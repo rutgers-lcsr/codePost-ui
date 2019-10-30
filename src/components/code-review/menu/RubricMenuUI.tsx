@@ -36,6 +36,8 @@ import { LinkedCommentsAlert, LinkedCommentsConfirm } from '../../admin/assignme
 import CPTooltip from '../../core/CPTooltip';
 import { tooltips } from '../../core/tooltips';
 
+import { CURSOR_DOMAIN } from '../CodeConsole';
+
 /**********************************************************************************************************************/
 
 enum EDITING_STATUS {
@@ -60,6 +62,9 @@ interface IRubricMenuUIProps extends IRubricManagerProps {
   }) => void;
   turnOnReload: () => void;
   turnOffReload: () => void;
+
+  showCursor: CURSOR_DOMAIN;
+  cursorIndex: number;
 }
 
 const RubricMenuUI = ({
@@ -144,17 +149,30 @@ const RubricMenuUI = ({
       commentSearchTerm = '';
     }
 
+    let commentIndex = 0;
+
     return filteredCatgories.map((cat: RubricCategoryType, catIndex: number) => {
       const savedCategory = state.savedRubricCategories.find((el: any) => {
         return el.id === cat.id;
       });
 
-      return (
+      let filteredComments: RubricComment[] = [];
+      if (cat.id in rubricComments) {
+        filteredComments = rubricComments[cat.id]
+          .filter((rubricComment: RubricCommentType) => {
+            return rubricComment.text.toUpperCase().includes(commentSearchTerm.toUpperCase());
+          })
+          .sort(RubricComment.compare);
+      }
+
+      const thisIndex = commentIndex;
+
+      const rubricCategoryManager = (
         <RubricCategoryManager
           key={cat.id}
           rubricCategory={cat}
           savedRubricCategory={savedCategory}
-          rubricComments={cat.id in rubricComments ? rubricComments[cat.id].sort(RubricComment.compare) : []}
+          rubricComments={filteredComments}
           savedRubricComments={savedCategory ? state.savedRubricComments[savedCategory.id] : undefined}
           updateCategory={helpers.updateRubricCategory}
           deleteCategory={helpers.deleteRubricCategory}
@@ -187,11 +205,18 @@ const RubricMenuUI = ({
               editRubricMode: props.editRubricMode,
               turnOnReload: props.turnOnReload,
               turnOffReload: props.turnOffReload,
+              showCursor: props.showCursor,
+              cursorIndex: props.cursorIndex,
+              commentIndex: thisIndex,
             };
             return <RubricMenuCategoryUI props={propsz} state={statez} helpers={helperz} />;
           }}
         </RubricCategoryManager>
       );
+
+      commentIndex = commentIndex + filteredComments.length;
+
+      return rubricCategoryManager;
     });
   };
 

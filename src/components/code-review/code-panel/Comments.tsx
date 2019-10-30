@@ -273,7 +273,6 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   };
 
   public render() {
-    console.log('props', this.props.showCursor, this.props.cursorIndex);
     const commentNodes = this.props.comments.map((comment: CommentType, index: number) => {
       const commentPlacement = this.state.placements.find((value: ICommentPlacement) => {
         return value.commentID === comment.id;
@@ -292,8 +291,6 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
         : comment.id;
 
       const cursored = this.props.showCursor === CURSOR_DOMAIN.COMMENTS && this.props.cursorIndex === index;
-
-      console.log('cursored', cursored);
 
       return (
         <Comment

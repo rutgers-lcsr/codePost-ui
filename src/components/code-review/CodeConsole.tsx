@@ -94,6 +94,7 @@ export enum CURSOR_DOMAIN {
   HIDDEN,
   CODE,
   COMMENTS,
+  RUBRIC,
 }
 
 interface ICodeConsoleState {
@@ -571,121 +572,148 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   }
 
   public handleKeydown = async (e: any) => {
+    const os = getOperatingSystem();
+    const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+
     if (this.state.selectedFile !== undefined) {
-      const lines = this.state.selectedFile.code.split('\n');
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        e.stopPropagation();
-        this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorExtent: 1 });
-      } else if (this.state.showCursor === CURSOR_DOMAIN.HIDDEN && ['ArrowUp', 'ArrowDown'].includes(e.key)) {
-        e.preventDefault();
-        e.stopPropagation();
-        this.setState({ showCursor: CURSOR_DOMAIN.CODE });
-      } else if (this.state.showCursor === CURSOR_DOMAIN.CODE) {
-        if (['ArrowRight', 'ArrowLeft'].includes(e.key)) {
+      if (this.state.activeCommentID !== undefined) {
+        if (e.key === 'j' && triggerKey) {
           e.preventDefault();
           e.stopPropagation();
-          this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS, cursorIndex: 0, cursorExtent: 1 });
-        } else if (e.shiftKey && e.key === 'ArrowUp') {
-          e.preventDefault();
-          e.stopPropagation();
-          console.log('SHIFT UP');
-          if (this.state.cursorIndex >= 0) {
-            this.setState({
-              cursorIndex: this.state.cursorIndex,
-              cursorExtent: Math.max(this.state.cursorExtent - 1, 1),
-            });
+          console.log('RUBRIC DOWN', this.state.cursorIndex);
+          if (this.state.showCursor !== CURSOR_DOMAIN.RUBRIC) {
+            this.setState({ showCursor: CURSOR_DOMAIN.RUBRIC });
+          } else {
+            this.setState({ cursorIndex: this.state.cursorIndex + 1 });
           }
-        } else if (e.shiftKey && e.key === 'ArrowDown') {
+        } else if (e.key === 'k' && triggerKey) {
           e.preventDefault();
           e.stopPropagation();
-          console.log('SHIFT DOWN');
-          if (this.state.cursorIndex >= 0) {
-            console.log('a', this.state.cursorExtent + 1 - this.state.cursorIndex);
-            this.setState({
-              cursorIndex: this.state.cursorIndex,
-              cursorExtent: Math.min(this.state.cursorExtent + 1, lines.length - this.state.cursorIndex),
-            });
+          console.log('RUBRIC DOWN', this.state.cursorIndex);
+          if (this.state.showCursor !== CURSOR_DOMAIN.RUBRIC) {
+            this.setState({ showCursor: CURSOR_DOMAIN.RUBRIC });
+          } else {
+            this.setState({ cursorIndex: this.state.cursorIndex - 1 });
           }
-        } else if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          e.stopPropagation();
-          this.setState({
-            cursorIndex: Math.max(this.state.cursorIndex - 1, 0),
-            cursorExtent: this.state.cursorExtent,
-          });
-          console.log('UP');
-        } else if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          e.stopPropagation();
-          console.log('DOWN');
-          this.setState({
-            cursorIndex: Math.min(this.state.cursorIndex + 1, lines.length - this.state.cursorExtent),
-            cursorExtent: this.state.cursorExtent,
-          });
-        } else if (e.key === 'Enter') {
-          e.preventDefault();
-          e.stopPropagation();
-
-          const startLine = this.state.cursorIndex;
-          const endLine = this.state.cursorIndex + this.state.cursorExtent - 1;
-          const startChar = 0;
-          const endChar = lines[endLine].length;
-          const newComment: CommentType = {
-            id: this.state.commentCounter,
-            endChar,
-            endLine,
-            file: this.state.selectedFile.id,
-            pointDelta: 0.0,
-            startChar,
-            startLine,
-            text: '',
-            rubricComment: null,
-            author: this.props.user.email,
-            feedback: 0,
-          };
-
-          this.addComment(newComment, this.state.selectedFile);
-
-          // FIXME: we can come up with a better solution
-          await wait(5);
-
-          this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorExtent: 1 });
-
-          CodePanelHighlighting.brightenHighlight(newComment.id, this.context.consoleTheme.highlightActive);
         }
-      } else if (this.state.showCursor === CURSOR_DOMAIN.COMMENTS) {
-        if (['ArrowRight', 'ArrowLeft'].includes(e.key)) {
-          e.preventDefault();
-          e.stopPropagation();
-          this.setState({ showCursor: CURSOR_DOMAIN.CODE, cursorIndex: 0, cursorExtent: 1 });
-        } else if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          e.stopPropagation();
-          this.setState({
-            cursorIndex: Math.max(this.state.cursorIndex - 1, 0),
-          });
-          console.log('UP');
-        } else if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          e.stopPropagation();
-          this.setState({
-            cursorIndex: Math.min(
-              this.state.cursorIndex + 1,
-              this.state.comments[this.state.selectedFile.id].length - 1,
-            ),
-          });
-        } else if (e.key === 'Enter') {
-          await wait(5);
 
-          this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorIndex: 0 });
+        //
+        // this.setState({showCursor: CURSOR_DOMAIN.RUBRIC})
+      } else {
+        const lines = this.state.selectedFile.code.split('\n');
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorExtent: 1 });
+        } else if (this.state.showCursor === CURSOR_DOMAIN.HIDDEN && ['ArrowUp', 'ArrowDown'].includes(e.key)) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.setState({ showCursor: CURSOR_DOMAIN.CODE });
+        } else if (this.state.showCursor === CURSOR_DOMAIN.CODE) {
+          if (['ArrowRight', 'ArrowLeft'].includes(e.key)) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS, cursorIndex: 0, cursorExtent: 1 });
+          } else if (e.shiftKey && e.key === 'ArrowUp') {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('SHIFT UP');
+            if (this.state.cursorIndex >= 0) {
+              this.setState({
+                cursorIndex: this.state.cursorIndex,
+                cursorExtent: Math.max(this.state.cursorExtent - 1, 1),
+              });
+            }
+          } else if (e.shiftKey && e.key === 'ArrowDown') {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('SHIFT DOWN');
+            if (this.state.cursorIndex >= 0) {
+              console.log('a', this.state.cursorExtent + 1 - this.state.cursorIndex);
+              this.setState({
+                cursorIndex: this.state.cursorIndex,
+                cursorExtent: Math.min(this.state.cursorExtent + 1, lines.length - this.state.cursorIndex),
+              });
+            }
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            e.stopPropagation();
+            this.setState({
+              cursorIndex: Math.max(this.state.cursorIndex - 1, 0),
+              cursorExtent: this.state.cursorExtent,
+            });
+            console.log('UP');
+          } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('DOWN');
+            this.setState({
+              cursorIndex: Math.min(this.state.cursorIndex + 1, lines.length - this.state.cursorExtent),
+              cursorExtent: this.state.cursorExtent,
+            });
+          } else if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const startLine = this.state.cursorIndex;
+            const endLine = this.state.cursorIndex + this.state.cursorExtent - 1;
+            const startChar = 0;
+            const endChar = lines[endLine].length;
+            const newComment: CommentType = {
+              id: this.state.commentCounter,
+              endChar,
+              endLine,
+              file: this.state.selectedFile.id,
+              pointDelta: 0.0,
+              startChar,
+              startLine,
+              text: '',
+              rubricComment: null,
+              author: this.props.user.email,
+              feedback: 0,
+            };
+
+            this.addComment(newComment, this.state.selectedFile);
+
+            // FIXME: we can come up with a better solution
+            await wait(5);
+
+            this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorExtent: 1 });
+
+            CodePanelHighlighting.brightenHighlight(newComment.id, this.context.consoleTheme.highlightActive);
+          }
+        } else if (this.state.showCursor === CURSOR_DOMAIN.COMMENTS) {
+          if (['ArrowRight', 'ArrowLeft'].includes(e.key)) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.setState({ showCursor: CURSOR_DOMAIN.CODE, cursorIndex: 0, cursorExtent: 1 });
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            e.stopPropagation();
+            this.setState({
+              cursorIndex: Math.max(this.state.cursorIndex - 1, 0),
+            });
+            console.log('UP');
+          } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            e.stopPropagation();
+            this.setState({
+              cursorIndex: Math.min(
+                this.state.cursorIndex + 1,
+                this.state.comments[this.state.selectedFile.id].length - 1,
+              ),
+            });
+          } else if (e.key === 'Enter') {
+            await wait(5);
+
+            this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorIndex: 0 });
+          }
         }
       }
     }
   };
 
   public setCursor = (cursorIndex: number, cursorExtent: number) => {
-    console.log('abc', cursorIndex, cursorExtent);
     this.setState({ showCursor: CURSOR_DOMAIN.CODE, cursorIndex, cursorExtent });
   };
 
@@ -985,7 +1013,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       rubricComment,
     );
 
-    this.setState({ comments, commentRubricComments });
+    this.setState({
+      comments,
+      commentRubricComments,
+      showCursor: CURSOR_DOMAIN.HIDDEN,
+      cursorIndex: 0,
+      cursorExtent: 1,
+    });
   };
 
   public calculateGradeFromState = (): number | undefined => {
@@ -1556,6 +1590,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 turnOffReload: this.turnOffReload,
                 canUserEdit: true, // showcase in-console rubric editing in demo
                 demoMode: true,
+                showCursor: this.state.showCursor,
+                cursorIndex: this.state.cursorIndex,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
@@ -1796,6 +1832,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 canUserEdit:
                   this.isCourseAdmin(this.state.assignment) || this.state.assignment!.collaborativeRubricMode,
                 demoMode: false,
+                showCursor: this.state.showCursor,
+                cursorIndex: this.state.cursorIndex,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
