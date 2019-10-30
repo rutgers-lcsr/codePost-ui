@@ -38,6 +38,7 @@ export const CodeWindow = (props: IProps) => {
   };
 
   const onBeforeChange = (editor: any, data: any, value: string) => {
+    console.log(value);
     if (props.onChange) {
       props.onChange(value);
     }
@@ -52,9 +53,10 @@ export const CodeWindow = (props: IProps) => {
     } else return 'txt';
   };
 
+  console.log(props.onSave);
   // ******************************* Return  *******************************
   return (
-    <div style={{ fontSize: 12 }}>
+    <div style={{ fontSize: 12, minWidth: 300 }}>
       <CodeMirror
         key={`codeMirror`}
         onBeforeChange={onBeforeChange}
@@ -64,6 +66,7 @@ export const CodeWindow = (props: IProps) => {
           lineWrapping: true,
           mode: getMode(),
           theme: 'neo',
+          styleActiveLine: { nonEmpty: true },
           readOnly: props.onSave && (!isEditing || isSaving),
         }}
       />
