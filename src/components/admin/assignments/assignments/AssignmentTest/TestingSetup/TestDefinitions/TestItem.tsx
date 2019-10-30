@@ -11,11 +11,11 @@ import { TestCase, TestCaseType } from '../../../../../../../infrastructure/test
 import { SolutionFileType } from '../../../../../../../infrastructure/solutionFile';
 
 /* codePost component imports */
-import { CodeWindow } from './utils/CodeWindow';
-import { TestResult } from './utils/TestResult';
+import { CodeWindow } from '../utils/CodeWindow';
+import { TestResult } from '../utils/TestResult';
 
 /* codePost util imports */
-import { getLanguage, testTemplates } from './utils/languageUtils';
+import { getLanguage, testTemplates } from '../utils/languageUtils';
 
 const { Option } = Select;
 
@@ -62,7 +62,7 @@ export const TestItem = (props: ITestItemProps) => {
 
     if (props.testCase.id > 0) {
       setIsRunning(true);
-      const payload = { id: props.testCase.id, files: props.files };
+      const payload = { id: props.testCase.id };
       const result = await TestCase.run(payload);
       setTestOutput(JSON.stringify(result));
       setIsRunning(false);

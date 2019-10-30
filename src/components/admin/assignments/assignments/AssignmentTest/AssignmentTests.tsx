@@ -53,6 +53,7 @@ export const AssignmentTests = (props: IProps) => {
           currentAssignment={assignment}
           switchDetail={setDetail.bind({}, DETAIL_TYPE.SetUp)}
           onCancel={props.onCancel}
+          submissions={props.submissions}
           updateAssignment={updateAssignment}
         />
       );

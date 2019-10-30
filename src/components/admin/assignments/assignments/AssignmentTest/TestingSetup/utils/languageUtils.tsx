@@ -98,11 +98,30 @@ const BASH_JAVA_TEMPLATE = `
 TestOutput true "Put your custom log statement here"
 `;
 
+const BASHMODE_PYTHON_TEMPLATE = `
+# You can write a bash script below to output mutltiple tests
+# Each test must call TestOutput <testName (string)> <passed (boolean)> <logs (string)>
+# The testNames must be unique
+#
+# For example, to check if a student's helloWorld file outputs "Hello World"
+#
+# result=$(python3 files.HelloWorld)
+# if echo $result | grep "Hello World"
+# then
+#   TestOutput test1 true "good job!"
+# else
+#   TestOutput test1 false "Wrong result: Expected Hello World. $result provided"
+# fi
+
+TestOutput test1 true "Put your custom log statement here"
+`;
+
 export const testTemplates: { [language: string]: { [type: string]: { [attr: string]: string } } } = {
   python: {
     functional: { placeholder: FUNCTION_TEMPLATE, initialValue: '' },
     unit: { placeholder: '', initialValue: PYTHON_UNIT_TEMPLATE },
     bash: { placeholder: '', initialValue: BASH_PYTHON_TEMPLATE },
+    bashMode: { placeholder: '', initialValue: BASHMODE_PYTHON_TEMPLATE },
   },
   java: {
     functional: { placeholder: FUNCTION_TEMPLATE, initialValue: '' },

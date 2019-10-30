@@ -2,86 +2,19 @@
 import React, { useState } from 'react';
 
 /* library imports  */
-import { Button, Icon, Layout, Menu, message, Modal, Table, Upload } from 'antd';
-import { ClickParam } from 'antd/lib/menu';
+import { Button, Icon, message, Modal, Table, Upload } from 'antd';
 
 /* codePost object imports  */
-import { AssignmentType } from '../../../../../../../infrastructure/assignment';
 import { SolutionFileType } from '../../../../../../../infrastructure/solutionFile';
-
-/* codePost other imports  */
-import { CodeWindow } from './utils/CodeWindow';
-
-const { Sider, Content } = Layout;
-
-interface IProps {
-  assignment: AssignmentType;
-  files: SolutionFileType[];
-  addFile: (file: any) => Promise<void>;
-  deleteFile: (id: number) => Promise<void>;
-  updateFile: (id: number, newCode: string) => Promise<void>;
-}
-
-export const SolutionCode = (props: IProps) => {
-  /******************************* State Variables ****************************/
-  const [currentIndex, setIndex] = useState('0');
-
-  /******************************** API Functions ****************************/
-  const onSave = (newCode: string) => {
-    return props.updateFile(props.files[parseInt(currentIndex, 10)].id, newCode);
-  };
-
-  /************************** State Change Functions ****************************/
-  const changeIndex = (e: ClickParam) => {
-    setIndex(e.key);
-  };
-
-  /***************************** Return ****************************************/
-  return (
-    <div>
-      <Layout style={{ maxHeight: 450 }}>
-        <Sider theme="light">
-          {'Files'}
-          <Menu selectedKeys={[currentIndex]} mode="inline" onClick={changeIndex}>
-            {props.files.map((file, index) => {
-              const pathName = `${file.path ? `${file.path}/` : ''}`;
-              return (
-                <Menu.Item key={index.toString()} style={{ height: 'fit-content', minHeight: 40 }}>
-                  <div style={{ lineHeight: pathName ? 1.5 : 3, marginTop: 4 }}>
-                    <div style={{ fontSize: 10, fontStyle: 'italic', whiteSpace: 'normal' }}>{pathName}</div>
-                    <div>{file.name}</div>
-                  </div>
-                </Menu.Item>
-              );
-            })}
-          </Menu>
-          <CodeUploader files={props.files} addFile={props.addFile} deleteFile={props.deleteFile} />
-        </Sider>
-        <Content style={{ maxHeight: '70vh', overflow: 'auto', fontSize: 12 }}>
-          {props.files.length === 0 ? (
-            <div />
-          ) : (
-            <div style={{ position: 'relative', marginLeft: 5 }}>
-              <CodeWindow
-                code={props.files[parseInt(currentIndex, 10)].code}
-                extension={props.files[parseInt(currentIndex, 10)].extension}
-                onSave={onSave}
-              />
-            </div>
-          )}
-        </Content>
-      </Layout>
-    </div>
-  );
-};
 
 interface IUploadProps {
   files: SolutionFileType[];
   addFile: (file: any) => Promise<void>;
   deleteFile: (id: number) => Promise<void>;
+  icon?: boolean;
 }
 
-const CodeUploader = (props: IUploadProps) => {
+export const CodeUploader = (props: IUploadProps) => {
   /******************************* State Variables ****************************/
   const [visible, setVisible] = useState(false);
   const [newFiles, setNewFiles] = useState<any[]>([]);
@@ -157,9 +90,13 @@ const CodeUploader = (props: IUploadProps) => {
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <Button onClick={toggleVisible} style={{ marginTop: 20 }}>
-        Add / Remove Files
-      </Button>
+      {props.icon ? (
+        <Icon onClick={toggleVisible} type="plus-circle" />
+      ) : (
+        <Button onClick={toggleVisible} style={{ marginTop: 20 }}>
+          Add / Remove Files
+        </Button>
+      )}
       <Modal visible={visible} onCancel={toggleVisible} footer={null} width={750}>
         <Table columns={columns} dataSource={data} />
         <Upload
