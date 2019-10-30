@@ -21,6 +21,8 @@ import { getOperatingSystem, OS } from '../core/operatingSystem';
 
 import CodePanelHighlighting from './code-panel/CodePanelHighlighting';
 
+import CodePanelSizing from './code-panel/CodePanelSizing';
+
 import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from '../../types/common';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
@@ -611,77 +613,112 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           e.stopPropagation();
           this.setState({ showCursor: CURSOR_DOMAIN.CODE });
         } else if (this.state.showCursor === CURSOR_DOMAIN.CODE) {
-          if (['ArrowRight', 'ArrowLeft'].includes(e.key) && triggerKey) {
-            e.preventDefault();
-            e.stopPropagation();
-            this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS, cursorIndex: 0, cursorExtent: 1 });
-          } else if (e.shiftKey && e.key === 'ArrowUp') {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('SHIFT UP');
-            if (this.state.cursorIndex >= 0) {
-              this.setState({
-                cursorIndex: this.state.cursorIndex,
-                cursorExtent: Math.max(this.state.cursorExtent - 1, 1),
-              });
-            }
-          } else if (e.shiftKey && e.key === 'ArrowDown' && triggerKey) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('SHIFT DOWN');
-            if (this.state.cursorIndex >= 0) {
-              console.log('a', this.state.cursorExtent + 1 - this.state.cursorIndex);
-              this.setState({
-                cursorIndex: this.state.cursorIndex,
-                cursorExtent: Math.min(this.state.cursorExtent + 1, lines.length - this.state.cursorIndex),
-              });
-            }
-          } else if (e.key === 'ArrowUp' && triggerKey) {
-            e.preventDefault();
-            e.stopPropagation();
-            this.setState({
-              cursorIndex: Math.max(this.state.cursorIndex - 1, 0),
-              cursorExtent: this.state.cursorExtent,
-            });
-            console.log('UP');
-          } else if (e.key === 'ArrowDown' && triggerKey) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('DOWN');
-            this.setState({
-              cursorIndex: Math.min(this.state.cursorIndex + 1, lines.length - this.state.cursorExtent),
-              cursorExtent: this.state.cursorExtent,
-            });
-          } else if (e.key === 'Enter') {
-            e.preventDefault();
-            e.stopPropagation();
+          const codeScrollArea = document.getElementById('code-scroll-area');
+          if (codeScrollArea !== null) {
+            // Handle code scrolling
+            const scrollCodeToCursor = (codeScrollArea: any, cursorIndex: number, cursorExtent: number) => {
+              const cursorTop = cursorIndex * CodePanelSizing.pixelsPerLine();
+              const cursorBottom = cursorTop + cursorExtent * CodePanelSizing.pixelsPerLine();
+              console.log('cursorTop', cursorTop);
+              console.log('currentScroll', codeScrollArea.scrollTop);
 
-            const startLine = this.state.cursorIndex;
-            const endLine = this.state.cursorIndex + this.state.cursorExtent - 1;
-            const startChar = 0;
-            const endChar = lines[endLine].length;
-            const newComment: CommentType = {
-              id: this.state.commentCounter,
-              endChar,
-              endLine,
-              file: this.state.selectedFile.id,
-              pointDelta: 0.0,
-              startChar,
-              startLine,
-              text: '',
-              rubricComment: null,
-              author: this.props.user.email,
-              feedback: 0,
+              const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+
+              if (cursorTop < codeScrollArea.scrollTop) {
+                setTimeout(() => {
+                  codeScrollArea.scrollTop = cursorTop;
+                });
+              } else if (cursorBottom - codeScrollArea.scrollTop > windowHeight - 170) {
+                setTimeout(() => {
+                  codeScrollArea.scrollTop = cursorBottom - windowHeight + 170;
+                });
+              }
             };
 
-            this.addComment(newComment, this.state.selectedFile);
+            if (['ArrowRight', 'ArrowLeft'].includes(e.key) && triggerKey) {
+              e.preventDefault();
+              e.stopPropagation();
+              this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS, cursorIndex: 0, cursorExtent: 1 });
+            } else if (e.shiftKey && e.key === 'ArrowUp') {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('SHIFT UP');
+              if (this.state.cursorIndex >= 0) {
+                const cursorIndex = this.state.cursorIndex;
+                const cursorExtent = Math.max(this.state.cursorExtent - 1, 1);
+                scrollCodeToCursor(codeScrollArea, cursorIndex, cursorExtent);
+                this.setState({
+                  cursorIndex,
+                  cursorExtent,
+                });
+              }
+            } else if (e.shiftKey && e.key === 'ArrowDown' && triggerKey) {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('SHIFT DOWN');
+              if (this.state.cursorIndex >= 0) {
+                const cursorIndex = this.state.cursorIndex;
+                const cursorExtent = Math.min(this.state.cursorExtent + 1, lines.length - this.state.cursorIndex);
+                scrollCodeToCursor(codeScrollArea, cursorIndex, cursorExtent);
+                this.setState({
+                  cursorIndex,
+                  cursorExtent,
+                });
+              }
+            } else if (e.key === 'ArrowUp' && triggerKey) {
+              e.preventDefault();
+              e.stopPropagation();
+              const cursorIndex = Math.max(this.state.cursorIndex - 1, 0);
+              const cursorExtent = this.state.cursorExtent;
+              scrollCodeToCursor(codeScrollArea, cursorIndex, cursorExtent);
+              this.setState({
+                cursorIndex,
+                cursorExtent,
+              });
+              console.log('UP');
+            } else if (e.key === 'ArrowDown' && triggerKey) {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('DOWN');
 
-            // FIXME: we can come up with a better solution
-            await wait(5);
+              const cursorIndex = Math.min(this.state.cursorIndex + 1, lines.length - this.state.cursorExtent);
+              const cursorExtent = this.state.cursorExtent;
+              scrollCodeToCursor(codeScrollArea, cursorIndex, cursorExtent);
+              this.setState({
+                cursorIndex,
+                cursorExtent,
+              });
+            } else if (e.key === 'Enter') {
+              e.preventDefault();
+              e.stopPropagation();
 
-            this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorExtent: 1 });
+              const startLine = this.state.cursorIndex;
+              const endLine = this.state.cursorIndex + this.state.cursorExtent - 1;
+              const startChar = 0;
+              const endChar = lines[endLine].length;
+              const newComment: CommentType = {
+                id: this.state.commentCounter,
+                endChar,
+                endLine,
+                file: this.state.selectedFile.id,
+                pointDelta: 0.0,
+                startChar,
+                startLine,
+                text: '',
+                rubricComment: null,
+                author: this.props.user.email,
+                feedback: 0,
+              };
 
-            CodePanelHighlighting.brightenHighlight(newComment.id, this.context.consoleTheme.highlightActive);
+              this.addComment(newComment, this.state.selectedFile);
+
+              // FIXME: we can come up with a better solution
+              await wait(5);
+
+              this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorExtent: 1 });
+
+              CodePanelHighlighting.brightenHighlight(newComment.id, this.context.consoleTheme.highlightActive);
+            }
           }
         } else if (this.state.showCursor === CURSOR_DOMAIN.COMMENTS) {
           if (['ArrowRight', 'ArrowLeft'].includes(e.key)) {

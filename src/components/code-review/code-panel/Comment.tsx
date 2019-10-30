@@ -178,6 +178,15 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         this.props.onDelete(this.props.comment);
       }
     }
+
+    if (!prevProps.cursored && this.props.cursored) {
+      const scrollArea = document.getElementById('code-scroll-area');
+      if (scrollArea !== null) {
+        setTimeout(() => {
+          scrollArea.scrollTop = this.props.placement;
+        });
+      }
+    }
   }
 
   public init = () => {
