@@ -40,25 +40,6 @@ const TestCaseVPatch = t.intersection(
   'TestCasePatch',
 );
 
-const RunTestCaseData = t.intersection([
-  GenericObject,
-  t.type({
-    files: t.array(
-      t.intersection([
-        t.type({
-          code: t.string,
-          name: t.string,
-          extension: t.string,
-        }),
-        t.partial({
-          id: t.number,
-          submisssion: t.number,
-        }),
-      ]),
-    ),
-  }),
-]);
-
 const TestCaseOutputs = t.intersection([
   GenericObject,
   t.type({
@@ -76,7 +57,7 @@ export class TestCase {
   public static delete = deleteObject(TestCaseV, 'testCases');
   public static update = updateObject(TestCaseV, TestCaseVPatch, 'testCases');
 
-  public static run = createObjectDetail(TestCaseOutputs, RunTestCaseData, 'testCases', 'run');
+  public static run = createObjectDetail(TestCaseOutputs, GenericObject, 'testCases', 'run');
 
   public static sort = (testCases: TestCaseType[]): TestCaseType[] => {
     const compare = (a: TestCaseType, b: TestCaseType) => {
