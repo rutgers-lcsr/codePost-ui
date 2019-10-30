@@ -9,7 +9,7 @@ import React from 'react';
 
 // We ignore eslint since Popover never explicitly used. We just use the classNames
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Button, Input, message, Popover, Tooltip } from 'antd';
+import { Button, Icon, Input, message, Popconfirm, Popover, Tooltip } from 'antd';
 
 /* codePost imports */
 
@@ -17,6 +17,8 @@ import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
 import CPPointInput from '../../core/CPPointInput';
 import CPTooltip from '../../core/CPTooltip';
+
+import { getOperatingSystem, OS } from '../../core/operatingSystem';
 
 import { tooltips } from '../../core/tooltips';
 
@@ -108,6 +110,7 @@ interface ICommentState {
   status: CommentStatus;
   text: string;
   points: number;
+  showDeletePopover: boolean;
 }
 
 class Comment extends React.Component<ICommentProps, ICommentState> {
@@ -119,12 +122,14 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   }
 
   public componentDidMount() {
-    document.addEventListener('keydown', this.handleCursorActivate);
+    document.addEventListener('keydown', this.handleCursorHotkeys);
+    document.addEventListener('keydown', this.handleHotkeys);
     this.props.setCommentPlacements();
   }
 
   public componentWillUnmount() {
-    document.removeEventListener('keydown', this.handleCursorActivate);
+    document.removeEventListener('keydown', this.handleCursorHotkeys);
+    document.removeEventListener('keydown', this.handleHotkeys);
   }
 
   public componentDidUpdate(prevProps: ICommentProps) {
@@ -194,7 +199,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     const points: number = UiComment.points(this.props.comment, this.props.rubricComment);
     const status: CommentStatus =
       text === '' && points === 0 && this.props.rubricComment === undefined ? 'edited' : 'idle';
-    return { text, points, status };
+    return { text, points, status, showDeletePopover: false };
   };
 
   public save = async () => {
@@ -216,7 +221,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     }
   };
 
-  public handleCursorActivate = (e: any) => {
+  public handleCursorHotkeys = (e: any) => {
     if (!this.props.cursored) {
       return;
     }
@@ -228,6 +233,38 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         this.props.changeActive(undefined);
       } else {
         this.props.changeActive(this.props.comment.id);
+      }
+    }
+  };
+
+  public handleHotkeys = (e: any) => {
+    if (this.props.commentType !== 'active') {
+      return;
+    }
+
+    const os = getOperatingSystem();
+    const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+
+    if (e.key === 'd' && triggerKey) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!this.state.showDeletePopover) {
+        this.setState({ showDeletePopover: true });
+      } else {
+        this.confirmDelete(e);
+      }
+    }
+
+    if (this.state.showDeletePopover && e.key === 'Enter') {
+      this.confirmDelete(e);
+    }
+
+    if (e.key === 'Escape') {
+      if (this.state.showDeletePopover) {
+        this.confirmCancelDelete(e);
+      } else {
+        this.props.changeActive(undefined);
       }
     }
   };
@@ -377,6 +414,29 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     }
   };
 
+  public showDeletePopover = () => {
+    this.setState({ showDeletePopover: true });
+  };
+
+  public hideDeletePopover = () => {
+    this.setState({ showDeletePopover: false });
+  };
+
+  public handleDeletePopoverVisibleChange = (showDeletePopover: boolean) => {
+    this.setState({ showDeletePopover });
+  };
+
+  public confirmDelete = (e: any) => {
+    console.log('deleting');
+    this.delete(e);
+    this.setState({ showDeletePopover: false });
+  };
+
+  public confirmCancelDelete = (e: any) => {
+    console.log('canceled');
+    this.setState({ showDeletePopover: false });
+  };
+
   public render() {
     const className = `comment comment--${this.props.commentType} ant-popover ant-popover-placement-rightTop`;
 
@@ -466,6 +526,21 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     // ------------------ commentType ['active', 'inactive', 'readonly'] ------------------ //
     //////////////////////////////////////////////////////////////////////////////////////////
 
+    const popoverContent = (
+      <CPFlex
+        left={[]}
+        right={[
+          <CPButton cpType="secondary" size="small" style={{ width: '60px' }} onClick={this.confirmCancelDelete}>
+            No
+          </CPButton>,
+          <CPButton cpType="danger" size="small" style={{ width: '60px' }} onClick={this.confirmDelete}>
+            Yes
+          </CPButton>,
+        ]}
+        gutterSize={14}
+      />
+    );
+
     if (this.props.commentType === 'active') {
       const tooltip = this.props.rubricComment ? tooltips.grade.comments.pointsDisabled : null;
 
@@ -514,7 +589,18 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       );
 
       commentElements.saveButton = <CPButton cpType="secondary" icon="check" onClick={this.deactivate} />;
-      commentElements.deleteButton = <CPButton cpType="danger" icon="delete" onClick={this.delete} />;
+      commentElements.deleteButton = (
+        <Popover
+          title="Are you sure you want to delete this comment?"
+          visible={this.state.showDeletePopover}
+          onVisibleChange={this.handleDeletePopoverVisibleChange}
+          trigger="click"
+          placement="bottomRight"
+          content={popoverContent}
+        >
+          <CPButton cpType="danger" icon="delete" />
+        </Popover>
+      );
 
       if (this.props.rubricComment) {
         commentElements.rubricCommentAction = (
@@ -542,7 +628,18 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           <BlockMarkdown source={this.state.text} />
         </div>
       );
-      commentElements.deleteButton = <CPButton cpType="danger" icon="delete" onClick={this.delete} />;
+      commentElements.deleteButton = (
+        <Popover
+          title="Are you sure you want to delete this comment?"
+          visible={this.state.showDeletePopover}
+          onVisibleChange={this.handleDeletePopoverVisibleChange}
+          trigger="click"
+          placement="bottomRight"
+          content={popoverContent}
+        >
+          <CPButton cpType="danger" icon="delete" />
+        </Popover>
+      );
 
       onClick = this.onCommentClick;
       cursor = 'pointer';

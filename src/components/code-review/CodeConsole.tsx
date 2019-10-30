@@ -605,8 +605,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       } else {
         const lines = this.state.selectedFile.code.split('\n');
         if (e.key === 'Escape') {
-          e.preventDefault();
-          e.stopPropagation();
           this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorExtent: 1 });
         } else if (
           this.state.showCursor === CURSOR_DOMAIN.HIDDEN &&
@@ -760,30 +758,31 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public handleActiveCommentHotkeys = (e: any) => {
-    if (e.key === 'Escape') {
-      this.setState({ activeCommentID: undefined });
-    }
+    console.log('skip');
+    // if (e.key === 'Escape') {
+    //   this.setState({ activeCommentID: undefined });
+    // }
 
-    if (this.state.selectedFile !== undefined && this.state.activeCommentID !== undefined) {
-      const os = getOperatingSystem();
-      const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+    // if (this.state.selectedFile !== undefined && this.state.activeCommentID !== undefined) {
+    //   const os = getOperatingSystem();
+    //   const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
 
-      // FIXME: Delete Comment - consider adding a warning
-      const trigger = e.key === 'd' && triggerKey;
-      if (trigger) {
-        e.preventDefault();
-        e.stopPropagation();
+    //   // FIXME: Delete Comment - consider adding a warning
+    //   const trigger = e.key === 'd' && triggerKey;
+    //   if (trigger) {
+    //     e.preventDefault();
+    //     e.stopPropagation();
 
-        const comment = this.state.comments[this.state.selectedFile.id].find((c: CommentType) => {
-          return c.id === this.state.activeCommentID;
-        });
-        this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorExtent: 1, activeCommentID: undefined });
+    //     const comment = this.state.comments[this.state.selectedFile.id].find((c: CommentType) => {
+    //       return c.id === this.state.activeCommentID;
+    //     });
+    //     this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorExtent: 1, activeCommentID: undefined });
 
-        if (comment !== undefined) {
-          this.deleteComment(comment);
-        }
-      }
-    }
+    //     if (comment !== undefined) {
+    //       this.deleteComment(comment);
+    //     }
+    //   }
+    // }
   };
 
   /***********************************************************************************
