@@ -235,6 +235,20 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         this.props.changeActive(this.props.comment.id);
       }
     }
+
+    const os = getOperatingSystem();
+    const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+
+    if (e.key === 'd' && triggerKey) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!this.state.showDeletePopover) {
+        this.setState({ showDeletePopover: true });
+      } else {
+        this.confirmDelete(e);
+      }
+    }
   };
 
   public handleHotkeys = (e: any) => {
@@ -266,6 +280,20 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       } else {
         this.props.changeActive(undefined);
       }
+    }
+
+    if (e.key === 'u' && triggerKey) {
+      this.removeRubricComment();
+    }
+
+    if (e.key === '[' && triggerKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.onMinus();
+    } else if (e.key === ']' && triggerKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.onPlus();
     }
   };
 
@@ -427,13 +455,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   };
 
   public confirmDelete = (e: any) => {
-    console.log('deleting');
     this.delete(e);
     this.setState({ showDeletePopover: false });
   };
 
   public confirmCancelDelete = (e: any) => {
-    console.log('canceled');
     this.setState({ showDeletePopover: false });
   };
 

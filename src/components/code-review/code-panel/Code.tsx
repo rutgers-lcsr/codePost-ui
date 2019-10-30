@@ -127,8 +127,6 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     document.addEventListener('mouseup', callback);
   };
 
-  console.log('> ', props.cursorIndex, props.cursorExtent);
-
   const linesOfCode = (readOnly: boolean, code: string, comments: CommentType[]) => {
     return code.split('\n').map((text: string, i: number) => {
       const style =

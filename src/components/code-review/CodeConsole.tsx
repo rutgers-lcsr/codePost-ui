@@ -584,7 +584,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           e.stopPropagation();
           console.log('RUBRIC DOWN', this.state.cursorIndex);
           if (this.state.showCursor !== CURSOR_DOMAIN.RUBRIC) {
-            this.setState({ showCursor: CURSOR_DOMAIN.RUBRIC });
+            this.setState({ showCursor: CURSOR_DOMAIN.RUBRIC, cursorIndex: 0 });
           } else {
             const numComments = Object.values(this.state.rubricComments).flat().length;
             this.setState({ cursorIndex: Math.min(this.state.cursorIndex + 1, numComments - 1) });
