@@ -252,6 +252,14 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   };
 
   public handleHotkeys = (e: any) => {
+    if (e.key === 'Escape') {
+      if (this.state.showDeletePopover) {
+        this.confirmCancelDelete(e);
+      } else {
+        this.props.changeActive(undefined);
+      }
+    }
+
     if (this.props.commentType !== 'active') {
       return;
     }
@@ -272,14 +280,6 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     if (this.state.showDeletePopover && e.key === 'Enter') {
       this.confirmDelete(e);
-    }
-
-    if (e.key === 'Escape') {
-      if (this.state.showDeletePopover) {
-        this.confirmCancelDelete(e);
-      } else {
-        this.props.changeActive(undefined);
-      }
     }
 
     if (e.key === 'u' && triggerKey) {

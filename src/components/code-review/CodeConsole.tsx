@@ -438,8 +438,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /**********************************************************************************/
 
   public async componentDidMount() {
-    document.addEventListener('keydown', this.handleKeydown);
-    document.addEventListener('keydown', this.handleActiveCommentHotkeys);
+    document.addEventListener('keydown', this.handleCursor);
 
     if (this.props.inDemoMode) {
       document.title = 'codePost | Code Console Demo';
@@ -569,11 +568,33 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   }
 
   public componentWillUnmount() {
-    document.removeEventListener('keydown', this.handleKeydown);
-    document.removeEventListener('keydown', this.handleActiveCommentHotkeys);
+    document.removeEventListener('keydown', this.handleCursor);
   }
 
-  public handleKeydown = async (e: any) => {
+  /////////////////////////////////////////////////////////////////////////////////
+  // Cursor Navigation (in order of code implementation below)
+  //
+  // >>>>>>>>>>> If Active Comment
+  // - Move up and down rubric: cmd - [j,k]
+  //
+  // >>>>>>>>>>> No Active Comment
+  // >>> General
+  // - Leave 'cursor mode': escape
+  // - Enter 'cursor mode': cmd - [up, down]
+  //
+  // >>> Code Domain
+  // - Change from code to comments domain: cmd - [left, right]
+  // - Extend code cursor: cmd - shift - [up, down]
+  // - Navigate and scroll code with cursor: cmd - [up, down]
+  // - Highlight selection: Enter
+  //
+  // >>> Comments Domain
+  // - Change from comments to code domain: cmd - [left, right]
+  // - Navigate and jump to next comment with cursor: cmd - [up, down]
+  // - Activate comment for editing: Enter
+  /////////////////////////////////////////////////////////////////////////////////
+
+  public handleCursor = async (e: any) => {
     const os = getOperatingSystem();
     const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
 
@@ -599,9 +620,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             this.setState({ cursorIndex: Math.max(this.state.cursorIndex - 1, 0) });
           }
         }
-
-        //
-        // this.setState({showCursor: CURSOR_DOMAIN.RUBRIC})
       } else {
         const lines = this.state.selectedFile.code.split('\n');
         if (e.key === 'Escape') {
@@ -621,8 +639,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             const scrollCodeToCursor = (codeScrollArea: any, cursorIndex: number, cursorExtent: number) => {
               const cursorTop = cursorIndex * CodePanelSizing.pixelsPerLine();
               const cursorBottom = cursorTop + cursorExtent * CodePanelSizing.pixelsPerLine();
-              console.log('cursorTop', cursorTop);
-              console.log('currentScroll', codeScrollArea.scrollTop);
 
               const windowHeight = window.innerHeight || document.documentElement.clientHeight;
 
@@ -727,7 +743,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             e.preventDefault();
             e.stopPropagation();
             this.setState({ showCursor: CURSOR_DOMAIN.CODE, cursorIndex: 0, cursorExtent: 1 });
-          } else if (e.key === 'ArrowUp') {
+          } else if (e.key === 'ArrowUp' && triggerKey) {
             e.preventDefault();
             e.stopPropagation();
             this.setState({
@@ -755,34 +771,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public setCursor = (cursorIndex: number, cursorExtent: number) => {
     this.setState({ showCursor: CURSOR_DOMAIN.CODE, cursorIndex, cursorExtent });
-  };
-
-  public handleActiveCommentHotkeys = (e: any) => {
-    console.log('skip');
-    // if (e.key === 'Escape') {
-    //   this.setState({ activeCommentID: undefined });
-    // }
-
-    // if (this.state.selectedFile !== undefined && this.state.activeCommentID !== undefined) {
-    //   const os = getOperatingSystem();
-    //   const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
-
-    //   // FIXME: Delete Comment - consider adding a warning
-    //   const trigger = e.key === 'd' && triggerKey;
-    //   if (trigger) {
-    //     e.preventDefault();
-    //     e.stopPropagation();
-
-    //     const comment = this.state.comments[this.state.selectedFile.id].find((c: CommentType) => {
-    //       return c.id === this.state.activeCommentID;
-    //     });
-    //     this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorExtent: 1, activeCommentID: undefined });
-
-    //     if (comment !== undefined) {
-    //       this.deleteComment(comment);
-    //     }
-    //   }
-    // }
   };
 
   /***********************************************************************************
