@@ -11,6 +11,7 @@ const SolutionFileV = t.intersection(
       extension: t.string,
       path: t.union([t.string, t.null]),
       created: t.string,
+      testCategory: t.union([t.number, t.null]),
     }),
     t.partial({}),
   ],
@@ -26,6 +27,7 @@ const SolutionFileVPost = t.intersection(
       code: t.string,
       extension: t.string,
       path: t.union([t.string, t.null]),
+      testCategory: t.union([t.number, t.null]),
     }),
     t.partial({}),
   ],
@@ -37,7 +39,6 @@ const SolutionFileVPatch = t.intersection(
     GenericObject,
     t.partial({
       name: t.string,
-      assignment: t.number,
       code: t.string,
       extension: t.string,
       path: t.union([t.string, t.null]),
