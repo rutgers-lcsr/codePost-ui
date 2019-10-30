@@ -584,7 +584,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           if (this.state.showCursor !== CURSOR_DOMAIN.RUBRIC) {
             this.setState({ showCursor: CURSOR_DOMAIN.RUBRIC });
           } else {
-            this.setState({ cursorIndex: this.state.cursorIndex + 1 });
+            const numComments = Object.values(this.state.rubricComments).flat().length;
+            this.setState({ cursorIndex: Math.min(this.state.cursorIndex + 1, numComments - 1) });
           }
         } else if (e.key === 'k' && triggerKey) {
           e.preventDefault();
@@ -593,7 +594,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           if (this.state.showCursor !== CURSOR_DOMAIN.RUBRIC) {
             this.setState({ showCursor: CURSOR_DOMAIN.RUBRIC });
           } else {
-            this.setState({ cursorIndex: this.state.cursorIndex - 1 });
+            this.setState({ cursorIndex: Math.max(this.state.cursorIndex - 1, 0) });
           }
         }
 
@@ -610,7 +611,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           e.stopPropagation();
           this.setState({ showCursor: CURSOR_DOMAIN.CODE });
         } else if (this.state.showCursor === CURSOR_DOMAIN.CODE) {
-          if (['ArrowRight', 'ArrowLeft'].includes(e.key)) {
+          if (['ArrowRight', 'ArrowLeft'].includes(e.key) && triggerKey) {
             e.preventDefault();
             e.stopPropagation();
             this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS, cursorIndex: 0, cursorExtent: 1 });
@@ -624,7 +625,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 cursorExtent: Math.max(this.state.cursorExtent - 1, 1),
               });
             }
-          } else if (e.shiftKey && e.key === 'ArrowDown') {
+          } else if (e.shiftKey && e.key === 'ArrowDown' && triggerKey) {
             e.preventDefault();
             e.stopPropagation();
             console.log('SHIFT DOWN');
@@ -635,7 +636,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 cursorExtent: Math.min(this.state.cursorExtent + 1, lines.length - this.state.cursorIndex),
               });
             }
-          } else if (e.key === 'ArrowUp') {
+          } else if (e.key === 'ArrowUp' && triggerKey) {
             e.preventDefault();
             e.stopPropagation();
             this.setState({
@@ -643,7 +644,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               cursorExtent: this.state.cursorExtent,
             });
             console.log('UP');
-          } else if (e.key === 'ArrowDown') {
+          } else if (e.key === 'ArrowDown' && triggerKey) {
             e.preventDefault();
             e.stopPropagation();
             console.log('DOWN');
@@ -1592,6 +1593,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 demoMode: true,
                 showCursor: this.state.showCursor,
                 cursorIndex: this.state.cursorIndex,
+                setCursor: this.setCursor,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
@@ -1834,6 +1836,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 demoMode: false,
                 showCursor: this.state.showCursor,
                 cursorIndex: this.state.cursorIndex,
+                setCursor: this.setCursor,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}

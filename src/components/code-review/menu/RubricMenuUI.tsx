@@ -65,6 +65,7 @@ interface IRubricMenuUIProps extends IRubricManagerProps {
 
   showCursor: CURSOR_DOMAIN;
   cursorIndex: number;
+  setCursor: (cursorIndex: number, cursorExtent: number) => void;
 }
 
 const RubricMenuUI = ({
@@ -111,6 +112,7 @@ const RubricMenuUI = ({
 
   const onSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+    props.setCursor(0, 1);
   };
 
   const linkToComment = (rubricComment: RubricCommentType) => {
