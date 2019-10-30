@@ -608,7 +608,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           e.preventDefault();
           e.stopPropagation();
           this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorExtent: 1 });
-        } else if (this.state.showCursor === CURSOR_DOMAIN.HIDDEN && ['ArrowUp', 'ArrowDown'].includes(e.key)) {
+        } else if (
+          this.state.showCursor === CURSOR_DOMAIN.HIDDEN &&
+          ['ArrowUp', 'ArrowDown'].includes(e.key) &&
+          triggerKey
+        ) {
           e.preventDefault();
           e.stopPropagation();
           this.setState({ showCursor: CURSOR_DOMAIN.CODE });
@@ -721,7 +725,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             }
           }
         } else if (this.state.showCursor === CURSOR_DOMAIN.COMMENTS) {
-          if (['ArrowRight', 'ArrowLeft'].includes(e.key)) {
+          if (['ArrowRight', 'ArrowLeft'].includes(e.key) && triggerKey) {
             e.preventDefault();
             e.stopPropagation();
             this.setState({ showCursor: CURSOR_DOMAIN.CODE, cursorIndex: 0, cursorExtent: 1 });
@@ -732,7 +736,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               cursorIndex: Math.max(this.state.cursorIndex - 1, 0),
             });
             console.log('UP');
-          } else if (e.key === 'ArrowDown') {
+          } else if (e.key === 'ArrowDown' && triggerKey) {
             e.preventDefault();
             e.stopPropagation();
             this.setState({

@@ -95,6 +95,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
         lineNumbers.removeEventListener('mousedown', clickLineNumbers);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const addCommentAndIncrement = (comment: CommentType, file: FileType) => {
