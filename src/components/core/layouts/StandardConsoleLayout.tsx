@@ -169,7 +169,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
 
   React.useEffect(() => {
     onCollapse(props.sider, getCachedCollapseKeys());
-  }, []);
+  }, [props.sider.length]);
 
   return (
     <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
