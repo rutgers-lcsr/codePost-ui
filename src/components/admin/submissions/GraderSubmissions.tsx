@@ -95,6 +95,12 @@ class GraderData extends React.Component<IByGraderProps, IState> {
       return -1;
     } else if (a === '--' && b === 'Unfinalized') {
       return 1;
+    } else if (typeof a === 'object' && typeof b === 'object') {
+      try {
+        return b.props.children.props.children - a.props.children.props.children;
+      } catch {
+        return 0;
+      }
     }
 
     return 0;
