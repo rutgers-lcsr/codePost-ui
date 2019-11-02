@@ -9,8 +9,11 @@ import { ClickParam } from 'antd/lib/menu';
 import { AssignmentType } from '../../../../../../infrastructure/assignment';
 import { TestCase, TestCaseType } from '../../../../../../infrastructure/testCase';
 import { TestCategory, TestCategoryType } from '../../../../../../infrastructure/testCategory';
-import { SolutionFileType } from '../../../../../../infrastructure/solutionFile';
+import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 import { SubmissionType } from '../../../../../../infrastructure/submission';
+import { TestEnvironmentType } from '../../../../../../infrastructure/autograder/testEnvironment';
+
+import ReactMarkdown from 'react-markdown';
 
 /* codePost component imports */
 import { TestItem } from './TestDefinitions/TestItem';
@@ -25,10 +28,11 @@ const { Sider, Content } = Layout;
 interface IProps {
   currentAssignment: AssignmentType;
   files: SolutionFileType[];
-  addFile: (testCategory: number | null, file: any) => Promise<void>;
+  addFile: (testCategory: number | null, name: string, code: string) => Promise<void>;
   deleteFile: (id: number) => Promise<void>;
   updateFile: (id: number, newCode: string) => Promise<void>;
   submissions: SubmissionType[];
+  env: TestEnvironmentType;
 }
 
 export const TestDefinitions = (props: IProps) => {
@@ -63,24 +67,12 @@ export const TestDefinitions = (props: IProps) => {
     return newTest;
   };
 
-  const updateCategory = async (id: number, newBash: string) => {
-    const payload = {
-      id: id,
-      bashFile: newBash,
-    };
-
-    const newCategory = await TestCategory.update(payload);
-
-    replaceTestCategory(newCategory);
-    return;
-  };
-
   const addCategory = async (name: string, proMode: boolean) => {
     const payload = {
       id: -1,
       name: name,
       assignment: props.currentAssignment.id,
-      isProMode: proMode,
+      type: proMode ? 'bash' : 'normal',
     };
     const newCategory = await TestCategory.create(payload);
 
@@ -92,20 +84,20 @@ export const TestDefinitions = (props: IProps) => {
 
   /******************************* State Change Functions  ****************************/
 
-  const replaceTestCategory = (newCategory: TestCategoryType) => {
-    const filteredCategories = categories.filter((cat) => {
-      return cat.id != newCategory.id;
-    });
-    setCategories([...filteredCategories, newCategory]);
-  };
-
   const replaceTestCase = (newCase: TestCaseType, oldCase: TestCaseType) => {
     const filteredTests = casesByCategory[newCase.testCategory].filter((tc) => {
-      return tc.id != oldCase.id;
+      return tc.id !== oldCase.id;
     });
     const newCases = { ...casesByCategory };
     newCases[newCase.testCategory] = [...filteredTests, newCase];
     setCasesByCategory(newCases);
+  };
+
+  const replaceTestCategory = (newCategory: TestCategoryType) => {
+    const filteredCategories = categories.filter((cat) => {
+      return cat.id !== newCategory.id;
+    });
+    setCategories([...filteredCategories, newCategory]);
   };
 
   const addTestCase = (newCase: TestCaseType) => {
@@ -117,17 +109,19 @@ export const TestDefinitions = (props: IProps) => {
   const addTest = (category: number) => {
     const dummyTestCase = {
       id: newTestCounter,
-      name: 'New Test',
-      expectedOutput: '',
+      sortKey: 0,
+      testCategory: category,
+      description: 'New Test',
+      type: 'io',
       pointsPass: 0,
       pointsFail: 0,
-      language: 'python',
-      type: 'functional',
       text: '',
-      assignment: props.currentAssignment.id,
-      sortKey: 0,
+      function: 'python',
       fileName: '',
-      testCategory: category,
+      expectedOutput: '',
+      input: '',
+      checkReturn: true,
+      modified: '',
     };
     setNewTestCounter(newTestCounter - 1);
     addTestCase(dummyTestCase);
@@ -145,18 +139,19 @@ export const TestDefinitions = (props: IProps) => {
   if (!thisCategory) {
     testContent = <div />;
   } else {
-    switch (thisCategory.isProMode) {
-      case false:
+    switch (thisCategory.type) {
+      case 'normal':
         const testItems = currentCategory && casesByCategory[parseInt(currentCategory, 10)] && (
           <Collapse>
             {TestCase.sort(casesByCategory[parseInt(currentCategory, 10)]).map((testCase, i) => {
               return (
-                <Panel header={`${i + 1}. ${testCase.name}`} key={testCase.id}>
+                <Panel header={`${i + 1}. ${testCase.description}`} key={testCase.id}>
                   <TestItem
                     currentAssignment={props.currentAssignment}
                     testCase={testCase}
                     saveTest={saveTest}
                     files={props.files}
+                    env={props.env}
                   />
                 </Panel>
               );
@@ -176,42 +171,77 @@ export const TestDefinitions = (props: IProps) => {
           </Content>
         );
         break;
-      case true:
+      case 'bash':
         testContent = (
           <Content style={{ margin: 15 }}>
             <ProMode
               currentCategory={thisCategory}
               addFile={props.addFile.bind({}, thisCategory.id)}
-              files={props.files}
+              solutions={props.files}
               deleteFile={props.deleteFile}
               updateFile={props.updateFile}
-              updateCategory={updateCategory}
               submissions={props.submissions}
+              replaceCategory={replaceTestCategory}
             />
+          </Content>
+        );
+        break;
+      case 'external':
+        // FIXME:
+        testContent = (
+          <Content style={{ margin: 15 }}>
+            <div>Externally set category</div>
           </Content>
         );
         break;
     }
   }
+
+  const exampleText = `\`\`\`
+  submission/
+    #### Files from a student submission or soluton code ####
+    submissionFile1
+    submissionFile2
+  helpers/
+    #### Helper files uploaded in environment set up ####
+    helperFile1
+    helperFile2
+  tests/
+    #### Each test case below gets converted to a test file ####
+    testCase1File
+    testCase2File
+  \`\`\``;
+
   return categories.length > 0 ? (
-    <div style={{ maxHeight: 500, overflow: 'auto', fontSize: 11 }}>
-      <Layout style={{ maxHeight: 450 }}>
-        <Sider theme="light">
-          <Menu selectedKeys={[currentCategory]} mode="inline" onClick={changeIndex}>
-            {TestCategory.sort(categories).map((category) => {
-              return (
-                <Menu.Item key={category.id.toString()} style={{ height: 'fit-content', minHeight: 40 }}>
-                  {category.name}
-                </Menu.Item>
-              );
-            })}
-            <div style={{ marginTop: 15, display: 'flex', justifyContent: 'center' }}>
-              <AddCategoryModal addCategory={addCategory} />
-            </div>
-          </Menu>
-        </Sider>
-        {testContent}
-      </Layout>
+    <div>
+      <Collapse>
+        <Panel header="Instructions" key="1">
+          Write each of your tests below, and run them on either solution code, or a student's submission. Each test
+          case will be converted to a test file in the following directory structure:
+          <br />
+          <br />
+          <ReactMarkdown source={exampleText} />
+        </Panel>
+      </Collapse>
+      <div style={{ maxHeight: 500, overflow: 'auto', fontSize: 11 }}>
+        <Layout style={{ maxHeight: 450 }}>
+          <Sider theme="light">
+            <Menu selectedKeys={[currentCategory]} mode="inline" onClick={changeIndex}>
+              {TestCategory.sort(categories).map((category) => {
+                return (
+                  <Menu.Item key={category.id.toString()} style={{ height: 'fit-content', minHeight: 40 }}>
+                    {category.name}
+                  </Menu.Item>
+                );
+              })}
+              <div style={{ marginTop: 15, display: 'flex', justifyContent: 'center' }}>
+                <AddCategoryModal addCategory={addCategory} />
+              </div>
+            </Menu>
+          </Sider>
+          {testContent}
+        </Layout>
+      </div>
     </div>
   ) : (
     <AddCategoryModal addCategory={addCategory} />

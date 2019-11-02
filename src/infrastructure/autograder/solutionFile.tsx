@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
+import { createObject, deleteObject, GenericObject, readObject, updateObject } from '../generics';
 
 const SolutionFileV = t.intersection(
   [
@@ -8,10 +8,8 @@ const SolutionFileV = t.intersection(
       name: t.string,
       assignment: t.number,
       code: t.string,
-      extension: t.string,
       path: t.union([t.string, t.null]),
       created: t.string,
-      testCategory: t.union([t.number, t.null]),
     }),
     t.partial({}),
   ],
@@ -25,9 +23,7 @@ const SolutionFileVPost = t.intersection(
       name: t.string,
       assignment: t.number,
       code: t.string,
-      extension: t.string,
       path: t.union([t.string, t.null]),
-      testCategory: t.union([t.number, t.null]),
     }),
     t.partial({}),
   ],
@@ -40,7 +36,6 @@ const SolutionFileVPatch = t.intersection(
     t.partial({
       name: t.string,
       code: t.string,
-      extension: t.string,
       path: t.union([t.string, t.null]),
     }),
   ],
@@ -50,8 +45,8 @@ const SolutionFileVPatch = t.intersection(
 export type SolutionFileType = t.TypeOf<typeof SolutionFileV>;
 
 export class SolutionFile {
-  public static create = createObject(SolutionFileV, SolutionFileVPost, 'solutionFiles');
-  public static read = readObject(SolutionFileV, 'solutionFiles');
-  public static delete = deleteObject(SolutionFileV, 'solutionFiles');
-  public static update = updateObject(SolutionFileV, SolutionFileVPatch, 'solutionFiles');
+  public static create = createObject(SolutionFileV, SolutionFileVPost, 'autograder/solutionFiles');
+  public static read = readObject(SolutionFileV, 'autograder/solutionFiles');
+  public static delete = deleteObject(SolutionFileV, 'autograder/solutionFiles');
+  public static update = updateObject(SolutionFileV, SolutionFileVPatch, 'autograder/solutionFiles');
 }

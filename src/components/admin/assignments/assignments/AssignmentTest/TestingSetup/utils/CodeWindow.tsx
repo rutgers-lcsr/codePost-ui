@@ -10,7 +10,7 @@ import { codeMirorLanguageMap } from './languageUtils';
 
 interface IProps {
   code: string;
-  extension: string;
+  name: string;
   onSave?: (code: string) => Promise<void>;
   onChange?: (code: string) => void;
 }
@@ -47,13 +47,12 @@ export const CodeWindow = (props: IProps) => {
 
   // ******************************* Util functions  *******************************
   const getMode = () => {
-    const extension = props.extension.replace('.', '');
+    const extension = props.name.split('.')[1].replace('.', '');
     if (extension in codeMirorLanguageMap) {
       return codeMirorLanguageMap[extension];
     } else return 'txt';
   };
 
-  console.log(props.onSave);
   // ******************************* Return  *******************************
   return (
     <div style={{ fontSize: 12, minWidth: 300 }}>

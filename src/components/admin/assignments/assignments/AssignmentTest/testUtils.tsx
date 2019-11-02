@@ -5,6 +5,9 @@ import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructur
 import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { SubmissionType } from '../../../../../infrastructure/submission';
 
+import { BashFile } from '../../../../../infrastructure/autograder/bashFile';
+import { HelperFile } from '../../../../../infrastructure/autograder/helperFile';
+
 //********************************** Interfaces **** ******************************
 export interface TestsBySubmission {
   [submissionID: number]: SubmissionTestType[];
@@ -15,7 +18,6 @@ export interface TestCasesByCategory {
 }
 
 //********************************** Data Fetch Utils ******************************
-
 export const fetchTestData = async (assignment: AssignmentType) => {
   const categories: TestCategoryType[] = await fetchTestCategories(assignment);
   const casesByCategory: TestCasesByCategory = await fetchTestCasesByCategory(categories);
@@ -63,4 +65,22 @@ export const fetchTestsBySubmission = async (submissions: SubmissionType[]) => {
   });
   await Promise.all(submissionPromises);
   return toRet;
+};
+
+export const fetchHelperFiles = async (category: TestCategoryType) => {
+  const promises = category.helperFiles.map((f) => {
+    return HelperFile.read(f);
+  });
+  return await Promise.all(promises);
+};
+
+export const fetchOrCreateBashFile = async (category: TestCategoryType) => {
+  if (category.bashFile) {
+    const bashFile = await BashFile.read(category.bashFile);
+    return bashFile;
+  } else {
+    const payload = { id: -1, testCategory: category.id, code: '' };
+    const bashFile = await BashFile.create(payload);
+    return bashFile;
+  }
 };

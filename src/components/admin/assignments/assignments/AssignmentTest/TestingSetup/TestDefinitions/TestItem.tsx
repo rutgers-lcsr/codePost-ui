@@ -8,7 +8,8 @@ import { FormComponentProps } from 'antd/lib/form';
 /* codePost object imports */
 import { AssignmentType } from '../../../../../../../infrastructure/assignment';
 import { TestCase, TestCaseType } from '../../../../../../../infrastructure/testCase';
-import { SolutionFileType } from '../../../../../../../infrastructure/solutionFile';
+import { SolutionFileType } from '../../../../../../../infrastructure/autograder/solutionFile';
+import { TestEnvironmentType } from '../../../../../../../infrastructure/autograder/testEnvironment';
 
 /* codePost component imports */
 import { CodeWindow } from '../utils/CodeWindow';
@@ -24,12 +25,16 @@ interface ITestItemProps {
   testCase: TestCaseType;
   saveTest: (test: TestCaseType) => Promise<TestCaseType>;
   files: SolutionFileType[];
+  env: TestEnvironmentType;
 }
 
 interface IFormValues {
   text: string;
-  name: string;
+  description: string;
+  function: string;
   expectedOutput: string;
+  input: string;
+  checkReturn: number | undefined;
   fileName: string;
   testType: string;
 }
@@ -53,10 +58,13 @@ export const TestItem = (props: ITestItemProps) => {
 
   const saveTest = async (values: IFormValues, codeString?: string) => {
     const testCaseCopy = { ...props.testCase };
-    testCaseCopy.text = codeString || values.text;
-    testCaseCopy.name = values.name;
+    testCaseCopy.text = codeString || '';
+    testCaseCopy.description = values.description;
     testCaseCopy.expectedOutput = values.expectedOutput;
     testCaseCopy.fileName = values.fileName;
+    testCaseCopy.function = values.function;
+    testCaseCopy.input = values.input;
+    testCaseCopy.checkReturn = values.checkReturn !== undefined;
     testCaseCopy.type = values.testType;
     const newTest = await props.saveTest(testCaseCopy);
 
@@ -83,7 +91,7 @@ export const TestItem = (props: ITestItemProps) => {
       wrappedComponentRef={saveFormRef}
       testOutput={testOutput}
       isRunning={isRunning}
-      language={getLanguage(props.currentAssignment.testLanguage!)}
+      language={getLanguage(props.env.language!)}
     />
   );
 };
@@ -120,10 +128,11 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     });
   };
 
-  public onChangeInput = (e: any) => {
-    this.setState({ commandText: e.target.value });
-    this.props.form.setFieldsValue({
-      text: e.target.value,
+  public onChangeInput = (field: string, e: any) => {
+    this.setState((prevstate) => {
+      const newState: any = { ...prevstate };
+      newState[field] = e.target.value;
+      return newState;
     });
   };
 
@@ -145,15 +154,14 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     const { getFieldDecorator } = form;
 
     const outputJSON = this.props.testOutput ? JSON.parse(this.props.testOutput) : {};
-    const commandTextPlaceholder = testTemplates[this.props.language][this.state.testType]['placeholder'];
-    const extension =
+    const name =
       this.state.testType == 'bash'
-        ? 'sh'
+        ? '.sh'
         : this.props.language == 'python'
-        ? 'py'
+        ? '.py'
         : this.props.language == 'java'
-        ? 'java'
-        : 'txt';
+        ? '.java'
+        : '.txt';
 
     return (
       <div>
@@ -161,7 +169,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
           <Row>
             <Form.Item label="Test Name">
               {getFieldDecorator('name', {
-                initialValue: testCase.name,
+                initialValue: testCase.description,
                 rules: [
                   {
                     required: true,
@@ -184,15 +192,18 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   value={testCase.type}
                   style={{ minWidth: 200 }}
                 >
-                  <Option value={'functional'}>Functional Test</Option>
-                  <Option value={'unit'}>Unit Test</Option>
-                  <Option value={'bash'}>Bash Test</Option>
+                  <Option value={'function'}>Functional Test</Option>
+                  <Option value={'native-unit'}>Unit Test</Option>
+                  <Option value={'bash-unit'}>Bash Test</Option>
                 </Select>,
               )}
             </Form.Item>
-            {this.state.testType === 'functional' ? (
-              <div>
-                <Form.Item label="File to test">
+          </Row>
+          {this.state.testType === 'function' ? (
+            <div>
+              <Row>
+                From file &nbsp;
+                <Form.Item label="">
                   {getFieldDecorator('fileName', {
                     initialValue: testCase.fileName,
                     rules: [
@@ -208,21 +219,51 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                     </Select>,
                   )}
                 </Form.Item>
-                <Form.Item label="Command">
-                  {getFieldDecorator('text', {
+                &nbsp; run function &nbsp;
+                <Form.Item label="">
+                  {getFieldDecorator('function', {
+                    initialValue: testCase.function,
+                    rules: [
+                      {
+                        required: true,
+                      },
+                    ],
+                  })(<Input placeholder={'Function or Method Name'} disabled={this.props.isRunning} />)}
+                </Form.Item>
+                &nbsp; with inputs &nbsp;
+                <Form.Item label="">
+                  {getFieldDecorator('input', {
+                    initialValue: testCase.input,
+                    rules: [
+                      {
+                        required: true,
+                      },
+                    ],
+                  })(<Input placeholder={'Function or Method Name'} disabled={this.props.isRunning} />)}
+                </Form.Item>
+                &nbsp; , &nbsp;
+              </Row>
+              <Row>
+                Should &nbsp;
+                <Form.Item label="">
+                  {getFieldDecorator('checkReturn', {
                     rules: [
                       {
                         required: true,
                       },
                     ],
                   })(
-                    <Input
-                      onChange={this.onChangeInput}
-                      placeholder={commandTextPlaceholder}
+                    <Select
                       disabled={this.props.isRunning}
-                    />,
+                      value={testCase.checkReturn ? 1 : undefined}
+                      style={{ minWidth: 200 }}
+                    >
+                      <Option value={1}>Return</Option>
+                      <Option value={undefined}>Output</Option>
+                    </Select>,
                   )}
                 </Form.Item>
+                &nbsp; the value &nbsp;
                 <Form.Item label="Output">
                   {getFieldDecorator('expectedOutput', {
                     initialValue: testCase.expectedOutput,
@@ -233,11 +274,12 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                     ],
                   })(<Input disabled={this.props.isRunning} />)}
                 </Form.Item>
-              </div>
-            ) : (
-              <CodeWindow code={this.state.commandText!} extension={extension} onChange={this.onChange} />
-            )}
-          </Row>
+                &nbsp; . &nbsp;
+              </Row>
+            </div>
+          ) : (
+            <CodeWindow code={this.state.commandText!} name={name} onChange={this.onChange} />
+          )}
         </Form>
         <div>
           <Row style={{ display: 'flex', justifyContent: 'flex-end' }}>

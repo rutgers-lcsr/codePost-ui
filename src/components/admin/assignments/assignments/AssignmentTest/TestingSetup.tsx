@@ -6,13 +6,14 @@ import { Breadcrumb, Tabs } from 'antd';
 
 /* codePost object imports */
 import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
-import { SolutionFile, SolutionFileType } from '../../../../../infrastructure/solutionFile';
+import { SolutionFile, SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
 import { SubmissionType } from '../../../../../infrastructure/submission';
+import { TestEnvironment, TestEnvironmentType } from '../../../../../infrastructure/autograder/testEnvironment';
 
 /* codePost component imports */
 import CPAdminDetail from '../../../other/CPAdminDetail';
 import { EnvironmentSpecs } from './TestingSetup/EnvironmentSpecs';
-import { TestsList } from './TestingSetup/TestDefinitions/TestsList';
+import { TestDefinitions } from './TestingSetup/TestDefinitions';
 import { SolutionCode } from './TestingSetup/SolutionCode';
 
 const { TabPane } = Tabs;
@@ -32,41 +33,53 @@ const getSolutionFiles = async (assignment: AssignmentType) => {
   return await Promise.all(solutionFilePromises);
 };
 
+const getEnvironment = async (assignment: AssignmentType) => {
+  if (assignment.testEnvironment) {
+    return await TestEnvironment.read(assignment.testEnvironment);
+  } else {
+    const payload = { id: -1, language: null, dependencies: '[]', assignment: assignment.id };
+    return await TestEnvironment.create(payload);
+  }
+};
+
 export const TestingSetup = (props: IProps) => {
   // ************************** State Variables ******************************
   const [currTab, setCurrTab] = useState('1');
-  const [solutionFiles, setSolutionFiles] = useState<SolutionFileType[]>([]);
+  const [solutions, setSolutions] = useState<SolutionFileType[]>([]);
+  const [env, setEnv] = useState<TestEnvironmentType | undefined>(undefined);
 
   /************************** Fetch data ******************************/
   useEffect(() => {
     const fetchData = async () => {
       const solutionFiles = await getSolutionFiles(props.currentAssignment);
-      setSolutionFiles(solutionFiles);
+      setSolutions(solutionFiles);
+      const currEnv = await getEnvironment(props.currentAssignment);
+      setEnv(currEnv);
     };
     fetchData();
   }, [props.currentAssignment]);
 
   /************************** API / State change functions ******************************/
-  const addFile = async (testCategory: number | null, file: any) => {
+
+  const addFile = async (testCategory: number | null, name: string, code: string) => {
     const payload = {
-      name: file.name,
+      name: name,
       assignment: props.currentAssignment.id,
-      code: file.code,
-      extension: file.extension,
+      code: code,
       path: null,
       id: -1,
       testCategory: testCategory,
     };
     const newFile = await SolutionFile.create(payload);
-    setSolutionFiles([...solutionFiles, newFile]);
+    setSolutions([...solutions, newFile]);
   };
 
   const deleteFile = async (id: number) => {
     await SolutionFile.delete(id);
-    const updatedFiles = solutionFiles.filter((file) => {
+    const updatedFiles = solutions.filter((file) => {
       return file.id !== id;
     });
-    setSolutionFiles(updatedFiles);
+    setSolutions(updatedFiles);
   };
 
   const updateFile = async (id: number, newCode: string) => {
@@ -77,7 +90,7 @@ export const TestingSetup = (props: IProps) => {
     await SolutionFile.update(payload);
 
     // FIXME: Mutating state
-    const newFiles = solutionFiles.map((file) => {
+    const newFiles = solutions.map((file) => {
       if (file.id == id) {
         file.code = newCode;
         return file;
@@ -85,13 +98,9 @@ export const TestingSetup = (props: IProps) => {
         return file;
       }
     });
-    setSolutionFiles(newFiles);
+    setSolutions(newFiles);
   };
 
-  const solutionCodeFiles = solutionFiles.filter((f) => {
-    // filter out solutionFiles attached to a test category
-    return !f.testCategory;
-  });
   // ************************** Return ***************************************
   const content = (
     <Tabs defaultActiveKey="1" activeKey={currTab} onChange={setCurrTab} animated={false}>
@@ -101,24 +110,27 @@ export const TestingSetup = (props: IProps) => {
           onContinue={setCurrTab.bind({}, '2')}
           onCancel={props.onCancel}
           updateAssignment={props.updateAssignment}
+          env={env}
+          updateEnv={setEnv}
         />
       </TabPane>
       <TabPane tab={'Solution Code'} key={'2'}>
         <SolutionCode
-          files={solutionCodeFiles}
+          files={solutions}
           addFile={addFile.bind({}, null)}
           deleteFile={deleteFile}
           updateFile={updateFile}
         />
       </TabPane>
       <TabPane tab={'Tests'} key={'3'}>
-        <TestsList
+        <TestDefinitions
           currentAssignment={props.currentAssignment}
-          files={solutionFiles}
+          files={solutions}
           addFile={addFile}
           deleteFile={deleteFile}
           updateFile={updateFile}
           submissions={props.submissions}
+          env={env!}
         />
       </TabPane>
       <TabPane tab={'Settings'} key={'4'}>

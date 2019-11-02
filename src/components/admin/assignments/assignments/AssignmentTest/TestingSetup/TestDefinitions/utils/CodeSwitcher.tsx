@@ -5,10 +5,10 @@ import React, { useState } from 'react';
 import { Button, Icon, Modal, Radio, Select } from 'antd';
 
 /* codePost object imports  */
-import { SolutionFileType } from '../../../../../../../infrastructure/autograder/solutionFile';
-import { SubmissionType } from '../../../../../../../infrastructure/submission';
+import { SolutionFileType } from '../../../../../../../../infrastructure/autograder/solutionFile';
+import { SubmissionType } from '../../../../../../../../infrastructure/submission';
 
-import { File, FileType } from '../../../../../../../infrastructure/file';
+import { File, FileType } from '../../../../../../../../infrastructure/file';
 
 interface IProps {
   submissions: SubmissionType[];

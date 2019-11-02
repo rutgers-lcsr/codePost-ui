@@ -118,14 +118,15 @@ TestOutput test1 true "Put your custom log statement here"
 
 export const testTemplates: { [language: string]: { [type: string]: { [attr: string]: string } } } = {
   python: {
-    functional: { placeholder: FUNCTION_TEMPLATE, initialValue: '' },
-    unit: { placeholder: '', initialValue: PYTHON_UNIT_TEMPLATE },
-    bash: { placeholder: '', initialValue: BASH_PYTHON_TEMPLATE },
+    function: { placeholder: FUNCTION_TEMPLATE, initialValue: '' },
+    'native-unit': { placeholder: '', initialValue: PYTHON_UNIT_TEMPLATE },
+    'bash-unit': { placeholder: '', initialValue: BASH_PYTHON_TEMPLATE },
     bashMode: { placeholder: '', initialValue: BASHMODE_PYTHON_TEMPLATE },
   },
   java: {
-    functional: { placeholder: FUNCTION_TEMPLATE, initialValue: '' },
-    unit: { placeholder: '', initialValue: JAVA_UNIT_TEMPLATE },
-    bash: { placeholder: '', initialValue: BASH_JAVA_TEMPLATE },
+    function: { placeholder: FUNCTION_TEMPLATE, initialValue: '' },
+    'native-unit': { placeholder: '', initialValue: JAVA_UNIT_TEMPLATE },
+    'bash-unit': { placeholder: '', initialValue: BASH_JAVA_TEMPLATE },
+    bashMode: { placeholder: '', initialValue: BASHMODE_PYTHON_TEMPLATE },
   },
 };
