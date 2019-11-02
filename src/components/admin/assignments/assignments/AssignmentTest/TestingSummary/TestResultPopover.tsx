@@ -9,7 +9,7 @@ import { SubmissionTestType } from '../../../../../../infrastructure/submissionT
 import { TestCaseType } from '../../../../../../infrastructure/testCase';
 
 /* codePost component imports */
-import { TestResult } from '../TestingSetup/TestDefinitions/utils/TestResult';
+import { TestResult } from '../TestingSetup/utils/TestResult';
 
 const { TabPane } = Tabs;
 
@@ -42,7 +42,7 @@ export const TestResultPopover = (props: IProps) => {
     return <TestResult passed={test.passed} log={test.logs} />;
   });
   const notRunItems = testsNotRun.map((tc) => {
-    return <div>Not Run: {tc.name}</div>;
+    return <div>Not Run: {tc.description}</div>;
   });
 
   return (

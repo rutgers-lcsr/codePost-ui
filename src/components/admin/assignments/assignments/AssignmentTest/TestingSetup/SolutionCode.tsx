@@ -6,18 +6,17 @@ import { Layout, Menu } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 /* codePost object imports  */
-import { SolutionFileType } from '../../../../../../infrastructure/solutionFile';
+import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 
 /* codePost other imports  */
 import { CodeWindow } from './utils/CodeWindow';
 import { CodeUploader } from './utils/CodeUploader';
 
 const { Sider, Content } = Layout;
-const { SubMenu } = Menu;
 
 interface IProps {
   files: SolutionFileType[];
-  addFile: (file: any) => Promise<void>;
+  addFile: (name: string, code: string) => Promise<void>;
   deleteFile: (id: number) => Promise<void>;
   updateFile: (id: number, newCode: string) => Promise<void>;
 }
@@ -59,7 +58,7 @@ export const SolutionCode = (props: IProps) => {
             <div style={{ position: 'relative', marginLeft: 5 }}>
               <CodeWindow
                 code={props.files[parseInt(currentIndex, 10)].code}
-                extension={props.files[parseInt(currentIndex, 10)].extension}
+                name={props.files[parseInt(currentIndex, 10)].name}
                 onSave={onSave}
               />
             </div>

@@ -7,14 +7,17 @@ const TestCaseV = t.intersection(
     t.type({
       sortKey: t.number,
       testCategory: t.number,
-      name: t.string,
-      text: t.string,
-      expectedOutput: t.string,
+      description: t.string,
+      type: t.string,
       pointsPass: t.number,
       pointsFail: t.number,
-      language: t.string,
-      type: t.string,
+      text: t.string,
+      modified: t.string,
       fileName: t.string,
+      function: t.string,
+      input: t.string,
+      expectedOutput: t.string,
+      checkReturn: t.boolean,
     }),
     t.partial({}),
   ],
@@ -27,17 +30,41 @@ const TestCaseVPatch = t.intersection(
     t.partial({
       sortKey: t.number,
       testCategory: t.number,
-      name: t.string,
-      text: t.string,
-      expectedOutput: t.string,
+      description: t.string,
+      type: t.string,
       pointsPass: t.number,
       pointsFail: t.number,
-      language: t.string,
-      type: t.string,
+      text: t.string,
       fileName: t.string,
+      function: t.string,
+      input: t.string,
+      expectedOutput: t.string,
+      checkReturn: t.boolean,
     }),
   ],
   'TestCasePatch',
+);
+
+const TestCaseVPost = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      sortKey: t.number,
+      testCategory: t.number,
+      description: t.string,
+      type: t.string,
+      pointsPass: t.number,
+      pointsFail: t.number,
+      text: t.string,
+      fileName: t.string,
+      function: t.string,
+      input: t.string,
+      expectedOutput: t.string,
+      checkReturn: t.boolean,
+    }),
+    t.partial({}),
+  ],
+  'TestCasePost',
 );
 
 const TestCaseOutputs = t.intersection([
@@ -52,7 +79,7 @@ const TestCaseOutputs = t.intersection([
 export type TestCaseType = t.TypeOf<typeof TestCaseV>;
 
 export class TestCase {
-  public static create = createObject(TestCaseV, TestCaseV, 'testCases');
+  public static create = createObject(TestCaseV, TestCaseVPost, 'testCases');
   public static read = readObject(TestCaseV, 'testCases');
   public static delete = deleteObject(TestCaseV, 'testCases');
   public static update = updateObject(TestCaseV, TestCaseVPatch, 'testCases');

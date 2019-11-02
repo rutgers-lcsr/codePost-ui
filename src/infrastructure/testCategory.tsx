@@ -8,8 +8,9 @@ const TestCategoryV = t.intersection(
       assignment: t.number,
       name: t.string,
       testCases: t.array(t.number),
-      isProMode: t.boolean,
-      bashFile: t.string,
+      helperFiles: t.array(t.number),
+      bashFile: t.union([t.number, t.null]),
+      type: t.string,
     }),
   ],
   'TestCategory',
@@ -21,7 +22,7 @@ const TestCategoryPostV = t.intersection(
     t.type({
       assignment: t.number,
       name: t.string,
-      isProMode: t.boolean,
+      type: t.string,
     }),
   ],
   'TestCategory',
@@ -31,7 +32,7 @@ const TestCategoryPatchV = t.intersection(
   [
     GenericObject,
     t.partial({
-      bashFile: t.string,
+      name: t.string,
     }),
   ],
   'TestCategory',

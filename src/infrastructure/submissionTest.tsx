@@ -10,6 +10,8 @@ export const SubmissionTestV = t.intersection(
       submission: t.number,
       logs: t.string,
       passed: t.union([t.boolean, t.null]),
+      created: t.string,
+      modified: t.string,
     }),
     t.partial({}),
   ],

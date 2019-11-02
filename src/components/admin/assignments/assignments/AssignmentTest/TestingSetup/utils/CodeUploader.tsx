@@ -5,11 +5,13 @@ import React, { useState } from 'react';
 import { Button, Icon, message, Modal, Table, Upload } from 'antd';
 
 /* codePost object imports  */
-import { SolutionFileType } from '../../../../../../../infrastructure/solutionFile';
+import { SolutionFileType } from '../../../../../../../infrastructure/autograder/solutionFile';
+import { HelperFileType } from '../../../../../../../infrastructure/autograder/helperFile';
 
 interface IUploadProps {
-  files: SolutionFileType[];
-  addFile: (file: any) => Promise<void>;
+  files: (SolutionFileType | HelperFileType)[];
+  // FIXME: FILE ANY
+  addFile: (name: string, code: string) => Promise<void>;
   deleteFile: (id: number) => Promise<void>;
   icon?: boolean;
 }
@@ -28,7 +30,7 @@ export const CodeUploader = (props: IUploadProps) => {
 
   const saveNewFiles = async () => {
     const promises = newFiles.map((newFile) => {
-      return props.addFile(newFile);
+      return props.addFile(newFile.name, newFile.code);
     });
     await Promise.all(promises);
     message.success(`File(s) uploaded successfully`);
@@ -45,8 +47,7 @@ export const CodeUploader = (props: IUploadProps) => {
     reader.onload = () => {
       if (reader.result) {
         const cleanedData = typeof reader.result === 'string' ? reader.result.replace(/\0/g, '') : reader.result;
-        const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
-        setNewFiles([...newFiles, { uid: counter, code: cleanedData, name: file.name, extension: extension }]);
+        setNewFiles([...newFiles, { uid: counter, code: cleanedData, name: file.name }]);
         setCounter(counter + 1);
       }
     };

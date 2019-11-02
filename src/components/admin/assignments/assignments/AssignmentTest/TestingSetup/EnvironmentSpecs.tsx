@@ -5,7 +5,8 @@ import React, { useState } from 'react';
 import { Button, Collapse, Select, Typography } from 'antd';
 
 /* codePost object imports */
-import { Assignment, AssignmentPatchType, AssignmentType } from '../../../../../../infrastructure/assignment';
+import { AssignmentPatchType, AssignmentType } from '../../../../../../infrastructure/assignment';
+import { TestEnvironment, TestEnvironmentType } from '../../../../../../infrastructure/autograder/testEnvironment';
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -16,6 +17,8 @@ interface IProps {
   onCancel: () => void;
   onContinue: () => void;
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
+  env: TestEnvironmentType | undefined;
+  updateEnv: (env: TestEnvironmentType) => void;
 }
 
 const languages = ['python-3.7', 'python-2.7', 'java'];
@@ -32,25 +35,26 @@ enum BUILD_STATUS {
 
 export const EnvironmentSpecs = (props: IProps) => {
   /******************************* State Variables ****************************/
-  const [language, setLanguage] = useState<string | null>(props.currentAssignment.testLanguage);
-  const [dependencies, setDependencies] = useState<string[]>(
-    props.currentAssignment.dependencies ? JSON.parse(props.currentAssignment.dependencies) : [],
-  );
+  const [language, setLanguage] = useState<string | null>(props.env ? props.env.language : null);
+  const [dependencies, setDependencies] = useState<string[]>(props.env ? JSON.parse(props.env.dependencies) : []);
   const [errorLogs, setErrorLogs] = useState<string[]>([]);
   const [buildStatus, setBuildStatus] = useState(BUILD_STATUS.Idle);
 
   /******************************* API / State Change Functions ****************************/
   const testEnv = async () => {
+    if (!props.env) {
+      return;
+    }
     const payload = {
-      id: props.currentAssignment.id,
+      id: props.env.id,
       dependencies: dependencies,
       language: language!,
       simulate: true,
     };
     setBuildStatus(BUILD_STATUS.TestRunning);
     setErrorLogs([]);
-    const status = await Assignment.simulateBuild(payload);
-    if (status.buildSucceeded) {
+    const status = await TestEnvironment.simulateBuild(payload);
+    if (status.result) {
       setBuildStatus(BUILD_STATUS.SaveReady);
     } else {
       setBuildStatus(BUILD_STATUS.Failed);
@@ -59,19 +63,21 @@ export const EnvironmentSpecs = (props: IProps) => {
   };
 
   const saveEnv = async () => {
+    if (!props.env) {
+      return;
+    }
     const payload = {
-      id: props.currentAssignment.id,
+      id: props.env.id,
       dependencies: dependencies,
       language: language!,
       simulate: false,
     };
     setBuildStatus(BUILD_STATUS.Saving);
-    const newAssignment = await Assignment.updateBuild(payload);
-    if (newAssignment) {
-      props.updateAssignment(newAssignment).then(() => {
-        setBuildStatus(BUILD_STATUS.Success);
-        props.onContinue();
-      });
+    const newEnv = await TestEnvironment.updateBuild(payload);
+    if (newEnv) {
+      props.updateEnv(newEnv);
+      setBuildStatus(BUILD_STATUS.Success);
+      props.onContinue();
     }
   };
 
@@ -86,7 +92,7 @@ export const EnvironmentSpecs = (props: IProps) => {
     setDependencies(newDependencies);
   };
   /******************************* Utils ****************************/
-  const hasChanged = props.currentAssignment.testLanguage !== language;
+  const hasChanged = props.env && props.env.language !== language;
 
   /******************************* Return ****************************/
 
