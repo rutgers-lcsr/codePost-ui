@@ -4,6 +4,9 @@ import * as React from 'react';
 /* ant imports */
 import { Badge, Button, Icon, Input, Popconfirm, Spin, Table, Tag } from 'antd';
 
+/* other library imports */
+import { Link } from 'react-router-dom';
+
 /* codePost imports */
 import CPButton from '../../../core/CPButton';
 import CPFlex from '../../../core/CPFlex';
@@ -86,12 +89,16 @@ const commentTableColumns = [
   },
 ];
 
+interface IProps {
+  baseURL: string;
+}
+
 const RubricCategoryUI = ({
   props,
   state,
   helpers,
 }: {
-  props: IRubricCategoryManagerProps;
+  props: IRubricCategoryManagerProps & IProps;
   state: IRubricCategoryManagerState;
   helpers: IRubricCategoryManagerHelpers;
 }) => {
@@ -130,7 +137,24 @@ const RubricCategoryUI = ({
 
         return {
           key: thisComment.id,
-          text: <TextArea autosize value={thisComment.text} onChange={onChangeText} onBlur={saveComment} />,
+          text: (
+            <span style={{ display: 'flex' }}>
+              <TextArea
+                autosize
+                value={thisComment.text}
+                onChange={onChangeText}
+                onBlur={saveComment}
+                style={{ width: '80%' }}
+              />
+              &nbsp;
+              <span style={{ verticalAlign: 'middle' }}>
+                <Link to={`${props.baseURL}/${thisComment.id}`}>
+                  <CPButton icon="edit" theme={thisComment.explanation ? 'filled' : undefined} />
+                </Link>
+                <CPButton icon="delete" theme={thisComment.explanation ? 'filled' : undefined} />
+              </span>
+            </span>
+          ),
           deduction: (
             <CPPointInput value={-thisComment.pointDelta} size="small" onChange={onChangePointDelta} disabled={false} />
           ),

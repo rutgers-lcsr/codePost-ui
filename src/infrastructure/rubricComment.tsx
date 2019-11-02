@@ -11,7 +11,9 @@ export const RubricCommentV = t.intersection(
       comments: t.array(t.number),
       sortKey: t.number,
     }),
-    t.partial({}),
+    t.partial({
+      explanation: t.string,
+    }),
   ],
   'RubricComment',
 );
