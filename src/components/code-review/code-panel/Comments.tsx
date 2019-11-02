@@ -5,8 +5,11 @@ import Comment from './Comment';
 import CodePanelSizing from './CodePanelSizing';
 
 import { CommentType } from '../../../infrastructure/comment';
-import { FileType } from '../../../infrastructure/file';
+
+import { File, FileType } from '../../../infrastructure/file';
+
 import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
+
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import { ICommentToRubricCommentMap } from '../../../types/common';
@@ -20,6 +23,8 @@ import themeVars from '../../../styles/abstracts/_theme.js';
 import { CodeConsoleDimensionsType } from './LayoutResizer';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+
+import { findBlockElement, getPDFStartPlacement } from './BlockUtils.tsx';
 
 interface ICommentsCoreProps extends IWithWindowWatcherProps {
   additiveGrading: boolean;
@@ -81,9 +86,13 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
     this.state = {
       placements: this.props.comments.map((comment: CommentType, index: number) => {
+        const placement =
+          File.codeType(props.file) === 'pdf'
+            ? getPDFStartPlacement(comment)
+            : comment.startLine * themeVars.grade.codeLineHeight;
         return {
           commentID: comment.id,
-          placement: comment.startLine * themeVars.grade.codeLineHeight,
+          placement,
         };
       }),
     };
@@ -116,6 +125,13 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   public componentDidMount() {
     document.addEventListener('mousedown', this.handleClickOutside);
     document.addEventListener('keydown', this.handleKeyPress);
+
+    // FIXME: This is a hack to trigger comment placements to reload after a PDF has loaded.
+    // The PDF can take some time to load, and if the placement isn't triggered the comments will stay on top
+    // Passing in refs to the <Comments /> and triggering comment placement from <CodeConent /> doesn't work because
+    // of a typescript issue with being unable to use react.forwardRef(), which we need to do because each <Comments />
+    // object is wrapped in a HOC with withWindowWatcher.
+    document.addEventListener('pdf-loaded', this.setCommentPlacements);
   }
 
   // FIXME: This forces comments with 'expand' to stack correctly
@@ -130,6 +146,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   public componentWillUnmount() {
     document.removeEventListener('mousedown', this.handleClickOutside);
     document.removeEventListener('keydown', this.handleKeyPress);
+    document.removeEventListener('loaded', this.setCommentPlacements);
   }
 
   public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {
@@ -195,7 +212,6 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   };
 
   public calculateCommentPlacements = (comments: CommentType[]): ICommentPlacement[] => {
-    // console.log('!! Calculating Placements !!');
     const blocks: BlockType[] = [];
 
     return comments.map((comment: CommentType) => {
@@ -204,13 +220,16 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
       const containerDifference = themeVars.grade.codeContainer.paddingTop + themeVars.grade.codeContainer.marginTop;
 
       let startAt =
-        comment.startLine * lineHeight -
-        themeVars.grade.arrowDisplacement +
-        containerDifference -
-        this.props.verticalOffset;
+        File.codeType(this.props.file) === 'pdf'
+          ? getPDFStartPlacement(comment)
+          : comment.startLine * lineHeight -
+            themeVars.grade.arrowDisplacement +
+            containerDifference -
+            this.props.verticalOffset;
 
       // Find position of markdown block elements
-      const blockElement: HTMLElement | null = document.querySelector(`[index-number="${comment.startLine}"]`);
+      const blockElement: HTMLElement | null = findBlockElement(this.props.file, comment.startLine);
+
       if (blockElement) {
         startAt = blockElement.offsetTop + 20; // 20 = aesthetic padding from top of block element
       }

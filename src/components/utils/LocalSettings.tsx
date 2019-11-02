@@ -106,6 +106,11 @@ const defaultCourse = generateSettingFunctions('defaultCourse', 0, intIParser, i
 // defalut value: 0
 const defaultAssignment = generateSettingFunctions('defaultAssignment', 0, intIParser, intOParser);
 
+// key: mostRecentFile
+// return type: int. Represents the id of the most recently visited file
+// defalut value: 0
+const mostRecentFile = generateSettingFunctions('mostRecentFile', 0, intIParser, intOParser);
+
 /******************************************************************************************************************/
 const LOCAL_SETTINGS = {
   darkMode,
@@ -116,6 +121,7 @@ const LOCAL_SETTINGS = {
   codeWidth,
   defaultCourse,
   defaultAssignment,
+  mostRecentFile,
 };
 
 export { LOCAL_SETTINGS, clearLocalSettings };

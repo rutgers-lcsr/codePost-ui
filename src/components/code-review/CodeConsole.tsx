@@ -440,6 +440,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let course;
     let rubricCategories;
     let rubricComments;
+    let selectedFile;
 
     switch (permissionLevel) {
       case PERMISSION_LEVEL.NOT_FOUND:
@@ -465,6 +466,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           return a.name.localeCompare(b.name);
         });
 
+        selectedFile = files.find((f: FileType) => {
+          return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
+        });
+        if (selectedFile === undefined && files.length > 0) {
+          selectedFile = files[0];
+        }
+
         // then store it in state
         this.setState({
           assignment,
@@ -475,7 +483,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           commentRubricComments,
           rubricCategories,
           isLoading: false,
-          selectedFile: files.length > 0 ? files[0] : undefined,
+          selectedFile,
           permissionLevel,
           isStudent: submission.students !== undefined && submission.students.indexOf(this.props.user.email) > -1,
         });
@@ -520,6 +528,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           );
         }
 
+        selectedFile = files.find((f: FileType) => {
+          return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
+        });
+
+        if (selectedFile === undefined && files.length > 0) {
+          selectedFile = files[0];
+        }
+
         this.setState(
           {
             assignment,
@@ -532,7 +548,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             rubricComments,
             graders,
             isLoading: false,
-            selectedFile: files.length > 0 ? files[0] : undefined,
+            selectedFile,
             permissionLevel,
             fileTemplates,
           },
@@ -634,6 +650,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     const selectedFile = this.state.files.find((file: FileType) => {
       return file.id === fileID;
     });
+    if (selectedFile !== undefined) {
+      LOCAL_SETTINGS.mostRecentFile.setter(selectedFile.id);
+    }
     this.setState({ selectedFile, activeCommentID: undefined });
   };
 
