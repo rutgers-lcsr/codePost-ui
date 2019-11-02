@@ -8,6 +8,10 @@ import * as React from 'react';
 /* antd imports */
 import { Checkbox, Breadcrumb, Empty } from 'antd';
 
+/* other library imports */
+import { Switch, Route } from 'react-router-dom';
+import _ from 'lodash';
+
 /* codePost imports */
 import RubricCommentExplorer from './RubricCommentExplorer';
 
@@ -38,8 +42,12 @@ import { IRubricManagerProps, IRubricManagerState, IRubricManagerHelpers } from 
 import CPTooltip from '../../../core/CPTooltip';
 import { tooltips } from '../../../core/tooltips';
 
+import ExplanationModal from './ExplanationModal';
+
 interface IRubricUIProps extends IRubricManagerProps {
   breadcrumbs: React.ReactElement[];
+  baseURL: string;
+  history: any;
 }
 
 const RubricUI = ({
@@ -110,7 +118,7 @@ const RubricUI = ({
             showHelpText={showHelpText}
           >
             {({ propz, statez, helperz }: IRubricCategoryManagerParams) => {
-              return <RubricCategoryUI props={propz} state={statez} helpers={helperz} />;
+              return <RubricCategoryUI props={{ ...propz, baseURL: props.baseURL }} state={statez} helpers={helperz} />;
             }}
           </RubricCategoryManager>
         );
@@ -245,33 +253,47 @@ const RubricUI = ({
     );
 
     return (
-      <CPAdminRubric
-        actions={actions}
-        title="Rubric"
-        content={content}
-        goBack={null}
-        isEmpty={state.rubricCategories.length === 0}
-        emptyNode={
-          <Empty
-            imageStyle={{
-              height: 60,
-            }}
-            description={<span>No rubric yet</span>}
-          >
-            <CPButton cpType="primary" onClick={addRubricCategory}>
-              Create a category
-            </CPButton>
-          </Empty>
-        }
-        breadcrumbs={
-          <Breadcrumb>
-            {props.breadcrumbs}
-            <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item>
-            <Breadcrumb.Item>Edit rubric</Breadcrumb.Item>
-          </Breadcrumb>
-        }
-        titleInfo={tooltips.admin.rubric.title}
-      />
+      <span>
+        <CPAdminRubric
+          actions={actions}
+          title="Rubric"
+          content={content}
+          goBack={null}
+          isEmpty={state.rubricCategories.length === 0}
+          emptyNode={
+            <Empty
+              imageStyle={{
+                height: 60,
+              }}
+              description={<span>No rubric yet</span>}
+            >
+              <CPButton cpType="primary" onClick={addRubricCategory}>
+                Create a category
+              </CPButton>
+            </Empty>
+          }
+          breadcrumbs={
+            <Breadcrumb>
+              {props.breadcrumbs}
+              <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item>
+              <Breadcrumb.Item>Edit rubric</Breadcrumb.Item>
+            </Breadcrumb>
+          }
+          titleInfo={tooltips.admin.rubric.title}
+        />
+        <Switch>
+          {_.flatten(Object.values(rubricComments)).map((rc: any) => {
+            return (
+              <Route
+                path={`${props.baseURL}/${rc.id}`}
+                render={(subprops: any) => {
+                  return <ExplanationModal rubricComment={rc} onCancel={() => props.history.push(props.baseURL)} />;
+                }}
+              />
+            );
+          })}
+        </Switch>
+      </span>
     );
   } else {
     return <Loading />;
