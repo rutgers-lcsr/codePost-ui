@@ -70,7 +70,6 @@ const TestCaseVPost = t.intersection(
 const TestCaseOutputs = t.intersection([
   GenericObject,
   t.type({
-    name: t.string,
     passed: t.boolean,
     log: t.string,
   }),

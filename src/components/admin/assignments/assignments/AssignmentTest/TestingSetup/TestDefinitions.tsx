@@ -116,7 +116,7 @@ export const TestDefinitions = (props: IProps) => {
       pointsPass: 0,
       pointsFail: 0,
       text: '',
-      function: 'python',
+      function: '',
       fileName: '',
       expectedOutput: '',
       input: '',
