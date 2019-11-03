@@ -23,6 +23,7 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 
 import { wait } from '../../infrastructure/animation';
 import { AssignmentType } from '../../infrastructure/assignment';
+import { CourseType } from '../../infrastructure/course';
 import { FileType } from '../../infrastructure/file';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../infrastructure/submission';
@@ -38,6 +39,8 @@ import useWindowSize from '../core/useWindowSize';
 import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
 
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+
+import { encodeForLink } from '../core/URLutils';
 
 const ButtonGroup = Button.Group;
 
@@ -630,6 +633,9 @@ export const SubheaderTitle = (props: ISubheaderTitleProps) => {
 interface IHeaderMenuProps {
   claimSubmission: () => void;
   isStudent: boolean;
+  isAdmin: boolean;
+  course?: CourseType;
+  assignment: AssignmentType;
 }
 
 export const HeaderMenu = (props: IHeaderMenuProps) => {
@@ -670,6 +676,17 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
           </span>
         </Menu.Item>
       )}
+      {props.isAdmin && props.course ? (
+        <Menu.Item key="rubric" style={itemStyle} className="header-menu">
+          <Link
+            to={`/admin/${encodeForLink(props.course.name)}/${encodeForLink(
+              props.course.period,
+            )}/assignments/${encodeForLink(props.assignment.name)}/rubric`}
+          >
+            <Icon type="edit" /> Open rubric in Admin Console
+          </Link>
+        </Menu.Item>
+      ) : null}
       {props.isStudent ? null : (
         <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
           <a href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>Redo tutorial</a>
