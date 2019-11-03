@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 /* library imports */
-import { Button, Form, Input, Row, Select } from 'antd';
+import { Button, Divider, Form, Input, Row, Select } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
 /* codePost object imports */
@@ -168,7 +168,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
         <Form labelCol={{ span: 8 }} wrapperCol={{ span: 16 }} layout="inline">
           <Row>
             <Form.Item label="Test Name">
-              {getFieldDecorator('name', {
+              {getFieldDecorator('description', {
                 initialValue: testCase.description,
                 rules: [
                   {
@@ -192,16 +192,17 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   value={testCase.type}
                   style={{ minWidth: 200 }}
                 >
-                  <Option value={'function'}>Functional Test</Option>
+                  <Option value={'io'}>I/O</Option>
                   <Option value={'native-unit'}>Unit Test</Option>
                   <Option value={'bash-unit'}>Bash Test</Option>
                 </Select>,
               )}
             </Form.Item>
           </Row>
-          {this.state.testType === 'function' ? (
+          <Divider />
+          {this.state.testType === 'io' ? (
             <div>
-              <Row>
+              <Row style={{ display: 'flex', alignItems: 'center' }}>
                 From file &nbsp;
                 <Form.Item label="">
                   {getFieldDecorator('fileName', {
@@ -239,14 +240,15 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                         required: true,
                       },
                     ],
-                  })(<Input placeholder={'Function or Method Name'} disabled={this.props.isRunning} />)}
+                  })(<Input placeholder={'Input'} disabled={this.props.isRunning} />)}
                 </Form.Item>
                 &nbsp; , &nbsp;
               </Row>
-              <Row>
+              <Row style={{ display: 'flex', alignItems: 'center' }}>
                 Should &nbsp;
                 <Form.Item label="">
                   {getFieldDecorator('checkReturn', {
+                    initialValue: testCase.checkReturn ? 1 : undefined,
                     rules: [
                       {
                         required: true,
