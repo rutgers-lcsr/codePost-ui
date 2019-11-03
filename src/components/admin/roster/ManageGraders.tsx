@@ -11,6 +11,8 @@ import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Switch } from 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
 import memoizeOne from 'memoize-one';
+import { Link } from 'react-router-dom';
+import { RouteComponentProps } from 'react-router';
 
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
@@ -63,8 +65,8 @@ interface IState {
   activeGrader: string;
 }
 
-class ManageGraders extends React.Component<IManageGradersProps, IState> {
-  public constructor(props: IManageGradersProps) {
+class ManageGraders extends React.Component<IManageGradersProps & RouteComponentProps, IState> {
+  public constructor(props: IManageGradersProps & RouteComponentProps) {
     super(props);
     this.state = {
       activeGrader: '',
@@ -270,6 +272,11 @@ class ManageGraders extends React.Component<IManageGradersProps, IState> {
                 Send activation email
               </Menu.Item>
             )}
+            <Menu.Item key="profile">
+              <Link to={this.props.match.url.replace('roster/graders', `submissions/by_grader/${graderEmail}`)}>
+                <Icon type="folder-open" /> &nbsp; Open profile
+              </Link>
+            </Menu.Item>
             <Menu.Item key="1" onClick={this.removeGrader.bind(this, graderEmail)}>
               <Icon type="user-delete" />
               Unenroll

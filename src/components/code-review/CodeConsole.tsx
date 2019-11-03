@@ -1403,7 +1403,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         siderTitles = ['Submission Info', fileMenuTitle, 'Rubric'];
 
         leftHeader = [
-          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
+          <HeaderMenu
+            key="menu"
+            claimSubmission={this.claimSubmission}
+            isStudent={this.state.isStudent}
+            isAdmin={this.isCourseAdmin(this.state.assignment)}
+            course={this.state.course}
+            assignment={this.state.assignment}
+          />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
         ];
 
@@ -1470,7 +1477,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         }
 
         leftHeader = [
-          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
+          <HeaderMenu
+            key="menu"
+            claimSubmission={this.claimSubmission}
+            isStudent={this.state.isStudent}
+            isAdmin={this.isCourseAdmin(this.state.assignment)}
+            course={this.state.course}
+            assignment={this.state.assignment}
+          />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
         ];
 
@@ -1499,7 +1513,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         siderTitles = ['Submission Info', fileMenuTitle];
       } else {
         leftHeader = [
-          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
+          <HeaderMenu
+            key="menu"
+            claimSubmission={this.claimSubmission}
+            isStudent={this.state.isStudent}
+            isAdmin={this.isCourseAdmin(this.state.assignment)}
+            course={this.state.course}
+            assignment={this.state.assignment}
+          />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
           <StatusTags
             key="tag"

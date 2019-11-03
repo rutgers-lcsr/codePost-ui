@@ -11,6 +11,8 @@ import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Select } from 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
 import memoizeOne from 'memoize-one';
+import { RouteComponentProps } from 'react-router';
+import { Link } from 'react-router-dom';
 
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
@@ -63,8 +65,8 @@ interface IState {
   activeStudent: string;
 }
 
-class ManageStudents extends React.Component<IManageStudentsProps, IState> {
-  public constructor(props: IManageStudentsProps) {
+class ManageStudents extends React.Component<IManageStudentsProps & RouteComponentProps, IState> {
+  public constructor(props: IManageStudentsProps & RouteComponentProps) {
     super(props);
     this.state = {
       activeStudent: '',
@@ -303,6 +305,11 @@ class ManageStudents extends React.Component<IManageStudentsProps, IState> {
                 Send activation email
               </Menu.Item>
             )}
+            <Menu.Item key="profile">
+              <Link to={this.props.match.url.replace('roster/students', `submissions/by_student/${studentEmail}`)}>
+                <Icon type="folder-open" /> &nbsp; Open profile
+              </Link>
+            </Menu.Item>
             <Menu.Item key="1" onClick={this.removeStudent.bind(this, studentEmail)}>
               <Icon type="user-delete" />
               Unenroll
