@@ -438,8 +438,13 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
   public updateRubricComment = (rubricCommentID: number, key: string, event: any) => {
     const rubricComments = { ...this.state.rubricComments };
     switch (typeof event) {
-      case 'number':
       case 'undefined':
+      case 'number':
+        rubricComments[rubricCommentID] = {
+          ...rubricComments[rubricCommentID],
+          [key]: event,
+        };
+        break;
       case 'string':
         if (key !== 'pointDelta') {
           rubricComments[rubricCommentID] = {
@@ -459,6 +464,7 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
     this.setState({ rubricComments }, () => {
       this.updateCommentStatus(rubricComments[rubricCommentID]);
       if (key !== 'text') {
+        console.log('bump');
         this.saveComment(rubricCommentID);
       }
     });
