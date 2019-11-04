@@ -104,7 +104,7 @@ export const CodeUploader = (props: IUploadProps) => {
         <Upload
           beforeUpload={beforeUpload}
           listType="text"
-          multiple={true}
+          multiple={false}
           showUploadList={true}
           onRemove={onRemove}
           fileList={newFiles}
