@@ -528,6 +528,7 @@ export const acceptedFiles = [
   '.vsps',
   '.vspx',
   '.vue',
+  '.xml',
 ];
 
 export const acceptedFilesString = acceptedFiles.join();
