@@ -99,7 +99,7 @@ export const TestingSetup = (props: IProps) => {
         break;
       case FILE_TYPE.HELPER:
         const newHelper = await HelperFile.create(payload);
-        setHelpers([...solutions, newHelper]);
+        setHelpers([...helpers, newHelper]);
         break;
     }
   };
