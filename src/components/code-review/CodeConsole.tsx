@@ -93,6 +93,7 @@ interface ICodeConsoleState {
   codeVerticalOffset: number;
   dimensions: CodeConsoleDimensionsType;
   isStudent: boolean;
+  showExplanations: boolean;
 
   /* submissions data for readers and writers */
   readOnlySubmission?: StudentSubmissionType;
@@ -406,6 +407,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       commentCounter: -1,
 
       rubricReload: undefined,
+      showExplanations: false,
     };
   }
 
@@ -658,6 +660,17 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       LOCAL_SETTINGS.mostRecentFile.setter(selectedFile.id);
     }
     this.setState({ selectedFile, activeCommentID: undefined });
+  };
+
+  public toggleShowExplanations = () => {
+    this.setState(
+      (oldState: ICodeConsoleState) => {
+        return { showExplanations: !oldState.showExplanations };
+      },
+      () => {
+        message.info(`Now showing rubric comment ${this.state.showExplanations ? 'explanations' : 'text'}`);
+      },
+    );
   };
 
   /***********************************************************************************
@@ -1318,6 +1331,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           const demoComments = (
             <GradeComments
               isStudent={this.state.isStudent}
+              showExplanations={this.state.showExplanations}
               comments={this.state.comments[this.state.selectedFile!.id]}
               rubricComments={this.state.commentRubricComments}
               readOnly={this.state.submission!.isFinalized}
@@ -1407,7 +1421,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         siderTitles = ['Submission Info', fileMenuTitle, 'Rubric'];
 
         leftHeader = [
-          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
+          <HeaderMenu
+            key="menu"
+            claimSubmission={this.claimSubmission}
+            isStudent={this.state.isStudent}
+            toggleShowExplanations={this.toggleShowExplanations}
+            showExplanations={this.state.showExplanations}
+          />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
         ];
 
@@ -1474,7 +1494,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         }
 
         leftHeader = [
-          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
+          <HeaderMenu
+            key="menu"
+            claimSubmission={this.claimSubmission}
+            isStudent={this.state.isStudent}
+            toggleShowExplanations={this.toggleShowExplanations}
+            showExplanations={this.state.showExplanations}
+          />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
         ];
 
@@ -1503,7 +1529,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         siderTitles = ['Submission Info', fileMenuTitle];
       } else {
         leftHeader = [
-          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
+          <HeaderMenu
+            key="menu"
+            claimSubmission={this.claimSubmission}
+            isStudent={this.state.isStudent}
+            toggleShowExplanations={this.toggleShowExplanations}
+            showExplanations={this.state.showExplanations}
+          />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
           <StatusTags
             key="tag"
@@ -1553,6 +1585,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           const comments = (
             <GradeComments
               isStudent={this.state.isStudent}
+              showExplanations={this.state.showExplanations}
               comments={this.state.comments[this.state.selectedFile!.id]}
               rubricComments={this.state.commentRubricComments}
               readOnly={this.state.submission!.isFinalized}

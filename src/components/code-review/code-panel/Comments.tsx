@@ -53,6 +53,7 @@ interface ICommentsEditProps {
   forcedRubricMode: boolean;
 
   oldCommentIDs: { [currentID: number]: number };
+  showExplanations: boolean;
 }
 
 interface ICommentPlacement {
@@ -317,6 +318,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
         <Comment
           key={key}
           isStudent={this.props.isStudent}
+          showExplanations={this.props.showExplanations}
           commentType={commentType}
           comment={comment}
           file={this.props.file}
@@ -406,6 +408,7 @@ const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & IComme
           removeRubricComment={this.removeRubricComment}
           forcedRubricMode={false}
           oldCommentIDs={{}}
+          showExplanations={false}
         />
       );
     }
