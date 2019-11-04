@@ -85,7 +85,6 @@ export const EnvironmentSpecs = (props: IProps) => {
     if (newEnv) {
       props.updateEnv(newEnv);
       setBuildStatus(BUILD_STATUS.Success);
-      props.onContinue();
     }
   };
 
