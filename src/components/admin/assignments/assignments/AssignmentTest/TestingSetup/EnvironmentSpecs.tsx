@@ -23,7 +23,7 @@ interface IProps {
   updateEnv: (env: EnvironmentType) => void;
 }
 
-const languages = ['python-3.7', 'python-2.7', 'java'];
+const languages = ['python-3.7', 'python-2.7', 'java', 'c/c++'];
 
 enum BUILD_STATUS {
   Idle,

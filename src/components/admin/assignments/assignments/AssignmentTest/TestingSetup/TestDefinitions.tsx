@@ -23,6 +23,8 @@ import { ProMode } from './TestDefinitions/ProMode';
 /* codePost utils imports */
 import { fetchTestData, TestCasesByCategory } from '../testUtils';
 
+import { hasNativeTestSupport } from './utils/languageUtils';
+
 const { Panel } = Collapse;
 const { Sider, Content } = Layout;
 
@@ -105,13 +107,15 @@ export const TestDefinitions = (props: IProps) => {
     setCasesByCategory(newCases);
   };
 
-  const addTest = (category: number) => {
+  const addTest = (language: string | null, category: number) => {
+    // If a language doesn't have native support, default to a bash unit test
+    const hasNativeSupport = language && hasNativeTestSupport(language);
     const dummyTestCase = {
       id: newTestCounter,
       sortKey: 0,
       testCategory: category,
       description: 'New Test',
-      type: 'io',
+      type: hasNativeSupport ? 'io' : 'bash-unit',
       pointsPass: 0,
       pointsFail: 0,
       text: '',
@@ -162,7 +166,7 @@ export const TestDefinitions = (props: IProps) => {
             <div>{testItems}</div>
             <div style={{ marginTop: 15, display: 'flex', justifyContent: 'center' }}>
               {currentCategory && (
-                <Button type="primary" onClick={addTest.bind({}, parseInt(currentCategory, 10))}>
+                <Button type="primary" onClick={addTest.bind({}, props.env.language, parseInt(currentCategory, 10))}>
                   Add Test
                 </Button>
               )}
@@ -279,7 +283,14 @@ const AddCategoryModal = (props: IUploadProps) => {
       <Button onClick={toggleVisible} type="primary" style={{ marginTop: 20 }}>
         Add Test Category
       </Button>
-      <Modal visible={visible} onCancel={toggleVisible} onOk={onSave} width={400} style={{ padding: 25 }}>
+      <Modal
+        visible={visible}
+        title="Add new test category"
+        onCancel={toggleVisible}
+        onOk={onSave}
+        width={400}
+        style={{ padding: 25 }}
+      >
         <Input onChange={onChange} value={name} placeholder="Category Name" />
         <Row>
           Category is pro mode:

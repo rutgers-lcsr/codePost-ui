@@ -16,7 +16,7 @@ import { CodeWindow } from '../utils/CodeWindow';
 import { TestResult } from '../utils/TestResult';
 
 /* codePost util imports */
-import { testTemplates } from '../utils/languageUtils';
+import { testTemplates, hasNativeTestSupport, extensionsByLanguage } from '../utils/languageUtils';
 
 const { Option } = Select;
 
@@ -154,14 +154,10 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     const { getFieldDecorator } = form;
 
     const outputJSON = this.props.testOutput ? JSON.parse(this.props.testOutput) : {};
-    const name =
-      this.state.testType == 'bash'
-        ? '.sh'
-        : this.props.language == 'python'
-        ? '.py'
-        : this.props.language == 'java'
-        ? '.java'
-        : '.txt';
+    const name = this.state.testType == 'bash' ? '.sh' : extensionsByLanguage[this.props.language];
+
+    // Disable changing the test type if there is no native test support
+    const hasNativeSupport = hasNativeTestSupport(this.props.language);
 
     return (
       <div>
@@ -188,7 +184,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               })(
                 <Select
                   onChange={this.onTypeChange}
-                  disabled={this.props.isRunning}
+                  disabled={this.props.isRunning || !hasNativeSupport}
                   value={testCase.type}
                   style={{ minWidth: 200 }}
                 >

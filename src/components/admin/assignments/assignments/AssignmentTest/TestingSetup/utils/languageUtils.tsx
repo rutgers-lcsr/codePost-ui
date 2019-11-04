@@ -25,16 +25,20 @@ export const codeMirorLanguageMap: { [language: string]: string } = {
   sh: 'text/x-sh',
 };
 
-/****************************** Language parse utils *********************************/
-export const getLanguage = (languageChoice: string) => {
-  return languageMap[languageChoice];
+export const extensionsByLanguage: { [language: string]: string } = {
+  'python-3.7': 'py',
+  'python-2.7': 'py',
+  java: 'java',
+  'c/c++': 'c',
 };
 
-const languageMap: { [language: string]: string } = {
-  'python-3.7': 'python',
-  'python-2.7': 'python',
-  java: 'java',
+/****************************** Language parse utils *********************************/
+export const hasNativeTestSupport = (language: string) => {
+  return languageWithNativeTestSupport.includes(language);
 };
+
+// The languages for which I/o tests and native unit tests are supported
+const languageWithNativeTestSupport = ['python-3.7', 'java', 'python2.-7'];
 
 /****************************** Test Templates *********************************/
 // Initial templates strings for different test and language types
