@@ -6,7 +6,7 @@ const HelperFileV = t.intersection(
     GenericObject,
     t.type({
       name: t.string,
-      testCategory: t.number,
+      environment: t.number,
       code: t.string,
       path: t.union([t.string, t.null]),
       created: t.string,
@@ -21,7 +21,7 @@ const HelperFileVPost = t.intersection(
     GenericObject,
     t.type({
       name: t.string,
-      testCategory: t.number,
+      environment: t.number,
       code: t.string,
       path: t.union([t.string, t.null]),
     }),

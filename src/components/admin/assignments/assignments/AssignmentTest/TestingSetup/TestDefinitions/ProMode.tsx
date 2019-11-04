@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* library imports  */
-import { Button, Layout, Menu, Spin } from 'antd';
+import { Button, Layout, Divider, Menu, Spin, Typography } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 /* codePost object imports  */
@@ -10,43 +10,40 @@ import { TestCategoryType, TestCategory } from '../../../../../../../infrastruct
 import { SolutionFileType } from '../../../../../../../infrastructure/autograder/solutionFile';
 import { SubmissionType } from '../../../../../../../infrastructure/submission';
 import { FileType } from '../../../../../../../infrastructure/file';
-import { HelperFile, HelperFileType } from '../../../../../../../infrastructure/autograder/helperFile';
+import { HelperFileType } from '../../../../../../../infrastructure/autograder/helperFile';
 import { BashFile, BashFileType } from '../../../../../../../infrastructure/autograder/bashFile';
+import { TestCaseType } from '../../../../../../../infrastructure/testCase';
 
 /* codePost other imports  */
 import { CodeWindow } from '../utils/CodeWindow';
-import { CodeUploader } from '../utils/CodeUploader';
 import { CodeSwitcher } from '../utils/CodeSwitcher';
 import { TestResult } from '../utils/TestResult';
 
-import { fetchHelperFiles, fetchOrCreateBashFile } from '../../testUtils';
+import { fetchOrCreateBashFile } from '../../testUtils';
 
 const { Sider, Content } = Layout;
 const { SubMenu } = Menu;
 
+const { Title } = Typography;
+
 interface ProModeProps {
   currentCategory: TestCategoryType;
   solutions: SolutionFileType[];
-  addFile: (name: string, code: string) => Promise<void>;
-  deleteFile: (id: number) => Promise<void>;
-  updateFile: (id: number, newCode: string) => Promise<void>;
+  helpers: HelperFileType[];
   submissions: SubmissionType[];
   replaceCategory: (newCategory: TestCategoryType) => void;
+  testCases: TestCaseType[];
 }
 
 export const ProMode = (props: ProModeProps) => {
   const [currentIndex, setIndex] = useState('bash');
   const [currentFiles, setCurrentFiles] = useState<(SolutionFileType | FileType)[]>(props.solutions);
-  const [output, setOutput] = useState('');
-  const [helpers, setHelpers] = useState<HelperFileType[]>([]);
+  const [outputs, setOutputs] = useState<any[]>([]);
   const [bash, setBash] = useState<BashFileType | undefined>();
 
   /******************************** Set up ****************************/
   useEffect(() => {
     const fetchData = async () => {
-      const helperFiles = await fetchHelperFiles(props.currentCategory);
-      setHelpers(helperFiles);
-
       const bashFile = await fetchOrCreateBashFile(props.currentCategory);
       if (!props.currentCategory.bashFile) {
         const updatedCategory = { ...props.currentCategory };
@@ -63,19 +60,10 @@ export const ProMode = (props: ProModeProps) => {
     const index = parseInt(currentIndex.split('-')[1], 10);
     const newFile = { ...currentFiles[index] };
     newFile.code = newCode;
-    const newFiles = currentFiles.splice(index, 1, newFile);
+    const newFiles = [...currentFiles];
+    newFiles.splice(index, 1, newFile);
     setCurrentFiles(newFiles);
     return Promise.resolve();
-  };
-
-  const onHelperSave = async (newCode: string) => {
-    const index = currentIndex.split('-')[1];
-    const payload = { id: props.solutions[parseInt(index, 10)].id, code: newCode };
-    const newHelper = await HelperFile.update(payload);
-    const oldHelpers = helpers.filter((f) => {
-      return f.id !== newHelper.id;
-    });
-    setHelpers([...oldHelpers, newHelper]);
   };
 
   const onBashSave = async (newCode: string) => {
@@ -89,7 +77,7 @@ export const ProMode = (props: ProModeProps) => {
 
   const runTest = async () => {
     const result = await TestCategory.run({ id: props.currentCategory.id });
-    setOutput(JSON.stringify(result));
+    setOutputs(result);
   };
   /************************** State Change Functions ****************************/
   const changeIndex = (e: ClickParam) => {
@@ -102,7 +90,6 @@ export const ProMode = (props: ProModeProps) => {
     return <Spin />;
   }
 
-  const outputJSON = output ? JSON.parse(output) : {};
   let currentCode;
   let currentName;
   let currentSave;
@@ -113,9 +100,9 @@ export const ProMode = (props: ProModeProps) => {
     currentSave = onBashSave;
   } else if (currentIndex.includes('helpers-')) {
     const index = currentIndex.split('-')[1];
-    currentCode = helpers[parseInt(index, 10)].code;
-    currentName = helpers[parseInt(index, 10)].name;
-    currentSave = onHelperSave;
+    currentCode = props.helpers[parseInt(index, 10)].code;
+    currentName = props.helpers[parseInt(index, 10)].name;
+    currentSave = undefined;
   } else {
     const index = currentIndex.split('-')[1];
     currentCode = currentFiles[parseInt(index, 10)].code;
@@ -124,16 +111,8 @@ export const ProMode = (props: ProModeProps) => {
   }
 
   const helperMenu = (
-    <SubMenu
-      key="helpers"
-      title={
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          helpers &nbsp;
-          <CodeUploader files={helpers} addFile={props.addFile} deleteFile={props.deleteFile} icon={true} />
-        </div>
-      }
-    >
-      {helpers.map((file, index) => {
+    <SubMenu key="helpers" title={<div style={{ display: 'flex', alignItems: 'center' }}>helpers &nbsp;</div>}>
+      {props.helpers.map((file, index) => {
         return (
           <Menu.Item key={`helpers-${index.toString()}`} style={{ height: 'fit-content', minHeight: 40 }}>
             <div>{file.name}</div>
@@ -163,6 +142,15 @@ export const ProMode = (props: ProModeProps) => {
     </SubMenu>
   );
 
+  const testCases =
+    outputs.length > 0
+      ? outputs.map((t) => {
+          return <TestCaseItem description={t.description} passed={t.passed} logs={t.log} />;
+        })
+      : props.testCases.map((t) => {
+          return <TestCaseItem description={t.description} />;
+        });
+
   /************************** Return  ****************************/
   return (
     <div
@@ -191,14 +179,44 @@ export const ProMode = (props: ProModeProps) => {
         </Content>
         <Sider
           theme="light"
-          style={{ borderLeft: '1px #f9f9f9 solid', padding: 5, display: 'flex', flexDirection: 'column' }}
+          style={{
+            borderLeft: '1px #f9f9f9 solid',
+          }}
+          width={200}
         >
-          <Button style={{ float: 'right' }} onClick={runTest}>
-            Run main.sh
-          </Button>
-          {output && <TestResult log={outputJSON.log} passed={outputJSON.passed} />}
+          <div style={{ padding: 5, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Button onClick={runTest}>Run main.sh</Button>
+            <Divider style={{ marginTop: 15, marginBottom: 15, width: 175 }} />
+            {testCases}
+          </div>
         </Sider>
       </Layout>
+    </div>
+  );
+};
+
+interface ITestCaseItemProps {
+  description: string;
+  passed?: boolean;
+  logs?: string;
+}
+
+const TestCaseItem = (props: ITestCaseItemProps) => {
+  return (
+    <div
+      style={{
+        margin: 5,
+        padding: 5,
+        borderRadius: 3,
+        boxShadow: 'rgba(0, 0, 0, 0.1) 0px 1px 6px 0px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '80%',
+      }}
+    >
+      <div style={{ marginRight: 10, fontSize: 16, fontWeight: 500, color: 'grey' }}>{props.description}</div>
+      {props.passed !== undefined && <TestResult log={props.logs || null} passed={props.passed} iconMode={true} />}
     </div>
   );
 };

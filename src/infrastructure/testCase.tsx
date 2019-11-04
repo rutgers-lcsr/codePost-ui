@@ -72,6 +72,7 @@ const TestCaseOutputs = t.intersection([
   t.type({
     passed: t.boolean,
     log: t.string,
+    isError: t.boolean,
   }),
 ]);
 

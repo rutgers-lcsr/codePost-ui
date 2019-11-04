@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* library imports */
-import { Button, Collapse, Input, Layout, Menu, Modal, Row, Switch } from 'antd';
+import { Button, Collapse, Input, Layout, Menu, Modal, Row, Switch, Tag } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 /* codePost object imports */
@@ -10,8 +10,9 @@ import { AssignmentType } from '../../../../../../infrastructure/assignment';
 import { TestCase, TestCaseType } from '../../../../../../infrastructure/testCase';
 import { TestCategory, TestCategoryType } from '../../../../../../infrastructure/testCategory';
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
+import { HelperFileType } from '../../../../../../infrastructure/autograder/helperFile';
 import { SubmissionType } from '../../../../../../infrastructure/submission';
-import { TestEnvironmentType } from '../../../../../../infrastructure/autograder/testEnvironment';
+import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
 
 import ReactMarkdown from 'react-markdown';
 
@@ -27,12 +28,10 @@ const { Sider, Content } = Layout;
 
 interface IProps {
   currentAssignment: AssignmentType;
-  files: SolutionFileType[];
-  addFile: (testCategory: number | null, name: string, code: string) => Promise<void>;
-  deleteFile: (id: number) => Promise<void>;
-  updateFile: (id: number, newCode: string) => Promise<void>;
+  solutions: SolutionFileType[];
+  helpers: HelperFileType[];
   submissions: SubmissionType[];
-  env: TestEnvironmentType;
+  env: EnvironmentType;
 }
 
 export const TestDefinitions = (props: IProps) => {
@@ -150,7 +149,7 @@ export const TestDefinitions = (props: IProps) => {
                     currentAssignment={props.currentAssignment}
                     testCase={testCase}
                     saveTest={saveTest}
-                    files={props.files}
+                    files={props.solutions}
                     env={props.env}
                   />
                 </Panel>
@@ -176,12 +175,11 @@ export const TestDefinitions = (props: IProps) => {
           <Content style={{ margin: 15 }}>
             <ProMode
               currentCategory={thisCategory}
-              addFile={props.addFile.bind({}, thisCategory.id)}
-              solutions={props.files}
-              deleteFile={props.deleteFile}
-              updateFile={props.updateFile}
+              solutions={props.solutions}
+              helpers={props.helpers}
               submissions={props.submissions}
               replaceCategory={replaceTestCategory}
+              testCases={TestCase.sort(casesByCategory[parseInt(currentCategory, 10)])}
             />
           </Content>
         );
@@ -198,7 +196,7 @@ export const TestDefinitions = (props: IProps) => {
   }
 
   const exampleText = `\`\`\`
-  submission/
+  files/
     #### Files from a student submission or soluton code ####
     submissionFile1
     submissionFile2
@@ -230,7 +228,7 @@ export const TestDefinitions = (props: IProps) => {
               {TestCategory.sort(categories).map((category) => {
                 return (
                   <Menu.Item key={category.id.toString()} style={{ height: 'fit-content', minHeight: 40 }}>
-                    {category.name}
+                    {category.name} {category.type === 'bash' && <Tag>Shell</Tag>}
                   </Menu.Item>
                 );
               })}

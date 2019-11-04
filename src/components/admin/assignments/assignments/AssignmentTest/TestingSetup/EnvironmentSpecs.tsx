@@ -1,12 +1,14 @@
 /* react imports */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 /* library imports */
-import { Button, Collapse, Select, Typography } from 'antd';
+import { Button, Collapse, Divider, Select, Typography } from 'antd';
 
 /* codePost object imports */
 import { AssignmentPatchType, AssignmentType } from '../../../../../../infrastructure/assignment';
-import { TestEnvironment, TestEnvironmentType } from '../../../../../../infrastructure/autograder/testEnvironment';
+import { Environment, EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
+
+import { CodeWindow } from './utils/CodeWindow';
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -17,8 +19,8 @@ interface IProps {
   onCancel: () => void;
   onContinue: () => void;
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
-  env: TestEnvironmentType | undefined;
-  updateEnv: (env: TestEnvironmentType) => void;
+  env: EnvironmentType | undefined;
+  updateEnv: (env: EnvironmentType) => void;
 }
 
 const languages = ['python-3.7', 'python-2.7', 'java'];
@@ -39,8 +41,14 @@ export const EnvironmentSpecs = (props: IProps) => {
   const [dependencies, setDependencies] = useState<string[]>(props.env ? JSON.parse(props.env.dependencies) : []);
   const [errorLogs, setErrorLogs] = useState<string[]>([]);
   const [buildStatus, setBuildStatus] = useState(BUILD_STATUS.Idle);
-
   /******************************* API / State Change Functions ****************************/
+
+  useEffect(() => {
+    if (props.env) {
+      setLanguage(props.env.language);
+    }
+  }, [props.env]);
+
   const testEnv = async () => {
     if (!props.env) {
       return;
@@ -53,7 +61,7 @@ export const EnvironmentSpecs = (props: IProps) => {
     };
     setBuildStatus(BUILD_STATUS.TestRunning);
     setErrorLogs([]);
-    const status = await TestEnvironment.simulateBuild(payload);
+    const status = await Environment.simulateBuild(payload);
     if (status.result) {
       setBuildStatus(BUILD_STATUS.SaveReady);
     } else {
@@ -73,7 +81,7 @@ export const EnvironmentSpecs = (props: IProps) => {
       simulate: false,
     };
     setBuildStatus(BUILD_STATUS.Saving);
-    const newEnv = await TestEnvironment.updateBuild(payload);
+    const newEnv = await Environment.updateBuild(payload);
     if (newEnv) {
       props.updateEnv(newEnv);
       setBuildStatus(BUILD_STATUS.Success);
@@ -81,6 +89,19 @@ export const EnvironmentSpecs = (props: IProps) => {
     }
   };
 
+  const saveCompileText = async (newText: string) => {
+    if (!props.env) {
+      return;
+    }
+    const payload = {
+      id: props.env.id,
+      compileText: newText,
+    };
+    const newEnv = await Environment.update(payload);
+    if (newEnv) {
+      props.updateEnv(newEnv);
+    }
+  };
   /******************************* State Change Functions ****************************/
   const onLanguageChange = (value: string) => {
     setBuildStatus(BUILD_STATUS.TestReady);
@@ -97,7 +118,7 @@ export const EnvironmentSpecs = (props: IProps) => {
   /******************************* Return ****************************/
 
   const selectLanguage = (
-    <Select defaultValue={language ? language : undefined} onChange={onLanguageChange} style={{ minWidth: 300 }}>
+    <Select value={language || undefined} onChange={onLanguageChange} style={{ minWidth: 300 }}>
       {languages.map((language) => {
         return <Option value={language}>{language}</Option>;
       })}
@@ -177,6 +198,13 @@ export const EnvironmentSpecs = (props: IProps) => {
         <div>{testBtn}</div>
         <div>{saveBtn}</div>
       </div>
+      <div>
+        <Divider />
+        <Typography.Title level={4}>Compile instructions</Typography.Title>
+        <CodeWindow code={(props.env && props.env.compileText) || ''} name={'.sh'} onSave={saveCompileText} />
+      </div>
     </div>
   );
 };
+
+const compileTemplateString = '';

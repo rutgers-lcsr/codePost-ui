@@ -67,13 +67,6 @@ export const fetchTestsBySubmission = async (submissions: SubmissionType[]) => {
   return toRet;
 };
 
-export const fetchHelperFiles = async (category: TestCategoryType) => {
-  const promises = category.helperFiles.map((f) => {
-    return HelperFile.read(f);
-  });
-  return await Promise.all(promises);
-};
-
 export const fetchOrCreateBashFile = async (category: TestCategoryType) => {
   if (category.bashFile) {
     const bashFile = await BashFile.read(category.bashFile);
