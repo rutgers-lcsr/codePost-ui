@@ -46,7 +46,12 @@ export const CodeWindow = (props: IProps) => {
 
   // ******************************* Util functions  *******************************
   const getMode = () => {
-    const extension = props.name.split('.')[1].replace('.', '');
+    let extension: string;
+    if (props.name.includes('.')) {
+      extension = props.name.split('.')[1].replace('.', '');
+    } else {
+      extension = props.name;
+    }
     if (extension in codeMirorLanguageMap) {
       return codeMirorLanguageMap[extension];
     } else return 'txt';
