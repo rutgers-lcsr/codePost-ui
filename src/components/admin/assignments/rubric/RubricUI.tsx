@@ -8,10 +8,6 @@ import * as React from 'react';
 /* antd imports */
 import { Checkbox, Breadcrumb, Empty } from 'antd';
 
-/* other library imports */
-import { Switch, Route } from 'react-router-dom';
-import _ from 'lodash';
-
 /* codePost imports */
 import RubricCommentExplorer from './RubricCommentExplorer';
 
@@ -42,8 +38,6 @@ import { IRubricManagerProps, IRubricManagerState, IRubricManagerHelpers } from 
 import CPTooltip from '../../../core/CPTooltip';
 import { tooltips } from '../../../core/tooltips';
 
-import ExplanationModal from './ExplanationModal';
-
 interface IRubricUIProps extends IRubricManagerProps {
   breadcrumbs: React.ReactElement[];
   baseURL: string;
@@ -60,10 +54,15 @@ const RubricUI = ({
   helpers: IRubricManagerHelpers;
 }) => {
   const { rubricCategories, rubricComments, loadComplete } = state;
+
+  /* optional rubric fields */
   const [showPointLimits, setShowPointLimits] = React.useState(false);
   const [showHelpText, setShowHelpText] = React.useState(false);
+  const [showExplanations, setShowExplanations] = React.useState(false);
+
   const [showPointLimitCheckbox, setShowPointLimitCheckbox] = React.useState(true);
   const [showHelpTextCheckbox, setShowHelpTextCheckbox] = React.useState(true);
+  const [showExplanationsCheckbox, setShowExplanationsCheckbox] = React.useState(true);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
@@ -76,6 +75,13 @@ const RubricUI = ({
       if (!showHelpText && (typeof cat.helpText === 'string' && cat.helpText.length > 0)) {
         setShowHelpText(true);
         setShowHelpTextCheckbox(false);
+      }
+
+      for (const rc of rubricComments[cat.id]) {
+        if (!showExplanations && rc.explanation) {
+          setShowExplanations(true);
+          setShowExplanationsCheckbox(false);
+        }
       }
     }
   });
@@ -116,6 +122,7 @@ const RubricUI = ({
             commentFeedbackOn={props.assignment.commentFeedback}
             showPointLimits={showPointLimits}
             showHelpText={showHelpText}
+            showExplanations={showExplanations}
           >
             {({ propz, statez, helperz }: IRubricCategoryManagerParams) => {
               return <RubricCategoryUI props={{ ...propz, baseURL: props.baseURL }} state={statez} helpers={helperz} />;
@@ -197,6 +204,10 @@ const RubricUI = ({
       setShowHelpText(!showHelpText);
     };
 
+    const toggleShowExplanations = () => {
+      setShowExplanations(!showExplanations);
+    };
+
     const content = (
       <div>
         <div className="display-flex flex-direction-column align-items-flex-end" style={{ marginBottom: '10px' }}>
@@ -216,6 +227,17 @@ const RubricUI = ({
               Show help text <Checkbox checked={showHelpText} onChange={toggleShowHelpText} />{' '}
               <CPTooltip
                 title={tooltips.admin.rubric.categoryHelpText}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
+          ) : null}
+          {showExplanationsCheckbox ? (
+            <div>
+              Show explanation editors <Checkbox checked={showExplanations} onChange={toggleShowExplanations} />{' '}
+              <CPTooltip
+                title={tooltips.admin.rubric.explanations}
                 infoIcon={true}
                 hideThisOnHideTips={true}
                 iconStyle={{ paddingLeft: 5 }}
@@ -281,18 +303,6 @@ const RubricUI = ({
           }
           titleInfo={tooltips.admin.rubric.title}
         />
-        <Switch>
-          {_.flatten(Object.values(rubricComments)).map((rc: any) => {
-            return (
-              <Route
-                path={`${props.baseURL}/${rc.id}`}
-                render={(subprops: any) => {
-                  return <ExplanationModal rubricComment={rc} onCancel={() => props.history.push(props.baseURL)} />;
-                }}
-              />
-            );
-          })}
-        </Switch>
       </span>
     );
   } else {

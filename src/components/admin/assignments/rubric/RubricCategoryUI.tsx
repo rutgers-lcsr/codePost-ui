@@ -4,9 +4,6 @@ import * as React from 'react';
 /* ant imports */
 import { Badge, Button, Icon, Input, Popconfirm, Spin, Table, Tag } from 'antd';
 
-/* other library imports */
-import { Link } from 'react-router-dom';
-
 /* codePost imports */
 import CPButton from '../../../core/CPButton';
 import CPFlex from '../../../core/CPFlex';
@@ -23,6 +20,8 @@ import {
 import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 
 import { DIRECTION } from '../../../../types/common';
+
+import ExplanationModal from './ExplanationModal';
 
 const { TextArea } = Input;
 
@@ -93,6 +92,10 @@ interface IProps {
   baseURL: string;
 }
 
+interface IState {
+  activeComment?: RubricCommentType;
+}
+
 const RubricCategoryUI = ({
   props,
   state,
@@ -102,6 +105,8 @@ const RubricCategoryUI = ({
   state: IRubricCategoryManagerState;
   helpers: IRubricCategoryManagerHelpers;
 }) => {
+  const [activeComment, setActiveComment] = React.useState(undefined as RubricCommentType | undefined);
+
   const buildCommentTableData = (
     rubricComments: RubricCommentType[],
     commentMap: { [id: number]: RubricCommentType },
@@ -121,6 +126,10 @@ const RubricCategoryUI = ({
 
         const onChangePointDelta = (e: any) => {
           helpers.updateRubricComment(thisComment.id, 'pointDelta', e);
+        };
+
+        const onDeleteExplanation = () => {
+          helpers.updateRubricComment(thisComment.id, 'explanation', '');
         };
 
         const saveComment = () => {
@@ -147,12 +156,28 @@ const RubricCategoryUI = ({
                 style={{ width: '80%' }}
               />
               &nbsp;
-              <span style={{ verticalAlign: 'middle' }}>
-                <Link to={`${props.baseURL}/${thisComment.id}`}>
-                  <CPButton icon="edit" theme={thisComment.explanation ? 'filled' : undefined} />
-                </Link>
-                <CPButton icon="delete" theme={thisComment.explanation ? 'filled' : undefined} />
-              </span>
+              {props.showExplanations ? (
+                <span style={{ verticalAlign: 'middle' }}>
+                  <CPTooltip title="Edit comment's explanation">
+                    <CPButton
+                      icon="edit"
+                      style={{ background: thisComment.explanation ? '#f0fff7' : undefined }}
+                      onClick={() => {
+                        setActiveComment(thisComment);
+                      }}
+                    />
+                  </CPTooltip>
+                  <CPTooltip title="Delete comment's explanation">
+                    <CPButton
+                      icon="delete"
+                      disabled={!thisComment.explanation}
+                      onClick={() => {
+                        onDeleteExplanation();
+                      }}
+                    />
+                  </CPTooltip>
+                </span>
+              ) : null}
             </span>
           ),
           deduction: (
@@ -347,6 +372,13 @@ const RubricCategoryUI = ({
       <CPFlex left={[categoryName, categoryPoints]} right={[helpText]} gutterSize={60} />
     );
 
+  const setExplanation = (draft?: string) => {
+    if (activeComment) {
+      helpers.updateRubricComment(activeComment.id, 'explanation', draft);
+      setActiveComment(undefined);
+    }
+  };
+
   return (
     <div className="cp-rubric-category">
       <div className="cp-rubric-category__title ">
@@ -368,6 +400,15 @@ const RubricCategoryUI = ({
           </span>
         </div>
       </div>
+      {activeComment ? (
+        <ExplanationModal
+          rubricComment={activeComment}
+          onCancel={() => {
+            setActiveComment(undefined);
+          }}
+          onSave={setExplanation}
+        />
+      ) : null}
     </div>
   );
 };
