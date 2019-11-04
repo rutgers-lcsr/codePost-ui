@@ -4,6 +4,14 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/mllike/mllike';
 import 'codemirror/mode/shell/shell';
 
+import {
+  PYTHON_UNIT_TEMPLATE,
+  BASH_PYTHON_TEMPLATE,
+  BASHMODE_PYTHON_TEMPLATE,
+  JAVA_UNIT_TEMPLATE,
+  BASH_JAVA_TEMPLATE,
+} from './templates/testTemplates';
+
 /****************************** CodeMirror Utils *********************************/
 // Map each extension to the syntax highlighter for it
 export const codeMirorLanguageMap: { [language: string]: string } = {
@@ -31,100 +39,21 @@ const languageMap: { [language: string]: string } = {
 /****************************** Test Templates *********************************/
 // Initial templates strings for different test and language types
 
-const FUNCTION_TEMPLATE = 'FunctionName(Arg1, Arg2, ...)';
-const PYTHON_UNIT_TEMPLATE = `
-# To call a student's method, uncomment the following line and call <fileName>.<method>
-
-# from files import <insert student's fileName here>
-
-def TestCase():
-  # TestCase must return a TestOutput Object
-  # TestObject is initialized
-  a = 1
-  if (a > 0):
-    return TestOutput(passed=True, logs="Test passed.")
-  else:
-    return TestOutput(passed=False, logs="Test failed.")
-`;
-const JAVA_UNIT_TEMPLATE = `
-# To call a student's method, call the Class and Method: <Class>.<Method>
-# Example: Calculator.add(1,2)
-
-public static TestOutput TestCase() {
-  int a = 1;
-  if (a > 0) {
-    TestOutput passed = new TestOutput(true, "good job");
-      return passed;
-  }
-  else {
-    TestOutput failed = new TestOutput(false, "base job");
-    return failed;
-  }
-};
-`;
-
-const BASH_PYTHON_TEMPLATE = `
-# You can write a bash script below
-# It must call the function TestOutput <boolean> <string logs>
-# For example, to check if a student's helloWorld file outputs "Hello World"
-#
-# result=$(python3 files.HelloWorld)
-# if echo $result | grep "Hello World"
-# then
-#   TestOutput true "good job!"
-# else
-#   TestOutput false "Wrong result: Expected Hello World. $result provided"
-# fi
-
-TestOutput true "Put your custom log statement here"
-`;
-
-const BASH_JAVA_TEMPLATE = `
-# You can write a bash script below
-# It must call the function TestOutput <boolean> <string logs>
-# For example, to check if a student's files compile:
-# javac ../files/*.java && TestOutput true "Compiled!" || TestOutput false "Didn't compile."
-#
-# Or to check if a student's HelloWorld.java outputs "Hello World":
-# javac ../files/HelloWorld.java -d .
-# result=$(java files.HelloWorld)
-# if echo $result | grep "Hello World"
-# then
-#   TestOutput true "good job!"
-# else
-#   TestOutput false "Wrong result: Expected Hello World. $result provided"
-# fi
-
-TestOutput true "Put your custom log statement here"
-`;
-
-const BASHMODE_PYTHON_TEMPLATE = `
-# You can write a bash script below to output mutltiple tests
-# Each test must call TestOutput <testName (string)> <passed (boolean)> <logs (string)>
-# The testNames must be unique
-#
-# For example, to check if a student's helloWorld file outputs "Hello World"
-#
-# result=$(python3 files.HelloWorld)
-# if echo $result | grep "Hello World"
-# then
-#   TestOutput test1 true "good job!"
-# else
-#   TestOutput test1 false "Wrong result: Expected Hello World. $result provided"
-# fi
-
-TestOutput test1 true "Put your custom log statement here"
-`;
-
 export const testTemplates: { [language: string]: { [type: string]: { [attr: string]: string } } } = {
-  python: {
-    function: { placeholder: FUNCTION_TEMPLATE, initialValue: '' },
+  'python-3.7': {
+    io: { placeholder: '', initialValue: '' },
+    'native-unit': { placeholder: '', initialValue: PYTHON_UNIT_TEMPLATE },
+    'bash-unit': { placeholder: '', initialValue: BASH_PYTHON_TEMPLATE },
+    bashMode: { placeholder: '', initialValue: BASHMODE_PYTHON_TEMPLATE },
+  },
+  'python-2.7': {
+    io: { placeholder: '', initialValue: '' },
     'native-unit': { placeholder: '', initialValue: PYTHON_UNIT_TEMPLATE },
     'bash-unit': { placeholder: '', initialValue: BASH_PYTHON_TEMPLATE },
     bashMode: { placeholder: '', initialValue: BASHMODE_PYTHON_TEMPLATE },
   },
   java: {
-    function: { placeholder: FUNCTION_TEMPLATE, initialValue: '' },
+    io: { placeholder: '', initialValue: '' },
     'native-unit': { placeholder: '', initialValue: JAVA_UNIT_TEMPLATE },
     'bash-unit': { placeholder: '', initialValue: BASH_JAVA_TEMPLATE },
     bashMode: { placeholder: '', initialValue: BASHMODE_PYTHON_TEMPLATE },

@@ -2,21 +2,21 @@
 import React, { useState } from 'react';
 
 /* library imports */
-import { Button, Divider, Form, Input, Row, Select } from 'antd';
+import { Button, Divider, Form, Input, Row, Select, Tag } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
 /* codePost object imports */
 import { AssignmentType } from '../../../../../../../infrastructure/assignment';
 import { TestCase, TestCaseType } from '../../../../../../../infrastructure/testCase';
 import { SolutionFileType } from '../../../../../../../infrastructure/autograder/solutionFile';
-import { TestEnvironmentType } from '../../../../../../../infrastructure/autograder/testEnvironment';
+import { EnvironmentType } from '../../../../../../../infrastructure/autograder/environment';
 
 /* codePost component imports */
 import { CodeWindow } from '../utils/CodeWindow';
 import { TestResult } from '../utils/TestResult';
 
 /* codePost util imports */
-import { getLanguage, testTemplates } from '../utils/languageUtils';
+import { testTemplates } from '../utils/languageUtils';
 
 const { Option } = Select;
 
@@ -25,7 +25,7 @@ interface ITestItemProps {
   testCase: TestCaseType;
   saveTest: (test: TestCaseType) => Promise<TestCaseType>;
   files: SolutionFileType[];
-  env: TestEnvironmentType;
+  env: EnvironmentType;
 }
 
 interface IFormValues {
@@ -34,7 +34,7 @@ interface IFormValues {
   function: string;
   expectedOutput: string;
   input: string;
-  checkReturn: number | undefined;
+  checkReturn: string;
   fileName: string;
   testType: string;
 }
@@ -64,7 +64,7 @@ export const TestItem = (props: ITestItemProps) => {
     testCaseCopy.fileName = values.fileName;
     testCaseCopy.function = values.function;
     testCaseCopy.input = values.input;
-    testCaseCopy.checkReturn = values.checkReturn !== undefined;
+    testCaseCopy.checkReturn = values.checkReturn === 'return';
     testCaseCopy.type = values.testType;
     const newTest = await props.saveTest(testCaseCopy);
 
@@ -91,7 +91,7 @@ export const TestItem = (props: ITestItemProps) => {
       wrappedComponentRef={saveFormRef}
       testOutput={testOutput}
       isRunning={isRunning}
-      language={getLanguage(props.env.language!)}
+      language={props.env.language!}
     />
   );
 };
@@ -193,8 +193,10 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   style={{ minWidth: 200 }}
                 >
                   <Option value={'io'}>I/O</Option>
-                  <Option value={'native-unit'}>Unit Test</Option>
-                  <Option value={'bash-unit'}>Bash Test</Option>
+                  <Option value={'bash-unit'}>Bash</Option>
+                  <Option value={'native-unit'}>
+                    Unit Test <Tag>BETA</Tag>
+                  </Option>
                 </Select>,
               )}
             </Form.Item>
@@ -248,7 +250,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 Should &nbsp;
                 <Form.Item label="">
                   {getFieldDecorator('checkReturn', {
-                    initialValue: testCase.checkReturn ? 1 : undefined,
+                    initialValue: testCase.checkReturn ? 'return' : 'output',
                     rules: [
                       {
                         required: true,
@@ -257,16 +259,16 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   })(
                     <Select
                       disabled={this.props.isRunning}
-                      value={testCase.checkReturn ? 1 : undefined}
+                      value={testCase.checkReturn ? 'return' : 'output'}
                       style={{ minWidth: 200 }}
                     >
-                      <Option value={1}>Return</Option>
-                      <Option value={undefined}>Output</Option>
+                      <Option value={'return'}>Return</Option>
+                      <Option value={'output'}>Output</Option>
                     </Select>,
                   )}
                 </Form.Item>
                 &nbsp; the value &nbsp;
-                <Form.Item label="Output">
+                <Form.Item label="">
                   {getFieldDecorator('expectedOutput', {
                     initialValue: testCase.expectedOutput,
                     rules: [

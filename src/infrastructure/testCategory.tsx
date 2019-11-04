@@ -8,7 +8,6 @@ const TestCategoryV = t.intersection(
       assignment: t.number,
       name: t.string,
       testCases: t.array(t.number),
-      helperFiles: t.array(t.number),
       bashFile: t.union([t.number, t.null]),
       type: t.string,
     }),
@@ -38,14 +37,15 @@ const TestCategoryPatchV = t.intersection(
   'TestCategory',
 );
 
-const TestOutputs = t.intersection([
-  GenericObject,
+const TestOutputs = t.array(
   t.type({
-    name: t.string,
+    id: t.number,
+    description: t.string,
     passed: t.boolean,
     log: t.string,
+    isError: t.boolean,
   }),
-]);
+);
 
 export type TestCategoryType = t.TypeOf<typeof TestCategoryV>;
 

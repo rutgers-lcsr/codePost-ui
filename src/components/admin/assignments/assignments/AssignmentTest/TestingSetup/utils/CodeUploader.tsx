@@ -43,11 +43,12 @@ export const CodeUploader = (props: IUploadProps) => {
   };
 
   const beforeUpload = (file: any, fileList: any) => {
-    let reader = new FileReader();
-    reader.onload = () => {
+    const reader = new FileReader();
+    reader.onload = async () => {
       if (reader.result) {
         const cleanedData = typeof reader.result === 'string' ? reader.result.replace(/\0/g, '') : reader.result;
-        setNewFiles([...newFiles, { uid: counter, code: cleanedData, name: file.name }]);
+        const oldFiles = [...newFiles];
+        setNewFiles([...oldFiles, { uid: `${counter}-${file.name}`, code: cleanedData, name: file.name }]);
         setCounter(counter + 1);
       }
     };
@@ -102,6 +103,7 @@ export const CodeUploader = (props: IUploadProps) => {
         <Table columns={columns} dataSource={data} />
         <Upload
           beforeUpload={beforeUpload}
+          listType="text"
           multiple={true}
           showUploadList={true}
           onRemove={onRemove}

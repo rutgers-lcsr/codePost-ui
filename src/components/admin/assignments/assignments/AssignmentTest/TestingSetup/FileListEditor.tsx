@@ -7,6 +7,7 @@ import { ClickParam } from 'antd/lib/menu';
 
 /* codePost object imports  */
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
+import { HelperFileType } from '../../../../../../infrastructure/autograder/helperFile';
 
 /* codePost other imports  */
 import { CodeWindow } from './utils/CodeWindow';
@@ -15,13 +16,13 @@ import { CodeUploader } from './utils/CodeUploader';
 const { Sider, Content } = Layout;
 
 interface IProps {
-  files: SolutionFileType[];
+  files: SolutionFileType[] | HelperFileType[];
   addFile: (name: string, code: string) => Promise<void>;
   deleteFile: (id: number) => Promise<void>;
   updateFile: (id: number, newCode: string) => Promise<void>;
 }
 
-export const SolutionCode = (props: IProps) => {
+export const FileListEditor = (props: IProps) => {
   /******************************* State Variables ****************************/
   const [currentIndex, setIndex] = useState('0');
 

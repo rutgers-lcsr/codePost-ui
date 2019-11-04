@@ -38,7 +38,6 @@ export const CodeWindow = (props: IProps) => {
   };
 
   const onBeforeChange = (editor: any, data: any, value: string) => {
-    console.log(value);
     if (props.onChange) {
       props.onChange(value);
     }
@@ -55,7 +54,7 @@ export const CodeWindow = (props: IProps) => {
 
   // ******************************* Return  *******************************
   return (
-    <div style={{ fontSize: 12, minWidth: 300 }}>
+    <div style={{ fontSize: 12, minWidth: 300, position: 'relative' }}>
       <CodeMirror
         key={`codeMirror`}
         onBeforeChange={onBeforeChange}
@@ -71,7 +70,7 @@ export const CodeWindow = (props: IProps) => {
       />
       {props.onSave && (
         <Button
-          style={{ position: 'absolute', zIndex: 999999, bottom: 15, right: 15 }}
+          style={{ position: 'absolute', zIndex: 100, bottom: 15, right: 15 }}
           type={isEditing ? 'primary' : 'default'}
           onClick={isEditing ? onSave : onEdit}
           loading={isSaving}
