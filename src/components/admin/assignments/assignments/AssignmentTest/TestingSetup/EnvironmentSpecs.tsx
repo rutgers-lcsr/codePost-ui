@@ -10,6 +10,8 @@ import { Environment, EnvironmentType } from '../../../../../../infrastructure/a
 
 import { CodeWindow } from './utils/CodeWindow';
 
+import { languages, hasDependenciesSupport } from './utils/languageUtils';
+
 const { Option } = Select;
 const { Text } = Typography;
 const { Panel } = Collapse;
@@ -22,8 +24,6 @@ interface IProps {
   env: EnvironmentType | undefined;
   updateEnv: (env: EnvironmentType) => void;
 }
-
-const languages = ['python-3.7', 'python-2.7', 'java', 'c/c++'];
 
 enum BUILD_STATUS {
   Idle,
@@ -187,10 +187,12 @@ export const EnvironmentSpecs = (props: IProps) => {
           <Text type="secondary">Language</Text>
           {selectLanguage}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 15 }}>
-          <Text type="secondary">Dependencies</Text>
-          {selectDependencies}
-        </div>
+        {language && hasDependenciesSupport(language) && (
+          <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 15 }}>
+            <Text type="secondary">Dependencies</Text>
+            {selectDependencies}
+          </div>
+        )}
       </div>
       <div style={{ marginBottom: 10, marginTop: 10 }}>{errorPanel}</div>
       <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end' }}>
