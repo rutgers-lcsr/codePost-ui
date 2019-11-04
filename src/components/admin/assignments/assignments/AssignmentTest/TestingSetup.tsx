@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* library imports */
-import { Breadcrumb, Tabs } from 'antd';
+import { Breadcrumb, Collapse, Tabs } from 'antd';
 
 /* codePost object imports */
 import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
@@ -18,6 +18,7 @@ import { TestDefinitions } from './TestingSetup/TestDefinitions';
 import { FileListEditor } from './TestingSetup/FileListEditor';
 
 const { TabPane } = Tabs;
+const { Panel } = Collapse;
 
 interface IProps {
   currentAssignment: AssignmentType;
@@ -172,20 +173,36 @@ export const TestingSetup = (props: IProps) => {
         />
       </TabPane>
       <TabPane tab={'Solution Code'} key={'2'}>
-        <FileListEditor
-          files={solutions}
-          addFile={addFile.bind({}, FILE_TYPE.SOLUTION)}
-          deleteFile={deleteFile.bind({}, FILE_TYPE.SOLUTION)}
-          updateFile={updateFile.bind({}, FILE_TYPE.SOLUTION)}
-        />
+        <div>
+          <Collapse>
+            <Panel header="Instructions" key="1">
+              Upload your solution code here. You'll be able to run and debug your tests using this code. These files
+              are not exposed to students or graders.
+            </Panel>
+          </Collapse>
+          <FileListEditor
+            files={solutions}
+            addFile={addFile.bind({}, FILE_TYPE.SOLUTION)}
+            deleteFile={deleteFile.bind({}, FILE_TYPE.SOLUTION)}
+            updateFile={updateFile.bind({}, FILE_TYPE.SOLUTION)}
+          />
+        </div>
       </TabPane>
       <TabPane tab={'Helper Files'} key={'3'}>
-        <FileListEditor
-          files={helpers}
-          addFile={addFile.bind({}, FILE_TYPE.HELPER)}
-          deleteFile={deleteFile.bind({}, FILE_TYPE.HELPER)}
-          updateFile={updateFile.bind({}, FILE_TYPE.HELPER)}
-        />
+        <div>
+          <Collapse>
+            <Panel header="Instructions" key="1">
+              Helper files are files that you can call from your tests. The 'Tests' tab will show the file directory
+              hierarchy of these files relative to the tests.
+            </Panel>
+          </Collapse>
+          <FileListEditor
+            files={helpers}
+            addFile={addFile.bind({}, FILE_TYPE.HELPER)}
+            deleteFile={deleteFile.bind({}, FILE_TYPE.HELPER)}
+            updateFile={updateFile.bind({}, FILE_TYPE.HELPER)}
+          />
+        </div>
       </TabPane>
       <TabPane tab={'Tests'} key={'4'}>
         <TestDefinitions

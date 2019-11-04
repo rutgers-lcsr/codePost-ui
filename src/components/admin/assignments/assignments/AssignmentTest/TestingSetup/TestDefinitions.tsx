@@ -196,6 +196,7 @@ export const TestDefinitions = (props: IProps) => {
   }
 
   const exampleText = `\`\`\`
+  main.sh
   files/
     #### Files from a student submission or soluton code ####
     submissionFile1
