@@ -427,8 +427,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let permissionLevel = await this.detectPermissionType(submissionID);
 
     const values = queryString.parse(this.props.location.search);
+    let simulatingStudent = false;
     if (permissionLevel === PERMISSION_LEVEL.WRITE && values.student !== undefined) {
       permissionLevel = PERMISSION_LEVEL.READ;
+      simulatingStudent = true;
     }
 
     // Everything we need to load
@@ -485,7 +487,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           isLoading: false,
           selectedFile,
           permissionLevel,
-          isStudent: submission.students !== undefined && submission.students.indexOf(this.props.user.email) > -1,
+          isStudent:
+            simulatingStudent ||
+            (submission.students !== undefined && submission.students.indexOf(this.props.user.email) > -1),
         });
         break;
 

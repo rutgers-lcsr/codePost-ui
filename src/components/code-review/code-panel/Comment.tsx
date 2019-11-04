@@ -408,7 +408,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     // ------------------------------------- author --------------------------------------- //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    if (this.props.comment.author) {
+    if (this.props.comment.author && !this.props.hideAuthor) {
       commentElements.author = (
         <span
           className="cp-label--italic cp-label--very-small"
@@ -569,7 +569,13 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       commentElements.rubricComment = (
         <div className={rubricCommentClassName} style={style}>
           <span className="cp-label--very-bold">{rubricCategoryTitle}</span>
-          <InlineMarkdown source={this.props.rubricComment.text} />
+          <InlineMarkdown
+            source={
+              this.props.isStudent && this.props.rubricComment.explanation
+                ? this.props.rubricComment.explanation
+                : this.props.rubricComment.text
+            }
+          />
           {commentElements.rubricCommentAction}
         </div>
       );
