@@ -12,7 +12,7 @@ import { File, FileType } from '../../../../../../../infrastructure/file';
 
 interface IProps {
   submissions: SubmissionType[];
-  setFiles: (files: FileType[] | SolutionFileType[]) => void;
+  setFiles: (files: FileType[] | SolutionFileType[], submission: SubmissionType | undefined) => void;
   solutionFiles: SolutionFileType[];
 }
 
@@ -33,11 +33,11 @@ export const CodeSwitcher = (props: IProps) => {
       return File.read(f);
     });
     const files = await Promise.all(filePromises);
-    props.setFiles(files);
+    props.setFiles(files, submission);
   };
 
   const setSolutionFiles = () => {
-    props.setFiles(props.solutionFiles);
+    props.setFiles(props.solutionFiles, undefined);
   };
 
   const submissionOptions = props.submissions.map((sub) => {

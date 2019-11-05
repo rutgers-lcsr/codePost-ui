@@ -39,6 +39,7 @@ export const ProMode = (props: ProModeProps) => {
   const [currentIndex, setIndex] = useState('bash');
   const [currentFiles, setCurrentFiles] = useState<(SolutionFileType | FileType)[]>(props.solutions);
   const [outputs, setOutputs] = useState<any[]>([]);
+  const [submission, setSubmission] = useState<SubmissionType | undefined>(undefined);
   const [bash, setBash] = useState<BashFileType | undefined>();
 
   /******************************** Set up ****************************/
@@ -78,6 +79,11 @@ export const ProMode = (props: ProModeProps) => {
   const runTest = async () => {
     const result = await TestCategory.run({ id: props.currentCategory.id });
     setOutputs(result);
+  };
+
+  const setCodeFiles = (files: SolutionFileType[] | FileType[], submission: SubmissionType | undefined) => {
+    setCurrentFiles(files);
+    setSubmission(submission);
   };
   /************************** State Change Functions ****************************/
   const changeIndex = (e: ClickParam) => {
@@ -125,10 +131,11 @@ export const ProMode = (props: ProModeProps) => {
   const currentFileMenu = (
     <SubMenu
       key="files"
+      disabled={true}
       title={
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          files &nbsp;
-          <CodeSwitcher solutionFiles={props.solutions} submissions={props.submissions} setFiles={setCurrentFiles} />
+          files ({submission ? submission.students : 'Solution Code'})&nbsp;
+          <CodeSwitcher solutionFiles={props.solutions} submissions={props.submissions} setFiles={setCodeFiles} />
         </div>
       }
     >
@@ -165,8 +172,13 @@ export const ProMode = (props: ProModeProps) => {
       }}
     >
       <Layout style={{ maxHeight: 450 }}>
-        <Sider theme="light">
-          <Menu selectedKeys={[currentIndex]} openKeys={['helpers', 'files']} mode="inline" onClick={changeIndex}>
+        <Sider theme="light" width={240}>
+          <Menu
+            selectedKeys={[currentIndex]}
+            defaultOpenKeys={['helpers', 'files']}
+            mode="inline"
+            onClick={changeIndex}
+          >
             <Menu.Item key={'bash'} style={{ height: 'fit-content', minHeight: 40 }}>
               <div>{'Main.sh'}</div>
             </Menu.Item>
