@@ -3,7 +3,11 @@ import { AssignmentType } from '../../../../../infrastructure/assignment';
 import { TestCase, TestCaseType } from '../../../../../infrastructure/testCase';
 import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructure/submissionTest';
 import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
-import { SubmissionType } from '../../../../../infrastructure/submission';
+import {
+  AnonymousSubmissionType,
+  SubmissionType,
+  StudentSubmissionType,
+} from '../../../../../infrastructure/submission';
 
 import { BashFile } from '../../../../../infrastructure/autograder/bashFile';
 
@@ -55,7 +59,7 @@ export const fetchTestCasesByCategory = async (categories: TestCategoryType[]) =
 };
 
 // For a list of submissions, create a {submissionID: SubmissionTest[]} object
-export const fetchTestsBySubmission = async (submissions: SubmissionType[]) => {
+export const fetchTestsBySubmission = async (submissions: AnonymousSubmissionType[]) => {
   const toRet: TestsBySubmission = {};
   const submissionPromises = submissions.map(async (submission) => {
     const testPromises = submission.tests.map((id) => {
