@@ -40,7 +40,7 @@ export const BASH_PYTHON_TEMPLATE = `
 # It must call the function TestOutput <boolean> <string logs>
 # For example, to check if a student's helloWorld file outputs "Hello World"
 #
-# result=$(python3 files.HelloWorld)
+# result=$(python3 /files/HelloWorld.py)
 # if echo $result | grep "Hello World"
 # then
 #   TestOutput true "good job!"
