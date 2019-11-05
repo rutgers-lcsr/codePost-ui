@@ -6,7 +6,8 @@ import { TestCategory, TestCategoryType } from '../../../../../infrastructure/te
 import { SubmissionType } from '../../../../../infrastructure/submission';
 
 import { BashFile } from '../../../../../infrastructure/autograder/bashFile';
-import { HelperFile } from '../../../../../infrastructure/autograder/helperFile';
+
+import { BASHMODE_TEMPLATE } from './TestingSetup/utils/templates/testTemplates';
 
 //********************************** Interfaces **** ******************************
 export interface TestsBySubmission {
@@ -72,7 +73,7 @@ export const fetchOrCreateBashFile = async (category: TestCategoryType) => {
     const bashFile = await BashFile.read(category.bashFile);
     return bashFile;
   } else {
-    const payload = { id: -1, testCategory: category.id, code: '' };
+    const payload = { id: -1, testCategory: category.id, code: BASHMODE_TEMPLATE };
     const bashFile = await BashFile.create(payload);
     return bashFile;
   }
