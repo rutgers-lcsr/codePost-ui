@@ -210,16 +210,16 @@ class Admin extends React.Component<IAdminProps, IAdminState> {
   public componentDidMount() {
     document.title = 'codePost - Admin Console';
 
-    this.interval = window.setInterval(() => {
-      if (this.state.currentCourse) {
-        this.loadAllCourseData(this.state.currentCourse);
-      }
-    }, LOADING_INTERVAL);
+    // this.interval = window.setInterval(() => {
+    //   if (this.state.currentCourse) {
+    //     this.loadAllCourseData(this.state.currentCourse);
+    //   }
+    // }, LOADING_INTERVAL);
   }
 
-  public componentWillUnmount() {
-    clearInterval(this.interval);
-  }
+  // public componentWillUnmount() {
+  //   clearInterval(this.interval);
+  // }
 
   /***********************************************************************************
   /* URL + UI handling methods

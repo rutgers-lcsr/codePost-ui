@@ -252,7 +252,7 @@ export const TestDefinitions = (props: IProps) => {
 
       return categories.length > 0 ? (
         <div>
-          <div style={{ maxHeight: 500, overflow: 'auto', fontSize: 11 }}>
+          <div style={{ fontSize: 11 }}>
             <div
               style={{
                 width: '100%',
@@ -274,7 +274,7 @@ export const TestDefinitions = (props: IProps) => {
                 <ReactMarkdown source={exampleText} />
               </Panel>
             </Collapse>
-            <Layout style={{ maxHeight: 450 }}>
+            <Layout>
               <Sider theme="light">
                 <Menu selectedKeys={[currentCategory]} mode="inline" onClick={changeIndex}>
                   {TestCategory.sort(categories).map((category) => {
