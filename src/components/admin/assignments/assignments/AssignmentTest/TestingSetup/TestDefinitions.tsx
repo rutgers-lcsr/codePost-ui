@@ -19,6 +19,7 @@ import ReactMarkdown from 'react-markdown';
 /* codePost component imports */
 import { TestItem } from './TestDefinitions/TestItem';
 import { ProMode } from './TestDefinitions/ProMode';
+import { ViewSource } from './TestDefinitions/ViewSource';
 
 /* codePost utils imports */
 import { fetchTestData, TestCasesByCategory } from '../testUtils';
@@ -36,12 +37,18 @@ interface IProps {
   env: EnvironmentType;
 }
 
+enum DETAIL_TYPE {
+  EditTests,
+  ViewSource,
+}
+
 export const TestDefinitions = (props: IProps) => {
   /******************************* State Variables ****************************/
   const [casesByCategory, setCasesByCategory] = useState<TestCasesByCategory>({});
   const [categories, setCategories] = useState<TestCategoryType[]>([]);
   const [newTestCounter, setNewTestCounter] = useState(-1);
   const [currentCategory, setCurrentCategory] = useState('');
+  const [panel, setPanel] = useState<DETAIL_TYPE>(DETAIL_TYPE.EditTests);
 
   /******************************* Fetch Data ****************************/
   useEffect(() => {
@@ -135,120 +142,161 @@ export const TestDefinitions = (props: IProps) => {
   };
 
   /******************************* Return  ****************************/
-  let testContent;
-  const thisCategory = categories.find((cat) => {
-    return cat.id === parseInt(currentCategory, 10);
-  });
-  if (!thisCategory) {
-    testContent = <div />;
-  } else {
-    switch (thisCategory.type) {
-      case 'normal':
-        const testItems = currentCategory && casesByCategory[parseInt(currentCategory, 10)] && (
-          <Collapse>
-            {TestCase.sort(casesByCategory[parseInt(currentCategory, 10)]).map((testCase, i) => {
-              return (
-                <Panel header={`${i + 1}. ${testCase.description}`} key={testCase.id}>
-                  <TestItem
-                    currentAssignment={props.currentAssignment}
-                    testCase={testCase}
-                    saveTest={saveTest}
-                    files={props.solutions}
-                    env={props.env}
-                  />
-                </Panel>
-              );
-            })}
-          </Collapse>
-        );
-        testContent = (
-          <Content style={{ margin: 15 }}>
-            <div>{testItems}</div>
-            <div style={{ marginTop: 15, display: 'flex', justifyContent: 'center' }}>
-              {currentCategory && (
-                <Button type="primary" onClick={addTest.bind({}, props.env.language, parseInt(currentCategory, 10))}>
-                  Add Test
-                </Button>
-              )}
+  switch (panel) {
+    case DETAIL_TYPE.ViewSource:
+      return (
+        <div>
+          <div
+            style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              fontSize: 15,
+              alignItems: 'center',
+              padding: 10,
+            }}
+          >
+            View Source: &nbsp; <Switch defaultChecked={true} onChange={setPanel.bind({}, DETAIL_TYPE.EditTests)} />
+          </div>
+          <ViewSource
+            submissions={props.submissions}
+            solutions={props.solutions}
+            helpers={props.helpers}
+            env={props.env}
+          />
+        </div>
+      );
+    case DETAIL_TYPE.EditTests:
+      let testContent;
+      const thisCategory = categories.find((cat) => {
+        return cat.id === parseInt(currentCategory, 10);
+      });
+      if (!thisCategory) {
+        testContent = <div />;
+      } else {
+        switch (thisCategory.type) {
+          case 'normal':
+            const testItems = currentCategory && casesByCategory[parseInt(currentCategory, 10)] && (
+              <Collapse>
+                {TestCase.sort(casesByCategory[parseInt(currentCategory, 10)]).map((testCase, i) => {
+                  return (
+                    <Panel header={`${i + 1}. ${testCase.description}`} key={testCase.id}>
+                      <TestItem
+                        currentAssignment={props.currentAssignment}
+                        testCase={testCase}
+                        saveTest={saveTest}
+                        files={props.solutions}
+                        env={props.env}
+                      />
+                    </Panel>
+                  );
+                })}
+              </Collapse>
+            );
+            testContent = (
+              <Content style={{ margin: 15 }}>
+                <div>{testItems}</div>
+                <div style={{ marginTop: 15, display: 'flex', justifyContent: 'center' }}>
+                  {currentCategory && (
+                    <Button
+                      type="primary"
+                      onClick={addTest.bind({}, props.env.language, parseInt(currentCategory, 10))}
+                    >
+                      Add Test
+                    </Button>
+                  )}
+                </div>
+              </Content>
+            );
+            break;
+          case 'bash':
+            testContent = (
+              <Content style={{ margin: 15 }}>
+                <ProMode
+                  currentCategory={thisCategory}
+                  solutions={props.solutions}
+                  helpers={props.helpers}
+                  submissions={props.submissions}
+                  replaceCategory={replaceTestCategory}
+                  testCases={TestCase.sort(casesByCategory[parseInt(currentCategory, 10)])}
+                />
+              </Content>
+            );
+            break;
+          case 'external':
+            // FIXME:
+            testContent = (
+              <Content style={{ margin: 15 }}>
+                <div>Externally set category</div>
+              </Content>
+            );
+            break;
+        }
+      }
+
+      const exampleText = `\`\`\`
+    main.sh
+    files/
+      #### Files from a student submission or soluton code ####
+      submissionFile1
+      submissionFile2
+    helpers/
+      #### Helper files uploaded in environment set up ####
+      helperFile1
+      helperFile2
+    tests/
+      #### Each test case below gets converted to a test file ####
+      testCase1File
+      testCase2File
+    \`\`\``;
+
+      return categories.length > 0 ? (
+        <div>
+          <div style={{ maxHeight: 500, overflow: 'auto', fontSize: 11 }}>
+            <div
+              style={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                fontSize: 15,
+                alignItems: 'center',
+                padding: 10,
+              }}
+            >
+              View Source: &nbsp; <Switch defaultChecked={false} onChange={setPanel.bind({}, DETAIL_TYPE.ViewSource)} />
             </div>
-          </Content>
-        );
-        break;
-      case 'bash':
-        testContent = (
-          <Content style={{ margin: 15 }}>
-            <ProMode
-              currentCategory={thisCategory}
-              solutions={props.solutions}
-              helpers={props.helpers}
-              submissions={props.submissions}
-              replaceCategory={replaceTestCategory}
-              testCases={TestCase.sort(casesByCategory[parseInt(currentCategory, 10)])}
-            />
-          </Content>
-        );
-        break;
-      case 'external':
-        // FIXME:
-        testContent = (
-          <Content style={{ margin: 15 }}>
-            <div>Externally set category</div>
-          </Content>
-        );
-        break;
-    }
+            <Collapse>
+              <Panel header="Instructions" key="1">
+                Write each of your tests below, and run them on either solution code, or a student's submission. Each
+                test case will be converted to a test file in the following directory structure:
+                <br />
+                <br />
+                <ReactMarkdown source={exampleText} />
+              </Panel>
+            </Collapse>
+            <Layout style={{ maxHeight: 450 }}>
+              <Sider theme="light">
+                <Menu selectedKeys={[currentCategory]} mode="inline" onClick={changeIndex}>
+                  {TestCategory.sort(categories).map((category) => {
+                    return (
+                      <Menu.Item key={category.id.toString()} style={{ height: 'fit-content', minHeight: 40 }}>
+                        {category.name} {category.type === 'bash' && <Tag>Shell</Tag>}
+                      </Menu.Item>
+                    );
+                  })}
+                  <div style={{ marginTop: 15, display: 'flex', justifyContent: 'center' }}>
+                    <AddCategoryModal addCategory={addCategory} />
+                  </div>
+                </Menu>
+              </Sider>
+              {testContent}
+            </Layout>
+          </div>
+        </div>
+      ) : (
+        <AddCategoryModal addCategory={addCategory} />
+      );
   }
-
-  const exampleText = `\`\`\`
-  main.sh
-  files/
-    #### Files from a student submission or soluton code ####
-    submissionFile1
-    submissionFile2
-  helpers/
-    #### Helper files uploaded in environment set up ####
-    helperFile1
-    helperFile2
-  tests/
-    #### Each test case below gets converted to a test file ####
-    testCase1File
-    testCase2File
-  \`\`\``;
-
-  return categories.length > 0 ? (
-    <div>
-      <Collapse>
-        <Panel header="Instructions" key="1">
-          Write each of your tests below, and run them on either solution code, or a student's submission. Each test
-          case will be converted to a test file in the following directory structure:
-          <br />
-          <br />
-          <ReactMarkdown source={exampleText} />
-        </Panel>
-      </Collapse>
-      <div style={{ maxHeight: 500, overflow: 'auto', fontSize: 11 }}>
-        <Layout style={{ maxHeight: 450 }}>
-          <Sider theme="light">
-            <Menu selectedKeys={[currentCategory]} mode="inline" onClick={changeIndex}>
-              {TestCategory.sort(categories).map((category) => {
-                return (
-                  <Menu.Item key={category.id.toString()} style={{ height: 'fit-content', minHeight: 40 }}>
-                    {category.name} {category.type === 'bash' && <Tag>Shell</Tag>}
-                  </Menu.Item>
-                );
-              })}
-              <div style={{ marginTop: 15, display: 'flex', justifyContent: 'center' }}>
-                <AddCategoryModal addCategory={addCategory} />
-              </div>
-            </Menu>
-          </Sider>
-          {testContent}
-        </Layout>
-      </div>
-    </div>
-  ) : (
-    <AddCategoryModal addCategory={addCategory} />
-  );
 };
 
 interface IUploadProps {

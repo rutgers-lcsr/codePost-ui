@@ -7,7 +7,7 @@ import 'codemirror/mode/shell/shell';
 import {
   PYTHON_UNIT_TEMPLATE,
   BASH_PYTHON_TEMPLATE,
-  BASHMODE_PYTHON_TEMPLATE,
+  BASHMODE_TEMPLATE,
   JAVA_UNIT_TEMPLATE,
   BASH_JAVA_TEMPLATE,
 } from './templates/testTemplates';
@@ -58,18 +58,18 @@ export const testTemplates: { [language: string]: { [type: string]: { [attr: str
     io: { placeholder: '', initialValue: '' },
     'native-unit': { placeholder: '', initialValue: PYTHON_UNIT_TEMPLATE },
     'bash-unit': { placeholder: '', initialValue: BASH_PYTHON_TEMPLATE },
-    bashMode: { placeholder: '', initialValue: BASHMODE_PYTHON_TEMPLATE },
+    bashMode: { placeholder: '', initialValue: BASHMODE_TEMPLATE },
   },
   'python-2.7': {
     io: { placeholder: '', initialValue: '' },
     'native-unit': { placeholder: '', initialValue: PYTHON_UNIT_TEMPLATE },
     'bash-unit': { placeholder: '', initialValue: BASH_PYTHON_TEMPLATE },
-    bashMode: { placeholder: '', initialValue: BASHMODE_PYTHON_TEMPLATE },
+    bashMode: { placeholder: '', initialValue: BASHMODE_TEMPLATE },
   },
   java: {
     io: { placeholder: '', initialValue: '' },
     'native-unit': { placeholder: '', initialValue: JAVA_UNIT_TEMPLATE },
     'bash-unit': { placeholder: '', initialValue: BASH_JAVA_TEMPLATE },
-    bashMode: { placeholder: '', initialValue: BASHMODE_PYTHON_TEMPLATE },
+    bashMode: { placeholder: '', initialValue: BASHMODE_TEMPLATE },
   },
 };

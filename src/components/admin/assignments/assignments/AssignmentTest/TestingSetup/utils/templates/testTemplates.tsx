@@ -19,8 +19,8 @@ def TestCase():
     return TestOutput(passed=False, logs="Test failed.")
 `;
 export const JAVA_UNIT_TEMPLATE = `
-# To call a student's method, call the Class and Method: <Class>.<Method>
-# Example: Calculator.add(1,2)
+// To call a student's method, call the Class and Method: <Class>.<Method>
+// Example: Calculator.add(1,2)
 
 public static TestOutput TestCase() {
   int a = 1;
@@ -70,20 +70,15 @@ export const BASH_JAVA_TEMPLATE = `
 TestOutput true "Put your custom log statement here"
 `;
 
-export const BASHMODE_PYTHON_TEMPLATE = `
+export const BASHMODE_TEMPLATE = `
 # You can write a bash script below to output mutltiple tests
 # Each test must call TestOutput <testName (string)> <passed (boolean)> <logs (string)>
 # The testNames must be unique
 #
-# For example, to check if a student's helloWorld file outputs "Hello World"
+# For example, to run two passed tests tests:
 #
-# result=$(python3 files.HelloWorld)
-# if echo $result | grep "Hello World"
-# then
-#   TestOutput test1 true "good job!"
-# else
-#   TestOutput test1 false "Wrong result: Expected Hello World. $result provided"
-# fi
-
-TestOutput test1 true "Put your custom log statement here"
+# TestOutput "test1" true "good job!"
+# TestOutput "test2" true "good job again!"
+#
+TestOutput "test1" true "Put your custom log statement here"
 `;
