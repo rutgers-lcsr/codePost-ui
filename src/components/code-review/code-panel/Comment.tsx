@@ -576,6 +576,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
                 ? this.props.rubricComment.explanation
                 : this.props.rubricComment.text
             }
+            em={!this.props.isStudent && this.props.showExplanations && this.props.rubricComment.explanation}
           />
           {commentElements.rubricCommentAction}
         </div>
