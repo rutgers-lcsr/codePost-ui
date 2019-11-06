@@ -40,6 +40,8 @@ import { tooltips } from '../../../core/tooltips';
 
 interface IRubricUIProps extends IRubricManagerProps {
   breadcrumbs: React.ReactElement[];
+  baseURL: string;
+  history: any;
 }
 
 const RubricUI = ({
@@ -52,10 +54,15 @@ const RubricUI = ({
   helpers: IRubricManagerHelpers;
 }) => {
   const { rubricCategories, rubricComments, loadComplete } = state;
+
+  /* optional rubric fields */
   const [showPointLimits, setShowPointLimits] = React.useState(false);
   const [showHelpText, setShowHelpText] = React.useState(false);
+  const [showExplanations, setShowExplanations] = React.useState(false);
+
   const [showPointLimitCheckbox, setShowPointLimitCheckbox] = React.useState(true);
   const [showHelpTextCheckbox, setShowHelpTextCheckbox] = React.useState(true);
+  const [showExplanationsCheckbox, setShowExplanationsCheckbox] = React.useState(true);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
@@ -68,6 +75,13 @@ const RubricUI = ({
       if (!showHelpText && (typeof cat.helpText === 'string' && cat.helpText.length > 0)) {
         setShowHelpText(true);
         setShowHelpTextCheckbox(false);
+      }
+
+      for (const rc of rubricComments[cat.id]) {
+        if (!showExplanations && rc.explanation) {
+          setShowExplanations(true);
+          setShowExplanationsCheckbox(false);
+        }
       }
     }
   });
@@ -108,9 +122,10 @@ const RubricUI = ({
             commentFeedbackOn={props.assignment.commentFeedback}
             showPointLimits={showPointLimits}
             showHelpText={showHelpText}
+            showExplanations={showExplanations}
           >
             {({ propz, statez, helperz }: IRubricCategoryManagerParams) => {
-              return <RubricCategoryUI props={propz} state={statez} helpers={helperz} />;
+              return <RubricCategoryUI props={{ ...propz, baseURL: props.baseURL }} state={statez} helpers={helperz} />;
             }}
           </RubricCategoryManager>
         );
@@ -189,6 +204,10 @@ const RubricUI = ({
       setShowHelpText(!showHelpText);
     };
 
+    const toggleShowExplanations = () => {
+      setShowExplanations(!showExplanations);
+    };
+
     const content = (
       <div>
         <div className="display-flex flex-direction-column align-items-flex-end" style={{ marginBottom: '10px' }}>
@@ -208,6 +227,17 @@ const RubricUI = ({
               Show help text <Checkbox checked={showHelpText} onChange={toggleShowHelpText} />{' '}
               <CPTooltip
                 title={tooltips.admin.rubric.categoryHelpText}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
+          ) : null}
+          {showExplanationsCheckbox ? (
+            <div>
+              Show explanation editors <Checkbox checked={showExplanations} onChange={toggleShowExplanations} />{' '}
+              <CPTooltip
+                title={tooltips.admin.rubric.explanations}
                 infoIcon={true}
                 hideThisOnHideTips={true}
                 iconStyle={{ paddingLeft: 5 }}
@@ -245,33 +275,35 @@ const RubricUI = ({
     );
 
     return (
-      <CPAdminRubric
-        actions={actions}
-        title="Rubric"
-        content={content}
-        goBack={null}
-        isEmpty={state.rubricCategories.length === 0}
-        emptyNode={
-          <Empty
-            imageStyle={{
-              height: 60,
-            }}
-            description={<span>No rubric yet</span>}
-          >
-            <CPButton cpType="primary" onClick={addRubricCategory}>
-              Create a category
-            </CPButton>
-          </Empty>
-        }
-        breadcrumbs={
-          <Breadcrumb>
-            {props.breadcrumbs}
-            <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item>
-            <Breadcrumb.Item>Edit rubric</Breadcrumb.Item>
-          </Breadcrumb>
-        }
-        titleInfo={tooltips.admin.rubric.title}
-      />
+      <span>
+        <CPAdminRubric
+          actions={actions}
+          title="Rubric"
+          content={content}
+          goBack={null}
+          isEmpty={state.rubricCategories.length === 0}
+          emptyNode={
+            <Empty
+              imageStyle={{
+                height: 60,
+              }}
+              description={<span>No rubric yet</span>}
+            >
+              <CPButton cpType="primary" onClick={addRubricCategory}>
+                Create a category
+              </CPButton>
+            </Empty>
+          }
+          breadcrumbs={
+            <Breadcrumb>
+              {props.breadcrumbs}
+              <Breadcrumb.Item key={props.assignment.name}>{props.assignment.name}</Breadcrumb.Item>
+              <Breadcrumb.Item key="Edit rubric">Edit rubric</Breadcrumb.Item>
+            </Breadcrumb>
+          }
+          titleInfo={tooltips.admin.rubric.title}
+        />
+      </span>
     );
   } else {
     return <Loading />;

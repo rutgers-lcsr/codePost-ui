@@ -144,6 +144,12 @@ const ADMIN_RUBRIC_CATEGORYHELPTEXT = (
     It will appear alongside the rubric category in the Code Console.
   </div>
 );
+const ADMIN_RUBRIC_EXPLANATIONS = (
+  <div>
+    An optional textarea that allows you to explain a rubric comment to students. If defined, students will see a rubric
+    comment's explanation instead of its text. Graders will always see the rubric comment's text.
+  </div>
+);
 const ADMIN_RUBRIC_DEDUCTION = 'The deduction (or addition) associated with this comment';
 const ADMIN_RUBRIC_INSTANCES = 'The comments that apply this rubric comment';
 const ADMIN_RUBRIC_CATEGORYUP = 'Move this category up';
@@ -289,6 +295,7 @@ export const tooltips = {
       categoryUp: ADMIN_RUBRIC_CATEGORYUP,
       categoryDown: ADMIN_RUBRIC_CATEGORYDOWN,
       categoryPointLimit: ADMIN_RUBRIC_CATEGORYPOINTLIMIT,
+      explanations: ADMIN_RUBRIC_EXPLANATIONS,
       title: ADMIN_RUBRIC_TITLE,
       categoryHelpText: ADMIN_RUBRIC_CATEGORYHELPTEXT,
     },

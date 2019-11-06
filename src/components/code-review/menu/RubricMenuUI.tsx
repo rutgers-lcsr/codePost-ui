@@ -52,6 +52,9 @@ interface IRubricMenuUIProps extends IRubricManagerProps {
   /* if true, simulate rubric save */
   demoMode: boolean;
 
+  /* decides whether to show text or explanations */
+  showExplanations: boolean;
+
   handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
   hasActiveComment: boolean;
   toggleEditRubricMode: () => void;
@@ -189,6 +192,7 @@ const RubricMenuUI = ({
               editRubricMode: props.editRubricMode,
               turnOnReload: props.turnOnReload,
               turnOffReload: props.turnOffReload,
+              showExplanations: props.showExplanations,
             };
             return <RubricMenuCategoryUI props={propsz} state={statez} helpers={helperz} />;
           }}

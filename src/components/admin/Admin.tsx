@@ -59,9 +59,6 @@ import { tooltips } from '../core/tooltips';
 
 /**********************************************************************************************************************/
 
-// 5 minute interval for automatic reload
-const LOADING_INTERVAL = 300000;
-
 interface IAdminState {
   /**** UI control data ****/
   onboardingModalVisible: boolean;
@@ -102,9 +99,6 @@ const formatCourseURL = (course: CourseType) => {
 };
 
 class Admin extends React.Component<IComponentProps, IAdminState> {
-  // @ts-ignore
-  private interval: number;
-
   public constructor(props: IComponentProps) {
     super(props);
 
@@ -152,16 +146,6 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
   public componentDidMount() {
     document.title = 'codePost - Admin Console';
-
-    this.interval = window.setInterval(() => {
-      if (this.props.currentCourse) {
-        this.loadAllCourseData(this.props.currentCourse);
-      }
-    }, LOADING_INTERVAL);
-  }
-
-  public componentWillUnmount() {
-    clearInterval(this.interval);
   }
 
   /***********************************************************************************
@@ -1152,7 +1136,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
             render={(props: any) => (
               <ManageAssignments
                 {...props}
-                key={+new Date()}
+                key="assignments"
                 loadComplete={
                   this.state.submissionsLoadComplete &&
                   this.state.assignmentsLoadComplete &&
