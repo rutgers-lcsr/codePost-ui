@@ -383,7 +383,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
   };
 
   if (!props.editRubricMode) {
-    const canShowExplanation = props.showExplanation && props.explanation;
+    const canShowExplanation = props.showExplanation && props.explanation !== undefined && props.explanation.length > 0;
     return (
       <div
         style={{
