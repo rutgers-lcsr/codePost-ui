@@ -1427,6 +1427,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             isStudent={this.state.isStudent}
             toggleShowExplanations={this.toggleShowExplanations}
             showExplanations={this.state.showExplanations}
+            hasExplanations={Object.values(this.state.rubricComments)
+              .flat()
+              .some((el) => el.explanation)}
           />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
         ];
@@ -1500,6 +1503,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             isStudent={this.state.isStudent}
             toggleShowExplanations={this.toggleShowExplanations}
             showExplanations={this.state.showExplanations}
+            hasExplanations={Object.values(this.state.rubricComments)
+              .flat()
+              .some((el) => el.explanation)}
           />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
         ];
@@ -1535,6 +1541,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             isStudent={this.state.isStudent}
             toggleShowExplanations={this.toggleShowExplanations}
             showExplanations={this.state.showExplanations}
+            hasExplanations={Object.values(this.state.rubricComments)
+              .flat()
+              .some((el) => el.explanation)}
           />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
           <StatusTags
