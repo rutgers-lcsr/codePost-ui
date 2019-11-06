@@ -36,6 +36,7 @@ interface IRubricMenuCategoryUIProps extends IRubricCategoryManagerProps {
   editRubricMode: boolean;
   turnOnReload: () => void;
   turnOffReload: () => void;
+  showExplanations: boolean;
 }
 
 const RubricMenuCategoryUI = ({
@@ -52,7 +53,11 @@ const RubricMenuCategoryUI = ({
   const buildCommentRows = (rubricCommentz: RubricCommentType[], commentMap: { [id: number]: RubricCommentType }) => {
     return rubricCommentz
       .filter((rubricComment: RubricCommentType) => {
-        return rubricComment.text.toUpperCase().includes(props.searchTerm.toUpperCase());
+        if (props.showExplanations && rubricComment.explanation && !props.editRubricMode) {
+          return rubricComment.explanation.toUpperCase().includes(props.searchTerm.toUpperCase());
+        } else {
+          return rubricComment.text.toUpperCase().includes(props.searchTerm.toUpperCase());
+        }
       })
       .map((rubricComment) => {
         const editing = rubricComment.id < 0 || props.editingStatuses[rubricComment.id] ? true : false;
@@ -126,6 +131,8 @@ const RubricMenuCategoryUI = ({
                 assignment={props.assignment}
                 linkedComments={linkedComments}
                 editRubricMode={props.editRubricMode}
+                showExplanation={props.showExplanations}
+                explanation={rubricComment.explanation}
               />
             </Menu.Item>
           );
@@ -188,6 +195,8 @@ const RubricMenuCategoryUI = ({
                 assignment={props.assignment}
                 linkedComments={null}
                 editRubricMode={props.editRubricMode}
+                showExplanation={props.showExplanations}
+                explanation={rubricComment.explanation}
               />
             </Menu.Item>
           );
@@ -355,6 +364,8 @@ interface IRubricMenuCommentElementProps {
   assignment: any;
   linkedComments: React.ReactNode;
   editRubricMode: boolean;
+  showExplanation: boolean;
+  explanation?: string;
 }
 
 const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
@@ -381,7 +392,11 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
         className="rubric-row--active"
         onClick={onClick}
       >
-        <InlineMarkdown source={props.text.length === 0 ? '-' : props.text} />
+        <InlineMarkdown
+          source={
+            props.text.length === 0 ? '-' : props.showExplanation && props.explanation ? props.explanation : props.text
+          }
+        />
         <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
       </div>
     );
