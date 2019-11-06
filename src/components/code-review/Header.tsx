@@ -31,7 +31,7 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/comm
 
 import CodeConsole from './CodeConsole';
 
-import useHotkeys, { F_KEY, MINUS_KEY, PLUS_KEY, P_KEY, J_KEY } from './useHotkeys';
+import useHotkeys, { F_KEY, MINUS_KEY, PLUS_KEY, P_KEY, T_KEY } from './useHotkeys';
 
 import useWindowSize from '../core/useWindowSize';
 
@@ -638,7 +638,7 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   useHotkeys(P_KEY, props.claimSubmission, true);
-  useHotkeys(J_KEY, props.toggleShowExplanations, true);
+  useHotkeys(T_KEY, props.toggleShowExplanations, true);
 
   const groupStyle = {
     padding: '5px 20px',
@@ -681,7 +681,7 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
       {props.isStudent ? null : (
         <Menu.Item key="explanations" style={itemStyle} className="header-menu" onClick={props.toggleShowExplanations}>
           Show rubric comment {props.showExplanations ? 'text' : ' explanations'}{' '}
-          <span style={{ color: '#ccc' }}>[{osControlKey()} shift j]</span>
+          <span style={{ color: '#ccc' }}>[{osControlKey()} shift t]</span>
         </Menu.Item>
       )}
       <Menu.Item key="setting:3" style={itemStyle} className="header-menu" onClick={openIntercom}>
