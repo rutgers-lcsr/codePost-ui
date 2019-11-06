@@ -1091,6 +1091,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           comments: [],
           pointDelta: 1,
           sortKey: 0,
+          explanation: '',
         },
         {
           id: 2,
@@ -1099,6 +1100,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           comments: [],
           pointDelta: 1,
           sortKey: 1,
+          explanation: '',
         },
         {
           id: 3,
@@ -1107,6 +1109,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           comments: [],
           pointDelta: 1,
           sortKey: 2,
+          explanation: '',
         },
       ],
       2: [
@@ -1117,6 +1120,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           comments: [],
           pointDelta: 2,
           sortKey: 0,
+          explanation: '',
         },
         {
           id: 5,
@@ -1125,6 +1129,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           comments: [],
           pointDelta: 1,
           sortKey: 0,
+          explanation: '',
         },
       ],
     };

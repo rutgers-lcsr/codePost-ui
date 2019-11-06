@@ -365,7 +365,7 @@ interface IRubricMenuCommentElementProps {
   linkedComments: React.ReactNode;
   editRubricMode: boolean;
   showExplanation: boolean;
-  explanation?: string;
+  explanation: string;
 }
 
 const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
@@ -383,7 +383,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
   };
 
   if (!props.editRubricMode) {
-    const canShowExplanation = props.showExplanation && props.explanation !== undefined && props.explanation.length > 0;
+    const canShowExplanation = props.showExplanation && props.explanation.length > 0;
     return (
       <div
         style={{
@@ -394,7 +394,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
         onClick={onClick}
       >
         <InlineMarkdown
-          source={props.text.length === 0 ? '-' : canShowExplanation ? props.explanation! : props.text}
+          source={props.text.length === 0 ? '-' : canShowExplanation ? props.explanation : props.text}
           em={canShowExplanation}
         />
         <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
