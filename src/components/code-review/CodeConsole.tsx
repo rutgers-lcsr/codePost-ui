@@ -121,6 +121,7 @@ interface ICodeConsoleState {
   commentCounter: number;
 
   rubricReload?: number;
+  noSave?: boolean;
 }
 
 export interface ICodeConsoleProps {
@@ -435,6 +436,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       simulatingStudent = true;
     }
 
+    let noSave = false;
+    if (values.noSave !== undefined) {
+      noSave = true;
+    }
+
     // Everything we need to load
     let submission;
     let assignment;
@@ -479,6 +485,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         // then store it in state
         this.setState({
+          noSave,
           assignment,
           course,
           readOnlySubmission: submission,
@@ -544,6 +551,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         this.setState(
           {
+            noSave,
             assignment,
             course,
             submission: writableSubmission,
@@ -728,7 +736,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let savedComment: CommentType = comment;
     let oldCommentIDs = this.state.oldCommentIDs;
 
-    if (!this.props.inDemoMode) {
+    if (!this.props.inDemoMode && !this.state.noSave) {
       if (comment.id < 0) {
         savedComment = await CommentIO.create(comment);
         oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
@@ -780,7 +788,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public deleteComment = async (comment: CommentType) => {
-    if (comment.id > 0 && !this.props.inDemoMode) {
+    if (comment.id > 0 && !this.props.inDemoMode && !this.state.noSave) {
       await CommentIO.delete(comment.id).then(() => this.updateSubmissionGrade());
     }
 
@@ -884,7 +892,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return;
     }
 
-    if (this.props.inDemoMode) {
+    if (this.props.inDemoMode || this.state.noSave) {
       this.setState(
         (oldState: ICodeConsoleState) => {
           // We need to update the submission object in the same way it would be updated
@@ -1244,7 +1252,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let sider: React.ReactElement[] = [];
 
     const toolbarWidgets = [];
-    if (!this.props.inDemoMode) {
+    if (!this.props.inDemoMode && !this.state.noSave) {
       const hasComments =
         this.state.selectedFile !== undefined ? this.state.comments[this.state.selectedFile.id].length > 0 : false;
 
@@ -1688,7 +1696,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 turnOffReload: this.turnOffReload,
                 canUserEdit:
                   this.isCourseAdmin(this.state.assignment) || this.state.assignment!.collaborativeRubricMode,
-                demoMode: false,
+                demoMode: this.state.noSave === true,
                 showExplanations: this.state.showExplanations,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
