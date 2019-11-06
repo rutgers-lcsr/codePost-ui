@@ -367,6 +367,22 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     return [currentFileSet, currentCommentSet];
   };
 
+  public static fileBouncer = (files: FileType[]) => {
+    const max_size_bytes = 150;
+
+    return files.map((file: FileType) => {
+      const size_bytes = new TextEncoder().encode(file.code).length;
+      if (size_bytes > max_size_bytes) {
+        return {
+          ...file,
+          code: `This file is over the codePost allowable size (${max_size_bytes /
+            1000000}MB).\n\nPlease compress the file or contact team@codepost.io.`,
+        };
+      }
+      return file;
+    });
+  };
+
   /***********************************************************************************************/
   /* Component instance
   /***********************************************************************************************/
@@ -466,6 +482,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           return a.name.localeCompare(b.name);
         });
 
+        files = CodeConsole.fileBouncer(files);
+
         selectedFile = files.find((f: FileType) => {
           return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
         });
@@ -527,6 +545,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             files,
           );
         }
+
+        files = files.sort((a, b) => {
+          return a.name.localeCompare(b.name);
+        });
+
+        files = CodeConsole.fileBouncer(files);
 
         selectedFile = files.find((f: FileType) => {
           return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
@@ -1590,6 +1614,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               rubricCategories={this.state.rubricCategories}
             />
           );
+          console.log('files', this.state.files);
 
           content = (
             <CodePanelLayout
