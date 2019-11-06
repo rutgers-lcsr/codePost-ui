@@ -142,6 +142,9 @@ export const TestDefinitions = (props: IProps) => {
   };
 
   /******************************* Return  ****************************/
+  if (!props.env || !props.env.language) {
+    return <div>There is no environment defined. Please set it up in the Environment tab before creating tests</div>;
+  }
   switch (panel) {
     case DETAIL_TYPE.ViewSource:
       return (
