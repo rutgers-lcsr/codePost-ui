@@ -9,6 +9,7 @@ import * as React from 'react';
 import { Breadcrumb } from 'antd';
 
 /* other library imports */
+import { RouteComponentProps } from 'react-router';
 import { Route, Link } from 'react-router-dom';
 
 /* codePost imports */
@@ -61,14 +62,11 @@ export interface IManageAssignmentsProps {
 
   /* user data */
   user: UserType;
-
-  location: any;
-  match: any;
 }
 
 /**********************************************************************************************************************/
 
-const ManageAssignments = (props: IManageAssignmentsProps) => {
+const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps) => {
   if (!props.loadComplete) {
     return <Loading />;
   }
@@ -104,7 +102,12 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
                   shouldLoadFeedback={true}
                 >
                   {(params: IRubricManagerParams) => {
-                    const propz = { ...params.props, breadcrumbs: breadcrumbs };
+                    const propz = {
+                      ...params.props,
+                      breadcrumbs: breadcrumbs,
+                      baseURL: `${props.match.url}/${encodedName}/rubric`,
+                      history: props.history,
+                    };
                     return <RubricUI props={propz} state={params.state} helpers={params.helpers} />;
                   }}
                 </RubricManager>

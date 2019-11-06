@@ -132,6 +132,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
         commentList.push({
           id: commentID,
           text: newComment.text,
+          explanation: '', // FIXME
           pointDelta: newComment.pointDelta,
           category: categoryPayload.id,
           comments: [],
