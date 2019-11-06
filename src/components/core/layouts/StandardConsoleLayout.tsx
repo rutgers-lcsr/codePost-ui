@@ -65,7 +65,13 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
       const submissionInfo = document.getElementById('submission-info');
       const rubricMenuTitle = document.getElementById('rubric-menu-title');
 
-      if (fileMenu !== null && rubricMenu !== null && rubricMenuTitle !== null && submissionInfo !== null) {
+      // No rubric menu ==> Student View
+      if (rubricMenu === null && fileMenu !== null && submissionInfo !== null) {
+        const fileHeaderHeight = 40;
+        const fileMenuMaxHeight = window.innerHeight - submissionInfo.getBoundingClientRect().bottom - fileHeaderHeight;
+        fileMenu.style.setProperty('max-height', `${fileMenuMaxHeight}px`);
+        // Rubric menu ==> Grader View
+      } else if (rubricMenu !== null && rubricMenuTitle !== null && fileMenu !== null && submissionInfo !== null) {
         // Don't let the file menu take up more than half of the vertical space
         // allowable for files and rubric
         const fileMenuMaxHeight =

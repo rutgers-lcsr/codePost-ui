@@ -66,7 +66,7 @@ const emailRegex = new RegExp(
 );
 
 // Regex match for new organizations.
-const organizationRegex = /^[a-zA-Z]+[a-zA-Z\s\.\-\_]*$/;
+const organizationRegex = /^.*$/;
 /* eslint-enable no-useless-escape */
 
 interface IState {
