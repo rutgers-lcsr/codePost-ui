@@ -19,18 +19,23 @@ def TestCase():
     return TestOutput(passed=False, logs="Test failed.")
 `;
 export const JAVA_UNIT_TEMPLATE = `
-// To call a student's method, call the Class and Method: <Class>.<Method>
-// Example: Calculator.add(1,2)
+// Put your imports here
 
-public static TestOutput TestCase() {
-  int a = 1;
-  if (a > 0) {
-    TestOutput passed = new TestOutput(true, "good job");
+class Test() {
+  TestOutput Test() {
+    // Your code goes here. It must return a TestOutput object
+    // To call a student's method, call the Class and Method: <Class>.<Method>
+    // Example: Calculator.add(1,2)
+
+    int a = 1;
+    if (a > 0) {
+      TestOutput passed = new TestOutput(true, "good job");
       return passed;
-  }
-  else {
-    TestOutput failed = new TestOutput(false, "base job");
-    return failed;
+    }
+    else {
+      TestOutput failed = new TestOutput(false, "base job");
+      return failed;
+    }
   }
 };
 `;
