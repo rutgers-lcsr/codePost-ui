@@ -4,18 +4,22 @@ import { Icon, Input, Popover } from 'antd';
 interface IResultProps {
   passed: boolean | null;
   log: string | null;
+  isError: boolean;
   minimalMode?: boolean;
   iconMode?: boolean;
 }
 
 export const TestResult = (props: IResultProps) => {
-  const color = props.passed ? '#24be85' : 'red';
+  const color = props.passed ? '#24be85' : props.isError ? 'red' : 'orange';
+  const iconStyle = { color: color, fontSize: 16 };
   const icon = props.passed ? (
-    <Icon style={{ color: color, fontSize: 16 }} type="check-circle" />
+    <Icon style={iconStyle} type="check-circle" />
+  ) : props.isError ? (
+    <Icon style={iconStyle} type="exclamation-circle" />
   ) : (
-    <Icon style={{ color: 'red', fontSize: 16 }} type="exclamation-circle" />
+    <Icon style={iconStyle} type="close-circle" />
   );
-  const text = props.passed ? 'Passed' : 'Failed';
+  const text = props.passed ? 'Passed' : props.isError ? 'Error' : 'Failed';
 
   const passElem = (
     <div style={{ color: color, fontSize: 20 }}>
