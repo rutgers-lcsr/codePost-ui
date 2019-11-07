@@ -7,7 +7,6 @@ import { Button, Icon, Modal, Radio, Select } from 'antd';
 /* codePost object imports  */
 import { SolutionFileType } from '../../../../../../../infrastructure/autograder/solutionFile';
 import { SubmissionType } from '../../../../../../../infrastructure/submission';
-
 import { File, FileType } from '../../../../../../../infrastructure/file';
 
 interface IProps {
@@ -19,14 +18,12 @@ interface IProps {
 const { Option } = Select;
 
 export const CodeSwitcher = (props: IProps) => {
+  /******************************* State Variables ****************************/
   const [visible, setVisible] = useState(false);
   const [optionIndex, setOptionIndex] = useState(0);
   const [submissionIndex, setSubmissiionIndex] = useState(-1);
 
-  /************************** State Change Functions ****************************/
-  const toggleVisible = () => {
-    setVisible(!visible);
-  };
+  /************************** API / State Change Functions ****************************/
 
   const setSubmission = async (submission: SubmissionType) => {
     const filePromises = submission.files.map((f) => {
@@ -36,13 +33,14 @@ export const CodeSwitcher = (props: IProps) => {
     props.setFiles(files, submission);
   };
 
+  /************************** State Change Functions ****************************/
+  const toggleVisible = () => {
+    setVisible(!visible);
+  };
+
   const setSolutionFiles = () => {
     props.setFiles(props.solutionFiles, undefined);
   };
-
-  const submissionOptions = props.submissions.map((sub) => {
-    return <Option value={sub.id}>{`${sub.students}'s submissions`}</Option>;
-  });
 
   const onChange = (e: any) => {
     setOptionIndex(e.target.value);
@@ -66,7 +64,12 @@ export const CodeSwitcher = (props: IProps) => {
     toggleVisible();
   };
 
-  /***************************** Return ****************************************/
+  /************************** Return ***********************************/
+
+  const submissionOptions = props.submissions.map((sub) => {
+    return <Option value={sub.id}>{`${sub.students}'s submissions`}</Option>;
+  });
+
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
       <Icon onClick={toggleVisible} type="edit" />

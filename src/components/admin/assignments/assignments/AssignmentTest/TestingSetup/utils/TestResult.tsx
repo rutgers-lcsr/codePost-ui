@@ -1,6 +1,10 @@
+/* react imports  */
 import React from 'react';
+
+/* library imports  */
 import { Icon, Popover } from 'antd';
 
+/* codePost other imports  */
 import { CodeWindow } from './CodeWindow';
 
 interface IResultProps {
@@ -12,6 +16,8 @@ interface IResultProps {
 }
 
 export const TestResult = (props: IResultProps) => {
+  // ************************** Return utils  ******************************
+
   const color = props.passed ? '#24be85' : props.isError ? 'red' : 'orange';
   const iconStyle = { color: color, fontSize: 16 };
   const icon = props.passed ? (
@@ -35,6 +41,7 @@ export const TestResult = (props: IResultProps) => {
     </div>
   );
 
+  // ************************** Return   ******************************
   if (props.iconMode) {
     return (
       <Popover

@@ -10,7 +10,6 @@ import { HelperFileType } from '../../../../../../../infrastructure/autograder/h
 
 interface IUploadProps {
   files: (SolutionFileType | HelperFileType)[];
-  // FIXME: FILE ANY
   addFile: (name: string, code: string) => Promise<void>;
   deleteFile: (id: number) => Promise<void>;
   icon?: boolean;
