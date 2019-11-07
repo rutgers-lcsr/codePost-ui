@@ -46,7 +46,6 @@ export const TestDefinitions = (props: IProps) => {
   /******************************* State Variables ****************************/
   const [casesByCategory, setCasesByCategory] = useState<TestCasesByCategory>({});
   const [categories, setCategories] = useState<TestCategoryType[]>([]);
-  const [newTestCounter, setNewTestCounter] = useState(-1);
   const [currentCategory, setCurrentCategory] = useState('');
   const [panel, setPanel] = useState<DETAIL_TYPE>(DETAIL_TYPE.EditTests);
 
@@ -90,6 +89,30 @@ export const TestDefinitions = (props: IProps) => {
     setCasesByCategory(newCases);
   };
 
+  const addTest = async (language: string | null, category: number) => {
+    // If a language doesn't have native support, default to a bash unit test
+    const hasNativeSupport = language && hasNativeTestSupport(language);
+    const dummyTestCase = {
+      id: -1,
+      sortKey: 0,
+      testCategory: category,
+      description: 'New Test',
+      type: hasNativeSupport ? 'io' : 'bash-unit',
+      pointsPass: 0,
+      pointsFail: 0,
+      text: '',
+      function: '',
+      fileName: '',
+      expectedOutput: '',
+      input: '',
+      checkReturn: true,
+      modified: '',
+    };
+
+    const newTestCase = await saveTest(dummyTestCase);
+    addTestCase(newTestCase);
+  };
+
   /******************************* State Change Functions  ****************************/
 
   const replaceTestCase = (newCase: TestCaseType, oldCase: TestCaseType) => {
@@ -112,29 +135,6 @@ export const TestDefinitions = (props: IProps) => {
     const newCases = { ...casesByCategory };
     newCases[newCase.testCategory] = [...casesByCategory[newCase.testCategory], newCase];
     setCasesByCategory(newCases);
-  };
-
-  const addTest = (language: string | null, category: number) => {
-    // If a language doesn't have native support, default to a bash unit test
-    const hasNativeSupport = language && hasNativeTestSupport(language);
-    const dummyTestCase = {
-      id: newTestCounter,
-      sortKey: 0,
-      testCategory: category,
-      description: 'New Test',
-      type: hasNativeSupport ? 'io' : 'bash-unit',
-      pointsPass: 0,
-      pointsFail: 0,
-      text: '',
-      function: '',
-      fileName: '',
-      expectedOutput: '',
-      input: '',
-      checkReturn: true,
-      modified: '',
-    };
-    setNewTestCounter(newTestCounter - 1);
-    addTestCase(dummyTestCase);
   };
 
   const changeIndex = (e: ClickParam) => {

@@ -285,11 +285,11 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
           <Row style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               onClick={this.props.saveTest.bind(this, this.state.commandText)}
-              disabled={this.props.isRunning}
+              loading={this.props.isRunning}
               style={{ marginRight: 10 }}
               type="primary"
             >
-              {this.props.testCase.id > 0 ? 'Save and Run' : 'Save'}
+              Save and Run
             </Button>
           </Row>
           {this.props.testOutput && <TestResult log={outputJSON.log} passed={outputJSON.passed} />}
