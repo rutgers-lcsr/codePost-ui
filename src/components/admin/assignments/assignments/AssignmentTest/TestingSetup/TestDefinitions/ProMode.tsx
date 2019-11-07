@@ -77,7 +77,10 @@ export const ProMode = (props: ProModeProps) => {
   /************************** State Change Functions ****************************/
 
   const runTest = async () => {
-    const result = await TestCategory.run({ id: props.currentCategory.id });
+    const result = await TestCategory.run({
+      id: props.currentCategory.id,
+      submission: submission ? submission.id : null,
+    });
     setOutputs(result);
   };
 

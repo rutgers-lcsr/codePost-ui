@@ -37,6 +37,9 @@ const TestCategoryPatchV = t.intersection(
   'TestCategory',
 );
 
+//  Defail Route : Run
+const TestInputs = t.intersection([GenericObject, t.type({ submission: t.union([t.number, t.null]) })]);
+
 const TestOutputs = t.array(
   t.type({
     id: t.number,
@@ -55,7 +58,7 @@ export class TestCategory {
   public static delete = deleteObject(TestCategoryV, 'testCategories');
   public static update = updateObject(TestCategoryV, TestCategoryPatchV, 'testCategories');
 
-  public static run = createObjectDetail(TestOutputs, GenericObject, 'testCategories', 'run');
+  public static run = createObjectDetail(TestOutputs, TestInputs, 'testCategories', 'run');
 
   public static sort = (categories: TestCategoryType[]): TestCategoryType[] => {
     const compare = (a: TestCategoryType, b: TestCategoryType) => {
