@@ -36,10 +36,10 @@ export const TestResultPopover = (props: IProps) => {
   });
 
   const passedItems = passedTests.map((test) => {
-    return <TestResult passed={test.passed} log={test.logs} />;
+    return <TestResult passed={test.passed} log={test.logs} isError={test.isError} />;
   });
   const failedItems = failedTests.map((test) => {
-    return <TestResult passed={test.passed} log={test.logs} />;
+    return <TestResult passed={test.passed} log={test.logs} isError={test.isError} />;
   });
   const notRunItems = testsNotRun.map((tc) => {
     return <div>Not Run: {tc.description}</div>;

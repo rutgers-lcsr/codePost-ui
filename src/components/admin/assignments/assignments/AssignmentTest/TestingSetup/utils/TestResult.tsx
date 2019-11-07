@@ -1,5 +1,7 @@
 import React from 'react';
-import { Icon, Input, Popover } from 'antd';
+import { Icon, Popover } from 'antd';
+
+import { CodeWindow } from './CodeWindow';
 
 interface IResultProps {
   passed: boolean | null;
@@ -27,7 +29,11 @@ export const TestResult = (props: IResultProps) => {
     </div>
   );
 
-  const logElem = props.log !== null && <Input.TextArea value={props.log} autosize={{ minRows: 4, maxRows: 8 }} />;
+  const logElem = props.log && (
+    <div style={{ maxHeight: 300 }}>
+      <CodeWindow code={props.log} name={'.txt'} theme="dark" />
+    </div>
+  );
 
   if (props.iconMode) {
     return (

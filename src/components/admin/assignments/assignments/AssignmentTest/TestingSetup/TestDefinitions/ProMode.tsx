@@ -120,7 +120,7 @@ export const ProMode = (props: ProModeProps) => {
   const testCases =
     outputs.length > 0
       ? outputs.map((t) => {
-          return <TestCaseItem description={t.description} passed={t.passed} logs={t.log} />;
+          return <TestCaseItem description={t.description} passed={t.passed} logs={t.log} isError={t.isError} />;
         })
       : props.testCases.map((t) => {
           return <TestCaseItem description={t.description} />;
@@ -152,6 +152,7 @@ export const ProMode = (props: ProModeProps) => {
 interface ITestCaseItemProps {
   description: string;
   passed?: boolean;
+  isError?: boolean;
   logs?: string;
 }
 
@@ -170,7 +171,9 @@ const TestCaseItem = (props: ITestCaseItemProps) => {
       }}
     >
       <div style={{ marginRight: 10, fontSize: 16, fontWeight: 500, color: 'grey' }}>{props.description}</div>
-      {props.passed !== undefined && <TestResult log={props.logs || null} passed={props.passed} iconMode={true} />}
+      {props.passed !== undefined && (
+        <TestResult log={props.logs || null} passed={props.passed} isError={props.isError || false} iconMode={true} />
+      )}
     </div>
   );
 };
