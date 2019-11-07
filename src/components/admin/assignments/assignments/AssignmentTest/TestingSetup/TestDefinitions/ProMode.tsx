@@ -70,7 +70,6 @@ export const ProMode = (props: ProModeProps) => {
     }
   };
   /************************** State Change Functions ****************************/
-
   const runTest = async () => {
     setRunning(true);
     const result = await TestCategory.run({
@@ -86,7 +85,7 @@ export const ProMode = (props: ProModeProps) => {
     setSubmission(submission);
   };
 
-  /************************** Return helpers ****************************/
+  /************************** Return utils ****************************/
   if (!bash) {
     return <Spin />;
   }

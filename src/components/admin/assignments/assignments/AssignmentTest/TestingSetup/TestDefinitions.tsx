@@ -20,10 +20,10 @@ import ReactMarkdown from 'react-markdown';
 import { TestItem } from './TestDefinitions/TestItem';
 import { ProMode } from './TestDefinitions/ProMode';
 import { ViewSource } from './TestDefinitions/ViewSource';
+import { AddCategoryModal } from './TestDefinitions/AddCategoryModal';
 
 /* codePost utils imports */
 import { fetchTestData, TestCasesByCategory } from '../testUtils';
-
 import { hasNativeTestSupport } from './utils/languageUtils';
 
 const { Panel } = Collapse;
@@ -299,54 +299,4 @@ export const TestDefinitions = (props: IProps) => {
         <AddCategoryModal addCategory={addCategory} />
       );
   }
-};
-
-interface IUploadProps {
-  addCategory: (name: string, proMode: boolean) => Promise<void>;
-}
-
-const AddCategoryModal = (props: IUploadProps) => {
-  /******************************* State Variables ****************************/
-  const [visible, setVisible] = useState(false);
-  const [name, setName] = useState('');
-  const [proMode, setProMode] = useState(false);
-
-  /******************************* API / State Change Functions ****************************/
-  const onSave = async () => {
-    await props.addCategory(name, proMode);
-    setName('');
-    setVisible(!visible);
-  };
-
-  /******************************* State Change Functions ****************************/
-  const toggleVisible = () => {
-    setVisible(!visible);
-  };
-
-  const onChange = (e: any) => {
-    setName(e.target.value);
-  };
-
-  /******************************* Return *****************************************/
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <Button onClick={toggleVisible} type="primary" style={{ marginTop: 20 }}>
-        Add Test Category
-      </Button>
-      <Modal
-        visible={visible}
-        title="Add new test category"
-        onCancel={toggleVisible}
-        onOk={onSave}
-        width={400}
-        style={{ padding: 25 }}
-      >
-        <Input onChange={onChange} value={name} placeholder="Category Name" />
-        <Row>
-          Category is pro mode:
-          <Switch onChange={setProMode} checked={proMode} />
-        </Row>
-      </Modal>
-    </div>
-  );
 };

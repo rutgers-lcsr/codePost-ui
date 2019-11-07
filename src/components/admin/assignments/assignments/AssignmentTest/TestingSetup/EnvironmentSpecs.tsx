@@ -8,8 +8,10 @@ import { Button, Collapse, Divider, Select, Typography } from 'antd';
 import { AssignmentPatchType, AssignmentType } from '../../../../../../infrastructure/assignment';
 import { Environment, EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
 
+/* codePost component imports */
 import { CodeWindow } from './utils/CodeWindow';
 
+/* codePost util imports */
 import { languages, hasDependenciesSupport } from './utils/languageUtils';
 
 const { Option } = Select;

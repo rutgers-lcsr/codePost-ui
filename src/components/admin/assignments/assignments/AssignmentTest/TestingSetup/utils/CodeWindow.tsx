@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import { Button } from 'antd';
 
-// codePost other imports
+// codePost util imports
 import { codeMirorLanguageMap } from './languageUtils';
 
 type themeType = 'light' | 'dark';

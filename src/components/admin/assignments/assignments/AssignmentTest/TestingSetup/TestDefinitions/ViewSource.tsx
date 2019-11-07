@@ -33,11 +33,47 @@ interface ViewSourceProps {
 // FIXME: This component shares the same basic structure as ProMode.
 // Abstract out the menu codeviewer + code switcher into a base component
 export const ViewSource = (props: ViewSourceProps) => {
+  /******************************** State variables ****************************/
   const [loading, setLoading] = useState(false);
   const [tests, setTests] = useState<TestTemplateType[]>([]);
   const [main, setMain] = useState('');
   const [currentFiles, setCurrentFiles] = useState<(SolutionFileType | FileType)[]>(props.solutions);
 
+  /******************************** Set up ****************************/
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      const source: TestsSourceType = await Environment.eject(props.env.id);
+      setMain(source.main);
+      setTests(source.templates);
+      setLoading(false);
+    };
+    fetchData();
+  }, [props.env.id]);
+
+  /******************************** Utils ****************************/
+  // FIXME: Turn zipping of a directory into a generic helper function
+  const download = () => {
+    const zip = new JSZip();
+    zip.file('main.sh', main);
+    let dir = zip.folder('tests');
+    tests.map((test) => {
+      dir.file(`Test${test.id}${test.extension}`, test.code);
+    });
+    dir = zip.folder('files');
+    currentFiles.map((file) => {
+      dir.file(file.name, file.code);
+    });
+    props.helpers.map((file) => {
+      dir.file(file.name, file.code);
+    });
+
+    zip.generateAsync({ type: 'blob' }).then(function(content: any) {
+      saveAs(content, `test-directory.zip`);
+    });
+  };
+
+  /******************************** Return helpers ****************************/
   const bashGroup = {
     files: [{ name: 'main.sh', code: main, canSave: false }],
     isDisabled: false,
@@ -68,40 +104,6 @@ export const ViewSource = (props: ViewSourceProps) => {
       return { code: test.code, name: `Test${test.id}${test.extension}`, canSave: false };
     }),
     isDisabled: false,
-  };
-
-  /******************************** Set up ****************************/
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      const source: TestsSourceType = await Environment.eject(props.env.id);
-      setMain(source.main);
-      setTests(source.templates);
-      setLoading(false);
-    };
-    fetchData();
-  }, [props.env.id]);
-
-  // FIXME: Turn zipping of a directory into a generic helper function
-  const download = () => {
-    const zip = new JSZip();
-    zip.file('main.sh', main);
-    let dir = zip.folder('tests');
-    tests.map((test) => {
-      dir.file(`Test${test.id}${test.extension}`, test.code);
-    });
-    dir = zip.folder('files');
-    currentFiles.map((file) => {
-      dir.file(file.name, file.code);
-    });
-    dir = zip.folder('helpers');
-    props.helpers.map((file) => {
-      dir.file(file.name, file.code);
-    });
-
-    zip.generateAsync({ type: 'blob' }).then(function(content: any) {
-      saveAs(content, `test-directory.zip`);
-    });
   };
 
   /************************** Return  ****************************/

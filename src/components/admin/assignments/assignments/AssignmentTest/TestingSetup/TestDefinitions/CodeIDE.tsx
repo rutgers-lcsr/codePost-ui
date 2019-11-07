@@ -1,7 +1,11 @@
+/* react imports */
 import React, { useState } from 'react';
+
+/* library imports */
 import { Layout, Menu } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
+/* codePost component imports */
 import { CodeWindow } from '../utils/CodeWindow';
 
 const { SubMenu } = Menu;
@@ -26,12 +30,15 @@ interface IProps {
 }
 
 export const CodeIDE = (props: IProps) => {
+  /******************************* State Variables ****************************/
   const [index, setIndex] = useState('0-0');
 
+  /******************************* State Change Functions  ****************************/
   const changeIndex = (e: ClickParam) => {
     setIndex(e.key);
   };
 
+  /******************************* Return helpers  ****************************/
   const groupElems = props.groups.map((group, groupIndex) => {
     const items = group.files.map((file, fileIndex) => {
       return (
@@ -61,6 +68,7 @@ export const CodeIDE = (props: IProps) => {
     return group.subMenuTitle ? groupIndex.toString() : '';
   });
 
+  /******************************* Return  ****************************/
   return (
     <div
       id="Autograder"

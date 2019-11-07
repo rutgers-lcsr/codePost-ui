@@ -9,7 +9,7 @@ import { ClickParam } from 'antd/lib/menu';
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 import { HelperFileType } from '../../../../../../infrastructure/autograder/helperFile';
 
-/* codePost other imports  */
+/* codePost component imports  */
 import { CodeWindow } from './utils/CodeWindow';
 import { CodeUploader } from './utils/CodeUploader';
 
