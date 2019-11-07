@@ -18,7 +18,7 @@ import { CodeIDE } from './CodeIDE';
 import { CodeSwitcher } from '../utils/CodeSwitcher';
 import { TestResult } from '../utils/TestResult';
 
-import { fetchOrCreateBashFile } from '../../testUtils';
+import { fetchOrCreateBashFile } from '../../testFetchUtils';
 
 const { Sider } = Layout;
 
@@ -85,7 +85,7 @@ export const ProMode = (props: ProModeProps) => {
     setSubmission(submission);
   };
 
-  /************************** Return utils ****************************/
+  /************************** Return helpers ****************************/
   if (!bash) {
     return <Spin />;
   }

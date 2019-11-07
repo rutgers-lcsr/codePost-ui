@@ -11,7 +11,7 @@ import { Badge, Table, Collapse, Statistic } from 'antd';
 /* codePost imports */
 import { SubmissionTestType } from '../../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../../infrastructure/testCategory';
-import { TestCasesByCategory } from '../../admin/assignments/assignments/AssignmentTest/testUtils';
+import { TestCasesByCategory } from '../../admin/assignments/assignments/AssignmentTest/testFetchUtils';
 
 /**********************************************************************************************************************/
 

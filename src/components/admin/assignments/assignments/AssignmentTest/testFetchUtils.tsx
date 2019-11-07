@@ -9,6 +9,10 @@ import {
   StudentSubmissionType,
 } from '../../../../../infrastructure/submission';
 
+import { SolutionFile } from '../../../../../infrastructure/autograder/solutionFile';
+import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
+import { HelperFile } from '../../../../../infrastructure/autograder/helperFile';
+
 import { BashFile } from '../../../../../infrastructure/autograder/bashFile';
 
 import { BASHMODE_TEMPLATE } from './TestingSetup/utils/templates/testTemplates';
@@ -22,19 +26,45 @@ export interface TestCasesByCategory {
   [categoryID: number]: TestCaseType[];
 }
 
-//********************************** Data Fetch Utils ******************************
-export const fetchTestData = async (assignment: AssignmentType) => {
-  const categories: TestCategoryType[] = await fetchTestCategories(assignment);
-  const casesByCategory: TestCasesByCategory = await fetchTestCasesByCategory(categories);
-  return [categories, casesByCategory];
-};
-
+//********************************** Basic Fetch Utils *****************************
 // For an assignment fetch teh testCategories
 export const fetchTestCategories = async (assignment: AssignmentType) => {
   const categoryPromises = assignment.testCategories.map((id) => {
     return TestCategory.read(id);
   });
   return await Promise.all(categoryPromises);
+};
+
+export const fetchSolutionFiles = async (env: EnvironmentType) => {
+  const solutionFilePromises = env.solutionFiles.map((id) => {
+    return SolutionFile.read(id);
+  });
+  return await Promise.all(solutionFilePromises);
+};
+
+export const fetchEnvironment = async (assignment: AssignmentType) => {
+  if (assignment.environment) {
+    return await Environment.read(assignment.environment);
+  } else {
+    const payload = { id: -1, language: null, dependencies: '[]', assignment: assignment.id, compileText: '' };
+    return await Environment.create(payload);
+  }
+};
+
+export const fetchHelpers = async (env: EnvironmentType) => {
+  const promises = env.helperFiles.map((f) => {
+    return HelperFile.read(f);
+  });
+
+  const helpers = await Promise.all(promises);
+  return helpers;
+};
+
+//********************************** Complex Fetch Utils (some data processing) *****************************
+export const fetchTestData = async (assignment: AssignmentType) => {
+  const categories: TestCategoryType[] = await fetchTestCategories(assignment);
+  const casesByCategory: TestCasesByCategory = await fetchTestCasesByCategory(categories);
+  return [categories, casesByCategory];
 };
 
 // For a list of test categories, create a {categoryID: TestCase[]} object

@@ -8,7 +8,7 @@ import { Breadcrumb, Collapse, Tabs } from 'antd';
 import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
 import { SolutionFile, SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
 import { SubmissionType } from '../../../../../infrastructure/submission';
-import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
+import { EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 import { HelperFile, HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
 
 /* codePost component imports */
@@ -16,6 +16,9 @@ import CPAdminDetail from '../../../other/CPAdminDetail';
 import { EnvironmentSpecs } from './TestingSetup/EnvironmentSpecs';
 import { TestDefinitions } from './TestingSetup/TestDefinitions';
 import { FileListEditor } from './TestingSetup/FileListEditor';
+
+/* codePost util imports */
+import { fetchSolutionFiles, fetchEnvironment, fetchHelpers } from './testFetchUtils';
 
 const { TabPane } = Tabs;
 const { Panel } = Collapse;
@@ -27,32 +30,6 @@ interface IProps {
   submissions: SubmissionType[];
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
 }
-
-const getSolutionFiles = async (env: EnvironmentType) => {
-  const solutionFilePromises = env.solutionFiles.map((id) => {
-    return SolutionFile.read(id);
-  });
-  return await Promise.all(solutionFilePromises);
-};
-
-const getEnvironment = async (assignment: AssignmentType) => {
-  if (assignment.environment) {
-    return await Environment.read(assignment.environment);
-  } else {
-    const payload = { id: -1, language: null, dependencies: '[]', assignment: assignment.id, compileText: '' };
-    return await Environment.create(payload);
-  }
-};
-
-const getHelpers = async (env: EnvironmentType) => {
-  const promises = env.helperFiles.map((f) => {
-    return HelperFile.read(f);
-  });
-
-  const helpers = await Promise.all(promises);
-  return helpers;
-};
-
 enum FILE_TYPE {
   HELPER,
   SOLUTION,
@@ -68,11 +45,11 @@ export const TestingSetup = (props: IProps) => {
   /************************** Fetch data ******************************/
   useEffect(() => {
     const fetchData = async () => {
-      const currEnv = await getEnvironment(props.currentAssignment);
+      const currEnv = await fetchEnvironment(props.currentAssignment);
       setEnv(currEnv);
-      const solutionFiles = await getSolutionFiles(currEnv);
+      const solutionFiles = await fetchSolutionFiles(currEnv);
       setSolutions(solutionFiles);
-      const helpers = await getHelpers(currEnv);
+      const helpers = await fetchHelpers(currEnv);
       setHelpers(helpers);
     };
     fetchData();

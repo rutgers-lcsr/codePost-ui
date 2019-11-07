@@ -23,7 +23,7 @@ import { ViewSource } from './TestDefinitions/ViewSource';
 import { AddCategoryModal } from './TestDefinitions/AddCategoryModal';
 
 /* codePost utils imports */
-import { fetchTestData, TestCasesByCategory } from '../testUtils';
+import { fetchTestData, TestCasesByCategory } from '../testFetchUtils';
 import { hasNativeTestSupport } from './utils/languageUtils';
 
 const { Panel } = Collapse;

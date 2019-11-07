@@ -2,7 +2,7 @@
 import React from 'react';
 
 /* library imports */
-import { Input, Popover, Tabs } from 'antd';
+import { Popover, Tabs } from 'antd';
 
 /* codePost object imports */
 import { SubmissionTestType } from '../../../../../../infrastructure/submissionTest';
@@ -19,7 +19,8 @@ interface IProps {
 }
 
 export const TestResultPopover = (props: IProps) => {
-  /* FIXME: optimize the speed of this logc, instead of looping 3 times*/
+  /******************************* Return helpers ****************************/
+  /* Low important FIXME: optimize the speed of this logc, instead of looping 3 times*/
   const passedTests = props.submissionTests.filter((test) => {
     return test.passed;
   });
@@ -45,6 +46,7 @@ export const TestResultPopover = (props: IProps) => {
     return <div>Not Run: {tc.description}</div>;
   });
 
+  /******************************* Return ****************************/
   return (
     <Popover
       content={

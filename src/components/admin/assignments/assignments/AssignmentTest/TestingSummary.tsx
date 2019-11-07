@@ -15,7 +15,7 @@ import CPAdminDetail from '../../../other/CPAdminDetail';
 import { TestResultPopover } from './TestingSummary/TestResultPopover';
 
 /* codePost util imports */
-import { fetchTestData, fetchTestsBySubmission, TestsBySubmission, TestCasesByCategory } from './testUtils';
+import { fetchTestData, fetchTestsBySubmission, TestsBySubmission, TestCasesByCategory } from './testFetchUtils';
 
 interface IProps {
   submissions: SubmissionType[];
