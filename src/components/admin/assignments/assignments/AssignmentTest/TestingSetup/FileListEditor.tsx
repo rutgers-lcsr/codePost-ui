@@ -45,7 +45,7 @@ export const FileListEditor = (props: IProps) => {
   /***************************** Return ****************************************/
   return (
     <div>
-      <Layout style={{ maxHeight: 450 }}>
+      <Layout style={{ height: 650 }}>
         <Sider theme="light">
           <Menu selectedKeys={[currentIndex]} openKeys={['helpers']} mode="inline" onClick={changeIndex}>
             {menuItems}

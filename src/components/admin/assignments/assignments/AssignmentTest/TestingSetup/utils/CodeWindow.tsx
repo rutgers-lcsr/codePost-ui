@@ -59,9 +59,20 @@ export const CodeWindow = (props: IProps) => {
 
   // ******************************* Return  *******************************
   return (
-    <div style={{ fontSize: 12, minWidth: 300, position: 'relative' }}>
+    <div style={{ fontSize: 12, minWidth: 300, width: 'inherit%', position: 'relative' }}>
+      {props.onSave && (
+        <Button
+          style={{ position: 'absolute', top: -5, right: 15, zIndex: 100 }}
+          type={isEditing ? 'primary' : 'default'}
+          onClick={isEditing ? onSave : onEdit}
+          loading={isSaving}
+        >
+          {isEditing ? 'Save' : 'Edit'}
+        </Button>
+      )}
       <CodeMirror
         key={`codeMirror`}
+        className="ProMode-codeMirror"
         onBeforeChange={onBeforeChange}
         value={isEditing && props.onSave ? editedCode : props.code}
         options={{
@@ -73,16 +84,6 @@ export const CodeWindow = (props: IProps) => {
           readOnly: props.onSave && (!isEditing || isSaving),
         }}
       />
-      {props.onSave && (
-        <Button
-          style={{ position: 'absolute', zIndex: 100, bottom: 15, right: 15 }}
-          type={isEditing ? 'primary' : 'default'}
-          onClick={isEditing ? onSave : onEdit}
-          loading={isSaving}
-        >
-          {isEditing ? 'Save' : 'Edit'}
-        </Button>
-      )}
     </div>
   );
 };

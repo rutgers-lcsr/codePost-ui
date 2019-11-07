@@ -77,7 +77,8 @@ TestOutput true "Put your custom log statement here"
 
 export const BASHMODE_TEMPLATE = `
 # You can write a bash script below to output mutltiple tests
-# Each test must call TestOutput <testName (string)> <passed (boolean)> <logs (string)>
+# Each test must call TestOutput. Sytntax:
+#    TestOuput <testName (string)> <passed (boolean)> <logs (string)>
 # The testNames must be unique
 #
 # For example, to run two passed tests tests:

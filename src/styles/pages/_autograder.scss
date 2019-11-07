@@ -21,4 +21,16 @@
     margin-bottom: 0px;
     font-size: 12px;
   }
+
+  .ProMode-codeMirror {
+    .CodeMirror {
+      height: fit-content;
+    }
+  }
+}
+
+.ProMode-codeMirror {
+  .CodeMirror {
+    height: fit-content;
+  }
 }
