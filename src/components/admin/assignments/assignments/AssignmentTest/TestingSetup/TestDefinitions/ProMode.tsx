@@ -2,8 +2,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* library imports  */
-import { Button, Layout, Divider, Menu, Spin, Typography } from 'antd';
-import { ClickParam } from 'antd/lib/menu';
+import { Button, Layout, Divider, Spin } from 'antd';
 
 /* codePost object imports  */
 import { TestCategoryType, TestCategory } from '../../../../../../../infrastructure/testCategory';
@@ -15,16 +14,13 @@ import { BashFile, BashFileType } from '../../../../../../../infrastructure/auto
 import { TestCaseType } from '../../../../../../../infrastructure/testCase';
 
 /* codePost other imports  */
-import { CodeWindow } from '../utils/CodeWindow';
+import { CodeIDE } from './CodeIDE';
 import { CodeSwitcher } from '../utils/CodeSwitcher';
 import { TestResult } from '../utils/TestResult';
 
 import { fetchOrCreateBashFile } from '../../testUtils';
 
-const { Sider, Content } = Layout;
-const { SubMenu } = Menu;
-
-const { Title } = Typography;
+const { Sider } = Layout;
 
 interface ProModeProps {
   currentCategory: TestCategoryType;
@@ -36,11 +32,11 @@ interface ProModeProps {
 }
 
 export const ProMode = (props: ProModeProps) => {
-  const [currentIndex, setIndex] = useState('bash');
   const [currentFiles, setCurrentFiles] = useState<(SolutionFileType | FileType)[]>(props.solutions);
   const [outputs, setOutputs] = useState<any[]>([]);
   const [submission, setSubmission] = useState<SubmissionType | undefined>(undefined);
   const [bash, setBash] = useState<BashFileType | undefined>();
+  const [running, setRunning] = useState(false);
 
   /******************************** Set up ****************************/
   useEffect(() => {
@@ -57,17 +53,16 @@ export const ProMode = (props: ProModeProps) => {
   }, [props.currentCategory.id]);
   /******************************** API Functions ****************************/
   // Not updating anything in the database, only local state
-  const onSubmissionFileSave = (newCode: string) => {
-    const index = parseInt(currentIndex.split('-')[1], 10);
-    const newFile = { ...currentFiles[index] };
+  const onSubmissionFileSave = (fileIndex: number, newCode: string) => {
+    const newFile = { ...currentFiles[fileIndex] };
     newFile.code = newCode;
     const newFiles = [...currentFiles];
-    newFiles.splice(index, 1, newFile);
+    newFiles.splice(fileIndex, 1, newFile);
     setCurrentFiles(newFiles);
     return Promise.resolve();
   };
 
-  const onBashSave = async (newCode: string) => {
+  const onBashSave = async (index: number, newCode: string) => {
     if (bash) {
       const payload = { id: bash.id, code: newCode };
       const newBash = await BashFile.update(payload);
@@ -77,21 +72,18 @@ export const ProMode = (props: ProModeProps) => {
   /************************** State Change Functions ****************************/
 
   const runTest = async () => {
+    setRunning(true);
     const result = await TestCategory.run({
       id: props.currentCategory.id,
       submission: submission ? submission.id : null,
     });
     setOutputs(result);
+    setRunning(false);
   };
 
   const setCodeFiles = (files: SolutionFileType[] | FileType[], submission: SubmissionType | undefined) => {
     setCurrentFiles(files);
     setSubmission(submission);
-  };
-  /************************** State Change Functions ****************************/
-  const changeIndex = (e: ClickParam) => {
-    console.log(e);
-    setIndex(e.key);
   };
 
   /************************** Return helpers ****************************/
@@ -99,58 +91,29 @@ export const ProMode = (props: ProModeProps) => {
     return <Spin />;
   }
 
-  let currentCode;
-  let currentName;
-  let currentSave;
+  const bashGroup = {
+    files: [{ name: 'main.sh', ...bash }],
+    onSave: onBashSave,
+    isDisabled: false,
+  };
 
-  if (currentIndex === 'bash') {
-    currentCode = bash && bash.code;
-    currentName = 'main.sh';
-    currentSave = onBashSave;
-  } else if (currentIndex.includes('helpers-')) {
-    const index = currentIndex.split('-')[1];
-    currentCode = props.helpers[parseInt(index, 10)].code;
-    currentName = props.helpers[parseInt(index, 10)].name;
-    currentSave = undefined;
-  } else {
-    const index = currentIndex.split('-')[1];
-    currentCode = currentFiles[parseInt(index, 10)].code;
-    currentName = currentFiles[parseInt(index, 10)].name;
-    currentSave = onSubmissionFileSave;
-  }
+  const helperGroup = {
+    subMenuTitle: <div>helpers</div>,
+    files: props.helpers,
+    isDisabled: false,
+  };
 
-  const helperMenu = (
-    <SubMenu key="helpers" title={<div style={{ display: 'flex', alignItems: 'center' }}>helpers &nbsp;</div>}>
-      {props.helpers.map((file, index) => {
-        return (
-          <Menu.Item key={`helpers-${index.toString()}`} style={{ height: 'fit-content', minHeight: 40 }}>
-            <div>{file.name}</div>
-          </Menu.Item>
-        );
-      })}
-    </SubMenu>
-  );
-
-  const currentFileMenu = (
-    <SubMenu
-      key="files"
-      disabled={true}
-      title={
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          files ({submission ? submission.students : 'Solution Code'})&nbsp;
-          <CodeSwitcher solutionFiles={props.solutions} submissions={props.submissions} setFiles={setCodeFiles} />
-        </div>
-      }
-    >
-      {currentFiles.map((file, index) => {
-        return (
-          <Menu.Item key={`files-${index.toString()}`} style={{ height: 'fit-content', minHeight: 40 }}>
-            <div>{file.name}</div>
-          </Menu.Item>
-        );
-      })}
-    </SubMenu>
-  );
+  const fileGroup = {
+    subMenuTitle: (
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        files ({submission ? submission.students : 'Solution Code'})&nbsp;
+        <CodeSwitcher solutionFiles={props.solutions} submissions={props.submissions} setFiles={setCodeFiles} />
+      </div>
+    ),
+    files: currentFiles,
+    isDisabled: true,
+    onSave: onSubmissionFileSave,
+  };
 
   const testCases =
     outputs.length > 0
@@ -163,50 +126,24 @@ export const ProMode = (props: ProModeProps) => {
 
   /************************** Return  ****************************/
   return (
-    <div
-      id="Autograder"
-      style={{
-        boxShadow: 'rgba(0, 0, 0, 0.1) 0px 2px 15px 0px',
-        padding: '15px 5px',
-        margin: 5,
-        width: '95%',
-        overflow: 'auto',
-        minHeight: 'fit-content',
-      }}
-    >
-      <Layout style={{ maxHeight: 450 }}>
-        <Sider theme="light" width={240}>
-          <Menu
-            selectedKeys={[currentIndex]}
-            defaultOpenKeys={['helpers', 'files']}
-            mode="inline"
-            onClick={changeIndex}
-          >
-            <Menu.Item key={'bash'} style={{ height: 'fit-content', minHeight: 40 }}>
-              <div>{'Main.sh'}</div>
-            </Menu.Item>
-            {helperMenu}
-            {currentFileMenu}
-          </Menu>
-        </Sider>
-        <Content style={{ maxHeight: '70vh', overflow: 'auto', fontSize: 12, marginLeft: 5 }}>
-          {currentFiles && <CodeWindow code={currentCode} name={currentName} onSave={currentSave} />}
-        </Content>
-        <Sider
-          theme="light"
-          style={{
-            borderLeft: '1px #f9f9f9 solid',
-          }}
-          width={200}
-        >
-          <div style={{ padding: 5, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <Button onClick={runTest}>Run main.sh</Button>
-            <Divider style={{ marginTop: 15, marginBottom: 15, width: 175 }} />
-            {testCases}
-          </div>
-        </Sider>
-      </Layout>
-    </div>
+    <Layout>
+      <CodeIDE groups={[bashGroup, helperGroup, fileGroup]} />
+      <Sider
+        theme="light"
+        style={{
+          borderLeft: '1px #f9f9f9 solid',
+        }}
+        width={200}
+      >
+        <div style={{ padding: 5, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Button onClick={runTest} loading={running}>
+            Run main.sh
+          </Button>
+          <Divider style={{ marginTop: 15, marginBottom: 15, width: 175 }} />
+          {testCases}
+        </div>
+      </Sider>
+    </Layout>
   );
 };
 
