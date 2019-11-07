@@ -6,13 +6,11 @@
 import * as React from 'react';
 
 /* antd imports */
-
-import { Icon, Button, Empty, message, notification } from 'antd';
-
-import queryString from 'query-string';
+import { Button, Empty, message, notification } from 'antd';
 
 /* other library imports */
 import _ from 'lodash';
+import queryString from 'query-string';
 
 /* codePost imports */
 import Loading from '../core/Loading';
@@ -30,7 +28,6 @@ import { RubricComment, RubricCommentType } from '../../infrastructure/rubricCom
 import { AnonymousSubmissionType, StudentSubmissionType, Submission } from '../../infrastructure/submission';
 import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
 import { UserType } from '../../infrastructure/user';
-import { TestCaseType } from '../../infrastructure/testCase';
 import { TestCategoryType } from '../../infrastructure/testCategory';
 
 import CPButton from '../core/CPButton';

@@ -6,12 +6,11 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Table } from 'antd';
+import { Table } from 'antd';
 
 /* codePost imports */
-import { SubmissionTest, SubmissionTestType } from '../../../infrastructure/submissionTest';
+import { SubmissionTestType } from '../../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../../infrastructure/testCategory';
-import { TestCaseType } from '../../../infrastructure/testCase';
 import { TestCasesByCategory } from '../../admin/assignments/assignments/AssignmentTest/testUtils';
 
 /**********************************************************************************************************************/
