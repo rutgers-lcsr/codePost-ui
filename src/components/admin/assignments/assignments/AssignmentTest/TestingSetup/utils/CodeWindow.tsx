@@ -62,7 +62,7 @@ export const CodeWindow = (props: IProps) => {
     <div style={{ fontSize: 12, minWidth: 300, width: 'inherit%', position: 'relative' }}>
       {props.onSave && (
         <Button
-          style={{ position: 'absolute', top: -5, right: 15, zIndex: 100 }}
+          style={{ position: 'absolute', right: 15, zIndex: 100 }}
           type={isEditing ? 'primary' : 'default'}
           onClick={isEditing ? onSave : onEdit}
           loading={isSaving}

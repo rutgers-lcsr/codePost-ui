@@ -243,7 +243,6 @@ export const TestDefinitions = (props: IProps) => {
       #### Files from a student submission or soluton code ####
       submissionFile1
       submissionFile2
-    helpers/
       #### Helper files uploaded in environment set up ####
       helperFile1
       helperFile2

@@ -39,15 +39,17 @@ export const ViewSource = (props: ViewSourceProps) => {
   const [currentFiles, setCurrentFiles] = useState<(SolutionFileType | FileType)[]>(props.solutions);
 
   const bashGroup = {
-    files: [{ name: 'main.sh', code: main }],
+    files: [{ name: 'main.sh', code: main, canSave: false }],
     isDisabled: false,
   };
 
-  const helperGroup = {
-    subMenuTitle: <div>helpers</div>,
-    files: props.helpers,
-    isDisabled: false,
-  };
+  const helperFiles = props.helpers.map((file) => {
+    return { title: <div>{file.name} (Helper)</div>, name: file.name, code: file.code, canSave: false };
+  });
+
+  const submissionFiles = currentFiles.map((file) => {
+    return { name: file.name, code: file.code, canSave: false };
+  });
 
   const fileGroup = {
     subMenuTitle: (
@@ -56,14 +58,14 @@ export const ViewSource = (props: ViewSourceProps) => {
         <CodeSwitcher solutionFiles={props.solutions} submissions={props.submissions} setFiles={setCurrentFiles} />
       </div>
     ),
-    files: currentFiles,
+    files: [...helperFiles, ...submissionFiles],
     isDisabled: true,
   };
 
   const templateGroup = {
     subMenuTitle: <div>tests</div>,
     files: tests.map((test) => {
-      return { code: test.code, name: `Test${test.id}${test.extension}` };
+      return { code: test.code, name: `Test${test.id}${test.extension}`, canSave: false };
     }),
     isDisabled: false,
   };
@@ -111,7 +113,7 @@ export const ViewSource = (props: ViewSourceProps) => {
       <Button onClick={download} style={{ float: 'right', marginBottom: 10 }} type="primary" icon="download">
         Download
       </Button>
-      <CodeIDE groups={[bashGroup, helperGroup, fileGroup, templateGroup]} />
+      <CodeIDE groups={[bashGroup, fileGroup, templateGroup]} />
     </div>
   );
 };

@@ -92,16 +92,18 @@ export const ProMode = (props: ProModeProps) => {
   }
 
   const bashGroup = {
-    files: [{ name: 'main.sh', ...bash }],
+    files: [{ name: 'main.sh', ...bash, canSave: true }],
     onSave: onBashSave,
     isDisabled: false,
   };
 
-  const helperGroup = {
-    subMenuTitle: <div>helpers</div>,
-    files: props.helpers,
-    isDisabled: false,
-  };
+  const helperFiles = props.helpers.map((file) => {
+    return { name: file.name, title: <div>{file.name} (Helper)</div>, code: file.code, canSave: false };
+  });
+
+  const submissionFiles = currentFiles.map((file) => {
+    return { name: file.name, code: file.code, canSave: true };
+  });
 
   const fileGroup = {
     subMenuTitle: (
@@ -110,7 +112,7 @@ export const ProMode = (props: ProModeProps) => {
         <CodeSwitcher solutionFiles={props.solutions} submissions={props.submissions} setFiles={setCodeFiles} />
       </div>
     ),
-    files: currentFiles,
+    files: [...helperFiles, ...submissionFiles],
     isDisabled: true,
     onSave: onSubmissionFileSave,
   };
@@ -127,7 +129,7 @@ export const ProMode = (props: ProModeProps) => {
   /************************** Return  ****************************/
   return (
     <Layout>
-      <CodeIDE groups={[bashGroup, helperGroup, fileGroup]} />
+      <CodeIDE groups={[bashGroup, fileGroup]} />
       <Sider
         theme="light"
         style={{

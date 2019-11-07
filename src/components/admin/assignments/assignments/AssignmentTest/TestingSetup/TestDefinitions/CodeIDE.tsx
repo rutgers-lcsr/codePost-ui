@@ -7,9 +7,16 @@ import { CodeWindow } from '../utils/CodeWindow';
 const { SubMenu } = Menu;
 const { Sider, Content } = Layout;
 
+interface BasicFile {
+  code: string;
+  name: string;
+  title?: React.ReactElement;
+  canSave: boolean;
+}
+
 interface FileGroup {
   subMenuTitle?: React.ReactNode;
-  files: any[];
+  files: BasicFile[];
   onSave?: (index: number, code: string) => Promise<void>;
   isDisabled: boolean;
 }
@@ -29,7 +36,7 @@ export const CodeIDE = (props: IProps) => {
     const items = group.files.map((file, fileIndex) => {
       return (
         <Menu.Item key={`${groupIndex}-${fileIndex}`} style={{ height: 'fit-content', minHeight: 40 }}>
-          <div>{file.name}</div>
+          <div>{file.title || file.name}</div>
         </Menu.Item>
       );
     });
@@ -76,7 +83,9 @@ export const CodeIDE = (props: IProps) => {
           <CodeWindow
             code={currentFile.code}
             name={currentFile.name}
-            onSave={currentGroup.onSave && currentGroup.onSave.bind({}, currentFileIndex)}
+            onSave={
+              currentFile.canSave && currentGroup.onSave ? currentGroup.onSave.bind({}, currentFileIndex) : undefined
+            }
           />
         </Content>
       </Layout>
