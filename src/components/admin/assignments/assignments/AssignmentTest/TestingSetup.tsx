@@ -15,7 +15,7 @@ import { HelperFile, HelperFileType } from '../../../../../infrastructure/autogr
 import CPAdminDetail from '../../../other/CPAdminDetail';
 import { EnvironmentSpecs } from './TestingSetup/EnvironmentSpecs';
 import { TestDefinitions } from './TestingSetup/TestDefinitions';
-import { FileListEditor } from './TestingSetup/FileListEditor';
+import { TestFileList } from './TestingSetup/TestFileList';
 
 /* codePost util imports */
 import { fetchSolutionFiles, fetchEnvironment, fetchHelpers } from './testFetchUtils';
@@ -157,7 +157,7 @@ export const TestingSetup = (props: IProps) => {
               are not exposed to students or graders.
             </Panel>
           </Collapse>
-          <FileListEditor
+          <TestFileList
             files={solutions}
             addFile={addFile.bind({}, FILE_TYPE.SOLUTION)}
             deleteFile={deleteFile.bind({}, FILE_TYPE.SOLUTION)}
@@ -173,7 +173,7 @@ export const TestingSetup = (props: IProps) => {
               hierarchy of these files relative to the tests.
             </Panel>
           </Collapse>
-          <FileListEditor
+          <TestFileList
             files={helpers}
             addFile={addFile.bind({}, FILE_TYPE.HELPER)}
             deleteFile={deleteFile.bind({}, FILE_TYPE.HELPER)}

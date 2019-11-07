@@ -15,7 +15,7 @@ import { TestCaseType } from '../../../../../../../infrastructure/testCase';
 
 /* codePost other imports  */
 import { CodeIDE } from './CodeIDE';
-import { CodeSwitcher } from '../utils/CodeSwitcher';
+import { SubmissionPicker } from '../utils/SubmissionPicker';
 import { TestResult } from '../utils/TestResult';
 
 import { fetchOrCreateBashFile } from '../../testFetchUtils';
@@ -108,7 +108,7 @@ export const ProMode = (props: ProModeProps) => {
     subMenuTitle: (
       <div style={{ display: 'flex', alignItems: 'center' }}>
         files ({submission ? submission.students : 'Solution Code'})&nbsp;
-        <CodeSwitcher solutionFiles={props.solutions} submissions={props.submissions} setFiles={setCodeFiles} />
+        <SubmissionPicker solutionFiles={props.solutions} submissions={props.submissions} setFiles={setCodeFiles} />
       </div>
     ),
     files: [...helperFiles, ...submissionFiles],

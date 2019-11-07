@@ -20,7 +20,7 @@ import { HelperFileType } from '../../../../../../../infrastructure/autograder/h
 import { SubmissionType } from '../../../../../../../infrastructure/submission';
 
 /* codePost other imports  */
-import { CodeSwitcher } from '../utils/CodeSwitcher';
+import { SubmissionPicker } from '../utils/SubmissionPicker';
 import { CodeIDE } from './CodeIDE';
 
 interface ViewSourceProps {
@@ -91,7 +91,7 @@ export const ViewSource = (props: ViewSourceProps) => {
     subMenuTitle: (
       <div style={{ display: 'flex', alignItems: 'center' }}>
         files
-        <CodeSwitcher solutionFiles={props.solutions} submissions={props.submissions} setFiles={setCurrentFiles} />
+        <SubmissionPicker solutionFiles={props.solutions} submissions={props.submissions} setFiles={setCurrentFiles} />
       </div>
     ),
     files: [...helperFiles, ...submissionFiles],

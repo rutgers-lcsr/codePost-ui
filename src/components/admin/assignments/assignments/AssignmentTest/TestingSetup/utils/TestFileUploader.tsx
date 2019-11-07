@@ -15,7 +15,7 @@ interface IUploadProps {
   icon?: boolean;
 }
 
-export const CodeUploader = (props: IUploadProps) => {
+export const TestFileUploader = (props: IUploadProps) => {
   /******************************* State Variables ****************************/
   const [visible, setVisible] = useState(false);
   const [newFiles, setNewFiles] = useState<any[]>([]);

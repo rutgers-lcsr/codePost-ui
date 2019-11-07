@@ -17,7 +17,7 @@ interface IProps {
 
 const { Option } = Select;
 
-export const CodeSwitcher = (props: IProps) => {
+export const SubmissionPicker = (props: IProps) => {
   /******************************* State Variables ****************************/
   const [visible, setVisible] = useState(false);
   const [optionIndex, setOptionIndex] = useState(0);

@@ -11,7 +11,7 @@ import { HelperFileType } from '../../../../../../infrastructure/autograder/help
 
 /* codePost component imports  */
 import { CodeWindow } from './utils/CodeWindow';
-import { CodeUploader } from './utils/CodeUploader';
+import { TestFileUploader } from './utils/TestFileUploader';
 
 const { Sider, Content } = Layout;
 
@@ -22,7 +22,7 @@ interface IProps {
   updateFile: (id: number, newCode: string) => Promise<void>;
 }
 
-export const FileListEditor = (props: IProps) => {
+export const TestFileList = (props: IProps) => {
   /******************************* State Variables ****************************/
   const [currentIndex, setIndex] = useState('0');
 
@@ -50,7 +50,7 @@ export const FileListEditor = (props: IProps) => {
           <Menu selectedKeys={[currentIndex]} openKeys={['helpers']} mode="inline" onClick={changeIndex}>
             {menuItems}
           </Menu>
-          <CodeUploader files={props.files} addFile={props.addFile} deleteFile={props.deleteFile} />
+          <TestFileUploader files={props.files} addFile={props.addFile} deleteFile={props.deleteFile} />
         </Sider>
         <Content style={{ maxHeight: '70vh', overflow: 'auto', fontSize: 12 }}>
           {props.files.length === 0 ? (
