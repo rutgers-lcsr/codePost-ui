@@ -1426,7 +1426,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
             updateGrader={this.updateGrader}
           />,
-          <TestsMenu tests={this.state.tests} cases={this.state.testCases} categories={this.state.testCategories} />,
+          <TestsMenu
+            isOpen={this.state.panelType === PANEL_TYPE.TESTS}
+            tests={this.state.tests}
+            cases={this.state.testCases}
+            categories={this.state.testCategories}
+          />,
           <FileMenu
             key="file-menu"
             title="Files"
@@ -1575,7 +1580,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             submitStudentQuestion={this.submitStudentQuestion}
             deleteStudentQuestion={this.deleteStudentQuestion}
           />,
-          <TestsMenu tests={this.state.tests} cases={this.state.testCases} categories={this.state.testCategories} />,
+          <TestsMenu
+            isOpen={this.state.panelType === PANEL_TYPE.TESTS}
+            tests={this.state.tests}
+            cases={this.state.testCases}
+            categories={this.state.testCategories}
+          />,
           <FileMenu
             key="file-menu"
             title="Files"
@@ -1674,20 +1684,21 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             />
           );
 
-          content =
-            this.state.panelType === PANEL_TYPE.FILE ? (
-              <CodePanelLayout
-                comments={comments}
-                code={code}
-                toolbarWidgets={toolbarWidgets}
-                dimensions={this.state.dimensions}
-                file={this.state.selectedFile}
-                zoom={this.state.codeZoom}
-                updateVerticalOffset={this.setVerticalOffset}
-              />
-            ) : (
-              <TestsList tests={this.state.tests} cases={this.state.testCases} categories={this.state.testCategories} />
-            );
+          content = (
+            <CodePanelLayout
+              comments={comments}
+              code={code}
+              toolbarWidgets={toolbarWidgets}
+              dimensions={this.state.dimensions}
+              file={this.state.selectedFile}
+              zoom={this.state.codeZoom}
+              updateVerticalOffset={this.setVerticalOffset}
+            />
+          );
+        } else if (this.state.panelType === PANEL_TYPE.TESTS) {
+          content = (
+            <TestsList tests={this.state.tests} cases={this.state.testCases} categories={this.state.testCategories} />
+          );
         }
 
         const onCancel = () => {
@@ -1704,7 +1715,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
             updateGrader={this.updateGrader}
           />,
-          <TestsMenu tests={this.state.tests} cases={this.state.testCases} categories={this.state.testCategories} />,
+          <TestsMenu
+            isOpen={this.state.panelType === PANEL_TYPE.TESTS}
+            tests={this.state.tests}
+            cases={this.state.testCases}
+            categories={this.state.testCategories}
+          />,
           <FileMenu
             key="file-menu"
             title="Files"
@@ -1752,7 +1768,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               icon="folder-open"
               onClick={(e) => {
                 e.stopPropagation();
-                this.setState({ panelType: PANEL_TYPE.TESTS });
+                this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
               }}
             />
           </div>,

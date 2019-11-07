@@ -1,21 +1,32 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import * as React from 'react';
 
+/* antd imports */
 import { Button, Table } from 'antd';
 
+/* codePost imports */
 import { SubmissionTest, SubmissionTestType } from '../../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../../infrastructure/testCategory';
 import { TestCaseType } from '../../../infrastructure/testCase';
 import { TestCasesByCategory } from '../../admin/assignments/assignments/AssignmentTest/testUtils';
 
+/**********************************************************************************************************************/
+
 interface IProps {
   tests: SubmissionTestType[];
   cases: TestCasesByCategory;
   categories: TestCategoryType[];
+  isOpen: boolean;
 }
 
 const TestsMenu = (props: IProps) => {
+  // Index tests by testCategory to access their data more easily when we loop
+  // over testCategories below
   const testsByCategory = {} as { [id: number]: SubmissionTestType[] };
-  const caseList: TestCaseType[] = Object.values(props.cases).flat();
   for (const category of props.categories) {
     testsByCategory[category.id] = [];
   }
@@ -46,7 +57,15 @@ const TestsMenu = (props: IProps) => {
   });
 
   return (
-    <div id="tests-info" style={{ paddingLeft: '15px', paddingBottom: '10px', paddingRight: '15px' }}>
+    <div
+      id="tests-info"
+      style={{
+        paddingLeft: '15px',
+        paddingBottom: '10px',
+        paddingRight: '15px',
+        backgroundColor: props.isOpen ? '#f0fff7' : undefined,
+      }}
+    >
       <div style={{ fontSize: 12, overflowX: 'auto' }}>
         <Table dataSource={data} columns={columns} size="middle" pagination={false} bordered={false} />
       </div>
