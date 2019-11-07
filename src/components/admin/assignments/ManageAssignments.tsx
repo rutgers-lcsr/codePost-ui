@@ -134,21 +134,6 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
               )}
             />
             <Route
-              path={`${props.match.url}/${encodedName}/moss`}
-              render={(subprops: any) => (
-                <Moss
-                  {...subprops}
-                  course={props.currentCourse!}
-                  assignment={assignment}
-                  submissions={props.submissions[assignment.id]}
-                  user={props.user}
-                  onCancel={cancel}
-                  location={props.location}
-                  breadcrumbs={breadcrumbs}
-                />
-              )}
-            />
-            <Route
               path={`${props.match.url}/${encodedName}/regrades`}
               render={(subprops: any) => (
                 <AssignmentRegrades
@@ -248,9 +233,35 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                 />
               )}
             />
+            <Route
+              path={`${props.match.url}/plagiarism/${encodedName}`}
+              render={(subprops: any) => (
+                <Moss
+                  {...subprops}
+                  course={props.currentCourse!}
+                  assignment={assignment}
+                  assignments={props.assignments}
+                  submissions={props.submissions[assignment.id]}
+                  user={props.user}
+                />
+              )}
+            />
           </div>
         );
       })}
+      <Route
+        path={`${props.match.url}/plagiarism`}
+        exact={true}
+        render={(subprops: any) => (
+          <Moss
+            {...subprops}
+            course={props.currentCourse!}
+            assignments={props.assignments}
+            submissions={[]}
+            user={props.user}
+          />
+        )}
+      />
       <Route
         path={`${props.match.url}/download/grades`}
         exact={true}
@@ -264,7 +275,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
         )}
       />
       <Route
-        path={props.match.url}
+        path={`${props.match.url}/overview`}
         exact={true}
         render={(subprops: any) => <AssignmentsTable {...props} {...subprops} baseURL={props.match.url} />}
       />
