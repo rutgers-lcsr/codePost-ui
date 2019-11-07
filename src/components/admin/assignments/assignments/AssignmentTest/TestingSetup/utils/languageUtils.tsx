@@ -32,8 +32,9 @@ export const extensionsByLanguage: { [language: string]: string } = {
   'c/c++': 'c',
 };
 
-/****************************** Language parse utils *********************************/
+/****************************** Languages and Language support *********************************/
 
+// Languages supported
 export const languages = ['python-3.7', 'python-2.7', 'java', 'c/c++'];
 
 export const hasNativeTestSupport = (language: string) => {
@@ -52,24 +53,23 @@ const languagesWithDependencySupport = ['python-3.7', 'python-2.7'];
 
 /****************************** Test Templates *********************************/
 // Initial templates strings for different test and language types
-
-export const testTemplates: { [language: string]: { [type: string]: { [attr: string]: string } } } = {
+export const testTemplates: { [language: string]: { [type: string]: string } } = {
   'python-3.7': {
-    io: { placeholder: '', initialValue: '' },
-    'native-unit': { placeholder: '', initialValue: PYTHON_UNIT_TEMPLATE },
-    'bash-unit': { placeholder: '', initialValue: BASH_PYTHON_TEMPLATE },
-    bashMode: { placeholder: '', initialValue: BASHMODE_TEMPLATE },
+    io: '',
+    'native-unit': PYTHON_UNIT_TEMPLATE,
+    'bash-unit': BASH_PYTHON_TEMPLATE,
+    bashMode: BASHMODE_TEMPLATE,
   },
   'python-2.7': {
-    io: { placeholder: '', initialValue: '' },
-    'native-unit': { placeholder: '', initialValue: PYTHON_UNIT_TEMPLATE },
-    'bash-unit': { placeholder: '', initialValue: BASH_PYTHON_TEMPLATE },
-    bashMode: { placeholder: '', initialValue: BASHMODE_TEMPLATE },
+    io: '',
+    'native-unit': PYTHON_UNIT_TEMPLATE,
+    'bash-unit': BASH_PYTHON_TEMPLATE,
+    bashMode: BASHMODE_TEMPLATE,
   },
   java: {
-    io: { placeholder: '', initialValue: '' },
-    'native-unit': { placeholder: '', initialValue: JAVA_UNIT_TEMPLATE },
-    'bash-unit': { placeholder: '', initialValue: BASH_JAVA_TEMPLATE },
-    bashMode: { placeholder: '', initialValue: BASHMODE_TEMPLATE },
+    io: '',
+    'native-unit': JAVA_UNIT_TEMPLATE,
+    'bash-unit': BASH_JAVA_TEMPLATE,
+    bashMode: BASHMODE_TEMPLATE,
   },
 };

@@ -140,11 +140,11 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     const newType = this.props.testCase.type === type;
     this.setState({
       testType: type,
-      commandText: newType ? this.props.testCase.text : testTemplates[this.props.language][type]['initialValue'],
+      commandText: newType ? this.props.testCase.text : testTemplates[this.props.language][type],
     });
     this.props.form.setFieldsValue({
       testType: type,
-      commandText: newType ? this.props.testCase.text : testTemplates[this.props.language][type]['initialValue'],
+      commandText: newType ? this.props.testCase.text : testTemplates[this.props.language][type],
     });
   };
 
@@ -292,7 +292,9 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               Save and Run
             </Button>
           </Row>
-          {this.props.testOutput && <TestResult log={outputJSON.log} passed={outputJSON.passed} />}
+          {this.props.testOutput && (
+            <TestResult log={outputJSON.log} passed={outputJSON.passed} isError={outputJSON.isError} />
+          )}
         </div>
       </div>
     );

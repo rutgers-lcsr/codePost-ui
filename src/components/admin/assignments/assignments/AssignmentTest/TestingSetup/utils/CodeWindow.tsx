@@ -8,11 +8,14 @@ import { Button } from 'antd';
 // codePost other imports
 import { codeMirorLanguageMap } from './languageUtils';
 
+type themeType = 'light' | 'dark';
+
 interface IProps {
   code: string;
   name: string;
   onSave?: (code: string) => Promise<void>;
   onChange?: (code: string) => void;
+  theme?: themeType;
 }
 
 export const CodeWindow = (props: IProps) => {
@@ -79,7 +82,7 @@ export const CodeWindow = (props: IProps) => {
           lineNumbers: true,
           lineWrapping: true,
           mode: getMode(),
-          theme: 'neo',
+          theme: props.theme && props.theme === 'dark' ? 'material' : 'neo',
           styleActiveLine: { nonEmpty: true },
           readOnly: props.onSave && (!isEditing || isSaving),
         }}
