@@ -207,7 +207,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
                 // @ts-ignore
                 <Collapse
                   expandIconPosition="right"
-                  defaultActiveKey={openSiderPanels.map((el) => {
+                  activeKey={defaultOpenMenus.map((el) => {
                     return el.toString();
                   })}
                   bordered={false}

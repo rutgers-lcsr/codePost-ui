@@ -429,7 +429,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
         });
 
         // NOTE: graders in submission.students might be inactive
-        if (submission.grader) {
+        if (submission.grader && submission.grader in subsByGrader) {
           subsByGrader[submission.grader][assignment.id].push(submission);
         }
       });
