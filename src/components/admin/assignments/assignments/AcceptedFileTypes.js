@@ -1,6 +1,8 @@
 // Source: https://fileinfo.com/filetypes/developer-all; .rtf,.txt,.csv,.ipynp, .ts,.tsx,.jsx,.json added
 
 export const acceptedFiles = [
+  '.pdf',
+  '.org',
   '.mll',
   '.mli',
   '.mly',
@@ -526,6 +528,7 @@ export const acceptedFiles = [
   '.vsps',
   '.vspx',
   '.vue',
+  '.xml',
 ];
 
 export const acceptedFilesString = acceptedFiles.join();

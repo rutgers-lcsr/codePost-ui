@@ -248,7 +248,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         };
 
         const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
-        if (['png', 'jpg', 'jpeg'].includes(extension)) {
+        if (['png', 'jpg', 'jpeg', 'pdf'].includes(extension)) {
           studentsReader.readAsDataURL(file);
         } else {
           studentsReader.readAsBinaryString(file);
@@ -878,7 +878,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
           },
         ];
 
-        const tableRows = this.state.protoSubmissions.map((protoSubmission) => {
+        const tableRows = this.state.protoSubmissions.map((protoSubmission: IProtoSubmission, index: number) => {
           const students = protoSubmission.students;
           let status;
           switch (this.state.uploadMap[students[0]]) {
@@ -898,6 +898,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
               break;
           }
           return {
+            key: index,
             students: protoSubmission.students.join(', '),
             status,
           };

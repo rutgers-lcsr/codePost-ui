@@ -1,8 +1,17 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
 import React from 'react';
+
+/* antd imports */
 
 // We ignore eslint since Popover never explicitly used. We just use the classNames
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button, Input, message, Popover, Tooltip } from 'antd';
+
+/* codePost imports */
 
 import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
@@ -27,11 +36,46 @@ import { wait } from '../../../infrastructure/animation';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
+import { findBlockElement } from './BlockUtils.tsx';
+/**********************************************************************************************************************/
+
 export type UICommentType = 'readonly' | 'active' | 'inactive';
 
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
 
 const { TextArea } = Input;
+
+/* Compare two rubricComments using a minimal number of comparisons
+ * This function defines what rubricComment equality means from the perspective of a comment.
+ * For example, we shouldn't need to save a comment just because its rubricComment.comments
+ * field changed (e.g. because the rubric comment was applied by another comment somewhere else).
+ */
+const cheapEqRubricComments = (rc1: RubricCommentType | undefined, rc2: RubricCommentType | undefined) => {
+  // Returns true if references match OR if both rc1 and rc2 are undefined
+  if (rc1 === rc2) {
+    return true;
+  }
+
+  // At this point, if this returns, only one of rc1 and rc2 are undefined
+  if (rc1 === undefined || rc2 === undefined) {
+    return false;
+  }
+
+  // Now, we know neither rc1 nor rc2 is undefined, so we can go ahead and compare meaningful properties
+  if (rc1.text !== rc2.text) {
+    return false;
+  }
+
+  if (rc1.pointDelta !== rc2.pointDelta) {
+    return false;
+  }
+
+  if (rc1.category !== rc2.category) {
+    return false;
+  }
+
+  return true;
+};
 
 interface ICommentProps {
   additiveGrading: boolean;
@@ -42,6 +86,7 @@ interface ICommentProps {
   rubricCategories: RubricCategoryType[];
 
   isStudent: boolean;
+  showExplanations: boolean;
 
   placement: number;
 
@@ -79,7 +124,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
   public componentDidUpdate(prevProps: ICommentProps) {
     // If a rubric comment is linked, unlinked, or updated, make sure to recalculate points
-    if (this.props.rubricComment !== prevProps.rubricComment) {
+    if (!cheapEqRubricComments(prevProps.rubricComment, this.props.rubricComment)) {
       if (this.props.forcedRubricMode && this.props.rubricComment === undefined) {
         this.setState({ points: 0 });
       } else if (prevProps.rubricComment !== undefined && this.props.rubricComment === undefined) {
@@ -282,7 +327,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     CodePanelHighlighting.brightenHighlight(this.props.comment.id, this.context.consoleTheme.highlightActive);
 
     // For handling markdown
-    const blockElement: HTMLElement | null = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);
+    const blockElement: HTMLElement | null = findBlockElement(this.props.file, this.props.comment.startLine);
+
     if (blockElement) {
       blockElement.className = `markdown-block markdown-block--focused ${
         this.props.commentType === 'readonly' ? 'readonly' : 'active'
@@ -294,7 +340,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     CodePanelHighlighting.darkenHighlight(this.props.comment.id, this.context.consoleTheme.highlight);
 
     // For handling markdown
-    const blockElement: HTMLElement | null = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);
+    const blockElement: HTMLElement | null = findBlockElement(this.props.file, this.props.comment.startLine);
+
     if (blockElement) {
       blockElement.className = `markdown-block markdown-block--commented ${
         this.props.commentType === 'readonly' ? 'readonly' : 'active'
@@ -334,6 +381,15 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           Block {this.props.comment.startLine + 1}
         </span>
       );
+    } else if (File.codeType(this.props.file) === 'pdf') {
+      commentElements.line = (
+        <span
+          className="cp-label--mid-bold cp-label--italic"
+          style={{ color: this.context.consoleTheme.commentTitleText }}
+        >
+          Page {this.props.comment.startLine}
+        </span>
+      );
     } else {
       commentElements.line = (
         <span
@@ -353,7 +409,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     // ------------------------------------- author --------------------------------------- //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    if (this.props.comment.author) {
+    if (this.props.comment.author && (!this.props.isStudent || !this.props.hideAuthor)) {
       commentElements.author = (
         <span
           className="cp-label--italic cp-label--very-small"
@@ -514,7 +570,14 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       commentElements.rubricComment = (
         <div className={rubricCommentClassName} style={style}>
           <span className="cp-label--very-bold">{rubricCategoryTitle}</span>
-          <InlineMarkdown source={this.props.rubricComment.text} />
+          <InlineMarkdown
+            source={
+              (this.props.isStudent || this.props.showExplanations) && this.props.rubricComment.explanation
+                ? this.props.rubricComment.explanation
+                : this.props.rubricComment.text
+            }
+            em={!this.props.isStudent && this.props.showExplanations && this.props.rubricComment.explanation.length > 0}
+          />
           {commentElements.rubricCommentAction}
         </div>
       );

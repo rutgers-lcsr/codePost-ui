@@ -58,6 +58,7 @@ const GRADE_HEADER_ALIGNMENT = (
 );
 const GRADE_RUBRIC_EDIT = <div>edit rubric [⌘ e]</div>;
 const GRADE_RUBRIC_SAVE = <div>save rubric [⌘ s]</div>;
+const GRADE_RUBRIC_CATEGORY_SEARCH = 'Search for specific rubric category names.';
 
 const GRADE_HEADER_VIEW_AS_STUDENT = 'See what a student will see.';
 const GRADE_HEADER_DOWNLOAD_CODE = 'Download the code for this submission.';
@@ -143,6 +144,12 @@ const ADMIN_RUBRIC_CATEGORYHELPTEXT = (
     It will appear alongside the rubric category in the Code Console.
   </div>
 );
+const ADMIN_RUBRIC_EXPLANATIONS = (
+  <div>
+    An optional textarea that allows you to explain a rubric comment to students. If defined, students will see a rubric
+    comment's explanation instead of its text. Graders will always see the rubric comment's text.
+  </div>
+);
 const ADMIN_RUBRIC_DEDUCTION = 'The deduction (or addition) associated with this comment';
 const ADMIN_RUBRIC_INSTANCES = 'The comments that apply this rubric comment';
 const ADMIN_RUBRIC_CATEGORYUP = 'Move this category up';
@@ -226,6 +233,7 @@ export const tooltips = {
     rubric: {
       edit: GRADE_RUBRIC_EDIT,
       save: GRADE_RUBRIC_SAVE,
+      categorySearch: GRADE_RUBRIC_CATEGORY_SEARCH,
     },
   },
   settings: {
@@ -287,6 +295,7 @@ export const tooltips = {
       categoryUp: ADMIN_RUBRIC_CATEGORYUP,
       categoryDown: ADMIN_RUBRIC_CATEGORYDOWN,
       categoryPointLimit: ADMIN_RUBRIC_CATEGORYPOINTLIMIT,
+      explanations: ADMIN_RUBRIC_EXPLANATIONS,
       title: ADMIN_RUBRIC_TITLE,
       categoryHelpText: ADMIN_RUBRIC_CATEGORYHELPTEXT,
     },

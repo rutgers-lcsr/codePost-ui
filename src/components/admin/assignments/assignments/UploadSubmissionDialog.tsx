@@ -304,7 +304,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             }
           };
 
-          if (['png', 'jpg', 'jpeg'].includes(File.extension(file.name))) {
+          if (['png', 'jpg', 'jpeg', 'pdf'].includes(File.extension(file.name))) {
             reader.readAsDataURL(file);
           } else {
             reader.readAsText(file);

@@ -23,6 +23,7 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 
 import { wait } from '../../infrastructure/animation';
 import { AssignmentType } from '../../infrastructure/assignment';
+import { CourseType } from '../../infrastructure/course';
 import { FileType } from '../../infrastructure/file';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../infrastructure/submission';
@@ -31,13 +32,15 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/comm
 
 import CodeConsole from './CodeConsole';
 
-import useHotkeys, { F_KEY, MINUS_KEY, PLUS_KEY, P_KEY } from './useHotkeys';
+import useHotkeys, { F_KEY, MINUS_KEY, PLUS_KEY, P_KEY, V_KEY } from './useHotkeys';
 
 import useWindowSize from '../core/useWindowSize';
 
 import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
 
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+
+import { encodeForLink } from '../core/URLutils';
 
 const ButtonGroup = Button.Group;
 
@@ -630,12 +633,19 @@ export const SubheaderTitle = (props: ISubheaderTitleProps) => {
 interface IHeaderMenuProps {
   claimSubmission: () => void;
   isStudent: boolean;
+  hasExplanations: boolean;
+  showExplanations: boolean;
+  toggleShowExplanations: () => void;
+  isAdmin: boolean;
+  course?: CourseType;
+  assignment: AssignmentType;
 }
 
 export const HeaderMenu = (props: IHeaderMenuProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   useHotkeys(P_KEY, props.claimSubmission, true);
+  useHotkeys(V_KEY, props.toggleShowExplanations, true, !props.hasExplanations);
 
   const groupStyle = {
     padding: '5px 20px',
@@ -670,9 +680,26 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
           </span>
         </Menu.Item>
       )}
+      {props.isAdmin && props.course ? (
+        <Menu.Item key="rubric" style={itemStyle} className="header-menu">
+          <Link
+            to={`/admin/${encodeForLink(props.course.name)}/${encodeForLink(
+              props.course.period,
+            )}/assignments/${encodeForLink(props.assignment.name)}/rubric`}
+          >
+            <Icon type="edit" /> Open rubric in Admin Console
+          </Link>
+        </Menu.Item>
+      ) : null}
       {props.isStudent ? null : (
         <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
           <a href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>Redo tutorial</a>
+        </Menu.Item>
+      )}
+      {props.isStudent || !props.hasExplanations ? null : (
+        <Menu.Item key="explanations" style={itemStyle} className="header-menu" onClick={props.toggleShowExplanations}>
+          Show rubric comment {props.showExplanations ? 'text' : ' explanations'}{' '}
+          <span style={{ color: '#ccc' }}>[{osControlKey()} shift v]</span>
         </Menu.Item>
       )}
       <Menu.Item key="setting:3" style={itemStyle} className="header-menu" onClick={openIntercom}>

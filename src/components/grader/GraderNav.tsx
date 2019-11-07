@@ -1,15 +1,17 @@
 import * as React from 'react';
 
 import { Icon, Menu } from 'antd';
-import { ClickParam } from 'antd/lib/menu';
 
-interface IProps {
-  onClick: (e: ClickParam) => void;
-  selectedPanel: number;
+import { RouteComponentProps } from 'react-router';
+
+import { Link } from 'react-router-dom';
+
+interface IProps extends RouteComponentProps<{ panel: string }> {
   collapsed: boolean;
   isSuperGrader: boolean;
   isSectionLeader: boolean;
   regradesAllowed: boolean;
+  baseURL: string;
 }
 
 class GraderNav extends React.Component<IProps, {}> {
@@ -20,36 +22,52 @@ class GraderNav extends React.Component<IProps, {}> {
     }
   };
 
+  public getDefaultSelectedKeys = () => {
+    const routes = ['my_submissions', 'my_sections', 'all_submissions', 'regrades'];
+
+    const match = routes.indexOf(this.props.match.params.panel).toString();
+
+    // default to /assignments
+    if (match === '-1') {
+      return '0';
+    } else {
+      return match;
+    }
+  };
+
   public render() {
     return (
       <div>
         <div>
-          <Menu
-            onClick={this.props.onClick}
-            theme="dark"
-            selectedKeys={[this.props.selectedPanel.toString()]}
-            mode="inline"
-          >
+          <Menu theme="dark" mode="inline" selectedKeys={[this.getDefaultSelectedKeys()]}>
             <Menu.Item key="0">
-              <Icon type="container" />
-              <span>Claimed by Me</span>
+              <Link to={`${this.props.baseURL}/my_submissions`}>
+                <Icon type="container" />
+                <span>Claimed by Me</span>
+              </Link>
             </Menu.Item>
             {this.props.isSectionLeader ? (
               <Menu.Item key="1">
-                <Icon type="cluster" />
-                <span>My Sections</span>
+                <Link to={`${this.props.baseURL}/my_sections`}>
+                  <Icon type="cluster" />
+                  <span>My Sections</span>
+                </Link>
               </Menu.Item>
             ) : null}
             {this.props.isSuperGrader ? (
               <Menu.Item key="2">
-                <Icon type="inbox" />
-                <span>All Submissions</span>
+                <Link to={`${this.props.baseURL}/all_submissions`}>
+                  <Icon type="inbox" />
+                  <span>All Submissions</span>
+                </Link>
               </Menu.Item>
             ) : null}
             {this.props.regradesAllowed ? (
               <Menu.Item key="3">
-                <Icon type="message" />
-                <span>Regrade Requests</span>
+                <Link to={`${this.props.baseURL}/regrades`}>
+                  <Icon type="message" />
+                  <span>Regrade Requests</span>
+                </Link>
               </Menu.Item>
             ) : null}
           </Menu>

@@ -76,6 +76,7 @@ const fontLogo = 'Muli, Lato, sans-serif';
 const subheaderHeight = 116; // px
 const codeLineHeight = 20; // px
 const codeFontSize = 12; // px
+const pageHeight = 830; // px
 
 // FIXME: Thes should be a function of codeFontSize and codeLineHeight
 const lineNumberPadding = 14.41; // px
@@ -200,6 +201,7 @@ module.exports = {
     subheaderHeight: subheaderHeight,
 
     codeLineHeight: codeLineHeight,
+    pageHeight: pageHeight,
     codeFontSize: codeFontSize,
     lineNumberPadding: lineNumberPadding,
     highlightHeight: highlightHeight,

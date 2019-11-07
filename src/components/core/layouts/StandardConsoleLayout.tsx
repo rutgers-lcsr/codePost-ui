@@ -47,6 +47,8 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     toTheme === 'light' ? setConsoleTheme(consoleThemes.light) : setConsoleTheme(consoleThemes.dark);
   };
 
+  const [defaultOpenMenus, setDefaultOpenMenus] = React.useState([0, 1, 2]);
+
   let siderWidth =
     windowSize.width < layoutVars.breakpoints.smallScreen.grade
       ? layoutVars.maxWidths.gradeSiderSmallScreen
@@ -63,7 +65,13 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
       const submissionInfo = document.getElementById('submission-info');
       const rubricMenuTitle = document.getElementById('rubric-menu-title');
 
-      if (fileMenu !== null && rubricMenu !== null && rubricMenuTitle !== null && submissionInfo !== null) {
+      // No rubric menu ==> Student View
+      if (rubricMenu === null && fileMenu !== null && submissionInfo !== null) {
+        const fileHeaderHeight = 40;
+        const fileMenuMaxHeight = window.innerHeight - submissionInfo.getBoundingClientRect().bottom - fileHeaderHeight;
+        fileMenu.style.setProperty('max-height', `${fileMenuMaxHeight}px`);
+        // Rubric menu ==> Grader View
+      } else if (rubricMenu !== null && rubricMenuTitle !== null && fileMenu !== null && submissionInfo !== null) {
         // Don't let the file menu take up more than half of the vertical space
         // allowable for files and rubric
         const fileMenuMaxHeight =
@@ -87,7 +95,42 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.editRubricMode]);
 
+  const getCachedCollapseKeys = () => {
+    return props.sider
+      .map((el, index) => {
+        switch (el.key) {
+          case 'submission-info':
+            return !LOCAL_SETTINGS.infoMenuHidden.getter();
+          case 'file-menu':
+            return !LOCAL_SETTINGS.fileMenuHidden.getter();
+          case 'rubric-menu':
+            return !LOCAL_SETTINGS.rubricMenuHidden.getter();
+          default:
+            return index;
+        }
+      })
+      .map((el, index) => {
+        if (el) {
+          return index;
+        } else {
+          return -1;
+        }
+      })
+      .filter((el) => {
+        return el > -1;
+      })
+      .map((el) => {
+        return el.toString();
+      });
+  };
+
   const onCollapse = async (nodes: React.ReactElement[], keys: string[]) => {
+    setDefaultOpenMenus(
+      keys.map((el) => {
+        return parseInt(el);
+      }),
+    );
+
     if (window.innerHeight !== 0) {
       const rubricMenu = document.getElementById('rubric-menu');
       const rubricMenuTitle = document.getElementById('rubric-menu-title');
@@ -130,29 +173,9 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     return <Icon type={iconType} style={{ color: consoleTheme.siderTitle }} />;
   };
 
-  const openSiderPanels = props.sider
-    .map((el, index) => {
-      switch (el.key) {
-        case 'submission-info':
-          return !LOCAL_SETTINGS.infoMenuHidden.getter();
-        case 'file-menu':
-          return !LOCAL_SETTINGS.fileMenuHidden.getter();
-        case 'rubric-menu':
-          return !LOCAL_SETTINGS.rubricMenuHidden.getter();
-        default:
-          return index;
-      }
-    })
-    .map((el, index) => {
-      if (el) {
-        return index;
-      } else {
-        return -1;
-      }
-    })
-    .filter((el) => {
-      return el > -1;
-    });
+  React.useEffect(() => {
+    onCollapse(props.sider, getCachedCollapseKeys());
+  }, [props.sider.length]);
 
   return (
     <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
@@ -170,54 +193,56 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
           {props.header}
         </Header>
         <Layout style={{ overflowX: 'auto' }}>
-          <Sider
-            width={siderWidth}
-            className="layout--standard-console__sider"
-            style={{
-              backgroundColor: consoleTheme.siderBg,
-              color: consoleTheme.siderTitle,
-              zIndex: 100,
-            }}
-          >
-            {props.sider.length === 0 ? null : (
-              // @ts-ignore
-              <Collapse
-                expandIconPosition="right"
-                defaultActiveKey={openSiderPanels.map((el) => {
-                  return el.toString();
-                })}
-                bordered={false}
+          <div id="Code-Header">
+            <Sider
+              width={siderWidth}
+              className="layout--standard-console__sider"
+              style={{
+                backgroundColor: consoleTheme.siderBg,
+                color: consoleTheme.siderTitle,
+                zIndex: 100,
+              }}
+            >
+              {props.sider.length === 0 ? null : (
                 // @ts-ignore
-                onChange={onCollapse.bind(false, props.sider)}
-                // @ts-ignore
-                expandIcon={collapseIcon}
-                style={{
-                  backgroundColor: consoleTheme.siderBg,
-                  color: consoleTheme.siderTitle,
-                }}
-              >
-                {props.sider.map((siderNode: React.ReactNode, index: number) => {
-                  return (
-                    <Collapse.Panel
-                      header={
-                        <div
-                          style={{
-                            padding: '0px 10px 5px 0px',
-                            color: consoleTheme.siderTitle,
-                          }}
-                        >
-                          <div className="cp-label cp-label--plus cp-label--bold">{props.siderTitles[index]}</div>
-                        </div>
-                      }
-                      key={index.toString()}
-                    >
-                      {siderNode}
-                    </Collapse.Panel>
-                  );
-                })}
-              </Collapse>
-            )}
-          </Sider>
+                <Collapse
+                  expandIconPosition="right"
+                  activeKey={defaultOpenMenus.map((el) => {
+                    return el.toString();
+                  })}
+                  bordered={false}
+                  // @ts-ignore
+                  onChange={onCollapse.bind(false, props.sider)}
+                  // @ts-ignore
+                  expandIcon={collapseIcon}
+                  style={{
+                    backgroundColor: consoleTheme.siderBg,
+                    color: consoleTheme.siderTitle,
+                  }}
+                >
+                  {props.sider.map((siderNode: React.ReactNode, index: number) => {
+                    return (
+                      <Collapse.Panel
+                        header={
+                          <div
+                            style={{
+                              padding: '0px 10px 5px 0px',
+                              color: consoleTheme.siderTitle,
+                            }}
+                          >
+                            <div className="cp-label cp-label--plus cp-label--bold">{props.siderTitles[index]}</div>
+                          </div>
+                        }
+                        key={index.toString()}
+                      >
+                        {siderNode}
+                      </Collapse.Panel>
+                    );
+                  })}
+                </Collapse>
+              )}
+            </Sider>
+          </div>
           <Layout
             style={{
               backgroundColor: consoleTheme.mainBg,
