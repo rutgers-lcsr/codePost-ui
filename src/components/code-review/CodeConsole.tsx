@@ -368,11 +368,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public static fileBouncer = (files: FileType[]) => {
-    const max_size_bytes = 150;
+    const max_size_bytes = 500000;
 
     return files.map((file: FileType) => {
       const size_bytes = new TextEncoder().encode(file.code).length;
-      if (size_bytes > max_size_bytes) {
+
+      const bounce =
+        !['pdf', 'jpg', '.jpg', 'jpeg', '.jpeg', 'png', '.png', 'ipynb', '.ipynb'].includes(file.extension) &&
+        size_bytes > max_size_bytes;
+      if (bounce) {
         return {
           ...file,
           code: `This file is over the codePost allowable size (${max_size_bytes /
@@ -1614,7 +1618,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               rubricCategories={this.state.rubricCategories}
             />
           );
-          console.log('files', this.state.files);
 
           content = (
             <CodePanelLayout
