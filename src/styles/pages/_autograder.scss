@@ -22,6 +22,12 @@
     font-size: 12px;
   }
 
+  .natural-language-form {
+    .ant-form-item {
+      margin-right: 0;
+    }
+  }
+
   .ProMode-codeMirror {
     .CodeMirror {
       height: fit-content;

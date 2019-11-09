@@ -24,8 +24,8 @@ interface IProps {
 const TestsOverview = (props: IProps & RouteComponentProps) => {
   const columns = [
     { title: 'Assignment', key: 'assignment', dataIndex: 'assignment' },
-    { title: 'Tests?', key: 'rubric', dataIndex: 'rubric', align: 'center' as const },
     { title: 'Edit', key: 'edit', dataIndex: 'edit', align: 'center' as const },
+    { title: 'Run', key: 'tests', dataIndex: 'tests', align: 'center' as const },
     { title: 'Actions', key: 'actions', dataIndex: 'actions', align: 'center' as const },
   ];
 
@@ -40,10 +40,14 @@ const TestsOverview = (props: IProps & RouteComponentProps) => {
     );
     return {
       assignment: assignment.name,
-      rubric: assignment.testCategories.length > 0 ? 'Yes!' : 'No!',
+      tests: (
+        <Link to={`${props.match.url}/${encodeForLink(assignment.name)}/run`}>
+          <Button disabled={assignment.testCategories.length === 0 || !assignment.environment}>Run</Button>
+        </Link>
+      ),
       edit: (
-        <Link to={`${props.match.url}/${encodeForLink(assignment.name)}`}>
-          <Button>Edit</Button>
+        <Link to={`${props.match.url}/${encodeForLink(assignment.name)}/edit`}>
+          <Button>{assignment.testCategories.length > 0 ? 'Edit' : 'Create'}</Button>
         </Link>
       ),
       actions: (

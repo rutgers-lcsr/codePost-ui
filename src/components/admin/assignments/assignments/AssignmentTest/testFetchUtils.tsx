@@ -3,11 +3,7 @@ import { AssignmentType } from '../../../../../infrastructure/assignment';
 import { TestCase, TestCaseType } from '../../../../../infrastructure/testCase';
 import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructure/submissionTest';
 import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
-import {
-  AnonymousSubmissionType,
-  SubmissionType,
-  StudentSubmissionType,
-} from '../../../../../infrastructure/submission';
+import { AnonymousSubmissionType } from '../../../../../infrastructure/submission';
 
 import { SolutionFile } from '../../../../../infrastructure/autograder/solutionFile';
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';

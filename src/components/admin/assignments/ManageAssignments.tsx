@@ -235,6 +235,8 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
               path={`${props.match.url}/tests/${encodedName}`}
               render={(subprops: any) => (
                 <AssignmentTests
+                  {...subprops}
+                  breadcrumbs={breadcrumbs}
                   activeAssignment={assignment}
                   submissions={props.submissions[assignment.id]}
                   onCancel={cancel}

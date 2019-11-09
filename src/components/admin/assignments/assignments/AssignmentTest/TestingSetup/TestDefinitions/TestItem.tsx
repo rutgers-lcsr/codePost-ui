@@ -1,31 +1,44 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
 /* react imports */
 import React, { useState } from 'react';
 
-/* library imports */
-import { Button, Divider, Form, Input, Row, Select, Tag } from 'antd';
+/* antd imports */
+import { Button, Divider, Form, Input, Row, Select, Tag, message, Modal, Typography } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
+
+/* other library imports */
+import { cloneDeep } from 'lodash-es';
 
 /* codePost object imports */
 import { AssignmentType } from '../../../../../../../infrastructure/assignment';
 import { TestCase, TestCaseType } from '../../../../../../../infrastructure/testCase';
 import { SolutionFileType } from '../../../../../../../infrastructure/autograder/solutionFile';
 import { EnvironmentType } from '../../../../../../../infrastructure/autograder/environment';
+import { SubmissionType } from '../../../../../../../infrastructure/submission';
 
 /* codePost component imports */
 import { CodeWindow } from '../utils/CodeWindow';
-import { TestResult } from '../utils/TestResult';
+import { PsuedoTerminal } from '../utils/PsuedoTerminal';
 
 /* codePost util imports */
 import { testTemplates, hasNativeTestSupport, extensionsByLanguage } from '../utils/languageUtils';
 
+const { confirm } = Modal;
 const { Option } = Select;
+
+/**********************************************************************************************************************/
 
 interface ITestItemProps {
   currentAssignment: AssignmentType;
   testCase: TestCaseType;
   saveTest: (test: TestCaseType) => Promise<TestCaseType>;
+  deleteTest: (test: TestCaseType) => Promise<void>;
   files: SolutionFileType[];
   env: EnvironmentType;
+  submissions: SubmissionType[];
 }
 
 interface IFormValues {
@@ -44,6 +57,7 @@ export const TestItem = (props: ITestItemProps) => {
   let formRef: any = React.createRef();
   const [testOutput, setTestOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
+  const [activeSubmission, setActiveSubmission] = useState<SubmissionType | undefined>(undefined);
 
   /******************************* API / State Change Functions ****************************/
   const handleCreate = (codeString?: string) => {
@@ -56,6 +70,61 @@ export const TestItem = (props: ITestItemProps) => {
     });
   };
 
+  const handleRun = (codeString?: string) => {
+    const form = formRef.props.form;
+    form.validateFields((err: any, values: IFormValues) => {
+      if (err) {
+        return;
+      }
+      runTest(values, codeString);
+    });
+  };
+
+  const handleDelete = () => {
+    confirm({
+      title: (
+        <span>
+          Are you sure you want to delete <b>{props.testCase.description}</b>?
+        </span>
+      ),
+      content: 'This decision cannot be reversed.',
+      onOk() {
+        return new Promise((resolve, reject) => {
+          return resolve(props.deleteTest(props.testCase));
+        }).catch(() => console.log('Oops errors!'));
+      },
+    });
+  };
+
+  // A testCase must be saved before it can be run. To simulate a "run without saving"
+  // operation, we (1) save the test, (2) run it, (3) save it using its old values.
+  const runTest = async (values: IFormValues, codeString?: string) => {
+    const testCaseCopy = cloneDeep(props.testCase);
+    const toRevert = cloneDeep(testCaseCopy);
+    testCaseCopy.text = codeString || '';
+    testCaseCopy.description = values.description;
+    testCaseCopy.expectedOutput = values.expectedOutput;
+    testCaseCopy.fileName = values.fileName;
+    testCaseCopy.function = values.function;
+    testCaseCopy.input = values.input;
+    testCaseCopy.checkReturn = values.checkReturn === 'return';
+    testCaseCopy.type = values.testType;
+    await props.saveTest(testCaseCopy);
+
+    if (props.testCase.id > 0) {
+      setIsRunning(true);
+      setTestOutput('');
+      const payload = { id: props.testCase.id };
+      const result = await TestCase.run(payload);
+      setTestOutput(JSON.stringify(result));
+
+      // Undo changes
+      await props.saveTest(toRevert);
+      setIsRunning(false);
+      return;
+    }
+  };
+
   const saveTest = async (values: IFormValues, codeString?: string) => {
     const testCaseCopy = { ...props.testCase };
     testCaseCopy.text = codeString || '';
@@ -66,15 +135,8 @@ export const TestItem = (props: ITestItemProps) => {
     testCaseCopy.input = values.input;
     testCaseCopy.checkReturn = values.checkReturn === 'return';
     testCaseCopy.type = values.testType;
-    const newTest = await props.saveTest(testCaseCopy);
-
-    if (props.testCase.id > 0) {
-      setIsRunning(true);
-      const payload = { id: props.testCase.id };
-      const result = await TestCase.run(payload);
-      setTestOutput(JSON.stringify(result));
-      setIsRunning(false);
-    }
+    await props.saveTest(testCaseCopy);
+    message.success('Test saved');
   };
 
   /******************************* State Change Functions ****************************/
@@ -87,11 +149,14 @@ export const TestItem = (props: ITestItemProps) => {
     <WrappedTestFormItem
       testCase={props.testCase}
       saveTest={handleCreate}
+      deleteTest={handleDelete}
+      runTest={handleRun}
       files={props.files}
       wrappedComponentRef={saveFormRef}
       testOutput={testOutput}
       isRunning={isRunning}
       language={props.env.language!}
+      submissions={props.submissions}
     />
   );
 };
@@ -99,11 +164,13 @@ export const TestItem = (props: ITestItemProps) => {
 interface ITestFormItemProps extends FormComponentProps {
   testCase: TestCaseType;
   saveTest: () => void;
+  deleteTest: () => Promise<void>;
   files: SolutionFileType[];
   testOutput: string;
   runTest: () => void;
   isRunning: boolean;
   language: string;
+  submissions: SubmissionType[];
 }
 
 interface IState {
@@ -148,153 +215,184 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     });
   };
 
+  public buildIOTest = (testCase: TestCaseType) => {
+    const { getFieldDecorator } = this.props.form;
+    const textStyle: React.CSSProperties = { whiteSpace: 'nowrap', marginRight: '4px', marginLeft: '4px' };
+    const inputStyle: React.CSSProperties = { width: '200px' };
+
+    return (
+      <div className="natural-language-form" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+        <span style={{ ...textStyle, marginLeft: undefined }}>From file</span>
+        <Form.Item label="">
+          {getFieldDecorator('fileName', {
+            initialValue: testCase.fileName,
+            rules: [
+              {
+                required: true,
+              },
+            ],
+          })(
+            <Select disabled={this.props.isRunning} style={inputStyle}>
+              {this.props.files.map((file) => {
+                return (
+                  <Option key={file.id} value={file.name}>
+                    {file.name}
+                  </Option>
+                );
+              })}
+            </Select>,
+          )}
+        </Form.Item>
+        <span style={textStyle}>run</span>
+        <Form.Item label="">
+          {getFieldDecorator('function', {
+            initialValue: testCase.function,
+            rules: [
+              {
+                required: true,
+              },
+            ],
+          })(<Input placeholder={'Function or Method Name'} style={inputStyle} disabled={this.props.isRunning} />)}
+        </Form.Item>
+        <span style={textStyle}>with arguments</span>
+        <Form.Item label="">
+          {getFieldDecorator('input', {
+            initialValue: testCase.input,
+            rules: [
+              {
+                required: true,
+              },
+            ],
+          })(<Input placeholder={'Input'} disabled={this.props.isRunning} style={inputStyle} />)}
+        </Form.Item>
+        <span style={textStyle}>and expect the call to</span>
+        <Form.Item label="">
+          {getFieldDecorator('checkReturn', {
+            initialValue: testCase.checkReturn ? 'return' : 'output',
+            rules: [
+              {
+                required: true,
+              },
+            ],
+          })(
+            <Select disabled={this.props.isRunning} style={inputStyle}>
+              <Option value={'return'}>Return</Option>
+              <Option value={'output'}>Output</Option>
+            </Select>,
+          )}
+        </Form.Item>
+        <span style={textStyle}>the value</span>
+        <Form.Item label="">
+          {getFieldDecorator('expectedOutput', {
+            initialValue: testCase.expectedOutput,
+            rules: [
+              {
+                required: false,
+              },
+            ],
+          })(<Input disabled={this.props.isRunning} style={inputStyle} />)}
+          <span style={{ marginLeft: '1px' }}>.</span>
+        </Form.Item>
+      </div>
+    );
+  };
+
   /******************************* Render  ****************************/
   public render() {
     const { testCase, form } = this.props;
     const { getFieldDecorator } = form;
 
     const outputJSON = this.props.testOutput ? JSON.parse(this.props.testOutput) : {};
-    const name = this.state.testType == 'bash' ? '.sh' : extensionsByLanguage[this.props.language];
+    const name = this.state.testType === 'bash' ? '.sh' : extensionsByLanguage[this.props.language];
 
     // Disable changing the test type if there is no native test support
     const hasNativeSupport = hasNativeTestSupport(this.props.language);
 
+    // Get appropriate body
+    let testBody;
+    switch (this.state.testType) {
+      case 'io':
+        testBody = this.buildIOTest(testCase);
+        break;
+      case 'external':
+        testBody = <div />;
+        break;
+      default:
+        testBody = <CodeWindow code={this.state.commandText!} name={name} onChange={this.onChange} />;
+    }
+
     return (
-      <div>
-        <Form labelCol={{ span: 8 }} wrapperCol={{ span: 16 }} layout="inline">
-          <Row>
-            <Form.Item label="Test Name">
-              {getFieldDecorator('description', {
-                initialValue: testCase.description,
-                rules: [
-                  {
-                    required: true,
-                  },
-                ],
-              })(<Input disabled={this.props.isRunning} />)}
-            </Form.Item>
-            <Form.Item label="Test type">
-              {getFieldDecorator('testType', {
-                initialValue: testCase.type,
-                rules: [
-                  {
-                    required: true,
-                  },
-                ],
-              })(
-                <Select
-                  onChange={this.onTypeChange}
-                  disabled={this.props.isRunning || !hasNativeSupport}
-                  value={testCase.type}
-                  style={{ minWidth: 200 }}
-                >
-                  <Option value={'io'}>I/O</Option>
-                  <Option value={'bash-unit'}>Bash</Option>
-                  <Option value={'native-unit'}>
-                    Unit Test <Tag>BETA</Tag>
-                  </Option>
-                </Select>,
-              )}
-            </Form.Item>
-          </Row>
-          <Divider />
-          {this.state.testType === 'io' ? (
-            <div>
-              <Row style={{ display: 'flex', alignItems: 'center' }}>
-                From file &nbsp;
-                <Form.Item label="">
-                  {getFieldDecorator('fileName', {
-                    initialValue: testCase.fileName,
-                    rules: [
-                      {
-                        required: true,
-                      },
-                    ],
-                  })(
-                    <Select disabled={this.props.isRunning} style={{ minWidth: 200 }}>
-                      {this.props.files.map((file) => {
-                        return <Option value={file.name}>{file.name}</Option>;
-                      })}
-                    </Select>,
-                  )}
-                </Form.Item>
-                &nbsp; run function &nbsp;
-                <Form.Item label="">
-                  {getFieldDecorator('function', {
-                    initialValue: testCase.function,
-                    rules: [
-                      {
-                        required: true,
-                      },
-                    ],
-                  })(<Input placeholder={'Function or Method Name'} disabled={this.props.isRunning} />)}
-                </Form.Item>
-                &nbsp; with inputs &nbsp;
-                <Form.Item label="">
-                  {getFieldDecorator('input', {
-                    initialValue: testCase.input,
-                    rules: [
-                      {
-                        required: true,
-                      },
-                    ],
-                  })(<Input placeholder={'Input'} disabled={this.props.isRunning} />)}
-                </Form.Item>
-                &nbsp; , &nbsp;
-              </Row>
-              <Row style={{ display: 'flex', alignItems: 'center' }}>
-                Should &nbsp;
-                <Form.Item label="">
-                  {getFieldDecorator('checkReturn', {
-                    initialValue: testCase.checkReturn ? 'return' : 'output',
-                    rules: [
-                      {
-                        required: true,
-                      },
-                    ],
-                  })(
-                    <Select
-                      disabled={this.props.isRunning}
-                      value={testCase.checkReturn ? 'return' : 'output'}
-                      style={{ minWidth: 200 }}
-                    >
-                      <Option value={'return'}>Return</Option>
-                      <Option value={'output'}>Output</Option>
-                    </Select>,
-                  )}
-                </Form.Item>
-                &nbsp; the value &nbsp;
-                <Form.Item label="">
-                  {getFieldDecorator('expectedOutput', {
-                    initialValue: testCase.expectedOutput,
-                    rules: [
-                      {
-                        required: true,
-                      },
-                    ],
-                  })(<Input disabled={this.props.isRunning} />)}
-                </Form.Item>
-                &nbsp; . &nbsp;
-              </Row>
-            </div>
-          ) : (
-            <CodeWindow code={this.state.commandText!} name={name} onChange={this.onChange} />
-          )}
-        </Form>
+      <div style={{ padding: '0 15px 15px 15px' }}>
+        <Typography.Title level={3} style={{ display: 'inline' }}>
+          Editing: {testCase.description}
+        </Typography.Title>
+        <div style={{ float: 'right' }}>
+          <Button
+            style={{ marginRight: 10 }}
+            type="primary"
+            onClick={this.props.saveTest.bind(this, this.state.commandText)}
+          >
+            Save
+          </Button>
+          <Button type="danger" onClick={this.props.deleteTest}>
+            Delete
+          </Button>
+        </div>
+        <div style={{ marginTop: '15px' }} />
+        <Divider />
         <div>
-          <Row style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Button
-              onClick={this.props.saveTest.bind(this, this.state.commandText)}
-              loading={this.props.isRunning}
-              style={{ marginRight: 10 }}
-              type="primary"
-            >
-              Save and Run
-            </Button>
-          </Row>
-          {this.props.testOutput && (
-            <TestResult log={outputJSON.log} passed={outputJSON.passed} isError={outputJSON.isError} />
-          )}
+          <Typography.Title level={4}>0. Details</Typography.Title>
+          <Form labelCol={{ span: 8 }} wrapperCol={{ span: 16 }} layout="inline">
+            <Row>
+              <Form.Item label="Test Name">
+                {getFieldDecorator('description', {
+                  initialValue: testCase.description,
+                  rules: [
+                    {
+                      required: true,
+                    },
+                  ],
+                })(<Input disabled={this.props.isRunning} />)}
+              </Form.Item>
+              <Form.Item label="Test type">
+                {getFieldDecorator('testType', {
+                  initialValue: testCase.type,
+                  rules: [
+                    {
+                      required: true,
+                    },
+                  ],
+                })(
+                  <Select
+                    onChange={this.onTypeChange}
+                    disabled={this.props.isRunning || !hasNativeSupport}
+                    style={{ minWidth: 200 }}
+                  >
+                    <Option value={'io'}>Input / Output</Option>
+                    <Option value={'bash-unit'}>Shell Script</Option>
+                    <Option value={'native-unit'}>
+                      Unit Test <Tag>BETA</Tag>
+                    </Option>
+                  </Select>,
+                )}
+              </Form.Item>
+            </Row>
+            <Divider />
+            <Typography.Title level={4}>1. Definition</Typography.Title>
+            {testBody}
+          </Form>
+          <Divider />
+          <Typography.Title level={4}>2. Results</Typography.Title>
+          <div>
+            <PsuedoTerminal
+              log={outputJSON.log}
+              passed={outputJSON.passed}
+              isError={outputJSON.isError}
+              isRunning={this.props.isRunning}
+              runTest={this.props.runTest.bind(this, this.state.commandText)}
+              submissions={this.props.submissions}
+            />
+          </div>
         </div>
       </div>
     );

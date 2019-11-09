@@ -1,5 +1,16 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
 /* react imports */
 import React, { useEffect, useState } from 'react';
+
+/* antd imports */
+import { Breadcrumb } from 'antd';
+
+/* other library imports */
+import { RouteComponentProps } from 'react-router';
+import { Switch, Route } from 'react-router-dom';
 
 /* codePost object imports */
 import { Assignment, AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
@@ -9,6 +20,8 @@ import { UserType } from '../../../../../infrastructure/user';
 /* codePost component imports */
 import { TestingSetup } from './TestingSetup';
 import { TestingSummary } from './TestingSummary';
+
+/**********************************************************************************************************************/
 
 enum DETAIL_TYPE {
   SetUp,
@@ -21,9 +34,10 @@ interface IProps {
   onCancel: () => void;
   user: UserType;
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
+  breadcrumbs?: React.ReactElement[];
 }
 
-export const AssignmentTests = (props: IProps) => {
+export const AssignmentTests = (props: IProps & RouteComponentProps) => {
   // ************************** State Variables ******************************
   const [detail, setDetail] = useState(DETAIL_TYPE.Summary);
   const [assignment, setAssignment] = useState(props.activeAssignment);
@@ -44,30 +58,35 @@ export const AssignmentTests = (props: IProps) => {
     setAssignment(newAssignment);
   };
 
-  // ************************ Return ************************************
-  let content;
-  switch (detail) {
-    case DETAIL_TYPE.SetUp:
-      content = (
-        <TestingSetup
-          currentAssignment={assignment}
-          switchDetail={setDetail.bind({}, DETAIL_TYPE.SetUp)}
-          onCancel={props.onCancel}
-          submissions={props.submissions}
-          updateAssignment={updateAssignment}
-        />
-      );
-      break;
-    case DETAIL_TYPE.Summary:
-      content = (
-        <TestingSummary
-          currentAssignment={assignment}
-          submissions={props.submissions}
-          switchDetail={setDetail.bind({}, DETAIL_TYPE.SetUp)}
-          onCancel={props.onCancel}
-        />
-      );
-  }
+  const breadcrumbs = [...(props.breadcrumbs ? props.breadcrumbs : []), <Breadcrumb.Item>Tests</Breadcrumb.Item>];
 
-  return <div>{content}</div>;
+  // ************************ Return ************************************
+  return (
+    <Switch>
+      <Route
+        path={`${props.match.url}/edit`}
+        render={(subprops: any) => (
+          <TestingSetup
+            breadcrumbs={breadcrumbs}
+            currentAssignment={assignment}
+            switchDetail={setDetail.bind({}, DETAIL_TYPE.SetUp)}
+            onCancel={props.onCancel}
+            submissions={props.submissions}
+            updateAssignment={updateAssignment}
+          />
+        )}
+      />
+      <Route
+        path={`${props.match.url}/run`}
+        render={(subprops: any) => (
+          <TestingSummary
+            currentAssignment={assignment}
+            submissions={props.submissions}
+            switchDetail={setDetail.bind({}, DETAIL_TYPE.SetUp)}
+            onCancel={props.onCancel}
+          />
+        )}
+      />
+    </Switch>
+  );
 };

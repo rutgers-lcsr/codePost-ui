@@ -1,3 +1,7 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
 /* react imports */
 import React, { useEffect, useState } from 'react';
 
@@ -23,13 +27,17 @@ import { fetchSolutionFiles, fetchEnvironment, fetchHelpers } from './testFetchU
 const { TabPane } = Tabs;
 const { Panel } = Collapse;
 
+/**********************************************************************************************************************/
+
 interface IProps {
   currentAssignment: AssignmentType;
   switchDetail: () => void;
   onCancel: () => void;
   submissions: SubmissionType[];
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
+  breadcrumbs?: React.ReactElement[];
 }
+
 enum FILE_TYPE {
   HELPER,
   SOLUTION,
@@ -129,7 +137,6 @@ export const TestingSetup = (props: IProps) => {
         if (helperIndex > -1) {
           const newHelpers = [...helpers];
           newHelpers.splice(helperIndex, 1, newHelper);
-          console.log(newHelpers);
           setHelpers(newHelpers);
         }
         break;
@@ -199,13 +206,9 @@ export const TestingSetup = (props: IProps) => {
     <CPAdminDetail
       breadcrumbs={
         <Breadcrumb>
-          <Breadcrumb.Item onClick={props.onCancel}>
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-            <a>Assignments</a>
-          </Breadcrumb.Item>
+          {props.breadcrumbs}
           <Breadcrumb.Item>{props.currentAssignment.name}</Breadcrumb.Item>
-          <Breadcrumb.Item onClick={props.switchDetail}>Tests Summary</Breadcrumb.Item>
-          <Breadcrumb.Item>Edit Tests</Breadcrumb.Item>
+          <Breadcrumb.Item>Edit</Breadcrumb.Item>
         </Breadcrumb>
       }
       goBack={null}
