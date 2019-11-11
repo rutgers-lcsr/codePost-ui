@@ -1,5 +1,6 @@
 import * as t from 'io-ts';
 import { createObject, deleteObject, GenericObject, readObject, updateObject, createObjectDetail } from './generics';
+import { TaskV } from './autograder/runTypes';
 
 const TestCategoryV = t.intersection(
   [
@@ -40,16 +41,6 @@ const TestCategoryPatchV = t.intersection(
 //  Defail Route : Run
 const TestInputs = t.intersection([GenericObject, t.type({ submission: t.union([t.number, t.null]) })]);
 
-const TestOutputs = t.array(
-  t.type({
-    id: t.number,
-    description: t.string,
-    passed: t.boolean,
-    log: t.string,
-    isError: t.boolean,
-  }),
-);
-
 export type TestCategoryType = t.TypeOf<typeof TestCategoryV>;
 
 export class TestCategory {
@@ -58,7 +49,7 @@ export class TestCategory {
   public static delete = deleteObject(TestCategoryV, 'testCategories');
   public static update = updateObject(TestCategoryV, TestCategoryPatchV, 'testCategories');
 
-  public static run = createObjectDetail(TestOutputs, TestInputs, 'testCategories', 'run');
+  public static run = createObjectDetail(TaskV, TestInputs, 'testCategories', 'run');
 
   public static sort = (categories: TestCategoryType[]): TestCategoryType[] => {
     const compare = (a: TestCategoryType, b: TestCategoryType) => {

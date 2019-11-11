@@ -2,20 +2,30 @@
 import React, { useState, useEffect } from 'react';
 
 /* library imports */
-import { Breadcrumb, Button, Dropdown, Empty, Icon, Menu, Table } from 'antd';
+import { Breadcrumb, Button, Dropdown, Empty, Icon, Menu, Modal, Table } from 'antd';
 
 /* codePost object imports */
 import { SubmissionType } from '../../../../../infrastructure/submission';
 import { AssignmentType } from '../../../../../infrastructure/assignment';
 import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { Submission } from '../../../../../infrastructure/submission';
+import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
+import { SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
+
+import { awaitTestResult } from './testResult';
 
 /* codePost component imports */
 import CPAdminDetail from '../../../other/CPAdminDetail';
 import { TestResultPopover } from './TestingSummary/TestResultPopover';
 
 /* codePost util imports */
-import { fetchTestData, fetchTestsBySubmission, TestsBySubmission, TestCasesByCategory } from './testFetchUtils';
+import {
+  fetchTestData,
+  fetchEnvironment,
+  fetchTestsBySubmission,
+  TestsBySubmission,
+  TestCasesByCategory,
+} from './testFetchUtils';
 
 interface IProps {
   submissions: SubmissionType[];
@@ -31,6 +41,8 @@ export const TestingSummary = (props: IProps) => {
   const [testsBySubmission, setTestsBySubmission] = useState<TestsBySubmission>({});
   const [subsLoading, setSubsLoading] = useState<number[]>([]);
   const [fetchLoading, setFetchLoading] = useState(false);
+  const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
+  const [progress, setProgress] = useState('');
 
   // ************************** Fetch Data ******************************
   useEffect(() => {
@@ -40,6 +52,8 @@ export const TestingSummary = (props: IProps) => {
       setCategories(categories);
       setTestCasesByCategory(casesByCategory);
       setFetchLoading(false);
+      const currEnv = await fetchEnvironment(props.currentAssignment);
+      setEnv(currEnv);
     };
     fetchData();
   }, [props.currentAssignment]);
@@ -53,40 +67,33 @@ export const TestingSummary = (props: IProps) => {
   }, [props.submissions]);
 
   // ******************************* API / State change functions  *******************************
-  const runTests = async (sub: SubmissionType) => {
-    setSubsLoading([...subsLoading, sub.id]);
-    const newTests = await Submission.runTests(sub.id);
+  const callback = (sub: SubmissionType, result: SubmissionTestResultType) => {
     const newTestBySub = { ...testsBySubmission };
-    newTestBySub[sub.id] = newTests;
+    newTestBySub[sub.id] = result;
     setTestsBySubmission(newTestBySub);
     const newLoadingSubs = subsLoading.filter((id) => {
       return id !== sub.id;
     });
     setSubsLoading(newLoadingSubs);
   };
+  const runTests = async (sub: SubmissionType) => {
+    setSubsLoading([...subsLoading, sub.id]);
+    const result = await Submission.run(sub.id);
+    awaitTestResult(result.task, callback.bind({}, sub));
+  };
+
+  const runAllCallback = (result: any) => {
+    setProgress(result);
+  };
 
   const runAll = async () => {
-    setSubsLoading(
-      props.submissions.map((sub) => {
-        return sub.id;
-      }),
-    );
-    const newTestsBySub: TestsBySubmission = {};
-    const promises = props.submissions.map(async (sub) => {
-      const results = await Submission.runTests(sub.id);
-      return {
-        submission: sub.id,
-        tests: results,
-      };
-    });
-
-    const newTests = await Promise.all(promises);
-    newTests.forEach((obj) => {
-      newTestsBySub[obj.submission] = obj.tests;
-    });
-
-    setTestsBySubmission(newTestsBySub);
-    setSubsLoading([]);
+    if (env) {
+      const result = await Environment.runAll(env.id);
+      awaitTestResult(result.task, runAllCallback, runAllCallback);
+      const newEnv = { ...env };
+      newEnv.isRunning = true;
+      setEnv(newEnv);
+    }
   };
 
   // ******************************* Return  *******************************
@@ -175,11 +182,16 @@ export const TestingSummary = (props: IProps) => {
       return toRet;
     });
 
-    content = <Table columns={columns} loading={fetchLoading} dataSource={data} />;
+    content = (
+      <div>
+        <Modal visible={progress !== ''}>{JSON.stringify(progress)}</Modal>
+        <Table columns={columns} loading={fetchLoading} dataSource={data} />
+      </div>
+    );
   }
 
   actions = [
-    <Button type="default" disabled={totalTests === 0} onClick={runAll}>
+    <Button type="default" disabled={totalTests === 0} loading={env && env.isRunning} onClick={runAll}>
       Run all Tests
     </Button>,
     <Button type="primary" onClick={props.switchDetail}>

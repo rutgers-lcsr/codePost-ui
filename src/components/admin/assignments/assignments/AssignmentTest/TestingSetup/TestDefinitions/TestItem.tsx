@@ -11,9 +11,13 @@ import { TestCase, TestCaseType } from '../../../../../../../infrastructure/test
 import { SolutionFileType } from '../../../../../../../infrastructure/autograder/solutionFile';
 import { EnvironmentType } from '../../../../../../../infrastructure/autograder/environment';
 
+import { TestCaseTestResultType } from '../../../../../../../infrastructure/autograder/runTypes';
+
 /* codePost component imports */
 import { CodeWindow } from '../utils/CodeWindow';
 import { TestResult } from '../utils/TestResult';
+
+import { awaitTestResult } from '../../testResult';
 
 /* codePost util imports */
 import { testTemplates, hasNativeTestSupport, extensionsByLanguage } from '../utils/languageUtils';
@@ -42,7 +46,7 @@ interface IFormValues {
 export const TestItem = (props: ITestItemProps) => {
   /******************************* State Variables ****************************/
   let formRef: any = React.createRef();
-  const [testOutput, setTestOutput] = useState('');
+  const [testOutput, setTestOutput] = useState<TestCaseTestResultType | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
   /******************************* API / State Change Functions ****************************/
@@ -54,6 +58,11 @@ export const TestItem = (props: ITestItemProps) => {
       }
       saveTest(values, codeString);
     });
+  };
+
+  const callback = (result: TestCaseTestResultType) => {
+    setTestOutput(result);
+    setIsRunning(false);
   };
 
   const saveTest = async (values: IFormValues, codeString?: string) => {
@@ -72,8 +81,7 @@ export const TestItem = (props: ITestItemProps) => {
       setIsRunning(true);
       const payload = { id: props.testCase.id };
       const result = await TestCase.run(payload);
-      setTestOutput(JSON.stringify(result));
-      setIsRunning(false);
+      awaitTestResult(result.task, callback);
     }
   };
 
@@ -100,7 +108,7 @@ interface ITestFormItemProps extends FormComponentProps {
   testCase: TestCaseType;
   saveTest: () => void;
   files: SolutionFileType[];
-  testOutput: string;
+  testOutput: TestCaseTestResultType;
   runTest: () => void;
   isRunning: boolean;
   language: string;
@@ -153,7 +161,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     const { testCase, form } = this.props;
     const { getFieldDecorator } = form;
 
-    const outputJSON = this.props.testOutput ? JSON.parse(this.props.testOutput) : {};
+    const outputJSON = this.props.testOutput;
     const name = this.state.testType == 'bash' ? '.sh' : extensionsByLanguage[this.props.language];
 
     // Disable changing the test type if there is no native test support

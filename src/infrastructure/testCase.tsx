@@ -1,6 +1,6 @@
 import * as t from 'io-ts';
 import { createObject, deleteObject, GenericObject, readObject, updateObject, createObjectDetail } from './generics';
-
+import { TaskV } from './autograder/runTypes';
 const TestCaseV = t.intersection(
   [
     GenericObject,
@@ -67,15 +67,6 @@ const TestCaseVPost = t.intersection(
   'TestCasePost',
 );
 
-const TestCaseOutputs = t.intersection([
-  GenericObject,
-  t.type({
-    passed: t.boolean,
-    log: t.string,
-    isError: t.boolean,
-  }),
-]);
-
 export type TestCaseType = t.TypeOf<typeof TestCaseV>;
 
 export class TestCase {
@@ -84,7 +75,7 @@ export class TestCase {
   public static delete = deleteObject(TestCaseV, 'testCases');
   public static update = updateObject(TestCaseV, TestCaseVPatch, 'testCases');
 
-  public static run = createObjectDetail(TestCaseOutputs, GenericObject, 'testCases', 'run');
+  public static run = createObjectDetail(TaskV, GenericObject, 'testCases', 'run');
 
   public static sort = (testCases: TestCaseType[]): TestCaseType[] => {
     const compare = (a: TestCaseType, b: TestCaseType) => {

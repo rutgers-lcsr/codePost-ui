@@ -12,6 +12,7 @@ import { FileType } from '../../../../../../../infrastructure/file';
 import { HelperFileType } from '../../../../../../../infrastructure/autograder/helperFile';
 import { BashFile, BashFileType } from '../../../../../../../infrastructure/autograder/bashFile';
 import { TestCaseType } from '../../../../../../../infrastructure/testCase';
+import { TestCategoryTestResultType } from '../../../../../../../infrastructure/autograder/runTypes';
 
 /* codePost other imports  */
 import { CodeIDE } from './CodeIDE';
@@ -19,6 +20,8 @@ import { SubmissionPicker } from '../utils/SubmissionPicker';
 import { TestResult } from '../utils/TestResult';
 
 import { fetchOrCreateBashFile } from '../../testFetchUtils';
+
+import { awaitTestResult } from '../../testResult';
 
 const { Sider } = Layout;
 
@@ -70,14 +73,20 @@ export const ProMode = (props: ProModeProps) => {
     }
   };
   /************************** State Change Functions ****************************/
+
+  const callback = (result: TestCategoryTestResultType) => {
+    setOutputs(result);
+    setRunning(false);
+  };
+
   const runTest = async () => {
     setRunning(true);
     const result = await TestCategory.run({
       id: props.currentCategory.id,
       submission: submission ? submission.id : null,
     });
-    setOutputs(result);
-    setRunning(false);
+
+    awaitTestResult(result.task, callback);
   };
 
   const setCodeFiles = (files: SolutionFileType[] | FileType[], submission: SubmissionType | undefined) => {
