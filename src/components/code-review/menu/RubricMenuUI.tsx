@@ -437,7 +437,7 @@ const RubricMenuUI = ({
   }
 
   return (
-    <div style={{ marginTop: '8px' }}>
+    <div style={{ marginTop: '8px' }} id="rubric-menu-container">
       <div
         id="rubric-menu-title"
         style={{ marginBottom: '5px', width: '100%', textAlign: 'center', padding: '0px 10px' }}
