@@ -157,7 +157,12 @@ export const EnvironmentSpecs = (props: IProps) => {
   /******************************* Return ****************************/
 
   const selectLanguage = (
-    <Select value={language || undefined} onChange={onLanguageChange} style={{ minWidth: 300 }}>
+    <Select
+      value={language || undefined}
+      onChange={onLanguageChange}
+      style={{ minWidth: 300 }}
+      disabled={props.env !== undefined}
+    >
       {languages.map((language) => {
         return (
           <Option key={language} value={language}>
