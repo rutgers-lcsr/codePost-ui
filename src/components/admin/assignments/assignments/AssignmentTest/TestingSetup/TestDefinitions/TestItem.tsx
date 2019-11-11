@@ -37,7 +37,7 @@ interface ITestItemProps {
   saveTest: (test: TestCaseType) => Promise<TestCaseType>;
   deleteTest: (test: TestCaseType) => Promise<void>;
   files: SolutionFileType[];
-  env: EnvironmentType;
+  env?: EnvironmentType;
   submissions: SubmissionType[];
   setTestSubject: (id: string) => void;
 }
@@ -156,7 +156,7 @@ export const TestItem = (props: ITestItemProps) => {
       wrappedComponentRef={saveFormRef}
       testOutput={testOutput}
       isRunning={isRunning}
-      language={props.env.language!}
+      language={props.env ? props.env.language : ''}
       submissions={props.submissions}
       setTestSubject={props.setTestSubject}
     />
@@ -321,7 +321,9 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
         testBody = <div />;
         break;
       default:
-        testBody = <CodeWindow code={this.state.commandText!} name={name} onChange={this.onChange} />;
+        testBody = (
+          <CodeWindow code={this.state.commandText!} name={name === undefined ? '' : name} onChange={this.onChange} />
+        );
     }
 
     return (
@@ -344,7 +346,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
         <div style={{ marginTop: '15px' }} />
         <Divider />
         <div>
-          <Typography.Title level={4}>0. Details</Typography.Title>
+          <Typography.Title level={4}>1. Details</Typography.Title>
           <Form labelCol={{ span: 8 }} wrapperCol={{ span: 16 }} layout="inline">
             <Row>
               <Form.Item label="Test Name">
@@ -381,11 +383,11 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               </Form.Item>
             </Row>
             <Divider />
-            <Typography.Title level={4}>1. Definition</Typography.Title>
+            <Typography.Title level={4}>2. Definition</Typography.Title>
             {testBody}
           </Form>
           <Divider />
-          <Typography.Title level={4}>2. Results</Typography.Title>
+          <Typography.Title level={4}>3. Results</Typography.Title>
           <div>
             <PsuedoTerminal
               log={outputJSON.log}

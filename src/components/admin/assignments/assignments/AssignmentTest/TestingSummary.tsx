@@ -4,27 +4,33 @@ import React, { useState, useEffect } from 'react';
 /* library imports */
 import { Breadcrumb, Button, Dropdown, Empty, Icon, Menu, Table } from 'antd';
 
+/* other library imports */
+import { RouteComponentProps } from 'react-router';
+import { Link } from 'react-router-dom';
+
 /* codePost object imports */
 import { SubmissionType } from '../../../../../infrastructure/submission';
 import { AssignmentType } from '../../../../../infrastructure/assignment';
+import { SubmissionTest } from '../../../../../infrastructure/submissionTest';
 import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { Submission } from '../../../../../infrastructure/submission';
 
 /* codePost component imports */
-import CPAdminDetail from '../../../other/CPAdminDetail';
+import { TableDetail } from '../../../other/TableDetail';
 import { TestResultPopover } from './TestingSummary/TestResultPopover';
 
 /* codePost util imports */
 import { fetchTestData, fetchTestsBySubmission, TestsBySubmission, TestCasesByCategory } from './testFetchUtils';
+import { openSubmission } from '../../../other/AdminUtils';
 
 interface IProps {
+  breadcrumbs?: React.ReactElement[];
   submissions: SubmissionType[];
   currentAssignment: AssignmentType;
-  switchDetail: () => void;
   onCancel: () => void;
 }
 
-export const TestingSummary = (props: IProps) => {
+export const TestingSummary = (props: IProps & RouteComponentProps) => {
   // ************************** State Variables ******************************
   const [testCasesByCategory, setTestCasesByCategory] = useState<TestCasesByCategory>({});
   const [categories, setCategories] = useState<TestCategoryType[]>([]);
@@ -96,113 +102,114 @@ export const TestingSummary = (props: IProps) => {
     return acc + cat.testCases.length;
   }, 0);
 
-  if (props.currentAssignment.testCategories.length == 0) {
-    content = <Empty />;
-  } else {
-    const columns = [
-      {
-        title: 'Student(s)',
-        dataIndex: 'students',
-        key: 'students',
-      },
-      ...TestCategory.sort(categories).map((category) => {
-        return {
-          title: category.name,
-          dataIndex: category.id.toString(),
-          key: category.id.toString(),
-          align: 'center' as 'center',
-        };
-      }),
-      {
-        title: 'Summary',
-        dataIndex: 'summary',
-        key: 'summary',
+  const columns = [
+    {
+      title: 'Student(s)',
+      dataIndex: 'students',
+      key: 'students',
+      sorter: (a: any, b: any) => a.students.localeCompare(b.students),
+    },
+    ...TestCategory.sort(categories).map((category) => {
+      return {
+        title: category.name,
+        dataIndex: category.id.toString(),
+        key: category.id.toString(),
         align: 'center' as 'center',
-      },
-      {
-        title: 'Actions',
-        dataIndex: 'actions',
-        key: 'actions',
-        align: 'center' as 'center',
-      },
-    ];
-
-    const data = props.submissions.map((submission: SubmissionType) => {
-      const actionsMenu = (
-        <Menu>
-          <Menu.Item key="1" onClick={runTests.bind({}, submission)}>
-            <Icon type="caret-right" />
-            Run tests
-          </Menu.Item>
-        </Menu>
-      );
-
-      const toRet: any = {
-        students: submission.students,
-        key: submission.id,
-        actions: subsLoading.includes(submission.id) ? (
-          <Icon type="loading" />
-        ) : (
-          <Dropdown overlay={actionsMenu} trigger={['click']}>
-            <Icon type="menu" />
-          </Dropdown>
-        ),
       };
+    }),
+    {
+      title: 'Summary',
+      dataIndex: 'summary',
+      key: 'summary',
+      align: 'center' as 'center',
+    },
+    {
+      title: 'Actions',
+      dataIndex: 'actions',
+      key: 'actions',
+      align: 'center' as 'center',
+    },
+  ];
 
-      const tests = testsBySubmission[submission.id] || [];
-      let passed = 0;
+  const data = props.submissions.map((submission: SubmissionType) => {
+    const actionsMenu = (
+      <Menu>
+        <Menu.Item key="run-tests" onClick={runTests.bind({}, submission)}>
+          <Icon type="caret-right" />
+          Run tests
+        </Menu.Item>
+        <Menu.Item key="submission" onClick={openSubmission.bind({}, submission.id)}>
+          <Icon type="code" />
+          Open submission
+        </Menu.Item>
+      </Menu>
+    );
 
-      // Group the SubmissionTests by category
-      const testByCategory: any = {};
-      tests.forEach((test) => {
-        (testByCategory[test.testCategory] && testByCategory[test.testCategory].push(test)) ||
-          (testByCategory[test.testCategory] = [test]);
-        if (test.passed) {
-          passed += 1;
-        }
-      });
+    const toRet: any = {
+      students: submission.students.join(','),
+      key: submission.id,
+      actions: subsLoading.includes(submission.id) ? (
+        <Icon type="loading" />
+      ) : (
+        <Dropdown overlay={actionsMenu} trigger={['click']}>
+          <Icon type="menu" />
+        </Dropdown>
+      ),
+    };
 
-      for (const category of categories) {
-        toRet[category.id] = (
-          <TestResultPopover
-            submissionTests={testByCategory[category.id] || []}
-            testCases={testCasesByCategory[category.id] || []}
-          />
-        );
+    const tests = SubmissionTest.getLatest(testsBySubmission[submission.id] || []);
+    let passed = 0;
+
+    // Group the SubmissionTests by category
+    const testByCategory: any = {};
+    tests.forEach((test) => {
+      (testByCategory[test.testCategory] && testByCategory[test.testCategory].push(test)) ||
+        (testByCategory[test.testCategory] = [test]);
+      if (test.passed) {
+        passed += 1;
       }
-
-      toRet['summary'] = totalTests === 0 ? '-- / --' : <div>{`${passed} / ${totalTests}`}</div>;
-      return toRet;
     });
 
-    content = <Table columns={columns} loading={fetchLoading} dataSource={data} />;
-  }
+    for (const category of categories) {
+      toRet[category.id] = (
+        <TestResultPopover
+          submissionTests={testByCategory[category.id] || []}
+          testCases={testCasesByCategory[category.id] || []}
+        />
+      );
+    }
+
+    toRet['summary'] = totalTests === 0 ? '-- / --' : <div>{`${passed} / ${totalTests}`}</div>;
+    return toRet;
+  });
 
   actions = [
     <Button type="default" disabled={totalTests === 0} onClick={runAll}>
       Run all Tests
     </Button>,
-    <Button type="primary" onClick={props.switchDetail}>
-      Edit Tests
+    <Button type="primary">
+      <Link to={[...props.match.url.split('/').slice(0, props.match.url.split('/').length - 1), 'edit'].join('/')}>
+        Edit Tests
+      </Link>
     </Button>,
   ];
 
   return (
-    <CPAdminDetail
+    <TableDetail
+      loadComplete={!fetchLoading}
+      isEmpty={Object.keys(testCasesByCategory).length === 0}
+      title={`${props.currentAssignment.name} | Tests Summary`}
       breadcrumbs={
         <Breadcrumb>
-          <Breadcrumb.Item onClick={props.onCancel}>
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-            <a>Assignments</a>
-          </Breadcrumb.Item>
-          <Breadcrumb.Item>{props.currentAssignment.name}</Breadcrumb.Item>
-          <Breadcrumb.Item>Tests Summary</Breadcrumb.Item>
+          {props.breadcrumbs}
+          <Breadcrumb.Item key="assignment">{props.currentAssignment.name}</Breadcrumb.Item>
+          <Breadcrumb.Item>Results</Breadcrumb.Item>
         </Breadcrumb>
       }
-      goBack={null}
-      title={`${props.currentAssignment.name} | Tests Summary`}
+      emptyNode={'Create some tests and you will be able to run them here'}
       actions={actions}
-      content={content}
+      columns={columns}
+      data={data}
     />
   );
 };

@@ -9,6 +9,9 @@ import React, { useEffect, useState } from 'react';
 import { Breadcrumb } from 'antd';
 
 /* other library imports */
+import { Link } from 'react-router-dom';
+
+/* other library imports */
 import { RouteComponentProps } from 'react-router';
 import { Switch, Route } from 'react-router-dom';
 
@@ -23,11 +26,6 @@ import { TestingSummary } from './TestingSummary';
 
 /**********************************************************************************************************************/
 
-enum DETAIL_TYPE {
-  SetUp,
-  Summary,
-}
-
 interface IProps {
   activeAssignment: AssignmentType;
   submissions: SubmissionType[];
@@ -39,7 +37,6 @@ interface IProps {
 
 export const AssignmentTests = (props: IProps & RouteComponentProps) => {
   // ************************** State Variables ******************************
-  const [detail, setDetail] = useState(DETAIL_TYPE.Summary);
   const [assignment, setAssignment] = useState(props.activeAssignment);
 
   // ************************** Fetch data ******************************
@@ -58,7 +55,19 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
     setAssignment(newAssignment);
   };
 
-  const breadcrumbs = [...(props.breadcrumbs ? props.breadcrumbs : []), <Breadcrumb.Item>Tests</Breadcrumb.Item>];
+  const breadcrumbs = [
+    ...(props.breadcrumbs ? props.breadcrumbs : []),
+    <Breadcrumb.Item key="tests">
+      <Link
+        to={props.match.url
+          .split('/')
+          .slice(0, props.match.url.split('/').length - 1)
+          .join('/')}
+      >
+        Tests
+      </Link>
+    </Breadcrumb.Item>,
+  ];
 
   // ************************ Return ************************************
   return (
@@ -67,9 +76,9 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
         path={`${props.match.url}/edit`}
         render={(subprops: any) => (
           <TestingSetup
+            {...subprops}
             breadcrumbs={breadcrumbs}
             currentAssignment={assignment}
-            switchDetail={setDetail.bind({}, DETAIL_TYPE.SetUp)}
             onCancel={props.onCancel}
             submissions={props.submissions}
             updateAssignment={updateAssignment}
@@ -77,12 +86,13 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
         )}
       />
       <Route
-        path={`${props.match.url}/run`}
+        path={`${props.match.url}/results`}
         render={(subprops: any) => (
           <TestingSummary
+            {...subprops}
+            breadcrumbs={breadcrumbs}
             currentAssignment={assignment}
             submissions={props.submissions}
-            switchDetail={setDetail.bind({}, DETAIL_TYPE.SetUp)}
             onCancel={props.onCancel}
           />
         )}

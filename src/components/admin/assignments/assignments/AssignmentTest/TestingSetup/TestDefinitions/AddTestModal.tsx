@@ -16,6 +16,17 @@ export const AddTestModal = (props: IUploadProps) => {
   const [visible, setVisible] = useState(false);
   const [category, setCategory] = useState<number | undefined>(undefined);
 
+  // If the user has only created a single category, don't make them choose it
+  // through a modal: select it automatically.
+  React.useEffect(() => {
+    if (visible) {
+      if (props.categories.length === 1) {
+        props.addTest(props.categories[0].id);
+        toggleVisible();
+      }
+    }
+  }, [visible]);
+
   /******************************* API / State Change Functions ****************************/
   const onSave = async () => {
     if (category) {
@@ -38,7 +49,7 @@ export const AddTestModal = (props: IUploadProps) => {
     <span>
       <Icon type="file-add" onClick={toggleVisible} />
       <Modal
-        visible={visible}
+        visible={visible && props.categories.length > 1}
         title={`Add TestCase`}
         onCancel={toggleVisible}
         width={400}

@@ -41,9 +41,6 @@ export const fetchSolutionFiles = async (env: EnvironmentType) => {
 export const fetchEnvironment = async (assignment: AssignmentType) => {
   if (assignment.environment) {
     return await Environment.read(assignment.environment);
-  } else {
-    const payload = { id: -1, language: null, dependencies: '[]', assignment: assignment.id, compileText: '' };
-    return await Environment.create(payload);
   }
 };
 

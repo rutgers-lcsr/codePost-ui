@@ -50,14 +50,6 @@ export const AddCategoryModal = (props: IUploadProps) => {
         style={{ padding: 25 }}
       >
         <Input onChange={onChange} value={name} placeholder="Category Name" />
-        {props.externalOnly ? (
-          undefined
-        ) : (
-          <Row>
-            Category is pro mode:
-            <Switch onChange={setProMode} checked={proMode} />
-          </Row>
-        )}
       </Modal>
     </span>
   );

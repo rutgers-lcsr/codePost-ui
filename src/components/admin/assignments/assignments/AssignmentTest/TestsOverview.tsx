@@ -41,8 +41,8 @@ const TestsOverview = (props: IProps & RouteComponentProps) => {
     return {
       assignment: assignment.name,
       tests: (
-        <Link to={`${props.match.url}/${encodeForLink(assignment.name)}/run`}>
-          <Button disabled={assignment.testCategories.length === 0 || !assignment.environment}>Run</Button>
+        <Link to={`${props.match.url}/${encodeForLink(assignment.name)}/results`}>
+          <Button disabled={assignment.testCategories.length === 0 || !assignment.environment}>Results</Button>
         </Link>
       ),
       edit: (

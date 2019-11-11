@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Layout, Menu, Icon } from 'antd';
+import { Button, Layout, Menu, Icon, Empty, Spin } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 /* other library imports */
@@ -50,7 +50,7 @@ interface IProps {
   solutions: SolutionFileType[];
   helpers: HelperFileType[];
   submissions: SubmissionType[];
-  env: EnvironmentType;
+  env?: EnvironmentType;
 }
 
 enum DETAIL_TYPE {
@@ -75,6 +75,7 @@ export const TestDefinitions = (props: IProps) => {
   const [main, setMain] = useState('');
   const [currentFiles, setCurrentFiles] = useState<(SolutionFileType | FileType)[]>(props.solutions);
   const [index, setIndex] = useState('0-0');
+  const [loading, setLoading] = useState(true);
 
   /******************************* Fetch Data ****************************/
   useEffect(() => {
@@ -82,19 +83,25 @@ export const TestDefinitions = (props: IProps) => {
       const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
       setCategories(categories);
       setCasesByCategory(casesByCategory);
+      if (activeTest === undefined) {
+        if (categories.length > 0 && activeTest === undefined) setActiveTest(casesByCategory[categories[0].id][0]);
+      }
+      setLoading(false);
     };
 
     fetchData();
   }, [props.currentAssignment]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const source: TestsSourceType = await Environment.eject(props.env.id);
-      setMain(source.main);
-      setTests(source.templates);
-    };
-    fetchData();
-  }, [props.env.id]);
+    if (props.env !== undefined) {
+      const fetchData = async () => {
+        const source: TestsSourceType = await Environment.eject(props.env!.id);
+        setMain(source.main);
+        setTests(source.templates);
+      };
+      fetchData();
+    }
+  }, [props.env]);
 
   /******************************* TestCategory functions  ****************************/
 
@@ -319,7 +326,9 @@ export const TestDefinitions = (props: IProps) => {
       const currentGroup = groups[currentGroupIndex];
       const currentFile = currentGroup.files[currentFileIndex];
 
-      content = <CodeWindow code={currentFile.code} name={currentFile.name} />;
+      if (currentFile !== undefined) {
+        content = <CodeWindow code={currentFile.code} name={currentFile.name} />;
+      }
       break;
     case DETAIL_TYPE.EditTests:
       menu = (
@@ -385,43 +394,76 @@ export const TestDefinitions = (props: IProps) => {
       );
   }
 
-  return categories.length > 0 ? (
-    <div>
-      <div style={{ fontSize: 11 }} id="Autograder">
-        <Layout>
-          <Sider theme="light">
-            {externalOnly ? null : (
-              <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
-                <Button onClick={togglePanel}>{panel === DETAIL_TYPE.ViewSource ? 'Edit tests' : 'View source'}</Button>
-              </div>
-            )}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                background: '#ccc',
-                justifyContent: 'space-between',
-                padding: '0 15px',
-                fontSize: '14px',
-                height: '30px',
-              }}
-            >
-              Tests
-              <div>
-                <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} icon={true} />
-                &nbsp; &nbsp;
-                <AddTestModal addTest={addTest.bind({}, props.env.language)} categories={categories} />
-                &nbsp; &nbsp;
-                <Icon type="cloud-download" onClick={download} />
-              </div>
-            </div>
-            {menu}
-          </Sider>
-          {content}
-        </Layout>
+  const hasTests = Object.values(casesByCategory).some((el) => el.length > 0);
+
+  if (loading) {
+    return <Spin />;
+  } else if (categories.length === 0) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <Empty
+          style={{ marginTop: '20px', maxWidth: '400px' }}
+          description={<span>Create a test category to get started.</span>}
+        >
+          <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} />
+        </Empty>
       </div>
-    </div>
-  ) : (
-    <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} />
-  );
+    );
+  } else {
+    return (
+      <div>
+        <div style={{ fontSize: 11 }} id="Autograder">
+          <Layout>
+            <Sider theme="light">
+              {externalOnly ? null : (
+                <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
+                  <Button onClick={togglePanel}>
+                    {panel === DETAIL_TYPE.ViewSource ? 'Edit tests' : 'View source'}
+                  </Button>
+                </div>
+              )}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  background: '#ccc',
+                  justifyContent: 'space-between',
+                  padding: '0 15px',
+                  fontSize: '14px',
+                  height: '30px',
+                }}
+              >
+                Tests
+                <div>
+                  <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} icon={true} />
+                  &nbsp; &nbsp;
+                  <AddTestModal
+                    addTest={addTest.bind({}, props.env ? props.env.language : '')}
+                    categories={categories}
+                  />
+                  &nbsp; &nbsp;
+                  <Icon type="cloud-download" onClick={download} />
+                </div>
+              </div>
+              {menu}
+            </Sider>
+            {hasTests ? (
+              content
+            ) : (
+              <Content style={{ margin: 15 }}>
+                <Empty
+                  style={{ marginTop: '20px', maxWidth: '400px' }}
+                  description={
+                    <span>
+                      Now create your first test by clicking the <Icon type="file-add" /> icon on the left.{' '}
+                    </span>
+                  }
+                ></Empty>
+              </Content>
+            )}
+          </Layout>
+        </div>
+      </div>
+    );
+  }
 };

@@ -5,14 +5,18 @@
 /* react imports */
 import React, { useEffect, useState } from 'react';
 
-/* library imports */
-import { Breadcrumb, Collapse, Tabs } from 'antd';
+/* antd imports */
+import { Breadcrumb, Button, Collapse, Tabs } from 'antd';
+
+/* other library imports */
+import { RouteComponentProps } from 'react-router';
+import { Link } from 'react-router-dom';
 
 /* codePost object imports */
 import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
 import { SolutionFile, SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
 import { SubmissionType } from '../../../../../infrastructure/submission';
-import { EnvironmentType } from '../../../../../infrastructure/autograder/environment';
+import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 import { HelperFile, HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
 
 /* codePost component imports */
@@ -31,19 +35,18 @@ const { Panel } = Collapse;
 
 interface IProps {
   currentAssignment: AssignmentType;
-  switchDetail: () => void;
   onCancel: () => void;
   submissions: SubmissionType[];
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   breadcrumbs?: React.ReactElement[];
 }
 
-enum FILE_TYPE {
+export enum FILE_TYPE {
   HELPER,
   SOLUTION,
 }
 
-export const TestingSetup = (props: IProps) => {
+export const TestingSetup = (props: IProps & RouteComponentProps) => {
   // ************************** State Variables ******************************
   const [currTab, setCurrTab] = useState('1');
   const [solutions, setSolutions] = useState<SolutionFileType[]>([]);
@@ -55,10 +58,12 @@ export const TestingSetup = (props: IProps) => {
     const fetchData = async () => {
       const currEnv = await fetchEnvironment(props.currentAssignment);
       setEnv(currEnv);
-      const solutionFiles = await fetchSolutionFiles(currEnv);
-      setSolutions(solutionFiles);
-      const helpers = await fetchHelpers(currEnv);
-      setHelpers(helpers);
+      if (currEnv) {
+        const solutionFiles = await fetchSolutionFiles(currEnv);
+        setSolutions(solutionFiles);
+        const helpers = await fetchHelpers(currEnv);
+        setHelpers(helpers);
+      }
     };
     fetchData();
   }, [props.currentAssignment]);
@@ -143,6 +148,35 @@ export const TestingSetup = (props: IProps) => {
     }
   };
 
+  // ************************** Environment function **************************
+
+  const createEnv = async (language: string, compileText: string, dependencies: string[]) => {
+    const payload = {
+      id: -1,
+      language,
+      dependencies: JSON.stringify(dependencies),
+      assignment: props.currentAssignment.id,
+      compileText,
+    };
+    const newEnv = await Environment.create(payload);
+    const buildEnv = await Environment.updateBuild({
+      id: newEnv.id,
+      dependencies: dependencies,
+      language: newEnv.language !== null ? newEnv.language : '',
+      simulate: false,
+    });
+    setEnv(newEnv);
+  };
+
+  const updateEnv = () => {};
+
+  const deleteEnv = () => {
+    if (env !== undefined) {
+      Environment.delete(env.id);
+      setEnv(undefined);
+    }
+  };
+
   // ************************** Return ***************************************
   const content = (
     <Tabs defaultActiveKey="1" activeKey={currTab} onChange={setCurrTab} animated={false}>
@@ -153,40 +187,15 @@ export const TestingSetup = (props: IProps) => {
           onCancel={props.onCancel}
           updateAssignment={props.updateAssignment}
           env={env}
+          createEnv={createEnv}
           updateEnv={setEnv}
+          deleteEnv={deleteEnv}
+          helpers={helpers}
+          solutions={solutions}
+          addFile={addFile}
+          deleteFile={deleteFile}
+          updateFile={updateFile}
         />
-      </TabPane>
-      <TabPane tab={'Solution Code'} key={'2'}>
-        <div>
-          <Collapse>
-            <Panel header="Instructions" key="1">
-              Upload your solution code here. You'll be able to run and debug your tests using this code. These files
-              are not exposed to students or graders.
-            </Panel>
-          </Collapse>
-          <TestFileList
-            files={solutions}
-            addFile={addFile.bind({}, FILE_TYPE.SOLUTION)}
-            deleteFile={deleteFile.bind({}, FILE_TYPE.SOLUTION)}
-            updateFile={updateFile.bind({}, FILE_TYPE.SOLUTION)}
-          />
-        </div>
-      </TabPane>
-      <TabPane tab={'Helper Files'} key={'3'}>
-        <div>
-          <Collapse>
-            <Panel header="Instructions" key="1">
-              Helper files are files that you can call from your tests. The 'Tests' tab will show the file directory
-              hierarchy of these files relative to the tests.
-            </Panel>
-          </Collapse>
-          <TestFileList
-            files={helpers}
-            addFile={addFile.bind({}, FILE_TYPE.HELPER)}
-            deleteFile={deleteFile.bind({}, FILE_TYPE.HELPER)}
-            updateFile={updateFile.bind({}, FILE_TYPE.HELPER)}
-          />
-        </div>
       </TabPane>
       <TabPane tab={'Tests'} key={'4'}>
         <TestDefinitions
@@ -194,7 +203,7 @@ export const TestingSetup = (props: IProps) => {
           solutions={solutions}
           helpers={helpers}
           submissions={props.submissions}
-          env={env!}
+          env={env}
         />
       </TabPane>
       <TabPane tab={'Settings'} key={'5'}>
@@ -202,18 +211,27 @@ export const TestingSetup = (props: IProps) => {
       </TabPane>
     </Tabs>
   );
+
+  const actions = [
+    <Button type="primary">
+      <Link to={[...props.match.url.split('/').slice(0, props.match.url.split('/').length - 1), 'results'].join('/')}>
+        View results
+      </Link>
+    </Button>,
+  ];
+
   return (
     <CPAdminDetail
       breadcrumbs={
         <Breadcrumb>
           {props.breadcrumbs}
-          <Breadcrumb.Item>{props.currentAssignment.name}</Breadcrumb.Item>
-          <Breadcrumb.Item>Edit</Breadcrumb.Item>
+          <Breadcrumb.Item key="assignment">{props.currentAssignment.name}</Breadcrumb.Item>
+          <Breadcrumb.Item key="edit">Edit</Breadcrumb.Item>
         </Breadcrumb>
       }
       goBack={null}
       title={`${props.currentAssignment.name} | Tests Setup`}
-      actions={[]}
+      actions={actions}
       content={content}
     />
   );

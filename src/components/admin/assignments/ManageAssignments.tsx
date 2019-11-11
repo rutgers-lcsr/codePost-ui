@@ -80,7 +80,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
     return;
   };
 
-  const breadcrumbs = [<Breadcrumb.Item>Assignments</Breadcrumb.Item>];
+  const breadcrumbs = [<Breadcrumb.Item key="0">Assignments</Breadcrumb.Item>];
 
   return (
     <div>
