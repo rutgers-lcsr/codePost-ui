@@ -33,6 +33,9 @@ import Loading from '../../core/Loading';
 
 import { AssignmentTests } from './assignments/AssignmentTest/AssignmentTests';
 
+import RubricOverview from './rubric/RubricOverview';
+import TestsOverview from './assignments/AssignmentTest/TestsOverview';
+
 /**********************************************************************************************************************/
 
 export interface IManageAssignmentsProps {
@@ -77,11 +80,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
     return;
   };
 
-  const breadcrumbs = [
-    <Breadcrumb.Item>
-      <Link to={props.match.url}>Assignments</Link>
-    </Breadcrumb.Item>,
-  ];
+  const breadcrumbs = [<Breadcrumb.Item key="0">Assignments</Breadcrumb.Item>];
 
   return (
     <div>
@@ -94,7 +93,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
         return (
           <div key={encodedName}>
             <Route
-              path={`${props.match.url}/${encodedName}/rubric`}
+              path={`${props.match.url}/rubrics/${encodedName}`}
               render={(subprops: any) => (
                 <RubricManager
                   {...subprops}
@@ -106,7 +105,12 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   {(params: IRubricManagerParams) => {
                     const propz = {
                       ...params.props,
-                      breadcrumbs: breadcrumbs,
+                      breadcrumbs: [
+                        ...breadcrumbs,
+                        <Breadcrumb.Item>
+                          <Link to={`${props.match.url}/rubrics`}>Rubrics</Link>
+                        </Breadcrumb.Item>,
+                      ],
                       baseURL: `${props.match.url}/${encodedName}/rubric`,
                       history: props.history,
                     };
@@ -129,21 +133,6 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   refreshCourseData={props.refreshCourseData}
                   onCancel={cancel}
                   myEmail={props.myEmail}
-                  breadcrumbs={breadcrumbs}
-                />
-              )}
-            />
-            <Route
-              path={`${props.match.url}/${encodedName}/moss`}
-              render={(subprops: any) => (
-                <Moss
-                  {...subprops}
-                  course={props.currentCourse!}
-                  assignment={assignment}
-                  submissions={props.submissions[assignment.id]}
-                  user={props.user}
-                  onCancel={cancel}
-                  location={props.location}
                   breadcrumbs={breadcrumbs}
                 />
               )}
@@ -173,6 +162,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   activeAssignment={assignment}
                   detailType={DETAIL_TYPE.Settings}
                   baseURL={props.match.url}
+                  breadcrumbs={breadcrumbs}
                 />
               )}
             />
@@ -185,6 +175,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   activeAssignment={assignment}
                   detailType={DETAIL_TYPE.DownloadGrades}
                   baseURL={props.match.url}
+                  breadcrumbs={breadcrumbs}
                 />
               )}
             />
@@ -197,6 +188,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   activeAssignment={assignment}
                   detailType={DETAIL_TYPE.Delete}
                   baseURL={props.match.url}
+                  breadcrumbs={breadcrumbs}
                 />
               )}
             />
@@ -209,6 +201,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   activeAssignment={assignment}
                   detailType={DETAIL_TYPE.Upload_Single}
                   baseURL={props.match.url}
+                  breadcrumbs={breadcrumbs}
                 />
               )}
             />
@@ -221,6 +214,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   activeAssignment={assignment}
                   detailType={DETAIL_TYPE.Upload_Multiple}
                   baseURL={props.match.url}
+                  breadcrumbs={breadcrumbs}
                 />
               )}
             />
@@ -233,13 +227,16 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   activeAssignment={assignment}
                   detailType={DETAIL_TYPE.Upload_Import}
                   baseURL={props.match.url}
+                  breadcrumbs={breadcrumbs}
                 />
               )}
             />
             <Route
-              path={`${props.match.url}/${encodedName}/tests`}
+              path={`${props.match.url}/tests/${encodedName}`}
               render={(subprops: any) => (
                 <AssignmentTests
+                  {...subprops}
+                  breadcrumbs={breadcrumbs}
                   activeAssignment={assignment}
                   submissions={props.submissions[assignment.id]}
                   onCancel={cancel}
@@ -248,9 +245,47 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                 />
               )}
             />
+            <Route
+              path={`${props.match.url}/plagiarism/${encodedName}`}
+              render={(subprops: any) => (
+                <Moss
+                  {...subprops}
+                  course={props.currentCourse!}
+                  assignment={assignment}
+                  assignments={props.assignments}
+                  submissions={props.submissions[assignment.id]}
+                  user={props.user}
+                />
+              )}
+            />
           </div>
         );
       })}
+
+      <Route
+        path={`${props.match.url}/tests`}
+        exact={true}
+        render={(subprops: any) => <TestsOverview {...subprops} assignments={props.assignments} />}
+      />
+      <Route
+        path={`${props.match.url}/rubrics`}
+        exact={true}
+        render={(subprops: any) => <RubricOverview {...subprops} assignments={props.assignments} />}
+      />
+      <Route
+        path={`${props.match.url}/plagiarism`}
+        exact={true}
+        render={(subprops: any) => (
+          <Moss
+            {...subprops}
+            breadcrumbs={breadcrumbs}
+            course={props.currentCourse!}
+            assignments={props.assignments}
+            submissions={[]}
+            user={props.user}
+          />
+        )}
+      />
       <Route
         path={`${props.match.url}/download/grades`}
         exact={true}
@@ -258,15 +293,18 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
           <AssignmentsTable
             {...props}
             {...subprops}
+            breadcrumbs={breadcrumbs}
             detailType={DETAIL_TYPE.DownloadGrades}
             baseURL={props.match.url}
           />
         )}
       />
       <Route
-        path={props.match.url}
+        path={`${props.match.url}/overview`}
         exact={true}
-        render={(subprops: any) => <AssignmentsTable {...props} {...subprops} baseURL={props.match.url} />}
+        render={(subprops: any) => (
+          <AssignmentsTable {...props} {...subprops} breadcrumbs={breadcrumbs} baseURL={props.match.url} />
+        )}
       />
     </div>
   );

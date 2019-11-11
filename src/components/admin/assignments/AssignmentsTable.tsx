@@ -97,6 +97,8 @@ export interface IManageAssignmentsProps {
   activeAssignment?: AssignmentType; // which assignment has been clicked
   detailType?: DETAIL_TYPE; // what detail view are we showing
   baseURL: string;
+
+  breadcrumbs?: React.ReactElement[];
 }
 
 export enum DETAIL_TYPE {
@@ -316,9 +318,15 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
             </Link>
           </Menu.Item>
           <Menu.Item key="tests">
-            <Link to={`${this.props.baseURL}/${encodedName}/tests`}>
+            <Link to={`${this.props.baseURL}/tests/${encodedName}`}>
               <Icon type="file-done" />
               &nbsp; Edit tests
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="tests">
+            <Link to={`${this.props.baseURL}/plagiarism/${encodedName}`}>
+              <Icon type="diff" />
+              &nbsp; Check for plagiarism
             </Link>
           </Menu.Item>
           <Menu.Item key="2">
@@ -634,7 +642,8 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
         actions={actions}
         breadcrumbs={
           <Breadcrumb>
-            <Breadcrumb.Item>Assignments</Breadcrumb.Item>
+            {this.props.breadcrumbs}
+            <Breadcrumb.Item>Overview</Breadcrumb.Item>
           </Breadcrumb>
         }
         titleInfo={tooltips.admin.graderRoster.title}

@@ -1,3 +1,7 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
 /* react imports */
 import React, { useState } from 'react';
 
@@ -13,6 +17,8 @@ import { HelperFileType } from '../../../../../../infrastructure/autograder/help
 import { CodeWindow } from './utils/CodeWindow';
 import { TestFileUploader } from './utils/TestFileUploader';
 
+/**********************************************************************************************************************/
+
 const { Sider, Content } = Layout;
 
 interface IProps {
@@ -20,6 +26,8 @@ interface IProps {
   addFile: (name: string, code: string) => Promise<void>;
   deleteFile: (id: number) => Promise<void>;
   updateFile: (id: number, newCode: string) => Promise<void>;
+  height?: number;
+  title: string;
 }
 
 export const TestFileList = (props: IProps) => {
@@ -43,29 +51,40 @@ export const TestFileList = (props: IProps) => {
     );
   });
   /***************************** Return ****************************************/
-  return (
-    <div>
-      <Layout style={{ height: 650 }}>
-        <Sider theme="light">
-          <Menu selectedKeys={[currentIndex]} openKeys={['helpers']} mode="inline" onClick={changeIndex}>
-            {menuItems}
-          </Menu>
-          <TestFileUploader files={props.files} addFile={props.addFile} deleteFile={props.deleteFile} />
-        </Sider>
-        <Content style={{ maxHeight: '70vh', overflow: 'auto', fontSize: 12 }}>
-          {props.files.length === 0 ? (
-            <div />
-          ) : (
-            <div style={{ position: 'relative', marginLeft: 5 }}>
-              <CodeWindow
-                code={props.files[parseInt(currentIndex, 10)].code}
-                name={props.files[parseInt(currentIndex, 10)].name}
-                onSave={onSave}
-              />
-            </div>
-          )}
-        </Content>
-      </Layout>
-    </div>
-  );
+  if (props.files.length === 0) {
+    return (
+      <TestFileUploader title={props.title} files={props.files} addFile={props.addFile} deleteFile={props.deleteFile} />
+    );
+  } else {
+    return (
+      <div>
+        <Layout style={{ height: props.height ? props.height : 650 }}>
+          <Sider theme="light">
+            <Menu selectedKeys={[currentIndex]} openKeys={['helpers']} mode="inline" onClick={changeIndex}>
+              {menuItems}
+            </Menu>
+            <TestFileUploader
+              files={props.files}
+              addFile={props.addFile}
+              deleteFile={props.deleteFile}
+              title={props.title}
+            />
+          </Sider>
+          <Content style={{ maxHeight: '70vh', overflow: 'auto', fontSize: 12 }}>
+            {props.files.length === 0 ? (
+              <div />
+            ) : (
+              <div style={{ position: 'relative', marginLeft: 5 }}>
+                <CodeWindow
+                  code={props.files[parseInt(currentIndex, 10)].code}
+                  name={props.files[parseInt(currentIndex, 10)].name}
+                  onSave={onSave}
+                />
+              </div>
+            )}
+          </Content>
+        </Layout>
+      </div>
+    );
+  }
 };

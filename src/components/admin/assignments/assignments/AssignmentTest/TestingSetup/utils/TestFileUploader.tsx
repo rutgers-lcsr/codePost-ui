@@ -1,3 +1,7 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
 /* react imports */
 import React, { useState } from 'react';
 
@@ -13,7 +17,10 @@ interface IUploadProps {
   addFile: (name: string, code: string) => Promise<void>;
   deleteFile: (id: number) => Promise<void>;
   icon?: boolean;
+  title: string;
 }
+
+/**********************************************************************************************************************/
 
 export const TestFileUploader = (props: IUploadProps) => {
   /******************************* State Variables ****************************/
@@ -70,11 +77,6 @@ export const TestFileUploader = (props: IUploadProps) => {
       key: 'name',
     },
     {
-      title: 'Date uploaded',
-      dataIndex: 'created',
-      key: 'created',
-    },
-    {
       title: 'Delete',
       dataIndex: 'delete',
       key: 'delete',
@@ -84,7 +86,6 @@ export const TestFileUploader = (props: IUploadProps) => {
   const data = props.files.map((file) => {
     return {
       name: file.name,
-      created: file.created,
       delete: <Icon onClick={deleteFile.bind({}, file.id)} type="delete" />,
     };
   });
@@ -98,8 +99,16 @@ export const TestFileUploader = (props: IUploadProps) => {
           Add / Remove Files
         </Button>
       )}
-      <Modal visible={visible} onCancel={toggleVisible} footer={null} width={750}>
+      <Modal
+        visible={visible}
+        onCancel={toggleVisible}
+        width={750}
+        okText="Save"
+        onOk={saveNewFiles}
+        title={props.title}
+      >
         <Table columns={columns} dataSource={data} />
+        <br />
         <Upload
           beforeUpload={beforeUpload}
           listType="text"
@@ -112,9 +121,6 @@ export const TestFileUploader = (props: IUploadProps) => {
             <Icon type="upload" /> Add Files
           </Button>
         </Upload>
-        <Button disabled={newFiles.length === 0} onClick={saveNewFiles}>
-          Save new files
-        </Button>
       </Modal>
     </div>
   );

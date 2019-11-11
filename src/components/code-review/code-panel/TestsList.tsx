@@ -9,7 +9,7 @@ import * as React from 'react';
 import { Badge, Table, Collapse, Statistic } from 'antd';
 
 /* codePost imports */
-import { SubmissionTestType } from '../../../infrastructure/submissionTest';
+import { SubmissionTest, SubmissionTestType } from '../../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../../infrastructure/testCategory';
 import { TestCasesByCategory } from '../../admin/assignments/assignments/AssignmentTest/testFetchUtils';
 
@@ -28,7 +28,7 @@ const TestsList = (props: IProps) => {
   for (const category of props.categories) {
     testsByCategory[category.id] = [];
   }
-  for (const test of props.tests) {
+  for (const test of SubmissionTest.getLatest(props.tests)) {
     testsByCategory[test.testCategory] = [...testsByCategory[test.testCategory], test];
   }
 

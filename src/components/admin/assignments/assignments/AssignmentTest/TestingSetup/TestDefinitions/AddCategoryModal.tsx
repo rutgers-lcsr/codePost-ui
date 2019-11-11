@@ -2,10 +2,12 @@
 import React, { useState } from 'react';
 
 /* library imports */
-import { Button, Input, Modal, Row, Switch } from 'antd';
+import { Button, Input, Modal, Row, Switch, Icon } from 'antd';
 
 interface IUploadProps {
   addCategory: (name: string, proMode: boolean) => Promise<void>;
+  externalOnly: boolean;
+  icon?: boolean;
 }
 
 export const AddCategoryModal = (props: IUploadProps) => {
@@ -32,10 +34,13 @@ export const AddCategoryModal = (props: IUploadProps) => {
 
   /******************************* Return *****************************************/
   return (
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <Button onClick={toggleVisible} type="primary" style={{ marginTop: 20 }}>
-        Add Test Category
-      </Button>
+    <span>
+      {props.icon ? (
+        <Icon type="folder-add" onClick={toggleVisible} />
+      ) : (
+        <Button onClick={toggleVisible}>Add Test Category</Button>
+      )}
+
       <Modal
         visible={visible}
         title="Add new test category"
@@ -45,11 +50,7 @@ export const AddCategoryModal = (props: IUploadProps) => {
         style={{ padding: 25 }}
       >
         <Input onChange={onChange} value={name} placeholder="Category Name" />
-        <Row>
-          Category is pro mode:
-          <Switch onChange={setProMode} checked={proMode} />
-        </Row>
       </Modal>
-    </div>
+    </span>
   );
 };

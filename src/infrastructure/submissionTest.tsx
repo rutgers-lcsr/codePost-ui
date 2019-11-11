@@ -25,4 +25,15 @@ export class SubmissionTest {
   public static create = createObject(SubmissionTestV, SubmissionTestV, 'submissionTests');
   public static read = readObject(SubmissionTestV, 'submissionTests');
   public static delete = deleteObject(SubmissionTestV, 'submissionTests');
+  public static getLatest = (tests: SubmissionTestType[]) => {
+    const byTestCase: { [id: number]: SubmissionTestType } = {};
+    for (const test of tests) {
+      const thisCase = byTestCase[test.testCase];
+      if (!thisCase || thisCase.modified < test.modified) {
+        byTestCase[test.testCase] = test;
+      }
+    }
+
+    return Object.values(byTestCase);
+  };
 }

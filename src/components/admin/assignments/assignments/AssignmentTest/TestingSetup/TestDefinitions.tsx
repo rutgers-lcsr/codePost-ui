@@ -1,9 +1,17 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
 /* react imports */
 import React, { useEffect, useState } from 'react';
 
-/* library imports */
-import { Button, Collapse, Layout, Menu, Switch, Tag } from 'antd';
+/* antd imports */
+import { Button, Layout, Menu, Icon, Empty, Spin } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
+
+/* other library imports */
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 /* codePost object imports */
 import { AssignmentType } from '../../../../../../infrastructure/assignment';
@@ -12,29 +20,37 @@ import { TestCategory, TestCategoryType } from '../../../../../../infrastructure
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 import { HelperFileType } from '../../../../../../infrastructure/autograder/helperFile';
 import { SubmissionType } from '../../../../../../infrastructure/submission';
-import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
-
-import ReactMarkdown from 'react-markdown';
+import {
+  Environment,
+  EnvironmentType,
+  TestTemplateType,
+  TestsSourceType,
+} from '../../../../../../infrastructure/autograder/environment';
+import { File, FileType } from '../../../../../../infrastructure/file';
 
 /* codePost component imports */
 import { TestItem } from './TestDefinitions/TestItem';
-import { ProMode } from './TestDefinitions/ProMode';
-import { ViewSource } from './TestDefinitions/ViewSource';
+// import { ProMode } from './TestDefinitions/ProMode';
 import { AddCategoryModal } from './TestDefinitions/AddCategoryModal';
+import { EditCategoryModal } from './TestDefinitions/EditCategoryModal';
+import { AddTestModal } from './TestDefinitions/AddTestModal';
 
 /* codePost utils imports */
 import { fetchTestData, TestCasesByCategory } from '../testFetchUtils';
 import { hasNativeTestSupport } from './utils/languageUtils';
 
-const { Panel } = Collapse;
+import { CodeWindow } from './utils/CodeWindow';
+
 const { Sider, Content } = Layout;
+
+/**********************************************************************************************************************/
 
 interface IProps {
   currentAssignment: AssignmentType;
   solutions: SolutionFileType[];
   helpers: HelperFileType[];
   submissions: SubmissionType[];
-  env: EnvironmentType;
+  env?: EnvironmentType;
 }
 
 enum DETAIL_TYPE {
@@ -42,12 +58,24 @@ enum DETAIL_TYPE {
   ViewSource,
 }
 
+interface IGroupType {
+  subMenuTitle?: React.ReactElement;
+  isDisabled: boolean;
+  files: { name: string; canSave: boolean; code: string; title?: any }[];
+  onSave?: any;
+}
+
 export const TestDefinitions = (props: IProps) => {
   /******************************* State Variables ****************************/
   const [casesByCategory, setCasesByCategory] = useState<TestCasesByCategory>({});
   const [categories, setCategories] = useState<TestCategoryType[]>([]);
-  const [currentCategory, setCurrentCategory] = useState('');
   const [panel, setPanel] = useState<DETAIL_TYPE>(DETAIL_TYPE.EditTests);
+  const [activeTest, setActiveTest] = useState<TestCaseType | undefined>(undefined);
+  const [tests, setTests] = useState<TestTemplateType[]>([]);
+  const [main, setMain] = useState('');
+  const [currentFiles, setCurrentFiles] = useState<(SolutionFileType | FileType)[]>(props.solutions);
+  const [index, setIndex] = useState('0-0');
+  const [loading, setLoading] = useState(true);
 
   /******************************* Fetch Data ****************************/
   useEffect(() => {
@@ -55,24 +83,27 @@ export const TestDefinitions = (props: IProps) => {
       const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
       setCategories(categories);
       setCasesByCategory(casesByCategory);
-      setCurrentCategory(categories.length > 0 ? categories[0].id.toString() : '');
+      if (activeTest === undefined) {
+        if (categories.length > 0 && activeTest === undefined) setActiveTest(casesByCategory[categories[0].id][0]);
+      }
+      setLoading(false);
     };
 
     fetchData();
   }, [props.currentAssignment]);
 
-  /******************************* API / State Change Functions  ****************************/
-  const saveTest = async (testcase: TestCaseType) => {
-    let newTest;
-    if (testcase.id < 0) {
-      newTest = await TestCase.create(testcase);
-    } else {
-      newTest = await TestCase.update(testcase);
+  useEffect(() => {
+    if (props.env !== undefined) {
+      const fetchData = async () => {
+        const source: TestsSourceType = await Environment.eject(props.env!.id);
+        setMain(source.main);
+        setTests(source.templates);
+      };
+      fetchData();
     }
+  }, [props.env]);
 
-    replaceTestCase(newTest, testcase);
-    return newTest;
-  };
+  /******************************* TestCategory functions  ****************************/
 
   const addCategory = async (name: string, proMode: boolean) => {
     const payload = {
@@ -89,15 +120,43 @@ export const TestDefinitions = (props: IProps) => {
     setCasesByCategory(newCases);
   };
 
+  const updateCategory = (testCategory: TestCategoryType) => {
+    return TestCategory.update(testCategory).then((newCategory) => {
+      replaceTestCategory(newCategory);
+    });
+  };
+
+  const deleteCategory = (testCategory: TestCategoryType) => {
+    return TestCategory.delete(testCategory.id).then(() => {
+      setCategories(categories.filter((el) => el.id !== testCategory.id));
+    });
+  };
+
+  /******************************* TestCase functions  ****************************/
+
+  const saveTest = async (testcase: TestCaseType) => {
+    let newTest;
+    if (testcase.id < 0) {
+      newTest = await TestCase.create(testcase);
+    } else {
+      newTest = await TestCase.update(testcase);
+    }
+
+    replaceTestCase(newTest, testcase);
+    setActiveTest(testcase);
+    return newTest;
+  };
+
   const addTest = async (language: string | null, category: number) => {
     // If a language doesn't have native support, default to a bash unit test
-    const hasNativeSupport = language && hasNativeTestSupport(language);
+    const externalOnly = !props.env || !props.env.language;
+    const hasNativeSupport = !externalOnly && language && hasNativeTestSupport(language);
     const dummyTestCase = {
       id: -1,
       sortKey: 0,
       testCategory: category,
       description: 'New Test',
-      type: hasNativeSupport ? 'io' : 'bash-unit',
+      type: hasNativeSupport ? 'io' : externalOnly ? 'external' : 'bash-unit',
       pointsPass: 0,
       pointsFail: 0,
       text: '',
@@ -110,7 +169,31 @@ export const TestDefinitions = (props: IProps) => {
     };
 
     const newTestCase = await saveTest(dummyTestCase);
-    addTestCase(newTestCase);
+    const newCases = { ...casesByCategory };
+    newCases[newTestCase.testCategory] = [...casesByCategory[newTestCase.testCategory], newTestCase];
+    setCasesByCategory(newCases);
+    setActiveTest(newTestCase);
+  };
+
+  const deleteTest = (testCase: TestCaseType) => {
+    const newCases = { ...casesByCategory };
+    newCases[testCase.testCategory] = newCases[testCase.testCategory].filter((el) => el.id !== testCase.id);
+
+    // Load new test
+    const sorted = TestCase.sort(casesByCategory[testCase.testCategory]);
+    const index = sorted.findIndex((el) => el.id === testCase.id);
+    if (index === 0) {
+      if (sorted.length > 1) {
+        setActiveTest(sorted[1]);
+      } else {
+        setActiveTest(undefined);
+      }
+    } else {
+      setActiveTest(sorted[index - 1]);
+    }
+
+    setCasesByCategory(newCases);
+    return TestCase.delete(testCase.id);
   };
 
   /******************************* State Change Functions  ****************************/
@@ -131,172 +214,256 @@ export const TestDefinitions = (props: IProps) => {
     setCategories([...filteredCategories, newCategory]);
   };
 
-  const addTestCase = (newCase: TestCaseType) => {
-    const newCases = { ...casesByCategory };
-    newCases[newCase.testCategory] = [...casesByCategory[newCase.testCategory], newCase];
-    setCasesByCategory(newCases);
+  const togglePanel = () => {
+    if (panel === DETAIL_TYPE.EditTests) {
+      setPanel(DETAIL_TYPE.ViewSource);
+    } else {
+      setPanel(DETAIL_TYPE.EditTests);
+    }
   };
 
   const changeIndex = (e: ClickParam) => {
-    setCurrentCategory(e.key);
+    setIndex(e.key);
+  };
+
+  // Fixme: wire this up to selector in TestItem
+  const setTestSubject = (id: string) => {
+    const idNum = parseInt(id, 10);
+    const match = props.submissions.find((el) => el.id === idNum);
+    if (match) {
+      const files = match.files.map((fileID) => File.read(fileID));
+      Promise.all(files).then((fileList) => setCurrentFiles(fileList));
+    }
+  };
+
+  /******************************* Misc ****************************/
+
+  const download = () => {
+    const zip = new JSZip();
+    zip.file('main.sh', main);
+    let dir = zip.folder('tests');
+    tests.map((test) => {
+      dir.file(`Test${test.id}${test.extension}`, test.code);
+    });
+    dir = zip.folder('files');
+    currentFiles.map((file) => {
+      dir.file(file.name, file.code);
+    });
+    props.helpers.map((file) => {
+      dir.file(file.name, file.code);
+    });
+
+    zip.generateAsync({ type: 'blob' }).then(function(content: any) {
+      saveAs(content, `test-directory.zip`);
+    });
   };
 
   /******************************* Return  ****************************/
-  if (!props.env || !props.env.language) {
-    return <div>There is no environment defined. Please set it up in the Environment tab before creating tests</div>;
-  }
+
+  const externalOnly = !props.env || !props.env.language;
+  let menu;
+  let content;
+
   switch (panel) {
     case DETAIL_TYPE.ViewSource:
-      return (
-        <div>
-          <div
-            style={{
-              width: '100%',
-              display: 'flex',
-              justifyContent: 'flex-end',
-              fontSize: 15,
-              alignItems: 'center',
-              padding: 10,
-            }}
-          >
-            View Source: &nbsp; <Switch defaultChecked={true} onChange={setPanel.bind({}, DETAIL_TYPE.EditTests)} />
-          </div>
-          <ViewSource
-            submissions={props.submissions}
-            solutions={props.solutions}
-            helpers={props.helpers}
-            env={props.env}
-          />
-        </div>
-      );
-    case DETAIL_TYPE.EditTests:
-      let testContent;
-      const thisCategory = categories.find((cat) => {
-        return cat.id === parseInt(currentCategory, 10);
+      const bashGroup: IGroupType = {
+        files: [{ name: 'main.sh', code: main, canSave: false }],
+        isDisabled: false,
+      };
+
+      const helperFiles = props.helpers.map((file) => {
+        return { title: <div>{file.name} (Helper)</div>, name: file.name, code: file.code, canSave: false };
       });
-      if (!thisCategory) {
-        testContent = <div />;
-      } else {
-        switch (thisCategory.type) {
-          case 'normal':
-            const testItems = currentCategory && casesByCategory[parseInt(currentCategory, 10)] && (
-              <Collapse>
-                {TestCase.sort(casesByCategory[parseInt(currentCategory, 10)]).map((testCase, i) => {
-                  return (
-                    <Panel header={`${i + 1}. ${testCase.description}`} key={testCase.id}>
-                      <TestItem
-                        currentAssignment={props.currentAssignment}
-                        testCase={testCase}
-                        saveTest={saveTest}
-                        files={props.solutions}
-                        env={props.env}
-                      />
-                    </Panel>
-                  );
-                })}
-              </Collapse>
-            );
-            testContent = (
-              <Content style={{ margin: 15 }}>
-                <div>{testItems}</div>
-                <div style={{ marginTop: 15, display: 'flex', justifyContent: 'center' }}>
-                  {currentCategory && (
-                    <Button
-                      type="primary"
-                      onClick={addTest.bind({}, props.env.language, parseInt(currentCategory, 10))}
-                    >
-                      Add Test
-                    </Button>
-                  )}
-                </div>
-              </Content>
-            );
-            break;
-          case 'bash':
-            testContent = (
-              <Content style={{ margin: 15 }}>
-                <ProMode
-                  currentCategory={thisCategory}
-                  solutions={props.solutions}
-                  helpers={props.helpers}
-                  submissions={props.submissions}
-                  replaceCategory={replaceTestCategory}
-                  testCases={TestCase.sort(casesByCategory[parseInt(currentCategory, 10)])}
-                />
-              </Content>
-            );
-            break;
-          case 'external':
-            // FIXME:
-            testContent = (
-              <Content style={{ margin: 15 }}>
-                <div>Externally set category</div>
-              </Content>
-            );
-            break;
+
+      const submissionFiles = currentFiles.map((file) => {
+        return { name: file.name, code: file.code, canSave: false };
+      });
+
+      const fileGroup: IGroupType = {
+        subMenuTitle: <div style={{ display: 'flex', alignItems: 'center' }}>files</div>,
+        files: [...helperFiles, ...submissionFiles],
+        isDisabled: true,
+      };
+
+      const templateGroup: IGroupType = {
+        subMenuTitle: <div>tests</div>,
+        files: tests.map((test) => {
+          return { code: test.code, name: `Test${test.id}${test.extension}`, canSave: false };
+        }),
+        isDisabled: false,
+      };
+
+      const groups = [bashGroup, fileGroup, templateGroup];
+
+      const groupElems = groups.map((group, groupIndex) => {
+        const items = group.files.map((file, fileIndex) => {
+          return (
+            <Menu.Item key={`${groupIndex}-${fileIndex}`} style={{ height: 'fit-content', minHeight: 40 }}>
+              <div>{file.title || file.name}</div>
+            </Menu.Item>
+          );
+        });
+        if (!group.subMenuTitle) {
+          return items;
         }
-      }
 
-      const exampleText = `\`\`\`
-    main.sh
-    files/
-      #### Files from a student submission or soluton code ####
-      submissionFile1
-      submissionFile2
-      #### Helper files uploaded in environment set up ####
-      helperFile1
-      helperFile2
-    tests/
-      #### Each test case below gets converted to a test file ####
-      testCase1File
-      testCase2File
-    \`\`\``;
+        return (
+          <Menu.SubMenu key={`${groupIndex}`} disabled={group.isDisabled} title={group.subMenuTitle}>
+            {items}
+          </Menu.SubMenu>
+        );
+      });
 
-      return categories.length > 0 ? (
-        <div>
-          <div style={{ fontSize: 11 }}>
-            <div
-              style={{
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'flex-end',
-                fontSize: 15,
-                alignItems: 'center',
-                padding: 10,
-              }}
-            >
-              View Source: &nbsp; <Switch defaultChecked={false} onChange={setPanel.bind({}, DETAIL_TYPE.ViewSource)} />
-            </div>
-            <Collapse>
-              <Panel header="Instructions" key="1">
-                Write each of your tests below, and run them on either solution code, or a student's submission. Each
-                test case will be converted to a test file in the following directory structure:
-                <br />
-                <br />
-                <ReactMarkdown source={exampleText} />
-              </Panel>
-            </Collapse>
-            <Layout>
-              <Sider theme="light">
-                <Menu selectedKeys={[currentCategory]} mode="inline" onClick={changeIndex}>
-                  {TestCategory.sort(categories).map((category) => {
-                    return (
-                      <Menu.Item key={category.id.toString()} style={{ height: 'fit-content', minHeight: 40 }}>
-                        {category.name} {category.type === 'bash' && <Tag>Shell</Tag>}
-                      </Menu.Item>
-                    );
-                  })}
-                  <div style={{ marginTop: 15, display: 'flex', justifyContent: 'center' }}>
-                    <AddCategoryModal addCategory={addCategory} />
-                  </div>
-                </Menu>
-              </Sider>
-              {testContent}
-            </Layout>
-          </div>
-        </div>
-      ) : (
-        <AddCategoryModal addCategory={addCategory} />
+      menu = (
+        <Menu onClick={changeIndex} mode="inline" selectedKeys={[index]} openKeys={['0', '1', '2', '3']}>
+          {groupElems}
+        </Menu>
       );
+
+      const currentGroupIndex = parseInt(index.split('-')[0], 10);
+      const currentFileIndex = parseInt(index.split('-')[1], 10);
+
+      const currentGroup = groups[currentGroupIndex];
+      const currentFile = currentGroup.files[currentFileIndex];
+
+      if (currentFile !== undefined) {
+        content = <CodeWindow code={currentFile.code} name={currentFile.name} />;
+      }
+      break;
+    case DETAIL_TYPE.EditTests:
+      menu = (
+        <Menu
+          defaultOpenKeys={categories.map((el) => el.id.toString())}
+          mode="inline"
+          selectedKeys={activeTest ? [activeTest.id.toString()] : []}
+          style={{ height: '100%' }}
+        >
+          {TestCategory.sort(categories).map((category) => {
+            return (
+              <Menu.SubMenu
+                key={category.id}
+                title={
+                  <span>
+                    {category.name}{' '}
+                    <EditCategoryModal
+                      testCategory={category}
+                      updateCategory={updateCategory}
+                      deleteCategory={deleteCategory}
+                      externalOnly={externalOnly}
+                    />{' '}
+                  </span>
+                }
+              >
+                {category.id in casesByCategory
+                  ? TestCase.sort(casesByCategory[category.id]).map((el) => (
+                      <Menu.Item
+                        key={el.id}
+                        style={{ height: 'fit-content', minHeight: 40 }}
+                        onClick={() => {
+                          setActiveTest(el);
+                        }}
+                      >
+                        {el.description}
+                      </Menu.Item>
+                    ))
+                  : null}
+              </Menu.SubMenu>
+            );
+          })}
+        </Menu>
+      );
+
+      content = (
+        <Content style={{ margin: 15 }}>
+          <div>
+            {activeTest && (
+              <TestItem
+                key={activeTest.id}
+                currentAssignment={props.currentAssignment}
+                testCase={activeTest}
+                saveTest={saveTest}
+                files={props.solutions}
+                env={props.env}
+                deleteTest={deleteTest}
+                submissions={props.submissions}
+                setTestSubject={setTestSubject}
+              />
+            )}
+          </div>
+        </Content>
+      );
+  }
+
+  const hasTests = Object.values(casesByCategory).some((el) => el.length > 0);
+
+  if (loading) {
+    return <Spin />;
+  } else if (categories.length === 0) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <Empty
+          style={{ marginTop: '20px', maxWidth: '400px' }}
+          description={<span>Create a test category to get started.</span>}
+        >
+          <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} />
+        </Empty>
+      </div>
+    );
+  } else {
+    return (
+      <div>
+        <div style={{ fontSize: 11 }} id="Autograder">
+          <Layout>
+            <Sider theme="light">
+              {externalOnly ? null : (
+                <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
+                  <Button onClick={togglePanel}>
+                    {panel === DETAIL_TYPE.ViewSource ? 'Edit tests' : 'View source'}
+                  </Button>
+                </div>
+              )}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  background: '#ccc',
+                  justifyContent: 'space-between',
+                  padding: '0 15px',
+                  fontSize: '14px',
+                  height: '30px',
+                }}
+              >
+                Tests
+                <div>
+                  <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} icon={true} />
+                  &nbsp; &nbsp;
+                  <AddTestModal
+                    addTest={addTest.bind({}, props.env ? props.env.language : '')}
+                    categories={categories}
+                  />
+                  &nbsp; &nbsp;
+                  <Icon type="cloud-download" onClick={download} />
+                </div>
+              </div>
+              {menu}
+            </Sider>
+            {hasTests ? (
+              content
+            ) : (
+              <Content style={{ margin: 15 }}>
+                <Empty
+                  style={{ marginTop: '20px', maxWidth: '400px' }}
+                  description={
+                    <span>
+                      Now create your first test by clicking the <Icon type="file-add" /> icon on the left.{' '}
+                    </span>
+                  }
+                ></Empty>
+              </Content>
+            )}
+          </Layout>
+        </div>
+      </div>
+    );
   }
 };

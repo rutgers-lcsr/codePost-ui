@@ -3,11 +3,7 @@ import { AssignmentType } from '../../../../../infrastructure/assignment';
 import { TestCase, TestCaseType } from '../../../../../infrastructure/testCase';
 import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructure/submissionTest';
 import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
-import {
-  AnonymousSubmissionType,
-  SubmissionType,
-  StudentSubmissionType,
-} from '../../../../../infrastructure/submission';
+import { AnonymousSubmissionType } from '../../../../../infrastructure/submission';
 
 import { SolutionFile } from '../../../../../infrastructure/autograder/solutionFile';
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
@@ -45,9 +41,6 @@ export const fetchSolutionFiles = async (env: EnvironmentType) => {
 export const fetchEnvironment = async (assignment: AssignmentType) => {
   if (assignment.environment) {
     return await Environment.read(assignment.environment);
-  } else {
-    const payload = { id: -1, language: null, dependencies: '[]', assignment: assignment.id, compileText: '' };
-    return await Environment.create(payload);
   }
 };
 

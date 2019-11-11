@@ -62,7 +62,7 @@ export const CodeWindow = (props: IProps) => {
 
   // ******************************* Return  *******************************
   return (
-    <div style={{ fontSize: 12, minWidth: 300, width: 'inherit%', position: 'relative' }}>
+    <div style={{ fontSize: 12, minWidth: 300, width: '100%', position: 'relative' }}>
       {props.onSave && (
         <Button
           style={{ position: 'absolute', right: 15, zIndex: 100 }}
