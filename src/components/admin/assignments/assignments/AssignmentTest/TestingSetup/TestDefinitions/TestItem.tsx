@@ -244,7 +244,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             <Select disabled={this.props.isRunning} style={inputStyle}>
               {this.props.files.map((file) => {
                 return (
-                  <Option key={file.id} value={file.id}>
+                  <Option key={file.id} value={file.name}>
                     {file.name}
                   </Option>
                 );
