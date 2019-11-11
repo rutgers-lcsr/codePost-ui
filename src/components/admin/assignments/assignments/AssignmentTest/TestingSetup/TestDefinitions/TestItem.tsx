@@ -39,6 +39,7 @@ interface ITestItemProps {
   files: SolutionFileType[];
   env: EnvironmentType;
   submissions: SubmissionType[];
+  setTestSubject: (id: string) => void;
 }
 
 interface IFormValues {
@@ -157,6 +158,7 @@ export const TestItem = (props: ITestItemProps) => {
       isRunning={isRunning}
       language={props.env.language!}
       submissions={props.submissions}
+      setTestSubject={props.setTestSubject}
     />
   );
 };
@@ -171,6 +173,7 @@ interface ITestFormItemProps extends FormComponentProps {
   isRunning: boolean;
   language: string;
   submissions: SubmissionType[];
+  setTestSubject: (id: string) => void;
 }
 
 interface IState {
@@ -235,7 +238,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             <Select disabled={this.props.isRunning} style={inputStyle}>
               {this.props.files.map((file) => {
                 return (
-                  <Option key={file.id} value={file.name}>
+                  <Option key={file.id} value={file.id}>
                     {file.name}
                   </Option>
                 );
