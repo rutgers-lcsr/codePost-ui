@@ -2,13 +2,11 @@
 import React from 'react';
 
 /* library imports  */
-import { Icon, Popover, Button, Tag, Select, Divider } from 'antd';
+import { Button, Tag, Select } from 'antd';
 
 import { animateScroll } from 'react-scroll';
 
-/* codePost other imports  */
-import { CodeWindow } from './CodeWindow';
-
+/* codePost imports  */
 import { SubmissionType } from '../../../../../infrastructure/submission';
 
 export enum RESULT_TYPE {
@@ -44,7 +42,6 @@ const getResultTag = (resultType: RESULT_TYPE) => {
 
 export const PsuedoTerminal = (props: IResultProps) => {
   const [logs, setLogs] = React.useState([] as ILogType[]);
-  const [submission, setSubmission] = React.useState('0');
 
   React.useEffect(() => {
     if (props.log !== undefined) {

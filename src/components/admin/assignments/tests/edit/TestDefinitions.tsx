@@ -461,7 +461,7 @@ export const TestDefinitions = (props: IProps) => {
             {hasTests ? (
               content
             ) : (
-              <Content style={{ margin: 15 }}>
+              <Content style={{ margin: 15, display: 'flex', justifyContent: 'center' }}>
                 <Empty
                   style={{ marginTop: '20px', maxWidth: '400px' }}
                   description={

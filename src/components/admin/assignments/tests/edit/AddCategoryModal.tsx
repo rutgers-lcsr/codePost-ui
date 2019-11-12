@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 /* library imports */
-import { Button, Input, Modal, Row, Switch, Icon } from 'antd';
+import { Button, Input, Modal, Icon } from 'antd';
 
 interface IUploadProps {
   addCategory: (name: string, proMode: boolean) => Promise<void>;
@@ -14,11 +14,10 @@ export const AddCategoryModal = (props: IUploadProps) => {
   /******************************* State Variables ****************************/
   const [visible, setVisible] = useState(false);
   const [name, setName] = useState('');
-  const [proMode, setProMode] = useState(false);
 
   /******************************* API / State Change Functions ****************************/
   const onSave = async () => {
-    await props.addCategory(name, proMode);
+    await props.addCategory(name, false);
     setName('');
     setVisible(!visible);
   };

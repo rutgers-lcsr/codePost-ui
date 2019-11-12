@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Breadcrumb, Button, Collapse, Tabs } from 'antd';
+import { Breadcrumb, Button, Tabs } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -23,13 +23,11 @@ import { HelperFile, HelperFileType } from '../../../../../infrastructure/autogr
 import CPAdminDetail from '../../../other/CPAdminDetail';
 import { EnvironmentSpecs } from './EnvironmentSpecs';
 import { TestDefinitions } from './TestDefinitions';
-import { TestFileList } from './TestFileList';
 
 /* codePost util imports */
 import { fetchSolutionFiles, fetchEnvironment, fetchHelpers } from '../../../../core/testFetchUtils';
 
 const { TabPane } = Tabs;
-const { Panel } = Collapse;
 
 /**********************************************************************************************************************/
 

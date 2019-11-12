@@ -23,9 +23,9 @@ async function checkAndRefreshTimer(
     },
     method: 'GET',
   });
-  if (res.status == 200) {
+  if (res.status === 200) {
     const result = await res.json();
-    if (result.status == 'SUCCESS' || result.status == 'FAILURE') {
+    if (result.status === 'SUCCESS' || result.status === 'FAILURE') {
       callback(result.result);
       clearInterval(interval);
     } else if (result.result && progressCallback) {

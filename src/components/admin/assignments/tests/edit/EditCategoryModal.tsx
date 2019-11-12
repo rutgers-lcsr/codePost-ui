@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 /* library imports */
-import { Button, Input, Modal, Row, Switch, Icon } from 'antd';
+import { Button, Input, Modal, Icon } from 'antd';
 
 import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 
@@ -18,7 +18,6 @@ export const EditCategoryModal = (props: IUploadProps) => {
   const [visible, setVisible] = useState(false);
   const [name, setName] = useState(props.testCategory.name);
   const [loading, setLoading] = useState(false);
-  const [proMode, setProMode] = useState(false);
 
   /******************************* API / State Change Functions ****************************/
   const onSave = async () => {
@@ -71,14 +70,6 @@ export const EditCategoryModal = (props: IUploadProps) => {
         ]}
       >
         <Input onChange={onChange} value={name} placeholder="Category Name" />
-        {props.externalOnly ? (
-          undefined
-        ) : (
-          <Row>
-            Category is pro mode:
-            <Switch onChange={setProMode} checked={proMode} />
-          </Row>
-        )}
       </Modal>
     </span>
   );

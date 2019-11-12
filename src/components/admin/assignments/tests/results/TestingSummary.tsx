@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 
 /* library imports */
-import { Breadcrumb, Button, Dropdown, Empty, Icon, Menu, Table, Modal } from 'antd';
+import { Breadcrumb, Button, Dropdown, Icon, Menu } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -105,7 +105,6 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   };
 
   // ******************************* Return  *******************************
-  let content;
   let actions: any = [];
   const totalTests = categories.reduce((acc: number, cat) => {
     return acc + cat.testCases.length;

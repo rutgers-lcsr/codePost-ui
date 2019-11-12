@@ -9,9 +9,6 @@ import React, { useState } from 'react';
 import { Button, Divider, Form, Input, Row, Select, Tag, message, Modal, Typography } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
-/* other library imports */
-import { cloneDeep } from 'lodash-es';
-
 /* codePost object imports */
 import { AssignmentType, TestCaseType, SubmissionType } from '../../../../../infrastructure/types';
 import { TestCase } from '../../../../../infrastructure/testCase';
