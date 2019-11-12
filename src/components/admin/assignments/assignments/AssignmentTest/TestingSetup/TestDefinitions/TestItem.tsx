@@ -29,6 +29,8 @@ import { PsuedoTerminal } from '../utils/PsuedoTerminal';
 /* codePost util imports */
 import { testTemplates, hasNativeTestSupport, extensionsByLanguage } from '../utils/languageUtils';
 
+import { ILogType, RESULT_TYPE } from '../utils/PsuedoTerminal';
+
 const { confirm } = Modal;
 const { Option } = Select;
 
@@ -43,6 +45,7 @@ interface ITestItemProps {
   env?: EnvironmentType;
   submissions: SubmissionType[];
   setTestSubject: (id: string) => void;
+  activeSubmission?: SubmissionType;
 }
 
 interface IFormValues {
@@ -59,9 +62,8 @@ interface IFormValues {
 export const TestItem = (props: ITestItemProps) => {
   /******************************* State Variables ****************************/
   let formRef: any = React.createRef();
-  const [testOutput, setTestOutput] = useState<TestCaseTestResultType | null>(null);
+  const [testOutput, setTestOutput] = useState<ILogType | undefined>(undefined);
   const [isRunning, setIsRunning] = useState(false);
-  const [activeSubmission, setActiveSubmission] = useState<SubmissionType | undefined>(undefined);
 
   /******************************* API / State Change Functions ****************************/
   const handleCreate = (codeString?: string) => {
@@ -103,32 +105,28 @@ export const TestItem = (props: ITestItemProps) => {
   // A testCase must be saved before it can be run. To simulate a "run without saving"
   // operation, we (1) save the test, (2) run it, (3) save it using its old values.
   const runTest = async (values: IFormValues, codeString?: string) => {
-    const testCaseCopy = cloneDeep(props.testCase);
-    const toRevert = cloneDeep(testCaseCopy);
-    testCaseCopy.text = codeString || '';
-    testCaseCopy.description = values.description;
-    testCaseCopy.expectedOutput = values.expectedOutput;
-    testCaseCopy.fileName = values.fileName;
-    testCaseCopy.function = values.function;
-    testCaseCopy.input = values.input;
-    testCaseCopy.checkReturn = values.checkReturn === 'return';
-    testCaseCopy.type = values.testType;
-    await props.saveTest(testCaseCopy);
+    await saveTest(values, codeString);
 
     if (props.testCase.id > 0) {
       setIsRunning(true);
-      const payload = { id: props.testCase.id };
+      const payload = {
+        id: props.testCase.id,
+        submission: props.activeSubmission ? props.activeSubmission.id : undefined,
+      };
+      console.log(payload);
       const result = await TestCase.run(payload);
       awaitTestResult(result.task, callback);
-
-      // Undo changes
-      await props.saveTest(toRevert);
-      return;
     }
   };
 
   const callback = (result: TestCaseTestResultType) => {
-    setTestOutput(result);
+    const formatted = {
+      log: result.log,
+      target: props.activeSubmission ? props.activeSubmission.students[0] : 'solution code',
+      result: result.passed ? RESULT_TYPE.PASSED : result.isError ? RESULT_TYPE.ERROR : RESULT_TYPE.FAILED,
+    };
+
+    setTestOutput(formatted);
     setIsRunning(false);
   };
 
@@ -160,7 +158,7 @@ export const TestItem = (props: ITestItemProps) => {
       runTest={handleRun}
       files={props.files}
       wrappedComponentRef={saveFormRef}
-      testOutput={testOutput}
+      log={testOutput}
       isRunning={isRunning}
       language={props.env ? props.env.language : ''}
       submissions={props.submissions}
@@ -174,7 +172,7 @@ interface ITestFormItemProps extends FormComponentProps {
   saveTest: () => void;
   deleteTest: () => Promise<void>;
   files: SolutionFileType[];
-  testOutput: TestCaseTestResultType | null;
+  log?: ILogType;
   runTest: () => void;
   isRunning: boolean;
   language: string;
@@ -311,7 +309,6 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     const { testCase, form } = this.props;
     const { getFieldDecorator } = form;
 
-    const outputJSON = this.props.testOutput;
     const name = this.state.testType === 'bash' ? '.sh' : extensionsByLanguage[this.props.language];
 
     // Disable changing the test type if there is no native test support
@@ -396,12 +393,11 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
           <Typography.Title level={4}>3. Results</Typography.Title>
           <div>
             <PsuedoTerminal
-              log={outputJSON === null ? null : outputJSON.log}
-              passed={outputJSON === null ? null : outputJSON.passed}
-              isError={outputJSON === null ? false : outputJSON.isError}
+              log={this.props.log}
               isRunning={this.props.isRunning}
               runTest={this.props.runTest.bind(this, this.state.commandText)}
               submissions={this.props.submissions}
+              setTestSubject={this.props.setTestSubject}
             />
           </div>
         </div>

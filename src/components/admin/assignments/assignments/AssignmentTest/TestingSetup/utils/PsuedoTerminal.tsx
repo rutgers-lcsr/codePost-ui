@@ -11,24 +11,24 @@ import { CodeWindow } from './CodeWindow';
 
 import { SubmissionType } from '../../../../../../../infrastructure/submission';
 
-enum RESULT_TYPE {
+export enum RESULT_TYPE {
   PASSED,
   FAILED,
   ERROR,
 }
 
-interface ILogType {
+export interface ILogType {
   log: string;
   result: RESULT_TYPE;
+  target: string;
 }
 
 interface IResultProps {
-  passed: boolean | null;
-  log: string | null;
-  isError: boolean;
+  log?: ILogType;
   isRunning?: boolean;
   runTest?: () => void;
   submissions: SubmissionType[];
+  setTestSubject: (id: string) => void;
 }
 
 const getResultTag = (resultType: RESULT_TYPE) => {
@@ -44,21 +44,11 @@ const getResultTag = (resultType: RESULT_TYPE) => {
 
 export const PsuedoTerminal = (props: IResultProps) => {
   const [logs, setLogs] = React.useState([] as ILogType[]);
-  const [selectedSubmission, setSelectedSubmission] = React.useState('Solution code');
+  const [submission, setSubmission] = React.useState('0');
 
   React.useEffect(() => {
-    // FIXME: replace this convoluted calculation with a prop of type RESULT_TYPE
-    let resultType;
-    if (props.passed) {
-      resultType = RESULT_TYPE.PASSED;
-    } else if (props.isError) {
-      resultType = RESULT_TYPE.ERROR;
-    } else if (props.passed === false) {
-      resultType = RESULT_TYPE.FAILED;
-    }
-
-    if (props.log !== null && resultType !== undefined) {
-      setLogs([...logs, { log: props.log, result: resultType }]);
+    if (props.log !== undefined) {
+      setLogs([...logs, props.log]);
     }
   }, [props.log]);
 
@@ -73,12 +63,8 @@ export const PsuedoTerminal = (props: IResultProps) => {
   React.useEffect(scrollToBottom, [logs]);
 
   let resultType;
-  if (props.passed) {
-    resultType = RESULT_TYPE.PASSED;
-  } else if (props.isError) {
-    resultType = RESULT_TYPE.ERROR;
-  } else if (props.passed === false) {
-    resultType = RESULT_TYPE.FAILED;
+  if (props.log) {
+    resultType = props.log.result;
   }
 
   let resultTag;
@@ -107,33 +93,21 @@ export const PsuedoTerminal = (props: IResultProps) => {
       >
         <div style={{ marginRight: '5px' }}>
           <Select
-            value={selectedSubmission}
-            onChange={setSelectedSubmission}
+            onChange={props.setTestSubject}
             style={{ height: '25px', minWidth: '200px', fontSize: '12px' }}
             size="small"
             showSearch
+            defaultValue="0"
             filterOption={(input, option: any) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-            dropdownRender={(menu) => (
-              <div>
-                {menu}
-                <Divider style={{ margin: '4px 0' }} />
-                <div
-                  style={{ padding: '4px 8px', cursor: 'pointer' }}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    setSelectedSubmission('Solution code');
-                  }}
-                >
-                  <Icon type="solution" /> Use solution code
-                </div>
-              </div>
-            )}
           >
             {props.submissions.map((sub, i) => (
-              <Select.Option key={i} value={i}>
+              <Select.Option key={i} value={sub.id}>
                 {sub.students[0]}
               </Select.Option>
             ))}
+            <Select.Option key="0" value="0">
+              Solution code
+            </Select.Option>
           </Select>
         </div>
         <div style={{ marginRight: '5px' }}>{resultTag}</div>
@@ -163,11 +137,11 @@ export const PsuedoTerminal = (props: IResultProps) => {
       >
         {logs.map((log, i) => (
           <span key={i}>
-            Running....
+            Running...
             <br />
             {log.log}
             {log.log.length > 0 ? <br /> : null}
-            {getResultTag(log.result)}
+            {getResultTag(log.result)} on {log.target}
             <br />
           </span>
         ))}

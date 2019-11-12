@@ -165,10 +165,8 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       language: newEnv.language !== null ? newEnv.language : '',
       simulate: false,
     });
-    setEnv(newEnv);
+    setEnv(buildEnv);
   };
-
-  const updateEnv = () => {};
 
   const deleteEnv = () => {
     if (env !== undefined) {

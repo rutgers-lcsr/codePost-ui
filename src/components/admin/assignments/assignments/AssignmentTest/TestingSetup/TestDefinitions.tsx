@@ -73,9 +73,11 @@ export const TestDefinitions = (props: IProps) => {
   const [activeTest, setActiveTest] = useState<TestCaseType | undefined>(undefined);
   const [tests, setTests] = useState<TestTemplateType[]>([]);
   const [main, setMain] = useState('');
-  const [currentFiles, setCurrentFiles] = useState<(SolutionFileType | FileType)[]>(props.solutions);
   const [index, setIndex] = useState('0-0');
   const [loading, setLoading] = useState(true);
+
+  const [activeSubmission, setActiveSubmission] = useState<SubmissionType | undefined>(undefined);
+  const [currentFiles, setCurrentFiles] = useState<(SolutionFileType | FileType)[]>(props.solutions);
 
   /******************************* Fetch Data ****************************/
   useEffect(() => {
@@ -233,6 +235,10 @@ export const TestDefinitions = (props: IProps) => {
     if (match) {
       const files = match.files.map((fileID) => File.read(fileID));
       Promise.all(files).then((fileList) => setCurrentFiles(fileList));
+      setActiveSubmission(match);
+    } else {
+      setActiveSubmission(undefined);
+      setCurrentFiles(props.solutions);
     }
   };
 
@@ -387,6 +393,7 @@ export const TestDefinitions = (props: IProps) => {
                 deleteTest={deleteTest}
                 submissions={props.submissions}
                 setTestSubject={setTestSubject}
+                activeSubmission={activeSubmission}
               />
             )}
           </div>
