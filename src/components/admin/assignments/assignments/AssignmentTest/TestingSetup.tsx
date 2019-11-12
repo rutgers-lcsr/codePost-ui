@@ -86,11 +86,15 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     switch (type) {
       case FILE_TYPE.SOLUTION:
         const newSolution = await SolutionFile.create(payload);
-        setSolutions([...solutions, newSolution]);
+        setSolutions((prevState) => {
+          return [...prevState, newSolution];
+        });
         break;
       case FILE_TYPE.HELPER:
         const newHelper = await HelperFile.create(payload);
-        setHelpers([...helpers, newHelper]);
+        setHelpers((prevState) => {
+          return [...prevState, newHelper];
+        });
         break;
     }
   };
@@ -129,7 +133,6 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         if (solutionIndex > -1) {
           const newSolutions = [...solutions];
           newSolutions.splice(solutionIndex, 1, newSolution);
-
           setSolutions(newSolutions);
         }
         break;

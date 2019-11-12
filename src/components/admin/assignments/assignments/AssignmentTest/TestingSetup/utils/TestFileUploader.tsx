@@ -54,6 +54,7 @@ export const TestFileUploader = (props: IUploadProps) => {
       if (reader.result) {
         const cleanedData = typeof reader.result === 'string' ? reader.result.replace(/\0/g, '') : reader.result;
         const oldFiles = [...newFiles];
+        console.log(oldFiles);
         setNewFiles([...oldFiles, { uid: `${counter}-${file.name}`, code: cleanedData, name: file.name }]);
         setCounter(counter + 1);
       }
