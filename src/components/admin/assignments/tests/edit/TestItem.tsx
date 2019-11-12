@@ -265,7 +265,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             initialValue: testCase.input,
             rules: [
               {
-                required: true,
+                required: false,
               },
             ],
           })(<Input placeholder={'Input'} disabled={this.props.isRunning} style={inputStyle} />)}
