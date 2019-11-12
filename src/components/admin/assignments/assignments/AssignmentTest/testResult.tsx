@@ -4,7 +4,7 @@ export function awaitTestResult(id: string, callback: (result: any) => any, prog
   let tries = 0;
   const interval = setInterval(() => {
     checkAndRefreshTimer(id, interval, callback, progressCallback);
-    if (++tries === MAX_TRIES) {
+    if (++tries === MAX_TRIES && !progressCallback) {
       window.clearInterval(interval);
     }
   }, 2000);
