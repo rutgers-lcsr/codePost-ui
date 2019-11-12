@@ -248,6 +248,10 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     });
   };
 
+  public onChangeFileName = (newName: string) => {
+    this.setState({ selectedFileName: newName });
+  };
+
   public buildIOTest = (testCase: TestCaseType) => {
     const { getFieldDecorator } = this.props.form;
     const textStyle: React.CSSProperties = { whiteSpace: 'nowrap', marginRight: '4px', marginLeft: '4px' };
@@ -276,7 +280,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               },
             ],
           })(
-            <Select disabled={this.props.isRunning} style={inputStyle}>
+            <Select disabled={this.props.isRunning} onChange={this.onChangeFileName} style={inputStyle}>
               {this.props.files.map((file) => {
                 return (
                   <Option key={file.id} value={file.name}>
