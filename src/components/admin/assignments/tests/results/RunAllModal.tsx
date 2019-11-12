@@ -1,6 +1,8 @@
 import * as React from 'react';
 
-import { Modal } from 'antd';
+import { Modal, Progress } from 'antd';
+
+import { TestCaseType } from '../../../../../infrastructure/testCase';
 
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Cell, CartesianGrid, Tooltip, Legend } from 'recharts';
 
@@ -18,7 +20,8 @@ const raw: IResultsType = {
 };
 
 interface IProps {
-  raw: IResultsType;
+  raw: string;
+  cases: TestCaseType[];
 }
 
 // const data = [
@@ -53,31 +56,42 @@ interface IProps {
 // ];
 
 const RunAllModal = (props: IProps) => {
-  const data = Object.keys(props.raw).map((key) => {
-    const obj: any = raw[parseInt(key, 10)];
-    return {
-      AnswerRef: key,
-      Text: key,
-      Score: obj.passed / (obj.passed + obj.failed + obj.error),
-    };
-  });
-  return (
-    <Modal visible={Object.keys(props.raw).length > 0} width={700} title="Results">
-      <ResponsiveContainer width="95%" height={400}>
-        <BarChart data={data} margin={{ top: 5, right: 0, left: 0, bottom: 25 }} layout="horizontal">
-          <XAxis dataKey="Text" fontFamily="sans-serif" tickSize dy="25" />
-          <YAxis hide />
-          <CartesianGrid vertical={false} stroke="#ebf3f0" />
-          <Bar dataKey="Score" barSize={170} fontFamily="sans-serif" label={'test'}>
-            {data.map((entry, index) => (
-              <Cell fill={data[index].AnswerRef === 'three' ? '#61bf93' : '#ededed'} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-      Submissions tested: 5/380
-    </Modal>
-  );
+  if (props.raw !== '{}') {
+    const castRaw = (props.raw as any) as IResultsType;
+    return (
+      <Modal visible={true} title="Results">
+        {Object.keys(castRaw).map((key) => {
+          const obj = castRaw[parseInt(key, 10)];
+          return (
+            <div>
+              {props.cases.find((el) => el.id === parseInt(key, 10))!.description}
+              <Progress percent={(obj.passed / (obj.passed + obj.failed + obj.error)) * 100} status="active" />
+            </div>
+          );
+        })}
+      </Modal>
+    );
+  } else {
+    return <div />;
+  }
+
+  // return (
+  //   <Modal visible={Object.keys(props.raw).length > 0} width={700} title="Results">
+  //     <ResponsiveContainer width="95%" height={400}>
+  //       <BarChart data={data} margin={{ top: 5, right: 0, left: 0, bottom: 25 }} layout="horizontal">
+  //         <XAxis dataKey="Text" fontFamily="sans-serif" tickSize dy="25" />
+  //         <YAxis hide />
+  //         <CartesianGrid vertical={false} stroke="#ebf3f0" />
+  //         <Bar dataKey="Score" barSize={170} fontFamily="sans-serif" label={'test'}>
+  //           {data.map((entry, index) => (
+  //             <Cell fill={data[index].AnswerRef === 'three' ? '#61bf93' : '#ededed'} />
+  //           ))}
+  //         </Bar>
+  //       </BarChart>
+  //     </ResponsiveContainer>
+  //     Submissions tested: 5/380
+  //   </Modal>
+  // );
 };
 
 export default RunAllModal;

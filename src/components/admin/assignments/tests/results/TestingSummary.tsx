@@ -97,7 +97,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   const runAll = async () => {
     if (env) {
       const result = await Environment.runAll(env.id);
-      awaitTestResult(result.task, runAllCallback, runAllCallback);
+      awaitTestResult(result.task, () => 5, runAllCallback);
       const newEnv = { ...env };
       newEnv.isRunning = true;
       setEnv(newEnv);
@@ -202,7 +202,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     </Button>,
   ];
 
-  const detail = <RunAllModal raw={JSON.parse(progress)} />;
+  const detail = <RunAllModal cases={Object.values(testCasesByCategory).flat()} raw={progress} />;
 
   return (
     <TableDetail
