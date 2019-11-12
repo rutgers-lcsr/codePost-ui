@@ -139,7 +139,7 @@ export const PsuedoTerminal = (props: IResultProps) => {
           <span key={i}>
             Running...
             <br />
-            {log.log}
+            <div style={{ whiteSpace: 'pre-wrap' }}>{log.log}</div>
             {log.log.length > 0 ? <br /> : null}
             {getResultTag(log.result)} on {log.target}
             <br />
