@@ -3,7 +3,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 /* antd imports */
 import { Button, Divider, Form, Input, Row, Select, Tag, message, Modal, Typography } from 'antd';
@@ -59,8 +59,35 @@ export const TestItem = (props: ITestItemProps) => {
   let formRef: any = React.createRef();
   const [testOutput, setTestOutput] = useState<ILogType | undefined>(undefined);
   const [isRunning, setIsRunning] = useState(false);
+  const [methodsByFile, setMethodsByFile] = useState<{ [name: string]: string[] }>({});
+
+  useEffect(() => {
+    getMethodNames();
+  }, [props.files]);
 
   /******************************* API / State Change Functions ****************************/
+  const getMethodNames = () => {
+    // FIXME: temporary hack to get method names.
+    // We should use a library like Antlr4 to do this instead of writing our own parser
+    if (props.env && props.env.language === 'java') {
+      props.files.forEach((f) => {
+        const code = f.code.split('\n');
+        const methodNames: String[] = [];
+        code.forEach((line) => {
+          if (line.match(/(public|protected|private|static|\s) +[\w\<\>\[\]]+\s+(\w+) *\([^\)]*\) *(\{?|[^;])/)) {
+            const tokens = line.split('(')[0].split(' ');
+            methodNames.push(tokens[tokens.length - 1]);
+          }
+        });
+        setMethodsByFile((prevState) => {
+          const newState: any = { ...prevState };
+          newState[f.name] = methodNames;
+          return newState;
+        });
+      });
+    }
+  };
+
   const handleCreate = (codeString?: string) => {
     const form = formRef.props.form;
     form.validateFields((err: any, values: IFormValues) => {
@@ -158,6 +185,7 @@ export const TestItem = (props: ITestItemProps) => {
       language={props.env ? props.env.language : ''}
       submissions={props.submissions}
       setTestSubject={props.setTestSubject}
+      methodsByFile={methodsByFile}
     />
   );
 };
@@ -173,11 +201,13 @@ interface ITestFormItemProps extends FormComponentProps {
   language: string;
   submissions: SubmissionType[];
   setTestSubject: (id: string) => void;
+  methodsByFile: { [name: string]: string[] };
 }
 
 interface IState {
   commandText: string;
   testType: string;
+  selectedFileName: string;
 }
 
 class TestFormItem extends React.Component<ITestFormItemProps, IState> {
@@ -186,6 +216,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     this.state = {
       commandText: props.testCase.text,
       testType: props.testCase.type,
+      selectedFileName: props.testCase.fileName,
     };
   }
 
@@ -222,6 +253,17 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     const textStyle: React.CSSProperties = { whiteSpace: 'nowrap', marginRight: '4px', marginLeft: '4px' };
     const inputStyle: React.CSSProperties = { width: '200px' };
 
+    const functionOptions =
+      this.props.methodsByFile && this.props.methodsByFile[this.state.selectedFileName]
+        ? this.props.methodsByFile[this.state.selectedFileName].map((name: string) => {
+            return (
+              <Option key={name} value={name}>
+                {name}
+              </Option>
+            );
+          })
+        : [];
+
     return (
       <div className="natural-language-form" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
         <span style={{ ...textStyle, marginLeft: undefined }}>From file</span>
@@ -246,16 +288,29 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
           )}
         </Form.Item>
         <span style={textStyle}>run</span>
-        <Form.Item label="">
-          {getFieldDecorator('function', {
-            initialValue: testCase.function,
-            rules: [
-              {
-                required: true,
-              },
-            ],
-          })(<Input placeholder={'Function or Method Name'} style={inputStyle} disabled={this.props.isRunning} />)}
-        </Form.Item>
+        {this.props.methodsByFile && this.props.methodsByFile[this.state.selectedFileName] ? (
+          <Form.Item label="">
+            {getFieldDecorator('function', {
+              initialValue: testCase.function,
+              rules: [
+                {
+                  required: true,
+                },
+              ],
+            })(<Select style={inputStyle}>{functionOptions}</Select>)}
+          </Form.Item>
+        ) : (
+          <Form.Item label="">
+            {getFieldDecorator('function', {
+              initialValue: testCase.function,
+              rules: [
+                {
+                  required: true,
+                },
+              ],
+            })(<Input placeholder={'Function or Method Name'} style={inputStyle} disabled={this.props.isRunning} />)}
+          </Form.Item>
+        )}
         <span style={textStyle}>with arguments</span>
         <Form.Item label="">
           {getFieldDecorator('input', {
