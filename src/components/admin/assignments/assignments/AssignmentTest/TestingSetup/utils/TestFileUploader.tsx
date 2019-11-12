@@ -53,8 +53,9 @@ export const TestFileUploader = (props: IUploadProps) => {
     reader.onload = async () => {
       if (reader.result) {
         const cleanedData = typeof reader.result === 'string' ? reader.result.replace(/\0/g, '') : reader.result;
-        const oldFiles = [...newFiles];
-        setNewFiles([...oldFiles, { uid: `${counter}-${file.name}`, code: cleanedData, name: file.name }]);
+        setNewFiles((prevState) => {
+          return [...prevState, { uid: `${counter}-${file.name}`, code: cleanedData, name: file.name }];
+        });
         setCounter(counter + 1);
       }
     };
@@ -112,7 +113,7 @@ export const TestFileUploader = (props: IUploadProps) => {
         <Upload
           beforeUpload={beforeUpload}
           listType="text"
-          multiple={false}
+          multiple={true}
           showUploadList={true}
           onRemove={onRemove}
           fileList={newFiles}
