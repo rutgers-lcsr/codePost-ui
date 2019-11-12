@@ -103,17 +103,19 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     switch (type) {
       case FILE_TYPE.SOLUTION:
         await SolutionFile.delete(id);
-        const updatedSolutions = solutions.filter((file) => {
-          return file.id !== id;
+        setSolutions((prevState) => {
+          return prevState.filter((file) => {
+            return file.id !== id;
+          });
         });
-        setSolutions(updatedSolutions);
         break;
       case FILE_TYPE.HELPER:
         await HelperFile.delete(id);
-        const updatedHelpers = helpers.filter((file) => {
-          return file.id !== id;
+        setHelpers((prevState) => {
+          return prevState.filter((file) => {
+            return file.id !== id;
+          });
         });
-        setHelpers(updatedHelpers);
         break;
     }
   };
@@ -126,27 +128,32 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     switch (type) {
       case FILE_TYPE.SOLUTION:
         const newSolution = await SolutionFile.update(payload);
-        // FIXME: Mutating state
-        const solutionIndex = solutions.findIndex((f) => {
-          return f.id === id;
+        setSolutions((prevState) => {
+          const solutionIndex = prevState.findIndex((f) => {
+            return f.id === id;
+          });
+          if (solutionIndex > -1) {
+            const newSolutions = [...prevState];
+            newSolutions.splice(solutionIndex, 1, newSolution);
+            return newSolutions;
+          }
+          return prevState;
         });
-        if (solutionIndex > -1) {
-          const newSolutions = [...solutions];
-          newSolutions.splice(solutionIndex, 1, newSolution);
-          setSolutions(newSolutions);
-        }
         break;
       case FILE_TYPE.HELPER:
         const newHelper = await HelperFile.update(payload);
-        // FIXME: Mutating state
-        const helperIndex = helpers.findIndex((f) => {
-          return f.id === id;
+        setHelpers((prevState) => {
+          const helperIndex = prevState.findIndex((f) => {
+            return f.id === id;
+          });
+
+          if (helperIndex > -1) {
+            const newHelpers = [...prevState];
+            newHelpers.splice(helperIndex, 1, newHelper);
+            return newHelpers;
+          }
+          return prevState;
         });
-        if (helperIndex > -1) {
-          const newHelpers = [...helpers];
-          newHelpers.splice(helperIndex, 1, newHelper);
-          setHelpers(newHelpers);
-        }
         break;
     }
   };
