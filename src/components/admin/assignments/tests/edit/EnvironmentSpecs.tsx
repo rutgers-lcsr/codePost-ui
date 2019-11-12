@@ -23,6 +23,8 @@ import { TestFileList } from './TestFileList';
 import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
 import { HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
 
+import CPTooltip from '../../../../core/CPTooltip';
+
 import { FILE_TYPE } from './TestingSetup';
 
 import locale from './languageLocale';
@@ -145,17 +147,8 @@ export const EnvironmentSpecs = (props: IProps) => {
   );
 
   // Fixme: refactor into util
-  let dependencyText;
-  if (language !== null) {
-    switch (language.split('-')[0]) {
-      case 'python':
-        dependencyText = locale.python.dependencies;
-        break;
-      case 'java':
-        dependencyText = locale.java.dependencies;
-        break;
-    }
-  }
+  const dependencyText = language && locale[language].dependencies;
+  const envSpecText = language && locale[language].environment;
 
   const selectDependencies = (
     <Select
@@ -245,7 +238,8 @@ export const EnvironmentSpecs = (props: IProps) => {
           </Button>
         </div>
       </div>
-      Language: {selectLanguage}
+      Language: {selectLanguage} &nbsp;
+      <CPTooltip infoIcon={true} title={envSpecText} />
       <br />
       <br />
       Custom dependencies: {selectDependencies}
