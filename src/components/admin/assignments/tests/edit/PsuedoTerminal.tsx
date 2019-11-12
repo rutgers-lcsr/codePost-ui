@@ -9,7 +9,7 @@ import { animateScroll } from 'react-scroll';
 /* codePost other imports  */
 import { CodeWindow } from './CodeWindow';
 
-import { SubmissionType } from '../../../../../../../infrastructure/submission';
+import { SubmissionType } from '../../../../../infrastructure/submission';
 
 export enum RESULT_TYPE {
   PASSED,

@@ -10,7 +10,7 @@ import {
   BASHMODE_TEMPLATE,
   JAVA_UNIT_TEMPLATE,
   BASH_JAVA_TEMPLATE,
-} from './templates/testTemplates';
+} from './testTemplates';
 
 /****************************** CodeMirror Utils *********************************/
 // Map each extension to the syntax highlighter for it

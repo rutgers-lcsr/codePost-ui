@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 /* library imports */
 import { Button, Modal, Select, Icon } from 'antd';
 
-import { TestCategoryType } from '../../../../../../../infrastructure/testCategory';
+import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 
 interface IUploadProps {
   addTest: (id: number) => Promise<void>;

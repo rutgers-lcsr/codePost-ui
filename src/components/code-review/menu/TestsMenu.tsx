@@ -11,7 +11,7 @@ import { Table } from 'antd';
 /* codePost imports */
 import { SubmissionTestType } from '../../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../../infrastructure/testCategory';
-import { TestCasesByCategory } from '../../admin/assignments/assignments/AssignmentTest/testFetchUtils';
+import { TestCasesByCategory } from '../../core/testFetchUtils';
 
 /**********************************************************************************************************************/
 

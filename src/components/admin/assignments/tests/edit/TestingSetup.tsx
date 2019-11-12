@@ -21,12 +21,12 @@ import { HelperFile, HelperFileType } from '../../../../../infrastructure/autogr
 
 /* codePost component imports */
 import CPAdminDetail from '../../../other/CPAdminDetail';
-import { EnvironmentSpecs } from './TestingSetup/EnvironmentSpecs';
-import { TestDefinitions } from './TestingSetup/TestDefinitions';
-import { TestFileList } from './TestingSetup/TestFileList';
+import { EnvironmentSpecs } from './EnvironmentSpecs';
+import { TestDefinitions } from './TestDefinitions';
+import { TestFileList } from './TestFileList';
 
 /* codePost util imports */
-import { fetchSolutionFiles, fetchEnvironment, fetchHelpers } from './testFetchUtils';
+import { fetchSolutionFiles, fetchEnvironment, fetchHelpers } from '../../../../core/testFetchUtils';
 
 const { TabPane } = Tabs;
 const { Panel } = Collapse;

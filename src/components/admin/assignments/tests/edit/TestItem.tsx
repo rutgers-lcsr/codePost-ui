@@ -13,23 +13,21 @@ import { FormComponentProps } from 'antd/lib/form';
 import { cloneDeep } from 'lodash-es';
 
 /* codePost object imports */
-import { AssignmentType } from '../../../../../../../infrastructure/assignment';
-import { TestCase, TestCaseType } from '../../../../../../../infrastructure/testCase';
-import { SolutionFileType } from '../../../../../../../infrastructure/autograder/solutionFile';
-import { EnvironmentType } from '../../../../../../../infrastructure/autograder/environment';
-import { SubmissionType } from '../../../../../../../infrastructure/submission';
-
-import { TestCaseTestResultType } from '../../../../../../../infrastructure/autograder/runTypes';
-import { awaitTestResult } from '../../testResult';
+import { AssignmentType, TestCaseType, SubmissionType } from '../../../../../infrastructure/types';
+import { TestCase } from '../../../../../infrastructure/testCase';
+import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
+import { EnvironmentType } from '../../../../../infrastructure/autograder/environment';
+import { TestCaseTestResultType } from '../../../../../infrastructure/autograder/runTypes';
+import { awaitTestResult } from '../testResult';
 
 /* codePost component imports */
-import { CodeWindow } from '../utils/CodeWindow';
-import { PsuedoTerminal } from '../utils/PsuedoTerminal';
+import { CodeWindow } from './CodeWindow';
+import { PsuedoTerminal } from './PsuedoTerminal';
 
 /* codePost util imports */
-import { testTemplates, hasNativeTestSupport, extensionsByLanguage } from '../utils/languageUtils';
+import { testTemplates, hasNativeTestSupport, extensionsByLanguage } from './languageUtils';
 
-import { ILogType, RESULT_TYPE } from '../utils/PsuedoTerminal';
+import { ILogType, RESULT_TYPE } from './PsuedoTerminal';
 
 const { confirm } = Modal;
 const { Option } = Select;

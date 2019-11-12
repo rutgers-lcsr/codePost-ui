@@ -9,11 +9,11 @@ import { Link } from 'react-router-dom';
 
 import { Button, Breadcrumb, Dropdown, Empty, Menu, Icon } from 'antd';
 
-import { TableDetail } from '../../../other/TableDetail';
+import { TableDetail } from '../../other/TableDetail';
 
-import { AssignmentType } from '../../../../../infrastructure/assignment';
+import { AssignmentType } from '../../../../infrastructure/types';
 
-import { encodeForLink } from '../../../../core/URLutils';
+import { encodeForLink } from '../../../core/URLutils';
 
 /**********************************************************************************************************************/
 

@@ -9,21 +9,21 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button, Collapse, Divider, Select, Typography, Empty } from 'antd';
 
 /* codePost object imports */
-import { AssignmentPatchType, AssignmentType } from '../../../../../../infrastructure/assignment';
-import { Environment, EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
+import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
+import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 
 /* codePost component imports */
-import { CodeWindow } from './utils/CodeWindow';
+import { CodeWindow } from './CodeWindow';
 
 /* codePost util imports */
-import { languages, hasDependenciesSupport } from './utils/languageUtils';
+import { languages, hasDependenciesSupport } from './languageUtils';
 
 import { TestFileList } from './TestFileList';
 
-import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
-import { HelperFileType } from '../../../../../../infrastructure/autograder/helperFile';
+import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
+import { HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
 
-import { FILE_TYPE } from '../TestingSetup';
+import { FILE_TYPE } from './TestingSetup';
 
 const { Option } = Select;
 const { Text } = Typography;

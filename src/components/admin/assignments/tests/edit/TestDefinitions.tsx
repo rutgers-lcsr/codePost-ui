@@ -14,32 +14,36 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 /* codePost object imports */
-import { AssignmentType } from '../../../../../../infrastructure/assignment';
-import { TestCase, TestCaseType } from '../../../../../../infrastructure/testCase';
-import { TestCategory, TestCategoryType } from '../../../../../../infrastructure/testCategory';
-import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
-import { HelperFileType } from '../../../../../../infrastructure/autograder/helperFile';
-import { SubmissionType } from '../../../../../../infrastructure/submission';
+import {
+  AssignmentType,
+  TestCaseType,
+  TestCategoryType,
+  SubmissionType,
+  FileType,
+} from '../../../../../infrastructure/types';
+import { TestCase } from '../../../../../infrastructure/testCase';
+import { TestCategory } from '../../../../../infrastructure/testCategory';
+import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
+import { HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
 import {
   Environment,
   EnvironmentType,
   TestTemplateType,
   TestsSourceType,
-} from '../../../../../../infrastructure/autograder/environment';
-import { File, FileType } from '../../../../../../infrastructure/file';
+} from '../../../../../infrastructure/autograder/environment';
+import { File } from '../../../../../infrastructure/file';
 
 /* codePost component imports */
-import { TestItem } from './TestDefinitions/TestItem';
-// import { ProMode } from './TestDefinitions/ProMode';
-import { AddCategoryModal } from './TestDefinitions/AddCategoryModal';
-import { EditCategoryModal } from './TestDefinitions/EditCategoryModal';
-import { AddTestModal } from './TestDefinitions/AddTestModal';
+import { TestItem } from './TestItem';
+import { AddCategoryModal } from './AddCategoryModal';
+import { EditCategoryModal } from './EditCategoryModal';
+import { AddTestModal } from './AddTestModal';
 
 /* codePost utils imports */
-import { fetchTestData, TestCasesByCategory } from '../testFetchUtils';
-import { hasNativeTestSupport } from './utils/languageUtils';
+import { fetchTestData, TestCasesByCategory } from '../../../../core/testFetchUtils';
+import { hasNativeTestSupport } from './languageUtils';
 
-import { CodeWindow } from './utils/CodeWindow';
+import { CodeWindow } from './CodeWindow';
 
 const { Sider, Content } = Layout;
 

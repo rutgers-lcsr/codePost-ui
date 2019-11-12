@@ -5,11 +5,11 @@ import React from 'react';
 import { Popover, Tabs } from 'antd';
 
 /* codePost object imports */
-import { SubmissionTestType } from '../../../../../../infrastructure/submissionTest';
-import { TestCaseType } from '../../../../../../infrastructure/testCase';
+import { SubmissionTestType } from '../../../../../infrastructure/submissionTest';
+import { TestCaseType } from '../../../../../infrastructure/testCase';
 
 /* codePost component imports */
-import { TestResult } from '../TestingSetup/utils/TestResult';
+import { TestResult } from '../edit/TestResult';
 
 const { TabPane } = Tabs;
 

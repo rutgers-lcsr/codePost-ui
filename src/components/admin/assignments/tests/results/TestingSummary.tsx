@@ -17,11 +17,12 @@ import { Submission } from '../../../../../infrastructure/submission';
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 import { SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
 
-import { awaitTestResult } from './testResult';
+import { awaitTestResult } from '../testResult';
 
 /* codePost component imports */
 import { TableDetail } from '../../../other/TableDetail';
-import { TestResultPopover } from './TestingSummary/TestResultPopover';
+import { TestResultPopover } from './TestResultPopover';
+import RunAllModal from './RunAllModal';
 
 /* codePost util imports */
 import {
@@ -30,7 +31,7 @@ import {
   fetchTestsBySubmission,
   TestsBySubmission,
   TestCasesByCategory,
-} from './testFetchUtils';
+} from '../../../../core/testFetchUtils';
 import { openSubmission } from '../../../other/AdminUtils';
 
 interface IProps {
@@ -48,7 +49,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   const [subsLoading, setSubsLoading] = useState<number[]>([]);
   const [fetchLoading, setFetchLoading] = useState(false);
   const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
-  const [progress, setProgress] = useState('');
+  const [progress, setProgress] = useState('{}');
 
   // ************************** Fetch Data ******************************
   useEffect(() => {
@@ -202,7 +203,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     </Button>,
   ];
 
-  const detail = <Modal visible={progress !== ''}>{JSON.stringify(progress)}</Modal>;
+  const detail = <RunAllModal raw={JSON.parse(progress)} />;
 
   return (
     <TableDetail
