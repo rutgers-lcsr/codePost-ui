@@ -9,7 +9,8 @@ import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-co
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
-import InlineMarkdown from '../../core/InlineMarkdown';
+// import InlineMarkdown from '../../core/InlineMarkdown';
+import BlockMarkdown from '../../core/BlockMarkdown';
 
 import CPFlex from '../../core/CPFlex';
 import CPPointInput from '../../core/CPPointInput';
@@ -393,7 +394,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
         className="rubric-row--active"
         onClick={onClick}
       >
-        <InlineMarkdown
+        <BlockMarkdown
           source={props.text.length === 0 ? '-' : canShowExplanation ? props.explanation : props.text}
           em={canShowExplanation}
         />
@@ -434,7 +435,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
         className={`rubric-row--${props.hasActiveComment ? 'active' : 'inactive'} `}
         onClick={props.hasActiveComment ? onClick : props.startEditing}
       >
-        <InlineMarkdown source={props.text.length === 0 ? '-' : props.text} />
+        <BlockMarkdown source={props.text.length === 0 ? '-' : props.text} />
         <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
         {!props.hasActiveComment ? (
           <div className="overlay">

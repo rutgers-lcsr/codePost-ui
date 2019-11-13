@@ -9,12 +9,19 @@ import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-conte
 interface IBlockMarkdownProps {
   source: string;
   extraRenderers?: any;
+  em?: boolean;
 }
 
 const BlockMarkdown = (props: IBlockMarkdownProps) => {
   const renderers = useBlockMarkdownRenderers(props.extraRenderers);
 
-  return <ReactMarkdown renderers={renderers} source={props.source} />;
+  const markdown = <ReactMarkdown renderers={renderers} source={props.source} />;
+
+  if (props.em) {
+    return <em>{markdown}</em>;
+  } else {
+    return markdown;
+  }
 };
 
 const useBlockMarkdownRenderers = (extraRenderers: any) => {
