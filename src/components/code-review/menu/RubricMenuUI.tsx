@@ -148,6 +148,7 @@ const RubricMenuUI = ({
       };
       adjustedRubricComments[-1000] = Object.values(rubricComments)
         .flat()
+        .filter((el) => el.comments.length > 0)
         .sort((a, b) => b.comments.length - a.comments.length)
         .slice(0, 10);
       filteredCatgories = [freq, ...rubricCategories.sort(RubricCategory.compare)];
