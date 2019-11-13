@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 
 /* library imports */
-import { Breadcrumb, Button, Dropdown, Empty, Icon, Menu, Table } from 'antd';
+import { Breadcrumb, Button, Dropdown, Icon, Menu } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -14,13 +14,24 @@ import { AssignmentType } from '../../../../../infrastructure/assignment';
 import { SubmissionTest } from '../../../../../infrastructure/submissionTest';
 import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { Submission } from '../../../../../infrastructure/submission';
+import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
+import { SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
+
+import { awaitTestResult } from '../testResult';
 
 /* codePost component imports */
 import { TableDetail } from '../../../other/TableDetail';
-import { TestResultPopover } from './TestingSummary/TestResultPopover';
+import { TestResultPopover } from './TestResultPopover';
+import RunAllModal from './RunAllModal';
 
 /* codePost util imports */
-import { fetchTestData, fetchTestsBySubmission, TestsBySubmission, TestCasesByCategory } from './testFetchUtils';
+import {
+  fetchTestData,
+  fetchEnvironment,
+  fetchTestsBySubmission,
+  TestsBySubmission,
+  TestCasesByCategory,
+} from '../../../../core/testFetchUtils';
 import { openSubmission } from '../../../other/AdminUtils';
 
 interface IProps {
@@ -37,6 +48,8 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   const [testsBySubmission, setTestsBySubmission] = useState<TestsBySubmission>({});
   const [subsLoading, setSubsLoading] = useState<number[]>([]);
   const [fetchLoading, setFetchLoading] = useState(false);
+  const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
+  const [progress, setProgress] = useState('{}');
 
   // ************************** Fetch Data ******************************
   useEffect(() => {
@@ -46,6 +59,8 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       setCategories(categories);
       setTestCasesByCategory(casesByCategory);
       setFetchLoading(false);
+      const currEnv = await fetchEnvironment(props.currentAssignment);
+      setEnv(currEnv);
     };
     fetchData();
   }, [props.currentAssignment]);
@@ -59,11 +74,13 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   }, [props.submissions]);
 
   // ******************************* API / State change functions  *******************************
-  const runTests = async (sub: SubmissionType) => {
-    setSubsLoading([...subsLoading, sub.id]);
-    const newTests = await Submission.runTests(sub.id);
+  const runAllCallback = (result: any) => {
+    setProgress(result);
+  };
+
+  const callback = (sub: SubmissionType, result: SubmissionTestResultType) => {
     const newTestBySub = { ...testsBySubmission };
-    newTestBySub[sub.id] = newTests;
+    newTestBySub[sub.id] = result;
     setTestsBySubmission(newTestBySub);
     const newLoadingSubs = subsLoading.filter((id) => {
       return id !== sub.id;
@@ -71,32 +88,23 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     setSubsLoading(newLoadingSubs);
   };
 
+  const runTests = async (sub: SubmissionType) => {
+    setSubsLoading([...subsLoading, sub.id]);
+    const result = await Submission.run(sub.id);
+    awaitTestResult(result.task, callback.bind({}, sub));
+  };
+
   const runAll = async () => {
-    setSubsLoading(
-      props.submissions.map((sub) => {
-        return sub.id;
-      }),
-    );
-    const newTestsBySub: TestsBySubmission = {};
-    const promises = props.submissions.map(async (sub) => {
-      const results = await Submission.runTests(sub.id);
-      return {
-        submission: sub.id,
-        tests: results,
-      };
-    });
-
-    const newTests = await Promise.all(promises);
-    newTests.forEach((obj) => {
-      newTestsBySub[obj.submission] = obj.tests;
-    });
-
-    setTestsBySubmission(newTestsBySub);
-    setSubsLoading([]);
+    if (env) {
+      const result = await Environment.runAll(env.id);
+      awaitTestResult(result.task, () => 5, runAllCallback);
+      const newEnv = { ...env };
+      newEnv.isRunning = true;
+      setEnv(newEnv);
+    }
   };
 
   // ******************************* Return  *******************************
-  let content;
   let actions: any = [];
   const totalTests = categories.reduce((acc: number, cat) => {
     return acc + cat.testCases.length;
@@ -184,7 +192,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   });
 
   actions = [
-    <Button type="default" disabled={totalTests === 0} onClick={runAll}>
+    <Button type="default" disabled={totalTests === 0} onClick={runAll} loading={env && env.isRunning}>
       Run all Tests
     </Button>,
     <Button type="primary">
@@ -193,6 +201,8 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       </Link>
     </Button>,
   ];
+
+  const detail = <RunAllModal cases={Object.values(testCasesByCategory).flat()} raw={progress} />;
 
   return (
     <TableDetail
@@ -210,6 +220,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       actions={actions}
       columns={columns}
       data={data}
+      detail={detail}
     />
   );
 };

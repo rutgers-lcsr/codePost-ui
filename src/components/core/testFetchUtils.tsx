@@ -1,17 +1,17 @@
 /* codepost object imports */
-import { AssignmentType } from '../../../../../infrastructure/assignment';
-import { TestCase, TestCaseType } from '../../../../../infrastructure/testCase';
-import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructure/submissionTest';
-import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
-import { AnonymousSubmissionType } from '../../../../../infrastructure/submission';
+import { AssignmentType } from '../../infrastructure/assignment';
+import { TestCase, TestCaseType } from '../../infrastructure/testCase';
+import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
+import { TestCategory, TestCategoryType } from '../../infrastructure/testCategory';
+import { AnonymousSubmissionType } from '../../infrastructure/submission';
 
-import { SolutionFile } from '../../../../../infrastructure/autograder/solutionFile';
-import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
-import { HelperFile } from '../../../../../infrastructure/autograder/helperFile';
+import { SolutionFile } from '../../infrastructure/autograder/solutionFile';
+import { Environment, EnvironmentType } from '../../infrastructure/autograder/environment';
+import { HelperFile } from '../../infrastructure/autograder/helperFile';
 
-import { BashFile } from '../../../../../infrastructure/autograder/bashFile';
+import { BashFile } from '../../infrastructure/autograder/bashFile';
 
-import { BASHMODE_TEMPLATE } from './TestingSetup/utils/templates/testTemplates';
+import { BASHMODE_TEMPLATE } from '../admin/assignments/tests/edit/testTemplates';
 
 //********************************** Interfaces **** ******************************
 export interface TestsBySubmission {

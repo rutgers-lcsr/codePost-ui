@@ -31,10 +31,10 @@ import { encodeForRoute } from '../../core/URLutils';
 
 import Loading from '../../core/Loading';
 
-import { AssignmentTests } from './assignments/AssignmentTest/AssignmentTests';
+import { AssignmentTests } from './tests/AssignmentTests';
 
 import RubricOverview from './rubric/RubricOverview';
-import TestsOverview from './assignments/AssignmentTest/TestsOverview';
+import TestsOverview from './tests/TestsOverview';
 
 /**********************************************************************************************************************/
 

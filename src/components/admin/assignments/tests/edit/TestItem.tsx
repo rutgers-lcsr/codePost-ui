@@ -3,28 +3,28 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 /* antd imports */
 import { Button, Divider, Form, Input, Row, Select, Tag, message, Modal, Typography } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
-/* other library imports */
-import { cloneDeep } from 'lodash-es';
-
 /* codePost object imports */
-import { AssignmentType } from '../../../../../../../infrastructure/assignment';
-import { TestCase, TestCaseType } from '../../../../../../../infrastructure/testCase';
-import { SolutionFileType } from '../../../../../../../infrastructure/autograder/solutionFile';
-import { EnvironmentType } from '../../../../../../../infrastructure/autograder/environment';
-import { SubmissionType } from '../../../../../../../infrastructure/submission';
+import { AssignmentType, TestCaseType, SubmissionType } from '../../../../../infrastructure/types';
+import { TestCase } from '../../../../../infrastructure/testCase';
+import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
+import { EnvironmentType } from '../../../../../infrastructure/autograder/environment';
+import { TestCaseTestResultType } from '../../../../../infrastructure/autograder/runTypes';
+import { awaitTestResult } from '../testResult';
 
 /* codePost component imports */
-import { CodeWindow } from '../utils/CodeWindow';
-import { PsuedoTerminal } from '../utils/PsuedoTerminal';
+import { CodeWindow } from './CodeWindow';
+import { PsuedoTerminal } from './PsuedoTerminal';
 
 /* codePost util imports */
-import { testTemplates, hasNativeTestSupport, extensionsByLanguage } from '../utils/languageUtils';
+import { testTemplates, hasNativeTestSupport, extensionsByLanguage } from './languageUtils';
+
+import { ILogType, RESULT_TYPE } from './PsuedoTerminal';
 
 const { confirm } = Modal;
 const { Option } = Select;
@@ -40,6 +40,7 @@ interface ITestItemProps {
   env?: EnvironmentType;
   submissions: SubmissionType[];
   setTestSubject: (id: string) => void;
+  activeSubmission?: SubmissionType;
 }
 
 interface IFormValues {
@@ -56,11 +57,37 @@ interface IFormValues {
 export const TestItem = (props: ITestItemProps) => {
   /******************************* State Variables ****************************/
   let formRef: any = React.createRef();
-  const [testOutput, setTestOutput] = useState('');
+  const [testOutput, setTestOutput] = useState<ILogType | undefined>(undefined);
   const [isRunning, setIsRunning] = useState(false);
-  const [activeSubmission, setActiveSubmission] = useState<SubmissionType | undefined>(undefined);
+  const [methodsByFile, setMethodsByFile] = useState<{ [name: string]: string[] }>({});
+
+  useEffect(() => {
+    getMethodNames();
+  }, [props.files]);
 
   /******************************* API / State Change Functions ****************************/
+  const getMethodNames = () => {
+    // FIXME: temporary hack to get method names.
+    // We should use a library like Antlr4 to do this instead of writing our own parser
+    if (props.env && props.env.language === 'java') {
+      props.files.forEach((f) => {
+        const code = f.code.split('\n');
+        const methodNames: String[] = [];
+        code.forEach((line) => {
+          if (line.match(/(public|protected|private|static|\s) +[\w\<\>\[\]]+\s+(\w+) *\([^\)]*\) *(\{?|[^;])/)) {
+            const tokens = line.split('(')[0].split(' ');
+            methodNames.push(tokens[tokens.length - 1]);
+          }
+        });
+        setMethodsByFile((prevState) => {
+          const newState: any = { ...prevState };
+          newState[f.name] = methodNames;
+          return newState;
+        });
+      });
+    }
+  };
+
   const handleCreate = (codeString?: string) => {
     const form = formRef.props.form;
     form.validateFields((err: any, values: IFormValues) => {
@@ -100,30 +127,29 @@ export const TestItem = (props: ITestItemProps) => {
   // A testCase must be saved before it can be run. To simulate a "run without saving"
   // operation, we (1) save the test, (2) run it, (3) save it using its old values.
   const runTest = async (values: IFormValues, codeString?: string) => {
-    const testCaseCopy = cloneDeep(props.testCase);
-    const toRevert = cloneDeep(testCaseCopy);
-    testCaseCopy.text = codeString || '';
-    testCaseCopy.description = values.description;
-    testCaseCopy.expectedOutput = values.expectedOutput;
-    testCaseCopy.fileName = values.fileName;
-    testCaseCopy.function = values.function;
-    testCaseCopy.input = values.input;
-    testCaseCopy.checkReturn = values.checkReturn === 'return';
-    testCaseCopy.type = values.testType;
-    await props.saveTest(testCaseCopy);
+    await saveTest(values, codeString);
 
     if (props.testCase.id > 0) {
       setIsRunning(true);
-      setTestOutput('');
-      const payload = { id: props.testCase.id };
+      const payload = {
+        id: props.testCase.id,
+        submission: props.activeSubmission ? props.activeSubmission.id : undefined,
+      };
+      console.log(payload);
       const result = await TestCase.run(payload);
-      setTestOutput(JSON.stringify(result));
-
-      // Undo changes
-      await props.saveTest(toRevert);
-      setIsRunning(false);
-      return;
+      awaitTestResult(result.task, callback);
     }
+  };
+
+  const callback = (result: TestCaseTestResultType) => {
+    const formatted = {
+      log: result.log,
+      target: props.activeSubmission ? props.activeSubmission.students[0] : 'solution code',
+      result: result.passed ? RESULT_TYPE.PASSED : result.isError ? RESULT_TYPE.ERROR : RESULT_TYPE.FAILED,
+    };
+
+    setTestOutput(formatted);
+    setIsRunning(false);
   };
 
   const saveTest = async (values: IFormValues, codeString?: string) => {
@@ -154,11 +180,12 @@ export const TestItem = (props: ITestItemProps) => {
       runTest={handleRun}
       files={props.files}
       wrappedComponentRef={saveFormRef}
-      testOutput={testOutput}
+      log={testOutput}
       isRunning={isRunning}
       language={props.env ? props.env.language : ''}
       submissions={props.submissions}
       setTestSubject={props.setTestSubject}
+      methodsByFile={methodsByFile}
     />
   );
 };
@@ -168,17 +195,19 @@ interface ITestFormItemProps extends FormComponentProps {
   saveTest: () => void;
   deleteTest: () => Promise<void>;
   files: SolutionFileType[];
-  testOutput: string;
+  log?: ILogType;
   runTest: () => void;
   isRunning: boolean;
   language: string;
   submissions: SubmissionType[];
   setTestSubject: (id: string) => void;
+  methodsByFile: { [name: string]: string[] };
 }
 
 interface IState {
   commandText: string;
   testType: string;
+  selectedFileName: string;
 }
 
 class TestFormItem extends React.Component<ITestFormItemProps, IState> {
@@ -187,6 +216,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     this.state = {
       commandText: props.testCase.text,
       testType: props.testCase.type,
+      selectedFileName: props.testCase.fileName,
     };
   }
 
@@ -218,10 +248,25 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     });
   };
 
+  public onChangeFileName = (newName: string) => {
+    this.setState({ selectedFileName: newName });
+  };
+
   public buildIOTest = (testCase: TestCaseType) => {
     const { getFieldDecorator } = this.props.form;
     const textStyle: React.CSSProperties = { whiteSpace: 'nowrap', marginRight: '4px', marginLeft: '4px' };
     const inputStyle: React.CSSProperties = { width: '200px' };
+
+    const functionOptions =
+      this.props.methodsByFile && this.props.methodsByFile[this.state.selectedFileName]
+        ? this.props.methodsByFile[this.state.selectedFileName].map((name: string) => {
+            return (
+              <Option key={name} value={name}>
+                {name}
+              </Option>
+            );
+          })
+        : [];
 
     return (
       <div className="natural-language-form" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -235,10 +280,10 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               },
             ],
           })(
-            <Select disabled={this.props.isRunning} style={inputStyle}>
+            <Select disabled={this.props.isRunning} onChange={this.onChangeFileName} style={inputStyle}>
               {this.props.files.map((file) => {
                 return (
-                  <Option key={file.id} value={file.id}>
+                  <Option key={file.id} value={file.name}>
                     {file.name}
                   </Option>
                 );
@@ -247,23 +292,36 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
           )}
         </Form.Item>
         <span style={textStyle}>run</span>
-        <Form.Item label="">
-          {getFieldDecorator('function', {
-            initialValue: testCase.function,
-            rules: [
-              {
-                required: true,
-              },
-            ],
-          })(<Input placeholder={'Function or Method Name'} style={inputStyle} disabled={this.props.isRunning} />)}
-        </Form.Item>
+        {this.props.methodsByFile && this.props.methodsByFile[this.state.selectedFileName] ? (
+          <Form.Item label="">
+            {getFieldDecorator('function', {
+              initialValue: testCase.function,
+              rules: [
+                {
+                  required: true,
+                },
+              ],
+            })(<Select style={inputStyle}>{functionOptions}</Select>)}
+          </Form.Item>
+        ) : (
+          <Form.Item label="">
+            {getFieldDecorator('function', {
+              initialValue: testCase.function,
+              rules: [
+                {
+                  required: true,
+                },
+              ],
+            })(<Input placeholder={'Function or Method Name'} style={inputStyle} disabled={this.props.isRunning} />)}
+          </Form.Item>
+        )}
         <span style={textStyle}>with arguments</span>
         <Form.Item label="">
           {getFieldDecorator('input', {
             initialValue: testCase.input,
             rules: [
               {
-                required: true,
+                required: false,
               },
             ],
           })(<Input placeholder={'Input'} disabled={this.props.isRunning} style={inputStyle} />)}
@@ -305,7 +363,6 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     const { testCase, form } = this.props;
     const { getFieldDecorator } = form;
 
-    const outputJSON = this.props.testOutput ? JSON.parse(this.props.testOutput) : {};
     const name = this.state.testType === 'bash' ? '.sh' : extensionsByLanguage[this.props.language];
 
     // Disable changing the test type if there is no native test support
@@ -390,12 +447,11 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
           <Typography.Title level={4}>3. Results</Typography.Title>
           <div>
             <PsuedoTerminal
-              log={outputJSON.log}
-              passed={outputJSON.passed}
-              isError={outputJSON.isError}
+              log={this.props.log}
               isRunning={this.props.isRunning}
               runTest={this.props.runTest.bind(this, this.state.commandText)}
               submissions={this.props.submissions}
+              setTestSubject={this.props.setTestSubject}
             />
           </div>
         </div>

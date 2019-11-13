@@ -6,27 +6,30 @@
 import React, { useState, useEffect } from 'react';
 
 /* library imports */
-import { Modal, Button, Collapse, Divider, Select, Typography, Empty } from 'antd';
+import { Modal, Button, Collapse, Divider, Select, Typography, Empty, message } from 'antd';
 
 /* codePost object imports */
-import { AssignmentPatchType, AssignmentType } from '../../../../../../infrastructure/assignment';
-import { Environment, EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
+import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
+import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 
 /* codePost component imports */
-import { CodeWindow } from './utils/CodeWindow';
+import { CodeWindow } from './CodeWindow';
 
 /* codePost util imports */
-import { languages, hasDependenciesSupport } from './utils/languageUtils';
+import { languages, hasDependenciesSupport } from './languageUtils';
 
 import { TestFileList } from './TestFileList';
 
-import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
-import { HelperFileType } from '../../../../../../infrastructure/autograder/helperFile';
+import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
+import { HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
 
-import { FILE_TYPE } from '../TestingSetup';
+import CPTooltip from '../../../../core/CPTooltip';
+
+import { FILE_TYPE } from './TestingSetup';
+
+import locale from './languageLocale';
 
 const { Option } = Select;
-const { Text } = Typography;
 const { Panel } = Collapse;
 const { confirm } = Modal;
 
@@ -48,22 +51,13 @@ interface IProps {
   updateFile: (type: FILE_TYPE, id: number, newCode: string) => Promise<void>;
 }
 
-enum BUILD_STATUS {
-  Idle,
-  TestReady,
-  TestRunning,
-  Failed,
-  SaveReady,
-  Saving,
-  Success,
-}
-
 export const EnvironmentSpecs = (props: IProps) => {
   /******************************* State Variables ****************************/
   const [language, setLanguage] = useState<string | null>(props.env ? props.env.language : null);
   const [dependencies, setDependencies] = useState<string[]>(props.env ? JSON.parse(props.env.dependencies) : []);
   const [errorLogs, setErrorLogs] = useState<string[]>([]);
-  const [buildStatus, setBuildStatus] = useState(BUILD_STATUS.Idle);
+  const [loading, setLoading] = useState(false);
+
   /******************************* API / State Change Functions ****************************/
 
   useEffect(() => {
@@ -72,43 +66,26 @@ export const EnvironmentSpecs = (props: IProps) => {
     }
   }, [props.env]);
 
-  const testEnv = async () => {
-    if (!props.env) {
-      return;
-    }
-    const payload = {
-      id: props.env.id,
-      dependencies: dependencies,
-      language: language!,
-      simulate: true,
-    };
-    setBuildStatus(BUILD_STATUS.TestRunning);
-    setErrorLogs([]);
-    const status = await Environment.simulateBuild(payload);
-    if (status.result) {
-      setBuildStatus(BUILD_STATUS.SaveReady);
-    } else {
-      setBuildStatus(BUILD_STATUS.Failed);
-      setErrorLogs(status.logs);
-    }
-  };
-
   const saveEnv = async () => {
     if (!props.env) {
-      props.createEnv(language !== null ? language : '', '', []);
+      setLoading(true);
+      await props.createEnv(language !== null ? language : '', '', []);
+      setLoading(false);
+      message.success('Environment created');
     } else {
+      setLoading(true);
       const payload = {
         id: props.env.id,
         dependencies: dependencies,
         language: language!,
         simulate: false,
       };
-      setBuildStatus(BUILD_STATUS.Saving);
       const newEnv = await Environment.updateBuild(payload);
       if (newEnv) {
         props.updateEnv(newEnv);
-        setBuildStatus(BUILD_STATUS.Success);
       }
+      message.success('Environment saved');
+      setLoading(false);
     }
   };
 
@@ -143,16 +120,12 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   /******************************* State Change Functions ****************************/
   const onLanguageChange = (value: string) => {
-    setBuildStatus(BUILD_STATUS.TestReady);
     setLanguage(value);
   };
 
   const onDependenciesChange = (newDependencies: string[]) => {
-    setBuildStatus(BUILD_STATUS.TestReady);
     setDependencies(newDependencies);
   };
-  /******************************* Utils ****************************/
-  const hasChanged = props.env && props.env.language !== language;
 
   /******************************* Return ****************************/
 
@@ -172,45 +145,17 @@ export const EnvironmentSpecs = (props: IProps) => {
       })}
     </Select>
   );
-  const saveBtn = (
-    <Button
-      type="primary"
-      disabled={!hasChanged || buildStatus !== BUILD_STATUS.SaveReady}
-      loading={buildStatus === BUILD_STATUS.Saving}
-      onClick={saveEnv}
-    >
-      {buildStatus === BUILD_STATUS.Success
-        ? 'Saved Successfully'
-        : buildStatus === BUILD_STATUS.Saving
-        ? 'Saving'
-        : 'Save and Continue'}
-    </Button>
-  );
 
-  const testBtn = (
-    <Button
-      disabled={buildStatus !== BUILD_STATUS.TestReady}
-      loading={buildStatus == BUILD_STATUS.TestRunning}
-      onClick={testEnv}
-    >
-      {buildStatus === BUILD_STATUS.TestRunning
-        ? 'Testing'
-        : buildStatus === BUILD_STATUS.SaveReady ||
-          buildStatus === BUILD_STATUS.Saving ||
-          buildStatus === BUILD_STATUS.Success
-        ? 'Successfully Tested'
-        : buildStatus === BUILD_STATUS.Failed
-        ? 'Test Failed'
-        : 'Test Environment'}
-    </Button>
-  );
+  // Fixme: refactor into util
+  const dependencyText = language && locale[language].dependencies;
+  const envSpecText = language && locale[language].environment;
 
   const selectDependencies = (
     <Select
       mode="tags"
       style={{ minWidth: 300 }}
       value={dependencies}
-      placeholder="Installed with pip"
+      placeholder={dependencyText}
       onChange={onDependenciesChange}
       disabled={language === null || !hasDependenciesSupport(language)}
     />
@@ -234,18 +179,18 @@ export const EnvironmentSpecs = (props: IProps) => {
     );
   }
 
-  const errorPanel =
-    errorLogs.length === 0 ? (
-      <div />
-    ) : (
-      <Collapse bordered={false} defaultActiveKey={[]}>
-        <Panel header="Traceback" key="1">
-          {errorLogs.map((error, i) => {
-            return <div key={i}>{error}</div>;
-          })}
-        </Panel>
-      </Collapse>
-    );
+  // const errorPanel =
+  //   errorLogs.length === 0 ? (
+  //     <div />
+  //   ) : (
+  //     <Collapse bordered={false} defaultActiveKey={[]}>
+  //       <Panel header="Traceback" key="1">
+  //         {errorLogs.map((error, i) => {
+  //           return <div key={i}>{error}</div>;
+  //         })}
+  //       </Panel>
+  //     </Collapse>
+  //   );
 
   const showAfterCreation = (
     <div>
@@ -288,12 +233,13 @@ export const EnvironmentSpecs = (props: IProps) => {
             undefined
           )}
           &nbsp;
-          <Button type="primary" onClick={saveEnv}>
+          <Button type="primary" onClick={saveEnv} loading={loading}>
             {props.env ? 'Save' : 'Create'}
           </Button>
         </div>
       </div>
-      Language: {selectLanguage}
+      Language: {selectLanguage} &nbsp;
+      <CPTooltip infoIcon={true} title={envSpecText} />
       <br />
       <br />
       Custom dependencies: {selectDependencies}
@@ -301,5 +247,3 @@ export const EnvironmentSpecs = (props: IProps) => {
     </div>
   );
 };
-
-const compileTemplateString = '';

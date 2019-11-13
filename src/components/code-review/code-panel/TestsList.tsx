@@ -11,7 +11,7 @@ import { Badge, Table, Collapse, Statistic } from 'antd';
 /* codePost imports */
 import { SubmissionTest, SubmissionTestType } from '../../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../../infrastructure/testCategory';
-import { TestCasesByCategory } from '../../admin/assignments/assignments/AssignmentTest/testFetchUtils';
+import { TestCasesByCategory } from '../../core/testFetchUtils';
 
 /**********************************************************************************************************************/
 
@@ -60,7 +60,9 @@ const TestsList = (props: IProps) => {
     <div style={{ margin: '20px' }}>
       <Statistic
         title="Tests Passed"
-        value={`${props.tests.reduce((acc, el) => acc + (el.passed ? 1 : 0), 0)}/${Object.values(props.cases).length}`}
+        value={`${props.tests.reduce((acc, el) => acc + (el.passed ? 1 : 0), 0)}/${
+          Object.values(props.cases).flat().length
+        }`}
       />
       <br />
       <Collapse defaultActiveKey={props.categories.map((x, i) => i)} bordered={false} style={{ background: '#f2f2f2' }}>

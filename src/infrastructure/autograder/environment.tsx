@@ -9,6 +9,8 @@ import {
   readObjectDetail,
 } from '../generics';
 
+import { TaskV } from './runTypes';
+
 const EnvironmentV = t.intersection(
   [
     GenericObject,
@@ -19,6 +21,7 @@ const EnvironmentV = t.intersection(
       helperFiles: t.array(t.number),
       solutionFiles: t.array(t.number),
       compileText: t.string,
+      isRunning: t.boolean,
     }),
     t.partial({}),
   ],
@@ -92,4 +95,5 @@ export class Environment {
   public static simulateBuild = updateObjectDetail(SimulateResponse, BuildData, 'autograder/environments', 'build');
   public static updateBuild = updateObjectDetail(EnvironmentV, BuildData, 'autograder/environments', 'build');
   public static eject = readObjectDetail(TestsSource, 'autograder/environments', 'eject');
+  public static runAll = readObjectDetail(TaskV, 'autograder/environments', 'runAll');
 }

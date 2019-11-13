@@ -14,32 +14,36 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 /* codePost object imports */
-import { AssignmentType } from '../../../../../../infrastructure/assignment';
-import { TestCase, TestCaseType } from '../../../../../../infrastructure/testCase';
-import { TestCategory, TestCategoryType } from '../../../../../../infrastructure/testCategory';
-import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
-import { HelperFileType } from '../../../../../../infrastructure/autograder/helperFile';
-import { SubmissionType } from '../../../../../../infrastructure/submission';
+import {
+  AssignmentType,
+  TestCaseType,
+  TestCategoryType,
+  SubmissionType,
+  FileType,
+} from '../../../../../infrastructure/types';
+import { TestCase } from '../../../../../infrastructure/testCase';
+import { TestCategory } from '../../../../../infrastructure/testCategory';
+import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
+import { HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
 import {
   Environment,
   EnvironmentType,
   TestTemplateType,
   TestsSourceType,
-} from '../../../../../../infrastructure/autograder/environment';
-import { File, FileType } from '../../../../../../infrastructure/file';
+} from '../../../../../infrastructure/autograder/environment';
+import { File } from '../../../../../infrastructure/file';
 
 /* codePost component imports */
-import { TestItem } from './TestDefinitions/TestItem';
-// import { ProMode } from './TestDefinitions/ProMode';
-import { AddCategoryModal } from './TestDefinitions/AddCategoryModal';
-import { EditCategoryModal } from './TestDefinitions/EditCategoryModal';
-import { AddTestModal } from './TestDefinitions/AddTestModal';
+import { TestItem } from './TestItem';
+import { AddCategoryModal } from './AddCategoryModal';
+import { EditCategoryModal } from './EditCategoryModal';
+import { AddTestModal } from './AddTestModal';
 
 /* codePost utils imports */
-import { fetchTestData, TestCasesByCategory } from '../testFetchUtils';
-import { hasNativeTestSupport } from './utils/languageUtils';
+import { fetchTestData, TestCasesByCategory } from '../../../../core/testFetchUtils';
+import { hasNativeTestSupport } from './languageUtils';
 
-import { CodeWindow } from './utils/CodeWindow';
+import { CodeWindow } from './CodeWindow';
 
 const { Sider, Content } = Layout;
 
@@ -73,9 +77,11 @@ export const TestDefinitions = (props: IProps) => {
   const [activeTest, setActiveTest] = useState<TestCaseType | undefined>(undefined);
   const [tests, setTests] = useState<TestTemplateType[]>([]);
   const [main, setMain] = useState('');
-  const [currentFiles, setCurrentFiles] = useState<(SolutionFileType | FileType)[]>(props.solutions);
   const [index, setIndex] = useState('0-0');
   const [loading, setLoading] = useState(true);
+
+  const [activeSubmission, setActiveSubmission] = useState<SubmissionType | undefined>(undefined);
+  const [currentFiles, setCurrentFiles] = useState<(SolutionFileType | FileType)[]>(props.solutions);
 
   /******************************* Fetch Data ****************************/
   useEffect(() => {
@@ -102,6 +108,11 @@ export const TestDefinitions = (props: IProps) => {
       fetchData();
     }
   }, [props.env]);
+
+  useEffect(() => {
+    setActiveSubmission(undefined);
+    setCurrentFiles([]);
+  }, [activeTest]);
 
   /******************************* TestCategory functions  ****************************/
 
@@ -233,6 +244,10 @@ export const TestDefinitions = (props: IProps) => {
     if (match) {
       const files = match.files.map((fileID) => File.read(fileID));
       Promise.all(files).then((fileList) => setCurrentFiles(fileList));
+      setActiveSubmission(match);
+    } else {
+      setActiveSubmission(undefined);
+      setCurrentFiles(props.solutions);
     }
   };
 
@@ -387,6 +402,7 @@ export const TestDefinitions = (props: IProps) => {
                 deleteTest={deleteTest}
                 submissions={props.submissions}
                 setTestSubject={setTestSubject}
+                activeSubmission={activeSubmission}
               />
             )}
           </div>
@@ -450,7 +466,7 @@ export const TestDefinitions = (props: IProps) => {
             {hasTests ? (
               content
             ) : (
-              <Content style={{ margin: 15 }}>
+              <Content style={{ margin: 15, display: 'flex', justifyContent: 'center' }}>
                 <Empty
                   style={{ marginTop: '20px', maxWidth: '400px' }}
                   description={

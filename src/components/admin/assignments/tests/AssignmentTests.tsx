@@ -16,13 +16,13 @@ import { RouteComponentProps } from 'react-router';
 import { Switch, Route } from 'react-router-dom';
 
 /* codePost object imports */
-import { Assignment, AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
-import { SubmissionType } from '../../../../../infrastructure/submission';
-import { UserType } from '../../../../../infrastructure/user';
+import { Assignment, AssignmentPatchType, AssignmentType } from '../../../../infrastructure/assignment';
+import { SubmissionType } from '../../../../infrastructure/submission';
+import { UserType } from '../../../../infrastructure/user';
 
 /* codePost component imports */
-import { TestingSetup } from './TestingSetup';
-import { TestingSummary } from './TestingSummary';
+import { TestingSetup } from './edit/TestingSetup';
+import { TestingSummary } from './results/TestingSummary';
 
 /**********************************************************************************************************************/
 

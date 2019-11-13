@@ -55,7 +55,7 @@ import { sendSlack } from '../core/slack';
 
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
-import { fetchTestData, TestCasesByCategory } from '../admin/assignments/assignments/AssignmentTest/testFetchUtils';
+import { fetchTestData, TestCasesByCategory } from '../core/testFetchUtils';
 
 import {
   Controls,

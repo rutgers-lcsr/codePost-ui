@@ -10,7 +10,7 @@ import {
   BASHMODE_TEMPLATE,
   JAVA_UNIT_TEMPLATE,
   BASH_JAVA_TEMPLATE,
-} from './templates/testTemplates';
+} from './testTemplates';
 
 /****************************** CodeMirror Utils *********************************/
 // Map each extension to the syntax highlighter for it
@@ -46,7 +46,7 @@ export const hasDependenciesSupport = (language: string) => {
 };
 
 // The languages for which I/o tests and native unit tests are supported
-const languageWithNativeTestSupport = ['python-3.7', 'java', 'python2.-7'];
+const languageWithNativeTestSupport = ['python-3.7', 'java', 'python-2.7'];
 
 // The languages for which custom dependencies are supported
 const languagesWithDependencySupport = ['python-3.7', 'python-2.7'];
