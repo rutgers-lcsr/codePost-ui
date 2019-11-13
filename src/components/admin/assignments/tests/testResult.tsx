@@ -1,4 +1,4 @@
-const MAX_TRIES = 15;
+const MAX_TRIES = 25;
 
 export function awaitTestResult(id: string, callback: (result: any) => any, progressCallback?: (progress: any) => any) {
   let tries = 0;

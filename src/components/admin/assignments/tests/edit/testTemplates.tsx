@@ -7,7 +7,7 @@
 export const PYTHON_UNIT_TEMPLATE = `
 # To call a student's method, uncomment the following line and call <fileName>.<method>
 
-# from files import <insert student's fileName here>
+# import <insert student's fileName here>
 
 def TestCase():
   # TestCase must return a TestOutput Object
@@ -21,8 +21,8 @@ def TestCase():
 export const JAVA_UNIT_TEMPLATE = `
 // Put your imports here
 
-class Test() {
-  TestOutput Test() {
+class Test {
+  static TestOutput Test() {
     // Your code goes here. It must return a TestOutput object
     // To call a student's method, call the Class and Method: <Class>.<Method>
     // Example: Calculator.add(1,2)
@@ -45,7 +45,7 @@ export const BASH_PYTHON_TEMPLATE = `
 # It must call the function TestOutput <boolean> <string logs>
 # For example, to check if a student's helloWorld file outputs "Hello World"
 #
-# result=$(python3 /files/HelloWorld.py)
+# result=$(python3 HelloWorld.py)
 # if echo $result | grep "Hello World"
 # then
 #   TestOutput true "good job!"
@@ -60,10 +60,10 @@ export const BASH_JAVA_TEMPLATE = `
 # You can write a bash script below
 # It must call the function TestOutput <boolean> <string logs>
 # For example, to check if a student's files compile:
-# javac ../files/*.java && TestOutput true "Compiled!" || TestOutput false "Didn't compile."
+# javac *.java && TestOutput true "Compiled!" || TestOutput false "Didn't compile."
 #
 # Or to check if a student's HelloWorld.java outputs "Hello World":
-# javac ../files/HelloWorld.java -d .
+# javac HelloWorld.java
 # result=$(java files.HelloWorld)
 # if echo $result | grep "Hello World"
 # then
