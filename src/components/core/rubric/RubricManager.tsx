@@ -197,9 +197,10 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
           for (const newComment of rubric.rubricComments) {
             const found = oldComments.find((el) => el.id === newComment.id);
             if (!found) {
+              const category = rubric.rubricCategories.find((el) => el.id === newComment.category);
               notification.open({
-                message: 'New rubric comments',
-                description: `A new rubric comment has been to added: ${newComment.text}`,
+                message: `New rubric comment in ${category ? category.name : ''}`,
+                description: newComment.text,
               });
             }
           }
