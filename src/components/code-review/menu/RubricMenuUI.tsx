@@ -128,8 +128,32 @@ const RubricMenuUI = ({
 
     // If user has specified a category with category:[some text], respect it
     const categoryMatches = searchTerm.match(/(category:[a-z0-9]+)|(category:"[a-z0-9\s]+")/i);
+    let adjustedRubricComments = { ...rubricComments };
 
-    let filteredCatgories = rubricCategories.sort(RubricCategory.compare);
+    // Create a category of frequently used comments
+    let freq: RubricCategoryType;
+    const noSort: number[] = [];
+
+    let filteredCatgories;
+    if (!props.editRubricMode) {
+      noSort.push(-1000);
+      freq = {
+        id: -1000,
+        name: 'Frequently used',
+        rubricComments: [],
+        assignment: -1,
+        pointLimit: null,
+        sortKey: 0,
+      };
+      adjustedRubricComments[-1000] = Object.values(rubricComments)
+        .flat()
+        .sort((a, b) => b.comments.length - a.comments.length)
+        .slice(0, 10);
+      filteredCatgories = [freq, ...rubricCategories.sort(RubricCategory.compare)];
+    } else {
+      filteredCatgories = rubricCategories.sort(RubricCategory.compare);
+    }
+
     let commentSearchTerm = searchTerm;
     if (categoryMatches !== null && categoryMatches.length > 0) {
       const categoryName = categoryMatches[0].split(':')[1].slice(1, -1);
@@ -154,12 +178,23 @@ const RubricMenuUI = ({
         return el.id === cat.id;
       });
 
+      // Don't sort comments which are custom sorted prior to this map
+      let comments: RubricCommentType[] = [];
+      if (cat.id in adjustedRubricComments) {
+        if (noSort.indexOf(cat.id) > -1) {
+          console.log(adjustedRubricComments[cat.id]);
+          comments = adjustedRubricComments[cat.id];
+        } else {
+          comments = adjustedRubricComments[cat.id].sort(RubricComment.compare);
+        }
+      }
+
       return (
         <RubricCategoryManager
           key={cat.id}
           rubricCategory={cat}
           savedRubricCategory={savedCategory}
-          rubricComments={cat.id in rubricComments ? rubricComments[cat.id].sort(RubricComment.compare) : []}
+          rubricComments={comments}
           savedRubricComments={savedCategory ? state.savedRubricComments[savedCategory.id] : undefined}
           updateCategory={helpers.updateRubricCategory}
           deleteCategory={helpers.deleteRubricCategory}
