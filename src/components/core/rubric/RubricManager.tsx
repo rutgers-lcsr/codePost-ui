@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { message } from 'antd';
+import { message, notification } from 'antd';
 
 /* other library imports */
 import arrayMove from 'array-move';
@@ -190,6 +190,21 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     return Assignment.readRubric(assignment.id)
       .then((rubric: RubricType) => {
         const commentMap = this.buildCommentMap(rubric.rubricCategories, rubric.rubricComments);
+
+        // calculate diff between old rubric and new rubric, and notify user of new comments
+        const oldComments = Object.values(this.state.rubricComments).flat();
+        if (oldComments.length > 0) {
+          for (const newComment of rubric.rubricComments) {
+            const found = oldComments.find((el) => el.id === newComment.id);
+            if (!found) {
+              notification.open({
+                message: 'New rubric comments',
+                description: `A new rubric comment has been to added: ${newComment.text}`,
+              });
+            }
+          }
+        }
+
         if (this.props.setRubric !== undefined) {
           this.props.setRubric({
             rubricCategories: rubric.rubricCategories,
