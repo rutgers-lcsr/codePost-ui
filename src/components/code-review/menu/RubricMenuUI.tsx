@@ -182,7 +182,6 @@ const RubricMenuUI = ({
       let comments: RubricCommentType[] = [];
       if (cat.id in adjustedRubricComments) {
         if (noSort.indexOf(cat.id) > -1) {
-          console.log(adjustedRubricComments[cat.id]);
           comments = adjustedRubricComments[cat.id];
         } else {
           comments = adjustedRubricComments[cat.id].sort(RubricComment.compare);
