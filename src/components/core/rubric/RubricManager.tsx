@@ -836,6 +836,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
       category: category.id,
       comments: [],
       sortKey: rubricComments[category.id] ? rubricComments[category.id].length : 0,
+      explanation: '',
     };
 
     newComments[category.id] = [...newComments[category.id], payload];

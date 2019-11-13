@@ -93,6 +93,7 @@ interface ICodeConsoleState {
   codeVerticalOffset: number;
   dimensions: CodeConsoleDimensionsType;
   isStudent: boolean;
+  showExplanations: boolean;
 
   /* submissions data for readers and writers */
   readOnlySubmission?: StudentSubmissionType;
@@ -120,6 +121,7 @@ interface ICodeConsoleState {
   commentCounter: number;
 
   rubricReload?: number;
+  noSave?: boolean;
 }
 
 export interface ICodeConsoleProps {
@@ -426,6 +428,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       commentCounter: -1,
 
       rubricReload: undefined,
+      showExplanations: false,
     };
   }
 
@@ -447,8 +450,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let permissionLevel = await this.detectPermissionType(submissionID);
 
     const values = queryString.parse(this.props.location.search);
+    let simulatingStudent = false;
     if (permissionLevel === PERMISSION_LEVEL.WRITE && values.student !== undefined) {
       permissionLevel = PERMISSION_LEVEL.READ;
+      simulatingStudent = true;
+    }
+
+    let noSave = false;
+    if (values.noSave !== undefined) {
+      noSave = true;
     }
 
     // Everything we need to load
@@ -497,6 +507,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         // then store it in state
         this.setState({
+          noSave,
           assignment,
           course,
           readOnlySubmission: submission,
@@ -507,7 +518,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           isLoading: false,
           selectedFile,
           permissionLevel,
-          isStudent: submission.students !== undefined && submission.students.indexOf(this.props.user.email) > -1,
+          isStudent:
+            simulatingStudent ||
+            (submission.students !== undefined && submission.students.indexOf(this.props.user.email) > -1),
         });
         break;
 
@@ -566,6 +579,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         this.setState(
           {
+            noSave,
             assignment,
             course,
             submission: writableSubmission,
@@ -684,6 +698,17 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     this.setState({ selectedFile, activeCommentID: undefined });
   };
 
+  public toggleShowExplanations = () => {
+    this.setState(
+      (oldState: ICodeConsoleState) => {
+        return { showExplanations: !oldState.showExplanations };
+      },
+      () => {
+        message.info(`Now showing rubric comment ${this.state.showExplanations ? 'explanations' : 'text'}`);
+      },
+    );
+  };
+
   /***********************************************************************************
   /* Helper functions
   /**********************************************************************************/
@@ -739,7 +764,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let savedComment: CommentType = comment;
     let oldCommentIDs = this.state.oldCommentIDs;
 
-    if (!this.props.inDemoMode) {
+    if (!this.props.inDemoMode && !this.state.noSave) {
       if (comment.id < 0) {
         savedComment = await CommentIO.create(comment);
         oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
@@ -791,7 +816,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public deleteComment = async (comment: CommentType) => {
-    if (comment.id > 0 && !this.props.inDemoMode) {
+    if (comment.id > 0 && !this.props.inDemoMode && !this.state.noSave) {
       await CommentIO.delete(comment.id).then(() => this.updateSubmissionGrade());
     }
 
@@ -895,7 +920,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return;
     }
 
-    if (this.props.inDemoMode) {
+    if (this.props.inDemoMode || this.state.noSave) {
       this.setState(
         (oldState: ICodeConsoleState) => {
           // We need to update the submission object in the same way it would be updated
@@ -1102,6 +1127,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           comments: [],
           pointDelta: 1,
           sortKey: 0,
+          explanation: '',
         },
         {
           id: 2,
@@ -1110,6 +1136,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           comments: [],
           pointDelta: 1,
           sortKey: 1,
+          explanation: '',
         },
         {
           id: 3,
@@ -1118,6 +1145,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           comments: [],
           pointDelta: 1,
           sortKey: 2,
+          explanation: '',
         },
       ],
       2: [
@@ -1128,6 +1156,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           comments: [],
           pointDelta: 2,
           sortKey: 0,
+          explanation: '',
         },
         {
           id: 5,
@@ -1136,6 +1165,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           comments: [],
           pointDelta: 1,
           sortKey: 0,
+          explanation: '',
         },
       ],
     };
@@ -1250,7 +1280,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let sider: React.ReactElement[] = [];
 
     const toolbarWidgets = [];
-    if (!this.props.inDemoMode) {
+    if (!this.props.inDemoMode && !this.state.noSave) {
       const hasComments =
         this.state.selectedFile !== undefined ? this.state.comments[this.state.selectedFile.id].length > 0 : false;
 
@@ -1342,6 +1372,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           const demoComments = (
             <GradeComments
               isStudent={this.state.isStudent}
+              showExplanations={this.state.showExplanations}
               comments={this.state.comments[this.state.selectedFile!.id]}
               rubricComments={this.state.commentRubricComments}
               readOnly={this.state.submission!.isFinalized}
@@ -1422,6 +1453,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 turnOffReload: this.turnOffReload,
                 canUserEdit: true, // showcase in-console rubric editing in demo
                 demoMode: true,
+                showExplanations: this.state.showExplanations,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
@@ -1435,6 +1467,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             key="menu"
             claimSubmission={this.claimSubmission}
             isStudent={this.state.isStudent}
+            toggleShowExplanations={this.toggleShowExplanations}
+            showExplanations={this.state.showExplanations}
+            hasExplanations={Object.values(this.state.rubricComments)
+              .flat()
+              .some((el) => el.explanation)}
             isAdmin={this.isCourseAdmin(this.state.assignment)}
             course={this.state.course}
             assignment={this.state.assignment}
@@ -1509,6 +1546,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             key="menu"
             claimSubmission={this.claimSubmission}
             isStudent={this.state.isStudent}
+            toggleShowExplanations={this.toggleShowExplanations}
+            showExplanations={this.state.showExplanations}
+            hasExplanations={Object.values(this.state.rubricComments)
+              .flat()
+              .some((el) => el.explanation)}
             isAdmin={this.isCourseAdmin(this.state.assignment)}
             course={this.state.course}
             assignment={this.state.assignment}
@@ -1545,6 +1587,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             key="menu"
             claimSubmission={this.claimSubmission}
             isStudent={this.state.isStudent}
+            toggleShowExplanations={this.toggleShowExplanations}
+            showExplanations={this.state.showExplanations}
+            hasExplanations={Object.values(this.state.rubricComments)
+              .flat()
+              .some((el) => el.explanation)}
             isAdmin={this.isCourseAdmin(this.state.assignment)}
             course={this.state.course}
             assignment={this.state.assignment}
@@ -1598,6 +1645,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           const comments = (
             <GradeComments
               isStudent={this.state.isStudent}
+              showExplanations={this.state.showExplanations}
               comments={this.state.comments[this.state.selectedFile!.id]}
               rubricComments={this.state.commentRubricComments}
               readOnly={this.state.submission!.isFinalized}
@@ -1676,7 +1724,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 turnOffReload: this.turnOffReload,
                 canUserEdit:
                   this.isCourseAdmin(this.state.assignment) || this.state.assignment!.collaborativeRubricMode,
-                demoMode: false,
+                demoMode: this.state.noSave === true,
+                showExplanations: this.state.showExplanations,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}

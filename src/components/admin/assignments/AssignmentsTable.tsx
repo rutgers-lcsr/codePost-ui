@@ -165,6 +165,10 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
     });
   };
 
+  public closeDrawer = () => {
+    this.setState({ drawerType: undefined });
+  };
+
   /******************************************************************************
    * Detail callbacks
    ******************************************************************************/
@@ -501,7 +505,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
           type={this.state.drawerType}
           content={this.state.drawerContent}
           isVisible={true}
-          onClose={cancel}
+          onClose={this.closeDrawer}
           uploadSubmission={this.uploadForStudent}
         />
       );
