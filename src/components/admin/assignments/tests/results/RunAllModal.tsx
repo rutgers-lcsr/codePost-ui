@@ -62,9 +62,10 @@ const RunAllModal = (props: IProps) => {
       <Modal visible={true} title="Results">
         {Object.keys(castRaw).map((key) => {
           const obj = castRaw[parseInt(key, 10)];
+          const foundCase = props.cases.find((el) => el.id === parseInt(key, 10));
           return (
             <div>
-              {props.cases.find((el) => el.id === parseInt(key, 10))!.description}
+              {foundCase ? foundCase.description : ''}
               <Progress percent={(obj.passed / (obj.passed + obj.failed + obj.error)) * 100} status="active" />
             </div>
           );

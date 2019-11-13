@@ -33,7 +33,7 @@ export const CodeWindow = (props: IProps) => {
   const onSave = async () => {
     if (props.onSave) {
       setIsSaving(true);
-      await props.onSave(editedCode);
+      await props.onSave(editedCode.replace('\\r', ''));
       setIsSaving(false);
       setIsEditing(false);
       setEditedCode('');
