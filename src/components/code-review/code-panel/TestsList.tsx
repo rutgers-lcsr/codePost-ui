@@ -22,6 +22,10 @@ interface IProps {
 }
 
 const TestsList = (props: IProps) => {
+  // Submission-level stats
+  let passed = 0;
+  let total = 0;
+
   // Index tests by testCategory to access their data more easily when we loop
   // over testCategories below
   const testsByCategory = {} as { [id: number]: SubmissionTestType[] };
@@ -30,6 +34,10 @@ const TestsList = (props: IProps) => {
   }
   for (const test of SubmissionTest.getLatest(props.tests)) {
     testsByCategory[test.testCategory] = [...testsByCategory[test.testCategory], test];
+    if (test.passed) {
+      passed += 1;
+    }
+    total += 1;
   }
 
   // Top-level columns used used to display individual test information
@@ -58,12 +66,7 @@ const TestsList = (props: IProps) => {
 
   return (
     <div style={{ margin: '20px' }}>
-      <Statistic
-        title="Tests Passed"
-        value={`${props.tests.reduce((acc, el) => acc + (el.passed ? 1 : 0), 0)}/${
-          Object.values(props.cases).flat().length
-        }`}
-      />
+      <Statistic title="Tests Passed" value={`${passed}/${total}`} />
       <br />
       <Collapse defaultActiveKey={props.categories.map((x, i) => i)} bordered={false} style={{ background: '#f2f2f2' }}>
         {props.categories.map((category, index) => {
