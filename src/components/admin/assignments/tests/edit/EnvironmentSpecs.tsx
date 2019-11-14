@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 
 /* library imports */
-import { Modal, Button, Collapse, Divider, Select, Typography, Empty, message } from 'antd';
+import { Modal, Button, Divider, Select, Typography, Empty, message } from 'antd';
 
 /* codePost object imports */
 import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
@@ -30,7 +30,6 @@ import { FILE_TYPE } from './TestingSetup';
 import locale from './languageLocale';
 
 const { Option } = Select;
-const { Panel } = Collapse;
 const { confirm } = Modal;
 
 /**********************************************************************************************************************/
@@ -55,7 +54,6 @@ export const EnvironmentSpecs = (props: IProps) => {
   /******************************* State Variables ****************************/
   const [language, setLanguage] = useState<string | null>(props.env ? props.env.language : null);
   const [dependencies, setDependencies] = useState<string[]>(props.env ? JSON.parse(props.env.dependencies) : []);
-  const [errorLogs, setErrorLogs] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
   /******************************* API / State Change Functions ****************************/
