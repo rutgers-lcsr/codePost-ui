@@ -10,6 +10,7 @@ import {
   BASHMODE_TEMPLATE,
   JAVA_UNIT_TEMPLATE,
   BASH_JAVA_TEMPLATE,
+  BASH_CPP_TEMPLATE,
 } from './testTemplates';
 
 /****************************** CodeMirror Utils *********************************/
@@ -71,5 +72,11 @@ export const testTemplates: { [language: string]: { [type: string]: string } } =
     'native-unit': JAVA_UNIT_TEMPLATE,
     'bash-unit': BASH_JAVA_TEMPLATE,
     bashMode: BASHMODE_TEMPLATE,
+  },
+  'c/c++': {
+    io: '',
+    'native-unit': '',
+    'bash-unit': BASH_CPP_TEMPLATE,
+    bashMode: '',
   },
 };

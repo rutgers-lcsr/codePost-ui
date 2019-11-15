@@ -88,3 +88,19 @@ export const BASHMODE_TEMPLATE = `
 #
 TestOutput "test1" true "Put your custom log statement here"
 `;
+
+export const BASH_CPP_TEMPLATE = `
+# You can write a bash script below
+# It must call the function TestOutput <boolean> <string logs>
+# For example, to compile and check a student file's output with a given input txt
+#
+# g++ -o hello hello.cpp
+# result = $(hello < datainput.txt)
+# if [ $result == "Hello World" ];
+# then
+#   TestOutput true "Passed!"
+# else
+#   TestOutput false "Failed!"
+# fi
+TestOutput true "Put your custom log statement here"
+`;

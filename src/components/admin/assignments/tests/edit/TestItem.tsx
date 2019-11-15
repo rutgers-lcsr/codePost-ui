@@ -51,7 +51,6 @@ interface IFormValues {
   input: string;
   checkReturn: string;
   fileName: string;
-  testType: string;
 }
 
 export const TestItem = (props: ITestItemProps) => {
@@ -88,23 +87,23 @@ export const TestItem = (props: ITestItemProps) => {
     }
   };
 
-  const handleCreate = (codeString?: string) => {
+  const handleCreate = (testType: string, codeString?: string) => {
     const form = formRef.props.form;
     form.validateFields((err: any, values: IFormValues) => {
       if (err) {
         return;
       }
-      saveTest(values, codeString);
+      saveTest(values, testType, codeString);
     });
   };
 
-  const handleRun = (codeString?: string) => {
+  const handleRun = (testType: string, codeString?: string) => {
     const form = formRef.props.form;
     form.validateFields((err: any, values: IFormValues) => {
       if (err) {
         return;
       }
-      runTest(values, codeString);
+      runTest(values, testType, codeString);
     });
   };
 
@@ -126,8 +125,8 @@ export const TestItem = (props: ITestItemProps) => {
 
   // A testCase must be saved before it can be run. To simulate a "run without saving"
   // operation, we (1) save the test, (2) run it, (3) save it using its old values.
-  const runTest = async (values: IFormValues, codeString?: string) => {
-    await saveTest(values, codeString);
+  const runTest = async (values: IFormValues, testType: string, codeString?: string) => {
+    await saveTest(values, testType, codeString);
 
     if (props.testCase.id > 0) {
       setIsRunning(true);
@@ -152,7 +151,7 @@ export const TestItem = (props: ITestItemProps) => {
     setIsRunning(false);
   };
 
-  const saveTest = async (values: IFormValues, codeString?: string) => {
+  const saveTest = async (values: IFormValues, testType: string, codeString?: string) => {
     const testCaseCopy = { ...props.testCase };
     testCaseCopy.text = codeString || '';
     testCaseCopy.description = values.description;
@@ -161,7 +160,7 @@ export const TestItem = (props: ITestItemProps) => {
     testCaseCopy.function = values.function;
     testCaseCopy.input = values.input;
     testCaseCopy.checkReturn = values.checkReturn === 'return';
-    testCaseCopy.type = values.testType;
+    testCaseCopy.type = testType;
     await props.saveTest(testCaseCopy);
     message.success('Test saved');
   };
@@ -242,17 +241,13 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
       testType: type,
       commandText: newType ? this.props.testCase.text : testTemplates[this.props.language][type],
     });
-    this.props.form.setFieldsValue({
-      testType: type,
-      commandText: newType ? this.props.testCase.text : testTemplates[this.props.language][type],
-    });
   };
 
   public onChangeFileName = (newName: string) => {
     this.setState({ selectedFileName: newName });
   };
 
-  public buildIOTest = (testCase: TestCaseType) => {
+  public buildIOBasic = (testCase: TestCaseType) => {
     const { getFieldDecorator } = this.props.form;
     const textStyle: React.CSSProperties = { whiteSpace: 'nowrap', marginRight: '4px', marginLeft: '4px' };
     const inputStyle: React.CSSProperties = { width: '200px' };
@@ -267,10 +262,18 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             );
           })
         : [];
-
     return (
       <div className="natural-language-form" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-        <span style={{ ...textStyle, marginLeft: undefined }}>From file</span>
+        <span style={{ ...textStyle, marginLeft: undefined }}>From</span>
+        <Select disabled={this.props.isRunning} value={'io'} onChange={this.onTypeChange} style={inputStyle}>
+          <Option key={'file'} value={'io'}>
+            File
+          </Option>
+          <Option key={'cli'} value={'io_cli'}>
+            command line
+          </Option>
+        </Select>
+        <span style={textStyle}>with name</span>
         <Form.Item label="">
           {getFieldDecorator('fileName', {
             initialValue: testCase.fileName,
@@ -291,6 +294,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             </Select>,
           )}
         </Form.Item>
+        <span style={textStyle}>, &nbsp; </span>
         <span style={textStyle}>run</span>
         {this.props.methodsByFile && this.props.methodsByFile[this.state.selectedFileName] ? (
           <Form.Item label="">
@@ -358,6 +362,46 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     );
   };
 
+  public buildIOCL = (testCase: TestCaseType) => {
+    const { getFieldDecorator } = this.props.form;
+    const textStyle: React.CSSProperties = { whiteSpace: 'nowrap', marginRight: '4px', marginLeft: '4px' };
+    const inputStyle: React.CSSProperties = { width: '200px' };
+
+    return (
+      <div className="natural-language-form" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+        <span style={{ ...textStyle, marginLeft: undefined }}>From</span>
+        <Select disabled={this.props.isRunning} value={'io_cli'} onChange={this.onTypeChange} style={inputStyle}>
+          <Option key={'file'} value={'io'}>
+            File
+          </Option>
+          <Option key={'cli'} value={'io_cli'}>
+            Command Line
+          </Option>
+        </Select>
+        <span style={textStyle}>run the command</span>
+        <Input
+          placeholder={'Command'}
+          style={inputStyle}
+          value={this.state.commandText}
+          onChange={(e) => this.onChange(e.target.value)}
+          disabled={this.props.isRunning}
+        />
+        <span style={textStyle}>and expect the call to output the value</span>
+        <Form.Item label="">
+          {getFieldDecorator('expectedOutput', {
+            initialValue: testCase.expectedOutput,
+            rules: [
+              {
+                required: false,
+              },
+            ],
+          })(<Input disabled={this.props.isRunning} style={inputStyle} />)}
+          <span style={{ marginLeft: '1px' }}>.</span>
+        </Form.Item>
+      </div>
+    );
+  };
+
   /******************************* Render  ****************************/
   public render() {
     const { testCase, form } = this.props;
@@ -372,7 +416,10 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     let testBody;
     switch (this.state.testType) {
       case 'io':
-        testBody = this.buildIOTest(testCase);
+        testBody = this.buildIOBasic(testCase);
+        break;
+      case 'io_cli':
+        testBody = this.buildIOCL(testCase);
         break;
       case 'external':
         testBody = <div />;
@@ -392,7 +439,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
           <Button
             style={{ marginRight: 10 }}
             type="primary"
-            onClick={this.props.saveTest.bind(this, this.state.commandText)}
+            onClick={this.props.saveTest.bind(this, this.state.testType, this.state.commandText)}
           >
             Save
           </Button>
@@ -405,7 +452,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
         <div>
           <Typography.Title level={4}>1. Details</Typography.Title>
           <Form labelCol={{ span: 8 }} wrapperCol={{ span: 16 }} layout="inline">
-            <Row>
+            <Row style={{ alignItems: 'center' }}>
               <Form.Item label="Test Name">
                 {getFieldDecorator('description', {
                   initialValue: testCase.description,
@@ -416,28 +463,21 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   ],
                 })(<Input disabled={this.props.isRunning} />)}
               </Form.Item>
-              <Form.Item label="Test type">
-                {getFieldDecorator('testType', {
-                  initialValue: testCase.type,
-                  rules: [
-                    {
-                      required: true,
-                    },
-                  ],
-                })(
-                  <Select
-                    onChange={this.onTypeChange}
-                    disabled={this.props.isRunning || !hasNativeSupport}
-                    style={{ minWidth: 200 }}
-                  >
-                    <Option value={'io'}>Input / Output</Option>
-                    <Option value={'bash-unit'}>Shell Script</Option>
-                    <Option value={'native-unit'}>
-                      Unit Test <Tag>BETA</Tag>
-                    </Option>
-                  </Select>,
-                )}
-              </Form.Item>
+              <div style={{ alignItems: 'center' }}>
+                Test Type: &nbsp;
+                <Select
+                  onChange={this.onTypeChange}
+                  disabled={this.props.isRunning || !hasNativeSupport}
+                  style={{ width: 200 }}
+                  value={this.state.testType == 'io_cli' ? 'io' : this.state.testType}
+                >
+                  <Option value={'io'}>Input / Output</Option>
+                  <Option value={'bash-unit'}>Shell Script</Option>
+                  <Option value={'native-unit'}>
+                    Unit Test <Tag>BETA</Tag>
+                  </Option>
+                </Select>
+              </div>
             </Row>
             <Divider />
             <Typography.Title level={4}>2. Definition</Typography.Title>
@@ -449,7 +489,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             <PsuedoTerminal
               log={this.props.log}
               isRunning={this.props.isRunning}
-              runTest={this.props.runTest.bind(this, this.state.commandText)}
+              runTest={this.props.runTest.bind(this, this.state.testType, this.state.commandText)}
               submissions={this.props.submissions}
               setTestSubject={this.props.setTestSubject}
             />
