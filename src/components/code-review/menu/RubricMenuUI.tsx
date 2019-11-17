@@ -49,6 +49,9 @@ interface IRubricMenuUIProps extends IRubricManagerProps {
   /* is the user allowed to edit the rubric? */
   canUserEdit: boolean;
 
+  /* should we show the frequent comments synthetic category? */
+  showFrequent: boolean;
+
   /* if true, simulate rubric save */
   demoMode: boolean;
 
@@ -135,7 +138,7 @@ const RubricMenuUI = ({
     const noSort: number[] = [];
 
     let filteredCatgories;
-    if (!props.editRubricMode) {
+    if (!props.editRubricMode && props.showFrequent) {
       noSort.push(-1000);
       freq = {
         id: -1000,

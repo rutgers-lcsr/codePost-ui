@@ -1039,6 +1039,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       forcedRubricMode: false,
       templateMode: false,
       fileTemplates: [],
+      freqRubricComments: false,
     };
 
     const demoCourse: CourseType = {
@@ -1454,6 +1455,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 canUserEdit: true, // showcase in-console rubric editing in demo
                 demoMode: true,
                 showExplanations: this.state.showExplanations,
+                showFrequent: this.state.assignment !== undefined ? this.state.assignment.freqRubricComments : false,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
@@ -1726,6 +1728,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                   this.isCourseAdmin(this.state.assignment) || this.state.assignment!.collaborativeRubricMode,
                 demoMode: this.state.noSave === true,
                 showExplanations: this.state.showExplanations,
+                showFrequent: this.state.assignment !== undefined ? this.state.assignment.freqRubricComments : false,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
