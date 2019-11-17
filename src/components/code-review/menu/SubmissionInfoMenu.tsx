@@ -54,10 +54,10 @@ interface ISubmissionInfoWriteProps {
 const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
-  let lastEdited;
+  let submitted;
   if (props.submission !== undefined) {
-    if (props.submission.dateEdited) {
-      lastEdited = formatDate(props.submission.dateEdited);
+    if (props.submission) {
+      submitted = formatDate(props.submission.created, props.assignment.uploadDueDate);
     }
   }
 
@@ -70,7 +70,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
 
   return (
     <div id="submission-info" style={{ paddingLeft: '15px', paddingBottom: '10px' }}>
-      <span style={{ fontSize: '12px', color: '#ccc' }}>{lastEdited}</span>
+      <span style={{ fontSize: '12px', color: '#ccc' }}>{submitted}</span>
       <div style={{ fontSize: 12, overflowX: 'auto' }}>
         <b style={{ color: consoleTheme.siderMenuItemColor }}>Students</b>: {studentList}
         {props.submission !== undefined ? (
