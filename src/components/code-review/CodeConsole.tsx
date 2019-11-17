@@ -1040,6 +1040,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       templateMode: false,
       fileTemplates: [],
       showFrequentlyUsedRubricComments: false,
+      allowLateUploads: false,
     };
 
     const demoCourse: CourseType = {
@@ -1072,7 +1073,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       questionIsRegrade: false,
       questionDate: '',
       responseDate: '',
-      created: '',
     };
 
     const fileList: FileType[] = [];

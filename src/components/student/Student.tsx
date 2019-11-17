@@ -257,8 +257,9 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     const dueDatePassed = assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now();
     const isFinalized = submission !== undefined && submission.isFinalized;
     const alreadyClaimed = submission !== undefined && (submission.hasGrader && !assignment.liveFeedbackMode);
+    const canUploadLate = assignment.allowLateUploads || false;
 
-    const canUpload = !dueDatePassed && !isFinalized && !alreadyClaimed;
+    const canUpload = (!dueDatePassed || canUploadLate) && !isFinalized && !alreadyClaimed;
 
     // Present the assignment's due date to the student
     const dueDate = assignment.uploadDueDate ? `Due date: ${moment(assignment.uploadDueDate).format('llll')}` : '';
@@ -297,6 +298,15 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
               content: `Replacing your files will delete existing files, including any comments on those files.
                   If you want to add a file to your submission click 'Add Files' instead.
                   Are you sure you want to continue?`,
+              okText: 'Continue',
+              cancelText: 'Cancel',
+              onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),
+            });
+          }
+          if (submission && dueDatePassed) {
+            Modal.confirm({
+              title: 'Confirm File Replacement',
+              content: `The due date for this submission has passed, so your submission will be logged as late.`,
               okText: 'Continue',
               cancelText: 'Cancel',
               onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),

@@ -49,6 +49,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       forcedRubricMode: values.forcedRubricMode,
       templateMode: values.templateMode,
       showFrequentlyUsedRubricComments: values.showFrequentlyUsedRubricComments,
+      allowLateUploads: values.allowLateUploads,
     };
 
     this.props.onSave(payload).then(() => {
@@ -120,6 +121,7 @@ interface IFormValues {
   forcedRubricMode: boolean;
   templateMode: boolean;
   showFrequentlyUsedRubricComments: boolean;
+  allowLateUploads: boolean;
 }
 
 interface IFormState {
@@ -279,6 +281,22 @@ const CollectionCreateForm: any = Form.create()(
                 >
                   {getFieldDecorator('liveFeedbackMode', {
                     initialValue: this.props.assignment.liveFeedbackMode,
+                    valuePropName: 'checked',
+                  })(<Switch />)}
+                </Form.Item>
+                <Form.Item
+                  label="Allow late submissions"
+                  extra={
+                    <div>
+                      <Tag>NEW</Tag> When enabled, students will be allowed to submit after this assignment's due date
+                      has passed.
+                    </div>
+                  }
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 16 }}
+                >
+                  {getFieldDecorator('allowLateUploads', {
+                    initialValue: this.props.assignment.allowLateUploads,
                     valuePropName: 'checked',
                   })(<Switch />)}
                 </Form.Item>

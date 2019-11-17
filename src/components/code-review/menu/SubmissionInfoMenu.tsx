@@ -57,7 +57,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
   let submitted;
   if (props.submission !== undefined) {
     if (props.submission) {
-      submitted = formatDate(props.submission.created, props.assignment.uploadDueDate);
+      submitted = formatDate(props.submission.dateUploaded, props.assignment.uploadDueDate);
     }
   }
 

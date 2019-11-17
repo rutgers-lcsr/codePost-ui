@@ -142,7 +142,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               /* eslint-disable no-multi-str */
               message.error(
                 'Sorry, something went wrong. Please try uploading again.\
-                If the problem persists, contact the codePost tean.',
+                If the problem persists, contact the codePost team.',
               );
               /* eslint-enable no-multi-str */
               this.cancel();
