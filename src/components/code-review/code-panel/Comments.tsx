@@ -104,15 +104,12 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   };
 
   public handleClickOutside = (event: any) => {
-    const rubricMenu = document.getElementById('rubric-menu');
-    if (
-      !this.props.readOnly &&
-      this.wrapperRef &&
-      !this.wrapperRef.contains(event.target) &&
-      rubricMenu !== null &&
-      !rubricMenu.contains(event.target)
-    ) {
-      this.props.changeActive(undefined);
+    const safeAreaIDs = ['rubric-menu-container'];
+    const safeAreas = safeAreaIDs.map((id) => document.getElementById(id));
+    if (!this.props.readOnly && this.wrapperRef && !this.wrapperRef.contains(event.target)) {
+      if (!safeAreas.some((area) => area !== null && area.contains(event.target))) {
+        this.props.changeActive(undefined);
+      }
     }
   };
 
