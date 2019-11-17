@@ -48,6 +48,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       additiveGrading: values.additiveGrading,
       forcedRubricMode: values.forcedRubricMode,
       templateMode: values.templateMode,
+      freqRubricComments: values.freqRubricComments,
     };
 
     this.props.onSave(payload).then(() => {
@@ -118,6 +119,7 @@ interface IFormValues {
   additiveGrading: boolean;
   forcedRubricMode: boolean;
   templateMode: boolean;
+  freqRubricComments: boolean;
 }
 
 interface IFormState {
@@ -369,6 +371,22 @@ const CollectionCreateForm: any = Form.create()(
                     <UploadFileTemplates assignment={this.props.assignment} />
                   </div>
                 ) : null}
+                <Form.Item
+                  label="Freq. rubric comments"
+                  extra={
+                    <div>
+                      When enabled, an assignment's 10 most frequently applied rubric comments will be shown within the
+                      code console to make them easily accessible.
+                    </div>
+                  }
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 16 }}
+                >
+                  {getFieldDecorator('freqRubricComments', {
+                    initialValue: this.props.assignment.freqRubricComments,
+                    valuePropName: 'checked',
+                  })(<Switch />)}
+                </Form.Item>
               </Tabs.TabPane>
               <Tabs.TabPane tab="Publishing" key="4">
                 <Form.Item
