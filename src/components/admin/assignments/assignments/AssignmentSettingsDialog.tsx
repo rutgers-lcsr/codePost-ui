@@ -48,7 +48,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       additiveGrading: values.additiveGrading,
       forcedRubricMode: values.forcedRubricMode,
       templateMode: values.templateMode,
-      freqRubricComments: values.freqRubricComments,
+      showFrequentlyUsedRubricComments: values.showFrequentlyUsedRubricComments,
     };
 
     this.props.onSave(payload).then(() => {
@@ -119,7 +119,7 @@ interface IFormValues {
   additiveGrading: boolean;
   forcedRubricMode: boolean;
   templateMode: boolean;
-  freqRubricComments: boolean;
+  showFrequentlyUsedRubricComments: boolean;
 }
 
 interface IFormState {
@@ -382,8 +382,8 @@ const CollectionCreateForm: any = Form.create()(
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 16 }}
                 >
-                  {getFieldDecorator('freqRubricComments', {
-                    initialValue: this.props.assignment.freqRubricComments,
+                  {getFieldDecorator('showFrequentlyUsedRubricComments', {
+                    initialValue: this.props.assignment.showFrequentlyUsedRubricComments,
                     valuePropName: 'checked',
                   })(<Switch />)}
                 </Form.Item>
