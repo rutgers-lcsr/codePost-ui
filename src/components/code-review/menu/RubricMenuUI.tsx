@@ -431,6 +431,7 @@ const RubricMenuUI = ({
     const iconType = props.editRubricMode ? 'backward' : 'edit';
     searchBar = (
       <Input
+        allowClear
         placeholder={`Search rubric... (${osControlKey()} O)`}
         id="rubric-search"
         onChange={onSearch}
