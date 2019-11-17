@@ -41,6 +41,7 @@ const AssignmentV = t.intersection(
       fileTemplates: t.array(t.number),
       mean: t.union([t.number, t.null, t.undefined]),
       median: t.union([t.number, t.null, t.undefined]),
+      freqRubricComments: t.boolean,
     }),
   ],
   'Assignment',
