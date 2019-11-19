@@ -1,41 +1,27 @@
 import React from 'react';
 
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 import { Tag } from 'antd';
 
+import { CourseContext } from '../core/Contexts';
+
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-const formatDate = (date: string, deadline?: string | null) => {
-  let dateString;
-  const dateObj = new Date(date);
-  const today = new Date();
-  if (dateObj.getFullYear() === today.getFullYear()) {
-    if (dateObj.getMonth() === today.getMonth() && dateObj.getDate() === today.getDate()) {
-      if (today.getTime() - dateObj.getTime() < 30000) {
-        dateString = 'Uploaded: moments ago';
-      } else {
-        dateString = `Uploaded: ${moment(dateObj).format('h:mm a')} today`;
-      }
-    } else {
-      dateString = `Uploaded: ${months[dateObj.getMonth()]} ${dateObj.getDate()}`;
-    }
-  } else {
-    dateString = `Uploaded:     in ${dateObj.getFullYear()}`;
-  }
-
-  if (deadline !== undefined && deadline !== null) {
-    const deadlineDate = new Date(deadline);
-    if (dateObj > deadlineDate) {
-      return (
-        <span>
-          {dateString} <Tag color={'volcano'}>LATE</Tag>
-        </span>
-      );
-    }
-  }
-
-  return dateString;
+const CodePostDateChild = (props: { datetime: string; timezone: string }) => {
+  const dateObj = new Date(props.datetime);
+  const momentObj = moment(dateObj).tz(props.timezone);
+  return (
+    <span>
+      {momentObj.format('h:mm a')} on {momentObj.format('MMM DD')}
+    </span>
+  );
 };
 
-export { formatDate };
+const CodePostDate = (props: { datetime: string }) => (
+  <CourseContext.Consumer>
+    {(course) => <CodePostDateChild {...props} timezone={course.timezone} />}
+  </CourseContext.Consumer>
+);
+
+export { CodePostDate };

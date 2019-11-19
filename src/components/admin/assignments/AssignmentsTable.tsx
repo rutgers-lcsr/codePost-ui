@@ -66,7 +66,7 @@ export interface IManageAssignmentsProps {
   submissions: IAssignmentToSubmissionsMap;
   students: string[]; // emails
   submissionsByStudent: IStudentSubmissionsDataTable;
-  currentCourse: CourseType | undefined;
+  currentCourse: CourseType;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 
   /* loading state */
@@ -519,8 +519,9 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
               isVisible={true}
               onCancel={cancel}
               onSave={this.saveSettings}
-              currentAssignment={this.props.activeAssignment}
+              currentAssignment={this.props.activeAssignment!}
               assignments={this.props.assignments}
+              timezone={this.props.currentCourse.timezone}
             />
           );
           break;

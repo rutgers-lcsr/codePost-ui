@@ -74,6 +74,8 @@ import { demoFiles } from './demoCode';
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 
+import { CourseContext, defaultCourse } from '../core/Contexts';
+
 /**********************************************************************************************************************/
 
 /* f(logged in user, submission) */
@@ -1753,28 +1755,30 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           onUploadConfirm={this.loadDemoData}
           onCancel={cancelFunc}
         />
-        <StandardConsoleLayout
-          consoleTypes={['grade']}
-          header={
-            <CPFlex
-              style={{
-                padding: '0 15',
-                height: 49,
-                fontSize: 12,
-                overflow: 'initial',
-              }}
-              left={leftHeader}
-              right={rightHeader}
-              middle={middleHeader}
-              gutterSize={20}
-              className={theme}
-            />
-          }
-          sider={sider}
-          siderTitles={siderTitles}
-          content={content}
-          editRubricMode={this.state.editRubricMode}
-        />
+        <CourseContext.Provider value={this.state.course || defaultCourse}>
+          <StandardConsoleLayout
+            consoleTypes={['grade']}
+            header={
+              <CPFlex
+                style={{
+                  padding: '0 15',
+                  height: 49,
+                  fontSize: 12,
+                  overflow: 'initial',
+                }}
+                left={leftHeader}
+                right={rightHeader}
+                middle={middleHeader}
+                gutterSize={20}
+                className={theme}
+              />
+            }
+            sider={sider}
+            siderTitles={siderTitles}
+            content={content}
+            editRubricMode={this.state.editRubricMode}
+          />
+        </CourseContext.Provider>
       </div>
     );
   }

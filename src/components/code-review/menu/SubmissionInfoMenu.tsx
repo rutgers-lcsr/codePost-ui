@@ -21,7 +21,7 @@ import CPButton from '../../core/CPButton';
 import CPTooltip from '../../core/CPTooltip';
 import { tooltips } from '../../core/tooltips';
 
-import { formatDate } from '../../utils/DateUtils';
+import { CodePostDate } from '../../utils/DateUtils';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -57,7 +57,11 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
   let submitted;
   if (props.submission !== undefined) {
     if (props.submission) {
-      submitted = formatDate(props.submission.dateUploaded, props.assignment.uploadDueDate);
+      submitted = (
+        <span>
+          Uploaded: <CodePostDate datetime={props.submission.dateUploaded} />
+        </span>
+      );
     }
   }
 
@@ -481,7 +485,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
                 {props.submission.students}
                 &nbsp; &nbsp;
                 <span style={{ fontSize: 12, color: '#ccc' }}>
-                  {props.submission.questionDate ? formatDate(props.submission.questionDate) : ''}
+                  {props.submission.questionDate ? <CodePostDate datetime={props.submission.questionDate} /> : ''}
                 </span>
                 <span style={{ fontSize: 12, color: '#25be85', fontWeight: 400, float: 'right' }}>
                   {props.submission.questionIsRegrade ? 'Regrade Requested' : ''}
@@ -512,7 +516,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
                 {props.submission.students}
                 &nbsp; &nbsp;
                 <span style={{ fontSize: 12, color: '#ccc' }}>
-                  {props.submission.questionDate ? formatDate(props.submission.questionDate) : ''}
+                  {props.submission.questionDate ? <CodePostDate datetime={props.submission.questionDate} /> : ''}
                 </span>
                 <span style={{ color: '#25be85', fontWeight: 400, float: 'right' }}>
                   {props.submission.questionIsRegrade ? 'Regrade Requested' : ''}
@@ -526,7 +530,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
                 {props.submission.questionResponder}
                 &nbsp; &nbsp;
                 <span style={{ fontSize: 12, color: '#ccc' }}>
-                  {props.submission.responseDate ? formatDate(props.submission.responseDate) : ''}
+                  {props.submission.responseDate ? <CodePostDate datetime={props.submission.responseDate} /> : ''}
                 </span>
               </div>
               <span style={{ fontSize: 15, whiteSpace: 'pre-wrap' }}>{props.submission.questionResponse}</span>
