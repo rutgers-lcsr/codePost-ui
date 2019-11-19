@@ -13,12 +13,12 @@ import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructu
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 
 /* codePost component imports */
-import { CodeWindow } from './CodeWindow';
+import { CodeWindow } from './utils/CodeWindow';
 
 /* codePost util imports */
-import { languages, hasDependenciesSupport } from './languageUtils';
+import { languages, hasDependenciesSupport } from './utils/languageUtils';
 
-import { TestFileList } from './TestFileList';
+import { TestFileList } from './EnvironmentSpecs/TestFileList';
 
 import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
 import { HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
@@ -27,7 +27,7 @@ import CPTooltip from '../../../../core/CPTooltip';
 
 import { FILE_TYPE } from './TestingSetup';
 
-import locale from './languageLocale';
+import locale from './utils/languageLocale';
 
 const { Option } = Select;
 const { confirm } = Modal;

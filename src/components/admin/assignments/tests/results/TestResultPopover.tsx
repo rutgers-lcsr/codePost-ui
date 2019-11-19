@@ -9,7 +9,7 @@ import { SubmissionTestType } from '../../../../../infrastructure/submissionTest
 import { TestCaseType } from '../../../../../infrastructure/testCase';
 
 /* codePost component imports */
-import { TestResult } from '../edit/TestResult';
+import { TestResult } from '../edit/utils/TestResult';
 
 const { TabPane } = Tabs;
 

@@ -11,7 +11,7 @@ import {
   JAVA_UNIT_TEMPLATE,
   BASH_JAVA_TEMPLATE,
   BASH_CPP_TEMPLATE,
-} from './testTemplates';
+} from '../TestDefinitions/testTemplates';
 
 /****************************** CodeMirror Utils *********************************/
 // Map each extension to the syntax highlighter for it

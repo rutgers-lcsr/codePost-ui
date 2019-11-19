@@ -7,7 +7,7 @@ import { Button, Tag, Select } from 'antd';
 import { animateScroll } from 'react-scroll';
 
 /* codePost imports  */
-import { SubmissionType } from '../../../../../infrastructure/submission';
+import { SubmissionType } from '../../../../../../infrastructure/submission';
 
 export enum RESULT_TYPE {
   PASSED,
