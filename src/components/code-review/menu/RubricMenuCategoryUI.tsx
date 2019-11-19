@@ -7,7 +7,7 @@ import { Button, Divider, Icon, Input, Menu, Popover, Tag } from 'antd';
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
 import { AssignmentType } from '../../../infrastructure/assignment';
-import { RubricCommentType } from '../../../infrastructure/rubricComment';
+import { RubricComment, RubricCommentType } from '../../../infrastructure/rubricComment';
 
 // import InlineMarkdown from '../../core/InlineMarkdown';
 import BlockMarkdown from '../../core/BlockMarkdown';
@@ -60,6 +60,7 @@ const RubricMenuCategoryUI = ({
           return rubricComment.text.toUpperCase().includes(props.searchTerm.toUpperCase());
         }
       })
+      .sort(RubricComment.compare)
       .map((rubricComment) => {
         const editing = rubricComment.id < 0 || props.editingStatuses[rubricComment.id] ? true : false;
 
