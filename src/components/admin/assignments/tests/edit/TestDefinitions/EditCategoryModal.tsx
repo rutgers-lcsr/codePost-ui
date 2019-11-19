@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 /* library imports */
 import { Button, Input, Modal, Icon } from 'antd';
 
-import { TestCategoryType } from '../../../../../infrastructure/testCategory';
+import { TestCategoryType } from '../../../../../../infrastructure/testCategory';
 
 interface IUploadProps {
   updateCategory: (obj: TestCategoryType) => Promise<void>;

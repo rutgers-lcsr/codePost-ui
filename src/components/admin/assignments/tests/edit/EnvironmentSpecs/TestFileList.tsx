@@ -10,11 +10,11 @@ import { Layout, Menu } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 /* codePost object imports  */
-import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
-import { HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
+import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
+import { HelperFileType } from '../../../../../../infrastructure/autograder/helperFile';
 
 /* codePost component imports  */
-import { CodeWindow } from './CodeWindow';
+import { CodeWindow } from '../utils/CodeWindow';
 import { TestFileUploader } from './TestFileUploader';
 
 /**********************************************************************************************************************/

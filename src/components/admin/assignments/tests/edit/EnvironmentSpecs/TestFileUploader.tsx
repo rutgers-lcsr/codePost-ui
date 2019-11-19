@@ -9,8 +9,8 @@ import React, { useState } from 'react';
 import { Button, Icon, message, Modal, Table, Upload } from 'antd';
 
 /* codePost object imports  */
-import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
-import { HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
+import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
+import { HelperFileType } from '../../../../../../infrastructure/autograder/helperFile';
 
 interface IUploadProps {
   files: (SolutionFileType | HelperFileType)[];
