@@ -98,6 +98,13 @@ const Normal = (props: IUploadFormProps) => {
             return;
           }
 
+          const split = f.name.split('/');
+          const fileName = split[split.length - 1];
+
+          if (fileName[0] === '.') {
+            return;
+          }
+
           fileNames.push(f.name);
         });
 
@@ -154,7 +161,11 @@ const Normal = (props: IUploadFormProps) => {
         <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
       </Dragger>
       <br />
-      <Statistic title="Uploaded files" value={props.rawFiles.length} />
+      {zipMode ? (
+        <Statistic title="Unzipped and uploaded files" value={props.rawFiles.length} />
+      ) : (
+        <Statistic title="Uploaded files" value={props.rawFiles.length} />
+      )}
     </div>
   );
 };
