@@ -11,7 +11,7 @@ import { HelperFile } from '../../infrastructure/autograder/helperFile';
 
 import { BashFile } from '../../infrastructure/autograder/bashFile';
 
-import { BASHMODE_TEMPLATE } from '../admin/assignments/tests/edit/testTemplates';
+import { BASHMODE_TEMPLATE } from '../admin/assignments/tests/edit/TestDefinitions/testTemplates';
 
 //********************************** Interfaces **** ******************************
 export interface TestsBySubmission {

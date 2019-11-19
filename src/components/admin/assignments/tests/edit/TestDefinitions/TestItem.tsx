@@ -10,19 +10,19 @@ import { Button, Divider, Form, Input, Row, Select, Tag, message, Modal, Typogra
 import { FormComponentProps } from 'antd/lib/form';
 
 /* codePost object imports */
-import { AssignmentType, TestCaseType, SubmissionType } from '../../../../../infrastructure/types';
-import { TestCase } from '../../../../../infrastructure/testCase';
-import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
-import { EnvironmentType } from '../../../../../infrastructure/autograder/environment';
-import { TestCaseTestResultType } from '../../../../../infrastructure/autograder/runTypes';
-import { awaitTestResult } from '../testResult';
+import { AssignmentType, TestCaseType, SubmissionType } from '../../../../../../infrastructure/types';
+import { TestCase } from '../../../../../../infrastructure/testCase';
+import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
+import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
+import { TestCaseTestResultType } from '../../../../../../infrastructure/autograder/runTypes';
+import { awaitTestResult } from '../../testResult';
 
 /* codePost component imports */
-import { CodeWindow } from './CodeWindow';
+import { CodeWindow } from '../utils/CodeWindow';
 import { PsuedoTerminal } from './PsuedoTerminal';
 
 /* codePost util imports */
-import { testTemplates, hasNativeTestSupport, extensionsByLanguage } from './languageUtils';
+import { testTemplates, hasNativeTestSupport, extensionsByLanguage } from '../utils/languageUtils';
 
 import { ILogType, RESULT_TYPE } from './PsuedoTerminal';
 

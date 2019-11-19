@@ -34,16 +34,16 @@ import {
 import { File } from '../../../../../infrastructure/file';
 
 /* codePost component imports */
-import { TestItem } from './TestItem';
-import { AddCategoryModal } from './AddCategoryModal';
-import { EditCategoryModal } from './EditCategoryModal';
-import { AddTestModal } from './AddTestModal';
+import { TestItem } from './TestDefinitions/TestItem';
+import { AddCategoryModal } from './TestDefinitions/AddCategoryModal';
+import { EditCategoryModal } from './TestDefinitions/EditCategoryModal';
+import { AddTestModal } from './TestDefinitions/AddTestModal';
 
 /* codePost utils imports */
 import { fetchTestData, TestCasesByCategory } from '../../../../core/testFetchUtils';
-import { hasNativeTestSupport } from './languageUtils';
+import { hasNativeTestSupport } from './utils/languageUtils';
 
-import { CodeWindow } from './CodeWindow';
+import { CodeWindow } from './utils/CodeWindow';
 
 const { Sider, Content } = Layout;
 
