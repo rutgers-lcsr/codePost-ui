@@ -9,7 +9,7 @@ import { SolutionFile } from '../../infrastructure/autograder/solutionFile';
 import { Environment, EnvironmentType } from '../../infrastructure/autograder/environment';
 import { HelperFile } from '../../infrastructure/autograder/helperFile';
 
-import { BashFile } from '../../infrastructure/autograder/bashFile';
+import { SourceFile } from '../../infrastructure/autograder/bashFile';
 
 import { BASHMODE_TEMPLATE } from '../admin/assignments/tests/edit/TestDefinitions/testTemplates';
 
