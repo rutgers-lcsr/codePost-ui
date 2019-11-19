@@ -244,7 +244,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public render() {
-    console.log('999', this.state.files);
     const { isVisible } = this.props;
     const { status } = this.state;
 
@@ -289,7 +288,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
           const reader = new FileReader();
           reader.onload = async () => {
-            console.log('FILE', file);
             const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
             if (!acceptedFilesSet.has(`.${extension}`)) {
               // message.error(`${file.name} cannot be uploaded because it is empty.`);

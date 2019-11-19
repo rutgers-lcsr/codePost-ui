@@ -218,12 +218,9 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
 
   public readFiles = () => {
     const submissions = this.state.protoSubmissions;
-    console.log('READING FILES', this.state.protoSubmissions);
-    console.log('FILEMAP', this.state.fileMap);
     submissions.forEach((submission) => {
       for (const file of submission.files) {
         const anyFile: any = file;
-        console.log('anyfile', anyFile);
         const studentsReader = new FileReader();
         studentsReader.onabort = () => console.log('file reading was aborted');
         studentsReader.onerror = () => {
@@ -244,14 +241,8 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
               // We want to limit the image to a certain size so we don't slow down file load
               result = await resizeImage(result);
             }
-            console.log('in here');
-
-            let path: string = anyFile.webkitRelativePath;
-            if (anyFile.webkitRelativePath === '') {
-              path = anyFile.name;
-            }
             const cleanedResult = result.replace(/\0/g, '');
-            fileMap[path] = cleanedResult;
+            fileMap[anyFile.webkitRelativePath] = cleanedResult;
             this.setState({ fileMap });
           }
         };
@@ -267,15 +258,11 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
   };
 
   public tryToUpload = () => {
-    console.log('TRY TO UPLAOD', this.state.fileMap);
     const { fileMap, numFiles, overwriteMode } = this.state;
     const readFiles = Object.keys(fileMap).reduce((acc, el) => {
-      console.log('typeof', fileMap[el]);
       const toAdd = typeof fileMap[el] === 'undefined' ? 0 : 1;
       return acc + toAdd;
     }, 0);
-
-    console.log('readFiles', readFiles);
 
     if (readFiles === numFiles) {
       this.setState({ status: STATUS.UPLOADING }, () => {
@@ -293,8 +280,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
   public upload = () => {
     const { protoSubmissions, fileMap } = this.state;
 
-    console.log('UPLOAD PROTOSUBMISSIONS', protoSubmissions);
-
     // tslint:disable
     const toUpload = this.state.overwriteMode
       ? protoSubmissions
@@ -305,19 +290,12 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     const promises = toUpload.map((submission) => {
       const files: any[] = [];
       submission.files.forEach((file: any) => {
-        let path: string = file.webkitRelativePath;
-        let fileName: string = file.name;
-        if (file.webkitRelativePath === '') {
-          path = file.name;
-          fileName = file.name.split('/').slice(-1)[0];
-        }
-        // const pathDirs = file.webkitRelativePath.split('/');
-        const pathDirs = path.split('/');
+        const pathDirs = file.webkitRelativePath.split('/');
         // Want to ignore first (root dir, student email) two and last element (file name) of split
         const filePath = pathDirs.length > 3 ? pathDirs.slice(2, pathDirs.length - 1).join('/') : null;
         const payload = {
-          name: fileName,
-          data: fileMap[path],
+          name: file.name,
+          data: fileMap[file.webkitRelativePath],
           path: filePath,
         };
         files.push(payload);
@@ -456,16 +434,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     acceptedFiles.forEach((newFile: any) => {
       // FIXME: webkit prefix only used in Chrome. Extend to Edge and Firefox
       // by detecting browser and removing prefix if necessary
-
-      // const path: string = newFile.webkitRelativePath;
-
-      //       console.log('TRYING', newFile);
-
-      let path: string = newFile.webkitRelativePath;
-      if (newFile.webkitRelativePath === '') {
-        path = newFile.name;
-      }
-      console.log('TRYING', newFile, path);
+      const path: string = newFile.webkitRelativePath;
 
       const folderName = path
         .split('/')[1]
@@ -515,38 +484,18 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     // Sort files into appropriate protoSubmissions
     let numFiles = 0;
     acceptedFiles.forEach((el: any) => {
-      let path: string = el.webkitRelativePath;
-      let fileName: string = el.name;
-      if (el.webkitRelativePath === '') {
-        path = el.name;
-        fileName = el.name.split('/').slice(-1)[0];
-      }
-
-      const folderName = path
-        .split('/')[1]
-        .trim()
-        .toLowerCase();
-
-      // const folderName = el.webkitRelativePath.split('/')[1].toLowerCase();
-      // const extension = el.name.includes('.') ? el.name.split('.').slice(-1)[0] : '';
-      const extension = fileName.includes('.') ? fileName.split('.').slice(-1)[0] : '';
+      const folderName = el.webkitRelativePath.split('/')[1].toLowerCase();
+      const extension = el.name.includes('.') ? el.name.split('.').slice(-1)[0] : '';
       if (!acceptedFilesSet.has(`.${extension}`)) {
-        // invalidPaths.push(`File type not accepted: ${el.webkitRelativePath}`);
-        invalidPaths.push(`File type not accepted: ${path}`);
+        invalidPaths.push(`File type not accepted: ${el.webkitRelativePath}`);
       } else if (
-        // el.webkitRelativePath.split('/').find((pathEl: string) => {
-        //   return pathEl.startsWith('.');
-        // })
-        path.split('/').find((pathEl: string) => {
+        el.webkitRelativePath.split('/').find((pathEl: string) => {
           return pathEl.startsWith('.');
         })
       ) {
-        // invalidPaths.push(`Cannot have a folder that starts with .: ${el.webkitRelativePath}`);
-        invalidPaths.push(`Cannot have a folder that starts with .: ${path}`);
+        invalidPaths.push(`Cannot have a folder that starts with .: ${el.webkitRelativePath}`);
       } else {
         if (folderName in folderMap) {
-          // const newFile = new File([el], fileName, { type: el.type });
-          // folderMap[folderName].files.push(newFile);
           folderMap[folderName].files.push(el);
           numFiles = numFiles + 1;
         }

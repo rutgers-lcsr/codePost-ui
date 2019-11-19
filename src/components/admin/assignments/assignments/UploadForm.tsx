@@ -1,13 +1,11 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Collapse, Icon, Radio, Statistic, Switch, Upload } from 'antd';
+import { Collapse, Icon, Radio, Statistic, Upload } from 'antd';
 
 import ReactMarkdown from 'react-markdown';
 
 import BlockMarkdown from '../../../core/BlockMarkdown';
-
-import JSZip from 'jszip';
 
 const Panel = Collapse.Panel;
 const Dragger = Upload.Dragger;
@@ -47,8 +45,6 @@ const UploadForm = (props: IUploadFormProps) => {
 };
 
 const Normal = (props: IUploadFormProps) => {
-  const [zipMode, setZipMode] = React.useState(false);
-
   const exampleText = `\`\`\`
   folder/
     student1@university.edu/
@@ -59,7 +55,7 @@ const Normal = (props: IUploadFormProps) => {
       file2.txt
   \`\`\``;
 
-  const beforeUploadDirectory = (file: File, fileList: File[]) => {
+  const beforeUpload = (file: File, fileList: File[]) => {
     if (fileList.length > 1) {
       // Case 1: use has selected a folder via menu, which will place all files into
       // fileList
@@ -82,56 +78,6 @@ const Normal = (props: IUploadFormProps) => {
     return false;
   };
 
-  const beforeUploadZip = (file: File, fileList: File[]) => {
-    if (file.type === 'application/zip') {
-      const new_zip = new JSZip();
-      new_zip.loadAsync(file).then((zip: any) => {
-        console.log('ZIP', zip);
-        const fileNames: string[] = [];
-
-        zip.forEach((relativePath: any, f: any) => {
-          if (relativePath.startsWith('__MACOSX')) {
-            return;
-          }
-
-          if (f.dir) {
-            return;
-          }
-
-          const split = f.name.split('/');
-          const fileName = split[split.length - 1];
-
-          if (fileName[0] === '.') {
-            return;
-          }
-
-          fileNames.push(f.name);
-        });
-
-        console.log('newlist', fileNames);
-
-        Promise.all(
-          fileNames.map((fileName: string) => {
-            return zip.files[fileName].async('blob').then((fileData: any) => {
-              console.log('filedata', fileData);
-              return new File([fileData], fileName);
-            });
-          }),
-        ).then((newList: any) => {
-          console.log('xxxx', newList);
-          props.setRawFiles(newList);
-        });
-      });
-    }
-
-    // prevent upload
-    return false;
-  };
-
-  const onChange = (checked: boolean) => {
-    setZipMode(checked);
-  };
-
   return (
     <div>
       <Collapse>
@@ -144,16 +90,7 @@ const Normal = (props: IUploadFormProps) => {
       </Collapse>
       <br />
       <br />
-      <Switch checked={zipMode} onChange={onChange} /> <span> Upload Zip File</span>
-      <br />
-      <br />
-      <Dragger
-        showUploadList={false}
-        directory={!zipMode}
-        multiple={false}
-        beforeUpload={zipMode ? beforeUploadZip : beforeUploadDirectory}
-        accept={zipMode ? 'zip' : undefined}
-      >
+      <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
         <p className="ant-upload-drag-icon">
           <Icon type="inbox" />
         </p>
@@ -161,11 +98,7 @@ const Normal = (props: IUploadFormProps) => {
         <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
       </Dragger>
       <br />
-      {zipMode ? (
-        <Statistic title="Unzipped and uploaded files" value={props.rawFiles.length} />
-      ) : (
-        <Statistic title="Uploaded files" value={props.rawFiles.length} />
-      )}
+      <Statistic title="Uploaded files" value={props.rawFiles.length} />
     </div>
   );
 };
