@@ -392,6 +392,8 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             </div>
           );
 
+        const unzippedFiles = this.state.files.filter((el) => el.zipSource !== undefined);
+
         content = (
           <div>
             Assignment:
@@ -448,6 +450,17 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 iconStyle={{ paddingLeft: 5 }}
               />
             </div>
+            <span>
+              {unzippedFiles.length > 0 ? (
+                <span>
+                  <br />
+                  <b>The following files will be unzipped on upload:</b>{' '}
+                  {unzippedFiles.map((el) => `${el.path}/${el.name}`).join(', ')}
+                </span>
+              ) : (
+                <div />
+              )}
+            </span>
             <br />
             {rejectedFiles}
           </div>
