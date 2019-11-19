@@ -272,22 +272,6 @@ const CollectionCreateForm: any = Form.create()(
                   })(<DatePicker showTime placeholder="Select Time" disabled={!this.state.studentUploadEnabled} />)}
                 </Form.Item>
                 <Form.Item
-                  label="Live feedback mode"
-                  extra={
-                    <div>
-                      <Tag>NEW</Tag> Students can see their feedback and comments without the submission being finalized
-                      or published. Ideal for office hours or ungraded feedback.
-                    </div>
-                  }
-                  labelCol={{ span: 6 }}
-                  wrapperCol={{ span: 16 }}
-                >
-                  {getFieldDecorator('liveFeedbackMode', {
-                    initialValue: this.props.assignment.liveFeedbackMode,
-                    valuePropName: 'checked',
-                  })(<Switch />)}
-                </Form.Item>
-                <Form.Item
                   label="Allow late submissions"
                   extra={
                     <div>
@@ -300,6 +284,22 @@ const CollectionCreateForm: any = Form.create()(
                 >
                   {getFieldDecorator('allowLateUploads', {
                     initialValue: this.props.assignment.allowLateUploads,
+                    valuePropName: 'checked',
+                  })(<Switch disabled={!form.getFieldValue('allowStudentUpload')} />)}
+                </Form.Item>
+                <Form.Item
+                  label="Live feedback mode"
+                  extra={
+                    <div>
+                      <Tag>NEW</Tag> Students can see their feedback and comments without the submission being finalized
+                      or published. Ideal for office hours or ungraded feedback.
+                    </div>
+                  }
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 16 }}
+                >
+                  {getFieldDecorator('liveFeedbackMode', {
+                    initialValue: this.props.assignment.liveFeedbackMode,
                     valuePropName: 'checked',
                   })(<Switch />)}
                 </Form.Item>
