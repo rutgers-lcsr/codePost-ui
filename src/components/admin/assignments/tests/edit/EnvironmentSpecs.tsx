@@ -194,9 +194,20 @@ export const EnvironmentSpecs = (props: IProps) => {
     <div>
       <Divider />
       <Typography.Title level={3}>2. Create a runscript</Typography.Title>
+      <span>
+        <b>Instructions</b>: A runscript is run once before any test run. If you're using a compiled language, use this
+        script to compile. You can also perform pre-processing here.
+      </span>
+      <br />
+      <br />
       <CodeWindow code={(props.env && props.env.compileText) || ''} name={'.sh'} onSave={saveCompileText} />
       <Divider />
       <Typography.Title level={3}>3. Add custom dependencies</Typography.Title>
+      <span>
+        <b>Instructions</b>: Custom dependencies can be imported by tests, student code, or solution code.
+      </span>
+      <br />
+      <br />
       <TestFileList
         files={props.helpers}
         addFile={props.addFile.bind({}, FILE_TYPE.HELPER)}
@@ -207,6 +218,12 @@ export const EnvironmentSpecs = (props: IProps) => {
       />
       <Divider />
       <Typography.Title level={3}>4. Add solution code</Typography.Title>
+      <span>
+        <b>Instructions</b>: Solution code is used to check the correctness of your tests. Though optional, it is
+        strongly recommended to verify that your tests perform as expected on solution code.
+      </span>
+      <br />
+      <br />
       <TestFileList
         files={props.solutions}
         addFile={props.addFile.bind({}, FILE_TYPE.SOLUTION)}
