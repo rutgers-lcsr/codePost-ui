@@ -44,6 +44,8 @@ import { IComponentProps } from '../core/ComponentManager';
 
 import CourseMenu from '../core/CourseMenu';
 
+import { CodePostDate } from '../utils/DateUtils';
+
 const { Text } = Typography;
 
 /**********************************************************************************************************************/
@@ -257,12 +259,19 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     const dueDatePassed = assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now();
     const isFinalized = submission !== undefined && submission.isFinalized;
     const alreadyClaimed = submission !== undefined && (submission.hasGrader && !assignment.liveFeedbackMode);
-    const canUploadLate = assignment.allowLateUploads || false;
+    const canUploadLate = assignment.allowLateUploads;
 
     const canUpload = (!dueDatePassed || canUploadLate) && !isFinalized && !alreadyClaimed;
 
     // Present the assignment's due date to the student
-    const dueDate = assignment.uploadDueDate ? `Due date: ${moment(assignment.uploadDueDate).format('llll')}` : '';
+    const dueDate = assignment.uploadDueDate ? (
+      <span>
+        Due date: &nbsp;
+        <CodePostDate datetime={assignment.uploadDueDate} />
+      </span>
+    ) : (
+      ''
+    );
     const dueDateText = (
       <span>
         <Text>{dueDate}</Text>
