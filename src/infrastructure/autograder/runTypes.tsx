@@ -7,7 +7,7 @@ export const TaskV = t.type({
   task: t.string,
 });
 
-const TestCaseTestResult = t.type({
+const BasicTestResult = t.type({
   passed: t.boolean,
   logs: t.string,
   isError: t.boolean,
@@ -15,10 +15,11 @@ const TestCaseTestResult = t.type({
   testCategory: t.number,
 });
 
-const TestCategoryTestResult = t.array(TestCaseTestResult);
+const TestCategoryTestResult = t.array(BasicTestResult);
 
 const SubmissionTestResult = t.array(SubmissionTestV);
 
-export type TestCaseTestResultType = t.TypeOf<typeof TestCaseTestResult>;
+export type TestCaseTestResultType = t.TypeOf<typeof BasicTestResult>;
 export type TestCategoryTestResultType = t.TypeOf<typeof TestCategoryTestResult>;
 export type SubmissionTestResultType = t.TypeOf<typeof SubmissionTestResult>;
+export type BasicTestResultType = t.TypeOf<typeof BasicTestResult>;

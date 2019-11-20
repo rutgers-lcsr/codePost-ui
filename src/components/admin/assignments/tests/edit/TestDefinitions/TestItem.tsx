@@ -142,7 +142,7 @@ export const TestItem = (props: ITestItemProps) => {
 
   const callback = (result: TestCaseTestResultType) => {
     const formatted = {
-      log: result.log,
+      log: result.logs,
       target: props.activeSubmission ? props.activeSubmission.students[0] : 'solution code',
       result: result.passed ? RESULT_TYPE.PASSED : result.isError ? RESULT_TYPE.ERROR : RESULT_TYPE.FAILED,
     };
