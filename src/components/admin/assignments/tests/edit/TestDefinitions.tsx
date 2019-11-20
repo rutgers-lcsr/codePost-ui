@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Layout, Menu, Icon, Empty, Spin } from 'antd';
+import { Badge, Button, Collapse, Layout, Menu, Icon, Empty, Spin } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 /* other library imports */
@@ -31,6 +31,7 @@ import {
   TestTemplateType,
   TestsSourceType,
 } from '../../../../../infrastructure/autograder/environment';
+import { SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
 import { File } from '../../../../../infrastructure/file';
 
 /* codePost component imports */
@@ -40,10 +41,15 @@ import { EditCategoryModal } from './TestDefinitions/EditCategoryModal';
 import { AddTestModal } from './TestDefinitions/AddTestModal';
 
 /* codePost utils imports */
-import { fetchTestData, TestCasesByCategory } from '../../../../core/testFetchUtils';
+import { fetchSourceFiles, fetchTestData, TestCasesByCategory } from '../../../../core/testFetchUtils';
+
+import CPTooltip from '../../../../core/CPTooltip';
+
 import { hasNativeTestSupport } from './utils/languageUtils';
 
 import { CodeWindow } from './utils/CodeWindow';
+
+import { SourceEditor } from './SourceEditor';
 
 const { Sider, Content } = Layout;
 
@@ -62,11 +68,12 @@ enum DETAIL_TYPE {
   ViewSource,
 }
 
-interface IGroupType {
-  subMenuTitle?: React.ReactElement;
-  isDisabled: boolean;
-  files: { name: string; canSave: boolean; code: string; title?: any }[];
-  onSave?: any;
+interface IFileType {
+  name: string;
+  canSave: boolean;
+  code: string;
+  title?: any;
+  id: number;
 }
 
 export const TestDefinitions = (props: IProps) => {
@@ -79,6 +86,8 @@ export const TestDefinitions = (props: IProps) => {
   const [main, setMain] = useState('');
   const [index, setIndex] = useState('0-0');
   const [loading, setLoading] = useState(true);
+
+  const [sourceFiles, setSourceFiles] = useState<SourceFileType[]>([]);
 
   const [activeSubmission, setActiveSubmission] = useState<SubmissionType | undefined>(undefined);
   const [currentFiles, setCurrentFiles] = useState<(SolutionFileType | FileType)[]>(props.solutions);
@@ -101,8 +110,10 @@ export const TestDefinitions = (props: IProps) => {
   useEffect(() => {
     if (props.env !== undefined) {
       const fetchData = async () => {
+        const sourceFiles: SourceFileType[] = await fetchSourceFiles(props.env!);
         const source: TestsSourceType = await Environment.eject(props.env!.id);
         setMain(source.main);
+        setSourceFiles(sourceFiles);
         setTests(source.templates);
       };
       fetchData();
@@ -207,6 +218,15 @@ export const TestDefinitions = (props: IProps) => {
     return TestCase.delete(testCase.id);
   };
 
+  /******************************* SourceFile functions  ****************************/
+
+  const addSourceFile = (name: string) => {
+    setSourceFiles((prevState) => {
+      return [...prevState, { id: -1, name: name, code: '', environment: props.env!.id }];
+    });
+    // DONOWFIXME: setIndex to this file
+  };
+
   /******************************* State Change Functions  ****************************/
 
   const replaceTestCase = (newCase: TestCaseType, oldCase: TestCaseType) => {
@@ -227,6 +247,7 @@ export const TestDefinitions = (props: IProps) => {
 
   const togglePanel = () => {
     if (panel === DETAIL_TYPE.EditTests) {
+      setCurrentFiles(props.solutions);
       setPanel(DETAIL_TYPE.ViewSource);
     } else {
       setPanel(DETAIL_TYPE.EditTests);
@@ -278,72 +299,134 @@ export const TestDefinitions = (props: IProps) => {
   const externalOnly = !props.env || !props.env.language;
   let menu;
   let content;
+  let header;
+  let headerTitle;
 
   switch (panel) {
     case DETAIL_TYPE.ViewSource:
-      const bashGroup: IGroupType = {
-        files: [{ name: 'main.sh', code: main, canSave: false }],
-        isDisabled: false,
-      };
+      const bashFile = [{ name: 'main.sh', code: main, canSave: false, id: 0 }];
 
       const helperFiles = props.helpers.map((file) => {
-        return { title: <div>{file.name} (Helper)</div>, name: file.name, code: file.code, canSave: false };
+        return {
+          id: file.id,
+          name: file.name,
+          code: file.code,
+          canSave: false,
+          title: (
+            <div>
+              {file.name} &nbsp;{' '}
+              <CPTooltip title="Helper file">
+                <Badge color={'purple'} />
+              </CPTooltip>
+            </div>
+          ),
+        };
       });
 
       const submissionFiles = currentFiles.map((file) => {
-        return { name: file.name, code: file.code, canSave: false };
+        return {
+          id: file.id,
+          name: file.name,
+          code: file.code,
+          canSave: false,
+          title: (
+            <div>
+              {file.name} &nbsp;{' '}
+              <CPTooltip title="Submission file">
+                <Badge color={'orange'} />
+              </CPTooltip>
+            </div>
+          ),
+        };
       });
 
-      const fileGroup: IGroupType = {
-        subMenuTitle: <div style={{ display: 'flex', alignItems: 'center' }}>files</div>,
-        files: [...helperFiles, ...submissionFiles],
-        isDisabled: true,
-      };
+      const templates = tests.map((test) => {
+        if (test.id < 0) {
+          return {
+            id: test.id,
+            code: test.code,
+            name: `_test${test.id}${test.extension}`,
+            canSave: false,
+            title: (
+              <div>
+                {`_test${test.id}${test.extension}`} &nbsp;{' '}
+                <CPTooltip title="User-written test">
+                  <Badge color={'lime'} />
+                </CPTooltip>
+              </div>
+            ),
+          };
+        }
+        return {
+          id: test.id,
+          code: test.code,
+          name: `_Test${test.id}${test.extension}`,
+          canSave: false,
+          title: (
+            <div>
+              {`_Test${test.id}${test.extension}`} &nbsp;{' '}
+              <CPTooltip title="codePost generated test">
+                <Badge color={'green'} />
+              </CPTooltip>
+            </div>
+          ),
+        };
+      });
 
-      const templateGroup: IGroupType = {
-        subMenuTitle: <div>tests</div>,
-        files: tests.map((test) => {
-          return { code: test.code, name: `Test${test.id}${test.extension}`, canSave: false };
-        }),
-        isDisabled: false,
-      };
+      const groups = [bashFile, helperFiles, submissionFiles, templates];
 
-      const groups = [bashGroup, fileGroup, templateGroup];
-
-      const groupElems = groups.map((group, groupIndex) => {
-        const items = group.files.map((file, fileIndex) => {
+      const groupElems = groups.map((group: IFileType[], groupIndex) => {
+        return group.map((file, fileIndex) => {
           return (
             <Menu.Item key={`${groupIndex}-${fileIndex}`} style={{ height: 'fit-content', minHeight: 40 }}>
               <div>{file.title || file.name}</div>
             </Menu.Item>
           );
         });
-        if (!group.subMenuTitle) {
-          return items;
-        }
-
-        return (
-          <Menu.SubMenu key={`${groupIndex}`} disabled={group.isDisabled} title={group.subMenuTitle}>
-            {items}
-          </Menu.SubMenu>
-        );
       });
 
       menu = (
-        <Menu onClick={changeIndex} mode="inline" selectedKeys={[index]} openKeys={['0', '1', '2', '3']}>
-          {groupElems}
-        </Menu>
+        <Collapse expandIconPosition="right" bordered={false}>
+          <Collapse.Panel
+            header={
+              <div style={{ padding: '0px 10px 5px 0px' }}>
+                <div className="cp-label cp-label--plus cp-label--bold">Source Files</div>
+              </div>
+            }
+            key="1"
+          >
+            <Menu onClick={changeIndex} mode="inline" selectedKeys={[index]}>
+              {groupElems}
+            </Menu>
+          </Collapse.Panel>
+          <Collapse.Panel
+            header={
+              <div style={{ padding: '0px 10px 5px 0px' }}>
+                <div className="cp-label cp-label--plus cp-label--bold">Source Files</div>
+              </div>
+            }
+            key="2"
+          ></Collapse.Panel>
+        </Collapse>
       );
 
       const currentGroupIndex = parseInt(index.split('-')[0], 10);
       const currentFileIndex = parseInt(index.split('-')[1], 10);
 
       const currentGroup = groups[currentGroupIndex];
-      const currentFile = currentGroup.files[currentFileIndex];
+      const currentFile = currentGroup[currentFileIndex];
 
-      if (currentFile !== undefined) {
-        content = <CodeWindow code={currentFile.code} name={currentFile.name} />;
-      }
+      content = (
+        <SourceEditor
+          categories={categories}
+          casesByCategory={casesByCategory}
+          sourceFiles={sourceFiles}
+          currentFile={currentFile}
+        />
+      );
+
+      header = <div />;
+      headerTitle = 'Source Files';
       break;
     case DETAIL_TYPE.EditTests:
       menu = (
@@ -408,6 +491,27 @@ export const TestDefinitions = (props: IProps) => {
           </div>
         </Content>
       );
+      header = (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: '#ccc',
+            padding: '0 15px',
+            fontSize: '14px',
+            height: '30px',
+          }}
+        >
+          Tests
+          <div>
+            <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} icon={true} />
+            &nbsp; &nbsp;
+            <AddTestModal addTest={addTest.bind({}, props.env ? props.env.language : '')} categories={categories} />
+            &nbsp; &nbsp;
+          </div>
+        </div>
+      );
   }
 
   const hasTests = Object.values(casesByCategory).some((el) => el.length > 0);
@@ -442,24 +546,14 @@ export const TestDefinitions = (props: IProps) => {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  background: '#ccc',
                   justifyContent: 'space-between',
+                  background: '#ccc',
                   padding: '0 15px',
                   fontSize: '14px',
                   height: '30px',
                 }}
               >
-                Tests
-                <div>
-                  <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} icon={true} />
-                  &nbsp; &nbsp;
-                  <AddTestModal
-                    addTest={addTest.bind({}, props.env ? props.env.language : '')}
-                    categories={categories}
-                  />
-                  &nbsp; &nbsp;
-                  <Icon type="cloud-download" onClick={download} />
-                </div>
+                {header}
               </div>
               {menu}
             </Sider>

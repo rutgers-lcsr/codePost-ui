@@ -9,9 +9,7 @@ import { SolutionFile } from '../../infrastructure/autograder/solutionFile';
 import { Environment, EnvironmentType } from '../../infrastructure/autograder/environment';
 import { HelperFile } from '../../infrastructure/autograder/helperFile';
 
-import { SourceFile } from '../../infrastructure/autograder/bashFile';
-
-import { BASHMODE_TEMPLATE } from '../admin/assignments/tests/edit/TestDefinitions/testTemplates';
+import { SourceFile } from '../../infrastructure/autograder/sourceFile';
 
 //********************************** Interfaces **** ******************************
 export interface TestsBySubmission {
@@ -29,6 +27,13 @@ export const fetchTestCategories = async (assignment: AssignmentType) => {
     return TestCategory.read(id);
   });
   return await Promise.all(categoryPromises);
+};
+
+export const fetchSourceFiles = async (env: EnvironmentType) => {
+  const promises = env.sourceFiles.map((id) => {
+    return SourceFile.read(id);
+  });
+  return await Promise.all(promises);
 };
 
 export const fetchSolutionFiles = async (env: EnvironmentType) => {
@@ -95,13 +100,13 @@ export const fetchTestsBySubmission = async (submissions: AnonymousSubmissionTyp
   return toRet;
 };
 
-export const fetchOrCreateBashFile = async (category: TestCategoryType) => {
-  if (category.bashFile) {
-    const bashFile = await BashFile.read(category.bashFile);
-    return bashFile;
-  } else {
-    const payload = { id: -1, testCategory: category.id, code: BASHMODE_TEMPLATE };
-    const bashFile = await BashFile.create(payload);
-    return bashFile;
-  }
-};
+// export const fetchOrCreateBashFile = async (category: TestCategoryType) => {
+//   if (category.bashFile) {
+//     const bashFile = await BashFile.read(category.bashFile);
+//     return bashFile;
+//   } else {
+//     const payload = { id: -1, testCategory: category.id, code: BASHMODE_TEMPLATE };
+//     const bashFile = await BashFile.create(payload);
+//     return bashFile;
+//   }
+// };

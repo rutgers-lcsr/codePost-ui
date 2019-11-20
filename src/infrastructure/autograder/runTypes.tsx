@@ -7,24 +7,15 @@ export const TaskV = t.type({
   task: t.string,
 });
 
-const TestCaseTestResult = t.intersection([
-  GenericObject,
-  t.type({
-    passed: t.boolean,
-    log: t.string,
-    isError: t.boolean,
-  }),
-]);
+const TestCaseTestResult = t.type({
+  passed: t.boolean,
+  logs: t.string,
+  isError: t.boolean,
+  testCase: t.number,
+  testCategory: t.number,
+});
 
-const TestCategoryTestResult = t.array(
-  t.type({
-    id: t.number,
-    description: t.string,
-    passed: t.boolean,
-    log: t.string,
-    isError: t.boolean,
-  }),
-);
+const TestCategoryTestResult = t.array(TestCaseTestResult);
 
 const SubmissionTestResult = t.array(SubmissionTestV);
 

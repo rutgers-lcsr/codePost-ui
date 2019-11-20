@@ -9,7 +9,6 @@ const TestCategoryV = t.intersection(
       assignment: t.number,
       name: t.string,
       testCases: t.array(t.number),
-      bashFile: t.union([t.number, t.null]),
       type: t.string,
     }),
   ],

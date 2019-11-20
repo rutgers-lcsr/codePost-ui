@@ -22,6 +22,7 @@ const EnvironmentV = t.intersection(
       solutionFiles: t.array(t.number),
       compileText: t.string,
       isRunning: t.boolean,
+      sourceFiles: t.array(t.number),
     }),
     t.partial({}),
   ],
