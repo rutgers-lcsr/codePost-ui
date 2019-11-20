@@ -447,7 +447,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     // Set window title
     const submissionID: number = +this.props.match.params.submissionId.valueOf();
-    document.title = `codePost | Submission - ${submissionID}`;
 
     let permissionLevel = await this.detectPermissionType(submissionID);
 
@@ -492,6 +491,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           Submission.loadData(submission),
           this.loadRubric(submission.assignment),
         ]);
+
+        document.title = `${submissionID}-Submission [${assignment.name}]`;
+
         course = await Course.read(assignment.course);
 
         files = files.sort((a, b) => {
@@ -539,6 +541,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           Submission.loadData(writableSubmission),
           this.loadRubric(writableSubmission.assignment),
         ]);
+
+        document.title = `${submissionID}-Submission [${assignment.name}]`;
+
         course = await Course.read(assignment.course);
         let fileTemplates;
         if (assignment.templateMode) {
