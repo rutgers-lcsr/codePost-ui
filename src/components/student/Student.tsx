@@ -501,11 +501,14 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
 
         if (submission === undefined) {
           // Case 2: assignment is published, but student has no submission OR submission isn't finalized
+          const missingText = assignment.allowStudentUpload
+            ? "Your submission hasn't been uploaded"
+            : "Your instructor hasn't transferred your submission to codePost yet";
           return {
             ...toRet,
             partners: (
               <div>
-                <Icon type="minus-circle" /> &nbsp; Your submission hasn't been uploaded
+                <Icon type="minus-circle" /> &nbsp; {missingText}
               </div>
             ),
             statusType: SUBMISSION_STATUS.NO_SUBMISSION,
