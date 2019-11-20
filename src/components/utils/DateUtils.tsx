@@ -2,11 +2,7 @@ import React from 'react';
 
 import moment from 'moment-timezone';
 
-import { Tag } from 'antd';
-
 import { CourseContext } from '../core/Contexts';
-
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const CodePostDateChild = (props: { datetime: string; timezone: string }) => {
   const dateObj = new Date(props.datetime);
