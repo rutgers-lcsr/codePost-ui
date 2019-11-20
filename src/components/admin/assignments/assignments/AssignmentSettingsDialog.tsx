@@ -254,14 +254,18 @@ const CollectionCreateForm: any = Form.create()(
                 </Form.Item>
                 <Form.Item
                   label="Due Date"
-                  extra="Due date for student uploads"
+                  extra={
+                    <span>
+                      Due date for student uploads. Your course's timezone is <b>{this.props.timezone}.</b>
+                    </span>
+                  }
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 16 }}
                 >
                   {getFieldDecorator('uploadDueDate', {
                     initialValue: this.props.assignment.uploadDueDate
                       ? moment(this.props.assignment.uploadDueDate).tz(this.props.timezone)
-                      : null,
+                      : moment().tz(this.props.timezone),
                     valuePropName: 'value',
                     rules: [
                       {
@@ -458,14 +462,19 @@ const CollectionCreateForm: any = Form.create()(
                 </Form.Item>
                 <Form.Item
                   label="Deadline"
-                  extra="Optional deadline for students to submit regrade requests"
+                  extra={
+                    <span>
+                      Optional deadline for students to submit regrade requests. Your course's timezone is{' '}
+                      <b>{this.props.timezone}.</b>
+                    </span>
+                  }
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 16 }}
                 >
                   {getFieldDecorator('regradeDeadline', {
                     initialValue: this.props.assignment.regradeDeadline
                       ? moment(this.props.assignment.regradeDeadline).tz(this.props.timezone)
-                      : null,
+                      : moment().tz(this.props.timezone),
                     valuePropName: 'value',
                   })(<DatePicker showTime placeholder="Select Time" disabled={!this.state.regradesEnabled} />)}
                 </Form.Item>
