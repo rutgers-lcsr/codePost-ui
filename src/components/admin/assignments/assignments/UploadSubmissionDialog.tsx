@@ -27,7 +27,7 @@ import { resizeImage } from '../../other/AdminUtils';
 
 import JSZip from 'jszip';
 
-import { readUploadedFile } from './CodePostFileReader';
+import { ICodePostFileUpload, fileToCodePostFileUpload, readUploadedFile } from './CodePostFileReader';
 
 /**********************************************************************************************************************/
 
@@ -156,24 +156,20 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
   };
 
-  public getPath = (webkitRelativePath: string) => {
-    const pathDirs = webkitRelativePath.split('/');
-    const filePath = pathDirs.length > 2 ? pathDirs.slice(1, pathDirs.length - 1).join('/') : null;
-    return filePath;
-  };
-
   public onRemove = (file: any) => {
-    const filePath = this.getPath(file.webkitRelativePath);
-    const newFiles = this.state.files.filter((el) => {
-      return (el.name !== file.name || el.path !== filePath) && el.zipSource !== file.name;
+    const codePostFile = fileToCodePostFileUpload(file);
+
+    const files = this.state.files.filter((f: any) => {
+      return (
+        f.longname !== codePostFile.longname && (f.zipSource === undefined || f.zipSource !== codePostFile.zipSource)
+      );
     });
 
-    const newFileList = this.state.fileList.filter((el) => {
-      const elPath = this.getPath(el.webkitRelativePath);
-      return el.name !== file.name || elPath !== filePath;
+    const fileList = this.state.fileList.filter((f: any) => {
+      return fileToCodePostFileUpload(f).longname !== codePostFile.longname;
     });
 
-    this.setState({ files: newFiles, fileList: newFileList });
+    this.setState({ files, fileList });
   };
 
   public changeStatus = (newStatus: STATUS) => {
@@ -225,29 +221,9 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     this.props.onCancel();
   };
 
-  public updateFileState = (fileName: string, filePath: string | null, data: any, zipSource?: string) => {
-    const newFiles = this.state.files.filter((f: any) => {
-      return f.name !== fileName || f.path !== filePath;
-    });
-
-    const cleanedData = typeof data === 'string' ? data.replace(/\0/g, '') : data;
-
-    this.setState({
-      files: [
-        ...newFiles,
-        {
-          name: fileName,
-          data: cleanedData,
-          path: filePath,
-          zipSource,
-        },
-      ],
-    });
-  };
-
   public render() {
-    console.log('IN HERE');
-    console.log(File.extension('abc.jpg'), File.extension('abc'), File.extension('abc.xyz.png'));
+    console.log('FILES --->', this.state.files);
+    console.log('FILELIST --> ', this.state.fileList);
     const { isVisible } = this.props;
     const { status } = this.state;
 
@@ -283,102 +259,35 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       case STATUS.NONE:
         // FIXME: this method of reading file contents relies on a race win, since
         // we need the fileReaders to finish before we hit upload.
-
         const beforeUpload = async (file: any, fileList: any) => {
-          console.log('BEFORE UPLAODE', file);
+          const codePostFileUpload: ICodePostFileUpload = fileToCodePostFileUpload(file);
 
-          try {
-            const outputFiles = await readUploadedFile(file);
-            console.log('fileContents', outputFiles);
-          } catch (e) {
-            console.warn(e, e.message);
+          if (!acceptedFilesSet.has(`.${codePostFileUpload.extension}`)) {
+            this.setState({ rejectedFiles: [...this.state.rejectedFiles, codePostFileUpload.longname] });
+          } else {
+            try {
+              const outputFiles = await readUploadedFile(file);
+
+              const newFileList = this.state.fileList.filter((f: any) => {
+                return fileToCodePostFileUpload(f).longname !== codePostFileUpload.longname;
+              });
+
+              const newFiles = this.state.files.filter((f: any) => {
+                return !outputFiles
+                  .map((outputFile: ICodePostFileUpload) => {
+                    return outputFile.longname;
+                  })
+                  .includes(fileToCodePostFileUpload(f).longname);
+              });
+
+              this.setState({ fileList: [...newFileList, file], files: [...newFiles, ...outputFiles] });
+            } catch (e) {
+              this.setState({ rejectedFiles: [...this.state.rejectedFiles, codePostFileUpload.longname] });
+              message.error(e);
+            }
           }
 
           return Promise.reject();
-        };
-
-        const beforeUpload2 = (file: any, fileList: any) => {
-          console.log('BEFORE UPLOAD', file, fileList);
-          console.log('types', typeof file, typeof fileList);
-          // Ignore hidden files
-          if (file.name[0] === '.') {
-            return false;
-          }
-
-          const reader = new FileReader();
-          reader.onload = async () => {
-            const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
-            if (!acceptedFilesSet.has(`.${extension}`)) {
-              // message.error(`${file.name} cannot be uploaded because it is empty.`);
-              const joined = this.state.rejectedFiles.concat(file.name);
-              this.setState({ rejectedFiles: joined });
-              return;
-            }
-
-            if (reader.result) {
-              const newFileList = this.state.fileList.filter((f: any) => {
-                const fPath = this.getPath(f.webkitRelativePath);
-                // FIXME: New naming FileList Convention
-                return f.name !== file.name || fPath !== file.path;
-              });
-
-              const namedFile =
-                file.webkitRelativePath === ''
-                  ? file
-                  : { ...file, name: file.webkitRelativePath, webkitRelativePath: file.webkitRelativePath };
-              this.setState({
-                fileList: [...newFileList, namedFile],
-              });
-
-              if (reader.result instanceof ArrayBuffer) {
-                const new_zip = new JSZip();
-                new_zip.loadAsync(reader.result).then((zip: any) => {
-                  zip.forEach((relativePath: any, f: any) => {
-                    if (relativePath.startsWith('__MACOSX')) {
-                      return;
-                    }
-
-                    if (!f.dir) {
-                      f.async('string').then(async (content: any) => {
-                        const split = relativePath.split('/');
-                        const filePath = split.slice(0, split.length - 1).join('/');
-                        const fileName = split[split.length - 1];
-
-                        let data: any = content;
-                        if (['png', 'jpeg', 'jpg'].includes(File.extension(fileName)) && typeof data === 'string') {
-                          data = await resizeImage(data);
-                        }
-
-                        this.updateFileState(fileName, filePath, data, file.name);
-                      });
-                    }
-                  });
-                });
-              } else {
-                let data: any = reader.result;
-                if (['png', 'jpeg', 'jpg'].includes(File.extension(file.name)) && typeof data === 'string') {
-                  data = await resizeImage(data);
-                }
-
-                this.updateFileState(file.name, this.getPath(file.webkitRelativePath), data);
-              }
-            } else {
-              message.error(`${file.name} cannot be uploaded because it is empty.`);
-            }
-          };
-
-          console.log('FILETYPE', file.type);
-
-          if (['png', 'jpg', 'jpeg', 'pdf'].includes(File.extension(file.name))) {
-            reader.readAsDataURL(file);
-          } else if (file.type === 'application/zip') {
-            reader.readAsArrayBuffer(file);
-          } else {
-            reader.readAsText(file);
-          }
-
-          // prevent upload
-          return false;
         };
 
         const studentOptions = this.buildStudentOptions(

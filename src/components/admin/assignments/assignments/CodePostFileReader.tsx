@@ -4,15 +4,16 @@ import { File as CodePostFile } from '../../../../infrastructure/file';
 
 import { resizeImage } from '../../other/AdminUtils';
 
-interface ICodePostFileUpload {
+export interface ICodePostFileUpload {
   longname: string;
   name: string;
   path: string;
+  extension: string;
   data: string | ArrayBuffer | null;
   zipSource?: string;
 }
 
-const fileToCodePostFileUpload = (inputFile: File): ICodePostFileUpload => {
+export const fileToCodePostFileUpload = (inputFile: File, zipSource?: string): ICodePostFileUpload => {
   let longname: string = inputFile.name;
 
   // @ts-ignore
@@ -24,22 +25,26 @@ const fileToCodePostFileUpload = (inputFile: File): ICodePostFileUpload => {
   const split = longname.split('/');
   const path = split.slice(0, split.length - 1).join('/');
   const name = split[split.length - 1];
+  const extension = CodePostFile.extension(inputFile.name);
 
   return {
     longname,
     name,
     path,
+    extension,
     data: '', // placeholder
+    zipSource,
   };
 };
 
-export const readUploadedFile = (inputFile: File): Promise<ICodePostFileUpload[]> => {
+export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<ICodePostFileUpload[]> => {
   const reader = new FileReader();
+
+  let outputFile = fileToCodePostFileUpload(inputFile, zipSource);
 
   return new Promise((resolve, reject) => {
     reader.onerror = () => {
       reader.abort();
-      // FIXME add message
       reject('Error uploading file.');
     };
 
@@ -76,7 +81,7 @@ export const readUploadedFile = (inputFile: File): Promise<ICodePostFileUpload[]
                 return zippedFile.async('blob').then(async (blob: Blob) => {
                   // Recursively read the new files, but we need to cast the
                   // Blob object into a File
-                  const unzippedFile = await readUploadedFile(new File([blob], zippedFile.name));
+                  const unzippedFile = await readUploadedFile(new File([blob], zippedFile.name), outputFile.longname);
                   return unzippedFile;
                 });
               }
@@ -93,24 +98,27 @@ export const readUploadedFile = (inputFile: File): Promise<ICodePostFileUpload[]
             });
           });
       } else {
-        let outputFile = fileToCodePostFileUpload(inputFile);
         let data: any = reader.result;
 
-        if (['png', 'jpeg', 'jpg'].includes(CodePostFile.extension(inputFile.name)) && typeof data === 'string') {
+        if (['png', 'jpeg', 'jpg'].includes(outputFile.extension) && typeof data === 'string') {
           data = await resizeImage(data);
         }
 
-        outputFile = { ...outputFile, data };
+        if (typeof data === 'string') {
+          data = data.replace(/\0/g, '');
+        }
 
+        outputFile = { ...outputFile, data };
+        console.log('normal read', outputFile);
         resolve([outputFile]);
       }
     };
 
-    if (inputFile.type.includes('image') || ['png', 'jpeg', 'jpg'].includes(CodePostFile.extension(inputFile.name))) {
+    if (inputFile.type.includes('image') || ['png', 'jpeg', 'jpg'].includes(outputFile.extension)) {
       reader.readAsDataURL(inputFile);
-    } else if (inputFile.type.includes('pdf') || ['pdf'].includes(CodePostFile.extension(inputFile.name))) {
+    } else if (inputFile.type.includes('pdf') || ['pdf'].includes(outputFile.extension)) {
       reader.readAsDataURL(inputFile);
-    } else if (inputFile.type === 'application/zip' || ['zip'].includes(CodePostFile.extension(inputFile.name))) {
+    } else if (inputFile.type === 'application/zip' || ['zip'].includes(outputFile.extension)) {
       reader.readAsArrayBuffer(inputFile);
     } else {
       reader.readAsText(inputFile);
