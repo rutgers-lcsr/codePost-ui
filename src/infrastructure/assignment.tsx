@@ -56,6 +56,7 @@ const AssignmentVStudent = t.intersection(
       isReleased: t.boolean,
       rubricCategories: t.array(t.number),
       course: t.number,
+      allowLateUploads: t.boolean,
     }),
     t.partial({
       hideGrades: t.boolean,
@@ -71,7 +72,6 @@ const AssignmentVStudent = t.intersection(
       mean: t.union([t.number, t.null, t.undefined]),
       median: t.union([t.number, t.null, t.undefined]),
       points: t.number,
-      allowLateUploads: t.boolean,
     }),
   ],
   'Assignment',
