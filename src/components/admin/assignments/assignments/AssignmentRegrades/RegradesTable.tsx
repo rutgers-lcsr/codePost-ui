@@ -12,7 +12,7 @@ import CPButton from '../../../../../components/core/CPButton';
 
 import { openSubmission } from '../../../other/AdminUtils';
 
-import { formatDate } from '../../../../utils/DateUtils';
+import { CodePostDate } from '../../../../utils/DateUtils';
 
 const { TextArea } = Input;
 const { Paragraph, Text } = Typography;
@@ -346,7 +346,11 @@ const RegradesTable = (props: IRegradesTableProps) => {
             {activeSubmission ? activeSubmission.students : ''}
             &nbsp; &nbsp;
             <span style={{ fontSize: 12, color: '#ccc' }}>
-              {activeSubmission && activeSubmission.questionDate ? formatDate(activeSubmission.questionDate) : ''}
+              {activeSubmission && activeSubmission.questionDate ? (
+                <CodePostDate datetime={activeSubmission.questionDate} />
+              ) : (
+                ''
+              )}
             </span>
             <span style={{ fontSize: 12, color: '#25be85', fontWeight: 400, float: 'right' }}>
               {activeSubmission && activeSubmission.questionIsRegrade ? ' Regrade Requested' : ''}
@@ -366,7 +370,11 @@ const RegradesTable = (props: IRegradesTableProps) => {
               : ''}
             &nbsp; &nbsp;
             <span style={{ fontSize: 12, color: '#ccc' }}>
-              {activeSubmission && activeSubmission.responseDate ? formatDate(activeSubmission.responseDate) : ''}
+              {activeSubmission && activeSubmission.responseDate ? (
+                <CodePostDate datetime={activeSubmission.responseDate} />
+              ) : (
+                ''
+              )}
             </span>
           </div>
           {modalReadOnly ? (

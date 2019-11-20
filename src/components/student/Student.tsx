@@ -44,6 +44,8 @@ import { IComponentProps } from '../core/ComponentManager';
 
 import CourseMenu from '../core/CourseMenu';
 
+import { CodePostDate } from '../utils/DateUtils';
+
 const { Text } = Typography;
 
 /**********************************************************************************************************************/
@@ -257,11 +259,19 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     const dueDatePassed = assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now();
     const isFinalized = submission !== undefined && submission.isFinalized;
     const alreadyClaimed = submission !== undefined && (submission.hasGrader && !assignment.liveFeedbackMode);
+    const canUploadLate = assignment.allowLateUploads;
 
-    const canUpload = !dueDatePassed && !isFinalized && !alreadyClaimed;
+    const canUpload = (!dueDatePassed || canUploadLate) && !isFinalized && !alreadyClaimed;
 
     // Present the assignment's due date to the student
-    const dueDate = assignment.uploadDueDate ? `Due date: ${moment(assignment.uploadDueDate).format('llll')}` : '';
+    const dueDate = assignment.uploadDueDate ? (
+      <span>
+        Due date: &nbsp;
+        <CodePostDate datetime={assignment.uploadDueDate} />
+      </span>
+    ) : (
+      ''
+    );
     const dueDateText = (
       <span>
         <Text>{dueDate}</Text>
@@ -293,10 +303,19 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
         onClick={() => {
           if (submission && assignment.liveFeedbackMode) {
             Modal.confirm({
-              title: 'Confirm File Replacement',
+              title: 'Confirm file replacement',
               content: `Replacing your files will delete existing files, including any comments on those files.
                   If you want to add a file to your submission click 'Add Files' instead.
                   Are you sure you want to continue?`,
+              okText: 'Continue',
+              cancelText: 'Cancel',
+              onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),
+            });
+          }
+          if (dueDatePassed) {
+            Modal.confirm({
+              title: 'Confirm late submission',
+              content: `The due date for this submission has passed, so your submission will be logged as late.`,
               okText: 'Continue',
               cancelText: 'Cancel',
               onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),

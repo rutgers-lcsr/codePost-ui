@@ -1,25 +1,23 @@
-import moment from 'moment';
+import React from 'react';
 
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+import moment from 'moment-timezone';
 
-const formatDate = (date: string) => {
-  let dateString;
-  const dateObj = new Date(date);
-  const today = new Date();
-  if (dateObj.getFullYear() === today.getFullYear()) {
-    if (dateObj.getMonth() === today.getMonth() && dateObj.getDate() === today.getDate()) {
-      if (today.getTime() - dateObj.getTime() < 30000) {
-        dateString = 'Last edited moments ago';
-      } else {
-        dateString = `Last edit at ${moment(dateObj).format('h:mm a')}`;
-      }
-    } else {
-      dateString = `Last edit on ${months[dateObj.getMonth()]} ${dateObj.getDate()}`;
-    }
-  } else {
-    dateString = `Last edit in ${dateObj.getFullYear()}`;
-  }
-  return dateString;
+import { CourseContext } from '../core/Contexts';
+
+const CodePostDateChild = (props: { datetime: string; timezone: string }) => {
+  const dateObj = new Date(props.datetime);
+  const momentObj = moment(dateObj).tz(props.timezone);
+  return (
+    <span>
+      {momentObj.format('h:mm a')} on {momentObj.format('MMM DD')}
+    </span>
+  );
 };
 
-export { formatDate };
+const CodePostDate = (props: { datetime: string }) => (
+  <CourseContext.Consumer>
+    {(course) => <CodePostDateChild {...props} timezone={course.timezone} />}
+  </CourseContext.Consumer>
+);
+
+export { CodePostDate };

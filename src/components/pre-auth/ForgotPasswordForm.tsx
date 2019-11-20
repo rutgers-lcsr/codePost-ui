@@ -112,7 +112,7 @@ class ForgotPasswordForm extends React.Component<IProps, State> {
 
     return (
       <PreAuthLayout isLoggedIn={this.props.isLoggedIn}>
-        <div style={{ width: 500 }}>
+        <div style={{ width: 500, margin: '0 auto' }}>
           <br />
           <br />
           <Typography.Title level={1}>Reset your password</Typography.Title>
