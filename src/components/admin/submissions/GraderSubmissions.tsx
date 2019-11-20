@@ -303,7 +303,7 @@ class GraderData extends React.Component<IByGraderProps, IState> {
                     {this.props.assignments.length === 0 ? (
                       <span>
                         {numGraders === 0 ? <span>&nbsp; &nbsp;</span> : null}
-                        <Link to={`${this.props.baseURL}/assignments`}>
+                        <Link to={`${this.props.baseURL}/assignments/overview`}>
                           <CPButton cpType="primary" key={2} icon="plus-circle">
                             Add an assignment
                           </CPButton>

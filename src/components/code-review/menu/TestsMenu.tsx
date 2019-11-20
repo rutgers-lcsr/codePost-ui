@@ -9,7 +9,7 @@ import * as React from 'react';
 import { Table } from 'antd';
 
 /* codePost imports */
-import { SubmissionTestType } from '../../../infrastructure/submissionTest';
+import { SubmissionTest, SubmissionTestType } from '../../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../../infrastructure/testCategory';
 import { TestCasesByCategory } from '../../core/testFetchUtils';
 
@@ -48,12 +48,14 @@ const TestsMenu = (props: IProps) => {
   ];
 
   const data = props.categories.map((category) => {
+    let latest = testsByCategory[category.id];
+    if (props.tests && props.tests[0] instanceof SubmissionTest) {
+      // @ts-ignore
+      latest = SubmissionTest.getLatest(latest);
+    }
     // @ts-ignore
-    const numPassed = testsByCategory[category.id].reduce(
-      (prev: number, newVal: SubmissionTestType | BasicTestResultType) => prev + (newVal.passed ? 1 : 0),
-      0,
-    );
-    const numTotal = testsByCategory[category.id].length;
+    const numPassed = latest.reduce((prev, newVal) => prev + (newVal.passed ? 1 : 0), 0);
+    const numTotal = latest.length;
     return {
       category: category.name,
       passed: `${numPassed}/${numTotal}`,

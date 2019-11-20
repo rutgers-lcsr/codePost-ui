@@ -312,7 +312,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
       const menu = (
         <Menu>
           <Menu.Item key="1">
-            <Link to={`${this.props.baseURL}/${encodedName}/rubric`}>
+            <Link to={`${this.props.baseURL}/rubrics/${encodedName}`}>
               <Icon type="ordered-list" />
               &nbsp; Edit rubric
             </Link>

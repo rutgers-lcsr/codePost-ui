@@ -207,8 +207,10 @@
   }
 }
 
-.ant-collapse tr {
-  line-height: 5px;
+#Code-Header {
+  .ant-collapse tr {
+    line-height: 5px;
+  }
 }
 
 #Admin .ant-table-tbody td {

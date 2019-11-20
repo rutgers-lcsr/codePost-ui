@@ -313,7 +313,7 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                     {this.props.assignments.length === 0 ? (
                       <span>
                         {numStudents === 0 ? <span>&nbsp; &nbsp;</span> : null}
-                        <Link to={`${this.props.baseURL}/assignments`}>
+                        <Link to={`${this.props.baseURL}/assignments/overview`}>
                           <CPButton cpType="primary" key={2} icon="plus-circle">
                             Add an assignment
                           </CPButton>
