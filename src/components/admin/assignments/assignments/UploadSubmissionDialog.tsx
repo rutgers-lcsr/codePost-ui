@@ -27,6 +27,8 @@ import { resizeImage } from '../../other/AdminUtils';
 
 import JSZip from 'jszip';
 
+import { readUploadedFile } from './CodePostFileReader';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -244,6 +246,8 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public render() {
+    console.log('IN HERE');
+    console.log(File.extension('abc.jpg'), File.extension('abc'), File.extension('abc.xyz.png'));
     const { isVisible } = this.props;
     const { status } = this.state;
 
@@ -280,7 +284,22 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         // FIXME: this method of reading file contents relies on a race win, since
         // we need the fileReaders to finish before we hit upload.
 
-        const beforeUpload = (file: any, fileList: any) => {
+        const beforeUpload = async (file: any, fileList: any) => {
+          console.log('BEFORE UPLAODE', file);
+
+          try {
+            const outputFiles = await readUploadedFile(file);
+            console.log('fileContents', outputFiles);
+          } catch (e) {
+            console.warn(e, e.message);
+          }
+
+          return Promise.reject();
+        };
+
+        const beforeUpload2 = (file: any, fileList: any) => {
+          console.log('BEFORE UPLOAD', file, fileList);
+          console.log('types', typeof file, typeof fileList);
           // Ignore hidden files
           if (file.name[0] === '.') {
             return false;
@@ -348,6 +367,8 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             }
           };
 
+          console.log('FILETYPE', file.type);
+
           if (['png', 'jpg', 'jpeg', 'pdf'].includes(File.extension(file.name))) {
             reader.readAsDataURL(file);
           } else if (file.type === 'application/zip') {
@@ -359,6 +380,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           // prevent upload
           return false;
         };
+
         const studentOptions = this.buildStudentOptions(
           this.props.students,
           this.props.submissions,
