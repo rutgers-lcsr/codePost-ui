@@ -57,9 +57,13 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
   let submitted;
   if (props.submission !== undefined) {
     if (props.submission) {
+      const isLate =
+        props.assignment.uploadDueDate &&
+        Date.parse(props.submission.dateUploaded) > Date.parse(props.assignment.uploadDueDate);
       submitted = (
         <span>
-          Uploaded: <CodePostDate datetime={props.submission.dateUploaded} />
+          Uploaded: <CodePostDate datetime={props.submission.dateUploaded} />{' '}
+          {isLate ? <Tag color="volcano">LATE</Tag> : ''}
         </span>
       );
     }
