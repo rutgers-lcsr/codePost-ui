@@ -1,31 +1,8 @@
-// class CodePostFileReader {
-//   public firstName: string;
-//   public lastName: string;
-//   public constructor(firstName, lastName) {
-//     this.firstName = firstName;
-//     this.lastName = lastName;
-//   }
-
-//   public getName() {
-//     return `${this.firstName} ${this.lastName}`;
-//   }
-// }
-
-// const readFile = (file: File) => {
-//   // output list of files
-// }
-
-// class CodePostFileUpload {
-//   public name: string;
-//   public extension: string;
-//   public path: string;
-//   public type: any;
-
-// }
-
-// export default CodePostFileReader;
-
 import JSZip from 'jszip';
+
+import { File as CodePostFile } from '../../../../infrastructure/file';
+
+import { resizeImage } from '../../other/AdminUtils';
 
 interface ICodePostFileUpload {
   longname: string;
@@ -66,49 +43,74 @@ export const readUploadedFile = (inputFile: File): Promise<ICodePostFileUpload[]
       reject('Error uploading file.');
     };
 
-    reader.onload = () => {
+    reader.onload = async () => {
       if (reader.result === null) {
         // FIXME
         // reject('Error uploading file: empty file');
         resolve([]);
       } else if (reader.result instanceof ArrayBuffer) {
-        console.log('zip');
-        const new_zip = new JSZip();
-        // new_zip.loadAsync(reader.result).then((zip: any) => {
-        //   zip.forEach((relativePath: any, f: any) => {
-        //     if (relativePath.startsWith('__MACOSX')) {
-        //       return;
-        //     }
+        // Handle zip files
+        const zipper = new JSZip();
 
-        //     if (!f.dir) {
-        //       f.async('string').then(async (data: any) => {
-        //         const split = relativePath.split('/');
-        //         const filePath = split.slice(0, split.length - 1).join('/');
-        //         const fileName = split[split.length - 1];
+        zipper
+          .loadAsync(reader.result)
+          .then((zip: any) => {
+            // JSZip doesn't have a 'map' function over the files
+            // which makes it difficult to do asynchronous work
+            // Here we do two loops over the zip contents so that we can
+            // use the Array.map functionality
+            const listOfZippedFiles: any = [];
+            zip.forEach((relativePath: any, zippedFile: any) => {
+              listOfZippedFiles.push([relativePath, zippedFile]);
+            });
 
-        //         let data: any = content;
-        //         if (['png', 'jpeg', 'jpg'].includes(File.extension(fileName)) && typeof data === 'string') {
-        //           data = await resizeImage(data);
-        //         }
+            return listOfZippedFiles;
+          })
+          .then((listOfZippedFiles: any) => {
+            const promises = listOfZippedFiles.map(async ([relativePath, zippedFile]: [any, any]) => {
+              if (relativePath.startsWith('__MACOSX')) {
+                return Promise.resolve();
+              }
 
-        //         this.updateFileState(fileName, filePath, data, file.name);
-        //       });
-        //     }
-        //   });
-        // });
+              if (!zippedFile.dir) {
+                return zippedFile.async('blob').then(async (blob: Blob) => {
+                  // Recursively read the new files, but we need to cast the
+                  // Blob object into a File
+                  const unzippedFile = await readUploadedFile(new File([blob], zippedFile.name));
+                  return unzippedFile;
+                });
+              }
+            });
+
+            Promise.all(promises).then((dirtyUnzippedFiles: any) => {
+              // dirtyUnzippedFiles includes ignored files (undefined) and nested unzips
+              const unzippedFiles = dirtyUnzippedFiles
+                .filter((f: any) => {
+                  return f !== undefined;
+                })
+                .flat(Infinity);
+              resolve(unzippedFiles);
+            });
+          });
       } else {
         let outputFile = fileToCodePostFileUpload(inputFile);
-        outputFile = { ...outputFile, data: reader.result };
+        let data: any = reader.result;
+
+        if (['png', 'jpeg', 'jpg'].includes(CodePostFile.extension(inputFile.name)) && typeof data === 'string') {
+          data = await resizeImage(data);
+        }
+
+        outputFile = { ...outputFile, data };
 
         resolve([outputFile]);
       }
     };
 
-    if (inputFile.type.includes('image')) {
+    if (inputFile.type.includes('image') || ['png', 'jpeg', 'jpg'].includes(CodePostFile.extension(inputFile.name))) {
       reader.readAsDataURL(inputFile);
-    } else if (inputFile.type.includes('pdf')) {
+    } else if (inputFile.type.includes('pdf') || ['pdf'].includes(CodePostFile.extension(inputFile.name))) {
       reader.readAsDataURL(inputFile);
-    } else if (inputFile.type === 'application/zip') {
+    } else if (inputFile.type === 'application/zip' || ['zip'].includes(CodePostFile.extension(inputFile.name))) {
       reader.readAsArrayBuffer(inputFile);
     } else {
       reader.readAsText(inputFile);
