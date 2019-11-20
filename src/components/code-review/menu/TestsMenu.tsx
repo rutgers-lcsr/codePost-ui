@@ -13,10 +13,11 @@ import { SubmissionTestType } from '../../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../../infrastructure/testCategory';
 import { TestCasesByCategory } from '../../core/testFetchUtils';
 
+import { BasicTestResultType } from '../../../infrastructure/autograder/runTypes';
 /**********************************************************************************************************************/
 
 interface IProps {
-  tests: SubmissionTestType[];
+  tests: SubmissionTestType[] | BasicTestResultType[];
   cases: TestCasesByCategory;
   categories: TestCategoryType[];
   isOpen: boolean;
@@ -25,7 +26,7 @@ interface IProps {
 const TestsMenu = (props: IProps) => {
   // Index tests by testCategory to access their data more easily when we loop
   // over testCategories below
-  const testsByCategory = {} as { [id: number]: SubmissionTestType[] };
+  const testsByCategory = {} as { [id: number]: BasicTestResultType[] | SubmissionTestType[] };
   for (const category of props.categories) {
     testsByCategory[category.id] = [];
   }
@@ -47,7 +48,11 @@ const TestsMenu = (props: IProps) => {
   ];
 
   const data = props.categories.map((category) => {
-    const numPassed = testsByCategory[category.id].reduce((prev, newVal) => prev + (newVal.passed ? 1 : 0), 0);
+    // @ts-ignore
+    const numPassed = testsByCategory[category.id].reduce(
+      (prev: number, newVal: SubmissionTestType | BasicTestResultType) => prev + (newVal.passed ? 1 : 0),
+      0,
+    );
     const numTotal = testsByCategory[category.id].length;
     return {
       category: category.name,

@@ -13,10 +13,12 @@ import { SubmissionTest, SubmissionTestType } from '../../../infrastructure/subm
 import { TestCategoryType } from '../../../infrastructure/testCategory';
 import { TestCasesByCategory } from '../../core/testFetchUtils';
 
+import { BasicTestResultType } from '../../../infrastructure/autograder/runTypes';
+
 /**********************************************************************************************************************/
 
 interface IProps {
-  tests: SubmissionTestType[];
+  tests: SubmissionTestType[] | BasicTestResultType[];
   cases: TestCasesByCategory;
   categories: TestCategoryType[];
 }
@@ -28,8 +30,11 @@ const TestsList = (props: IProps) => {
   for (const category of props.categories) {
     testsByCategory[category.id] = [];
   }
-  for (const test of SubmissionTest.getLatest(props.tests)) {
-    testsByCategory[test.testCategory] = [...testsByCategory[test.testCategory], test];
+  if (props.tests.length > 0 && props.tests[0] instanceof SubmissionTest) {
+    // @ts-ignore
+    for (const test of SubmissionTest.getLatest(props.tests)) {
+      testsByCategory[test.testCategory] = [...testsByCategory[test.testCategory], test];
+    }
   }
 
   // Top-level columns used used to display individual test information
@@ -60,6 +65,7 @@ const TestsList = (props: IProps) => {
     <div style={{ margin: '20px' }}>
       <Statistic
         title="Tests Passed"
+        // @ts-ignore
         value={`${props.tests.reduce((acc, el) => acc + (el.passed ? 1 : 0), 0)}/${
           Object.values(props.cases).flat().length
         }`}
