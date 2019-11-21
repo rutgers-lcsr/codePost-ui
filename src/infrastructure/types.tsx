@@ -27,3 +27,9 @@ export { TestCaseType } from './testCase';
 
 // @ts-ignore
 export { TestCategoryType } from './testCategory';
+
+// @ts-ignore
+export { SubmissionTestType } from './submissionTest';
+
+// @ts-ignore
+export { FileTemplateType } from './fileTemplate';

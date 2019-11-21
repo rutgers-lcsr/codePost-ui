@@ -14,6 +14,8 @@ import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
 import { AnonymousSubmissionV, StudentSubmissionV, SubmissionV } from './submission';
 import { SubmissionHistoryV } from './submissionHistory';
+import { TestCaseV } from './testCase';
+import { TestCategoryV } from './testCategory';
 
 const AssignmentV = t.intersection(
   [
@@ -134,7 +136,18 @@ const RubricV = t.intersection(
     }),
     t.partial({}),
   ],
-  'Roster',
+  'Rubric',
+);
+
+const TestsV = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      testCases: t.array(TestCaseV),
+      testCategories: t.array(TestCategoryV),
+    }),
+  ],
+  'Tests',
 );
 
 export type RubricType = t.TypeOf<typeof RubricV>;
@@ -197,6 +210,7 @@ export class AssignmentStudent {
     'studentUpload',
   );
   public static readStudentUpload = readObjectDetail(StudentUploadData, 'assignments', 'studentUpload');
+  public static readStudentTests = readObjectDetail(TestsV, 'assignments', 'tests');
 }
 
 export const sortAssignments = (assignments: AssignmentType[]): AssignmentType[] => {
