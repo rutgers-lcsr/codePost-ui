@@ -39,7 +39,7 @@ interface IProps {
   assignments: AssignmentType[];
   graders: string[];
   submissions: IStudentSubmissionsDataTable;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<any>;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
   student: string;

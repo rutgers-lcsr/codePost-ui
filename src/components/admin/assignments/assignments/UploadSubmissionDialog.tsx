@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Icon, message, Modal, Progress, Switch, Upload, Table, Tag, Collapse } from 'antd';
+import { Button, Icon, message, Modal, Progress, Switch, Upload, Table, Tag } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -14,9 +14,9 @@ import Select from 'react-select';
 /* codePost imports */
 import {
   AssignmentType,
-  TestCaseType,
   TestCategoryType,
   SubmissionTestType,
+  SubmissionType,
   StudentSubmissionType,
   FileTemplateType,
 } from '../../../../infrastructure/types';
@@ -36,7 +36,7 @@ import { acceptedFilesSet, acceptedFilesString } from './AcceptedFileTypes';
 import { resizeImage } from '../../other/AdminUtils';
 
 import TestsList from '../../../../components/code-review/code-panel/TestsList';
-import { TestCasesByCategory, fetchTestsBySubmission } from '../../../../components/core/testFetchUtils';
+import { TestCasesByCategory } from '../../../../components/core/testFetchUtils';
 
 import { awaitTestResult } from '../../../../components/admin/assignments/tests/testResult';
 
@@ -52,7 +52,11 @@ interface IProps {
   students: string[];
   selectedStudents: string[];
   submissions: IStudentSubmissionsDataTable;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<StudentSubmissionType>;
+  uploadSubmission: (
+    assignment: AssignmentType,
+    partners: string[],
+    files: any[],
+  ) => Promise<StudentSubmissionType | SubmissionType>;
 
   disableStudentSelect?: boolean;
   onSuccess?: () => void;
@@ -446,11 +450,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         /*****************************************************************************************/
         /* Build list of settings and toggles
         /*****************************************************************************************/
-
-        const settingColumns = [
-          { title: 'Setting', dataIndex: 'setting', key: 'setting' },
-          { title: 'Toggle', dataIndex: 'toggle', key: 'toggle', align: 'center' as const },
-        ];
 
         const settings = [
           {

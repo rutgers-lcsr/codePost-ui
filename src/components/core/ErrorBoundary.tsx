@@ -39,7 +39,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
       url: window.location.href,
     };
 
-    // slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, payload);
+    slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, payload);
   }
 
   public render() {

@@ -1041,7 +1041,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       newSubmissions[submission.assignment] = newAssignmentSubmissions;
       this.setState({ submissionsByStudent, submissions: newSubmissions });
       return Promise.all(filePromises).then(() => {
-        return;
+        return submission;
       });
     });
 

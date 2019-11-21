@@ -211,7 +211,6 @@ const CollectionCreateForm: any = Form.create()(
     };
 
     public addTemplate = () => {
-      const templates = this.state.templates;
       this.setState((oldState: IFormState) => {
         return {
           templates: [

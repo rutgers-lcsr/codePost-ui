@@ -1,9 +1,6 @@
 import * as React from 'react';
 
-import { Button, Icon, message, Spin, Upload } from 'antd';
-
-import { File } from '../../../../infrastructure/file';
-import { FileTemplate, FileTemplateType } from '../../../../infrastructure/fileTemplate';
+import { Button, Icon, message, Upload } from 'antd';
 
 interface IProps {
   isReplacement: boolean;
