@@ -162,7 +162,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     });
 
     const fileList = this.state.fileList.filter((f: UploadFile) => {
-      return fileToCodePostFileUpload(f).longname !== codePostFile.longname;
+      return f.name !== codePostFile.longname;
     });
 
     this.setState({ files, fileList });
@@ -263,7 +263,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               const outputFiles = await readUploadedFile(file);
 
               const newFileList = this.state.fileList.filter((f: UploadFile) => {
-                return fileToCodePostFileUpload(f).longname !== codePostFileUpload.longname;
+                return f.name !== codePostFileUpload.longname;
               });
 
               const newFiles = this.state.files.filter((f: ICodePostFileUpload) => {
@@ -274,7 +274,9 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                   .includes(f.longname);
               });
 
-              this.setState({ fileList: [...newFileList, file], files: [...newFiles, ...outputFiles] });
+              const newFileListItem = { ...file, name: fileToCodePostFileUpload(file).longname };
+
+              this.setState({ fileList: [...newFileList, newFileListItem], files: [...newFiles, ...outputFiles] });
             } catch (e) {
               this.setState({ rejectedFiles: [...this.state.rejectedFiles, codePostFileUpload.longname] });
               message.error(e);
