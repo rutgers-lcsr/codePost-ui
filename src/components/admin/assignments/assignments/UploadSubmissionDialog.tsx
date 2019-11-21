@@ -494,29 +494,32 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           { title: 'Uploaded', dataIndex: 'uploaded', key: 'uploaded', align: 'center' as const },
         ];
 
-        const fileList = (
-          <Table
-            columns={requiredColumns}
-            dataSource={this.state.fileTemplates.map((el) => {
-              const exists = this.state.files.some((file) => file.name === el.name);
-              return {
-                ...el,
-                name: (
-                  <span>
-                    {el.required ? <Tag color={exists ? 'green' : 'volcano'}>REQUIRED</Tag> : <Tag>OPTIONAL</Tag>}
-                    {el.name}
-                  </span>
-                ),
-                uploaded: exists ? (
-                  <Icon type="check-circle" style={{ color: 'green' }} />
-                ) : (
-                  <Icon type="close-circle" style={{ color: 'red' }} />
-                ),
-              };
-            })}
-            pagination={false}
-          />
-        );
+        const fileList =
+          this.state.fileTemplates.length > 0 ? (
+            <Table
+              columns={requiredColumns}
+              dataSource={this.state.fileTemplates.map((el) => {
+                const exists = this.state.files.some((file) => file.name === el.name);
+                return {
+                  ...el,
+                  name: (
+                    <span>
+                      {el.required ? <Tag color={exists ? 'green' : 'volcano'}>REQUIRED</Tag> : <Tag>OPTIONAL</Tag>}
+                      {el.name}
+                    </span>
+                  ),
+                  uploaded: exists ? (
+                    <Icon type="check-circle" style={{ color: 'green' }} />
+                  ) : (
+                    <Icon type="close-circle" style={{ color: 'red' }} />
+                  ),
+                };
+              })}
+              pagination={false}
+            />
+          ) : (
+            <span />
+          );
 
         // FIXME: make 'upload incomplete submission' a course setting
         content = (
