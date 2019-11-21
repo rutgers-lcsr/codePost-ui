@@ -17,8 +17,6 @@ import { tooltips } from '../../../../components/core/tooltips';
 import { AssignmentType } from '../../../../infrastructure/assignment';
 import { SubmissionType } from '../../../../infrastructure/submission';
 
-import { acceptedFilesSet } from './AcceptedFileTypes';
-
 import UploadForm from './UploadForm';
 
 import { IntegrationButton, INTEGRATIONS } from '../../../landing/Integrations';
@@ -260,8 +258,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
   public upload = () => {
     const { protoSubmissions, fileMap } = this.state;
 
-    console.log('UPLOAD PROTOSUBMISSIONS', protoSubmissions);
-
     // tslint:disable
     const toUpload = this.state.overwriteMode
       ? protoSubmissions
@@ -415,10 +411,8 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     - path contains a student listed in a different folder
     - path contains a student multiple times
     /*************************************************************/
-    console.log('accepted files', acceptedFiles);
     acceptedFiles.forEach((newFile: any) => {
       const protoFileUpload: IProtoFileUpload = fileToProtoFileUpload(newFile);
-      console.log('pr', protoFileUpload);
 
       const folderName = protoFileUpload.path.split('/')[1];
       const emails = folderName.split(',');
@@ -468,9 +462,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       const protoFileUpload: IProtoFileUpload = fileToProtoFileUpload(el);
       const folderName = protoFileUpload.path.split('/')[1];
 
-      if (!acceptedFilesSet.has(`.${protoFileUpload.extension}`)) {
-        invalidPaths.push(`File type not accepted: ${protoFileUpload.longname}`);
-      } else if (
+      if (
         protoFileUpload.longname.split('/').find((pathEl: string) => {
           return pathEl.startsWith('.');
         })

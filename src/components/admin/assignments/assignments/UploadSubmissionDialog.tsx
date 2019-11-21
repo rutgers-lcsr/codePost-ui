@@ -19,8 +19,6 @@ import { tooltips } from '../../../../components/core/tooltips';
 
 import { IStudentSubmissionsDataTable } from '../../../../types/common';
 
-import { acceptedFilesSet, acceptedFilesString } from './AcceptedFileTypes';
-
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './CodePostFileReader';
@@ -257,31 +255,27 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         const beforeUpload = async (file: any, fileList: UploadFile[]) => {
           const ProtoFileUpload: IProtoFileUpload = fileToProtoFileUpload(file);
 
-          if (!acceptedFilesSet.has(`.${ProtoFileUpload.extension}`)) {
+          try {
+            const outputFiles = await readUploadedFile(file);
+
+            const newFileList = this.state.fileList.filter((f: UploadFile) => {
+              return f.name !== ProtoFileUpload.longname;
+            });
+
+            const newFiles = this.state.files.filter((f: IProtoFileUpload) => {
+              return !outputFiles
+                .map((outputFile: IProtoFileUpload) => {
+                  return outputFile.longname;
+                })
+                .includes(f.longname);
+            });
+
+            const newFileListItem = { ...file, name: ProtoFileUpload.longname };
+
+            this.setState({ fileList: [...newFileList, newFileListItem], files: [...newFiles, ...outputFiles] });
+          } catch (e) {
             this.setState({ rejectedFiles: [...this.state.rejectedFiles, ProtoFileUpload.longname] });
-          } else {
-            try {
-              const outputFiles = await readUploadedFile(file);
-
-              const newFileList = this.state.fileList.filter((f: UploadFile) => {
-                return f.name !== ProtoFileUpload.longname;
-              });
-
-              const newFiles = this.state.files.filter((f: IProtoFileUpload) => {
-                return !outputFiles
-                  .map((outputFile: IProtoFileUpload) => {
-                    return outputFile.longname;
-                  })
-                  .includes(f.longname);
-              });
-
-              const newFileListItem = { ...file, name: ProtoFileUpload.longname };
-
-              this.setState({ fileList: [...newFileList, newFileListItem], files: [...newFiles, ...outputFiles] });
-            } catch (e) {
-              this.setState({ rejectedFiles: [...this.state.rejectedFiles, ProtoFileUpload.longname] });
-              message.error(e);
-            }
+            message.error(e);
           }
 
           return Promise.reject();
@@ -363,18 +357,12 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 multiple={true}
                 onRemove={this.onRemove}
                 fileList={this.state.fileList}
-                accept={acceptedFilesString}
                 directory={this.state.uploadDirectory}
               >
                 <Button>
                   <Icon type="upload" /> Upload files
                 </Button>
               </Upload>
-              <CPTooltip
-                title={tooltips.admin.assignments.uploadSubmissionFileTypes}
-                infoIcon={true}
-                iconStyle={{ paddingLeft: 5 }}
-              />
             </div>
             <span>
               {unzippedFiles.length > 0 ? (
