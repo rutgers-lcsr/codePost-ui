@@ -14,8 +14,6 @@ import Select from 'react-select';
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
 
-import { File } from '../../../../infrastructure/file';
-
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
 
@@ -23,9 +21,7 @@ import { IStudentSubmissionsDataTable } from '../../../../types/common';
 
 import { acceptedFilesSet, acceptedFilesString } from './AcceptedFileTypes';
 
-import { resizeImage } from '../../other/AdminUtils';
-
-import JSZip from 'jszip';
+import { UploadFile } from 'antd/lib/upload/interface';
 
 import { ICodePostFileUpload, fileToCodePostFileUpload, readUploadedFile } from './CodePostFileReader';
 
@@ -55,10 +51,10 @@ interface IState {
   selectedStudents: string[];
   selectedAssignment?: AssignmentType;
   // List of files in codePost format for upload
-  files: any[];
+  files: ICodePostFileUpload[];
   // List of files in ant format. Required to make make the dialog a controlled list so we
   // can remove files from the list if they are not valid
-  fileList: any[];
+  fileList: UploadFile[];
   status: STATUS;
 
   rejectedFiles: string[];
@@ -156,16 +152,16 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
   };
 
-  public onRemove = (file: any) => {
+  public onRemove = (file: UploadFile) => {
     const codePostFile = fileToCodePostFileUpload(file);
 
-    const files = this.state.files.filter((f: any) => {
+    const files = this.state.files.filter((f: ICodePostFileUpload) => {
       return (
         f.longname !== codePostFile.longname && (f.zipSource === undefined || f.zipSource !== codePostFile.zipSource)
       );
     });
 
-    const fileList = this.state.fileList.filter((f: any) => {
+    const fileList = this.state.fileList.filter((f: UploadFile) => {
       return fileToCodePostFileUpload(f).longname !== codePostFile.longname;
     });
 
@@ -222,8 +218,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public render() {
-    console.log('FILES --->', this.state.files);
-    console.log('FILELIST --> ', this.state.fileList);
     const { isVisible } = this.props;
     const { status } = this.state;
 
@@ -259,7 +253,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       case STATUS.NONE:
         // FIXME: this method of reading file contents relies on a race win, since
         // we need the fileReaders to finish before we hit upload.
-        const beforeUpload = async (file: any, fileList: any) => {
+        const beforeUpload = async (file: any, fileList: UploadFile[]) => {
           const codePostFileUpload: ICodePostFileUpload = fileToCodePostFileUpload(file);
 
           if (!acceptedFilesSet.has(`.${codePostFileUpload.extension}`)) {
@@ -268,16 +262,16 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             try {
               const outputFiles = await readUploadedFile(file);
 
-              const newFileList = this.state.fileList.filter((f: any) => {
+              const newFileList = this.state.fileList.filter((f: UploadFile) => {
                 return fileToCodePostFileUpload(f).longname !== codePostFileUpload.longname;
               });
 
-              const newFiles = this.state.files.filter((f: any) => {
+              const newFiles = this.state.files.filter((f: ICodePostFileUpload) => {
                 return !outputFiles
                   .map((outputFile: ICodePostFileUpload) => {
                     return outputFile.longname;
                   })
-                  .includes(fileToCodePostFileUpload(f).longname);
+                  .includes(f.longname);
               });
 
               this.setState({ fileList: [...newFileList, file], files: [...newFiles, ...outputFiles] });

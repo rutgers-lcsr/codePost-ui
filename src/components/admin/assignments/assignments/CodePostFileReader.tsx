@@ -2,6 +2,8 @@ import JSZip from 'jszip';
 
 import { File as CodePostFile } from '../../../../infrastructure/file';
 
+import { UploadFile } from 'antd/lib/upload/interface';
+
 import { resizeImage } from '../../other/AdminUtils';
 
 export interface ICodePostFileUpload {
@@ -13,7 +15,7 @@ export interface ICodePostFileUpload {
   zipSource?: string;
 }
 
-export const fileToCodePostFileUpload = (inputFile: File, zipSource?: string): ICodePostFileUpload => {
+export const fileToCodePostFileUpload = (inputFile: File | UploadFile, zipSource?: string): ICodePostFileUpload => {
   let longname: string = inputFile.name;
 
   // @ts-ignore
@@ -49,10 +51,8 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
     };
 
     reader.onload = async () => {
-      if (reader.result === null) {
-        // FIXME
-        // reject('Error uploading file: empty file');
-        resolve([]);
+      if (reader.result === null || reader.result === '') {
+        reject(`${outputFile.longname} cannot be uploaded because it is empty.`);
       } else if (reader.result instanceof ArrayBuffer) {
         // Handle zip files
         const zipper = new JSZip();
@@ -64,15 +64,15 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
             // which makes it difficult to do asynchronous work
             // Here we do two loops over the zip contents so that we can
             // use the Array.map functionality
-            const listOfZippedFiles: any = [];
-            zip.forEach((relativePath: any, zippedFile: any) => {
+            const listOfZippedFiles: [string, any][] = [];
+            zip.forEach((relativePath: string, zippedFile: any) => {
               listOfZippedFiles.push([relativePath, zippedFile]);
             });
 
             return listOfZippedFiles;
           })
-          .then((listOfZippedFiles: any) => {
-            const promises = listOfZippedFiles.map(async ([relativePath, zippedFile]: [any, any]) => {
+          .then((listOfZippedFiles: [string, any][]) => {
+            const promises = listOfZippedFiles.map(async ([relativePath, zippedFile]: [string, any]) => {
               if (relativePath.startsWith('__MACOSX')) {
                 return Promise.resolve();
               }
@@ -90,7 +90,7 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
             Promise.all(promises).then((dirtyUnzippedFiles: any) => {
               // dirtyUnzippedFiles includes ignored files (undefined) and nested unzips
               const unzippedFiles = dirtyUnzippedFiles
-                .filter((f: any) => {
+                .filter((f: ICodePostFileUpload | undefined) => {
                   return f !== undefined;
                 })
                 .flat(Infinity);
@@ -109,7 +109,6 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
         }
 
         outputFile = { ...outputFile, data };
-        console.log('normal read', outputFile);
         resolve([outputFile]);
       }
     };
