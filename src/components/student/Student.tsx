@@ -304,15 +304,23 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
           if (submission && assignment.liveFeedbackMode) {
             Modal.confirm({
               title: 'Confirm file replacement',
-              content: `Replacing your files will delete existing files, including any comments on those files.
-                  If you want to add a file to your submission click 'Add Files' instead.
-                  Are you sure you want to continue?`,
+              content: (
+                <div>
+                  <p>
+                    Replacing your files will delete existing files and file versions, including any comments on those
+                    files.
+                  </p>
+                  <p>If you want to add a file to your submission or update a file click 'Add/Update files' instead.</p>
+                  <p>
+                    <b>Are you sure you want to continue?</b>
+                  </p>
+                </div>
+              ),
               okText: 'Continue',
               cancelText: 'Cancel',
               onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),
             });
-          }
-          if (dueDatePassed) {
+          } else if (dueDatePassed) {
             Modal.confirm({
               title: 'Confirm late submission',
               content: `The due date for this submission has passed, so your submission will be logged as late.`,
@@ -353,7 +361,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
           onClick={this.changePanel.bind(this, CURRENT_PANEL.ADDFILES, assignment, submission)}
           disabled={!canUpload}
         >
-          Add files
+          Add/Update files
         </Button>
       );
 
