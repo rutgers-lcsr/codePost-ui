@@ -21,7 +21,7 @@ import CPButton from '../../core/CPButton';
 import CPTooltip from '../../core/CPTooltip';
 import { tooltips } from '../../core/tooltips';
 
-import { formatDate } from '../../utils/DateUtils';
+import { CodePostDate } from '../../utils/DateUtils';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -54,10 +54,18 @@ interface ISubmissionInfoWriteProps {
 const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
-  let lastEdited;
+  let submitted;
   if (props.submission !== undefined) {
-    if (props.submission.dateEdited) {
-      lastEdited = formatDate(props.submission.dateEdited);
+    if (props.submission) {
+      const isLate =
+        props.assignment.uploadDueDate &&
+        Date.parse(props.submission.dateUploaded) > Date.parse(props.assignment.uploadDueDate);
+      submitted = (
+        <span>
+          Uploaded: <CodePostDate datetime={props.submission.dateUploaded} />{' '}
+          {isLate ? <Tag color="volcano">LATE</Tag> : ''}
+        </span>
+      );
     }
   }
 
@@ -70,7 +78,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
 
   return (
     <div id="submission-info" style={{ paddingLeft: '15px', paddingBottom: '10px' }}>
-      <span style={{ fontSize: '12px', color: '#ccc' }}>{lastEdited}</span>
+      <span style={{ fontSize: '12px', color: '#ccc' }}>{submitted}</span>
       <div style={{ fontSize: 12, overflowX: 'auto' }}>
         <b style={{ color: consoleTheme.siderMenuItemColor }}>Students</b>: {studentList}
         {props.submission !== undefined ? (
@@ -481,7 +489,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
                 {props.submission.students}
                 &nbsp; &nbsp;
                 <span style={{ fontSize: 12, color: '#ccc' }}>
-                  {props.submission.questionDate ? formatDate(props.submission.questionDate) : ''}
+                  {props.submission.questionDate ? <CodePostDate datetime={props.submission.questionDate} /> : ''}
                 </span>
                 <span style={{ fontSize: 12, color: '#25be85', fontWeight: 400, float: 'right' }}>
                   {props.submission.questionIsRegrade ? 'Regrade Requested' : ''}
@@ -512,7 +520,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
                 {props.submission.students}
                 &nbsp; &nbsp;
                 <span style={{ fontSize: 12, color: '#ccc' }}>
-                  {props.submission.questionDate ? formatDate(props.submission.questionDate) : ''}
+                  {props.submission.questionDate ? <CodePostDate datetime={props.submission.questionDate} /> : ''}
                 </span>
                 <span style={{ color: '#25be85', fontWeight: 400, float: 'right' }}>
                   {props.submission.questionIsRegrade ? 'Regrade Requested' : ''}
@@ -526,7 +534,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
                 {props.submission.questionResponder}
                 &nbsp; &nbsp;
                 <span style={{ fontSize: 12, color: '#ccc' }}>
-                  {props.submission.responseDate ? formatDate(props.submission.responseDate) : ''}
+                  {props.submission.responseDate ? <CodePostDate datetime={props.submission.responseDate} /> : ''}
                 </span>
               </div>
               <span style={{ fontSize: 15, whiteSpace: 'pre-wrap' }}>{props.submission.questionResponse}</span>

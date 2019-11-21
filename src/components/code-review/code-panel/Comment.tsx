@@ -21,7 +21,6 @@ import CPTooltip from '../../core/CPTooltip';
 import { tooltips } from '../../core/tooltips';
 
 import BlockMarkdown from '../../core/BlockMarkdown';
-import InlineMarkdown from '../../core/InlineMarkdown';
 
 import Badge from '../../core/Badge';
 

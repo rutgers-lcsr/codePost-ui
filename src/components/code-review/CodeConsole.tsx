@@ -74,6 +74,8 @@ import { demoFiles } from './demoCode';
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 
+import { CourseContext, defaultCourse } from '../core/Contexts';
+
 /**********************************************************************************************************************/
 
 /* f(logged in user, submission) */
@@ -445,7 +447,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     // Set window title
     const submissionID: number = +this.props.match.params.submissionId.valueOf();
-    document.title = `codePost | Submission - ${submissionID}`;
 
     let permissionLevel = await this.detectPermissionType(submissionID);
 
@@ -490,6 +491,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           Submission.loadData(submission),
           this.loadRubric(submission.assignment),
         ]);
+
+        document.title = `${submissionID}-Submission [${assignment.name}]`;
+
         course = await Course.read(assignment.course);
 
         files = files.sort((a, b) => {
@@ -537,6 +541,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           Submission.loadData(writableSubmission),
           this.loadRubric(writableSubmission.assignment),
         ]);
+
+        document.title = `${submissionID}-Submission [${assignment.name}]`;
+
         course = await Course.read(assignment.course);
         let fileTemplates;
         if (assignment.templateMode) {
@@ -1040,6 +1047,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       templateMode: false,
       fileTemplates: [],
       showFrequentlyUsedRubricComments: false,
+      allowLateUploads: false,
     };
 
     const demoCourse: CourseType = {
@@ -1752,28 +1760,30 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           onUploadConfirm={this.loadDemoData}
           onCancel={cancelFunc}
         />
-        <StandardConsoleLayout
-          consoleTypes={['grade']}
-          header={
-            <CPFlex
-              style={{
-                padding: '0 15',
-                height: 49,
-                fontSize: 12,
-                overflow: 'initial',
-              }}
-              left={leftHeader}
-              right={rightHeader}
-              middle={middleHeader}
-              gutterSize={20}
-              className={theme}
-            />
-          }
-          sider={sider}
-          siderTitles={siderTitles}
-          content={content}
-          editRubricMode={this.state.editRubricMode}
-        />
+        <CourseContext.Provider value={this.state.course || defaultCourse}>
+          <StandardConsoleLayout
+            consoleTypes={['grade']}
+            header={
+              <CPFlex
+                style={{
+                  padding: '0 15',
+                  height: 49,
+                  fontSize: 12,
+                  overflow: 'initial',
+                }}
+                left={leftHeader}
+                right={rightHeader}
+                middle={middleHeader}
+                gutterSize={20}
+                className={theme}
+              />
+            }
+            sider={sider}
+            siderTitles={siderTitles}
+            content={content}
+            editRubricMode={this.state.editRubricMode}
+          />
+        </CourseContext.Provider>
       </div>
     );
   }
