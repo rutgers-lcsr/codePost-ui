@@ -6,7 +6,7 @@ import { UploadFile } from 'antd/lib/upload/interface';
 
 import { resizeImage } from '../../other/AdminUtils';
 
-export interface ICodePostFileUpload {
+export interface IProtoFileUpload {
   longname: string;
   name: string;
   path: string;
@@ -15,7 +15,7 @@ export interface ICodePostFileUpload {
   zipSource?: string;
 }
 
-export const fileToCodePostFileUpload = (inputFile: File | UploadFile, zipSource?: string): ICodePostFileUpload => {
+export const fileToProtoFileUpload = (inputFile: File | UploadFile, zipSource?: string): IProtoFileUpload => {
   let longname: string = inputFile.name;
 
   // @ts-ignore
@@ -25,7 +25,11 @@ export const fileToCodePostFileUpload = (inputFile: File | UploadFile, zipSource
   }
 
   const split = longname.split('/');
-  const path = split.slice(0, split.length - 1).join('/');
+  const path = split
+    .slice(0, split.length - 1)
+    .join('/')
+    .trim()
+    .toLowerCase();
   const name = split[split.length - 1];
   const extension = CodePostFile.extension(inputFile.name);
 
@@ -39,10 +43,10 @@ export const fileToCodePostFileUpload = (inputFile: File | UploadFile, zipSource
   };
 };
 
-export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<ICodePostFileUpload[]> => {
+export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<IProtoFileUpload[]> => {
   const reader = new FileReader();
 
-  let outputFile = fileToCodePostFileUpload(inputFile, zipSource);
+  let outputFile = fileToProtoFileUpload(inputFile, zipSource);
 
   return new Promise((resolve, reject) => {
     reader.onerror = () => {
@@ -90,7 +94,7 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
             Promise.all(promises).then((dirtyUnzippedFiles: any) => {
               // dirtyUnzippedFiles includes ignored files (undefined) and nested unzips
               const unzippedFiles = dirtyUnzippedFiles
-                .filter((f: ICodePostFileUpload | undefined) => {
+                .filter((f: IProtoFileUpload | undefined) => {
                   return f !== undefined;
                 })
                 .flat(Infinity);
@@ -121,6 +125,73 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
       reader.readAsArrayBuffer(inputFile);
     } else {
       reader.readAsText(inputFile);
+    }
+  });
+};
+
+// This is mostly the same code as the function above, but with a different return type
+// I made a valiant effort to get the Typescript function overloading working, but to not avail
+// The only functional difference here is that it doesn't recursively call itself
+export const readZipTopLevel = (inputFile: File): Promise<File[]> => {
+  const reader = new FileReader();
+  let protoFileUpload = fileToProtoFileUpload(inputFile);
+
+  return new Promise((resolve, reject) => {
+    reader.onerror = () => {
+      reader.abort();
+      reject('Error uploading file.');
+    };
+
+    reader.onload = async () => {
+      if (reader.result === null || reader.result === '') {
+        reject(`${protoFileUpload.longname} cannot be uploaded because it is empty.`);
+      } else {
+        const zipper = new JSZip();
+
+        zipper
+          .loadAsync(reader.result)
+          .then((zip: any) => {
+            // JSZip doesn't have a 'map' function over the files
+            // which makes it difficult to do asynchronous work
+            // Here we do two loops over the zip contents so that we can
+            // use the Array.map functionality
+            const listOfZippedFiles: [string, any][] = [];
+            zip.forEach((relativePath: string, zippedFile: any) => {
+              listOfZippedFiles.push([relativePath, zippedFile]);
+            });
+
+            return listOfZippedFiles;
+          })
+          .then((listOfZippedFiles: [string, any][]) => {
+            const promises = listOfZippedFiles.map(async ([relativePath, zippedFile]: [string, any]) => {
+              if (relativePath.startsWith('__MACOSX')) {
+                return Promise.resolve();
+              }
+
+              if (!zippedFile.dir) {
+                return zippedFile.async('blob').then((blob: Blob) => {
+                  return new File([blob], zippedFile.name);
+                });
+              }
+            });
+
+            Promise.all(promises).then((dirtyUnzippedFiles: any) => {
+              // dirtyUnzippedFiles includes ignored files (undefined) and nested unzips
+              const unzippedFiles = dirtyUnzippedFiles
+                .filter((f: IProtoFileUpload | undefined) => {
+                  return f !== undefined;
+                })
+                .flat(Infinity);
+              resolve(unzippedFiles);
+            });
+          });
+      }
+    };
+
+    if (inputFile.type === 'application/zip' || ['zip'].includes(protoFileUpload.extension)) {
+      reader.readAsArrayBuffer(inputFile);
+    } else {
+      reject('Not a zip');
     }
   });
 };

@@ -9,11 +9,15 @@ import BlockMarkdown from '../../../core/BlockMarkdown';
 
 import JSZip from 'jszip';
 
+import { UploadFile } from 'antd/lib/upload/interface';
+
+import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile, readZipTopLevel } from './CodePostFileReader';
+
 const Panel = Collapse.Panel;
 const Dragger = Upload.Dragger;
 
 interface IUploadFormProps {
-  rawFiles: File[];
+  rawFiles: UploadFile[];
   setRawFiles: any;
   mode?: string;
 }
@@ -46,6 +50,52 @@ const UploadForm = (props: IUploadFormProps) => {
   return content;
 };
 
+const beforeUploadDirectory = (files: UploadFile[], callback: any) => {
+  const beforeUpload = async (file: UploadFile, fileList: UploadFile[]) => {
+    if (fileList.length > 1) {
+      // Case 1: use has selected a folder via menu, which will place all files into
+      // fileList
+      callback(
+        fileList.filter((el) => {
+          const protoFileUpload: IProtoFileUpload = fileToProtoFileUpload(el);
+          return protoFileUpload.path.split('/').length > 1 && el.name !== '.DS_Store'; // filter our system files
+        }),
+      );
+    } else {
+      // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
+      // contains only one file at a time. So add these files one-by-one to state.rawFiles
+      const protoFileUpload: IProtoFileUpload = fileToProtoFileUpload(file);
+      if (protoFileUpload.path.split('/').length > 1 && file.name !== '.DS_Store') {
+        // ignore system files
+        const newList = [...files, file];
+        callback(newList);
+      }
+    }
+
+    // prevent upload
+    return Promise.reject();
+  };
+
+  return beforeUpload;
+};
+
+const beforeUploadZip = (files: UploadFile[], callback: any) => {
+  const beforeUpload = async (file: File, fileList: File[]) => {
+    const unzippedFiles = await readZipTopLevel(file);
+
+    const filteredFiles = unzippedFiles.filter((file: File) => {
+      const protoFileUpload: IProtoFileUpload = fileToProtoFileUpload(file);
+      return protoFileUpload.path.split('/').length > 1;
+    });
+
+    callback(filteredFiles);
+
+    // prevent upload
+    return Promise.reject();
+  };
+  return beforeUpload;
+};
+
 const Normal = (props: IUploadFormProps) => {
   const [zipMode, setZipMode] = React.useState(false);
 
@@ -59,74 +109,9 @@ const Normal = (props: IUploadFormProps) => {
       file2.txt
   \`\`\``;
 
-  const beforeUploadDirectory = (file: File, fileList: File[]) => {
-    if (fileList.length > 1) {
-      // Case 1: use has selected a folder via menu, which will place all files into
-      // fileList
-      props.setRawFiles(
-        fileList.filter((el) => {
-          return el.name[0] !== '.'; // filter our system files
-        }),
-      );
-    } else {
-      // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
-      // contains only one file at a time. So add these files one-by-one to state.rawFiles
-      if (file.name[0] !== '.') {
-        // ignore system files
-        const newList = [...props.rawFiles, file];
-        props.setRawFiles(newList);
-      }
-    }
-
-    // prevent upload
-    return false;
-  };
-
-  const beforeUploadZip = (file: File, fileList: File[]) => {
-    if (file.type === 'application/zip') {
-      const new_zip = new JSZip();
-      new_zip.loadAsync(file).then((zip: any) => {
-        console.log('ZIP', zip);
-        const fileNames: string[] = [];
-
-        zip.forEach((relativePath: any, f: any) => {
-          if (relativePath.startsWith('__MACOSX')) {
-            return;
-          }
-
-          if (f.dir) {
-            return;
-          }
-
-          const split = f.name.split('/');
-          const fileName = split[split.length - 1];
-
-          if (fileName[0] === '.') {
-            return;
-          }
-
-          fileNames.push(f.name);
-        });
-
-        console.log('newlist', fileNames);
-
-        Promise.all(
-          fileNames.map((fileName: string) => {
-            return zip.files[fileName].async('blob').then((fileData: any) => {
-              console.log('filedata', fileData);
-              return new File([fileData], fileName);
-            });
-          }),
-        ).then((newList: any) => {
-          console.log('xxxx', newList);
-          props.setRawFiles(newList);
-        });
-      });
-    }
-
-    // prevent upload
-    return false;
-  };
+  const beforeUpload = zipMode
+    ? beforeUploadZip(props.rawFiles, props.setRawFiles)
+    : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
 
   const onChange = (checked: boolean) => {
     setZipMode(checked);
@@ -151,7 +136,7 @@ const Normal = (props: IUploadFormProps) => {
         showUploadList={false}
         directory={!zipMode}
         multiple={false}
-        beforeUpload={zipMode ? beforeUploadZip : beforeUploadDirectory}
+        beforeUpload={beforeUpload}
         accept={zipMode ? 'zip' : undefined}
       >
         <p className="ant-upload-drag-icon">
@@ -171,27 +156,13 @@ const Normal = (props: IUploadFormProps) => {
 };
 
 const Canvas = (props: IUploadFormProps) => {
-  const beforeUpload = (file: File, fileList: File[]) => {
-    if (fileList.length > 1) {
-      // Case 1: use has selected a folder via menu, which will place all files into
-      // fileList
-      props.setRawFiles(
-        fileList.filter((el) => {
-          return el.name[0] !== '.'; // filter our system files
-        }),
-      );
-    } else {
-      // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
-      // contains only one file at a time. So add these files one-by-one to state.rawFiles
-      if (file.name[0] !== '.') {
-        // ignore system files
-        const newList = [...props.rawFiles, file];
-        props.setRawFiles(newList);
-      }
-    }
+  const [zipMode, setZipMode] = React.useState(false);
+  const beforeUpload = zipMode
+    ? beforeUploadZip(props.rawFiles, props.setRawFiles)
+    : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
 
-    // prevent upload
-    return false;
+  const onChange = (checked: boolean) => {
+    setZipMode(checked);
   };
 
   const [selection, setSelection] = React.useState<boolean | undefined>(undefined);
@@ -286,6 +257,9 @@ You can also fork \`canvas_to_codePost_manual.py\` [here](https://github.com/cod
           </Collapse>
           <br />
           <br />
+          <Switch checked={zipMode} onChange={onChange} /> <span> Upload Zip File</span>
+          <br />
+          <br />
           <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
             <p className="ant-upload-drag-icon">
               <Icon type="inbox" />
@@ -296,7 +270,11 @@ You can also fork \`canvas_to_codePost_manual.py\` [here](https://github.com/cod
           <br />
           <br />
           <br />
-          <Statistic title="Uploaded files" value={props.rawFiles.length} />
+          {zipMode ? (
+            <Statistic title="Unzipped and uploaded files" value={props.rawFiles.length} />
+          ) : (
+            <Statistic title="Uploaded files" value={props.rawFiles.length} />
+          )}
         </div>
       ) : null}
     </div>
@@ -304,27 +282,13 @@ You can also fork \`canvas_to_codePost_manual.py\` [here](https://github.com/cod
 };
 
 const Brightspace = (props: IUploadFormProps) => {
-  const beforeUpload = (file: File, fileList: File[]) => {
-    if (fileList.length > 1) {
-      // Case 1: use has selected a folder via menu, which will place all files into
-      // fileList
-      props.setRawFiles(
-        fileList.filter((el) => {
-          return el.name[0] !== '.'; // filter our system files
-        }),
-      );
-    } else {
-      // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
-      // contains only one file at a time. So add these files one-by-one to state.rawFiles
-      if (file.name[0] !== '.') {
-        // ignore system files
-        const newList = [...props.rawFiles, file];
-        props.setRawFiles(newList);
-      }
-    }
+  const [zipMode, setZipMode] = React.useState(false);
+  const beforeUpload = zipMode
+    ? beforeUploadZip(props.rawFiles, props.setRawFiles)
+    : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
 
-    // prevent upload
-    return false;
+  const onChange = (checked: boolean) => {
+    setZipMode(checked);
   };
 
   const instructions = `
@@ -372,33 +336,23 @@ You can also fork \`brightspace_to_codepost_manual.py\` [here](https://github.co
       <br />
       <br />
       <br />
-      <Statistic title="Uploaded files" value={props.rawFiles.length} />
+      {zipMode ? (
+        <Statistic title="Unzipped and uploaded files" value={props.rawFiles.length} />
+      ) : (
+        <Statistic title="Uploaded files" value={props.rawFiles.length} />
+      )}
     </div>
   );
 };
 
 const Blackboard = (props: IUploadFormProps) => {
-  const beforeUpload = (file: File, fileList: File[]) => {
-    if (fileList.length > 1) {
-      // Case 1: use has selected a folder via menu, which will place all files into
-      // fileList
-      props.setRawFiles(
-        fileList.filter((el) => {
-          return el.name[0] !== '.'; // filter our system files
-        }),
-      );
-    } else {
-      // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
-      // contains only one file at a time. So add these files one-by-one to state.rawFiles
-      if (file.name[0] !== '.') {
-        // ignore system files
-        const newList = [...props.rawFiles, file];
-        props.setRawFiles(newList);
-      }
-    }
+  const [zipMode, setZipMode] = React.useState(false);
+  const beforeUpload = zipMode
+    ? beforeUploadZip(props.rawFiles, props.setRawFiles)
+    : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
 
-    // prevent upload
-    return false;
+  const onChange = (checked: boolean) => {
+    setZipMode(checked);
   };
 
   const instructions = `
@@ -436,6 +390,9 @@ You can also fork \`blackboard_to_codepost_manual.py\` [here](https://github.com
       </Collapse>
       <br />
       <br />
+      <Switch checked={zipMode} onChange={onChange} /> <span> Upload Zip File</span>
+      <br />
+      <br />
       <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
         <p className="ant-upload-drag-icon">
           <Icon type="inbox" />
@@ -446,33 +403,23 @@ You can also fork \`blackboard_to_codepost_manual.py\` [here](https://github.com
       <br />
       <br />
       <br />
-      <Statistic title="Uploaded files" value={props.rawFiles.length} />
+      {zipMode ? (
+        <Statistic title="Unzipped and uploaded files" value={props.rawFiles.length} />
+      ) : (
+        <Statistic title="Uploaded files" value={props.rawFiles.length} />
+      )}
     </div>
   );
 };
 
 const GitHub = (props: IUploadFormProps) => {
-  const beforeUpload = (file: File, fileList: File[]) => {
-    if (fileList.length > 1) {
-      // Case 1: use has selected a folder via menu, which will place all files into
-      // fileList
-      props.setRawFiles(
-        fileList.filter((el) => {
-          return el.name[0] !== '.'; // filter our system files
-        }),
-      );
-    } else {
-      // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
-      // contains only one file at a time. So add these files one-by-one to state.rawFiles
-      if (file.name[0] !== '.') {
-        // ignore system files
-        const newList = [...props.rawFiles, file];
-        props.setRawFiles(newList);
-      }
-    }
+  const [zipMode, setZipMode] = React.useState(false);
+  const beforeUpload = zipMode
+    ? beforeUploadZip(props.rawFiles, props.setRawFiles)
+    : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
 
-    // prevent upload
-    return false;
+  const onChange = (checked: boolean) => {
+    setZipMode(checked);
   };
 
   const instructions = `
@@ -499,6 +446,9 @@ You can also fork the scripts included [here](https://github.com/codepost-io/int
       </Collapse>
       <br />
       <br />
+      <Switch checked={zipMode} onChange={onChange} /> <span> Upload Zip File</span>
+      <br />
+      <br />
       <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
         <p className="ant-upload-drag-icon">
           <Icon type="inbox" />
@@ -509,7 +459,11 @@ You can also fork the scripts included [here](https://github.com/codepost-io/int
       <br />
       <br />
       <br />
-      <Statistic title="Uploaded files" value={props.rawFiles.length} />
+      {zipMode ? (
+        <Statistic title="Unzipped and uploaded files" value={props.rawFiles.length} />
+      ) : (
+        <Statistic title="Uploaded files" value={props.rawFiles.length} />
+      )}
     </div>
   );
 };
@@ -529,27 +483,13 @@ Upload a folder with the following file structure.
       file2.ipynb
   \`\`\``;
 
-  const beforeUpload = (file: File, fileList: File[]) => {
-    if (fileList.length > 1) {
-      // Case 1: use has selected a folder via menu, which will place all files into
-      // fileList
-      props.setRawFiles(
-        fileList.filter((el) => {
-          return el.name[0] !== '.'; // filter our system files
-        }),
-      );
-    } else {
-      // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
-      // contains only one file at a time. So add these files one-by-one to state.rawFiles
-      if (file.name[0] !== '.') {
-        // ignore system files
-        const newList = [...props.rawFiles, file];
-        props.setRawFiles(newList);
-      }
-    }
+  const [zipMode, setZipMode] = React.useState(false);
+  const beforeUpload = zipMode
+    ? beforeUploadZip(props.rawFiles, props.setRawFiles)
+    : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
 
-    // prevent upload
-    return false;
+  const onChange = (checked: boolean) => {
+    setZipMode(checked);
   };
 
   return (
@@ -561,6 +501,9 @@ Upload a folder with the following file structure.
       </Collapse>
       <br />
       <br />
+      <Switch checked={zipMode} onChange={onChange} /> <span> Upload Zip File</span>
+      <br />
+      <br />
       <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
         <p className="ant-upload-drag-icon">
           <Icon type="inbox" />
@@ -569,7 +512,11 @@ Upload a folder with the following file structure.
         <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
       </Dragger>
       <br />
-      <Statistic title="Uploaded files" value={props.rawFiles.length} />
+      {zipMode ? (
+        <Statistic title="Unzipped and uploaded files" value={props.rawFiles.length} />
+      ) : (
+        <Statistic title="Uploaded files" value={props.rawFiles.length} />
+      )}
     </div>
   );
 };

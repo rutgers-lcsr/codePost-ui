@@ -23,7 +23,7 @@ import { acceptedFilesSet, acceptedFilesString } from './AcceptedFileTypes';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
-import { ICodePostFileUpload, fileToCodePostFileUpload, readUploadedFile } from './CodePostFileReader';
+import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './CodePostFileReader';
 
 /**********************************************************************************************************************/
 
@@ -51,7 +51,7 @@ interface IState {
   selectedStudents: string[];
   selectedAssignment?: AssignmentType;
   // List of files in codePost format for upload
-  files: ICodePostFileUpload[];
+  files: IProtoFileUpload[];
   // List of files in ant format. Required to make make the dialog a controlled list so we
   // can remove files from the list if they are not valid
   fileList: UploadFile[];
@@ -153,16 +153,17 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public onRemove = (file: UploadFile) => {
-    const codePostFile = fileToCodePostFileUpload(file);
+    const protoFileUpload = fileToProtoFileUpload(file);
 
-    const files = this.state.files.filter((f: ICodePostFileUpload) => {
+    const files = this.state.files.filter((f: IProtoFileUpload) => {
       return (
-        f.longname !== codePostFile.longname && (f.zipSource === undefined || f.zipSource !== codePostFile.zipSource)
+        f.longname !== protoFileUpload.longname &&
+        (f.zipSource === undefined || f.zipSource !== protoFileUpload.zipSource)
       );
     });
 
     const fileList = this.state.fileList.filter((f: UploadFile) => {
-      return f.name !== codePostFile.longname;
+      return f.name !== protoFileUpload.longname;
     });
 
     this.setState({ files, fileList });
@@ -254,31 +255,31 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         // FIXME: this method of reading file contents relies on a race win, since
         // we need the fileReaders to finish before we hit upload.
         const beforeUpload = async (file: any, fileList: UploadFile[]) => {
-          const codePostFileUpload: ICodePostFileUpload = fileToCodePostFileUpload(file);
+          const ProtoFileUpload: IProtoFileUpload = fileToProtoFileUpload(file);
 
-          if (!acceptedFilesSet.has(`.${codePostFileUpload.extension}`)) {
-            this.setState({ rejectedFiles: [...this.state.rejectedFiles, codePostFileUpload.longname] });
+          if (!acceptedFilesSet.has(`.${ProtoFileUpload.extension}`)) {
+            this.setState({ rejectedFiles: [...this.state.rejectedFiles, ProtoFileUpload.longname] });
           } else {
             try {
               const outputFiles = await readUploadedFile(file);
 
               const newFileList = this.state.fileList.filter((f: UploadFile) => {
-                return f.name !== codePostFileUpload.longname;
+                return f.name !== ProtoFileUpload.longname;
               });
 
-              const newFiles = this.state.files.filter((f: ICodePostFileUpload) => {
+              const newFiles = this.state.files.filter((f: IProtoFileUpload) => {
                 return !outputFiles
-                  .map((outputFile: ICodePostFileUpload) => {
+                  .map((outputFile: IProtoFileUpload) => {
                     return outputFile.longname;
                   })
                   .includes(f.longname);
               });
 
-              const newFileListItem = { ...file, name: fileToCodePostFileUpload(file).longname };
+              const newFileListItem = { ...file, name: ProtoFileUpload.longname };
 
               this.setState({ fileList: [...newFileList, newFileListItem], files: [...newFiles, ...outputFiles] });
             } catch (e) {
-              this.setState({ rejectedFiles: [...this.state.rejectedFiles, codePostFileUpload.longname] });
+              this.setState({ rejectedFiles: [...this.state.rejectedFiles, ProtoFileUpload.longname] });
               message.error(e);
             }
           }
