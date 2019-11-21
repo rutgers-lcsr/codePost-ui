@@ -48,7 +48,7 @@ export interface IByStudentProps extends RouteComponentProps {
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   graders: string[];
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>;
 
   baseURL: string;
 }

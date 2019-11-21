@@ -1,7 +1,7 @@
 import * as t from 'io-ts';
 import { createObject, deleteObject, GenericObject, readObject, updateObject, createObjectDetail } from './generics';
 import { TaskV } from './autograder/runTypes';
-const TestCaseV = t.intersection(
+export const TestCaseV = t.intersection(
   [
     GenericObject,
     t.type({
@@ -18,6 +18,7 @@ const TestCaseV = t.intersection(
       input: t.string,
       expectedOutput: t.string,
       checkReturn: t.boolean,
+      exposed: t.boolean,
     }),
     t.partial({}),
   ],
@@ -40,6 +41,7 @@ const TestCaseVPatch = t.intersection(
       input: t.string,
       expectedOutput: t.string,
       checkReturn: t.boolean,
+      exposed: t.boolean,
     }),
   ],
   'TestCasePatch',
@@ -61,6 +63,7 @@ const TestCaseVPost = t.intersection(
       input: t.string,
       expectedOutput: t.string,
       checkReturn: t.boolean,
+      exposed: t.boolean,
     }),
     t.partial({}),
   ],

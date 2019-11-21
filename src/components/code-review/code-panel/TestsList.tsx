@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Badge, Table, Collapse, Statistic } from 'antd';
+import { Badge, Table, Collapse, Statistic, Spin } from 'antd';
 
 /* codePost imports */
 import { SubmissionTest, SubmissionTestType } from '../../../infrastructure/submissionTest';
@@ -19,6 +19,7 @@ interface IProps {
   tests: SubmissionTestType[];
   cases: TestCasesByCategory;
   categories: TestCategoryType[];
+  isLoading?: boolean;
 }
 
 const TestsList = (props: IProps) => {
@@ -66,7 +67,7 @@ const TestsList = (props: IProps) => {
 
   return (
     <div style={{ margin: '20px' }}>
-      <Statistic title="Tests Passed" value={`${passed}/${total}`} />
+      <Statistic title="Tests Passed" value={props.isLoading ? 'Running...' : `${passed}/${total}`} />
       <br />
       <Collapse defaultActiveKey={props.categories.map((x, i) => i)} bordered={false} style={{ background: '#f2f2f2' }}>
         {props.categories.map((category, index) => {
@@ -125,9 +126,15 @@ const TestsList = (props: IProps) => {
                 <span>
                   {category.name}
                   &nbsp;
-                  <Badge count={numPassed} style={{ backgroundColor: '#52c41a' }} />
-                  <Badge count={numFailed} style={{ backgroundColor: 'red' }} />
-                  <Badge count={numNotRun} style={{ backgroundColor: 'gray' }} />
+                  {props.isLoading ? (
+                    <Spin />
+                  ) : (
+                    <span>
+                      <Badge count={numPassed} style={{ backgroundColor: '#52c41a' }} />
+                      <Badge count={numFailed} style={{ backgroundColor: 'red' }} />
+                      <Badge count={numNotRun} style={{ backgroundColor: 'gray' }} />
+                    </span>
+                  )}
                 </span>
               }
               key={index}

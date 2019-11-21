@@ -2,7 +2,7 @@ import * as t from 'io-ts';
 import { createObject, deleteObject, GenericObject, readObject, updateObject, createObjectDetail } from './generics';
 import { TaskV } from './autograder/runTypes';
 
-const TestCategoryV = t.intersection(
+export const TestCategoryV = t.intersection(
   [
     GenericObject,
     t.type({
