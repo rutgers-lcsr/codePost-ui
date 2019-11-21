@@ -5,32 +5,13 @@ import { Button, Icon, message, Spin, Upload } from 'antd';
 import { File } from '../../../../infrastructure/file';
 import { FileTemplate, FileTemplateType } from '../../../../infrastructure/fileTemplate';
 
-const UploadFileTemplates = (props: any) => {
-  // @ts-ignore
-  const [defaultFileList, setDefaultFileList] = React.useState<any>(undefined);
+interface IProps {
+  isReplacement: boolean;
+  updateTemplate: (code: string) => void;
+  fileName: string;
+}
 
-  React.useEffect(() => {
-    const ft = props.assignment.fileTemplates.map((fileTemplateID: number) => {
-      return FileTemplate.read(fileTemplateID);
-    });
-    // @ts-ignore
-    Promise.all(ft).then((fileTemplates: FileTemplateType[]) => {
-      const defaultFiles = fileTemplates.map((fileTemplate: FileTemplateType) => {
-        return {
-          uid: fileTemplate.id,
-          name: fileTemplate.name,
-          status: 'done',
-        };
-      });
-      // @ts-ignore
-      setDefaultFileList(defaultFiles);
-    });
-
-    return () => {};
-    // Should implement useCallback()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+const UploadFileTemplates = (props: IProps) => {
   const onChange = (info: any) => {
     if (info.file.status === 'done') {
       message.success(`${info.file.name} file uploaded successfully`);
@@ -39,40 +20,18 @@ const UploadFileTemplates = (props: any) => {
     }
   };
 
-  const onRemove = async (f: any) => {
-    if (typeof f.uid === 'string') {
-      const toDelete = defaultFileList.find((x: any) => {
-        return x.name === f.name;
-      });
-      if (toDelete !== undefined) {
-        await FileTemplate.delete(toDelete.id);
-      }
-    } else {
-      await FileTemplate.delete(f.uid);
-    }
-  };
-
   const customRequest = async (r: any) => {
-    if (r.file.name[0] === '.') {
+    if (r.file.name !== props.fileName) {
       r.onError();
+      message.error(`Upload failed. You must upload a file called ${props.fileName}`);
       return;
     }
 
     const reader = new FileReader();
     reader.onload = async () => {
       if (reader.result) {
-        const fileTemplate = {
-          id: -1,
-          name: r.file.name,
-          code: reader.result as string,
-          extension: File.extension(r.file.name),
-          path: '',
-          assignment: props.assignment.id,
-        };
-
-        const ft = await FileTemplate.create(fileTemplate);
-        setDefaultFileList([...defaultFileList, ft]);
-        r.onSuccess(ft, r.file);
+        props.updateTemplate(reader.result as string);
+        r.onSuccess(props.fileName, r.file);
       } else {
         message.error(`${r.file.name} cannot be uploaded because it is empty.`);
         r.onError();
@@ -81,17 +40,16 @@ const UploadFileTemplates = (props: any) => {
     reader.readAsText(r.file);
   };
 
-  if (defaultFileList === undefined) {
-    return <Spin />;
-  }
-
   return (
     // @ts-ignore
-    <Upload defaultFileList={defaultFileList} onChange={onChange} onRemove={onRemove} customRequest={customRequest}>
-      <Button>
-        <Icon type="upload" /> Click to Upload
-      </Button>
-    </Upload>
+    <div>
+      <Upload showUploadList={false} onChange={onChange} customRequest={customRequest}>
+        <Button>
+          <Icon type="upload" /> {props.isReplacement ? 'Replace' : 'Upload'}
+        </Button>
+      </Upload>
+      &nbsp; {props.isReplacement ? <Icon type="delete" onClick={() => props.updateTemplate('')} /> : ''}
+    </div>
   );
 };
 
