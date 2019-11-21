@@ -16,8 +16,6 @@ import CPButton from '../core/CPButton';
 
 import { createDemoCourse } from '../utils/DemoCourse';
 
-import { acceptedFiles } from '../admin/assignments/assignments/AcceptedFileTypes';
-
 import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
 
 /**********************************************************************************************************************/
@@ -133,13 +131,6 @@ const AdminOnboardingSelector = (props: IProps) => {
 
 /**********************************************************************************************************************/
 
-const toRemove = ['.ipynb', '.md'];
-const editedAcceptedFiles = acceptedFiles
-  .filter((el) => {
-    return toRemove.indexOf(el) === -1;
-  })
-  .join();
-
 interface ICodeConsoleOnboardingProps {
   visible: boolean;
   onCancel: () => void;
@@ -242,13 +233,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
     };
 
     const uploader = (
-      <Upload
-        beforeUpload={beforeUpload}
-        listType="text"
-        multiple={true}
-        onChange={onChange}
-        accept={editedAcceptedFiles}
-      >
+      <Upload beforeUpload={beforeUpload} listType="text" multiple={true} onChange={onChange}>
         <CPButton cpType="secondary">
           <Icon type="upload" /> Click to Upload
         </CPButton>
