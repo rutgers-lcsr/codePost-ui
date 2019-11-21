@@ -25,7 +25,7 @@ import { resizeImage } from '../../other/AdminUtils';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
-import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './CodePostFileReader';
+import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
 
 const Panel = Collapse.Panel;
 const { Step } = Steps;

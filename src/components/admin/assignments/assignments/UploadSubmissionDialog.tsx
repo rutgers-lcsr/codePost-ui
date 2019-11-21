@@ -21,7 +21,7 @@ import { IStudentSubmissionsDataTable } from '../../../../types/common';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
-import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './CodePostFileReader';
+import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
 
 /**********************************************************************************************************************/
 

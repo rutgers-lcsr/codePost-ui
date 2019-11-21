@@ -11,7 +11,7 @@ import JSZip from 'jszip';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
-import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile, readZipTopLevel } from './CodePostFileReader';
+import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile, readZipTopLevel } from './FileReader';
 
 const Panel = Collapse.Panel;
 const Dragger = Upload.Dragger;
