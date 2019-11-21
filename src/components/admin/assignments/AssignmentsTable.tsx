@@ -77,7 +77,7 @@ export interface IManageAssignmentsProps {
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
 
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<any>;
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   updateSubmission: (submission: SubmissionType) => Promise<void>;
 
@@ -194,7 +194,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
   };
 
   public closeSingleSubmissionUpload = () => {
-    this.props.history.push(this.props.baseURL);
+    this.props.history.push(`${this.props.baseURL}/overview`);
     this.setState({ activeStudent: undefined });
   };
 
@@ -504,7 +504,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
     });
 
     const cancel = () => {
-      this.props.history.push(this.props.baseURL);
+      this.props.history.push(`${this.props.baseURL}/overview`);
     };
 
     const drawerComponent =
