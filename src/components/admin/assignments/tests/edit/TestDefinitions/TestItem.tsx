@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Divider, Form, Input, Row, Select, Tag, message, Modal, Typography } from 'antd';
+import { Button, Divider, Form, Input, Row, Select, Tag, message, Modal, Typography, Switch } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
 /* codePost object imports */
@@ -51,6 +51,7 @@ interface IFormValues {
   input: string;
   checkReturn: string;
   fileName: string;
+  exposed: boolean;
 }
 
 export const TestItem = (props: ITestItemProps) => {
@@ -134,7 +135,6 @@ export const TestItem = (props: ITestItemProps) => {
         id: props.testCase.id,
         submission: props.activeSubmission ? props.activeSubmission.id : undefined,
       };
-      console.log(payload);
       const result = await TestCase.run(payload);
       awaitTestResult(result.task, callback);
     }
@@ -161,6 +161,7 @@ export const TestItem = (props: ITestItemProps) => {
     testCaseCopy.input = values.input;
     testCaseCopy.checkReturn = values.checkReturn === 'return';
     testCaseCopy.type = testType;
+    testCaseCopy.exposed = values.exposed;
     await props.saveTest(testCaseCopy);
     message.success('Test saved');
   };
@@ -451,8 +452,8 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
         <Divider />
         <div>
           <Typography.Title level={4}>1. Details</Typography.Title>
-          <Form labelCol={{ span: 8 }} wrapperCol={{ span: 16 }} layout="inline">
-            <Row style={{ alignItems: 'center' }}>
+          <Form layout="inline">
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
               <Form.Item label="Test Name">
                 {getFieldDecorator('description', {
                   initialValue: testCase.description,
@@ -477,8 +478,20 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                     Unit Test <Tag>BETA</Tag>
                   </Option>
                 </Select>
-              </div>
-            </Row>
+              </div>{' '}
+              &nbsp; &nbsp;
+              <Form.Item label="Exposed">
+                {getFieldDecorator('exposed', {
+                  initialValue: testCase.exposed,
+                  valuePropName: 'checked',
+                  rules: [
+                    {
+                      required: true,
+                    },
+                  ],
+                })(<Switch disabled={this.props.isRunning} />)}
+              </Form.Item>
+            </div>
             <Divider />
             <Typography.Title level={4}>2. Definition</Typography.Title>
             {testBody}
