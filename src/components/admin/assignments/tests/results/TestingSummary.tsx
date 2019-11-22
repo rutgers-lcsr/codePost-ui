@@ -38,7 +38,6 @@ interface IProps {
   breadcrumbs?: React.ReactElement[];
   submissions: SubmissionType[];
   currentAssignment: AssignmentType;
-  onCancel: () => void;
 }
 
 export const TestingSummary = (props: IProps & RouteComponentProps) => {

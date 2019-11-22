@@ -33,7 +33,6 @@ const { TabPane } = Tabs;
 
 interface IProps {
   currentAssignment: AssignmentType;
-  onCancel: () => void;
   submissions: SubmissionType[];
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   breadcrumbs?: React.ReactElement[];
@@ -189,8 +188,6 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       <TabPane tab={'Environment'} key={'1'}>
         <EnvironmentSpecs
           currentAssignment={props.currentAssignment}
-          onContinue={setCurrTab.bind({}, '2')}
-          onCancel={props.onCancel}
           updateAssignment={props.updateAssignment}
           env={env}
           createEnv={createEnv}
