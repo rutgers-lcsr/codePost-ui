@@ -2,18 +2,17 @@ import * as React from 'react';
 
 import { Modal, Input, Tabs } from 'antd';
 
-import { RubricCommentType } from '../../../../infrastructure/rubricComment';
-
 import ReactMarkdown from 'react-markdown';
 
 interface IProps {
-  rubricComment: RubricCommentType;
+  title: string;
+  startText: string;
   onCancel: () => void;
   onSave: (draft?: string) => void;
 }
 
 const ExplanationModal = (props: IProps) => {
-  const [draft, setDraft] = React.useState(props.rubricComment.explanation);
+  const [draft, setDraft] = React.useState(props.startText);
 
   const onChange = (event: any) => {
     setDraft(event.target.value);
@@ -24,7 +23,7 @@ const ExplanationModal = (props: IProps) => {
   };
 
   return (
-    <Modal visible={true} okText="Save" title={props.rubricComment.text} onCancel={props.onCancel} onOk={onSave}>
+    <Modal visible={true} okText="Save" title={props.title} onCancel={props.onCancel} onOk={onSave}>
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane key="1" tab="Edit">
           <Input.TextArea
