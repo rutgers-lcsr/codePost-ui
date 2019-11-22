@@ -1,5 +1,4 @@
 import * as t from 'io-ts';
-import { GenericObject } from '../generics';
 
 import { SubmissionTestV } from '../submissionTest';
 
@@ -15,11 +14,7 @@ const BasicTestResult = t.type({
   testCategory: t.number,
 });
 
-const TestCategoryTestResult = t.array(BasicTestResult);
-
 const SubmissionTestResult = t.array(SubmissionTestV);
 
-export type TestCaseTestResultType = t.TypeOf<typeof BasicTestResult>;
-export type TestCategoryTestResultType = t.TypeOf<typeof TestCategoryTestResult>;
 export type SubmissionTestResultType = t.TypeOf<typeof SubmissionTestResult>;
 export type BasicTestResultType = t.TypeOf<typeof BasicTestResult>;
