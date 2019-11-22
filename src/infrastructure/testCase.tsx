@@ -20,6 +20,7 @@ export const TestCaseV = t.intersection(
       checkReturn: t.boolean,
       exposed: t.boolean,
       instances: t.array(t.number),
+      explanation: t.string,
     }),
     t.partial({}),
   ],
