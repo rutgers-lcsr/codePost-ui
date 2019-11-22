@@ -47,13 +47,21 @@ const TestsList = (props: IProps) => {
       title: 'Test Case',
       dataIndex: 'case',
       key: 'case',
-      width: '80%',
+      width: '60%',
     },
     {
       title: 'Passed',
       dataIndex: 'passed',
       key: 'passed',
       width: '20%',
+      align: 'center' as const,
+    },
+    {
+      title: 'Points',
+      dataIndex: 'points',
+      key: 'points',
+      width: '20%',
+      align: 'center' as const,
     },
   ];
 
@@ -101,6 +109,15 @@ const TestsList = (props: IProps) => {
                 badgeStatus = 'default';
             }
 
+            let points = '--';
+            if (result) {
+              if (result.passed) {
+                points = `${testCase.pointsPass > 0 ? '+' : ''}${testCase.pointsPass}`;
+              } else {
+                points = `${testCase.pointsFail > 0 ? '+' : ''}${testCase.pointsFail}`;
+              }
+            }
+
             return {
               case: testCase.description,
               passed: (
@@ -109,6 +126,7 @@ const TestsList = (props: IProps) => {
                   {badgeString}
                 </span>
               ),
+              points,
               logs: result ? result.logs : '--',
             };
           });

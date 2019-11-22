@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Divider, Form, Input, Row, Select, Tag, message, Modal, Typography, Switch } from 'antd';
+import { Button, Divider, Form, Input, Row, Select, Tag, message, Modal, Typography, Switch, InputNumber } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
 /* codePost object imports */
@@ -52,6 +52,8 @@ interface IFormValues {
   checkReturn: string;
   fileName: string;
   exposed: boolean;
+  pointsPass: number;
+  pointsFail: number;
 }
 
 export const TestItem = (props: ITestItemProps) => {
@@ -162,8 +164,33 @@ export const TestItem = (props: ITestItemProps) => {
     testCaseCopy.checkReturn = values.checkReturn === 'return';
     testCaseCopy.type = testType;
     testCaseCopy.exposed = values.exposed;
-    await props.saveTest(testCaseCopy);
-    message.success('Test saved');
+    testCaseCopy.pointsPass = values.pointsPass;
+    testCaseCopy.pointsFail = values.pointsFail;
+
+    // Warn user if they are modifying an instantiated SubmissionTest in a way that
+    // will propagate to instances.
+    const execute = async () => {
+      await props.saveTest(testCaseCopy);
+      message.success('Test saved');
+    };
+    if (props.testCase.instances.length > 0) {
+      const prop_fields: Array<keyof TestCaseType> = ['pointsPass', 'pointsFail'];
+      if (prop_fields.some((el) => testCaseCopy[el] !== props.testCase[el])) {
+        confirm({
+          title: <span>Are you sure you want to modify this TestCase? You have already run it on submissions.</span>,
+          content: 'This decision cannot be reversed.',
+          onOk() {
+            return new Promise((resolve, reject) => {
+              return resolve(execute());
+            }).catch(() => console.log('Oops errors!'));
+          },
+        });
+      } else {
+        execute();
+      }
+    } else {
+      execute();
+    }
   };
 
   /******************************* State Change Functions ****************************/
@@ -490,6 +517,27 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                     },
                   ],
                 })(<Switch disabled={this.props.isRunning} />)}
+              </Form.Item>
+              &nbsp; &nbsp;
+              <Form.Item label="Points on Pass">
+                {getFieldDecorator('pointsPass', {
+                  initialValue: testCase.pointsPass,
+                  rules: [
+                    {
+                      required: true,
+                    },
+                  ],
+                })(<InputNumber />)}
+              </Form.Item>
+              <Form.Item label="Points on Fail">
+                {getFieldDecorator('pointsFail', {
+                  initialValue: testCase.pointsFail,
+                  rules: [
+                    {
+                      required: true,
+                    },
+                  ],
+                })(<InputNumber />)}
               </Form.Item>
             </div>
             <Divider />

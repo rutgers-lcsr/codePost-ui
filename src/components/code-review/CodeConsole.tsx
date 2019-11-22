@@ -17,6 +17,8 @@ import Loading from '../core/Loading';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from '../../types/common';
 
+import { TestCaseType } from '../../infrastructure/types';
+
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CommentIO, CommentType, UiComment } from '../../infrastructure/comment';
 import { Course, CourseType } from '../../infrastructure/course';
@@ -328,6 +330,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     commentRubricComments: ICommentToRubricCommentMap,
     rubricCategories: RubricCategoryType[],
     files: FileType[],
+    submissionTests: SubmissionTestType[],
+    testCases: TestCaseType[],
   ): number => {
     // Get the set of fileIDs and commentIDs for the current files
     // This filters out any old file versions
@@ -340,11 +344,20 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return accumulator + current;
     }, 0);
 
+    /* grab latest submission tests */
+    const testPoints = SubmissionTest.getLatest(submissionTests)
+      .map((test) => {
+        const match = testCases.find((el) => el.id === test.testCase);
+        return test.passed ? match!.pointsPass : match!.pointsFail;
+      })
+      .reduce((el, acc) => el + acc, 0);
+    console.log(testPoints);
+
     let grade = 0;
     if (assignment.additiveGrading) {
-      grade = 0 - commentPoints - categoryPoints;
+      grade = 0 - commentPoints - categoryPoints + testPoints;
     } else {
-      grade = assignment.points - commentPoints - categoryPoints;
+      grade = assignment.points - commentPoints - categoryPoints + testPoints;
     }
 
     // Prevent floating point arithmetic causing weird rounding errors
@@ -559,6 +572,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             commentRubricComments,
             rubricCategories,
             files,
+            this.state.tests,
+            Object.values(this.state.testCases).flat(),
           );
         }
 
@@ -895,6 +910,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       this.state.commentRubricComments,
       this.state.rubricCategories,
       this.state.files,
+      this.state.tests,
+      Object.values(this.state.testCases).flat(),
     );
   };
 

@@ -13,6 +13,8 @@ import { SubmissionTest, SubmissionTestType } from '../../../infrastructure/subm
 import { TestCategoryType } from '../../../infrastructure/testCategory';
 import { TestCasesByCategory } from '../../core/testFetchUtils';
 
+import Badge from '../../core/Badge';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -50,8 +52,35 @@ const TestsMenu = (props: IProps) => {
     const latest = SubmissionTest.getLatest(testsByCategory[category.id]);
     const numPassed = latest.reduce((prev, newVal) => prev + (newVal.passed ? 1 : 0), 0);
     const numTotal = latest.length;
+
+    const cases = props.cases[category.id];
+    let positivePoints = 0;
+    let negativePoints = 0;
+    for (const test of latest) {
+      const myCase = cases.find((el) => el.id === test.testCase);
+      if (myCase !== undefined) {
+        const points = test.passed ? myCase.pointsPass : myCase.pointsFail;
+        if (points > 0) {
+          positivePoints += points;
+        } else {
+          negativePoints += points;
+        }
+      }
+    }
+
+    const badgeStyle = {
+      fontSize: 10,
+      padding: '0 2px',
+      opacity: props.isOpen ? 1 : 0.7,
+    };
+
     return {
-      category: category.name,
+      category: (
+        <span>
+          {category.name} <Badge hideZero={true} count={positivePoints} size="small" />
+          <Badge count={negativePoints} hideZero={true} size="small" />
+        </span>
+      ),
       passed: `${numPassed}/${numTotal}`,
     };
   });
