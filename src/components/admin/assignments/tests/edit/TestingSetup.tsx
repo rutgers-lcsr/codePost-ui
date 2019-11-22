@@ -128,6 +128,14 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
           });
         });
         break;
+      case FILE_TYPE.SOURCEFILE:
+        await SourceFile.delete(id);
+        setSourceFiles((prevState) => {
+          return prevState.filter((file) => {
+            return file.id !== id;
+          });
+        });
+        break;
     }
   };
 
@@ -168,7 +176,6 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         break;
       case FILE_TYPE.SOURCEFILE:
         const newSource = await SourceFile.update(payload);
-        console.log(newSource);
         setSourceFiles((prevState) => {
           const index = prevState.findIndex((f) => {
             return f.id === id;
@@ -239,6 +246,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
           env={env}
           updateEnv={setEnv}
           addFile={addFile}
+          deleteFile={deleteFile}
           updateFile={updateFile}
           solutions={solutions}
           helpers={helpers}
