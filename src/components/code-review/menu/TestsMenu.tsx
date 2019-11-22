@@ -69,11 +69,12 @@ const TestsMenu = (props: IProps) => {
         paddingLeft: '15px',
         paddingBottom: '10px',
         paddingRight: '15px',
+        paddingTop: '10px',
         backgroundColor: props.isOpen ? '#f0fff7' : undefined,
       }}
     >
       <div style={{ fontSize: 12, overflowX: 'auto' }}>
-        <Table dataSource={data} columns={columns} size="middle" pagination={false} bordered={false} />
+        <Table dataSource={data} columns={columns} size="small" pagination={false} bordered={false} />
       </div>
     </div>
   );
