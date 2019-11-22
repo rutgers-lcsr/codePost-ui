@@ -8,6 +8,9 @@ import * as React from 'react';
 /* antd imports */
 import { Badge, Table, Collapse, Statistic, Spin } from 'antd';
 
+/* other library imports */
+import ReactMarkdown from 'react-markdown';
+
 /* codePost imports */
 import { SubmissionTest, SubmissionTestType } from '../../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../../infrastructure/testCategory';
@@ -47,7 +50,13 @@ const TestsList = (props: IProps) => {
       title: 'Test Case',
       dataIndex: 'case',
       key: 'case',
-      width: '60%',
+      width: '20%',
+    },
+    {
+      title: 'Explanation',
+      dataIndex: 'explanation',
+      key: 'explanation',
+      width: '40%',
     },
     {
       title: 'Passed',
@@ -128,6 +137,7 @@ const TestsList = (props: IProps) => {
               ),
               points,
               logs: result ? result.logs : '--',
+              explanation: <ReactMarkdown>{testCase.explanation}</ReactMarkdown>,
             };
           });
 
