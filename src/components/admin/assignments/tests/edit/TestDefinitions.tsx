@@ -88,15 +88,21 @@ export const TestDefinitions = (props: IProps) => {
   /******************************* State Variables ****************************/
   const [casesByCategory, setCasesByCategory] = useState<TestCasesByCategory>({});
   const [categories, setCategories] = useState<TestCategoryType[]>([]);
-  const [panel, setPanel] = useState<DETAIL_TYPE>(DETAIL_TYPE.EditTests);
+
+  // Edit Tests variables
   const [activeTest, setActiveTest] = useState<TestCaseType | undefined>(undefined);
+
+  // Source Editor / Eject mode variables
   const [tests, setTests] = useState<TestTemplateType[]>([]);
   const [main, setMain] = useState('');
-  const [index, setIndex] = useState('0-0');
+  const [index, setIndex] = useState('0-0'); // file index <group>_<file index>
+  const [testResults, setTestResults] = useState<BasicTestResultType[]>([]);
+
+  // render variables
+  const [panel, setPanel] = useState<DETAIL_TYPE>(DETAIL_TYPE.EditTests);
   const [loading, setLoading] = useState(true);
 
-  const [sourceFiles, setSourceFiles] = useState<SourceFileType[]>([]);
-
+  // Submission / Solution code toggle variables
   const [activeSubmission, setActiveSubmission] = useState<SubmissionType | undefined>(undefined);
   const [currentFiles, setCurrentFiles] = useState<(SolutionFileType | FileType)[]>(props.solutions);
 
