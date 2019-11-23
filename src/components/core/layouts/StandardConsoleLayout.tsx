@@ -21,6 +21,8 @@ import { wait } from '../../../infrastructure/animation';
 
 import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
 
+import Slider from 'rc-slider';
+
 const { Content, Header, Sider } = Layout;
 
 export type ConsoleType = 'grade' | 'subheader';
@@ -49,14 +51,43 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
 
   const [defaultOpenMenus, setDefaultOpenMenus] = React.useState([0, 1, 2]);
 
-  let siderWidth =
-    windowSize.width < layoutVars.breakpoints.smallScreen.grade
-      ? layoutVars.maxWidths.gradeSiderSmallScreen
-      : layoutVars.maxWidths.gradeSiderNormal;
+  const [rubricWidth, setRubricWidth] = React.useState(300);
+  const minSiderWidth = 200;
 
-  if (props.editRubricMode) {
-    siderWidth = 700;
-  }
+  const onAfterChange = (result: number) => {
+    setRubricWidth(result + minSiderWidth);
+  };
+
+  const siderResizer = (
+    <div
+      style={{
+        backgroundColor: 'transparent',
+        position: 'absolute',
+        width: '100%',
+        left: minSiderWidth,
+        zIndex: 1,
+      }}
+    >
+      <Slider
+        min={0}
+        max={windowSize.width}
+        defaultValue={rubricWidth - minSiderWidth}
+        onAfterChange={onAfterChange}
+        handleStyle={[
+          {
+            backgroundColor: 'transparent',
+            border: '0px solid transparent',
+            borderRadius: 0,
+            cursor: 'col-resize',
+            height: `${windowSize.height - 80}px`,
+          },
+        ]}
+        trackStyle={[{ backgroundColor: 'transparent', height: '1px' }]}
+        railStyle={{ backgroundColor: 'transparent', height: '1px' }}
+        style={{ padding: '0px', height: '1px' }}
+      />
+    </div>
+  );
 
   const handleResize = async () => {
     if (window.innerHeight !== 0) {
@@ -194,8 +225,9 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
           {props.header}
         </Header>
         <Layout style={{ overflowX: 'auto' }}>
+          {siderResizer}
           <Sider
-            width={siderWidth}
+            width={rubricWidth}
             className="layout--standard-console__sider"
             style={{
               backgroundColor: consoleTheme.siderBg,
