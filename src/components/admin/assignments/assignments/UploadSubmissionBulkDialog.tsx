@@ -13,6 +13,8 @@ import { Button, Collapse, Divider, Modal, Progress, Steps, Switch, Table, Tag, 
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
 
+import LogViewer from '../../../../components/core/LogViewer';
+
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
 import { SubmissionType } from '../../../../infrastructure/submission';
@@ -792,11 +794,8 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
                       iconStyle={{ paddingLeft: 5 }}
                     />
                   </div>
-                  <ul>
-                    {this.state.errorPaths.map((el, i) => {
-                      return <li key={i}>{el}</li>;
-                    })}
-                  </ul>
+                  <LogViewer text={this.state.errorPaths.join('\n')} />
+
                   <br />
                 </div>
               </div>
