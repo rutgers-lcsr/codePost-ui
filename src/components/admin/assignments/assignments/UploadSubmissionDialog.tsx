@@ -14,18 +14,14 @@ import Select from 'react-select';
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
 
-import { File } from '../../../../infrastructure/file';
-
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
 
 import { IStudentSubmissionsDataTable } from '../../../../types/common';
 
-import { acceptedFilesSet, acceptedFilesString } from './AcceptedFileTypes';
+import { UploadFile } from 'antd/lib/upload/interface';
 
-import { resizeImage } from '../../other/AdminUtils';
-
-import JSZip from 'jszip';
+import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
 
 /**********************************************************************************************************************/
 
@@ -53,10 +49,10 @@ interface IState {
   selectedStudents: string[];
   selectedAssignment?: AssignmentType;
   // List of files in codePost format for upload
-  files: any[];
+  files: IProtoFileUpload[];
   // List of files in ant format. Required to make make the dialog a controlled list so we
   // can remove files from the list if they are not valid
-  fileList: any[];
+  fileList: UploadFile[];
   status: STATUS;
 
   rejectedFiles: string[];
@@ -154,24 +150,21 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
   };
 
-  public getPath = (webkitRelativePath: string) => {
-    const pathDirs = webkitRelativePath.split('/');
-    const filePath = pathDirs.length > 2 ? pathDirs.slice(1, pathDirs.length - 1).join('/') : null;
-    return filePath;
-  };
+  public onRemove = (file: UploadFile) => {
+    const protoFileUpload = fileToProtoFileUpload(file);
 
-  public onRemove = (file: any) => {
-    const filePath = this.getPath(file.webkitRelativePath);
-    const newFiles = this.state.files.filter((el) => {
-      return (el.name !== file.name || el.path !== filePath) && el.zipSource !== file.name;
+    const files = this.state.files.filter((f: IProtoFileUpload) => {
+      return (
+        f.longname !== protoFileUpload.longname &&
+        (f.zipSource === undefined || f.zipSource !== protoFileUpload.zipSource)
+      );
     });
 
-    const newFileList = this.state.fileList.filter((el) => {
-      const elPath = this.getPath(el.webkitRelativePath);
-      return el.name !== file.name || elPath !== filePath;
+    const fileList = this.state.fileList.filter((f: UploadFile) => {
+      return f.name !== protoFileUpload.longname;
     });
 
-    this.setState({ files: newFiles, fileList: newFileList });
+    this.setState({ files, fileList });
   };
 
   public changeStatus = (newStatus: STATUS) => {
@@ -223,26 +216,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     this.props.onCancel();
   };
 
-  public updateFileState = (fileName: string, filePath: string | null, data: any, zipSource?: string) => {
-    const newFiles = this.state.files.filter((f: any) => {
-      return f.name !== fileName || f.path !== filePath;
-    });
-
-    const cleanedData = typeof data === 'string' ? data.replace(/\0/g, '') : data;
-
-    this.setState({
-      files: [
-        ...newFiles,
-        {
-          name: fileName,
-          data: cleanedData,
-          path: filePath,
-          zipSource,
-        },
-      ],
-    });
-  };
-
   public render() {
     const { isVisible } = this.props;
     const { status } = this.state;
@@ -279,86 +252,35 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       case STATUS.NONE:
         // FIXME: this method of reading file contents relies on a race win, since
         // we need the fileReaders to finish before we hit upload.
+        const beforeUpload = async (file: any, fileList: UploadFile[]) => {
+          const ProtoFileUpload: IProtoFileUpload = fileToProtoFileUpload(file);
 
-        const beforeUpload = (file: any, fileList: any) => {
-          // Ignore hidden files
-          if (file.name[0] === '.') {
-            return false;
+          try {
+            const outputFiles = await readUploadedFile(file);
+
+            const newFileList = this.state.fileList.filter((f: UploadFile) => {
+              return f.name !== ProtoFileUpload.longname;
+            });
+
+            const newFiles = this.state.files.filter((f: IProtoFileUpload) => {
+              return !outputFiles
+                .map((outputFile: IProtoFileUpload) => {
+                  return outputFile.longname;
+                })
+                .includes(f.longname);
+            });
+
+            const newFileListItem = { ...file, name: ProtoFileUpload.longname };
+
+            this.setState({ fileList: [...newFileList, newFileListItem], files: [...newFiles, ...outputFiles] });
+          } catch (e) {
+            this.setState({ rejectedFiles: [...this.state.rejectedFiles, ProtoFileUpload.longname] });
+            message.error(e);
           }
 
-          const reader = new FileReader();
-          reader.onload = async () => {
-            const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
-            if (!acceptedFilesSet.has(`.${extension}`)) {
-              // message.error(`${file.name} cannot be uploaded because it is empty.`);
-              const joined = this.state.rejectedFiles.concat(file.name);
-              this.setState({ rejectedFiles: joined });
-              return;
-            }
-
-            if (reader.result) {
-              const newFileList = this.state.fileList.filter((f: any) => {
-                const fPath = this.getPath(f.webkitRelativePath);
-                // FIXME: New naming FileList Convention
-                return f.name !== file.name || fPath !== file.path;
-              });
-
-              const namedFile =
-                file.webkitRelativePath === ''
-                  ? file
-                  : { ...file, name: file.webkitRelativePath, webkitRelativePath: file.webkitRelativePath };
-              this.setState({
-                fileList: [...newFileList, namedFile],
-              });
-
-              if (reader.result instanceof ArrayBuffer) {
-                const new_zip = new JSZip();
-                new_zip.loadAsync(reader.result).then((zip: any) => {
-                  zip.forEach((relativePath: any, f: any) => {
-                    if (relativePath.startsWith('__MACOSX')) {
-                      return;
-                    }
-
-                    if (!f.dir) {
-                      f.async('string').then(async (content: any) => {
-                        const split = relativePath.split('/');
-                        const filePath = split.slice(0, split.length - 1).join('/');
-                        const fileName = split[split.length - 1];
-
-                        let data: any = content;
-                        if (['png', 'jpeg', 'jpg'].includes(File.extension(fileName)) && typeof data === 'string') {
-                          data = await resizeImage(data);
-                        }
-
-                        this.updateFileState(fileName, filePath, data, file.name);
-                      });
-                    }
-                  });
-                });
-              } else {
-                let data: any = reader.result;
-                if (['png', 'jpeg', 'jpg'].includes(File.extension(file.name)) && typeof data === 'string') {
-                  data = await resizeImage(data);
-                }
-
-                this.updateFileState(file.name, this.getPath(file.webkitRelativePath), data);
-              }
-            } else {
-              message.error(`${file.name} cannot be uploaded because it is empty.`);
-            }
-          };
-
-          if (['png', 'jpg', 'jpeg', 'pdf'].includes(File.extension(file.name))) {
-            reader.readAsDataURL(file);
-          } else if (file.type === 'application/zip') {
-            reader.readAsArrayBuffer(file);
-          } else {
-            reader.readAsText(file);
-          }
-
-          // prevent upload
-          return false;
+          return Promise.reject();
         };
+
         const studentOptions = this.buildStudentOptions(
           this.props.students,
           this.props.submissions,
@@ -435,18 +357,12 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 multiple={true}
                 onRemove={this.onRemove}
                 fileList={this.state.fileList}
-                accept={acceptedFilesString}
                 directory={this.state.uploadDirectory}
               >
                 <Button>
                   <Icon type="upload" /> Upload files
                 </Button>
               </Upload>
-              <CPTooltip
-                title={tooltips.admin.assignments.uploadSubmissionFileTypes}
-                infoIcon={true}
-                iconStyle={{ paddingLeft: 5 }}
-              />
             </div>
             <span>
               {unzippedFiles.length > 0 ? (

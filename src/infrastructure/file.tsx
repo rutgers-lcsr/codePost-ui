@@ -85,11 +85,7 @@ export class File {
   };
 
   public static extension = (filename: string): string => {
-    const l = filename.split('.').length;
-    if (l > 0) {
-      return filename.split('.')[l - 1];
-    }
-    return '';
+    return filename.slice(((filename.lastIndexOf('.') - 1) >>> 0) + 2);
   };
 }
 
