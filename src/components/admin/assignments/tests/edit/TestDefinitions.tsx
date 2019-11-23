@@ -290,6 +290,10 @@ export const TestDefinitions = (props: IProps) => {
     }
   };
 
+  const setResults = (results: BasicTestResultType[]) => {
+    setTestResults(results);
+  };
+
   /******************************* Misc ****************************/
 
   const download = () => {
@@ -316,26 +320,28 @@ export const TestDefinitions = (props: IProps) => {
   let menu;
   let content;
   let header;
-  let headerTitle;
+
+  const headerStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    background: '#ccc',
+    padding: '0 15px',
+    fontSize: '14px',
+    height: '30px',
+  };
 
   switch (panel) {
     case DETAIL_TYPE.ViewSource:
-      const bashFile = [{ name: 'main.sh', code: main, canSave: false, id: 0 }];
+      const bashFile = [{ name: 'main.sh', code: main, canSave: false, id: 0, type: FILE_TYPE.MAIN }];
 
       const helperFiles = props.helpers.map((file) => {
         return {
           id: file.id,
           name: file.name,
           code: file.code,
-          canSave: false,
-          title: (
-            <div>
-              {file.name} &nbsp;{' '}
-              <CPTooltip title="Helper file">
-                <Badge color={'purple'} />
-              </CPTooltip>
-            </div>
-          ),
+          canSave: true,
+          type: FILE_TYPE.HELPER,
         };
       });
 
@@ -344,147 +350,159 @@ export const TestDefinitions = (props: IProps) => {
           id: file.id,
           name: file.name,
           code: file.code,
-          canSave: false,
-          title: (
-            <div>
-              {file.name} &nbsp;{' '}
-              <CPTooltip title="Submission file">
-                <Badge color={'orange'} />
-              </CPTooltip>
-            </div>
-          ),
+          canSave: !activeSubmission,
+          type: activeSubmission ? FILE_TYPE.SUBMISSION : FILE_TYPE.SOLUTION,
         };
       });
 
-      const templates = tests.map((test) => {
-        if (test.id < 0) {
+      // filter out test templates for sourcefiles. We want to most up to date source files because
+      // we're editing them and the eject mode templates can be stale
+      const templates = tests
+        .filter((tc) => tc.errorIfMissing)
+        .map((template) => {
           return {
-            id: test.id,
-            code: test.code,
-            name: `_test${test.id}${test.extension}`,
+            id: template.id,
+            code: template.code,
+            name: template.name,
             canSave: false,
-            title: (
-              <div>
-                {`_test${test.id}${test.extension}`} &nbsp;{' '}
-                <CPTooltip title="User-written test">
-                  <Badge color={'lime'} />
-                </CPTooltip>
-              </div>
-            ),
+            type: FILE_TYPE.CODEPOST_TEST_FILE,
           };
-        }
+        });
+
+      const sourceFiles = props.sourceFiles.map((sourceFile) => {
         return {
-          id: test.id,
-          code: test.code,
-          name: `_Test${test.id}${test.extension}`,
-          canSave: false,
-          title: (
-            <div>
-              {`_Test${test.id}${test.extension}`} &nbsp;{' '}
-              <CPTooltip title="codePost generated test">
-                <Badge color={'green'} />
-              </CPTooltip>
-            </div>
-          ),
+          id: sourceFile.id,
+          code: sourceFile.code,
+          name: sourceFile.name,
+          canSave: true,
+          type: FILE_TYPE.SOURCEFILE,
         };
       });
 
-      const groups = [bashFile, helperFiles, submissionFiles, templates];
+      const groups = [bashFile, helperFiles, submissionFiles, templates, sourceFiles];
 
-      const groupElems = groups.map((group: IFileType[], groupIndex) => {
+      const groupElems = groups.map((group: IBasicFile[], groupIndex) => {
         return group.map((file, fileIndex) => {
           return (
             <Menu.Item key={`${groupIndex}-${fileIndex}`} style={{ height: 'fit-content', minHeight: 40 }}>
-              <div>{file.title || file.name}</div>
+              <FileTag type={file.type} small={true} />
+              &nbsp;
+              {file.name}
             </Menu.Item>
           );
         });
       });
 
+      header = (
+        <div style={headerStyle}>
+          Source Files
+          <div>
+            <AddFileModal addFile={props.addFile} icon={true} />
+            &nbsp; &nbsp;
+            <Icon type="download" onClick={download} />
+          </div>
+        </div>
+      );
       menu = (
-        <Collapse expandIconPosition="right" bordered={false}>
-          <Collapse.Panel
-            header={
-              <div style={{ padding: '0px 10px 5px 0px' }}>
-                <div className="cp-label cp-label--plus cp-label--bold">Source Files</div>
-              </div>
-            }
-            key="1"
-          >
-            <Menu onClick={changeIndex} mode="inline" selectedKeys={[index]}>
-              {groupElems}
-            </Menu>
-          </Collapse.Panel>
-          <Collapse.Panel
-            header={
-              <div style={{ padding: '0px 10px 5px 0px' }}>
-                <div className="cp-label cp-label--plus cp-label--bold">Source Files</div>
-              </div>
-            }
-            key="2"
-          ></Collapse.Panel>
-        </Collapse>
+        <div>
+          <Menu onClick={changeIndex} mode="inline" selectedKeys={[index]}>
+            {groupElems}
+          </Menu>
+          <div onClick={setIndex.bind({}, 'tests')}>
+            <div style={{ ...headerStyle, marginTop: 10 }}>TestResults</div>
+            <TestsMenu tests={testResults} cases={casesByCategory} categories={categories} isOpen={index === 'tests'} />
+          </div>
+        </div>
       );
 
-      const currentGroupIndex = parseInt(index.split('-')[0], 10);
-      const currentFileIndex = parseInt(index.split('-')[1], 10);
+      if (index === 'tests') {
+        content = (
+          <div style={{ width: '100%' }}>
+            <TestsList tests={testResults} cases={casesByCategory} categories={categories} />
+          </div>
+        );
+      } else {
+        const currentGroupIndex = parseInt(index.split('-')[0], 10);
+        const currentFileIndex = parseInt(index.split('-')[1], 10);
 
-      const currentGroup = groups[currentGroupIndex];
-      const currentFile = currentGroup[currentFileIndex];
+        const currentGroup = groups[currentGroupIndex];
+        const currentFile = currentGroup[currentFileIndex];
+        content = (
+          <SourceEditor
+            categories={categories}
+            casesByCategory={casesByCategory}
+            sourceFiles={props.sourceFiles}
+            currentFile={currentFile}
+            setResults={setResults}
+            setTestSubject={setTestSubject}
+            submissions={props.submissions}
+            updateFile={props.updateFile}
+            addCategory={addCategory}
+            deleteCategory={deleteCategory}
+            addTest={addTest}
+            deleteTest={deleteTest}
+            activeSubmission={activeSubmission}
+            updateEnv={props.updateEnv}
+            env={props.env}
+          />
+        );
+      }
 
-      content = (
-        <SourceEditor
-          categories={categories}
-          casesByCategory={casesByCategory}
-          sourceFiles={sourceFiles}
-          currentFile={currentFile}
-        />
-      );
-
-      header = <div />;
-      headerTitle = 'Source Files';
       break;
     case DETAIL_TYPE.EditTests:
+      header = (
+        <div style={headerStyle}>
+          Tests
+          <div>
+            <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} icon={true} />
+            &nbsp; &nbsp;
+            <AddTestModal addTest={addTest.bind({}, props.env ? props.env.language : '')} categories={categories} />
+            &nbsp; &nbsp;
+          </div>
+        </div>
+      );
       menu = (
-        <Menu
-          defaultOpenKeys={categories.map((el) => el.id.toString())}
-          mode="inline"
-          selectedKeys={activeTest ? [activeTest.id.toString()] : []}
-          style={{ height: '100%' }}
-        >
-          {TestCategory.sort(categories).map((category) => {
-            return (
-              <Menu.SubMenu
-                key={category.id}
-                title={
-                  <span>
-                    {category.name}{' '}
-                    <EditCategoryModal
-                      testCategory={category}
-                      updateCategory={updateCategory}
-                      deleteCategory={deleteCategory}
-                      externalOnly={externalOnly}
-                    />{' '}
-                  </span>
-                }
-              >
-                {category.id in casesByCategory
-                  ? TestCase.sort(casesByCategory[category.id]).map((el) => (
-                      <Menu.Item
-                        key={el.id}
-                        style={{ height: 'fit-content', minHeight: 40 }}
-                        onClick={() => {
-                          setActiveTest(el);
-                        }}
-                      >
-                        {el.description}
-                      </Menu.Item>
-                    ))
-                  : null}
-              </Menu.SubMenu>
-            );
-          })}
-        </Menu>
+        <div>
+          <Menu
+            defaultOpenKeys={categories.map((el) => el.id.toString())}
+            mode="inline"
+            selectedKeys={activeTest ? [activeTest.id.toString()] : []}
+            style={{ height: '100%' }}
+          >
+            {TestCategory.sort(categories).map((category) => {
+              return (
+                <Menu.SubMenu
+                  key={category.id}
+                  title={
+                    <span>
+                      {category.name}{' '}
+                      <EditCategoryModal
+                        testCategory={category}
+                        updateCategory={updateCategory}
+                        deleteCategory={deleteCategory}
+                        externalOnly={externalOnly}
+                      />{' '}
+                    </span>
+                  }
+                >
+                  {category.id in casesByCategory
+                    ? TestCase.sort(casesByCategory[category.id]).map((el) => (
+                        <Menu.Item
+                          key={el.id}
+                          style={{ height: 'fit-content', minHeight: 40 }}
+                          onClick={() => {
+                            setActiveTest(el);
+                          }}
+                        >
+                          {el.description}
+                        </Menu.Item>
+                      ))
+                    : null}
+                </Menu.SubMenu>
+              );
+            })}
+          </Menu>
+        </div>
       );
 
       content = (
@@ -506,27 +524,6 @@ export const TestDefinitions = (props: IProps) => {
             )}
           </div>
         </Content>
-      );
-      header = (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            background: '#ccc',
-            padding: '0 15px',
-            fontSize: '14px',
-            height: '30px',
-          }}
-        >
-          Tests
-          <div>
-            <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} icon={true} />
-            &nbsp; &nbsp;
-            <AddTestModal addTest={addTest.bind({}, props.env ? props.env.language : '')} categories={categories} />
-            &nbsp; &nbsp;
-          </div>
-        </div>
       );
   }
 
@@ -556,19 +553,7 @@ export const TestDefinitions = (props: IProps) => {
                   {panel === DETAIL_TYPE.ViewSource ? 'Edit tests' : 'View source'}
                 </Button>
               )}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  background: '#ccc',
-                  padding: '0 15px',
-                  fontSize: '14px',
-                  height: '30px',
-                }}
-              >
-                {header}
-              </div>
+              {header}
               {menu}
             </Sider>
             {hasTests ? (
