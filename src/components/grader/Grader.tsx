@@ -221,6 +221,7 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
           render={(props: any) => (
             <GraderNav
               {...props}
+              baseURL={this.props.match.url}
               collapsed={collapsed}
               isSuperGrader={this.state.isSuperGrader}
               isSectionLeader={this.state.sectionsLed.length > 0}

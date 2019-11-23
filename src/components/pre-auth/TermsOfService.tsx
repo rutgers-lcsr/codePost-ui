@@ -47,6 +47,16 @@ class TermsOfService extends React.Component<IProps, {}> {
           <Typography.Paragraph>
             By accessing or using the Site and/or using one or more Services, you agree to these Terms. These Terms are
             a legal agreement between you and codePost.
+            
+            In addition, by accessing or using the Site and/or using one or more Services, you represent that you are over
+            the age of sixteen (16) years old if residing in the European Union, fourteen (14) years old if residing in Spain
+            or South Korea, or thirteen (13) years old if residing anywhere else (the “Minimum Age”). If your age exceeds the
+            Minimum age but is under the legal age of majority wherever you reside, a parent or legal guardian of yours
+            must consent to these Terms and our Privacy Policy. In addition, this same parent or legal guaradian must affirm
+            that he or she accepts these Terms on behalf of, as well as bear all legal and financial responsibility and
+            liability for the actions of, the child accessing the Site and/or using one or more Services whose 
+            age falls between the Minimum Age and majority. This same parent or legal guardian must expressly ratify and
+            confirm any acts of the child and all users of the account corresponding to the child.
           </Typography.Paragraph>
           <Typography.Title level={4}>1. Modification</Typography.Title>
           <Typography.Paragraph>

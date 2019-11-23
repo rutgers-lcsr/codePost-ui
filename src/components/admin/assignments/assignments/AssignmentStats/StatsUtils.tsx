@@ -308,7 +308,7 @@ export const getDrawerTitle = (type: DRAWER_TYPE, contentLength: number) => {
     case DRAWER_TYPE.Submitted:
       return `Total Submissions (${contentLength})`;
     case DRAWER_TYPE.Graded:
-      return `Done Submissions (${contentLength})`;
+      return `Finalized Submissions (${contentLength})`;
     case DRAWER_TYPE.InProgress:
       return `Draft Submissions (${contentLength})`;
     case DRAWER_TYPE.Unclaimed:
@@ -373,6 +373,7 @@ export const StatsDrawer = (props: {
     };
 
     return {
+      key: el.email,
       students: el.email,
       open: el.subID ? (
         // eslint-disable-next-line jsx-a11y/anchor-is-valid

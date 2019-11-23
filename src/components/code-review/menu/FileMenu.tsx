@@ -35,6 +35,8 @@ import { getOperatingSystem, osControlKey, OS } from '../../core/operatingSystem
 
 import { sendSlack } from '../../core/slack';
 
+import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
+
 const { SubMenu } = Menu;
 
 /*************************************** Helper Interfaces for Directory rendering ******************************/
@@ -83,7 +85,11 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
       sortedFiles,
       oldVersionsMap,
     };
-    if (sortedFiles.length > 0) {
+
+    const autosettedFile = sortedFiles.find((f: FileType) => {
+      return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
+    });
+    if (autosettedFile === undefined && sortedFiles.length > 0) {
       // If the file has a directory, then the order of the files in the UI might be different than the order passed in
       // After getting the order, we want to change the selected file to be the first in the list
       this.props.changeSelectedFile(sortedFiles[0].id);
@@ -326,13 +332,13 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     let bonusBadge = null;
 
     if (deductions > 0) {
-      deductionBadge = <Badge count={deductions * -1} faded={faded} size="small" />;
+      deductionBadge = <Badge count={parseFloat((deductions * -1).toFixed(2))} faded={faded} size="small" />;
     } else {
       deductionBadge = null;
     }
 
     if (bonuses > 0) {
-      bonusBadge = <Badge count={bonuses} faded={faded} size="small" />;
+      bonusBadge = <Badge count={parseFloat(bonuses.toFixed(2))} faded={faded} size="small" />;
     } else {
       bonusBadge = null;
     }

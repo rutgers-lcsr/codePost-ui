@@ -55,7 +55,7 @@ import {
 
 import SendEmailModal from '../other/SendEmailModal';
 
-import { encodeForReactRouter } from '../../core/URLutils';
+import { encodeForLink } from '../../core/URLutils';
 
 const { Text } = Typography;
 const SubMenu = Menu.SubMenu;
@@ -70,7 +70,7 @@ export interface IManageAssignmentsProps {
   submissions: IAssignmentToSubmissionsMap;
   students: string[]; // emails
   submissionsByStudent: IStudentSubmissionsDataTable;
-  currentCourse: CourseType | undefined;
+  currentCourse: CourseType;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 
   /* loading state */
@@ -172,6 +172,10 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
     });
   };
 
+  public closeDrawer = () => {
+    this.setState({ drawerType: undefined });
+  };
+
   /******************************************************************************
    * Detail callbacks
    ******************************************************************************/
@@ -194,7 +198,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
     // Note: this call to setState is futile, because the component will be reloaded when
     // new route is pushed to this.props.history
     this.setState({ activeStudent: student }, () => {
-      this.props.history.push(`${this.props.baseURL}/${encodeForReactRouter(assignmentName)}/upload/single`);
+      this.props.history.push(`${this.props.baseURL}/${encodeForLink(assignmentName)}/upload/single`);
     });
   };
 
@@ -313,7 +317,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
 
     data = this.state.assignments.map((assignment, i) => {
       const statsForRow = assignmentStats[assignment.id];
-      const encodedName = encodeForReactRouter(assignment.name);
+      const encodedName = encodeForLink(assignment.name);
       const menu = (
         <Menu>
           <Menu.Item key="1">
@@ -394,11 +398,26 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
         </Menu>
       );
 
-      let publishToggleText = '';
+      let publishToggleText: React.ReactElement | string = '';
       if (assignment.isReleased) {
         publishToggleText = 'Are you sure you want to un-publish this assignment?';
       } else {
-        publishToggleText = 'Are you sure you want to publish this assignment?';
+        const stats = assignmentStats[assignment.id];
+        const finalizedRatio = stats.numSubmissions !== 0 ? stats.numGraded / stats.numSubmissions : 1;
+        if (!assignment.liveFeedbackMode && finalizedRatio < 0.5) {
+          publishToggleText = (
+            <div>
+              <div style={{ paddingBottom: '4px', maxWidth: '260px' }}>
+                Are you sure you want to publish this assignment?
+              </div>
+              <div style={{ paddingBottom: '4px', maxWidth: '260px' }}>
+                The majority of your submissions are still unfinalized, so students will not be able to view them.
+              </div>
+            </div>
+          );
+        } else {
+          publishToggleText = 'Are you sure you want to publish this assignment?';
+        }
       }
 
       const notifyButton = (toggleDialog: () => void) => {
@@ -493,7 +512,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
           type={this.state.drawerType}
           content={this.state.drawerContent}
           isVisible={true}
-          onClose={cancel}
+          onClose={this.closeDrawer}
           uploadSubmission={this.uploadForStudent}
         />
       );
@@ -507,8 +526,9 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
               isVisible={true}
               onCancel={cancel}
               onSave={this.saveSettings}
-              currentAssignment={this.props.activeAssignment}
+              currentAssignment={this.props.activeAssignment!}
               assignments={this.props.assignments}
+              timezone={this.props.currentCourse.timezone}
             />
           );
           break;

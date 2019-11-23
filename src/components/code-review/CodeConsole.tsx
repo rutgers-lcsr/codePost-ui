@@ -74,6 +74,8 @@ import { demoFiles } from './demoCode';
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 
+import { CourseContext, defaultCourse } from '../core/Contexts';
+
 /**********************************************************************************************************************/
 
 /* f(logged in user, submission) */
@@ -93,6 +95,7 @@ interface ICodeConsoleState {
   codeVerticalOffset: number;
   dimensions: CodeConsoleDimensionsType;
   isStudent: boolean;
+  showExplanations: boolean;
 
   /* submissions data for readers and writers */
   readOnlySubmission?: StudentSubmissionType;
@@ -120,6 +123,7 @@ interface ICodeConsoleState {
   commentCounter: number;
 
   rubricReload?: number;
+  noSave?: boolean;
 }
 
 export interface ICodeConsoleProps {
@@ -367,6 +371,26 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     return [currentFileSet, currentCommentSet];
   };
 
+  public static fileBouncer = (files: FileType[]) => {
+    const max_size_bytes = 500000;
+
+    return files.map((file: FileType) => {
+      const size_bytes = new TextEncoder().encode(file.code).length;
+
+      const bounce =
+        !['.pdf', 'pdf', 'jpg', '.jpg', 'jpeg', '.jpeg', 'png', '.png', 'ipynb', '.ipynb'].includes(file.extension) &&
+        size_bytes > max_size_bytes;
+      if (bounce) {
+        return {
+          ...file,
+          code: `This file is over the codePost allowable size (${max_size_bytes /
+            1000000}MB).\n\nPlease compress the file or contact team@codepost.io.`,
+        };
+      }
+      return file;
+    });
+  };
+
   /***********************************************************************************************/
   /* Component instance
   /***********************************************************************************************/
@@ -406,6 +430,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       commentCounter: -1,
 
       rubricReload: undefined,
+      showExplanations: false,
     };
   }
 
@@ -422,13 +447,19 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     // Set window title
     const submissionID: number = +this.props.match.params.submissionId.valueOf();
-    document.title = `codePost | Submission - ${submissionID}`;
 
     let permissionLevel = await this.detectPermissionType(submissionID);
 
     const values = queryString.parse(this.props.location.search);
+    let simulatingStudent = false;
     if (permissionLevel === PERMISSION_LEVEL.WRITE && values.student !== undefined) {
       permissionLevel = PERMISSION_LEVEL.READ;
+      simulatingStudent = true;
+    }
+
+    let noSave = false;
+    if (values.noSave !== undefined) {
+      noSave = true;
     }
 
     // Everything we need to load
@@ -440,6 +471,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let course;
     let rubricCategories;
     let rubricComments;
+    let selectedFile;
 
     switch (permissionLevel) {
       case PERMISSION_LEVEL.NOT_FOUND:
@@ -459,14 +491,27 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           Submission.loadData(submission),
           this.loadRubric(submission.assignment),
         ]);
+
+        document.title = `${submissionID}-Submission [${assignment.name}]`;
+
         course = await Course.read(assignment.course);
 
         files = files.sort((a, b) => {
           return a.name.localeCompare(b.name);
         });
 
+        files = CodeConsole.fileBouncer(files);
+
+        selectedFile = files.find((f: FileType) => {
+          return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
+        });
+        if (selectedFile === undefined && files.length > 0) {
+          selectedFile = files[0];
+        }
+
         // then store it in state
         this.setState({
+          noSave,
           assignment,
           course,
           readOnlySubmission: submission,
@@ -475,9 +520,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           commentRubricComments,
           rubricCategories,
           isLoading: false,
-          selectedFile: files.length > 0 ? files[0] : undefined,
+          selectedFile,
           permissionLevel,
-          isStudent: submission.students !== undefined && submission.students.indexOf(this.props.user.email) > -1,
+          isStudent:
+            simulatingStudent ||
+            (submission.students !== undefined && submission.students.indexOf(this.props.user.email) > -1),
         });
         break;
 
@@ -494,6 +541,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           Submission.loadData(writableSubmission),
           this.loadRubric(writableSubmission.assignment),
         ]);
+
+        document.title = `${submissionID}-Submission [${assignment.name}]`;
+
         course = await Course.read(assignment.course);
         let fileTemplates;
         if (assignment.templateMode) {
@@ -520,8 +570,23 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           );
         }
 
+        files = files.sort((a, b) => {
+          return a.name.localeCompare(b.name);
+        });
+
+        files = CodeConsole.fileBouncer(files);
+
+        selectedFile = files.find((f: FileType) => {
+          return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
+        });
+
+        if (selectedFile === undefined && files.length > 0) {
+          selectedFile = files[0];
+        }
+
         this.setState(
           {
+            noSave,
             assignment,
             course,
             submission: writableSubmission,
@@ -532,7 +597,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             rubricComments,
             graders,
             isLoading: false,
-            selectedFile: files.length > 0 ? files[0] : undefined,
+            selectedFile,
             permissionLevel,
             fileTemplates,
           },
@@ -634,7 +699,21 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     const selectedFile = this.state.files.find((file: FileType) => {
       return file.id === fileID;
     });
+    if (selectedFile !== undefined) {
+      LOCAL_SETTINGS.mostRecentFile.setter(selectedFile.id);
+    }
     this.setState({ selectedFile, activeCommentID: undefined });
+  };
+
+  public toggleShowExplanations = () => {
+    this.setState(
+      (oldState: ICodeConsoleState) => {
+        return { showExplanations: !oldState.showExplanations };
+      },
+      () => {
+        message.info(`Now showing rubric comment ${this.state.showExplanations ? 'explanations' : 'text'}`);
+      },
+    );
   };
 
   /***********************************************************************************
@@ -692,7 +771,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let savedComment: CommentType = comment;
     let oldCommentIDs = this.state.oldCommentIDs;
 
-    if (!this.props.inDemoMode) {
+    if (!this.props.inDemoMode && !this.state.noSave) {
       if (comment.id < 0) {
         savedComment = await CommentIO.create(comment);
         oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
@@ -744,7 +823,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public deleteComment = async (comment: CommentType) => {
-    if (comment.id > 0 && !this.props.inDemoMode) {
+    if (comment.id > 0 && !this.props.inDemoMode && !this.state.noSave) {
       await CommentIO.delete(comment.id).then(() => this.updateSubmissionGrade());
     }
 
@@ -848,7 +927,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return;
     }
 
-    if (this.props.inDemoMode) {
+    if (this.props.inDemoMode || this.state.noSave) {
       this.setState(
         (oldState: ICodeConsoleState) => {
           // We need to update the submission object in the same way it would be updated
@@ -967,6 +1046,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       forcedRubricMode: false,
       templateMode: false,
       fileTemplates: [],
+      showFrequentlyUsedRubricComments: false,
+      allowLateUploads: false,
     };
 
     const demoCourse: CourseType = {
@@ -1055,6 +1136,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           comments: [],
           pointDelta: 1,
           sortKey: 0,
+          explanation: '',
         },
         {
           id: 2,
@@ -1063,6 +1145,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           comments: [],
           pointDelta: 1,
           sortKey: 1,
+          explanation: '',
         },
         {
           id: 3,
@@ -1071,6 +1154,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           comments: [],
           pointDelta: 1,
           sortKey: 2,
+          explanation: '',
         },
       ],
       2: [
@@ -1081,6 +1165,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           comments: [],
           pointDelta: 2,
           sortKey: 0,
+          explanation: '',
         },
         {
           id: 5,
@@ -1089,6 +1174,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           comments: [],
           pointDelta: 1,
           sortKey: 0,
+          explanation: '',
         },
       ],
     };
@@ -1203,7 +1289,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let sider: React.ReactElement[] = [];
 
     const toolbarWidgets = [];
-    if (!this.props.inDemoMode) {
+    if (!this.props.inDemoMode && !this.state.noSave) {
       const hasComments =
         this.state.selectedFile !== undefined ? this.state.comments[this.state.selectedFile.id].length > 0 : false;
 
@@ -1295,6 +1381,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           const demoComments = (
             <GradeComments
               isStudent={this.state.isStudent}
+              showExplanations={this.state.showExplanations}
               comments={this.state.comments[this.state.selectedFile!.id]}
               rubricComments={this.state.commentRubricComments}
               readOnly={this.state.submission!.isFinalized}
@@ -1375,6 +1462,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 turnOffReload: this.turnOffReload,
                 canUserEdit: true, // showcase in-console rubric editing in demo
                 demoMode: true,
+                showExplanations: this.state.showExplanations,
+                showFrequent:
+                  this.state.assignment !== undefined ? this.state.assignment.showFrequentlyUsedRubricComments : false,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
@@ -1384,7 +1474,19 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         siderTitles = ['Submission Info', fileMenuTitle, 'Rubric'];
 
         leftHeader = [
-          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
+          <HeaderMenu
+            key="menu"
+            claimSubmission={this.claimSubmission}
+            isStudent={this.state.isStudent}
+            toggleShowExplanations={this.toggleShowExplanations}
+            showExplanations={this.state.showExplanations}
+            hasExplanations={Object.values(this.state.rubricComments)
+              .flat()
+              .some((el) => el.explanation)}
+            isAdmin={this.isCourseAdmin(this.state.assignment)}
+            course={this.state.course}
+            assignment={this.state.assignment}
+          />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
         ];
 
@@ -1451,7 +1553,19 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         }
 
         leftHeader = [
-          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
+          <HeaderMenu
+            key="menu"
+            claimSubmission={this.claimSubmission}
+            isStudent={this.state.isStudent}
+            toggleShowExplanations={this.toggleShowExplanations}
+            showExplanations={this.state.showExplanations}
+            hasExplanations={Object.values(this.state.rubricComments)
+              .flat()
+              .some((el) => el.explanation)}
+            isAdmin={this.isCourseAdmin(this.state.assignment)}
+            course={this.state.course}
+            assignment={this.state.assignment}
+          />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
         ];
 
@@ -1480,7 +1594,19 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         siderTitles = ['Submission Info', fileMenuTitle];
       } else {
         leftHeader = [
-          <HeaderMenu key="menu" claimSubmission={this.claimSubmission} isStudent={this.state.isStudent} />,
+          <HeaderMenu
+            key="menu"
+            claimSubmission={this.claimSubmission}
+            isStudent={this.state.isStudent}
+            toggleShowExplanations={this.toggleShowExplanations}
+            showExplanations={this.state.showExplanations}
+            hasExplanations={Object.values(this.state.rubricComments)
+              .flat()
+              .some((el) => el.explanation)}
+            isAdmin={this.isCourseAdmin(this.state.assignment)}
+            course={this.state.course}
+            assignment={this.state.assignment}
+          />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
           <StatusTags
             key="tag"
@@ -1530,6 +1656,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           const comments = (
             <GradeComments
               isStudent={this.state.isStudent}
+              showExplanations={this.state.showExplanations}
               comments={this.state.comments[this.state.selectedFile!.id]}
               rubricComments={this.state.commentRubricComments}
               readOnly={this.state.submission!.isFinalized}
@@ -1608,7 +1735,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 turnOffReload: this.turnOffReload,
                 canUserEdit:
                   this.isCourseAdmin(this.state.assignment) || this.state.assignment!.collaborativeRubricMode,
-                demoMode: false,
+                demoMode: this.state.noSave === true,
+                showExplanations: this.state.showExplanations,
+                showFrequent:
+                  this.state.assignment !== undefined ? this.state.assignment.showFrequentlyUsedRubricComments : false,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
@@ -1630,28 +1760,30 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           onUploadConfirm={this.loadDemoData}
           onCancel={cancelFunc}
         />
-        <StandardConsoleLayout
-          consoleTypes={['grade']}
-          header={
-            <CPFlex
-              style={{
-                padding: '0 15',
-                height: 49,
-                fontSize: 12,
-                overflow: 'initial',
-              }}
-              left={leftHeader}
-              right={rightHeader}
-              middle={middleHeader}
-              gutterSize={20}
-              className={theme}
-            />
-          }
-          sider={sider}
-          siderTitles={siderTitles}
-          content={content}
-          editRubricMode={this.state.editRubricMode}
-        />
+        <CourseContext.Provider value={this.state.course || defaultCourse}>
+          <StandardConsoleLayout
+            consoleTypes={['grade']}
+            header={
+              <CPFlex
+                style={{
+                  padding: '0 15',
+                  height: 49,
+                  fontSize: 12,
+                  overflow: 'initial',
+                }}
+                left={leftHeader}
+                right={rightHeader}
+                middle={middleHeader}
+                gutterSize={20}
+                className={theme}
+              />
+            }
+            sider={sider}
+            siderTitles={siderTitles}
+            content={content}
+            editRubricMode={this.state.editRubricMode}
+          />
+        </CourseContext.Provider>
       </div>
     );
   }

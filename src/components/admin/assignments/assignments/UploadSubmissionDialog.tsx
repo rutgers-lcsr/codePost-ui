@@ -25,6 +25,8 @@ import { acceptedFilesSet, acceptedFilesString } from './AcceptedFileTypes';
 
 import { resizeImage } from '../../other/AdminUtils';
 
+import JSZip from 'jszip';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -142,7 +144,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               /* eslint-disable no-multi-str */
               message.error(
                 'Sorry, something went wrong. Please try uploading again.\
-                If the problem persists, contact the codePost tean.',
+                If the problem persists, contact the codePost team.',
               );
               /* eslint-enable no-multi-str */
               this.cancel();
@@ -161,8 +163,9 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   public onRemove = (file: any) => {
     const filePath = this.getPath(file.webkitRelativePath);
     const newFiles = this.state.files.filter((el) => {
-      return el.name !== file.name || el.path !== filePath;
+      return (el.name !== file.name || el.path !== filePath) && el.zipSource !== file.name;
     });
+
     const newFileList = this.state.fileList.filter((el) => {
       const elPath = this.getPath(el.webkitRelativePath);
       return el.name !== file.name || elPath !== filePath;
@@ -220,6 +223,26 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     this.props.onCancel();
   };
 
+  public updateFileState = (fileName: string, filePath: string | null, data: any, zipSource?: string) => {
+    const newFiles = this.state.files.filter((f: any) => {
+      return f.name !== fileName || f.path !== filePath;
+    });
+
+    const cleanedData = typeof data === 'string' ? data.replace(/\0/g, '') : data;
+
+    this.setState({
+      files: [
+        ...newFiles,
+        {
+          name: fileName,
+          data: cleanedData,
+          path: filePath,
+          zipSource,
+        },
+      ],
+    });
+  };
+
   public render() {
     const { isVisible } = this.props;
     const { status } = this.state;
@@ -274,38 +297,61 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             }
 
             if (reader.result) {
-              let result: any = reader.result;
-              if (['png', 'jpeg', 'jpg'].includes(File.extension(file.name)) && typeof result === 'string') {
-                result = await resizeImage(result);
-              }
+              const newFileList = this.state.fileList.filter((f: any) => {
+                const fPath = this.getPath(f.webkitRelativePath);
+                // FIXME: New naming FileList Convention
+                return f.name !== file.name || fPath !== file.path;
+              });
 
-              const filePath = this.getPath(file.webkitRelativePath);
-              const newFiles = this.state.files.filter((el) => {
-                return el.name !== file.name || el.path !== filePath;
-              });
-              const newFileList = this.state.fileList.filter((el) => {
-                const elPath = this.getPath(el.webkitRelativePath);
-                return el.name !== file.name || elPath !== filePath;
-              });
-              const cleanedData = typeof result === 'string' ? result.replace(/\0/g, '') : result;
+              const namedFile =
+                file.webkitRelativePath === ''
+                  ? file
+                  : { ...file, name: file.webkitRelativePath, webkitRelativePath: file.webkitRelativePath };
               this.setState({
-                files: [
-                  ...newFiles,
-                  {
-                    name: file.name,
-                    data: cleanedData,
-                    path: filePath,
-                  },
-                ],
-                fileList: [...newFileList, file],
+                fileList: [...newFileList, namedFile],
               });
+
+              if (reader.result instanceof ArrayBuffer) {
+                const new_zip = new JSZip();
+                new_zip.loadAsync(reader.result).then((zip: any) => {
+                  zip.forEach((relativePath: any, f: any) => {
+                    if (relativePath.startsWith('__MACOSX')) {
+                      return;
+                    }
+
+                    if (!f.dir) {
+                      f.async('string').then(async (content: any) => {
+                        const split = relativePath.split('/');
+                        const filePath = split.slice(0, split.length - 1).join('/');
+                        const fileName = split[split.length - 1];
+
+                        let data: any = content;
+                        if (['png', 'jpeg', 'jpg'].includes(File.extension(fileName)) && typeof data === 'string') {
+                          data = await resizeImage(data);
+                        }
+
+                        this.updateFileState(fileName, filePath, data, file.name);
+                      });
+                    }
+                  });
+                });
+              } else {
+                let data: any = reader.result;
+                if (['png', 'jpeg', 'jpg'].includes(File.extension(file.name)) && typeof data === 'string') {
+                  data = await resizeImage(data);
+                }
+
+                this.updateFileState(file.name, this.getPath(file.webkitRelativePath), data);
+              }
             } else {
               message.error(`${file.name} cannot be uploaded because it is empty.`);
             }
           };
 
-          if (['png', 'jpg', 'jpeg'].includes(File.extension(file.name))) {
+          if (['png', 'jpg', 'jpeg', 'pdf'].includes(File.extension(file.name))) {
             reader.readAsDataURL(file);
+          } else if (file.type === 'application/zip') {
+            reader.readAsArrayBuffer(file);
           } else {
             reader.readAsText(file);
           }
@@ -343,6 +389,8 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               </div>
             </div>
           );
+
+        const unzippedFiles = this.state.files.filter((el) => el.zipSource !== undefined);
 
         content = (
           <div>
@@ -400,6 +448,17 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 iconStyle={{ paddingLeft: 5 }}
               />
             </div>
+            <span>
+              {unzippedFiles.length > 0 ? (
+                <span>
+                  <br />
+                  <b>The following files will be unzipped on upload:</b>{' '}
+                  {unzippedFiles.map((el) => `${el.path}/${el.name}`).join(', ')}
+                </span>
+              ) : (
+                <div />
+              )}
+            </span>
             <br />
             {rejectedFiles}
           </div>

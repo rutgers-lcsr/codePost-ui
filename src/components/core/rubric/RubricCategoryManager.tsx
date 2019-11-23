@@ -84,6 +84,7 @@ export interface IRubricCategoryManagerProps extends IWithWindowWatcherProps {
   commentFeedbackOn: boolean;
   showPointLimits: boolean;
   showHelpText: boolean;
+  showExplanations: boolean;
 
   children: (params: IRubricCategoryManagerParams) => React.ReactNode;
 }
@@ -383,7 +384,7 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
       const payload: RubricCommentType = { ...rubricComment };
       this.props.updateComment(payload);
 
-      if (text !== match.text || pointDelta !== match.pointDelta) {
+      if (text !== match.text || pointDelta !== match.pointDelta || rubricComment.explanation !== match.explanation) {
         const hasCurrentError = this.state.hasError || this.state.hasCommentError;
         if (hasCurrentError && !this.state.hasError && valid) {
           // moving from error state to safe state
@@ -412,8 +413,8 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
       if (savedRubricComment) {
         const status = this.state.rubricCommentStatus[rubricComment.id];
         const newStatus = statusChange(
-          [savedRubricComment.text, savedRubricComment.pointDelta],
-          [localRubricComment.text, localRubricComment.pointDelta],
+          [savedRubricComment.text, savedRubricComment.pointDelta, savedRubricComment.explanation],
+          [localRubricComment.text, localRubricComment.pointDelta, localRubricComment.explanation],
           status,
         );
         if (newStatus !== status) {
@@ -437,6 +438,7 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
   public updateRubricComment = (rubricCommentID: number, key: string, event: any) => {
     const rubricComments = { ...this.state.rubricComments };
     switch (typeof event) {
+      case 'undefined':
       case 'number':
         rubricComments[rubricCommentID] = {
           ...rubricComments[rubricCommentID],
@@ -461,7 +463,8 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
 
     this.setState({ rubricComments }, () => {
       this.updateCommentStatus(rubricComments[rubricCommentID]);
-      if (key === 'pointDelta') {
+      if (key !== 'text') {
+        console.log('bump');
         this.saveComment(rubricCommentID);
       }
     });

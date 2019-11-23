@@ -95,12 +95,12 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
 
   public onPlus = () => {
     const step = this.props.step !== undefined ? this.props.step : 0.5;
-    this.setValue(Math.abs(this.props.value !== undefined ? this.props.value : 0) + step);
+    this.setValue(parseFloat((Math.abs(this.props.value !== undefined ? this.props.value : 0) + step).toFixed(2)));
   };
 
   public onMinus = () => {
     const step = this.props.step !== undefined ? this.props.step : 0.5;
-    this.setValue(Math.abs(this.props.value !== undefined ? this.props.value : 0) - step);
+    this.setValue(parseFloat((Math.abs(this.props.value !== undefined ? this.props.value : 0) - step).toFixed(2)));
   };
 
   public render() {

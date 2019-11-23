@@ -133,7 +133,7 @@ const LinkedCommentsConfirm = (props: IPropsConfirm) => {
       <ul>
         {contentEditedComments.map((el) => {
           if (el.id > 0 && el.comments.length > 0) {
-            return <li>{el.text}</li>;
+            return <li key={el.text}>{el.text}</li>;
           } else {
             return undefined;
           }

@@ -17,9 +17,11 @@ import {
   IRubricCategoryManagerHelpers,
 } from '../../../core/rubric/RubricCategoryManager';
 
-import { RubricCommentType } from '../../../../infrastructure/rubricComment';
+import { RubricComment, RubricCommentType } from '../../../../infrastructure/rubricComment';
 
 import { DIRECTION } from '../../../../types/common';
+
+import ExplanationModal from './ExplanationModal';
 
 const { TextArea } = Input;
 
@@ -86,20 +88,30 @@ const commentTableColumns = [
   },
 ];
 
+interface IProps {
+  baseURL: string;
+}
+
+interface IState {
+  activeComment?: RubricCommentType;
+}
+
 const RubricCategoryUI = ({
   props,
   state,
   helpers,
 }: {
-  props: IRubricCategoryManagerProps;
+  props: IRubricCategoryManagerProps & IProps;
   state: IRubricCategoryManagerState;
   helpers: IRubricCategoryManagerHelpers;
 }) => {
+  const [activeComment, setActiveComment] = React.useState(undefined as RubricCommentType | undefined);
+
   const buildCommentTableData = (
     rubricComments: RubricCommentType[],
     commentMap: { [id: number]: RubricCommentType },
   ) => {
-    return rubricComments.map((rubricComment) => {
+    return rubricComments.sort(RubricComment.compare).map((rubricComment) => {
       const thisComment = commentMap[rubricComment.id];
 
       let thisFeedback;
@@ -116,6 +128,10 @@ const RubricCategoryUI = ({
           helpers.updateRubricComment(thisComment.id, 'pointDelta', e);
         };
 
+        const onDeleteExplanation = () => {
+          helpers.updateRubricComment(thisComment.id, 'explanation', '');
+        };
+
         const saveComment = () => {
           helpers.saveComment(thisComment.id);
         };
@@ -130,7 +146,40 @@ const RubricCategoryUI = ({
 
         return {
           key: thisComment.id,
-          text: <TextArea autosize value={thisComment.text} onChange={onChangeText} onBlur={saveComment} />,
+          text: (
+            <span style={{ display: 'flex' }}>
+              <TextArea
+                autosize
+                value={thisComment.text}
+                onChange={onChangeText}
+                onBlur={saveComment}
+                style={{ width: '80%' }}
+              />
+              &nbsp;
+              {props.showExplanations ? (
+                <span style={{ verticalAlign: 'middle' }}>
+                  <CPTooltip title="Edit comment's explanation">
+                    <CPButton
+                      icon="edit"
+                      style={{ background: thisComment.explanation ? '#f0fff7' : undefined }}
+                      onClick={() => {
+                        setActiveComment(thisComment);
+                      }}
+                    />
+                  </CPTooltip>
+                  <CPTooltip title="Delete comment's explanation">
+                    <CPButton
+                      icon="delete"
+                      disabled={!thisComment.explanation}
+                      onClick={() => {
+                        onDeleteExplanation();
+                      }}
+                    />
+                  </CPTooltip>
+                </span>
+              ) : null}
+            </span>
+          ),
           deduction: (
             <CPPointInput value={-thisComment.pointDelta} size="small" onChange={onChangePointDelta} disabled={false} />
           ),
@@ -323,6 +372,13 @@ const RubricCategoryUI = ({
       <CPFlex left={[categoryName, categoryPoints]} right={[helpText]} gutterSize={60} />
     );
 
+  const setExplanation = (draft?: string) => {
+    if (activeComment) {
+      helpers.updateRubricComment(activeComment.id, 'explanation', draft);
+      setActiveComment(undefined);
+    }
+  };
+
   return (
     <div className="cp-rubric-category">
       <div className="cp-rubric-category__title ">
@@ -344,6 +400,15 @@ const RubricCategoryUI = ({
           </span>
         </div>
       </div>
+      {activeComment ? (
+        <ExplanationModal
+          rubricComment={activeComment}
+          onCancel={() => {
+            setActiveComment(undefined);
+          }}
+          onSave={setExplanation}
+        />
+      ) : null}
     </div>
   );
 };
