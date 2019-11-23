@@ -14,7 +14,7 @@ import { AssignmentType, TestCaseType, SubmissionType } from '../../../../../../
 import { TestCase } from '../../../../../../infrastructure/testCase';
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
-import { TestCaseTestResultType } from '../../../../../../infrastructure/autograder/runTypes';
+import { BasicTestResultType } from '../../../../../../infrastructure/autograder/runTypes';
 import { awaitTestResult } from '../../testResult';
 
 /* codePost component imports */
@@ -140,7 +140,8 @@ export const TestItem = (props: ITestItemProps) => {
     }
   };
 
-  const callback = (result: TestCaseTestResultType) => {
+  const callback = (resultArr: BasicTestResultType[]) => {
+    const result = resultArr[0];
     const formatted = {
       log: result.logs,
       target: props.activeSubmission ? props.activeSubmission.students[0] : 'solution code',
@@ -469,7 +470,13 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   onChange={this.onTypeChange}
                   disabled={this.props.isRunning || !hasNativeSupport}
                   style={{ width: 200 }}
-                  value={this.state.testType == 'io_cli' ? 'io' : this.state.testType}
+                  value={
+                    this.state.testType == 'io_cli'
+                      ? 'io'
+                      : this.state.testType == 'bash-group'
+                      ? 'Source Editor defined'
+                      : this.state.testType
+                  }
                 >
                   <Option value={'io'}>Input / Output</Option>
                   <Option value={'bash-unit'}>Shell Script</Option>
@@ -480,20 +487,28 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               </div>
             </Row>
             <Divider />
-            <Typography.Title level={4}>2. Definition</Typography.Title>
-            {testBody}
+            {this.state.testType !== 'bash-group' && (
+              <div>
+                <Typography.Title level={4}>2. Definition</Typography.Title>
+                {testBody}
+              </div>
+            )}
           </Form>
-          <Divider />
-          <Typography.Title level={4}>3. Results</Typography.Title>
-          <div>
-            <PsuedoTerminal
-              log={this.props.log}
-              isRunning={this.props.isRunning}
-              runTest={this.props.runTest.bind(this, this.state.testType, this.state.commandText)}
-              submissions={this.props.submissions}
-              setTestSubject={this.props.setTestSubject}
-            />
-          </div>
+          {this.state.testType !== 'bash-group' && (
+            <div>
+              <Divider />
+              <Typography.Title level={4}>3. Results</Typography.Title>
+              <div>
+                <PsuedoTerminal
+                  log={this.props.log}
+                  isRunning={this.props.isRunning}
+                  runTest={this.props.runTest.bind(this, this.state.testType, this.state.commandText)}
+                  submissions={this.props.submissions}
+                  setTestSubject={this.props.setTestSubject}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
