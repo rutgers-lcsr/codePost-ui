@@ -42,6 +42,7 @@ interface IProps {
 export enum FILE_TYPE {
   HELPER,
   SOLUTION,
+  SUBMISSION,
   CODEPOST_TEST_FILE,
   SOURCEFILE,
   MAIN,
