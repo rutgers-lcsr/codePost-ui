@@ -1386,6 +1386,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               rubricComments={this.state.commentRubricComments}
               readOnly={this.state.submission!.isFinalized}
               file={this.state.selectedFile!}
+              fileIDs={this.state.files.map((file: FileType) => {
+                return file.id;
+              })}
               activeCommentID={this.state.activeCommentID}
               changeActive={this.changeActiveComment}
               deleteComment={this.deleteComment}
@@ -1529,6 +1532,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               comments={this.state.comments[this.state.selectedFile!.id]}
               rubricComments={this.state.commentRubricComments}
               file={this.state.selectedFile!}
+              fileIDs={this.state.files.map((file: FileType) => {
+                return file.id;
+              })}
               verticalOffset={this.state.codeVerticalOffset}
               dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
@@ -1661,6 +1667,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               rubricComments={this.state.commentRubricComments}
               readOnly={this.state.submission!.isFinalized}
               file={this.state.selectedFile!}
+              fileIDs={this.state.files.map((file: FileType) => {
+                return file.id;
+              })}
               activeCommentID={this.state.activeCommentID}
               changeActive={this.changeActiveComment}
               deleteComment={this.deleteComment}
