@@ -372,7 +372,7 @@ export const TestsChangeModal = (props: IProps) => {
       break;
     case STATUS.SUCCESS:
       const doneButton = (
-        <Button onClick={props.onCancel} type="primary">
+        <Button onClick={onCancel} type="primary">
           Done
         </Button>
       );

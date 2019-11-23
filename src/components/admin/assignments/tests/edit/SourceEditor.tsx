@@ -137,7 +137,6 @@ export const SourceEditor = (props: IProps) => {
         style={{ height: '25px', minWidth: '150px', fontSize: '12px' }}
         size="small"
         showSearch
-        defaultValue="0"
         filterOption={(input, option: any) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
       >
         {props.sourceFiles.map((f, i) => (
@@ -145,9 +144,6 @@ export const SourceEditor = (props: IProps) => {
             {f.name}
           </Select.Option>
         ))}
-        <Select.Option key="0" value="0" style={{ fontSize: 12 }}>
-          All tests
-        </Select.Option>
       </Select>
     </Input.Group>
   );

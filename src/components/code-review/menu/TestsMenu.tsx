@@ -31,7 +31,8 @@ const TestsMenu = (props: IProps) => {
     testsByCategory[category.id] = [];
   }
   for (const test of props.tests) {
-    testsByCategory[test.testCategory] = [...testsByCategory[test.testCategory], test];
+    const oldTests = testsByCategory[test.testCategory] || [];
+    testsByCategory[test.testCategory] = [...oldTests, test];
   }
 
   const columns = [
