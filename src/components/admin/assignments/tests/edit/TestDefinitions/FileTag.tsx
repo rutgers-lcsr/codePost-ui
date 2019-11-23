@@ -20,26 +20,32 @@ const FileTag = (props: IProps) => {
       name = 'Helper file';
       abbrev = 'H';
       color = 'purple';
+      break;
     case FILE_TYPE.SOLUTION:
       name = 'Solution File';
       abbrev = 'S';
       color = 'orange';
+      break;
     case FILE_TYPE.SUBMISSION:
       name = 'Submission File';
       abbrev = 'S';
       color = 'volcano';
+      break;
     case FILE_TYPE.MAIN:
       name = 'Main';
       abbrev = 'M';
       color = 'grey';
+      break;
     case FILE_TYPE.CODEPOST_TEST_FILE:
       name = 'codePost generated testfile';
       abbrev = 'CT';
       color = 'green';
+      break;
     case FILE_TYPE.SOURCEFILE:
       name = 'User generated testfile';
       abbrev = 'UT';
       color = 'lime';
+      break;
   }
 
   const tag = (

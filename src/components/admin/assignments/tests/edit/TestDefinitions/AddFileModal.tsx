@@ -9,7 +9,7 @@ import { FILE_TYPE } from '../TestingSetup';
 
 /* codePost util imports */
 import useHotkeys, { M_KEY } from '../../../../../code-review/useHotkeys';
-import { SOURCEFILE_TEMPLATE } from './languageUtils';
+import { SOURCEFILE_TEMPLATE } from './testTemplates';
 
 const { Option } = Select;
 interface IUploadProps {

@@ -69,11 +69,6 @@ export const SourceEditor = (props: IProps) => {
   const [fileToRun, setFileToRun] = useState(0);
 
   /************************** API Functions ****************************/
-  useEffect(() => {
-    // open modal when new code of current file is saved, only if the newCode isn't being set to empty
-    newCode && setSaving(true);
-  }, [newCode]);
-
   const runTest = async () => {
     if (fileToRun) {
       setRunning(true);
@@ -105,6 +100,11 @@ export const SourceEditor = (props: IProps) => {
   };
 
   /************************** State change Functions ****************************/
+  useEffect(() => {
+    // open modal when new code of current file is saved, only if the newCode isn't being set to empty
+    newCode && setSaving(true);
+  }, [newCode]);
+
   // callback called when run is complete
   const callback = (results: BasicTestResultType[]) => {
     props.setResults(results);
@@ -233,7 +233,7 @@ export const SourceEditor = (props: IProps) => {
         {content}
       </Content>
       <TestsChangeModal
-        isVisible={saving}
+        checkChanges={saving}
         currentFile={props.currentFile!}
         currentFileCode={newCode}
         sourceFiles={props.sourceFiles}

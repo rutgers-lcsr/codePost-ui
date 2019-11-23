@@ -8,6 +8,7 @@ import React, { useEffect, useState } from 'react';
 /* antd imports */
 import { Button, Layout, Menu, Icon, Empty, Spin, Tag } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
+import _ from 'lodash';
 
 /* other library imports */
 import JSZip from 'jszip';
@@ -147,10 +148,14 @@ export const TestDefinitions = (props: IProps) => {
     };
     const newCategory = await TestCategory.create(payload);
 
-    setCategories([...categories, newCategory]);
-    const newCases = { ...casesByCategory };
-    newCases[newCategory.id] = [];
-    setCasesByCategory(newCases);
+    setCategories((prevState) => {
+      return [...prevState, newCategory];
+    });
+    setCasesByCategory((prevState) => {
+      const newCases = { ...prevState };
+      newCases[newCategory.id] = [];
+      return newCases;
+    });
 
     return newCategory;
   };
@@ -162,7 +167,12 @@ export const TestDefinitions = (props: IProps) => {
 
   const deleteCategory = async (id: number) => {
     await TestCategory.delete(id);
-    setCategories(categories.filter((el) => el.id !== id));
+    setCategories((prevState) => {
+      return prevState.filter((el) => el.id !== id);
+    });
+    setCasesByCategory((prevState) => {
+      return _.omit(prevState, id);
+    });
   };
 
   /******************************* TestCase functions  ****************************/
@@ -255,7 +265,12 @@ export const TestDefinitions = (props: IProps) => {
     const filteredCategories = categories.filter((cat) => {
       return cat.id !== newCategory.id;
     });
-    setCategories([...filteredCategories, newCategory]);
+    setCategories((prevState) => {
+      const filteredCategories = prevState.filter((cat) => {
+        return cat.id !== newCategory.id;
+      });
+      return [...filteredCategories, newCategory];
+    });
   };
 
   const togglePanel = () => {
