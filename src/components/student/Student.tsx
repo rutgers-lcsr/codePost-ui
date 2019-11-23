@@ -44,6 +44,8 @@ import { IComponentProps } from '../core/ComponentManager';
 
 import CourseMenu from '../core/CourseMenu';
 
+import { CodePostDate } from '../utils/DateUtils';
+
 const { Text } = Typography;
 
 /**********************************************************************************************************************/
@@ -259,12 +261,19 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     // Algorithm for computing
     const dueDatePassed = assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now();
     const isFinalized = submission !== undefined && submission.isFinalized;
-    const alreadyClaimed = submission !== undefined && (submission.hasGrader && !assignment.liveFeedbackMode);
+    const canUploadLate = assignment.allowLateUploads;
 
-    const canUpload = !dueDatePassed && !isFinalized && !alreadyClaimed;
+    const canUpload = (!dueDatePassed || canUploadLate) && (assignment.liveFeedbackMode || !isFinalized);
 
     // Present the assignment's due date to the student
-    const dueDate = assignment.uploadDueDate ? `Due date: ${moment(assignment.uploadDueDate).format('llll')}` : '';
+    const dueDate = assignment.uploadDueDate ? (
+      <span>
+        Due date: &nbsp;
+        <CodePostDate datetime={assignment.uploadDueDate} />
+      </span>
+    ) : (
+      ''
+    );
     const dueDateText = (
       <span>
         <Text>{dueDate}</Text>
@@ -296,10 +305,27 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
         onClick={() => {
           if (submission && assignment.liveFeedbackMode) {
             Modal.confirm({
-              title: 'Confirm File Replacement',
-              content: `Replacing your files will delete existing files, including any comments on those files.
-                  If you want to add a file to your submission click 'Add Files' instead.
-                  Are you sure you want to continue?`,
+              title: 'Confirm file replacement',
+              content: (
+                <div>
+                  <p>
+                    Replacing your files will delete existing files and file versions, including any comments on those
+                    files.
+                  </p>
+                  <p>If you want to add a file to your submission or update a file click 'Add/Update files' instead.</p>
+                  <p>
+                    <b>Are you sure you want to continue?</b>
+                  </p>
+                </div>
+              ),
+              okText: 'Continue',
+              cancelText: 'Cancel',
+              onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),
+            });
+          } else if (dueDatePassed) {
+            Modal.confirm({
+              title: 'Confirm late submission',
+              content: `The due date for this submission has passed, so your submission will be logged as late.`,
               okText: 'Continue',
               cancelText: 'Cancel',
               onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),
@@ -337,7 +363,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
           onClick={this.changePanel.bind(this, CURRENT_PANEL.ADDFILES, assignment, submission)}
           disabled={!canUpload}
         >
-          Add files
+          Add/Update files
         </Button>
       );
 
@@ -485,11 +511,14 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
 
         if (submission === undefined) {
           // Case 2: assignment is published, but student has no submission OR submission isn't finalized
+          const missingText = assignment.allowStudentUpload
+            ? "Your submission hasn't been uploaded"
+            : "Your instructor hasn't transferred your submission to codePost yet";
           return {
             ...toRet,
             partners: (
               <div>
-                <Icon type="minus-circle" /> &nbsp; Your submission hasn't been uploaded
+                <Icon type="minus-circle" /> &nbsp; {missingText}
               </div>
             ),
             statusType: SUBMISSION_STATUS.NO_SUBMISSION,

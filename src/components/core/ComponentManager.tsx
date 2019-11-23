@@ -19,6 +19,8 @@ import { SectionType } from '../../infrastructure/section';
 
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
+import { CourseContext } from '../core/Contexts';
+
 /**********************************************************************************************************************/
 
 interface IComponentManagerProps extends RouteComponentProps<{}> {
@@ -53,7 +55,11 @@ const ComponentManager = (MyComponent: React.ComponentType<IComponentProps>, def
             path={formURL(props.match.url, course)}
             render={(subprops: any) => {
               LOCAL_SETTINGS.defaultCourse.setter(course.id);
-              return <MyComponent {...props} {...subprops} currentCourse={course} />;
+              return (
+                <CourseContext.Provider value={course}>
+                  <MyComponent {...props} {...subprops} currentCourse={course} />
+                </CourseContext.Provider>
+              );
             }}
           />
         ))}

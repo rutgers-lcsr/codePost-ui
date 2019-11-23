@@ -31,6 +31,7 @@ interface ICommentsCoreProps extends IWithWindowWatcherProps {
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
   file: FileType;
+  fileIDs: number[];
   verticalOffset: number;
   dimensions: CodeConsoleDimensionsType;
   isStudent: boolean;
@@ -63,6 +64,7 @@ interface ICommentPlacement {
 
 interface ICommentsState {
   placements: ICommentPlacement[];
+  fileScrollPositions: { [fileID: number]: number };
 }
 
 type BlockType = {
@@ -96,6 +98,9 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           placement,
         };
       }),
+      fileScrollPositions: this.props.fileIDs.reduce((scrollPositions: { [fid: number]: number }, fileID: number) => {
+        return { ...scrollPositions, [fileID]: 0 };
+      }, {}),
     };
   }
 
@@ -104,15 +109,12 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   };
 
   public handleClickOutside = (event: any) => {
-    const rubricMenu = document.getElementById('rubric-menu');
-    if (
-      !this.props.readOnly &&
-      this.wrapperRef &&
-      !this.wrapperRef.contains(event.target) &&
-      rubricMenu !== null &&
-      !rubricMenu.contains(event.target)
-    ) {
-      this.props.changeActive(undefined);
+    const safeAreaIDs = ['rubric-menu-container'];
+    const safeAreas = safeAreaIDs.map((id) => document.getElementById(id));
+    if (!this.props.readOnly && this.wrapperRef && !this.wrapperRef.contains(event.target)) {
+      if (!safeAreas.some((area) => area !== null && area.contains(event.target))) {
+        this.props.changeActive(undefined);
+      }
     }
   };
 
@@ -153,7 +155,14 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {
     const codeScrollArea = document.getElementById('code-scroll-area');
     if (codeScrollArea !== null) {
-      return codeScrollArea.scrollTop;
+      if (prevProps.file.id === this.props.file.id) {
+        return codeScrollArea.scrollTop;
+      } else {
+        this.setState({
+          fileScrollPositions: { ...this.state.fileScrollPositions, [prevProps.file.id]: codeScrollArea.scrollTop },
+        });
+        return this.state.fileScrollPositions[this.props.file.id];
+      }
     }
 
     return null;

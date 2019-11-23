@@ -21,7 +21,6 @@ import CPTooltip from '../../core/CPTooltip';
 import { tooltips } from '../../core/tooltips';
 
 import BlockMarkdown from '../../core/BlockMarkdown';
-import InlineMarkdown from '../../core/InlineMarkdown';
 
 import Badge from '../../core/Badge';
 
@@ -570,7 +569,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       commentElements.rubricComment = (
         <div className={rubricCommentClassName} style={style}>
           <span className="cp-label--very-bold">{rubricCategoryTitle}</span>
-          <InlineMarkdown
+          <BlockMarkdown
             source={
               (this.props.isStudent || this.props.showExplanations) && this.props.rubricComment.explanation
                 ? this.props.rubricComment.explanation

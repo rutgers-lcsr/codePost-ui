@@ -31,6 +31,8 @@ import queryString from 'query-string';
 
 import { encodeForLink } from '../../../core/URLutils';
 
+import { trackFeature } from '../../../../components/utils/Fullstory';
+
 const { Option } = Select;
 
 const { Paragraph } = Typography;
@@ -107,6 +109,10 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
   if (values.test !== undefined) {
     testMode = true;
   }
+
+  React.useEffect(() => {
+    trackFeature('Moss', {});
+  }, []);
 
   // const mockResults = [
   //   {

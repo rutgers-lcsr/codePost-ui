@@ -9,7 +9,7 @@ import * as React from 'react';
 import { Button, DatePicker, Form, Input, InputNumber, message, Modal, Switch, Tabs, Tag, Transfer, Table } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 /* codePost imports */
 import { AssignmentType, FileTemplateType } from '../../../../infrastructure/types';
@@ -26,6 +26,7 @@ interface IProps {
   onSave: (assignment: AssignmentPatchType) => Promise<void>;
   currentAssignment: AssignmentType;
   assignments: AssignmentType[];
+  timezone: string;
 }
 
 interface IState {
@@ -70,6 +71,8 @@ class AssignmentSettingsDialog extends React.Component<IProps, IState> {
       additiveGrading: values.additiveGrading,
       forcedRubricMode: values.forcedRubricMode,
       templateMode: values.templateMode,
+      showFrequentlyUsedRubricComments: values.showFrequentlyUsedRubricComments,
+      allowLateUploads: values.allowLateUploads,
     };
 
     this.props.onSave(payload).then(() => {
@@ -122,6 +125,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, IState> {
         assignment={this.props.currentAssignment}
         assignments={this.props.assignments}
         initialTemplateFiles={this.state.fileTemplates}
+        timezone={this.props.timezone}
       />
     );
   }
@@ -138,6 +142,7 @@ interface IFormProps extends FormComponentProps {
   assignment: AssignmentType;
   assignments: AssignmentType[];
   initialTemplateFiles: FileTemplateType[];
+  timezone: string;
 }
 
 interface IFormValues {
@@ -156,6 +161,8 @@ interface IFormValues {
   additiveGrading: boolean;
   forcedRubricMode: boolean;
   templateMode: boolean;
+  showFrequentlyUsedRubricComments: boolean;
+  allowLateUploads: boolean;
 }
 
 interface IFormState {
@@ -374,14 +381,18 @@ const CollectionCreateForm: any = Form.create()(
                 </Form.Item>
                 <Form.Item
                   label="Due Date"
-                  extra="Due date for student uploads"
+                  extra={
+                    <span>
+                      Due date for student uploads. Your course's timezone is <b>{this.props.timezone}.</b>
+                    </span>
+                  }
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 16 }}
                 >
                   {getFieldDecorator('uploadDueDate', {
                     initialValue: this.props.assignment.uploadDueDate
-                      ? moment(this.props.assignment.uploadDueDate)
-                      : null,
+                      ? moment(this.props.assignment.uploadDueDate).tz(this.props.timezone)
+                      : moment().tz(this.props.timezone),
                     valuePropName: 'value',
                     rules: [
                       {
@@ -410,6 +421,22 @@ const CollectionCreateForm: any = Form.create()(
                   />
                   <Input onChange={this.changeTemplateText} placeholder="file name" style={{ width: '72%' }} />
                   <Button onClick={this.addTemplate}>Add</Button>
+                </Form.Item>
+                <Form.Item
+                  label="Allow late submissions"
+                  extra={
+                    <div>
+                      <Tag>NEW</Tag> When enabled, students will be allowed to submit after this assignment's due date
+                      has passed.
+                    </div>
+                  }
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 16 }}
+                >
+                  {getFieldDecorator('allowLateUploads', {
+                    initialValue: this.props.assignment.allowLateUploads,
+                    valuePropName: 'checked',
+                  })(<Switch disabled={!form.getFieldValue('allowStudentUpload')} />)}
                 </Form.Item>
                 <Form.Item
                   label="Live feedback mode"
@@ -526,6 +553,22 @@ const CollectionCreateForm: any = Form.create()(
                     pagination={false}
                   />
                 </Form.Item>
+                <Form.Item
+                  label="Freq. rubric comments"
+                  extra={
+                    <div>
+                      When enabled, an assignment's 10 most frequently applied rubric comments will be shown within the
+                      code console to make them easily accessible.
+                    </div>
+                  }
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 16 }}
+                >
+                  {getFieldDecorator('showFrequentlyUsedRubricComments', {
+                    initialValue: this.props.assignment.showFrequentlyUsedRubricComments,
+                    valuePropName: 'checked',
+                  })(<Switch />)}
+                </Form.Item>
               </Tabs.TabPane>
               <Tabs.TabPane tab="Publishing" key="4">
                 <Form.Item
@@ -576,14 +619,19 @@ const CollectionCreateForm: any = Form.create()(
                 </Form.Item>
                 <Form.Item
                   label="Deadline"
-                  extra="Optional deadline for students to submit regrade requests"
+                  extra={
+                    <span>
+                      Optional deadline for students to submit regrade requests. Your course's timezone is{' '}
+                      <b>{this.props.timezone}.</b>
+                    </span>
+                  }
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 16 }}
                 >
                   {getFieldDecorator('regradeDeadline', {
                     initialValue: this.props.assignment.regradeDeadline
-                      ? moment(this.props.assignment.regradeDeadline)
-                      : null,
+                      ? moment(this.props.assignment.regradeDeadline).tz(this.props.timezone)
+                      : moment().tz(this.props.timezone),
                     valuePropName: 'value',
                   })(<DatePicker showTime placeholder="Select Time" disabled={!this.state.regradesEnabled} />)}
                 </Form.Item>

@@ -81,6 +81,8 @@ import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManage
 import TestsMenu from './menu/TestsMenu';
 import TestsList from './code-panel/TestsList';
 
+import { CourseContext, defaultCourse } from '../core/Contexts';
+
 /**********************************************************************************************************************/
 
 /* f(logged in user, submission) */
@@ -397,6 +399,26 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     return [currentFileSet, currentCommentSet];
   };
 
+  public static fileBouncer = (files: FileType[]) => {
+    const max_size_bytes = 500000;
+
+    return files.map((file: FileType) => {
+      const size_bytes = new TextEncoder().encode(file.code).length;
+
+      const bounce =
+        !['.pdf', 'pdf', 'jpg', '.jpg', 'jpeg', '.jpeg', 'png', '.png', 'ipynb', '.ipynb'].includes(file.extension) &&
+        size_bytes > max_size_bytes;
+      if (bounce) {
+        return {
+          ...file,
+          code: `This file is over the codePost allowable size (${max_size_bytes /
+            1000000}MB).\n\nPlease compress the file or contact team@codepost.io.`,
+        };
+      }
+      return file;
+    });
+  };
+
   /***********************************************************************************************/
   /* Component instance
   /***********************************************************************************************/
@@ -458,7 +480,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     // Set window title
     const submissionID: number = +this.props.match.params.submissionId.valueOf();
-    document.title = `codePost | Submission - ${submissionID}`;
 
     let permissionLevel = await this.detectPermissionType(submissionID);
 
@@ -504,11 +525,16 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           Submission.loadData(submission),
           this.loadRubric(submission.assignment),
         ]);
+
+        document.title = `${submissionID}-Submission [${assignment.name}]`;
+
         course = await Course.read(assignment.course);
 
         files = files.sort((a, b) => {
           return a.name.localeCompare(b.name);
         });
+
+        files = CodeConsole.fileBouncer(files);
 
         selectedFile = files.find((f: FileType) => {
           return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
@@ -549,6 +575,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           Submission.loadData(writableSubmission),
           this.loadRubric(writableSubmission.assignment),
         ]);
+
+        document.title = `${submissionID}-Submission [${assignment.name}]`;
+
         course = await Course.read(assignment.course);
         let fileTemplates;
         if (assignment.templateMode) {
@@ -576,6 +605,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             Object.values(this.state.testCases).flat(),
           );
         }
+
+        files = files.sort((a, b) => {
+          return a.name.localeCompare(b.name);
+        });
+
+        files = CodeConsole.fileBouncer(files);
 
         selectedFile = files.find((f: FileType) => {
           return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
@@ -1057,6 +1092,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       fileTemplates: [],
       testCategories: [],
       environment: null,
+      showFrequentlyUsedRubricComments: false,
+      allowLateUploads: false,
     };
 
     const demoCourse: CourseType = {
@@ -1396,6 +1433,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               rubricComments={this.state.commentRubricComments}
               readOnly={this.state.submission!.isFinalized}
               file={this.state.selectedFile!}
+              fileIDs={this.state.files.map((file: FileType) => {
+                return file.id;
+              })}
               activeCommentID={this.state.activeCommentID}
               changeActive={this.changeActiveComment}
               deleteComment={this.deleteComment}
@@ -1479,6 +1519,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 canUserEdit: true, // showcase in-console rubric editing in demo
                 demoMode: true,
                 showExplanations: this.state.showExplanations,
+                showFrequent:
+                  this.state.assignment !== undefined ? this.state.assignment.showFrequentlyUsedRubricComments : false,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
@@ -1543,6 +1585,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               comments={this.state.comments[this.state.selectedFile!.id]}
               rubricComments={this.state.commentRubricComments}
               file={this.state.selectedFile!}
+              fileIDs={this.state.files.map((file: FileType) => {
+                return file.id;
+              })}
               verticalOffset={this.state.codeVerticalOffset}
               dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
@@ -1681,6 +1726,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               rubricComments={this.state.commentRubricComments}
               readOnly={this.state.submission!.isFinalized}
               file={this.state.selectedFile!}
+              fileIDs={this.state.files.map((file: FileType) => {
+                return file.id;
+              })}
               activeCommentID={this.state.activeCommentID}
               changeActive={this.changeActiveComment}
               deleteComment={this.deleteComment}
@@ -1767,6 +1815,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                   this.isCourseAdmin(this.state.assignment) || this.state.assignment!.collaborativeRubricMode,
                 demoMode: this.state.noSave === true,
                 showExplanations: this.state.showExplanations,
+                showFrequent:
+                  this.state.assignment !== undefined ? this.state.assignment.showFrequentlyUsedRubricComments : false,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
@@ -1803,28 +1853,30 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           onUploadConfirm={this.loadDemoData}
           onCancel={cancelFunc}
         />
-        <StandardConsoleLayout
-          consoleTypes={['grade']}
-          header={
-            <CPFlex
-              style={{
-                padding: '0 15',
-                height: 49,
-                fontSize: 12,
-                overflow: 'initial',
-              }}
-              left={leftHeader}
-              right={rightHeader}
-              middle={middleHeader}
-              gutterSize={20}
-              className={theme}
-            />
-          }
-          sider={sider}
-          siderTitles={siderTitles}
-          content={content}
-          editRubricMode={this.state.editRubricMode}
-        />
+        <CourseContext.Provider value={this.state.course || defaultCourse}>
+          <StandardConsoleLayout
+            consoleTypes={['grade']}
+            header={
+              <CPFlex
+                style={{
+                  padding: '0 15',
+                  height: 49,
+                  fontSize: 12,
+                  overflow: 'initial',
+                }}
+                left={leftHeader}
+                right={rightHeader}
+                middle={middleHeader}
+                gutterSize={20}
+                className={theme}
+              />
+            }
+            sider={sider}
+            siderTitles={siderTitles}
+            content={content}
+            editRubricMode={this.state.editRubricMode}
+          />
+        </CourseContext.Provider>
       </div>
     );
   }

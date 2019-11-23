@@ -24,16 +24,14 @@ import { AssignmentStudent } from '../../../../infrastructure/assignment';
 import { Submission } from '../../../../infrastructure/submission';
 import { FileTemplate } from '../../../../infrastructure/fileTemplate';
 
-import { File } from '../../../../infrastructure/file';
-
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
 
 import { IStudentSubmissionsDataTable } from '../../../../types/common';
 
-import { acceptedFilesSet, acceptedFilesString } from './AcceptedFileTypes';
+import { UploadFile } from 'antd/lib/upload/interface';
 
-import { resizeImage } from '../../other/AdminUtils';
+import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
 
 import TestsList from '../../../../components/code-review/code-panel/TestsList';
 import { TestCasesByCategory } from '../../../../components/core/testFetchUtils';
@@ -74,10 +72,10 @@ interface IState {
   selectedStudents: string[];
   selectedAssignment?: AssignmentType;
   // List of files in codePost format for upload
-  files: any[];
+  files: IProtoFileUpload[];
   // List of files in ant format. Required to make make the dialog a controlled list so we
   // can remove files from the list if they are not valid
-  fileList: any[];
+  fileList: UploadFile[];
   status: STATUS;
 
   rejectedFiles: string[];
@@ -237,7 +235,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               /* eslint-disable no-multi-str */
               message.error(
                 'Sorry, something went wrong. Please try uploading again.\
-                If the problem persists, contact the codePost tean.',
+                If the problem persists, contact the codePost team.',
               );
               /* eslint-enable no-multi-str */
               this.cancel();
@@ -247,23 +245,21 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
   };
 
-  public getPath = (webkitRelativePath: string) => {
-    const pathDirs = webkitRelativePath.split('/');
-    const filePath = pathDirs.length > 2 ? pathDirs.slice(1, pathDirs.length - 1).join('/') : null;
-    return filePath;
-  };
+  public onRemove = (file: UploadFile) => {
+    const protoFileUpload = fileToProtoFileUpload(file);
 
-  public onRemove = (file: any) => {
-    const filePath = this.getPath(file.webkitRelativePath);
-    const newFiles = this.state.files.filter((el) => {
-      return el.name !== file.name || el.path !== filePath;
-    });
-    const newFileList = this.state.fileList.filter((el) => {
-      const elPath = this.getPath(el.webkitRelativePath);
-      return el.name !== file.name || elPath !== filePath;
+    const files = this.state.files.filter((f: IProtoFileUpload) => {
+      return (
+        f.longname !== protoFileUpload.longname &&
+        (f.zipSource === undefined || f.zipSource !== protoFileUpload.zipSource)
+      );
     });
 
-    this.setState({ files: newFiles, fileList: newFileList });
+    const fileList = this.state.fileList.filter((f: UploadFile) => {
+      return f.name !== protoFileUpload.longname;
+    });
+
+    this.setState({ files, fileList });
   };
 
   public changeStatus = (newStatus: STATUS) => {
@@ -317,61 +313,33 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
   // FIXME: this method of reading file contents relies on a race win, since
   // we need the fileReaders to finish before we hit upload.
-  public beforeUpload = (file: any, fileList: any) => {
-    // Ignore hidden files
-    if (file.name[0] === '.') {
-      return false;
+  public beforeUpload = async (file: any, fileList: UploadFile[]) => {
+    const ProtoFileUpload: IProtoFileUpload = fileToProtoFileUpload(file);
+
+    try {
+      const outputFiles = await readUploadedFile(file);
+
+      const newFileList = this.state.fileList.filter((f: UploadFile) => {
+        return f.name !== ProtoFileUpload.longname;
+      });
+
+      const newFiles = this.state.files.filter((f: IProtoFileUpload) => {
+        return !outputFiles
+          .map((outputFile: IProtoFileUpload) => {
+            return outputFile.longname;
+          })
+          .includes(f.longname);
+      });
+
+      const newFileListItem = { ...file, name: ProtoFileUpload.longname };
+
+      this.setState({ fileList: [...newFileList, newFileListItem], files: [...newFiles, ...outputFiles] });
+    } catch (e) {
+      this.setState({ rejectedFiles: [...this.state.rejectedFiles, ProtoFileUpload.longname] });
+      message.error(e);
     }
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
-      if (!acceptedFilesSet.has(`.${extension}`)) {
-        // message.error(`${file.name} cannot be uploaded because it is empty.`);
-        const joined = this.state.rejectedFiles.concat(file.name);
-        this.setState({ rejectedFiles: joined });
-        return;
-      }
-
-      if (reader.result) {
-        let result: any = reader.result;
-        if (['png', 'jpeg', 'jpg'].includes(File.extension(file.name)) && typeof result === 'string') {
-          result = await resizeImage(result);
-        }
-
-        const filePath = this.getPath(file.webkitRelativePath);
-        const newFiles = this.state.files.filter((el) => {
-          return el.name !== file.name || el.path !== filePath;
-        });
-        const newFileList = this.state.fileList.filter((el) => {
-          const elPath = this.getPath(el.webkitRelativePath);
-          return el.name !== file.name || elPath !== filePath;
-        });
-        const cleanedData = typeof result === 'string' ? result.replace(/\0/g, '') : result;
-        this.setState({
-          files: [
-            ...newFiles,
-            {
-              name: file.name,
-              data: cleanedData,
-              path: filePath,
-            },
-          ],
-          fileList: [...newFileList, file],
-        });
-      } else {
-        message.error(`${file.name} cannot be uploaded because it is empty.`);
-      }
-    };
-
-    if (['png', 'jpg', 'jpeg', 'pdf'].includes(File.extension(file.name))) {
-      reader.readAsDataURL(file);
-    } else {
-      reader.readAsText(file);
-    }
-
-    // prevent upload
-    return false;
+    return Promise.reject();
   };
 
   public render() {
@@ -521,7 +489,8 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             <span />
           );
 
-        // FIXME: make 'upload incomplete submission' a course setting
+        const unzippedFiles = this.state.files.filter((el) => el.zipSource !== undefined);
+
         content = (
           <div>
             Assignment:
@@ -566,7 +535,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 multiple={true}
                 onRemove={this.onRemove}
                 fileList={this.state.fileList}
-                accept={acceptedFilesString}
                 directory={this.state.uploadDirectory}
               >
                 <Button>
@@ -574,6 +542,18 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 </Button>
               </Upload>
             </div>
+            <span>
+              {unzippedFiles.length > 0 ? (
+                <span>
+                  <br />
+                  <b>The following files will be unzipped on upload:</b>{' '}
+                  {unzippedFiles.map((el) => `${el.path}/${el.name}`).join(', ')}
+                </span>
+              ) : (
+                <div />
+              )}
+            </span>
+            <br />
             {rejectedFiles}
           </div>
         );

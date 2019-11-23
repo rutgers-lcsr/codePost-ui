@@ -72,7 +72,7 @@ interface IState {
 
 /**********************************************************************************************************************/
 
-class ManageAssignments extends React.Component<IProps, IState> {
+class AssignmentStats extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     drawerContent: { title: '', subtitle: '', content: [] },
     isLoading: false,
@@ -466,4 +466,4 @@ class ManageAssignments extends React.Component<IProps, IState> {
   }
 }
 
-export default ManageAssignments;
+export default AssignmentStats;

@@ -232,7 +232,7 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
 
     return (
       <PreAuthLayout isLoggedIn={this.props.isLoggedIn}>
-        <div style={{ maxWidth: 500 }}>
+        <div style={{ maxWidth: 500, margin: '0 auto' }}>
           <br />
           <br />
           <Typography.Title level={1}>{title}</Typography.Title>
