@@ -61,17 +61,19 @@ interface IProps {
 const { Header, Content } = Layout;
 
 export const SourceEditor = (props: IProps) => {
+  /************************** State variables Functions ****************************/
   const [running, setRunning] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [updatedSourceFiles, setUpdatedSourceFiles] = useState<SourceFileType[]>(props.sourceFiles);
+  // The new code of the edited sourceFile
   const [newCode, setNewCode] = useState('');
   const [fileToRun, setFileToRun] = useState(0);
 
-  useEffect(() => {
-    setUpdatedSourceFiles(props.sourceFiles);
-  }, [props.sourceFiles]);
-
   /************************** API Functions ****************************/
+  useEffect(() => {
+    // open modal when new code of current file is saved, only if the newCode isn't being set to empty
+    newCode && setSaving(true);
+  }, [newCode]);
+
   const runTest = async () => {
     if (fileToRun) {
       setRunning(true);
@@ -116,20 +118,6 @@ export const SourceEditor = (props: IProps) => {
   const onSourceFileSave = (code: string) => {
     if (props.currentFile) {
       setNewCode(code);
-      setUpdatedSourceFiles((prevState) => {
-        const index = prevState.findIndex((f) => {
-          return f.id === props.currentFile!.id;
-        });
-        if (index > -1) {
-          const newSourceFile = { ...prevState[index] };
-          newSourceFile.code = code;
-          const newFiles = [...prevState];
-          newFiles.splice(index, 1, newSourceFile);
-          return newFiles;
-        }
-        return prevState;
-      });
-      setSaving(true);
     }
     return Promise.resolve();
   };
@@ -246,7 +234,9 @@ export const SourceEditor = (props: IProps) => {
       </Content>
       <TestsChangeModal
         isVisible={saving}
-        sourceFiles={updatedSourceFiles}
+        currentFile={props.currentFile!}
+        currentFileCode={newCode}
+        sourceFiles={props.sourceFiles}
         categories={props.categories}
         casesByCategory={props.casesByCategory}
         onCancel={setSaving.bind({}, false)}
