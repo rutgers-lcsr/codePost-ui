@@ -63,3 +63,9 @@ export const shutdownFS = () => {
     FS.shutdown();
   }
 };
+
+export const trackFeature = (feature, params) => {
+  if (typeof FS !== 'undefined') {
+    FS.event(feature, params);
+  }
+};

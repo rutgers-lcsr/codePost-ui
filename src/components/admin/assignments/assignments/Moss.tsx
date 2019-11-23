@@ -28,6 +28,8 @@ import { sendSlack } from '../../../core/slack';
 
 import queryString from 'query-string';
 
+import { trackFeature } from '../../../../components/utils/Fullstory';
+
 const { Option } = Select;
 
 const { Paragraph } = Typography;
@@ -103,6 +105,10 @@ const Moss = (props: IMossProps) => {
   if (values.test !== undefined) {
     testMode = true;
   }
+
+  React.useEffect(() => {
+    trackFeature('Moss', {});
+  }, []);
 
   // const mockResults = [
   //   {
