@@ -29,7 +29,7 @@ const ExplanationModal = (props: IProps) => {
           <Input.TextArea
             defaultValue={draft}
             onChange={onChange}
-            placeholder="Use this space to write an explanation for students. Students will see this explanation instead of the rubric comment's text."
+            placeholder="Use this space to write an explanation for students."
             autosize={{ minRows: 10, maxRows: 12 }}
           />
         </Tabs.TabPane>
