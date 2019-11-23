@@ -12,6 +12,10 @@ import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
 import { tooltips } from '../../../components/core/tooltips';
 
+import DraggableBodyRow from '../../../components/core/DraggableBodyRow';
+
+import update from 'immutability-helper';
+
 import { TableDetail } from '../other/TableDetail';
 
 /* other library imports */
@@ -20,7 +24,7 @@ import memoizeOne from 'memoize-one';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
-import { AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
+import { Assignment, AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
 import { CourseType } from '../../../infrastructure/course';
 import { SubmissionType } from '../../../infrastructure/submission';
 import { UserType } from '../../../infrastructure/user';
@@ -118,6 +122,8 @@ interface IManageAssignmentsState {
   };
   isDownloading: boolean;
   activeStudent?: string; // track student from drawer to upload component
+
+  assignments: AssignmentType[];
 }
 
 /**********************************************************************************************************************/
@@ -126,6 +132,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
   public state: Readonly<IManageAssignmentsState> = {
     drawerContent: { title: '', subtitle: '', content: [] },
     isDownloading: false,
+    assignments: sortAssignments(this.props.assignments),
   };
 
   public calculateStats = memoizeOne(calculateMultipleAssignmentProgressStats);
@@ -214,6 +221,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
         title: 'Assignment',
         dataIndex: 'assignment',
         key: 'assignment',
+        className: 'draggable',
       },
       {
         title: (
@@ -308,7 +316,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
       this.props.students,
     );
 
-    data = sortAssignments(this.props.assignments).map((assignment, i) => {
+    data = this.state.assignments.map((assignment, i) => {
       const statsForRow = assignmentStats[assignment.id];
       const encodedName = encodeForLink(assignment.name);
       const menu = (
@@ -609,6 +617,31 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
       }
     }
 
+    const components = {
+      body: {
+        row: DraggableBodyRow,
+      },
+    };
+
+    const moveRow = (dragIndex: number, hoverIndex: number) => {
+      const { assignments } = this.state;
+      const dragRow = assignments[dragIndex];
+
+      this.setState(
+        update(this.state, {
+          assignments: {
+            $splice: [[dragIndex, 1], [hoverIndex, 0, dragRow]],
+          },
+        }),
+        () => {
+          this.state.assignments.map((assignment: AssignmentType, index: number) => {
+            const patchObj: AssignmentPatchType = { id: assignment.id, sortKey: index };
+            Assignment.update(patchObj);
+          });
+        },
+      );
+    };
+
     return (
       <TableDetail
         title={'Assignments'}
@@ -640,6 +673,11 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
         drawer={drawerComponent}
         hideSearch={true}
         detail={detailComponent}
+        components={components}
+        onRow={(record: any, index: number) => ({
+          index,
+          moveRow: moveRow,
+        })}
       />
     );
   }

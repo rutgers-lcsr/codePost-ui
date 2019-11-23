@@ -212,3 +212,15 @@
 #Admin .ant-table-tbody td {
   padding: 10px 8px;
 }
+
+tr.drop-over-downward td {
+  border-bottom: 2px dashed #47cc97 !important;
+}
+
+tr.drop-over-upward td {
+  border-top: 2px dashed #47cc97;
+}
+
+td.draggable {
+  cursor: move;
+}

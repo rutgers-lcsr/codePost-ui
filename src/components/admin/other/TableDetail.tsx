@@ -15,6 +15,9 @@ import Highlighter from 'react-highlight-words';
 /* codePost imports */
 import CPAdminDetail from '../other/CPAdminDetail';
 
+import { DndProvider } from 'react-dnd';
+import HTML5Backend from 'react-dnd-html5-backend';
+
 /**********************************************************************************************************************/
 
 export interface ITableDetailColumn extends ColumnProps<any> {
@@ -37,6 +40,8 @@ interface IProps {
   titleInfo?: string | React.ReactNode;
   onRowClick?: (record: any) => void;
   detail?: React.ReactNode;
+  components?: any;
+  onRow?: any;
 }
 
 interface IState {
@@ -175,32 +180,37 @@ class TableDetail extends React.Component<IProps, IState> {
                 <br />
               </div>
             )}
-            <Table
-              columns={newColumns}
-              dataSource={data}
-              onRow={
-                this.props.onRowClick === undefined
-                  ? undefined
-                  : (record, rowIndex) => {
-                      return {
-                        onClick: (event) => {
-                          if (this.props.onRowClick) {
-                            return this.props.onRowClick(record);
-                          }
-                        },
-                      };
-                    }
-              }
-              pagination={
-                this.props.pagination !== undefined
-                  ? this.props.pagination
-                  : {
-                      showSizeChanger: true,
-                      pageSizeOptions: ['10', '50', '100'],
-                    }
-              }
-              {...(this.props.tableProps ? this.props.tableProps : undefined)}
-            />
+            <DndProvider backend={HTML5Backend}>
+              <Table
+                columns={newColumns}
+                dataSource={data}
+                components={this.props.components}
+                onRow={
+                  this.props.onRow !== undefined
+                    ? this.props.onRow
+                    : this.props.onRowClick !== undefined
+                    ? (record, rowIndex) => {
+                        return {
+                          onClick: (event) => {
+                            if (this.props.onRowClick) {
+                              return this.props.onRowClick(record);
+                            }
+                          },
+                        };
+                      }
+                    : undefined
+                }
+                pagination={
+                  this.props.pagination !== undefined
+                    ? this.props.pagination
+                    : {
+                        showSizeChanger: true,
+                        pageSizeOptions: ['10', '50', '100'],
+                      }
+                }
+                {...(this.props.tableProps ? this.props.tableProps : undefined)}
+              />
+            </DndProvider>
             {this.props.drawer}
             {this.props.detail}
           </div>

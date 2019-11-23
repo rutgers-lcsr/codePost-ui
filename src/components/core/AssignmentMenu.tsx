@@ -13,7 +13,7 @@ import { Link } from 'react-router-dom';
 import { Menu, Icon } from 'antd';
 
 /* codePost imports */
-import { AssignmentType } from '../../infrastructure/assignment';
+import { AssignmentType, sortAssignments } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 
 import CPDropdown from './CPDropdown';
@@ -43,7 +43,7 @@ const AssignmentMenu = (props: IProps) => {
           <Icon type="close" /> <em>Clear assignment</em>
         </span>
       </Menu.Item>
-      {props.assignments.map((assignment) => {
+      {sortAssignments(props.assignments).map((assignment) => {
         const path = `${props.baseURL}/${props.match.params.panel}/${encodeForLink(assignment.name)}`;
         return (
           <Menu.Item key={assignment.id}>

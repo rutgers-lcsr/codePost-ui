@@ -118,6 +118,7 @@ const AssignmentVPatch = t.intersection(
       additiveGrading: t.boolean,
       forcedRubricMode: t.boolean,
       templateMode: t.boolean,
+      sortKey: t.number,
       allowLateUploads: t.boolean,
       showFrequentlyUsedRubricComments: t.boolean,
     }),
