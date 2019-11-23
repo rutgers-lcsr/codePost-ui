@@ -268,15 +268,20 @@ export const TestDefinitions = (props: IProps) => {
   };
 
   const changeIndex = (e: ClickParam) => {
+    if (panel !== DETAIL_TYPE.ViewSource) {
+      setPanel(DETAIL_TYPE.ViewSource);
+    }
     setIndex(e.key);
   };
 
   // Fixme: wire this up to selector in TestItem
-  const setTestSubject = (id: string) => {
+  const setTestSubject = async (id: string) => {
     const idNum = parseInt(id, 10);
     const match = props.submissions.find((el) => el.id === idNum);
     if (match) {
-      const files = match.files.map((fileID) => File.read(fileID));
+      // Get the latest submission files
+      const submission = await Submission.read(match.id);
+      const files = submission.files.map((fileID) => File.read(fileID));
       Promise.all(files).then((fileList) => setCurrentFiles(fileList));
       setActiveSubmission(match);
     } else {
