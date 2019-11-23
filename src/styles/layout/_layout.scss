@@ -220,3 +220,7 @@ tr.drop-over-downward td {
 tr.drop-over-upward td {
   border-top: 2px dashed #47cc97;
 }
+
+td.draggable {
+  cursor: move;
+}

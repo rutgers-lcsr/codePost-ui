@@ -17,7 +17,7 @@ interface IBodyRowProps {
 class BodyRow extends React.Component<IBodyRowProps, {}> {
   render() {
     const { isOver, connectDragSource, connectDropTarget, moveRow, ...restProps } = this.props;
-    const style = { ...restProps.style, cursor: 'move' };
+    const style = { ...restProps.style };
 
     let { className } = restProps;
     if (isOver) {

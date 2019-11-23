@@ -221,6 +221,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
         title: 'Assignment',
         dataIndex: 'assignment',
         key: 'assignment',
+        className: 'draggable',
       },
       {
         title: (
