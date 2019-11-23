@@ -93,8 +93,13 @@ const codeZoom = generateSettingFunctions('codeZoom', 1.0, floatIParser, floatOP
 
 // key: codeWidth
 // return type: float. Represents the width (in pixels) of the code displayed in the code console
-// defalut value: 1.0
+// defalut value: 0.0
 const codeWidth = generateSettingFunctions('codeWidth', 0, floatIParser, floatOParser);
+
+// key: siderWidth
+// return type: float. Represents the width (in pixels) of the sider displayed in the code console
+// defalut value: 300.0
+const siderWidth = generateSettingFunctions('siderWidth', 300.0, floatIParser, floatOParser);
 
 // key: defaultCourse
 // return type: int. Represents the id of the default course rendered in the admin console
@@ -119,6 +124,7 @@ const LOCAL_SETTINGS = {
   rubricMenuHidden,
   codeZoom,
   codeWidth,
+  siderWidth,
   defaultCourse,
   defaultAssignment,
   mostRecentFile,
