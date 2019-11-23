@@ -178,6 +178,8 @@ export const TestDefinitions = (props: IProps) => {
       checkReturn: true,
       modified: '',
       exposed: false,
+      instances: [],
+      explanation: '',
     };
 
     const newTestCase = await saveTest(dummyTestCase);
