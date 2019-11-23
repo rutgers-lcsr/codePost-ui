@@ -139,12 +139,11 @@ export const TestDefinitions = (props: IProps) => {
 
   /******************************* TestCategory functions  ****************************/
 
-  const addCategory = async (name: string, proMode: boolean) => {
+  const addCategory = async (name: string) => {
     const payload = {
       id: -1,
       name: name,
       assignment: props.currentAssignment.id,
-      type: proMode ? 'bash' : 'normal',
     };
     const newCategory = await TestCategory.create(payload);
 
@@ -181,16 +180,20 @@ export const TestDefinitions = (props: IProps) => {
     return newTest;
   };
 
-  const addTest = async (language: string | null, category: number) => {
-    // If a language doesn't have native support, default to a bash unit test
+  const addTest = async (language: string | null, category: number, sourceFile?: boolean, name?: string) => {
     const externalOnly = !props.env || !props.env.language;
+    // If a language doesn't have native support, default to a bash unit test
+
     const hasNativeSupport = !externalOnly && language && hasNativeTestSupport(language);
     const dummyTestCase = {
       id: -1,
       sortKey: 0,
       testCategory: category,
-      description: 'New Test',
-      type: hasNativeSupport ? 'io' : externalOnly ? 'external' : 'bash-unit',
+      description: name ? name : 'New Test',
+      // if the test is connected to a sourcefile, set bash-group
+      // if the language is natively supported, set it as 'io'
+      // else, set the default to bash-unit
+      type: sourceFile ? 'bash-group' : hasNativeSupport ? 'io' : externalOnly ? 'external' : 'bash-unit',
       pointsPass: 0,
       pointsFail: 0,
       text: '',
