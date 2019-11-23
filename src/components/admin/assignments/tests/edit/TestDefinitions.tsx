@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Badge, Button, Collapse, Layout, Menu, Icon, Empty, Spin } from 'antd';
+import { Button, Layout, Menu, Icon, Empty, Spin, Tag } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 /* other library imports */
@@ -33,23 +33,26 @@ import {
 } from '../../../../../infrastructure/autograder/environment';
 import { SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
 import { File } from '../../../../../infrastructure/file';
+import { Submission } from '../../../../../infrastructure/submission';
+import { BasicTestResultType } from '../../../../../infrastructure/autograder/runTypes';
+import { FILE_TYPE } from './TestingSetup';
 
 /* codePost component imports */
 import { TestItem } from './TestDefinitions/TestItem';
 import { AddCategoryModal } from './TestDefinitions/AddCategoryModal';
+import { AddFileModal } from './TestDefinitions/AddFileModal';
 import { EditCategoryModal } from './TestDefinitions/EditCategoryModal';
 import { AddTestModal } from './TestDefinitions/AddTestModal';
+import CPTooltip from '../../../../core/CPTooltip';
+import { SourceEditor } from './SourceEditor';
+import TestsList from '../../../../code-review/code-panel/TestsList';
+import TestsMenu from '../../../../code-review/menu/TestsMenu';
+
+import FileTag from './TestDefinitions/FileTag';
 
 /* codePost utils imports */
-import { fetchSourceFiles, fetchTestData, TestCasesByCategory } from '../../../../core/testFetchUtils';
-
-import CPTooltip from '../../../../core/CPTooltip';
-
+import { fetchTestData, TestCasesByCategory } from '../../../../core/testFetchUtils';
 import { hasNativeTestSupport } from './utils/languageUtils';
-
-import { CodeWindow } from './utils/CodeWindow';
-
-import { SourceEditor } from './SourceEditor';
 
 const { Sider, Content } = Layout;
 
@@ -60,7 +63,12 @@ interface IProps {
   solutions: SolutionFileType[];
   helpers: HelperFileType[];
   submissions: SubmissionType[];
+  sourceFiles: SourceFileType[];
+  updateEnv: (env: EnvironmentType) => void;
   env?: EnvironmentType;
+  addFile: (type: FILE_TYPE, name: string, code: string) => Promise<void>;
+  updateFile: (type: FILE_TYPE, id: number, newCode: string) => Promise<void>;
+  deleteFile: (type: FILE_TYPE, id: number) => Promise<void>;
 }
 
 enum DETAIL_TYPE {
@@ -68,12 +76,12 @@ enum DETAIL_TYPE {
   ViewSource,
 }
 
-interface IFileType {
+export interface IBasicFile {
   name: string;
   canSave: boolean;
   code: string;
-  title?: any;
   id: number;
+  type: FILE_TYPE;
 }
 
 export const TestDefinitions = (props: IProps) => {
@@ -110,10 +118,8 @@ export const TestDefinitions = (props: IProps) => {
   useEffect(() => {
     if (props.env !== undefined) {
       const fetchData = async () => {
-        const sourceFiles: SourceFileType[] = await fetchSourceFiles(props.env!);
         const source: TestsSourceType = await Environment.eject(props.env!.id);
         setMain(source.main);
-        setSourceFiles(sourceFiles);
         setTests(source.templates);
       };
       fetchData();
@@ -191,51 +197,49 @@ export const TestDefinitions = (props: IProps) => {
     };
 
     const newTestCase = await saveTest(dummyTestCase);
-    const newCases = { ...casesByCategory };
-    newCases[newTestCase.testCategory] = [...casesByCategory[newTestCase.testCategory], newTestCase];
-    setCasesByCategory(newCases);
+    setCasesByCategory((prevState) => {
+      const newCases = { ...prevState };
+      const oldTests = (newCases[newTestCase.testCategory] && casesByCategory[newTestCase.testCategory]) || [];
+      newCases[newTestCase.testCategory] = [...oldTests, newTestCase];
+      return newCases;
+    });
     setActiveTest(newTestCase);
   };
 
-  const deleteTest = (testCase: TestCaseType) => {
-    const newCases = { ...casesByCategory };
-    newCases[testCase.testCategory] = newCases[testCase.testCategory].filter((el) => el.id !== testCase.id);
+  const deleteTest = async (testCase: TestCaseType) => {
+    await TestCase.delete(testCase.id);
 
     // Load new test
     const sorted = TestCase.sort(casesByCategory[testCase.testCategory]);
     const index = sorted.findIndex((el) => el.id === testCase.id);
     if (index === 0) {
-      if (sorted.length > 1) {
-        setActiveTest(sorted[1]);
-      } else {
-        setActiveTest(undefined);
-      }
+      (sorted.length > 1 && setActiveTest(sorted[1])) || setActiveTest(undefined);
     } else {
       setActiveTest(sorted[index - 1]);
     }
 
-    setCasesByCategory(newCases);
-    return TestCase.delete(testCase.id);
-  };
-
-  /******************************* SourceFile functions  ****************************/
-
-  const addSourceFile = (name: string) => {
-    setSourceFiles((prevState) => {
-      return [...prevState, { id: -1, name: name, code: '', environment: props.env!.id }];
+    setCasesByCategory((prevState) => {
+      const newCases = { ...prevState };
+      newCases[testCase.testCategory] = newCases[testCase.testCategory]
+        ? newCases[testCase.testCategory].filter((el) => el.id !== testCase.id)
+        : [];
+      return newCases;
     });
-    // DONOWFIXME: setIndex to this file
   };
 
   /******************************* State Change Functions  ****************************/
 
   const replaceTestCase = (newCase: TestCaseType, oldCase: TestCaseType) => {
-    const filteredTests = casesByCategory[newCase.testCategory].filter((tc) => {
-      return tc.id !== oldCase.id;
+    setCasesByCategory((prevState) => {
+      const filteredTests = prevState[newCase.testCategory]
+        ? prevState[newCase.testCategory].filter((tc) => {
+            return tc.id !== oldCase.id;
+          })
+        : [];
+      const newCases = { ...prevState };
+      newCases[newCase.testCategory] = [...filteredTests, newCase];
+      return newCases;
     });
-    const newCases = { ...casesByCategory };
-    newCases[newCase.testCategory] = [...filteredTests, newCase];
-    setCasesByCategory(newCases);
   };
 
   const replaceTestCategory = (newCategory: TestCategoryType) => {
