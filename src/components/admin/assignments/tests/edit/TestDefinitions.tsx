@@ -536,11 +536,9 @@ export const TestDefinitions = (props: IProps) => {
           <Layout>
             <Sider theme="light">
               {externalOnly ? null : (
-                <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
-                  <Button onClick={togglePanel}>
-                    {panel === DETAIL_TYPE.ViewSource ? 'Edit tests' : 'View source'}
-                  </Button>
-                </div>
+                <Button style={{ width: '100%' }} onClick={togglePanel}>
+                  {panel === DETAIL_TYPE.ViewSource ? 'Edit tests' : 'View source'}
+                </Button>
               )}
               <div
                 style={{
