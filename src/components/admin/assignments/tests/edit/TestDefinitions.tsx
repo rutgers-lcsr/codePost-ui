@@ -146,18 +146,18 @@ export const TestDefinitions = (props: IProps) => {
     const newCases = { ...casesByCategory };
     newCases[newCategory.id] = [];
     setCasesByCategory(newCases);
+
+    return newCategory;
   };
 
-  const updateCategory = (testCategory: TestCategoryType) => {
-    return TestCategory.update(testCategory).then((newCategory) => {
-      replaceTestCategory(newCategory);
-    });
+  const updateCategory = async (testCategory: TestCategoryType) => {
+    const newCategory = await TestCategory.update(testCategory);
+    replaceTestCategory(newCategory);
   };
 
-  const deleteCategory = (testCategory: TestCategoryType) => {
-    return TestCategory.delete(testCategory.id).then(() => {
-      setCategories(categories.filter((el) => el.id !== testCategory.id));
-    });
+  const deleteCategory = async (id: number) => {
+    await TestCategory.delete(id);
+    setCategories(categories.filter((el) => el.id !== id));
   };
 
   /******************************* TestCase functions  ****************************/
