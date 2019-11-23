@@ -295,16 +295,14 @@ export const TestDefinitions = (props: IProps) => {
   const download = () => {
     const zip = new JSZip();
     zip.file('main.sh', main);
-    let dir = zip.folder('tests');
     tests.map((test) => {
-      dir.file(`Test${test.id}${test.extension}`, test.code);
+      zip.file(`${test.name}`, test.code);
     });
-    dir = zip.folder('files');
     currentFiles.map((file) => {
-      dir.file(file.name, file.code);
+      zip.file(file.name, file.code);
     });
     props.helpers.map((file) => {
-      dir.file(file.name, file.code);
+      zip.file(file.name, file.code);
     });
 
     zip.generateAsync({ type: 'blob' }).then(function(content: any) {
