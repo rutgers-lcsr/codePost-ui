@@ -86,20 +86,22 @@ export const TestsChangeModal = (props: IProps) => {
     }
   }, [props.checkChanges]);
 
+  console.log();
+
   // ********************* GET DIFF BETWEEN FILES ******************************
   const parseTests = (sourceFiles: SourceFileType[], currentFile: IBasicFile, currentCode: string) => {
     const parsedTests: { [categoryName: string]: Set<string> } = {};
     sourceFiles.forEach((f) => {
-      const re = /TestOutput "(\w(\w|\d)*?)" "(\w(\w|\d)*?)" (true|false) "(.*?)"/g;
+      const re = /TestOutput "([^"]+?)" "([^"]+?)" (true|false) "([^"]*?)"/g;
 
       // The current file is updated, so we want to use the latest code
-      const code = f.id === currentFile.id && currentFile.type === FILE_TYPE.SOURCEFILE ? f.code : currentCode;
+      const code = f.id === currentFile.id && currentFile.type === FILE_TYPE.SOURCEFILE ? currentCode : f.code;
       const tests = code.match(re);
 
       if (tests) {
         tests.forEach((t) => {
           // Syntax for the regex match is <TestOutput> <category> <test> <boolean> <log>
-          const [_, category, test, __, ___] = t.split(' ');
+          const [_, category, test, __, ___] = t.split(/(?:" | ")+/);
 
           const categoryName = category.replace(/"/g, '');
           const testestName = test.replace(/"/g, '');
@@ -367,7 +369,7 @@ export const TestsChangeModal = (props: IProps) => {
           Ok
         </Button>
       );
-      const cancelButton = <Button onClick={props.onCancel}>Cancel</Button>;
+      const cancelButton = <Button onClick={onCancel}>Cancel</Button>;
       footer = [cancelButton, okButton];
       break;
     case STATUS.SUCCESS:
@@ -383,7 +385,14 @@ export const TestsChangeModal = (props: IProps) => {
 
   return (
     <div>
-      <Modal visible={visible} title={`Save test changes`} width={700} destroyOnClose={true} footer={footer}>
+      <Modal
+        visible={visible}
+        title={`Save test changes`}
+        onCancel={onCancel}
+        width={700}
+        destroyOnClose={true}
+        footer={footer}
+      >
         <Steps size="small" current={status}>
           {steps.map((item) => {
             return <Steps.Step key={item.title} title={item.title} />;
