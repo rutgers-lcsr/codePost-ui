@@ -239,7 +239,6 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   breadcrumbs={breadcrumbs}
                   activeAssignment={assignment}
                   submissions={props.submissions[assignment.id]}
-                  onCancel={cancel}
                   user={props.user}
                   updateAssignment={props.updateAssignment}
                 />

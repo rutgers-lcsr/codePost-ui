@@ -16,10 +16,12 @@ import { SubmissionTest, SubmissionTestType } from '../../../infrastructure/subm
 import { TestCategoryType } from '../../../infrastructure/testCategory';
 import { TestCasesByCategory } from '../../core/testFetchUtils';
 
+import { BasicTestResultType } from '../../../infrastructure/autograder/runTypes';
+
 /**********************************************************************************************************************/
 
 interface IProps {
-  tests: SubmissionTestType[];
+  tests: SubmissionTestType[] | BasicTestResultType[];
   cases: TestCasesByCategory;
   categories: TestCategoryType[];
   isLoading?: boolean;
@@ -32,16 +34,27 @@ const TestsList = (props: IProps) => {
 
   // Index tests by testCategory to access their data more easily when we loop
   // over testCategories below
-  const testsByCategory = {} as { [id: number]: SubmissionTestType[] };
+  const testsByCategory = {} as { [id: number]: SubmissionTestType[] | BasicTestResultType[] };
   for (const category of props.categories) {
     testsByCategory[category.id] = [];
   }
-  for (const test of SubmissionTest.getLatest(props.tests)) {
-    testsByCategory[test.testCategory] = [...testsByCategory[test.testCategory], test];
-    if (test.passed) {
-      passed += 1;
+  if (props.tests.length > 0 && props.tests[0] instanceof SubmissionTest) {
+    // @ts-ignore
+    for (const test of SubmissionTest.getLatest(props.tests)) {
+      testsByCategory[test.testCategory] = [...testsByCategory[test.testCategory], test];
+      if (test.passed) {
+        passed += 1;
+      }
+      total += 1;
     }
-    total += 1;
+  } else {
+    for (const test of props.tests) {
+      testsByCategory[test.testCategory] = [...testsByCategory[test.testCategory], test];
+      if (test.passed) {
+        passed += 1;
+      }
+      total += 1;
+    }
   }
 
   // Top-level columns used used to display individual test information
@@ -89,7 +102,8 @@ const TestsList = (props: IProps) => {
       <Collapse defaultActiveKey={props.categories.map((x, i) => i)} bordered={false} style={{ background: '#f2f2f2' }}>
         {props.categories.map((category, index) => {
           const theseTests = testsByCategory[category.id];
-          const numPassed = theseTests.reduce((acc, el) => acc + (el.passed === true ? 1 : 0), 0);
+          // @ts-ignore
+          const numPassed = theseTests.reduce((acc: number, el: any) => acc + (el.passed === true ? 1 : 0), 0);
           const numFailed = theseTests.length - numPassed;
           const numNotRun = props.cases[category.id].length - theseTests.length;
 

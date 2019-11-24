@@ -9,7 +9,7 @@ export const SubmissionTestV = t.intersection(
       testCategory: t.number,
       submission: t.number,
       logs: t.string,
-      passed: t.union([t.boolean, t.null]),
+      passed: t.boolean,
       created: t.string,
       modified: t.string,
       isError: t.boolean,

@@ -1,7 +1,3 @@
-// FIXME: Python2 import works differently
-//  sys.path.append('/files')
-// import math1
-
 /****************************** Test Templates *********************************/
 
 export const PYTHON_UNIT_TEMPLATE = `
@@ -104,3 +100,8 @@ export const BASH_CPP_TEMPLATE = `
 # fi
 TestOutput true "Put your custom log statement here"
 `;
+
+export const SOURCEFILE_TEMPLATE = `#######################################################################################
+# This file will be run from main.sh. Create test results by calling the following function:
+# TestOutput <categoryName [string]> <testName [string]> <result[boolean]> <log[string]>
+###################################################################################### `;

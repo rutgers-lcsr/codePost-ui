@@ -13,12 +13,12 @@ import { SubmissionTest, SubmissionTestType } from '../../../infrastructure/subm
 import { TestCategoryType } from '../../../infrastructure/testCategory';
 import { TestCasesByCategory } from '../../core/testFetchUtils';
 
+import { BasicTestResultType } from '../../../infrastructure/autograder/runTypes';
 import Badge from '../../core/Badge';
-
 /**********************************************************************************************************************/
 
 interface IProps {
-  tests: SubmissionTestType[];
+  tests: SubmissionTestType[] | BasicTestResultType[];
   cases: TestCasesByCategory;
   categories: TestCategoryType[];
   isOpen: boolean;
@@ -27,12 +27,13 @@ interface IProps {
 const TestsMenu = (props: IProps) => {
   // Index tests by testCategory to access their data more easily when we loop
   // over testCategories below
-  const testsByCategory = {} as { [id: number]: SubmissionTestType[] };
+  const testsByCategory = {} as { [id: number]: BasicTestResultType[] | SubmissionTestType[] };
   for (const category of props.categories) {
     testsByCategory[category.id] = [];
   }
   for (const test of props.tests) {
-    testsByCategory[test.testCategory] = [...testsByCategory[test.testCategory], test];
+    const oldTests = testsByCategory[test.testCategory] || [];
+    testsByCategory[test.testCategory] = [...oldTests, test];
   }
 
   const columns = [
@@ -49,7 +50,12 @@ const TestsMenu = (props: IProps) => {
   ];
 
   const data = props.categories.map((category) => {
-    const latest = SubmissionTest.getLatest(testsByCategory[category.id]);
+    let latest = testsByCategory[category.id];
+    if (props.tests && props.tests[0] instanceof SubmissionTest) {
+      // @ts-ignore
+      latest = SubmissionTest.getLatest(latest);
+    }
+    // @ts-ignore
     const numPassed = latest.reduce((prev, newVal) => prev + (newVal.passed ? 1 : 0), 0);
     const numTotal = latest.length;
 
@@ -92,11 +98,12 @@ const TestsMenu = (props: IProps) => {
         paddingLeft: '15px',
         paddingBottom: '10px',
         paddingRight: '15px',
+        paddingTop: '10px',
         backgroundColor: props.isOpen ? '#f0fff7' : undefined,
       }}
     >
       <div style={{ fontSize: 12, overflowX: 'auto' }}>
-        <Table dataSource={data} columns={columns} size="middle" pagination={false} bordered={false} />
+        <Table dataSource={data} columns={columns} size="small" pagination={false} bordered={false} />
       </div>
     </div>
   );

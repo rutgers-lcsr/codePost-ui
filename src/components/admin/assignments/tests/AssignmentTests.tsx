@@ -29,7 +29,6 @@ import { TestingSummary } from './results/TestingSummary';
 interface IProps {
   activeAssignment: AssignmentType;
   submissions: SubmissionType[];
-  onCancel: () => void;
   user: UserType;
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   breadcrumbs?: React.ReactElement[];
@@ -79,7 +78,6 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
             {...subprops}
             breadcrumbs={breadcrumbs}
             currentAssignment={assignment}
-            onCancel={props.onCancel}
             submissions={props.submissions}
             updateAssignment={updateAssignment}
           />
@@ -93,7 +91,6 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
             breadcrumbs={breadcrumbs}
             currentAssignment={assignment}
             submissions={props.submissions}
-            onCancel={props.onCancel}
           />
         )}
       />

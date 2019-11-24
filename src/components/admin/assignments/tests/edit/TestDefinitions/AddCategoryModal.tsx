@@ -4,8 +4,10 @@ import React, { useState } from 'react';
 /* library imports */
 import { Button, Input, Modal, Icon } from 'antd';
 
+import { TestCategoryType } from '../../../../../../infrastructure/types';
+
 interface IUploadProps {
-  addCategory: (name: string, proMode: boolean) => Promise<void>;
+  addCategory: (name: string, proMode: boolean) => Promise<TestCategoryType>;
   externalOnly: boolean;
   icon?: boolean;
 }

@@ -1,5 +1,5 @@
 // react imports
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 // library imports
 import { Controlled as CodeMirror } from 'react-codemirror2';
@@ -7,6 +7,8 @@ import { Button } from 'antd';
 
 // codePost util imports
 import { codeMirorLanguageMap } from './languageUtils';
+
+import useHotkeys, { S_KEY } from '../../../../../code-review/useHotkeys';
 
 type themeType = 'light' | 'dark';
 
@@ -20,13 +22,14 @@ interface IProps {
 
 export const CodeWindow = (props: IProps) => {
   // ************************** State Variables ******************************
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedCode, setEditedCode] = useState('');
+  const [editedCode, setEditedCode] = useState(props.code);
   const [isSaving, setIsSaving] = useState(false);
 
+  useEffect(() => {
+    setEditedCode(props.code);
+  }, [props.code]);
   // ******************************* State change functions  *******************************
   const onEdit = () => {
-    setIsEditing(true);
     setEditedCode(props.code);
   };
 
@@ -35,8 +38,6 @@ export const CodeWindow = (props: IProps) => {
       setIsSaving(true);
       await props.onSave(editedCode.replace('\\r', ''));
       setIsSaving(false);
-      setIsEditing(false);
-      setEditedCode('');
     }
   };
 
@@ -46,6 +47,8 @@ export const CodeWindow = (props: IProps) => {
     }
     setEditedCode(value);
   };
+
+  useHotkeys(S_KEY, onSave);
 
   // ******************************* Util functions  *******************************
   const getMode = () => {
@@ -63,28 +66,30 @@ export const CodeWindow = (props: IProps) => {
   // ******************************* Return  *******************************
   return (
     <div style={{ fontSize: 12, minWidth: 300, width: '100%', position: 'relative' }}>
-      {props.onSave && (
+      {!props.onChange && (
         <Button
           style={{ position: 'absolute', right: 15, zIndex: 100 }}
-          type={isEditing ? 'primary' : 'default'}
-          onClick={isEditing ? onSave : onEdit}
+          type={'primary'}
+          ghost={!props.onSave}
+          onClick={onSave}
           loading={isSaving}
+          disabled={!props.onSave || props.code === editedCode}
         >
-          {isEditing ? 'Save' : 'Edit'}
+          {props.onSave ? 'Save [⌘+S]' : 'Editing is Disabled'}
         </Button>
       )}
       <CodeMirror
         key={`codeMirror`}
         className="ProMode-codeMirror"
         onBeforeChange={onBeforeChange}
-        value={isEditing && props.onSave ? editedCode : props.code}
+        value={props.onSave ? editedCode : props.code}
         options={{
           lineNumbers: true,
           lineWrapping: true,
           mode: getMode(),
           theme: props.theme && props.theme === 'dark' ? 'material' : 'neo',
           styleActiveLine: { nonEmpty: true },
-          readOnly: props.onSave && (!isEditing || isSaving),
+          readOnly: !(props.onSave || props.onChange) || isSaving,
         }}
       />
     </div>

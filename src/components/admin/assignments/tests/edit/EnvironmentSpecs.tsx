@@ -36,8 +36,6 @@ const { confirm } = Modal;
 
 interface IProps {
   currentAssignment: AssignmentType;
-  onCancel: () => void;
-  onContinue: () => void;
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   env: EnvironmentType | undefined;
   createEnv: (language: string, compileText: string, dependencies: string[]) => void;

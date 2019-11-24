@@ -8,7 +8,7 @@ import { TestCategoryType } from '../../../../../../infrastructure/testCategory'
 
 interface IUploadProps {
   updateCategory: (obj: TestCategoryType) => Promise<void>;
-  deleteCategory: (obj: TestCategoryType) => Promise<void>;
+  deleteCategory: (id: number) => Promise<void>;
   testCategory: TestCategoryType;
   externalOnly: boolean;
 }
@@ -32,7 +32,7 @@ export const EditCategoryModal = (props: IUploadProps) => {
 
   const onDelete = async () => {
     setLoading(true);
-    await props.deleteCategory(props.testCategory);
+    await props.deleteCategory(props.testCategory.id);
     setVisible(!visible);
     setName('');
     setLoading(false);

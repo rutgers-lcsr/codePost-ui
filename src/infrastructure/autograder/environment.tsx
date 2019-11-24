@@ -22,6 +22,8 @@ const EnvironmentV = t.intersection(
       solutionFiles: t.array(t.number),
       compileText: t.string,
       isRunning: t.boolean,
+      sourceFiles: t.array(t.number),
+      dumpMode: t.boolean,
     }),
     t.partial({}),
   ],
@@ -36,6 +38,7 @@ const EnvironmentVPost = t.intersection(
       assignment: t.number,
       dependencies: t.string,
       compileText: t.string,
+      dumpMode: t.boolean,
     }),
     t.partial({}),
   ],
@@ -49,6 +52,7 @@ const EnvironmentVPatch = t.intersection(
       language: t.union([t.string, t.null]),
       dependencies: t.string,
       compileText: t.string,
+      dumpMode: t.boolean,
     }),
   ],
   'EnvironmentPatch',
@@ -66,8 +70,9 @@ const BuildData = t.intersection([
 const TestTemplate = t.intersection([
   GenericObject,
   t.type({
+    name: t.string,
     code: t.string,
-    extension: t.string,
+    errorIfMissing: t.union([t.null, t.boolean]),
   }),
 ]);
 
