@@ -75,15 +75,27 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   }, [props.submissions]);
 
   // ******************************* API / State change functions  *******************************
-  const runAllCallback = (result: any) => {
+  const runAllProgressCallback = (result: any) => {
     setProgress(result);
+  };
+
+  const runAllCallback = (result: SubmissionTestResultType) => {
+    const newTestBySub: TestsBySubmission = {};
+    for (const test of result) {
+      const subID = test.submission;
+      newTestBySub[subID] = (newTestBySub[subID] && [...newTestBySub[subID], test]) || [test];
+    }
+    setTestsBySubmission(newTestBySub);
+    const newEnv = { ...env! };
+    newEnv.isRunning = false;
+    setEnv(newEnv);
+    setRunSummaryVisible(false);
   };
 
   const callback = (sub: SubmissionType, result: SubmissionTestResultType) => {
     const newTestBySub = { ...testsBySubmission };
     newTestBySub[sub.id] = result;
     setTestsBySubmission(newTestBySub);
-    setRunSummaryVisible(false);
     const newLoadingSubs = subsLoading.filter((id) => {
       return id !== sub.id;
     });
@@ -99,7 +111,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   const runAll = async () => {
     if (env) {
       const result = await Environment.runAll(env.id);
-      awaitTestResult(result.task, () => 5, runAllCallback);
+      awaitTestResult(result.task, runAllCallback, runAllProgressCallback);
       const newEnv = { ...env };
       newEnv.isRunning = true;
       setRunSummaryVisible(true);
@@ -211,6 +223,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       onCancel={setRunSummaryVisible.bind({}, false)}
       cases={Object.values(testCasesByCategory).flat()}
       raw={progress}
+      numSubmissions={props.submissions.length}
     />
   );
 
