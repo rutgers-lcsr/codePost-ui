@@ -195,7 +195,7 @@ export const TestDefinitions = (props: IProps) => {
     // If a language doesn't have native support, default to a bash unit test
 
     const hasNativeSupport = !externalOnly && language && hasNativeTestSupport(language);
-    const dummyTestCase = {
+    const dummyTestCase: TestCaseType = {
       id: -1,
       sortKey: 0,
       testCategory: category,
@@ -213,6 +213,9 @@ export const TestDefinitions = (props: IProps) => {
       input: '',
       checkReturn: true,
       modified: '',
+      exposed: false,
+      instances: [],
+      explanation: '',
     };
 
     const newTestCase = await saveTest(dummyTestCase);

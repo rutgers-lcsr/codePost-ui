@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Divider, Form, Input, Row, Select, Tag, message, Modal, Typography } from 'antd';
+import { Button, Divider, Form, Input, Row, Select, Tag, message, Modal, Typography, Switch, InputNumber } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
 /* codePost object imports */
@@ -20,6 +20,7 @@ import { awaitTestResult } from '../../testResult';
 /* codePost component imports */
 import { CodeWindow } from '../utils/CodeWindow';
 import { PsuedoTerminal } from './PsuedoTerminal';
+import ExplanationModal from '../../../../assignments/rubric/ExplanationModal';
 
 /* codePost util imports */
 import { testTemplates, hasNativeTestSupport, extensionsByLanguage } from '../utils/languageUtils';
@@ -51,6 +52,9 @@ interface IFormValues {
   input: string;
   checkReturn: string;
   fileName: string;
+  exposed: boolean;
+  pointsPass: number;
+  pointsFail: number;
 }
 
 export const TestItem = (props: ITestItemProps) => {
@@ -87,23 +91,23 @@ export const TestItem = (props: ITestItemProps) => {
     }
   };
 
-  const handleCreate = (testType: string, codeString?: string) => {
+  const handleCreate = (testType: string, explanation: string, codeString?: string) => {
     const form = formRef.props.form;
     form.validateFields((err: any, values: IFormValues) => {
       if (err) {
         return;
       }
-      saveTest(values, testType, codeString);
+      saveTest(values, testType, explanation, codeString);
     });
   };
 
-  const handleRun = (testType: string, codeString?: string) => {
+  const handleRun = (testType: string, explanation: string, codeString?: string) => {
     const form = formRef.props.form;
     form.validateFields((err: any, values: IFormValues) => {
       if (err) {
         return;
       }
-      runTest(values, testType, codeString);
+      runTest(values, testType, explanation, codeString);
     });
   };
 
@@ -125,8 +129,8 @@ export const TestItem = (props: ITestItemProps) => {
 
   // A testCase must be saved before it can be run. To simulate a "run without saving"
   // operation, we (1) save the test, (2) run it, (3) save it using its old values.
-  const runTest = async (values: IFormValues, testType: string, codeString?: string) => {
-    await saveTest(values, testType, codeString);
+  const runTest = async (values: IFormValues, testType: string, explanation: string, codeString?: string) => {
+    await saveTest(values, testType, explanation, codeString);
 
     if (props.testCase.id > 0) {
       setIsRunning(true);
@@ -134,7 +138,6 @@ export const TestItem = (props: ITestItemProps) => {
         id: props.testCase.id,
         submission: props.activeSubmission ? props.activeSubmission.id : undefined,
       };
-      console.log(payload);
       const result = await TestCase.run(payload);
       awaitTestResult(result.task, callback);
     }
@@ -152,7 +155,7 @@ export const TestItem = (props: ITestItemProps) => {
     setIsRunning(false);
   };
 
-  const saveTest = async (values: IFormValues, testType: string, codeString?: string) => {
+  const saveTest = async (values: IFormValues, testType: string, explanation: string, codeString?: string) => {
     const testCaseCopy = { ...props.testCase };
     testCaseCopy.text = codeString || '';
     testCaseCopy.description = values.description;
@@ -162,8 +165,35 @@ export const TestItem = (props: ITestItemProps) => {
     testCaseCopy.input = values.input;
     testCaseCopy.checkReturn = values.checkReturn === 'return';
     testCaseCopy.type = testType;
-    await props.saveTest(testCaseCopy);
-    message.success('Test saved');
+    testCaseCopy.exposed = values.exposed;
+    testCaseCopy.pointsPass = values.pointsPass;
+    testCaseCopy.pointsFail = values.pointsFail;
+    testCaseCopy.explanation = explanation;
+
+    // Warn user if they are modifying an instantiated SubmissionTest in a way that
+    // will propagate to instances.
+    const execute = async () => {
+      await props.saveTest(testCaseCopy);
+      message.success('Test saved');
+    };
+    if (props.testCase.instances.length > 0) {
+      const prop_fields: Array<keyof TestCaseType> = ['pointsPass', 'pointsFail'];
+      if (prop_fields.some((el) => testCaseCopy[el] !== props.testCase[el])) {
+        confirm({
+          title: <span>Are you sure you want to modify this TestCase? You have already run it on submissions.</span>,
+          content: 'This decision cannot be reversed.',
+          onOk() {
+            return new Promise((resolve, reject) => {
+              return resolve(execute());
+            }).catch(() => console.log('Oops errors!'));
+          },
+        });
+      } else {
+        execute();
+      }
+    } else {
+      execute();
+    }
   };
 
   /******************************* State Change Functions ****************************/
@@ -208,6 +238,8 @@ interface IState {
   commandText: string;
   testType: string;
   selectedFileName: string;
+  showExplanation: boolean;
+  explanation: string;
 }
 
 class TestFormItem extends React.Component<ITestFormItemProps, IState> {
@@ -217,6 +249,8 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
       commandText: props.testCase.text,
       testType: props.testCase.type,
       selectedFileName: props.testCase.fileName,
+      showExplanation: false,
+      explanation: props.testCase.explanation,
     };
   }
 
@@ -440,7 +474,12 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
           <Button
             style={{ marginRight: 10 }}
             type="primary"
-            onClick={this.props.saveTest.bind(this, this.state.testType, this.state.commandText)}
+            onClick={this.props.saveTest.bind(
+              this,
+              this.state.testType,
+              this.state.explanation,
+              this.state.commandText,
+            )}
           >
             Save
           </Button>
@@ -452,8 +491,8 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
         <Divider />
         <div>
           <Typography.Title level={4}>1. Details</Typography.Title>
-          <Form labelCol={{ span: 8 }} wrapperCol={{ span: 16 }} layout="inline">
-            <Row style={{ alignItems: 'center' }}>
+          <Form layout="inline">
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
               <Form.Item label="Test Name">
                 {getFieldDecorator('description', {
                   initialValue: testCase.description,
@@ -484,8 +523,56 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                     Unit Test <Tag>BETA</Tag>
                   </Option>
                 </Select>
-              </div>
-            </Row>
+              </div>{' '}
+              &nbsp; &nbsp;
+              <Form.Item label="Exposed">
+                {getFieldDecorator('exposed', {
+                  initialValue: testCase.exposed,
+                  valuePropName: 'checked',
+                  rules: [
+                    {
+                      required: true,
+                    },
+                  ],
+                })(<Switch disabled={this.props.isRunning} />)}
+              </Form.Item>
+              &nbsp; &nbsp;
+              <Form.Item label="Points on Pass">
+                {getFieldDecorator('pointsPass', {
+                  initialValue: testCase.pointsPass,
+                  rules: [
+                    {
+                      required: true,
+                    },
+                  ],
+                })(<InputNumber />)}
+              </Form.Item>
+              <Form.Item label="Points on Fail">
+                {getFieldDecorator('pointsFail', {
+                  initialValue: testCase.pointsFail,
+                  rules: [
+                    {
+                      required: true,
+                    },
+                  ],
+                })(<InputNumber />)}
+              </Form.Item>
+              <Form.Item label="Explanation">
+                <Button icon="edit" onClick={() => this.setState({ showExplanation: true })} />
+                {this.state.showExplanation ? (
+                  <ExplanationModal
+                    title={testCase.description}
+                    startText={this.state.explanation}
+                    onCancel={() => this.setState({ showExplanation: false })}
+                    onSave={(draft?: string) => {
+                      draft
+                        ? this.setState({ explanation: draft, showExplanation: false })
+                        : this.setState({ explanation: '', showExplanation: false });
+                    }}
+                  />
+                ) : null}
+              </Form.Item>
+            </div>
             <Divider />
             {this.state.testType !== 'bash-group' && (
               <div>
@@ -502,7 +589,12 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 <PsuedoTerminal
                   log={this.props.log}
                   isRunning={this.props.isRunning}
-                  runTest={this.props.runTest.bind(this, this.state.testType, this.state.commandText)}
+                  runTest={this.props.runTest.bind(
+                    this,
+                    this.state.testType,
+                    this.state.explanation,
+                    this.state.commandText,
+                  )}
                   submissions={this.props.submissions}
                   setTestSubject={this.props.setTestSubject}
                 />

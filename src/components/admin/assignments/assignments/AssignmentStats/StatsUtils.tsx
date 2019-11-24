@@ -374,6 +374,7 @@ export const StatsDrawer = (props: {
     };
 
     return {
+      key: el.email,
       students: el.email,
       open: el.subID ? (
         // eslint-disable-next-line jsx-a11y/anchor-is-valid

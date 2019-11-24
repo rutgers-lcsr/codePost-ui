@@ -12,6 +12,10 @@ import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
 import { tooltips } from '../../../components/core/tooltips';
 
+import DraggableBodyRow from '../../../components/core/DraggableBodyRow';
+
+import update from 'immutability-helper';
+
 import { TableDetail } from '../other/TableDetail';
 
 /* other library imports */
@@ -20,7 +24,7 @@ import memoizeOne from 'memoize-one';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
-import { AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
+import { Assignment, AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
 import { CourseType } from '../../../infrastructure/course';
 import { SubmissionType } from '../../../infrastructure/submission';
 import { UserType } from '../../../infrastructure/user';
@@ -66,7 +70,7 @@ export interface IManageAssignmentsProps {
   submissions: IAssignmentToSubmissionsMap;
   students: string[]; // emails
   submissionsByStudent: IStudentSubmissionsDataTable;
-  currentCourse: CourseType | undefined;
+  currentCourse: CourseType;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 
   /* loading state */
@@ -77,7 +81,7 @@ export interface IManageAssignmentsProps {
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
 
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<any>;
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   updateSubmission: (submission: SubmissionType) => Promise<void>;
 
@@ -120,6 +124,8 @@ interface IManageAssignmentsState {
   };
   isDownloading: boolean;
   activeStudent?: string; // track student from drawer to upload component
+
+  assignments: AssignmentType[];
 }
 
 /**********************************************************************************************************************/
@@ -128,6 +134,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
   public state: Readonly<IManageAssignmentsState> = {
     drawerContent: { title: '', subtitle: '', content: [] },
     isDownloading: false,
+    assignments: sortAssignments(this.props.assignments),
   };
 
   public calculateStats = memoizeOne(calculateMultipleAssignmentProgressStats);
@@ -167,6 +174,10 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
     });
   };
 
+  public closeDrawer = () => {
+    this.setState({ drawerType: undefined });
+  };
+
   /******************************************************************************
    * Detail callbacks
    ******************************************************************************/
@@ -194,7 +205,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
   };
 
   public closeSingleSubmissionUpload = () => {
-    this.props.history.push(this.props.baseURL);
+    this.props.history.push(`${this.props.baseURL}/overview`);
     this.setState({ activeStudent: undefined });
   };
 
@@ -212,6 +223,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
         title: 'Assignment',
         dataIndex: 'assignment',
         key: 'assignment',
+        className: 'draggable',
       },
       {
         title: (
@@ -306,7 +318,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
       this.props.students,
     );
 
-    data = sortAssignments(this.props.assignments).map((assignment, i) => {
+    data = this.state.assignments.map((assignment, i) => {
       const statsForRow = assignmentStats[assignment.id];
       const encodedName = encodeForLink(assignment.name);
       const menu = (
@@ -504,7 +516,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
     });
 
     const cancel = () => {
-      this.props.history.push(this.props.baseURL);
+      this.props.history.push(`${this.props.baseURL}/overview`);
     };
 
     const drawerComponent =
@@ -515,7 +527,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
           type={this.state.drawerType}
           content={this.state.drawerContent}
           isVisible={true}
-          onClose={cancel}
+          onClose={this.closeDrawer}
           uploadSubmission={this.uploadForStudent}
         />
       );
@@ -529,8 +541,9 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
               isVisible={true}
               onCancel={cancel}
               onSave={this.saveSettings}
-              currentAssignment={this.props.activeAssignment}
+              currentAssignment={this.props.activeAssignment!}
               assignments={this.props.assignments}
+              timezone={this.props.currentCourse.timezone}
             />
           );
           break;
@@ -618,6 +631,31 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
       }
     }
 
+    const components = {
+      body: {
+        row: DraggableBodyRow,
+      },
+    };
+
+    const moveRow = (dragIndex: number, hoverIndex: number) => {
+      const { assignments } = this.state;
+      const dragRow = assignments[dragIndex];
+
+      this.setState(
+        update(this.state, {
+          assignments: {
+            $splice: [[dragIndex, 1], [hoverIndex, 0, dragRow]],
+          },
+        }),
+        () => {
+          this.state.assignments.map((assignment: AssignmentType, index: number) => {
+            const patchObj: AssignmentPatchType = { id: assignment.id, sortKey: index };
+            Assignment.update(patchObj);
+          });
+        },
+      );
+    };
+
     return (
       <TableDetail
         title={'Assignments'}
@@ -650,6 +688,11 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
         drawer={drawerComponent}
         hideSearch={true}
         detail={detailComponent}
+        components={components}
+        onRow={(record: any, index: number) => ({
+          index,
+          moveRow: moveRow,
+        })}
       />
     );
   }

@@ -93,7 +93,7 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
   public render() {
     return (
       <PreAuthLayout isLoggedIn={false}>
-        <div style={{ maxWidth: 500 }}>
+        <div style={{ maxWidth: 500, margin: '0 auto' }}>
           <br />
           {this.props.maintenanceMode ? (
             <Typography.Title level={2} style={{ textAlign: 'center', color: 'orange' }}>

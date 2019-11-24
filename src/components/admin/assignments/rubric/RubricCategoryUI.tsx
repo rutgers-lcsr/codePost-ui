@@ -17,7 +17,7 @@ import {
   IRubricCategoryManagerHelpers,
 } from '../../../core/rubric/RubricCategoryManager';
 
-import { RubricCommentType } from '../../../../infrastructure/rubricComment';
+import { RubricComment, RubricCommentType } from '../../../../infrastructure/rubricComment';
 
 import { DIRECTION } from '../../../../types/common';
 
@@ -111,7 +111,7 @@ const RubricCategoryUI = ({
     rubricComments: RubricCommentType[],
     commentMap: { [id: number]: RubricCommentType },
   ) => {
-    return rubricComments.map((rubricComment) => {
+    return rubricComments.sort(RubricComment.compare).map((rubricComment) => {
       const thisComment = commentMap[rubricComment.id];
 
       let thisFeedback;
@@ -402,7 +402,8 @@ const RubricCategoryUI = ({
       </div>
       {activeComment ? (
         <ExplanationModal
-          rubricComment={activeComment}
+          title={activeComment.text}
+          startText={activeComment.explanation}
           onCancel={() => {
             setActiveComment(undefined);
           }}
