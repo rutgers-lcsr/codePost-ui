@@ -15,31 +15,29 @@ interface IResultsType {
 interface IProps {
   raw: string;
   cases: TestCaseType[];
+  visible: boolean;
+  onCancel: () => void;
 }
 
 const RunAllModal = (props: IProps) => {
-  if (props.raw !== '{}') {
-    const castRaw = (props.raw as any) as IResultsType;
-    return (
-      <Modal visible={true} title="Results">
-        {Object.keys(castRaw).map((key) => {
-          const obj = castRaw[parseInt(key, 10)];
-          const foundCase = props.cases.find((el) => el.id === parseInt(key, 10));
-          return (
-            <div>
-              {foundCase ? foundCase.description : ''}
-              <Progress
-                percent={parseInt(((obj.passed / (obj.passed + obj.failed + obj.error)) * 100).toFixed(0), 0)}
-                status="active"
-              />
-            </div>
-          );
-        })}
-      </Modal>
-    );
-  } else {
-    return <div />;
-  }
+  const castRaw = (props.raw as any) as IResultsType;
+  return (
+    <Modal visible={props.visible} title="Results" onCancel={props.onCancel}>
+      {Object.keys(castRaw).map((key) => {
+        const obj = castRaw[parseInt(key, 10)];
+        const foundCase = props.cases.find((el) => el.id === parseInt(key, 10));
+        return (
+          <div>
+            {foundCase ? foundCase.description : ''}
+            <Progress
+              percent={parseInt(((obj.passed / (obj.passed + obj.failed + obj.error)) * 100).toFixed(0), 0)}
+              status="active"
+            />
+          </div>
+        );
+      })}
+    </Modal>
+  );
 };
 
 export default RunAllModal;

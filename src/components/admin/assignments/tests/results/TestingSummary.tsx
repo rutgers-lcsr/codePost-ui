@@ -51,6 +51,8 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
   const [progress, setProgress] = useState('{}');
 
+  const [runSummaryVisible, setRunSummaryVisible] = useState(false);
+
   // ************************** Fetch Data ******************************
   useEffect(() => {
     const fetchData = async () => {
@@ -82,6 +84,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     const newTestBySub = { ...testsBySubmission };
     newTestBySub[sub.id] = result;
     setTestsBySubmission(newTestBySub);
+    setRunSummaryVisible(false);
     const newLoadingSubs = subsLoading.filter((id) => {
       return id !== sub.id;
     });
@@ -100,6 +103,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       awaitTestResult(result.task, () => 5, runAllCallback);
       const newEnv = { ...env };
       newEnv.isRunning = true;
+      setRunSummaryVisible(true);
       setEnv(newEnv);
     }
   };
@@ -202,7 +206,14 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     </Button>,
   ];
 
-  const detail = <RunAllModal cases={Object.values(testCasesByCategory).flat()} raw={progress} />;
+  const detail = (
+    <RunAllModal
+      visible={runSummaryVisible}
+      onCancel={setRunSummaryVisible.bind({}, false)}
+      cases={Object.values(testCasesByCategory).flat()}
+      raw={progress}
+    />
+  );
 
   return (
     <TableDetail
