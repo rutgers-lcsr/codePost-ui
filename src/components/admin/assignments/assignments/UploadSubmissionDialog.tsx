@@ -23,6 +23,8 @@ import { UploadFile } from 'antd/lib/upload/interface';
 
 import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
 
+import { slack } from '../../../../components/core/slack';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -136,13 +138,21 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 selectedAssignment: this.props.selectedAssignment ? this.props.selectedAssignment : undefined,
               });
             })
-            .catch(() => {
+            .catch((error) => {
               /* eslint-disable no-multi-str */
               message.error(
                 'Sorry, something went wrong. Please try uploading again.\
                 If the problem persists, contact the codePost team.',
               );
               /* eslint-enable no-multi-str */
+              const payload = {
+                error: error.toString(),
+                errorDetail: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+                url: window.location.href,
+              };
+
+              slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, payload);
+
               this.cancel();
             });
         }
