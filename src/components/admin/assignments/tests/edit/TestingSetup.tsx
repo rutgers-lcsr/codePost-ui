@@ -18,6 +18,7 @@ import { SolutionFile, SolutionFileType } from '../../../../../infrastructure/au
 import { SubmissionType } from '../../../../../infrastructure/submission';
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 import { HelperFile, HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
+import { SourceFile, SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
 
 /* codePost component imports */
 import CPAdminDetail from '../../../other/CPAdminDetail';
@@ -25,7 +26,7 @@ import { EnvironmentSpecs } from './EnvironmentSpecs';
 import { TestDefinitions } from './TestDefinitions';
 
 /* codePost util imports */
-import { fetchSolutionFiles, fetchEnvironment, fetchHelpers } from '../../../../core/testFetchUtils';
+import { fetchSourceFiles, fetchSolutionFiles, fetchEnvironment, fetchHelpers } from '../../../../core/testFetchUtils';
 
 const { TabPane } = Tabs;
 
@@ -33,7 +34,6 @@ const { TabPane } = Tabs;
 
 interface IProps {
   currentAssignment: AssignmentType;
-  onCancel: () => void;
   submissions: SubmissionType[];
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   breadcrumbs?: React.ReactElement[];
@@ -42,14 +42,20 @@ interface IProps {
 export enum FILE_TYPE {
   HELPER,
   SOLUTION,
+  SUBMISSION,
+  CODEPOST_TEST_FILE,
+  SOURCEFILE,
+  MAIN,
 }
 
 export const TestingSetup = (props: IProps & RouteComponentProps) => {
   // ************************** State Variables ******************************
   const [currTab, setCurrTab] = useState('1');
-  const [solutions, setSolutions] = useState<SolutionFileType[]>([]);
   const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
+
+  const [solutions, setSolutions] = useState<SolutionFileType[]>([]);
   const [helpers, setHelpers] = useState<HelperFileType[]>([]);
+  const [sourceFiles, setSourceFiles] = useState<SourceFileType[]>([]);
 
   /************************** Fetch data ******************************/
   useEffect(() => {
@@ -61,6 +67,8 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         setSolutions(solutionFiles);
         const helpers = await fetchHelpers(currEnv);
         setHelpers(helpers);
+        const sourceFiles: SourceFileType[] = await fetchSourceFiles(currEnv);
+        setSourceFiles(sourceFiles);
       }
     };
     fetchData();
@@ -94,6 +102,12 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
           return [...prevState, newHelper];
         });
         break;
+      case FILE_TYPE.SOURCEFILE:
+        const newSource = await SourceFile.create(payload);
+        setSourceFiles((prevState) => {
+          return [...prevState, newSource];
+        });
+        break;
     }
   };
 
@@ -115,6 +129,14 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
           });
         });
         break;
+      case FILE_TYPE.SOURCEFILE:
+        await SourceFile.delete(id);
+        setSourceFiles((prevState) => {
+          return prevState.filter((file) => {
+            return file.id !== id;
+          });
+        });
+        break;
     }
   };
 
@@ -127,13 +149,13 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       case FILE_TYPE.SOLUTION:
         const newSolution = await SolutionFile.update(payload);
         setSolutions((prevState) => {
-          const solutionIndex = prevState.findIndex((f) => {
+          const index = prevState.findIndex((f) => {
             return f.id === id;
           });
-          if (solutionIndex > -1) {
-            const newSolutions = [...prevState];
-            newSolutions.splice(solutionIndex, 1, newSolution);
-            return newSolutions;
+          if (index > -1) {
+            const newFiles = [...prevState];
+            newFiles.splice(index, 1, newSolution);
+            return newFiles;
           }
           return prevState;
         });
@@ -141,14 +163,30 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       case FILE_TYPE.HELPER:
         const newHelper = await HelperFile.update(payload);
         setHelpers((prevState) => {
-          const helperIndex = prevState.findIndex((f) => {
+          const index = prevState.findIndex((f) => {
             return f.id === id;
           });
 
-          if (helperIndex > -1) {
-            const newHelpers = [...prevState];
-            newHelpers.splice(helperIndex, 1, newHelper);
-            return newHelpers;
+          if (index > -1) {
+            const newFiles = [...prevState];
+            newFiles.splice(index, 1, newHelper);
+            return newFiles;
+          }
+          return prevState;
+        });
+        break;
+      case FILE_TYPE.SOURCEFILE:
+        const newSource = await SourceFile.update(payload);
+        setSourceFiles((prevState) => {
+          const index = prevState.findIndex((f) => {
+            return f.id === id;
+          });
+
+          if (index > -1) {
+            const newFiles = [...prevState];
+            newFiles.splice(index, 1, newSource);
+            console.log(newFiles);
+            return newFiles;
           }
           return prevState;
         });
@@ -164,6 +202,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       language,
       dependencies: JSON.stringify(dependencies),
       assignment: props.currentAssignment.id,
+      dumpMode: false,
       compileText,
     };
     const newEnv = await Environment.create(payload);
@@ -189,27 +228,30 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       <TabPane tab={'Environment'} key={'1'}>
         <EnvironmentSpecs
           currentAssignment={props.currentAssignment}
-          onContinue={setCurrTab.bind({}, '2')}
-          onCancel={props.onCancel}
           updateAssignment={props.updateAssignment}
           env={env}
           createEnv={createEnv}
           updateEnv={setEnv}
           deleteEnv={deleteEnv}
-          helpers={helpers}
-          solutions={solutions}
           addFile={addFile}
           deleteFile={deleteFile}
           updateFile={updateFile}
+          solutions={solutions}
+          helpers={helpers}
         />
       </TabPane>
       <TabPane tab={'Tests'} key={'4'}>
         <TestDefinitions
           currentAssignment={props.currentAssignment}
-          solutions={solutions}
-          helpers={helpers}
           submissions={props.submissions}
           env={env}
+          updateEnv={setEnv}
+          addFile={addFile}
+          deleteFile={deleteFile}
+          updateFile={updateFile}
+          solutions={solutions}
+          helpers={helpers}
+          sourceFiles={sourceFiles}
         />
       </TabPane>
       <TabPane tab={'Settings'} key={'5'}>

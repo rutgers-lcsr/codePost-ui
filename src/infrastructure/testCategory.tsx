@@ -1,6 +1,5 @@
 import * as t from 'io-ts';
-import { createObject, deleteObject, GenericObject, readObject, updateObject, createObjectDetail } from './generics';
-import { TaskV } from './autograder/runTypes';
+import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
 
 export const TestCategoryV = t.intersection(
   [
@@ -9,8 +8,6 @@ export const TestCategoryV = t.intersection(
       assignment: t.number,
       name: t.string,
       testCases: t.array(t.number),
-      bashFile: t.union([t.number, t.null]),
-      type: t.string,
     }),
   ],
   'TestCategory',
@@ -22,7 +19,6 @@ const TestCategoryPostV = t.intersection(
     t.type({
       assignment: t.number,
       name: t.string,
-      type: t.string,
     }),
   ],
   'TestCategory',
@@ -38,18 +34,12 @@ const TestCategoryPatchV = t.intersection(
   'TestCategory',
 );
 
-//  Defail Route : Run
-const TestInputs = t.intersection([GenericObject, t.type({ submission: t.union([t.number, t.null]) })]);
-
 export type TestCategoryType = t.TypeOf<typeof TestCategoryV>;
-
 export class TestCategory {
   public static create = createObject(TestCategoryV, TestCategoryPostV, 'testCategories');
   public static read = readObject(TestCategoryV, 'testCategories');
   public static delete = deleteObject(TestCategoryV, 'testCategories');
   public static update = updateObject(TestCategoryV, TestCategoryPatchV, 'testCategories');
-
-  public static run = createObjectDetail(TaskV, TestInputs, 'testCategories', 'run');
 
   public static sort = (categories: TestCategoryType[]): TestCategoryType[] => {
     const compare = (a: TestCategoryType, b: TestCategoryType) => {
