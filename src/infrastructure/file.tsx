@@ -72,6 +72,13 @@ export class File {
     return LangMap.languages(extension)[0];
   };
 
+  // FIXME: replace language with this
+  public static language2 = (fileExtension: string) => {
+    const extensionMatch = /^(?:\.?)(.*)/;
+    const extension = extensionMatch.exec(fileExtension)![1];
+    return LangMap.languages(extension)[0];
+  };
+
   public static codeType = (file: FileType): CodeType => {
     return JupyterExtensions.includes(file.extension)
       ? 'jupyter'

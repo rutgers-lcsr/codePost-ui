@@ -81,7 +81,7 @@ export interface IManageAssignmentsProps {
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
 
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<any>;
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   updateSubmission: (submission: SubmissionType) => Promise<void>;
 
@@ -101,6 +101,8 @@ export interface IManageAssignmentsProps {
   activeAssignment?: AssignmentType; // which assignment has been clicked
   detailType?: DETAIL_TYPE; // what detail view are we showing
   baseURL: string;
+
+  breadcrumbs?: React.ReactElement[];
 }
 
 export enum DETAIL_TYPE {
@@ -203,7 +205,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
   };
 
   public closeSingleSubmissionUpload = () => {
-    this.props.history.push(this.props.baseURL);
+    this.props.history.push(`${this.props.baseURL}/overview`);
     this.setState({ activeStudent: undefined });
   };
 
@@ -322,9 +324,21 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
       const menu = (
         <Menu>
           <Menu.Item key="1">
-            <Link to={`${this.props.baseURL}/${encodedName}/rubric`}>
+            <Link to={`${this.props.baseURL}/rubrics/${encodedName}`}>
               <Icon type="ordered-list" />
               &nbsp; Edit rubric
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="tests">
+            <Link to={`${this.props.baseURL}/tests/${encodedName}/edit`}>
+              <Icon type="file-done" />
+              &nbsp; Edit tests
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="tests">
+            <Link to={`${this.props.baseURL}/plagiarism/${encodedName}`}>
+              <Icon type="diff" />
+              &nbsp; Check for plagiarism
             </Link>
           </Menu.Item>
           <Menu.Item key="2">
@@ -502,7 +516,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
     });
 
     const cancel = () => {
-      this.props.history.push(this.props.baseURL);
+      this.props.history.push(`${this.props.baseURL}/overview`);
     };
 
     const drawerComponent =
@@ -666,7 +680,8 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
         actions={actions}
         breadcrumbs={
           <Breadcrumb>
-            <Breadcrumb.Item>Assignments</Breadcrumb.Item>
+            {this.props.breadcrumbs}
+            <Breadcrumb.Item>Overview</Breadcrumb.Item>
           </Breadcrumb>
         }
         titleInfo={tooltips.admin.graderRoster.title}

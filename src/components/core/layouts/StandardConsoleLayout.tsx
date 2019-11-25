@@ -227,55 +227,57 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
           {props.header}
         </Header>
         <Layout style={{ overflowX: 'auto' }}>
-          {siderResizer}
-          <Sider
-            width={rubricWidth}
-            className="layout--standard-console__sider"
-            style={{
-              backgroundColor: consoleTheme.siderBg,
-              color: consoleTheme.siderTitle,
-              zIndex: 100,
-            }}
-          >
-            {props.sider.length === 0 ? null : (
-              // @ts-ignore
-              <Collapse
-                expandIconPosition="right"
-                activeKey={defaultOpenMenus.map((el) => {
-                  return el.toString();
-                })}
-                bordered={false}
+          <div id="Code-Header">
+            {siderResizer}
+            <Sider
+              width={rubricWidth}
+              className="layout--standard-console__sider"
+              style={{
+                backgroundColor: consoleTheme.siderBg,
+                color: consoleTheme.siderTitle,
+                zIndex: 100,
+              }}
+            >
+              {props.sider.length === 0 ? null : (
                 // @ts-ignore
-                onChange={onCollapse.bind(false, props.sider)}
-                // @ts-ignore
-                expandIcon={collapseIcon}
-                style={{
-                  backgroundColor: consoleTheme.siderBg,
-                  color: consoleTheme.siderTitle,
-                }}
-              >
-                {props.sider.map((siderNode: React.ReactNode, index: number) => {
-                  return (
-                    <Collapse.Panel
-                      header={
-                        <div
-                          style={{
-                            padding: '0px 10px 5px 0px',
-                            color: consoleTheme.siderTitle,
-                          }}
-                        >
-                          <div className="cp-label cp-label--plus cp-label--bold">{props.siderTitles[index]}</div>
-                        </div>
-                      }
-                      key={index.toString()}
-                    >
-                      {siderNode}
-                    </Collapse.Panel>
-                  );
-                })}
-              </Collapse>
-            )}
-          </Sider>
+                <Collapse
+                  expandIconPosition="right"
+                  activeKey={defaultOpenMenus.map((el) => {
+                    return el.toString();
+                  })}
+                  bordered={false}
+                  // @ts-ignore
+                  onChange={onCollapse.bind(false, props.sider)}
+                  // @ts-ignore
+                  expandIcon={collapseIcon}
+                  style={{
+                    backgroundColor: consoleTheme.siderBg,
+                    color: consoleTheme.siderTitle,
+                  }}
+                >
+                  {props.sider.map((siderNode: React.ReactNode, index: number) => {
+                    return (
+                      <Collapse.Panel
+                        header={
+                          <div
+                            style={{
+                              padding: '0px 10px 5px 0px',
+                              color: consoleTheme.siderTitle,
+                            }}
+                          >
+                            <div className="cp-label cp-label--plus cp-label--bold">{props.siderTitles[index]}</div>
+                          </div>
+                        }
+                        key={index.toString()}
+                      >
+                        {siderNode}
+                      </Collapse.Panel>
+                    );
+                  })}
+                </Collapse>
+              )}
+            </Sider>
+          </div>
           <Layout
             style={{
               backgroundColor: consoleTheme.mainBg,

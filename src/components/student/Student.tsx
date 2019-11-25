@@ -202,7 +202,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
   };
 
   // Upload a submission as a student
-  public uploadSubmission = async (isNew: boolean, assignment: AssignmentType, partners: string[], files: any[]) => {
+  public uploadSubmission = (isNew: boolean, assignment: AssignmentType, partners: string[], files: any[]) => {
     if (partners.length === 0) {
       return Promise.reject();
     }
@@ -222,12 +222,15 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     };
 
     const submission1 = isNew
-      ? await AssignmentStudent.createStudentUpload(payload)
-      : await AssignmentStudent.updateStudentUpload(payload);
+      ? AssignmentStudent.createStudentUpload(payload)
+      : AssignmentStudent.updateStudentUpload(payload);
 
-    const submissions = this.state.submissions;
-    submissions[assignment.id] = [submission1];
-    this.setState({ submissions });
+    return submission1.then((newSub) => {
+      const submissions = this.state.submissions;
+      submissions[assignment.id] = [newSub];
+      this.setState({ submissions });
+      return newSub;
+    });
   };
 
   public onUploadSuccess = () => {
@@ -635,6 +638,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
             uploadSubmission={this.uploadSubmission.bind(this, this.state.currentPanel === CURRENT_PANEL.UPLOADFILES)}
             disableStudentSelect={true}
             onSuccess={this.onUploadSuccess}
+            isStudent={true}
           />
           <ViewUpload
             isVisible={this.state.currentPanel === CURRENT_PANEL.VIEWFILES}

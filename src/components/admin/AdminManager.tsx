@@ -9,6 +9,6 @@ import Admin from './Admin';
 
 /**********************************************************************************************************************/
 
-const AdminManager = ComponentManager(Admin, 'assignments');
+const AdminManager = ComponentManager(Admin, 'assignments/overview');
 
 export default AdminManager;

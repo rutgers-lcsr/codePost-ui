@@ -298,7 +298,6 @@ const RubricUI = ({
             <Breadcrumb>
               {props.breadcrumbs}
               <Breadcrumb.Item key={props.assignment.name}>{props.assignment.name}</Breadcrumb.Item>
-              <Breadcrumb.Item key="Edit rubric">Edit rubric</Breadcrumb.Item>
             </Breadcrumb>
           }
           titleInfo={tooltips.admin.rubric.title}

@@ -429,7 +429,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
         });
 
         // NOTE: graders in submission.students might be inactive
-        if (submission.grader) {
+        if (submission.grader && submission.grader in subsByGrader) {
           subsByGrader[submission.grader][assignment.id].push(submission);
         }
       });
@@ -517,12 +517,12 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
             }),
           ).then((newAssignments) => {
             this.props.addCourse(course);
-            this.props.history.push(`${formatCourseURL(course)}/assignments`);
+            this.props.history.push(`${formatCourseURL(course)}/assignments/overview`);
           });
         });
       } else {
         this.props.addCourse(course);
-        this.props.history.push(`${formatCourseURL(course)}/assignments`);
+        this.props.history.push(`${formatCourseURL(course)}/assignments/overview`);
       }
     });
   };
@@ -1041,7 +1041,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       newSubmissions[submission.assignment] = newAssignmentSubmissions;
       this.setState({ submissionsByStudent, submissions: newSubmissions });
       return Promise.all(filePromises).then(() => {
-        return;
+        return submission;
       });
     });
 

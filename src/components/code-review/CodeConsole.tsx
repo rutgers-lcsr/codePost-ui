@@ -6,18 +6,18 @@
 import * as React from 'react';
 
 /* antd imports */
-
-import { Empty, message, notification } from 'antd';
-
-import queryString from 'query-string';
+import { Button, Empty, message, notification } from 'antd';
 
 /* other library imports */
 import _ from 'lodash';
+import queryString from 'query-string';
 
 /* codePost imports */
 import Loading from '../core/Loading';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from '../../types/common';
+
+import { TestCaseType } from '../../infrastructure/types';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CommentIO, CommentType, UiComment } from '../../infrastructure/comment';
@@ -28,7 +28,9 @@ import * as Immutable from '../../infrastructure/immutable';
 import { RubricCategory, RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from '../../infrastructure/rubricComment';
 import { AnonymousSubmissionType, StudentSubmissionType, Submission } from '../../infrastructure/submission';
+import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
 import { UserType } from '../../infrastructure/user';
+import { TestCategoryType } from '../../infrastructure/testCategory';
 
 import CPButton from '../core/CPButton';
 import CPFlex from '../core/CPFlex';
@@ -55,6 +57,8 @@ import { sendSlack } from '../core/slack';
 
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
+import { fetchTestData, TestCasesByCategory } from '../core/testFetchUtils';
+
 import {
   Controls,
   FinalizeButton,
@@ -74,6 +78,9 @@ import { demoFiles } from './demoCode';
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 
+import TestsMenu from './menu/TestsMenu';
+import TestsList from './code-panel/TestsList';
+
 import { CourseContext, defaultCourse } from '../core/Contexts';
 
 /**********************************************************************************************************************/
@@ -84,6 +91,11 @@ enum PERMISSION_LEVEL {
   NONE,
   READ,
   WRITE,
+}
+
+enum PANEL_TYPE {
+  TESTS,
+  FILE,
 }
 
 interface ICodeConsoleState {
@@ -104,6 +116,9 @@ interface ICodeConsoleState {
   files: FileType[];
   comments: IFileToCommentsMap;
   fileTemplates?: FileTemplateType[];
+  tests: SubmissionTestType[];
+  testCategories: TestCategoryType[];
+  testCases: TestCasesByCategory;
 
   /* writer data */
   submission?: AnonymousSubmissionType;
@@ -121,6 +136,8 @@ interface ICodeConsoleState {
 
   editRubricMode: boolean;
   commentCounter: number;
+
+  panelType: PANEL_TYPE;
 
   rubricReload?: number;
   noSave?: boolean;
@@ -315,6 +332,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     commentRubricComments: ICommentToRubricCommentMap,
     rubricCategories: RubricCategoryType[],
     files: FileType[],
+    submissionTests: SubmissionTestType[],
+    testCases: TestCaseType[],
   ): number => {
     // Get the set of fileIDs and commentIDs for the current files
     // This filters out any old file versions
@@ -327,11 +346,20 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return accumulator + current;
     }, 0);
 
+    /* grab latest submission tests */
+    const testPoints = SubmissionTest.getLatest(submissionTests)
+      .map((test) => {
+        const match = testCases.find((el) => el.id === test.testCase);
+        return test.passed ? match!.pointsPass : match!.pointsFail;
+      })
+      .reduce((el, acc) => el + acc, 0);
+    console.log(testPoints);
+
     let grade = 0;
     if (assignment.additiveGrading) {
-      grade = 0 - commentPoints - categoryPoints;
+      grade = 0 - commentPoints - categoryPoints + testPoints;
     } else {
-      grade = assignment.points - commentPoints - categoryPoints;
+      grade = assignment.points - commentPoints - categoryPoints + testPoints;
     }
 
     // Prevent floating point arithmetic causing weird rounding errors
@@ -415,6 +443,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       rubricCategories: [],
       rubricComments: {},
       submission: undefined,
+      tests: [],
+      testCases: {},
+      testCategories: [],
 
       selectedFile: undefined,
       oldCommentIDs: {},
@@ -431,6 +462,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
       rubricReload: undefined,
       showExplanations: false,
+
+      panelType: PANEL_TYPE.FILE,
     };
   }
 
@@ -472,6 +505,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     let rubricCategories;
     let rubricComments;
     let selectedFile;
+    let tests: SubmissionTestType[];
 
     switch (permissionLevel) {
       case PERMISSION_LEVEL.NOT_FOUND:
@@ -567,6 +601,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             commentRubricComments,
             rubricCategories,
             files,
+            this.state.tests,
+            Object.values(this.state.testCases).flat(),
           );
         }
 
@@ -584,6 +620,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           selectedFile = files[0];
         }
 
+        tests = await Promise.all(writableSubmission.tests.map((id) => SubmissionTest.read(id)));
+        const [categories, cases] = await fetchTestData(assignment);
+
         this.setState(
           {
             noSave,
@@ -600,6 +639,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             selectedFile,
             permissionLevel,
             fileTemplates,
+            tests,
+            testCases: cases as TestCasesByCategory,
+            testCategories: categories as TestCategoryType[],
           },
           () => this.setNewFilesWarning(),
         );
@@ -702,7 +744,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     if (selectedFile !== undefined) {
       LOCAL_SETTINGS.mostRecentFile.setter(selectedFile.id);
     }
-    this.setState({ selectedFile, activeCommentID: undefined });
+    this.setState({ selectedFile, activeCommentID: undefined, panelType: PANEL_TYPE.FILE });
   };
 
   public toggleShowExplanations = () => {
@@ -903,6 +945,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       this.state.commentRubricComments,
       this.state.rubricCategories,
       this.state.files,
+      this.state.tests,
+      Object.values(this.state.testCases).flat(),
     );
   };
 
@@ -1046,6 +1090,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       forcedRubricMode: false,
       templateMode: false,
       fileTemplates: [],
+      testCategories: [],
+      environment: null,
       showFrequentlyUsedRubricComments: false,
       allowLateUploads: false,
     };
@@ -1080,6 +1126,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       questionIsRegrade: false,
       questionDate: '',
       responseDate: '',
+      tests: [],
     };
 
     const fileList: FileType[] = [];
@@ -1433,6 +1480,18 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
             updateGrader={this.updateGrader}
           />,
+          this.state.testCategories.length > 0 || this.isCourseAdmin(this.state.assignment) ? (
+            <TestsMenu
+              isOpen={this.state.panelType === PANEL_TYPE.TESTS}
+              tests={this.state.tests}
+              cases={this.state.testCases}
+              categories={this.state.testCategories}
+              assignment={this.state.assignment}
+              showLink={true}
+            />
+          ) : (
+            <span />
+          ),
           <FileMenu
             key="file-menu"
             title="Files"
@@ -1586,6 +1645,17 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             submitStudentQuestion={this.submitStudentQuestion}
             deleteStudentQuestion={this.deleteStudentQuestion}
           />,
+          this.state.testCategories.length > 0 ? (
+            <TestsMenu
+              isOpen={this.state.panelType === PANEL_TYPE.TESTS}
+              tests={this.state.tests}
+              cases={this.state.testCases}
+              categories={this.state.testCategories}
+              assignment={this.state.assignment}
+            />
+          ) : (
+            <span />
+          ),
           <FileMenu
             key="file-menu"
             title="Files"
@@ -1698,6 +1768,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               updateVerticalOffset={this.setVerticalOffset}
             />
           );
+        } else if (this.state.panelType === PANEL_TYPE.TESTS) {
+          content = (
+            <TestsList tests={this.state.tests} cases={this.state.testCases} categories={this.state.testCategories} />
+          );
         }
 
         const onCancel = () => {
@@ -1714,6 +1788,18 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
             updateGrader={this.updateGrader}
           />,
+          this.state.testCategories.length > 0 || this.isCourseAdmin(this.state.assignment) ? (
+            <TestsMenu
+              isOpen={this.state.panelType === PANEL_TYPE.TESTS}
+              tests={this.state.tests}
+              cases={this.state.testCases}
+              categories={this.state.testCategories}
+              assignment={this.state.assignment}
+              showLink={true}
+            />
+          ) : (
+            <span />
+          ),
           <FileMenu
             key="file-menu"
             title="Files"
@@ -1754,7 +1840,22 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           </RubricManager>,
         ];
 
-        siderTitles = ['Submission Info', fileMenuTitle, 'Rubric'];
+        siderTitles = [
+          'Submission Info',
+          <div>
+            Tests{' '}
+            <Button
+              size="small"
+              icon="folder-open"
+              onClick={(e) => {
+                e.stopPropagation();
+                this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
+              }}
+            />
+          </div>,
+          fileMenuTitle,
+          'Rubric',
+        ];
       }
     }
 

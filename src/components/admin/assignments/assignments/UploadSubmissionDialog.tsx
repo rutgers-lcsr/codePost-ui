@@ -6,13 +6,23 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Icon, message, Modal, Progress, Switch, Upload } from 'antd';
+import { Button, Icon, message, Modal, Progress, Switch, Upload, Table, Tag } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
 
 /* codePost imports */
-import { AssignmentType } from '../../../../infrastructure/assignment';
+import {
+  AssignmentType,
+  TestCategoryType,
+  SubmissionTestType,
+  SubmissionType,
+  StudentSubmissionType,
+  FileTemplateType,
+} from '../../../../infrastructure/types';
+import { AssignmentStudent } from '../../../../infrastructure/assignment';
+import { Submission } from '../../../../infrastructure/submission';
+import { FileTemplate } from '../../../../infrastructure/fileTemplate';
 
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
@@ -22,6 +32,13 @@ import { IStudentSubmissionsDataTable } from '../../../../types/common';
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
+
+import TestsList from '../../../../components/code-review/code-panel/TestsList';
+import { TestCasesByCategory } from '../../../../components/core/testFetchUtils';
+
+import { awaitTestResult } from '../../../../components/admin/assignments/tests/testResult';
+
+import { SubmissionTestResultType } from '../../../../infrastructure/autograder/runTypes';
 
 import { slack } from '../../../../components/core/slack';
 
@@ -35,15 +52,21 @@ interface IProps {
   students: string[];
   selectedStudents: string[];
   submissions: IStudentSubmissionsDataTable;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
+  uploadSubmission: (
+    assignment: AssignmentType,
+    partners: string[],
+    files: any[],
+  ) => Promise<StudentSubmissionType | SubmissionType>;
 
   disableStudentSelect?: boolean;
   onSuccess?: () => void;
+  isStudent?: boolean;
 }
 
 enum STATUS {
   NONE,
   SAVING /* reading files from user's file system */,
+  TESTING /* testing uploaded submission against codePost tests */,
   COMPLETE /* completed upload */,
 }
 
@@ -60,6 +83,14 @@ interface IState {
   rejectedFiles: string[];
 
   uploadDirectory: boolean;
+
+  testCategories: TestCategoryType[];
+  testCases: TestCasesByCategory;
+  submissionTests: SubmissionTestType[];
+  submission?: StudentSubmissionType;
+  loadingTests: boolean;
+
+  fileTemplates: FileTemplateType[];
 }
 
 class UploadSubmissionDialog extends React.Component<IProps, IState> {
@@ -78,16 +109,79 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     rejectedFiles: [],
     status: STATUS.NONE,
     uploadDirectory: false,
+    testCases: {},
+    testCategories: [],
+    submissionTests: [],
+    loadingTests: false,
+    fileTemplates: [],
   };
 
-  public componentDidUpdate(prevProps: IProps) {
+  public toggleState = (key: keyof IState) => (prevState: IState): IState => ({
+    ...prevState,
+    [key]: !prevState[key],
+  });
+
+  public getState = (key: keyof IState): any => {
+    return this.state[key];
+  };
+
+  public componentDidMount() {
+    if (this.props.selectedAssignment) {
+      this.loadTemplates(this.props.selectedAssignment);
+    }
+  }
+
+  public componentDidUpdate(prevProps: IProps, prevState: IState) {
     if (prevProps.selectedAssignment !== this.props.selectedAssignment) {
       this.setState({ selectedAssignment: this.props.selectedAssignment });
+      if (this.props.selectedAssignment) {
+        this.loadTemplates(this.props.selectedAssignment);
+        this.loadTests();
+      }
     }
     if (prevProps.selectedStudents !== this.props.selectedStudents) {
       this.setState({ selectedStudents: this.props.selectedStudents });
     }
+
+    if (prevState.status !== STATUS.TESTING && this.state.status === STATUS.TESTING) {
+      this.runTests();
+    }
+
+    if (prevProps.isVisible && !this.props.isVisible) {
+      this.setState({ submissionTests: [], testCategories: [], testCases: {} });
+    }
   }
+
+  public loadTemplates = (assignment: AssignmentType) => {
+    const promises = assignment.fileTemplates.map((el) => FileTemplate.read(el));
+    Promise.all(promises).then((fileTemplates) => this.setState({ fileTemplates }));
+  };
+
+  public loadTests = async () => {
+    if (this.props.isStudent && this.props.selectedAssignment) {
+      this.setState({ loadingTests: true });
+      const { testCases, testCategories } = await AssignmentStudent.readStudentTests(this.props.selectedAssignment.id);
+      const caseObj: TestCasesByCategory = {};
+      testCategories.forEach((category) => {
+        caseObj[category.id] = [];
+      });
+      testCases.forEach((testCase) => {
+        caseObj[testCase.testCategory] = [...caseObj[testCase.testCategory], testCase];
+      });
+      this.setState({ testCategories, testCases: caseObj });
+    }
+  };
+
+  public setResults = (result: SubmissionTestResultType) => {
+    this.setState({ submissionTests: result, loadingTests: false });
+  };
+
+  public runTests = async () => {
+    if (this.state.submission) {
+      const result = await Submission.run(this.state.submission.id);
+      awaitTestResult(result.task, this.setResults);
+    }
+  };
 
   public changeStudents = (options: any) => {
     const students = options.map((option: any) => option.value);
@@ -128,9 +222,10 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         if (this.state.selectedAssignment !== null) {
           this.props
             .uploadSubmission(this.state.selectedAssignment!, this.state.selectedStudents, this.state.files)
-            .then((newSubmission: any) => {
+            .then((newSubmission: StudentSubmissionType) => {
               this.setState({
-                status: STATUS.COMPLETE,
+                submission: newSubmission,
+                status: this.props.isStudent && this.state.testCategories.length > 0 ? STATUS.TESTING : STATUS.COMPLETE,
                 files: [],
                 fileList: [],
                 rejectedFiles: [],
@@ -226,6 +321,37 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     this.props.onCancel();
   };
 
+  // FIXME: this method of reading file contents relies on a race win, since
+  // we need the fileReaders to finish before we hit upload.
+  public beforeUpload = async (file: any, fileList: UploadFile[]) => {
+    const ProtoFileUpload: IProtoFileUpload = fileToProtoFileUpload(file);
+
+    try {
+      const outputFiles = await readUploadedFile(file);
+
+      const newFileList = this.state.fileList.filter((f: UploadFile) => {
+        return f.name !== ProtoFileUpload.longname;
+      });
+
+      const newFiles = this.state.files.filter((f: IProtoFileUpload) => {
+        return !outputFiles
+          .map((outputFile: IProtoFileUpload) => {
+            return outputFile.longname;
+          })
+          .includes(f.longname);
+      });
+
+      const newFileListItem = { ...file, name: ProtoFileUpload.longname };
+
+      this.setState({ fileList: [...newFileList, newFileListItem], files: [...newFiles, ...outputFiles] });
+    } catch (e) {
+      this.setState({ rejectedFiles: [...this.state.rejectedFiles, ProtoFileUpload.longname] });
+      message.error(e);
+    }
+
+    return Promise.reject();
+  };
+
   public render() {
     const { isVisible } = this.props;
     const { status } = this.state;
@@ -238,6 +364,10 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       this.state.selectedStudents.length > 0 &&
       this.state.files.length > 0 &&
       this.state.selectedAssignment
+    );
+
+    const areRequiredFilesPresent = this.state.fileTemplates.every(
+      (ft) => !ft.required || this.state.files.some((el) => el.name === ft.name),
     );
 
     let content;
@@ -259,38 +389,17 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           </div>
         );
         break;
+      case STATUS.TESTING:
+        content = (
+          <TestsList
+            tests={this.state.submissionTests}
+            cases={this.state.testCases}
+            categories={this.state.testCategories}
+            isLoading={this.state.loadingTests}
+          />
+        );
+        break;
       case STATUS.NONE:
-        // FIXME: this method of reading file contents relies on a race win, since
-        // we need the fileReaders to finish before we hit upload.
-        const beforeUpload = async (file: any, fileList: UploadFile[]) => {
-          const ProtoFileUpload: IProtoFileUpload = fileToProtoFileUpload(file);
-
-          try {
-            const outputFiles = await readUploadedFile(file);
-
-            const newFileList = this.state.fileList.filter((f: UploadFile) => {
-              return f.name !== ProtoFileUpload.longname;
-            });
-
-            const newFiles = this.state.files.filter((f: IProtoFileUpload) => {
-              return !outputFiles
-                .map((outputFile: IProtoFileUpload) => {
-                  return outputFile.longname;
-                })
-                .includes(f.longname);
-            });
-
-            const newFileListItem = { ...file, name: ProtoFileUpload.longname };
-
-            this.setState({ fileList: [...newFileList, newFileListItem], files: [...newFiles, ...outputFiles] });
-          } catch (e) {
-            this.setState({ rejectedFiles: [...this.state.rejectedFiles, ProtoFileUpload.longname] });
-            message.error(e);
-          }
-
-          return Promise.reject();
-        };
-
         const studentOptions = this.buildStudentOptions(
           this.props.students,
           this.props.submissions,
@@ -308,18 +417,86 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           this.state.rejectedFiles.length === 0 ? (
             <div />
           ) : (
-            <div>
-              <div style={{ color: 'red', marginBottom: 10 }}>
-                The following files were not uploaded:{' '}
-                {this.state.rejectedFiles.map((fileName, index) => {
-                  return `${fileName}${index === this.state.rejectedFiles.length - 1 ? '' : ', '}`;
-                })}
-              </div>
-              <div>
-                If you think codePost should support files of this type,{' '}
-                <a href="mailto:team@codepost.io?subject=File Support Request">let us know</a>.
-              </div>
+            <div style={{ color: 'red', marginBottom: 10, marginTop: '10px' }}>
+              The following files were not uploaded:{' '}
+              {this.state.rejectedFiles.map((fileName, index) => {
+                return `${fileName}${index === this.state.rejectedFiles.length - 1 ? '' : ', '}`;
+              })}
             </div>
+          );
+
+        /*****************************************************************************************/
+        /* Build list of settings and toggles
+        /*****************************************************************************************/
+
+        const settings = [
+          {
+            setting: 'Upload a directory',
+            tooltip: 'Turn this on to upload nested folders.',
+            variable: 'uploadDirectory' as keyof IState,
+          },
+          // {
+          //   setting: 'Upload an incomplete submission',
+          //   tooltip: 'Turn this on to a submission missing required files.',
+          //   variable: 'allowIncomplete' as keyof IState,
+          // },
+          // {
+          //   setting: 'Upload extra files',
+          //   tooltip: 'Turn this on to upload files not specifed by the assignment.',
+          //   variable: 'allowExtra' as keyof IState,
+          // },
+        ];
+
+        const settingList = (
+          <span>
+            {settings.map((setting) => (
+              <span>
+                {setting.setting} <CPTooltip title={setting.tooltip} infoIcon={true} /> &nbsp;{' '}
+                <Switch
+                  checked={this.getState(setting.variable)}
+                  onClick={() => {
+                    this.setState(this.toggleState(setting.variable));
+                    return;
+                  }}
+                />
+              </span>
+            ))}
+          </span>
+        );
+
+        /*****************************************************************************************/
+        /* Build list of required and optional files
+        /*****************************************************************************************/
+        const requiredColumns = [
+          { title: 'Assignment files', dataIndex: 'name', key: 'file' },
+          { title: 'Uploaded', dataIndex: 'uploaded', key: 'uploaded', align: 'center' as const },
+        ];
+
+        const fileList =
+          this.state.fileTemplates.length > 0 ? (
+            <Table
+              columns={requiredColumns}
+              dataSource={this.state.fileTemplates.map((el) => {
+                const exists = this.state.files.some((file) => file.name === el.name);
+                return {
+                  ...el,
+                  name: (
+                    <span>
+                      {el.required ? <Tag color={exists ? 'green' : 'volcano'}>REQUIRED</Tag> : <Tag>OPTIONAL</Tag>}
+                      {el.name}
+                    </span>
+                  ),
+                  uploaded: exists ? (
+                    <Icon type="check-circle" style={{ color: 'green' }} />
+                  ) : (
+                    <Icon type="close-circle" style={{ color: 'red' }} />
+                  ),
+                };
+              })}
+              pagination={false}
+            />
+          ) : (
+            <span />
           );
 
         const unzippedFiles = this.state.files.filter((el) => el.zipSource !== undefined);
@@ -339,7 +516,12 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             />
             <br />
             <br />
-            Students: <CPTooltip title={tooltips.admin.assignments.uploadSubmission} infoIcon={true} />
+            Students:{' '}
+            {this.props.isStudent ? (
+              <CPTooltip title={tooltips.admin.assignments.uploadSubmission} infoIcon={true} />
+            ) : (
+              <span />
+            )}
             <Select
               placeholder={'Select students'}
               isMulti={true}
@@ -351,18 +533,14 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             <br />
             {/*  beforeUpload prop stops Upload component from trying to upload files to external server */}
             {/*  FIXME: we should prevent users from uploading image files here */}
-            <div style={{ marginBottom: 15 }}>
-              Upload a directory{' '}
-              <CPTooltip
-                title={`If the submission has nested directories, turn this on and upload a single
-                  directory that contains the submission.`}
-                infoIcon={true}
-              />
-              &nbsp; <Switch checked={this.state.uploadDirectory} onClick={this.toggleDirectoryUpload} />
-            </div>
+            {fileList}
+            <br />
+            {settingList}
+            <br />
+            <br />
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <Upload
-                beforeUpload={beforeUpload}
+                beforeUpload={this.beforeUpload}
                 listType="text"
                 multiple={true}
                 onRemove={this.onRemove}
@@ -416,7 +594,12 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     switch (this.state.status) {
       case STATUS.NONE:
         goForwardButton = (
-          <Button key="submit" type="primary" disabled={disableUpload} onClick={this.upload}>
+          <Button
+            key="submit"
+            type="primary"
+            disabled={disableUpload || !areRequiredFilesPresent}
+            onClick={this.upload}
+          >
             Upload
           </Button>
         );
@@ -428,9 +611,10 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           </Button>
         );
         break;
+      case STATUS.TESTING:
       case STATUS.COMPLETE:
         goForwardButton = (
-          <Button key="submit" type="primary" onClick={this.onSuccess}>
+          <Button key="submit" type="primary" onClick={this.onSuccess} disabled={this.state.loadingTests}>
             Close
           </Button>
         );

@@ -371,7 +371,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     const shrunkSider = this.props.windowwidth < layoutVars.breakpoints.smallScreen.grade;
     const { oldVersionsMap } = this.state;
 
-    return files.map((file: FileType) => {
+    const codeFiles = files.map((file: FileType) => {
       let oldVersionsMenu: any = null;
       const path = `${file.path ? file.path.replace(/^\/+|\/+$/g, '') : ''}/${file.name}`;
 
@@ -462,6 +462,8 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         </Menu.Item>
       );
     });
+
+    return codeFiles;
   };
 
   // FOLDER MENU BUILD
