@@ -1480,12 +1480,18 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
             updateGrader={this.updateGrader}
           />,
-          <TestsMenu
-            isOpen={this.state.panelType === PANEL_TYPE.TESTS}
-            tests={this.state.tests}
-            cases={this.state.testCases}
-            categories={this.state.testCategories}
-          />,
+          this.state.testCategories.length > 0 || this.isCourseAdmin(this.state.assignment) ? (
+            <TestsMenu
+              isOpen={this.state.panelType === PANEL_TYPE.TESTS}
+              tests={this.state.tests}
+              cases={this.state.testCases}
+              categories={this.state.testCategories}
+              assignment={this.state.assignment}
+              showLink={true}
+            />
+          ) : (
+            <span />
+          ),
           <FileMenu
             key="file-menu"
             title="Files"
@@ -1639,12 +1645,17 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             submitStudentQuestion={this.submitStudentQuestion}
             deleteStudentQuestion={this.deleteStudentQuestion}
           />,
-          <TestsMenu
-            isOpen={this.state.panelType === PANEL_TYPE.TESTS}
-            tests={this.state.tests}
-            cases={this.state.testCases}
-            categories={this.state.testCategories}
-          />,
+          this.state.testCategories.length > 0 ? (
+            <TestsMenu
+              isOpen={this.state.panelType === PANEL_TYPE.TESTS}
+              tests={this.state.tests}
+              cases={this.state.testCases}
+              categories={this.state.testCategories}
+              assignment={this.state.assignment}
+            />
+          ) : (
+            <span />
+          ),
           <FileMenu
             key="file-menu"
             title="Files"
@@ -1777,12 +1788,18 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
             updateGrader={this.updateGrader}
           />,
-          <TestsMenu
-            isOpen={this.state.panelType === PANEL_TYPE.TESTS}
-            tests={this.state.tests}
-            cases={this.state.testCases}
-            categories={this.state.testCategories}
-          />,
+          this.state.testCategories.length > 0 || this.isCourseAdmin(this.state.assignment) ? (
+            <TestsMenu
+              isOpen={this.state.panelType === PANEL_TYPE.TESTS}
+              tests={this.state.tests}
+              cases={this.state.testCases}
+              categories={this.state.testCategories}
+              assignment={this.state.assignment}
+              showLink={true}
+            />
+          ) : (
+            <span />
+          ),
           <FileMenu
             key="file-menu"
             title="Files"
