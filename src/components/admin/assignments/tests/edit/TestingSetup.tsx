@@ -37,6 +37,7 @@ interface IProps {
   submissions: SubmissionType[];
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   breadcrumbs?: React.ReactElement[];
+  match: any;
 }
 
 export enum FILE_TYPE {
@@ -50,7 +51,15 @@ export enum FILE_TYPE {
 
 export const TestingSetup = (props: IProps & RouteComponentProps) => {
   // ************************** State Variables ******************************
-  const [currTab, setCurrTab] = useState('1');
+  let defaultTab;
+  if (props.match.params.tabKey !== undefined) {
+    defaultTab = props.match.params.tabKey.valueOf();
+  } else {
+    defaultTab = 'environment';
+    props.history.push(`${props.match.url}/environment`);
+  }
+
+  const [currTab, setCurrTab] = useState(defaultTab);
   const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
 
   const [solutions, setSolutions] = useState<SolutionFileType[]>([]);
@@ -185,7 +194,6 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
           if (index > -1) {
             const newFiles = [...prevState];
             newFiles.splice(index, 1, newSource);
-            console.log(newFiles);
             return newFiles;
           }
           return prevState;
@@ -222,10 +230,20 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     }
   };
 
+  const onChange = (val: string) => {
+    setCurrTab(val);
+
+    const newUrl = `${props.match.url
+      .split('/')
+      .slice(0, -1)
+      .join('/')}/${val}`;
+    props.history.push(newUrl);
+  };
+
   // ************************** Return ***************************************
   const content = (
-    <Tabs defaultActiveKey="1" activeKey={currTab} onChange={setCurrTab} animated={false}>
-      <TabPane tab={'Environment'} key={'1'}>
+    <Tabs defaultActiveKey="environment" activeKey={currTab} onChange={onChange} animated={false}>
+      <TabPane tab={'Environment'} key={'environment'}>
         <EnvironmentSpecs
           currentAssignment={props.currentAssignment}
           updateAssignment={props.updateAssignment}
@@ -240,7 +258,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
           helpers={helpers}
         />
       </TabPane>
-      <TabPane tab={'Tests'} key={'4'}>
+      <TabPane tab={'Tests'} key={'tests'}>
         <TestDefinitions
           currentAssignment={props.currentAssignment}
           submissions={props.submissions}
@@ -254,7 +272,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
           sourceFiles={sourceFiles}
         />
       </TabPane>
-      <TabPane tab={'Settings'} key={'5'}>
+      <TabPane tab={'Settings'} key={'settings'}>
         <div>Settings</div>
       </TabPane>
     </Tabs>
