@@ -7,7 +7,6 @@ import 'codemirror/mode/shell/shell';
 import {
   PYTHON_UNIT_TEMPLATE,
   BASH_PYTHON_TEMPLATE,
-  BASHMODE_TEMPLATE,
   JAVA_UNIT_TEMPLATE,
   BASH_JAVA_TEMPLATE,
   BASH_CPP_TEMPLATE,
@@ -57,26 +56,22 @@ const languagesWithDependencySupport = ['python-3.7', 'python-2.7'];
 export const testTemplates: { [language: string]: { [type: string]: string } } = {
   'python-3.7': {
     io: '',
-    'native-unit': PYTHON_UNIT_TEMPLATE,
-    'bash-unit': BASH_PYTHON_TEMPLATE,
-    bashMode: BASHMODE_TEMPLATE,
+    unit: PYTHON_UNIT_TEMPLATE,
+    shell: BASH_PYTHON_TEMPLATE,
   },
   'python-2.7': {
     io: '',
-    'native-unit': PYTHON_UNIT_TEMPLATE,
-    'bash-unit': BASH_PYTHON_TEMPLATE,
-    bashMode: BASHMODE_TEMPLATE,
+    unit: PYTHON_UNIT_TEMPLATE,
+    shell: BASH_PYTHON_TEMPLATE,
   },
   java: {
     io: '',
-    'native-unit': JAVA_UNIT_TEMPLATE,
-    'bash-unit': BASH_JAVA_TEMPLATE,
-    bashMode: BASHMODE_TEMPLATE,
+    unit: JAVA_UNIT_TEMPLATE,
+    shell: BASH_JAVA_TEMPLATE,
   },
   'c/c++': {
     io: '',
-    'native-unit': '',
-    'bash-unit': BASH_CPP_TEMPLATE,
-    bashMode: '',
+    unit: '',
+    shell: BASH_CPP_TEMPLATE,
   },
 };

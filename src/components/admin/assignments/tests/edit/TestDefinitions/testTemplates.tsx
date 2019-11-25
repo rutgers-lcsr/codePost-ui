@@ -71,20 +71,6 @@ export const BASH_JAVA_TEMPLATE = `
 TestOutput true "Put your custom log statement here"
 `;
 
-export const BASHMODE_TEMPLATE = `
-# You can write a bash script below to output mutltiple tests
-# Each test must call TestOutput. Sytntax:
-#    TestOuput <testName (string)> <passed (boolean)> <logs (string)>
-# The testNames must be unique
-#
-# For example, to run two passed tests tests:
-#
-# TestOutput "test1" true "good job!"
-# TestOutput "test2" true "good job again!"
-#
-TestOutput "test1" true "Put your custom log statement here"
-`;
-
 export const BASH_CPP_TEMPLATE = `
 # You can write a bash script below
 # It must call the function TestOutput <boolean> <string logs>

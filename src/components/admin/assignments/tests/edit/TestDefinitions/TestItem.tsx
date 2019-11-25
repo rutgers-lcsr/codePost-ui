@@ -14,7 +14,7 @@ import { AssignmentType, TestCaseType, SubmissionType } from '../../../../../../
 import { TestCase } from '../../../../../../infrastructure/testCase';
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
-import { BasicTestResultType } from '../../../../../../infrastructure/autograder/runTypes';
+import { TestEditorResultType, BasicTestResultType } from '../../../../../../infrastructure/autograder/runTypes';
 import { awaitTestResult } from '../../testResult';
 
 /* codePost component imports */
@@ -143,8 +143,8 @@ export const TestItem = (props: ITestItemProps) => {
     }
   };
 
-  const callback = (resultArr: BasicTestResultType[]) => {
-    const result = resultArr[0];
+  const callback = (response: TestEditorResultType) => {
+    const result: BasicTestResultType = response.results[0];
     const formatted = {
       log: result.logs,
       target: props.activeSubmission ? props.activeSubmission.students[0] : 'solution code',
@@ -521,8 +521,8 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   }
                 >
                   <Option value={'io'}>Input / Output</Option>
-                  <Option value={'bash-unit'}>Shell Script</Option>
-                  <Option value={'native-unit'}>
+                  <Option value={'shell'}>Shell Script</Option>
+                  <Option value={'unit'}>
                     Unit Test <Tag>BETA</Tag>
                   </Option>
                 </Select>

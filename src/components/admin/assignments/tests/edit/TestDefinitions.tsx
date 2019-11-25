@@ -203,7 +203,7 @@ export const TestDefinitions = (props: IProps) => {
       // if the test is connected to a sourcefile, set bash-group
       // if the language is natively supported, set it as 'io'
       // else, set the default to bash-unit
-      type: sourceFile ? 'bash-group' : hasNativeSupport ? 'io' : externalOnly ? 'external' : 'bash-unit',
+      type: sourceFile ? 'file' : hasNativeSupport ? 'io' : externalOnly ? 'external' : 'shell',
       pointsPass: 0,
       pointsFail: 0,
       text: '',

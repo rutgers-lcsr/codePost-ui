@@ -9,7 +9,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, Checkbox, Divider, Icon, Input, Layout, Select, Typography } from 'antd';
 
 /* codePost object imports */
-import { BasicTestResultType } from '../../../../../infrastructure/autograder/runTypes';
+import { BasicTestResultType, TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 import { SubmissionType } from '../../../../../infrastructure/submission';
 import { SourceFile, SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
@@ -106,8 +106,8 @@ export const SourceEditor = (props: IProps) => {
   }, [newCode]);
 
   // callback called when run is complete
-  const callback = (results: BasicTestResultType[]) => {
-    props.setResults(results);
+  const callback = (response: TestEditorResultType) => {
+    props.setResults(response.results);
     setRunning(false);
     if (props.env && props.env.dumpMode && props.activeSubmission) {
       // Refresh submission files after dump
