@@ -511,6 +511,8 @@ export const GradeButton = (props: IGradeButtonProps) => {
     setBreakdownVisible(!breakdownVisible);
   }
 
+  useHotkeys('b', handleClick, true);
+
   return (
     <div>
       <CPButton cpType={theme === 'light' ? 'secondary' : 'dark'} onClick={handleClick}>

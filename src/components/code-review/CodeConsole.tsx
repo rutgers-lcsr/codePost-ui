@@ -49,6 +49,8 @@ import LayoutResizer, { CodeConsoleDimensionsType, getInitialDimensions } from '
 
 import ThemeToggle from '../core/ThemeToggle';
 
+import KeyboardShortcuts from './KeyboardShortcuts';
+
 import FileMenu, { FileMenuTitle } from './menu/FileMenu';
 
 import RubricMenuUI from './menu/RubricMenuUI';
@@ -108,6 +110,7 @@ interface ICodeConsoleState {
   codeVerticalOffset: number;
   dimensions: CodeConsoleDimensionsType;
   isStudent: boolean;
+  showKeyboardShortcuts: boolean;
 
   /* submissions data for readers and writers */
   readOnlySubmission?: StudentSubmissionType;
@@ -404,6 +407,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       commentRubricComments: {},
       comments: {},
       fileTemplates: undefined,
+      showKeyboardShortcuts: false,
 
       files: [],
       graders: [],
@@ -598,6 +602,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     const os = getOperatingSystem();
     const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
 
+    if (e.key === '/' && triggerKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.toggleKeyboardShortcuts();
+      return;
+    }
+
     if (this.state.selectedFile !== undefined) {
       if (this.state.activeCommentID !== undefined) {
         if (e.key === 'j' && triggerKey) {
@@ -689,6 +700,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               const cursorIndex = Math.max(this.state.cursorIndex - 1, 0);
               const cursorExtent = this.state.cursorExtent;
               scrollCodeToCursor(codeScrollArea, cursorIndex, cursorExtent);
+
               this.setState({
                 cursorIndex,
                 cursorExtent,
@@ -698,7 +710,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               e.preventDefault();
               e.stopPropagation();
               console.log('DOWN');
-
               const cursorIndex = Math.min(this.state.cursorIndex + 1, lines.length - this.state.cursorExtent);
               const cursorExtent = this.state.cursorExtent;
               scrollCodeToCursor(codeScrollArea, cursorIndex, cursorExtent);
@@ -1175,6 +1186,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         codeVerticalOffset: oldToNew(oldState.codeVerticalOffset),
       };
     });
+  };
+
+  public toggleKeyboardShortcuts = () => {
+    this.setState({ showKeyboardShortcuts: !this.state.showKeyboardShortcuts });
   };
 
   /***********************************************************************************************/
@@ -1908,6 +1923,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           content={content}
           editRubricMode={this.state.editRubricMode}
         />
+        <KeyboardShortcuts visible={this.state.showKeyboardShortcuts} onClose={this.toggleKeyboardShortcuts} />
       </div>
     );
   }

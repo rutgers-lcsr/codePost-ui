@@ -9,7 +9,7 @@ export const getOperatingSystem = () => {
 
 export const osControlKey = () => {
   if (getOperatingSystem() === OS.WINDOWS) {
-    return 'ctrl';
+    return 'Ctrl';
   } else {
     return '⌘';
   }
