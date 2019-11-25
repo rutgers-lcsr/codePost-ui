@@ -15,7 +15,7 @@ const EnvironmentV = t.intersection(
   [
     GenericObject,
     t.type({
-      language: t.union([t.string, t.null]),
+      language: t.string,
       assignment: t.number,
       dependencies: t.string,
       helperFiles: t.array(t.number),
@@ -34,7 +34,7 @@ const EnvironmentVPost = t.intersection(
   [
     GenericObject,
     t.type({
-      language: t.union([t.string, t.null]),
+      language: t.string,
       assignment: t.number,
       dependencies: t.string,
       compileText: t.string,
@@ -49,7 +49,7 @@ const EnvironmentVPatch = t.intersection(
   [
     GenericObject,
     t.partial({
-      language: t.union([t.string, t.null]),
+      language: t.string,
       dependencies: t.string,
       compileText: t.string,
       dumpMode: t.boolean,

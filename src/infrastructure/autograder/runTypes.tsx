@@ -14,7 +14,13 @@ const BasicTestResult = t.type({
   testCategory: t.number,
 });
 
+const TestEditorResult = t.type({
+  logs: t.string,
+  results: t.array(BasicTestResult),
+});
+
 const SubmissionTestResult = t.array(SubmissionTestV);
 
 export type SubmissionTestResultType = t.TypeOf<typeof SubmissionTestResult>;
 export type BasicTestResultType = t.TypeOf<typeof BasicTestResult>;
+export type TestEditorResultType = t.TypeOf<typeof TestEditorResult>;

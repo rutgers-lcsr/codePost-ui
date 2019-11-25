@@ -446,6 +446,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
 
     // Disable changing the test type if there is no native test support
     const hasNativeSupport = hasNativeTestSupport(this.props.language);
+    const typesWithEditDisabled = ['file', 'external'];
 
     // Get appropriate body
     let testBody;
@@ -507,13 +508,15 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 Test Type: &nbsp;
                 <Select
                   onChange={this.onTypeChange}
-                  disabled={this.props.isRunning || !hasNativeSupport}
+                  disabled={
+                    this.props.isRunning || !hasNativeSupport || typesWithEditDisabled.includes(this.state.testType)
+                  }
                   style={{ width: 200 }}
                   value={
                     this.state.testType == 'io_cli'
                       ? 'io'
-                      : this.state.testType == 'bash-group'
-                      ? 'Source Editor defined'
+                      : this.state.testType == 'file'
+                      ? 'File defined'
                       : this.state.testType
                   }
                 >
@@ -574,14 +577,14 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               </Form.Item>
             </div>
             <Divider />
-            {this.state.testType !== 'bash-group' && (
+            {!typesWithEditDisabled.includes(this.state.testType) && (
               <div>
                 <Typography.Title level={4}>2. Definition</Typography.Title>
                 {testBody}
               </div>
             )}
           </Form>
-          {this.state.testType !== 'bash-group' && (
+          {!typesWithEditDisabled.includes(this.state.testType) && (
             <div>
               <Divider />
               <Typography.Title level={4}>3. Results</Typography.Title>

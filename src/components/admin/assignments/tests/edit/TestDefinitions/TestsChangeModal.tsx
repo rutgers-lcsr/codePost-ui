@@ -135,7 +135,8 @@ export const TestsChangeModal = (props: IProps) => {
       const cases = casesByCategory[parseInt(cat, 10)];
       const categoryName = categoriesByID[parseInt(cat, 10)].name;
       cases.forEach((c) => {
-        if (c.type === 'bash-group') {
+        // We want to ignore any non file-defined tests in the comparison
+        if (c.type === 'file') {
           (categoryName in casesByCategoryName && (casesByCategoryName[categoryName][c.description] = c)) ||
             (casesByCategoryName[categoryName] = { [c.description]: c });
         }
