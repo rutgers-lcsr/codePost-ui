@@ -40,9 +40,7 @@ const TestsOverview = (props: IProps & RouteComponentProps) => {
               height: 60,
             }}
             description={
-              <span>
-                The codePost autograder is coming soon! Let us know if you want to participate in our public beta.
-              </span>
+              <span>The codePost autograder is coming soon! Let us know if you want to participate in our beta.</span>
             }
           ></Empty>
         </div>
