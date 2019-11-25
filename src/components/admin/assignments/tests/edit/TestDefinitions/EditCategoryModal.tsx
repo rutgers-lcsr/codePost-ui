@@ -48,6 +48,21 @@ export const EditCategoryModal = (props: IUploadProps) => {
     setName(e.target.value);
   };
 
+  React.useEffect(() => {
+    const handleKeydown = (e: any) => {
+      if (visible && e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        onSave();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+    return () => {
+      document.removeEventListener('keydown', handleKeydown);
+    };
+  });
+
   /******************************* Return *****************************************/
   return (
     <span>
