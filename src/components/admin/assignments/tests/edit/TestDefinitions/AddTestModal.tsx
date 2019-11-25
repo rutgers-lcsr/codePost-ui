@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 /* library imports */
-import { Button, Modal, Select, Icon } from 'antd';
+import { Button, Modal, Select, Icon, Tooltip } from 'antd';
 
 import { TestCategoryType } from '../../../../../../infrastructure/testCategory';
 
@@ -47,7 +47,9 @@ export const AddTestModal = (props: IUploadProps) => {
   /******************************* Return *****************************************/
   return (
     <span>
-      <Icon type="file-add" onClick={toggleVisible} />
+      <Tooltip title="Add File">
+        <Icon type="file-add" onClick={toggleVisible} />
+      </Tooltip>
       <Modal
         visible={visible && props.categories.length > 1}
         title={`Add TestCase`}
