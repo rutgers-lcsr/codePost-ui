@@ -8,13 +8,21 @@ import * as React from 'react';
 /* antd imports */
 import { Table } from 'antd';
 
+/* other library imports */
+import { Link } from 'react-router-dom';
+
 /* codePost imports */
-import { SubmissionTest, SubmissionTestType } from '../../../infrastructure/submissionTest';
-import { TestCategoryType } from '../../../infrastructure/testCategory';
+import { AssignmentType, SubmissionTestType, TestCategoryType } from '../../../infrastructure/types';
+import { SubmissionTest } from '../../../infrastructure/submissionTest';
 import { TestCasesByCategory } from '../../core/testFetchUtils';
 
 import { BasicTestResultType } from '../../../infrastructure/autograder/runTypes';
 import Badge from '../../core/Badge';
+
+import { CourseContext } from '../../core/Contexts';
+
+import { encodeForLink } from '../../core/URLutils';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -22,6 +30,8 @@ interface IProps {
   cases: TestCasesByCategory;
   categories: TestCategoryType[];
   isOpen: boolean;
+  assignment: AssignmentType;
+  showLink?: boolean;
 }
 
 const TestsMenu = (props: IProps) => {
@@ -103,7 +113,34 @@ const TestsMenu = (props: IProps) => {
       }}
     >
       <div style={{ fontSize: 12, overflowX: 'auto' }}>
-        <Table dataSource={data} columns={columns} size="small" pagination={false} bordered={false} />
+        {props.categories.length > 0 ? (
+          <Table dataSource={data} columns={columns} size="small" pagination={false} bordered={false} />
+        ) : (
+          <span>
+            You haven't defined any tests.{' '}
+            {props.showLink ? (
+              <span>
+                You can do so from the{' '}
+                <CourseContext.Consumer>
+                  {(course) => (
+                    <span>
+                      <Link
+                        to={`/admin/${encodeForLink(course.name)}/${encodeForLink(
+                          course.period,
+                        )}/assignments/tests/${encodeForLink(props.assignment.name)}/edit`}
+                      >
+                        Admin Console
+                      </Link>
+                      .
+                    </span>
+                  )}
+                </CourseContext.Consumer>
+              </span>
+            ) : (
+              ''
+            )}
+          </span>
+        )}
       </div>
     </div>
   );

@@ -428,7 +428,13 @@ export const TestDefinitions = (props: IProps) => {
           </Menu>
           <div onClick={setIndex.bind({}, 'tests')}>
             <div style={{ ...headerStyle, marginTop: 10 }}>TestResults</div>
-            <TestsMenu tests={testResults} cases={casesByCategory} categories={categories} isOpen={index === 'tests'} />
+            <TestsMenu
+              assignment={props.currentAssignment}
+              tests={testResults}
+              cases={casesByCategory}
+              categories={categories}
+              isOpen={index === 'tests'}
+            />
           </div>
         </div>
       );
