@@ -116,30 +116,7 @@ const TestsMenu = (props: IProps) => {
         {props.categories.length > 0 ? (
           <Table dataSource={data} columns={columns} size="small" pagination={false} bordered={false} />
         ) : (
-          <span>
-            You haven't defined any tests.{' '}
-            {props.showLink ? (
-              <span>
-                You can do so from the{' '}
-                <CourseContext.Consumer>
-                  {(course) => (
-                    <span>
-                      <Link
-                        to={`/admin/${encodeForLink(course.name)}/${encodeForLink(
-                          course.period,
-                        )}/assignments/tests/${encodeForLink(props.assignment.name)}/edit`}
-                      >
-                        Admin Console
-                      </Link>
-                      .
-                    </span>
-                  )}
-                </CourseContext.Consumer>
-              </span>
-            ) : (
-              ''
-            )}
-          </span>
+          <span>Soon you'll be able to show test output and run tests on student code using codePost!</span>
         )}
       </div>
     </div>
