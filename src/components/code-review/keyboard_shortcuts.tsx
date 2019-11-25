@@ -1,7 +1,13 @@
+import { IShortcutCategory } from './KeyboardShortcuts';
+
 const shortcuts: IShortcutCategory[] = [
   {
     category: 'General',
     shortcuts: [
+      {
+        name: 'Show Shortcuts Guide',
+        keys: ['COMMAND', '/'],
+      },
       {
         name: 'Dark Mode',
         keys: ['COMMAND', 'l'],

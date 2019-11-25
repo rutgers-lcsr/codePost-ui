@@ -16,7 +16,7 @@ interface IShortcut {
   keys: string[];
 }
 
-interface IShortcutCategory {
+export interface IShortcutCategory {
   category: string;
   shortcuts: IShortcut[];
 }
@@ -57,6 +57,7 @@ const KeyIcon = (props: IKeyIconProps) => {
     case 'UP':
       keyString = '↑';
       tooltip = 'Up';
+      break;
     default:
       break;
   }
