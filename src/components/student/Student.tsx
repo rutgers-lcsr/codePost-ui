@@ -19,7 +19,7 @@ import CPFlex from '../core/CPFlex';
 
 import { IAssignmentToSubmissionStudentMap, ICourseToAssignmentMap, USER_TYPE } from '../../types/common';
 
-import { AssignmentStudent, AssignmentType } from '../../infrastructure/assignment';
+import { AssignmentStudent, AssignmentType, sortAssignments } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { loadIDList } from '../../infrastructure/generics';
 import { StudentSubmissionType, Submission } from '../../infrastructure/submission';
@@ -472,7 +472,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
         : columns;
     }
 
-    const data = assignments.map((assignment) => {
+    const data = sortAssignments(assignments).map((assignment) => {
       const submission = assignment.id in submissions ? submissions[assignment.id][0] : undefined;
       const uploadContent = this.getUploadContent(assignment, submission);
 
