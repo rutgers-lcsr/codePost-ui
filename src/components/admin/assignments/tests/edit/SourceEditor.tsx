@@ -128,7 +128,7 @@ export const SourceEditor = (props: IProps) => {
 
   /************************** Return ****************************/
   const runSelect = (
-    <Input.Group compact style={{ width: 'fit-content' }}>
+    <Input.Group compact style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
       <Button type="primary" style={{ height: '24px', fontSize: '12px' }} loading={running} onClick={runTest}>
         Run
       </Button>
@@ -182,6 +182,7 @@ export const SourceEditor = (props: IProps) => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          overflowX: 'scroll',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -215,7 +216,7 @@ export const SourceEditor = (props: IProps) => {
           )}
         </div>
         &nbsp; &nbsp; &nbsp;
-        <Checkbox style={{ minWidth: 150 }} defaultChecked={props.env && props.env.dumpMode} onChange={updateEnv}>
+        <Checkbox style={{ minWidth: '125px' }} defaultChecked={props.env && props.env.dumpMode} onChange={updateEnv}>
           Dump outputs{' '}
           <CPTooltip title="When this is checked, a TEST.txt file will be created on a student's submissionw with the raw output of the tests" />
         </Checkbox>
