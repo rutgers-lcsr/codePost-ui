@@ -36,7 +36,7 @@ const optionStyle = {
   textAlign: 'left',
   verticalAlign: 'middle',
   fontSize: '16px',
-  height: 250,
+  height: 230,
 } as React.CSSProperties;
 
 const freeButtonStyle = {
@@ -73,6 +73,7 @@ const Pricing = (props: IProps) => {
     marginLeft: windowSize.width < breakpoint ? 0 : 50,
     padding: '35px 35px 35px 35px',
     color: '#fff',
+    fontSize: '14px',
   } as React.CSSProperties;
 
   const featureStyle = {
@@ -109,7 +110,8 @@ const Pricing = (props: IProps) => {
               </Link>
             </div>
             <div style={premiumStyle}>
-              <h3 style={{ color: '#fff', fontWeight: 'bold', fontSize: 24 }}>For-profits and department-wide</h3>
+              <h3 style={{ color: '#fff', fontWeight: 'bold', fontSize: 20 }}>For-profits and department-wide</h3>
+              <p style={{ fontSize: '18px', fontWeight: 'bold' }}>$5 / student</p>
               <a href="mailto:team@codepost.io">
                 <Button style={premiumButtonStyle}>
                   Get in touch <Icon type="arrow-right" />
@@ -135,16 +137,14 @@ const Pricing = (props: IProps) => {
                     <ul style={{ maxWidth: 210, marginBottom: 0 }}>
                       <li>Unlimited students</li>
                       <li>Unlimited course staff</li>
-                      <li>Unlimited submissions</li>
                     </ul>
-                  </div>
-                </div>
-                <div className="display-flex flex-direction-column">
-                  <p style={{ fontSize: '16px', fontWeight: 'bold' }}>Premium features:</p>
-                  <div className={`display-flex justify-content-center flex-direction-${flexDirection}`}>
-                    <ul style={{ maxWidth: 210, marginLeft: windowSize.width < breakpoint ? 0 : 20 }}>
+                    <ul style={{ maxWidth: 210, marginBottom: 0 }}>
+                      <li>Unlimited submissions</li>
+                      <li>Plagiarism detection</li>
+                    </ul>
+                    <ul style={{ maxWidth: 210, marginBottom: 0 }}>
                       <li>Full API access: Unlimited requests</li>
-                      <li>Premium support</li>
+                      <li>24 hour support</li>
                     </ul>
                   </div>
                 </div>
