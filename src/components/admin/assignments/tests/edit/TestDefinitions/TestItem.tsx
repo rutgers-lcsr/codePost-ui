@@ -305,7 +305,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             File
           </Option>
           <Option key={'cli'} value={'io_cli'}>
-            command line
+            Command Line
           </Option>
         </Select>
         <span style={textStyle}>with name</span>
