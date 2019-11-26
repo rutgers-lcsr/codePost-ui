@@ -280,7 +280,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
 
   const actions = [
     <Button type="primary">
-      <Link to={[...props.match.url.split('/').slice(0, props.match.url.split('/').length - 1), 'results'].join('/')}>
+      <Link to={[...props.match.url.split('/').slice(0, props.match.url.split('/').length - 2), 'results'].join('/')}>
         View results
       </Link>
     </Button>,

@@ -68,7 +68,7 @@ export const CodeWindow = (props: IProps) => {
     <div style={{ fontSize: 12, minWidth: 300, width: '100%', position: 'relative' }}>
       {!props.onChange && (
         <Button
-          style={{ position: 'absolute', right: 15, zIndex: 100 }}
+          style={{ position: 'absolute', right: 15, top: '-34px', zIndex: 100 }}
           type={'primary'}
           ghost={!props.onSave}
           onClick={onSave}
