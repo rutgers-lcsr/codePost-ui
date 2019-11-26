@@ -21,6 +21,8 @@ import { TableDetail } from '../other/TableDetail';
 /* other library imports */
 import memoizeOne from 'memoize-one';
 
+import { RouteComponentProps } from 'react-router';
+
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
@@ -94,10 +96,6 @@ export interface IManageAssignmentsProps {
   /* user data */
   user: UserType;
 
-  location: any;
-  match: any;
-  history: any;
-
   activeAssignment?: AssignmentType; // which assignment has been clicked
   detailType?: DETAIL_TYPE; // what detail view are we showing
   baseURL: string;
@@ -124,17 +122,16 @@ interface IManageAssignmentsState {
   };
   isDownloading: boolean;
   activeStudent?: string; // track student from drawer to upload component
-
-  assignments: AssignmentType[];
+  sortedOrder: number[];
 }
 
 /**********************************************************************************************************************/
 
-class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageAssignmentsState> {
+class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteComponentProps, IManageAssignmentsState> {
   public state: Readonly<IManageAssignmentsState> = {
     drawerContent: { title: '', subtitle: '', content: [] },
     isDownloading: false,
-    assignments: sortAssignments(this.props.assignments),
+    sortedOrder: sortAssignments(this.props.assignments).map((el) => el.id),
   };
 
   public calculateStats = memoizeOne(calculateMultipleAssignmentProgressStats);
@@ -318,7 +315,11 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
       this.props.students,
     );
 
-    data = this.state.assignments.map((assignment, i) => {
+    data = this.state.sortedOrder.map((id, i) => {
+      const assignment = this.props.assignments.find((el) => el.id === id);
+      if (assignment === undefined) {
+        return;
+      }
       const statsForRow = assignmentStats[assignment.id];
       const encodedName = encodeForLink(assignment.name);
       const menu = (
@@ -638,19 +639,22 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
     };
 
     const moveRow = (dragIndex: number, hoverIndex: number) => {
-      const { assignments } = this.state;
-      const dragRow = assignments[dragIndex];
+      const { sortedOrder } = this.state;
+      const dragRow = sortedOrder[dragIndex];
 
       this.setState(
         update(this.state, {
-          assignments: {
+          sortedOrder: {
             $splice: [[dragIndex, 1], [hoverIndex, 0, dragRow]],
           },
         }),
         () => {
-          this.state.assignments.map((assignment: AssignmentType, index: number) => {
-            const patchObj: AssignmentPatchType = { id: assignment.id, sortKey: index };
-            Assignment.update(patchObj);
+          const match = this.props.assignments.find((el) => el.id === dragRow);
+          this.props.assignments.forEach((assignment) => {
+            assignment.sortKey = this.state.sortedOrder.indexOf(assignment.id);
+            this.props.updateAssignment(assignment);
+            console.log(assignment.name);
+            console.log(assignment.sortKey);
           });
         },
       );
