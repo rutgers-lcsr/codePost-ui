@@ -76,12 +76,15 @@ const niemaText = (
     <Typography.Text mark className="codePost-highlight">
       worried about how I would scale my courses
     </Typography.Text>{' '}
-    to meet the needs of my students...{' '}
+    to meet the needs of my students.
     <Typography.Text mark className="codePost-highlight">
-      With codePost's intuitive UI and top-notch Python API, I have been able to build workflows that have made all
-      aspects of executing my course extremely streamlined.
-    </Typography.Text>{' '}
-    Thank you for helping me keep my sanity :-)
+      With codePost's intuitive UI and top-notch Python API
+    </Typography.Text>
+    , I have been able to build workflows that have made all aspects of executing my course extremely streamlined,{' '}
+    <Typography.Text mark className="codePost-highlight">
+      even with >500 students
+    </Typography.Text>
+    .
   </span>
 );
 
@@ -179,7 +182,7 @@ const testimonials = [
 
 const Testimonials = () => {
   const [startIndex, setStartIndex] = React.useState(0);
-  const [permutation, setPerm] = React.useState(shuffle(testimonials.map((el, i) => i)));
+  const [permutation] = React.useState(shuffle(testimonials.map((el, i) => i)));
 
   const windowSize = useWindowSize();
 
