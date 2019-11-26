@@ -651,8 +651,11 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         () => {
           const match = this.props.assignments.find((el) => el.id === dragRow);
           this.props.assignments.forEach((assignment) => {
-            assignment.sortKey = this.state.sortedOrder.indexOf(assignment.id);
-            this.props.updateAssignment(assignment);
+            const newKey = this.state.sortedOrder.indexOf(assignment.id);
+            if (newKey !== assignment.sortKey) {
+              assignment.sortKey = newKey;
+              this.props.updateAssignment(assignment);
+            }
           });
         },
       );
