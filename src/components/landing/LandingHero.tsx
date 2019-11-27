@@ -57,7 +57,7 @@ const LandingHero = () => {
       >
         Give better feedback on programming assignments, so you can teach CS better and train good programmers.{' '}
         <Link to="/pricing">
-          <span style={{ fontWeight: 600, color: '#24be85' }}>Free for colleges.</span>
+          <span style={{ fontWeight: 600, color: '#24be85' }}>Free for higher ed.</span>
         </Link>
       </div>
       <div
