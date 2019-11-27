@@ -36,7 +36,7 @@ const optionStyle = {
   textAlign: 'left',
   verticalAlign: 'middle',
   fontSize: '16px',
-  height: 230,
+  height: 250,
 } as React.CSSProperties;
 
 const freeButtonStyle = {
@@ -110,7 +110,7 @@ const Pricing = (props: IProps) => {
               </Link>
             </div>
             <div style={premiumStyle}>
-              <h3 style={{ color: '#fff', fontWeight: 'bold', fontSize: 20 }}>For-profits and custom deployments</h3>
+              <h3 style={{ color: '#fff', fontWeight: 'bold', fontSize: 17 }}>For-profits and custom deployments</h3>
               <p style={{ fontSize: '18px', fontWeight: 'bold' }}>$5 / student</p>
               <a href="mailto:team@codepost.io">
                 <Button style={premiumButtonStyle}>
