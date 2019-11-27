@@ -92,7 +92,7 @@ export const TestsChangeModal = (props: IProps) => {
   const parseTests = (sourceFiles: SourceFileType[], currentFile: IBasicFile, currentCode: string) => {
     const parsedTests: { [categoryName: string]: Set<string> } = {};
     sourceFiles.forEach((f) => {
-      const re = /TestOutput "([^"]+?)" "([^"]+?)" (true|false)( "([^"]*?)")?/g;
+      const re = /^([^#]*\s)*TestOutput "([^"]+?)" "([^"]+?)" (true|false)( "([^"]*?)")?/g;
 
       // The current file is updated, so we want to use the latest code
       const code = f.id === currentFile.id && currentFile.type === FILE_TYPE.SOURCEFILE ? currentCode : f.code;
