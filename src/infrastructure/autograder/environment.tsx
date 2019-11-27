@@ -101,4 +101,5 @@ export class Environment {
   public static updateBuild = updateObjectDetail(EnvironmentV, BuildData, 'autograder/environments', 'build');
   public static eject = readObjectDetail(TestsSource, 'autograder/environments', 'eject');
   public static runAll = readObjectDetail(TaskV, 'autograder/environments', 'runAll');
+  public static run = readObjectDetail(TaskV, 'submissions', 'run');
 }

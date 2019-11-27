@@ -138,7 +138,10 @@ export const TestItem = (props: ITestItemProps) => {
         id: props.testCase.id,
         submission: props.activeSubmission ? props.activeSubmission.id : undefined,
       };
-      const result = await TestCase.run(payload);
+      const result = await TestCase.run(
+        props.testCase.id,
+        props.activeSubmission ? { submission: props.activeSubmission.id.toString() } : {},
+      );
       awaitTestResult(result.task, callback);
     }
   };

@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { createObject, deleteObject, GenericObject, readObject, updateObject, createObjectDetail } from './generics';
+import { createObject, deleteObject, GenericObject, readObject, updateObject, readObjectDetail } from './generics';
 import { TaskV } from './autograder/runTypes';
 export const TestCaseV = t.intersection(
   [
@@ -80,7 +80,7 @@ export class TestCase {
   public static delete = deleteObject(TestCaseV, 'testCases');
   public static update = updateObject(TestCaseV, TestCaseVPatch, 'testCases');
 
-  public static run = createObjectDetail(TaskV, GenericObject, 'testCases', 'run');
+  public static run = readObjectDetail(TaskV, 'testCases', 'run');
 
   public static sort = (testCases: TestCaseType[]): TestCaseType[] => {
     const compare = (a: TestCaseType, b: TestCaseType) => {

@@ -21,7 +21,7 @@ import {
   FileTemplateType,
 } from '../../../../infrastructure/types';
 import { AssignmentStudent } from '../../../../infrastructure/assignment';
-import { Submission } from '../../../../infrastructure/submission';
+import { Environment } from '../../../../infrastructure/autograder/environment';
 import { FileTemplate } from '../../../../infrastructure/fileTemplate';
 
 import CPTooltip from '../../../../components/core/CPTooltip';
@@ -175,8 +175,10 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public runTests = async () => {
-    if (this.state.submission) {
-      const result = await Submission.run(this.state.submission.id);
+    if (this.state.submission && this.state.selectedAssignment && this.state.selectedAssignment.environment) {
+      const result = await Environment.run(this.state.selectedAssignment.environment, {
+        submission: this.state.submission.id.toString(),
+      });
       awaitTestResult(result.task, this.setResults);
     }
   };

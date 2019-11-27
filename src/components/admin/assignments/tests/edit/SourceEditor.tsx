@@ -72,10 +72,14 @@ export const SourceEditor = (props: IProps) => {
   const runTest = async () => {
     if (fileToRun) {
       setRunning(true);
-      const result: any = await SourceFile.run({
-        id: fileToRun,
-        submission: props.activeSubmission ? props.activeSubmission.id : null,
-      });
+      const result: any = await SourceFile.run(
+        fileToRun,
+        props.activeSubmission
+          ? {
+              submission: props.activeSubmission.id.toString(),
+            }
+          : {},
+      );
       awaitTestResult(result.task, callback);
     }
   };

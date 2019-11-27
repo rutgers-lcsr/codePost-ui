@@ -103,9 +103,11 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   };
 
   const runTests = async (sub: SubmissionType) => {
-    setSubsLoading([...subsLoading, sub.id]);
-    const result = await Submission.run(sub.id);
-    awaitTestResult(result.task, callback.bind({}, sub));
+    if (env) {
+      setSubsLoading([...subsLoading, sub.id]);
+      const result = await Environment.run(env.id, { submission: sub.id.toString() });
+      awaitTestResult(result.task, callback.bind({}, sub));
+    }
   };
 
   const runAll = async () => {
