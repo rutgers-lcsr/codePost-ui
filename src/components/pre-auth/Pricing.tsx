@@ -110,7 +110,7 @@ const Pricing = (props: IProps) => {
               </Link>
             </div>
             <div style={premiumStyle}>
-              <h3 style={{ color: '#fff', fontWeight: 'bold', fontSize: 20 }}>For-profits and department-wide</h3>
+              <h3 style={{ color: '#fff', fontWeight: 'bold', fontSize: 20 }}>For-profits and custom deployments</h3>
               <p style={{ fontSize: '18px', fontWeight: 'bold' }}>$5 / student</p>
               <a href="mailto:team@codepost.io">
                 <Button style={premiumButtonStyle}>
