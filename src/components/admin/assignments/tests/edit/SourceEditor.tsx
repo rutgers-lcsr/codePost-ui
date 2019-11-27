@@ -66,20 +66,26 @@ export const SourceEditor = (props: IProps) => {
   const [saving, setSaving] = useState(false);
   // The new code of the edited sourceFile
   const [newCode, setNewCode] = useState('');
-  const [fileToRun, setFileToRun] = useState(0);
+  const [fileToRun, setFileToRun] = useState('0');
 
   /************************** API Functions ****************************/
   const runTest = async () => {
-    if (fileToRun) {
+    if (props.env) {
       setRunning(true);
-      const result: any = await SourceFile.run(
-        fileToRun,
-        props.activeSubmission
-          ? {
-              submission: props.activeSubmission.id.toString(),
-            }
-          : {},
-      );
+      let result: any;
+      if (parseInt(fileToRun, 10) === 0) {
+        // Run without submission runs all on solution code
+        result = await Environment.run(props.env.id);
+      } else {
+        result = await SourceFile.run(
+          parseInt(fileToRun, 10),
+          props.activeSubmission
+            ? {
+                submission: props.activeSubmission.id.toString(),
+              }
+            : {},
+        );
+      }
       awaitTestResult(result.task, callback);
     }
   };
@@ -127,7 +133,7 @@ export const SourceEditor = (props: IProps) => {
   };
 
   const onFileChange = (id: string) => {
-    setFileToRun(parseInt(id, 10));
+    setFileToRun(id);
   };
 
   /************************** Return ****************************/
@@ -141,6 +147,7 @@ export const SourceEditor = (props: IProps) => {
         style={{ height: '25px', minWidth: '150px', fontSize: '12px' }}
         size="small"
         showSearch
+        value={fileToRun.toString()}
         filterOption={(input, option: any) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
       >
         {props.sourceFiles.map((f, i) => (
@@ -148,6 +155,9 @@ export const SourceEditor = (props: IProps) => {
             {f.name}
           </Select.Option>
         ))}
+        <Select.Option key={'0'} value={'0'} style={{ fontSize: 12 }}>
+          All tests
+        </Select.Option>
       </Select>
     </Input.Group>
   );
@@ -199,11 +209,11 @@ export const SourceEditor = (props: IProps) => {
             }}
             size="small"
             showSearch
-            defaultValue={(props.activeSubmission && props.activeSubmission.id.toString()) || '0'}
+            defaultValue={fileToRun}
             filterOption={(input, option: any) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
           >
             {props.submissions.map((sub, i) => (
-              <Select.Option key={sub.students[0]} value={sub.id} style={{ fontSize: 11 }}>
+              <Select.Option key={sub.students[0]} value={sub.id.toString()} style={{ fontSize: 11 }}>
                 {`${sub.students[0]}'s submission`}
               </Select.Option>
             ))}
