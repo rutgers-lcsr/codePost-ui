@@ -23,7 +23,7 @@ const { Sider, Content } = Layout;
 
 interface IProps {
   files: SolutionFileType[] | HelperFileType[];
-  addFile: (name: string, code: string) => Promise<void>;
+  addFile: (name: string, code: string, path?: string) => Promise<void>;
   deleteFile: (id: number) => Promise<void>;
   updateFile: (id: number, newCode: string) => Promise<void>;
   height?: number;
@@ -59,7 +59,7 @@ export const TestFileList = (props: IProps) => {
     return (
       <div>
         <Layout style={{ height: props.height ? props.height : 650 }}>
-          <Sider theme="light">
+          <Sider theme="light" style={{ maxHeight: 650, overflow: 'auto' }}>
             <Menu selectedKeys={[currentIndex]} openKeys={['helpers']} mode="inline" onClick={changeIndex}>
               {menuItems}
             </Menu>

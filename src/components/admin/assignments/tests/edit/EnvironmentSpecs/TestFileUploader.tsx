@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 
 /* library imports  */
-import { Button, Icon, message, Modal, Table, Upload } from 'antd';
+import { Button, Icon, message, Modal, Switch, Table, Upload } from 'antd';
 
 /* codePost object imports  */
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
@@ -14,7 +14,7 @@ import { HelperFileType } from '../../../../../../infrastructure/autograder/help
 
 interface IUploadProps {
   files: (SolutionFileType | HelperFileType)[];
-  addFile: (name: string, code: string) => Promise<void>;
+  addFile: (name: string, code: string, path?: string) => Promise<void>;
   deleteFile: (id: number) => Promise<void>;
   icon?: boolean;
   title: string;
@@ -27,6 +27,7 @@ export const TestFileUploader = (props: IUploadProps) => {
   const [visible, setVisible] = useState(false);
   const [newFiles, setNewFiles] = useState<any[]>([]);
   const [counter, setCounter] = useState(0);
+  const [uploadDir, setUploadDir] = useState(false);
 
   /************************** API Functions ****************************/
   const deleteFile = async (id: number) => {
@@ -36,7 +37,7 @@ export const TestFileUploader = (props: IUploadProps) => {
 
   const saveNewFiles = async () => {
     const promises = newFiles.map((newFile) => {
-      return props.addFile(newFile.name, newFile.code);
+      return props.addFile(newFile.name, newFile.code, newFile.path);
     });
     await Promise.all(promises);
     message.success(`File(s) uploaded successfully`);
@@ -53,8 +54,17 @@ export const TestFileUploader = (props: IUploadProps) => {
     reader.onload = async () => {
       if (reader.result) {
         const cleanedData = typeof reader.result === 'string' ? reader.result.replace(/\0/g, '') : reader.result;
+
+        const split = file.webkitRelativePath && file.webkitRelativePath.split('/');
+        const path = split
+          ? split
+              .slice(0, split.length - 1)
+              .join('/')
+              .trim()
+              .toLowerCase()
+          : '';
         setNewFiles((prevState) => {
-          return [...prevState, { uid: `${counter}-${file.name}`, code: cleanedData, name: file.name }];
+          return [...prevState, { uid: `${counter}-${file.name}`, code: cleanedData, name: file.name, path: path }];
         });
         setCounter(counter + 1);
       }
@@ -83,6 +93,10 @@ export const TestFileUploader = (props: IUploadProps) => {
       key: 'delete',
     },
   ];
+
+  const toggleDir = () => {
+    setUploadDir(!uploadDir);
+  };
 
   const data = props.files.map((file) => {
     return {
@@ -117,11 +131,15 @@ export const TestFileUploader = (props: IUploadProps) => {
           showUploadList={true}
           onRemove={onRemove}
           fileList={newFiles}
+          directory={uploadDir}
         >
           <Button>
             <Icon type="upload" /> Add Files
           </Button>
         </Upload>
+        <Switch onChange={toggleDir}>
+          <Icon type="upload" /> Add Files
+        </Switch>
       </Modal>
     </div>
   );

@@ -85,7 +85,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
 
   /************************** API / State change functions ******************************/
 
-  const addFile = async (type: FILE_TYPE, name: string, code: string) => {
+  const addFile = async (type: FILE_TYPE, name: string, code: string, path?: string) => {
     if (!env) {
       return;
     }
@@ -94,7 +94,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       name: name,
       environment: env.id,
       code: code,
-      path: null,
+      path: path ? path : null,
       id: -1,
     };
 

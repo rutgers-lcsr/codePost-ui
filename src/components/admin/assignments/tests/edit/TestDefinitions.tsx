@@ -55,6 +55,13 @@ import FileTag from './TestDefinitions/FileTag';
 import { fetchTestData, TestCasesByCategory } from '../../../../core/testFetchUtils';
 import { hasNativeTestSupport } from './utils/languageUtils';
 
+import {
+  IFolder,
+  IDirectoryStructure,
+  buildFolderMenu,
+  createDirectoryStructure,
+} from '../../../../code-review/menu/fileMenuUtils';
+
 const { Sider, Content } = Layout;
 
 /**********************************************************************************************************************/
@@ -79,10 +86,11 @@ enum DETAIL_TYPE {
 
 export interface IBasicFile {
   name: string;
-  canSave: boolean;
+  canSave?: boolean;
   code: string;
   id: number;
   type: FILE_TYPE;
+  path: string | null;
 }
 
 export const TestDefinitions = (props: IProps) => {
@@ -351,31 +359,35 @@ export const TestDefinitions = (props: IProps) => {
 
   switch (panel) {
     case DETAIL_TYPE.ViewSource:
-      const bashFile = [{ name: 'main.sh', code: main, canSave: false, id: 0, type: FILE_TYPE.MAIN }];
+      const bashFile: IBasicFile[] = [
+        { name: 'main.sh', code: main, canSave: false, id: 0, type: FILE_TYPE.MAIN, path: null },
+      ];
 
-      const helperFiles = props.helpers.map((file) => {
+      const helperFiles: IBasicFile[] = props.helpers.map((file) => {
         return {
           id: file.id,
           name: file.name,
           code: file.code,
           canSave: true,
           type: FILE_TYPE.HELPER,
+          path: file.path,
         };
       });
 
-      const submissionFiles = currentFiles.map((file) => {
+      const submissionFiles: IBasicFile[] = currentFiles.map((file) => {
         return {
           id: file.id,
           name: file.name,
           code: file.code,
           canSave: !activeSubmission,
           type: activeSubmission ? FILE_TYPE.SUBMISSION : FILE_TYPE.SOLUTION,
+          path: file.path,
         };
       });
 
       // filter out test templates for sourcefiles. We want to most up to date source files because
       // we're editing them and the eject mode templates can be stale
-      const templates = tests
+      const templates: IBasicFile[] = tests
         .filter((tc) => tc.errorIfMissing)
         .map((template) => {
           return {
@@ -384,32 +396,22 @@ export const TestDefinitions = (props: IProps) => {
             name: template.name,
             canSave: false,
             type: FILE_TYPE.CODEPOST_TEST_FILE,
+            path: null,
           };
         });
 
-      const sourceFiles = props.sourceFiles.map((sourceFile) => {
+      const sourceFiles: IBasicFile[] = props.sourceFiles.map((sourceFile) => {
         return {
           id: sourceFile.id,
           code: sourceFile.code,
           name: sourceFile.name,
           canSave: true,
           type: FILE_TYPE.SOURCEFILE,
+          path: null,
         };
       });
 
       const groups = [bashFile, helperFiles, submissionFiles, templates, sourceFiles];
-
-      const groupElems = groups.map((group: IBasicFile[], groupIndex) => {
-        return group.map((file, fileIndex) => {
-          return (
-            <Menu.Item key={`${groupIndex}-${fileIndex}`} style={{ height: 'fit-content', minHeight: 40 }}>
-              <FileTag type={file.type} small={true} />
-              &nbsp;
-              {file.name}
-            </Menu.Item>
-          );
-        });
-      });
 
       header = (
         <div style={headerStyle}>
@@ -421,10 +423,31 @@ export const TestDefinitions = (props: IProps) => {
           </div>
         </div>
       );
+
+      const buildFileMenu = (groupIndex: number, files: IBasicFile[]) => {
+        return files.map((f) => {
+          return (
+            <Menu.Item key={`${groupIndex}-${f.id}`} style={{ height: 'fit-content', minHeight: 40 }}>
+              <FileTag type={f.type} small={true} />
+              &nbsp;
+              {f.name}
+            </Menu.Item>
+          );
+        });
+      };
+
       menu = (
         <div>
           <Menu onClick={changeIndex} mode="inline" selectedKeys={[index]}>
-            {groupElems}
+            {groups.map((group: IBasicFile[], groupIndex) => {
+              const directoryStructure = createDirectoryStructure<IBasicFile>(group);
+              const buildFile = buildFileMenu.bind({}, groupIndex);
+              const folders = directoryStructure.folders.map((f: IFolder<IBasicFile>) => {
+                return buildFolderMenu('', f, buildFile);
+              });
+              console.log(folders);
+              return [buildFileMenu(groupIndex, directoryStructure.files), folders];
+            })}
           </Menu>
           <div onClick={setIndex.bind({}, 'tests')}>
             <div style={{ ...headerStyle, marginTop: 10 }}>TestResults</div>
@@ -450,7 +473,9 @@ export const TestDefinitions = (props: IProps) => {
         const currentFileIndex = parseInt(index.split('-')[1], 10);
 
         const currentGroup = groups[currentGroupIndex];
-        const currentFile = currentGroup[currentFileIndex];
+        const currentFile = currentGroup.find((f) => {
+          return f.id === currentFileIndex;
+        });
         content = (
           <SourceEditor
             categories={categories}
