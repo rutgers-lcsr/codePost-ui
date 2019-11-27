@@ -67,26 +67,74 @@ export const TestsChangeModal = (props: IProps) => {
   useEffect(() => {
     if (props.checkChanges) {
       setStatus(STATUS.PARSING);
-      const parsedTests = parseTests(props.sourceFiles, props.currentFile, props.currentFileCode);
-      const [newCategories, deletedCategories, newTests, deletedTests]: any = compareDiff(
-        parsedTests,
-        props.casesByCategory,
-      );
-      setCategoriesToAdd(newCategories);
-      setCategoriesToDelete(deletedCategories);
-      setTestsToAdd(newTests);
-      setTestsToDelete(deletedTests);
-      if (_.isEmpty(newCategories) && _.isEmpty(deletedCategories) && _.isEmpty(newTests) && _.isEmpty(deletedTests)) {
-        props.onConfirm();
+      const errors = checkForErrors(props.currentFileCode);
+      if (errors.length > 0) {
         props.onCancel();
+        Modal.error({
+          width: 550,
+          title: 'TestOutput syntax errors',
+          content: (
+            <div>
+              {errors.map((error) => {
+                return (
+                  <div>
+                    Line {error.lineNumber}: {error.log}
+                  </div>
+                );
+              })}
+              <Divider />
+              <div>
+                <div style={{ fontWeight: 600, marginBottom: 10 }}> Correct syntax examples:</div>
+                <div style={{ fontWeight: 500, fontStyle: 'italic' }}>
+                  <div>TestOutput "Category 1" "Test 1" true "Great job!"</div>
+                  <div>TestOutput "Style" "Checking for header" false "This is incorrect."</div>
+                  <div>TestOutput "Algorithms" "O(N) test" true</div>
+                </div>
+              </div>
+            </div>
+          ),
+        });
       } else {
-        setVisible(true);
-        setStatus(STATUS.CONFIRM);
+        // No errors
+        const parsedTests = parseTests(props.sourceFiles, props.currentFile, props.currentFileCode);
+        const [newCategories, deletedCategories, newTests, deletedTests]: any = compareDiff(
+          parsedTests,
+          props.casesByCategory,
+        );
+        setCategoriesToAdd(newCategories);
+        setCategoriesToDelete(deletedCategories);
+        setTestsToAdd(newTests);
+        setTestsToDelete(deletedTests);
+        if (
+          _.isEmpty(newCategories) &&
+          _.isEmpty(deletedCategories) &&
+          _.isEmpty(newTests) &&
+          _.isEmpty(deletedTests)
+        ) {
+          props.onConfirm();
+          props.onCancel();
+        } else {
+          setVisible(true);
+          setStatus(STATUS.CONFIRM);
+        }
       }
     }
   }, [props.checkChanges]);
 
-  console.log();
+  const checkForErrors = (currentCode: string) => {
+    const errors: { lineNumber: number; log: string }[] = [];
+    const re = /^([^#]*\s)*TestOutput (?!("([^"]+?)" "([^"]+?)" (true|false)( "([^"]*?)")?)).*/g;
+    const lines = currentCode.split('\n');
+
+    lines.forEach((l, i) => {
+      const t = l.match(re);
+      if (t) {
+        errors.push({ lineNumber: i, log: t.toString() });
+      }
+    });
+
+    return errors;
+  };
 
   // ********************* GET DIFF BETWEEN FILES ******************************
   const parseTests = (sourceFiles: SourceFileType[], currentFile: IBasicFile, currentCode: string) => {
