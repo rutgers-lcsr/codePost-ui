@@ -82,9 +82,8 @@ const niemaText = (
     </Typography.Text>
     , I have been able to build workflows that have made all aspects of executing my course extremely streamlined,{' '}
     <Typography.Text mark className="codePost-highlight">
-      even with >500 students
+      even with >500 students.
     </Typography.Text>
-    .
   </span>
 );
 
@@ -96,9 +95,8 @@ const kateText = (
     </Typography.Text>{' '}
     This tool allowed me to{' '}
     <Typography.Text mark className="codePost-highlight">
-      automate the repetitive manual tasks and focus my entire attention on the quality of students’ solutions
+      automate the repetitive manual tasks and focus my entire attention on the quality of students’ solutions.
     </Typography.Text>
-    .
   </span>
 );
 
@@ -106,9 +104,8 @@ const nohaText = (
   <span style={{ fontStyle: 'italic' }}>
     codePost has been a great help as it{' '}
     <Typography.Text mark className="codePost-highlight">
-      saved me tons of time and allowed me to focus on my students more
+      saved me tons of time and allowed me to focus on my students more.
     </Typography.Text>
-    .
   </span>
 );
 

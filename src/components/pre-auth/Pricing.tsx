@@ -140,11 +140,13 @@ const Pricing = (props: IProps) => {
                     </ul>
                     <ul style={{ maxWidth: 210, marginBottom: 0 }}>
                       <li>Unlimited submissions</li>
-                      <li>Plagiarism detection</li>
+                      <li>Full API access: Unlimited requests</li>
                     </ul>
                     <ul style={{ maxWidth: 210, marginBottom: 0 }}>
-                      <li>Full API access: Unlimited requests</li>
                       <li>24 hour support</li>
+                      <li>
+                        And we're always adding <Link to="/why-use-codePost">new features</Link>!
+                      </li>
                     </ul>
                   </div>
                 </div>
