@@ -13,23 +13,28 @@ export enum RESULT_TYPE {
   PASSED,
   FAILED,
   ERROR,
+  NONE,
 }
 
 export interface ILogType {
   log: string;
   result: RESULT_TYPE;
   target: string;
+  testCaseName: string;
 }
 
 interface IResultProps {
-  log?: ILogType;
+  log?: ILogType | ILogType[];
   isRunning?: boolean;
   runTest?: () => void;
   submissions: SubmissionType[];
+  files?: string[];
+  defaultFile?: string;
   setTestSubject: (id: string) => void;
+  updateFile?: (file: string) => void;
 }
 
-const getResultTag = (resultType: RESULT_TYPE) => {
+const getResultSpan = (resultType: RESULT_TYPE) => {
   switch (resultType) {
     case RESULT_TYPE.PASSED:
       return <span style={{ color: 'green' }}>PASSED</span>;
@@ -40,12 +45,38 @@ const getResultTag = (resultType: RESULT_TYPE) => {
   }
 };
 
+const getResultTag = (results: RESULT_TYPE[]) => {
+  if (results.length === 0) {
+    return <span />;
+  }
+
+  const allPassed = results.every((el) => el === RESULT_TYPE.PASSED || el === RESULT_TYPE.NONE);
+  const noErrors = results.every((el) => el !== RESULT_TYPE.ERROR);
+  if (allPassed) {
+    return <Tag color="green">PASSED</Tag>;
+  } else if (noErrors) {
+    return <Tag color="volcano">FAILED</Tag>;
+  } else {
+    return <Tag color="geekblue">ERROR</Tag>;
+  }
+};
+
 export const PsuedoTerminal = (props: IResultProps) => {
-  const [logs, setLogs] = React.useState([] as ILogType[]);
+  const [logs, setLogs] = React.useState([] as ILogType[][]);
 
   React.useEffect(() => {
     if (props.log !== undefined) {
-      setLogs([...logs, props.log]);
+      if (Array.isArray(props.log)) {
+        if (props.log.length > 0) {
+          setLogs([...logs, props.log]);
+        }
+      } else {
+        console.log('bump');
+        if (logs.length > 0 && logs[logs.length - 1][0] === props.log) {
+          return;
+        }
+        setLogs([...logs, [props.log]]);
+      }
     }
   }, [props.log]);
 
@@ -59,22 +90,13 @@ export const PsuedoTerminal = (props: IResultProps) => {
 
   React.useEffect(scrollToBottom, [logs]);
 
-  let resultType;
-  if (props.log) {
-    resultType = props.log.result;
-  }
-
   let resultTag;
-  switch (resultType) {
-    case RESULT_TYPE.PASSED:
-      resultTag = <Tag color="green">PASSED</Tag>;
-      break;
-    case RESULT_TYPE.FAILED:
-      resultTag = <Tag color="volcano">FAILED</Tag>;
-      break;
-    case RESULT_TYPE.ERROR:
-      resultTag = <Tag color="geekblue">ERROR</Tag>;
-      break;
+  if (props.log) {
+    if (Array.isArray(props.log)) {
+      resultTag = getResultTag(props.log.map((el) => el.result));
+    } else {
+      resultTag = getResultTag([props.log.result]);
+    }
   }
 
   const logElem = (
@@ -89,6 +111,25 @@ export const PsuedoTerminal = (props: IResultProps) => {
         }}
       >
         <div style={{ marginRight: '5px' }}>
+          {props.files && props.files.length > 0 ? (
+            <Select
+              style={{ height: '25px', minWidth: '200px', fontSize: '12px' }}
+              size="small"
+              showSearch
+              defaultValue={props.defaultFile || undefined}
+              onChange={props.updateFile || undefined}
+            >
+              <Select.Option key="main.sh" value="main.sh">
+                main.sh
+              </Select.Option>
+              {props.files.map((file, i) => (
+                <Select.Option key={i} value={file}>
+                  {file}
+                </Select.Option>
+              ))}
+            </Select>
+          ) : null}
+          &nbsp; &nbsp;
           <Select
             onChange={props.setTestSubject}
             style={{ height: '25px', minWidth: '200px', fontSize: '12px' }}
@@ -132,14 +173,39 @@ export const PsuedoTerminal = (props: IResultProps) => {
           fontSize: '13px',
         }}
       >
-        {logs.map((log, i) => (
+        {logs.map((logList, i) => (
           <span key={i}>
             Running...
             <br />
-            <div style={{ whiteSpace: 'pre-wrap' }}>{log.log}</div>
-            {log.log.length > 0 ? <br /> : null}
-            {getResultTag(log.result)} on {log.target}
-            <br />
+            {logList.length > 1 ? (
+              logList.map((log) => (
+                <span>
+                  {log.testCaseName.length > 0 ? (
+                    <span>
+                      ################################################### <br />
+                      Logs: {log.testCaseName}
+                    </span>
+                  ) : null}
+                  <div style={{ whiteSpace: 'pre-wrap' }}>{log.log}</div>
+                  {log.testCaseName.length > 0 ? (
+                    <span>
+                      {getResultSpan(log.result)} on {log.target} <br />
+                    </span>
+                  ) : null}
+                  <br />
+                </span>
+              ))
+            ) : (
+              <div>
+                {' '}
+                <div style={{ whiteSpace: 'pre-wrap' }}>{logList[0].log}</div>
+                {logList[0].testCaseName.length > 0 ? (
+                  <span>
+                    {getResultSpan(logList[0].result)} on {logList[0].target} <br />
+                  </span>
+                ) : null}
+              </div>
+            )}
           </span>
         ))}
         {props.isRunning ? 'Running...' : null}

@@ -152,7 +152,14 @@ export const TestItem = (props: ITestItemProps) => {
       log: result.logs,
       target: props.activeSubmission ? props.activeSubmission.students[0] : 'solution code',
       result: result.passed ? RESULT_TYPE.PASSED : result.isError ? RESULT_TYPE.ERROR : RESULT_TYPE.FAILED,
+      testCaseName: props.testCase.description,
     };
+
+    // FIXME: mutating state
+    if (!props.activeSubmission) {
+      props.testCase.status = formatted.result;
+      props.saveTest(props.testCase);
+    }
 
     setTestOutput(formatted);
     setIsRunning(false);
