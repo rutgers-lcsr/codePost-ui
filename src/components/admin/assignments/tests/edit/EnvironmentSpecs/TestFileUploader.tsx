@@ -137,9 +137,10 @@ export const TestFileUploader = (props: IUploadProps) => {
             <Icon type="upload" /> Add Files
           </Button>
         </Upload>
-        <Switch onChange={toggleDir}>
-          <Icon type="upload" /> Add Files
-        </Switch>
+        <div>
+          Upload directory: &nbsp;
+          <Switch onChange={toggleDir} />
+        </div>
       </Modal>
     </div>
   );
