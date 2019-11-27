@@ -170,7 +170,7 @@ const testimonials = [
     thumbnail={robertImg}
     school="Grand Valley State University"
   />,
-  <Testimonial text={<div>{kateText}</div>} name="Kate Holdener" thumbnail={kateImg} school="St. Louis University" />,
+  <Testimonial text={<div>{kateText}</div>} name="Kate Holdener" thumbnail={kateImg} school="Saint Louis University" />,
   <Testimonial text={<div>{niemaText}</div>} name="Niema Moshiri" thumbnail={niemaImg} school="UCSD" />,
   <Testimonial text={<div>{nohaText}</div>} name="Noha Hazzazi" thumbnail={nohaImg} school="Howard University" />,
 ];
