@@ -27,6 +27,7 @@ import FileTag from './TestDefinitions/FileTag';
 
 import { CodeWindow } from './utils/CodeWindow';
 import { TestsChangeModal } from './TestDefinitions/TestsChangeModal';
+import { PsuedoTerminal, ILogType, RESULT_TYPE } from './TestDefinitions/PsuedoTerminal';
 
 /* codePost util imports */
 import { awaitTestResult } from '../testResult';
@@ -61,14 +62,15 @@ interface IProps {
 const { Header, Content } = Layout;
 
 export const SourceEditor = (props: IProps) => {
-  /************************** State variables Functions ****************************/
+  /************************** State variables  ****************************/
   const [running, setRunning] = useState(false);
   const [saving, setSaving] = useState(false);
   // The new code of the edited sourceFile
   const [newCode, setNewCode] = useState('');
   const [fileToRun, setFileToRun] = useState('0');
+  const [log, setLog] = useState<ILogType | undefined>(undefined);
 
-  /************************** API Functions ****************************/
+  /************************** API functions ****************************/
   const runTest = async () => {
     if (props.env) {
       setRunning(true);
@@ -123,6 +125,13 @@ export const SourceEditor = (props: IProps) => {
       // Refresh submission files after dump
       props.setTestSubject(props.activeSubmission.id.toString());
     }
+
+    const formatted = {
+      log: response.logs,
+      target: props.activeSubmission ? props.activeSubmission.students[0] : 'solution code',
+      result: RESULT_TYPE.PASSED,
+    };
+    setLog(formatted);
   };
 
   const onSourceFileSave = (code: string) => {
@@ -163,17 +172,26 @@ export const SourceEditor = (props: IProps) => {
   );
 
   const content = props.currentFile && (
-    <CodeWindow
-      code={props.currentFile.code}
-      name={props.currentFile.name}
-      onSave={
-        props.currentFile.type === FILE_TYPE.SOURCEFILE
-          ? onSourceFileSave
-          : props.currentFile.canSave
-          ? props.updateFile.bind({}, props.currentFile.type, props.currentFile.id)
-          : undefined
-      }
-    />
+    <div>
+      <CodeWindow
+        code={props.currentFile.code}
+        name={props.currentFile.name}
+        onSave={
+          props.currentFile.type === FILE_TYPE.SOURCEFILE
+            ? onSourceFileSave
+            : props.currentFile.canSave
+            ? props.updateFile.bind({}, props.currentFile.type, props.currentFile.id)
+            : undefined
+        }
+      />
+      <PsuedoTerminal
+        log={log}
+        isRunning={running}
+        runTest={runTest}
+        submissions={props.submissions}
+        setTestSubject={props.setTestSubject}
+      />
+    </div>
   );
   const title = props.currentFile && (
     <div style={{ padding: '12px 20px 8px 25px', display: 'flex' }}>
