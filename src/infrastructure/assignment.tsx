@@ -61,6 +61,7 @@ const AssignmentVStudent = t.intersection(
       rubricCategories: t.array(t.number),
       course: t.number,
       allowLateUploads: t.boolean,
+      fileTemplates: t.array(t.number),
     }),
     t.partial({
       hideGrades: t.boolean,
