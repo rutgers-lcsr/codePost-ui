@@ -305,6 +305,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
           <AssignmentsTable {...props} {...subprops} breadcrumbs={breadcrumbs} baseURL={props.match.url} />
         )}
       />
+      <Route path={props.match.url} exact={true} render={() => <Redirect to={`${props.match.url}/overview`} />} />
     </div>
   );
 };
