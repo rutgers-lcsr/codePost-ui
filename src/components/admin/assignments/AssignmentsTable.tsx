@@ -79,7 +79,7 @@ export interface IManageAssignmentsProps {
   loadComplete: boolean;
 
   /* object-level REST operations */
-  createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<AssignmentType>;
+  createAssignment: (assignmentName: string, assignmentPoints: number, sortKey?: number) => Promise<AssignmentType>;
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
 
@@ -188,7 +188,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
     if (deletingAssignment) {
       this.props.deleteAssignment(deletingAssignment).then(() => {
         message.success('Assignment successfully deleted!');
-        this.props.history.push(this.props.baseURL);
+        this.props.history.push(`${this.props.baseURL}/overview`);
       });
     }
   };
@@ -204,6 +204,25 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
   public closeSingleSubmissionUpload = () => {
     this.props.history.push(`${this.props.baseURL}/overview`);
     this.setState({ activeStudent: undefined });
+  };
+
+  public createAssignment = (name: string, points: number) => {
+    const { sortedOrder } = this.state;
+
+    // Place assignment at the end of the assignment list
+    let sortKey;
+    if (sortedOrder.length > 0) {
+      sortKey = sortedOrder[sortedOrder.length - 1] + 1;
+    }
+
+    return this.props.createAssignment(name, points, sortKey).then((assignment) => {
+      // If an assignment's ID isn't added to sortedOrder, it won't appear in the assignment table
+      this.setState((oldState) => {
+        return { sortedOrder: [...oldState.sortedOrder, assignment.id] };
+      });
+      message.success(`Successfully created ${name}`);
+      return assignment;
+    });
   };
 
   /******************************************************************************
@@ -295,11 +314,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
     ];
 
     actions = [
-      <NewAssignmentDialog
-        key={1}
-        assignments={this.props.assignments}
-        createAssignment={this.props.createAssignment}
-      />,
+      <NewAssignmentDialog key={1} assignments={this.props.assignments} createAssignment={this.createAssignment} />,
       <Link to={`${this.props.baseURL}/download/grades`}>
         <CPButton cpType="secondary" key={2} icon="download">
           Download grades
