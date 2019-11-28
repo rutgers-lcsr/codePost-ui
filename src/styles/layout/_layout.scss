@@ -1,3 +1,13 @@
+.source-editor-code {
+  height: 100%;
+}
+
+.CodeMirror {
+  &--source-editor {
+    height: 450px;
+  }
+}
+
 #Student {
   height: 100%;
 

@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Breadcrumb, Button, Tabs } from 'antd';
+import { Breadcrumb, Button, Tabs, Checkbox, message, Typography } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -24,6 +24,7 @@ import { SourceFile, SourceFileType } from '../../../../../infrastructure/autogr
 import CPAdminDetail from '../../../other/CPAdminDetail';
 import { EnvironmentSpecs } from './EnvironmentSpecs';
 import { TestDefinitions } from './TestDefinitions';
+import CPTooltip from '../../../../core/CPTooltip';
 
 /* codePost util imports */
 import { fetchSourceFiles, fetchSolutionFiles, fetchEnvironment, fetchHelpers } from '../../../../core/testFetchUtils';
@@ -240,6 +241,18 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     props.history.push(newUrl);
   };
 
+  const updateEnv = async (e: any) => {
+    if (env) {
+      const payload = {
+        id: env.id,
+        dumpMode: e.target.checked,
+      };
+      const newEnv = await Environment.update(payload);
+      message.success(e.target.checked ? 'Setting enabled' : 'Setting disabled');
+      setEnv(newEnv);
+    }
+  };
+
   // ************************** Return ***************************************
   const content = (
     <Tabs defaultActiveKey="environment" activeKey={currTab} onChange={onChange} animated={false}>
@@ -273,7 +286,14 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         />
       </TabPane>
       <TabPane tab={'Settings'} key={'settings'}>
-        <div>Settings</div>
+        <Checkbox style={{ minWidth: '125px' }} defaultChecked={env && env.dumpMode} onChange={updateEnv}>
+          Dump outputs to <Typography.Text code>_tests.txt</Typography.Text>
+          &nbsp;
+          <CPTooltip
+            infoIcon={true}
+            title="When this setting is enabled, a file called _tests.txt containing the raw output of your tests will be added to every student's submission."
+          />
+        </Checkbox>
       </TabPane>
     </Tabs>
   );

@@ -21,8 +21,8 @@ export const TestCaseV = t.intersection(
       exposed: t.boolean,
       instances: t.array(t.number),
       explanation: t.string,
+      status: t.number,
     }),
-    t.partial({}),
   ],
   'TestCase',
 );

@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Divider, Form, Input, Row, Select, Tag, message, Modal, Typography, Switch, InputNumber } from 'antd';
+import { Button, Divider, Form, Input, Select, Tag, message, Modal, Typography, Switch, InputNumber } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
 /* codePost object imports */
@@ -134,10 +134,6 @@ export const TestItem = (props: ITestItemProps) => {
 
     if (props.testCase.id > 0) {
       setIsRunning(true);
-      const payload = {
-        id: props.testCase.id,
-        submission: props.activeSubmission ? props.activeSubmission.id : undefined,
-      };
       const result = await TestCase.run(
         props.testCase.id,
         props.activeSubmission ? { submission: props.activeSubmission.id.toString() } : {},
@@ -152,7 +148,14 @@ export const TestItem = (props: ITestItemProps) => {
       log: result.logs,
       target: props.activeSubmission ? props.activeSubmission.students[0] : 'solution code',
       result: result.passed ? RESULT_TYPE.PASSED : result.isError ? RESULT_TYPE.ERROR : RESULT_TYPE.FAILED,
+      testCaseName: props.testCase.description,
     };
+
+    // FIXME: mutating state
+    if (!props.activeSubmission) {
+      props.testCase.status = formatted.result;
+      props.saveTest(props.testCase);
+    }
 
     setTestOutput(formatted);
     setIsRunning(false);
@@ -516,9 +519,9 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   }
                   style={{ width: 200 }}
                   value={
-                    this.state.testType == 'io_cli'
+                    this.state.testType === 'io_cli'
                       ? 'io'
-                      : this.state.testType == 'file'
+                      : this.state.testType === 'file'
                       ? 'File defined'
                       : this.state.testType
                   }

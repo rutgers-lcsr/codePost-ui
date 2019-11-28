@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Layout, Menu, Icon, Empty, Spin, Tag } from 'antd';
+import { Button, Layout, Menu, Icon, Empty, Spin, Badge } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 import _ from 'lodash';
 
@@ -47,7 +47,6 @@ import { AddTestModal } from './TestDefinitions/AddTestModal';
 import CPTooltip from '../../../../core/CPTooltip';
 import { SourceEditor } from './SourceEditor';
 import TestsList from '../../../../code-review/code-panel/TestsList';
-import TestsMenu from '../../../../code-review/menu/TestsMenu';
 
 import FileTag from './TestDefinitions/FileTag';
 
@@ -61,6 +60,8 @@ import {
   buildFolderMenu,
   createDirectoryStructure,
 } from '../../../../code-review/menu/fileMenuUtils';
+
+import { RESULT_TYPE } from './TestDefinitions/PsuedoTerminal';
 
 const { Sider, Content } = Layout;
 
@@ -108,7 +109,7 @@ export const TestDefinitions = (props: IProps) => {
   const [testResults, setTestResults] = useState<BasicTestResultType[]>([]);
 
   // render variables
-  const [panel, setPanel] = useState<DETAIL_TYPE>(DETAIL_TYPE.EditTests);
+  const [panel, setPanel] = useState<DETAIL_TYPE>(DETAIL_TYPE.ViewSource);
   const [loading, setLoading] = useState(true);
 
   // Submission / Solution code toggle variables
@@ -224,6 +225,7 @@ export const TestDefinitions = (props: IProps) => {
       exposed: false,
       instances: [],
       explanation: '',
+      status: RESULT_TYPE.NONE,
     };
 
     const newTestCase = await saveTest(dummyTestCase);
@@ -340,6 +342,35 @@ export const TestDefinitions = (props: IProps) => {
     });
   };
 
+  const buildStatusBadge = (status?: number) => {
+    let statusText;
+    let statusColor;
+    switch (status) {
+      case 0:
+        statusText = 'Solution code passed';
+        statusColor = 'lime';
+        break;
+      case 1:
+        statusText = 'Solution code failed';
+        statusColor = 'red';
+        break;
+      case 2:
+        statusText = 'Error occurred while testing solution code';
+        statusColor = 'blue';
+        break;
+      case 3:
+      default:
+        statusText = 'Not tested on solution code';
+        statusColor = 'gray';
+    }
+
+    return (
+      <CPTooltip title={statusText}>
+        <Badge color={statusColor} />
+      </CPTooltip>
+    );
+  };
+
   /******************************* Return  ****************************/
 
   const externalOnly = !props.env || !props.env.language;
@@ -445,19 +476,33 @@ export const TestDefinitions = (props: IProps) => {
               const folders = directoryStructure.folders.map((f: IFolder<IBasicFile>) => {
                 return buildFolderMenu('', f, buildFile);
               });
-              console.log(folders);
               return [buildFileMenu(groupIndex, directoryStructure.files), folders];
             })}
           </Menu>
-          <div onClick={setIndex.bind({}, 'tests')}>
-            <div style={{ ...headerStyle, marginTop: 10 }}>TestResults</div>
-            <TestsMenu
-              assignment={props.currentAssignment}
-              tests={testResults}
-              cases={casesByCategory}
-              categories={categories}
-              isOpen={index === 'tests'}
-            />
+          <div>
+            <div style={{ ...headerStyle, marginTop: 10 }}>Tests</div>
+            <Menu
+              selectedKeys={[]}
+              defaultOpenKeys={categories.map((el) => el.id.toString())}
+              mode="inline"
+              style={{ height: '100%' }}
+            >
+              {TestCategory.sort(categories).map((category) => {
+                return (
+                  <Menu.SubMenu key={category.id} title={category.name}>
+                    {category.id in casesByCategory
+                      ? TestCase.sort(casesByCategory[category.id]).map((el) => {
+                          return (
+                            <Menu.Item key={el.id} style={{ height: 'fit-content', minHeight: 40 }}>
+                              {el.description} &nbsp; {buildStatusBadge(el.status)}
+                            </Menu.Item>
+                          );
+                        })
+                      : null}
+                  </Menu.SubMenu>
+                );
+              })}
+            </Menu>
           </div>
         </div>
       );
@@ -493,6 +538,7 @@ export const TestDefinitions = (props: IProps) => {
             activeSubmission={activeSubmission}
             updateEnv={props.updateEnv}
             env={props.env}
+            saveTest={saveTest}
           />
         );
       }
@@ -543,7 +589,7 @@ export const TestDefinitions = (props: IProps) => {
                             setActiveTest(el);
                           }}
                         >
-                          {el.description}
+                          {el.description} &nbsp; {buildStatusBadge(el.status)}
                         </Menu.Item>
                       ))
                     : null}
