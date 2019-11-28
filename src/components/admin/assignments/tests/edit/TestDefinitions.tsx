@@ -62,6 +62,8 @@ import {
   createDirectoryStructure,
 } from '../../../../code-review/menu/fileMenuUtils';
 
+import { RESULT_TYPE } from './TestDefinitions/PsuedoTerminal';
+
 const { Sider, Content } = Layout;
 
 /**********************************************************************************************************************/
@@ -224,7 +226,7 @@ export const TestDefinitions = (props: IProps) => {
       exposed: false,
       instances: [],
       explanation: '',
-      status: 3,
+      status: RESULT_TYPE.NONE,
     };
 
     const newTestCase = await saveTest(dummyTestCase);

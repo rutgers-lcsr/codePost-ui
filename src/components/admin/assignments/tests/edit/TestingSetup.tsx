@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Breadcrumb, Button, Tabs, Checkbox, message } from 'antd';
+import { Breadcrumb, Button, Tabs, Checkbox, message, Typography } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -287,8 +287,12 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       </TabPane>
       <TabPane tab={'Settings'} key={'settings'}>
         <Checkbox style={{ minWidth: '125px' }} defaultChecked={env && env.dumpMode} onChange={updateEnv}>
-          Dump outputs{' '}
-          <CPTooltip title="When this setting is enabled, a file called _tests.txt containing the raw output of your tests will be added to every student's submission." />
+          Dump outputs to <Typography.Text code>_tests.txt</Typography.Text>
+          &nbsp;
+          <CPTooltip
+            infoIcon={true}
+            title="When this setting is enabled, a file called _tests.txt containing the raw output of your tests will be added to every student's submission."
+          />
         </Checkbox>
       </TabPane>
     </Tabs>

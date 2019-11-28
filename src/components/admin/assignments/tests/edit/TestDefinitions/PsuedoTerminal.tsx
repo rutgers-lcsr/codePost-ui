@@ -1,13 +1,20 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
 /* react imports  */
 import React from 'react';
 
-/* library imports  */
+/* antd imports  */
 import { Button, Tag, Select } from 'antd';
 
+/* other library imports */
 import { animateScroll } from 'react-scroll';
 
 /* codePost imports  */
 import { SubmissionType } from '../../../../../../infrastructure/submission';
+
+/**********************************************************************************************************************/
 
 export enum RESULT_TYPE {
   PASSED,
@@ -71,7 +78,6 @@ export const PsuedoTerminal = (props: IResultProps) => {
           setLogs([...logs, props.log]);
         }
       } else {
-        console.log('bump');
         if (logs.length > 0 && logs[logs.length - 1][0] === props.log) {
           return;
         }
