@@ -789,7 +789,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       });
   };
 
-  public createAssignment = (aName: string, aPoints: number): Promise<AssignmentType> => {
+  public createAssignment = (aName: string, aPoints: number, sortKey?: number): Promise<AssignmentType> => {
     const { currentCourse } = this.props;
     if (!currentCourse) {
       return Promise.reject();
@@ -803,6 +803,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       isReleased: false,
       hideGrades: false,
       rubricCategories: [],
+      sortKey,
     };
 
     return Assignment.create(payload).then((assignment: AssignmentType) => {
