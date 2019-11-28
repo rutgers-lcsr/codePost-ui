@@ -109,7 +109,7 @@ export const TestDefinitions = (props: IProps) => {
   const [testResults, setTestResults] = useState<BasicTestResultType[]>([]);
 
   // render variables
-  const [panel, setPanel] = useState<DETAIL_TYPE>(DETAIL_TYPE.ViewSource);
+  const [panel, setPanel] = useState<DETAIL_TYPE>(DETAIL_TYPE.EditTests);
   const [loading, setLoading] = useState(true);
 
   // Submission / Solution code toggle variables
@@ -626,14 +626,19 @@ export const TestDefinitions = (props: IProps) => {
 
   if (loading) {
     return <Spin />;
-  } else if (categories.length === 0) {
+  } else if (categories.length === 0 && panel == DETAIL_TYPE.EditTests) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <Empty
-          style={{ marginTop: '20px', maxWidth: '400px' }}
-          description={<span>Create a test category to get started.</span>}
-        >
+        <Empty style={{ marginTop: '20px', maxWidth: '400px' }} description={<span> Get started.</span>}>
           <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} />
+          {externalOnly ? (
+            <span />
+          ) : (
+            <span>
+              {' '}
+              &nbsp; <Button onClick={() => setPanel(DETAIL_TYPE.ViewSource)}>Edit source files</Button>{' '}
+            </span>
+          )}
         </Empty>
       </div>
     );
@@ -651,7 +656,7 @@ export const TestDefinitions = (props: IProps) => {
               {header}
               {menu}
             </Sider>
-            {hasTests ? (
+            {hasTests || panel === DETAIL_TYPE.ViewSource ? (
               content
             ) : (
               <Content style={{ margin: 15, display: 'flex', justifyContent: 'center' }}>
