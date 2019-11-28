@@ -10,7 +10,7 @@ import { Breadcrumb } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
-import { Route, Link } from 'react-router-dom';
+import { Route, Link, Redirect } from 'react-router-dom';
 
 /* codePost imports */
 import { AssignmentPatchType, AssignmentType } from '../../../infrastructure/assignment';
@@ -51,7 +51,7 @@ export interface IManageAssignmentsProps {
   loadComplete: boolean;
 
   /* object-level REST operations */
-  createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<AssignmentType>;
+  createAssignment: (assignmentName: string, assignmentPoints: number, sortKey?: number) => Promise<AssignmentType>;
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
 
@@ -305,6 +305,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
           <AssignmentsTable {...props} {...subprops} breadcrumbs={breadcrumbs} baseURL={props.match.url} />
         )}
       />
+      <Route path={props.match.url} exact={true} render={() => <Redirect to={`${props.match.url}/overview`} />} />
     </div>
   );
 };
