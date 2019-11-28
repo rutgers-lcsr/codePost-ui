@@ -144,8 +144,9 @@ export const TestItem = (props: ITestItemProps) => {
 
   const callback = (response: TestEditorResultType) => {
     const result: BasicTestResultType = response.results[0];
+
     const formatted = {
-      log: result.logs,
+      log: `${response.logs}\n${result.logs}`,
       target: props.activeSubmission ? props.activeSubmission.students[0] : 'solution code',
       result: result.passed ? RESULT_TYPE.PASSED : result.isError ? RESULT_TYPE.ERROR : RESULT_TYPE.FAILED,
       testCaseName: props.testCase.description,
