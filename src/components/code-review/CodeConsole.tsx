@@ -639,7 +639,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             selectedFile,
             permissionLevel,
             fileTemplates,
-            tests,
+            tests: SubmissionTest.getLatest(tests),
             testCases: cases as TestCasesByCategory,
             testCategories: categories as TestCategoryType[],
           },
