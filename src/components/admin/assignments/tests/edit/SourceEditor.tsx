@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* library imports */
-import { Button, Checkbox, Divider, Icon, Input, Layout, Select, Typography } from 'antd';
+import { Layout, Typography } from 'antd';
 
 /* codePost object imports */
 import { BasicTestResultType, TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
@@ -22,7 +22,6 @@ import { TestCasesByCategory } from '../../../../core/testFetchUtils';
 import { FILE_TYPE } from './TestingSetup';
 
 /* codePost component imports */
-import CPTooltip from '../../../../core/CPTooltip';
 import FileTag from './TestDefinitions/FileTag';
 
 import { CodeWindow } from './utils/CodeWindow';
@@ -31,7 +30,6 @@ import { PsuedoTerminal, ILogType, RESULT_TYPE } from './TestDefinitions/PsuedoT
 
 /* codePost util imports */
 import { awaitTestResult } from '../testResult';
-import { openSubmission } from '../../../other/AdminUtils';
 
 /**********************************************************************************************************************/
 interface IProps {
@@ -60,7 +58,7 @@ interface IProps {
   saveTest: (test: TestCaseType) => Promise<TestCaseType>;
 }
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
 
 export const SourceEditor = (props: IProps) => {
   /************************** State variables  ****************************/
@@ -103,18 +101,6 @@ export const SourceEditor = (props: IProps) => {
   const onConfirm = () => {
     if (props.currentFile) {
       props.updateFile(FILE_TYPE.SOURCEFILE, props.currentFile.id, newCode);
-    }
-  };
-
-  // update environment with dump mode
-  const updateEnv = async (e: any) => {
-    if (props.env) {
-      const payload = {
-        id: props.env.id,
-        dumpMode: e.target.checked,
-      };
-      const newEnv = await Environment.update(payload);
-      props.updateEnv(newEnv);
     }
   };
 
@@ -165,10 +151,6 @@ export const SourceEditor = (props: IProps) => {
       setNewCode(code);
     }
     return Promise.resolve();
-  };
-
-  const onFileChange = (name: string) => {
-    setFileToRun(name);
   };
 
   /************************** Return ****************************/

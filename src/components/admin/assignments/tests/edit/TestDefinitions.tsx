@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Layout, Menu, Icon, Empty, Spin, Tag, Badge } from 'antd';
+import { Button, Layout, Menu, Icon, Empty, Spin, Badge } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 import _ from 'lodash';
 
@@ -47,7 +47,6 @@ import { AddTestModal } from './TestDefinitions/AddTestModal';
 import CPTooltip from '../../../../core/CPTooltip';
 import { SourceEditor } from './SourceEditor';
 import TestsList from '../../../../code-review/code-panel/TestsList';
-import TestsMenu from '../../../../code-review/menu/TestsMenu';
 
 import FileTag from './TestDefinitions/FileTag';
 
