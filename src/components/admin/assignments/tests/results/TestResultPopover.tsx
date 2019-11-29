@@ -2,7 +2,7 @@
 import React from 'react';
 
 /* library imports */
-import { Popover, Tabs } from 'antd';
+import { Popover, Tabs, Icon, Empty } from 'antd';
 
 /* codePost object imports */
 import { SubmissionTestType } from '../../../../../infrastructure/submissionTest';
@@ -18,15 +18,31 @@ interface IProps {
   testCases: TestCaseType[];
 }
 
+const getNameFromSubmissionTest = (st: SubmissionTestType, testCases: TestCaseType[]) => {
+  const testCase = testCases.find((el) => el.id === st.testCase);
+  if (testCase !== undefined) {
+    return testCase.description;
+  } else {
+    return '';
+  }
+};
+
 export const TestResultPopover = (props: IProps) => {
   /******************************* Return helpers ****************************/
   /* Low important FIXME: optimize the speed of this logc, instead of looping 3 times*/
-  const passedTests = props.submissionTests.filter((test) => {
-    return test.passed;
-  });
-  const failedTests = props.submissionTests.filter((test) => {
-    return !test.passed;
-  });
+  let passedTests: SubmissionTestType[] = [];
+  let failedTests: SubmissionTestType[] = [];
+  let errorTests: SubmissionTestType[] = [];
+  for (const st of props.submissionTests) {
+    if (st.passed) {
+      passedTests.push(st);
+    } else if (st.isError) {
+      errorTests.push(st);
+    } else {
+      failedTests.push(st);
+    }
+  }
+
   const runTests = props.submissionTests.map((test) => {
     return test.testCase;
   });
@@ -37,34 +53,63 @@ export const TestResultPopover = (props: IProps) => {
   });
 
   const passedItems = passedTests.map((test) => {
-    return <TestResult passed={test.passed} log={test.logs} isError={test.isError} />;
+    return <div>{getNameFromSubmissionTest(test, props.testCases)}</div>;
   });
   const failedItems = failedTests.map((test) => {
-    return <TestResult passed={test.passed} log={test.logs} isError={test.isError} />;
+    return <div>{getNameFromSubmissionTest(test, props.testCases)}</div>;
+  });
+  const errorItems = errorTests.map((test) => {
+    return <div>{getNameFromSubmissionTest(test, props.testCases)}</div>;
   });
   const notRunItems = testsNotRun.map((tc) => {
-    return <div>Not Run: {tc.description}</div>;
+    return tc.description;
   });
 
+  /* UX optimization: open the first tab that has meaningful contents */
+  const getActiveKey = () => {
+    if (passedItems.length > 0) {
+      return 'passed';
+    } else if (failedItems.length > 0) {
+      return 'failed';
+    } else if (errorItems.length > 0) {
+      return 'error';
+    } else if (notRunItems.length > 0) {
+      return 'notrun';
+    } else {
+      return 'passed';
+    }
+  };
+
   /******************************* Return ****************************/
+  if (props.submissionTests.length === 0) {
+    return <span>--</span>;
+  }
+
   return (
     <Popover
       content={
         <div>
-          <Tabs defaultActiveKey="1" animated={false}>
-            <TabPane style={{ maxHeight: 500, overflow: 'auto' }} tab={`Passed (${passedTests.length})`} key={'1'}>
-              {passedItems}
+          <Tabs defaultActiveKey={getActiveKey()} animated={false}>
+            <TabPane style={{ maxHeight: 500, overflow: 'auto' }} tab={`Passed (${passedTests.length})`} key={'passed'}>
+              {passedItems.length > 0 ? passedItems : <Empty />}
             </TabPane>
-            <TabPane style={{ maxHeight: 500, overflow: 'auto' }} tab={`Failed (${failedTests.length})`} key={'2'}>
+            <TabPane style={{ maxHeight: 500, overflow: 'auto' }} tab={`Failed (${failedTests.length})`} key={'failed'}>
               {failedItems}
             </TabPane>
-            <TabPane style={{ maxHeight: 500, overflow: 'auto' }} tab={`Not Run (${testsNotRun.length})`} key={'3'}>
+            <TabPane style={{ maxHeight: 500, overflow: 'auto' }} tab={`Error (${errorTests.length})`} key={'error'}>
+              {errorItems}
+            </TabPane>
+            <TabPane
+              style={{ maxHeight: 500, overflow: 'auto' }}
+              tab={`Not Run (${testsNotRun.length})`}
+              key={'notrun'}
+            >
               {notRunItems}
             </TabPane>
           </Tabs>
         </div>
       }
-      title="Logs"
+      title="Results detail"
       trigger="click"
     >
       {`${passedItems.length} / ${props.submissionTests.length}`}

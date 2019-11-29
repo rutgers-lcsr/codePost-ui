@@ -84,12 +84,6 @@ const TestsMenu = (props: IProps) => {
       }
     }
 
-    const badgeStyle = {
-      fontSize: 10,
-      padding: '0 2px',
-      opacity: props.isOpen ? 1 : 0.7,
-    };
-
     return {
       category: (
         <span>

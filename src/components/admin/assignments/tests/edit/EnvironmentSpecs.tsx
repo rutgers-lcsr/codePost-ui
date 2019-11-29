@@ -43,7 +43,7 @@ interface IProps {
   deleteEnv: () => void;
   helpers: SolutionFileType[] | HelperFileType[];
   solutions: SolutionFileType[] | HelperFileType[];
-  addFile: (type: FILE_TYPE, name: string, code: string) => Promise<void>;
+  addFile: (type: FILE_TYPE, name: string, code: string, path?: string) => Promise<void>;
   deleteFile: (type: FILE_TYPE, id: number) => Promise<void>;
   updateFile: (type: FILE_TYPE, id: number, newCode: string) => Promise<void>;
 }

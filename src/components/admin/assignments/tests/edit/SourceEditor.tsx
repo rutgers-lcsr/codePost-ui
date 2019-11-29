@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* library imports */
-import { Button, Checkbox, Divider, Icon, Input, Layout, Select, Typography } from 'antd';
+import { Layout, Typography } from 'antd';
 
 /* codePost object imports */
 import { BasicTestResultType, TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
@@ -22,15 +22,14 @@ import { TestCasesByCategory } from '../../../../core/testFetchUtils';
 import { FILE_TYPE } from './TestingSetup';
 
 /* codePost component imports */
-import CPTooltip from '../../../../core/CPTooltip';
 import FileTag from './TestDefinitions/FileTag';
 
 import { CodeWindow } from './utils/CodeWindow';
 import { TestsChangeModal } from './TestDefinitions/TestsChangeModal';
+import { PsuedoTerminal, ILogType, RESULT_TYPE } from './TestDefinitions/PsuedoTerminal';
 
 /* codePost util imports */
 import { awaitTestResult } from '../testResult';
-import { openSubmission } from '../../../other/AdminUtils';
 
 /**********************************************************************************************************************/
 interface IProps {
@@ -56,26 +55,44 @@ interface IProps {
   addTest: (language: string | null, category: number, sourceFile?: boolean, name?: string) => Promise<void>;
   deleteTest: (testCase: TestCaseType) => Promise<void>;
   setResults: (results: BasicTestResultType[]) => void;
+  saveTest: (test: TestCaseType) => Promise<TestCaseType>;
 }
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
 
 export const SourceEditor = (props: IProps) => {
-  /************************** State variables Functions ****************************/
+  /************************** State variables  ****************************/
   const [running, setRunning] = useState(false);
   const [saving, setSaving] = useState(false);
   // The new code of the edited sourceFile
   const [newCode, setNewCode] = useState('');
-  const [fileToRun, setFileToRun] = useState(0);
+  const [fileToRun, setFileToRun] = useState('main.sh');
+  const [logs, setLogs] = useState<ILogType[]>([]);
 
-  /************************** API Functions ****************************/
+  /************************** API functions ****************************/
   const runTest = async () => {
-    if (fileToRun) {
+    if (props.env) {
       setRunning(true);
-      const result: any = await SourceFile.run({
-        id: fileToRun,
-        submission: props.activeSubmission ? props.activeSubmission.id : null,
-      });
+      let result: any;
+      if (fileToRun === 'main.sh') {
+        // Run all tests
+        result = await Environment.run(
+          props.env.id,
+          props.activeSubmission ? { submission: props.activeSubmission.id.toString() } : {},
+        );
+      } else {
+        const found = props.sourceFiles.find((el) => el.name === fileToRun);
+        if (found !== undefined) {
+          result = await SourceFile.run(
+            found.id,
+            props.activeSubmission
+              ? {
+                  submission: props.activeSubmission.id.toString(),
+                }
+              : {},
+          );
+        }
+      }
       awaitTestResult(result.task, callback);
     }
   };
@@ -84,18 +101,6 @@ export const SourceEditor = (props: IProps) => {
   const onConfirm = () => {
     if (props.currentFile) {
       props.updateFile(FILE_TYPE.SOURCEFILE, props.currentFile.id, newCode);
-    }
-  };
-
-  // update environment with dump mode
-  const updateEnv = async (e: any) => {
-    if (props.env) {
-      const payload = {
-        id: props.env.id,
-        dumpMode: e.target.checked,
-      };
-      const newEnv = await Environment.update(payload);
-      props.updateEnv(newEnv);
     }
   };
 
@@ -113,6 +118,32 @@ export const SourceEditor = (props: IProps) => {
       // Refresh submission files after dump
       props.setTestSubject(props.activeSubmission.id.toString());
     }
+
+    const formatted = {
+      log: response.logs,
+      target: props.activeSubmission ? props.activeSubmission.students[0] : 'solution code',
+      result: RESULT_TYPE.NONE,
+      testCaseName: '',
+    };
+
+    const logs = response.results.map((el) => {
+      const testCase = props.casesByCategory[el.testCategory].find((testCase) => testCase.id === el.testCase)!;
+      const status = el.isError ? RESULT_TYPE.ERROR : el.passed ? RESULT_TYPE.PASSED : RESULT_TYPE.FAILED;
+
+      if (!props.activeSubmission) {
+        testCase.status = status;
+        props.saveTest(testCase);
+      }
+
+      return {
+        log: el.logs,
+        target: props.activeSubmission ? props.activeSubmission.students[0] : 'solution code',
+        result: status,
+        testCaseName: testCase.description,
+      };
+    });
+
+    setLogs([formatted, ...logs]);
   };
 
   const onSourceFileSave = (code: string) => {
@@ -122,44 +153,32 @@ export const SourceEditor = (props: IProps) => {
     return Promise.resolve();
   };
 
-  const onFileChange = (id: string) => {
-    setFileToRun(parseInt(id, 10));
-  };
-
   /************************** Return ****************************/
-  const runSelect = (
-    <Input.Group compact style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-      <Button type="primary" style={{ height: '24px', fontSize: '12px' }} loading={running} onClick={runTest}>
-        Run
-      </Button>
-      <Select
-        onChange={onFileChange}
-        style={{ height: '25px', minWidth: '150px', fontSize: '12px' }}
-        size="small"
-        showSearch
-        filterOption={(input, option: any) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-      >
-        {props.sourceFiles.map((f, i) => (
-          <Select.Option key={f.id} value={f.id} style={{ fontSize: 12 }}>
-            {f.name}
-          </Select.Option>
-        ))}
-      </Select>
-    </Input.Group>
-  );
-
   const content = props.currentFile && (
-    <CodeWindow
-      code={props.currentFile.code}
-      name={props.currentFile.name}
-      onSave={
-        props.currentFile.type === FILE_TYPE.SOURCEFILE
-          ? onSourceFileSave
-          : props.currentFile.canSave
-          ? props.updateFile.bind({}, props.currentFile.type, props.currentFile.id)
-          : undefined
-      }
-    />
+    <div>
+      <CodeWindow
+        code={props.currentFile.code}
+        name={props.currentFile.name}
+        onSave={
+          props.currentFile.type === FILE_TYPE.SOURCEFILE
+            ? onSourceFileSave
+            : props.currentFile.canSave
+            ? props.updateFile.bind({}, props.currentFile.type, props.currentFile.id)
+            : undefined
+        }
+        height={'350px'}
+      />
+      <PsuedoTerminal
+        log={logs}
+        isRunning={running}
+        runTest={runTest}
+        submissions={props.submissions}
+        setTestSubject={props.setTestSubject}
+        files={props.sourceFiles.map((el) => el.name)}
+        defaultFile="main.sh"
+        updateFile={setFileToRun}
+      />
+    </div>
   );
   const title = props.currentFile && (
     <div style={{ padding: '12px 20px 8px 25px', display: 'flex' }}>
@@ -173,58 +192,6 @@ export const SourceEditor = (props: IProps) => {
 
   return (
     <Layout>
-      <Header
-        style={{
-          backgroundColor: 'white',
-          height: 40,
-          lineHeight: 40,
-          padding: '0px 25px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          overflowX: 'scroll',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Select
-            onChange={props.setTestSubject}
-            style={{
-              height: '25px',
-              minWidth: '225px',
-              fontSize: '12px',
-            }}
-            size="small"
-            showSearch
-            defaultValue={(props.activeSubmission && props.activeSubmission.id.toString()) || '0'}
-            filterOption={(input, option: any) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-          >
-            {props.submissions.map((sub, i) => (
-              <Select.Option key={sub.students[0]} value={sub.id} style={{ fontSize: 11 }}>
-                {`${sub.students[0]}'s submission`}
-              </Select.Option>
-            ))}
-            <Select.Option key="0" value="0" style={{ fontSize: 11 }}>
-              Solution code
-            </Select.Option>
-          </Select>
-          {props.activeSubmission && (
-            <Icon
-              type="code"
-              style={{ fontSize: 18, marginLeft: 5 }}
-              onClick={openSubmission.bind({}, props.activeSubmission.id)}
-            />
-          )}
-        </div>
-        &nbsp; &nbsp; &nbsp;
-        <Checkbox style={{ minWidth: '125px' }} defaultChecked={props.env && props.env.dumpMode} onChange={updateEnv}>
-          Dump outputs{' '}
-          <CPTooltip title="When this is checked, a TEST.txt file will be created on a student's submissionw with the raw output of the tests" />
-        </Checkbox>
-        {runSelect}
-      </Header>
-      <div style={{ padding: '0px 25px' }}>
-        <Divider style={{ margin: '5px 0px 0px 0px' }} />
-      </div>
       <Content style={{ paddingLeft: 5 }}>
         {title}
         {content}
