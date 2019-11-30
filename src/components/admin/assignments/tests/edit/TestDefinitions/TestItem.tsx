@@ -154,7 +154,7 @@ export const TestItem = (props: ITestItemProps) => {
 
     // FIXME: mutating state
     if (!props.activeSubmission) {
-      props.testCase.status = formatted.result;
+      props.testCase.lastSolutionRun = formatted.result;
       props.saveTest(props.testCase);
     }
 

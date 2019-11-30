@@ -225,7 +225,7 @@ export const TestDefinitions = (props: IProps) => {
       exposed: false,
       instances: [],
       explanation: '',
-      status: RESULT_TYPE.NONE,
+      lastSolutionRun: RESULT_TYPE.NONE,
     };
 
     const newTestCase = await saveTest(dummyTestCase);
@@ -494,7 +494,7 @@ export const TestDefinitions = (props: IProps) => {
                       ? TestCase.sort(casesByCategory[category.id]).map((el) => {
                           return (
                             <Menu.Item key={el.id} style={{ height: 'fit-content', minHeight: 40 }}>
-                              {el.description} &nbsp; {buildStatusBadge(el.status)}
+                              {el.description} &nbsp; {buildStatusBadge(el.lastSolutionRun)}
                             </Menu.Item>
                           );
                         })
@@ -589,7 +589,7 @@ export const TestDefinitions = (props: IProps) => {
                             setActiveTest(el);
                           }}
                         >
-                          {el.description} &nbsp; {buildStatusBadge(el.status)}
+                          {el.description} &nbsp; {buildStatusBadge(el.lastSolutionRun)}
                         </Menu.Item>
                       ))
                     : null}

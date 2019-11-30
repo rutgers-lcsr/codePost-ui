@@ -21,7 +21,7 @@ export const TestCaseV = t.intersection(
       exposed: t.boolean,
       instances: t.array(t.number),
       explanation: t.string,
-      status: t.number,
+      lastSolutionRun: t.number,
     }),
   ],
   'TestCase',

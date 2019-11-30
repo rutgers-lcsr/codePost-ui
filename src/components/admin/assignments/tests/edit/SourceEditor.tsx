@@ -131,7 +131,7 @@ export const SourceEditor = (props: IProps) => {
       const status = el.isError ? RESULT_TYPE.ERROR : el.passed ? RESULT_TYPE.PASSED : RESULT_TYPE.FAILED;
 
       if (!props.activeSubmission) {
-        testCase.status = status;
+        testCase.lastSolutionRun = status;
         props.saveTest(testCase);
       }
 
