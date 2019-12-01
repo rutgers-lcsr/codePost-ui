@@ -21,6 +21,8 @@ import { wait } from '../../../infrastructure/animation';
 
 import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
 
+import Slider from 'rc-slider';
+
 const { Content, Header, Sider } = Layout;
 
 export type ConsoleType = 'grade' | 'subheader';
@@ -49,14 +51,45 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
 
   const [defaultOpenMenus, setDefaultOpenMenus] = React.useState([0, 1, 2]);
 
-  let siderWidth =
-    windowSize.width < layoutVars.breakpoints.smallScreen.grade
-      ? layoutVars.maxWidths.gradeSiderSmallScreen
-      : layoutVars.maxWidths.gradeSiderNormal;
+  const [rubricWidth, setRubricWidth] = React.useState(LOCAL_SETTINGS.siderWidth.getter());
+  const minSiderWidth = 200;
 
-  if (props.editRubricMode) {
-    siderWidth = 700;
-  }
+  const onAfterChange = (result: number) => {
+    const newWidth = result + minSiderWidth;
+    setRubricWidth(newWidth);
+    LOCAL_SETTINGS.siderWidth.setter(newWidth);
+  };
+
+  const siderResizer = (
+    <div
+      style={{
+        backgroundColor: 'transparent',
+        position: 'absolute',
+        width: '100%',
+        left: minSiderWidth,
+        zIndex: 1,
+      }}
+    >
+      <Slider
+        min={0}
+        max={windowSize.width}
+        defaultValue={rubricWidth - minSiderWidth}
+        onAfterChange={onAfterChange}
+        handleStyle={[
+          {
+            backgroundColor: 'transparent',
+            border: '0px solid transparent',
+            borderRadius: 0,
+            cursor: 'col-resize',
+            height: `${windowSize.height - 80}px`,
+          },
+        ]}
+        trackStyle={[{ backgroundColor: 'transparent', height: '1px' }]}
+        railStyle={{ backgroundColor: 'transparent', height: '1px' }}
+        style={{ padding: '0px', height: '1px' }}
+      />
+    </div>
+  );
 
   const handleResize = async () => {
     if (window.innerHeight !== 0) {
@@ -194,54 +227,57 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
           {props.header}
         </Header>
         <Layout style={{ overflowX: 'auto' }}>
-          <Sider
-            width={siderWidth}
-            className="layout--standard-console__sider"
-            style={{
-              backgroundColor: consoleTheme.siderBg,
-              color: consoleTheme.siderTitle,
-              zIndex: 100,
-            }}
-          >
-            {props.sider.length === 0 ? null : (
-              // @ts-ignore
-              <Collapse
-                expandIconPosition="right"
-                activeKey={defaultOpenMenus.map((el) => {
-                  return el.toString();
-                })}
-                bordered={false}
+          <div id="Code-Header">
+            {siderResizer}
+            <Sider
+              width={rubricWidth}
+              className="layout--standard-console__sider"
+              style={{
+                backgroundColor: consoleTheme.siderBg,
+                color: consoleTheme.siderTitle,
+                zIndex: 100,
+              }}
+            >
+              {props.sider.length === 0 ? null : (
                 // @ts-ignore
-                onChange={onCollapse.bind(false, props.sider)}
-                // @ts-ignore
-                expandIcon={collapseIcon}
-                style={{
-                  backgroundColor: consoleTheme.siderBg,
-                  color: consoleTheme.siderTitle,
-                }}
-              >
-                {props.sider.map((siderNode: React.ReactNode, index: number) => {
-                  return (
-                    <Collapse.Panel
-                      header={
-                        <div
-                          style={{
-                            padding: '0px 10px 5px 0px',
-                            color: consoleTheme.siderTitle,
-                          }}
-                        >
-                          <div className="cp-label cp-label--plus cp-label--bold">{props.siderTitles[index]}</div>
-                        </div>
-                      }
-                      key={index.toString()}
-                    >
-                      {siderNode}
-                    </Collapse.Panel>
-                  );
-                })}
-              </Collapse>
-            )}
-          </Sider>
+                <Collapse
+                  expandIconPosition="right"
+                  activeKey={defaultOpenMenus.map((el) => {
+                    return el.toString();
+                  })}
+                  bordered={false}
+                  // @ts-ignore
+                  onChange={onCollapse.bind(false, props.sider)}
+                  // @ts-ignore
+                  expandIcon={collapseIcon}
+                  style={{
+                    backgroundColor: consoleTheme.siderBg,
+                    color: consoleTheme.siderTitle,
+                  }}
+                >
+                  {props.sider.map((siderNode: React.ReactNode, index: number) => {
+                    return (
+                      <Collapse.Panel
+                        header={
+                          <div
+                            style={{
+                              padding: '0px 10px 5px 0px',
+                              color: consoleTheme.siderTitle,
+                            }}
+                          >
+                            <div className="cp-label cp-label--plus cp-label--bold">{props.siderTitles[index]}</div>
+                          </div>
+                        }
+                        key={index.toString()}
+                      >
+                        {siderNode}
+                      </Collapse.Panel>
+                    );
+                  })}
+                </Collapse>
+              )}
+            </Sider>
+          </div>
           <Layout
             style={{
               backgroundColor: consoleTheme.mainBg,

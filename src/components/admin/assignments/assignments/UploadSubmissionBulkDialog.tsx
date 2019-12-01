@@ -17,13 +17,15 @@ import { tooltips } from '../../../../components/core/tooltips';
 import { AssignmentType } from '../../../../infrastructure/assignment';
 import { SubmissionType } from '../../../../infrastructure/submission';
 
-import { acceptedFilesSet } from './AcceptedFileTypes';
-
 import UploadForm from './UploadForm';
 
 import { IntegrationButton, INTEGRATIONS } from '../../../landing/Integrations';
 
 import { resizeImage } from '../../other/AdminUtils';
+
+import { UploadFile } from 'antd/lib/upload/interface';
+
+import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
 
 const Panel = Collapse.Panel;
 const { Step } = Steps;
@@ -91,7 +93,7 @@ interface IState {
   uploadMap: { [student: string]: UPLOAD_STATUS };
 
   /* Used to store the contents of files */
-  fileMap: { [fileName: string]: string };
+  fileMap: { [fileName: string]: string | ArrayBuffer | null };
 
   /* stores progress */
   status: STATUS;
@@ -103,7 +105,7 @@ interface IState {
   numFiles: number;
 
   /* raw file objects (unread) for passing to validation function */
-  rawFiles: File[];
+  rawFiles: UploadFile[];
 
   /* overwrite mode toggle */
   overwriteMode: boolean;
@@ -218,40 +220,16 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
 
   public readFiles = () => {
     const submissions = this.state.protoSubmissions;
-    submissions.forEach((submission) => {
-      for (const file of submission.files) {
-        const anyFile: any = file;
-        const studentsReader = new FileReader();
-        studentsReader.onabort = () => console.log('file reading was aborted');
-        studentsReader.onerror = () => {
-          const errorPaths = this.state.errorPaths;
-          const newMessage = `Failed to read file: ${anyFile.webkitRelativePath}`;
-          this.setState({
-            errorPaths: [...errorPaths, newMessage],
-            status: STATUS.FILE_ERROR,
-          });
-        };
-        studentsReader.onload = async () => {
-          let result: any = studentsReader.result;
-          const fileMap = this.state.fileMap;
-          if (typeof result === 'string') {
-            const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
-            // Optimization: The resizing takes time so we only want to do it on bigger images (>50Kb)
-            if (['png', 'jpeg', 'jpg'].includes(extension) && file.size > 50000) {
-              // We want to limit the image to a certain size so we don't slow down file load
-              result = await resizeImage(result);
-            }
-            const cleanedResult = result.replace(/\0/g, '');
-            fileMap[anyFile.webkitRelativePath] = cleanedResult;
-            this.setState({ fileMap });
-          }
-        };
 
-        const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
-        if (['png', 'jpg', 'jpeg', 'pdf'].includes(extension)) {
-          studentsReader.readAsDataURL(file);
-        } else {
-          studentsReader.readAsBinaryString(file);
+    submissions.map(async (submission) => {
+      for (const file of submission.files) {
+        try {
+          const outputFiles = await readUploadedFile(file);
+          outputFiles.map((outputFile: IProtoFileUpload) => {
+            this.setState({ fileMap: { ...this.state.fileMap, [outputFile.longname]: outputFile.data } });
+          });
+        } catch (e) {
+          this.setState({ errorPaths: [...this.state.errorPaths, e], status: STATUS.FILE_ERROR });
         }
       }
     });
@@ -290,12 +268,19 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     const promises = toUpload.map((submission) => {
       const files: any[] = [];
       submission.files.forEach((file: any) => {
-        const pathDirs = file.webkitRelativePath.split('/');
+        let path: string = file.webkitRelativePath;
+        let fileName: string = file.name;
+        if (file.webkitRelativePath === '') {
+          path = file.name;
+          fileName = file.name.split('/').slice(-1)[0];
+        }
+        // const pathDirs = file.webkitRelativePath.split('/');
+        const pathDirs = path.split('/');
         // Want to ignore first (root dir, student email) two and last element (file name) of split
         const filePath = pathDirs.length > 3 ? pathDirs.slice(2, pathDirs.length - 1).join('/') : null;
         const payload = {
-          name: file.name,
-          data: fileMap[file.webkitRelativePath],
+          name: fileName,
+          data: fileMap[path],
           path: filePath,
         };
         files.push(payload);
@@ -412,7 +397,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     return true;
   };
 
-  public onFileDrop = (acceptedFiles: File[]) => {
+  public onFileDrop = async (acceptedFiles: UploadFile[]) => {
     const folderMap: any = {};
     const students = this.props.students;
     const studentMap = this.state.studentMap;
@@ -426,26 +411,16 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     - path contains a student listed in a different folder
     - path contains a student multiple times
     /*************************************************************/
-
-    // WARNING:
-    // casting File (newFile) to any to access webkitRelativePath property
-    // this property is experimental and not on a standards track
-    // https://developer.mozilla.org/en-US/docs/Web/API/File/webkitRelativePath
     acceptedFiles.forEach((newFile: any) => {
-      // FIXME: webkit prefix only used in Chrome. Extend to Edge and Firefox
-      // by detecting browser and removing prefix if necessary
-      const path: string = newFile.webkitRelativePath;
+      const protoFileUpload: IProtoFileUpload = fileToProtoFileUpload(newFile);
 
-      const folderName = path
-        .split('/')[1]
-        .trim()
-        .toLowerCase();
+      const folderName = protoFileUpload.path.split('/')[1];
       const emails = folderName.split(',');
 
       if (!this.allStudentsValid(emails, students)) {
-        invalidPaths.push(`Folder refers to invalid student: ${path}`);
+        invalidPaths.push(`Folder refers to invalid student: ${folderName}`);
       } else if (!this.noDuplicates(emails)) {
-        invalidPaths.push(`Folder contains duplicate students: ${path}`);
+        invalidPaths.push(`Folder contains duplicate students: ${folderName}`);
       } else {
         // No need to check folders which we've already validated
         if (!(folderName in folderMap)) {
@@ -457,7 +432,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
 
           if (validEmails.length !== emails.length) {
             // Some email in the folder name was invalid
-            invalidPaths.push(`Contains a duplicate student: ${path}`);
+            invalidPaths.push(`Contains a duplicate student: ${protoFileUpload.longname}`);
           } else {
             let noCollisions = true;
             for (const email of emails) {
@@ -484,16 +459,15 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     // Sort files into appropriate protoSubmissions
     let numFiles = 0;
     acceptedFiles.forEach((el: any) => {
-      const folderName = el.webkitRelativePath.split('/')[1].toLowerCase();
-      const extension = el.name.includes('.') ? el.name.split('.').slice(-1)[0] : '';
-      if (!acceptedFilesSet.has(`.${extension}`)) {
-        invalidPaths.push(`File type not accepted: ${el.webkitRelativePath}`);
-      } else if (
-        el.webkitRelativePath.split('/').find((pathEl: string) => {
+      const protoFileUpload: IProtoFileUpload = fileToProtoFileUpload(el);
+      const folderName = protoFileUpload.path.split('/')[1];
+
+      if (
+        protoFileUpload.longname.split('/').find((pathEl: string) => {
           return pathEl.startsWith('.');
         })
       ) {
-        invalidPaths.push(`Cannot have a folder that starts with .: ${el.webkitRelativePath}`);
+        invalidPaths.push(`Cannot have a folder that starts with .: ${protoFileUpload.longname}`);
       } else {
         if (folderName in folderMap) {
           folderMap[folderName].files.push(el);
@@ -542,7 +516,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     }
   };
 
-  public setRawFiles = (rawFiles: File[]) => {
+  public setRawFiles = (rawFiles: UploadFile[]) => {
     this.setState({ rawFiles });
   };
 

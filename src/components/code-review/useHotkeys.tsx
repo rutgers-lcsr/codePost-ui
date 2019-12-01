@@ -42,6 +42,10 @@ export const V_KEY = 86;
 
 /*******************************************************************************/
 
+export const M_KEY = 77;
+
+/*******************************************************************************/
+
 const useHotkeys = (hotkey: number, callback: any, shift?: boolean, override?: boolean) => {
   const os = getOperatingSystem();
 

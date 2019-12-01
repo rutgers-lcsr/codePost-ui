@@ -1,0 +1,57 @@
+/* react imports */
+import React, { useState } from 'react';
+
+/* library imports */
+import { Button, Input, Modal, Icon } from 'antd';
+
+import { TestCategoryType } from '../../../../../../infrastructure/types';
+
+interface IUploadProps {
+  addCategory: (name: string, proMode: boolean) => Promise<TestCategoryType>;
+  externalOnly: boolean;
+  icon?: boolean;
+}
+
+export const AddCategoryModal = (props: IUploadProps) => {
+  /******************************* State Variables ****************************/
+  const [visible, setVisible] = useState(false);
+  const [name, setName] = useState('');
+
+  /******************************* API / State Change Functions ****************************/
+  const onSave = async () => {
+    await props.addCategory(name, false);
+    setName('');
+    setVisible(!visible);
+  };
+
+  /******************************* State Change Functions ****************************/
+  const toggleVisible = () => {
+    setVisible(!visible);
+  };
+
+  const onChange = (e: any) => {
+    setName(e.target.value);
+  };
+
+  /******************************* Return *****************************************/
+  return (
+    <span>
+      {props.icon ? (
+        <Icon type="folder-add" onClick={toggleVisible} />
+      ) : (
+        <Button onClick={toggleVisible}>Add Test Category</Button>
+      )}
+
+      <Modal
+        visible={visible}
+        title="Add new test category"
+        onCancel={toggleVisible}
+        onOk={onSave}
+        width={400}
+        style={{ padding: 25 }}
+      >
+        <Input onChange={onChange} value={name} placeholder="Category Name" />
+      </Modal>
+    </span>
+  );
+};

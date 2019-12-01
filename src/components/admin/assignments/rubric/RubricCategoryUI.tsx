@@ -402,7 +402,8 @@ const RubricCategoryUI = ({
       </div>
       {activeComment ? (
         <ExplanationModal
-          rubricComment={activeComment}
+          title={activeComment.text}
+          startText={activeComment.explanation}
           onCancel={() => {
             setActiveComment(undefined);
           }}

@@ -47,12 +47,14 @@
     width: 200px;
   }
 
-  .ant-collapse-header {
-    padding-bottom: 0;
-  }
+  #Code-Header {
+    .ant-collapse-header {
+      padding-bottom: 0;
+    }
 
-  .ant-collapse-content-box {
-    padding: 0;
+    .ant-collapse-content-box {
+      padding: 0;
+    }
   }
 }
 
@@ -205,10 +207,24 @@
   }
 }
 
-.ant-collapse tr {
-  line-height: 5px;
+#Code-Header {
+  .ant-collapse tr {
+    line-height: 5px;
+  }
 }
 
 #Admin .ant-table-tbody td {
   padding: 10px 8px;
+}
+
+tr.drop-over-downward td {
+  border-bottom: 2px dashed #47cc97 !important;
+}
+
+tr.drop-over-upward td {
+  border-top: 2px dashed #47cc97;
+}
+
+td.draggable {
+  cursor: move;
 }

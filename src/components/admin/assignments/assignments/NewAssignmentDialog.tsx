@@ -82,7 +82,7 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
 
 interface IFormProps extends FormComponentProps {
   visible: boolean;
-  onCreate: () => void;
+  onCreate: () => Promise<void>;
   onCancel: () => void;
   assignments: AssignmentType[];
 }

@@ -11,6 +11,7 @@ interface IBadgeProps {
   forcedStyle?: BadgeStyle;
   size?: BadgeSize;
   placeholder?: boolean;
+  hideZero?: boolean;
 }
 
 const Badge = (props: IBadgeProps) => {
@@ -44,7 +45,7 @@ const Badge = (props: IBadgeProps) => {
   } else {
     className += ' badge--normal';
   }
-  return <AntBadge count={label} className={className} showZero={showZero} {...extraProps} />;
+  return <AntBadge count={label} className={className} showZero={props.hideZero ? false : showZero} {...extraProps} />;
 };
 
 export default Badge;

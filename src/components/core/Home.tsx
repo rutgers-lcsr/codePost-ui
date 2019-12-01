@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Typography } from 'antd';
+import { Card, Divider, Icon, Typography } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -16,7 +16,7 @@ import PeripheralPageLayout from './layouts/PeripheralPageLayout';
 
 import { UserType } from '../../infrastructure/user';
 
-import CPButton from '../core/CPButton';
+import useWindowSize from './useWindowSize';
 
 import layoutVars from '../../styles/layout/_layoutVars';
 
@@ -35,41 +35,74 @@ const buttonStyle = {
   fontSize: '17px',
 };
 
-class Home extends React.Component<IProps, {}> {
-  public render() {
-    const studentBtn = this.props.isStudent ? (
-      <Link to="/student">
-        <CPButton icon="idcard" block cpType="secondary" style={buttonStyle}>
-          Student Console
-        </CPButton>
-      </Link>
-    ) : null;
-    const graderBtn = this.props.isGrader ? (
-      <Link to="/grader">
-        <CPButton icon="audit" block cpType="secondary" style={buttonStyle}>
-          Grader Console
-        </CPButton>
-      </Link>
-    ) : null;
-    const adminBtn = this.props.isAdmin ? (
-      <Link to="/admin">
-        <CPButton icon="sliders" block cpType="secondary" style={buttonStyle}>
-          Admin Console
-        </CPButton>
-      </Link>
-    ) : null;
-
-    return (
-      <PeripheralPageLayout user={this.props.user} handleLogout={this.props.handleLogout}>
-        <div style={{ maxWidth: layoutVars.maxWidths.home, margin: '0 auto' }}>
-          <Typography.Title level={3}>Select your role:</Typography.Title>
-          {studentBtn}
-          {graderBtn}
-          {adminBtn}
-        </div>
-      </PeripheralPageLayout>
-    );
-  }
+interface IRoleProps {
+  title: string;
+  icon: string;
+  linkTo: string;
 }
+
+const RoleItem = (props: IRoleProps) => {
+  const [hovered, setHovered] = React.useState(false);
+
+  const onMouseEnter = (e: React.MouseEvent) => {
+    setHovered(true);
+  };
+
+  const onMouseLeave = (e: React.MouseEvent) => {
+    setHovered(false);
+  };
+
+  return (
+    <Link to={props.linkTo}>
+      <div
+        style={{ padding: '10px', textAlign: 'center', cursor: hovered ? 'pointer' : 'auto' }}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      >
+        <div
+          style={{
+            margin: '8px',
+            width: '120px',
+            height: '120px',
+            border: '1px solid rgb(232, 232, 232)',
+            boxShadow: hovered ? '0 2px 8px rgba(0,0,0,.15)' : undefined,
+            display: 'table',
+          }}
+        >
+          <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
+            <Icon type={props.icon} style={{ fontSize: '70px', color: hovered ? '#24be85' : 'rgba(0, 0, 0, 0.7)' }} />
+          </div>
+        </div>
+        <div style={{ fontWeight: hovered ? 560 : 380, fontSize: '16px', color: 'rgba(0, 0, 0, 0.7)' }}>
+          {props.title}
+        </div>
+      </div>
+    </Link>
+  );
+};
+
+const Home = (props: IProps) => {
+  const windowSize = useWindowSize();
+
+  const flexDirection = windowSize.width < 600 ? 'column' : 'row';
+
+  const items = [
+    props.isStudent ? <RoleItem key="student" title="Student Console" icon="idcard" linkTo="/student" /> : null,
+    props.isGrader ? <RoleItem key="grader" title="Grader Console" icon="audit" linkTo="/grader" /> : null,
+    props.isAdmin ? <RoleItem key="admin" title="Admin Console" icon="sliders" linkTo="/admin" /> : null,
+  ];
+
+  return (
+    <PeripheralPageLayout user={props.user} handleLogout={props.handleLogout}>
+      <div style={{ maxWidth: layoutVars.maxWidths.home, margin: '0 auto' }}>
+        <Typography.Title level={3} style={{ textAlign: 'center' }}>
+          Select your Role
+        </Typography.Title>
+        <Divider />
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection }}>{items}</div>
+      </div>
+    </PeripheralPageLayout>
+  );
+};
 
 export default Home;
