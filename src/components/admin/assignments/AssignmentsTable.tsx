@@ -380,7 +380,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
             <div />
           )}
           <Menu.Item key="moss">
-            <Link to={`${this.props.baseURL}/${encodedName}/moss`}>
+            <Link to={`${this.props.baseURL}/plagiarism/${encodedName}`}>
               <Icon type="diff" />
               &nbsp; Check Moss <Tag>BETA</Tag>
             </Link>
