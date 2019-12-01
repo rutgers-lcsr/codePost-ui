@@ -107,6 +107,7 @@ interface ICommentState {
   status: CommentStatus;
   text: string;
   points: number;
+  hasHover: boolean;
 }
 
 class Comment extends React.Component<ICommentProps, ICommentState> {
@@ -174,13 +175,35 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     }
   }
 
-  public init = () => {
+  public init = (): ICommentState => {
     const text: string = this.props.comment.text ? this.props.comment.text : '';
     const points: number = UiComment.points(this.props.comment, this.props.rubricComment);
     const status: CommentStatus =
       text === '' && points === 0 && this.props.rubricComment === undefined ? 'edited' : 'idle';
-    return { text, points, status };
+    return { text, points, status, hasHover: false };
   };
+
+  /***********************************************************************************************/
+  /* Hover handlers
+  /***********************************************************************************************/
+
+  public onMouseEnter = () => {
+    this.highlightRelatedComment();
+    this.handleHoverEvent();
+  };
+
+  public onMouseLeave = () => {
+    this.unhighlightRelatedComment();
+    this.handleHoverEvent();
+  };
+
+  public handleHoverEvent = () => {
+    this.setState((oldState) => {
+      return { hasHover: !oldState.hasHover };
+    });
+  };
+
+  /***********************************************************************************************/
 
   public save = async () => {
     this.unhighlightRelatedComment();
@@ -522,7 +545,13 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           <BlockMarkdown source={this.state.text} />
         </div>
       );
-      commentElements.deleteButton = <CPButton cpType="danger" icon="delete" onClick={this.delete} />;
+
+      // Only shown delete button on inactive comment when the user is hovering
+      commentElements.deleteButton = this.state.hasHover ? (
+        <CPButton cpType="danger" icon="delete" onClick={this.delete} />
+      ) : (
+        <span />
+      );
 
       onClick = this.onCommentClick;
       cursor = 'pointer';
@@ -650,8 +679,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         id={`comment-${this.props.comment.id}`}
         style={{ top: `${this.props.placement}px`, cursor, zIndex: 0 }}
         onClick={onClick}
-        onMouseEnter={this.highlightRelatedComment}
-        onMouseLeave={this.unhighlightRelatedComment}
+        onMouseEnter={this.onMouseEnter}
+        onMouseLeave={this.onMouseLeave}
         data-status={this.state.status}
       >
         <div className="ant-popover-content">
