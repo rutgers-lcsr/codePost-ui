@@ -11,6 +11,8 @@ import { Button, Empty, message, notification } from 'antd';
 /* other library imports */
 import _ from 'lodash';
 import queryString from 'query-string';
+import moment from 'moment-timezone';
+
 
 /* codePost imports */
 import Loading from '../core/Loading';
@@ -1104,7 +1106,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       sections: [],
       sendReleasedSubmissionsToBack: false,
       showStudentsStatistics: false,
-      timezone: '',
+      timezone: moment.tz.guess(),
       emailNewUsers: false,
       anonymousGradingDefault: false,
     };
@@ -1116,7 +1118,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       students: ['student1@example.edu'],
       assignment: -1,
       dateEdited: '',
-      dateUploaded: '',
+      dateUploaded: moment().toString(),
       grade: null,
       grader: this.props.user.email,
       questionText: '',
