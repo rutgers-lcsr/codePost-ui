@@ -9,13 +9,15 @@ import React from 'react';
 import { Button, Collapse, Divider, Modal, Progress, Steps, Switch, Table, Tag, Typography } from 'antd';
 
 /* other library imports */
+import { Link } from 'react-router-dom';
 
+/* codePost imports */
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
 
-/* codePost imports */
-import { AssignmentType } from '../../../../infrastructure/assignment';
-import { SubmissionType } from '../../../../infrastructure/submission';
+import { encodeForLink } from '../../../../components/core/URLutils';
+
+import { AssignmentType, CourseType, SubmissionType } from '../../../../infrastructure/types';
 
 import UploadForm from './UploadForm';
 
@@ -53,6 +55,7 @@ interface IProps {
   updateSubmission: (submission: SubmissionType) => Promise<void>;
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   showImportOptions?: boolean;
+  course: CourseType;
 }
 
 interface IProtoSubmission {
@@ -549,66 +552,87 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     let numToUpload = 0;
     switch (this.state.status) {
       case STATUS.NONE:
-        content = (
-          <div>
-            {!this.state.showImportOptions ? (
-              <div style={{ margin: '15px 0px' }}>
-                Looking to import submissions from a third-party tool (like your LMS)?{' '}
-                <span>
-                  <Button size="small" onClick={this.showImportOptions}>
-                    View instructions
-                  </Button>
-                </span>
-              </div>
-            ) : (
-              <div
-                style={{
-                  margin: '15px 0px',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
+        if (this.props.students.length === 0) {
+          content = (
+            <div>
+              After you add students, you can upload their submissions in bulk here. <br />
+              <br />{' '}
+              <Link
+                to={
+                  this.props.course
+                    ? `/admin/${encodeForLink(this.props.course.name)}/${encodeForLink(
+                        this.props.course.period,
+                      )}/roster/students`
+                    : ''
+                }
               >
-                <IntegrationButton
-                  integration={INTEGRATIONS['canvas']}
-                  onClick={this.onIntegrationClick}
-                  active={this.state.mode === 'canvas'}
-                />
-                <div style={{ width: '20px' }} />
-                <IntegrationButton
-                  integration={INTEGRATIONS['blackboard']}
-                  onClick={this.onIntegrationClick}
-                  active={this.state.mode === 'blackboard'}
-                />
-                <div style={{ width: '20px' }} />
-                <IntegrationButton
-                  integration={INTEGRATIONS['brightspace']}
-                  onClick={this.onIntegrationClick}
-                  active={this.state.mode === 'brightspace'}
-                />
-                <div style={{ width: '20px' }} />
-                <IntegrationButton
-                  integration={INTEGRATIONS['github']}
-                  onClick={this.onIntegrationClick}
-                  active={this.state.mode === 'github'}
-                />
-                <div style={{ width: '20px' }} />
-                <IntegrationButton
-                  integration={INTEGRATIONS['jupyter']}
-                  onClick={this.onIntegrationClick}
-                  active={this.state.mode === 'jupyter'}
-                />
-                <div style={{ width: '20px' }} />
-                <IntegrationButton
-                  integration={INTEGRATIONS['more']}
-                  onClick={this.onIntegrationClick}
-                  active={this.state.mode === 'more'}
-                />
-              </div>
-            )}
+                <Button>Add students</Button>
+              </Link>
+            </div>
+          );
+        } else {
+          content = (
+            <div>
+              {!this.state.showImportOptions ? (
+                <div style={{ margin: '15px 0px' }}>
+                  Looking to import submissions from a third-party tool (like your LMS)?{' '}
+                  <span>
+                    <Button size="small" onClick={this.showImportOptions}>
+                      View instructions
+                    </Button>
+                  </span>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    margin: '15px 0px',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <IntegrationButton
+                    integration={INTEGRATIONS['canvas']}
+                    onClick={this.onIntegrationClick}
+                    active={this.state.mode === 'canvas'}
+                  />
+                  <div style={{ width: '20px' }} />
+                  <IntegrationButton
+                    integration={INTEGRATIONS['blackboard']}
+                    onClick={this.onIntegrationClick}
+                    active={this.state.mode === 'blackboard'}
+                  />
+                  <div style={{ width: '20px' }} />
+                  <IntegrationButton
+                    integration={INTEGRATIONS['brightspace']}
+                    onClick={this.onIntegrationClick}
+                    active={this.state.mode === 'brightspace'}
+                  />
+                  <div style={{ width: '20px' }} />
+                  <IntegrationButton
+                    integration={INTEGRATIONS['github']}
+                    onClick={this.onIntegrationClick}
+                    active={this.state.mode === 'github'}
+                  />
+                  <div style={{ width: '20px' }} />
+                  <IntegrationButton
+                    integration={INTEGRATIONS['jupyter']}
+                    onClick={this.onIntegrationClick}
+                    active={this.state.mode === 'jupyter'}
+                  />
+                  <div style={{ width: '20px' }} />
+                  <IntegrationButton
+                    integration={INTEGRATIONS['more']}
+                    onClick={this.onIntegrationClick}
+                    active={this.state.mode === 'more'}
+                  />
+                </div>
+              )}
 
-            <UploadForm rawFiles={this.state.rawFiles} setRawFiles={this.setRawFiles} mode={this.state.mode} />
-          </div>
-        );
+              <UploadForm rawFiles={this.state.rawFiles} setRawFiles={this.setRawFiles} mode={this.state.mode} />
+            </div>
+          );
+        }
+
         break;
       case STATUS.FILE_ERROR:
       case STATUS.UPLOADED:
