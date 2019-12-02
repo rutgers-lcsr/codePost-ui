@@ -549,9 +549,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       // Only shown delete button on inactive comment when the user is hovering
       commentElements.deleteButton = this.state.hasHover ? (
         <CPButton cpType="danger" icon="delete" onClick={this.delete} />
-      ) : (
-        <span />
-      );
+      ) : null;
 
       onClick = this.onCommentClick;
       cursor = 'pointer';
