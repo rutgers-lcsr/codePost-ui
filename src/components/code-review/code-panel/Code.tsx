@@ -6,13 +6,15 @@ import CodePanelHighlighting from './CodePanelHighlighting';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
-import { CommentType } from '../../../infrastructure/comment';
+import { CommentIO, CommentType } from '../../../infrastructure/comment';
 
 import { POSITION } from '../../../types/common';
 
 import { wait } from '../../../infrastructure/animation';
 
 import { CURSOR_DOMAIN } from '../CodeConsole';
+
+import { ICursorType, left, right, up, down, shiftLeft, shiftRight, shiftUp, shiftDown, front, back } from './Cursor';
 
 interface ICodeProps {
   commentCounter: number;
@@ -23,6 +25,99 @@ interface ICodeProps {
 
 const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
+
+  const [cursor, setCursor] = React.useState<ICursorType>({
+    startChar: 0,
+    endChar: 1,
+    startLine: 0,
+    endLine: 0,
+    lead: 'front',
+  });
+
+  // A cursorComment is a pseudo-comment with ID === 0
+  const cursorComment = {
+    ...cursor,
+    id: 0,
+    file: props.file.id,
+    pointDelta: 0.0,
+    text: '',
+    rubricComment: null,
+    author: props.user,
+    feedback: 0,
+  };
+
+  console.log('rendering CODE');
+
+  const addNewComment = async (startLine: number, endLine: number, startChar: number, endChar: number) => {
+    const newComment: CommentType = {
+      startLine,
+      endLine,
+      startChar,
+      endChar,
+      id: props.commentCounter,
+      file: props.file.id,
+      pointDelta: 0.0,
+      text: '',
+      rubricComment: null,
+      author: props.user,
+      feedback: 0,
+    };
+
+    props.addComment(newComment, props.file);
+
+    // FIXME: we can come up with a better solution
+    await wait(5);
+
+    CodePanelHighlighting.brightenHighlight(newComment.id, consoleTheme.highlightActive);
+  };
+
+  React.useEffect(() => {
+    const code = props.file.code.split('\n');
+
+    const handleKeydown = async (e: any) => {
+      if (props.showCursor === CURSOR_DOMAIN.CODE) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          e.stopPropagation();
+
+          await addNewComment(cursor.startLine, cursor.endLine, cursor.startChar, cursor.endChar);
+        }
+
+        if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Escape'].includes(e.key)) {
+          let newCursor = cursor;
+
+          e.preventDefault();
+          e.stopPropagation();
+
+          if (e.key === 'Escape') {
+            newCursor = cursor.lead === 'front' ? front(cursor) : back(cursor);
+          } else if (e.shiftKey && e.key === 'ArrowLeft') {
+            newCursor = shiftLeft(code, cursor);
+          } else if (e.shiftKey && e.key === 'ArrowRight') {
+            newCursor = shiftRight(code, cursor);
+          } else if (e.shiftKey && e.key === 'ArrowUp') {
+            newCursor = shiftUp(code, cursor);
+          } else if (e.shiftKey && e.key === 'ArrowDown') {
+            newCursor = shiftDown(code, cursor);
+          } else if (e.key === 'ArrowLeft') {
+            newCursor = left(code, cursor);
+          } else if (e.key === 'ArrowRight') {
+            newCursor = right(code, cursor);
+          } else if (e.key === 'ArrowUp') {
+            newCursor = up(code, cursor);
+          } else if (e.key === 'ArrowDown') {
+            newCursor = down(code, cursor);
+          }
+
+          setCursor(newCursor);
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKeydown);
+    return () => {
+      document.removeEventListener('keydown', handleKeydown);
+    };
+  });
 
   const onMouseUp = async (event: React.MouseEvent) => {
     const selection = window.getSelection();
@@ -96,26 +191,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
       endChar = temp1 < temp2 ? temp2 : temp1;
     }
 
-    const newComment: CommentType = {
-      id: props.commentCounter,
-      endChar,
-      endLine,
-      file: props.file.id,
-      pointDelta: 0.0,
-      startChar,
-      startLine,
-      text: '',
-      rubricComment: null,
-      author: props.user,
-      feedback: 0,
-    };
-
-    props.addComment(newComment, props.file);
-
-    // FIXME: we can come up with a better solution
-    await wait(5);
-
-    CodePanelHighlighting.brightenHighlight(newComment.id, consoleTheme.highlightActive);
+    await addNewComment(startLine, endLine, startChar, endChar);
   };
 
   const onMouseDown = (event: React.MouseEvent) => {
@@ -136,23 +212,27 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
               opacity: 0.2,
             }
           : {};
+
+      const t = text === '' ? ' ' : text;
       return (
         <div key={i} id={`line-${i}`} onMouseDown={readOnly ? undefined : onMouseDown} style={style}>
-          {text === ''
-            ? ' '
-            : CodePanelHighlighting.highlight(
-                comments,
-                text,
-                i,
-                readOnly,
-                consoleTheme.highlight,
-                props.onHighlightClick,
-              )}
+          {CodePanelHighlighting.highlight(comments, t, i, readOnly, consoleTheme.highlight, props.onHighlightClick)}
         </div>
       );
     });
   };
-  return <div>{linesOfCode(props.readOnly, props.file.code, props.comments)}</div>;
+
+  let comments = props.comments;
+  if (props.showCursor === CURSOR_DOMAIN.CODE) {
+    const cursorInsertIndex = CommentIO.sortedIndex(props.comments, cursorComment);
+    comments = [
+      ...props.comments.slice(0, cursorInsertIndex),
+      cursorComment,
+      ...props.comments.slice(cursorInsertIndex),
+    ];
+  }
+
+  return <div>{linesOfCode(props.readOnly, props.file.code, comments)}</div>;
 };
 
 export default Code;

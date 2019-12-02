@@ -431,7 +431,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
       rubricReload: undefined,
 
-      showCursor: CURSOR_DOMAIN.HIDDEN,
+      showCursor: CURSOR_DOMAIN.CODE,
       cursorIndex: 0,
       cursorExtent: 1,
     };
@@ -611,6 +611,40 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     if (this.state.selectedFile !== undefined) {
       if (this.state.activeCommentID !== undefined) {
+        console.log('active comment');
+      } else {
+        console.log('normal');
+
+        if (e.key === 'j' && triggerKey) {
+          if (this.state.showCursor === CURSOR_DOMAIN.CODE) {
+            this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN });
+          } else {
+            this.setState({ showCursor: CURSOR_DOMAIN.CODE });
+          }
+        } else if (e.key === 'k' && triggerKey) {
+          if (this.state.showCursor === CURSOR_DOMAIN.COMMENTS) {
+            this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN });
+          } else {
+            this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS });
+          }
+        }
+      }
+    }
+  };
+
+  public handleCursor2 = async (e: any) => {
+    const os = getOperatingSystem();
+    const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+
+    if (e.key === '/' && triggerKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.toggleKeyboardShortcuts();
+      return;
+    }
+
+    if (this.state.selectedFile !== undefined) {
+      if (this.state.activeCommentID !== undefined) {
         if (e.key === 'j' && triggerKey) {
           e.preventDefault();
           e.stopPropagation();
@@ -633,7 +667,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         }
       } else {
         const lines = this.state.selectedFile.code.split('\n');
-        if (e.key === 'Escape') {
+        if (e.key === 'Escapes') {
           this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorExtent: 1 });
         } else if (
           this.state.showCursor === CURSOR_DOMAIN.HIDDEN &&
@@ -870,7 +904,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /**********************************************************************************/
 
   public changeActiveComment = (id: number | undefined): void => {
-    this.setState({ activeCommentID: id });
+    if (id === undefined) {
+      this.setState({ activeCommentID: id, showCursor: CURSOR_DOMAIN.COMMENTS });
+    } else {
+      this.setState({ activeCommentID: id, showCursor: CURSOR_DOMAIN.RUBRIC });
+    }
   };
 
   public changeSelectedFile = (fileID: number): void => {

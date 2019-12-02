@@ -252,7 +252,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   };
 
   public handleHotkeys = (e: any) => {
-    if (e.key === 'Escape') {
+    if (e.key === 'Escapes') {
       if (this.state.showDeletePopover) {
         this.confirmCancelDelete(e);
       } else {

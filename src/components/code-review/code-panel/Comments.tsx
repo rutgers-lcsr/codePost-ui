@@ -62,6 +62,7 @@ interface ICommentPlacement {
 
 interface ICommentsState {
   placements: ICommentPlacement[];
+  cursor: number;
 }
 
 type BlockType = {
@@ -91,6 +92,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           placement: comment.startLine * themeVars.grade.codeLineHeight,
         };
       }),
+      cursor: 0,
     };
   }
 
@@ -113,6 +115,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
   public componentDidMount() {
     document.addEventListener('mousedown', this.handleClickOutside);
+    document.addEventListener('keydown', this.handleCursor);
   }
 
   // FIXME: This forces comments with 'expand' to stack correctly
@@ -126,7 +129,18 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
   public componentWillUnmount() {
     document.removeEventListener('mousedown', this.handleClickOutside);
+    document.removeEventListener('keydown', this.handleCursor);
   }
+
+  public handleCursor = async (e: any) => {
+    if (this.props.showCursor === CURSOR_DOMAIN.COMMENTS) {
+      if (e.key === 'ArrowDown') {
+        this.setState({ cursor: Math.min(this.props.comments.length - 1, this.state.cursor + 1) });
+      } else if (e.key === 'ArrowUp') {
+        this.setState({ cursor: Math.max(0, this.state.cursor - 1) });
+      }
+    }
+  };
 
   public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {
     const codeScrollArea = document.getElementById('code-scroll-area');
@@ -290,7 +304,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
         ? this.props.oldCommentIDs[comment.id]
         : comment.id;
 
-      const cursored = this.props.showCursor === CURSOR_DOMAIN.COMMENTS && this.props.cursorIndex === index;
+      const cursored = this.props.showCursor === CURSOR_DOMAIN.COMMENTS && this.state.cursor === index;
 
       return (
         <Comment

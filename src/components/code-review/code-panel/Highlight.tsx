@@ -25,14 +25,14 @@ const Highlight = (props: IHighlightProps) => {
   let onMouseLeave;
   let onClick;
   if (commandPressed) {
-    style = { cursor: 'pointer', backgroundColor: consoleTheme.highlight };
+    style = { cursor: 'pointer', backgroundColor: props.commentID === 0 ? 'blue' : consoleTheme.highlight };
     onMouseEnter = (e: React.MouseEvent) =>
       CodePanelHighlighting.brightenHighlight(props.commentID, consoleTheme.highlightActive);
     onMouseLeave = (e: React.MouseEvent) =>
       CodePanelHighlighting.darkenHighlight(props.commentID, consoleTheme.highlight);
     onClick = props.onHighlightClick;
   } else {
-    style = { cursor: 'auto', backgroundColor: consoleTheme.highlight };
+    style = { cursor: 'auto', backgroundColor: props.commentID === 0 ? 'blue' : consoleTheme.highlight };
     CodePanelHighlighting.darkenHighlight(props.commentID, consoleTheme.highlight);
   }
 

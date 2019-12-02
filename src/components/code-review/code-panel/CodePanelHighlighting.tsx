@@ -238,8 +238,10 @@ class CodePanelHighlighting {
     const className = `highlight-${commentID}`;
     const elems = document.getElementsByClassName(className);
 
+    const col = commentID === 0 ? 'blue' : color;
+
     [].forEach.call(elems, (elem: any) => {
-      elem.style.setProperty('background-color', color, 'important');
+      elem.style.setProperty('background-color', col, 'important');
     });
   };
 
@@ -247,8 +249,10 @@ class CodePanelHighlighting {
     const className = `highlight-${commentID}`;
     const elems = document.getElementsByClassName(className);
 
+    const col = commentID === 0 ? 'blue' : color;
+
     [].forEach.call(elems, (elem: any) => {
-      elem.style.setProperty('background-color', color, 'important');
+      elem.style.setProperty('background-color', col, 'important');
     });
   };
 }
