@@ -22,6 +22,7 @@ const robertImg = require('./../../img/landing/compressed/robert_adams.jpg');
 const niemaImg = require('./../../img/landing/compressed/niema_moshiri.jpg');
 const kateImg = require('./../../img/landing/compressed/kate_holdener.jpg');
 const nohaImg = require('./../../img/landing/compressed/noha_hazzazi.jpg');
+const abbasImg = require('./../../img/landing/compressed/abbas_attarwala.jpg');
 
 /*************************************************************************************/
 /* TEXT
@@ -112,6 +113,16 @@ const nohaText = (
   </span>
 );
 
+const abbasText = (
+  <span style={{ fontStyle: 'italic' }}>
+    <Typography.Text mark className="codePost-highlight">
+      My graders, myself and my students love codePost.
+    </Typography.Text>{' '}
+    The quality of feedback that I can provide to my students is far richer; my graders annotate problematic code and
+    provide high-quality feedback to my students that previously was difficult. I recommend codePost very highly!
+  </span>
+);
+
 /*************************************************************************************/
 
 // Source: https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
@@ -142,6 +153,7 @@ const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name:
         marginLeft: 15,
         marginBottom: windowSize.width < landingVars.breakpoints.testimonial ? 30 : 0,
         marginTop: windowSize.width < landingVars.breakpoints.testimonial ? 20 : 0,
+        padding: '0px 6px',
       }}
       className="display-flex flex-direction-column justify-content-flex-start"
     >
@@ -176,6 +188,7 @@ const testimonials = [
   <Testimonial text={<div>{kateText}</div>} name="Kate Holdener" thumbnail={kateImg} school="Saint Louis University" />,
   <Testimonial text={<div>{niemaText}</div>} name="Niema Moshiri" thumbnail={niemaImg} school="UCSD" />,
   <Testimonial text={<div>{nohaText}</div>} name="Noha Hazzazi" thumbnail={nohaImg} school="Howard University" />,
+  <Testimonial text={<div>{abbasText}</div>} name="Abbas Attarwala" thumbnail={abbasImg} school="Boston University" />,
 ];
 
 /*************************************************************************************/
