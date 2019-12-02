@@ -8,6 +8,9 @@ import landingVars from '../../styles/pages/_landingVars';
 
 import { Typography } from 'antd';
 
+import Carousel from '@brainhubeu/react-carousel';
+import '@brainhubeu/react-carousel/lib/style.css';
+
 /*************************************************************************************/
 /* IMAGES
 /*************************************************************************************/
@@ -178,31 +181,16 @@ const testimonials = [
 /*************************************************************************************/
 
 const Testimonials = () => {
-  const [startIndex, setStartIndex] = React.useState(0);
-  const [permutation] = React.useState(shuffle(testimonials.map((el, i) => i)));
+  const [permutation] = React.useState(testimonials.slice(0, 2).concat(shuffle(testimonials.slice(2))));
 
   const windowSize = useWindowSize();
 
+  const slidesPerPage = windowSize.width < landingVars.breakpoints.testimonial ? 1 : 3;
+
   return (
-    <div
-      style={{
-        width: '100%',
-        alignItems: 'center',
-      }}
-      className={`display-flex justify-content-space-between flex-direction-${
-        windowSize.width < landingVars.breakpoints.testimonial ? 'column' : 'row'
-      } align-items-${windowSize.width < landingVars.breakpoints.testimonial ? 'center' : 'start'}`}
-    >
-      {startIndex === 0 ? null : (
-        <Button icon="arrow-left" onClick={() => setStartIndex(Math.max(0, startIndex - 1))} />
-      )}
-      {testimonials[permutation[startIndex]]}
-      {testimonials[permutation[startIndex + 1]]}
-      {testimonials[permutation[startIndex + 2]]}
-      {startIndex === testimonials.length - 3 ? null : (
-        <Button icon="arrow-right" onClick={() => setStartIndex(Math.min(testimonials.length - 3, startIndex + 1))} />
-      )}
-    </div>
+    <Carousel slidesPerPage={slidesPerPage} arrows infinite>
+      {permutation}
+    </Carousel>
   );
 };
 
