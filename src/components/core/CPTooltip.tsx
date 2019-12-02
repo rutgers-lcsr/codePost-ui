@@ -14,6 +14,7 @@ interface IProps extends AbstractTooltipProps {
   title: string | React.ReactNode;
   hideThisOnHideTips?: boolean;
   hideChildrenOnHideTips?: boolean;
+  disabled?: boolean;
 }
 
 enum TOOLTIP_STATE {
@@ -50,6 +51,11 @@ const CPTooltip = (props: IProps) => {
   }
 
   const tooltipState = getTooltipState(showTooltips, hideThisOnHideTips, hideChildrenOnHideTips);
+
+  // Avoids https://github.com/ant-design/ant-design/issues/10795
+  if (props.disabled && props.children) {
+    return <span>{props.children}</span>;
+  }
 
   switch (tooltipState) {
     case TOOLTIP_STATE.Show && icon:

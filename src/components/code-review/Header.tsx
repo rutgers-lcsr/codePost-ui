@@ -582,17 +582,17 @@ export const StatusTags = (props: IStatusTagsProps) => {
       tooltipText = 'student cannot view';
       break;
     case 1:
-      tagColor = theme === 'light' ? 'orange' : '#fa8c16';
+      tagColor = theme === 'light' ? 'gold' : '#fa8c16';
       tagText = 'finalized but not published';
       tooltipText = 'student cannot view';
       break;
     case 2:
-      tagColor = theme === 'light' ? 'red' : '#f5222d';
+      tagColor = theme === 'light' ? 'orange' : '#fa8c16';
       tagText = 'published but not finalized';
       tooltipText = 'student cannot view';
       break;
     case 3:
-      tagColor = theme === 'light' ? 'gold' : '#faad14';
+      tagColor = theme === 'light' ? '#22be84' : '#22be84';
       tagText = 'finalized and published';
       tooltipText = 'student can view';
       break;

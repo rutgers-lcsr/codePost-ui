@@ -158,7 +158,7 @@ const RubricCategoryUI = ({
               &nbsp;
               {props.showExplanations ? (
                 <span style={{ verticalAlign: 'middle' }}>
-                  <CPTooltip title="Edit comment's explanation">
+                  <CPTooltip title="Edit comment's explanation" key={rubricComment.id}>
                     <CPButton
                       icon="edit"
                       style={{ background: thisComment.explanation ? '#f0fff7' : undefined }}
@@ -167,7 +167,11 @@ const RubricCategoryUI = ({
                       }}
                     />
                   </CPTooltip>
-                  <CPTooltip title="Delete comment's explanation">
+                  <CPTooltip
+                    title="Delete comment's explanation"
+                    key={rubricComment.id}
+                    disabled={!thisComment.explanation}
+                  >
                     <CPButton
                       icon="delete"
                       disabled={!thisComment.explanation}

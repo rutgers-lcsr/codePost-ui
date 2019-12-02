@@ -47,23 +47,18 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
       if (this.props.type === 'codepanel') {
         return (
           <div style={{ padding: '40px' }}>
-            <h1>
-              <span role="img" aria-label="downvote">
-                😬
-              </span>{' '}
-              Something went wrong
-            </h1>
+            <h1>Something went wrong</h1>
             <h2>
               <span role="img" aria-label="downvote">
                 🕑
               </span>{' '}
-              We will investigate the issue as soon as possible.
+              Our team has been notified, and we will investigate the issue as soon as possible.
             </h2>
             <h2>
               <span role="img" aria-label="downvote">
                 🙏
               </span>{' '}
-              Feel free to try again or email us at team@codepost.io.
+              Feel free to try again, or email us at team@codepost.io.
             </h2>
             <br />
             <div style={{ padding: '50px' }}>
@@ -90,17 +85,12 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
       } else {
         return (
           <div style={{ padding: '40px' }}>
-            <h1>
-              <span role="img" aria-label="downvote">
-                😬
-              </span>{' '}
-              Something went wrong.
-            </h1>
+            <h1>Something went wrong.</h1>
             <h2>
               <span role="img" aria-label="downvote">
                 🕑
               </span>{' '}
-              We will investigate the issue as soon as possible.
+              Our team has been notified, and we will investigate the issue as soon as possible.
             </h2>
             <h2>
               <span role="img" aria-label="downvote">
@@ -110,6 +100,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
               <b>try switching to Chrome if you're using a different browser</b>. If that doesn't work, email us at{' '}
               <a href="mailto:team@codepost.io">team@codepost.io</a> if the problem persists.
             </h2>
+            <img src="" />
           </div>
         );
       }
