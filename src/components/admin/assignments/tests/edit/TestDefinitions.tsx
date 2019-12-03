@@ -317,6 +317,7 @@ export const TestDefinitions = (props: IProps) => {
       const files = submission.files.map((fileID) => File.read(fileID));
       Promise.all(files).then((fileList) => setCurrentFiles(fileList));
       setActiveSubmission(match);
+      setIndex('0-0');
     } else {
       setActiveSubmission(undefined);
       setCurrentFiles(props.solutions);
