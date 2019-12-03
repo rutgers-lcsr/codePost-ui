@@ -147,6 +147,11 @@ export const TestDefinitions = (props: IProps) => {
     setCurrentFiles([]);
   }, [activeTest]);
 
+  useEffect(() => {
+    setActiveSubmission(undefined);
+    setCurrentFiles(props.solutions);
+  }, [props.solutions]);
+
   /******************************* TestCategory functions  ****************************/
 
   const addCategory = async (name: string) => {
