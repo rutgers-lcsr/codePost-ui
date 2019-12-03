@@ -230,6 +230,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       setEnv(undefined);
       setHelpers([]);
       setSolutions([]);
+      setSourceFiles([]);
     }
   };
 
