@@ -228,6 +228,8 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     if (env !== undefined) {
       Environment.delete(env.id);
       setEnv(undefined);
+      setHelpers([]);
+      setSolutions([]);
     }
   };
 
