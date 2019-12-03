@@ -370,7 +370,9 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 required: false,
               },
             ],
-          })(<Input placeholder={'Input'} disabled={this.props.isRunning} style={inputStyle} />)}
+          })(
+            <Input.TextArea placeholder={'Input'} disabled={this.props.isRunning} style={inputStyle} autosize={true} />,
+          )}
         </Form.Item>
         <span style={textStyle}>and expect the call to</span>
         <Form.Item label="">
@@ -397,7 +399,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 required: false,
               },
             ],
-          })(<Input disabled={this.props.isRunning} style={inputStyle} />)}
+          })(<Input.TextArea disabled={this.props.isRunning} style={inputStyle} autosize={true} />)}
           <span style={{ marginLeft: '1px' }}>.</span>
         </Form.Item>
       </div>
