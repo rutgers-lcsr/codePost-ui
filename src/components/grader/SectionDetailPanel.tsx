@@ -138,19 +138,23 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     const submissions = await Promise.all(promises);
 
     this.setState((prevState) => {
-      const sectionID = prevState.activeSection.id;
-
-      const newSubmissions = { ...prevState.submissionsBySection[sectionID] };
+      const newSubmissions = { ...prevState.submissionsBySection };
       // Map each student to the new submission
+      // We need to go through all sections because of partner submissions
+      const sections = Object.keys(newSubmissions);
       submissions.map((sub) => {
         sub.students.forEach((student) => {
-          if (student in newSubmissions) {
-            newSubmissions[student] = sub;
+          for (const section of sections) {
+            const sectionID = parseInt(section, 10);
+            if (student in newSubmissions[sectionID]) {
+              newSubmissions[sectionID][student] = sub;
+              break;
+            }
           }
         });
       });
       return {
-        submissionsBySection: { ...prevState.submissionsBySection, [sectionID]: newSubmissions },
+        submissionsBySection: newSubmissions,
         selectedSubmissions: [],
       };
     });
@@ -166,7 +170,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     });
 
     if (activeSection) {
-      this.setState({ activeSection });
+      this.setState({ activeSection, selectedSubmissions: [] });
     }
   };
 
@@ -327,7 +331,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     );
 
     const rowSelection = {
-      onChange: (selectedRowKeys: any[], selectedRows: any[]) => {
+      onChange: (selectedRowKeys: any[]) => {
         this.setState({ selectedSubmissions: selectedRowKeys });
       },
       getCheckboxProps: (row: any) => {
