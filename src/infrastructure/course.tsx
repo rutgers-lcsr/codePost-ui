@@ -24,6 +24,7 @@ export const CourseV = t.intersection(
       emailNewUsers: t.boolean,
       anonymousGradingDefault: t.boolean,
       minComments: t.number,
+      noUnfinalize: t.boolean,
     }),
   ],
   'Course',

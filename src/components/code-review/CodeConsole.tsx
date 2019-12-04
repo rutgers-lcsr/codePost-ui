@@ -1109,6 +1109,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       emailNewUsers: false,
       anonymousGradingDefault: false,
       minComments: 0,
+      noUnfinalize: false,
     };
 
     const demoSubmission: AnonymousSubmissionType = {
@@ -1561,6 +1562,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             toggleFinalized={this.toggleFinalized}
             numComments={Object.values(this.state.comments).length}
             minComments={this.state.course!.minComments}
+            canUnfinalize={true}
           />,
         ];
       } else if (this.state.permissionLevel === PERMISSION_LEVEL.READ) {
@@ -1684,6 +1686,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             toggleFinalized={this.toggleFinalized}
             numComments={Object.values(this.state.comments).length}
             minComments={this.state.course!.minComments}
+            canUnfinalize={!this.state.course!.noUnfinalize || this.isCourseAdmin(this.state.assignment)}
           />,
         ];
 
