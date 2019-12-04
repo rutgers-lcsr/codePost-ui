@@ -180,7 +180,6 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
 
   public render() {
     const { activeSection, isLoading } = this.state;
-    console.log(this.state.submissionsBySection);
     const showingEmails = !this.props.assignment.anonymousGrading || this.state.showStudentEmails;
 
     let columns: any[] = [];
