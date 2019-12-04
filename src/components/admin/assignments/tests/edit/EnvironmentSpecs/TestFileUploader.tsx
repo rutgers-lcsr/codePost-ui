@@ -77,7 +77,10 @@ export const TestFileUploader = (props: IUploadProps) => {
               .toLowerCase()
           : '';
         setNewFiles((prevState) => {
-          return [...prevState, { uid: `${counter}-${file.name}`, code: cleanedData, name: file.name, path: path }];
+          const oldFiles = prevState.filter((f) => {
+            return f.name !== file.name || f.path !== file.path;
+          });
+          return [...oldFiles, { uid: `${counter}-${file.name}`, code: cleanedData, name: file.name, path: path }];
         });
         setCounter(counter + 1);
       }

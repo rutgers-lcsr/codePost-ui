@@ -105,18 +105,39 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         setSolutions((prevState) => {
           return [...prevState, newSolution];
         });
+        // delete old version if it exists
+        const existingSolution = solutions.find((f) => {
+          return f.name === name && ((!f.path && !path) || f.path === path);
+        });
+        if (existingSolution) {
+          await deleteFile(FILE_TYPE.SOLUTION, existingSolution.id);
+        }
         break;
       case FILE_TYPE.HELPER:
         const newHelper = await HelperFile.create(payload);
         setHelpers((prevState) => {
           return [...prevState, newHelper];
         });
+        // delete old version if it exists
+        const existingHelper = solutions.find((f) => {
+          return f.name === name && ((!f.path && !path) || f.path === path);
+        });
+        if (existingHelper) {
+          await deleteFile(FILE_TYPE.HELPER, existingHelper.id);
+        }
         break;
       case FILE_TYPE.SOURCEFILE:
         const newSource = await SourceFile.create(payload);
         setSourceFiles((prevState) => {
           return [...prevState, newSource];
         });
+        // delete old version if it exists
+        const existingSource = solutions.find((f) => {
+          return f.name === name && ((!f.path && !path) || f.path === path);
+        });
+        if (existingSource) {
+          await deleteFile(FILE_TYPE.SOURCEFILE, existingSource.id);
+        }
         break;
     }
   };
