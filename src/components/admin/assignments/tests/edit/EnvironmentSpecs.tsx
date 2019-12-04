@@ -59,6 +59,7 @@ export const EnvironmentSpecs = (props: IProps) => {
   useEffect(() => {
     if (props.env) {
       setLanguage(props.env.language);
+      setDependencies(JSON.parse(props.env.dependencies));
     }
   }, [props.env]);
 
