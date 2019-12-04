@@ -232,6 +232,8 @@ export const Controls = (props: IControlsProps) => {
 interface IFinalizeButtonProps {
   submission: AnonymousSubmissionType;
   toggleFinalized: () => void;
+  numComments: number;
+  minComments: number;
 }
 
 export const FinalizeButton = (props: IFinalizeButtonProps) => {
@@ -249,6 +251,20 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   };
 
   const onClick = async () => {
+    if (!props.submission.isFinalized && props.minComments > 0 && props.numComments < props.minComments) {
+      Modal.confirm({
+        title: `This submission has fewer than ${props.minComments} comments applied.`,
+        content: `Are you sure you want to finalize it? Submissions with fewer than ${props.minComments} comments will be flagged for quality control.`,
+        onOk() {
+          return executeToggle();
+        },
+      });
+    } else {
+      executeToggle();
+    }
+  };
+
+  const executeToggle = async () => {
     await props.toggleFinalized();
     setIsLoading(false);
   };

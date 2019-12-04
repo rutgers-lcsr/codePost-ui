@@ -84,6 +84,7 @@ const demoCourse = (testName: string) => {
     emailNewUsers: false,
     anonymousGradingDefault: false,
     allowGradersToEditRubric: false,
+    minComments: 0,
   };
 };
 

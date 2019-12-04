@@ -13,7 +13,6 @@ import _ from 'lodash';
 import queryString from 'query-string';
 import moment from 'moment-timezone';
 
-
 /* codePost imports */
 import Loading from '../core/Loading';
 
@@ -1109,6 +1108,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       timezone: moment.tz.guess(),
       emailNewUsers: false,
       anonymousGradingDefault: false,
+      minComments: 0,
     };
 
     const demoSubmission: AnonymousSubmissionType = {
@@ -1559,6 +1559,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             key="subheader-finalize"
             submission={this.state.submission!}
             toggleFinalized={this.toggleFinalized}
+            numComments={Object.values(this.state.comments).length}
+            minComments={this.state.course!.minComments}
           />,
         ];
       } else if (this.state.permissionLevel === PERMISSION_LEVEL.READ) {
@@ -1680,6 +1682,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             key="subheader-finalize"
             submission={this.state.submission!}
             toggleFinalized={this.toggleFinalized}
+            numComments={Object.values(this.state.comments).length}
+            minComments={this.state.course!.minComments}
           />,
         ];
 

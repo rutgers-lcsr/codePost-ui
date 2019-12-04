@@ -23,6 +23,7 @@ export const CourseV = t.intersection(
       timezone: t.string,
       emailNewUsers: t.boolean,
       anonymousGradingDefault: t.boolean,
+      minComments: t.number,
     }),
   ],
   'Course',

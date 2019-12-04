@@ -87,7 +87,7 @@ const AdminOnboardingSelector = (props: IProps) => {
     setLoading(true);
     if (!props.demoCourseExists) {
       createDemoCourse(props.email, `${props.email.split('@')[0]}'s course`, props.email.split('@')[1]).then(
-        (course) => {
+        (course: CourseType) => {
           setLoading(false);
           props.onDemoCreate(course);
         },

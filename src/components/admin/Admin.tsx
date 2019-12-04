@@ -458,6 +458,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       emailNewUsers: false,
       anonymousGradingDefault: false,
       allowGradersToEditRubric: false,
+      minComments: 0,
     };
 
     return Course.create(payload).then((course: CourseType) => {
