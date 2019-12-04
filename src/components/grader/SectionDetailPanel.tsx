@@ -357,7 +357,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
           </Breadcrumb>
         }
         title={`Section: ${this.state.activeSection.name}`}
-        actions={[claimButton, anonymousToggle, selectContent]}
+        actions={[anonymousToggle, selectContent, claimButton]}
         content={content}
         gutterSize={0}
         titleInfo={tooltips.grader.section.title}
