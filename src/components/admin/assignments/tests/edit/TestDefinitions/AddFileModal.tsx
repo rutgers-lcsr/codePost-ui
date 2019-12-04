@@ -22,9 +22,15 @@ export const AddFileModal = (props: IUploadProps) => {
   const [visible, setVisible] = useState(false);
   const [name, setName] = useState('');
   const [type, setType] = useState<FILE_TYPE>(FILE_TYPE.HELPER);
+  const [errors, setErrors] = useState<string[]>([]);
 
   /******************************* API / State Change Functions ****************************/
   const onSave = async () => {
+    if (type === FILE_TYPE.SOURCEFILE && !name.endsWith('.sh')) {
+      setErrors(['Test file must be a shell script (end with .sh)']);
+      return;
+    }
+    setErrors([]);
     const code = type === FILE_TYPE.SOURCEFILE ? SOURCEFILE_TEMPLATE : '';
     await props.addFile(type, name, code);
     setName('');
@@ -83,6 +89,14 @@ export const AddFileModal = (props: IUploadProps) => {
           <Input onChange={onChange} value={name} placeholder="File Name" />
           {typeSelect}
         </Row>
+        {errors.map((e) => {
+          return (
+            <Row style={{ textAlign: 'center', color: 'red', marginTop: 10 }}>
+              <Icon type="exclamation-circle" />
+              &nbsp; {e}
+            </Row>
+          );
+        })}
       </Modal>
     </span>
   );
