@@ -339,6 +339,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
           disabled: row.disableCheck,
         };
       },
+      selectedRowKeys: this.state.selectedSubmissions,
     };
 
     const content = (
