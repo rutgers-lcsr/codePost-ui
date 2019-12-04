@@ -651,7 +651,7 @@ export const TestDefinitions = (props: IProps) => {
   } else {
     return (
       <div>
-        <div style={{ fontSize: 11 }} id="Autograder">
+        <div style={{ fontSize: 11 }}>
           <Layout>
             <Sider theme="light">
               {externalOnly ? null : (

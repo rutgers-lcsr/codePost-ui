@@ -310,18 +310,20 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
   ];
 
   return (
-    <CPAdminDetail
-      breadcrumbs={
-        <Breadcrumb>
-          {props.breadcrumbs}
-          <Breadcrumb.Item key="assignment">{props.currentAssignment.name}</Breadcrumb.Item>
-          <Breadcrumb.Item key="edit">Edit</Breadcrumb.Item>
-        </Breadcrumb>
-      }
-      goBack={null}
-      title={`${props.currentAssignment.name} | Tests Setup`}
-      actions={actions}
-      content={content}
-    />
+    <div id="Autograder">
+      <CPAdminDetail
+        breadcrumbs={
+          <Breadcrumb>
+            {props.breadcrumbs}
+            <Breadcrumb.Item key="assignment">{props.currentAssignment.name}</Breadcrumb.Item>
+            <Breadcrumb.Item key="edit">Edit</Breadcrumb.Item>
+          </Breadcrumb>
+        }
+        goBack={null}
+        title={`${props.currentAssignment.name} | Tests Setup`}
+        actions={actions}
+        content={content}
+      />
+    </div>
   );
 };

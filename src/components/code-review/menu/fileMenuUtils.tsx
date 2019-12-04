@@ -91,5 +91,34 @@ export function buildFolderMenu<T extends IBasicFile>(
   );
 }
 
+// Figure out the file order to be shown in the UI based on the nested file directory
+export function sortFiles<T extends IBasicFile>(directoryStructure: IDirectoryStructure<T>) {
+  const sortedFiles: T[] = [];
+
+  // Put the files in the root directory last
+  const sortedDirectFiles = directoryStructure.files.sort((f1: T, f2: T) => {
+    return f1.name.localeCompare(f2.name);
+  });
+
+  sortedDirectFiles.forEach((f) => {
+    sortedFiles.push(f);
+  });
+
+  // Put the files in the root directory first
+  const addFilesOfFolder = (folder: IFolder<T>, currentList: T[]) => {
+    folder.files.forEach((f: T) => {
+      currentList.push(f);
+    });
+    folder.folders.forEach((f: IFolder<T>) => {
+      addFilesOfFolder(f, currentList);
+    });
+  };
+  directoryStructure.folders.forEach((f: IFolder<T>) => {
+    addFilesOfFolder(f, sortedFiles);
+  });
+
+  return sortedFiles;
+}
+
 //
 // export const buildMenu = (directory: IDirectoryStructure<T> )

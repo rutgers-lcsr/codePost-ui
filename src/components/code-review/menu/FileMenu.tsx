@@ -37,7 +37,7 @@ import { sendSlack } from '../../core/slack';
 
 import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
 
-import { IFolder, IDirectoryStructure, buildFolderMenu, createDirectoryStructure } from './fileMenuUtils';
+import { IFolder, IDirectoryStructure, buildFolderMenu, createDirectoryStructure, sortFiles } from './fileMenuUtils';
 
 /*************************************** Helper Interfaces for Directory rendering ******************************/
 
@@ -65,7 +65,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     super(props);
     const separatedFiles = this.separateFilesByVersion(props.files);
     const directoryStructure = createDirectoryStructure(separatedFiles.new);
-    const sortedFiles = this.sortFiles(directoryStructure);
+    const sortedFiles = sortFiles(directoryStructure);
     const oldVersionsMap = separatedFiles.old;
     if (oldVersionsMap && Object.keys(oldVersionsMap).length > 0) {
       sendSlack('File Versioning', window.location.href, '#f9f9f9', '#user_notifications_beta_use');
@@ -90,7 +90,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     if (prevProps.files !== this.props.files) {
       const separatedFiles = this.separateFilesByVersion(this.props.files);
       const directoryStructure = createDirectoryStructure(separatedFiles.new);
-      const sortedFiles = this.sortFiles(directoryStructure);
+      const sortedFiles = sortFiles(directoryStructure);
       this.setState({ directoryStructure, sortedFiles, oldVersionsMap: separatedFiles.old });
     }
   }
@@ -144,35 +144,6 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     });
 
     return { new: latestFilesArr, old: olderFiles };
-  };
-
-  // Figure out the file order to be shown in the UI based on the nested file directory
-  public sortFiles = (directoryStructure: IDirectoryStructure<FileType>) => {
-    const sortedFiles: FileType[] = [];
-
-    // Put the files in the root directory last
-    const sortedDirectFiles = directoryStructure.files.sort((f1: FileType, f2: FileType) => {
-      return f1.name.localeCompare(f2.name);
-    });
-
-    sortedDirectFiles.forEach((f) => {
-      sortedFiles.push(f);
-    });
-
-    // Put the files in the root directory first
-    const addFilesOfFolder = (folder: IFolder<FileType>, currentList: FileType[]) => {
-      folder.files.forEach((f: FileType) => {
-        currentList.push(f);
-      });
-      folder.folders.forEach((f: IFolder<FileType>) => {
-        addFilesOfFolder(f, currentList);
-      });
-    };
-    directoryStructure.folders.forEach((f: IFolder<FileType>) => {
-      addFilesOfFolder(f, sortedFiles);
-    });
-
-    return sortedFiles;
   };
 
   /**************************** MENU BUILD HELPER FUNCTIONS *************************************/
