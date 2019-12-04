@@ -127,12 +127,7 @@ export const TestFileUploader = (props: IUploadProps) => {
     });
 
     return {
-      name: (
-        <div>
-          <Icon type="folder" /> &nbsp;
-          {folder.name}
-        </div>
-      ),
+      name: folder.name,
       delete: <Button onClick={deleteFolder.bind({}, folder)}>Delete Folder</Button>,
       children: [...files, ...folders],
     };
@@ -165,7 +160,7 @@ export const TestFileUploader = (props: IUploadProps) => {
         visible={visible}
         onCancel={toggleVisible}
         width={750}
-        okText="Save"
+        okText="Done"
         onOk={saveNewFiles}
         title={props.title}
       >
