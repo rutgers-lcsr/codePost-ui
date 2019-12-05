@@ -63,22 +63,6 @@ class Landing extends React.PureComponent<{}, {}> {
   }
 
   public render() {
-    const whyText = (
-      <div>
-        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 16 }}>
-          <b>Yes!</b> If you use an autograder, you can make it more effective by incorporating code review.
-        </div>
-        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 16 }}>
-          Autograding can tell your students whether their code is correct, but, by itself, the output can be confusing,
-          and bad code can still pass correctness tests.
-        </div>
-        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 16 }}>
-          With code review, you can <b>explain autograder output</b> and give feedback on everything an autograder can't
-          evaluate.
-        </div>
-      </div>
-    );
-
     const panelOneText = (
       <div>
         <div style={{ paddingBottom: 15 }}>
@@ -139,21 +123,6 @@ class Landing extends React.PureComponent<{}, {}> {
       </div>
     );
 
-    const whyPanel = (
-      <LandingPanel
-        text={whyText}
-        title="Can I still use my autograder?"
-        subTitle=""
-        module={<div>{<CodeReview />}</div>}
-        type="left"
-        moduleMaxWidth={600}
-        moduleMaxHeight={800}
-        textSize="normal"
-        removeModelSmallScreen={true}
-        bevel={false}
-        gutterSize={85}
-      />
-    );
     const panelOne = (
       <LandingPanel
         text={panelOneText}
@@ -226,7 +195,6 @@ class Landing extends React.PureComponent<{}, {}> {
             <Testimonials />
           </div>
         }
-        whyPanel={whyPanel}
         panelOne={panelOne}
         panelTwo={panelTwo}
         panelThree={panelThree}

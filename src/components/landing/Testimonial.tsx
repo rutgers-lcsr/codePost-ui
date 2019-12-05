@@ -184,24 +184,37 @@ const Testimonials = () => {
   const windowSize = useWindowSize();
 
   return (
-    <div
-      style={{
-        width: '100%',
-        alignItems: 'center',
-      }}
-      className={`display-flex justify-content-space-between flex-direction-${
-        windowSize.width < landingVars.breakpoints.testimonial ? 'column' : 'row'
-      } align-items-${windowSize.width < landingVars.breakpoints.testimonial ? 'center' : 'start'}`}
-    >
-      {startIndex === 0 ? null : (
-        <Button icon="arrow-left" onClick={() => setStartIndex(Math.max(0, startIndex - 1))} />
-      )}
-      {testimonials[permutation[startIndex]]}
-      {testimonials[permutation[startIndex + 1]]}
-      {testimonials[permutation[startIndex + 2]]}
-      {startIndex === testimonials.length - 3 ? null : (
-        <Button icon="arrow-right" onClick={() => setStartIndex(Math.min(testimonials.length - 3, startIndex + 1))} />
-      )}
+    <div>
+      <div className={'display-flex justify-content-center flex-direction-column align-items-center'}>
+        <Typography.Title level={3}>codePost isn’t just another grading tool</Typography.Title>
+        <span style={{ width: '500px' }}>
+          We rebuilt the feedback-giving process from the ground up to make you brilliant at what you do: teaching the
+          next generation of programmers. codePost is fast and easy-to-use. Actually easy to use. And it includes
+          advanced features that will supercharge your teaching and save you time. Leave comments on code with your
+          keyboard. Write tests that compare student code against solution code in seconds. Triage regrade requests. To
+          name but a few.
+        </span>
+      </div>
+      <br />
+      <br />
+      <div
+        style={{
+          alignItems: 'center',
+        }}
+        className={`display-flex justify-content-space-between flex-direction-${
+          windowSize.width < landingVars.breakpoints.testimonial ? 'column' : 'row'
+        } align-items-${windowSize.width < landingVars.breakpoints.testimonial ? 'center' : 'start'}`}
+      >
+        {startIndex === 0 ? null : (
+          <Button icon="arrow-left" onClick={() => setStartIndex(Math.max(0, startIndex - 1))} />
+        )}
+        {testimonials[permutation[startIndex]]}
+        {testimonials[permutation[startIndex + 1]]}
+        {testimonials[permutation[startIndex + 2]]}
+        {startIndex === testimonials.length - 3 ? null : (
+          <Button icon="arrow-right" onClick={() => setStartIndex(Math.min(testimonials.length - 3, startIndex + 1))} />
+        )}
+      </div>
     </div>
   );
 };

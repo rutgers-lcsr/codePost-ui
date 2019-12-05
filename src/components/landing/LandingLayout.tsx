@@ -11,7 +11,6 @@ interface IProps {
   topBar: React.ReactNode;
   hero: React.ReactNode;
   testimonial: React.ReactNode;
-  whyPanel: React.ReactNode;
   panelOne: React.ReactNode;
   panelTwo: React.ReactNode;
   panelThree: React.ReactNode;
@@ -72,7 +71,6 @@ const LandingLayout = (props: IProps) => {
 
   const testimonialBackground = require('../../img/landing/compressed/backgrounds/testimonial.png');
   const testimonialBackgroundMobile = require('../../img/landing/compressed/backgrounds/testimonial-MOBILE.jpg');
-  const whyPanelBackground = require('../../img/landing/compressed/backgrounds/panelTwo.png');
   const whyPanelBackgroundMobile = undefined;
   const panelOneBackground = require('../../img/landing/compressed/backgrounds/panelOne.png');
   const panelOneBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelOne-MOBILE.jpg');
@@ -162,28 +160,6 @@ const LandingLayout = (props: IProps) => {
           alt=""
         />
         <div style={{ ...panelStyle, paddingBottom: 25, paddingTop: 100 }}>{props.panelOne}</div>
-      </div>
-      <div style={{ ...sectionStyle, background: landingVars.backgrounds.whyPanel }} className={sectionClass}>
-        <img
-          src={windowSize.width < landingVars.breakpoints.mobile ? whyPanelBackgroundMobile : whyPanelBackground}
-          style={{
-            ...backgroundImageStyle,
-            paddingTop:
-              windowSize.width < landingVars.breakpoints.mobile
-                ? landingVars.backgroundOffsets.whyPanelMobile
-                : landingVars.backgroundOffsets.whyPanel,
-          }}
-          alt=""
-        />
-        <div
-          style={{
-            ...panelStyle,
-            paddingTop: 35,
-            maxWidth: landingVars.maxWidths.whyPanel,
-          }}
-        >
-          {props.whyPanel}
-        </div>
       </div>
       <div style={{ ...sectionStyle, background: landingVars.backgrounds.panelTwo }} className={sectionClass}>
         <img
