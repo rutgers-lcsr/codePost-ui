@@ -8,6 +8,9 @@ import landingVars from '../../styles/pages/_landingVars';
 
 import { Typography } from 'antd';
 
+import Carousel from '@brainhubeu/react-carousel';
+import '@brainhubeu/react-carousel/lib/style.css';
+
 /*************************************************************************************/
 /* IMAGES
 /*************************************************************************************/
@@ -19,6 +22,7 @@ const robertImg = require('./../../img/landing/compressed/robert_adams.jpg');
 const niemaImg = require('./../../img/landing/compressed/niema_moshiri.jpg');
 const kateImg = require('./../../img/landing/compressed/kate_holdener.jpg');
 const nohaImg = require('./../../img/landing/compressed/noha_hazzazi.jpg');
+const abbasImg = require('./../../img/landing/compressed/abbas_attarwala.jpg');
 
 /*************************************************************************************/
 /* TEXT
@@ -109,6 +113,16 @@ const nohaText = (
   </span>
 );
 
+const abbasText = (
+  <span style={{ fontStyle: 'italic' }}>
+    <Typography.Text mark className="codePost-highlight">
+      My graders, myself and my students love codePost.
+    </Typography.Text>{' '}
+    The quality of feedback that I can provide to my students is far richer; my graders annotate problematic code and
+    provide high-quality feedback to my students that previously was difficult. I recommend codePost very highly!
+  </span>
+);
+
 /*************************************************************************************/
 
 // Source: https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
@@ -139,6 +153,7 @@ const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name:
         marginLeft: 15,
         marginBottom: windowSize.width < landingVars.breakpoints.testimonial ? 30 : 0,
         marginTop: windowSize.width < landingVars.breakpoints.testimonial ? 20 : 0,
+        padding: '0px 6px',
       }}
       className="display-flex flex-direction-column justify-content-flex-start"
     >
@@ -173,36 +188,22 @@ const testimonials = [
   <Testimonial text={<div>{kateText}</div>} name="Kate Holdener" thumbnail={kateImg} school="Saint Louis University" />,
   <Testimonial text={<div>{niemaText}</div>} name="Niema Moshiri" thumbnail={niemaImg} school="UCSD" />,
   <Testimonial text={<div>{nohaText}</div>} name="Noha Hazzazi" thumbnail={nohaImg} school="Howard University" />,
+  <Testimonial text={<div>{abbasText}</div>} name="Abbas Attarwala" thumbnail={abbasImg} school="Boston University" />,
 ];
 
 /*************************************************************************************/
 
 const Testimonials = () => {
-  const [startIndex, setStartIndex] = React.useState(0);
-  const [permutation] = React.useState(shuffle(testimonials.map((el, i) => i)));
+  const [permutation] = React.useState(testimonials.slice(0, 2).concat(shuffle(testimonials.slice(2))));
 
   const windowSize = useWindowSize();
 
+  const slidesPerPage = windowSize.width < landingVars.breakpoints.testimonial ? 1 : 3;
+
   return (
-    <div
-      style={{
-        width: '100%',
-        alignItems: 'center',
-      }}
-      className={`display-flex justify-content-space-between flex-direction-${
-        windowSize.width < landingVars.breakpoints.testimonial ? 'column' : 'row'
-      } align-items-${windowSize.width < landingVars.breakpoints.testimonial ? 'center' : 'start'}`}
-    >
-      {startIndex === 0 ? null : (
-        <Button icon="arrow-left" onClick={() => setStartIndex(Math.max(0, startIndex - 1))} />
-      )}
-      {testimonials[permutation[startIndex]]}
-      {testimonials[permutation[startIndex + 1]]}
-      {testimonials[permutation[startIndex + 2]]}
-      {startIndex === testimonials.length - 3 ? null : (
-        <Button icon="arrow-right" onClick={() => setStartIndex(Math.min(testimonials.length - 3, startIndex + 1))} />
-      )}
-    </div>
+    <Carousel slidesPerPage={slidesPerPage} arrows infinite>
+      {permutation}
+    </Carousel>
   );
 };
 
