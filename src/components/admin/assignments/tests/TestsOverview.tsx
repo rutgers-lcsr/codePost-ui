@@ -47,7 +47,7 @@ const TestsOverview = (props: IProps & RouteComponentProps) => {
       ),
       edit: (
         <Link to={`${props.match.url}/${encodeForLink(assignment.name)}/edit`}>
-          <Button>{assignment.testCategories.length > 0 ? 'Edit' : 'Create'}</Button>
+          <Button>{assignment.environment ? 'Edit' : 'Create'}</Button>
         </Link>
       ),
       actions: (
