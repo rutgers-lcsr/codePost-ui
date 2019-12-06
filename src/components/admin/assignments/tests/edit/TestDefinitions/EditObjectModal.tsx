@@ -4,35 +4,37 @@ import React, { useState } from 'react';
 /* library imports */
 import { Button, Input, Modal, Icon } from 'antd';
 
-import { TestCategoryType } from '../../../../../../infrastructure/testCategory';
-
-interface IUploadProps {
-  updateCategory: (obj: TestCategoryType) => Promise<void>;
-  deleteCategory: (id: number) => Promise<void>;
-  testCategory: TestCategoryType;
-  externalOnly: boolean;
+interface BasicItem {
+  id: number;
+  name: string;
 }
 
-export const EditCategoryModal = (props: IUploadProps) => {
+interface IUploadProps {
+  updateItem?: (id: number, name: string) => Promise<void>;
+  deleteItem: (id: number) => Promise<void>;
+  item: BasicItem;
+}
+
+export const EditObjectModal = (props: IUploadProps) => {
   /******************************* State Variables ****************************/
   const [visible, setVisible] = useState(false);
-  const [name, setName] = useState(props.testCategory.name);
+  const [name, setName] = useState(props.item.name);
   const [loading, setLoading] = useState(false);
 
   /******************************* API / State Change Functions ****************************/
   const onSave = async () => {
-    setLoading(true);
-    const newCategory = { ...props.testCategory };
-    newCategory.name = name;
-    await props.updateCategory(newCategory);
-    setVisible(!visible);
-    setName('');
-    setLoading(false);
+    if (props.updateItem) {
+      setLoading(true);
+      await props.updateItem(props.item.id, name);
+      setVisible(!visible);
+      setName('');
+      setLoading(false);
+    }
   };
 
   const onDelete = async () => {
     setLoading(true);
-    await props.deleteCategory(props.testCategory.id);
+    await props.deleteItem(props.item.id);
     setVisible(!visible);
     setName('');
     setLoading(false);
@@ -69,7 +71,7 @@ export const EditCategoryModal = (props: IUploadProps) => {
       <Icon type="edit" onClick={toggleVisible} />
       <Modal
         visible={visible}
-        title={`Edit: ${props.testCategory.name}`}
+        title={`Edit: ${props.item.name}`}
         onCancel={toggleVisible}
         width={400}
         footer={[
@@ -79,12 +81,12 @@ export const EditCategoryModal = (props: IUploadProps) => {
           <Button key="delete" type="danger" loading={loading} onClick={onDelete}>
             Delete
           </Button>,
-          <Button key="save" type="primary" loading={loading} onClick={onSave}>
+          <Button key="save" type="primary" loading={loading} disabled={!props.updateItem} onClick={onSave}>
             Save
           </Button>,
         ]}
       >
-        <Input onChange={onChange} value={name} placeholder="Category Name" />
+        <Input onChange={onChange} value={name} disabled={!props.updateItem} placeholder="Category Name" />
       </Modal>
     </span>
   );
