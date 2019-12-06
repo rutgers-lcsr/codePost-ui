@@ -42,7 +42,7 @@ import { FILE_TYPE } from './TestingSetup';
 import { TestItem } from './TestDefinitions/TestItem';
 import { AddCategoryModal } from './TestDefinitions/AddCategoryModal';
 import { AddFileModal } from './TestDefinitions/AddFileModal';
-import { EditCategoryModal } from './TestDefinitions/EditCategoryModal';
+import { EditObjectModal } from './TestDefinitions/EditObjectModal';
 import { AddTestModal } from './TestDefinitions/AddTestModal';
 import CPTooltip from '../../../../core/CPTooltip';
 import { SourceEditor } from './SourceEditor';
@@ -176,6 +176,16 @@ export const TestDefinitions = (props: IProps) => {
 
   const updateCategory = async (testCategory: TestCategoryType) => {
     const newCategory = await TestCategory.update(testCategory);
+    replaceTestCategory(newCategory);
+  };
+
+  // FixME: come up with a generic field saving function
+  const updateCategoryName = async (id: number, name: string) => {
+    const payload = {
+      id: id,
+      name: name,
+    };
+    const newCategory = await TestCategory.update(payload);
     replaceTestCategory(newCategory);
   };
 
@@ -474,6 +484,9 @@ export const TestDefinitions = (props: IProps) => {
               <FileTag type={f.type} small={true} />
               &nbsp;
               {f.name}
+              {f.type === FILE_TYPE.SOURCEFILE && (
+                <EditObjectModal item={f} deleteItem={props.deleteFile.bind({}, FILE_TYPE.SOURCEFILE)} />
+              )}
             </Menu.Item>
           );
         });
@@ -583,12 +596,7 @@ export const TestDefinitions = (props: IProps) => {
                   title={
                     <span>
                       {category.name}{' '}
-                      <EditCategoryModal
-                        testCategory={category}
-                        updateCategory={updateCategory}
-                        deleteCategory={deleteCategory}
-                        externalOnly={externalOnly}
-                      />{' '}
+                      <EditObjectModal item={category} updateItem={updateCategoryName} deleteItem={deleteCategory} />
                     </span>
                   }
                 >
