@@ -233,6 +233,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       dependencies: JSON.stringify(dependencies),
       assignment: props.currentAssignment.id,
       dumpMode: false,
+      testParsing: true,
       compileText,
     };
     const newEnv = await Environment.create(payload);
@@ -265,11 +266,23 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     props.history.push(newUrl);
   };
 
-  const updateEnv = async (e: any) => {
+  const updateDumpMode = async (e: any) => {
     if (env) {
       const payload = {
         id: env.id,
         dumpMode: e.target.checked,
+      };
+      const newEnv = await Environment.update(payload);
+      message.success(e.target.checked ? 'Setting enabled' : 'Setting disabled');
+      setEnv(newEnv);
+    }
+  };
+
+  const updateTestParsing = async (e: any) => {
+    if (env) {
+      const payload = {
+        id: env.id,
+        testParsing: e.target.checked,
       };
       const newEnv = await Environment.update(payload);
       message.success(e.target.checked ? 'Setting enabled' : 'Setting disabled');
@@ -310,14 +323,31 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         />
       </TabPane>
       <TabPane tab={'Settings'} key={'settings'}>
-        <Checkbox style={{ minWidth: '125px' }} defaultChecked={env && env.dumpMode} onChange={updateEnv}>
-          Dump outputs to <Typography.Text code>_tests.txt</Typography.Text>
-          &nbsp;
-          <CPTooltip
-            infoIcon={true}
-            title="When this setting is enabled, a file called _tests.txt containing the raw output of your tests will be added to every student's submission."
-          />
-        </Checkbox>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+          <Checkbox
+            style={{ minWidth: '125px', marginBottom: 15 }}
+            defaultChecked={env && env.dumpMode}
+            onChange={updateDumpMode}
+          >
+            Dump outputs to <Typography.Text code>_tests.txt</Typography.Text>
+            &nbsp;
+            <CPTooltip
+              infoIcon={true}
+              title="When this setting is enabled, a file called _tests.txt containing the raw output of your tests will be added to every student's submission."
+            />
+          </Checkbox>
+          <Checkbox
+            style={{ minWidth: '125px', marginLeft: 0 }}
+            defaultChecked={env && env.testParsing}
+            onChange={updateTestParsing}
+          >
+            Parse <Typography.Text code>TestOutput</Typography.Text> calls in source editor &nbsp;
+            <CPTooltip
+              infoIcon={true}
+              title="You should turn this off if you are making bash TestOutput calls in non-bash files (e.g., Makefile, helper python subprocess, etc.)"
+            />
+          </Checkbox>
+        </div>
       </TabPane>
     </Tabs>
   );
