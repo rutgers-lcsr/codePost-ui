@@ -107,7 +107,11 @@ export const SourceEditor = (props: IProps) => {
   /************************** State change Functions ****************************/
   useEffect(() => {
     // open modal when new code of current file is saved, only if the newCode isn't being set to empty
-    newCode && setSaving(true);
+    if (props.env && !props.env.testParsing) {
+      onConfirm();
+    } else {
+      newCode && setSaving(true);
+    }
   }, [newCode]);
 
   // callback called when run is complete

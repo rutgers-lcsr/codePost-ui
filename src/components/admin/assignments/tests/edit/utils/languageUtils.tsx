@@ -16,6 +16,8 @@ import {
 // Map each extension to the syntax highlighter for it
 export const codeMirorLanguageMap: { [language: string]: string } = {
   java: 'text/x-java',
+  c: 'text/x-csrc',
+  cpp: 'text/x-c++src',
   py: 'python',
   js: 'javascript',
   jsx: 'javascript',

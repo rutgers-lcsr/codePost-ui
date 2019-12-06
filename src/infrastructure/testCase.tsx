@@ -44,6 +44,7 @@ const TestCaseVPatch = t.intersection(
       expectedOutput: t.string,
       checkReturn: t.boolean,
       exposed: t.boolean,
+      lastSolutionRun: t.number,
     }),
   ],
   'TestCasePatch',

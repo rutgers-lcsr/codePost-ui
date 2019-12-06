@@ -105,18 +105,39 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         setSolutions((prevState) => {
           return [...prevState, newSolution];
         });
+        // delete old version if it exists
+        const existingSolution = solutions.find((f) => {
+          return f.name === name && ((!f.path && !path) || f.path === path);
+        });
+        if (existingSolution) {
+          await deleteFile(FILE_TYPE.SOLUTION, existingSolution.id);
+        }
         break;
       case FILE_TYPE.HELPER:
         const newHelper = await HelperFile.create(payload);
         setHelpers((prevState) => {
           return [...prevState, newHelper];
         });
+        // delete old version if it exists
+        const existingHelper = solutions.find((f) => {
+          return f.name === name && ((!f.path && !path) || f.path === path);
+        });
+        if (existingHelper) {
+          await deleteFile(FILE_TYPE.HELPER, existingHelper.id);
+        }
         break;
       case FILE_TYPE.SOURCEFILE:
         const newSource = await SourceFile.create(payload);
         setSourceFiles((prevState) => {
           return [...prevState, newSource];
         });
+        // delete old version if it exists
+        const existingSource = solutions.find((f) => {
+          return f.name === name && ((!f.path && !path) || f.path === path);
+        });
+        if (existingSource) {
+          await deleteFile(FILE_TYPE.SOURCEFILE, existingSource.id);
+        }
         break;
     }
   };
@@ -212,6 +233,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       dependencies: JSON.stringify(dependencies),
       assignment: props.currentAssignment.id,
       dumpMode: false,
+      testParsing: true,
       compileText,
     };
     const newEnv = await Environment.create(payload);
@@ -228,6 +250,9 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     if (env !== undefined) {
       Environment.delete(env.id);
       setEnv(undefined);
+      setHelpers([]);
+      setSolutions([]);
+      setSourceFiles([]);
     }
   };
 
@@ -241,11 +266,23 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     props.history.push(newUrl);
   };
 
-  const updateEnv = async (e: any) => {
+  const updateDumpMode = async (e: any) => {
     if (env) {
       const payload = {
         id: env.id,
         dumpMode: e.target.checked,
+      };
+      const newEnv = await Environment.update(payload);
+      message.success(e.target.checked ? 'Setting enabled' : 'Setting disabled');
+      setEnv(newEnv);
+    }
+  };
+
+  const updateTestParsing = async (e: any) => {
+    if (env) {
+      const payload = {
+        id: env.id,
+        testParsing: e.target.checked,
       };
       const newEnv = await Environment.update(payload);
       message.success(e.target.checked ? 'Setting enabled' : 'Setting disabled');
@@ -286,14 +323,31 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         />
       </TabPane>
       <TabPane tab={'Settings'} key={'settings'}>
-        <Checkbox style={{ minWidth: '125px' }} defaultChecked={env && env.dumpMode} onChange={updateEnv}>
-          Dump outputs to <Typography.Text code>_tests.txt</Typography.Text>
-          &nbsp;
-          <CPTooltip
-            infoIcon={true}
-            title="When this setting is enabled, a file called _tests.txt containing the raw output of your tests will be added to every student's submission."
-          />
-        </Checkbox>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+          <Checkbox
+            style={{ minWidth: '125px', marginBottom: 15 }}
+            defaultChecked={env && env.dumpMode}
+            onChange={updateDumpMode}
+          >
+            Dump outputs to <Typography.Text code>_tests.txt</Typography.Text>
+            &nbsp;
+            <CPTooltip
+              infoIcon={true}
+              title="When this setting is enabled, a file called _tests.txt containing the raw output of your tests will be added to every student's submission."
+            />
+          </Checkbox>
+          <Checkbox
+            style={{ minWidth: '125px', marginLeft: 0 }}
+            defaultChecked={env && env.testParsing}
+            onChange={updateTestParsing}
+          >
+            Parse <Typography.Text code>TestOutput</Typography.Text> calls in source editor &nbsp;
+            <CPTooltip
+              infoIcon={true}
+              title="You should turn this off if you are making bash TestOutput calls in non-bash files (e.g., Makefile, helper python subprocess, etc.)"
+            />
+          </Checkbox>
+        </div>
       </TabPane>
     </Tabs>
   );
@@ -307,18 +361,20 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
   ];
 
   return (
-    <CPAdminDetail
-      breadcrumbs={
-        <Breadcrumb>
-          {props.breadcrumbs}
-          <Breadcrumb.Item key="assignment">{props.currentAssignment.name}</Breadcrumb.Item>
-          <Breadcrumb.Item key="edit">Edit</Breadcrumb.Item>
-        </Breadcrumb>
-      }
-      goBack={null}
-      title={`${props.currentAssignment.name} | Tests Setup`}
-      actions={actions}
-      content={content}
-    />
+    <div id="Autograder">
+      <CPAdminDetail
+        breadcrumbs={
+          <Breadcrumb>
+            {props.breadcrumbs}
+            <Breadcrumb.Item key="assignment">{props.currentAssignment.name}</Breadcrumb.Item>
+            <Breadcrumb.Item key="edit">Edit</Breadcrumb.Item>
+          </Breadcrumb>
+        }
+        goBack={null}
+        title={`${props.currentAssignment.name} | Tests Setup`}
+        actions={actions}
+        content={content}
+      />
+    </div>
   );
 };

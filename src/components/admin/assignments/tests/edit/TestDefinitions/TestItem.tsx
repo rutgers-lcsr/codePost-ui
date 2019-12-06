@@ -42,6 +42,7 @@ interface ITestItemProps {
   submissions: SubmissionType[];
   setTestSubject: (id: string) => void;
   activeSubmission?: SubmissionType;
+  updateTestStatus: (testID: number, status: number) => void;
 }
 
 interface IFormValues {
@@ -154,8 +155,7 @@ export const TestItem = (props: ITestItemProps) => {
 
     // FIXME: mutating state
     if (!props.activeSubmission) {
-      props.testCase.lastSolutionRun = formatted.result;
-      props.saveTest(props.testCase);
+      props.updateTestStatus(props.testCase.id, formatted.result);
     }
 
     setTestOutput(formatted);
@@ -370,7 +370,9 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 required: false,
               },
             ],
-          })(<Input placeholder={'Input'} disabled={this.props.isRunning} style={inputStyle} />)}
+          })(
+            <Input.TextArea placeholder={'Input'} disabled={this.props.isRunning} style={inputStyle} autosize={true} />,
+          )}
         </Form.Item>
         <span style={textStyle}>and expect the call to</span>
         <Form.Item label="">
@@ -397,7 +399,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 required: false,
               },
             ],
-          })(<Input disabled={this.props.isRunning} style={inputStyle} />)}
+          })(<Input.TextArea disabled={this.props.isRunning} style={inputStyle} autosize={true} />)}
           <span style={{ marginLeft: '1px' }}>.</span>
         </Form.Item>
       </div>

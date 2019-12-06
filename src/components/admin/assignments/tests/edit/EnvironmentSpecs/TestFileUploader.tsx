@@ -12,8 +12,10 @@ import { Button, Icon, message, Modal, Switch, Table, Upload } from 'antd';
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 import { HelperFileType } from '../../../../../../infrastructure/autograder/helperFile';
 
+import { IDirectoryStructure, IFolder } from '../../../../../code-review/menu/fileMenuUtils';
+
 interface IUploadProps {
-  files: (SolutionFileType | HelperFileType)[];
+  directory: IDirectoryStructure<SolutionFileType | HelperFileType> | undefined;
   addFile: (name: string, code: string, path?: string) => Promise<void>;
   deleteFile: (id: number) => Promise<void>;
   icon?: boolean;
@@ -33,6 +35,17 @@ export const TestFileUploader = (props: IUploadProps) => {
   const deleteFile = async (id: number) => {
     await props.deleteFile(id);
     message.success(`File deleted!`);
+  };
+
+  const deleteFolder = async (folder: IFolder<SolutionFileType | HelperFileType>) => {
+    const filePromises = folder.files.map((f) => {
+      return props.deleteFile(f.id);
+    });
+    const folderPromises: any = folder.folders.map((f) => {
+      return deleteFolder(f);
+    });
+
+    return Promise.all([...filePromises, ...folderPromises]);
   };
 
   const saveNewFiles = async () => {
@@ -64,7 +77,10 @@ export const TestFileUploader = (props: IUploadProps) => {
               .toLowerCase()
           : '';
         setNewFiles((prevState) => {
-          return [...prevState, { uid: `${counter}-${file.name}`, code: cleanedData, name: file.name, path: path }];
+          const oldFiles = prevState.filter((f) => {
+            return f.name !== file.name || f.path !== file.path;
+          });
+          return [...oldFiles, { uid: `${counter}-${file.name}`, code: cleanedData, name: file.name, path: path }];
         });
         setCounter(counter + 1);
       }
@@ -98,12 +114,41 @@ export const TestFileUploader = (props: IUploadProps) => {
     setUploadDir(!uploadDir);
   };
 
-  const data = props.files.map((file) => {
+  let files: any = [];
+  let folders: any = [];
+  const getFolderData = (folder: IFolder<SolutionFileType | HelperFileType>) => {
+    const files = folder.files.map((file) => {
+      return {
+        key: file.id,
+        name: file.name,
+        delete: <Icon onClick={deleteFile.bind({}, file.id)} type="delete" />,
+      };
+    });
+
+    const folders: any = folder.folders.map((folder) => {
+      return getFolderData(folder);
+    });
+
     return {
-      name: file.name,
-      delete: <Icon onClick={deleteFile.bind({}, file.id)} type="delete" />,
+      name: folder.name,
+      delete: <Button onClick={deleteFolder.bind({}, folder)}>Delete Folder</Button>,
+      children: [...files, ...folders],
     };
-  });
+  };
+
+  if (props.directory) {
+    files = props.directory.files.map((file) => {
+      return {
+        key: file.id,
+        name: file.name,
+        delete: <Icon onClick={deleteFile.bind({}, file.id)} type="delete" />,
+      };
+    });
+
+    folders = props.directory.folders.map((folder) => {
+      return getFolderData(folder);
+    });
+  }
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -118,11 +163,11 @@ export const TestFileUploader = (props: IUploadProps) => {
         visible={visible}
         onCancel={toggleVisible}
         width={750}
-        okText="Save"
+        okText="Done"
         onOk={saveNewFiles}
         title={props.title}
       >
-        <Table columns={columns} dataSource={data} />
+        <Table columns={columns} dataSource={[...files, ...folders]} />
         <br />
         <Upload
           beforeUpload={beforeUpload}
