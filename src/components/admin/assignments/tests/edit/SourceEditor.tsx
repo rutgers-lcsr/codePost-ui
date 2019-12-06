@@ -78,7 +78,7 @@ export const SourceEditor = (props: IProps) => {
         // Run all tests
         result = await Environment.run(
           props.env.id,
-          props.activeSubmission ? { submission: props.activeSubmission.id.toString() } : {},
+          props.activeSubmission ? { submission: props.activeSubmission.id.toString(), simulate: 'True' } : {},
         );
       } else {
         const found = props.sourceFiles.find((el) => el.name === fileToRun);

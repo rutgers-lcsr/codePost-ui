@@ -180,6 +180,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     if (this.state.submission && this.state.selectedAssignment && this.state.selectedAssignment.environment) {
       const result = await Environment.run(this.state.selectedAssignment.environment, {
         submission: this.state.submission.id.toString(),
+        simulate: 'False',
       });
       awaitTestResult(result.task, this.setResults);
     }
