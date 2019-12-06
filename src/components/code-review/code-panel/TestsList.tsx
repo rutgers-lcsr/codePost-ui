@@ -96,7 +96,7 @@ const TestsList = (props: IProps) => {
   };
 
   return (
-    <div style={{ margin: '20px' }}>
+    <div style={{ margin: '20px', overflow: 'auto', height: 'calc(100vh - 100px)' }}>
       <Statistic title="Tests Passed" value={props.isLoading ? 'Running...' : `${passed}/${total}`} />
       <br />
       <Collapse defaultActiveKey={props.categories.map((x, i) => i)} bordered={false} style={{ background: '#f2f2f2' }}>

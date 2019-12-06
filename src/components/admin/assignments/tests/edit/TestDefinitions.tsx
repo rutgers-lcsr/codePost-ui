@@ -649,7 +649,7 @@ export const TestDefinitions = (props: IProps) => {
           ) : (
             <span>
               {' '}
-              &nbsp; <Button onClick={() => setPanel(DETAIL_TYPE.ViewSource)}>Edit source files</Button>{' '}
+              &nbsp; <Button onClick={() => setPanel(DETAIL_TYPE.ViewSource)}>Enter File Mode</Button>{' '}
             </span>
           )}
         </Empty>
@@ -663,7 +663,7 @@ export const TestDefinitions = (props: IProps) => {
             <Sider theme="light">
               {externalOnly ? null : (
                 <Button style={{ width: '100%' }} onClick={togglePanel}>
-                  {panel === DETAIL_TYPE.ViewSource ? 'Edit tests' : 'View source'}
+                  {panel === DETAIL_TYPE.ViewSource ? 'Exit File Mode' : 'Enter File Mode'}
                 </Button>
               )}
               {header}
