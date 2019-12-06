@@ -199,9 +199,15 @@ export const TestDefinitions = (props: IProps) => {
       newTest = await TestCase.update(testcase);
     }
 
-    replaceTestCase(newTest, testcase);
-    setActiveTest(testcase);
+    replaceTestCase(newTest, testcase.id);
+    setActiveTest(newTest);
     return newTest;
+  };
+
+  const updateTestStatus = async (testCaseID: number, result: number) => {
+    const newTest = await TestCase.update({ id: testCaseID, lastSolutionRun: result });
+    replaceTestCase(newTest, testCaseID);
+    setActiveTest(newTest);
   };
 
   const addTest = async (language: string | null, category: number, sourceFile?: boolean, name?: string) => {
@@ -266,11 +272,11 @@ export const TestDefinitions = (props: IProps) => {
 
   /******************************* State Change Functions  ****************************/
 
-  const replaceTestCase = (newCase: TestCaseType, oldCase: TestCaseType) => {
+  const replaceTestCase = (newCase: TestCaseType, oldID: number) => {
     setCasesByCategory((prevState) => {
       const filteredTests = prevState[newCase.testCategory]
         ? prevState[newCase.testCategory].filter((tc) => {
-            return tc.id !== oldCase.id;
+            return tc.id !== oldID;
           })
         : [];
       const newCases = { ...prevState };
@@ -621,6 +627,7 @@ export const TestDefinitions = (props: IProps) => {
                 submissions={props.submissions}
                 setTestSubject={setTestSubject}
                 activeSubmission={activeSubmission}
+                updateTestStatus={updateTestStatus}
               />
             )}
           </div>

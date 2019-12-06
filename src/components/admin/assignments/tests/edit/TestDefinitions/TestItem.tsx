@@ -42,6 +42,7 @@ interface ITestItemProps {
   submissions: SubmissionType[];
   setTestSubject: (id: string) => void;
   activeSubmission?: SubmissionType;
+  updateTestStatus: (testID: number, status: number) => void;
 }
 
 interface IFormValues {
@@ -154,8 +155,7 @@ export const TestItem = (props: ITestItemProps) => {
 
     // FIXME: mutating state
     if (!props.activeSubmission) {
-      props.testCase.lastSolutionRun = formatted.result;
-      props.saveTest(props.testCase);
+      props.updateTestStatus(props.testCase.id, formatted.result);
     }
 
     setTestOutput(formatted);
