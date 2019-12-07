@@ -226,10 +226,10 @@ const RubricUI = ({
 
     const toggleShowInstructions = () => {
       setShowInstructions(!showInstructions);
+    };
 
     const toggleShowAtMostOnce = () => {
       setShowAtMostOnce(!showAtMostOnce);
-
     };
 
     const content = (
