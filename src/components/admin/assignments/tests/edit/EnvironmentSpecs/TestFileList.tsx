@@ -111,7 +111,7 @@ export const TestFileList = (props: IProps) => {
               title={props.title}
             />
           </Sider>
-          <Content style={{ maxHeight: '70vh', overflow: 'auto', fontSize: 12 }}>
+          <Content style={{ maxHeight: '70vh', overflow: 'visible', fontSize: 12 }}>
             {sortedFiles.length === 0 ? (
               <div />
             ) : (
