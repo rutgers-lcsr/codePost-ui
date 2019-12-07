@@ -38,6 +38,7 @@ export interface IRubricCategoryManagerState {
   name: string;
   pointLimit: number | null;
   helpText: string;
+  requireMutex: boolean;
   status: STATUS;
 
   /* local rubric comment data */
@@ -85,6 +86,7 @@ export interface IRubricCategoryManagerProps extends IWithWindowWatcherProps {
   showPointLimits: boolean;
   showHelpText: boolean;
   showExplanations: boolean;
+  showMutex: boolean;
 
   children: (params: IRubricCategoryManagerParams) => React.ReactNode;
 }
@@ -119,6 +121,7 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
       name: props.rubricCategory.name,
       pointLimit: props.rubricCategory.pointLimit,
       helpText: props.rubricCategory.helpText ? props.rubricCategory.helpText : '',
+      requireMutex: props.rubricCategory.requireMutuallyExclusive,
       status: typeof props.savedRubricCategory === 'undefined' ? STATUS.UNSAVED : STATUS.NONE,
       rubricComments: this.buildLocalRubricCommentsStructure(props.rubricComments),
       rubricCommentStatus: this.initializeRubricCommentStatus(props.rubricComments),
@@ -216,11 +219,16 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
 
   public updateCategoryStatus = () => {
     const { savedRubricCategory } = this.props;
-    const { name, pointLimit, helpText, status } = this.state;
+    const { name, pointLimit, helpText, status, requireMutex } = this.state;
     if (savedRubricCategory) {
       const newStatus = statusChange(
-        [savedRubricCategory.name, savedRubricCategory.pointLimit, savedRubricCategory.helpText],
-        [name, pointLimit, helpText],
+        [
+          savedRubricCategory.name,
+          savedRubricCategory.pointLimit,
+          savedRubricCategory.helpText,
+          savedRubricCategory.requireMutuallyExclusive,
+        ],
+        [name, pointLimit, helpText, requireMutex],
         status,
       );
       if (newStatus !== status) {
@@ -257,7 +265,7 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
       },
       () => {
         this.updateCategoryStatus();
-        if (label === 'pointLimit') {
+        if (label === 'pointLimit' || label === 'requireMutex') {
           this.saveCategory();
         }
       },
@@ -308,19 +316,22 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
 
   public saveCategory = () => {
     const { rubricCategory } = this.props;
-    const { name, pointLimit, helpText } = this.state;
+    const { name, pointLimit, helpText, requireMutex } = this.state;
 
     if (
       rubricCategory.id < 0 ||
       name !== rubricCategory.name ||
       pointLimit !== rubricCategory.pointLimit ||
-      helpText !== rubricCategory.helpText
+      helpText !== rubricCategory.helpText ||
+      requireMutex !== rubricCategory.requireMutuallyExclusive
     ) {
       const { valid, message } = this.validateCategory(name, helpText, pointLimit);
       const payload: RubricCategoryType = Object.assign({}, this.props.rubricCategory);
       payload.name = this.state.name;
       payload.pointLimit = this.state.pointLimit;
       payload.helpText = this.state.helpText;
+      payload.requireMutuallyExclusive = this.state.requireMutex;
+      console.log(payload);
 
       // have to take into account the possibility of a comment error here
       this.props.updateCategory(payload, !valid || this.state.hasCommentError);

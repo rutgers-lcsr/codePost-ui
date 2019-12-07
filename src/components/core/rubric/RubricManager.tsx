@@ -786,6 +786,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
       rubricComments: [], // ignored by API,
       sortKey: rubricCategories.length,
       helpText: '',
+      requireMutuallyExclusive: false,
     };
 
     newComments[payload.id] = [];

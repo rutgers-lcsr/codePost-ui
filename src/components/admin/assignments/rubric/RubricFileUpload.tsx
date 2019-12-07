@@ -126,6 +126,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
         pointLimit: newCategory.pointLimit,
         sortKey: index,
         helpText: newCategory.helpText,
+        requireMutuallyExclusive: false,
       };
 
       newCategory.rubricComments.forEach((newComment: IDownloadComment, indexComment: number) => {

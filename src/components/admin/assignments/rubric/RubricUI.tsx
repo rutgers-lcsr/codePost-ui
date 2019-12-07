@@ -59,10 +59,12 @@ const RubricUI = ({
   const [showPointLimits, setShowPointLimits] = React.useState(false);
   const [showHelpText, setShowHelpText] = React.useState(false);
   const [showExplanations, setShowExplanations] = React.useState(false);
+  const [showMutex, setShowMutex] = React.useState(false);
 
   const [showPointLimitCheckbox, setShowPointLimitCheckbox] = React.useState(true);
   const [showHelpTextCheckbox, setShowHelpTextCheckbox] = React.useState(true);
   const [showExplanationsCheckbox, setShowExplanationsCheckbox] = React.useState(true);
+  const [showMutexCheckbox, setShowMutexCheckbox] = React.useState(true);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
@@ -75,6 +77,11 @@ const RubricUI = ({
       if (!showHelpText && (typeof cat.helpText === 'string' && cat.helpText.length > 0)) {
         setShowHelpText(true);
         setShowHelpTextCheckbox(false);
+      }
+
+      if (!showMutex && cat.requireMutuallyExclusive) {
+        setShowMutex(true);
+        setShowMutexCheckbox(false);
       }
 
       for (const rc of rubricComments[cat.id]) {
@@ -123,6 +130,7 @@ const RubricUI = ({
             showPointLimits={showPointLimits}
             showHelpText={showHelpText}
             showExplanations={showExplanations}
+            showMutex={showMutex}
           >
             {({ propz, statez, helperz }: IRubricCategoryManagerParams) => {
               return <RubricCategoryUI props={{ ...propz, baseURL: props.baseURL }} state={statez} helpers={helperz} />;
@@ -208,6 +216,10 @@ const RubricUI = ({
       setShowExplanations(!showExplanations);
     };
 
+    const toggleShowMutex = () => {
+      setShowMutex(!showMutex);
+    };
+
     const content = (
       <div>
         <div className="display-flex flex-direction-column align-items-flex-end" style={{ marginBottom: '10px' }}>
@@ -238,6 +250,17 @@ const RubricUI = ({
               Show explanation editors <Checkbox checked={showExplanations} onChange={toggleShowExplanations} />{' '}
               <CPTooltip
                 title={tooltips.admin.rubric.explanations}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
+          ) : null}
+          {showMutexCheckbox ? (
+            <div>
+              Show mutually exclusive toggle <Checkbox checked={showMutex} onChange={toggleShowMutex} />{' '}
+              <CPTooltip
+                title={"Show the option to make a rubric category's comments mutually exclusive."}
                 infoIcon={true}
                 hideThisOnHideTips={true}
                 iconStyle={{ paddingLeft: 5 }}

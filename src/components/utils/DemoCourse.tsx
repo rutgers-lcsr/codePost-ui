@@ -76,6 +76,7 @@ const createAssignment = (course: CourseType, assignment: any) => {
         pointLimit: category.cap,
         sortKey: 0,
         helpText: '',
+        requireMutuallyExclusive: false,
       };
 
       return RubricCategory.create(catPayload).then((catObj) => {
