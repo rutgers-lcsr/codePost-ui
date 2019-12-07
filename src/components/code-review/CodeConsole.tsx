@@ -1585,7 +1585,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             key="subheader-finalize"
             submission={this.state.submission!}
             toggleFinalized={this.toggleFinalized}
-            numComments={Object.values(this.state.comments).length}
+            numComments={Object.values(this.state.comments).flat().length}
             minComments={this.state.course!.minComments}
             canUnfinalize={true}
           />,
@@ -1709,7 +1709,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             key="subheader-finalize"
             submission={this.state.submission!}
             toggleFinalized={this.toggleFinalized}
-            numComments={Object.values(this.state.comments).length}
+            numComments={Object.values(this.state.comments).flat().length}
             minComments={this.state.course!.minComments}
             canUnfinalize={!this.state.course!.noUnfinalize || this.isCourseAdmin(this.state.assignment)}
           />,
