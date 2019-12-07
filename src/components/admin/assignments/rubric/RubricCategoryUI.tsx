@@ -487,6 +487,14 @@ const RubricCategoryUI = ({
                     helpers.updateRubricComment(activeComment.id, 'templateTextOn', !activeComment.templateTextOn)
                   }
                 />
+                <CPTooltip
+                  title={
+                    'If on, this instruction text will be made available for graders to edit directly in the custom text area of a rubric comment instance.'
+                  }
+                  infoIcon={true}
+                  hideThisOnHideTips={true}
+                  iconStyle={{ paddingLeft: 5 }}
+                />
               </span>
             ) : (
               undefined
