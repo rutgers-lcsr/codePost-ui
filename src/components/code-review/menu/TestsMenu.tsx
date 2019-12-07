@@ -116,7 +116,9 @@ const TestsMenu = (props: IProps) => {
         {props.categories.length > 0 ? (
           <Table dataSource={data} columns={columns} size="small" pagination={false} bordered={false} />
         ) : (
-          <span>Soon you'll be able to show test output and run tests on student code using codePost!</span>
+          <span>
+            Soon you’ll be able to show test output and run tests on student code using codePost! Ask us for access.
+          </span>
         )}
       </div>
     </div>
