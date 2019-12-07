@@ -2,7 +2,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Badge, Button, Icon, Input, Popconfirm, Spin, Table, Tag } from 'antd';
+import { Badge, Button, Icon, Input, Popconfirm, Spin, Table, Tag, Switch } from 'antd';
 
 /* codePost imports */
 import CPButton from '../../../core/CPButton';
@@ -65,6 +65,18 @@ const commentTableColumns = [
     align: aligner,
   },
   {
+    title: 'Explanations',
+    key: 'explanation',
+    dataIndex: 'explanation',
+    align: aligner,
+  },
+  {
+    title: 'Instructions',
+    key: 'instruction',
+    dataIndex: 'instruction',
+    align: aligner,
+  },
+  {
     title: (
       <div>
         Feedback
@@ -106,6 +118,7 @@ const RubricCategoryUI = ({
   helpers: IRubricCategoryManagerHelpers;
 }) => {
   const [activeComment, setActiveComment] = React.useState(undefined as RubricCommentType | undefined);
+  const [activeField, setActiveField] = React.useState<'explanation' | 'instructionText'>('explanation');
 
   const buildCommentTableData = (
     rubricComments: RubricCommentType[],
@@ -128,8 +141,8 @@ const RubricCategoryUI = ({
           helpers.updateRubricComment(thisComment.id, 'pointDelta', e);
         };
 
-        const onDeleteExplanation = () => {
-          helpers.updateRubricComment(thisComment.id, 'explanation', '');
+        const onDeleteField = (field: string) => {
+          helpers.updateRubricComment(thisComment.id, field, '');
         };
 
         const saveComment = () => {
@@ -156,32 +169,6 @@ const RubricCategoryUI = ({
                 style={{ width: '80%' }}
               />
               &nbsp;
-              {props.showExplanations ? (
-                <span style={{ verticalAlign: 'middle' }}>
-                  <CPTooltip title="Edit comment's explanation" key={rubricComment.id}>
-                    <CPButton
-                      icon="edit"
-                      style={{ background: thisComment.explanation ? '#f0fff7' : undefined }}
-                      onClick={() => {
-                        setActiveComment(thisComment);
-                      }}
-                    />
-                  </CPTooltip>
-                  <CPTooltip
-                    title="Delete comment's explanation"
-                    key={rubricComment.id}
-                    disabled={!thisComment.explanation}
-                  >
-                    <CPButton
-                      icon="delete"
-                      disabled={!thisComment.explanation}
-                      onClick={() => {
-                        onDeleteExplanation();
-                      }}
-                    />
-                  </CPTooltip>
-                </span>
-              ) : null}
             </span>
           ),
           deduction: (
@@ -194,6 +181,62 @@ const RubricCategoryUI = ({
                 className="badge badge--standard"
                 style={{ backgroundColor: 'rgba(0,0,0,0.5)', cursor: 'pointer' }}
               />
+            </span>
+          ),
+          explanation: props.showExplanations ? (
+            <span style={{ verticalAlign: 'middle' }}>
+              <CPTooltip title="Edit comment's explanation" key={rubricComment.id}>
+                <CPButton
+                  icon="edit"
+                  style={{ background: thisComment.explanation ? '#f0fff7' : undefined }}
+                  onClick={() => {
+                    setActiveComment(thisComment);
+                    setActiveField('explanation');
+                  }}
+                />
+              </CPTooltip>
+              <CPTooltip
+                title="Delete comment's explanation"
+                key={rubricComment.id}
+                disabled={!thisComment.explanation}
+              >
+                <CPButton
+                  icon="delete"
+                  disabled={!thisComment.explanation}
+                  onClick={() => {
+                    onDeleteField('explanation');
+                  }}
+                />
+              </CPTooltip>
+            </span>
+          ) : (
+            undefined
+          ),
+          instruction: (
+            <span style={{ verticalAlign: 'middle' }}>
+              <CPTooltip title="Edit comment's instructions" key={rubricComment.id}>
+                <CPButton
+                  icon="edit"
+                  style={{ background: thisComment.instructionText ? '#f0fff7' : undefined }}
+                  onClick={() => {
+                    setActiveComment(thisComment);
+                    setActiveField('instructionText');
+                  }}
+                />
+              </CPTooltip>
+              <CPTooltip
+                title="Delete comment's instructions"
+                key={rubricComment.id}
+                disabled={!thisComment.instructionText}
+              >
+                <CPButton
+                  icon="delete"
+                  disabled={!thisComment.instructionText}
+                  onClick={() => {
+                    onDeleteField('instructionText');
+                  }}
+                />
+              </CPTooltip>
             </span>
           ),
           feedback: !props.commentFeedbackOn ? (
@@ -376,12 +419,20 @@ const RubricCategoryUI = ({
       <CPFlex left={[categoryName, categoryPoints]} right={[helpText]} gutterSize={60} />
     );
 
-  const setExplanation = (draft?: string) => {
+  const setField = (field: 'explanation' | 'instructionText', draft?: string) => {
     if (activeComment) {
-      helpers.updateRubricComment(activeComment.id, 'explanation', draft);
+      helpers.updateRubricComment(activeComment.id, field, draft);
       setActiveComment(undefined);
     }
   };
+
+  const toRemove: string[] = [];
+  if (!props.showExplanations) {
+    toRemove.push('explanation');
+  }
+  if (!props.showInstructions) {
+    toRemove.push('instruction');
+  }
 
   return (
     <div className="cp-rubric-category">
@@ -392,7 +443,7 @@ const RubricCategoryUI = ({
         {contentLeft}
         <div style={{ height: '40px' }} />
         <Table
-          columns={commentTableColumns}
+          columns={commentTableColumns.filter((el) => toRemove.indexOf(el.key) === -1)}
           dataSource={data}
           pagination={false}
           locale={{ emptyText: 'No comments yet' }}
@@ -407,11 +458,26 @@ const RubricCategoryUI = ({
       {activeComment ? (
         <ExplanationModal
           title={activeComment.text}
-          startText={activeComment.explanation}
+          startText={activeComment[activeField]}
           onCancel={() => {
             setActiveComment(undefined);
           }}
-          onSave={setExplanation}
+          onSave={setField.bind({}, activeField)}
+          extra={
+            activeField === 'instructionText' ? (
+              <span>
+                Use as template:{' '}
+                <Switch
+                  defaultChecked={activeComment.templateTextOn}
+                  onChange={() =>
+                    helpers.updateRubricComment(activeComment.id, 'templateTextOn', !activeComment.templateTextOn)
+                  }
+                />
+              </span>
+            ) : (
+              undefined
+            )
+          }
         />
       ) : null}
     </div>

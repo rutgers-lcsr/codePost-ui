@@ -137,6 +137,8 @@ class RubricFileUpload extends React.Component<IProps, IState> {
           category: categoryPayload.id,
           comments: [],
           sortKey: indexComment,
+          instructionText: '',
+          templateTextOn: false,
         });
         commentID = commentID - 1;
       });
