@@ -59,12 +59,12 @@ const RubricUI = ({
   const [showPointLimits, setShowPointLimits] = React.useState(false);
   const [showHelpText, setShowHelpText] = React.useState(false);
   const [showExplanations, setShowExplanations] = React.useState(false);
-  const [showMutex, setShowMutex] = React.useState(false);
+  const [showAtMostOnce, setShowAtMostOnce] = React.useState(false);
 
   const [showPointLimitCheckbox, setShowPointLimitCheckbox] = React.useState(true);
   const [showHelpTextCheckbox, setShowHelpTextCheckbox] = React.useState(true);
   const [showExplanationsCheckbox, setShowExplanationsCheckbox] = React.useState(true);
-  const [showMutexCheckbox, setShowMutexCheckbox] = React.useState(true);
+  const [showAtMostOnceCheckbox, setShowAtMostOnceCheckbox] = React.useState(true);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
@@ -79,9 +79,9 @@ const RubricUI = ({
         setShowHelpTextCheckbox(false);
       }
 
-      if (!showMutex && cat.requireMutuallyExclusive) {
-        setShowMutex(true);
-        setShowMutexCheckbox(false);
+      if (!showAtMostOnce && cat.atMostOnce) {
+        setShowAtMostOnce(true);
+        setShowAtMostOnceCheckbox(false);
       }
 
       for (const rc of rubricComments[cat.id]) {
@@ -130,7 +130,7 @@ const RubricUI = ({
             showPointLimits={showPointLimits}
             showHelpText={showHelpText}
             showExplanations={showExplanations}
-            showMutex={showMutex}
+            showAtMostOnce={showAtMostOnce}
           >
             {({ propz, statez, helperz }: IRubricCategoryManagerParams) => {
               return <RubricCategoryUI props={{ ...propz, baseURL: props.baseURL }} state={statez} helpers={helperz} />;
@@ -216,8 +216,8 @@ const RubricUI = ({
       setShowExplanations(!showExplanations);
     };
 
-    const toggleShowMutex = () => {
-      setShowMutex(!showMutex);
+    const toggleShowAtMostOnce = () => {
+      setShowAtMostOnce(!showAtMostOnce);
     };
 
     const content = (
@@ -256,11 +256,11 @@ const RubricUI = ({
               />
             </div>
           ) : null}
-          {showMutexCheckbox ? (
+          {showAtMostOnceCheckbox ? (
             <div>
-              Show mutually exclusive toggle <Checkbox checked={showMutex} onChange={toggleShowMutex} />{' '}
+              Show "At Most Once" toggle <Checkbox checked={showAtMostOnce} onChange={toggleShowAtMostOnce} />{' '}
               <CPTooltip
-                title={"Show the option to make a rubric category's comments mutually exclusive."}
+                title={'Show the option to require a rubric category be applied at most once.'}
                 infoIcon={true}
                 hideThisOnHideTips={true}
                 iconStyle={{ paddingLeft: 5 }}

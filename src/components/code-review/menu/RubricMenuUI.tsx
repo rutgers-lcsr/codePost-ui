@@ -148,7 +148,7 @@ const RubricMenuUI = ({
         pointLimit: null,
         sortKey: 0,
         helpText: 'List of the 10 most frequently applied comments from this rubric.',
-        requireMutuallyExclusive: false,
+        atMostOnce: false,
       };
       adjustedRubricComments[-1000] = Object.values(rubricComments)
         .flat()

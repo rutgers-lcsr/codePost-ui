@@ -272,8 +272,8 @@ const RubricCategoryUI = ({
     helpers.setValue('pointLimit', null);
   };
 
-  const toggleMutex = () => {
-    helpers.setValue('requireMutex', !state.requireMutex);
+  const toggleAtMostOnce = () => {
+    helpers.setValue('atMostOnce', !state.atMostOnce);
   };
 
   const titleLeft = [
@@ -370,12 +370,12 @@ const RubricCategoryUI = ({
     </div>
   ) : null;
 
-  const mutexToggle = props.showMutex ? (
-    <div key="mutex" style={{ maxWidth: 300 }}>
+  const atMostOnceToggle = props.showAtMostOnce ? (
+    <div key="atMostOnce" style={{ maxWidth: 300 }}>
       <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
-        Make comments mutually exclusive
+        "At Most Once" mode
       </div>
-      <Switch checked={state.requireMutex} onChange={toggleMutex} />
+      <Switch checked={state.atMostOnce} onChange={toggleAtMostOnce} />
     </div>
   ) : null;
 
@@ -383,10 +383,10 @@ const RubricCategoryUI = ({
     props.windowwidth < 1200 ? (
       <div>
         <CPFlex left={[categoryName, categoryPoints]} right={[]} gutterSize={60} />
-        <CPFlex left={[helpText, mutexToggle]} right={[]} gutterSize={60} style={{ paddingTop: 30 }} />
+        <CPFlex left={[helpText, atMostOnceToggle]} right={[]} gutterSize={60} style={{ paddingTop: 30 }} />
       </div>
     ) : (
-      <CPFlex left={[categoryName, categoryPoints, mutexToggle]} right={[helpText]} gutterSize={60} />
+      <CPFlex left={[categoryName, categoryPoints, atMostOnceToggle]} right={[helpText]} gutterSize={60} />
     );
 
   const setExplanation = (draft?: string) => {

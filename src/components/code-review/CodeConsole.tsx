@@ -919,10 +919,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return;
     }
 
-    // If this category requires "at most one", check to see if we've applied a comment from this
+    // If this category requires "at most once", check to see if we've applied a comment from this
     // category somewhere else.
     const category = this.state.rubricCategories.find((el) => el.id === rubricComment.category);
-    if (category !== undefined && category.requireMutuallyExclusive) {
+    if (category !== undefined && category.atMostOnce) {
       const siblings = this.state.rubricComments[rubricComment.category].map((el) => el.id);
       const hasApplied = Object.values(this.state.comments)
         .flat()
@@ -1176,7 +1176,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         pointLimit: null,
         sortKey: 0,
         helpText: '',
-        requireMutuallyExclusive: false,
+        atMostOnce: false,
       },
       {
         id: 2,
@@ -1186,7 +1186,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         pointLimit: null,
         sortKey: 1,
         helpText: '',
-        requireMutuallyExclusive: false,
+        atMostOnce: false,
       },
     ];
 

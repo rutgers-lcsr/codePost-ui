@@ -10,7 +10,7 @@ export const RubricCategoryV = t.intersection(
       assignment: t.number,
       pointLimit: t.union([t.number, t.null]),
       sortKey: t.number,
-      requireMutuallyExclusive: t.boolean,
+      atMostOnce: t.boolean,
     }),
     t.partial({
       helpText: t.string,
@@ -43,7 +43,7 @@ export const RubricCategoryVPatch = t.intersection(
       pointLimit: t.union([t.number, t.null]),
       helpText: t.string,
       sortKey: t.number,
-      requireMutuallyExclusive: t.boolean,
+      atMostOnce: t.boolean,
     }),
   ],
   'RubricCategoryPatch',
@@ -76,7 +76,7 @@ export const RubricCategoryMock: RubricCategoryType = {
   assignment: 1,
   pointLimit: 4,
   sortKey: 0,
-  requireMutuallyExclusive: false,
+  atMostOnce: false,
 };
 
 // export {
