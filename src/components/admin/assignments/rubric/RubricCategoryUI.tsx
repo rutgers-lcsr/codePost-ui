@@ -2,7 +2,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Badge, Button, Icon, Input, Popconfirm, Spin, Table, Tag } from 'antd';
+import { Badge, Button, Icon, Input, Popconfirm, Spin, Table, Tag, Switch } from 'antd';
 
 /* codePost imports */
 import CPButton from '../../../core/CPButton';
@@ -272,6 +272,10 @@ const RubricCategoryUI = ({
     helpers.setValue('pointLimit', null);
   };
 
+  const toggleAtMostOnce = () => {
+    helpers.setValue('atMostOnce', !state.atMostOnce);
+  };
+
   const titleLeft = [
     <span key="title" className="cp-label cp-label--plus cp-label--bold">
       Category: {props.rubricCategory.name}
@@ -366,14 +370,24 @@ const RubricCategoryUI = ({
     </div>
   ) : null;
 
+  const atMostOnceToggle = props.showAtMostOnce ? (
+    <div key="atMostOnce" style={{ maxWidth: 300 }}>
+      <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
+        "At Most Once" Mode{' '}
+        <CPTooltip infoIcon={true} title={'If applied, this category can be applied at most once to any submission.'} />
+      </div>
+      <Switch checked={state.atMostOnce} onChange={toggleAtMostOnce} />
+    </div>
+  ) : null;
+
   const contentLeft =
     props.windowwidth < 1200 ? (
       <div>
         <CPFlex left={[categoryName, categoryPoints]} right={[]} gutterSize={60} />
-        <CPFlex left={[helpText]} right={[]} gutterSize={60} style={{ paddingTop: 30 }} />
+        <CPFlex left={[helpText, atMostOnceToggle]} right={[]} gutterSize={60} style={{ paddingTop: 30 }} />
       </div>
     ) : (
-      <CPFlex left={[categoryName, categoryPoints]} right={[helpText]} gutterSize={60} />
+      <CPFlex left={[categoryName, categoryPoints, atMostOnceToggle]} right={[helpText]} gutterSize={60} />
     );
 
   const setExplanation = (draft?: string) => {
