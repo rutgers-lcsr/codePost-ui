@@ -373,7 +373,8 @@ const RubricCategoryUI = ({
   const atMostOnceToggle = props.showAtMostOnce ? (
     <div key="atMostOnce" style={{ maxWidth: 300 }}>
       <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
-        "At Most Once" mode
+        "At Most Once" Mode{' '}
+        <CPTooltip infoIcon={true} title={'If applied, this category can be applied at most once to any submission.'} />
       </div>
       <Switch checked={state.atMostOnce} onChange={toggleAtMostOnce} />
     </div>
