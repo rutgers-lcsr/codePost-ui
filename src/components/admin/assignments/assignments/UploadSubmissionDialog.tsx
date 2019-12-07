@@ -11,6 +11,8 @@ import { Button, Icon, message, Modal, Progress, Switch, Upload, Table, Tag } fr
 /* other library imports */
 import Select from 'react-select';
 
+import { Link } from 'react-router-dom';
+
 /* codePost imports */
 import {
   AssignmentType,
@@ -19,6 +21,7 @@ import {
   SubmissionType,
   StudentSubmissionType,
   FileTemplateType,
+  CourseType,
 } from '../../../../infrastructure/types';
 import { AssignmentStudent } from '../../../../infrastructure/assignment';
 import { Submission } from '../../../../infrastructure/submission';
@@ -42,6 +45,8 @@ import { SubmissionTestResultType } from '../../../../infrastructure/autograder/
 
 import { slack } from '../../../../components/core/slack';
 
+import { encodeForLink } from '../../../../components/core/URLutils';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -61,6 +66,7 @@ interface IProps {
   disableStudentSelect?: boolean;
   onSuccess?: () => void;
   isStudent?: boolean;
+  course?: CourseType;
 }
 
 enum STATUS {
@@ -501,72 +507,93 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
         const unzippedFiles = this.state.files.filter((el) => el.zipSource !== undefined);
 
-        content = (
-          <div>
-            Assignment:
-            <Select
-              defaultValue={
-                this.state.selectedAssignment
-                  ? { value: this.state.selectedAssignment!.id, label: this.state.selectedAssignment!.name }
-                  : {}
-              }
-              isDisabled={typeof this.props.selectedAssignment === 'object'}
-              onChange={this.changeAssignment}
-              options={this.assignmentOptions}
-            />
-            <br />
-            <br />
-            Students:{' '}
-            {this.props.isStudent ? (
-              <CPTooltip title={tooltips.admin.assignments.uploadSubmission} infoIcon={true} />
-            ) : (
-              <span />
-            )}
-            <Select
-              placeholder={'Select students'}
-              isMulti={true}
-              value={selectedStudents}
-              options={studentOptions}
-              onChange={this.changeStudents}
-              isDisabled={this.props.disableStudentSelect}
-            />
-            <br />
-            {/*  beforeUpload prop stops Upload component from trying to upload files to external server */}
-            {/*  FIXME: we should prevent users from uploading image files here */}
-            {fileList}
-            <br />
-            {settingList}
-            <br />
-            <br />
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <Upload
-                beforeUpload={this.beforeUpload}
-                listType="text"
-                multiple={true}
-                onRemove={this.onRemove}
-                fileList={this.state.fileList}
-                directory={this.state.uploadDirectory}
+        // Address https://github.com/codepost-io/codePost-ui/issues/1039
+        if (!this.props.isStudent && this.props.students.length === 0) {
+          content = (
+            <div>
+              After you add students, you can upload their submissions here. <br />
+              <br />{' '}
+              <Link
+                to={
+                  this.props.course
+                    ? `/admin/${encodeForLink(this.props.course.name)}/${encodeForLink(
+                        this.props.course.period,
+                      )}/roster/students`
+                    : ''
+                }
               >
-                <Button>
-                  <Icon type="upload" /> Upload files
-                </Button>
-              </Upload>
+                <Button>Add students</Button>
+              </Link>
             </div>
-            <span>
-              {unzippedFiles.length > 0 ? (
-                <span>
-                  <br />
-                  <b>The following files will be unzipped on upload:</b>{' '}
-                  {unzippedFiles.map((el) => `${el.path}/${el.name}`).join(', ')}
-                </span>
+          );
+        } else {
+          content = (
+            <div>
+              Assignment:
+              <Select
+                defaultValue={
+                  this.state.selectedAssignment
+                    ? { value: this.state.selectedAssignment!.id, label: this.state.selectedAssignment!.name }
+                    : {}
+                }
+                isDisabled={typeof this.props.selectedAssignment === 'object'}
+                onChange={this.changeAssignment}
+                options={this.assignmentOptions}
+              />
+              <br />
+              <br />
+              Students:{' '}
+              {this.props.isStudent ? (
+                <CPTooltip title={tooltips.admin.assignments.uploadSubmission} infoIcon={true} />
               ) : (
-                <div />
+                <span />
               )}
-            </span>
-            <br />
-            {rejectedFiles}
-          </div>
-        );
+              <Select
+                placeholder={'Select students'}
+                isMulti={true}
+                value={selectedStudents}
+                options={studentOptions}
+                onChange={this.changeStudents}
+                isDisabled={this.props.disableStudentSelect}
+              />
+              <br />
+              {/*  beforeUpload prop stops Upload component from trying to upload files to external server */}
+              {/*  FIXME: we should prevent users from uploading image files here */}
+              {fileList}
+              <br />
+              {settingList}
+              <br />
+              <br />
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Upload
+                  beforeUpload={this.beforeUpload}
+                  listType="text"
+                  multiple={true}
+                  onRemove={this.onRemove}
+                  fileList={this.state.fileList}
+                  directory={this.state.uploadDirectory}
+                >
+                  <Button>
+                    <Icon type="upload" /> Upload files
+                  </Button>
+                </Upload>
+              </div>
+              <span>
+                {unzippedFiles.length > 0 ? (
+                  <span>
+                    <br />
+                    <b>The following files will be unzipped on upload:</b>{' '}
+                    {unzippedFiles.map((el) => `${el.path}/${el.name}`).join(', ')}
+                  </span>
+                ) : (
+                  <div />
+                )}
+              </span>
+              <br />
+              {rejectedFiles}
+            </div>
+          );
+        }
         break;
     }
 

@@ -574,6 +574,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
               selectedStudents={this.state.activeStudent !== undefined ? [this.state.activeStudent] : []}
               submissions={this.props.submissionsByStudent}
               uploadSubmission={this.props.uploadSubmission}
+              course={this.props.currentCourse}
             />
           );
           break;
@@ -589,6 +590,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
               updateSubmission={this.props.updateSubmission}
               deleteSubmission={this.props.deleteSubmission}
               showImportOptions={false}
+              course={this.props.currentCourse}
             />
           );
           break;
@@ -604,6 +606,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
               updateSubmission={this.props.updateSubmission}
               deleteSubmission={this.props.deleteSubmission}
               showImportOptions={true}
+              course={this.props.currentCourse}
             />
           );
           break;
