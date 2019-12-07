@@ -14,6 +14,7 @@ interface IProps {
   panelOne: React.ReactNode;
   panelTwo: React.ReactNode;
   panelThree: React.ReactNode;
+  panelFour: React.ReactNode;
   getStarted: React.ReactNode;
   footer: React.ReactNode;
 }
@@ -143,6 +144,23 @@ const LandingLayout = (props: IProps) => {
             {props.testimonial}
           </div>
         </div>
+      </div>
+      <div
+        style={{ ...sectionStyle, paddingTop: 0, background: landingVars.backgrounds.panelOne }}
+        className={sectionClass}
+      >
+        <img
+          src={windowSize.width < landingVars.breakpoints.mobile ? panelOneBackgroundMobile : panelOneBackground}
+          style={{
+            ...backgroundImageStyle,
+            paddingTop:
+              windowSize.width < landingVars.breakpoints.mobile
+                ? landingVars.backgroundOffsets.panelOneMobile
+                : landingVars.backgroundOffsets.panelOne,
+          }}
+          alt=""
+        />
+        <div style={{ ...panelStyle, paddingBottom: 25, paddingTop: 100 }}>{props.panelOne}</div>
       </div>
       <div
         style={{ ...sectionStyle, paddingTop: 0, background: landingVars.backgrounds.panelOne }}

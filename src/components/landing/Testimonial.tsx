@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import useWindowSize from '../core/useWindowSize';
 
-import { Button } from 'antd';
+import { Button, Divider } from 'antd';
 
 import landingVars from '../../styles/pages/_landingVars';
 
@@ -204,19 +204,30 @@ const Testimonials = () => {
     <div>
       <div className={'display-flex justify-content-center flex-direction-column align-items-center'}>
         <Typography.Title level={3}>codePost isn’t just another grading tool</Typography.Title>
-        <span style={{ width: '500px' }}>
-          We rebuilt the feedback-giving process from the ground up to make you brilliant at what you do: teaching the
-          next generation of programmers. codePost is fast and easy-to-use. Actually easy to use. And it includes
-          advanced features that will supercharge your teaching and save you time. Leave comments on code with your
-          keyboard. Write tests that compare student code against solution code in seconds. Triage regrade requests. To
-          name but a few.
+        <span style={{ maxWidth: '700px', lineHeight: '24px', fontSize: '16px' }}>
+          <p style={{ breakInside: 'avoid' }}>
+            We rebuilt the feedback-giving process from the ground up to make you brilliant at what you do: teaching the
+            next generation of programmers.
+          </p>
+          <p style={{ breakInside: 'avoid' }}>
+            codePost is fast and easy-to-use.{' '}
+            <span style={{ fontWeight: 600, color: '#24be85' }}>Actually easy to use.</span> And it includes advanced
+            features that will supercharge your teaching and save you time.
+          </p>
+          <p style={{ breakInside: 'avoid' }}>
+            Leave comments on code with your keyboard. Write tests that compare student code against solution code in
+            seconds. Triage regrade requests. To name but a few.
+          </p>
         </span>
+        <br />
+        <Typography.Title level={3}>100,000 submissions and counting...</Typography.Title>
       </div>
       <br />
       <br />
       <Carousel slidesPerPage={slidesPerPage} arrows infinite>
         {permutation}
       </Carousel>
+      <Divider />
     </div>
   );
 };

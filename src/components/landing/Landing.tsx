@@ -196,8 +196,9 @@ class Landing extends React.PureComponent<{}, {}> {
           </div>
         }
         panelOne={panelOne}
-        panelTwo={panelTwo}
-        panelThree={panelThree}
+        panelTwo={panelOne}
+        panelThree={panelTwo}
+        panelFour={panelThree}
         getStarted={<LandingGetStarted />}
         footer={
           <div id="PreAuth">
