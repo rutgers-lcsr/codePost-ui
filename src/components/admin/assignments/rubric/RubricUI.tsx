@@ -60,11 +60,13 @@ const RubricUI = ({
   const [showHelpText, setShowHelpText] = React.useState(false);
   const [showExplanations, setShowExplanations] = React.useState(false);
   const [showInstructions, setShowInstructions] = React.useState(false);
+  const [showAtMostOnce, setShowAtMostOnce] = React.useState(false);
 
   const [showPointLimitCheckbox, setShowPointLimitCheckbox] = React.useState(true);
   const [showHelpTextCheckbox, setShowHelpTextCheckbox] = React.useState(true);
   const [showExplanationsCheckbox, setShowExplanationsCheckbox] = React.useState(true);
   const [showInstructionsCheckbox, setShowInstructionsCheckbox] = React.useState(true);
+  const [showAtMostOnceCheckbox, setShowAtMostOnceCheckbox] = React.useState(true);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
@@ -77,6 +79,11 @@ const RubricUI = ({
       if (!showHelpText && (typeof cat.helpText === 'string' && cat.helpText.length > 0)) {
         setShowHelpText(true);
         setShowHelpTextCheckbox(false);
+      }
+
+      if (!showAtMostOnce && cat.atMostOnce) {
+        setShowAtMostOnce(true);
+        setShowAtMostOnceCheckbox(false);
       }
 
       for (const rc of rubricComments[cat.id]) {
@@ -131,6 +138,7 @@ const RubricUI = ({
             showHelpText={showHelpText}
             showExplanations={showExplanations}
             showInstructions={showInstructions}
+            showAtMostOnce={showAtMostOnce}
           >
             {({ propz, statez, helperz }: IRubricCategoryManagerParams) => {
               return <RubricCategoryUI props={{ ...propz, baseURL: props.baseURL }} state={statez} helpers={helperz} />;
@@ -218,6 +226,10 @@ const RubricUI = ({
 
     const toggleShowInstructions = () => {
       setShowInstructions(!showInstructions);
+
+    const toggleShowAtMostOnce = () => {
+      setShowAtMostOnce(!showAtMostOnce);
+
     };
 
     const content = (
@@ -261,6 +273,17 @@ const RubricUI = ({
               Show instruction editors <Checkbox checked={showInstructions} onChange={toggleShowInstructions} />{' '}
               <CPTooltip
                 title={`An optional textarea that allows you to give graders instructions for personalizing a rubric comment.`}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
+          ) : null}
+          {showAtMostOnceCheckbox ? (
+            <div>
+              Show "At Most Once" toggle <Checkbox checked={showAtMostOnce} onChange={toggleShowAtMostOnce} />{' '}
+              <CPTooltip
+                title={'Show the option to require a rubric category be applied at most once.'}
                 infoIcon={true}
                 hideThisOnHideTips={true}
                 iconStyle={{ paddingLeft: 5 }}

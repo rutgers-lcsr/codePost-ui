@@ -2,7 +2,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Divider, Icon, Input, Menu, Popover, Tag } from 'antd';
+import { Button, Divider, Icon, Input, Menu, Popover, Tag, Tooltip } from 'antd';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
@@ -293,7 +293,14 @@ const RubricMenuCategoryUI = ({
       }}
     />
   ) : (
-    <div style={{ textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '150px' }}>{props.rubricCategory.name}</div>
+    <div style={{ textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '150px' }}>
+      {props.rubricCategory.name}{' '}
+      {props.rubricCategory.atMostOnce ? (
+        <Tooltip title="This category can be applied at most once.">
+          <Icon type="tag" />
+        </Tooltip>
+      ) : null}
+    </div>
   );
 
   const addComment = () => {

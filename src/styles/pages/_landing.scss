@@ -47,6 +47,16 @@
 
 .landing__testimonials {
   animation: fade-in-bottom 1.4s;
+
+  .BrainhubCarousel__arrows {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    padding: 16px;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+  }
 }
 
 #APIExample {

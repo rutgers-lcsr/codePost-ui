@@ -354,7 +354,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         return test.passed ? match!.pointsPass : match!.pointsFail;
       })
       .reduce((el, acc) => el + acc, 0);
-    console.log(testPoints);
 
     let grade = 0;
     if (assignment.additiveGrading) {
@@ -920,6 +919,20 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return;
     }
 
+    // If this category requires "at most once", check to see if we've applied a comment from this
+    // category somewhere else.
+    const category = this.state.rubricCategories.find((el) => el.id === rubricComment.category);
+    if (category !== undefined && category.atMostOnce) {
+      const siblings = this.state.rubricComments[rubricComment.category].map((el) => el.id);
+      const hasApplied = Object.values(this.state.comments)
+        .flat()
+        .some((el) => siblings.indexOf(el.rubricComment) > -1 && el.id !== this.state.activeCommentID);
+      if (hasApplied) {
+        message.warning("You can't apply more than one rubric comment from this rubric category.");
+        return;
+      }
+    }
+
     const comments = CodeConsole.linkRubricComment(this.state.comments, rubricComment, this.state.activeCommentID);
 
     if (comments === undefined) {
@@ -1165,6 +1178,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         pointLimit: null,
         sortKey: 0,
         helpText: '',
+        atMostOnce: false,
       },
       {
         id: 2,
@@ -1174,6 +1188,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         pointLimit: null,
         sortKey: 1,
         helpText: '',
+        atMostOnce: false,
       },
     ];
 

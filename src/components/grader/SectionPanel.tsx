@@ -176,6 +176,7 @@ class SectionPanel extends React.Component<IProps, IState> {
         actions={[selectContent]}
         title="My sections"
         sections={this.props.sections}
+        email={this.props.graderEmail}
       />
     );
   }

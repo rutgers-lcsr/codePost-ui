@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Breadcrumb, Divider, Icon, Select, Spin, Switch, Table } from 'antd';
+import { Button, Breadcrumb, Divider, Icon, Select, Spin, Switch, Table } from 'antd';
 
 /* codePost imports */
 import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
@@ -14,7 +14,7 @@ import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtil
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { SectionType } from '../../infrastructure/section';
-import { SubmissionType } from '../../infrastructure/submission';
+import { Submission, SubmissionType } from '../../infrastructure/submission';
 
 import { tooltips } from '../core/tooltips';
 
@@ -41,6 +41,7 @@ interface IProps {
   assignment: AssignmentType;
   sections: SectionType[];
   breadcrumbs: React.ReactElement[];
+  email: string;
 }
 
 interface IState {
@@ -57,6 +58,8 @@ interface IState {
 
   /* Anonymous grading contorl */
   showStudentEmails: boolean;
+
+  selectedSubmissions: number[];
 }
 
 class SectionDetailPanel extends React.Component<IProps, IState> {
@@ -71,6 +74,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
       viewsBySubmission: {},
       showStudentEmails: false,
       isLoading: false,
+      selectedSubmissions: [],
     };
   }
 
@@ -126,6 +130,36 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     return submissionMap;
   };
 
+  public claimSubmissions = async () => {
+    const promises = this.state.selectedSubmissions.map((id) => {
+      return Submission.update({ id: id, isFinalized: false, grader: this.props.email });
+    });
+
+    const submissions = await Promise.all(promises);
+
+    this.setState((prevState) => {
+      const newSubmissions = { ...prevState.submissionsBySection };
+      // Map each student to the new submission
+      // We need to go through all sections because of partner submissions
+      const sections = Object.keys(newSubmissions);
+      submissions.map((sub) => {
+        sub.students.forEach((student) => {
+          for (const section of sections) {
+            const sectionID = parseInt(section, 10);
+            if (student in newSubmissions[sectionID]) {
+              newSubmissions[sectionID][student] = sub;
+              break;
+            }
+          }
+        });
+      });
+      return {
+        submissionsBySection: newSubmissions,
+        selectedSubmissions: [],
+      };
+    });
+  };
+
   /***********************************************************************************
   /* Utility functions
   /**********************************************************************************/
@@ -136,7 +170,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     });
 
     if (activeSection) {
-      this.setState({ activeSection });
+      this.setState({ activeSection, selectedSubmissions: [] });
     }
   };
 
@@ -231,11 +265,12 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
 
           return {
             ...formatSub(submission, this.props.assignment),
-            key: student,
+            key: submission ? submission.id : student,
             student: shownStudent,
             partners,
             viewIcon: <div>{getViewIcon(submission, this.state.viewsBySubmission, student)}</div>,
             open: submission !== null ? <Icon type="code" onClick={openGradePage} /> : null,
+            disableCheck: !submission || submission.grader,
           };
         });
       }
@@ -289,7 +324,33 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
       );
     }
 
-    const content = <Table columns={columns} dataSource={data} pagination={false} loading={this.state.isLoading} />;
+    const claimButton = (
+      <Button type="primary" disabled={this.state.selectedSubmissions.length === 0} onClick={this.claimSubmissions}>
+        Claim Selected
+      </Button>
+    );
+
+    const rowSelection = {
+      onChange: (selectedRowKeys: any[]) => {
+        this.setState({ selectedSubmissions: selectedRowKeys });
+      },
+      getCheckboxProps: (row: any) => {
+        return {
+          disabled: row.disableCheck,
+        };
+      },
+      selectedRowKeys: this.state.selectedSubmissions,
+    };
+
+    const content = (
+      <Table
+        rowSelection={rowSelection}
+        columns={columns}
+        dataSource={data}
+        pagination={false}
+        loading={this.state.isLoading}
+      />
+    );
 
     return (
       <CPAdminDetail
@@ -301,7 +362,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
           </Breadcrumb>
         }
         title={`Section: ${this.state.activeSection.name}`}
-        actions={[anonymousToggle, selectContent]}
+        actions={[anonymousToggle, selectContent, claimButton]}
         content={content}
         gutterSize={0}
         titleInfo={tooltips.grader.section.title}
