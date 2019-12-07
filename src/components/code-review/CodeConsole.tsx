@@ -926,7 +926,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       const siblings = this.state.rubricComments[rubricComment.category].map((el) => el.id);
       const hasApplied = Object.values(this.state.comments)
         .flat()
-        .some((el) => siblings.indexOf(el.rubricComment) > -1);
+        .some((el) => siblings.indexOf(el.rubricComment) > -1 && el.id !== this.state.activeCommentID);
       if (hasApplied) {
         message.warning("You can't apply more than one rubric comment from this rubric category.");
         return;
