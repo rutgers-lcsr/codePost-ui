@@ -267,11 +267,11 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
           title: `This submission has fewer than ${props.minComments} comments applied.`,
           content: `Are you sure you want to finalize it? Submissions with fewer than ${props.minComments} comments will be flagged for quality control.`,
           onOk() {
-            return executeToggle();
+            return finalize();
           },
         });
       } else {
-        executeToggle();
+        finalize();
       }
     }
   };
@@ -279,6 +279,14 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const executeToggle = async () => {
     await props.toggleFinalized();
     setIsLoading(false);
+  };
+
+  const finalize = () => {
+    if (!props.submission.grader) {
+      message.warning('You must assign a grader before finalizing this submission.');
+    } else {
+      executeToggle();
+    }
   };
 
   useHotkeys(F_KEY, onClick, true);
@@ -329,7 +337,11 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
       toggleNotice = "You aren't able to unfinalize this submission. Please contact an admin if you made a mistake";
     }
   } else {
-    toggleNotice = `This submission is unfinalized. Finalize it to mark it as complete. [${osControlKey()} shift f]`;
+    if (!props.submission.grader) {
+      toggleNotice = `You must assign a grader before finalizing this submission.`;
+    } else {
+      toggleNotice = `This submission is unfinalized. Finalize it to mark it as complete. [${osControlKey()} shift f]`;
+    }
   }
 
   return (
