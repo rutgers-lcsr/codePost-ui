@@ -226,6 +226,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
           () => {
             if (shouldLoadFeedback) {
               this.loadInstanceLists(rubric.rubricComments);
+              this.loadFeedbackScores(rubric.rubricComments);
             }
           },
         );
@@ -238,13 +239,15 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
   public loadFeedbackScores = async (rubricComments: RubricCommentType[]) => {
     const newMap: any = {};
     for (const rComment of rubricComments) {
-      const score = await RubricComment.readFeedbackScore(rComment.id);
+      if (rComment.id > 0) {
+        const score = await RubricComment.readFeedbackScore(rComment.id);
 
-      // feedback scores
-      newMap[rComment.id] = {
-        negative: score.negative,
-        positive: score.positive,
-      };
+        // feedback scores
+        newMap[rComment.id] = {
+          negative: score.negative,
+          positive: score.positive,
+        };
+      }
     }
 
     this.setState({ feedbackScores: newMap });
@@ -253,11 +256,14 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
   public loadInstanceLists = async (rubricComments: RubricCommentType[]) => {
     const newMap: { [id: number]: number[] } = {};
     for (const rComment of rubricComments) {
-      const list = await RubricComment.readCommmentList(rComment.id);
-      newMap[rComment.id] = list.comments;
+      if (rComment.id > 0) {
+        const list = await RubricComment.readCommmentList(rComment.id);
+        newMap[rComment.id] = list.comments;
+      } else {
+        newMap[rComment.id] = [];
+      }
     }
 
-    this.loadFeedbackScores(rubricComments);
     this.setState({ instanceLists: newMap });
     return await newMap;
   };
@@ -512,6 +518,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
           if (this.props.shouldLoadFeedback) {
             this.loadInstanceLists(newRubric.rubricComments);
+            this.loadFeedbackScores(newRubric.rubricComments);
           }
 
           return {
