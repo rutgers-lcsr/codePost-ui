@@ -35,7 +35,6 @@ interface IMergeRubricCommentsDialogProps {
 interface IMergeRubricCommentsDialogState {
   fromComment: RubricCommentType | null;
   toComment: RubricCommentType | null;
-  fromCommentInstances: number[];
   isLoading: boolean;
   visible: boolean;
 }
@@ -49,7 +48,6 @@ class MergeRubricCommentsDialog extends React.Component<
     toComment: null,
     isLoading: false,
     visible: false,
-    fromCommentInstances: [],
   };
 
   public openDialog = () => {
@@ -68,10 +66,8 @@ class MergeRubricCommentsDialog extends React.Component<
     });
   };
 
-  public onChangeFromComment = async (selected: any) => {
-    const awaited = await RubricComment.readCommmentList(selected.comment.id);
-    const instanceList = awaited.comments;
-    this.setState({ fromComment: selected.comment, fromCommentInstances: instanceList });
+  public onChangeFromComment = (selected: any) => {
+    this.setState({ fromComment: selected.comment });
   };
 
   public onChangeToComment = (selected: any) => {
@@ -90,7 +86,7 @@ class MergeRubricCommentsDialog extends React.Component<
     this.setState({ isLoading: true });
 
     // Loop through linked comments of fromComment and relink to toComment
-    const relinkCommentPromises = this.state.fromCommentInstances.map((commentID: number) => {
+    const relinkCommentPromises = this.state.fromComment.comments.map((commentID: number) => {
       const payload = {
         id: commentID,
         rubricComment: this.state.toComment!.id,
@@ -111,7 +107,7 @@ class MergeRubricCommentsDialog extends React.Component<
       })
       // Otherwise undo the changes
       .catch(() => {
-        const undoLinkCommentPromises = this.state.fromCommentInstances.map((commentID: number) => {
+        const undoLinkCommentPromises = this.state.fromComment!.comments.map((commentID: number) => {
           const payload = {
             id: commentID,
             rubricComment: this.state.fromComment!.id,

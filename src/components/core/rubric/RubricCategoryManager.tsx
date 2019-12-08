@@ -58,7 +58,6 @@ export interface IRubricCategoryManagerProps extends IWithWindowWatcherProps {
   rubricComments: RubricCommentType[];
   index: number;
   numCategories: number;
-  instanceLists: { [id: number]: number[] };
 
   // saved data
   savedRubricCategory?: RubricCategoryType;
