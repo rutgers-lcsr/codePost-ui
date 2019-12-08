@@ -189,11 +189,15 @@ const RubricCategoryUI = ({
           ),
           linked: (
             <span onClick={activateCommentExplorer}>
-              <Badge
-                count={thisComment.comments.length}
-                className="badge badge--standard"
-                style={{ backgroundColor: 'rgba(0,0,0,0.5)', cursor: 'pointer' }}
-              />
+              {props.instanceLists[thisComment.id] ? (
+                <Badge
+                  count={props.instanceLists[thisComment.id].length}
+                  className="badge badge--standard"
+                  style={{ backgroundColor: 'rgba(0,0,0,0.5)', cursor: 'pointer' }}
+                />
+              ) : (
+                <Spin />
+              )}
             </span>
           ),
           feedback: !props.commentFeedbackOn ? (
