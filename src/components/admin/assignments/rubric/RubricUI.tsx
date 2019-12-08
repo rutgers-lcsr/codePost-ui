@@ -131,6 +131,7 @@ const RubricUI = ({
             showHelpText={showHelpText}
             showExplanations={showExplanations}
             showAtMostOnce={showAtMostOnce}
+            instanceLists={state.instanceLists}
           >
             {({ propz, statez, helperz }: IRubricCategoryManagerParams) => {
               return <RubricCategoryUI props={{ ...propz, baseURL: props.baseURL }} state={statez} helpers={helperz} />;
@@ -286,6 +287,7 @@ const RubricUI = ({
           onUnLink={onUnLink}
           onCancel={helpers.onLinkedAlertCancel}
           isVisible={state.linkedComments.length > 0}
+          numComments={state.linkedComments[0] ? state.instanceLists[state.linkedComments[0].id].length : 0}
         />
         <LinkedCommentsConfirm
           onAccept={helpers.onLinkedConfirmAccept}
