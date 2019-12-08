@@ -106,6 +106,10 @@ const RubricMenuCategoryUI = ({
             <CPPointInput value={-thisComment.pointDelta} size="small" onChange={onChangePointDelta} disabled={false} />
           );
 
+          const linkedComments = (
+            <Badge count={thisComment.comments.length} forcedStyle="neutral" faded={false} size="small" />
+          );
+
           const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
           return (
             <Menu.Item
@@ -127,6 +131,7 @@ const RubricMenuCategoryUI = ({
                 pointDelta={thisComment.pointDelta}
                 deleteComment={deleteThisComment}
                 assignment={props.assignment}
+                linkedComments={linkedComments}
                 editRubricMode={props.editRubricMode}
                 showExplanation={props.showExplanations}
                 explanation={rubricComment.explanation}
@@ -190,6 +195,7 @@ const RubricMenuCategoryUI = ({
                 pointDelta={0}
                 deleteComment={deleteThisComment}
                 assignment={props.assignment}
+                linkedComments={null}
                 editRubricMode={props.editRubricMode}
                 showExplanation={props.showExplanations}
                 explanation={rubricComment.explanation}
@@ -365,6 +371,7 @@ interface IRubricMenuCommentElementProps {
   pointDelta: number;
   deleteComment: any;
   assignment: any;
+  linkedComments: React.ReactNode;
   editRubricMode: boolean;
   showExplanation: boolean;
   explanation: string;
@@ -422,6 +429,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
           }}
         >
           <Icon type="delete" onClick={props.deleteComment} style={{ fontSize: '11px', margin: '0px' }} />
+          {props.linkedComments}
         </div>
       </div>
     );
