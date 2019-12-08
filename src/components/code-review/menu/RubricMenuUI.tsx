@@ -400,6 +400,7 @@ const RubricMenuUI = ({
           onUnLink={onUnLink}
           onCancel={helpers.onLinkedAlertCancel}
           isVisible={state.linkedComments.length > 0}
+          numComments={state.linkedComments[0] ? state.instanceLists[state.linkedComments[0].id].length : 0}
         />
         <LinkedCommentsConfirm
           onAccept={onLinkedConfirmAccept}

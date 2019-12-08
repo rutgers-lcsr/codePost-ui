@@ -190,7 +190,7 @@ const RubricCategoryUI = ({
           linked: (
             <span onClick={activateCommentExplorer}>
               <Badge
-                count={thisComment.comments.length}
+                count={props.instanceLists[thisComment.id] ? props.instanceLists[thisComment.id].length : 0}
                 className="badge badge--standard"
                 style={{ backgroundColor: 'rgba(0,0,0,0.5)', cursor: 'pointer' }}
               />
