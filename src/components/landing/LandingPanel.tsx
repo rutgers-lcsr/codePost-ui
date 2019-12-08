@@ -17,7 +17,7 @@ interface IProps {
   moduleMaxWidth: number;
   moduleMaxHeight: number;
   removeModelSmallScreen: boolean;
-  bevel: boolean;
+  bevel?: boolean;
   gutterSize: number;
 }
 
