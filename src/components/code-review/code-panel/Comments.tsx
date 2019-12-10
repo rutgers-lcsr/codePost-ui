@@ -124,6 +124,13 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     }
   };
 
+  // Handle ESC key
+  public handleKeyPress = (e: KeyboardEvent) => {
+    if (e.keyCode === 27) {
+      this.props.changeActive(undefined);
+    }
+  };
+
   public componentDidMount() {
     document.addEventListener('mousedown', this.handleClickOutside);
     document.addEventListener('keydown', this.handleCursor);

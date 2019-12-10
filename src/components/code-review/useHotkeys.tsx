@@ -37,15 +37,15 @@ export const S_KEY = 's';
 export const P_KEY = 'p';
 
 /*******************************************************************************/
-export const V_KEY = 86;
+export const V_KEY = 'v';
 
 /*******************************************************************************/
 
-export const M_KEY = 77;
+export const M_KEY = 'm';
 
 /*******************************************************************************/
 
-const useHotkeys = (hotkey: number, callback: any, shift?: boolean, override?: boolean) => {
+const useHotkeys = (hotkey: string, callback: any, shift?: boolean, override?: boolean) => {
   const os = getOperatingSystem();
 
   React.useEffect(() => {

@@ -66,7 +66,7 @@ const RubricMenuCategoryUI = ({
         }
       })
       .sort(RubricComment.compare)
-      .map((rubricComment) => {
+      .map((rubricComment, index: number) => {
         const editing = rubricComment.id < 0 || props.editingStatuses[rubricComment.id] ? true : false;
 
         const thisComment = commentMap[rubricComment.id];
