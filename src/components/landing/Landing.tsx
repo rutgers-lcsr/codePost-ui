@@ -25,16 +25,13 @@ import LandingPanel from './LandingPanel';
 
 import { LandingFlowChart } from './landingAnimations/flowchart/LandingFlowChart';
 
-// Animations
-import GradeAnimationVideo from './landingAnimations/grade/GradeAnimationVideo';
-
 // Other design elements
 import PreAuthFooter from '../pre-auth/PreAuthFooter';
 import { Testimonials } from './Testimonial';
 
 import APIExample from './LandingAPIExample';
-import CodeReview from './LandingCodeReview';
 
+import AutograderModule from './landingAnimations/autograder/AutograderModule';
 import Integrations from './Integrations';
 
 /**********************************************************************************************************************/
@@ -106,8 +103,8 @@ class Landing extends React.PureComponent<{}, {}> {
         moduleMaxWidth={595}
         moduleMaxHeight={380}
         textSize="normal"
-        removeModelSmallScreen={true}
-        module={<div />}
+        removeModelSmallScreen={false}
+        module={<AutograderModule />}
         gutterSize={50}
       />
     );

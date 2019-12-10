@@ -275,3 +275,26 @@
   transition-duration: 0.5s;
   -webkit-transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
+
+.slider-text {
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.9);
+  transition: all 0.3s;
+  &--active {
+    font-weight: 500;
+    color: #24be85 !important;
+    transition: all 0.3s;
+  }
+  &--inactive {
+    font-weight: 500;
+    color: #aaaaaa !important;
+    transition: all 0.3s;
+  }
+}
+
+.ant-slider-dot {
+  margin-left: -6px !important;
+  top: -4px !important;
+  height: 12px !important;
+  width: 12px !important;
+}
