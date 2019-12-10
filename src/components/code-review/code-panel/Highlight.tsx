@@ -27,9 +27,12 @@ const Highlight = (props: IHighlightProps) => {
   if (commandPressed) {
     style = {
       cursor: 'pointer',
-      backgroundColor: props.commentID === 0 ? 'blue' : consoleTheme.highlight,
       opacity: consoleTheme.highlightOpacity,
     };
+
+    if (props.commentID !== 0) {
+      style = { ...style, backgroundColor: consoleTheme.highlight };
+    }
 
     onMouseEnter = (e: React.MouseEvent) =>
       CodePanelHighlighting.brightenHighlight(props.commentID, consoleTheme.highlightActive);
@@ -39,9 +42,12 @@ const Highlight = (props: IHighlightProps) => {
   } else {
     style = {
       cursor: 'auto',
-      backgroundColor: props.commentID === 0 ? 'blue' : consoleTheme.highlight,
       opacity: consoleTheme.highlightOpacity,
     };
+
+    if (props.commentID !== 0) {
+      style = { ...style, backgroundColor: consoleTheme.highlight };
+    }
 
     CodePanelHighlighting.darkenHighlight(props.commentID, consoleTheme.highlight);
   }

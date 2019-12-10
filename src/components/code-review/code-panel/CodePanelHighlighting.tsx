@@ -171,6 +171,9 @@ class CodePanelHighlighting {
     // We have the correct 'nesting levels', but the !important doesn't always override on deeply nested
     // highlights. It catches the first nesting, but none deeper.
     for (const [highlight, level] of Object.entries(styles)) {
+      if (highlight === '0') {
+        continue;
+      }
       const tint = 0.2 + 0.2 * level;
       (document.styleSheets[0] as CSSStyleSheet).insertRule(
         `.highlight-${highlight} {background-color: ${color} !important; opacity: ${tint} !important;}`,
@@ -235,24 +238,27 @@ class CodePanelHighlighting {
   };
 
   public static brightenHighlight = (commentID: number, color: string) => {
+    if (commentID === 0) {
+      return;
+    }
+
     const className = `highlight-${commentID}`;
     const elems = document.getElementsByClassName(className);
 
-    const col = commentID === 0 ? 'blue' : color;
-
     [].forEach.call(elems, (elem: any) => {
-      elem.style.setProperty('background-color', col, 'important');
+      elem.style.setProperty('background-color', color, 'important');
     });
   };
 
   public static darkenHighlight = (commentID: number, color: string) => {
+    if (commentID === 0) {
+      return;
+    }
     const className = `highlight-${commentID}`;
     const elems = document.getElementsByClassName(className);
 
-    const col = commentID === 0 ? 'blue' : color;
-
     [].forEach.call(elems, (elem: any) => {
-      elem.style.setProperty('background-color', col, 'important');
+      elem.style.setProperty('background-color', color, 'important');
     });
   };
 }
