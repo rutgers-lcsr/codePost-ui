@@ -323,8 +323,8 @@ const WhyUse = (props: IPageProps) => {
     <PreAuthLayout isLoggedIn={props.isLoggedIn}>
       <div id="WhyUse">
         <div style={{ marginBottom: 75, textAlign: 'center' }}>
-          <Typography.Title level={1} style={{ fontSize: 40, color: 'black' }}>
-            Our users asked for these features. <span style={{ color: '#24be85' }}>So we built them.</span>{' '}
+          <Typography.Title level={1} style={{ fontSize: 30, color: 'black' }}>
+            codePost users asked for these features, <span style={{ color: '#24be85' }}>so we built them.</span>{' '}
             <a
               className="whyUse__link"
               href="mailto:team@codepost.io"
@@ -333,9 +333,9 @@ const WhyUse = (props: IPageProps) => {
                 textDecoration: 'none',
               }}
             >
-              Tell us
+              Let us know
             </a>{' '}
-            what features you want.
+            what features you want to use!
           </Typography.Title>
         </div>
         {content}
