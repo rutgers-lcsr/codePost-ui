@@ -38,23 +38,20 @@ const TestsList = (props: IProps) => {
   for (const category of props.categories) {
     testsByCategory[category.id] = [];
   }
-  if (props.tests.length > 0 && props.tests[0] instanceof SubmissionTest) {
+
+  // If the tests are submission tests, get the latest
+  let latestTests = props.tests;
+  if (props.tests.length > 0 && 'submission' in props.tests[0]) {
     // @ts-ignore
-    for (const test of SubmissionTest.getLatest(props.tests)) {
-      testsByCategory[test.testCategory] = [...testsByCategory[test.testCategory], test];
-      if (test.passed) {
-        passed += 1;
-      }
-      total += 1;
+    latestTests = SubmissionTest.getLatest(props.tests);
+  }
+
+  for (const test of latestTests) {
+    testsByCategory[test.testCategory] = [...testsByCategory[test.testCategory], test];
+    if (test.passed) {
+      passed += 1;
     }
-  } else {
-    for (const test of props.tests) {
-      testsByCategory[test.testCategory] = [...testsByCategory[test.testCategory], test];
-      if (test.passed) {
-        passed += 1;
-      }
-      total += 1;
-    }
+    total += 1;
   }
 
   // Top-level columns used used to display individual test information
