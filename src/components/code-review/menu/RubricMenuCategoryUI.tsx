@@ -114,11 +114,12 @@ const RubricMenuCategoryUI = ({
           const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
           const cursored =
             props.showCursor === CURSOR_DOMAIN.RUBRIC && props.cursorIndex === props.commentIndex + index;
+          // backgroundColor: cursored ? 'lightblue' : consoleTheme.siderBg,
           return (
             <Menu.Item
               key={key}
               style={{
-                backgroundColor: cursored ? 'lightblue' : consoleTheme.siderBg,
+                backgroundColor: consoleTheme.siderBg,
                 color: consoleTheme.siderMenuItemColor,
               }}
             >
@@ -180,11 +181,12 @@ const RubricMenuCategoryUI = ({
           const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
           const cursored =
             props.showCursor === CURSOR_DOMAIN.RUBRIC && props.cursorIndex === props.commentIndex + index;
+          // backgroundColor: cursored ? 'lightblue' : consoleTheme.siderBg,
           return (
             <Menu.Item
               key={key}
               style={{
-                backgroundColor: cursored ? 'lightblue' : consoleTheme.siderBg,
+                backgroundColor: consoleTheme.siderBg,
                 color: consoleTheme.siderMenuItemColor,
               }}
             >
