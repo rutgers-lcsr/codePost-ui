@@ -205,13 +205,14 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
 
   const linesOfCode = (readOnly: boolean, code: string, comments: CommentType[]) => {
     return code.split('\n').map((text: string, i: number) => {
-      const style =
-        props.showCursor === CURSOR_DOMAIN.CODE && i >= props.cursorIndex && i < props.cursorIndex + props.cursorExtent
-          ? {
-              backgroundColor: 'lightblue',
-              opacity: 0.2,
-            }
-          : {};
+      // const style =
+      //   props.showCursor === CURSOR_DOMAIN.CODE && i >= props.cursorIndex && i < props.cursorIndex + props.cursorExtent
+      //     ? {
+      //         backgroundColor: 'lightblue',
+      //         opacity: 0.2,
+      //       }
+      //     : {};
+      const style = {};
 
       const t = text === '' ? ' ' : text;
       return (

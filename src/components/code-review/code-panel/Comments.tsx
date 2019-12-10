@@ -236,6 +236,12 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   };
 
   public changeActive = (id: number | undefined) => {
+    if (id === undefined) {
+      const deactivatedCommentIndex = this.props.comments.findIndex((comment: CommentType) => {
+        return comment.id === this.props.activeCommentID;
+      });
+      this.setState({ cursor: deactivatedCommentIndex });
+    }
     this.props.changeActive(id);
   };
 

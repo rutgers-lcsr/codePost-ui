@@ -186,7 +186,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       }
     }
 
-    if (!prevProps.cursored && this.props.cursored) {
+    if (!prevProps.cursored && this.props.cursored && prevProps.commentType !== 'active') {
       const scrollArea = document.getElementById('code-scroll-area');
       if (scrollArea !== null) {
         setTimeout(() => {
@@ -250,7 +250,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       return;
     }
 
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       e.stopPropagation();
       if (this.props.commentType === 'active') {
@@ -437,6 +437,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   public handleShiftEnter = (e: any) => {
     if (e.key === 'Enter' && e.shiftKey) {
       e.preventDefault(); // skip OnChange method
+      e.stopPropagation();
       this.save();
       this.deactivate();
     }
