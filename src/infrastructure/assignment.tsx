@@ -14,6 +14,8 @@ import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
 import { AnonymousSubmissionV, StudentSubmissionV, SubmissionV } from './submission';
 import { SubmissionHistoryV } from './submissionHistory';
+import { TestCaseV } from './testCase';
+import { TestCategoryV } from './testCategory';
 
 const AssignmentV = t.intersection(
   [
@@ -41,6 +43,10 @@ const AssignmentV = t.intersection(
       fileTemplates: t.array(t.number),
       mean: t.union([t.number, t.null, t.undefined]),
       median: t.union([t.number, t.null, t.undefined]),
+      testCategories: t.array(t.number),
+      environment: t.union([t.number, t.null]),
+      showFrequentlyUsedRubricComments: t.boolean,
+      allowLateUploads: t.boolean,
     }),
   ],
   'Assignment',
@@ -54,6 +60,8 @@ const AssignmentVStudent = t.intersection(
       isReleased: t.boolean,
       rubricCategories: t.array(t.number),
       course: t.number,
+      allowLateUploads: t.boolean,
+      fileTemplates: t.array(t.number),
     }),
     t.partial({
       hideGrades: t.boolean,
@@ -115,6 +123,9 @@ const AssignmentVPatch = t.intersection(
       additiveGrading: t.boolean,
       forcedRubricMode: t.boolean,
       templateMode: t.boolean,
+      sortKey: t.number,
+      allowLateUploads: t.boolean,
+      showFrequentlyUsedRubricComments: t.boolean,
     }),
   ],
   'AssignmentPatch',
@@ -132,7 +143,18 @@ const RubricV = t.intersection(
     }),
     t.partial({}),
   ],
-  'Roster',
+  'Rubric',
+);
+
+const TestsV = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      testCases: t.array(TestCaseV),
+      testCategories: t.array(TestCategoryV),
+    }),
+  ],
+  'Tests',
 );
 
 export type RubricType = t.TypeOf<typeof RubricV>;
@@ -195,6 +217,7 @@ export class AssignmentStudent {
     'studentUpload',
   );
   public static readStudentUpload = readObjectDetail(StudentUploadData, 'assignments', 'studentUpload');
+  public static readStudentTests = readObjectDetail(TestsV, 'assignments', 'tests');
 }
 
 export const sortAssignments = (assignments: AssignmentType[]): AssignmentType[] => {

@@ -12,15 +12,21 @@ import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
 import { tooltips } from '../../../components/core/tooltips';
 
+import DraggableBodyRow from '../../../components/core/DraggableBodyRow';
+
+import update from 'immutability-helper';
+
 import { TableDetail } from '../other/TableDetail';
 
 /* other library imports */
 import memoizeOne from 'memoize-one';
 
+import { RouteComponentProps } from 'react-router';
+
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
-import { AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
+import { Assignment, AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
 import { CourseType } from '../../../infrastructure/course';
 import { SubmissionType } from '../../../infrastructure/submission';
 import { UserType } from '../../../infrastructure/user';
@@ -66,18 +72,18 @@ export interface IManageAssignmentsProps {
   submissions: IAssignmentToSubmissionsMap;
   students: string[]; // emails
   submissionsByStudent: IStudentSubmissionsDataTable;
-  currentCourse: CourseType | undefined;
+  currentCourse: CourseType;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 
   /* loading state */
   loadComplete: boolean;
 
   /* object-level REST operations */
-  createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<AssignmentType>;
+  createAssignment: (assignmentName: string, assignmentPoints: number, sortKey?: number) => Promise<AssignmentType>;
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
 
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<any>;
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   updateSubmission: (submission: SubmissionType) => Promise<void>;
 
@@ -90,13 +96,11 @@ export interface IManageAssignmentsProps {
   /* user data */
   user: UserType;
 
-  location: any;
-  match: any;
-  history: any;
-
   activeAssignment?: AssignmentType; // which assignment has been clicked
   detailType?: DETAIL_TYPE; // what detail view are we showing
   baseURL: string;
+
+  breadcrumbs?: React.ReactElement[];
 }
 
 export enum DETAIL_TYPE {
@@ -118,14 +122,16 @@ interface IManageAssignmentsState {
   };
   isDownloading: boolean;
   activeStudent?: string; // track student from drawer to upload component
+  sortedOrder: number[];
 }
 
 /**********************************************************************************************************************/
 
-class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageAssignmentsState> {
+class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteComponentProps, IManageAssignmentsState> {
   public state: Readonly<IManageAssignmentsState> = {
     drawerContent: { title: '', subtitle: '', content: [] },
     isDownloading: false,
+    sortedOrder: sortAssignments(this.props.assignments).map((el) => el.id),
   };
 
   public calculateStats = memoizeOne(calculateMultipleAssignmentProgressStats);
@@ -165,6 +171,10 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
     });
   };
 
+  public closeDrawer = () => {
+    this.setState({ drawerType: undefined });
+  };
+
   /******************************************************************************
    * Detail callbacks
    ******************************************************************************/
@@ -178,7 +188,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
     if (deletingAssignment) {
       this.props.deleteAssignment(deletingAssignment).then(() => {
         message.success('Assignment successfully deleted!');
-        this.props.history.push(this.props.baseURL);
+        this.props.history.push(`${this.props.baseURL}/overview`);
       });
     }
   };
@@ -192,8 +202,27 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
   };
 
   public closeSingleSubmissionUpload = () => {
-    this.props.history.push(this.props.baseURL);
+    this.props.history.push(`${this.props.baseURL}/overview`);
     this.setState({ activeStudent: undefined });
+  };
+
+  public createAssignment = (name: string, points: number) => {
+    const { sortedOrder } = this.state;
+
+    // Place assignment at the end of the assignment list
+    let sortKey;
+    if (sortedOrder.length > 0) {
+      sortKey = sortedOrder[sortedOrder.length - 1] + 1;
+    }
+
+    return this.props.createAssignment(name, points, sortKey).then((assignment) => {
+      // If an assignment's ID isn't added to sortedOrder, it won't appear in the assignment table
+      this.setState((oldState) => {
+        return { sortedOrder: [...oldState.sortedOrder, assignment.id] };
+      });
+      message.success(`Successfully created ${name}`);
+      return assignment;
+    });
   };
 
   /******************************************************************************
@@ -210,6 +239,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
         title: 'Assignment',
         dataIndex: 'assignment',
         key: 'assignment',
+        className: 'draggable',
       },
       {
         title: (
@@ -284,11 +314,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
     ];
 
     actions = [
-      <NewAssignmentDialog
-        key={1}
-        assignments={this.props.assignments}
-        createAssignment={this.props.createAssignment}
-      />,
+      <NewAssignmentDialog key={1} assignments={this.props.assignments} createAssignment={this.createAssignment} />,
       <Link to={`${this.props.baseURL}/download/grades`}>
         <CPButton cpType="secondary" key={2} icon="download">
           Download grades
@@ -304,15 +330,31 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
       this.props.students,
     );
 
-    data = sortAssignments(this.props.assignments).map((assignment, i) => {
+    data = this.state.sortedOrder.map((id, i) => {
+      const assignment = this.props.assignments.find((el) => el.id === id);
+      if (assignment === undefined) {
+        return;
+      }
       const statsForRow = assignmentStats[assignment.id];
       const encodedName = encodeForLink(assignment.name);
       const menu = (
         <Menu>
           <Menu.Item key="1">
-            <Link to={`${this.props.baseURL}/${encodedName}/rubric`}>
+            <Link to={`${this.props.baseURL}/rubrics/${encodedName}`}>
               <Icon type="ordered-list" />
               &nbsp; Edit rubric
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="tests">
+            <Link to={`${this.props.baseURL}/tests/${encodedName}/edit`}>
+              <Icon type="file-done" />
+              &nbsp; Edit tests
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="tests">
+            <Link to={`${this.props.baseURL}/plagiarism/${encodedName}`}>
+              <Icon type="diff" />
+              &nbsp; Check for plagiarism
             </Link>
           </Menu.Item>
           <Menu.Item key="2">
@@ -338,7 +380,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
             <div />
           )}
           <Menu.Item key="moss">
-            <Link to={`${this.props.baseURL}/${encodedName}/moss`}>
+            <Link to={`${this.props.baseURL}/plagiarism/${encodedName}`}>
               <Icon type="diff" />
               &nbsp; Check Moss <Tag>BETA</Tag>
             </Link>
@@ -387,11 +429,26 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
         </Menu>
       );
 
-      let publishToggleText = '';
+      let publishToggleText: React.ReactElement | string = '';
       if (assignment.isReleased) {
         publishToggleText = 'Are you sure you want to un-publish this assignment?';
       } else {
-        publishToggleText = 'Are you sure you want to publish this assignment?';
+        const stats = assignmentStats[assignment.id];
+        const finalizedRatio = stats.numSubmissions !== 0 ? stats.numGraded / stats.numSubmissions : 1;
+        if (!assignment.liveFeedbackMode && finalizedRatio < 0.5) {
+          publishToggleText = (
+            <div>
+              <div style={{ paddingBottom: '4px', maxWidth: '260px' }}>
+                Are you sure you want to publish this assignment?
+              </div>
+              <div style={{ paddingBottom: '4px', maxWidth: '260px' }}>
+                The majority of your submissions are still unfinalized, so students will not be able to view them.
+              </div>
+            </div>
+          );
+        } else {
+          publishToggleText = 'Are you sure you want to publish this assignment?';
+        }
       }
 
       const notifyButton = (toggleDialog: () => void) => {
@@ -475,7 +532,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
     });
 
     const cancel = () => {
-      this.props.history.push(this.props.baseURL);
+      this.props.history.push(`${this.props.baseURL}/overview`);
     };
 
     const drawerComponent =
@@ -486,7 +543,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
           type={this.state.drawerType}
           content={this.state.drawerContent}
           isVisible={true}
-          onClose={cancel}
+          onClose={this.closeDrawer}
           uploadSubmission={this.uploadForStudent}
         />
       );
@@ -500,8 +557,9 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
               isVisible={true}
               onCancel={cancel}
               onSave={this.saveSettings}
-              currentAssignment={this.props.activeAssignment}
+              currentAssignment={this.props.activeAssignment!}
               assignments={this.props.assignments}
+              timezone={this.props.currentCourse.timezone}
             />
           );
           break;
@@ -516,6 +574,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
               selectedStudents={this.state.activeStudent !== undefined ? [this.state.activeStudent] : []}
               submissions={this.props.submissionsByStudent}
               uploadSubmission={this.props.uploadSubmission}
+              course={this.props.currentCourse}
             />
           );
           break;
@@ -531,6 +590,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
               updateSubmission={this.props.updateSubmission}
               deleteSubmission={this.props.deleteSubmission}
               showImportOptions={false}
+              course={this.props.currentCourse}
             />
           );
           break;
@@ -546,6 +606,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
               updateSubmission={this.props.updateSubmission}
               deleteSubmission={this.props.deleteSubmission}
               showImportOptions={true}
+              course={this.props.currentCourse}
             />
           );
           break;
@@ -589,6 +650,35 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
       }
     }
 
+    const components = {
+      body: {
+        row: DraggableBodyRow,
+      },
+    };
+
+    const moveRow = (dragIndex: number, hoverIndex: number) => {
+      const { sortedOrder } = this.state;
+      const dragRow = sortedOrder[dragIndex];
+
+      this.setState(
+        update(this.state, {
+          sortedOrder: {
+            $splice: [[dragIndex, 1], [hoverIndex, 0, dragRow]],
+          },
+        }),
+        () => {
+          const match = this.props.assignments.find((el) => el.id === dragRow);
+          this.props.assignments.forEach((assignment) => {
+            const newKey = this.state.sortedOrder.indexOf(assignment.id);
+            if (newKey !== assignment.sortKey) {
+              assignment.sortKey = newKey;
+              this.props.updateAssignment(assignment);
+            }
+          });
+        },
+      );
+    };
+
     return (
       <TableDetail
         title={'Assignments'}
@@ -613,13 +703,19 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps, IManageA
         actions={actions}
         breadcrumbs={
           <Breadcrumb>
-            <Breadcrumb.Item>Assignments</Breadcrumb.Item>
+            {this.props.breadcrumbs}
+            <Breadcrumb.Item>Overview</Breadcrumb.Item>
           </Breadcrumb>
         }
         titleInfo={tooltips.admin.graderRoster.title}
         drawer={drawerComponent}
         hideSearch={true}
         detail={detailComponent}
+        components={components}
+        onRow={(record: any, index: number) => ({
+          index,
+          moveRow: moveRow,
+        })}
       />
     );
   }

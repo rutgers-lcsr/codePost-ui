@@ -9,7 +9,7 @@ import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 
 /* codePost imports */
-import { Assignment, AssignmentType } from '../../infrastructure/assignment';
+import { Assignment, AssignmentType, sortAssignments } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { AnonymousSubmissionType } from '../../infrastructure/submission';
 
@@ -102,7 +102,7 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
     ];
 
     const submissions = this.state.submissionsByAssignment;
-    const data = this.props.assignments.map((assignment) => {
+    const data = sortAssignments(this.props.assignments).map((assignment) => {
       const list = assignment.id in submissions ? submissions[assignment.id] : [];
       const numFinalized = list.filter((sub) => sub.isFinalized).length;
       return {

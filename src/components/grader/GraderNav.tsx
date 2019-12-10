@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { Icon, Menu } from 'antd';
 
-import { generatePath, RouteComponentProps } from 'react-router';
+import { RouteComponentProps } from 'react-router';
 
 import { Link } from 'react-router-dom';
 
@@ -11,6 +11,7 @@ interface IProps extends RouteComponentProps<{ panel: string }> {
   isSuperGrader: boolean;
   isSectionLeader: boolean;
   regradesAllowed: boolean;
+  baseURL: string;
 }
 
 class GraderNav extends React.Component<IProps, {}> {
@@ -40,14 +41,14 @@ class GraderNav extends React.Component<IProps, {}> {
         <div>
           <Menu theme="dark" mode="inline" selectedKeys={[this.getDefaultSelectedKeys()]}>
             <Menu.Item key="0">
-              <Link to={generatePath(this.props.match.path, { panel: 'my_submissions' })}>
+              <Link to={`${this.props.baseURL}/my_submissions`}>
                 <Icon type="container" />
                 <span>Claimed by Me</span>
               </Link>
             </Menu.Item>
             {this.props.isSectionLeader ? (
               <Menu.Item key="1">
-                <Link to={generatePath(this.props.match.path, { panel: 'my_sections' })}>
+                <Link to={`${this.props.baseURL}/my_sections`}>
                   <Icon type="cluster" />
                   <span>My Sections</span>
                 </Link>
@@ -55,7 +56,7 @@ class GraderNav extends React.Component<IProps, {}> {
             ) : null}
             {this.props.isSuperGrader ? (
               <Menu.Item key="2">
-                <Link to={generatePath(this.props.match.path, { panel: 'all_submissions' })}>
+                <Link to={`${this.props.baseURL}/all_submissions`}>
                   <Icon type="inbox" />
                   <span>All Submissions</span>
                 </Link>
@@ -63,7 +64,7 @@ class GraderNav extends React.Component<IProps, {}> {
             ) : null}
             {this.props.regradesAllowed ? (
               <Menu.Item key="3">
-                <Link to={generatePath(this.props.match.path, { panel: 'regrades' })}>
+                <Link to={`${this.props.baseURL}/regrades`}>
                   <Icon type="message" />
                   <span>Regrade Requests</span>
                 </Link>

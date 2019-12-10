@@ -59,9 +59,6 @@ import { tooltips } from '../core/tooltips';
 
 /**********************************************************************************************************************/
 
-// 5 minute interval for automatic reload
-const LOADING_INTERVAL = 300000;
-
 interface IAdminState {
   /**** UI control data ****/
   onboardingModalVisible: boolean;
@@ -102,9 +99,6 @@ const formatCourseURL = (course: CourseType) => {
 };
 
 class Admin extends React.Component<IComponentProps, IAdminState> {
-  // @ts-ignore
-  private interval: number;
-
   public constructor(props: IComponentProps) {
     super(props);
 
@@ -152,16 +146,6 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
   public componentDidMount() {
     document.title = 'codePost - Admin Console';
-
-    this.interval = window.setInterval(() => {
-      if (this.props.currentCourse) {
-        this.loadAllCourseData(this.props.currentCourse);
-      }
-    }, LOADING_INTERVAL);
-  }
-
-  public componentWillUnmount() {
-    clearInterval(this.interval);
   }
 
   /***********************************************************************************
@@ -445,7 +429,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
         });
 
         // NOTE: graders in submission.students might be inactive
-        if (submission.grader) {
+        if (submission.grader && submission.grader in subsByGrader) {
           subsByGrader[submission.grader][assignment.id].push(submission);
         }
       });
@@ -533,12 +517,12 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
             }),
           ).then((newAssignments) => {
             this.props.addCourse(course);
-            this.props.history.push(`${formatCourseURL(course)}/assignments`);
+            this.props.history.push(`${formatCourseURL(course)}/assignments/overview`);
           });
         });
       } else {
         this.props.addCourse(course);
-        this.props.history.push(`${formatCourseURL(course)}/assignments`);
+        this.props.history.push(`${formatCourseURL(course)}/assignments/overview`);
       }
     });
   };
@@ -805,7 +789,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       });
   };
 
-  public createAssignment = (aName: string, aPoints: number): Promise<AssignmentType> => {
+  public createAssignment = (aName: string, aPoints: number, sortKey?: number): Promise<AssignmentType> => {
     const { currentCourse } = this.props;
     if (!currentCourse) {
       return Promise.reject();
@@ -819,6 +803,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       isReleased: false,
       hideGrades: false,
       rubricCategories: [],
+      sortKey,
     };
 
     return Assignment.create(payload).then((assignment: AssignmentType) => {
@@ -1057,7 +1042,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       newSubmissions[submission.assignment] = newAssignmentSubmissions;
       this.setState({ submissionsByStudent, submissions: newSubmissions });
       return Promise.all(filePromises).then(() => {
-        return;
+        return submission;
       });
     });
 
@@ -1152,7 +1137,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
             render={(props: any) => (
               <ManageAssignments
                 {...props}
-                key={+new Date()}
+                key="assignments"
                 loadComplete={
                   this.state.submissionsLoadComplete &&
                   this.state.assignmentsLoadComplete &&

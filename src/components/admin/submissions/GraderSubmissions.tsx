@@ -16,6 +16,8 @@ import { Route, Link, Switch } from 'react-router-dom';
 /* codePost imports  */
 import { IAssignmentToSubmissionsMap, IGraderSubmissionsDataTable } from '../../../types/common';
 
+import { encodeForLink } from '../../../components/core/URLutils';
+
 import { AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
 
@@ -95,6 +97,12 @@ class GraderData extends React.Component<IByGraderProps, IState> {
       return -1;
     } else if (a === '--' && b === 'Unfinalized') {
       return 1;
+    } else if (typeof a === 'object' && typeof b === 'object') {
+      try {
+        return b.props.children.props.children - a.props.children.props.children;
+      } catch {
+        return 0;
+      }
     }
 
     return 0;
@@ -253,7 +261,7 @@ class GraderData extends React.Component<IByGraderProps, IState> {
                   const graded = this.props.submissionsByGrader[graderEmail][assignment.id];
                   if (graded) {
                     toRet[assignment.name] = (
-                      <Link to={`${this.props.match.url}/${graderEmail}/${assignment.name.replace(' ', '_')}`}>
+                      <Link to={`${this.props.match.url}/${graderEmail}/${encodeForLink(assignment.name)}`}>
                         <span style={{ cursor: 'pointer' }}>{graded.length}</span>
                       </Link>
                     );
@@ -297,7 +305,7 @@ class GraderData extends React.Component<IByGraderProps, IState> {
                     {this.props.assignments.length === 0 ? (
                       <span>
                         {numGraders === 0 ? <span>&nbsp; &nbsp;</span> : null}
-                        <Link to={`${this.props.baseURL}/assignments`}>
+                        <Link to={`${this.props.baseURL}/assignments/overview`}>
                           <CPButton cpType="primary" key={2} icon="plus-circle">
                             Add an assignment
                           </CPButton>

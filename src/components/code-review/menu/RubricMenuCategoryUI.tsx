@@ -2,14 +2,15 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Divider, Icon, Input, Menu, Popover, Tag } from 'antd';
+import { Button, Divider, Icon, Input, Menu, Popover, Tag, Tooltip } from 'antd';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
 import { AssignmentType } from '../../../infrastructure/assignment';
-import { RubricCommentType } from '../../../infrastructure/rubricComment';
+import { RubricComment, RubricCommentType } from '../../../infrastructure/rubricComment';
 
-import InlineMarkdown from '../../core/InlineMarkdown';
+// import InlineMarkdown from '../../core/InlineMarkdown';
+import BlockMarkdown from '../../core/BlockMarkdown';
 
 import CPFlex from '../../core/CPFlex';
 import CPPointInput from '../../core/CPPointInput';
@@ -38,10 +39,10 @@ interface IRubricMenuCategoryUIProps extends IRubricCategoryManagerProps {
   editRubricMode: boolean;
   turnOnReload: () => void;
   turnOffReload: () => void;
-
   showCursor: CURSOR_DOMAIN;
   cursorIndex: number;
   commentIndex: number;
+  showExplanations: boolean;
 }
 
 const RubricMenuCategoryUI = ({
@@ -56,152 +57,158 @@ const RubricMenuCategoryUI = ({
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   const buildCommentRows = (rubricCommentz: RubricCommentType[], commentMap: { [id: number]: RubricCommentType }) => {
-    return rubricCommentz.map((rubricComment, index: number) => {
-      const editing = rubricComment.id < 0 || props.editingStatuses[rubricComment.id] ? true : false;
+    return rubricCommentz
+      .filter((rubricComment: RubricCommentType) => {
+        if (props.showExplanations && rubricComment.explanation && !props.editRubricMode) {
+          return rubricComment.explanation.toUpperCase().includes(props.searchTerm.toUpperCase());
+        } else {
+          return rubricComment.text.toUpperCase().includes(props.searchTerm.toUpperCase());
+        }
+      })
+      .sort(RubricComment.compare)
+      .map((rubricComment) => {
+        const editing = rubricComment.id < 0 || props.editingStatuses[rubricComment.id] ? true : false;
 
-      const thisComment = commentMap[rubricComment.id];
+        const thisComment = commentMap[rubricComment.id];
 
-      const startEditingThis = () => {
-        props.startEditing(rubricComment.id);
-      };
-
-      if (thisComment) {
-        const onChangeText = (e: any) => {
-          helpers.updateRubricComment(thisComment.id, 'text', e);
+        const startEditingThis = () => {
+          props.startEditing(rubricComment.id);
         };
 
-        const onChangePointDelta = (e: any) => {
-          helpers.updateRubricComment(thisComment.id, 'pointDelta', e);
-        };
+        if (thisComment) {
+          const onChangeText = (e: any) => {
+            helpers.updateRubricComment(thisComment.id, 'text', e);
+          };
 
-        const saveComment = () => {
-          helpers.saveComment(thisComment.id);
-        };
+          const onChangePointDelta = (e: any) => {
+            helpers.updateRubricComment(thisComment.id, 'pointDelta', e);
+          };
 
-        const deleteThisComment = (e: any) => {
-          helpers.deleteComment(rubricComment, e);
-        };
+          const saveComment = () => {
+            helpers.saveComment(thisComment.id);
+          };
 
-        // // @ts-ignore
-        // const activateThisCommentExplorer = () => {
-        //   props.activateCommentExplorer(thisComment);
-        // };
+          const deleteThisComment = (e: any) => {
+            helpers.deleteComment(rubricComment, e);
+          };
 
-        const textInput = (
-          <TextArea
-            style={{ backgroundColor: consoleTheme.commentTextArea, color: consoleTheme.text }}
-            autosize={{ minRows: 2 }}
-            value={thisComment.text}
-            onChange={onChangeText}
-            onBlur={saveComment}
-          />
-        );
+          // // @ts-ignore
+          // const activateThisCommentExplorer = () => {
+          //   props.activateCommentExplorer(thisComment);
+          // };
 
-        const pointInput = (
-          <CPPointInput value={-thisComment.pointDelta} size="small" onChange={onChangePointDelta} disabled={false} />
-        );
-
-        const linkedComments = (
-          <Badge count={thisComment.comments.length} forcedStyle="neutral" faded={false} size="small" />
-        );
-
-        const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
-        const cursored = props.showCursor === CURSOR_DOMAIN.RUBRIC && props.cursorIndex === props.commentIndex + index;
-
-        return (
-          <Menu.Item
-            key={key}
-            style={{
-              backgroundColor: cursored ? 'lightblue' : consoleTheme.siderBg,
-              color: consoleTheme.siderMenuItemColor,
-            }}
-          >
-            <RubricMenuCommentElement
-              editing={editing}
-              startEditing={startEditingThis}
-              rubricComment={rubricComment}
-              linkToComment={props.linkToComment}
-              hasActiveComment={props.hasActiveComment}
-              textInput={textInput}
-              pointInput={pointInput}
-              text={thisComment.text}
-              pointDelta={thisComment.pointDelta}
-              deleteComment={deleteThisComment}
-              assignment={props.assignment}
-              linkedComments={linkedComments}
-              editRubricMode={props.editRubricMode}
-              cursored={cursored}
+          const textInput = (
+            <TextArea
+              style={{ backgroundColor: consoleTheme.commentTextArea, color: consoleTheme.text }}
+              autosize={{ minRows: 2 }}
+              value={thisComment.text}
+              onChange={onChangeText}
+              onBlur={saveComment}
             />
-          </Menu.Item>
-        );
-      } else {
-        const updateRubricCommentText = (e: any) => {
-          helpers.updateRubricComment(rubricComment.id, 'text', e);
-        };
+          );
 
-        const updateRubricCommentPointDelta = (e: any) => {
-          helpers.updateRubricComment(rubricComment.id, 'pointDelta', e);
-        };
+          const pointInput = (
+            <CPPointInput value={-thisComment.pointDelta} size="small" onChange={onChangePointDelta} disabled={false} />
+          );
 
-        const saveComment = () => {
-          helpers.saveComment(rubricComment.id);
-        };
+          const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
+          const cursored =
+            props.showCursor === CURSOR_DOMAIN.RUBRIC && props.cursorIndex === props.commentIndex + index;
+          return (
+            <Menu.Item
+              key={key}
+              style={{
+                backgroundColor: cursored ? 'lightblue' : consoleTheme.siderBg,
+                color: consoleTheme.siderMenuItemColor,
+              }}
+            >
+              <RubricMenuCommentElement
+                editing={editing}
+                startEditing={startEditingThis}
+                rubricComment={rubricComment}
+                linkToComment={props.linkToComment}
+                hasActiveComment={props.hasActiveComment}
+                textInput={textInput}
+                pointInput={pointInput}
+                text={thisComment.text}
+                pointDelta={thisComment.pointDelta}
+                deleteComment={deleteThisComment}
+                assignment={props.assignment}
+                editRubricMode={props.editRubricMode}
+                showExplanation={props.showExplanations}
+                explanation={rubricComment.explanation}
+                cursored={cursored}
+              />
+            </Menu.Item>
+          );
+        } else {
+          const updateRubricCommentText = (e: any) => {
+            helpers.updateRubricComment(rubricComment.id, 'text', e);
+          };
 
-        const deleteThisComment = (e: any) => {
-          helpers.deleteComment(rubricComment, e);
-        };
+          const updateRubricCommentPointDelta = (e: any) => {
+            helpers.updateRubricComment(rubricComment.id, 'pointDelta', e);
+          };
 
-        const textInput = (
-          <TextArea
-            style={{ backgroundColor: consoleTheme.commentTextArea, color: consoleTheme.text }}
-            autosize={{ minRows: 2 }}
-            value={''}
-            onChange={updateRubricCommentText}
-            onBlur={saveComment}
-          />
-        );
+          const saveComment = () => {
+            helpers.saveComment(rubricComment.id);
+          };
 
-        const pointInput = (
-          <CPPointInput
-            value={-rubricComment.pointDelta}
-            size="small"
-            onChange={updateRubricCommentPointDelta}
-            disabled={false}
-          />
-        );
+          const deleteThisComment = (e: any) => {
+            helpers.deleteComment(rubricComment, e);
+          };
 
-        const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
-
-        const cursored = props.showCursor === CURSOR_DOMAIN.RUBRIC && props.cursorIndex === props.commentIndex + index;
-
-        return (
-          <Menu.Item
-            key={key}
-            style={{
-              backgroundColor: cursored ? 'lightblue' : consoleTheme.siderBg,
-              color: consoleTheme.siderMenuItemColor,
-            }}
-          >
-            <RubricMenuCommentElement
-              editing={true}
-              startEditing={startEditingThis}
-              rubricComment={rubricComment}
-              linkToComment={props.linkToComment}
-              hasActiveComment={props.hasActiveComment}
-              textInput={textInput}
-              pointInput={pointInput}
-              text={''}
-              pointDelta={0}
-              deleteComment={deleteThisComment}
-              assignment={props.assignment}
-              linkedComments={null}
-              editRubricMode={props.editRubricMode}
-              cursored={cursored}
+          const textInput = (
+            <TextArea
+              style={{ backgroundColor: consoleTheme.commentTextArea, color: consoleTheme.text }}
+              autosize={{ minRows: 2 }}
+              value={''}
+              onChange={updateRubricCommentText}
+              onBlur={saveComment}
             />
-          </Menu.Item>
-        );
-      }
-    });
+          );
+
+          const pointInput = (
+            <CPPointInput
+              value={-rubricComment.pointDelta}
+              size="small"
+              onChange={updateRubricCommentPointDelta}
+              disabled={false}
+            />
+          );
+
+          const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
+          const cursored =
+            props.showCursor === CURSOR_DOMAIN.RUBRIC && props.cursorIndex === props.commentIndex + index;
+          return (
+            <Menu.Item
+              key={key}
+              style={{
+                backgroundColor: cursored ? 'lightblue' : consoleTheme.siderBg,
+                color: consoleTheme.siderMenuItemColor,
+              }}
+            >
+              <RubricMenuCommentElement
+                editing={true}
+                startEditing={startEditingThis}
+                rubricComment={rubricComment}
+                linkToComment={props.linkToComment}
+                hasActiveComment={props.hasActiveComment}
+                textInput={textInput}
+                pointInput={pointInput}
+                text={''}
+                pointDelta={0}
+                deleteComment={deleteThisComment}
+                assignment={props.assignment}
+                editRubricMode={props.editRubricMode}
+                showExplanation={props.showExplanations}
+                explanation={rubricComment.explanation}
+                cursored={cursored}
+              />
+            </Menu.Item>
+          );
+        }
+      });
   };
 
   const rows = buildCommentRows(props.rubricComments, state.rubricComments);
@@ -291,7 +298,14 @@ const RubricMenuCategoryUI = ({
       }}
     />
   ) : (
-    <div style={{ textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '150px' }}>{props.rubricCategory.name}</div>
+    <div style={{ textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '150px' }}>
+      {props.rubricCategory.name}{' '}
+      {props.rubricCategory.atMostOnce ? (
+        <Tooltip title="This category can be applied at most once.">
+          <Icon type="tag" />
+        </Tooltip>
+      ) : null}
+    </div>
   );
 
   const addComment = () => {
@@ -362,9 +376,10 @@ interface IRubricMenuCommentElementProps {
   pointDelta: number;
   deleteComment: any;
   assignment: any;
-  linkedComments: React.ReactNode;
   editRubricMode: boolean;
   cursored: boolean;
+  showExplanation: boolean;
+  explanation: string;
 }
 
 const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
@@ -397,6 +412,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
   });
 
   if (!props.editRubricMode) {
+    const canShowExplanation = props.showExplanation && props.explanation.length > 0;
     return (
       <div
         style={{
@@ -406,7 +422,10 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
         className="rubric-row--active"
         onClick={onClick}
       >
-        <InlineMarkdown source={props.text.length === 0 ? '-' : props.text} />
+        <BlockMarkdown
+          source={props.text.length === 0 ? '-' : canShowExplanation ? props.explanation : props.text}
+          em={canShowExplanation}
+        />
         <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
       </div>
     );
@@ -430,7 +449,6 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
           }}
         >
           <Icon type="delete" onClick={props.deleteComment} style={{ fontSize: '11px', margin: '0px' }} />
-          {props.linkedComments}
         </div>
       </div>
     );
@@ -444,7 +462,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
         className={`rubric-row--${props.hasActiveComment ? 'active' : 'inactive'} `}
         onClick={props.hasActiveComment ? onClick : props.startEditing}
       >
-        <InlineMarkdown source={props.text.length === 0 ? '-' : props.text} />
+        <BlockMarkdown source={props.text.length === 0 ? '-' : props.text} />
         <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
         {!props.hasActiveComment ? (
           <div className="overlay">

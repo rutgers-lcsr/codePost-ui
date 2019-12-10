@@ -5,8 +5,11 @@ import Comment from './Comment';
 import CodePanelSizing from './CodePanelSizing';
 
 import { CommentType } from '../../../infrastructure/comment';
-import { FileType } from '../../../infrastructure/file';
+
+import { File, FileType } from '../../../infrastructure/file';
+
 import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
+
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 import { ICommentToRubricCommentMap } from '../../../types/common';
@@ -22,12 +25,14 @@ import { CodeConsoleDimensionsType } from './LayoutResizer';
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
 import { CURSOR_DOMAIN } from '../CodeConsole';
+import { findBlockElement, getPDFStartPlacement } from './BlockUtils.tsx';
 
 interface ICommentsCoreProps extends IWithWindowWatcherProps {
   additiveGrading: boolean;
   comments: CommentType[];
   rubricComments: ICommentToRubricCommentMap;
   file: FileType;
+  fileIDs: number[];
   verticalOffset: number;
   dimensions: CodeConsoleDimensionsType;
   isStudent: boolean;
@@ -53,6 +58,7 @@ interface ICommentsEditProps {
 
   showCursor: CURSOR_DOMAIN;
   cursorIndex: number;
+  showExplanations: boolean;
 }
 
 interface ICommentPlacement {
@@ -63,6 +69,7 @@ interface ICommentPlacement {
 interface ICommentsState {
   placements: ICommentPlacement[];
   cursor: number;
+  fileScrollPositions: { [fileID: number]: number };
 }
 
 type BlockType = {
@@ -87,12 +94,19 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
     this.state = {
       placements: this.props.comments.map((comment: CommentType, index: number) => {
+        const placement =
+          File.codeType(props.file) === 'pdf'
+            ? getPDFStartPlacement(comment)
+            : comment.startLine * themeVars.grade.codeLineHeight;
         return {
           commentID: comment.id,
-          placement: comment.startLine * themeVars.grade.codeLineHeight,
+          placement,
         };
       }),
       cursor: 0,
+      fileScrollPositions: this.props.fileIDs.reduce((scrollPositions: { [fid: number]: number }, fileID: number) => {
+        return { ...scrollPositions, [fileID]: 0 };
+      }, {}),
     };
   }
 
@@ -101,21 +115,26 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   };
 
   public handleClickOutside = (event: any) => {
-    const rubricMenu = document.getElementById('rubric-menu');
-    if (
-      !this.props.readOnly &&
-      this.wrapperRef &&
-      !this.wrapperRef.contains(event.target) &&
-      rubricMenu !== null &&
-      !rubricMenu.contains(event.target)
-    ) {
-      this.props.changeActive(undefined);
+    const safeAreaIDs = ['rubric-menu-container'];
+    const safeAreas = safeAreaIDs.map((id) => document.getElementById(id));
+    if (!this.props.readOnly && this.wrapperRef && !this.wrapperRef.contains(event.target)) {
+      if (!safeAreas.some((area) => area !== null && area.contains(event.target))) {
+        this.props.changeActive(undefined);
+      }
     }
   };
 
   public componentDidMount() {
     document.addEventListener('mousedown', this.handleClickOutside);
     document.addEventListener('keydown', this.handleCursor);
+    document.addEventListener('keydown', this.handleKeyPress);
+
+    // FIXME: This is a hack to trigger comment placements to reload after a PDF has loaded.
+    // The PDF can take some time to load, and if the placement isn't triggered the comments will stay on top
+    // Passing in refs to the <Comments /> and triggering comment placement from <CodeConent /> doesn't work because
+    // of a typescript issue with being unable to use react.forwardRef(), which we need to do because each <Comments />
+    // object is wrapped in a HOC with withWindowWatcher.
+    document.addEventListener('pdf-loaded', this.setCommentPlacements);
   }
 
   // FIXME: This forces comments with 'expand' to stack correctly
@@ -130,6 +149,8 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   public componentWillUnmount() {
     document.removeEventListener('mousedown', this.handleClickOutside);
     document.removeEventListener('keydown', this.handleCursor);
+    document.removeEventListener('keydown', this.handleKeyPress);
+    document.removeEventListener('loaded', this.setCommentPlacements);
   }
 
   public handleCursor = async (e: any) => {
@@ -145,7 +166,14 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {
     const codeScrollArea = document.getElementById('code-scroll-area');
     if (codeScrollArea !== null) {
-      return codeScrollArea.scrollTop;
+      if (prevProps.file.id === this.props.file.id) {
+        return codeScrollArea.scrollTop;
+      } else {
+        this.setState({
+          fileScrollPositions: { ...this.state.fileScrollPositions, [prevProps.file.id]: codeScrollArea.scrollTop },
+        });
+        return this.state.fileScrollPositions[this.props.file.id];
+      }
     }
 
     return null;
@@ -205,7 +233,6 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   };
 
   public calculateCommentPlacements = (comments: CommentType[]): ICommentPlacement[] => {
-    // console.log('!! Calculating Placements !!');
     const blocks: BlockType[] = [];
 
     return comments.map((comment: CommentType) => {
@@ -214,13 +241,16 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
       const containerDifference = themeVars.grade.codeContainer.paddingTop + themeVars.grade.codeContainer.marginTop;
 
       let startAt =
-        comment.startLine * lineHeight -
-        themeVars.grade.arrowDisplacement +
-        containerDifference -
-        this.props.verticalOffset;
+        File.codeType(this.props.file) === 'pdf'
+          ? getPDFStartPlacement(comment)
+          : comment.startLine * lineHeight -
+            themeVars.grade.arrowDisplacement +
+            containerDifference -
+            this.props.verticalOffset;
 
       // Find position of markdown block elements
-      const blockElement: HTMLElement | null = document.querySelector(`[index-number="${comment.startLine}"]`);
+      const blockElement: HTMLElement | null = findBlockElement(this.props.file, comment.startLine);
+
       if (blockElement) {
         startAt = blockElement.offsetTop + 20; // 20 = aesthetic padding from top of block element
       }
@@ -310,6 +340,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
         <Comment
           key={key}
           isStudent={this.props.isStudent}
+          showExplanations={this.props.showExplanations}
           commentType={commentType}
           comment={comment}
           file={this.props.file}
@@ -402,6 +433,7 @@ const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & IComme
           oldCommentIDs={{}}
           showCursor={CURSOR_DOMAIN.HIDDEN}
           cursorIndex={0}
+          showExplanations={false}
         />
       );
     }

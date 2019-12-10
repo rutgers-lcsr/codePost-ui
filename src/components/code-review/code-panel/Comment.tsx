@@ -23,7 +23,6 @@ import { getOperatingSystem, OS } from '../../core/operatingSystem';
 import { tooltips } from '../../core/tooltips';
 
 import BlockMarkdown from '../../core/BlockMarkdown';
-import InlineMarkdown from '../../core/InlineMarkdown';
 
 import Badge from '../../core/Badge';
 
@@ -38,6 +37,7 @@ import { wait } from '../../../infrastructure/animation';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
+import { findBlockElement } from './BlockUtils.tsx';
 /**********************************************************************************************************************/
 
 export type UICommentType = 'readonly' | 'active' | 'inactive';
@@ -87,6 +87,7 @@ interface ICommentProps {
   rubricCategories: RubricCategoryType[];
 
   isStudent: boolean;
+  showExplanations: boolean;
 
   placement: number;
 
@@ -111,6 +112,7 @@ interface ICommentState {
   text: string;
   points: number;
   showDeletePopover: boolean;
+  hasHover: boolean;
 }
 
 class Comment extends React.Component<ICommentProps, ICommentState> {
@@ -194,13 +196,35 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     }
   }
 
-  public init = () => {
+  public init = (): ICommentState => {
     const text: string = this.props.comment.text ? this.props.comment.text : '';
     const points: number = UiComment.points(this.props.comment, this.props.rubricComment);
     const status: CommentStatus =
       text === '' && points === 0 && this.props.rubricComment === undefined ? 'edited' : 'idle';
-    return { text, points, status, showDeletePopover: false };
+    return { text, points, status, showDeletePopover: false, hasHover: false };
   };
+
+  /***********************************************************************************************/
+  /* Hover handlers
+  /***********************************************************************************************/
+
+  public onMouseEnter = () => {
+    this.highlightRelatedComment();
+    this.handleHoverEvent();
+  };
+
+  public onMouseLeave = () => {
+    this.unhighlightRelatedComment();
+    this.handleHoverEvent();
+  };
+
+  public handleHoverEvent = () => {
+    this.setState((oldState) => {
+      return { hasHover: !oldState.hasHover };
+    });
+  };
+
+  /***********************************************************************************************/
 
   public save = async () => {
     this.unhighlightRelatedComment();
@@ -422,7 +446,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     CodePanelHighlighting.brightenHighlight(this.props.comment.id, this.context.consoleTheme.highlightActive);
 
     // For handling markdown
-    const blockElement: HTMLElement | null = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);
+    const blockElement: HTMLElement | null = findBlockElement(this.props.file, this.props.comment.startLine);
+
     if (blockElement) {
       blockElement.className = `markdown-block markdown-block--focused ${
         this.props.commentType === 'readonly' ? 'readonly' : 'active'
@@ -434,7 +459,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     CodePanelHighlighting.darkenHighlight(this.props.comment.id, this.context.consoleTheme.highlight);
 
     // For handling markdown
-    const blockElement: HTMLElement | null = document.querySelector(`[index-number="${this.props.comment.startLine}"]`);
+    const blockElement: HTMLElement | null = findBlockElement(this.props.file, this.props.comment.startLine);
+
     if (blockElement) {
       blockElement.className = `markdown-block markdown-block--commented ${
         this.props.commentType === 'readonly' ? 'readonly' : 'active'
@@ -495,6 +521,15 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           Block {this.props.comment.startLine + 1}
         </span>
       );
+    } else if (File.codeType(this.props.file) === 'pdf') {
+      commentElements.line = (
+        <span
+          className="cp-label--mid-bold cp-label--italic"
+          style={{ color: this.context.consoleTheme.commentTitleText }}
+        >
+          Page {this.props.comment.startLine}
+        </span>
+      );
     } else {
       commentElements.line = (
         <span
@@ -514,7 +549,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     // ------------------------------------- author --------------------------------------- //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    if (this.props.comment.author) {
+    if (this.props.comment.author && (!this.props.isStudent || !this.props.hideAuthor)) {
       commentElements.author = (
         <span
           className="cp-label--italic cp-label--very-small"
@@ -654,7 +689,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           <BlockMarkdown source={this.state.text} />
         </div>
       );
-      commentElements.deleteButton = (
+      // Only shown delete button on inactive comment when the user is hovering
+      commentElements.deleteButton = this.state.hasHover ? (
         <Popover
           title="Are you sure you want to delete this comment?"
           visible={this.state.showDeletePopover}
@@ -665,7 +701,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         >
           <CPButton cpType="danger" icon="delete" />
         </Popover>
-      );
+      ) : null;
 
       onClick = this.onCommentClick;
       cursor = 'pointer';
@@ -712,7 +748,14 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       commentElements.rubricComment = (
         <div className={rubricCommentClassName} style={style}>
           <span className="cp-label--very-bold">{rubricCategoryTitle}</span>
-          <InlineMarkdown source={this.props.rubricComment.text} />
+          <BlockMarkdown
+            source={
+              (this.props.isStudent || this.props.showExplanations) && this.props.rubricComment.explanation
+                ? this.props.rubricComment.explanation
+                : this.props.rubricComment.text
+            }
+            em={!this.props.isStudent && this.props.showExplanations && this.props.rubricComment.explanation.length > 0}
+          />
           {commentElements.rubricCommentAction}
         </div>
       );
@@ -786,8 +829,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         id={`comment-${this.props.comment.id}`}
         style={{ top: `${this.props.placement}px`, cursor, zIndex: 0 }}
         onClick={onClick}
-        onMouseEnter={this.highlightRelatedComment}
-        onMouseLeave={this.unhighlightRelatedComment}
+        onMouseEnter={this.onMouseEnter}
+        onMouseLeave={this.onMouseLeave}
         data-status={this.state.status}
       >
         <div className="ant-popover-content">

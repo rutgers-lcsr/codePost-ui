@@ -8,14 +8,14 @@ import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-conte
 
 interface IInlineMarkdownProps {
   source: string;
+  em?: boolean;
 }
 
 const InlineMarkdown = (props: IInlineMarkdownProps) => {
   const renderers = useInlineMarkdownRenderers();
 
   const allowedTypes = ['paragraph', 'text', 'emphasis', 'strong', 'inlineCode', 'delete', 'link', 'break'];
-
-  return (
+  const markdown = (
     <ReactMarkdown
       // @ts-ignore
       allowedTypes={allowedTypes}
@@ -43,6 +43,12 @@ const InlineMarkdown = (props: IInlineMarkdownProps) => {
       ]}
     />
   );
+
+  if (props.em) {
+    return <em>{markdown}</em>;
+  } else {
+    return markdown;
+  }
 };
 
 const useInlineMarkdownRenderers = () => {

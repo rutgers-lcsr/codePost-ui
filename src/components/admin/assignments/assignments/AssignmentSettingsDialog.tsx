@@ -6,13 +6,15 @@
 import * as React from 'react';
 
 /* ant imports */
-import { DatePicker, Form, Input, InputNumber, message, Modal, Switch, Tabs, Tag } from 'antd';
+import { Button, DatePicker, Form, Input, InputNumber, message, Modal, Switch, Tabs, Tag, Transfer, Table } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 /* codePost imports */
-import { AssignmentPatchType, AssignmentType } from '../../../../infrastructure/assignment';
+import { AssignmentType, FileTemplateType } from '../../../../infrastructure/types';
+import { AssignmentPatchType } from '../../../../infrastructure/assignment';
+import { FileTemplate } from '../../../../infrastructure/fileTemplate';
 
 import UploadFileTemplates from './UploadFileTemplates';
 
@@ -24,10 +26,31 @@ interface IProps {
   onSave: (assignment: AssignmentPatchType) => Promise<void>;
   currentAssignment: AssignmentType;
   assignments: AssignmentType[];
+  timezone: string;
 }
 
-class AssignmentSettingsDialog extends React.Component<IProps, {}> {
+interface IState {
+  fileTemplates: FileTemplateType[];
+}
+
+class AssignmentSettingsDialog extends React.Component<IProps, IState> {
   private formRef: React.RefObject<FormComponentProps> = React.createRef();
+
+  public constructor(props: IProps) {
+    super(props);
+    this.state = {
+      fileTemplates: [],
+    };
+  }
+
+  public componentDidMount() {
+    this.loadTemplates();
+  }
+
+  public loadTemplates = () => {
+    const promises = this.props.currentAssignment.fileTemplates.map((el) => FileTemplate.read(el));
+    Promise.all(promises).then((fileTemplates) => this.setState({ fileTemplates }));
+  };
 
   public updateSettings = (values: IFormValues) => {
     const { currentAssignment } = this.props;
@@ -48,6 +71,8 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
       additiveGrading: values.additiveGrading,
       forcedRubricMode: values.forcedRubricMode,
       templateMode: values.templateMode,
+      showFrequentlyUsedRubricComments: values.showFrequentlyUsedRubricComments,
+      allowLateUploads: values.allowLateUploads,
     };
 
     this.props.onSave(payload).then(() => {
@@ -60,12 +85,26 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
     this.formRef = formRef;
   };
 
-  public handleCreate = () => {
+  public handleCreate = (fileTemplates: FileTemplateType[]) => {
     const formRefCast: any = this.formRef;
     const form = formRefCast.props.form;
     form.validateFields((err: any, values: IFormValues) => {
       if (err) {
         return;
+      }
+
+      for (const ft of fileTemplates) {
+        if (ft.id > 0) {
+          FileTemplate.update(ft);
+        } else {
+          FileTemplate.create(ft);
+        }
+      }
+
+      for (const ft of this.state.fileTemplates) {
+        if (!fileTemplates.some((el) => el.id === ft.id)) {
+          FileTemplate.delete(ft.id);
+        }
       }
 
       this.updateSettings(values);
@@ -85,6 +124,8 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
         onCancel={this.props.onCancel}
         assignment={this.props.currentAssignment}
         assignments={this.props.assignments}
+        initialTemplateFiles={this.state.fileTemplates}
+        timezone={this.props.timezone}
       />
     );
   }
@@ -96,10 +137,12 @@ class AssignmentSettingsDialog extends React.Component<IProps, {}> {
 
 interface IFormProps extends FormComponentProps {
   visible: boolean;
-  onSave: () => void;
+  onSave: (fileTemplates: FileTemplateType[]) => void;
   onCancel: () => void;
   assignment: AssignmentType;
   assignments: AssignmentType[];
+  initialTemplateFiles: FileTemplateType[];
+  timezone: string;
 }
 
 interface IFormValues {
@@ -118,12 +161,17 @@ interface IFormValues {
   additiveGrading: boolean;
   forcedRubricMode: boolean;
   templateMode: boolean;
+  showFrequentlyUsedRubricComments: boolean;
+  allowLateUploads: boolean;
 }
 
 interface IFormState {
   studentUploadEnabled: boolean;
   templateModeEnabled: boolean;
   regradesEnabled: boolean;
+  templates: FileTemplateType[];
+  newTemplate: string;
+  selectedTemplates: string[];
 }
 
 // FIXME: figure out how to type output of Form.create HOC
@@ -135,8 +183,94 @@ const CollectionCreateForm: any = Form.create()(
         studentUploadEnabled: this.props.assignment.allowStudentUpload,
         templateModeEnabled: this.props.assignment.templateMode,
         regradesEnabled: this.props.assignment.allowRegradeRequests,
+        templates: props.initialTemplateFiles,
+        newTemplate: '',
+        selectedTemplates: [],
       };
     }
+
+    public componentDidUpdate(oldProps: IFormProps) {
+      if (oldProps.initialTemplateFiles !== this.props.initialTemplateFiles) {
+        this.setState({ templates: this.props.initialTemplateFiles });
+      }
+    }
+
+    /****************************************************************************************/
+    /* Template file handling
+    /****************************************************************************************/
+
+    public templateColumns = [
+      {
+        title: 'File',
+        dataIndex: 'name',
+        key: 'file',
+      },
+      {
+        title: 'Template code',
+        dataIndex: 'template',
+        key: 'template',
+        align: 'center' as const,
+      },
+    ];
+
+    public changeTemplateText = (e: any) => {
+      this.setState({ newTemplate: e.target.value });
+    };
+
+    public addTemplate = () => {
+      this.setState((oldState: IFormState) => {
+        return {
+          templates: [
+            ...oldState.templates,
+            {
+              code: '',
+              extension: oldState.newTemplate.split('.')[1],
+              name: oldState.newTemplate,
+              assignment: this.props.assignment.id,
+              path: '',
+              required: false,
+              id: -1 * oldState.templates.length,
+            },
+          ],
+        };
+      });
+    };
+
+    public switchTemplates = (nextTargetKeys: string[], direction: string, moveKeys: string[]) => {
+      const targetRequired = direction === 'right' ? true : false;
+      this.setState((oldState: IFormState) => {
+        return {
+          templates: oldState.templates.map((template) =>
+            !moveKeys.includes(template.id.toString()) ? template : { ...template, required: targetRequired },
+          ),
+          selectedTemplates: [],
+        };
+      });
+    };
+
+    public deleteTemplates = () => {
+      this.setState((oldState: IFormState) => {
+        return {
+          templates: oldState.templates.filter((el) => !oldState.selectedTemplates.includes(el.id.toString())),
+          selectedTemplates: [],
+        };
+      });
+    };
+
+    public setSelectedTemplates = (sourceSelectedKeys: string[], targetSelectedKeys: string[]) => {
+      this.setState({ selectedTemplates: [...sourceSelectedKeys, ...targetSelectedKeys] });
+    };
+
+    public updateTemplateCode = (id: number, newCode: string) => {
+      this.setState((oldState: IFormState) => {
+        const old = oldState.templates.find((el) => el.id === id);
+        return {
+          templates: [...oldState.templates.filter((el) => el.id !== id), { ...old!, code: newCode }],
+        };
+      });
+    };
+
+    /****************************************************************************************/
 
     public handleStudentUploadCheck = (checked: boolean) => {
       this.setState({ studentUploadEnabled: checked });
@@ -186,7 +320,7 @@ const CollectionCreateForm: any = Form.create()(
           title="Update assignment settings"
           okText="Save"
           onCancel={onCancel}
-          onOk={onSave}
+          onOk={onSave.bind({}, this.state.templates)}
           width={'45%'}
         >
           <Form layout="horizontal" hideRequiredMark={true}>
@@ -247,14 +381,18 @@ const CollectionCreateForm: any = Form.create()(
                 </Form.Item>
                 <Form.Item
                   label="Due Date"
-                  extra="Due date for student uploads"
+                  extra={
+                    <span>
+                      Due date for student uploads. Your course's timezone is <b>{this.props.timezone}.</b>
+                    </span>
+                  }
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 16 }}
                 >
                   {getFieldDecorator('uploadDueDate', {
                     initialValue: this.props.assignment.uploadDueDate
-                      ? moment(this.props.assignment.uploadDueDate)
-                      : null,
+                      ? moment(this.props.assignment.uploadDueDate).tz(this.props.timezone)
+                      : moment().tz(this.props.timezone),
                     valuePropName: 'value',
                     rules: [
                       {
@@ -263,6 +401,42 @@ const CollectionCreateForm: any = Form.create()(
                       },
                     ],
                   })(<DatePicker showTime placeholder="Select Time" disabled={!this.state.studentUploadEnabled} />)}
+                </Form.Item>
+                <Form.Item label="Submission files" labelCol={{ span: 6 }} wrapperCol={{ span: 16 }}>
+                  <Transfer
+                    dataSource={this.state.templates.map((el) => {
+                      return { ...el, key: el.id.toString(), title: el.name };
+                    })}
+                    targetKeys={this.state.templates.filter((el) => el.required).map((el) => el.id.toString())}
+                    onSelectChange={this.setSelectedTemplates}
+                    selectedKeys={this.state.selectedTemplates}
+                    titles={['Optional', 'Required']}
+                    render={(item) => item.title}
+                    footer={() => (
+                      <Button size="small" style={{ float: 'right', margin: 5 }} onClick={this.deleteTemplates}>
+                        delete
+                      </Button>
+                    )}
+                    onChange={this.switchTemplates}
+                  />
+                  <Input onChange={this.changeTemplateText} placeholder="file name" style={{ width: '72%' }} />
+                  <Button onClick={this.addTemplate}>Add</Button>
+                </Form.Item>
+                <Form.Item
+                  label="Allow late submissions"
+                  extra={
+                    <div>
+                      <Tag>NEW</Tag> When enabled, students will be allowed to submit after this assignment's due date
+                      has passed.
+                    </div>
+                  }
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 16 }}
+                >
+                  {getFieldDecorator('allowLateUploads', {
+                    initialValue: this.props.assignment.allowLateUploads,
+                    valuePropName: 'checked',
+                  })(<Switch disabled={!form.getFieldValue('allowStudentUpload')} />)}
                 </Form.Item>
                 <Form.Item
                   label="Live feedback mode"
@@ -349,26 +523,52 @@ const CollectionCreateForm: any = Form.create()(
                   })(<Switch />)}
                 </Form.Item>
                 <Form.Item
-                  label="Include file templates"
+                  label="File template code"
                   extra={
                     <div>
-                      <Tag>NEW</Tag> Use file templates to help speed up grading by de-emphasizing template-provided
-                      versus student-written code. Template names must match submission file names.
+                      Use file templates to help speed up grading by de-emphasizing template-provided versus
+                      student-written code. Template names must match submission file names.
                     </div>
                   }
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 16 }}
                 >
-                  {getFieldDecorator('templateMode', {
-                    initialValue: this.props.assignment.templateMode,
-                    valuePropName: 'checked',
-                  })(<Switch onClick={this.handleTemplateModeCheck} />)}
+                  <Table
+                    columns={this.templateColumns}
+                    dataSource={this.state.templates
+                      .sort((a, b) => a.id - b.id)
+                      .map((el) => {
+                        return {
+                          name: el.name,
+                          template: (
+                            <UploadFileTemplates
+                              fileName={el.name}
+                              isReplacement={el.code.length > 0}
+                              updateTemplate={this.updateTemplateCode.bind({}, el.id)}
+                            />
+                          ),
+                          key: el.id.toString(),
+                        };
+                      })}
+                    pagination={false}
+                  />
                 </Form.Item>
-                {this.state.templateModeEnabled ? (
-                  <div style={{ paddingLeft: '25%' }}>
-                    <UploadFileTemplates assignment={this.props.assignment} />
-                  </div>
-                ) : null}
+                <Form.Item
+                  label="Freq. rubric comments"
+                  extra={
+                    <div>
+                      When enabled, an assignment's 10 most frequently applied rubric comments will be shown within the
+                      code console to make them easily accessible.
+                    </div>
+                  }
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 16 }}
+                >
+                  {getFieldDecorator('showFrequentlyUsedRubricComments', {
+                    initialValue: this.props.assignment.showFrequentlyUsedRubricComments,
+                    valuePropName: 'checked',
+                  })(<Switch />)}
+                </Form.Item>
               </Tabs.TabPane>
               <Tabs.TabPane tab="Publishing" key="4">
                 <Form.Item
@@ -419,14 +619,19 @@ const CollectionCreateForm: any = Form.create()(
                 </Form.Item>
                 <Form.Item
                   label="Deadline"
-                  extra="Optional deadline for students to submit regrade requests"
+                  extra={
+                    <span>
+                      Optional deadline for students to submit regrade requests. Your course's timezone is{' '}
+                      <b>{this.props.timezone}.</b>
+                    </span>
+                  }
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 16 }}
                 >
                   {getFieldDecorator('regradeDeadline', {
                     initialValue: this.props.assignment.regradeDeadline
-                      ? moment(this.props.assignment.regradeDeadline)
-                      : null,
+                      ? moment(this.props.assignment.regradeDeadline).tz(this.props.timezone)
+                      : moment().tz(this.props.timezone),
                     valuePropName: 'value',
                   })(<DatePicker showTime placeholder="Select Time" disabled={!this.state.regradesEnabled} />)}
                 </Form.Item>

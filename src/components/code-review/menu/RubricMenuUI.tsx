@@ -19,6 +19,8 @@ import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_c
 
 import useHotkeys, { E_KEY, O_KEY, S_KEY } from '../useHotkeys';
 
+import { osControlKey } from '../../core/operatingSystem';
+
 import CPButton from '../../core/CPButton';
 
 import Loading from '../../core/Loading';
@@ -49,8 +51,14 @@ interface IRubricMenuUIProps extends IRubricManagerProps {
   /* is the user allowed to edit the rubric? */
   canUserEdit: boolean;
 
+  /* should we show the frequent comments synthetic category? */
+  showFrequent: boolean;
+
   /* if true, simulate rubric save */
   demoMode: boolean;
+
+  /* decides whether to show text or explanations */
+  showExplanations: boolean;
 
   handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
   hasActiveComment: boolean;
@@ -130,8 +138,35 @@ const RubricMenuUI = ({
 
     // If user has specified a category with category:[some text], respect it
     const categoryMatches = searchTerm.match(/(category:[a-z0-9]+)|(category:"[a-z0-9\s]+")/i);
+    let adjustedRubricComments = { ...rubricComments };
 
-    let filteredCatgories = rubricCategories.sort(RubricCategory.compare);
+    // Create a category of frequently used comments
+    let freq: RubricCategoryType;
+    const noSort: number[] = [];
+
+    let filteredCatgories;
+    if (!props.editRubricMode && props.showFrequent) {
+      noSort.push(-1000);
+      freq = {
+        id: -1000,
+        name: 'Frequently used',
+        rubricComments: [],
+        assignment: -1,
+        pointLimit: null,
+        sortKey: 0,
+        helpText: 'List of the 10 most frequently applied comments from this rubric.',
+        atMostOnce: false,
+      };
+      adjustedRubricComments[-1000] = Object.values(rubricComments)
+        .flat()
+        .filter((el) => el.comments.length > 0)
+        .sort((a, b) => b.comments.length - a.comments.length)
+        .slice(0, 10);
+      filteredCatgories = [freq, ...rubricCategories.sort(RubricCategory.compare)];
+    } else {
+      filteredCatgories = rubricCategories.sort(RubricCategory.compare);
+    }
+
     let commentSearchTerm = searchTerm;
     if (categoryMatches !== null && categoryMatches.length > 0) {
       const categoryName = categoryMatches[0].split(':')[1].slice(1, -1);
@@ -210,6 +245,7 @@ const RubricMenuUI = ({
               showCursor: props.showCursor,
               cursorIndex: props.cursorIndex,
               commentIndex: thisIndex,
+              showExplanations: props.showExplanations,
             };
             return <RubricMenuCategoryUI props={propsz} state={statez} helpers={helperz} />;
           }}
@@ -381,6 +417,7 @@ const RubricMenuUI = ({
           onUnLink={onUnLink}
           onCancel={helpers.onLinkedAlertCancel}
           isVisible={state.linkedComments.length > 0}
+          numComments={state.linkedComments[0] ? state.instanceLists[state.linkedComments[0].id].length : 0}
         />
         <LinkedCommentsConfirm
           onAccept={onLinkedConfirmAccept}
@@ -413,7 +450,8 @@ const RubricMenuUI = ({
     const iconType = props.editRubricMode ? 'backward' : 'edit';
     searchBar = (
       <Input
-        placeholder="Search rubric... (⌘ O)"
+        allowClear
+        placeholder={`Search rubric... (${osControlKey()} O)`}
         id="rubric-search"
         onChange={onSearch}
         value={searchTerm}
@@ -436,7 +474,7 @@ const RubricMenuUI = ({
   } else {
     searchBar = (
       <Input
-        placeholder="Search rubric... (⌘ O)"
+        placeholder={`Search rubric... (${osControlKey()} O)`}
         id="rubric-search"
         onChange={onSearch}
         value={searchTerm}
@@ -458,25 +496,27 @@ const RubricMenuUI = ({
   }
 
   return (
-    <div style={{ marginTop: '8px' }}>
+    <div style={{ marginTop: '8px' }} id="rubric-menu-container">
       <div
         id="rubric-menu-title"
         style={{ marginBottom: '5px', width: '100%', textAlign: 'center', padding: '0px 10px' }}
       >
         <div style={{ textAlign: 'right' }}>
-          <Tag
-            style={{
-              background: consoleTheme.siderBg,
-              color: consoleTheme.siderTitle,
-              borderStyle: 'dashed',
-              marginBottom: '4px',
-              marginRight: '0px',
-              cursor: 'pointer',
-            }}
-            onClick={insertCategorySearch}
-          >
-            category:
-          </Tag>
+          <CPTooltip title={tooltips.grade.rubric.categorySearch} hideThisOnHideTips={true}>
+            <Tag
+              style={{
+                background: consoleTheme.siderBg,
+                color: consoleTheme.siderTitle,
+                borderStyle: 'dashed',
+                marginBottom: '4px',
+                marginRight: '0px',
+                cursor: 'pointer',
+              }}
+              onClick={insertCategorySearch}
+            >
+              category:
+            </Tag>
+          </CPTooltip>
         </div>
         {searchBar}
       </div>
