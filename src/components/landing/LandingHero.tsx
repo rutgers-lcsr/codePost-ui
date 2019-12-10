@@ -15,7 +15,7 @@ import GradeAnimationVideo from './landingAnimations/grade/GradeAnimationVideo';
 
 const LandingHero = () => {
   const windowSize = useWindowSize();
-  const MAX_WIDTH = 595;
+  const MAX_WIDTH = 605;
   const MAX_HEIGHT = 385;
   const [modalShowing, setModalShowing] = React.useState(false);
 
