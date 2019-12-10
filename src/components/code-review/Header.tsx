@@ -23,6 +23,9 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 
 import { wait } from '../../infrastructure/animation';
 import { AssignmentType } from '../../infrastructure/assignment';
+import { Submission } from '../../infrastructure/submission';
+import { File } from '../../infrastructure/file';
+
 import { CourseType } from '../../infrastructure/course';
 import { FileType } from '../../infrastructure/file';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
@@ -151,20 +154,30 @@ export const ViewAsStudent = (props: IViewAsStudentProps) => {
 /**********************************************************************************************************************/
 
 interface IDownloadCodeProps {
-  files: FileType[];
+  submission: AnonymousSubmissionType;
 }
 
 export const DownloadCode = (props: IDownloadCodeProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
 
-  const onClick = () => {
-    if (props.files.length === 0) {
+  const onClick = async () => {
+    // We fetch the latest files because some files over the size limit have had their code
+    // replaced for rendering performance
+
+    const latestSubmission = await Submission.read(props.submission.id);
+    const files = await Promise.all(
+      latestSubmission.files.map((f) => {
+        return File.read(f);
+      }),
+    );
+
+    if (files.length === 0) {
       return;
     }
 
     const zip = new JSZip();
-    props.files.map((file: FileType) => {
+    files.map((file: FileType) => {
       let dir = zip;
       if (file.path !== null && file.path.length > 0) {
         const folders = file.path.split('/');
@@ -177,7 +190,7 @@ export const DownloadCode = (props: IDownloadCodeProps) => {
     });
 
     zip.generateAsync({ type: 'blob' }).then(function(content: any) {
-      saveAs(content, `submission-${props.files[0].submission}.zip`);
+      saveAs(content, `submission-${files[0].submission}.zip`);
     });
   };
 
@@ -582,17 +595,17 @@ export const StatusTags = (props: IStatusTagsProps) => {
       tooltipText = 'student cannot view';
       break;
     case 1:
-      tagColor = theme === 'light' ? 'orange' : '#fa8c16';
+      tagColor = theme === 'light' ? 'gold' : '#fa8c16';
       tagText = 'finalized but not published';
       tooltipText = 'student cannot view';
       break;
     case 2:
-      tagColor = theme === 'light' ? 'red' : '#f5222d';
+      tagColor = theme === 'light' ? 'orange' : '#fa8c16';
       tagText = 'published but not finalized';
       tooltipText = 'student cannot view';
       break;
     case 3:
-      tagColor = theme === 'light' ? 'gold' : '#faad14';
+      tagColor = theme === 'light' ? '#22be84' : '#22be84';
       tagText = 'finalized and published';
       tooltipText = 'student can view';
       break;

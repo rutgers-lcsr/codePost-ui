@@ -16,6 +16,8 @@ import { Route, Link, Switch } from 'react-router-dom';
 /* codePost imports  */
 import { IAssignmentToSubmissionsMap, IGraderSubmissionsDataTable } from '../../../types/common';
 
+import { encodeForLink } from '../../../components/core/URLutils';
+
 import { AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
 
@@ -259,7 +261,7 @@ class GraderData extends React.Component<IByGraderProps, IState> {
                   const graded = this.props.submissionsByGrader[graderEmail][assignment.id];
                   if (graded) {
                     toRet[assignment.name] = (
-                      <Link to={`${this.props.match.url}/${graderEmail}/${assignment.name.replace(' ', '_')}`}>
+                      <Link to={`${this.props.match.url}/${graderEmail}/${encodeForLink(assignment.name)}`}>
                         <span style={{ cursor: 'pointer' }}>{graded.length}</span>
                       </Link>
                     );

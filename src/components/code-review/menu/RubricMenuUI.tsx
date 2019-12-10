@@ -148,6 +148,7 @@ const RubricMenuUI = ({
         pointLimit: null,
         sortKey: 0,
         helpText: 'List of the 10 most frequently applied comments from this rubric.',
+        atMostOnce: false,
       };
       adjustedRubricComments[-1000] = Object.values(rubricComments)
         .flat()
@@ -399,6 +400,7 @@ const RubricMenuUI = ({
           onUnLink={onUnLink}
           onCancel={helpers.onLinkedAlertCancel}
           isVisible={state.linkedComments.length > 0}
+          numComments={state.linkedComments[0] ? state.instanceLists[state.linkedComments[0].id].length : 0}
         />
         <LinkedCommentsConfirm
           onAccept={onLinkedConfirmAccept}

@@ -11,6 +11,7 @@ import { Button, Empty, message, notification } from 'antd';
 /* other library imports */
 import _ from 'lodash';
 import queryString from 'query-string';
+import moment from 'moment-timezone';
 
 /* codePost imports */
 import Loading from '../core/Loading';
@@ -353,7 +354,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         return test.passed ? match!.pointsPass : match!.pointsFail;
       })
       .reduce((el, acc) => el + acc, 0);
-    console.log(testPoints);
 
     let grade = 0;
     if (assignment.additiveGrading) {
@@ -919,6 +919,20 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return;
     }
 
+    // If this category requires "at most once", check to see if we've applied a comment from this
+    // category somewhere else.
+    const category = this.state.rubricCategories.find((el) => el.id === rubricComment.category);
+    if (category !== undefined && category.atMostOnce) {
+      const siblings = this.state.rubricComments[rubricComment.category].map((el) => el.id);
+      const hasApplied = Object.values(this.state.comments)
+        .flat()
+        .some((el) => siblings.indexOf(el.rubricComment) > -1 && el.id !== this.state.activeCommentID);
+      if (hasApplied) {
+        message.warning("You can't apply more than one rubric comment from this rubric category.");
+        return;
+      }
+    }
+
     const comments = CodeConsole.linkRubricComment(this.state.comments, rubricComment, this.state.activeCommentID);
 
     if (comments === undefined) {
@@ -1104,7 +1118,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       sections: [],
       sendReleasedSubmissionsToBack: false,
       showStudentsStatistics: false,
-      timezone: '',
+      timezone: moment.tz.guess(),
       emailNewUsers: false,
       anonymousGradingDefault: false,
     };
@@ -1116,7 +1130,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       students: ['student1@example.edu'],
       assignment: -1,
       dateEdited: '',
-      dateUploaded: '',
+      dateUploaded: moment().toString(),
       grade: null,
       grader: this.props.user.email,
       questionText: '',
@@ -1162,6 +1176,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         pointLimit: null,
         sortKey: 0,
         helpText: '',
+        atMostOnce: false,
       },
       {
         id: 2,
@@ -1171,6 +1186,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         pointLimit: null,
         sortKey: 1,
         helpText: '',
+        atMostOnce: false,
       },
     ];
 
@@ -1180,7 +1196,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           id: 1,
           text: 'Unnecessary comment - this code speaks for itself!',
           category: 1,
-          comments: [],
           pointDelta: 1,
           sortKey: 0,
           explanation: '',
@@ -1189,7 +1204,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           id: 2,
           text: 'Code not separated by newlines into logical blocks',
           category: 1,
-          comments: [],
           pointDelta: 1,
           sortKey: 1,
           explanation: '',
@@ -1198,7 +1212,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           id: 3,
           text: "Generic variable name (e.g. `x`) that doesn't describe value",
           category: 1,
-          comments: [],
           pointDelta: 1,
           sortKey: 2,
           explanation: '',
@@ -1209,7 +1222,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           id: 4,
           text: 'Sorting followed by binary search would be faster than performing a `O(n^2)` search every time',
           category: 2,
-          comments: [],
           pointDelta: 2,
           sortKey: 0,
           explanation: '',
@@ -1218,7 +1230,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           id: 5,
           text: 'Memoization would improve performance, since these values are frequently recomputed',
           category: 2,
-          comments: [],
           pointDelta: 1,
           sortKey: 0,
           explanation: '',
@@ -1694,7 +1705,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         rightHeader = [
           <ThemeToggle key="theme-toggle" small={true} />,
-          <DownloadCode key="download-code" files={this.state.files} />,
+          <DownloadCode key="download-code" submission={this.state.submission!} />,
           controls,
           <ViewAsStudent key="view-as-student" pathname={this.props.location.pathname} />,
           <FinalizeButton
