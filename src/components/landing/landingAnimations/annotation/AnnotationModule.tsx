@@ -14,7 +14,16 @@ const AnnotationModule = (props: IProps) => {
   const pdfImg = <img width={370} src={pdf} alt="" />;
 
   return (
-    <div style={{ position: 'relative', width: 500, left: 140, top: -125 }}>
+    <div
+      style={{
+        position: 'relative',
+        width: 550,
+        height: 400,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
       <div
         style={{
           maxWidth: 370,
