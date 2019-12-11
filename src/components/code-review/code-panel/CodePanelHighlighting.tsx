@@ -295,6 +295,7 @@ class CodePanelHighlighting {
       return;
     }
 
+    const className = `highlight-${commentID}`;
     const elems = document.getElementsByClassName(className);
 
     [].forEach.call(elems, (elem: any) => {
