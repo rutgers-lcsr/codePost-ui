@@ -298,3 +298,15 @@
   height: 12px !important;
   width: 12px !important;
 }
+
+.annotation-image {
+  z-index: 1000;
+  transform: scale(0.8);
+  transition: all 0.3s;
+
+  &--active {
+    z-index: 2000;
+    transform: scale(1.4);
+    transition: all 0.3s;
+  }
+}

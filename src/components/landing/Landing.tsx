@@ -22,6 +22,7 @@ import LandingHeader from './LandingHeader';
 import LandingHero from './LandingHero';
 import LandingLayout from './LandingLayout';
 import LandingPanel from './LandingPanel';
+import LandingAnnotationPanel from './LandingAnnotationPanel';
 
 import { LandingFlowChart } from './landingAnimations/flowchart/LandingFlowChart';
 
@@ -32,6 +33,7 @@ import { Testimonials } from './Testimonial';
 import APIExample from './LandingAPIExample';
 
 import AutograderModule from './landingAnimations/autograder/AutograderModule';
+
 import Integrations from './Integrations';
 
 /**********************************************************************************************************************/
@@ -62,29 +64,7 @@ class Landing extends React.PureComponent<{}, {}> {
   }
 
   public render() {
-    const panelOne = (
-      <LandingPanel
-        text={
-          <div>
-            <div style={{ paddingBottom: 15 }}>
-              Use codePost to annotate programming assignments with easy-to-read comments that don't clutter code. You
-              and your course staff can provide custom feedback, as well as apply standardized rubrics. And we support
-              iPython notebooks too.
-            </div>
-          </div>
-        }
-        title="ANNOTATE STUDENT CODE"
-        subTitle="Effortlessly annotate and grade programming assignments"
-        module={<div />}
-        type="left"
-        moduleMaxWidth={595}
-        moduleMaxHeight={380}
-        textSize="normal"
-        removeModelSmallScreen={true}
-        bevel={true}
-        gutterSize={50}
-      />
-    );
+    const panelOne = <LandingAnnotationPanel />;
 
     const panelTwo = (
       <LandingPanel
