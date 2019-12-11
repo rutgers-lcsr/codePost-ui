@@ -114,7 +114,6 @@ class CodePanelHighlighting {
       prevIDs = updatedIDs;
       elements.push(element);
     }
-
     return [elements.join(''), styles];
   };
 
@@ -129,10 +128,14 @@ class CodePanelHighlighting {
       if (html.includes('</strong>')) {
         let className = html.match(/class=".*?"/g) ? html.match(/class=".*?"/g)![0] : '';
         let commentID = 0;
+        console.log('classname', className);
         if (className !== '') {
           className = className.split('=')[1];
+          console.log(className);
           className = className.substring(1, className.length - 1);
+          console.log(className);
           commentID = +className.substr(10);
+          console.log(commentID);
         }
         const text = html.replace(/<\/?strong.*?>/g, '');
         return (
@@ -154,6 +157,17 @@ class CodePanelHighlighting {
     return returnElements;
   };
 
+  // public static insertHighlightClass = (id: number) => {
+  //   const stylesheet = document.styleSheets[0] as CSSStyleSheet;
+  //   stylesheet.insertRule(`.highlight-${id}`);
+  // };
+
+  // public static createHighlightClasses = (comments: CommentType[]) => {
+  //   comments.forEach((comment: CommentType) => {
+  //     CodePanelHighlighting.insertHighlightClass(comment.id);
+  //   });
+  // };
+
   // O(NM) where N is the number of highlights and M is the length of the line
   public static highlight = (
     sortedComments: CommentType[],
@@ -170,14 +184,58 @@ class CodePanelHighlighting {
     // This code doesn't quite work yet
     // We have the correct 'nesting levels', but the !important doesn't always override on deeply nested
     // highlights. It catches the first nesting, but none deeper.
-    for (const [highlight, level] of Object.entries(styles)) {
-      if (highlight === '0' || highlight === `${Number.MAX_SAFE_INTEGER}`) {
-        continue;
+    const ids: string[] = Object.entries(styles).map(([highlight, level]) => {
+      return highlight;
+    });
+    // Don't mess with nested opacity for the cursor
+    if (!ids.includes('0') && !ids.includes(`${Number.MAX_SAFE_INTEGER}`)) {
+      for (const [highlight, level] of Object.entries(styles)) {
+        if (highlight === '0' || highlight === `${Number.MAX_SAFE_INTEGER}`) {
+          continue;
+        }
+
+        console.log('stylesheets', document.styleSheets[0]);
+        const className = `.highlight-${highlight}`;
+        const stylesheet = document.styleSheets[0] as CSSStyleSheet;
+        const tint = 0.2 + 0.2 * level;
+        const rules = stylesheet.rules || stylesheet.cssRules;
+
+        let ruleExists = false;
+        for (let x in rules) {
+          // @ts-ignore
+          if (rules[x].selectorText === className) {
+            // @ts-ignore
+            rules[x].style.backgroudColor = color;
+            // @ts-ignore
+            rules[x].style.opacity = `${tint} !important`;
+            ruleExists = true;
+            break;
+          }
+        }
+        if (!ruleExists) {
+          stylesheet.insertRule(`.highlight-${highlight} {background-color: ${color}; opacity: ${tint} !important;}`);
+        }
+
+        // for (var i = 0; i < stylesheet.length; i++) {
+        //   var rules = document.styleSheets[i].rules || document.styleSheets[i].cssRules;
+        //   for (var x in rules) {
+        //     if (typeof rules[x].selectorText == 'string') ret.push(rules[x].selectorText);
+        //   }
+        // }
+
+        // if (
+        //   stylesheet['cssRules'].find((rule: any) => {
+        //     return rule.selectorText === className;
+        //   })
+        // ) {
+        //   console.log('already found!!');
+        // }
+
+        // const tint = 0.2 + 0.2 * level;
+        // (document.styleSheets[0] as CSSStyleSheet).insertRule(
+        //   `.highlight-${highlight} {background-color: ${color}; opacity: ${tint} !important;}`,
+        // );
       }
-      const tint = 0.2 + 0.2 * level;
-      (document.styleSheets[0] as CSSStyleSheet).insertRule(
-        `.highlight-${highlight} {background-color: ${color} !important; opacity: ${tint} !important;}`,
-      );
     }
 
     const returnElements = CodePanelHighlighting.convertStringToJSX(htmlString, line, readOnly, onHighlightClick);
@@ -242,23 +300,40 @@ class CodePanelHighlighting {
       return;
     }
 
+    if (commentID < 0) {
+      return;
+    }
+
     const className = `highlight-${commentID}`;
     const elems = document.getElementsByClassName(className);
 
     [].forEach.call(elems, (elem: any) => {
-      elem.style.setProperty('background-color', color, 'important');
+      elem.style.setProperty('background-color', color);
     });
   };
 
   public static darkenHighlight = (commentID: number, color: string) => {
+    // if (commentID === -1 || commentID === 13) {
+    //   console.log('DARKENHIGHLIGHT FUNCTION');
+    // }
     if (commentID === 0 || commentID === Number.MAX_SAFE_INTEGER) {
       return;
     }
+    if (commentID < 0) {
+      return;
+    }
+    console.log('DARKENHIGHLIGHT FUNCTION', commentID);
     const className = `highlight-${commentID}`;
+    console.log('---->>>>', className);
+
+    // const cName = `.highlight-${commentID}`;
+
+    // document.querySelector('')
+
     const elems = document.getElementsByClassName(className);
 
     [].forEach.call(elems, (elem: any) => {
-      elem.style.setProperty('background-color', color, 'important');
+      elem.style.setProperty('background-color', color);
     });
   };
 }

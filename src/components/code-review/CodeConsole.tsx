@@ -1012,7 +1012,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public changeActiveComment = (id: number | undefined): void => {
     if (id === undefined) {
-      this.setState({ activeCommentID: id, showCursor: CURSOR_DOMAIN.COMMENTS });
+      this.setState({ activeCommentID: id, showCursor: CURSOR_DOMAIN.CODE });
     } else {
       this.setState({ activeCommentID: id, showCursor: CURSOR_DOMAIN.RUBRIC });
     }
@@ -1624,6 +1624,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /**********************************************************************************/
 
   public render() {
+    if (this.state.selectedFile !== undefined) {
+      console.log(
+        'RENDER COMMETNS',
+        this.state.comments[this.state.selectedFile.id].map((comment: any) => {
+          return comment.id;
+        }),
+      );
+    }
+
     if (this.state.isLoading) {
       return <Loading />;
     }

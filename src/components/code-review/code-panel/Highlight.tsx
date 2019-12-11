@@ -8,6 +8,8 @@ import CodePanelHighlighting from './CodePanelHighlighting';
 
 interface IHighlightProps {
   readOnly: boolean;
+  // FIXME: commentID will be 'n/a' for nested comments
+  //          consider yourself warned...
   commentID: number;
   line: number;
   className: string;
@@ -17,6 +19,8 @@ interface IHighlightProps {
 
 const Highlight = (props: IHighlightProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
+
+  console.log('COMMENTID', props.line, props.commentID);
 
   const commandPressed = useKeyPress('Meta');
 
@@ -49,7 +53,11 @@ const Highlight = (props: IHighlightProps) => {
     //   style = { ...style, backgroundColor: consoleTheme.highlight };
     // }
 
-    CodePanelHighlighting.darkenHighlight(props.commentID, consoleTheme.highlight);
+    const regex = /-0\s|9007199254740991/gm;
+    // console.log('match', props.className.match(regex));
+    if (props.className.match(regex) === null) {
+      CodePanelHighlighting.darkenHighlight(props.commentID, consoleTheme.highlight);
+    }
   }
 
   //   <div

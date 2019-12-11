@@ -83,6 +83,8 @@
 
       vertical-align: middle;
 
+      background-color: #ffbf00;
+
       // Override selection styling
       &::selection {
         color: transparent; /* WebKit/Blink Browsers */
@@ -112,10 +114,10 @@
     .highlight-9007199254740991 {
       background-color: rgba(0, 0, 255, 0.2) !important;
       opacity: 1 !important;
-      border-right-width: 1px;
+      border-right-width: 2px;
       border-right-style: solid;
       border-right-color: rgba(0, 0, 0, 0.8) !important;
-      margin-right: -1px;
+      margin-right: -2px;
       animation: blink-right 1s ease-in infinite;
     }
 
