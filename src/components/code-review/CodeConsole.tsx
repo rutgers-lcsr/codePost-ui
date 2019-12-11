@@ -932,6 +932,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               ),
             });
           } else if (e.key === 'Enter') {
+            console.log('waiting');
             await wait(5);
 
             this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN, cursorIndex: 0 });

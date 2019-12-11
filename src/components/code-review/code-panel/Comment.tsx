@@ -190,7 +190,12 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       const scrollArea = document.getElementById('code-scroll-area');
       if (scrollArea !== null) {
         setTimeout(() => {
-          scrollArea.scrollTop = this.props.placement;
+          if (
+            this.props.placement > scrollArea.scrollTop + window.innerHeight - 100 ||
+            this.props.placement < scrollArea.scrollTop
+          ) {
+            scrollArea.scrollTop = Math.max(0, this.props.placement - 100);
+          }
         });
       }
     }
@@ -250,7 +255,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       return;
     }
 
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !this.state.showDeletePopover) {
       e.preventDefault();
       e.stopPropagation();
       if (this.props.commentType === 'active') {
@@ -276,12 +281,18 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   };
 
   public handleHotkeys = (e: any) => {
-    if (e.key === 'Escapes') {
+    if (e.key === 'Escape') {
       if (this.state.showDeletePopover) {
         this.confirmCancelDelete(e);
       } else {
         this.props.changeActive(undefined);
       }
+    }
+
+    if (this.state.showDeletePopover && e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+      this.confirmDelete(e);
     }
 
     if (this.props.commentType !== 'active') {
@@ -300,12 +311,6 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       } else {
         this.confirmDelete(e);
       }
-    }
-
-    if (this.state.showDeletePopover && e.key === 'Enter') {
-      e.preventDefault();
-      e.stopPropagation();
-      this.confirmDelete(e);
     }
 
     if (e.key === 'y' && triggerKey) {
@@ -706,7 +711,18 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         >
           <CPButton cpType="danger" icon="delete" />
         </Popover>
-      ) : null;
+      ) : (
+        <Popover
+          title="Are you sure you want to delete this comment?"
+          visible={this.state.showDeletePopover}
+          onVisibleChange={this.handleDeletePopoverVisibleChange}
+          trigger="click"
+          placement="bottomRight"
+          content={popoverContent}
+        >
+          {null}
+        </Popover>
+      );
 
       onClick = this.onCommentClick;
       cursor = 'pointer';
