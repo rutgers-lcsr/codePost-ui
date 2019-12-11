@@ -128,14 +128,10 @@ class CodePanelHighlighting {
       if (html.includes('</strong>')) {
         let className = html.match(/class=".*?"/g) ? html.match(/class=".*?"/g)![0] : '';
         let commentID = 0;
-        console.log('classname', className);
         if (className !== '') {
           className = className.split('=')[1];
-          console.log(className);
           className = className.substring(1, className.length - 1);
-          console.log(className);
           commentID = +className.substr(10);
-          console.log(commentID);
         }
         const text = html.replace(/<\/?strong.*?>/g, '');
         return (
@@ -194,7 +190,6 @@ class CodePanelHighlighting {
           continue;
         }
 
-        console.log('stylesheets', document.styleSheets[0]);
         const className = `.highlight-${highlight}`;
         const stylesheet = document.styleSheets[0] as CSSStyleSheet;
         const tint = 0.2 + 0.2 * level;
@@ -215,26 +210,6 @@ class CodePanelHighlighting {
         if (!ruleExists) {
           stylesheet.insertRule(`.highlight-${highlight} {background-color: ${color}; opacity: ${tint} !important;}`);
         }
-
-        // for (var i = 0; i < stylesheet.length; i++) {
-        //   var rules = document.styleSheets[i].rules || document.styleSheets[i].cssRules;
-        //   for (var x in rules) {
-        //     if (typeof rules[x].selectorText == 'string') ret.push(rules[x].selectorText);
-        //   }
-        // }
-
-        // if (
-        //   stylesheet['cssRules'].find((rule: any) => {
-        //     return rule.selectorText === className;
-        //   })
-        // ) {
-        //   console.log('already found!!');
-        // }
-
-        // const tint = 0.2 + 0.2 * level;
-        // (document.styleSheets[0] as CSSStyleSheet).insertRule(
-        //   `.highlight-${highlight} {background-color: ${color}; opacity: ${tint} !important;}`,
-        // );
       }
     }
 
@@ -313,22 +288,12 @@ class CodePanelHighlighting {
   };
 
   public static darkenHighlight = (commentID: number, color: string) => {
-    // if (commentID === -1 || commentID === 13) {
-    //   console.log('DARKENHIGHLIGHT FUNCTION');
-    // }
     if (commentID === 0 || commentID === Number.MAX_SAFE_INTEGER) {
       return;
     }
     if (commentID < 0) {
       return;
     }
-    console.log('DARKENHIGHLIGHT FUNCTION', commentID);
-    const className = `highlight-${commentID}`;
-    console.log('---->>>>', className);
-
-    // const cName = `.highlight-${commentID}`;
-
-    // document.querySelector('')
 
     const elems = document.getElementsByClassName(className);
 

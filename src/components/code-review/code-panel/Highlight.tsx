@@ -20,8 +20,6 @@ interface IHighlightProps {
 const Highlight = (props: IHighlightProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
-  console.log('COMMENTID', props.line, props.commentID);
-
   const commandPressed = useKeyPress('Meta');
 
   let style: React.CSSProperties = {};
@@ -49,23 +47,13 @@ const Highlight = (props: IHighlightProps) => {
       opacity: consoleTheme.highlightOpacity,
     };
 
-    // if (props.commentID !== 0) {
-    //   style = { ...style, backgroundColor: consoleTheme.highlight };
-    // }
-
+    // Don't darken the cursor highlights
     const regex = /-0\s|9007199254740991/gm;
-    // console.log('match', props.className.match(regex));
     if (props.className.match(regex) === null) {
       CodePanelHighlighting.darkenHighlight(props.commentID, consoleTheme.highlight);
     }
   }
 
-  //   <div
-  //   style={{
-  //     ...style,
-  //     ...{ position: 'absolute', border: '1px solid red', height: '16px', width: '100%', top: '2px', opacity: 0.2 },
-  //   }}
-  // />
   return (
     <span
       key={`${props.line}-${props.commentID}`}
