@@ -3,6 +3,7 @@ import * as React from 'react';
 import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
 
 import CodePanelHighlighting from './CodePanelHighlighting';
+import CodePanelSizing from './CodePanelSizing';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
@@ -46,8 +47,6 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     feedback: 0,
   };
 
-  console.log('rendering CODE');
-
   const addNewComment = async (startLine: number, endLine: number, startChar: number, endChar: number) => {
     const newComment: CommentType = {
       startLine,
@@ -71,11 +70,30 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     CodePanelHighlighting.brightenHighlight(newComment.id, consoleTheme.highlightActive);
   };
 
+  // Handle code scrolling
+  const scrollCodeToCursor = (codeScrollArea: any, _cursor: ICursorType) => {
+    const cursorTop = _cursor.startLine * CodePanelSizing.pixelsPerLine();
+    const cursorBottom = cursorTop + (_cursor.endLine - _cursor.startLine) * CodePanelSizing.pixelsPerLine();
+
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+
+    if (cursorTop < codeScrollArea.scrollTop) {
+      setTimeout(() => {
+        codeScrollArea.scrollTop = cursorTop;
+      });
+    } else if (cursorBottom - codeScrollArea.scrollTop > windowHeight - 170) {
+      setTimeout(() => {
+        codeScrollArea.scrollTop = cursorBottom - windowHeight + 170;
+      });
+    }
+  };
+
   React.useEffect(() => {
     const code = props.file.code.split('\n');
+    const codeScrollArea = document.getElementById('code-scroll-area');
 
     const handleKeydown = async (e: any) => {
-      if (props.showCursor === CURSOR_DOMAIN.CODE) {
+      if (props.showCursor === CURSOR_DOMAIN.CODE && codeScrollArea !== null) {
         if (e.key === 'Enter') {
           e.preventDefault();
           e.stopPropagation();
@@ -97,16 +115,20 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
             newCursor = shiftRight(code, cursor, e.altKey);
           } else if (e.shiftKey && e.key === 'ArrowUp') {
             newCursor = shiftUp(code, cursor);
+            scrollCodeToCursor(codeScrollArea, newCursor);
           } else if (e.shiftKey && e.key === 'ArrowDown') {
             newCursor = shiftDown(code, cursor);
+            scrollCodeToCursor(codeScrollArea, newCursor);
           } else if (e.key === 'ArrowLeft') {
             newCursor = left(code, cursor, e.altKey);
           } else if (e.key === 'ArrowRight') {
             newCursor = right(code, cursor, e.altKey);
           } else if (e.key === 'ArrowUp') {
             newCursor = up(code, cursor);
+            scrollCodeToCursor(codeScrollArea, newCursor);
           } else if (e.key === 'ArrowDown') {
             newCursor = down(code, cursor);
+            scrollCodeToCursor(codeScrollArea, newCursor);
           }
 
           setCursor(newCursor);
