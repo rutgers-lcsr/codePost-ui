@@ -303,10 +303,14 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     }
 
     if (this.state.showDeletePopover && e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
       this.confirmDelete(e);
     }
 
-    if (e.key === 'u' && triggerKey) {
+    if (e.key === 'y' && triggerKey) {
+      e.preventDefault();
+      e.stopPropagation();
       this.removeRubricComment();
     }
 

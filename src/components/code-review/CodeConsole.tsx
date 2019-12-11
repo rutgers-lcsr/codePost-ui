@@ -719,6 +719,26 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     if (this.state.selectedFile !== undefined) {
       if (this.state.activeCommentID !== undefined) {
         console.log('active comment');
+        if (e.key === 'u' && triggerKey) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('RUBRIC DOWN', this.state.cursorIndex);
+          if (this.state.showCursor !== CURSOR_DOMAIN.RUBRIC) {
+            this.setState({ showCursor: CURSOR_DOMAIN.RUBRIC, cursorIndex: 0 });
+          } else {
+            const numComments = Object.values(this.state.rubricComments).flat().length;
+            this.setState({ cursorIndex: Math.min(this.state.cursorIndex + 1, numComments - 1) });
+          }
+        } else if (e.key === 'i' && triggerKey) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('RUBRIC DOWN', this.state.cursorIndex);
+          if (this.state.showCursor !== CURSOR_DOMAIN.RUBRIC) {
+            this.setState({ showCursor: CURSOR_DOMAIN.RUBRIC });
+          } else {
+            this.setState({ cursorIndex: Math.max(this.state.cursorIndex - 1, 0) });
+          }
+        }
       } else {
         console.log('normal');
 
@@ -1014,7 +1034,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     if (id === undefined) {
       this.setState({ activeCommentID: id, showCursor: CURSOR_DOMAIN.CODE });
     } else {
-      this.setState({ activeCommentID: id, showCursor: CURSOR_DOMAIN.RUBRIC });
+      this.setState({ activeCommentID: id, showCursor: CURSOR_DOMAIN.HIDDEN });
     }
   };
 
