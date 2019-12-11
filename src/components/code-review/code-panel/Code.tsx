@@ -92,17 +92,17 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
           if (e.key === 'Escape') {
             newCursor = cursor.lead === 'front' ? front(cursor) : back(cursor);
           } else if (e.shiftKey && e.key === 'ArrowLeft') {
-            newCursor = shiftLeft(code, cursor);
+            newCursor = shiftLeft(code, cursor, e.altKey);
           } else if (e.shiftKey && e.key === 'ArrowRight') {
-            newCursor = shiftRight(code, cursor);
+            newCursor = shiftRight(code, cursor, e.altKey);
           } else if (e.shiftKey && e.key === 'ArrowUp') {
             newCursor = shiftUp(code, cursor);
           } else if (e.shiftKey && e.key === 'ArrowDown') {
             newCursor = shiftDown(code, cursor);
           } else if (e.key === 'ArrowLeft') {
-            newCursor = left(code, cursor);
+            newCursor = left(code, cursor, e.altKey);
           } else if (e.key === 'ArrowRight') {
-            newCursor = right(code, cursor);
+            newCursor = right(code, cursor, e.altKey);
           } else if (e.key === 'ArrowUp') {
             newCursor = up(code, cursor);
           } else if (e.key === 'ArrowDown') {

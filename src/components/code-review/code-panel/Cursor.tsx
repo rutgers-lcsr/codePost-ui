@@ -58,7 +58,9 @@ export const down = (code: string[], cursor: ICursorType): ICursorType => {
   }
 };
 
-export const left = (code: string[], cursor: ICursorType): ICursorType => {
+export const left = (code: string[], cursor: ICursorType, optionKey: boolean = false): ICursorType => {
+  const line = code[cursor.endLine];
+
   if (cursor.startChar <= 0) {
     if (cursor.startLine === 0) {
       // Beginning of file
@@ -81,17 +83,43 @@ export const left = (code: string[], cursor: ICursorType): ICursorType => {
       };
     }
   } else {
+    let newEndChar;
+
+    if (optionKey) {
+      const regexp = /\s/g;
+      // @ts-ignore
+      const spaces = line.matchAll(regexp);
+      const spaceIndices = [...spaces].filter((match: any) => {
+        return match.index < cursor.startChar - 1;
+      });
+
+      console.log(
+        'LINE LEFT',
+        spaceIndices.map((s: any) => {
+          return s.index;
+        }),
+      );
+
+      if (spaceIndices.length === 0) {
+        newEndChar = 1;
+      } else {
+        newEndChar = spaceIndices[spaceIndices.length - 1].index + 2;
+      }
+    } else {
+      newEndChar = cursor.startChar;
+    }
+
     return {
       ...cursor,
-      startChar: cursor.startChar - 1,
-      endChar: cursor.startChar,
+      startChar: newEndChar - 1,
+      endChar: newEndChar,
       endLine: cursor.startLine,
       lead: 'back',
     };
   }
 };
 
-export const right = (code: string[], cursor: ICursorType): ICursorType => {
+export const right = (code: string[], cursor: ICursorType, optionKey: boolean = false): ICursorType => {
   const line = code[cursor.endLine];
 
   if (cursor.endChar >= line.length) {
@@ -115,27 +143,53 @@ export const right = (code: string[], cursor: ICursorType): ICursorType => {
       };
     }
   } else {
+    let newEndChar;
+
+    if (optionKey) {
+      const regexp = /\s/g;
+      // @ts-ignore
+      const spaces = line.matchAll(regexp);
+      const spaceIndices = [...spaces].filter((match: any) => {
+        return match.index > cursor.endChar;
+      });
+
+      console.log(
+        'LINE RIGHT',
+        spaceIndices.map((s: any) => {
+          return s.index;
+        }),
+      );
+
+      if (spaceIndices.length === 0) {
+        newEndChar = line.length - 1;
+      } else {
+        newEndChar = spaceIndices[0].index + 1;
+      }
+    } else {
+      newEndChar = cursor.endChar;
+    }
+
     return {
       ...cursor,
-      startChar: cursor.endChar,
-      endChar: cursor.endChar + 1,
+      startChar: newEndChar,
+      endChar: newEndChar + 1,
       startLine: cursor.endLine,
       lead: 'front',
     };
   }
 };
 
-export const shiftLeft = (code: string[], cursor: ICursorType): ICursorType => {
+export const shiftLeft = (code: string[], cursor: ICursorType, optionKey: boolean = false): ICursorType => {
   if (cursor.lead === 'front') {
     if (cursor.startLine === cursor.endLine && cursor.endChar - cursor.startChar <= 1) {
-      const leadCursor = left(code, cursor);
+      const leadCursor = left(code, cursor, optionKey);
       return {
         ...leadCursor,
         endChar: cursor.endChar,
         endLine: cursor.endLine,
       };
     } else {
-      const frontCursor = left(code, front(cursor));
+      const frontCursor = left(code, front(cursor), optionKey);
 
       return {
         ...cursor,
@@ -144,7 +198,7 @@ export const shiftLeft = (code: string[], cursor: ICursorType): ICursorType => {
       };
     }
   } else {
-    const leadCursor = left(code, cursor);
+    const leadCursor = left(code, cursor, optionKey);
     return {
       ...leadCursor,
       endChar: cursor.endChar,
@@ -153,17 +207,17 @@ export const shiftLeft = (code: string[], cursor: ICursorType): ICursorType => {
   }
 };
 
-export const shiftRight = (code: string[], cursor: ICursorType): ICursorType => {
+export const shiftRight = (code: string[], cursor: ICursorType, optionKey: boolean = false): ICursorType => {
   if (cursor.lead === 'back') {
     if (cursor.startLine === cursor.endLine && cursor.endChar - cursor.startChar <= 1) {
-      const leadCursor = right(code, cursor);
+      const leadCursor = right(code, cursor, optionKey);
       return {
         ...leadCursor,
         startChar: cursor.startChar,
         startLine: cursor.startLine,
       };
     } else {
-      const leadCursor = right(code, back(cursor));
+      const leadCursor = right(code, back(cursor), optionKey);
       return {
         ...cursor,
         startChar: leadCursor.startChar,
@@ -171,7 +225,7 @@ export const shiftRight = (code: string[], cursor: ICursorType): ICursorType => 
       };
     }
   } else {
-    const leadCursor = right(code, front(cursor));
+    const leadCursor = right(code, front(cursor), optionKey);
 
     return {
       ...cursor,
