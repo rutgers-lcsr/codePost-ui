@@ -742,13 +742,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       } else {
         console.log('normal');
 
-        if (e.key === 'j' && triggerKey) {
+        if (e.key === 'ArrowLeft' && triggerKey) {
           if (this.state.showCursor === CURSOR_DOMAIN.CODE) {
             this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN });
           } else {
             this.setState({ showCursor: CURSOR_DOMAIN.CODE });
           }
-        } else if (e.key === 'k' && triggerKey) {
+        } else if (e.key === 'ArrowRight' && triggerKey) {
           if (this.state.showCursor === CURSOR_DOMAIN.COMMENTS) {
             this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN });
           } else {

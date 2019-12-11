@@ -314,11 +314,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       this.removeRubricComment();
     }
 
-    if (e.key === '[' && triggerKey) {
+    if (e.key === '[' && this.props.rubricComment === undefined && triggerKey) {
       e.preventDefault();
       e.stopPropagation();
       this.onMinus();
-    } else if (e.key === ']' && triggerKey) {
+    } else if (e.key === ']' && this.props.rubricComment === undefined && triggerKey) {
       e.preventDefault();
       e.stopPropagation();
       this.onPlus();

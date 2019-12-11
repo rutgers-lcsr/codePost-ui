@@ -5,6 +5,8 @@ import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
 import CodePanelHighlighting from './CodePanelHighlighting';
 import CodePanelSizing from './CodePanelSizing';
 
+import { getOperatingSystem, OS } from '../../core/operatingSystem';
+
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
 import { CommentIO, CommentType } from '../../../infrastructure/comment';
@@ -93,6 +95,8 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     const codeScrollArea = document.getElementById('code-scroll-area');
 
     const handleKeydown = async (e: any) => {
+      const os = getOperatingSystem();
+      const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
       if (props.showCursor === CURSOR_DOMAIN.CODE && codeScrollArea !== null) {
         if (e.key === 'Enter') {
           e.preventDefault();
