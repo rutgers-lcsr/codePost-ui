@@ -30,7 +30,7 @@ const Highlight = (props: IHighlightProps) => {
       opacity: consoleTheme.highlightOpacity,
     };
 
-    if (props.commentID !== 0) {
+    if (props.commentID !== 0 || props.commentID !== Number.MAX_SAFE_INTEGER) {
       style = { ...style, backgroundColor: consoleTheme.highlight };
     }
 
@@ -45,9 +45,9 @@ const Highlight = (props: IHighlightProps) => {
       opacity: consoleTheme.highlightOpacity,
     };
 
-    if (props.commentID !== 0) {
-      style = { ...style, backgroundColor: consoleTheme.highlight };
-    }
+    // if (props.commentID !== 0) {
+    //   style = { ...style, backgroundColor: consoleTheme.highlight };
+    // }
 
     CodePanelHighlighting.darkenHighlight(props.commentID, consoleTheme.highlight);
   }

@@ -37,7 +37,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
   // A cursorComment is a pseudo-comment with ID === 0
   const cursorComment = {
     ...cursor,
-    id: 0,
+    id: cursor.lead === 'back' ? 0 : Number.MAX_SAFE_INTEGER,
     file: props.file.id,
     pointDelta: 0.0,
     text: '',

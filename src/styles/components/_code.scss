@@ -95,9 +95,44 @@
       }
     }
 
+    //////////////////////////////////////////////////////
+    // CURSOR
+    //////////////////////////////////////////////////////
+
     .highlight-0 {
-      background-color: blue !important;
+      background-color: rgba(0, 0, 255, 0.2) !important;
+      opacity: 1 !important;
+      border-left-width: 1px;
+      border-left-style: solid;
+      border-left-color: rgba(0, 0, 0, 0.8) !important;
+      margin-right: -1px;
+      animation: blink-left 1s ease-in infinite;
     }
+
+    .highlight-9007199254740991 {
+      background-color: rgba(0, 0, 255, 0.2) !important;
+      opacity: 1 !important;
+      border-right-width: 1px;
+      border-right-style: solid;
+      border-right-color: rgba(0, 0, 0, 0.8) !important;
+      margin-right: -1px;
+      animation: blink-right 1s ease-in infinite;
+    }
+
+    @keyframes blink-left {
+      50% {
+        border-left-color: rgba(255, 255, 255, 0);
+      }
+    }
+
+    @keyframes blink-right {
+      50% {
+        border-right-color: rgba(255, 255, 255, 0);
+      }
+    }
+
+    //////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////
   }
 
   .react-syntax-highlighter-line-number {

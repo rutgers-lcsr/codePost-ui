@@ -171,7 +171,7 @@ class CodePanelHighlighting {
     // We have the correct 'nesting levels', but the !important doesn't always override on deeply nested
     // highlights. It catches the first nesting, but none deeper.
     for (const [highlight, level] of Object.entries(styles)) {
-      if (highlight === '0') {
+      if (highlight === '0' || highlight === `${Number.MAX_SAFE_INTEGER}`) {
         continue;
       }
       const tint = 0.2 + 0.2 * level;
@@ -238,7 +238,7 @@ class CodePanelHighlighting {
   };
 
   public static brightenHighlight = (commentID: number, color: string) => {
-    if (commentID === 0) {
+    if (commentID === 0 || commentID === Number.MAX_SAFE_INTEGER) {
       return;
     }
 
@@ -251,7 +251,7 @@ class CodePanelHighlighting {
   };
 
   public static darkenHighlight = (commentID: number, color: string) => {
-    if (commentID === 0) {
+    if (commentID === 0 || commentID === Number.MAX_SAFE_INTEGER) {
       return;
     }
     const className = `highlight-${commentID}`;
