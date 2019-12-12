@@ -57,7 +57,6 @@ interface ICommentsEditProps {
   oldCommentIDs: { [currentID: number]: number };
 
   showCursor: CURSOR_DOMAIN;
-  cursorIndex: number;
   showExplanations: boolean;
 }
 
@@ -445,7 +444,6 @@ const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & IComme
           forcedRubricMode={false}
           oldCommentIDs={{}}
           showCursor={CURSOR_DOMAIN.HIDDEN}
-          cursorIndex={0}
           showExplanations={false}
         />
       );

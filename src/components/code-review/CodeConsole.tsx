@@ -107,7 +107,9 @@ enum PERMISSION_LEVEL {
 export enum CURSOR_DOMAIN {
   HIDDEN,
   CODE,
+  CODE_HIDDEN,
   COMMENTS,
+  COMMENTS_HIDDEN,
   RUBRIC,
 }
 
@@ -744,7 +746,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           e.preventDefault();
           e.stopPropagation();
           if (this.state.showCursor === CURSOR_DOMAIN.CODE) {
-            this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN });
+            this.setState({ showCursor: CURSOR_DOMAIN.CODE_HIDDEN });
           } else {
             this.setState({ showCursor: CURSOR_DOMAIN.CODE });
           }
@@ -752,7 +754,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           e.preventDefault();
           e.stopPropagation();
           if (this.state.showCursor === CURSOR_DOMAIN.COMMENTS) {
-            this.setState({ showCursor: CURSOR_DOMAIN.HIDDEN });
+            this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS_HIDDEN });
           } else {
             this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS });
           }
@@ -856,9 +858,22 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public changeActiveComment = (id: number | undefined): void => {
     if (id === undefined) {
-      this.setState({ activeCommentID: id, showCursor: CURSOR_DOMAIN.CODE });
+      console.log('DEACTIVATED', this.state.showCursor);
+      if (this.state.showCursor === CURSOR_DOMAIN.CODE_HIDDEN) {
+        this.setState({ activeCommentID: id, showCursor: CURSOR_DOMAIN.CODE });
+      } else if (this.state.showCursor === CURSOR_DOMAIN.COMMENTS_HIDDEN) {
+        this.setState({ activeCommentID: id, showCursor: CURSOR_DOMAIN.COMMENTS });
+      } else {
+        this.setState({ activeCommentID: id });
+      }
     } else {
-      this.setState({ activeCommentID: id, showCursor: CURSOR_DOMAIN.HIDDEN });
+      if (this.state.showCursor === CURSOR_DOMAIN.CODE) {
+        this.setState({ activeCommentID: id, showCursor: CURSOR_DOMAIN.CODE_HIDDEN });
+      } else if (this.state.showCursor === CURSOR_DOMAIN.COMMENTS) {
+        this.setState({ activeCommentID: id, showCursor: CURSOR_DOMAIN.COMMENTS_HIDDEN });
+      } else {
+        this.setState({ activeCommentID: id });
+      }
     }
   };
 
@@ -1073,7 +1088,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     this.setState({
       comments,
       commentRubricComments,
-      showCursor: CURSOR_DOMAIN.HIDDEN,
+      showCursor: CURSOR_DOMAIN.CODE_HIDDEN,
       cursorIndex: 0,
     });
   };
@@ -1598,7 +1613,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               forcedRubricMode={this.state.assignment.forcedRubricMode}
               rubricCategories={this.state.rubricCategories}
               showCursor={this.state.showCursor}
-              cursorIndex={this.state.cursorIndex}
             />
           );
 

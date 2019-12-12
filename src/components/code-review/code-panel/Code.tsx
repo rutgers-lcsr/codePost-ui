@@ -77,7 +77,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     };
 
     props.addComment(newComment, props.file);
-    props.updateCursorDomain(CURSOR_DOMAIN.HIDDEN);
+    props.updateCursorDomain(CURSOR_DOMAIN.CODE_HIDDEN);
 
     // FIXME: we can come up with a better solution
     await wait(5);
@@ -129,7 +129,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
           e.stopPropagation();
 
           await addNewComment(cursor.startLine, cursor.endLine, cursor.startChar, cursor.endChar);
-          props.updateCursorDomain(CURSOR_DOMAIN.HIDDEN);
+          props.updateCursorDomain(CURSOR_DOMAIN.CODE_HIDDEN);
         }
 
         if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Escape'].includes(e.key)) {
