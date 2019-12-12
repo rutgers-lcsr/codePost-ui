@@ -58,7 +58,12 @@ export const down = (code: string[], cursor: ICursorType): ICursorType => {
   }
 };
 
-export const left = (code: string[], cursor: ICursorType, optionKey: boolean = false): ICursorType => {
+export const left = (
+  code: string[],
+  cursor: ICursorType,
+  optionKey: boolean = false,
+  jumpSpace: boolean = false,
+): ICursorType => {
   const line = code[cursor.endLine];
 
   if (cursor.startChar <= 0) {
@@ -103,7 +108,13 @@ export const left = (code: string[], cursor: ICursorType, optionKey: boolean = f
       if (spaceIndices.length === 0) {
         newEndChar = 1;
       } else {
-        newEndChar = spaceIndices[spaceIndices.length - 1].index + 2;
+        if (jumpSpace) {
+          // newEndChar = spaceIndices[0].index + 1;
+          newEndChar = spaceIndices[spaceIndices.length - 1].index;
+        } else {
+          newEndChar = spaceIndices[spaceIndices.length - 1].index + 2;
+          // newEndChar = spaceIndices[0].index - 1;
+        }
       }
     } else {
       newEndChar = cursor.startChar;
@@ -119,7 +130,12 @@ export const left = (code: string[], cursor: ICursorType, optionKey: boolean = f
   }
 };
 
-export const right = (code: string[], cursor: ICursorType, optionKey: boolean = false): ICursorType => {
+export const right = (
+  code: string[],
+  cursor: ICursorType,
+  optionKey: boolean = false,
+  jumpSpace: boolean = true,
+): ICursorType => {
   const line = code[cursor.endLine];
 
   if (cursor.endChar >= line.length) {
@@ -163,7 +179,11 @@ export const right = (code: string[], cursor: ICursorType, optionKey: boolean = 
       if (spaceIndices.length === 0) {
         newEndChar = line.length - 1;
       } else {
-        newEndChar = spaceIndices[0].index + 1;
+        if (jumpSpace) {
+          newEndChar = spaceIndices[0].index + 1;
+        } else {
+          newEndChar = spaceIndices[0].index - 1;
+        }
       }
     } else {
       newEndChar = cursor.endChar;
@@ -182,14 +202,14 @@ export const right = (code: string[], cursor: ICursorType, optionKey: boolean = 
 export const shiftLeft = (code: string[], cursor: ICursorType, optionKey: boolean = false): ICursorType => {
   if (cursor.lead === 'front') {
     if (cursor.startLine === cursor.endLine && cursor.endChar - cursor.startChar <= 1) {
-      const leadCursor = left(code, cursor, optionKey);
+      const leadCursor = left(code, cursor, optionKey, true);
       return {
         ...leadCursor,
         endChar: cursor.endChar,
         endLine: cursor.endLine,
       };
     } else {
-      const frontCursor = left(code, front(cursor), optionKey);
+      const frontCursor = left(code, front(cursor), optionKey, true);
 
       return {
         ...cursor,
@@ -198,7 +218,7 @@ export const shiftLeft = (code: string[], cursor: ICursorType, optionKey: boolea
       };
     }
   } else {
-    const leadCursor = left(code, cursor, optionKey);
+    const leadCursor = left(code, cursor, optionKey, false);
     return {
       ...leadCursor,
       endChar: cursor.endChar,
@@ -210,14 +230,14 @@ export const shiftLeft = (code: string[], cursor: ICursorType, optionKey: boolea
 export const shiftRight = (code: string[], cursor: ICursorType, optionKey: boolean = false): ICursorType => {
   if (cursor.lead === 'back') {
     if (cursor.startLine === cursor.endLine && cursor.endChar - cursor.startChar <= 1) {
-      const leadCursor = right(code, cursor, optionKey);
+      const leadCursor = right(code, cursor, optionKey, true);
       return {
         ...leadCursor,
         startChar: cursor.startChar,
         startLine: cursor.startLine,
       };
     } else {
-      const leadCursor = right(code, back(cursor), optionKey);
+      const leadCursor = right(code, back(cursor), optionKey, true);
       return {
         ...cursor,
         startChar: leadCursor.startChar,
@@ -225,7 +245,7 @@ export const shiftRight = (code: string[], cursor: ICursorType, optionKey: boole
       };
     }
   } else {
-    const leadCursor = right(code, front(cursor), optionKey);
+    const leadCursor = right(code, front(cursor), optionKey, false);
 
     return {
       ...cursor,
