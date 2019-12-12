@@ -70,6 +70,13 @@ const BuildData = t.intersection([
   }),
 ]);
 
+const RunAllData = t.intersection([
+  GenericObject,
+  t.type({
+    sendEmail: t.boolean,
+  }),
+]);
+
 const TestTemplate = t.intersection([
   GenericObject,
   t.type({
@@ -103,6 +110,6 @@ export class Environment {
   public static simulateBuild = updateObjectDetail(SimulateResponse, BuildData, 'autograder/environments', 'build');
   public static updateBuild = updateObjectDetail(EnvironmentV, BuildData, 'autograder/environments', 'build');
   public static eject = readObjectDetail(TestsSource, 'autograder/environments', 'eject');
-  public static runAll = readObjectDetail(TaskV, 'autograder/environments', 'runAll');
+  public static runAll = updateObjectDetail(TaskV, RunAllData, 'autograder/environments', 'runAll');
   public static run = readObjectDetail(TaskV, 'autograder/environments', 'run');
 }

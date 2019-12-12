@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 
 /* library imports */
-import { Breadcrumb, Button, Dropdown, Icon, Menu, Radio } from 'antd';
+import { Breadcrumb, Button, Checkbox, Dropdown, Icon, Menu, Modal, Radio } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -48,6 +48,7 @@ interface IProps {
 
 enum MODAL_STATUS {
   None,
+  PendingRunAll,
   RunAll,
   ResultDetail,
 }
@@ -59,26 +60,34 @@ enum SUMMARY_TYPE {
 
 export const TestingSummary = (props: IProps & RouteComponentProps) => {
   // ************************** State Variables ******************************
-  const [testCasesByCategory, setTestCasesByCategory] = useState<TestCasesByCategory>({});
+  // objects
+  const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
   const [categories, setCategories] = useState<TestCategoryType[]>([]);
+
+  // Calculated data structures
+  const [testCasesByCategory, setTestCasesByCategory] = useState<TestCasesByCategory>({});
   const [testsBySubmission, setTestsBySubmission] = useState<TestsBySubmission>({});
   const [passedByCase, setPassedByCase] = useState<TestsByCase>({});
   const [failedByCase, setFailedByCase] = useState<TestsByCase>({});
   const [errorByCase, setErrorByCase] = useState<TestsByCase>({});
 
+  // Filters for result detail modal
   const [filterCategory, setFilterCategory] = useState<TestCategoryType | undefined>(undefined);
   const [filterCase, setFilterCase] = useState<TestCaseType | undefined>(undefined);
   const [filterStatus, setFilterStatus] = useState<RESULT_STATUS | undefined>(undefined);
   const [filterSubmission, setFilterSubmission] = useState<SubmissionType | undefined>(undefined);
 
+  // Loading
   const [subsLoading, setSubsLoading] = useState<number[]>([]);
   const [fetchLoading, setFetchLoading] = useState(false);
-  const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
-  const [progress, setProgress] = useState('{}');
 
+  // Page state
   const [modalStatus, setModalStatus] = useState<MODAL_STATUS>(MODAL_STATUS.None);
-
   const [summaryType, setSummaryType] = useState<SUMMARY_TYPE>(SUMMARY_TYPE.ByTest);
+
+  // Run all specific
+  const [progress, setProgress] = useState('{}');
+  const [sendEmail, setSendEmail] = useState(true);
 
   // ************************** Fetch Data ******************************
   useEffect(() => {
@@ -145,9 +154,24 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     }
   };
 
+  const getEstimate = (numSubmissions: number) => {
+    const showWith0 = (value: number) => (value < 10 ? `0${value}` : `${value}`);
+    const estimateInSeconds = numSubmissions * 4;
+
+    const hours = showWith0(Math.floor((estimateInSeconds / (60 * 60)) % 60));
+    const minutes = showWith0(Math.floor((estimateInSeconds / 60) % 60));
+    const seconds = showWith0(Math.floor(estimateInSeconds % 60));
+    return `${parseInt(hours) ? `${hours}hr` : ''}${minutes}m ${seconds}s`;
+  };
+
+  const triggerRunAll = () => {
+    setModalStatus(MODAL_STATUS.PendingRunAll);
+  };
+
   const runAll = async () => {
     if (env) {
-      const result = await Environment.runAll(env.id);
+      console.log(sendEmail);
+      const result = await Environment.runAll({ id: env.id, sendEmail: sendEmail });
       awaitTestResult(result.task, runAllCallback, runAllProgressCallback);
       const newEnv = { ...env };
       newEnv.isRunning = true;
@@ -356,7 +380,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
         <Icon type="solution" />
       </Radio.Button>
     </Radio.Group>,
-    <Button type="default" disabled={totalTests === 0} onClick={runAll} loading={env && env.isRunning}>
+    <Button type="default" disabled={totalTests === 0} onClick={triggerRunAll} loading={env && env.isRunning}>
       Run all Tests
     </Button>,
     <Button type="primary">
@@ -386,6 +410,24 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       raw={progress}
       numSubmissions={props.submissions.length}
     />,
+    <Modal
+      visible={modalStatus === MODAL_STATUS.PendingRunAll}
+      onCancel={setModalStatus.bind({}, MODAL_STATUS.None)}
+      onOk={runAll}
+      okText="Run"
+      title="Confirm Run All Tests"
+    >
+      <div style={{ fontSize: 16 }}>
+        <div>
+          Estimated time to complete: <b>{getEstimate(props.submissions.length)}</b>
+        </div>
+        <br />
+        <div>
+          <Checkbox checked={sendEmail} onChange={(e) => setSendEmail(e.target.checked)} /> Send me an email when
+          completed
+        </div>
+      </div>
+    </Modal>,
   ];
   return (
     <div>
