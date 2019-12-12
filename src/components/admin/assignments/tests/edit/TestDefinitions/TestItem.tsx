@@ -134,12 +134,27 @@ export const TestItem = (props: ITestItemProps) => {
     await saveTest(values, testType, explanation, codeString);
 
     if (props.testCase.id > 0) {
-      setIsRunning(true);
-      const result = await TestCase.run(
-        props.testCase.id,
-        props.activeSubmission ? { submission: props.activeSubmission.id.toString() } : {},
-      );
-      awaitTestResult(result.task, callback);
+      if (!props.activeSubmission && props.files.length === 0) {
+        confirm({
+          title: 'Empty Solution code',
+          content: "You haven't uploaded any solution code. Do you still want to run this test?",
+          async onOk() {
+            setIsRunning(true);
+            const result = await TestCase.run(
+              props.testCase.id,
+              props.activeSubmission ? { submission: props.activeSubmission.id.toString() } : {},
+            );
+            awaitTestResult(result.task, callback);
+          },
+        });
+      } else {
+        setIsRunning(true);
+        const result = await TestCase.run(
+          props.testCase.id,
+          props.activeSubmission ? { submission: props.activeSubmission.id.toString() } : {},
+        );
+        awaitTestResult(result.task, callback);
+      }
     }
   };
 
