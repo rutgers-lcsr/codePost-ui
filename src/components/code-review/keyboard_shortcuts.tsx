@@ -20,10 +20,6 @@ const shortcuts: IShortcutCategory[] = [
         name: 'Zoom',
         keys: ['COMMAND', '+', 'SLASH', '-'],
       },
-      {
-        name: 'Adjust Code Area',
-        keys: ['COMMAND', 'LEFT', 'SLASH', 'RIGHT'],
-      },
     ],
   },
   {
@@ -34,28 +30,20 @@ const shortcuts: IShortcutCategory[] = [
         keys: ['COMMAND', 'file-#'],
       },
       {
-        name: 'Enter Cursor Mode',
-        keys: ['COMMAND', 'DOWN'],
+        name: 'Move Cursor to Code',
+        keys: ['COMMAND', 'LEFT'],
       },
       {
-        name: 'Leave Cursor Mode',
-        keys: ['ESC'],
+        name: 'Move Cursor to Comments',
+        keys: ['COMMAND', 'RIGHT'],
       },
       {
-        name: 'Move Cursor',
-        keys: ['COMMAND', 'SLASH', 'UP', 'DOWN', 'LEFT', 'RIGHT'],
-      },
-      {
-        name: 'Extend Code Cursor',
-        keys: ['COMMAND', 'SHIFT', 'UP', 'SLASH', 'DOWN'],
+        name: 'Select Comments',
+        keys: ['UP', 'SLASH', 'DOWN'],
       },
       {
         name: 'Highlight Line / Activate Comment',
         keys: ['ENTER'],
-      },
-      {
-        name: 'Highlight Line',
-        keys: ['CLICK', 'line-#'],
       },
     ],
   },
@@ -97,15 +85,15 @@ const shortcuts: IShortcutCategory[] = [
       },
       {
         name: 'Scroll Rubric Comments',
-        keys: ['COMMAND', 'j', 'SLASH', 'k'],
+        keys: ['COMMAND', 'u', 'SLASH', 'i'],
       },
       {
         name: 'Link Highlighted Rubric Comment',
         keys: ['ENTER'],
       },
       {
-        name: 'Clear Rubric Comment',
-        keys: ['COMMAND', 'u'],
+        name: 'Remove Rubric Comment',
+        keys: ['COMMAND', 'y'],
       },
     ],
   },

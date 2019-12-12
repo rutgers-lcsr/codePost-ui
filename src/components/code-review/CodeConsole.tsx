@@ -1560,8 +1560,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               commentCounter={this.state.commentCounter}
               fileTemplate={undefined}
               showCursor={this.state.showCursor}
-              cursorIndex={this.state.cursorIndex}
-              setCursor={this.setCursor}
             />
           );
 
@@ -1849,8 +1847,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               commentCounter={this.state.commentCounter}
               fileTemplate={fileTemplate}
               showCursor={this.state.showCursor}
-              cursorIndex={this.state.cursorIndex}
-              setCursor={this.setCursor}
             />
           );
 
@@ -1880,7 +1876,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               forcedRubricMode={this.state.assignment.forcedRubricMode}
               rubricCategories={this.state.rubricCategories}
               showCursor={this.state.showCursor}
-              cursorIndex={this.state.cursorIndex}
             />
           );
 
