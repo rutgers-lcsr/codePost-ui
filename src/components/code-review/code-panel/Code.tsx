@@ -73,7 +73,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
   };
 
   // Handle code scrolling
-  const scrollCodeToCursor = (codeScrollArea: any, _cursor: ICursorType) => {
+  const handleVerticalScroll = (codeScrollArea: any, _cursor: ICursorType) => {
     const cursorTop = _cursor.startLine * CodePanelSizing.pixelsPerLine();
     const cursorBottom = cursorTop + (_cursor.endLine - _cursor.startLine) * CodePanelSizing.pixelsPerLine();
 
@@ -87,6 +87,19 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
       setTimeout(() => {
         codeScrollArea.scrollTop = cursorBottom - windowHeight + 170;
       });
+    }
+  };
+
+  const handleHorizontalScroll = (c: ICursorType) => {
+    const codeMain = document.getElementById('code-main');
+    if (codeMain !== null) {
+      const leadHorizontalPosition = c.lead === 'front' ? 9.2 * c.endChar : 9.2 * c.startChar;
+      if (leadHorizontalPosition > codeMain.offsetWidth + codeMain.scrollLeft) {
+        const maxScrollLeft = codeMain.scrollWidth - codeMain.clientWidth;
+        codeMain.scrollLeft = Math.min(maxScrollLeft, leadHorizontalPosition + 10);
+      } else if (leadHorizontalPosition < codeMain.scrollLeft) {
+        codeMain.scrollLeft = 0;
+      }
     }
   };
 
@@ -115,24 +128,28 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
             newCursor = cursor.lead === 'front' ? front(cursor) : back(cursor);
           } else if (e.shiftKey && e.key === 'ArrowLeft') {
             newCursor = shiftLeft(code, cursor, e.altKey);
+            handleHorizontalScroll(newCursor);
           } else if (e.shiftKey && e.key === 'ArrowRight') {
             newCursor = shiftRight(code, cursor, e.altKey);
+            handleHorizontalScroll(newCursor);
           } else if (e.shiftKey && e.key === 'ArrowUp') {
             newCursor = shiftUp(code, cursor);
-            scrollCodeToCursor(codeScrollArea, newCursor);
+            handleVerticalScroll(codeScrollArea, newCursor);
           } else if (e.shiftKey && e.key === 'ArrowDown') {
             newCursor = shiftDown(code, cursor);
-            scrollCodeToCursor(codeScrollArea, newCursor);
+            handleVerticalScroll(codeScrollArea, newCursor);
           } else if (e.key === 'ArrowLeft') {
             newCursor = left(code, cursor, e.altKey);
+            handleHorizontalScroll(newCursor);
           } else if (e.key === 'ArrowRight') {
             newCursor = right(code, cursor, e.altKey);
+            handleHorizontalScroll(newCursor);
           } else if (e.key === 'ArrowUp') {
             newCursor = up(code, cursor);
-            scrollCodeToCursor(codeScrollArea, newCursor);
+            handleVerticalScroll(codeScrollArea, newCursor);
           } else if (e.key === 'ArrowDown') {
             newCursor = down(code, cursor);
-            scrollCodeToCursor(codeScrollArea, newCursor);
+            handleVerticalScroll(codeScrollArea, newCursor);
           }
 
           setCursor(newCursor);
