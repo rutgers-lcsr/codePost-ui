@@ -757,6 +757,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     }
   };
 
+  public updateCursorDomain = (domain: CURSOR_DOMAIN) => {
+    this.setState({ showCursor: domain });
+  };
+
   public setCursor = (cursorIndex: number) => {
     this.setState({ showCursor: CURSOR_DOMAIN.CODE });
   };
@@ -1560,6 +1564,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               commentCounter={this.state.commentCounter}
               fileTemplate={undefined}
               showCursor={this.state.showCursor}
+              updateCursorDomain={this.updateCursorDomain}
             />
           );
 
@@ -1848,6 +1853,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               commentCounter={this.state.commentCounter}
               fileTemplate={fileTemplate}
               showCursor={this.state.showCursor}
+              updateCursorDomain={this.updateCursorDomain}
             />
           );
 

@@ -35,6 +35,7 @@ import {
 interface ICodeProps {
   commentCounter: number;
   showCursor: CURSOR_DOMAIN;
+  updateCursorDomain: (domain: CURSOR_DOMAIN) => void;
 }
 
 const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps) => {
@@ -127,6 +128,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
           e.stopPropagation();
 
           await addNewComment(cursor.startLine, cursor.endLine, cursor.startChar, cursor.endChar);
+          props.updateCursorDomain(CURSOR_DOMAIN.HIDDEN);
         }
 
         if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Escape'].includes(e.key)) {
