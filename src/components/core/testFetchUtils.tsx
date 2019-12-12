@@ -115,7 +115,7 @@ export const getTestsByCase = (testsBySubmission: TestsBySubmission) => {
   const failedToRet: TestsByCase = {};
   const errorToRet: TestsByCase = {};
   Object.keys(testsBySubmission).forEach((subID) => {
-    const tests = testsBySubmission[parseInt(subID, 10)];
+    const tests = SubmissionTest.getLatest(testsBySubmission[parseInt(subID, 10)]);
 
     tests.forEach((t) => {
       const caseID = t.testCase;

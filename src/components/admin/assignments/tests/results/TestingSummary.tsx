@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 
 /* library imports */
-import { Breadcrumb, Button, Dropdown, Icon, Menu } from 'antd';
+import { Breadcrumb, Button, Dropdown, Icon, Menu, Radio } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom';
 import { SubmissionType } from '../../../../../infrastructure/submission';
 import { AssignmentType } from '../../../../../infrastructure/assignment';
 import { SubmissionTest } from '../../../../../infrastructure/submissionTest';
-import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
+import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { TestCaseType } from '../../../../../infrastructure/testCase';
 
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
@@ -24,6 +24,8 @@ import { awaitTestResult } from '../testResult';
 import { TableDetail } from '../../../other/TableDetail';
 import RunAllModal from './RunAllModal';
 import ResultDetail from './ResultDetail';
+
+import { bySubmissionColumns, byTestColumns } from './testSummaryUtils';
 
 /* codePost util imports */
 import {
@@ -50,6 +52,11 @@ enum MODAL_STATUS {
   ResultDetail,
 }
 
+enum SUMMARY_TYPE {
+  ByTest = 1,
+  BySubmission = 2,
+}
+
 export const TestingSummary = (props: IProps & RouteComponentProps) => {
   // ************************** State Variables ******************************
   const [testCasesByCategory, setTestCasesByCategory] = useState<TestCasesByCategory>({});
@@ -71,6 +78,8 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
 
   const [modalStatus, setModalStatus] = useState<MODAL_STATUS>(MODAL_STATUS.None);
 
+  const [summaryType, setSummaryType] = useState<SUMMARY_TYPE>(SUMMARY_TYPE.ByTest);
+
   // ************************** Fetch Data ******************************
   useEffect(() => {
     const fetchData = async () => {
@@ -78,15 +87,9 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
       setCategories(categories);
       setTestCasesByCategory(casesByCategory);
-      setFetchLoading(false);
       const currEnv = await fetchEnvironment(props.currentAssignment);
       setEnv(currEnv);
-    };
-    fetchData();
-  }, [props.currentAssignment]);
 
-  useEffect(() => {
-    const fetchData = async () => {
       const tests = await fetchTestsBySubmission(props.submissions);
       setTestsBySubmission(tests);
       const [passed, failed, error]: any = getTestsByCase(tests);
@@ -94,9 +97,17 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       setPassedByCase(passed);
       setFailedByCase(failed);
       setErrorByCase(error);
+      setFetchLoading(false);
     };
     fetchData();
-  }, [props.submissions]);
+  }, [props.currentAssignment]);
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     setFetchLoading(true);
+  //   };
+  //   fetchData();
+  // }, [props.submissions]);
 
   // ******************************* API / State change functions  *******************************
   const runAllProgressCallback = (result: any) => {
@@ -164,97 +175,187 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     return acc + cat.testCases.length;
   }, 0);
 
-  const columns = [
-    {
-      title: 'Student(s)',
-      dataIndex: 'students',
-      key: 'students',
-      sorter: (a: any, b: any) => a.students.localeCompare(b.students),
-    },
-    ...TestCategory.sort(categories).map((category) => {
-      return {
-        title: category.name,
-        dataIndex: category.id.toString(),
-        key: category.id.toString(),
-        align: 'center' as 'center',
-      };
-    }),
-    {
-      title: 'Summary',
-      dataIndex: 'summary',
-      key: 'summary',
-      align: 'center' as 'center',
-    },
-    {
-      title: 'Actions',
-      dataIndex: 'actions',
-      key: 'actions',
-      align: 'center' as 'center',
-    },
-  ];
+  let columns: any = [];
+  let data: any = [];
 
-  const data = props.submissions.map((submission: SubmissionType) => {
-    const actionsMenu = (
-      <Menu>
-        <Menu.Item key="run-tests" onClick={runTests.bind({}, submission)}>
-          <Icon type="caret-right" />
-          Run tests
-        </Menu.Item>
-        <Menu.Item key="submission" onClick={openSubmission.bind({}, submission.id)}>
-          <Icon type="code" />
-          Open submission
-        </Menu.Item>
-      </Menu>
-    );
+  if (!fetchLoading) {
+    switch (summaryType) {
+      case SUMMARY_TYPE.BySubmission:
+        console.log('BY SUBMISSION');
+        columns = bySubmissionColumns(categories);
+        data = props.submissions.map((submission: SubmissionType) => {
+          const actionsMenu = (
+            <Menu>
+              <Menu.Item key="run-tests" onClick={runTests.bind({}, submission)}>
+                <Icon type="caret-right" />
+                Run tests
+              </Menu.Item>
+              <Menu.Item key="submission" onClick={openSubmission.bind({}, submission.id)}>
+                <Icon type="code" />
+                Open submission
+              </Menu.Item>
+            </Menu>
+          );
 
-    const toRet: any = {
-      students: submission.students.join(','),
-      key: submission.id,
-      actions: subsLoading.includes(submission.id) ? (
-        <Icon type="loading" />
-      ) : (
-        <Dropdown overlay={actionsMenu} trigger={['click']}>
-          <Icon type="menu" />
-        </Dropdown>
-      ),
-    };
+          const toRet: any = {
+            students: submission.students.join(','),
+            key: `submission-${submission.id}`,
+            actions: subsLoading.includes(submission.id) ? (
+              <Icon type="loading" />
+            ) : (
+              <Dropdown overlay={actionsMenu} trigger={['click']}>
+                <Icon type="menu" />
+              </Dropdown>
+            ),
+          };
 
-    const tests = SubmissionTest.getLatest(testsBySubmission[submission.id] || []);
-    let passed = 0;
+          const tests = SubmissionTest.getLatest(testsBySubmission[submission.id] || []);
+          let passed = 0;
 
-    // Group the SubmissionTests by category
-    const testByCategory: any = {};
-    tests.forEach((test) => {
-      (testByCategory[test.testCategory] && testByCategory[test.testCategory].push(test)) ||
-        (testByCategory[test.testCategory] = [test]);
-      if (test.passed) {
-        passed += 1;
-      }
-    });
+          // Group the SubmissionTests by category
+          const testByCategory: any = {};
+          tests.forEach((test) => {
+            (testByCategory[test.testCategory] && testByCategory[test.testCategory].push(test)) ||
+              (testByCategory[test.testCategory] = [test]);
+            if (test.passed) {
+              passed += 1;
+            }
+          });
 
-    for (const category of categories) {
-      const tests = testByCategory[category.id] || [];
-      let categoryPassed = 0;
-      let categoryTotal = tests.length;
-      for (const t of tests) {
-        categoryPassed += t.passed ? 1 : 0;
-      }
-      toRet[category.id] = (
-        <div
-          onClick={openDetail.bind({}, category, undefined, undefined, submission)}
-        >{`${categoryPassed} / ${categoryTotal}`}</div>
-      );
+          for (const category of categories) {
+            const tests = testByCategory[category.id] || [];
+            let categoryPassed = 0;
+            let categoryTotal = tests.length;
+            for (const t of tests) {
+              categoryPassed += t.passed ? 1 : 0;
+            }
+            toRet[category.id] = (
+              <div
+                className="text-link"
+                onClick={openDetail.bind({}, category, undefined, undefined, submission)}
+              >{`${categoryPassed} / ${categoryTotal}`}</div>
+            );
+          }
+
+          const summaryString = totalTests === 0 ? '-- / --' : `${passed} / ${totalTests}`;
+
+          toRet['summary'] = (
+            <div className="text-link" onClick={openDetail.bind({}, undefined, undefined, undefined, submission)}>
+              {summaryString}
+            </div>
+          );
+          return toRet;
+        });
+        break;
+      case SUMMARY_TYPE.ByTest:
+        console.log('BY TEST');
+        columns = byTestColumns;
+        data = categories.map((category) => {
+          let passed = 0;
+          let failed = 0;
+          let notRun = 0;
+          let error = 0;
+
+          const children = !testCasesByCategory[category.id]
+            ? []
+            : testCasesByCategory[category.id].map((testCase) => {
+                const thisNotRun =
+                  props.submissions.length -
+                  passedByCase[testCase.id].length -
+                  failedByCase[testCase.id].length -
+                  errorByCase[testCase.id].length;
+                passed += passedByCase[testCase.id].length;
+                failed += failedByCase[testCase.id].length;
+                error += errorByCase[testCase.id].length;
+                notRun += thisNotRun;
+                return {
+                  description: (
+                    <span className="text-link" onClick={openDetail.bind({}, category, testCase, undefined, undefined)}>
+                      {testCase.description}
+                    </span>
+                  ),
+                  passed: (
+                    <div
+                      className="text-link"
+                      onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Passed, undefined)}
+                    >
+                      {passedByCase[testCase.id].length}
+                    </div>
+                  ),
+                  failed: (
+                    <div
+                      className="text-link"
+                      onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Failed, undefined)}
+                    >
+                      {failedByCase[testCase.id].length}
+                    </div>
+                  ),
+                  error: (
+                    <div
+                      className="text-link"
+                      onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Error, undefined)}
+                    >
+                      {errorByCase[testCase.id].length}
+                    </div>
+                  ),
+                  notRun: thisNotRun,
+                  key: `testCase-${testCase.id}`,
+                };
+              });
+
+          return {
+            description: (
+              <span className="text-link" onClick={openDetail.bind({}, category, undefined, undefined, undefined)}>
+                {category.name}
+              </span>
+            ),
+            children: children,
+            passed: (
+              <div
+                className="text-link"
+                onClick={openDetail.bind({}, category, undefined, RESULT_STATUS.Passed, undefined)}
+              >
+                {passed}
+              </div>
+            ),
+            failed: (
+              <div
+                className="text-link"
+                onClick={openDetail.bind({}, category, undefined, RESULT_STATUS.Failed, undefined)}
+              >
+                {failed}
+              </div>
+            ),
+            notRun: notRun,
+            error: (
+              <div
+                className="text-link"
+                onClick={openDetail.bind({}, category, undefined, RESULT_STATUS.Error, undefined)}
+              >
+                {failed}
+              </div>
+            ),
+            key: `category-${category.id}`,
+          };
+        });
+        break;
     }
+  }
 
-    const summaryString = totalTests === 0 ? '-- / --' : `${passed} / ${totalTests}`;
-
-    toRet['summary'] = (
-      <div onClick={openDetail.bind({}, undefined, undefined, undefined, submission)}>{summaryString}</div>
-    );
-    return toRet;
-  });
-
+  const onSummaryTypeChange = (e: any) => {
+    // @ts-ignore
+    const newType: SUMMARY_TYPE = SUMMARY_TYPE[e.target.value];
+    setSummaryType(newType);
+  };
   actions = [
+    <Radio.Group value={SUMMARY_TYPE[summaryType]} onChange={onSummaryTypeChange} buttonStyle="solid">
+      <Radio.Button key={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]} value={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]}>
+        <Icon type="cluster" />
+      </Radio.Button>
+      <Radio.Button key={SUMMARY_TYPE[SUMMARY_TYPE.BySubmission]} value={SUMMARY_TYPE[SUMMARY_TYPE.BySubmission]}>
+        <Icon type="solution" />
+      </Radio.Button>
+    </Radio.Group>,
     <Button type="default" disabled={totalTests === 0} onClick={runAll} loading={env && env.isRunning}>
       Run all Tests
     </Button>,
@@ -273,9 +374,6 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       submissions={props.submissions}
       casesByCategory={testCasesByCategory}
       categories={categories}
-      passedByCase={passedByCase}
-      failedByCase={failedByCase}
-      errorByCase={errorByCase}
       filterCategory={filterCategory}
       filterCase={filterCase}
       filterStatus={filterStatus}
@@ -289,24 +387,25 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       numSubmissions={props.submissions.length}
     />,
   ];
-
   return (
-    <TableDetail
-      loadComplete={!fetchLoading}
-      isEmpty={Object.keys(testCasesByCategory).length === 0}
-      title={`${props.currentAssignment.name} | Tests Summary`}
-      breadcrumbs={
-        <Breadcrumb>
-          {props.breadcrumbs}
-          <Breadcrumb.Item key="assignment">{props.currentAssignment.name}</Breadcrumb.Item>
-          <Breadcrumb.Item>Results</Breadcrumb.Item>
-        </Breadcrumb>
-      }
-      emptyNode={'Create some tests and you will be able to run them here'}
-      actions={actions}
-      columns={columns}
-      data={data}
-      detail={detail}
-    />
+    <div>
+      <TableDetail
+        loadComplete={!fetchLoading}
+        isEmpty={Object.keys(testCasesByCategory).length === 0}
+        title={`${props.currentAssignment.name} | Tests Summary`}
+        breadcrumbs={
+          <Breadcrumb>
+            {props.breadcrumbs}
+            <Breadcrumb.Item key="assignment">{props.currentAssignment.name}</Breadcrumb.Item>
+            <Breadcrumb.Item>Results</Breadcrumb.Item>
+          </Breadcrumb>
+        }
+        emptyNode={'Create some tests and you will be able to run them here'}
+        actions={actions}
+        columns={columns}
+        data={data}
+        detail={detail}
+      />
+    </div>
   );
 };

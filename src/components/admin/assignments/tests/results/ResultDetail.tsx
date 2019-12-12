@@ -44,7 +44,12 @@ export const ResultDetail = (props: IProps) => {
     props.visible && setFilterStatus(props.filterStatus);
   }, [props.filterStatus, props.visible]);
   useEffect(() => {
-    props.visible && setFilterSubmission(props.filterSubmission);
+    const newSub = props.filterSubmission
+      ? props.filterSubmission
+      : props.submissions.length > 0
+      ? props.submissions[0]
+      : undefined;
+    props.visible && setFilterSubmission(newSub);
   }, [props.filterSubmission, props.visible]);
 
   /********************** State change functions **********************************/
