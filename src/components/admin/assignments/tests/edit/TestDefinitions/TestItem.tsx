@@ -552,6 +552,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 </Select>
                 &nbsp;
                 <CPTooltip
+                  hideThisOnHideTips={true}
                   title={
                     <span>
                       To learn more, check out our guide to writing{' '}
@@ -591,7 +592,18 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 />
               </div>{' '}
               &nbsp; &nbsp;
-              <Form.Item label="Exposed">
+              <Form.Item
+                label={
+                  <span>
+                    Exposed{' '}
+                    <CPTooltip
+                      hideThisOnHideTips={true}
+                      title="If student upload is turned on, exposed tests will be run when students upload their submission."
+                      infoIcon={true}
+                    />
+                  </span>
+                }
+              >
                 {getFieldDecorator('exposed', {
                   initialValue: testCase.exposed,
                   valuePropName: 'checked',
@@ -623,7 +635,18 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   ],
                 })(<InputNumber />)}
               </Form.Item>
-              <Form.Item label="Explanation">
+              <Form.Item
+                label={
+                  <span>
+                    Explanation{' '}
+                    <CPTooltip
+                      hideThisOnHideTips={true}
+                      title="An explanation that should be shown to students to explain the tests. This will be shown in the test summary students see in the code console."
+                      infoIcon={true}
+                    />
+                  </span>
+                }
+              >
                 <Button icon="edit" onClick={() => this.setState({ showExplanation: true })} />
                 {this.state.showExplanation ? (
                   <ExplanationModal
