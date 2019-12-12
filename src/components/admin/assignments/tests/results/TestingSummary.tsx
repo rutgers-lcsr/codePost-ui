@@ -13,7 +13,8 @@ import { SubmissionType } from '../../../../../infrastructure/submission';
 import { AssignmentType } from '../../../../../infrastructure/assignment';
 import { SubmissionTest } from '../../../../../infrastructure/submissionTest';
 import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
-import { Submission } from '../../../../../infrastructure/submission';
+import { TestCaseType } from '../../../../../infrastructure/testCase';
+
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 import { SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
 
@@ -21,8 +22,8 @@ import { awaitTestResult } from '../testResult';
 
 /* codePost component imports */
 import { TableDetail } from '../../../other/TableDetail';
-import { TestResultPopover } from './TestResultPopover';
 import RunAllModal from './RunAllModal';
+import ResultDetail from './ResultDetail';
 
 /* codePost util imports */
 import {
@@ -31,6 +32,9 @@ import {
   fetchTestsBySubmission,
   TestsBySubmission,
   TestCasesByCategory,
+  TestsByCase,
+  getTestsByCase,
+  RESULT_STATUS,
 } from '../../../../core/testFetchUtils';
 import { openSubmission } from '../../../other/AdminUtils';
 
@@ -40,17 +44,32 @@ interface IProps {
   currentAssignment: AssignmentType;
 }
 
+enum MODAL_STATUS {
+  None,
+  RunAll,
+  ResultDetail,
+}
+
 export const TestingSummary = (props: IProps & RouteComponentProps) => {
   // ************************** State Variables ******************************
   const [testCasesByCategory, setTestCasesByCategory] = useState<TestCasesByCategory>({});
   const [categories, setCategories] = useState<TestCategoryType[]>([]);
   const [testsBySubmission, setTestsBySubmission] = useState<TestsBySubmission>({});
+  const [passedByCase, setPassedByCase] = useState<TestsByCase>({});
+  const [failedByCase, setFailedByCase] = useState<TestsByCase>({});
+  const [errorByCase, setErrorByCase] = useState<TestsByCase>({});
+
+  const [filterCategory, setFilterCategory] = useState<TestCategoryType | undefined>(undefined);
+  const [filterCase, setFilterCase] = useState<TestCaseType | undefined>(undefined);
+  const [filterStatus, setFilterStatus] = useState<RESULT_STATUS | undefined>(undefined);
+  const [filterSubmission, setFilterSubmission] = useState<SubmissionType | undefined>(undefined);
+
   const [subsLoading, setSubsLoading] = useState<number[]>([]);
   const [fetchLoading, setFetchLoading] = useState(false);
   const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
   const [progress, setProgress] = useState('{}');
 
-  const [runSummaryVisible, setRunSummaryVisible] = useState(false);
+  const [modalStatus, setModalStatus] = useState<MODAL_STATUS>(MODAL_STATUS.None);
 
   // ************************** Fetch Data ******************************
   useEffect(() => {
@@ -70,6 +89,11 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     const fetchData = async () => {
       const tests = await fetchTestsBySubmission(props.submissions);
       setTestsBySubmission(tests);
+      const [passed, failed, error]: any = getTestsByCase(tests);
+
+      setPassedByCase(passed);
+      setFailedByCase(failed);
+      setErrorByCase(error);
     };
     fetchData();
   }, [props.submissions]);
@@ -89,7 +113,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     const newEnv = { ...env! };
     newEnv.isRunning = false;
     setEnv(newEnv);
-    setRunSummaryVisible(false);
+    setModalStatus(MODAL_STATUS.None);
   };
 
   const callback = (sub: SubmissionType, result: SubmissionTestResultType) => {
@@ -116,9 +140,22 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       awaitTestResult(result.task, runAllCallback, runAllProgressCallback);
       const newEnv = { ...env };
       newEnv.isRunning = true;
-      setRunSummaryVisible(true);
+      setModalStatus(MODAL_STATUS.RunAll);
       setEnv(newEnv);
     }
+  };
+
+  const openDetail = (
+    category: TestCategoryType | undefined,
+    testCase: TestCaseType | undefined,
+    status: RESULT_STATUS | undefined,
+    submission: SubmissionType | undefined,
+  ) => {
+    setFilterCategory(category);
+    setFilterCase(testCase);
+    setFilterStatus(status);
+    setFilterSubmission(submission);
+    setModalStatus(MODAL_STATUS.ResultDetail);
   };
 
   // ******************************* Return  *******************************
@@ -196,15 +233,24 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     });
 
     for (const category of categories) {
+      const tests = testByCategory[category.id] || [];
+      let categoryPassed = 0;
+      let categoryTotal = tests.length;
+      for (const t of tests) {
+        categoryPassed += t.passed ? 1 : 0;
+      }
       toRet[category.id] = (
-        <TestResultPopover
-          submissionTests={testByCategory[category.id] || []}
-          testCases={testCasesByCategory[category.id] || []}
-        />
+        <div
+          onClick={openDetail.bind({}, category, undefined, undefined, submission)}
+        >{`${categoryPassed} / ${categoryTotal}`}</div>
       );
     }
 
-    toRet['summary'] = totalTests === 0 ? '-- / --' : <div>{`${passed} / ${totalTests}`}</div>;
+    const summaryString = totalTests === 0 ? '-- / --' : `${passed} / ${totalTests}`;
+
+    toRet['summary'] = (
+      <div onClick={openDetail.bind({}, undefined, undefined, undefined, submission)}>{summaryString}</div>
+    );
     return toRet;
   });
 
@@ -219,15 +265,30 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     </Button>,
   ];
 
-  const detail = (
+  const detail = [
+    <ResultDetail
+      visible={modalStatus === MODAL_STATUS.ResultDetail}
+      onCancel={setModalStatus.bind({}, MODAL_STATUS.None)}
+      testsBySubmission={testsBySubmission}
+      submissions={props.submissions}
+      casesByCategory={testCasesByCategory}
+      categories={categories}
+      passedByCase={passedByCase}
+      failedByCase={failedByCase}
+      errorByCase={errorByCase}
+      filterCategory={filterCategory}
+      filterCase={filterCase}
+      filterStatus={filterStatus}
+      filterSubmission={filterSubmission}
+    />,
     <RunAllModal
-      visible={runSummaryVisible}
-      onCancel={setRunSummaryVisible.bind({}, false)}
+      visible={modalStatus === MODAL_STATUS.RunAll}
+      onCancel={setModalStatus.bind({}, MODAL_STATUS.None)}
       cases={Object.values(testCasesByCategory).flat()}
       raw={progress}
       numSubmissions={props.submissions.length}
-    />
-  );
+    />,
+  ];
 
   return (
     <TableDetail

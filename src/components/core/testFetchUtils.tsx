@@ -16,6 +16,16 @@ export interface TestsBySubmission {
   [submissionID: number]: SubmissionTestType[];
 }
 
+export enum RESULT_STATUS {
+  Passed = 1,
+  Failed = 2,
+  Error = 3,
+}
+
+export interface TestsByCase {
+  [caseID: number]: SubmissionTestType[];
+}
+
 export interface TestCasesByCategory {
   [categoryID: number]: TestCaseType[];
 }
@@ -100,13 +110,43 @@ export const fetchTestsBySubmission = async (submissions: AnonymousSubmissionTyp
   return toRet;
 };
 
-// export const fetchOrCreateBashFile = async (category: TestCategoryType) => {
-//   if (category.bashFile) {
-//     const bashFile = await BashFile.read(category.bashFile);
-//     return bashFile;
-//   } else {
-//     const payload = { id: -1, testCategory: category.id, code: BASHMODE_TEMPLATE };
-//     const bashFile = await BashFile.create(payload);
-//     return bashFile;
-//   }
-// };
+export const getTestsByCase = (testsBySubmission: TestsBySubmission) => {
+  const passedToRet: TestsByCase = {};
+  const failedToRet: TestsByCase = {};
+  const errorToRet: TestsByCase = {};
+  Object.keys(testsBySubmission).forEach((subID) => {
+    const tests = testsBySubmission[parseInt(subID, 10)];
+
+    tests.forEach((t) => {
+      const caseID = t.testCase;
+      if (!(caseID in passedToRet)) {
+        passedToRet[caseID] = [];
+      }
+      if (!(caseID in failedToRet)) {
+        failedToRet[caseID] = [];
+      }
+      if (!(caseID in errorToRet)) {
+        errorToRet[caseID] = [];
+      }
+
+      const status: RESULT_STATUS = t.passed
+        ? RESULT_STATUS.Passed
+        : t.isError
+        ? RESULT_STATUS.Error
+        : RESULT_STATUS.Failed;
+
+      switch (status) {
+        case RESULT_STATUS.Passed:
+          passedToRet[caseID].push(t);
+          break;
+        case RESULT_STATUS.Failed:
+          failedToRet[caseID].push(t);
+          break;
+        case RESULT_STATUS.Error:
+          errorToRet[caseID].push(t);
+          break;
+      }
+    });
+  });
+  return [passedToRet, failedToRet, errorToRet];
+};
