@@ -101,6 +101,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   submissions={props.submissions[assignment.id]}
                   onCancel={cancel}
                   shouldLoadFeedback={true}
+                  shouldLoadInstanceLists={true}
                 >
                   {(params: IRubricManagerParams) => {
                     const propz = {
