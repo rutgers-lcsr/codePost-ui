@@ -77,6 +77,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     };
 
     props.addComment(newComment, props.file);
+    props.updateCursorDomain(CURSOR_DOMAIN.HIDDEN);
 
     // FIXME: we can come up with a better solution
     await wait(5);
@@ -268,7 +269,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     setCursor(newCursor);
   };
 
-  const onMouseDown = (event: React.MouseEvent) => {
+  const onMouseDown = (event: any) => {
     const callback = () => {
       onMouseUp(event);
       document.removeEventListener('mouseup', callback);
