@@ -94,8 +94,6 @@ const RubricMenuUI = ({
   const [changesMade, setChangesMade] = React.useState(false);
   const [confirmChanges, setConfirmChanges] = React.useState(false);
 
-  // console.log(props, state, helpers);
-
   const startEditing = (rubricCommentID: number) => {
     const newEditingStatuses = { ...editingStatuses, [rubricCommentID]: EDITING_STATUS.EDITING };
     setEditingStatuses(newEditingStatuses);
@@ -146,6 +144,9 @@ const RubricMenuUI = ({
 
     let filteredCatgories;
     if (!props.editRubricMode && props.showFrequent) {
+      // Let's be type-safe
+      const rubricCommentList: RubricCommentType[] = Object.values(rubricComments).flat();
+
       noSort.push(-1000);
       freq = {
         id: -1000,
@@ -157,10 +158,10 @@ const RubricMenuUI = ({
         helpText: 'List of the 10 most frequently applied comments from this rubric.',
         atMostOnce: false,
       };
-      adjustedRubricComments[-1000] = Object.values(rubricComments)
-        .flat()
-        .filter((el) => el.comments.length > 0)
-        .sort((a, b) => b.comments.length - a.comments.length)
+
+      adjustedRubricComments[-1000] = rubricCommentList
+        .filter((el) => state.instanceLists[el.id] && state.instanceLists[el.id].length > 0)
+        .sort((a, b) => state.instanceLists[b.id].length - state.instanceLists[a.id].length)
         .slice(0, 10);
       filteredCatgories = [freq, ...rubricCategories.sort(RubricCategory.compare)];
     } else {

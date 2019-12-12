@@ -65,7 +65,6 @@ const RubricMenuCategoryUI = ({
           return rubricComment.text.toUpperCase().includes(props.searchTerm.toUpperCase());
         }
       })
-      .sort(RubricComment.compare)
       .map((rubricComment, index: number) => {
         const editing = rubricComment.id < 0 || props.editingStatuses[rubricComment.id] ? true : false;
 

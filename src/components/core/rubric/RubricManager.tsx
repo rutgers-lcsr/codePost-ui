@@ -36,6 +36,7 @@ export interface IRubricManagerParams {
 export interface IRubricManagerHelpers {
   loadAssignmentRubric: any;
   loadFeedbackScores: any;
+  loadInstanceLists: any;
   resetRubric: any;
   setNewRubric: any;
   replaceRubric: any;
@@ -75,6 +76,7 @@ export interface IRubricManagerProps {
   submissions: SubmissionType[];
 
   shouldLoadFeedback: boolean;
+  shouldLoadInstanceLists: boolean;
 
   onCancel: () => void;
 
@@ -184,11 +186,15 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     this.onUnload = this.onUnload.bind(this);
 
     if (!props.defaultRubric) {
-      this.loadAssignmentRubric(props.assignment, props.shouldLoadFeedback);
+      this.loadAssignmentRubric(props.assignment, props.shouldLoadInstanceLists, props.shouldLoadFeedback);
     }
   }
 
-  public loadAssignmentRubric = (assignment: AssignmentType, shouldLoadFeedback: boolean) => {
+  public loadAssignmentRubric = (
+    assignment: AssignmentType,
+    shouldLoadInstances: boolean,
+    shouldLoadFeedback: boolean,
+  ) => {
     return Assignment.readRubric(assignment.id)
       .then((rubric: RubricType) => {
         const commentMap = this.buildCommentMap(rubric.rubricCategories, rubric.rubricComments);
@@ -225,8 +231,11 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
           },
           () => {
             if (shouldLoadFeedback) {
-              this.loadInstanceLists(rubric.rubricComments);
               this.loadFeedbackScores(rubric.rubricComments);
+            }
+
+            if (shouldLoadInstances) {
+              this.loadInstanceLists(rubric.rubricComments);
             }
           },
         );
@@ -273,7 +282,11 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
     if (this.props.reloadInterval !== undefined) {
       this.interval = window.setInterval(() => {
-        this.loadAssignmentRubric(this.props.assignment, this.props.shouldLoadFeedback);
+        this.loadAssignmentRubric(
+          this.props.assignment,
+          this.props.shouldLoadInstanceLists,
+          this.props.shouldLoadFeedback,
+        );
       }, this.props.reloadInterval);
     }
   }
@@ -284,7 +297,11 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         clearInterval(this.interval);
       } else {
         this.interval = window.setInterval(async () => {
-          await this.loadAssignmentRubric(this.props.assignment, this.props.shouldLoadFeedback);
+          await this.loadAssignmentRubric(
+            this.props.assignment,
+            this.props.shouldLoadInstanceLists,
+            this.props.shouldLoadFeedback,
+          );
         }, this.props.reloadInterval);
       }
     }
@@ -516,8 +533,11 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
             newRubric.rubricComments,
           );
 
-          if (this.props.shouldLoadFeedback) {
+          if (this.props.shouldLoadInstanceLists) {
             this.loadInstanceLists(newRubric.rubricComments);
+          }
+
+          if (this.props.shouldLoadFeedback) {
             this.loadFeedbackScores(newRubric.rubricComments);
           }
 
@@ -1051,6 +1071,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
       helpers: {
         loadAssignmentRubric: this.loadAssignmentRubric,
         loadFeedbackScores: this.loadFeedbackScores,
+        loadInstanceLists: this.loadInstanceLists,
         resetRubric: this.resetRubric,
         setNewRubric: this.setNewRubric,
         replaceRubric: this.replaceRubric,
