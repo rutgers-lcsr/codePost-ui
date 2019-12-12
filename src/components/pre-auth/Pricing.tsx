@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Icon, Table, Typography } from 'antd';
+import { Button, Icon, Divider } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -21,112 +21,120 @@ interface IProps {
   isLoggedIn: boolean;
 }
 
-const columns = [
-  {
-    key: 'feature',
-    title: '',
-    dataIndex: 'feature',
-  },
-  {
-    key: 'free',
-    title: (
-      <span>
-        <Typography.Title level={4}>Standard</Typography.Title>
-        <span>For courses large and small</span>
-      </span>
-    ),
-    dataIndex: 'free',
-  },
-  {
-    key: 'enterprise',
-    title: (
-      <span>
-        <Typography.Title level={4}>Enterprise</Typography.Title>
-        <span>For large businesses with custom requirements</span>
-      </span>
-    ),
-    dataIndex: 'enterprise',
-  },
-];
+const textStyle = {
+  maxWidth: 600,
+  fontSize: 30,
+  textAlign: 'center',
+  color: '#062a22',
+  fontWeight: 'bold',
+} as React.CSSProperties;
 
-const data = [
-  {
-    feature: 'Users (students, graders, admins)',
-    free: 'Unlimited',
-    gold: 'Unlimited',
-    enterprise: 'Unlimited',
-  },
-  {
-    feature: 'Rubrics',
-    free: <Icon type="check" />,
-    gold: <Icon type="check" />,
-    enterprise: <Icon type="check" />,
-  },
-  {
-    feature: 'Autograder',
-    free: 'Standard machines (1x CPU, 1GB memory)',
-    gold: <Icon type="check" />,
-    enterprise: 'Faster machines (2x CPU, 4GB memory)',
-  },
-  {
-    feature: 'codePost API Access',
-    free: 'Up to 1000 requests / day',
-    gold: <Icon type="check" />,
-    enterprise: <Icon type="check" />,
-  },
-  {
-    feature: 'Support',
-    free: 'Email and chat (24 hour response)',
-    gold: 'Dedicated (4 hour response)',
-    enterprise: 'Dedicated (4 hour response)',
-  },
-  {
-    feature: 'On-premise deployment',
-    free: '',
-    gold: '',
-    enterprise: <Icon type="check" />,
-  },
-  {
-    feature: 'Custom system integration',
-    free: '',
-    gold: '',
-    enterprise: <Icon type="check" />,
-  },
-  {
-    feature: 'Price',
-    free: 'Free!',
-    gold: '$3 / student',
-    enterprise: 'Starts at $3 / student / month †',
-  },
-  {
-    feature: 'Get started',
-    free: <Button type="primary">Sign up</Button>,
-    gold: <Button>Contact us</Button>,
-    enterprise: <Button>Contact us</Button>,
-  },
-];
+const optionStyle = {
+  borderRadius: 5,
+  boxShadow: '0 2px 15px 0 rgba(0, 0, 0, 0.15)',
+  display: 'inline-block',
+  textAlign: 'left',
+  verticalAlign: 'middle',
+  fontSize: '16px',
+  height: 550,
+} as React.CSSProperties;
+
+const freeButtonStyle = {
+  borderRadius: 5,
+  backgroundColor: '#fff',
+  color: '#24be85',
+};
+
+const premiumButtonStyle = {
+  borderRadius: 5,
+  backgroundColor: '#4a4a4a',
+  color: '#fff',
+};
 
 const Pricing = (props: IProps) => {
   const breakpoint = 700;
   const windowSize = useWindowSize();
   const flexDirection = windowSize.width < breakpoint ? 'column' : 'row';
 
+  const freeStyle = {
+    ...optionStyle,
+    width: 275,
+    backgroundColor: '#24be85',
+    padding: '35px 35px 35px 35px',
+    color: '#fff',
+  } as React.CSSProperties;
+
+  const premiumStyle = {
+    ...optionStyle,
+    width: 275,
+    backgroundColor: '#1b1b1b',
+    marginLeft: windowSize.width < breakpoint ? 0 : 50,
+    padding: '35px 35px 35px 35px',
+    color: '#fff',
+    fontSize: '16px',
+  } as React.CSSProperties;
+
+  // const freeTextPadding = windowSize.width < breakpoint ? '0 20px 10px 20px' : '0 20px 30px 20px';
+
+  const freeFeatures = [
+    'Unlimited students',
+    'Unlimited instructors',
+    'Unlimited assignments',
+    'codePost Autograder',
+    'codePost API',
+    'FERPA compliance',
+  ];
+
+  const enterpriseFeatures = [
+    <span>
+      Everything in <b>Teach</b>
+    </span>,
+    'Tools for managing large, high-velocity courses + training sessions',
+    'Custom system integration',
+  ];
+
   return (
     <PreAuthLayout isLoggedIn={props.isLoggedIn}>
-      <div>
+      <div className="display-flex flex-direction-column" style={{ textAlign: 'center', position: 'relative' }}>
         <div className="display-flex justify-content-center" style={{ width: '100%' }}>
-          <Typography.Title level={3}>
-            codePost is free for as many students as you need. No credit card required.
-          </Typography.Title>
+          <span style={textStyle}>codePost is 100% free for educators.</span>
         </div>
-        <br />
-        <div className="display-flex flex-direction-column" style={{ textAlign: 'center', position: 'relative' }}>
-          <Table columns={columns} dataSource={data} pagination={false} />
-          <br />
-          <span style={{ display: 'flex', alignItems: 'left', textAlign: 'left' }}>
-            † Students will be counted towards your monthly bill if they login to codePost in that month. Each student
-            is only counted for billing once (they can be a member of any number of courses).
-          </span>
+        <div
+          className={`display-flex justify-content-center align-items-center flex-direction-${flexDirection}`}
+          style={{ paddingTop: 50 }}
+        >
+          <div style={freeStyle}>
+            <h3 style={{ fontWeight: 'bold', fontSize: 24, color: '#fff' }}>Teach</h3>
+            <em>For higher ed and teachers anywhere</em>
+            <br />
+            <br />
+            <p style={{ fontSize: '18px', fontWeight: 'bold' }}>Free</p>
+            <Link to="/signup/create">
+              <Button style={freeButtonStyle}>
+                Sign up <Icon type="arrow-right" />
+              </Button>
+            </Link>
+            <Divider />
+            {freeFeatures.map((el) => (
+              <div style={{ margin: '10px 0' }}>{el}</div>
+            ))}
+          </div>
+          <div style={premiumStyle}>
+            <h3 style={{ color: '#fff', fontWeight: 'bold', fontSize: 24 }}>Enterprise</h3>
+            <em>For bootcamps, for-profits, and large departments</em>
+            <br />
+            <br />
+            <p style={{ fontSize: '18px', fontWeight: 'bold' }}>$5 / student per course</p>
+            <a href="mailto:team@codepost.io">
+              <Button style={premiumButtonStyle}>
+                Coming soon <Icon type="arrow-right" />
+              </Button>
+            </a>
+            <Divider />
+            {enterpriseFeatures.map((el) => (
+              <div style={{ margin: '10px 0' }}>{el}</div>
+            ))}
+          </div>
         </div>
       </div>
     </PreAuthLayout>
