@@ -36,8 +36,7 @@ export interface ICodeContentEditProps {
   fileTemplate?: FileTemplateType;
   showCursor: CURSOR_DOMAIN;
   cursorIndex: number;
-  cursorExtent: number;
-  setCursor: (cursorIndex: number, cursorExtent: number) => void;
+  setCursor: (cursorIndex: number) => void;
 }
 
 const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
@@ -75,7 +74,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     if (classNames[classNames.length - 1] === 'number') {
       const lineNumber = parseInt(e.target.innerText);
       // Update cursor
-      props.setCursor(lineNumber - 1, 1);
+      props.setCursor(lineNumber - 1);
     }
   };
 
@@ -233,7 +232,6 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
             onHighlightClick={props.onHighlightClick}
             showCursor={props.showCursor}
             cursorIndex={props.cursorIndex}
-            cursorExtent={props.cursorExtent}
           />
         </div>
       </div>
@@ -247,7 +245,7 @@ const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICo
       return;
     };
 
-    public setCursor = (cursorIndex: number, cursorExtent: number) => {
+    public setCursor = (cursorIndex: number) => {
       return;
     };
 
@@ -260,7 +258,6 @@ const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICo
           fileTemplate={undefined}
           showCursor={CURSOR_DOMAIN.HIDDEN}
           cursorIndex={0}
-          cursorExtent={1}
           setCursor={this.setCursor}
         />
       );

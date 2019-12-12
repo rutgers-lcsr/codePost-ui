@@ -23,7 +23,6 @@ interface ICodeProps {
   commentCounter: number;
   showCursor: CURSOR_DOMAIN;
   cursorIndex: number;
-  cursorExtent: number;
 }
 
 const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps) => {
@@ -37,7 +36,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     lead: 'front',
   });
 
-  // A cursorComment is a pseudo-comment with ID === 0
+  // A cursorComment is a pseudo-comment with ID === 0 or Number.MAX_SAFE_INTEGER
   const cursorComment = {
     ...cursor,
     id: cursor.lead === 'back' ? 0 : Number.MAX_SAFE_INTEGER,
@@ -248,18 +247,9 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
 
   const linesOfCode = (readOnly: boolean, code: string, comments: CommentType[]) => {
     return code.split('\n').map((text: string, i: number) => {
-      // const style =
-      //   props.showCursor === CURSOR_DOMAIN.CODE && i >= props.cursorIndex && i < props.cursorIndex + props.cursorExtent
-      //     ? {
-      //         backgroundColor: 'lightblue',
-      //         opacity: 0.2,
-      //       }
-      //     : {};
-      const style = {};
-
       const t = text === '' ? ' ' : text;
       return (
-        <div key={i} id={`line-${i}`} onMouseDown={readOnly ? undefined : onMouseDown} style={style}>
+        <div key={i} id={`line-${i}`} onMouseDown={readOnly ? undefined : onMouseDown}>
           {CodePanelHighlighting.highlight(comments, t, i, readOnly, consoleTheme.highlight, props.onHighlightClick)}
         </div>
       );
