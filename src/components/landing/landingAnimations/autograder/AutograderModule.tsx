@@ -11,7 +11,7 @@ const AutograderModule = () => {
 
   const noCodeImg = <img style={{ marginTop: 30, marginLeft: 10 }} width={475} src={noCode} alt="" />;
   const unitImg = <img style={{ marginTop: 30, marginLeft: 10 }} width={475} src={unit} alt="" />;
-  const fileModeImg = <img style={{ marginTop: -1, marginLeft: -5 }} width={475} src={fileMode} alt="" />;
+  const fileModeImg = <img style={{ marginTop: 30, marginLeft: 10 }} width={475} src={fileMode} alt="" />;
 
   const handleChange = (e: any) => {
     setIndex(e);

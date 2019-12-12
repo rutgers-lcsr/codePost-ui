@@ -223,14 +223,6 @@ const Testimonials = () => {
       </div>
       <br />
       <br />
-      <div
-        className={'display-flex justify-content-center flex-direction-column align-items-left'}
-        style={{ marginLeft: '65px' }}
-      >
-        <Typography.Title level={3} style={{ color: '#323332', fontSize: 20 }}>
-          100,000 submissions and counting...
-        </Typography.Title>
-      </div>
       <Carousel slidesPerPage={slidesPerPage} arrows infinite>
         {permutation}
       </Carousel>

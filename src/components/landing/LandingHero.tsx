@@ -53,7 +53,7 @@ const LandingHero = () => {
       >
         Autograding, code annotation, rubrics, plagiarism detection, and more. &nbsp;
         <Link to="/pricing">
-          <span style={{ fontWeight: 600, color: '#24be85' }}>Free for higher ed.</span>
+          <span style={{ fontWeight: 600, color: '#24be85' }}>Free for educators.</span>
         </Link>
       </div>
       <div
