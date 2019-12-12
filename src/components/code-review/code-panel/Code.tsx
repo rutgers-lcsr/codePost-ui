@@ -17,7 +17,20 @@ import { wait } from '../../../infrastructure/animation';
 
 import { CURSOR_DOMAIN } from '../CodeConsole';
 
-import { ICursorType, left, right, up, down, shiftLeft, shiftRight, shiftUp, shiftDown, front, back } from './Cursor';
+import {
+  ICursorType,
+  LeadPosition,
+  left,
+  right,
+  up,
+  down,
+  shiftLeft,
+  shiftRight,
+  shiftUp,
+  shiftDown,
+  front,
+  back,
+} from './Cursor';
 
 interface ICodeProps {
   commentCounter: number;
@@ -235,6 +248,24 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     await addNewComment(startLine, endLine, startChar, endChar);
   };
 
+  const onLineClick = (e: any) => {
+    if (e.target.id.split('-').length < 2) {
+      return;
+    }
+    const lineNumber = +e.target.id.split('-')[1];
+    const lineLength = e.target.textContent.length;
+
+    const newCursor = {
+      startChar: 0,
+      endChar: lineLength,
+      startLine: lineNumber,
+      endLine: lineNumber,
+      lead: 'front' as LeadPosition,
+    };
+
+    setCursor(newCursor);
+  };
+
   const onMouseDown = (event: React.MouseEvent) => {
     const callback = () => {
       onMouseUp(event);
@@ -248,7 +279,12 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     return code.split('\n').map((text: string, i: number) => {
       const t = text === '' ? ' ' : text;
       return (
-        <div key={i} id={`line-${i}`} onMouseDown={readOnly ? undefined : onMouseDown}>
+        <div
+          key={i}
+          id={`line-${i}`}
+          onClick={readOnly ? undefined : onLineClick}
+          onMouseDown={readOnly ? undefined : onMouseDown}
+        >
           {CodePanelHighlighting.highlight(comments, t, i, readOnly, consoleTheme.highlight, props.onHighlightClick)}
         </div>
       );
