@@ -101,7 +101,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
 
       const tests = await fetchTestsBySubmission(props.submissions);
       setTestsBySubmission(tests);
-      const [passed, failed, error]: any = getTestsByCase(tests);
+      const [passed, failed, error]: any = getTestsByCase(tests, casesByCategory);
 
       setPassedByCase(passed);
       setFailedByCase(failed);

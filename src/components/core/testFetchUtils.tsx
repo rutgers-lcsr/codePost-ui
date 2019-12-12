@@ -1,5 +1,5 @@
 /* codepost object imports */
-import { AssignmentType } from '../../infrastructure/assignment';
+import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { TestCase, TestCaseType } from '../../infrastructure/testCase';
 import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
 import { TestCategory, TestCategoryType } from '../../infrastructure/testCategory';
@@ -70,7 +70,9 @@ export const fetchHelpers = async (env: EnvironmentType) => {
 
 //********************************** Complex Fetch Utils (some data processing) *****************************
 export const fetchTestData = async (assignment: AssignmentType) => {
-  const categories: TestCategoryType[] = await fetchTestCategories(assignment);
+  // get the latest assignment in case the categories have changed
+  const latestAssignment: AssignmentType = await Assignment.read(assignment.id);
+  const categories: TestCategoryType[] = await fetchTestCategories(latestAssignment);
   const casesByCategory: TestCasesByCategory = await fetchTestCasesByCategory(categories);
   return [categories, casesByCategory];
 };
@@ -110,24 +112,23 @@ export const fetchTestsBySubmission = async (submissions: AnonymousSubmissionTyp
   return toRet;
 };
 
-export const getTestsByCase = (testsBySubmission: TestsBySubmission) => {
+export const getTestsByCase = (testsBySubmission: TestsBySubmission, casesByCategory: TestCasesByCategory) => {
   const passedToRet: TestsByCase = {};
   const failedToRet: TestsByCase = {};
   const errorToRet: TestsByCase = {};
+  // Loop through all tests, to iniate tests
+  Object.keys(casesByCategory).forEach((categoryID) => {
+    casesByCategory[parseInt(categoryID, 10)].forEach((t) => {
+      passedToRet[t.id] = [];
+      failedToRet[t.id] = [];
+      errorToRet[t.id] = [];
+    });
+  });
   Object.keys(testsBySubmission).forEach((subID) => {
     const tests = SubmissionTest.getLatest(testsBySubmission[parseInt(subID, 10)]);
 
     tests.forEach((t) => {
       const caseID = t.testCase;
-      if (!(caseID in passedToRet)) {
-        passedToRet[caseID] = [];
-      }
-      if (!(caseID in failedToRet)) {
-        failedToRet[caseID] = [];
-      }
-      if (!(caseID in errorToRet)) {
-        errorToRet[caseID] = [];
-      }
 
       const status: RESULT_STATUS = t.passed
         ? RESULT_STATUS.Passed
