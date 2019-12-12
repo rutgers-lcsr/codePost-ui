@@ -25,6 +25,8 @@ import ExplanationModal from '../../../../assignments/rubric/ExplanationModal';
 /* codePost util imports */
 import { testTemplates, hasNativeTestSupport, extensionsByLanguage } from '../utils/languageUtils';
 
+import CPTooltip from '../../../../../core/CPTooltip';
+
 import { ILogType, RESULT_TYPE } from './PsuedoTerminal';
 
 const { confirm } = Modal;
@@ -544,12 +546,49 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                       : this.state.testType
                   }
                 >
-                  <Option value={'io'}>Input / Output</Option>
-                  <Option value={'shell'}>Shell Script</Option>
-                  <Option value={'unit'}>
-                    Unit Test <Tag>BETA</Tag>
-                  </Option>
+                  <Option value={'io'}>Input / Output </Option>
+                  <Option value={'shell'}>Shell Script </Option>
+                  <Option value={'unit'}>Unit Test</Option>
                 </Select>
+                &nbsp;
+                <CPTooltip
+                  title={
+                    <span>
+                      To learn more, check out our guide to writing{' '}
+                      {this.state.testType === 'io' || this.state.testType === 'io_cli' ? (
+                        <a href="http://help.codepost.io/en/articles/3567215-writing-tests-i-o-tests" target="_blank">
+                          I/O tests.
+                        </a>
+                      ) : this.state.testType === 'shell' ? (
+                        <a
+                          href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
+                          target="_blank"
+                        >
+                          Shell tests.
+                        </a>
+                      ) : this.state.testType === 'unit' ? (
+                        <a
+                          href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
+                          target="_blank"
+                        >
+                          Unit tests.
+                        </a>
+                      ) : this.state.testType === 'file' ? (
+                        <a href="http://help.codepost.io/en/articles/3553024-writing-tests-file-mode" target="_blank">
+                          tests in file mode.
+                        </a>
+                      ) : (
+                        <a
+                          href="http://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
+                          target="_blank"
+                        >
+                          tests.
+                        </a>
+                      )}
+                    </span>
+                  }
+                  infoIcon={true}
+                />
               </div>{' '}
               &nbsp; &nbsp;
               <Form.Item label="Exposed">
