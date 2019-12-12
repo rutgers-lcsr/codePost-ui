@@ -35,8 +35,6 @@ export interface ICodeContentEditProps {
   addComment: (comment: CommentType, file: FileType) => void;
   fileTemplate?: FileTemplateType;
   showCursor: CURSOR_DOMAIN;
-  cursorIndex: number;
-  setCursor: (cursorIndex: number) => void;
 }
 
 const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
@@ -67,35 +65,6 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
         codeMain.removeEventListener('scroll', horizontalCodeScroll);
       }
     };
-  }, []);
-
-  const clickLineNumbers = (e: any) => {
-    const classNames = e.target.className.split('-');
-    if (classNames[classNames.length - 1] === 'number') {
-      const lineNumber = parseInt(e.target.innerText);
-      // Update cursor
-      props.setCursor(lineNumber - 1);
-    }
-  };
-
-  React.useEffect(() => {
-    const codeSyntax = document.getElementById('code-syntax');
-    let lineNumbers: any;
-
-    if (codeSyntax !== null) {
-      lineNumbers = codeSyntax.getElementsByTagName('code')[0];
-
-      if (lineNumbers) {
-        lineNumbers.addEventListener('mousedown', clickLineNumbers);
-      }
-    }
-
-    return () => {
-      if (lineNumbers !== undefined) {
-        lineNumbers.removeEventListener('mousedown', clickLineNumbers);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const addCommentAndIncrement = (comment: CommentType, file: FileType) => {
@@ -231,7 +200,6 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
             addComment={addCommentAndIncrement}
             onHighlightClick={props.onHighlightClick}
             showCursor={props.showCursor}
-            cursorIndex={props.cursorIndex}
           />
         </div>
       </div>
@@ -245,10 +213,6 @@ const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICo
       return;
     };
 
-    public setCursor = (cursorIndex: number) => {
-      return;
-    };
-
     public render() {
       return (
         <Component
@@ -257,8 +221,6 @@ const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICo
           commentCounter={-1}
           fileTemplate={undefined}
           showCursor={CURSOR_DOMAIN.HIDDEN}
-          cursorIndex={0}
-          setCursor={this.setCursor}
         />
       );
     }

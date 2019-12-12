@@ -22,7 +22,6 @@ import { ICursorType, left, right, up, down, shiftLeft, shiftRight, shiftUp, shi
 interface ICodeProps {
   commentCounter: number;
   showCursor: CURSOR_DOMAIN;
-  cursorIndex: number;
 }
 
 const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps) => {
