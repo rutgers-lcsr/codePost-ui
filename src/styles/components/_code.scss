@@ -102,23 +102,29 @@
     //////////////////////////////////////////////////////
 
     .highlight-0 {
-      background-color: rgba(0, 0, 255, 0.2) !important;
       opacity: 1 !important;
       border-left-width: 2px;
       border-left-style: solid;
-      border-left-color: rgba(0, 0, 0, 0.8) !important;
+      border-left-color: rgba(0, 0, 0, 0.6) !important;
       margin-right: -2px;
       animation: blink-left 1s ease-in infinite;
     }
 
     .highlight-9007199254740991 {
-      background-color: rgba(0, 0, 255, 0.2) !important;
       opacity: 1 !important;
       border-right-width: 2px;
       border-right-style: solid;
       border-right-color: rgba(0, 0, 0, 0.8) !important;
       margin-right: -2px;
       animation: blink-right 1s ease-in infinite;
+    }
+
+    .highlight-cursor-light {
+      background-color: rgba(0, 0, 255, 0.2) !important;
+    }
+
+    .highlight-cursor-dark {
+      background-color: rgba(36, 190, 133, 0.6) !important;
     }
 
     @keyframes blink-left {

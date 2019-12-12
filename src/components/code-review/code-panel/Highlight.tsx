@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import useKeyPress from '../../core/useKeyPress';
 
-import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
 import CodePanelHighlighting from './CodePanelHighlighting';
 
@@ -19,6 +19,12 @@ interface IHighlightProps {
 
 const Highlight = (props: IHighlightProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
+
+  const cursorThemeClass = theme === 'light' ? 'highlight-cursor-light' : 'highlight-cursor-dark';
+
+  const regex = /-0|9007199254740991/gm;
+  const isNotCursor = props.className.match(regex) === null;
 
   const commandPressed = useKeyPress('Meta');
 
@@ -48,8 +54,7 @@ const Highlight = (props: IHighlightProps) => {
     };
 
     // Don't darken the cursor highlights
-    const regex = /-0\s|9007199254740991/gm;
-    if (props.className.match(regex) === null) {
+    if (isNotCursor) {
       CodePanelHighlighting.darkenHighlight(props.commentID, consoleTheme.highlight);
     }
   }
@@ -58,7 +63,7 @@ const Highlight = (props: IHighlightProps) => {
     <span
       key={`${props.line}-${props.commentID}`}
       id={`line-${props.line}-${props.commentID}`}
-      className={`highlight ${props.className}`}
+      className={`highlight ${props.className} ${isNotCursor ? '' : cursorThemeClass}`}
       style={style}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
