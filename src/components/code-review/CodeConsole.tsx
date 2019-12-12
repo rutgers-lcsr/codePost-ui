@@ -1503,6 +1503,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           <RubricManager
             key="rubric-menu"
             shouldLoadFeedback={false}
+            shouldLoadInstanceLists={this.state.assignment.showFrequentlyUsedRubricComments}
             assignment={this.state.assignment}
             submissions={[]}
             onCancel={onCancel}
@@ -1682,7 +1683,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         rightHeader = [
           <ThemeToggle key="theme-toggle" small={true} />,
-          <DownloadCode key="download-code" files={this.state.files} />,
+          <DownloadCode key="download-code" submission={this.state.submission!} />,
           controls,
           <ViewAsStudent key="view-as-student" pathname={this.props.location.pathname} />,
           <FinalizeButton
@@ -1805,6 +1806,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             reloadInterval={this.state.rubricReload}
             setRubric={this.setRubric}
             shouldLoadFeedback={false}
+            shouldLoadInstanceLists={this.state.assignment.showFrequentlyUsedRubricComments}
           >
             {({ props, state, helpers }: IRubricManagerParams) => {
               const propz = {
