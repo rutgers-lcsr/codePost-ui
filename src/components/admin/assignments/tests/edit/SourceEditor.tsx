@@ -56,6 +56,7 @@ interface IProps {
   deleteTest: (testCase: TestCaseType) => Promise<void>;
   setResults: (results: BasicTestResultType[]) => void;
   saveTest: (test: TestCaseType) => Promise<TestCaseType>;
+  updateTestStatus: (testID: number, status: number) => void;
 }
 
 const { Content } = Layout;
@@ -120,6 +121,7 @@ export const SourceEditor = (props: IProps) => {
     setRunning(false);
     if (props.env && props.env.dumpMode && props.activeSubmission) {
       // Refresh submission files after dump
+      console.log(props.activeSubmission);
       props.setTestSubject(props.activeSubmission.id.toString());
     }
 
@@ -134,9 +136,10 @@ export const SourceEditor = (props: IProps) => {
       const testCase = props.casesByCategory[el.testCategory].find((testCase) => testCase.id === el.testCase)!;
       const status = el.isError ? RESULT_TYPE.ERROR : el.passed ? RESULT_TYPE.PASSED : RESULT_TYPE.FAILED;
 
-      if (!props.activeSubmission) {
-        testCase.lastSolutionRun = status;
-        props.saveTest(testCase);
+      if (testCase) {
+        if (!props.activeSubmission) {
+          props.updateTestStatus(testCase.id, status);
+        }
       }
 
       return {
