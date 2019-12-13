@@ -7,7 +7,7 @@ import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
-import { Button, Breadcrumb, Dropdown, Empty, Menu, Icon } from 'antd';
+import { Button, Breadcrumb, Dropdown, Empty, Menu, Icon, Tag } from 'antd';
 
 import { TableDetail } from '../../other/TableDetail';
 
@@ -62,7 +62,11 @@ const TestsOverview = (props: IProps & RouteComponentProps) => {
     <TableDetail
       loadComplete={true}
       pagination={props.assignments.length < 10 ? false : undefined}
-      title={'Tests'}
+      title={
+        <div className="display-flex align-items-center">
+          Tests &nbsp;<Tag>BETA</Tag>
+        </div>
+      }
       isEmpty={false}
       emptyNode={
         <Empty
