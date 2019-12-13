@@ -121,7 +121,6 @@ export const SourceEditor = (props: IProps) => {
     setRunning(false);
     if (props.env && props.env.dumpMode && props.activeSubmission) {
       // Refresh submission files after dump
-      console.log(props.activeSubmission);
       props.setTestSubject(props.activeSubmission.id.toString());
     }
 
