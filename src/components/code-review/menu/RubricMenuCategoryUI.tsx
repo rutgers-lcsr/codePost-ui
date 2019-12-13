@@ -420,7 +420,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
           padding: '0px 40px 0px 0px',
           fontSize: '12px',
         }}
-        className="rubric-row--active"
+        className="rubric-row rubric-row--active"
         onClick={onClick}
       >
         <BlockMarkdown
@@ -432,7 +432,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
     );
   } else if (props.editing) {
     return (
-      <div className="rubric-row--editing">
+      <div className="rubric-row rubric-row--editing">
         {props.textInput}
         {props.pointInput}
         <div style={{ width: '40px' }} />
@@ -460,7 +460,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
           padding: '0px 40px 0px 0px',
           fontSize: '12px',
         }}
-        className={`rubric-row--${props.hasActiveComment ? 'active' : 'inactive'} `}
+        className={`rubric-row rubric-row--${props.hasActiveComment ? 'active' : 'inactive'} `}
         onClick={props.hasActiveComment ? onClick : props.startEditing}
       >
         <BlockMarkdown source={props.text.length === 0 ? '-' : props.text} />

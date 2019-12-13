@@ -144,6 +144,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           points: prevProps.rubricComment.pointDelta,
         });
       } else {
+        const commentTextArea = document.getElementById('comment-text-area');
+        if (commentTextArea !== null) {
+          commentTextArea.focus();
+        }
+
         this.setState({
           points: UiComment.points(this.props.comment, this.props.rubricComment),
         });
@@ -639,6 +644,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       commentElements.comment = (
         <CPTooltip title={forcedRubricTooltip} hideThisOnHideTips={true}>
           <TextArea
+            id="comment-text-area"
             autosize
             className="comment__text-area"
             value={this.state.text}

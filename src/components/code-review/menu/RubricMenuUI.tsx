@@ -19,7 +19,7 @@ import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_c
 
 import useHotkeys, { E_KEY, O_KEY, S_KEY } from '../useHotkeys';
 
-import { osControlKey } from '../../core/operatingSystem';
+import { osControlKey, getOperatingSystem, OS } from '../../core/operatingSystem';
 
 import CPButton from '../../core/CPButton';
 
@@ -94,6 +94,8 @@ const RubricMenuUI = ({
   const [changesMade, setChangesMade] = React.useState(false);
   const [confirmChanges, setConfirmChanges] = React.useState(false);
 
+  const [cursorIndex, setCursorIndex] = React.useState(0);
+
   const startEditing = (rubricCommentID: number) => {
     const newEditingStatuses = { ...editingStatuses, [rubricCommentID]: EDITING_STATUS.EDITING };
     setEditingStatuses(newEditingStatuses);
@@ -113,6 +115,27 @@ const RubricMenuUI = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  React.useEffect(() => {
+    const handleKeydown = async (e: any) => {
+      const os = getOperatingSystem();
+      const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+      if (props.showCursor === CURSOR_DOMAIN.RUBRIC && props.hasActiveComment) {
+        if (e.key === 'u' && triggerKey) {
+          const rubricCommentCount = document.getElementsByClassName('rubric-row').length;
+          setCursorIndex(Math.min(cursorIndex + 1, rubricCommentCount - 1));
+        } else if (e.key === 'i' && triggerKey) {
+          const rubricCommentCount = document.getElementsByClassName('rubric-row').length;
+          setCursorIndex(Math.max(cursorIndex - 1, 0));
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+    return () => {
+      document.removeEventListener('keydown', handleKeydown);
+    };
+  });
 
   useHotkeys(O_KEY, focusSearch);
 
@@ -244,7 +267,7 @@ const RubricMenuUI = ({
               turnOnReload: props.turnOnReload,
               turnOffReload: props.turnOffReload,
               showCursor: props.showCursor,
-              cursorIndex: props.cursorIndex,
+              cursorIndex: cursorIndex,
               commentIndex: thisIndex,
               showExplanations: props.showExplanations,
             };
