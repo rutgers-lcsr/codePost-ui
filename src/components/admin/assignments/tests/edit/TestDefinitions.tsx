@@ -564,6 +564,7 @@ export const TestDefinitions = (props: IProps) => {
             updateEnv={props.updateEnv}
             env={props.env}
             saveTest={saveTest}
+            updateTestStatus={updateTestStatus}
           />
         );
       }
