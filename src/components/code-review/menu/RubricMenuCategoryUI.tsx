@@ -318,6 +318,7 @@ const RubricMenuCategoryUI = ({
       defaultOpenKeys={[`category-${props.rubricCategory.id}`]}
       selectedKeys={[]}
       mode="inline"
+      id="rubric-menu-menu"
       className="rubric-menu"
       style={{ backgroundColor: consoleTheme.siderBg }}
     >
@@ -419,7 +420,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
           padding: '0px 40px 0px 0px',
           fontSize: '12px',
         }}
-        className="rubric-row rubric-row--active"
+        className={`rubric-row rubric-row--active${props.cursored ? ' rubric-row-cursored' : ''}`}
         onClick={onClick}
       >
         <BlockMarkdown
@@ -431,7 +432,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
     );
   } else if (props.editing) {
     return (
-      <div className="rubric-row rubric-row--editing">
+      <div className={`rubric-row rubric-row--editing${props.cursored ? ' rubric-row-cursored' : ''}`}>
         {props.textInput}
         {props.pointInput}
         <div style={{ width: '40px' }} />
@@ -459,7 +460,9 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
           padding: '0px 40px 0px 0px',
           fontSize: '12px',
         }}
-        className={`rubric-row rubric-row--${props.hasActiveComment ? 'active' : 'inactive'} `}
+        className={`rubric-row rubric-row--${props.hasActiveComment ? 'active' : 'inactive'}${
+          props.cursored ? ' rubric-row-cursored' : ''
+        }`}
         onClick={props.hasActiveComment ? onClick : props.startEditing}
       >
         <BlockMarkdown source={props.text.length === 0 ? '-' : props.text} />

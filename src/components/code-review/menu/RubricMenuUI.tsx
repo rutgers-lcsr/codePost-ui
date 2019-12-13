@@ -117,6 +117,32 @@ const RubricMenuUI = ({
   }, []);
 
   React.useEffect(() => {
+    const tryScroll = () => {
+      const rubricMenu = document.getElementById('rubric-menu');
+
+      if (rubricMenu !== null) {
+        let cursoredRows = document.getElementsByClassName('rubric-row-cursored');
+        // console.log('cursoredRows', cursoredRows);
+        if (cursoredRows.length > 0) {
+          const cursoredRow = cursoredRows[0];
+
+          const distance = cursoredRow.getBoundingClientRect().top - rubricMenu.getBoundingClientRect().top;
+
+          const rubricMenuVisibleHeight = rubricMenu.offsetHeight;
+          // console.log('distance', distance, rubricMenuVisibleHeight);
+
+          if (distance < 35) {
+            rubricMenu.scrollTop = rubricMenu.scrollTop - (35 - distance);
+          } else if (distance > rubricMenuVisibleHeight) {
+            const updatedScroll = distance - rubricMenuVisibleHeight;
+            const maxScrollTop = rubricMenu.scrollHeight - rubricMenu.offsetHeight;
+            // console.log('updatedScroll', updatedScroll);
+            rubricMenu.scrollTop = Math.min(rubricMenu.scrollTop + updatedScroll + 70, maxScrollTop);
+          }
+        }
+      }
+    };
+
     const handleKeydown = async (e: any) => {
       const os = getOperatingSystem();
       const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
@@ -124,9 +150,11 @@ const RubricMenuUI = ({
         if (e.key === 'u' && triggerKey) {
           const rubricCommentCount = document.getElementsByClassName('rubric-row').length;
           setCursorIndex(Math.min(cursorIndex + 1, rubricCommentCount - 1));
+          setTimeout(() => tryScroll(), 100);
         } else if (e.key === 'i' && triggerKey) {
           const rubricCommentCount = document.getElementsByClassName('rubric-row').length;
           setCursorIndex(Math.max(cursorIndex - 1, 0));
+          setTimeout(() => tryScroll(), 100);
         }
       }
     };
@@ -516,7 +544,7 @@ const RubricMenuUI = ({
   if (state.loadComplete) {
     const rubricMenu = buildRubricMenu(state.rubricCategories, state.rubricComments);
 
-    content = <div id="rubric-menu">{rubricMenu}</div>;
+    content = <div id="rubric-menu-wrapper">{rubricMenu}</div>;
   }
 
   return (
