@@ -226,24 +226,37 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
 
   // ************************** Environment function **************************
 
-  const createEnv = async (language: string, compileText: string, dependencies: string[]) => {
-    const payload = {
-      id: -1,
-      language,
-      dependencies: JSON.stringify(dependencies),
-      assignment: props.currentAssignment.id,
-      dumpMode: false,
-      testParsing: true,
-      compileText,
-    };
-    const newEnv = await Environment.create(payload);
-    const buildEnv = await Environment.updateBuild({
-      id: newEnv.id,
+  const buildEnv = async (language: string, dependencies: string[]) => {
+    let thisEnvironment = env;
+    if (!thisEnvironment) {
+      const payload = {
+        id: -1,
+        language,
+        dependencies: JSON.stringify(dependencies),
+        assignment: props.currentAssignment.id,
+        dumpMode: false,
+        testParsing: true,
+        compileText: '',
+      };
+      thisEnvironment = await Environment.create(payload);
+    }
+    const newEnv = await Environment.updateBuild({
+      id: thisEnvironment.id,
       dependencies: dependencies,
-      language: newEnv.language !== null ? newEnv.language : '',
+      language: language,
       simulate: false,
     });
-    setEnv(buildEnv);
+    setEnv(newEnv);
+  };
+
+  const updateCompileText = async (compileText: string) => {
+    if (env) {
+      const newEnv = await Environment.update({
+        id: env.id,
+        compileText: compileText,
+      });
+      setEnv(newEnv);
+    }
   };
 
   const deleteEnv = () => {
@@ -298,9 +311,8 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
           currentAssignment={props.currentAssignment}
           updateAssignment={props.updateAssignment}
           env={env}
-          createEnv={createEnv}
-          updateEnv={setEnv}
-          deleteEnv={deleteEnv}
+          buildEnv={buildEnv}
+          updateCompileText={updateCompileText}
           addFile={addFile}
           deleteFile={deleteFile}
           updateFile={updateFile}
