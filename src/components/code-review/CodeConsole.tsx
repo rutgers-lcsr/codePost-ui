@@ -2002,6 +2002,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 size="small"
                 icon="folder-open"
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
                 }}
