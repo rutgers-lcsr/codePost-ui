@@ -1853,17 +1853,22 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         siderTitles = [
           'Submission Info',
-          <div>
-            Tests{' '}
-            <Button
-              size="small"
-              icon="folder-open"
-              onClick={(e) => {
-                e.stopPropagation();
-                this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
-              }}
-            />
-          </div>,
+          this.state.testCategories.length > 0 || this.isCourseAdmin(this.state.assignment) ? (
+            <div>
+              Tests{' '}
+              <Button
+                size="small"
+                icon="folder-open"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
+                }}
+              />
+            </div>
+          ) : (
+            undefined
+          ),
           fileMenuTitle,
           'Rubric',
         ];

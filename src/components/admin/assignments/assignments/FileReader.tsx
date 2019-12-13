@@ -55,9 +55,12 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
     };
 
     reader.onload = async () => {
+      let readerResult = reader.result;
       if (reader.result === null || reader.result === '') {
-        reject(`${outputFile.longname} cannot be uploaded because it is empty.`);
-      } else if (reader.result instanceof ArrayBuffer) {
+        readerResult = '-';
+      }
+
+      if (reader.result instanceof ArrayBuffer) {
         // Handle zip files
         const zipper = new JSZip();
 
@@ -102,7 +105,7 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
             });
           });
       } else {
-        let data: any = reader.result;
+        let data: any = readerResult;
 
         if (['png', 'jpeg', 'jpg'].includes(outputFile.extension) && typeof data === 'string') {
           data = await resizeImage(data);
