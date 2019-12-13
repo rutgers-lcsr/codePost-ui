@@ -72,8 +72,7 @@ interface IRubricMenuUIProps extends IRubricManagerProps {
   turnOffReload: () => void;
 
   showCursor: CURSOR_DOMAIN;
-  cursorIndex: number;
-  setCursor: (cursorIndex: number) => void;
+  updateCursorDomain: (domain: CURSOR_DOMAIN) => void;
 }
 
 const RubricMenuUI = ({
@@ -147,7 +146,9 @@ const RubricMenuUI = ({
       const os = getOperatingSystem();
       const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
       if (props.showCursor === CURSOR_DOMAIN.RUBRIC && props.hasActiveComment) {
-        if (e.key === 'u' && triggerKey) {
+        if (e.key === 'Escape') {
+          props.updateCursorDomain(CURSOR_DOMAIN.CODE);
+        } else if (e.key === 'u' && triggerKey) {
           const rubricCommentCount = document.getElementsByClassName('rubric-row').length;
           setCursorIndex(Math.min(cursorIndex + 1, rubricCommentCount - 1));
           setTimeout(() => tryScroll(), 100);
@@ -169,7 +170,6 @@ const RubricMenuUI = ({
 
   const onSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    props.setCursor(0);
   };
 
   const linkToComment = (rubricComment: RubricCommentType) => {

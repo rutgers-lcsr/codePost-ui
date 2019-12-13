@@ -164,7 +164,6 @@ interface ICodeConsoleState {
 
   /* console cursor */
   showCursor: CURSOR_DOMAIN;
-  cursorIndex: number;
   noSave?: boolean;
 }
 
@@ -488,7 +487,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       rubricReload: undefined,
 
       showCursor: CURSOR_DOMAIN.CODE,
-      cursorIndex: 0,
       showExplanations: false,
 
       panelType: PANEL_TYPE.FILE,
@@ -720,26 +718,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       if (this.state.activeCommentID !== undefined) {
         console.log('active comment');
         if (e.key === 'u' && triggerKey) {
-          // e.preventDefault();
-          // e.stopPropagation();
-          console.log('RUBRIC DOWN', this.state.cursorIndex);
           if (this.state.showCursor !== CURSOR_DOMAIN.RUBRIC) {
             this.setState({ showCursor: CURSOR_DOMAIN.RUBRIC });
           }
-          // else {
-          //   const numComments = Object.values(this.state.rubricComments).flat().length;
-          //   this.setState({ cursorIndex: Math.min(this.state.cursorIndex + 1, numComments - 1) });
-          // }
         } else if (e.key === 'i' && triggerKey) {
-          // e.preventDefault();
-          // e.stopPropagation();
-          console.log('RUBRIC DOWN', this.state.cursorIndex);
           if (this.state.showCursor !== CURSOR_DOMAIN.RUBRIC) {
             this.setState({ showCursor: CURSOR_DOMAIN.RUBRIC });
           }
-          // else {
-          //   this.setState({ cursorIndex: Math.max(this.state.cursorIndex - 1, 0) });
-          // }
         }
       } else {
         console.log('normal');
@@ -767,10 +752,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public updateCursorDomain = (domain: CURSOR_DOMAIN) => {
     this.setState({ showCursor: domain });
-  };
-
-  public setCursor = (cursorIndex: number) => {
-    this.setState({ showCursor: CURSOR_DOMAIN.CODE });
   };
 
   /***********************************************************************************
@@ -1091,7 +1072,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       comments,
       commentRubricComments,
       showCursor: CURSOR_DOMAIN.CODE_HIDDEN,
-      cursorIndex: 0,
     });
   };
 
@@ -1679,8 +1659,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 canUserEdit: true, // showcase in-console rubric editing in demo
                 demoMode: true,
                 showCursor: this.state.showCursor,
-                cursorIndex: this.state.cursorIndex,
-                setCursor: this.setCursor,
+                updateCursorDomain: this.updateCursorDomain,
                 showExplanations: this.state.showExplanations,
                 showFrequent:
                   this.state.assignment !== undefined ? this.state.assignment.showFrequentlyUsedRubricComments : false,
@@ -1981,8 +1960,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 canUserEdit:
                   this.isCourseAdmin(this.state.assignment) || this.state.assignment!.collaborativeRubricMode,
                 showCursor: this.state.showCursor,
-                cursorIndex: this.state.cursorIndex,
-                setCursor: this.setCursor,
+                updateCursorDomain: this.updateCursorDomain,
                 demoMode: this.state.noSave === true,
                 showExplanations: this.state.showExplanations,
                 showFrequent:
