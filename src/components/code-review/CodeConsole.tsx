@@ -751,6 +751,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public updateCursorDomain = (domain: CURSOR_DOMAIN) => {
+    if (domain === CURSOR_DOMAIN.CODE) {
+      this.changeActiveComment(undefined);
+    }
     this.setState({ showCursor: domain });
   };
 

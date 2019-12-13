@@ -146,7 +146,7 @@ const RubricMenuUI = ({
       const os = getOperatingSystem();
       const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
       if (props.showCursor === CURSOR_DOMAIN.RUBRIC && props.hasActiveComment) {
-        if (e.key === 'Escape') {
+        if (e.key === 'ArrowRight' && triggerKey) {
           props.updateCursorDomain(CURSOR_DOMAIN.CODE);
         } else if (e.key === 'u' && triggerKey) {
           const rubricCommentCount = document.getElementsByClassName('rubric-row').length;
