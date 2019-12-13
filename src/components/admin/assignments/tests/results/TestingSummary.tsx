@@ -134,6 +134,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     newEnv.isRunning = false;
     setEnv(newEnv);
     setModalStatus(MODAL_STATUS.None);
+    setProgress('{}');
   };
 
   const callback = (sub: SubmissionType, result: SubmissionTestResultType) => {
@@ -170,7 +171,6 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
 
   const runAll = async () => {
     if (env) {
-      console.log(sendEmail);
       const result = await Environment.runAll({ id: env.id, sendEmail: sendEmail });
       awaitTestResult(result.task, runAllCallback, runAllProgressCallback);
       const newEnv = { ...env };
@@ -205,7 +205,6 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   if (!fetchLoading) {
     switch (summaryType) {
       case SUMMARY_TYPE.BySubmission:
-        console.log('BY SUBMISSION');
         columns = bySubmissionColumns(categories);
         data = props.submissions.map((submission: SubmissionType) => {
           const actionsMenu = (
@@ -272,7 +271,6 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
         });
         break;
       case SUMMARY_TYPE.ByTest:
-        console.log('BY TEST');
         columns = byTestColumns;
         data = categories.map((category) => {
           let passed = 0;
@@ -371,6 +369,11 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     const newType: SUMMARY_TYPE = SUMMARY_TYPE[e.target.value];
     setSummaryType(newType);
   };
+
+  const onCloseRunAll = () => {
+    setModalStatus(MODAL_STATUS.None);
+    setProgress('{}');
+  };
   actions = [
     <Radio.Group value={SUMMARY_TYPE[summaryType]} onChange={onSummaryTypeChange} buttonStyle="solid">
       <Radio.Button key={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]} value={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]}>
@@ -380,7 +383,12 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
         <Icon type="solution" />
       </Radio.Button>
     </Radio.Group>,
-    <Button type="default" disabled={totalTests === 0} onClick={triggerRunAll} loading={env && env.isRunning}>
+    <Button
+      type="default"
+      disabled={totalTests === 0 || props.submissions.length === 0}
+      onClick={triggerRunAll}
+      loading={env && env.isRunning}
+    >
       Run all Tests
     </Button>,
     <Button type="primary">
@@ -405,7 +413,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     />,
     <RunAllModal
       visible={modalStatus === MODAL_STATUS.RunAll}
-      onCancel={setModalStatus.bind({}, MODAL_STATUS.None)}
+      onCancel={onCloseRunAll}
       cases={Object.values(testCasesByCategory).flat()}
       raw={progress}
       numSubmissions={props.submissions.length}
