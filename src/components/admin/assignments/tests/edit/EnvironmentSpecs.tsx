@@ -10,7 +10,7 @@ import { Modal, Button, Divider, Select, Typography, Empty, message } from 'antd
 
 /* codePost object imports */
 import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
-import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
+import { EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 
 /* codePost component imports */
 import { CodeWindow } from './utils/CodeWindow';
@@ -38,9 +38,8 @@ interface IProps {
   currentAssignment: AssignmentType;
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   env: EnvironmentType | undefined;
-  createEnv: (language: string, compileText: string, dependencies: string[]) => void;
-  updateEnv: (env: EnvironmentType) => void;
-  deleteEnv: () => void;
+  buildEnv: (language: string, dependencies: string[]) => Promise<void>;
+  updateCompileText: (compileText: string) => Promise<void>;
   helpers: SolutionFileType[] | HelperFileType[];
   solutions: SolutionFileType[] | HelperFileType[];
   addFile: (type: FILE_TYPE, name: string, code: string, path?: string) => Promise<void>;
@@ -63,56 +62,32 @@ export const EnvironmentSpecs = (props: IProps) => {
     }
   }, [props.env]);
 
-  const saveEnv = async () => {
-    if (!props.env) {
-      setLoading(true);
-      await props.createEnv(language !== null ? language : '', '', []);
-      setLoading(false);
-      message.success('Environment created');
+  const onSave = () => {
+    if (props.env && language !== props.env.language) {
+      confirm({
+        title: `Are you sure you want to change the language of the environment?`,
+        content: 'This may cause existing tests to stop working.',
+        onOk() {
+          saveEnv();
+        },
+        onCancel() {
+          return;
+        },
+      });
     } else {
-      setLoading(true);
-      const payload = {
-        id: props.env.id,
-        dependencies: dependencies,
-        language: language!,
-        simulate: false,
-      };
-      const newEnv = await Environment.updateBuild(payload);
-      if (newEnv) {
-        props.updateEnv(newEnv);
-      }
-      message.success('Environment saved');
-      setLoading(false);
+      saveEnv();
     }
+  };
+
+  const saveEnv = async () => {
+    setLoading(true);
+    await props.buildEnv(language !== null ? language : '', dependencies);
+    setLoading(false);
+    message.success('Environment updated');
   };
 
   const saveCompileText = async (newText: string) => {
-    if (!props.env) {
-      return;
-    }
-    const payload = {
-      id: props.env.id,
-      compileText: newText,
-    };
-    const newEnv = await Environment.update(payload);
-    if (newEnv) {
-      props.updateEnv(newEnv);
-    }
-  };
-
-  const deleteEnv = async () => {
-    if (props.env !== undefined) {
-      confirm({
-        title: 'Are you sure you want to delete your environment?',
-        content: 'This will delete all of your tests, too.',
-        onOk() {
-          return new Promise((resolve, reject) => {
-            setLanguage(null);
-            resolve(props.deleteEnv());
-          }).catch(() => console.log('Oops errors!'));
-        },
-      });
-    }
+    await props.updateCompileText(newText);
   };
 
   /******************************* State Change Functions ****************************/
@@ -127,12 +102,7 @@ export const EnvironmentSpecs = (props: IProps) => {
   /******************************* Return ****************************/
 
   const selectLanguage = (
-    <Select
-      value={language || undefined}
-      onChange={onLanguageChange}
-      style={{ minWidth: 300 }}
-      disabled={props.env !== undefined}
-    >
+    <Select value={language || undefined} onChange={onLanguageChange} style={{ minWidth: 300 }}>
       {languages.map((language) => {
         return (
           <Option key={language} value={language}>
@@ -175,19 +145,6 @@ export const EnvironmentSpecs = (props: IProps) => {
       </div>
     );
   }
-
-  // const errorPanel =
-  //   errorLogs.length === 0 ? (
-  //     <div />
-  //   ) : (
-  //     <Collapse bordered={false} defaultActiveKey={[]}>
-  //       <Panel header="Traceback" key="1">
-  //         {errorLogs.map((error, i) => {
-  //           return <div key={i}>{error}</div>;
-  //         })}
-  //       </Panel>
-  //     </Collapse>
-  //   );
 
   const showAfterCreation = (
     <div>
@@ -239,16 +196,8 @@ export const EnvironmentSpecs = (props: IProps) => {
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <Typography.Title level={3}>1. Define environment</Typography.Title>
         <div>
-          {props.env ? (
-            <Button type="danger" onClick={deleteEnv}>
-              Delete
-            </Button>
-          ) : (
-            undefined
-          )}
-          &nbsp;
-          <Button type="primary" onClick={saveEnv} loading={loading}>
-            {props.env ? 'Save' : 'Create'}
+          <Button type="primary" onClick={onSave} loading={loading}>
+            {props.env ? 'Update' : 'Create'}
           </Button>
         </div>
       </div>
