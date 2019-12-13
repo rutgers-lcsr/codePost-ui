@@ -729,7 +729,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       } else {
         console.log('normal');
 
-        if (e.key === 'ArrowLeft' && triggerKey) {
+        if (e.key === 'ArrowLeft' && triggerKey && !e.shiftKey) {
           e.preventDefault();
           e.stopPropagation();
           if (this.state.showCursor === CURSOR_DOMAIN.CODE) {
@@ -737,7 +737,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           } else {
             this.setState({ showCursor: CURSOR_DOMAIN.CODE });
           }
-        } else if (e.key === 'ArrowRight' && triggerKey) {
+        } else if (e.key === 'ArrowRight' && triggerKey && !e.shiftKey) {
           e.preventDefault();
           e.stopPropagation();
           if (this.state.showCursor === CURSOR_DOMAIN.COMMENTS) {

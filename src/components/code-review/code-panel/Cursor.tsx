@@ -63,6 +63,7 @@ export const left = (
   cursor: ICursorType,
   optionKey: boolean = false,
   jumpSpace: boolean = false,
+  triggerKey: boolean = false,
 ): ICursorType => {
   const line = code[cursor.endLine];
 
@@ -90,7 +91,9 @@ export const left = (
   } else {
     let newEndChar;
 
-    if (optionKey) {
+    if (triggerKey) {
+      newEndChar = 1;
+    } else if (optionKey) {
       const regexp = /\s/g;
       // @ts-ignore
       const spaces = line.matchAll(regexp);
@@ -135,6 +138,7 @@ export const right = (
   cursor: ICursorType,
   optionKey: boolean = false,
   jumpSpace: boolean = true,
+  triggerKey: boolean = false,
 ): ICursorType => {
   const line = code[cursor.endLine];
 
@@ -169,8 +173,9 @@ export const right = (
     }
   } else {
     let newEndChar;
-
-    if (optionKey) {
+    if (triggerKey) {
+      newEndChar = line.length - 1;
+    } else if (optionKey) {
       const regexp = /\s/g;
       // @ts-ignore
       const spaces = line.matchAll(regexp);
@@ -208,7 +213,12 @@ export const right = (
   }
 };
 
-export const shiftLeft = (code: string[], cursor: ICursorType, optionKey: boolean = false): ICursorType => {
+export const shiftLeft = (
+  code: string[],
+  cursor: ICursorType,
+  optionKey: boolean = false,
+  triggerKey: boolean = false,
+): ICursorType => {
   if (cursor.lead === 'front') {
     if (cursor.startLine === cursor.endLine && cursor.endChar - cursor.startChar <= 1) {
       const leadCursor = left(code, cursor, optionKey, true);
@@ -227,7 +237,7 @@ export const shiftLeft = (code: string[], cursor: ICursorType, optionKey: boolea
       };
     }
   } else {
-    const leadCursor = left(code, cursor, optionKey, false);
+    const leadCursor = left(code, cursor, optionKey, false, triggerKey);
     return {
       ...leadCursor,
       endChar: cursor.endChar,
@@ -236,7 +246,12 @@ export const shiftLeft = (code: string[], cursor: ICursorType, optionKey: boolea
   }
 };
 
-export const shiftRight = (code: string[], cursor: ICursorType, optionKey: boolean = false): ICursorType => {
+export const shiftRight = (
+  code: string[],
+  cursor: ICursorType,
+  optionKey: boolean = false,
+  triggerKey: boolean = false,
+): ICursorType => {
   if (cursor.lead === 'back') {
     if (cursor.startLine === cursor.endLine && cursor.endChar - cursor.startChar <= 1) {
       const leadCursor = right(code, cursor, optionKey, true);
@@ -254,7 +269,7 @@ export const shiftRight = (code: string[], cursor: ICursorType, optionKey: boole
       };
     }
   } else {
-    const leadCursor = right(code, front(cursor), optionKey, false);
+    const leadCursor = right(code, front(cursor), optionKey, false, triggerKey);
 
     return {
       ...cursor,

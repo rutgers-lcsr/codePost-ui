@@ -141,10 +141,10 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
           if (e.key === 'Escape') {
             newCursor = cursor.lead === 'front' ? front(cursor) : back(cursor);
           } else if (e.shiftKey && e.key === 'ArrowLeft') {
-            newCursor = shiftLeft(code, cursor, e.altKey);
+            newCursor = shiftLeft(code, cursor, e.altKey, triggerKey);
             handleHorizontalScroll(newCursor);
           } else if (e.shiftKey && e.key === 'ArrowRight') {
-            newCursor = shiftRight(code, cursor, e.altKey);
+            newCursor = shiftRight(code, cursor, e.altKey, triggerKey);
             handleHorizontalScroll(newCursor);
           } else if (e.shiftKey && e.key === 'ArrowUp') {
             newCursor = shiftUp(code, cursor);
