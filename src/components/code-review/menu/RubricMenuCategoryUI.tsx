@@ -180,12 +180,11 @@ const RubricMenuCategoryUI = ({
           const key = `comment-${props.rubricCategory.id}-${rubricComment.id}`;
           const cursored =
             props.showCursor === CURSOR_DOMAIN.RUBRIC && props.cursorIndex === props.commentIndex + index;
-          // backgroundColor: cursored ? 'lightblue' : consoleTheme.siderBg,
           return (
             <Menu.Item
               key={key}
               style={{
-                backgroundColor: consoleTheme.siderBg,
+                backgroundColor: cursored ? 'rgba(0, 0, 255, 0.2)' : consoleTheme.siderBg,
                 color: consoleTheme.siderMenuItemColor,
               }}
             >
