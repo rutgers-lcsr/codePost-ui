@@ -646,7 +646,11 @@ export const TestDefinitions = (props: IProps) => {
   const hasTests = Object.values(casesByCategory).some((el) => el.length > 0);
 
   if (loading) {
-    return <Spin />;
+    return (
+      <div className="display-flex justify-content-center align-iterms-center">
+        <Spin style={{ marginTop: 15 }} />
+      </div>
+    );
   } else if (categories.length === 0 && panel == DETAIL_TYPE.EditTests) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center' }}>

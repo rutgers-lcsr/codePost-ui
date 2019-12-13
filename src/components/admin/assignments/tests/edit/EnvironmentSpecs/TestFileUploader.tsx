@@ -14,6 +14,8 @@ import { HelperFileType } from '../../../../../../infrastructure/autograder/help
 
 import { IDirectoryStructure, IFolder } from '../../../../../code-review/menu/fileMenuUtils';
 
+const { warning } = Modal;
+
 interface IUploadProps {
   directory: IDirectoryStructure<SolutionFileType | HelperFileType> | undefined;
   addFile: (name: string, code: string, path?: string) => Promise<void>;
@@ -45,7 +47,23 @@ export const TestFileUploader = (props: IUploadProps) => {
       return deleteFolder(f);
     });
 
-    return Promise.all([...filePromises, ...folderPromises]);
+    return await Promise.all([...filePromises, ...folderPromises]);
+  };
+
+  const deleteAll = async () => {
+    if (props.directory) {
+      warning({
+        title: 'Are you sure you want to delete all files?',
+        content: '',
+        okText: 'Delete',
+        async onOk() {
+          const filePromises = props.directory!.files.map((f) => deleteFile(f.id));
+          const folderPromises: any = props.directory!.folders.map((f) => deleteFolder(f));
+          return await Promise.all([...filePromises, ...folderPromises]);
+        },
+        onCancel() {},
+      });
+    }
   };
 
   const saveNewFiles = async () => {
@@ -150,6 +168,20 @@ export const TestFileUploader = (props: IUploadProps) => {
     });
   }
 
+  const footer = [
+    <Button
+      type="danger"
+      disabled={!(props.directory && (props.directory.files.length > 0 || props.directory.folders.length > 0))}
+      ghost={true}
+      onClick={deleteAll}
+    >
+      Delete all
+    </Button>,
+    <Button type="primary" disabled={newFiles.length === 0} onClick={saveNewFiles}>
+      Save
+    </Button>,
+  ];
+
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
       {props.icon ? (
@@ -159,14 +191,7 @@ export const TestFileUploader = (props: IUploadProps) => {
           Add / Remove Files
         </Button>
       )}
-      <Modal
-        visible={visible}
-        onCancel={toggleVisible}
-        width={750}
-        okText="Done"
-        onOk={saveNewFiles}
-        title={props.title}
-      >
+      <Modal visible={visible} onCancel={toggleVisible} width={750} footer={footer} title={props.title}>
         <Table columns={columns} dataSource={[...files, ...folders]} />
         <br />
         <Upload
@@ -182,7 +207,7 @@ export const TestFileUploader = (props: IUploadProps) => {
             <Icon type="upload" /> Add Files
           </Button>
         </Upload>
-        <div>
+        <div style={{ marginTop: 15 }}>
           Upload directory: &nbsp;
           <Switch onChange={toggleDir} />
         </div>

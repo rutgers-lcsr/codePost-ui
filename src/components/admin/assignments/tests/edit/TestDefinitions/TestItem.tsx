@@ -25,6 +25,8 @@ import ExplanationModal from '../../../../assignments/rubric/ExplanationModal';
 /* codePost util imports */
 import { testTemplates, hasNativeTestSupport, extensionsByLanguage } from '../utils/languageUtils';
 
+import CPTooltip from '../../../../../core/CPTooltip';
+
 import { ILogType, RESULT_TYPE } from './PsuedoTerminal';
 
 const { confirm } = Modal;
@@ -134,12 +136,27 @@ export const TestItem = (props: ITestItemProps) => {
     await saveTest(values, testType, explanation, codeString);
 
     if (props.testCase.id > 0) {
-      setIsRunning(true);
-      const result = await TestCase.run(
-        props.testCase.id,
-        props.activeSubmission ? { submission: props.activeSubmission.id.toString() } : {},
-      );
-      awaitTestResult(result.task, callback);
+      if (!props.activeSubmission && props.files.length === 0) {
+        confirm({
+          title: 'Empty Solution code',
+          content: "You haven't uploaded any solution code. Do you still want to run this test?",
+          async onOk() {
+            setIsRunning(true);
+            const result = await TestCase.run(
+              props.testCase.id,
+              props.activeSubmission ? { submission: props.activeSubmission.id.toString() } : {},
+            );
+            awaitTestResult(result.task, callback);
+          },
+        });
+      } else {
+        setIsRunning(true);
+        const result = await TestCase.run(
+          props.testCase.id,
+          props.activeSubmission ? { submission: props.activeSubmission.id.toString() } : {},
+        );
+        awaitTestResult(result.task, callback);
+      }
     }
   };
 
@@ -529,15 +546,64 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                       : this.state.testType
                   }
                 >
-                  <Option value={'io'}>Input / Output</Option>
-                  <Option value={'shell'}>Shell Script</Option>
-                  <Option value={'unit'}>
-                    Unit Test <Tag>BETA</Tag>
-                  </Option>
+                  <Option value={'io'}>Input / Output </Option>
+                  <Option value={'shell'}>Shell Script </Option>
+                  <Option value={'unit'}>Unit Test</Option>
                 </Select>
+                &nbsp;
+                <CPTooltip
+                  hideThisOnHideTips={true}
+                  title={
+                    <span>
+                      To learn more, check out our guide to writing{' '}
+                      {this.state.testType === 'io' || this.state.testType === 'io_cli' ? (
+                        <a href="http://help.codepost.io/en/articles/3567215-writing-tests-i-o-tests" target="_blank">
+                          I/O tests.
+                        </a>
+                      ) : this.state.testType === 'shell' ? (
+                        <a
+                          href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
+                          target="_blank"
+                        >
+                          Shell tests.
+                        </a>
+                      ) : this.state.testType === 'unit' ? (
+                        <a
+                          href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
+                          target="_blank"
+                        >
+                          Unit tests.
+                        </a>
+                      ) : this.state.testType === 'file' ? (
+                        <a href="http://help.codepost.io/en/articles/3553024-writing-tests-file-mode" target="_blank">
+                          tests in file mode.
+                        </a>
+                      ) : (
+                        <a
+                          href="http://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
+                          target="_blank"
+                        >
+                          tests.
+                        </a>
+                      )}
+                    </span>
+                  }
+                  infoIcon={true}
+                />
               </div>{' '}
               &nbsp; &nbsp;
-              <Form.Item label="Exposed">
+              <Form.Item
+                label={
+                  <span>
+                    Exposed{' '}
+                    <CPTooltip
+                      hideThisOnHideTips={true}
+                      title="If student upload is turned on, exposed tests will be run when students upload their submission."
+                      infoIcon={true}
+                    />
+                  </span>
+                }
+              >
                 {getFieldDecorator('exposed', {
                   initialValue: testCase.exposed,
                   valuePropName: 'checked',
@@ -569,7 +635,18 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   ],
                 })(<InputNumber />)}
               </Form.Item>
-              <Form.Item label="Explanation">
+              <Form.Item
+                label={
+                  <span>
+                    Explanation{' '}
+                    <CPTooltip
+                      hideThisOnHideTips={true}
+                      title="An explanation that should be shown to students to explain the tests. This will be shown in the test summary students see in the code console."
+                      infoIcon={true}
+                    />
+                  </span>
+                }
+              >
                 <Button icon="edit" onClick={() => this.setState({ showExplanation: true })} />
                 {this.state.showExplanation ? (
                   <ExplanationModal

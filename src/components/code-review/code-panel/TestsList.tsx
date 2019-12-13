@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Badge, Table, Collapse, Statistic, Spin } from 'antd';
+import { Badge, Card, Table, Collapse, Statistic, Spin } from 'antd';
 
 /* other library imports */
 import ReactMarkdown from 'react-markdown';
@@ -25,12 +25,15 @@ interface IProps {
   cases: TestCasesByCategory;
   categories: TestCategoryType[];
   isLoading?: boolean;
+  hideNotRun?: boolean;
+  hideSummary?: boolean;
 }
 
 const TestsList = (props: IProps) => {
   // Submission-level stats
   let passed = 0;
-  let total = 0;
+  let failed = 0;
+  let total = Object.keys(props.cases).reduce((acc, val: string) => acc + props.cases[parseInt(val, 10)].length, 0);
 
   // Index tests by testCategory to access their data more easily when we loop
   // over testCategories below
@@ -50,8 +53,9 @@ const TestsList = (props: IProps) => {
     testsByCategory[test.testCategory] = [...testsByCategory[test.testCategory], test];
     if (test.passed) {
       passed += 1;
+    } else {
+      failed += 1;
     }
-    total += 1;
   }
 
   // Top-level columns used used to display individual test information
@@ -93,8 +97,35 @@ const TestsList = (props: IProps) => {
   };
 
   return (
-    <div style={{ margin: '20px', overflow: 'auto', height: 'calc(100vh - 100px)' }}>
-      <Statistic title="Tests Passed" value={props.isLoading ? 'Running...' : `${passed}/${total}`} />
+    <div style={{ margin: '20px', overflow: 'auto' }}>
+      {!props.hideSummary && (
+        <div className="display-flex justify-content-center">
+          <Card>
+            <div className="display-flex justify-content-center">
+              <Statistic
+                style={{ textAlign: 'center', margin: '0px 30px' }}
+                title="Passed"
+                value={props.isLoading ? 'Running...' : `${passed}`}
+              />
+              <Statistic
+                style={{ textAlign: 'center', margin: '0px 30px' }}
+                title="Failed"
+                value={props.isLoading ? 'Running...' : `${failed}`}
+              />
+              <Statistic
+                style={{ textAlign: 'center', margin: '0px 30px' }}
+                title="Not Run"
+                value={props.isLoading ? 'Running...' : `${total - passed - failed}`}
+              />
+              <Statistic
+                style={{ textAlign: 'center', margin: '0px 30px' }}
+                title="Summary"
+                value={props.isLoading ? 'Running...' : `${passed}/${total}`}
+              />
+            </div>
+          </Card>
+        </div>
+      )}
       <br />
       <Collapse defaultActiveKey={props.categories.map((x, i) => i)} bordered={false} style={{ background: '#f2f2f2' }}>
         {props.categories.map((category, index) => {
@@ -104,7 +135,14 @@ const TestsList = (props: IProps) => {
           const numFailed = theseTests.length - numPassed;
           const numNotRun = props.cases[category.id].length - theseTests.length;
 
-          const data = props.cases[category.id].map((testCase) => {
+          // If we want to hide the not run, then we fitler out tests for which we don't have a submission test
+          const testCases = !props.hideNotRun
+            ? props.cases[category.id]
+            : props.cases[category.id].filter((tc) => {
+                return theseTests.find((el) => el.testCase === tc.id);
+              });
+
+          const data = testCases.map((testCase) => {
             const result = theseTests.find((el) => el.testCase === testCase.id);
 
             // Did submission pass this test?
@@ -167,12 +205,14 @@ const TestsList = (props: IProps) => {
                   &nbsp;
                   {props.isLoading ? (
                     <Spin />
-                  ) : (
+                  ) : !props.hideNotRun ? (
                     <span>
                       <Badge count={numPassed} style={{ backgroundColor: '#52c41a' }} />
                       <Badge count={numFailed} style={{ backgroundColor: 'red' }} />
                       <Badge count={numNotRun} style={{ backgroundColor: 'gray' }} />
                     </span>
+                  ) : (
+                    <div />
                   )}
                 </span>
               }
