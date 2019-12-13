@@ -144,8 +144,8 @@ export const TestDefinitions = (props: IProps) => {
 
   useEffect(() => {
     setActiveSubmission(undefined);
-    setCurrentFiles([]);
-  }, [activeTest]);
+    setCurrentFiles(props.solutions);
+  }, [activeTest && activeTest.id]);
 
   useEffect(() => {
     setActiveSubmission(undefined);
