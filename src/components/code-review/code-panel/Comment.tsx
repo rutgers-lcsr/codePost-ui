@@ -698,6 +698,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       shadow = { boxShadow: this.context.consoleTheme.commentShadow };
     }
 
+    const preventDefault = (e: any) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
     if (this.props.commentType === 'inactive') {
       commentElements.points = badge;
       commentElements.comment = (
@@ -715,7 +720,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           placement="bottomRight"
           content={popoverContent}
         >
-          <CPButton cpType="danger" icon="delete" />
+          <CPButton cpType="danger" icon="delete" onClick={preventDefault} />
         </Popover>
       ) : (
         <Popover
