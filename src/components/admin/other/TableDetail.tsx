@@ -39,6 +39,7 @@ interface IProps {
   detail?: React.ReactNode;
   components?: any;
   onRow?: any;
+  expandAllRows?: boolean;
 }
 
 interface IState {
@@ -181,6 +182,7 @@ class TableDetail extends React.Component<IProps, IState> {
               columns={newColumns}
               dataSource={data}
               components={this.props.components}
+              defaultExpandAllRows={this.props.expandAllRows}
               onRow={
                 this.props.onRow !== undefined
                   ? this.props.onRow
