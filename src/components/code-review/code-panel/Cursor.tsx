@@ -44,7 +44,7 @@ export const up = (code: string[], cursor: ICursorType): ICursorType => {
 
 export const down = (code: string[], cursor: ICursorType): ICursorType => {
   if (cursor.endLine === code.length - 1) {
-    return { ...cursor, lead: 'front' };
+    return { ...cursor, lead: 'back' };
   } else {
     const nextStartLine = code[cursor.startLine + 1];
     return {
@@ -53,7 +53,7 @@ export const down = (code: string[], cursor: ICursorType): ICursorType => {
       endChar: nextStartLine.length === 0 ? 1 : nextStartLine.length,
       startLine: cursor.startLine + 1,
       endLine: cursor.startLine + 1,
-      lead: 'front',
+      lead: 'back',
     };
   }
 };
