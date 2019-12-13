@@ -58,8 +58,8 @@ export const byTestColumns = [
   },
   {
     title: 'Not run',
-    dataIndex: 'notrun',
-    key: 'notrun',
+    dataIndex: 'notRun',
+    key: 'notRun',
     align: 'center' as 'center',
   },
 ];

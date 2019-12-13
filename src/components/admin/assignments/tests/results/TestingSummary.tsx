@@ -278,6 +278,8 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
           let notRun = 0;
           let error = 0;
 
+          const numTests = testCasesByCategory[category.id] ? testCasesByCategory[category.id].length : 0;
+
           const children = !testCasesByCategory[category.id]
             ? []
             : testCasesByCategory[category.id].map((testCase) => {
@@ -337,7 +339,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
                 className="text-link"
                 onClick={openDetail.bind({}, category, undefined, RESULT_STATUS.Passed, undefined)}
               >
-                {passed}
+                {`${Math.floor((passed / Math.max(1, props.submissions.length * numTests)) * 100)}%`}
               </div>
             ),
             failed: (
@@ -345,16 +347,16 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
                 className="text-link"
                 onClick={openDetail.bind({}, category, undefined, RESULT_STATUS.Failed, undefined)}
               >
-                {failed}
+                {`${Math.floor((failed / Math.max(1, props.submissions.length * numTests)) * 100)}%`}
               </div>
             ),
-            notRun: notRun,
+            notRun: `${Math.floor((notRun / Math.max(1, props.submissions.length * numTests)) * 100)}%`,
             error: (
               <div
                 className="text-link"
                 onClick={openDetail.bind({}, category, undefined, RESULT_STATUS.Error, undefined)}
               >
-                {failed}
+                {`${Math.floor((error / Math.max(1, props.submissions.length * numTests)) * 100)}%`}
               </div>
             ),
             key: `category-${category.id}`,
