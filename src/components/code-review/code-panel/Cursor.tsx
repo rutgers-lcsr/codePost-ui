@@ -147,6 +147,15 @@ export const right = (
         startLine: cursor.endLine,
         lead: 'front',
       };
+    } else if (cursor.startLine === cursor.endLine && cursor.startChar === 0) {
+      return {
+        ...cursor,
+        startChar: 0,
+        endChar: 1,
+        startLine: cursor.endLine,
+        endLine: cursor.endLine,
+        lead: 'front',
+      };
     } else {
       // Jump to first char of next line
       return {
