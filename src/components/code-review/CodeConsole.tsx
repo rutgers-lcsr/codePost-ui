@@ -724,6 +724,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return;
     }
 
+    if (e.key === 'y' && triggerKey && e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.toggleCursorMode(!this.state.cursorMode);
+      return;
+    }
+
     if (this.state.cursorMode) {
       if (this.state.selectedFile !== undefined) {
         if (this.state.activeCommentID !== undefined) {

@@ -54,6 +54,10 @@ const shortcuts: IShortcutCategory[] = [
     graderOnly: true,
     shortcuts: [
       {
+        name: 'Enable Cursor Mode',
+        keys: ['COMMAND', 'SHIFT', 'y'],
+      },
+      {
         name: 'Move Cursor to Code',
         keys: ['COMMAND', 'LEFT'],
       },

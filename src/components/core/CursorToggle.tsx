@@ -26,16 +26,12 @@ const CursorToggle = (props: IProps) => {
   // const [checked, setChecked] = React.useState(LOCAL_SETTINGS.darkMode.getter());
   const [checked, setChecked] = React.useState(props.cursorMode);
 
-  // React.useEffect(() => {
-  //   if (LOCAL_SETTINGS.darkMode.getter()) {
-  //     toggleConsoleTheme('dark');
-  //   } else {
-  //     toggleConsoleTheme('light');
-  //   }
+  React.useEffect(() => {
+    setChecked(props.cursorMode);
 
-  //   // Should implement useCallback()
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
+    // Should implement useCallback()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.cursorMode]);
 
   const onClick = (e: React.MouseEvent) => {
     e.preventDefault();
