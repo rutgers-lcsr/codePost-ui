@@ -332,6 +332,9 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       e.preventDefault();
       e.stopPropagation();
       this.onPlus();
+    } else if (['[', ']'].includes(e.key) && triggerKey) {
+      e.preventDefault();
+      e.stopPropagation();
     }
   };
 
