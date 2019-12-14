@@ -719,7 +719,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         console.log('active comment');
         if (e.key === 'u' && triggerKey) {
           if (this.state.showCursor !== CURSOR_DOMAIN.RUBRIC) {
+            this.blurActiveComment();
             this.setState({ showCursor: CURSOR_DOMAIN.RUBRIC });
+          } else {
+            this.focusActiveComment();
+            this.setState({ showCursor: CURSOR_DOMAIN.CODE_HIDDEN });
           }
         } else if (e.key === 'i' && triggerKey) {
           if (this.state.showCursor !== CURSOR_DOMAIN.RUBRIC) {
@@ -742,7 +746,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           e.stopPropagation();
           if (this.state.showCursor === CURSOR_DOMAIN.COMMENTS) {
             this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS_HIDDEN });
-          } else {
+          } else if (this.state.comments[this.state.selectedFile.id].length > 0) {
             this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS });
           }
         }
@@ -755,6 +759,20 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       this.changeActiveComment(undefined);
     }
     this.setState({ showCursor: domain });
+  };
+
+  public focusActiveComment = () => {
+    const commentTextArea = document.getElementById('comment-text-area');
+    if (commentTextArea !== null) {
+      commentTextArea.focus();
+    }
+  };
+
+  public blurActiveComment = () => {
+    const commentTextArea = document.getElementById('comment-text-area');
+    if (commentTextArea !== null) {
+      commentTextArea.blur();
+    }
   };
 
   /***********************************************************************************
@@ -1063,6 +1081,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     if (comments === undefined) {
       return;
+    }
+
+    if (this.state.showCursor === CURSOR_DOMAIN.RUBRIC) {
+      this.focusActiveComment();
+      this.setState({ showCursor: CURSOR_DOMAIN.CODE_HIDDEN });
     }
 
     const commentRubricComments = CodeConsole.addToCommentRubricCommentsState(

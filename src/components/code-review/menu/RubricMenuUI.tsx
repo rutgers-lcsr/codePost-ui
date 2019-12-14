@@ -148,11 +148,11 @@ const RubricMenuUI = ({
       if (props.showCursor === CURSOR_DOMAIN.RUBRIC && props.hasActiveComment) {
         if (e.key === 'ArrowRight' && triggerKey) {
           props.updateCursorDomain(CURSOR_DOMAIN.CODE);
-        } else if (e.key === 'u' && triggerKey) {
+        } else if (e.key === 'ArrowDown') {
           const rubricCommentCount = document.getElementsByClassName('rubric-row').length;
           setCursorIndex(Math.min(cursorIndex + 1, rubricCommentCount - 1));
           setTimeout(() => tryScroll(), 100);
-        } else if (e.key === 'i' && triggerKey) {
+        } else if (e.key === 'ArrowUp') {
           const rubricCommentCount = document.getElementsByClassName('rubric-row').length;
           setCursorIndex(Math.max(cursorIndex - 1, 0));
           setTimeout(() => tryScroll(), 100);
