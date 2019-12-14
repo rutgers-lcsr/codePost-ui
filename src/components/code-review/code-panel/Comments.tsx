@@ -443,7 +443,7 @@ const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & IComme
           removeRubricComment={this.removeRubricComment}
           forcedRubricMode={false}
           oldCommentIDs={{}}
-          showCursor={CURSOR_DOMAIN.HIDDEN}
+          showCursor={CURSOR_DOMAIN.CODE_HIDDEN}
           showExplanations={false}
         />
       );

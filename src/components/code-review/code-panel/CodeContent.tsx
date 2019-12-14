@@ -34,6 +34,7 @@ export interface ICodeContentEditProps {
   commentCounter: number;
   addComment: (comment: CommentType, file: FileType) => void;
   fileTemplate?: FileTemplateType;
+  cursorMode: boolean;
   showCursor: CURSOR_DOMAIN;
   updateCursorDomain: (domain: CURSOR_DOMAIN) => void;
 }
@@ -200,6 +201,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
             commentCounter={props.commentCounter}
             addComment={addCommentAndIncrement}
             onHighlightClick={props.onHighlightClick}
+            cursorMode={props.cursorMode}
             showCursor={props.showCursor}
             updateCursorDomain={props.updateCursorDomain}
           />
@@ -226,7 +228,8 @@ const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICo
           addComment={this.addComment}
           commentCounter={-1}
           fileTemplate={undefined}
-          showCursor={CURSOR_DOMAIN.HIDDEN}
+          cursorMode={false}
+          showCursor={CURSOR_DOMAIN.CODE_HIDDEN}
           updateCursorDomain={this.updateCursorDomain}
         />
       );

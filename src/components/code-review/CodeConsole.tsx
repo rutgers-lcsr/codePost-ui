@@ -51,6 +51,7 @@ import { GradeComments, StudentComments } from './code-panel/Comments';
 import LayoutResizer, { CodeConsoleDimensionsType, getInitialDimensions } from './code-panel/LayoutResizer';
 
 import ThemeToggle from '../core/ThemeToggle';
+import CursorToggle from '../core/CursorToggle';
 
 import KeyboardShortcuts from './KeyboardShortcuts';
 
@@ -105,7 +106,6 @@ enum PERMISSION_LEVEL {
 }
 
 export enum CURSOR_DOMAIN {
-  HIDDEN,
   CODE,
   CODE_HIDDEN,
   COMMENTS,
@@ -163,6 +163,7 @@ interface ICodeConsoleState {
   rubricReload?: number;
 
   /* console cursor */
+  cursorMode: boolean;
   showCursor: CURSOR_DOMAIN;
   noSave?: boolean;
 }
@@ -486,7 +487,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
       rubricReload: undefined,
 
-      showCursor: CURSOR_DOMAIN.CODE,
+      cursorMode: false,
+      showCursor: CURSOR_DOMAIN.CODE_HIDDEN,
       showExplanations: false,
 
       panelType: PANEL_TYPE.FILE,
@@ -703,6 +705,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   // - Activate comment for editing: Enter
   /////////////////////////////////////////////////////////////////////////////////
 
+  public toggleCursorMode = (cursorMode: boolean) => {
+    if (cursorMode) {
+      this.setState({ cursorMode, showCursor: CURSOR_DOMAIN.CODE });
+    } else {
+      this.setState({ cursorMode, showCursor: CURSOR_DOMAIN.CODE_HIDDEN });
+    }
+  };
+
   public handleCursor = async (e: any) => {
     const os = getOperatingSystem();
     const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
@@ -714,34 +724,36 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return;
     }
 
-    if (this.state.selectedFile !== undefined) {
-      if (this.state.activeCommentID !== undefined) {
-        console.log('active comment');
-        if (e.key === 'ArrowLeft' && triggerKey && !e.shiftKey) {
-          this.blurActiveComment();
-          this.setState({ showCursor: CURSOR_DOMAIN.RUBRIC });
-        } else if (e.key === 'ArrowRight' && triggerKey && !e.shiftKey) {
-          this.focusActiveComment();
-          this.setState({ showCursor: CURSOR_DOMAIN.CODE_HIDDEN });
-        }
-      } else {
-        console.log('normal');
-
-        if (e.key === 'ArrowLeft' && triggerKey && !e.shiftKey) {
-          e.preventDefault();
-          e.stopPropagation();
-          if (this.state.showCursor === CURSOR_DOMAIN.CODE) {
+    if (this.state.cursorMode) {
+      if (this.state.selectedFile !== undefined) {
+        if (this.state.activeCommentID !== undefined) {
+          console.log('active comment');
+          if (e.key === 'ArrowLeft' && triggerKey && !e.shiftKey) {
+            this.blurActiveComment();
+            this.setState({ showCursor: CURSOR_DOMAIN.RUBRIC });
+          } else if (e.key === 'ArrowRight' && triggerKey && !e.shiftKey) {
+            this.focusActiveComment();
             this.setState({ showCursor: CURSOR_DOMAIN.CODE_HIDDEN });
-          } else {
-            this.setState({ showCursor: CURSOR_DOMAIN.CODE });
           }
-        } else if (e.key === 'ArrowRight' && triggerKey && !e.shiftKey) {
-          e.preventDefault();
-          e.stopPropagation();
-          if (this.state.showCursor === CURSOR_DOMAIN.COMMENTS) {
-            this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS_HIDDEN });
-          } else if (this.state.comments[this.state.selectedFile.id].length > 0) {
-            this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS });
+        } else {
+          console.log('normal');
+
+          if (e.key === 'ArrowLeft' && triggerKey && !e.shiftKey) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (this.state.showCursor === CURSOR_DOMAIN.CODE) {
+              this.setState({ showCursor: CURSOR_DOMAIN.CODE_HIDDEN });
+            } else {
+              this.setState({ showCursor: CURSOR_DOMAIN.CODE });
+            }
+          } else if (e.key === 'ArrowRight' && triggerKey && !e.shiftKey) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (this.state.showCursor === CURSOR_DOMAIN.COMMENTS) {
+              this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS_HIDDEN });
+            } else if (this.state.comments[this.state.selectedFile.id].length > 0) {
+              this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS });
+            }
           }
         }
       }
@@ -1543,7 +1555,16 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         />
       );
     } else if (this.props.inDemoMode && !this.state.assignment) {
-      rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
+      rightHeader = [
+        <CursorToggle
+          key="cursor-toggle"
+          toggleCursorMode={this.toggleCursorMode}
+          cursorMode={this.state.cursorMode}
+          small={true}
+        />,
+        <ThemeToggle key="theme-toggle" small={true} />,
+        controls,
+      ];
     } else {
       if (!this.state.assignment) {
         return <div>We're not supposed to get here..</div>;
@@ -1584,6 +1605,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               dimensions={this.state.dimensions}
               commentCounter={this.state.commentCounter}
               fileTemplate={undefined}
+              cursorMode={this.state.cursorMode}
               showCursor={this.state.showCursor}
               updateCursorDomain={this.updateCursorDomain}
             />
@@ -1719,6 +1741,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         rightHeader = [
           signupButton,
+          <CursorToggle
+            key="cursor-toggle"
+            toggleCursorMode={this.toggleCursorMode}
+            cursorMode={this.state.cursorMode}
+            small={true}
+          />,
           <ThemeToggle key="theme-toggle" small={true} />,
           controls,
           <FinalizeButton
@@ -1838,6 +1866,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         ];
 
         rightHeader = [
+          <CursorToggle
+            key="cursor-toggle"
+            toggleCursorMode={this.toggleCursorMode}
+            cursorMode={this.state.cursorMode}
+            small={true}
+          />,
           <ThemeToggle key="theme-toggle" small={true} />,
           <DownloadCode key="download-code" submission={this.state.submission!} />,
           controls,
@@ -1871,6 +1905,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               dimensions={this.state.dimensions}
               commentCounter={this.state.commentCounter}
               fileTemplate={fileTemplate}
+              cursorMode={this.state.cursorMode}
               showCursor={this.state.showCursor}
               updateCursorDomain={this.updateCursorDomain}
             />

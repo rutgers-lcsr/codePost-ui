@@ -34,6 +34,7 @@ import {
 
 interface ICodeProps {
   commentCounter: number;
+  cursorMode: boolean;
   showCursor: CURSOR_DOMAIN;
   updateCursorDomain: (domain: CURSOR_DOMAIN) => void;
 }
@@ -121,52 +122,54 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     const codeScrollArea = document.getElementById('code-scroll-area');
 
     const handleKeydown = async (e: any) => {
-      const os = getOperatingSystem();
-      const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
-      if (props.showCursor === CURSOR_DOMAIN.CODE && codeScrollArea !== null) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          e.stopPropagation();
+      if (props.cursorMode) {
+        const os = getOperatingSystem();
+        const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+        if (props.showCursor === CURSOR_DOMAIN.CODE && codeScrollArea !== null) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
 
-          await addNewComment(cursor.startLine, cursor.endLine, cursor.startChar, cursor.endChar);
-          props.updateCursorDomain(CURSOR_DOMAIN.CODE_HIDDEN);
-        }
-
-        if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Escape'].includes(e.key)) {
-          let newCursor = cursor;
-
-          e.preventDefault();
-          e.stopPropagation();
-
-          if (e.key === 'Escape') {
-            newCursor = cursor.lead === 'front' ? front(cursor) : back(cursor);
-          } else if (e.shiftKey && e.key === 'ArrowLeft') {
-            newCursor = shiftLeft(code, cursor, e.altKey, triggerKey);
-            handleHorizontalScroll(newCursor);
-          } else if (e.shiftKey && e.key === 'ArrowRight') {
-            newCursor = shiftRight(code, cursor, e.altKey, triggerKey);
-            handleHorizontalScroll(newCursor);
-          } else if (e.shiftKey && e.key === 'ArrowUp') {
-            newCursor = shiftUp(code, cursor);
-            handleVerticalScroll(codeScrollArea, newCursor);
-          } else if (e.shiftKey && e.key === 'ArrowDown') {
-            newCursor = shiftDown(code, cursor);
-            handleVerticalScroll(codeScrollArea, newCursor);
-          } else if (e.key === 'ArrowLeft') {
-            newCursor = left(code, cursor, e.altKey);
-            handleHorizontalScroll(newCursor);
-          } else if (e.key === 'ArrowRight') {
-            newCursor = right(code, cursor, e.altKey);
-            handleHorizontalScroll(newCursor);
-          } else if (e.key === 'ArrowUp') {
-            newCursor = up(code, cursor);
-            handleVerticalScroll(codeScrollArea, newCursor);
-          } else if (e.key === 'ArrowDown') {
-            newCursor = down(code, cursor);
-            handleVerticalScroll(codeScrollArea, newCursor);
+            await addNewComment(cursor.startLine, cursor.endLine, cursor.startChar, cursor.endChar);
+            props.updateCursorDomain(CURSOR_DOMAIN.CODE_HIDDEN);
           }
 
-          setCursor(newCursor);
+          if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Escape'].includes(e.key)) {
+            let newCursor = cursor;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (e.key === 'Escape') {
+              newCursor = cursor.lead === 'front' ? front(cursor) : back(cursor);
+            } else if (e.shiftKey && e.key === 'ArrowLeft') {
+              newCursor = shiftLeft(code, cursor, e.altKey, triggerKey);
+              handleHorizontalScroll(newCursor);
+            } else if (e.shiftKey && e.key === 'ArrowRight') {
+              newCursor = shiftRight(code, cursor, e.altKey, triggerKey);
+              handleHorizontalScroll(newCursor);
+            } else if (e.shiftKey && e.key === 'ArrowUp') {
+              newCursor = shiftUp(code, cursor);
+              handleVerticalScroll(codeScrollArea, newCursor);
+            } else if (e.shiftKey && e.key === 'ArrowDown') {
+              newCursor = shiftDown(code, cursor);
+              handleVerticalScroll(codeScrollArea, newCursor);
+            } else if (e.key === 'ArrowLeft') {
+              newCursor = left(code, cursor, e.altKey);
+              handleHorizontalScroll(newCursor);
+            } else if (e.key === 'ArrowRight') {
+              newCursor = right(code, cursor, e.altKey);
+              handleHorizontalScroll(newCursor);
+            } else if (e.key === 'ArrowUp') {
+              newCursor = up(code, cursor);
+              handleVerticalScroll(codeScrollArea, newCursor);
+            } else if (e.key === 'ArrowDown') {
+              newCursor = down(code, cursor);
+              handleVerticalScroll(codeScrollArea, newCursor);
+            }
+
+            setCursor(newCursor);
+          }
         }
       }
     };
@@ -297,7 +300,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
   };
 
   let comments = props.comments;
-  if (props.showCursor === CURSOR_DOMAIN.CODE) {
+  if (!props.readOnly && props.cursorMode && props.showCursor === CURSOR_DOMAIN.CODE) {
     const cursorInsertIndex = CommentIO.sortedIndex(props.comments, cursorComment);
     comments = [
       ...props.comments.slice(0, cursorInsertIndex),

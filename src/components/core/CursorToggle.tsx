@@ -77,7 +77,7 @@ const CursorToggle = (props: IProps) => {
       key="highlighter-dark"
       style={{
         height: props.small ? '12px' : '16px',
-        fill: 'rgba(0, 0, 255, 0.8)',
+        fill: 'rgba(0, 0, 255, 0.5)',
         position: 'absolute',
         top: '50%',
         left: '50%',
