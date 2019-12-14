@@ -318,7 +318,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       }
     }
 
-    if (e.key === 'y' && triggerKey) {
+    if (e.key === 'u' && triggerKey) {
       e.preventDefault();
       e.stopPropagation();
       this.removeRubricComment();
