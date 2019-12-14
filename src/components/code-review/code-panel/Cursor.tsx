@@ -145,6 +145,7 @@ export const right = (
   const line = code[cursor.endLine];
 
   if (cursor.endChar >= line.length) {
+    const trimmedLineLength = line.trim().length;
     if (cursor.endLine === code.length - 1) {
       // End of file
       return {
@@ -153,11 +154,11 @@ export const right = (
         startLine: cursor.endLine,
         lead: 'front',
       };
-    } else if (cursor.startLine === cursor.endLine && cursor.startChar === 0 && cursor.endChar !== 1) {
+    } else if (cursor.startLine === cursor.endLine && trimmedLineLength === cursor.endChar - cursor.startChar) {
       return {
         ...cursor,
-        startChar: 0,
-        endChar: 1,
+        startChar: cursor.startChar,
+        endChar: cursor.startChar + 1,
         startLine: cursor.endLine,
         endLine: cursor.endLine,
         lead: 'front',
