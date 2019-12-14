@@ -198,7 +198,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
   };
 
   public onUpload = () => {
-    console.log('onUpload');
     this.setState({ status: STATUS.READING }, () => {
       this.readFiles();
     });
@@ -224,19 +223,15 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
 
   public readFiles = () => {
     const submissions = this.state.protoSubmissions;
-    console.log('submissions', submissions);
 
     submissions.map(async (submission, index: number) => {
-      console.log('READ FILES LOOP', submission, index, submission.files.length);
       for (const file of submission.files) {
         try {
           const outputFiles = await readUploadedFile(file);
           outputFiles.map((outputFile: IProtoFileUpload) => {
             this.setState({ fileMap: { ...this.state.fileMap, [outputFile.longname]: outputFile.data } });
           });
-          console.log('success', file);
         } catch (e) {
-          console.log('error', file);
           this.setState({ errorPaths: [...this.state.errorPaths, e], status: STATUS.FILE_ERROR });
         }
       }
@@ -244,20 +239,14 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
   };
 
   public tryToUpload = () => {
-    console.log('tryToUpload');
-
     const { fileMap, numFiles, overwriteMode } = this.state;
-    console.log('fileMap', fileMap, numFiles);
 
     const readFiles = Object.keys(fileMap).reduce((acc, el) => {
       const toAdd = typeof fileMap[el] === 'undefined' ? 0 : 1;
       return acc + toAdd;
     }, 0);
 
-    console.log('readFiles', readFiles);
-
     if (readFiles === numFiles) {
-      console.log('UPLOADING');
       this.setState({ status: STATUS.UPLOADING }, () => {
         if (overwriteMode) {
           this.handleOverwrite().then(() => {
@@ -271,7 +260,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
   };
 
   public upload = () => {
-    console.log('upload');
     const { protoSubmissions, fileMap } = this.state;
 
     // tslint:disable
@@ -320,7 +308,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     });
 
     Promise.all(promises).then(() => {
-      console.log('COMPLETE');
       this.setState({
         status: STATUS.COMPLETE,
       });
@@ -998,8 +985,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         panelNumber = 2;
         break;
     }
-
-    console.log('CURRENT STATUS', this.state.status);
 
     return (
       <Modal

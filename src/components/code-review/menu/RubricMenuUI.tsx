@@ -121,21 +121,18 @@ const RubricMenuUI = ({
 
       if (rubricMenu !== null) {
         let cursoredRows = document.getElementsByClassName('rubric-row-cursored');
-        // console.log('cursoredRows', cursoredRows);
         if (cursoredRows.length > 0) {
           const cursoredRow = cursoredRows[0];
 
           const distance = cursoredRow.getBoundingClientRect().top - rubricMenu.getBoundingClientRect().top;
 
           const rubricMenuVisibleHeight = rubricMenu.offsetHeight;
-          // console.log('distance', distance, rubricMenuVisibleHeight);
 
           if (distance < 35) {
             rubricMenu.scrollTop = rubricMenu.scrollTop - (35 - distance);
           } else if (distance > rubricMenuVisibleHeight) {
             const updatedScroll = distance - rubricMenuVisibleHeight;
             const maxScrollTop = rubricMenu.scrollHeight - rubricMenu.offsetHeight;
-            // console.log('updatedScroll', updatedScroll);
             rubricMenu.scrollTop = Math.min(rubricMenu.scrollTop + updatedScroll + 70, maxScrollTop);
           }
         }

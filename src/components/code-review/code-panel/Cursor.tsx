@@ -103,22 +103,13 @@ export const left = (
         return match.index < cursor.startChar - 1;
       });
 
-      console.log(
-        'LINE LEFT',
-        spaceIndices.map((s: any) => {
-          return s.index;
-        }),
-      );
-
       if (spaceIndices.length === 0) {
         newEndChar = 1;
       } else {
         if (jumpSpace) {
-          // newEndChar = spaceIndices[0].index + 1;
           newEndChar = spaceIndices[spaceIndices.length - 1].index;
         } else {
           newEndChar = spaceIndices[spaceIndices.length - 1].index + 2;
-          // newEndChar = spaceIndices[0].index - 1;
         }
       }
     } else {
@@ -186,13 +177,6 @@ export const right = (
         return match.index > cursor.endChar;
       });
 
-      console.log(
-        'LINE RIGHT',
-        spaceIndices.map((s: any) => {
-          return s.index;
-        }),
-      );
-
       if (spaceIndices.length === 0) {
         newEndChar = line.length - 1;
       } else {
@@ -223,7 +207,21 @@ export const shiftLeft = (
   triggerKey: boolean = false,
 ): ICursorType => {
   if (cursor.lead === 'front') {
-    if (cursor.startLine === cursor.endLine && cursor.endChar - cursor.startChar <= 1) {
+    if (triggerKey && cursor.startLine === cursor.endLine && cursor.startChar !== 0) {
+      return {
+        ...cursor,
+        startChar: 0,
+        endChar: cursor.startChar,
+        lead: 'back',
+      };
+    } else if (triggerKey && cursor.startLine !== cursor.endLine) {
+      const previousLine = code[cursor.endLine - 1];
+      return {
+        ...cursor,
+        endChar: previousLine.length === 0 ? 1 : previousLine.length,
+        endLine: cursor.endLine - 1,
+      };
+    } else if (cursor.startLine === cursor.endLine && cursor.endChar - cursor.startChar <= 1) {
       const leadCursor = left(code, cursor, optionKey, true);
       return {
         ...leadCursor,
@@ -256,7 +254,27 @@ export const shiftRight = (
   triggerKey: boolean = false,
 ): ICursorType => {
   if (cursor.lead === 'back') {
-    if (cursor.startLine === cursor.endLine && cursor.endChar - cursor.startChar <= 1) {
+    const line = code[cursor.endLine];
+
+    // CMD-SHIFT-RIGHT: Togggle lead cursor, swap the start and end char, move the end char to the end of the line
+    if (triggerKey && cursor.startLine === cursor.endLine && cursor.endChar !== line.length) {
+      return {
+        ...cursor,
+        startChar: cursor.endChar - 1,
+        endChar: line.length === 0 ? 1 : line.length,
+        lead: 'front',
+      };
+      // CMD-SHIFT-RIGHT: Clear the whole trailing top line
+    } else if (triggerKey && cursor.startLine !== cursor.endLine) {
+      const nextLine = code[cursor.startLine + 1];
+      return {
+        ...cursor,
+        startChar: 0,
+        startLine: cursor.startLine + 1,
+      };
+      // Start char mode on the same line
+      // https://github.com/codepost-io/codePost-ui/pull/1038/commits/dbb82e8f347041484c16740e4a91f6558d4637de
+    } else if (cursor.startLine === cursor.endLine && cursor.endChar - cursor.startChar <= 1) {
       const leadCursor = right(code, cursor, optionKey, true);
       return {
         ...leadCursor,
@@ -273,9 +291,7 @@ export const shiftRight = (
     }
   } else {
     const leadCursor = right(code, front(cursor), optionKey, false, triggerKey);
-    console.log('leadCursor', leadCursor);
     const endLineLength = code[leadCursor.endLine];
-    console.log('endLineLength', endLineLength.length);
 
     return {
       ...cursor,

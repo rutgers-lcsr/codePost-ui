@@ -727,7 +727,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     if (this.state.cursorMode) {
       if (this.state.selectedFile !== undefined) {
         if (this.state.activeCommentID !== undefined) {
-          console.log('active comment');
           if (e.key === 'ArrowLeft' && triggerKey && !e.shiftKey) {
             e.preventDefault();
             e.stopPropagation();
@@ -740,8 +739,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             this.setState({ showCursor: CURSOR_DOMAIN.CODE_HIDDEN });
           }
         } else {
-          console.log('normal');
-
           if (e.key === 'ArrowLeft' && triggerKey && !e.shiftKey) {
             e.preventDefault();
             e.stopPropagation();
@@ -872,7 +869,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public changeActiveComment = (id: number | undefined): void => {
     if (id === undefined) {
-      console.log('DEACTIVATED', this.state.showCursor);
       if (this.state.showCursor === CURSOR_DOMAIN.CODE_HIDDEN) {
         this.setState({ activeCommentID: id, showCursor: CURSOR_DOMAIN.CODE });
       } else if (this.state.showCursor === CURSOR_DOMAIN.COMMENTS_HIDDEN) {
