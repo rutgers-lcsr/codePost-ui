@@ -258,8 +258,10 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     const lineNumber = +e.target.id.split('-')[1];
     const lineLength = e.target.textContent.length;
 
+    const startChar = e.target.textContent.search(/\S/);
+
     const newCursor = {
-      startChar: 0,
+      startChar: startChar === -1 ? 0 : startChar,
       endChar: lineLength,
       startLine: lineNumber,
       endLine: lineNumber,

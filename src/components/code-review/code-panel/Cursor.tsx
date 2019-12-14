@@ -31,9 +31,10 @@ export const up = (code: string[], cursor: ICursorType): ICursorType => {
     return { ...cursor, lead: 'back' };
   } else {
     const prevStartLine = code[cursor.startLine - 1];
+    const prevStartChar = prevStartLine.search(/\S/);
     return {
       ...cursor,
-      startChar: 0,
+      startChar: prevStartChar === -1 ? 0 : prevStartChar,
       endChar: prevStartLine.length === 0 ? 1 : prevStartLine.length,
       startLine: cursor.startLine - 1,
       endLine: cursor.startLine - 1,
@@ -47,9 +48,10 @@ export const down = (code: string[], cursor: ICursorType): ICursorType => {
     return { ...cursor, lead: 'back' };
   } else {
     const nextStartLine = code[cursor.startLine + 1];
+    const nextStartChar = nextStartLine.search(/\S/);
     return {
       ...cursor,
-      startChar: 0,
+      startChar: nextStartChar === -1 ? 0 : nextStartChar,
       endChar: nextStartLine.length === 0 ? 1 : nextStartLine.length,
       startLine: cursor.startLine + 1,
       endLine: cursor.startLine + 1,
