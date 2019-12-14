@@ -2084,7 +2084,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             content={content}
             editRubricMode={this.state.editRubricMode}
           />
-          <KeyboardShortcuts visible={this.state.showKeyboardShortcuts} onClose={this.toggleKeyboardShortcuts} />
+          <KeyboardShortcuts
+            visible={this.state.showKeyboardShortcuts}
+            onClose={this.toggleKeyboardShortcuts}
+            isStudent={this.state.isStudent}
+          />
         </CourseContext.Provider>
       </div>
     );

@@ -9,6 +9,7 @@ const { TabPane } = Tabs;
 interface IKeyboardShortCutsProps {
   visible: boolean;
   onClose: () => void;
+  isStudent: boolean;
 }
 
 interface IShortcut {
@@ -18,6 +19,7 @@ interface IShortcut {
 
 export interface IShortcutCategory {
   category: string;
+  graderOnly: boolean;
   shortcuts: IShortcut[];
 }
 
@@ -70,7 +72,11 @@ const KeyIcon = (props: IKeyIconProps) => {
 };
 
 const KeyboardShortcuts = (props: IKeyboardShortCutsProps) => {
-  const tabs = shortcuts.map((category: IShortcutCategory) => {
+  const filteredShortcuts = shortcuts.filter((category: IShortcutCategory) => {
+    return props.isStudent ? !category.graderOnly : category;
+  });
+
+  const tabs = filteredShortcuts.map((category: IShortcutCategory) => {
     return (
       <TabPane tab={category.category} key={category.category}>
         <div style={{ width: '80%', margin: '0px auto', fontSize: '12px' }}>

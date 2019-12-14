@@ -3,6 +3,7 @@ import { IShortcutCategory } from './KeyboardShortcuts';
 const shortcuts: IShortcutCategory[] = [
   {
     category: 'General',
+    graderOnly: false,
     shortcuts: [
       {
         name: 'Show Shortcuts Guide',
@@ -28,6 +29,7 @@ const shortcuts: IShortcutCategory[] = [
   },
   {
     category: 'Manage',
+    graderOnly: true,
     shortcuts: [
       {
         name: 'Toggle Finalize',
@@ -49,6 +51,7 @@ const shortcuts: IShortcutCategory[] = [
   },
   {
     category: 'Cursor Mode',
+    graderOnly: true,
     shortcuts: [
       {
         name: 'Move Cursor to Code',
@@ -70,6 +73,7 @@ const shortcuts: IShortcutCategory[] = [
   },
   {
     category: 'Edit (Active Comment)',
+    graderOnly: true,
     shortcuts: [
       {
         name: 'Save Comment',
