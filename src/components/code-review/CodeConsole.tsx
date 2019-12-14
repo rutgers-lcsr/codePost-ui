@@ -487,8 +487,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
       rubricReload: undefined,
 
-      cursorMode: false,
-      showCursor: CURSOR_DOMAIN.CODE_HIDDEN,
+      cursorMode: LOCAL_SETTINGS.cursorMode.getter(),
+      showCursor: LOCAL_SETTINGS.cursorMode.getter() ? CURSOR_DOMAIN.CODE : CURSOR_DOMAIN.CODE_HIDDEN,
       showExplanations: false,
 
       panelType: PANEL_TYPE.FILE,

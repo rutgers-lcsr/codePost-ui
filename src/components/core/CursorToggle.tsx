@@ -47,11 +47,11 @@ const CursorToggle = (props: IProps) => {
     if (checked) {
       setChecked(false);
       props.toggleCursorMode(false);
-      // LOCAL_SETTINGS.darkMode.setter(false);
+      LOCAL_SETTINGS.cursorMode.setter(false);
     } else {
       setChecked(true);
       props.toggleCursorMode(true);
-      // LOCAL_SETTINGS.darkMode.setter(true);
+      LOCAL_SETTINGS.cursorMode.setter(true);
     }
   };
 
@@ -120,7 +120,7 @@ const CursorToggle = (props: IProps) => {
         thumbIcon={icon}
         value={checked}
         onToggle={onChange}
-        containerStyle={{ width: props.small ? '25px' : '30px', marginRight: '10px' }}
+        containerStyle={{ width: props.small ? '25px' : '30px', marginRight: '12px' }}
       />
     </CPTooltip>
   );
