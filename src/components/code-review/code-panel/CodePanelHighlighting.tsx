@@ -114,7 +114,6 @@ class CodePanelHighlighting {
       prevIDs = updatedIDs;
       elements.push(element);
     }
-
     return [elements.join(''), styles];
   };
 
@@ -154,6 +153,17 @@ class CodePanelHighlighting {
     return returnElements;
   };
 
+  // public static insertHighlightClass = (id: number) => {
+  //   const stylesheet = document.styleSheets[0] as CSSStyleSheet;
+  //   stylesheet.insertRule(`.highlight-${id}`);
+  // };
+
+  // public static createHighlightClasses = (comments: CommentType[]) => {
+  //   comments.forEach((comment: CommentType) => {
+  //     CodePanelHighlighting.insertHighlightClass(comment.id);
+  //   });
+  // };
+
   // O(NM) where N is the number of highlights and M is the length of the line
   public static highlight = (
     sortedComments: CommentType[],
@@ -170,11 +180,37 @@ class CodePanelHighlighting {
     // This code doesn't quite work yet
     // We have the correct 'nesting levels', but the !important doesn't always override on deeply nested
     // highlights. It catches the first nesting, but none deeper.
-    for (const [highlight, level] of Object.entries(styles)) {
-      const tint = 0.2 + 0.2 * level;
-      (document.styleSheets[0] as CSSStyleSheet).insertRule(
-        `.highlight-${highlight} {background-color: ${color} !important; opacity: ${tint} !important;}`,
-      );
+    const ids: string[] = Object.entries(styles).map(([highlight, level]) => {
+      return highlight;
+    });
+    // Don't mess with nested opacity for the cursor
+    if (!ids.includes('0') && !ids.includes(`${Number.MAX_SAFE_INTEGER}`)) {
+      for (const [highlight, level] of Object.entries(styles)) {
+        if (highlight === '0' || highlight === `${Number.MAX_SAFE_INTEGER}`) {
+          continue;
+        }
+
+        const className = `.highlight-${highlight}`;
+        const stylesheet = document.styleSheets[0] as CSSStyleSheet;
+        const tint = 0.2 + 0.2 * level;
+        const rules = stylesheet.rules || stylesheet.cssRules;
+
+        let ruleExists = false;
+        for (let x in rules) {
+          // @ts-ignore
+          if (rules[x].selectorText === className) {
+            // @ts-ignore
+            rules[x].style.backgroudColor = color;
+            // @ts-ignore
+            rules[x].style.opacity = `${tint} !important`;
+            ruleExists = true;
+            break;
+          }
+        }
+        if (!ruleExists) {
+          stylesheet.insertRule(`.highlight-${highlight} {background-color: ${color}; opacity: ${tint} !important;}`);
+        }
+      }
     }
 
     const returnElements = CodePanelHighlighting.convertStringToJSX(htmlString, line, readOnly, onHighlightClick);
@@ -235,20 +271,35 @@ class CodePanelHighlighting {
   };
 
   public static brightenHighlight = (commentID: number, color: string) => {
+    if (commentID === 0 || commentID === Number.MAX_SAFE_INTEGER) {
+      return;
+    }
+
+    if (commentID < 0) {
+      return;
+    }
+
     const className = `highlight-${commentID}`;
     const elems = document.getElementsByClassName(className);
 
     [].forEach.call(elems, (elem: any) => {
-      elem.style.setProperty('background-color', color, 'important');
+      elem.style.setProperty('background-color', color);
     });
   };
 
   public static darkenHighlight = (commentID: number, color: string) => {
+    if (commentID === 0 || commentID === Number.MAX_SAFE_INTEGER) {
+      return;
+    }
+    if (commentID < 0) {
+      return;
+    }
+
     const className = `highlight-${commentID}`;
     const elems = document.getElementsByClassName(className);
 
     [].forEach.call(elems, (elem: any) => {
-      elem.style.setProperty('background-color', color, 'important');
+      elem.style.setProperty('background-color', color);
     });
   };
 }

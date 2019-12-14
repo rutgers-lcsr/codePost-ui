@@ -24,6 +24,7 @@ import { CodeConsoleDimensionsType } from './LayoutResizer';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
+import { CURSOR_DOMAIN } from '../CodeConsole';
 import { findBlockElement, getPDFStartPlacement } from './BlockUtils.tsx';
 
 interface ICommentsCoreProps extends IWithWindowWatcherProps {
@@ -54,6 +55,8 @@ interface ICommentsEditProps {
   forcedRubricMode: boolean;
 
   oldCommentIDs: { [currentID: number]: number };
+
+  showCursor: CURSOR_DOMAIN;
   showExplanations: boolean;
 }
 
@@ -64,6 +67,7 @@ interface ICommentPlacement {
 
 interface ICommentsState {
   placements: ICommentPlacement[];
+  cursor: number;
   fileScrollPositions: { [fileID: number]: number };
 }
 
@@ -98,6 +102,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           placement,
         };
       }),
+      cursor: 0,
       fileScrollPositions: this.props.fileIDs.reduce((scrollPositions: { [fid: number]: number }, fileID: number) => {
         return { ...scrollPositions, [fileID]: 0 };
       }, {}),
@@ -127,6 +132,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
   public componentDidMount() {
     document.addEventListener('mousedown', this.handleClickOutside);
+    document.addEventListener('keydown', this.handleCursor);
     document.addEventListener('keydown', this.handleKeyPress);
 
     // FIXME: This is a hack to trigger comment placements to reload after a PDF has loaded.
@@ -148,9 +154,20 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
   public componentWillUnmount() {
     document.removeEventListener('mousedown', this.handleClickOutside);
+    document.removeEventListener('keydown', this.handleCursor);
     document.removeEventListener('keydown', this.handleKeyPress);
     document.removeEventListener('loaded', this.setCommentPlacements);
   }
+
+  public handleCursor = async (e: any) => {
+    if (this.props.showCursor === CURSOR_DOMAIN.COMMENTS) {
+      if (e.key === 'ArrowDown') {
+        this.setState({ cursor: Math.min(this.props.comments.length - 1, this.state.cursor + 1) });
+      } else if (e.key === 'ArrowUp') {
+        this.setState({ cursor: Math.max(0, this.state.cursor - 1) });
+      }
+    }
+  };
 
   public getSnapshotBeforeUpdate(prevProps: ICommentsCoreProps & ICommentsEditProps, prevState: ICommentsState) {
     const codeScrollArea = document.getElementById('code-scroll-area');
@@ -218,6 +235,12 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
   };
 
   public changeActive = (id: number | undefined) => {
+    if (id === undefined) {
+      const deactivatedCommentIndex = this.props.comments.findIndex((comment: CommentType) => {
+        return comment.id === this.props.activeCommentID;
+      });
+      this.setState({ cursor: deactivatedCommentIndex });
+    }
     this.props.changeActive(id);
   };
 
@@ -323,6 +346,8 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
         ? this.props.oldCommentIDs[comment.id]
         : comment.id;
 
+      const cursored = this.props.showCursor === CURSOR_DOMAIN.COMMENTS && this.state.cursor === index;
+
       return (
         <Comment
           key={key}
@@ -344,6 +369,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           additiveGrading={this.props.additiveGrading}
           forcedRubricMode={this.props.forcedRubricMode}
           rubricCategories={this.props.rubricCategories}
+          cursored={cursored}
         />
       );
     });
@@ -417,6 +443,7 @@ const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & IComme
           removeRubricComment={this.removeRubricComment}
           forcedRubricMode={false}
           oldCommentIDs={{}}
+          showCursor={CURSOR_DOMAIN.CODE_HIDDEN}
           showExplanations={false}
         />
       );

@@ -224,7 +224,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
   public readFiles = () => {
     const submissions = this.state.protoSubmissions;
 
-    submissions.map(async (submission) => {
+    submissions.map(async (submission, index: number) => {
       for (const file of submission.files) {
         try {
           const outputFiles = await readUploadedFile(file);
@@ -240,6 +240,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
 
   public tryToUpload = () => {
     const { fileMap, numFiles, overwriteMode } = this.state;
+
     const readFiles = Object.keys(fileMap).reduce((acc, el) => {
       const toAdd = typeof fileMap[el] === 'undefined' ? 0 : 1;
       return acc + toAdd;
