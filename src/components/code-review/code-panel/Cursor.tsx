@@ -151,7 +151,7 @@ export const right = (
         startLine: cursor.endLine,
         lead: 'front',
       };
-    } else if (cursor.startLine === cursor.endLine && cursor.startChar === 0) {
+    } else if (cursor.startLine === cursor.endLine && cursor.startChar === 0 && cursor.endChar !== 1) {
       return {
         ...cursor,
         startChar: 0,
@@ -270,6 +270,9 @@ export const shiftRight = (
     }
   } else {
     const leadCursor = right(code, front(cursor), optionKey, false, triggerKey);
+    console.log('leadCursor', leadCursor);
+    const endLineLength = code[leadCursor.endLine];
+    console.log('endLineLength', endLineLength.length);
 
     return {
       ...cursor,
