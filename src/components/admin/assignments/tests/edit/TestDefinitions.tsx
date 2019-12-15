@@ -535,42 +535,34 @@ export const TestDefinitions = (props: IProps) => {
         </div>
       );
 
-      if (index === 'tests') {
-        content = (
-          <div style={{ width: '100%' }}>
-            <TestsList tests={testResults} cases={casesByCategory} categories={categories} />
-          </div>
-        );
-      } else {
-        const currentGroupIndex = parseInt(index.split('-')[0], 10);
-        const currentFileIndex = parseInt(index.split('-')[1], 10);
+      const currentGroupIndex = parseInt(index.split('-')[0], 10);
+      const currentFileIndex = parseInt(index.split('-')[1], 10);
 
-        const currentGroup = groups[currentGroupIndex];
-        const currentFile = currentGroup.find((f) => {
-          return f.id === currentFileIndex;
-        });
-        content = (
-          <SourceEditor
-            categories={categories}
-            casesByCategory={casesByCategory}
-            sourceFiles={props.sourceFiles}
-            currentFile={currentFile}
-            setResults={setResults}
-            setTestSubject={setTestSubject}
-            submissions={props.submissions}
-            updateFile={props.updateFile}
-            addCategory={addCategory}
-            deleteCategory={deleteCategory}
-            addTest={addTest}
-            deleteTest={deleteTest}
-            activeSubmission={activeSubmission}
-            updateEnv={props.updateEnv}
-            env={props.env}
-            saveTest={saveTest}
-            updateTestStatus={updateTestStatus}
-          />
-        );
-      }
+      const currentGroup = groups[currentGroupIndex];
+      const currentFile = currentGroup.find((f) => {
+        return f.id === currentFileIndex;
+      });
+      content = (
+        <SourceEditor
+          categories={categories}
+          casesByCategory={casesByCategory}
+          sourceFiles={props.sourceFiles}
+          currentFile={currentFile}
+          setResults={setResults}
+          setTestSubject={setTestSubject}
+          submissions={props.submissions}
+          updateFile={props.updateFile}
+          addCategory={addCategory}
+          deleteCategory={deleteCategory}
+          addTest={addTest}
+          deleteTest={deleteTest}
+          activeSubmission={activeSubmission}
+          updateEnv={props.updateEnv}
+          env={props.env}
+          saveTest={saveTest}
+          updateTestStatus={updateTestStatus}
+        />
+      );
 
       break;
     case DETAIL_TYPE.EditTests:
@@ -658,6 +650,10 @@ export const TestDefinitions = (props: IProps) => {
   } else if (categories.length === 0 && panel == DETAIL_TYPE.EditTests) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <span>
+          <b>Instructions</b>: If you have an existing script with modular unit tests, or want to start fresh, click
+          "Add Category". Otherwise, click "Enter File Mode".
+        </span>
         <Empty style={{ marginTop: '20px', maxWidth: '400px' }} description={<span> Get started.</span>}>
           <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} />
           {externalOnly ? (
@@ -674,6 +670,26 @@ export const TestDefinitions = (props: IProps) => {
   } else {
     return (
       <div>
+        <div style={{ marginBottom: 15, marginLeft: 10, marginRight: 10 }}>
+          {panel === DETAIL_TYPE.EditTests ? (
+            <span>
+              <b>Instructions</b>: This editor shows all the tests you've created. You can create tests in two ways: in{' '}
+              <b style={{ fontWeight: 600 }}>this editor </b>(For test cases that have modular blocks of code) or in{' '}
+              <b style={{ fontWeight: 600 }}>File Mode </b>(if you want to run a script that includes multiple tests).
+            </span>
+          ) : (
+            <span>
+              <b>Instructions</b>: In "File Mode" you can run your existing scripts to output logs, or use our custom
+              syntax to structure your test results. If you use our syntax, new tests will automatically be created when
+              you run the file, which you can edit attributes of (points, explanations) by exiting File Mode. To learn
+              more,{' '}
+              <a href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode" target="_blank">
+                click here
+              </a>
+              .
+            </span>
+          )}
+        </div>
         <div style={{ fontSize: 11 }}>
           <Layout>
             <Sider theme="light">
