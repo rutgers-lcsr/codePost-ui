@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 /* library imports */
-import { Button, Input, Modal, Icon, Select, Row } from 'antd';
+import { Button, Input, Modal, Icon, Select, Row, Tooltip } from 'antd';
 
 /* codePost object imports */
 import { FILE_TYPE } from '../TestingSetup';
@@ -14,7 +14,6 @@ import { SOURCEFILE_TEMPLATE } from './testTemplates';
 const { Option } = Select;
 interface IUploadProps {
   addFile: (type: FILE_TYPE, name: string, code: string) => Promise<void>;
-  icon?: boolean;
 }
 
 export const AddFileModal = (props: IUploadProps) => {
@@ -71,12 +70,9 @@ export const AddFileModal = (props: IUploadProps) => {
 
   return (
     <span>
-      {props.icon ? (
-        <Icon type="folder-add" onClick={toggleVisible} />
-      ) : (
-        <Button onClick={toggleVisible}>Add Test Category</Button>
-      )}
-
+      <Tooltip title="Add File">
+        <Icon type="plus-circle" onClick={toggleVisible} />
+      </Tooltip>
       <Modal
         visible={visible}
         title="Add new file"

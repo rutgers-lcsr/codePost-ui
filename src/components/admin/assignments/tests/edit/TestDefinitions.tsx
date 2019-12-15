@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Layout, Menu, Icon, Empty, Spin, Badge } from 'antd';
+import { Button, Layout, Menu, Icon, Empty, Spin, Badge, Tooltip } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 import _ from 'lodash';
 
@@ -46,7 +46,6 @@ import { EditObjectModal } from './TestDefinitions/EditObjectModal';
 import { AddTestModal } from './TestDefinitions/AddTestModal';
 import CPTooltip from '../../../../core/CPTooltip';
 import { SourceEditor } from './SourceEditor';
-import TestsList from '../../../../code-review/code-panel/TestsList';
 
 import FileTag from './TestDefinitions/FileTag';
 
@@ -54,12 +53,7 @@ import FileTag from './TestDefinitions/FileTag';
 import { fetchTestData, TestCasesByCategory } from '../../../../core/testFetchUtils';
 import { hasNativeTestSupport } from './utils/languageUtils';
 
-import {
-  IFolder,
-  IDirectoryStructure,
-  buildFolderMenu,
-  createDirectoryStructure,
-} from '../../../../code-review/menu/fileMenuUtils';
+import { IFolder, buildFolderMenu, createDirectoryStructure } from '../../../../code-review/menu/fileMenuUtils';
 
 import { RESULT_TYPE } from './TestDefinitions/PsuedoTerminal';
 
@@ -175,11 +169,6 @@ export const TestDefinitions = (props: IProps) => {
     });
 
     return newCategory;
-  };
-
-  const updateCategory = async (testCategory: TestCategoryType) => {
-    const newCategory = await TestCategory.update(testCategory);
-    replaceTestCategory(newCategory);
   };
 
   // FixME: come up with a generic field saving function
@@ -473,9 +462,11 @@ export const TestDefinitions = (props: IProps) => {
         <div style={headerStyle}>
           Source Files
           <div>
-            <AddFileModal addFile={props.addFile} icon={true} />
+            <AddFileModal addFile={props.addFile} />
             &nbsp; &nbsp;
-            <Icon type="download" onClick={download} />
+            <Tooltip title="Download">
+              <Icon type="download" onClick={download} />
+            </Tooltip>
           </div>
         </div>
       );
@@ -652,7 +643,14 @@ export const TestDefinitions = (props: IProps) => {
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <span>
           <b>Instructions</b>: If you have an existing script with modular unit tests, or want to start fresh, click
-          "Add Category". Otherwise, click "Enter File Mode".
+          "Add Category". Otherwise, click "Enter File Mode". To learn more{' '}
+          <a
+            href="https://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
+            target="_blank"
+          >
+            click here
+          </a>
+          .
         </span>
         <Empty style={{ marginTop: '20px', maxWidth: '400px' }} description={<span> Get started.</span>}>
           <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} />
@@ -676,6 +674,7 @@ export const TestDefinitions = (props: IProps) => {
               <b>Instructions</b>: This editor shows all the tests you've created. You can create tests in two ways: in{' '}
               <b style={{ fontWeight: 600 }}>this editor </b>(For test cases that have modular blocks of code) or in{' '}
               <b style={{ fontWeight: 600 }}>File Mode </b>(if you want to run a script that includes multiple tests).
+              To get started, click the "Add Test" <Icon type="file-add" /> icon.
             </span>
           ) : (
             <span>
@@ -686,7 +685,7 @@ export const TestDefinitions = (props: IProps) => {
               <a href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode" target="_blank">
                 click here
               </a>
-              .
+              . To get started, create a new test file by clicking the "Add file" <Icon type="plus-circle" /> icon.
             </span>
           )}
         </div>
