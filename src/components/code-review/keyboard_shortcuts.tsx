@@ -92,12 +92,8 @@ const shortcuts: IShortcutCategory[] = [
         keys: ['COMMAND', 'd', 'SLASH', 'COMMAND', 'd'],
       },
       {
-        name: 'Move Cursor to Rubric',
-        keys: ['COMMAND', 'LEFT'],
-      },
-      {
-        name: 'Move Cursor to Active Comment',
-        keys: ['COMMAND', 'RIGHT'],
+        name: 'Toggle Cursor to Rubric',
+        keys: ['COMMAND', 'y'],
       },
       {
         name: 'Link Highlighted Rubric Comment',
