@@ -734,16 +734,17 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     if (this.state.cursorMode) {
       if (this.state.selectedFile !== undefined) {
         if (this.state.activeCommentID !== undefined) {
-          if (e.key === 'ArrowLeft' && triggerKey && !e.shiftKey) {
+          if (e.key === 'y' && triggerKey && !e.shiftKey) {
             e.preventDefault();
             e.stopPropagation();
-            this.blurActiveComment();
-            this.setState({ showCursor: CURSOR_DOMAIN.RUBRIC });
-          } else if (e.key === 'ArrowRight' && triggerKey && !e.shiftKey) {
-            e.preventDefault();
-            e.stopPropagation();
-            this.focusActiveComment();
-            this.setState({ showCursor: CURSOR_DOMAIN.CODE_HIDDEN });
+
+            if (this.state.showCursor === CURSOR_DOMAIN.RUBRIC) {
+              this.focusActiveComment();
+              this.setState({ showCursor: CURSOR_DOMAIN.CODE_HIDDEN });
+            } else {
+              this.blurActiveComment();
+              this.setState({ showCursor: CURSOR_DOMAIN.RUBRIC });
+            }
           }
         } else {
           if (e.key === 'ArrowLeft' && triggerKey && !e.shiftKey) {
