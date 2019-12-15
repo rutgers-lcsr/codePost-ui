@@ -125,6 +125,9 @@ export const TestDefinitions = (props: IProps) => {
       if (activeTest === undefined) {
         if (categories.length > 0 && activeTest === undefined) setActiveTest(casesByCategory[categories[0].id][0]);
       }
+      if (categories.length === 0 && props.sourceFiles.length > 0) {
+        setPanel(DETAIL_TYPE.ViewSource);
+      }
       setLoading(false);
     };
 
