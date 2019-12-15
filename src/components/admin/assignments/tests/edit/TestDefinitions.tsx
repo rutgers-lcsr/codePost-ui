@@ -35,7 +35,7 @@ import {
 import { SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
 import { File } from '../../../../../infrastructure/file';
 import { Submission } from '../../../../../infrastructure/submission';
-import { BasicTestResultType } from '../../../../../infrastructure/autograder/runTypes';
+import { BasicTestResultType, TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
 import { FILE_TYPE } from './TestingSetup';
 
 /* codePost component imports */
@@ -100,7 +100,6 @@ export const TestDefinitions = (props: IProps) => {
   const [tests, setTests] = useState<TestTemplateType[]>([]);
   const [main, setMain] = useState('');
   const [index, setIndex] = useState('0-0'); // file index <group>_<file index>
-  const [testResults, setTestResults] = useState<BasicTestResultType[]>([]);
 
   // render variables
   const [panel, setPanel] = useState<DETAIL_TYPE>(DETAIL_TYPE.EditTests);
@@ -113,9 +112,9 @@ export const TestDefinitions = (props: IProps) => {
   /******************************* Fetch Data ****************************/
   useEffect(() => {
     const fetchData = async () => {
-      const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
-      setCategories(categories);
-      setCasesByCategory(casesByCategory);
+      const [_categories, _casesByCategory]: any = await fetchTestData(props.currentAssignment);
+      setCategories(_categories);
+      setCasesByCategory(_casesByCategory);
       if (activeTest === undefined) {
         if (categories.length > 0 && activeTest === undefined) setActiveTest(casesByCategory[categories[0].id][0]);
       }
@@ -332,8 +331,45 @@ export const TestDefinitions = (props: IProps) => {
     }
   };
 
-  const setResults = (results: BasicTestResultType[]) => {
-    setTestResults(results);
+  const parseFileModeResults = async (response: TestEditorResultType) => {
+    // In case new tests were created (if file mode, test parsing turned off),
+    //    fetch the newest tests before setting resylts
+    const [_categories, _casesByCategory]: any = await fetchTestData(props.currentAssignment);
+    setCategories(_categories);
+    setCasesByCategory(_casesByCategory);
+
+    if (props.env && props.env.dumpMode && activeSubmission) {
+      // Refresh submission files after dump, in case a _tests.txt file was created
+      setTestSubject(activeSubmission.id.toString());
+    }
+
+    //
+    const formatted = {
+      log: response.logs,
+      target: activeSubmission ? activeSubmission.students[0] : 'solution code',
+      result: RESULT_TYPE.NONE,
+      testCaseName: '',
+    };
+
+    const logs = response.results.map((el) => {
+      const testCase = _casesByCategory[el.testCategory].find((tc: TestCaseType) => tc.id === el.testCase)!;
+      const status = el.isError ? RESULT_TYPE.ERROR : el.passed ? RESULT_TYPE.PASSED : RESULT_TYPE.FAILED;
+
+      if (testCase) {
+        if (!activeSubmission) {
+          updateTestStatus(testCase.id, status);
+        }
+      }
+
+      return {
+        log: el.logs,
+        target: activeSubmission ? activeSubmission.students[0] : 'solution code',
+        result: status,
+        testCaseName: testCase ? testCase.description : '',
+      };
+    });
+
+    return [formatted, ...logs];
   };
 
   /******************************* Misc ****************************/
@@ -539,7 +575,7 @@ export const TestDefinitions = (props: IProps) => {
           casesByCategory={casesByCategory}
           sourceFiles={props.sourceFiles}
           currentFile={currentFile}
-          setResults={setResults}
+          parseResults={parseFileModeResults}
           setTestSubject={setTestSubject}
           submissions={props.submissions}
           updateFile={props.updateFile}
