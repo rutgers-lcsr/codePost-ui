@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 
 /* library imports */
-import { Breadcrumb, Button, Checkbox, Dropdown, Icon, Menu, Modal, Radio } from 'antd';
+import { Breadcrumb, Button, Checkbox, Dropdown, Icon, Menu, Modal, Radio, Tooltip } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -371,12 +371,16 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   };
   actions = [
     <Radio.Group value={SUMMARY_TYPE[summaryType]} onChange={onSummaryTypeChange} buttonStyle="solid">
-      <Radio.Button key={SUMMARY_TYPE[SUMMARY_TYPE.BySubmission]} value={SUMMARY_TYPE[SUMMARY_TYPE.BySubmission]}>
-        <Icon type="solution" />
-      </Radio.Button>
-      <Radio.Button key={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]} value={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]}>
-        <Icon type="cluster" />
-      </Radio.Button>
+      <Tooltip title="Summary by submission">
+        <Radio.Button key={SUMMARY_TYPE[SUMMARY_TYPE.BySubmission]} value={SUMMARY_TYPE[SUMMARY_TYPE.BySubmission]}>
+          <Icon type="solution" />
+        </Radio.Button>
+      </Tooltip>
+      <Tooltip title="Summary by test">
+        <Radio.Button key={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]} value={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]}>
+          <Icon type="cluster" />
+        </Radio.Button>
+      </Tooltip>
     </Radio.Group>,
     <Button
       type="default"
