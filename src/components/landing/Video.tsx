@@ -10,9 +10,10 @@ import queryString from 'query-string';
 /* ant imports */
 import { Button, Icon, Select } from 'antd';
 
-const { Option } = Select;
-
 /* codePost imports */
+import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
+
+const { Option } = Select;
 
 interface IVideoSection {
   id: string;
@@ -146,37 +147,61 @@ class Video extends React.Component<any, IVideoState> {
     this.player.seekTo(seconds);
   };
   public render() {
+    let videoWidth;
+
+    if (this.props.windowwidth > 1024) {
+      videoWidth = this.props.windowwidth - 460;
+    } else {
+      videoWidth = this.props.windowwidth - 100;
+    }
+
+    const videoHeight = (videoWidth * 540) / 960;
+
     return (
       <div className="video">
-        <div className="video__video">
+        <div
+          className="video__video"
+          style={{
+            width: `${videoWidth - 4}px`,
+            height: `${videoHeight - 1}px`,
+            borderRadius: '6px',
+            border: '2px solid #24be85',
+            overflow: 'hidden',
+            display: 'inline-block',
+          }}
+        >
           <WistiaPlayer
             ref={this.ref}
             id="video"
             url="https://codepost.wistia.com/medias/yx1va80hcd"
             onProgress={this.handleProgress}
-            height="440px"
-            width="700px"
+            height={`${videoHeight}px`}
+            width={`${videoWidth}px`}
             playing={this.state.playing}
+            style={{ transform: 'translateX(-2px)' }}
           />
         </div>
-        <div className="video__sections">
-          <div style={{ paddingBottom: '20px' }}>
+        {this.props.windowwidth > 1024 ? (
+          <div className="video__sections" style={{ display: 'inline-block' }}>
+            {/*<div style={{ paddingBottom: '20px' }}>
             <Select defaultValue="overview" size="large" style={{ width: '100%' }}>
               <Option value="overview">Overview</Option>
               <Option value="grading-teams">Grading Teams</Option>
             </Select>
+          </div>*/}
+            {sections.map((section: IVideoSection) => {
+              return (
+                <SectionButton
+                  key={section.id}
+                  section={section}
+                  active={section.id === this.state.selectedSectionId}
+                  setSection={this.setSection}
+                  height={videoHeight / sections.length}
+                />
+              );
+            })}
           </div>
-          {sections.map((section: IVideoSection) => {
-            return (
-              <SectionButton
-                key={section.id}
-                section={section}
-                active={section.id === this.state.selectedSectionId}
-                setSection={this.setSection}
-              />
-            );
-          })}
-        </div>
+        ) : null}
       </div>
     );
   }
@@ -186,6 +211,7 @@ interface ISectionButtonProps {
   section: IVideoSection;
   active: boolean;
   setSection: (id: IVideoSection) => void;
+  height: number;
 }
 
 const SectionButton: React.FC<ISectionButtonProps> = (props) => {
@@ -195,11 +221,14 @@ const SectionButton: React.FC<ISectionButtonProps> = (props) => {
   return (
     <div
       className={`video__sections__button video__sections__button--${props.active ? 'selected' : 'idle'}`}
+      style={{ height: `${props.height}px`, minWidth: '260px' }}
       onClick={onClick}
     >
-      <Icon type={props.section.icon} /> {props.section.name}
+      <Icon type={props.section.icon} />
+      <div style={{ display: 'inline-block', width: '4px' }} />
+      {props.section.name}
     </div>
   );
 };
 
-export default Video;
+export default withWindowWatcher(Video);
