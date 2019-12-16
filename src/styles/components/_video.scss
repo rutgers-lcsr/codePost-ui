@@ -13,7 +13,7 @@
       color: black;
       font-weight: 600;
       padding: 20px;
-      text-align: center;
+      // text-align: center;
       cursor: pointer;
       min-width: 300px;
 
@@ -25,6 +25,7 @@
 
       &--selected {
         box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.16);
+        color: #24be85;
 
         &:hover {
           background-color: #fff;

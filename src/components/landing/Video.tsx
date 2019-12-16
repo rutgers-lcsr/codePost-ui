@@ -7,7 +7,7 @@ import * as React from 'react';
 import WistiaPlayer from 'react-player/lib/players/Wistia';
 
 /* ant imports */
-import { Button, Select } from 'antd';
+import { Button, Icon, Select } from 'antd';
 
 const { Option } = Select;
 
@@ -17,33 +17,52 @@ interface IVideoSection {
   id: string;
   name: string;
   timestamp: number;
+  icon: string;
 }
 
 const sections: IVideoSection[] = [
   {
-    id: 'start',
-    name: 'Get Started',
-    timestamp: 0,
+    id: 'creating-assignments',
+    name: 'Creating Assignments',
+    timestamp: 26,
+    icon: 'plus',
   },
   {
-    id: 'add-roster',
-    name: 'Add Roster',
-    timestamp: 60,
+    id: 'writing-tests',
+    name: 'Writing Tests',
+    timestamp: 41,
+    icon: 'tool',
   },
   {
-    id: 'write-tests',
-    name: 'Write Tests',
-    timestamp: 120,
+    id: 'student-submission',
+    name: 'Student Submission',
+    timestamp: 164,
+    icon: 'upload',
   },
   {
-    id: 'review-code',
-    name: 'Review Code',
-    timestamp: 180,
+    id: 'manual-review',
+    name: 'Manual Review',
+    timestamp: 229,
+    icon: 'highlight',
+  },
+  {
+    id: 'post-grading',
+    name: 'Post Grading',
+    timestamp: 399,
+    icon: 'line-chart',
+  },
+  {
+    id: 'getting-feedback',
+    name: 'Getting Feedback',
+    timestamp: 441,
+    icon: 'eye',
   },
 ];
 
 interface IVideoState {
-  selectedSectionId: string;
+  selectedSectionId: string | null;
+  playedSeconds: number;
+  playing: boolean;
 }
 
 /**********************************************************************************************************************/
@@ -53,7 +72,9 @@ class Video extends React.Component<{}, IVideoState> {
     super(props);
 
     this.state = {
-      selectedSectionId: sections[0].id,
+      selectedSectionId: null,
+      playedSeconds: 0,
+      playing: false,
     };
   }
 
@@ -68,11 +89,41 @@ class Video extends React.Component<{}, IVideoState> {
   public setSection = (section: IVideoSection) => {
     this.setState({ selectedSectionId: section.id });
     this.seek(section.timestamp);
+    this.play();
   };
 
   public ref = (player: any) => {
     // @ts-ignore
     this.player = player;
+  };
+
+  public play = () => {
+    this.setState({ playing: true });
+  };
+
+  public pause = () => {
+    this.setState({ playing: false });
+  };
+
+  public handleProgress = (state: { playedSeconds: number; played: number }) => {
+    let currentSection = null;
+    let i;
+    for (i = 0; i < sections.length - 1; i++) {
+      if (state.playedSeconds < sections[0].timestamp) {
+        currentSection = null;
+        break;
+      }
+      if (state.playedSeconds >= sections[i].timestamp && state.playedSeconds < sections[i + 1].timestamp) {
+        currentSection = sections[i].id;
+        break;
+      }
+      if (i === sections.length - 2) {
+        currentSection = sections[sections.length - 1].id;
+        break;
+      }
+    }
+
+    this.setState({ playedSeconds: state.playedSeconds, selectedSectionId: currentSection });
   };
 
   public seek = (seconds: number) => {
@@ -83,7 +134,14 @@ class Video extends React.Component<{}, IVideoState> {
     return (
       <div className="video">
         <div className="video__video">
-          <WistiaPlayer ref={this.ref} id="video" url="https://codepost.wistia.com/medias/n0ja8jbpny" />
+          <WistiaPlayer
+            ref={this.ref}
+            id="video"
+            url="https://codepost.wistia.com/medias/yx1va80hcd"
+            onProgress={this.handleProgress}
+            height="440px"
+            playing={this.state.playing}
+          />
         </div>
         <div className="video__sections">
           <div style={{ paddingBottom: '20px' }}>
@@ -123,7 +181,7 @@ const SectionButton: React.FC<ISectionButtonProps> = (props) => {
       className={`video__sections__button video__sections__button--${props.active ? 'selected' : 'idle'}`}
       onClick={onClick}
     >
-      {props.section.name}
+      <Icon type={props.section.icon} /> {props.section.name}
     </div>
   );
 };
