@@ -6,15 +6,19 @@
 import React, { useState } from 'react';
 
 /* library imports  */
-import { Button, Icon, message, Modal, Table, Upload } from 'antd';
+import { Button, Icon, message, Modal, Switch, Table, Upload } from 'antd';
 
 /* codePost object imports  */
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 import { HelperFileType } from '../../../../../../infrastructure/autograder/helperFile';
 
+import { IDirectoryStructure, IFolder } from '../../../../../code-review/menu/fileMenuUtils';
+
+const { warning } = Modal;
+
 interface IUploadProps {
-  files: (SolutionFileType | HelperFileType)[];
-  addFile: (name: string, code: string) => Promise<void>;
+  directory: IDirectoryStructure<SolutionFileType | HelperFileType> | undefined;
+  addFile: (name: string, code: string, path?: string) => Promise<void>;
   deleteFile: (id: number) => Promise<void>;
   icon?: boolean;
   title: string;
@@ -27,6 +31,7 @@ export const TestFileUploader = (props: IUploadProps) => {
   const [visible, setVisible] = useState(false);
   const [newFiles, setNewFiles] = useState<any[]>([]);
   const [counter, setCounter] = useState(0);
+  const [uploadDir, setUploadDir] = useState(false);
 
   /************************** API Functions ****************************/
   const deleteFile = async (id: number) => {
@@ -34,9 +39,36 @@ export const TestFileUploader = (props: IUploadProps) => {
     message.success(`File deleted!`);
   };
 
+  const deleteFolder = async (folder: IFolder<SolutionFileType | HelperFileType>) => {
+    const filePromises = folder.files.map((f) => {
+      return props.deleteFile(f.id);
+    });
+    const folderPromises: any = folder.folders.map((f) => {
+      return deleteFolder(f);
+    });
+
+    return await Promise.all([...filePromises, ...folderPromises]);
+  };
+
+  const deleteAll = async () => {
+    if (props.directory) {
+      warning({
+        title: 'Are you sure you want to delete all files?',
+        content: '',
+        okText: 'Delete',
+        async onOk() {
+          const filePromises = props.directory!.files.map((f) => deleteFile(f.id));
+          const folderPromises: any = props.directory!.folders.map((f) => deleteFolder(f));
+          return await Promise.all([...filePromises, ...folderPromises]);
+        },
+        onCancel() {},
+      });
+    }
+  };
+
   const saveNewFiles = async () => {
     const promises = newFiles.map((newFile) => {
-      return props.addFile(newFile.name, newFile.code);
+      return props.addFile(newFile.name, newFile.code, newFile.path);
     });
     await Promise.all(promises);
     message.success(`File(s) uploaded successfully`);
@@ -53,8 +85,20 @@ export const TestFileUploader = (props: IUploadProps) => {
     reader.onload = async () => {
       if (reader.result) {
         const cleanedData = typeof reader.result === 'string' ? reader.result.replace(/\0/g, '') : reader.result;
+
+        const split = file.webkitRelativePath && file.webkitRelativePath.split('/');
+        const path = split
+          ? split
+              .slice(0, split.length - 1)
+              .join('/')
+              .trim()
+              .toLowerCase()
+          : '';
         setNewFiles((prevState) => {
-          return [...prevState, { uid: `${counter}-${file.name}`, code: cleanedData, name: file.name }];
+          const oldFiles = prevState.filter((f) => {
+            return f.name !== file.name || f.path !== file.path;
+          });
+          return [...oldFiles, { uid: `${counter}-${file.name}`, code: cleanedData, name: file.name, path: path }];
         });
         setCounter(counter + 1);
       }
@@ -84,12 +128,59 @@ export const TestFileUploader = (props: IUploadProps) => {
     },
   ];
 
-  const data = props.files.map((file) => {
+  const toggleDir = () => {
+    setUploadDir(!uploadDir);
+  };
+
+  let files: any = [];
+  let folders: any = [];
+  const getFolderData = (folder: IFolder<SolutionFileType | HelperFileType>) => {
+    const files = folder.files.map((file) => {
+      return {
+        key: file.id,
+        name: file.name,
+        delete: <Icon onClick={deleteFile.bind({}, file.id)} type="delete" />,
+      };
+    });
+
+    const folders: any = folder.folders.map((folder) => {
+      return getFolderData(folder);
+    });
+
     return {
-      name: file.name,
-      delete: <Icon onClick={deleteFile.bind({}, file.id)} type="delete" />,
+      name: folder.name,
+      delete: <Button onClick={deleteFolder.bind({}, folder)}>Delete Folder</Button>,
+      children: [...files, ...folders],
     };
-  });
+  };
+
+  if (props.directory) {
+    files = props.directory.files.map((file) => {
+      return {
+        key: file.id,
+        name: file.name,
+        delete: <Icon onClick={deleteFile.bind({}, file.id)} type="delete" />,
+      };
+    });
+
+    folders = props.directory.folders.map((folder) => {
+      return getFolderData(folder);
+    });
+  }
+
+  const footer = [
+    <Button
+      type="danger"
+      disabled={!(props.directory && (props.directory.files.length > 0 || props.directory.folders.length > 0))}
+      ghost={true}
+      onClick={deleteAll}
+    >
+      Delete all
+    </Button>,
+    <Button type="primary" disabled={newFiles.length === 0} onClick={saveNewFiles}>
+      Save
+    </Button>,
+  ];
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -100,15 +191,8 @@ export const TestFileUploader = (props: IUploadProps) => {
           Add / Remove Files
         </Button>
       )}
-      <Modal
-        visible={visible}
-        onCancel={toggleVisible}
-        width={750}
-        okText="Save"
-        onOk={saveNewFiles}
-        title={props.title}
-      >
-        <Table columns={columns} dataSource={data} />
+      <Modal visible={visible} onCancel={toggleVisible} width={750} footer={footer} title={props.title}>
+        <Table columns={columns} dataSource={[...files, ...folders]} />
         <br />
         <Upload
           beforeUpload={beforeUpload}
@@ -117,11 +201,16 @@ export const TestFileUploader = (props: IUploadProps) => {
           showUploadList={true}
           onRemove={onRemove}
           fileList={newFiles}
+          directory={uploadDir}
         >
           <Button>
             <Icon type="upload" /> Add Files
           </Button>
         </Upload>
+        <div style={{ marginTop: 15 }}>
+          Upload directory: &nbsp;
+          <Switch onChange={toggleDir} />
+        </div>
       </Modal>
     </div>
   );

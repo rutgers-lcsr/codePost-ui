@@ -84,12 +84,6 @@ const TestsMenu = (props: IProps) => {
       }
     }
 
-    const badgeStyle = {
-      fontSize: 10,
-      padding: '0 2px',
-      opacity: props.isOpen ? 1 : 0.7,
-    };
-
     return {
       category: (
         <span>
@@ -116,7 +110,30 @@ const TestsMenu = (props: IProps) => {
         {props.categories.length > 0 ? (
           <Table dataSource={data} columns={columns} size="small" pagination={false} bordered={false} />
         ) : (
-          <span>Soon you'll be able to show test output and run tests on student code using codePost!</span>
+          <span>
+            You haven't defined any tests.{' '}
+            {props.showLink ? (
+              <span>
+                You can do so from the{' '}
+                <CourseContext.Consumer>
+                  {(course) => (
+                    <span>
+                      <Link
+                        to={`/admin/${encodeForLink(course.name)}/${encodeForLink(
+                          course.period,
+                        )}/assignments/tests/${encodeForLink(props.assignment.name)}/edit`}
+                      >
+                        Admin Console
+                      </Link>
+                      .
+                    </span>
+                  )}
+                </CourseContext.Consumer>
+              </span>
+            ) : (
+              ''
+            )}
+          </span>
         )}
       </div>
     </div>
