@@ -7,11 +7,13 @@ import * as React from 'react';
 
 import { HashLink as Link } from 'react-router-hash-link';
 
+import Carousel, { Dots } from '@brainhubeu/react-carousel';
+import '@brainhubeu/react-carousel/lib/style.css';
+
 import { Icon } from 'antd';
 
 /* codePost Imports */
 import landingVars from '../../styles/pages/_landingVars';
-
 import CPButton from '../core/CPButton';
 
 // Section components
@@ -20,18 +22,17 @@ import LandingHeader from './LandingHeader';
 import LandingHero from './LandingHero';
 import LandingLayout from './LandingLayout';
 import LandingPanel from './LandingPanel';
+import LandingAnnotationPanel from './LandingAnnotationPanel';
 
 import { LandingFlowChart } from './landingAnimations/flowchart/LandingFlowChart';
-
-// Animations
-import GradeAnimationVideo from './landingAnimations/grade/GradeAnimationVideo';
 
 // Other design elements
 import PreAuthFooter from '../pre-auth/PreAuthFooter';
 import { Testimonials } from './Testimonial';
 
 import APIExample from './LandingAPIExample';
-import CodeReview from './LandingCodeReview';
+
+import AutograderModule from './landingAnimations/autograder/AutograderModule';
 
 import Integrations from './Integrations';
 
@@ -56,126 +57,70 @@ class Landing extends React.PureComponent<{}, {}> {
       'onclick',
       "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;",
     );
-    calendlyDivFooter!.setAttribute(
-      'onclick',
-      "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;",
-    );
+    // calendlyDivFooter!.setAttribute(
+    //   'onclick',
+    //   "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;",
+    // );
   }
 
   public render() {
-    const whyText = (
-      <div>
-        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 16 }}>
-          <b>Yes!</b> If you use an autograder, you can make it more effective by incorporating code review.
-        </div>
-        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 16 }}>
-          Autograding can tell your students whether their code is correct, but, by itself, the output can be confusing,
-          and bad code can still pass correctness tests.
-        </div>
-        <div style={{ fontWeight: 400, lineHeight: 1.5, paddingBottom: 10, fontSize: 16 }}>
-          With code review, you can <b>explain autograder output</b> and give feedback on everything an autograder can't
-          evaluate.
-        </div>
-      </div>
-    );
+    const panelOne = <LandingAnnotationPanel />;
 
-    const panelOneText = (
-      <div>
-        <div style={{ paddingBottom: 15 }}>
-          Use codePost to annotate programming assignments with easy-to-read comments that don't clutter code. You and
-          your course staff can provide custom feedback, as well as apply standardized rubrics. And we support iPython
-          notebooks too.
-        </div>
-      </div>
-    );
-
-    const panelTwoText = (
-      <div id="panelTwo">
-        <div style={{ paddingBottom: 15 }}>
-          Setting up a course in codePost is easy: upload submissions to review and return graded work to students with
-          a few clicks.
-          <div style={{ paddingTop: 15 }}>
-            <div style={{ fontWeight: 600, paddingBottom: 5 }}>Managing a team of graders?</div>
-            <div>
-              codePost lets you dispatch work to graders, perform quality control on their work, and set up a rubric
-              that lets you track what errors students are making.
+    const panelTwo = (
+      <LandingPanel
+        text={
+          <div>
+            <div style={{ paddingBottom: 15 }}>
+              Autograding student code can help you and your students identify correctness mistakes efficiently.
+              codePost provides (a) tools to help you write tests without writing lots of overhead code, and (b) makes
+              it easy to run your tests on students code and report results.
             </div>
           </div>
-        </div>
-        <Link to="/why-use-codePost#instructors" target="_blank">
-          <CPButton
-            key="panelTwoButton"
-            cpType="link"
-            style={{ background: 'white', fontSize: 16, padding: 0 }}
-            className="landing__link"
-          >
-            Learn more
-            <Icon type="arrow-right" className="landing__link__arrow" />
-          </CPButton>
-        </Link>
-      </div>
-    );
-
-    const panelThreeText = (
-      <div>
-        <div style={{ paddingBottom: 15 }}>
-          Integrating tools is a big pain. That's why we built the codePost API. It allows you to
-          <ul>
-            <li>
-              <span style={{ fontWeight: 600 }}>integrate with other software</span>, such as your LMS, autograder, and
-              version control systems,
-            </li>
-            <li>
-              <span style={{ fontWeight: 600 }}>automate common tasks</span>, such as synchronizing rosters from your
-              Registrar or LMS, and
-            </li>
-            <li>
-              <span style={{ fontWeight: 600 }}>analyze your course data</span>, so that you can find and track insights
-              against your goals.
-            </li>
-          </ul>
-          It's actually easy to use - you can write useful, short scripts in 10 minutes.
-        </div>
-      </div>
-    );
-
-    const whyPanel = (
-      <LandingPanel
-        text={whyText}
-        title="Can I still use my autograder?"
-        subTitle=""
-        module={<div>{<CodeReview />}</div>}
-        type="left"
-        moduleMaxWidth={600}
-        moduleMaxHeight={800}
-        textSize="normal"
-        removeModelSmallScreen={true}
-        bevel={false}
-        gutterSize={85}
-      />
-    );
-    const panelOne = (
-      <LandingPanel
-        text={panelOneText}
-        title="1. ANNOTATE STUDENT CODE"
-        subTitle="Effortlessly annotate and grade programming assignments"
-        module={<GradeAnimationVideo width={610} height={390} controls={500} />}
-        type="left"
+        }
+        title="AUTOMATE CORRECTNESS TESTS"
+        subTitle="Easily write and run tests against student code"
+        type="right"
         moduleMaxWidth={595}
         moduleMaxHeight={380}
         textSize="normal"
-        removeModelSmallScreen={true}
-        bevel={true}
+        removeModelSmallScreen={false}
+        module={<AutograderModule />}
         gutterSize={50}
       />
     );
-    const panelTwo = (
+
+    const panelThree = (
       <LandingPanel
-        text={panelTwoText}
-        title="2. MANAGE YOUR COURSE"
-        subTitle="Less time configuring software, more time teaching"
+        text={
+          <div id="panelTwo">
+            <div style={{ paddingBottom: 15 }}>
+              You can use codePost to do everything from collecting student work, to distributing results, and
+              everything in between.
+              <div style={{ paddingTop: 15 }}>
+                <div style={{ fontWeight: 600, paddingBottom: 5 }}>Managing a team of graders?</div>
+                <div>
+                  codePost includes tools to help you run a large course team: distribute work to graders, set up a
+                  rubric to ensure consistent, fair feedback, and perform quality control on grader work.
+                </div>
+              </div>
+            </div>
+            <Link to="/why-use-codePost#instructors" target="_blank">
+              <CPButton
+                key="panelTwoButton"
+                cpType="link"
+                style={{ background: 'white', fontSize: 16, padding: 0 }}
+                className="landing__link"
+              >
+                Learn more
+                <Icon type="arrow-right" className="landing__link__arrow" />
+              </CPButton>
+            </Link>
+          </div>
+        }
+        title="COMPLETE FEEDBACK WORKFLOW"
+        subTitle="Everything you need to run your course"
         module={<LandingFlowChart />}
-        type="right"
+        type="left"
         moduleMaxWidth={700}
         moduleMaxHeight={405}
         textSize="normal"
@@ -185,7 +130,7 @@ class Landing extends React.PureComponent<{}, {}> {
       />
     );
 
-    const panelThreeModule = (
+    const panelFourModule = (
       <div className="display-flex align-items-center">
         <div style={{ display: 'inline-block', width: '500px' }}>
           <Integrations
@@ -194,15 +139,36 @@ class Landing extends React.PureComponent<{}, {}> {
         </div>
       </div>
     );
-    const panelThree = (
+    const panelFour = (
       <div className="display-flex align-items-center flex-direction-column">
         <div style={{ marginBottom: 50, width: '100%' }}>
           <LandingPanel
-            text={panelThreeText}
-            title="3. INTEGRATE WITH ANYTHING"
+            text={
+              <div>
+                <div style={{ paddingBottom: 15 }}>
+                  Integrating tools is a big pain. That's why we built the codePost API. It allows you to
+                  <ul>
+                    <li>
+                      <span style={{ fontWeight: 600 }}>integrate with other software</span>, such as your LMS,
+                      autograder, and version control systems,
+                    </li>
+                    <li>
+                      <span style={{ fontWeight: 600 }}>automate common tasks</span>, such as synchronizing rosters from
+                      your Registrar or LMS, and
+                    </li>
+                    <li>
+                      <span style={{ fontWeight: 600 }}>analyze your course data</span>, so that you can find and track
+                      insights against your goals.
+                    </li>
+                  </ul>
+                  It's actually easy to use - you can write useful, short scripts in 10 minutes.
+                </div>
+              </div>
+            }
+            title="API-FIRST: OPEN AND INTEROPERABLE"
             subTitle="Write short scripts with the codePost API"
-            module={panelThreeModule}
-            type="left"
+            module={panelFourModule}
+            type="right"
             moduleMaxWidth={600}
             moduleMaxHeight={500}
             textSize="normal"
@@ -226,10 +192,10 @@ class Landing extends React.PureComponent<{}, {}> {
             <Testimonials />
           </div>
         }
-        whyPanel={whyPanel}
         panelOne={panelOne}
         panelTwo={panelTwo}
         panelThree={panelThree}
+        panelFour={panelFour}
         getStarted={<LandingGetStarted />}
         footer={
           <div id="PreAuth">

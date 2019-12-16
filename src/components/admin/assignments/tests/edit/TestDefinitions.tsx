@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Layout, Menu, Icon, Empty, Spin, Tag } from 'antd';
+import { Button, Layout, Menu, Icon, Empty, Modal, Spin, Badge, Tooltip } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 import _ from 'lodash';
 
@@ -35,25 +35,27 @@ import {
 import { SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
 import { File } from '../../../../../infrastructure/file';
 import { Submission } from '../../../../../infrastructure/submission';
-import { BasicTestResultType } from '../../../../../infrastructure/autograder/runTypes';
+import { BasicTestResultType, TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
 import { FILE_TYPE } from './TestingSetup';
 
 /* codePost component imports */
 import { TestItem } from './TestDefinitions/TestItem';
 import { AddCategoryModal } from './TestDefinitions/AddCategoryModal';
 import { AddFileModal } from './TestDefinitions/AddFileModal';
-import { EditCategoryModal } from './TestDefinitions/EditCategoryModal';
+import { EditObjectModal } from './TestDefinitions/EditObjectModal';
 import { AddTestModal } from './TestDefinitions/AddTestModal';
 import CPTooltip from '../../../../core/CPTooltip';
 import { SourceEditor } from './SourceEditor';
-import TestsList from '../../../../code-review/code-panel/TestsList';
-import TestsMenu from '../../../../code-review/menu/TestsMenu';
 
 import FileTag from './TestDefinitions/FileTag';
 
 /* codePost utils imports */
 import { fetchTestData, TestCasesByCategory } from '../../../../core/testFetchUtils';
 import { hasNativeTestSupport } from './utils/languageUtils';
+
+import { IFolder, buildFolderMenu, createDirectoryStructure } from '../../../../code-review/menu/fileMenuUtils';
+
+import { RESULT_TYPE } from './TestDefinitions/PsuedoTerminal';
 
 const { Sider, Content } = Layout;
 
@@ -79,10 +81,11 @@ enum DETAIL_TYPE {
 
 export interface IBasicFile {
   name: string;
-  canSave: boolean;
+  canSave?: boolean;
   code: string;
   id: number;
   type: FILE_TYPE;
+  path: string | null;
 }
 
 export const TestDefinitions = (props: IProps) => {
@@ -97,7 +100,6 @@ export const TestDefinitions = (props: IProps) => {
   const [tests, setTests] = useState<TestTemplateType[]>([]);
   const [main, setMain] = useState('');
   const [index, setIndex] = useState('0-0'); // file index <group>_<file index>
-  const [testResults, setTestResults] = useState<BasicTestResultType[]>([]);
 
   // render variables
   const [panel, setPanel] = useState<DETAIL_TYPE>(DETAIL_TYPE.EditTests);
@@ -110,11 +112,14 @@ export const TestDefinitions = (props: IProps) => {
   /******************************* Fetch Data ****************************/
   useEffect(() => {
     const fetchData = async () => {
-      const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
-      setCategories(categories);
-      setCasesByCategory(casesByCategory);
+      const [_categories, _casesByCategory]: any = await fetchTestData(props.currentAssignment);
+      setCategories(_categories);
+      setCasesByCategory(_casesByCategory);
       if (activeTest === undefined) {
-        if (categories.length > 0 && activeTest === undefined) setActiveTest(casesByCategory[categories[0].id][0]);
+        if (_categories.length > 0 && activeTest === undefined) setActiveTest(_casesByCategory[_categories[0].id][0]);
+      }
+      if (_categories.length === 0 && props.sourceFiles.length > 0) {
+        setPanel(DETAIL_TYPE.ViewSource);
       }
       setLoading(false);
     };
@@ -133,10 +138,18 @@ export const TestDefinitions = (props: IProps) => {
     }
   }, [props.env]);
 
+  // When the test changes, we want to reset the active submission
+  // We only change it when the test.id changes, because we update the test on run (solutionStatus)
   useEffect(() => {
     setActiveSubmission(undefined);
-    setCurrentFiles([]);
-  }, [activeTest]);
+    setCurrentFiles(props.solutions);
+  }, [activeTest && activeTest.id]);
+
+  // If solution files get updated (for example in file mode, update the current files)
+  useEffect(() => {
+    setActiveSubmission(undefined);
+    setCurrentFiles(props.solutions);
+  }, [props.solutions]);
 
   /******************************* TestCategory functions  ****************************/
 
@@ -160,8 +173,13 @@ export const TestDefinitions = (props: IProps) => {
     return newCategory;
   };
 
-  const updateCategory = async (testCategory: TestCategoryType) => {
-    const newCategory = await TestCategory.update(testCategory);
+  // FixME: come up with a generic field saving function
+  const updateCategoryName = async (id: number, name: string) => {
+    const payload = {
+      id: id,
+      name: name,
+    };
+    const newCategory = await TestCategory.update(payload);
     replaceTestCategory(newCategory);
   };
 
@@ -185,9 +203,15 @@ export const TestDefinitions = (props: IProps) => {
       newTest = await TestCase.update(testcase);
     }
 
-    replaceTestCase(newTest, testcase);
-    setActiveTest(testcase);
+    replaceTestCase(newTest, testcase.id);
+    setActiveTest(newTest);
     return newTest;
+  };
+
+  const updateTestStatus = async (testCaseID: number, result: number) => {
+    const newTest = await TestCase.update({ id: testCaseID, lastSolutionRun: result });
+    replaceTestCase(newTest, testCaseID);
+    setActiveTest(newTest);
   };
 
   const addTest = async (language: string | null, category: number, sourceFile?: boolean, name?: string) => {
@@ -216,6 +240,7 @@ export const TestDefinitions = (props: IProps) => {
       exposed: false,
       instances: [],
       explanation: '',
+      lastSolutionRun: RESULT_TYPE.NONE,
     };
 
     const newTestCase = await saveTest(dummyTestCase);
@@ -251,11 +276,11 @@ export const TestDefinitions = (props: IProps) => {
 
   /******************************* State Change Functions  ****************************/
 
-  const replaceTestCase = (newCase: TestCaseType, oldCase: TestCaseType) => {
+  const replaceTestCase = (newCase: TestCaseType, oldID: number) => {
     setCasesByCategory((prevState) => {
       const filteredTests = prevState[newCase.testCategory]
         ? prevState[newCase.testCategory].filter((tc) => {
-            return tc.id !== oldCase.id;
+            return tc.id !== oldID;
           })
         : [];
       const newCases = { ...prevState };
@@ -265,9 +290,6 @@ export const TestDefinitions = (props: IProps) => {
   };
 
   const replaceTestCategory = (newCategory: TestCategoryType) => {
-    const filteredCategories = categories.filter((cat) => {
-      return cat.id !== newCategory.id;
-    });
     setCategories((prevState) => {
       const filteredCategories = prevState.filter((cat) => {
         return cat.id !== newCategory.id;
@@ -302,14 +324,52 @@ export const TestDefinitions = (props: IProps) => {
       const files = submission.files.map((fileID) => File.read(fileID));
       Promise.all(files).then((fileList) => setCurrentFiles(fileList));
       setActiveSubmission(match);
+      setIndex('0-0');
     } else {
       setActiveSubmission(undefined);
       setCurrentFiles(props.solutions);
     }
   };
 
-  const setResults = (results: BasicTestResultType[]) => {
-    setTestResults(results);
+  const parseFileModeResults = async (response: TestEditorResultType) => {
+    // In case new tests were created (if file mode, test parsing turned off),
+    //    fetch the newest tests before setting resylts
+    const [_categories, _casesByCategory]: any = await fetchTestData(props.currentAssignment);
+    setCategories(_categories);
+    setCasesByCategory(_casesByCategory);
+
+    if (props.env && props.env.dumpMode && activeSubmission) {
+      // Refresh submission files after dump, in case a _tests.txt file was created
+      setTestSubject(activeSubmission.id.toString());
+    }
+
+    //
+    const formatted = {
+      log: response.logs,
+      target: activeSubmission ? activeSubmission.students[0] : 'solution code',
+      result: RESULT_TYPE.NONE,
+      testCaseName: '',
+    };
+
+    const logs = response.results.map((el) => {
+      const testCase = _casesByCategory[el.testCategory].find((tc: TestCaseType) => tc.id === el.testCase)!;
+      const status = el.isError ? RESULT_TYPE.ERROR : el.passed ? RESULT_TYPE.PASSED : RESULT_TYPE.FAILED;
+
+      if (testCase) {
+        if (!activeSubmission) {
+          updateTestStatus(testCase.id, status);
+        }
+      }
+
+      return {
+        log: el.logs,
+        target: activeSubmission ? activeSubmission.students[0] : 'solution code',
+        result: status,
+        testCaseName: testCase ? testCase.description : '',
+      };
+    });
+
+    return [formatted, ...logs];
   };
 
   /******************************* Misc ****************************/
@@ -332,6 +392,47 @@ export const TestDefinitions = (props: IProps) => {
     });
   };
 
+  const buildStatusBadge = (status?: number) => {
+    let statusText;
+    let statusColor;
+    switch (status) {
+      case 0:
+        statusText = 'Solution code passed';
+        statusColor = 'lime';
+        break;
+      case 1:
+        statusText = 'Solution code failed';
+        statusColor = 'red';
+        break;
+      case 2:
+        statusText = 'Error occurred while testing solution code';
+        statusColor = 'blue';
+        break;
+      case 3:
+      default:
+        statusText = 'Not tested on solution code';
+        statusColor = 'gray';
+    }
+
+    return (
+      <CPTooltip title={statusText}>
+        <Badge color={statusColor} />
+      </CPTooltip>
+    );
+  };
+
+  // This is the info modal that pops up if a user clicks on a test in filemoda
+  const editTestInfo = () => {
+    Modal.info({
+      title: 'Edit Tests',
+      content: (
+        <div>
+          <p>To edit this test, click "Exit File Mode."</p>
+        </div>
+      ),
+    });
+  };
+
   /******************************* Return  ****************************/
 
   const externalOnly = !props.env || !props.env.language;
@@ -351,31 +452,35 @@ export const TestDefinitions = (props: IProps) => {
 
   switch (panel) {
     case DETAIL_TYPE.ViewSource:
-      const bashFile = [{ name: 'main.sh', code: main, canSave: false, id: 0, type: FILE_TYPE.MAIN }];
+      const bashFile: IBasicFile[] = [
+        { name: 'main.sh', code: main, canSave: false, id: 0, type: FILE_TYPE.MAIN, path: null },
+      ];
 
-      const helperFiles = props.helpers.map((file) => {
+      const helperFiles: IBasicFile[] = props.helpers.map((file) => {
         return {
           id: file.id,
           name: file.name,
           code: file.code,
           canSave: true,
           type: FILE_TYPE.HELPER,
+          path: file.path,
         };
       });
 
-      const submissionFiles = currentFiles.map((file) => {
+      const submissionFiles: IBasicFile[] = currentFiles.map((file) => {
         return {
           id: file.id,
           name: file.name,
           code: file.code,
           canSave: !activeSubmission,
           type: activeSubmission ? FILE_TYPE.SUBMISSION : FILE_TYPE.SOLUTION,
+          path: file.path,
         };
       });
 
       // filter out test templates for sourcefiles. We want to most up to date source files because
       // we're editing them and the eject mode templates can be stale
-      const templates = tests
+      const templates: IBasicFile[] = tests
         .filter((tc) => tc.errorIfMissing)
         .map((template) => {
           return {
@@ -384,93 +489,120 @@ export const TestDefinitions = (props: IProps) => {
             name: template.name,
             canSave: false,
             type: FILE_TYPE.CODEPOST_TEST_FILE,
+            path: null,
           };
         });
 
-      const sourceFiles = props.sourceFiles.map((sourceFile) => {
+      const sourceFiles: IBasicFile[] = props.sourceFiles.map((sourceFile) => {
         return {
           id: sourceFile.id,
           code: sourceFile.code,
           name: sourceFile.name,
           canSave: true,
           type: FILE_TYPE.SOURCEFILE,
+          path: null,
         };
       });
 
       const groups = [bashFile, helperFiles, submissionFiles, templates, sourceFiles];
 
-      const groupElems = groups.map((group: IBasicFile[], groupIndex) => {
-        return group.map((file, fileIndex) => {
-          return (
-            <Menu.Item key={`${groupIndex}-${fileIndex}`} style={{ height: 'fit-content', minHeight: 40 }}>
-              <FileTag type={file.type} small={true} />
-              &nbsp;
-              {file.name}
-            </Menu.Item>
-          );
-        });
-      });
-
       header = (
         <div style={headerStyle}>
           Source Files
           <div>
-            <AddFileModal addFile={props.addFile} icon={true} />
+            <AddFileModal addFile={props.addFile} />
             &nbsp; &nbsp;
-            <Icon type="download" onClick={download} />
+            <Tooltip title="Download">
+              <Icon type="download" onClick={download} />
+            </Tooltip>
           </div>
         </div>
       );
+
+      const buildFileMenu = (groupIndex: number, files: IBasicFile[]) => {
+        return files.map((f) => {
+          return (
+            <Menu.Item key={`${groupIndex}-${f.id}`} style={{ height: 'fit-content', minHeight: 40 }}>
+              <FileTag type={f.type} small={true} />
+              &nbsp;
+              {f.name}
+              {f.type === FILE_TYPE.SOURCEFILE && (
+                <EditObjectModal item={f} deleteItem={props.deleteFile.bind({}, FILE_TYPE.SOURCEFILE)} />
+              )}
+            </Menu.Item>
+          );
+        });
+      };
+
       menu = (
         <div>
           <Menu onClick={changeIndex} mode="inline" selectedKeys={[index]}>
-            {groupElems}
+            {groups.map((group: IBasicFile[], groupIndex) => {
+              const directoryStructure = createDirectoryStructure<IBasicFile>(group);
+              const buildFile = buildFileMenu.bind({}, groupIndex);
+              const folders = directoryStructure.folders.map((f: IFolder<IBasicFile>) => {
+                return buildFolderMenu('', f, buildFile);
+              });
+              return [buildFileMenu(groupIndex, directoryStructure.files), folders];
+            })}
           </Menu>
-          <div onClick={setIndex.bind({}, 'tests')}>
-            <div style={{ ...headerStyle, marginTop: 10 }}>TestResults</div>
-            <TestsMenu
-              assignment={props.currentAssignment}
-              tests={testResults}
-              cases={casesByCategory}
-              categories={categories}
-              isOpen={index === 'tests'}
-            />
+          <div>
+            <div style={{ ...headerStyle, marginTop: 10 }}>Tests</div>
+            <Menu
+              selectedKeys={[]}
+              defaultOpenKeys={categories.map((el) => el.id.toString())}
+              mode="inline"
+              style={{ height: '100%' }}
+              onClick={editTestInfo}
+            >
+              {TestCategory.sort(categories).map((category) => {
+                return (
+                  <Menu.SubMenu key={category.id} title={category.name}>
+                    {category.id in casesByCategory
+                      ? TestCase.sort(casesByCategory[category.id]).map((el) => {
+                          return (
+                            <Menu.Item key={el.id} style={{ height: 'fit-content', minHeight: 40 }}>
+                              {el.description} &nbsp; {buildStatusBadge(el.lastSolutionRun)}
+                            </Menu.Item>
+                          );
+                        })
+                      : null}
+                  </Menu.SubMenu>
+                );
+              })}
+            </Menu>
           </div>
         </div>
       );
 
-      if (index === 'tests') {
-        content = (
-          <div style={{ width: '100%' }}>
-            <TestsList tests={testResults} cases={casesByCategory} categories={categories} />
-          </div>
-        );
-      } else {
-        const currentGroupIndex = parseInt(index.split('-')[0], 10);
-        const currentFileIndex = parseInt(index.split('-')[1], 10);
+      const currentGroupIndex = parseInt(index.split('-')[0], 10);
+      const currentFileIndex = parseInt(index.split('-')[1], 10);
 
-        const currentGroup = groups[currentGroupIndex];
-        const currentFile = currentGroup[currentFileIndex];
-        content = (
-          <SourceEditor
-            categories={categories}
-            casesByCategory={casesByCategory}
-            sourceFiles={props.sourceFiles}
-            currentFile={currentFile}
-            setResults={setResults}
-            setTestSubject={setTestSubject}
-            submissions={props.submissions}
-            updateFile={props.updateFile}
-            addCategory={addCategory}
-            deleteCategory={deleteCategory}
-            addTest={addTest}
-            deleteTest={deleteTest}
-            activeSubmission={activeSubmission}
-            updateEnv={props.updateEnv}
-            env={props.env}
-          />
-        );
-      }
+      const currentGroup = groups[currentGroupIndex];
+      const currentFile = currentGroup.find((f) => {
+        return f.id === currentFileIndex;
+      });
+      content = (
+        <SourceEditor
+          categories={categories}
+          casesByCategory={casesByCategory}
+          sourceFiles={props.sourceFiles}
+          currentFile={currentFile}
+          parseResults={parseFileModeResults}
+          setTestSubject={setTestSubject}
+          submissions={props.submissions}
+          updateFile={props.updateFile}
+          addCategory={addCategory}
+          deleteCategory={deleteCategory}
+          addTest={addTest}
+          deleteTest={deleteTest}
+          activeSubmission={activeSubmission}
+          updateEnv={props.updateEnv}
+          env={props.env}
+          saveTest={saveTest}
+          updateTestStatus={updateTestStatus}
+        />
+      );
 
       break;
     case DETAIL_TYPE.EditTests:
@@ -500,12 +632,7 @@ export const TestDefinitions = (props: IProps) => {
                   title={
                     <span>
                       {category.name}{' '}
-                      <EditCategoryModal
-                        testCategory={category}
-                        updateCategory={updateCategory}
-                        deleteCategory={deleteCategory}
-                        externalOnly={externalOnly}
-                      />{' '}
+                      <EditObjectModal item={category} updateItem={updateCategoryName} deleteItem={deleteCategory} />
                     </span>
                   }
                 >
@@ -518,7 +645,7 @@ export const TestDefinitions = (props: IProps) => {
                             setActiveTest(el);
                           }}
                         >
-                          {el.description}
+                          {el.description} &nbsp; {buildStatusBadge(el.lastSolutionRun)}
                         </Menu.Item>
                       ))
                     : null}
@@ -544,6 +671,7 @@ export const TestDefinitions = (props: IProps) => {
                 submissions={props.submissions}
                 setTestSubject={setTestSubject}
                 activeSubmission={activeSubmission}
+                updateTestStatus={updateTestStatus}
               />
             )}
           </div>
@@ -554,33 +682,74 @@ export const TestDefinitions = (props: IProps) => {
   const hasTests = Object.values(casesByCategory).some((el) => el.length > 0);
 
   if (loading) {
-    return <Spin />;
-  } else if (categories.length === 0) {
+    return (
+      <div className="display-flex justify-content-center align-iterms-center">
+        <Spin style={{ marginTop: 15 }} />
+      </div>
+    );
+  } else if (categories.length === 0 && panel == DETAIL_TYPE.EditTests) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <Empty
-          style={{ marginTop: '20px', maxWidth: '400px' }}
-          description={<span>Create a test category to get started.</span>}
-        >
+        <span>
+          <b>Instructions</b>: If you have an existing script with modular unit tests, or want to start fresh, click
+          "Add Category". Otherwise, click "Enter File Mode". To learn more{' '}
+          <a
+            href="https://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
+            target="_blank"
+          >
+            click here
+          </a>
+          .
+        </span>
+        <Empty style={{ marginTop: '20px', maxWidth: '400px' }} description={<span> Get started.</span>}>
           <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} />
+          {externalOnly ? (
+            <span />
+          ) : (
+            <span>
+              {' '}
+              &nbsp; <Button onClick={() => setPanel(DETAIL_TYPE.ViewSource)}>Enter File Mode</Button>{' '}
+            </span>
+          )}
         </Empty>
       </div>
     );
   } else {
     return (
       <div>
-        <div style={{ fontSize: 11 }} id="Autograder">
+        <div style={{ marginBottom: 15, marginLeft: 10, marginRight: 10 }}>
+          {panel === DETAIL_TYPE.EditTests ? (
+            <span>
+              <b>Instructions</b>: This editor shows all the tests you've created. You can create tests in two ways: in{' '}
+              <b style={{ fontWeight: 600 }}>this editor </b>(For test cases that have modular blocks of code) or in{' '}
+              <b style={{ fontWeight: 600 }}>file mode </b>(if you want to run a script that includes multiple tests).
+              To get started, click the "Add Test" <Icon type="file-add" /> icon.
+            </span>
+          ) : (
+            <span>
+              <b>Instructions</b>: In file mode you can run your existing scripts to output logs, or use our custom
+              syntax to structure your test results. If you use our syntax, new tests will automatically be created when
+              you run the file, which you can edit attributes of (points, explanations) by exiting file mode. To learn
+              more,{' '}
+              <a href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode" target="_blank">
+                click here
+              </a>
+              . To get started, create a new test file by clicking the "Add file" <Icon type="plus-circle" /> icon.
+            </span>
+          )}
+        </div>
+        <div style={{ fontSize: 11 }}>
           <Layout>
             <Sider theme="light">
               {externalOnly ? null : (
                 <Button style={{ width: '100%' }} onClick={togglePanel}>
-                  {panel === DETAIL_TYPE.ViewSource ? 'Edit tests' : 'View source'}
+                  {panel === DETAIL_TYPE.ViewSource ? 'Exit File Mode' : 'Enter File Mode'}
                 </Button>
               )}
               {header}
               {menu}
             </Sider>
-            {hasTests ? (
+            {hasTests || panel === DETAIL_TYPE.ViewSource ? (
               content
             ) : (
               <Content style={{ margin: 15, display: 'flex', justifyContent: 'center' }}>

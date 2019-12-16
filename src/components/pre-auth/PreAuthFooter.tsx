@@ -70,10 +70,9 @@ const PreAuthFooter = () => {
           <a style={linkStyle} href="https://updates.codepost.io">
             Updates
           </a>{' '}
-          {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-          <a style={linkStyle} id="calendly-button-footer">
-            Demo
-          </a>{' '}
+          <Link style={linkStyle} to="/about">
+            About us
+          </Link>{' '}
           <Link style={linkStyle} to="/terms">
             Terms
           </Link>{' '}

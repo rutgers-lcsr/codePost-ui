@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 
 /* library imports */
-import { Breadcrumb, Button, Dropdown, Icon, Menu } from 'antd';
+import { Breadcrumb, Button, Checkbox, Dropdown, Icon, Menu, Modal, Radio, Tooltip } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -12,8 +12,9 @@ import { Link } from 'react-router-dom';
 import { SubmissionType } from '../../../../../infrastructure/submission';
 import { AssignmentType } from '../../../../../infrastructure/assignment';
 import { SubmissionTest } from '../../../../../infrastructure/submissionTest';
-import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
-import { Submission } from '../../../../../infrastructure/submission';
+import { TestCategoryType } from '../../../../../infrastructure/testCategory';
+import { TestCaseType } from '../../../../../infrastructure/testCase';
+
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 import { SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
 
@@ -21,8 +22,10 @@ import { awaitTestResult } from '../testResult';
 
 /* codePost component imports */
 import { TableDetail } from '../../../other/TableDetail';
-import { TestResultPopover } from './TestResultPopover';
 import RunAllModal from './RunAllModal';
+import ResultDetail from './ResultDetail';
+
+import { bySubmissionColumns, byTestColumns } from './testSummaryUtils';
 
 /* codePost util imports */
 import {
@@ -31,6 +34,9 @@ import {
   fetchTestsBySubmission,
   TestsBySubmission,
   TestCasesByCategory,
+  TestsByCase,
+  getTestsByCase,
+  RESULT_STATUS,
 } from '../../../../core/testFetchUtils';
 import { openSubmission } from '../../../other/AdminUtils';
 
@@ -40,17 +46,48 @@ interface IProps {
   currentAssignment: AssignmentType;
 }
 
+enum MODAL_STATUS {
+  None,
+  PendingRunAll,
+  RunAll,
+  ResultDetail,
+}
+
+enum SUMMARY_TYPE {
+  ByTest = 1,
+  BySubmission = 2,
+}
+
 export const TestingSummary = (props: IProps & RouteComponentProps) => {
   // ************************** State Variables ******************************
-  const [testCasesByCategory, setTestCasesByCategory] = useState<TestCasesByCategory>({});
+  // objects
+  const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
   const [categories, setCategories] = useState<TestCategoryType[]>([]);
+
+  // Calculated data structures
+  const [testCasesByCategory, setTestCasesByCategory] = useState<TestCasesByCategory>({});
   const [testsBySubmission, setTestsBySubmission] = useState<TestsBySubmission>({});
+  const [passedByCase, setPassedByCase] = useState<TestsByCase>({});
+  const [failedByCase, setFailedByCase] = useState<TestsByCase>({});
+  const [errorByCase, setErrorByCase] = useState<TestsByCase>({});
+
+  // Filters for result detail modal
+  const [filterCategory, setFilterCategory] = useState<TestCategoryType | undefined>(undefined);
+  const [filterCase, setFilterCase] = useState<TestCaseType | undefined>(undefined);
+  const [filterStatus, setFilterStatus] = useState<RESULT_STATUS | undefined>(undefined);
+  const [filterSubmission, setFilterSubmission] = useState<SubmissionType | undefined>(undefined);
+
+  // Loading
   const [subsLoading, setSubsLoading] = useState<number[]>([]);
   const [fetchLoading, setFetchLoading] = useState(false);
-  const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
-  const [progress, setProgress] = useState('{}');
 
-  const [runSummaryVisible, setRunSummaryVisible] = useState(false);
+  // Page state
+  const [modalStatus, setModalStatus] = useState<MODAL_STATUS>(MODAL_STATUS.None);
+  const [summaryType, setSummaryType] = useState<SUMMARY_TYPE>(SUMMARY_TYPE.BySubmission);
+
+  // Run all specific
+  const [progress, setProgress] = useState('{}');
+  const [sendEmail, setSendEmail] = useState(true);
 
   // ************************** Fetch Data ******************************
   useEffect(() => {
@@ -59,20 +96,20 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
       setCategories(categories);
       setTestCasesByCategory(casesByCategory);
-      setFetchLoading(false);
       const currEnv = await fetchEnvironment(props.currentAssignment);
       setEnv(currEnv);
+
+      const tests = await fetchTestsBySubmission(props.submissions);
+      setTestsBySubmission(tests);
+      const [passed, failed, error]: any = getTestsByCase(tests, casesByCategory);
+
+      setPassedByCase(passed);
+      setFailedByCase(failed);
+      setErrorByCase(error);
+      setFetchLoading(false);
     };
     fetchData();
   }, [props.currentAssignment]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const tests = await fetchTestsBySubmission(props.submissions);
-      setTestsBySubmission(tests);
-    };
-    fetchData();
-  }, [props.submissions]);
 
   // ******************************* API / State change functions  *******************************
   const runAllProgressCallback = (result: any) => {
@@ -89,7 +126,8 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     const newEnv = { ...env! };
     newEnv.isRunning = false;
     setEnv(newEnv);
-    setRunSummaryVisible(false);
+    setModalStatus(MODAL_STATUS.None);
+    setProgress('{}');
   };
 
   const callback = (sub: SubmissionType, result: SubmissionTestResultType) => {
@@ -103,20 +141,49 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   };
 
   const runTests = async (sub: SubmissionType) => {
-    setSubsLoading([...subsLoading, sub.id]);
-    const result = await Submission.run(sub.id);
-    awaitTestResult(result.task, callback.bind({}, sub));
+    if (env) {
+      setSubsLoading([...subsLoading, sub.id]);
+      const result = await Environment.run(env.id, { submission: sub.id.toString(), simulate: 'False' });
+      awaitTestResult(result.task, callback.bind({}, sub));
+    }
+  };
+
+  const getEstimate = (numSubmissions: number) => {
+    const showWith0 = (value: number) => (value < 10 ? `0${value}` : `${value}`);
+    const estimateInSeconds = numSubmissions * 4;
+
+    const hours = showWith0(Math.floor((estimateInSeconds / (60 * 60)) % 60));
+    const minutes = showWith0(Math.floor((estimateInSeconds / 60) % 60));
+    const seconds = showWith0(Math.floor(estimateInSeconds % 60));
+    return `${parseInt(hours) ? `${hours}hr` : ''}${minutes}m ${seconds}s`;
+  };
+
+  const triggerRunAll = () => {
+    setModalStatus(MODAL_STATUS.PendingRunAll);
   };
 
   const runAll = async () => {
     if (env) {
-      const result = await Environment.runAll(env.id);
+      const result = await Environment.runAll({ id: env.id, sendEmail: sendEmail });
       awaitTestResult(result.task, runAllCallback, runAllProgressCallback);
       const newEnv = { ...env };
       newEnv.isRunning = true;
-      setRunSummaryVisible(true);
+      setModalStatus(MODAL_STATUS.RunAll);
       setEnv(newEnv);
     }
+  };
+
+  const openDetail = (
+    category: TestCategoryType | undefined,
+    testCase: TestCaseType | undefined,
+    status: RESULT_STATUS | undefined,
+    submission: SubmissionType | undefined,
+  ) => {
+    setFilterCategory(category);
+    setFilterCase(testCase);
+    setFilterStatus(status);
+    setFilterSubmission(submission);
+    setModalStatus(MODAL_STATUS.ResultDetail);
   };
 
   // ******************************* Return  *******************************
@@ -125,89 +192,202 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     return acc + cat.testCases.length;
   }, 0);
 
-  const columns = [
-    {
-      title: 'Student(s)',
-      dataIndex: 'students',
-      key: 'students',
-      sorter: (a: any, b: any) => a.students.localeCompare(b.students),
-    },
-    ...TestCategory.sort(categories).map((category) => {
-      return {
-        title: category.name,
-        dataIndex: category.id.toString(),
-        key: category.id.toString(),
-        align: 'center' as 'center',
-      };
-    }),
-    {
-      title: 'Summary',
-      dataIndex: 'summary',
-      key: 'summary',
-      align: 'center' as 'center',
-    },
-    {
-      title: 'Actions',
-      dataIndex: 'actions',
-      key: 'actions',
-      align: 'center' as 'center',
-    },
-  ];
+  let columns: any = [];
+  let data: any = [];
 
-  const data = props.submissions.map((submission: SubmissionType) => {
-    const actionsMenu = (
-      <Menu>
-        <Menu.Item key="run-tests" onClick={runTests.bind({}, submission)}>
-          <Icon type="caret-right" />
-          Run tests
-        </Menu.Item>
-        <Menu.Item key="submission" onClick={openSubmission.bind({}, submission.id)}>
-          <Icon type="code" />
-          Open submission
-        </Menu.Item>
-      </Menu>
-    );
+  if (!fetchLoading) {
+    switch (summaryType) {
+      case SUMMARY_TYPE.BySubmission:
+        columns = bySubmissionColumns(categories);
+        data = props.submissions.map((submission: SubmissionType) => {
+          const actionsMenu = (
+            <Menu>
+              <Menu.Item key="run-tests" onClick={runTests.bind({}, submission)}>
+                <Icon type="caret-right" />
+                Run tests
+              </Menu.Item>
+              <Menu.Item key="submission" onClick={openSubmission.bind({}, submission.id)}>
+                <Icon type="code" />
+                Open submission
+              </Menu.Item>
+            </Menu>
+          );
 
-    const toRet: any = {
-      students: submission.students.join(','),
-      key: submission.id,
-      actions: subsLoading.includes(submission.id) ? (
-        <Icon type="loading" />
-      ) : (
-        <Dropdown overlay={actionsMenu} trigger={['click']}>
-          <Icon type="menu" />
-        </Dropdown>
-      ),
-    };
+          const toRet: any = {
+            students: submission.students.join(','),
+            key: `submission-${submission.id}`,
+            actions: subsLoading.includes(submission.id) ? (
+              <Icon type="loading" />
+            ) : (
+              <Dropdown overlay={actionsMenu} trigger={['click']}>
+                <Icon type="menu" />
+              </Dropdown>
+            ),
+          };
 
-    const tests = SubmissionTest.getLatest(testsBySubmission[submission.id] || []);
-    let passed = 0;
+          const tests = SubmissionTest.getLatest(testsBySubmission[submission.id] || []);
+          let passed = 0;
 
-    // Group the SubmissionTests by category
-    const testByCategory: any = {};
-    tests.forEach((test) => {
-      (testByCategory[test.testCategory] && testByCategory[test.testCategory].push(test)) ||
-        (testByCategory[test.testCategory] = [test]);
-      if (test.passed) {
-        passed += 1;
-      }
-    });
+          // Group the SubmissionTests by category
+          const testByCategory: any = {};
+          tests.forEach((test) => {
+            (testByCategory[test.testCategory] && testByCategory[test.testCategory].push(test)) ||
+              (testByCategory[test.testCategory] = [test]);
+            if (test.passed) {
+              passed += 1;
+            }
+          });
 
-    for (const category of categories) {
-      toRet[category.id] = (
-        <TestResultPopover
-          submissionTests={testByCategory[category.id] || []}
-          testCases={testCasesByCategory[category.id] || []}
-        />
-      );
+          for (const category of categories) {
+            const tests = testByCategory[category.id] || [];
+            let categoryPassed = 0;
+            let categoryTotal = tests.length;
+            for (const t of tests) {
+              categoryPassed += t.passed ? 1 : 0;
+            }
+            toRet[category.id] = (
+              <div
+                className="text-link"
+                onClick={openDetail.bind({}, category, undefined, undefined, submission)}
+              >{`${categoryPassed} / ${categoryTotal}`}</div>
+            );
+          }
+
+          const summaryString = totalTests === 0 ? '-- / --' : `${passed} / ${totalTests}`;
+
+          toRet['summary'] = (
+            <div className="text-link" onClick={openDetail.bind({}, undefined, undefined, undefined, submission)}>
+              {summaryString}
+            </div>
+          );
+          return toRet;
+        });
+        break;
+      case SUMMARY_TYPE.ByTest:
+        columns = byTestColumns;
+        data = categories.map((category) => {
+          let passed = 0;
+          let failed = 0;
+          let notRun = 0;
+          let error = 0;
+
+          const numTests = testCasesByCategory[category.id] ? testCasesByCategory[category.id].length : 0;
+
+          const children = !testCasesByCategory[category.id]
+            ? []
+            : testCasesByCategory[category.id].map((testCase) => {
+                const thisNotRun =
+                  props.submissions.length -
+                  passedByCase[testCase.id].length -
+                  failedByCase[testCase.id].length -
+                  errorByCase[testCase.id].length;
+                passed += passedByCase[testCase.id].length;
+                failed += failedByCase[testCase.id].length;
+                error += errorByCase[testCase.id].length;
+                notRun += thisNotRun;
+                return {
+                  description: (
+                    <span className="text-link" onClick={openDetail.bind({}, category, testCase, undefined, undefined)}>
+                      {testCase.description}
+                    </span>
+                  ),
+                  passed: (
+                    <div
+                      className="text-link"
+                      onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Passed, undefined)}
+                    >
+                      {passedByCase[testCase.id].length}
+                    </div>
+                  ),
+                  failed: (
+                    <div
+                      className="text-link"
+                      onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Failed, undefined)}
+                    >
+                      {failedByCase[testCase.id].length}
+                    </div>
+                  ),
+                  error: (
+                    <div
+                      className="text-link"
+                      onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Error, undefined)}
+                    >
+                      {errorByCase[testCase.id].length}
+                    </div>
+                  ),
+                  notRun: thisNotRun,
+                  key: `testCase-${testCase.id}`,
+                };
+              });
+
+          return {
+            description: (
+              <span className="text-link" onClick={openDetail.bind({}, category, undefined, undefined, undefined)}>
+                {category.name}
+              </span>
+            ),
+            children: children,
+            passed: (
+              <div
+                className="text-link"
+                onClick={openDetail.bind({}, category, undefined, RESULT_STATUS.Passed, undefined)}
+              >
+                {`${Math.floor((passed / Math.max(1, props.submissions.length * numTests)) * 100)}%`}
+              </div>
+            ),
+            failed: (
+              <div
+                className="text-link"
+                onClick={openDetail.bind({}, category, undefined, RESULT_STATUS.Failed, undefined)}
+              >
+                {`${Math.floor((failed / Math.max(1, props.submissions.length * numTests)) * 100)}%`}
+              </div>
+            ),
+            notRun: `${Math.floor((notRun / Math.max(1, props.submissions.length * numTests)) * 100)}%`,
+            error: (
+              <div
+                className="text-link"
+                onClick={openDetail.bind({}, category, undefined, RESULT_STATUS.Error, undefined)}
+              >
+                {`${Math.floor((error / Math.max(1, props.submissions.length * numTests)) * 100)}%`}
+              </div>
+            ),
+            key: `category-${category.id}`,
+          };
+        });
+        break;
     }
+  }
 
-    toRet['summary'] = totalTests === 0 ? '-- / --' : <div>{`${passed} / ${totalTests}`}</div>;
-    return toRet;
-  });
+  const onSummaryTypeChange = (e: any) => {
+    // @ts-ignore
+    const newType: SUMMARY_TYPE = SUMMARY_TYPE[e.target.value];
+    setSummaryType(newType);
+  };
 
+  const onCloseRunAll = () => {
+    setModalStatus(MODAL_STATUS.None);
+    setProgress('{}');
+  };
   actions = [
-    <Button type="default" disabled={totalTests === 0} onClick={runAll} loading={env && env.isRunning}>
+    <Radio.Group value={SUMMARY_TYPE[summaryType]} onChange={onSummaryTypeChange} buttonStyle="solid">
+      <Tooltip title="Summary by submission">
+        <Radio.Button key={SUMMARY_TYPE[SUMMARY_TYPE.BySubmission]} value={SUMMARY_TYPE[SUMMARY_TYPE.BySubmission]}>
+          <Icon type="solution" />
+        </Radio.Button>
+      </Tooltip>
+      <Tooltip title="Summary by test">
+        <Radio.Button key={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]} value={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]}>
+          <Icon type="cluster" />
+        </Radio.Button>
+      </Tooltip>
+    </Radio.Group>,
+    <Button
+      type="default"
+      disabled={totalTests === 0 || props.submissions.length === 0}
+      onClick={triggerRunAll}
+      loading={env && env.isRunning}
+    >
       Run all Tests
     </Button>,
     <Button type="primary">
@@ -217,33 +397,64 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     </Button>,
   ];
 
-  const detail = (
+  const detail = [
+    <ResultDetail
+      visible={modalStatus === MODAL_STATUS.ResultDetail}
+      onCancel={setModalStatus.bind({}, MODAL_STATUS.None)}
+      testsBySubmission={testsBySubmission}
+      submissions={props.submissions}
+      casesByCategory={testCasesByCategory}
+      categories={categories}
+      filterCategory={filterCategory}
+      filterCase={filterCase}
+      filterStatus={filterStatus}
+      filterSubmission={filterSubmission}
+    />,
     <RunAllModal
-      visible={runSummaryVisible}
-      onCancel={setRunSummaryVisible.bind({}, false)}
+      visible={modalStatus === MODAL_STATUS.RunAll}
+      onCancel={onCloseRunAll}
       cases={Object.values(testCasesByCategory).flat()}
       raw={progress}
       numSubmissions={props.submissions.length}
-    />
-  );
-
+    />,
+    <Modal
+      visible={modalStatus === MODAL_STATUS.PendingRunAll}
+      onCancel={setModalStatus.bind({}, MODAL_STATUS.None)}
+      onOk={runAll}
+      okText="Run"
+      title="Confirm Run All Tests"
+    >
+      <div style={{ fontSize: 16 }}>
+        <div>
+          Estimated time to complete: <b>{getEstimate(props.submissions.length)}</b>
+        </div>
+        <br />
+        <div>
+          <Checkbox checked={sendEmail} onChange={(e) => setSendEmail(e.target.checked)} /> Send me an email when
+          completed
+        </div>
+      </div>
+    </Modal>,
+  ];
   return (
-    <TableDetail
-      loadComplete={!fetchLoading}
-      isEmpty={Object.keys(testCasesByCategory).length === 0}
-      title={`${props.currentAssignment.name} | Tests Summary`}
-      breadcrumbs={
-        <Breadcrumb>
-          {props.breadcrumbs}
-          <Breadcrumb.Item key="assignment">{props.currentAssignment.name}</Breadcrumb.Item>
-          <Breadcrumb.Item>Results</Breadcrumb.Item>
-        </Breadcrumb>
-      }
-      emptyNode={'Create some tests and you will be able to run them here'}
-      actions={actions}
-      columns={columns}
-      data={data}
-      detail={detail}
-    />
+    <div>
+      <TableDetail
+        loadComplete={!fetchLoading}
+        isEmpty={Object.keys(testCasesByCategory).length === 0}
+        title={`${props.currentAssignment.name} | Tests Summary`}
+        breadcrumbs={
+          <Breadcrumb>
+            {props.breadcrumbs}
+            <Breadcrumb.Item key="assignment">{props.currentAssignment.name}</Breadcrumb.Item>
+            <Breadcrumb.Item>Results</Breadcrumb.Item>
+          </Breadcrumb>
+        }
+        emptyNode={'Create some tests and you will be able to run them here'}
+        actions={actions}
+        columns={columns}
+        data={data}
+        detail={detail}
+      />
+    </div>
   );
 };

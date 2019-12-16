@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 /* library imports */
-import { Button, Input, Modal, Icon } from 'antd';
+import { Button, Input, Modal, Icon, Tooltip } from 'antd';
 
 import { TestCategoryType } from '../../../../../../infrastructure/types';
 
@@ -33,11 +33,28 @@ export const AddCategoryModal = (props: IUploadProps) => {
     setName(e.target.value);
   };
 
+  React.useEffect(() => {
+    const handleKeydown = (e: any) => {
+      if (visible && e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        onSave();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+    return () => {
+      document.removeEventListener('keydown', handleKeydown);
+    };
+  });
+
   /******************************* Return *****************************************/
   return (
     <span>
       {props.icon ? (
-        <Icon type="folder-add" onClick={toggleVisible} />
+        <Tooltip title="Add Category">
+          <Icon type="folder-add" onClick={toggleVisible} />
+        </Tooltip>
       ) : (
         <Button onClick={toggleVisible}>Add Test Category</Button>
       )}

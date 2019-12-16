@@ -24,6 +24,8 @@ const EnvironmentV = t.intersection(
       isRunning: t.boolean,
       sourceFiles: t.array(t.number),
       dumpMode: t.boolean,
+      testParsing: t.boolean,
+      dockerfile: t.string,
     }),
     t.partial({}),
   ],
@@ -39,6 +41,7 @@ const EnvironmentVPost = t.intersection(
       dependencies: t.string,
       compileText: t.string,
       dumpMode: t.boolean,
+      testParsing: t.boolean,
     }),
     t.partial({}),
   ],
@@ -53,6 +56,7 @@ const EnvironmentVPatch = t.intersection(
       dependencies: t.string,
       compileText: t.string,
       dumpMode: t.boolean,
+      testParsing: t.boolean,
     }),
   ],
   'EnvironmentPatch',
@@ -63,7 +67,13 @@ const BuildData = t.intersection([
   t.type({
     dependencies: t.array(t.string),
     language: t.string,
-    simulate: t.boolean,
+  }),
+]);
+
+const RunAllData = t.intersection([
+  GenericObject,
+  t.type({
+    sendEmail: t.boolean,
   }),
 ]);
 
@@ -84,8 +94,6 @@ const TestsSource = t.intersection([
   }),
 ]);
 
-const SimulateResponse = t.intersection([GenericObject, t.type({ result: t.boolean, logs: t.array(t.string) })]);
-
 export type TestTemplateType = t.TypeOf<typeof TestTemplate>;
 export type TestsSourceType = t.TypeOf<typeof TestsSource>;
 
@@ -97,8 +105,8 @@ export class Environment {
   public static delete = deleteObject(EnvironmentV, 'autograder/environments');
   public static update = updateObject(EnvironmentV, EnvironmentVPatch, 'autograder/environments');
 
-  public static simulateBuild = updateObjectDetail(SimulateResponse, BuildData, 'autograder/environments', 'build');
-  public static updateBuild = updateObjectDetail(EnvironmentV, BuildData, 'autograder/environments', 'build');
+  public static build = updateObjectDetail(EnvironmentV, BuildData, 'autograder/environments', 'build');
   public static eject = readObjectDetail(TestsSource, 'autograder/environments', 'eject');
-  public static runAll = readObjectDetail(TaskV, 'autograder/environments', 'runAll');
+  public static runAll = updateObjectDetail(TaskV, RunAllData, 'autograder/environments', 'runAll');
+  public static run = readObjectDetail(TaskV, 'autograder/environments', 'run');
 }

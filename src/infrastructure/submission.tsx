@@ -17,8 +17,6 @@ import { File, FileType } from './file';
 import { RubricComment } from './rubricComment';
 import { SubmissionHistoryV, SubmissionHistoryVPatch } from './submissionHistory';
 
-import { TaskV } from './autograder/runTypes';
-
 import { slack } from '../components/core/slack';
 
 import { message } from 'antd';
@@ -156,7 +154,6 @@ export class Submission {
   public static readAnonymous = readObject(AnonymousSubmissionV, 'submissions');
   public static readReadOnly = readObject(StudentSubmissionV, 'submissions');
   public static readHistory = readObjectDetail(t.array(SubmissionHistoryV), 'submissions', 'history');
-  public static run = readObjectDetail(TaskV, 'submissions', 'run');
 
   public static updateHistory = updateObjectDetail(
     SubmissionHistoryV,

@@ -3,7 +3,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 /* library imports  */
 import { Layout, Menu } from 'antd';
@@ -17,13 +17,21 @@ import { HelperFileType } from '../../../../../../infrastructure/autograder/help
 import { CodeWindow } from '../utils/CodeWindow';
 import { TestFileUploader } from './TestFileUploader';
 
+import {
+  IFolder,
+  IDirectoryStructure,
+  buildFolderMenu,
+  createDirectoryStructure,
+  sortFiles,
+} from '../../../../../code-review/menu/fileMenuUtils';
+
 /**********************************************************************************************************************/
 
 const { Sider, Content } = Layout;
 
 interface IProps {
   files: SolutionFileType[] | HelperFileType[];
-  addFile: (name: string, code: string) => Promise<void>;
+  addFile: (name: string, code: string, path?: string) => Promise<void>;
   deleteFile: (id: number) => Promise<void>;
   updateFile: (id: number, newCode: string) => Promise<void>;
   height?: number;
@@ -33,51 +41,84 @@ interface IProps {
 export const TestFileList = (props: IProps) => {
   /******************************* State Variables ****************************/
   const [currentIndex, setIndex] = useState('0');
+  const [sortedFiles, setSortedFiles] = useState<SolutionFileType[] | HelperFileType[]>([]);
+  const [directory, setDirectory] = useState<IDirectoryStructure<SolutionFileType | HelperFileType>>();
+
+  useEffect(() => {
+    const directoryStructure = createDirectoryStructure<SolutionFileType | HelperFileType>(props.files);
+    setDirectory(directoryStructure);
+    const sortedFiles = sortFiles(directoryStructure);
+    setSortedFiles(sortedFiles);
+    setIndex('0');
+  }, [props.files]);
 
   /******************************** API Functions ****************************/
   const onSave = (newCode: string) => {
-    return props.updateFile(props.files[parseInt(currentIndex, 10)].id, newCode);
+    return props.updateFile(sortedFiles[parseInt(currentIndex, 10)].id, newCode);
   };
 
   /************************** State Change Functions ****************************/
   const changeIndex = (e: ClickParam) => {
     setIndex(e.key);
   };
-  const menuItems = props.files.map((file, index) => {
-    return (
-      <Menu.Item key={index.toString()} style={{ height: 'fit-content', minHeight: 40 }}>
-        <div>{file.name}</div>
-      </Menu.Item>
+
+  const buildFileMenu = (files: SolutionFileType[] | HelperFileType[]) => {
+    return files.map((file) => {
+      const sortedIndex = sortedFiles.findIndex((f) => {
+        return f.id === file.id;
+      });
+      return (
+        <Menu.Item key={sortedIndex.toString()} style={{ height: 'fit-content', minHeight: 40 }}>
+          {file.name}
+        </Menu.Item>
+      );
+    });
+  };
+
+  let menu;
+  if (directory) {
+    const folders = directory.folders.map((f: IFolder<SolutionFileType | HelperFileType>) => {
+      return buildFolderMenu('', f, buildFileMenu);
+    });
+
+    menu = (
+      <Menu onClick={changeIndex} mode="inline" selectedKeys={[currentIndex]}>
+        {buildFileMenu(directory.files)}
+        {folders}
+      </Menu>
     );
-  });
+  }
   /***************************** Return ****************************************/
-  if (props.files.length === 0) {
+  if (sortedFiles.length === 0) {
     return (
-      <TestFileUploader title={props.title} files={props.files} addFile={props.addFile} deleteFile={props.deleteFile} />
+      <TestFileUploader
+        title={props.title}
+        directory={directory}
+        addFile={props.addFile}
+        deleteFile={props.deleteFile}
+      />
     );
   } else {
     return (
       <div>
         <Layout style={{ height: props.height ? props.height : 650 }}>
-          <Sider theme="light">
-            <Menu selectedKeys={[currentIndex]} openKeys={['helpers']} mode="inline" onClick={changeIndex}>
-              {menuItems}
-            </Menu>
+          <Sider theme="light" style={{ maxHeight: 650, overflow: 'auto' }}>
+            {menu}
             <TestFileUploader
-              files={props.files}
+              directory={directory}
               addFile={props.addFile}
               deleteFile={props.deleteFile}
               title={props.title}
             />
           </Sider>
-          <Content style={{ maxHeight: '70vh', overflow: 'auto', fontSize: 12 }}>
-            {props.files.length === 0 ? (
+          <Content style={{ maxHeight: '70vh', overflow: 'visible', fontSize: 12 }}>
+            {sortedFiles.length === 0 ? (
               <div />
             ) : (
               <div style={{ position: 'relative', marginLeft: 5 }}>
                 <CodeWindow
-                  code={props.files[parseInt(currentIndex, 10)].code}
-                  name={props.files[parseInt(currentIndex, 10)].name}
+                  code={sortedFiles[parseInt(currentIndex, 10)].code}
+                  name={sortedFiles[parseInt(currentIndex, 10)].name}
                   onSave={onSave}
                 />
               </div>
