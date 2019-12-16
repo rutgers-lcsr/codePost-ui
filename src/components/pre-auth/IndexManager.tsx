@@ -51,7 +51,7 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
       <div>
         <BrowserRouter>
           <Switch>
-            <Route exact={true} path={'/'} render={(props: any) => <AsyncLanding />} />
+            <Route exact={true} path={'/'} render={(props: any) => <AsyncLanding {...props} />} />
 
             <Route
               exact={true}

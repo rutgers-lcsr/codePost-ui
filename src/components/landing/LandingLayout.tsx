@@ -5,9 +5,12 @@ import useWindowSize from '../core/useWindowSize';
 
 import landingVars from '../../styles/pages/_landingVars';
 
-import WistiaVideo from './WistiaVideo';
+import Video from './Video';
+
+import { EmailSubscribe } from './EmailSubscribe';
 
 interface IProps {
+  location: any;
   topBar: React.ReactNode;
   hero: React.ReactNode;
   testimonial: React.ReactNode;
@@ -159,8 +162,8 @@ const LandingLayout = (props: IProps) => {
       </div>
       <Divider style={{ margin: 0 }} />
       <div style={{ ...sectionStyle }} className={sectionClass}>
-        <div style={{ ...panelStyle }}>
-          <WistiaVideo />
+        <div style={{ ...panelStyle, maxWidth: '1920px', textAlign: 'center' }}>
+          <Video location={props.location} />
         </div>
       </div>
 
@@ -176,8 +179,18 @@ const LandingLayout = (props: IProps) => {
             }}
           >
             {props.getStarted}
+            <div
+              style={{
+                width: '100%',
+                marginTop: 20,
+                padding: '0 25px',
+              }}
+            >
+              <EmailSubscribe />
+            </div>
           </div>
         </div>
+
         <div style={{ ...sectionStyle, background: landingVars.backgrounds.footer }} className={sectionClass}>
           <div style={{ maxWidth: landingVars.maxWidths.footer, width: '100%' }}>{props.footer}</div>
         </div>

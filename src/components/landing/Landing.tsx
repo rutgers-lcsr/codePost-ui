@@ -185,6 +185,8 @@ class Landing extends React.PureComponent<{}, {}> {
 
     return (
       <LandingLayout
+        // @ts-ignore
+        location={this.props.location}
         topBar={<LandingHeader />}
         hero={<LandingHero />}
         testimonial={
