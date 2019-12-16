@@ -25,11 +25,37 @@ class EmailSubscribeForm extends React.Component<any, IEmailSubscribeFormState> 
     };
   }
 
+  public subscribe = (email: string) => {
+    const payload = {
+      email,
+    };
+
+    fetch(`${process.env.REACT_APP_API_URL}/subscribe/`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+      .then((res) => {
+        if (res.status === 200) {
+          return res.json();
+        } else {
+          return Promise.reject(res.status);
+        }
+      })
+      .catch((err) => {
+        console.log('.');
+      });
+  };
+
   public handleSubmit = (e: any) => {
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err: any, values: any) => {
       if (!err) {
         this.setState({ loading: true });
+        console.log('values', values);
+        this.subscribe(values.email);
         setTimeout(() => {
           this.setState({ subscribed: true, loading: false });
         }, 1000);
