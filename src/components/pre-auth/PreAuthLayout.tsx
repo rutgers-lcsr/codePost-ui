@@ -34,8 +34,8 @@ class PreAuthLayout extends React.Component<IProps, {}> {
     head!.appendChild(script);
     head!.appendChild(link);
 
-    const calendlyDiv = document.getElementById('calendly-button-footer');
-    calendlyDiv!.setAttribute('onclick', "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;");
+    // const calendlyDiv = document.getElementById('calendly-button-footer');
+    // calendlyDiv!.setAttribute('onclick', "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;");
   }
 
   public render() {
