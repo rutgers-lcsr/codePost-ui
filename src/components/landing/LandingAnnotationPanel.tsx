@@ -44,7 +44,7 @@ const LandingAnnotationPanel = () => {
               style={{ color: index == 1 ? '#24be85' : '', fontWeight: index == 1 ? 600 : 500 }}
               onClick={setIndex.bind({}, 1)}
             >
-              iPython notebooks
+              Jupyter notebooks
             </span>{' '}
             and{' '}
             <span

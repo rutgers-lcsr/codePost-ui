@@ -70,8 +70,12 @@ const LandingHero = () => {
           </CPButton>
         </Link>
         &nbsp; &nbsp;
-        <CPButton style={{ width: 160, height: 50, fontSize: 17, display: 'inline' }} cpType="secondary">
-          Take our quiz
+        <CPButton
+          style={{ width: 160, height: 50, fontSize: 17, display: 'inline' }}
+          cpType="secondary"
+          id="calendly-button-hero"
+        >
+          Schedule demo
         </CPButton>
       </div>
       <Modal
