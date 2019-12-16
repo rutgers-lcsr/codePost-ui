@@ -179,22 +179,18 @@ const LandingLayout = (props: IProps) => {
             }}
           >
             {props.getStarted}
+            <div
+              style={{
+                width: '100%',
+                marginTop: 20,
+                padding: '0 25px',
+              }}
+            >
+              <EmailSubscribe />
+            </div>
           </div>
         </div>
-        <Divider style={{ margin: 0 }} />
-        <div style={{ ...sectionStyle, background: landingVars.backgrounds.getStarted }} className={sectionClass}>
-          <div
-            style={{
-              maxWidth,
-              width: '60%',
-              paddingTop: landingVars.Vpadding.getStartedNormal,
-              paddingBottom: landingVars.Vpadding.getStartedNormal,
-              margin: '0px 40px',
-            }}
-          >
-            <EmailSubscribe />
-          </div>
-        </div>
+
         <div style={{ ...sectionStyle, background: landingVars.backgrounds.footer }} className={sectionClass}>
           <div style={{ maxWidth: landingVars.maxWidths.footer, width: '100%' }}>{props.footer}</div>
         </div>

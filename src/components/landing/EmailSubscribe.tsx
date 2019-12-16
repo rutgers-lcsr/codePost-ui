@@ -54,7 +54,6 @@ class EmailSubscribeForm extends React.Component<any, IEmailSubscribeFormState> 
     this.props.form.validateFieldsAndScroll((err: any, values: any) => {
       if (!err) {
         this.setState({ loading: true });
-        console.log('values', values);
         this.subscribe(values.email);
         setTimeout(() => {
           this.setState({ subscribed: true, loading: false });
@@ -82,7 +81,7 @@ class EmailSubscribeForm extends React.Component<any, IEmailSubscribeFormState> 
                 message: 'Please input your email',
               },
             ],
-          })(<Input placeholder="email" />)}
+          })(<Input style={{ width: '285px' }} placeholder="email" />)}
         </Form.Item>
       </div>
     );
@@ -94,8 +93,8 @@ class EmailSubscribeForm extends React.Component<any, IEmailSubscribeFormState> 
     ) : (
       <div style={{ paddingLeft: '14px' }}>
         <Form.Item>
-          <Button type="primary" htmlType="submit" loading={this.state.loading}>
-            Subscribe!
+          <Button htmlType="submit" loading={this.state.loading}>
+            Subscribe
           </Button>
         </Form.Item>
       </div>
@@ -103,10 +102,15 @@ class EmailSubscribeForm extends React.Component<any, IEmailSubscribeFormState> 
 
     return (
       <Form onSubmit={this.handleSubmit}>
-        <div style={{ fontWeight: 500 }}>Enter your email to receive codePost product updates:</div>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          {input}
-          {submit}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <div>
+            <div style={{ fontWeight: 600, fontSize: '30px', color: '#707070' }}>Want to stay in touch?</div>
+            <div style={{ fontSize: '24px', color: '#A3A3A3' }}>Subscribe for new feature announcements.</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {input}
+            {submit}
+          </div>
         </div>
       </Form>
     );
