@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { Slider, Typography } from 'antd';
 
 const noCode = require('./IO.png');
-const unit = require('./Unit.png');
-const fileMode = require('./FileMode.png');
+const unit = require('./Unit.jpg');
+const fileMode = require('./FileMode.jpg');
 
 const AutograderModule = () => {
   const [index, setIndex] = useState(0);

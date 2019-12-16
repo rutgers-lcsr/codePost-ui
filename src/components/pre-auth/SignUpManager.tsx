@@ -20,8 +20,8 @@ import useWindowSize from '../core/useWindowSize';
 
 const buttonStyle = { fontSize: 18 };
 
-const studentImg = require('../../img/landing/compressed/student_cartoon.png');
-const teacherImg = require('../../img/landing/compressed/teacher_cartoon.png');
+const studentImg = require('../../img/landing/compressed/student_cartoon.jpg');
+const teacherImg = require('../../img/landing/compressed/teacher_cartoon.jpg');
 
 const SignUpManager = () => {
   const windowSize = useWindowSize();
