@@ -11,10 +11,6 @@ import { BrowserRouter } from 'react-router-dom';
 import { DndProvider } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 
-import 'typeface-lato';
-import 'typeface-muli';
-import 'typeface-pt-mono';
-
 import * as serviceWorker from './serviceWorker';
 
 // eslint-disable-next-line

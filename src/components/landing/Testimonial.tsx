@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import useWindowSize from '../core/useWindowSize';
 
-import { Button } from 'antd';
+import { Button, Divider } from 'antd';
 
 import landingVars from '../../styles/pages/_landingVars';
 
@@ -23,6 +23,7 @@ const niemaImg = require('./../../img/landing/compressed/niema_moshiri.jpg');
 const kateImg = require('./../../img/landing/compressed/kate_holdener.jpg');
 const nohaImg = require('./../../img/landing/compressed/noha_hazzazi.jpg');
 const abbasImg = require('./../../img/landing/compressed/abbas_attarwala.jpg');
+const kateKImg = require('./../../img/landing/compressed/kate_kharitonova.jpg');
 
 /*************************************************************************************/
 /* TEXT
@@ -123,6 +124,20 @@ const abbasText = (
   </span>
 );
 
+const kateKText = (
+  <span style={{ fontStyle: 'italic' }}>
+    The ability to see a properly-rendered Jupyter notebook in codePost has been{' '}
+    <Typography.Text mark className="codePost-highlight">
+      invaluable in our Data Science courses
+    </Typography.Text>
+    . codePost's team has also been{' '}
+    <Typography.Text mark className="codePost-highlight">
+      very responsive to our feedback
+    </Typography.Text>{' '}
+    and feature requests.
+  </span>
+);
+
 /*************************************************************************************/
 
 // Source: https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
@@ -186,9 +201,10 @@ const testimonials = [
     school="Grand Valley State University"
   />,
   <Testimonial text={<div>{kateText}</div>} name="Kate Holdener" thumbnail={kateImg} school="Saint Louis University" />,
-  <Testimonial text={<div>{niemaText}</div>} name="Niema Moshiri" thumbnail={niemaImg} school="UCSD" />,
+  <Testimonial text={<div>{niemaText}</div>} name="Niema Moshiri" thumbnail={niemaImg} school="UC San Diego" />,
   <Testimonial text={<div>{nohaText}</div>} name="Noha Hazzazi" thumbnail={nohaImg} school="Howard University" />,
   <Testimonial text={<div>{abbasText}</div>} name="Abbas Attarwala" thumbnail={abbasImg} school="Boston University" />,
+  <Testimonial text={<div>{kateKText}</div>} name="Kate Kharitonova" thumbnail={kateKImg} school="UC Santa Barbara" />,
 ];
 
 /*************************************************************************************/
@@ -201,9 +217,33 @@ const Testimonials = () => {
   const slidesPerPage = windowSize.width < landingVars.breakpoints.testimonial ? 1 : 3;
 
   return (
-    <Carousel slidesPerPage={slidesPerPage} arrows infinite>
-      {permutation}
-    </Carousel>
+    <div>
+      <div className={'display-flex justify-content-center flex-direction-column align-items-center'}>
+        <Typography.Title level={3}>codePost isn’t just another grading tool</Typography.Title>
+        <span style={{ maxWidth: '700px', lineHeight: '24px', fontSize: '16px' }}>
+          <p style={{ breakInside: 'avoid' }}>
+            We rebuilt the feedback-giving process from the ground up to make you brilliant at what you do: teaching the
+            next generation of programmers.
+          </p>
+          <p style={{ breakInside: 'avoid' }}>
+            codePost is fast and easy-to-use.{' '}
+            <span style={{ fontWeight: 600, color: '#24be85' }}>Actually easy to use.</span> And it includes advanced
+            features that will supercharge your teaching and save you time.
+          </p>
+          <p style={{ breakInside: 'avoid' }}>
+            Leave comments on code with your keyboard. Write tests that compare student code against solution code in
+            seconds. Triage regrade requests. To name but a few.
+          </p>
+        </span>
+        <br />
+      </div>
+      <br />
+      <br />
+      <Carousel slidesPerPage={slidesPerPage} arrows infinite>
+        {permutation}
+      </Carousel>
+      <Divider />
+    </div>
   );
 };
 
