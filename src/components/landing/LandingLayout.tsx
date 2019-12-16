@@ -7,6 +7,8 @@ import landingVars from '../../styles/pages/_landingVars';
 
 import Video from './Video';
 
+import { EmailSubscribe } from './EmailSubscribe';
+
 interface IProps {
   location: any;
   topBar: React.ReactNode;
@@ -177,6 +179,20 @@ const LandingLayout = (props: IProps) => {
             }}
           >
             {props.getStarted}
+          </div>
+        </div>
+        <Divider style={{ margin: 0 }} />
+        <div style={{ ...sectionStyle, background: landingVars.backgrounds.getStarted }} className={sectionClass}>
+          <div
+            style={{
+              maxWidth,
+              width: '70%',
+              paddingTop: landingVars.Vpadding.getStartedNormal,
+              paddingBottom: landingVars.Vpadding.getStartedNormal,
+              margin: '0px 40px',
+            }}
+          >
+            <EmailSubscribe />
           </div>
         </div>
         <div style={{ ...sectionStyle, background: landingVars.backgrounds.footer }} className={sectionClass}>
