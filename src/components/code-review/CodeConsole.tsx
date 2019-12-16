@@ -1681,7 +1681,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             cases={this.state.testCases}
             categories={this.state.testCategories}
             assignment={this.state.assignment}
-            emptyMessage="Your instructor didn't define any tests for this assignment"
+            emptyMessage="Your instructor didn't define any tests for this assignment. "
             showLink={true}
           />,
           <FileMenu
@@ -1852,7 +1852,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             cases={this.state.testCases}
             categories={this.state.testCategories}
             assignment={this.state.assignment}
-            emptyMessage="Your instructor didn't define any tests for this assignment"
+            emptyMessage="Your instructor didn't define any tests for this assignment. "
           />,
           <FileMenu
             key="file-menu"
