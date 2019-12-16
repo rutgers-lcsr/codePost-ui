@@ -9,9 +9,9 @@ const fileMode = require('./FileMode.png');
 const AutograderModule = () => {
   const [index, setIndex] = useState(0);
 
-  const noCodeImg = <img style={{ marginTop: 30, marginLeft: 10 }} width={475} src={noCode} alt="" />;
-  const unitImg = <img style={{ marginTop: 30, marginLeft: 10 }} width={475} src={unit} alt="" />;
-  const fileModeImg = <img style={{ marginTop: 30, marginLeft: 10 }} width={475} src={fileMode} alt="" />;
+  const noCodeImg = <img style={{ marginTop: 30, marginLeft: 10 }} width={550} src={noCode} alt="" />;
+  const unitImg = <img style={{ marginTop: 30, marginLeft: 10 }} width={550} src={unit} alt="" />;
+  const fileModeImg = <img style={{ marginTop: 30, marginLeft: 10 }} width={550} src={fileMode} alt="" />;
 
   const handleChange = (e: any) => {
     setIndex(e);
@@ -72,8 +72,8 @@ const AutograderModule = () => {
       </div>
       <div
         style={{
-          maxWidth: 480,
-          maxHeight: 340,
+          maxWidth: 550,
+          maxHeight: 380,
           borderRadius: 8,
         }}
         className={`display-flex justify-content-center align-items-center bevel`}
