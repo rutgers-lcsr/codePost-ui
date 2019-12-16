@@ -472,7 +472,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
 
     // Disable changing the test type if there is no native test support
     const hasNativeSupport = hasNativeTestSupport(this.props.language);
-    const typesWithEditDisabled = ['file', 'external'];
+    const typesWithEditDisabled = ['file'];
 
     // Get appropriate body
     let testBody;
@@ -549,42 +549,66 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   <Option value={'io'}>Input / Output </Option>
                   <Option value={'shell'}>Shell Script </Option>
                   <Option value={'unit'}>Unit Test</Option>
+                  <Option value={'external'}>External</Option>
                 </Select>
                 &nbsp;
                 <CPTooltip
                   hideThisOnHideTips={true}
                   title={
                     <span>
-                      To learn more, check out our guide to writing{' '}
                       {this.state.testType === 'io' || this.state.testType === 'io_cli' ? (
-                        <a href="http://help.codepost.io/en/articles/3567215-writing-tests-i-o-tests" target="_blank">
-                          I/O tests.
-                        </a>
+                        <span>
+                          I/O tests are basic equivalence tests comparing the output of a student's command with the
+                          expected output. To learn more, check out our guide to writing
+                          <a href="http://help.codepost.io/en/articles/3567215-writing-tests-i-o-tests" target="_blank">
+                            I/O tests.
+                          </a>
+                        </span>
                       ) : this.state.testType === 'shell' ? (
-                        <a
-                          href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
-                          target="_blank"
-                        >
-                          Shell tests.
-                        </a>
+                        <span>
+                          Shell tests are bash script unit tests. To learn more, check out our guide to writing
+                          <a
+                            href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
+                            target="_blank"
+                          >
+                            Shell tests.
+                          </a>
+                        </span>
                       ) : this.state.testType === 'unit' ? (
-                        <a
-                          href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
-                          target="_blank"
-                        >
-                          Unit tests.
-                        </a>
+                        <span>
+                          Unit tests are modular functions/classes written in the environment native language. Currently
+                          only java and python are supported. To learn more, check out our guide to writing
+                          <a
+                            href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
+                            target="_blank"
+                          >
+                            Unit tests.
+                          </a>
+                        </span>
                       ) : this.state.testType === 'file' ? (
-                        <a href="http://help.codepost.io/en/articles/3553024-writing-tests-file-mode" target="_blank">
-                          tests in file mode.
-                        </a>
+                        <span>
+                          File defined tests are created from running the scripts in file mode. You can edit certain
+                          attributes of these tests (points, explanations), but there is no unique code block that maps
+                          to each test, unlike tests created from the test editor (I/O, shell, unit).
+                          <a href="http://help.codepost.io/en/articles/3553024-writing-tests-file-mode" target="_blank">
+                            tests in file mode.
+                          </a>
+                        </span>
+                      ) : this.state.testType === 'external' ? (
+                        <span>
+                          External tests designate tests whose results can only be set via the API. If you run your test
+                          scripts locally and want to set the results with the codePost api, you'll use external tests.
+                        </span>
                       ) : (
-                        <a
-                          href="http://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
-                          target="_blank"
-                        >
-                          tests.
-                        </a>
+                        <span>
+                          To learn more, check out our guide to writing
+                          <a
+                            href="http://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
+                            target="_blank"
+                          >
+                            tests.
+                          </a>
+                        </span>
                       )}
                     </span>
                   }
