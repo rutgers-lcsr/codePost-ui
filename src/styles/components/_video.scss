@@ -1,0 +1,37 @@
+.video {
+  display: inline-flex;
+  flex-wrap: wrap-reverse;
+  // width: 100%;
+
+  &__sections {
+    display: flex;
+    flex-direction: column;
+    padding: 0px 10px;
+    text-align: left;
+
+    &__button {
+      font-size: 16px;
+      color: black;
+      font-weight: 600;
+      padding: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+
+      &--idle {
+        &:hover {
+          background-color: #ececec;
+        }
+      }
+
+      &--selected {
+        box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.16);
+        color: #24be85;
+
+        &:hover {
+          background-color: #fff;
+        }
+      }
+    }
+  }
+}
