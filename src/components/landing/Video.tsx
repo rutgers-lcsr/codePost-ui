@@ -31,7 +31,7 @@ const sections: IVideoSection[] = [
   },
   {
     id: 'writing-tests',
-    name: 'Writing Tests',
+    name: 'Writing Automated Tests',
     timestamp: 41,
     icon: 'tool',
   },
@@ -55,7 +55,7 @@ const sections: IVideoSection[] = [
   },
   {
     id: 'getting-feedback',
-    name: 'Getting Feedback',
+    name: 'Returning Feedback',
     timestamp: 441,
     icon: 'eye',
   },
