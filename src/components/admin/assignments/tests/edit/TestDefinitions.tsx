@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Layout, Menu, Icon, Empty, Spin, Badge } from 'antd';
+import { Button, Layout, Menu, Icon, Empty, Spin, Badge, Tooltip } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 import _ from 'lodash';
 
@@ -35,7 +35,7 @@ import {
 import { SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
 import { File } from '../../../../../infrastructure/file';
 import { Submission } from '../../../../../infrastructure/submission';
-import { BasicTestResultType } from '../../../../../infrastructure/autograder/runTypes';
+import { BasicTestResultType, TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
 import { FILE_TYPE } from './TestingSetup';
 
 /* codePost component imports */
@@ -46,7 +46,6 @@ import { EditObjectModal } from './TestDefinitions/EditObjectModal';
 import { AddTestModal } from './TestDefinitions/AddTestModal';
 import CPTooltip from '../../../../core/CPTooltip';
 import { SourceEditor } from './SourceEditor';
-import TestsList from '../../../../code-review/code-panel/TestsList';
 
 import FileTag from './TestDefinitions/FileTag';
 
@@ -54,12 +53,7 @@ import FileTag from './TestDefinitions/FileTag';
 import { fetchTestData, TestCasesByCategory } from '../../../../core/testFetchUtils';
 import { hasNativeTestSupport } from './utils/languageUtils';
 
-import {
-  IFolder,
-  IDirectoryStructure,
-  buildFolderMenu,
-  createDirectoryStructure,
-} from '../../../../code-review/menu/fileMenuUtils';
+import { IFolder, buildFolderMenu, createDirectoryStructure } from '../../../../code-review/menu/fileMenuUtils';
 
 import { RESULT_TYPE } from './TestDefinitions/PsuedoTerminal';
 
@@ -106,7 +100,6 @@ export const TestDefinitions = (props: IProps) => {
   const [tests, setTests] = useState<TestTemplateType[]>([]);
   const [main, setMain] = useState('');
   const [index, setIndex] = useState('0-0'); // file index <group>_<file index>
-  const [testResults, setTestResults] = useState<BasicTestResultType[]>([]);
 
   // render variables
   const [panel, setPanel] = useState<DETAIL_TYPE>(DETAIL_TYPE.EditTests);
@@ -119,11 +112,14 @@ export const TestDefinitions = (props: IProps) => {
   /******************************* Fetch Data ****************************/
   useEffect(() => {
     const fetchData = async () => {
-      const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
-      setCategories(categories);
-      setCasesByCategory(casesByCategory);
+      const [_categories, _casesByCategory]: any = await fetchTestData(props.currentAssignment);
+      setCategories(_categories);
+      setCasesByCategory(_casesByCategory);
       if (activeTest === undefined) {
         if (categories.length > 0 && activeTest === undefined) setActiveTest(casesByCategory[categories[0].id][0]);
+      }
+      if (categories.length === 0 && props.sourceFiles.length > 0) {
+        setPanel(DETAIL_TYPE.ViewSource);
       }
       setLoading(false);
     };
@@ -172,11 +168,6 @@ export const TestDefinitions = (props: IProps) => {
     });
 
     return newCategory;
-  };
-
-  const updateCategory = async (testCategory: TestCategoryType) => {
-    const newCategory = await TestCategory.update(testCategory);
-    replaceTestCategory(newCategory);
   };
 
   // FixME: come up with a generic field saving function
@@ -340,8 +331,45 @@ export const TestDefinitions = (props: IProps) => {
     }
   };
 
-  const setResults = (results: BasicTestResultType[]) => {
-    setTestResults(results);
+  const parseFileModeResults = async (response: TestEditorResultType) => {
+    // In case new tests were created (if file mode, test parsing turned off),
+    //    fetch the newest tests before setting resylts
+    const [_categories, _casesByCategory]: any = await fetchTestData(props.currentAssignment);
+    setCategories(_categories);
+    setCasesByCategory(_casesByCategory);
+
+    if (props.env && props.env.dumpMode && activeSubmission) {
+      // Refresh submission files after dump, in case a _tests.txt file was created
+      setTestSubject(activeSubmission.id.toString());
+    }
+
+    //
+    const formatted = {
+      log: response.logs,
+      target: activeSubmission ? activeSubmission.students[0] : 'solution code',
+      result: RESULT_TYPE.NONE,
+      testCaseName: '',
+    };
+
+    const logs = response.results.map((el) => {
+      const testCase = _casesByCategory[el.testCategory].find((tc: TestCaseType) => tc.id === el.testCase)!;
+      const status = el.isError ? RESULT_TYPE.ERROR : el.passed ? RESULT_TYPE.PASSED : RESULT_TYPE.FAILED;
+
+      if (testCase) {
+        if (!activeSubmission) {
+          updateTestStatus(testCase.id, status);
+        }
+      }
+
+      return {
+        log: el.logs,
+        target: activeSubmission ? activeSubmission.students[0] : 'solution code',
+        result: status,
+        testCaseName: testCase ? testCase.description : '',
+      };
+    });
+
+    return [formatted, ...logs];
   };
 
   /******************************* Misc ****************************/
@@ -470,9 +498,11 @@ export const TestDefinitions = (props: IProps) => {
         <div style={headerStyle}>
           Source Files
           <div>
-            <AddFileModal addFile={props.addFile} icon={true} />
+            <AddFileModal addFile={props.addFile} />
             &nbsp; &nbsp;
-            <Icon type="download" onClick={download} />
+            <Tooltip title="Download">
+              <Icon type="download" onClick={download} />
+            </Tooltip>
           </div>
         </div>
       );
@@ -532,42 +562,34 @@ export const TestDefinitions = (props: IProps) => {
         </div>
       );
 
-      if (index === 'tests') {
-        content = (
-          <div style={{ width: '100%' }}>
-            <TestsList tests={testResults} cases={casesByCategory} categories={categories} />
-          </div>
-        );
-      } else {
-        const currentGroupIndex = parseInt(index.split('-')[0], 10);
-        const currentFileIndex = parseInt(index.split('-')[1], 10);
+      const currentGroupIndex = parseInt(index.split('-')[0], 10);
+      const currentFileIndex = parseInt(index.split('-')[1], 10);
 
-        const currentGroup = groups[currentGroupIndex];
-        const currentFile = currentGroup.find((f) => {
-          return f.id === currentFileIndex;
-        });
-        content = (
-          <SourceEditor
-            categories={categories}
-            casesByCategory={casesByCategory}
-            sourceFiles={props.sourceFiles}
-            currentFile={currentFile}
-            setResults={setResults}
-            setTestSubject={setTestSubject}
-            submissions={props.submissions}
-            updateFile={props.updateFile}
-            addCategory={addCategory}
-            deleteCategory={deleteCategory}
-            addTest={addTest}
-            deleteTest={deleteTest}
-            activeSubmission={activeSubmission}
-            updateEnv={props.updateEnv}
-            env={props.env}
-            saveTest={saveTest}
-            updateTestStatus={updateTestStatus}
-          />
-        );
-      }
+      const currentGroup = groups[currentGroupIndex];
+      const currentFile = currentGroup.find((f) => {
+        return f.id === currentFileIndex;
+      });
+      content = (
+        <SourceEditor
+          categories={categories}
+          casesByCategory={casesByCategory}
+          sourceFiles={props.sourceFiles}
+          currentFile={currentFile}
+          parseResults={parseFileModeResults}
+          setTestSubject={setTestSubject}
+          submissions={props.submissions}
+          updateFile={props.updateFile}
+          addCategory={addCategory}
+          deleteCategory={deleteCategory}
+          addTest={addTest}
+          deleteTest={deleteTest}
+          activeSubmission={activeSubmission}
+          updateEnv={props.updateEnv}
+          env={props.env}
+          saveTest={saveTest}
+          updateTestStatus={updateTestStatus}
+        />
+      );
 
       break;
     case DETAIL_TYPE.EditTests:
@@ -655,6 +677,17 @@ export const TestDefinitions = (props: IProps) => {
   } else if (categories.length === 0 && panel == DETAIL_TYPE.EditTests) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <span>
+          <b>Instructions</b>: If you have an existing script with modular unit tests, or want to start fresh, click
+          "Add Category". Otherwise, click "Enter File Mode". To learn more{' '}
+          <a
+            href="https://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
+            target="_blank"
+          >
+            click here
+          </a>
+          .
+        </span>
         <Empty style={{ marginTop: '20px', maxWidth: '400px' }} description={<span> Get started.</span>}>
           <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} />
           {externalOnly ? (
@@ -671,6 +704,27 @@ export const TestDefinitions = (props: IProps) => {
   } else {
     return (
       <div>
+        <div style={{ marginBottom: 15, marginLeft: 10, marginRight: 10 }}>
+          {panel === DETAIL_TYPE.EditTests ? (
+            <span>
+              <b>Instructions</b>: This editor shows all the tests you've created. You can create tests in two ways: in{' '}
+              <b style={{ fontWeight: 600 }}>this editor </b>(For test cases that have modular blocks of code) or in{' '}
+              <b style={{ fontWeight: 600 }}>File Mode </b>(if you want to run a script that includes multiple tests).
+              To get started, click the "Add Test" <Icon type="file-add" /> icon.
+            </span>
+          ) : (
+            <span>
+              <b>Instructions</b>: In "File Mode" you can run your existing scripts to output logs, or use our custom
+              syntax to structure your test results. If you use our syntax, new tests will automatically be created when
+              you run the file, which you can edit attributes of (points, explanations) by exiting File Mode. To learn
+              more,{' '}
+              <a href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode" target="_blank">
+                click here
+              </a>
+              . To get started, create a new test file by clicking the "Add file" <Icon type="plus-circle" /> icon.
+            </span>
+          )}
+        </div>
         <div style={{ fontSize: 11 }}>
           <Layout>
             <Sider theme="light">

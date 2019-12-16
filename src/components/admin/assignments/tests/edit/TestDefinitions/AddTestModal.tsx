@@ -47,7 +47,7 @@ export const AddTestModal = (props: IUploadProps) => {
   /******************************* Return *****************************************/
   return (
     <span>
-      <Tooltip title="Add File">
+      <Tooltip title="Add Test">
         <Icon type="file-add" onClick={toggleVisible} />
       </Tooltip>
       <Modal

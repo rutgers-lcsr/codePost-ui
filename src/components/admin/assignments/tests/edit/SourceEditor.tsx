@@ -54,7 +54,7 @@ interface IProps {
   deleteCategory: (id: number) => Promise<void>;
   addTest: (language: string | null, category: number, sourceFile?: boolean, name?: string) => Promise<void>;
   deleteTest: (testCase: TestCaseType) => Promise<void>;
-  setResults: (results: BasicTestResultType[]) => void;
+  parseResults: (response: TestEditorResultType) => Promise<ILogType[]>;
   saveTest: (test: TestCaseType) => Promise<TestCaseType>;
   updateTestStatus: (testID: number, status: number) => void;
 }
@@ -116,40 +116,10 @@ export const SourceEditor = (props: IProps) => {
   }, [newCode]);
 
   // callback called when run is complete
-  const callback = (response: TestEditorResultType) => {
-    props.setResults(response.results);
+  const callback = async (response: TestEditorResultType) => {
+    const newLogs = await props.parseResults(response);
     setRunning(false);
-    if (props.env && props.env.dumpMode && props.activeSubmission) {
-      // Refresh submission files after dump
-      props.setTestSubject(props.activeSubmission.id.toString());
-    }
-
-    const formatted = {
-      log: response.logs,
-      target: props.activeSubmission ? props.activeSubmission.students[0] : 'solution code',
-      result: RESULT_TYPE.NONE,
-      testCaseName: '',
-    };
-
-    const logs = response.results.map((el) => {
-      const testCase = props.casesByCategory[el.testCategory].find((testCase) => testCase.id === el.testCase)!;
-      const status = el.isError ? RESULT_TYPE.ERROR : el.passed ? RESULT_TYPE.PASSED : RESULT_TYPE.FAILED;
-
-      if (testCase) {
-        if (!props.activeSubmission) {
-          props.updateTestStatus(testCase.id, status);
-        }
-      }
-
-      return {
-        log: el.logs,
-        target: props.activeSubmission ? props.activeSubmission.students[0] : 'solution code',
-        result: status,
-        testCaseName: testCase.description,
-      };
-    });
-
-    setLogs([formatted, ...logs]);
+    setLogs(newLogs);
   };
 
   const onSourceFileSave = (code: string) => {

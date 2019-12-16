@@ -240,11 +240,10 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       };
       thisEnvironment = await Environment.create(payload);
     }
-    const newEnv = await Environment.updateBuild({
+    const newEnv = await Environment.build({
       id: thisEnvironment.id,
       dependencies: dependencies,
       language: language,
-      simulate: false,
     });
     setEnv(newEnv);
   };

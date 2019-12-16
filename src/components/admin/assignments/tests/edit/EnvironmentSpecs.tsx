@@ -102,7 +102,13 @@ export const EnvironmentSpecs = (props: IProps) => {
   /******************************* Return ****************************/
 
   const selectLanguage = (
-    <Select value={language || undefined} onChange={onLanguageChange} style={{ minWidth: 300 }}>
+    // Disable selector if environment has a custom dockerfile defined
+    <Select
+      value={props.env && props.env.dockerfile.length > 0 ? 'Custom' : language || undefined}
+      onChange={onLanguageChange}
+      style={{ minWidth: 300 }}
+      disabled={props.env && props.env.dockerfile.length > 0}
+    >
       {languages.map((language) => {
         return (
           <Option key={language} value={language}>
@@ -118,14 +124,21 @@ export const EnvironmentSpecs = (props: IProps) => {
   const envSpecText = language && locale[language].environment;
 
   const selectDependencies = (
+    // Disable selector if environment has a custom dockerfile defined
     <Select
       mode="tags"
       style={{ minWidth: 300 }}
       value={dependencies}
       placeholder={dependencyText}
       onChange={onDependenciesChange}
-      disabled={language === null || !hasDependenciesSupport(language)}
+      disabled={
+        language === null || !hasDependenciesSupport(language) || (props.env && props.env.dockerfile.length > 0)
+      }
     />
+  );
+
+  const customDockerFile = props.env && props.env.dockerfile && (
+    <span>Custom DockerFile:&nbsp;{props.env.dockerfile}</span>
   );
 
   if (props.env === undefined && language === null) {
@@ -206,6 +219,7 @@ export const EnvironmentSpecs = (props: IProps) => {
       <br />
       <br />
       Custom dependencies: {selectDependencies}
+      {customDockerFile}
       {props.env ? showAfterCreation : null}
     </div>
   );
