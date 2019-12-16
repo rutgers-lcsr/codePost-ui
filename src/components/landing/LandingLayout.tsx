@@ -186,7 +186,7 @@ const LandingLayout = (props: IProps) => {
           <div
             style={{
               maxWidth,
-              width: '70%',
+              width: '60%',
               paddingTop: landingVars.Vpadding.getStartedNormal,
               paddingBottom: landingVars.Vpadding.getStartedNormal,
               margin: '0px 40px',

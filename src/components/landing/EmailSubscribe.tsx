@@ -82,7 +82,7 @@ class EmailSubscribeForm extends React.Component<any, IEmailSubscribeFormState> 
                 message: 'Please input your email',
               },
             ],
-          })(<Input placeholder="Enter your email to receive codePost product updates" />)}
+          })(<Input placeholder="email" />)}
         </Form.Item>
       </div>
     );
@@ -103,6 +103,7 @@ class EmailSubscribeForm extends React.Component<any, IEmailSubscribeFormState> 
 
     return (
       <Form onSubmit={this.handleSubmit}>
+        <div style={{ fontWeight: 500 }}>Enter your email to receive codePost product updates:</div>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           {input}
           {submit}
