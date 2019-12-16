@@ -124,7 +124,7 @@ const Pricing = (props: IProps) => {
             <em>For bootcamps, for-profits, and large departments</em>
             <br />
             <br />
-            <p style={{ fontSize: '18px', fontWeight: 'bold' }}>$5 / student per course</p>
+            <p style={{ fontSize: '18px', fontWeight: 'bold' }}>$15 / student per course</p>
             <a href="mailto:team@codepost.io">
               <Button style={premiumButtonStyle}>
                 Coming soon <Icon type="arrow-right" />

@@ -23,6 +23,7 @@ const niemaImg = require('./../../img/landing/compressed/niema_moshiri.jpg');
 const kateImg = require('./../../img/landing/compressed/kate_holdener.jpg');
 const nohaImg = require('./../../img/landing/compressed/noha_hazzazi.jpg');
 const abbasImg = require('./../../img/landing/compressed/abbas_attarwala.jpg');
+const kateKImg = require('./../../img/landing/compressed/kate_kharitonova.jpg');
 
 /*************************************************************************************/
 /* TEXT
@@ -123,6 +124,20 @@ const abbasText = (
   </span>
 );
 
+const kateKText = (
+  <span style={{ fontStyle: 'italic' }}>
+    The ability to see a properly-rendered Jupyter notebook in codePost has been{' '}
+    <Typography.Text mark className="codePost-highlight">
+      invaluable in our Data Science courses
+    </Typography.Text>
+    . codePost's team has also been{' '}
+    <Typography.Text mark className="codePost-highlight">
+      very responsive to our feedback
+    </Typography.Text>{' '}
+    and feature requests.
+  </span>
+);
+
 /*************************************************************************************/
 
 // Source: https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
@@ -186,9 +201,10 @@ const testimonials = [
     school="Grand Valley State University"
   />,
   <Testimonial text={<div>{kateText}</div>} name="Kate Holdener" thumbnail={kateImg} school="Saint Louis University" />,
-  <Testimonial text={<div>{niemaText}</div>} name="Niema Moshiri" thumbnail={niemaImg} school="UCSD" />,
+  <Testimonial text={<div>{niemaText}</div>} name="Niema Moshiri" thumbnail={niemaImg} school="UC San Diego" />,
   <Testimonial text={<div>{nohaText}</div>} name="Noha Hazzazi" thumbnail={nohaImg} school="Howard University" />,
   <Testimonial text={<div>{abbasText}</div>} name="Abbas Attarwala" thumbnail={abbasImg} school="Boston University" />,
+  <Testimonial text={<div>{kateKText}</div>} name="Kate Kharitonova" thumbnail={kateKImg} school="UC Santa Barbara" />,
 ];
 
 /*************************************************************************************/

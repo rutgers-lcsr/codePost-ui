@@ -79,16 +79,14 @@ const sections = [
       <img src="https://cl.ly/40709b6a88c4/DarkMode.png" width="550" height="344" key="dark" alt="dark mode" />,
     ],
     captions: [
-      `codePost comments sit alongside code so they're easier to read.
+      `Comments sit alongside code so they're easier to read.
       You can also use Markdown to format to your heart's content.`,
-      `codePost can use a template file to de-emphasize template code shared by all submissions,
+      `Use a template file to de-emphasize template code shared by all submissions,
       making it easier to focus on the student's work.`,
-      `codePost allows annotations to be place on rendered IPython / Jupyter notebooks, so you can
+      `Place annotations on rendered IPython / Jupyter notebooks, so you can
       see results while reviewing.`,
-      `codePost supports text-only formats as well as code. If your students upload .txt files or .md files,
-      you can annotate those just like you would annotate code. We'll render the .md files for you, too.`,
-      `When grading with codePost, you and your graders can apply rubrics. You can also track how rubrics are applied,
-      and even retroactively alter rubric items after they've been used.`,
+      `If your students upload .txt files or .md files, you can annotate those just like you would annotate code. We'll render the .md files for you, too.`,
+      `Apply rubrics, track how they are applied, and even retroactively alter rubric items after they've been used.`,
       `With this optional setting, admins can allow graders to participate in writing the rubric while grading.
       Easily create new rubric comments when discovering common issues in the submissions.`,
     ],
@@ -113,11 +111,10 @@ const sections = [
       />,
     ],
     captions: [
-      `In codePost, students can leave feedback on the feedback they receive. Course leaders can use this
+      `Students can leave feedback on the feedback they receive. Course leaders can use this
       information to fine-tune their rubrics, as well as evaluate graders.`,
-      `You can take advantage in peer grading with codePost. Just make your students "graders" and enable anonymous
-      grading mode.`,
-      'Students use codePost to access their scores and feedback.',
+      `Take advantage in peer grading. Just make your students "graders" and enable anonymous grading mode.`,
+      'Students can access their scores and feedback.',
       `You can give live feedback on code that students upload, allowing you to provide office-hours quality
         feedback remotely!`,
     ],
@@ -155,9 +152,8 @@ const sections = [
       <Video key="5" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/feedback-views.mp4" />,
     ],
     captions: [
-      `codePost gives course leaders a dashboard that helps track the progress of grading, so no submission
-    slips through the cracks.`,
-      `codePost can send assignment submissions through Moss for plagiarism detection, making it easy to
+      `Use a real-time dashboard to track the progress of grading, so no submission slips through the cracks.`,
+      `Send assignment submissions through Moss for plagiarism detection, making it easy to
     run routine checks.`,
       `Anonymous Grading Mode hides student identity from graders, preventing conflicts of interest or implicit
       bias to influence grading.`,
@@ -325,17 +321,6 @@ const WhyUse = (props: IPageProps) => {
         <div style={{ marginBottom: 75, textAlign: 'center' }}>
           <Typography.Title level={1} style={{ fontSize: 30, color: 'black' }}>
             codePost users asked for these features, <span style={{ color: '#24be85' }}>so we built them.</span>{' '}
-            <a
-              className="whyUse__link"
-              href="mailto:team@codepost.io"
-              style={{
-                borderBottom: '4px solid #24be85',
-                textDecoration: 'none',
-              }}
-            >
-              Let us know
-            </a>{' '}
-            what features you want to use!
           </Typography.Title>
         </div>
         {content}
