@@ -34,7 +34,7 @@ const AutograderModule = () => {
       break;
   }
   return (
-    <div>
+    <div style={{ marginRight: 25 }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
         <Typography.Text
           className={index == 0 ? 'slider-text--active' : index == 1 ? 'slider-text' : 'slider-text--inactive'}
@@ -73,7 +73,6 @@ const AutograderModule = () => {
       <div
         style={{
           maxWidth: 550,
-          maxHeight: 380,
           borderRadius: 8,
         }}
         className={`display-flex justify-content-center align-items-center bevel`}
