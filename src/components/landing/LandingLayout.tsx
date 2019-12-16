@@ -8,6 +8,7 @@ import landingVars from '../../styles/pages/_landingVars';
 import Video from './Video';
 
 interface IProps {
+  location: any;
   topBar: React.ReactNode;
   hero: React.ReactNode;
   testimonial: React.ReactNode;
@@ -160,7 +161,7 @@ const LandingLayout = (props: IProps) => {
       <Divider style={{ margin: 0 }} />
       <div style={{ ...sectionStyle }} className={sectionClass}>
         <div style={{ ...panelStyle }}>
-          <Video />
+          <Video location={props.location} />
         </div>
       </div>
 

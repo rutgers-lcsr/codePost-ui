@@ -5,6 +5,7 @@
 /* react imports */
 import * as React from 'react';
 import WistiaPlayer from 'react-player/lib/players/Wistia';
+import queryString from 'query-string';
 
 /* ant imports */
 import { Button, Icon, Select } from 'antd';
@@ -67,7 +68,7 @@ interface IVideoState {
 
 /**********************************************************************************************************************/
 
-class Video extends React.Component<{}, IVideoState> {
+class Video extends React.Component<any, IVideoState> {
   public constructor(props: any) {
     super(props);
 
@@ -80,9 +81,23 @@ class Video extends React.Component<{}, IVideoState> {
 
   public componentDidMount() {
     const video = document.getElementById('video');
-    console.log('vi', video);
-    if (video !== null) {
+
+    // URL setup
+    // codepost.io/?video=1&section=post-grading
+
+    const values = queryString.parse(this.props.location.search);
+    if (values.video !== undefined && video !== null) {
       video.scrollIntoView();
+
+      if (values.section !== undefined) {
+        const section = sections.filter((s: IVideoSection) => {
+          return s.id === values.section;
+        });
+
+        if (section.length > 0) {
+          this.setSection(section[0]);
+        }
+      }
     }
   }
 
@@ -140,6 +155,7 @@ class Video extends React.Component<{}, IVideoState> {
             url="https://codepost.wistia.com/medias/yx1va80hcd"
             onProgress={this.handleProgress}
             height="440px"
+            width="700px"
             playing={this.state.playing}
           />
         </div>
