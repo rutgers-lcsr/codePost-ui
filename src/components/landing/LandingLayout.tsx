@@ -162,7 +162,7 @@ const LandingLayout = (props: IProps) => {
       </div>
       <Divider style={{ margin: 0 }} />
       <div style={{ ...sectionStyle }} className={sectionClass}>
-        <div style={{ ...panelStyle, maxWidth: '1600px', textAlign: 'center' }}>
+        <div style={{ ...panelStyle, maxWidth: '1920px', textAlign: 'center' }}>
           <Video location={props.location} />
         </div>
       </div>
