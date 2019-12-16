@@ -83,7 +83,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
 
   // Page state
   const [modalStatus, setModalStatus] = useState<MODAL_STATUS>(MODAL_STATUS.None);
-  const [summaryType, setSummaryType] = useState<SUMMARY_TYPE>(SUMMARY_TYPE.ByTest);
+  const [summaryType, setSummaryType] = useState<SUMMARY_TYPE>(SUMMARY_TYPE.BySubmission);
 
   // Run all specific
   const [progress, setProgress] = useState('{}');
@@ -110,13 +110,6 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     };
     fetchData();
   }, [props.currentAssignment]);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     setFetchLoading(true);
-  //   };
-  //   fetchData();
-  // }, [props.submissions]);
 
   // ******************************* API / State change functions  *******************************
   const runAllProgressCallback = (result: any) => {
@@ -378,11 +371,11 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   };
   actions = [
     <Radio.Group value={SUMMARY_TYPE[summaryType]} onChange={onSummaryTypeChange} buttonStyle="solid">
-      <Radio.Button key={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]} value={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]}>
-        <Icon type="cluster" />
-      </Radio.Button>
       <Radio.Button key={SUMMARY_TYPE[SUMMARY_TYPE.BySubmission]} value={SUMMARY_TYPE[SUMMARY_TYPE.BySubmission]}>
         <Icon type="solution" />
+      </Radio.Button>
+      <Radio.Button key={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]} value={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]}>
+        <Icon type="cluster" />
       </Radio.Button>
     </Radio.Group>,
     <Button
