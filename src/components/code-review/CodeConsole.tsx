@@ -1728,7 +1728,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           </RubricManager>,
         ];
 
-        siderTitles = ['Submission Info', fileMenuTitle, 'Rubric'];
+        siderTitles = ['Submission Info', 'Tests', fileMenuTitle, 'Rubric'];
 
         leftHeader = [
           <HeaderMenu
