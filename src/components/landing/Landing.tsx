@@ -57,10 +57,9 @@ class Landing extends React.PureComponent<{}, {}> {
       'onclick',
       "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;",
     );
-    // calendlyDivFooter!.setAttribute(
-    //   'onclick',
-    //   "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;",
-    // );
+
+    const calendlyDiv = document.getElementById('calendly-button-hero');
+    calendlyDiv!.setAttribute('onclick', "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;");
   }
 
   public render() {
