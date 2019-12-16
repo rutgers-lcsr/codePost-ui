@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Layout, Menu, Icon, Empty, Spin, Badge, Tooltip } from 'antd';
+import { Button, Layout, Menu, Icon, Empty, Modal, Spin, Badge, Tooltip } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 import _ from 'lodash';
 
@@ -116,9 +116,9 @@ export const TestDefinitions = (props: IProps) => {
       setCategories(_categories);
       setCasesByCategory(_casesByCategory);
       if (activeTest === undefined) {
-        if (categories.length > 0 && activeTest === undefined) setActiveTest(casesByCategory[categories[0].id][0]);
+        if (_categories.length > 0 && activeTest === undefined) setActiveTest(_casesByCategory[_categories[0].id][0]);
       }
-      if (categories.length === 0 && props.sourceFiles.length > 0) {
+      if (_categories.length === 0 && props.sourceFiles.length > 0) {
         setPanel(DETAIL_TYPE.ViewSource);
       }
       setLoading(false);
@@ -138,11 +138,14 @@ export const TestDefinitions = (props: IProps) => {
     }
   }, [props.env]);
 
+  // When the test changes, we want to reset the active submission
+  // We only change it when the test.id changes, because we update the test on run (solutionStatus)
   useEffect(() => {
     setActiveSubmission(undefined);
     setCurrentFiles(props.solutions);
   }, [activeTest && activeTest.id]);
 
+  // If solution files get updated (for example in file mode, update the current files)
   useEffect(() => {
     setActiveSubmission(undefined);
     setCurrentFiles(props.solutions);
@@ -287,9 +290,6 @@ export const TestDefinitions = (props: IProps) => {
   };
 
   const replaceTestCategory = (newCategory: TestCategoryType) => {
-    const filteredCategories = categories.filter((cat) => {
-      return cat.id !== newCategory.id;
-    });
     setCategories((prevState) => {
       const filteredCategories = prevState.filter((cat) => {
         return cat.id !== newCategory.id;
@@ -421,6 +421,18 @@ export const TestDefinitions = (props: IProps) => {
     );
   };
 
+  // This is the info modal that pops up if a user clicks on a test in filemoda
+  const editTestInfo = () => {
+    Modal.info({
+      title: 'Edit Tests',
+      content: (
+        <div>
+          <p>To edit this test, click "Exit File Mode."</p>
+        </div>
+      ),
+    });
+  };
+
   /******************************* Return  ****************************/
 
   const externalOnly = !props.env || !props.env.language;
@@ -541,6 +553,7 @@ export const TestDefinitions = (props: IProps) => {
               defaultOpenKeys={categories.map((el) => el.id.toString())}
               mode="inline"
               style={{ height: '100%' }}
+              onClick={editTestInfo}
             >
               {TestCategory.sort(categories).map((category) => {
                 return (
@@ -709,14 +722,14 @@ export const TestDefinitions = (props: IProps) => {
             <span>
               <b>Instructions</b>: This editor shows all the tests you've created. You can create tests in two ways: in{' '}
               <b style={{ fontWeight: 600 }}>this editor </b>(For test cases that have modular blocks of code) or in{' '}
-              <b style={{ fontWeight: 600 }}>File Mode </b>(if you want to run a script that includes multiple tests).
+              <b style={{ fontWeight: 600 }}>file mode </b>(if you want to run a script that includes multiple tests).
               To get started, click the "Add Test" <Icon type="file-add" /> icon.
             </span>
           ) : (
             <span>
-              <b>Instructions</b>: In "File Mode" you can run your existing scripts to output logs, or use our custom
+              <b>Instructions</b>: In file mode you can run your existing scripts to output logs, or use our custom
               syntax to structure your test results. If you use our syntax, new tests will automatically be created when
-              you run the file, which you can edit attributes of (points, explanations) by exiting File Mode. To learn
+              you run the file, which you can edit attributes of (points, explanations) by exiting file mode. To learn
               more,{' '}
               <a href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode" target="_blank">
                 click here
