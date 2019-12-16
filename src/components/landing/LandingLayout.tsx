@@ -182,7 +182,7 @@ const LandingLayout = (props: IProps) => {
             <div
               style={{
                 width: '100%',
-                marginTop: 20,
+                marginTop: 25,
                 padding: '0 25px',
               }}
             >

@@ -104,8 +104,8 @@ class EmailSubscribeForm extends React.Component<any, IEmailSubscribeFormState> 
       <Form onSubmit={this.handleSubmit}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <div>
-            <div style={{ fontWeight: 600, fontSize: '30px', color: '#707070' }}>Want to stay in touch?</div>
-            <div style={{ fontSize: '24px', color: '#A3A3A3' }}>Subscribe for new feature announcements.</div>
+            <div style={{ fontWeight: 600, fontSize: '22px', color: '#8a8a8a' }}>Want to stay in touch?</div>
+            <div style={{ fontSize: '18px', color: '#A3A3A3' }}>Subscribe for new feature announcements.</div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             {input}
