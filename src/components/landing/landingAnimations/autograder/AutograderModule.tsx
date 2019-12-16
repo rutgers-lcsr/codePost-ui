@@ -9,9 +9,9 @@ const fileMode = require('./FileMode.png');
 const AutograderModule = () => {
   const [index, setIndex] = useState(0);
 
-  const noCodeImg = <img style={{ marginTop: 30, marginLeft: 10 }} width={550} src={noCode} alt="" />;
-  const unitImg = <img style={{ marginTop: 30, marginLeft: 10 }} width={550} src={unit} alt="" />;
-  const fileModeImg = <img style={{ marginTop: 30, marginLeft: 10 }} width={550} src={fileMode} alt="" />;
+  const noCodeImg = <img style={{ marginTop: 5, marginLeft: 10 }} width={550} src={noCode} alt="" />;
+  const unitImg = <img style={{ marginTop: 6, marginLeft: 10 }} width={550} src={unit} alt="" />;
+  const fileModeImg = <img style={{ marginTop: 0, marginLeft: 5 }} width={550} src={fileMode} alt="" />;
 
   const handleChange = (e: any) => {
     setIndex(e);
@@ -73,11 +73,36 @@ const AutograderModule = () => {
       <div
         style={{
           maxWidth: 550,
-          borderRadius: 8,
+          width: 550,
+          height: 390,
+          position: 'relative',
         }}
-        className={`display-flex justify-content-center align-items-center bevel`}
+        className={`display-flex justify-content-center align-items-center`}
       >
-        {imgToShow}
+        <div
+          style={{ position: 'absolute', maxWidth: 550, borderRadius: 8 }}
+          className={`display-flex justify-content-center align-items-center bevel autograder-image${
+            index === 0 ? '--active' : ''
+          }`}
+        >
+          {noCodeImg}
+        </div>
+        <div
+          style={{ position: 'absolute', maxWidth: 550, borderRadius: 8 }}
+          className={`display-flex justify-content-center align-items-center bevel autograder-image${
+            index === 1 ? '--active' : ''
+          }`}
+        >
+          {unitImg}
+        </div>
+        <div
+          style={{ position: 'absolute', maxWidth: 550, borderRadius: 8 }}
+          className={`display-flex justify-content-center align-items-center bevel autograder-image${
+            index === 2 ? '--active' : ''
+          }`}
+        >
+          {fileModeImg}
+        </div>
       </div>
     </div>
   );
