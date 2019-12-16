@@ -32,6 +32,7 @@ interface IProps {
   isOpen: boolean;
   assignment: AssignmentType;
   showLink?: boolean;
+  emptyMessage: string;
 }
 
 const TestsMenu = (props: IProps) => {
@@ -111,7 +112,7 @@ const TestsMenu = (props: IProps) => {
           <Table dataSource={data} columns={columns} size="small" pagination={false} bordered={false} />
         ) : (
           <span>
-            You haven't defined any tests.{' '}
+            {props.emptyMessage}
             {props.showLink ? (
               <span>
                 You can do so from the{' '}

@@ -1675,18 +1675,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
             updateGrader={this.updateGrader}
           />,
-          this.state.testCategories.length > 0 || this.isCourseAdmin(this.state.assignment) ? (
-            <TestsMenu
-              isOpen={this.state.panelType === PANEL_TYPE.TESTS}
-              tests={this.state.tests}
-              cases={this.state.testCases}
-              categories={this.state.testCategories}
-              assignment={this.state.assignment}
-              showLink={true}
-            />
-          ) : (
-            <span />
-          ),
+          <TestsMenu
+            isOpen={this.state.panelType === PANEL_TYPE.TESTS}
+            tests={this.state.tests}
+            cases={this.state.testCases}
+            categories={this.state.testCategories}
+            assignment={this.state.assignment}
+            emptyMessage="Your instructor didn't define any tests for this assignment"
+            showLink={true}
+          />,
           <FileMenu
             key="file-menu"
             title="Files"
@@ -1849,17 +1846,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             submitStudentQuestion={this.submitStudentQuestion}
             deleteStudentQuestion={this.deleteStudentQuestion}
           />,
-          this.state.testCategories.length > 0 ? (
-            <TestsMenu
-              isOpen={this.state.panelType === PANEL_TYPE.TESTS}
-              tests={this.state.tests}
-              cases={this.state.testCases}
-              categories={this.state.testCategories}
-              assignment={this.state.assignment}
-            />
-          ) : (
-            <span />
-          ),
+          <TestsMenu
+            isOpen={this.state.panelType === PANEL_TYPE.TESTS}
+            tests={this.state.tests}
+            cases={this.state.testCases}
+            categories={this.state.testCategories}
+            assignment={this.state.assignment}
+            emptyMessage="Your instructor didn't define any tests for this assignment"
+          />,
           <FileMenu
             key="file-menu"
             title="Files"
@@ -1871,7 +1865,23 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           />,
         ];
 
-        siderTitles = ['Submission Info', fileMenuTitle];
+        siderTitles = [
+          'Submission Info',
+          <div>
+            Tests{' '}
+            <Button
+              size="small"
+              icon="folder-open"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
+              }}
+              disabled={this.state.testCategories.length === 0}
+            />
+          </div>,
+          fileMenuTitle,
+        ];
       } else {
         leftHeader = [
           <HeaderMenu
@@ -2002,18 +2012,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
             updateGrader={this.updateGrader}
           />,
-          this.state.testCategories.length > 0 || this.isCourseAdmin(this.state.assignment) ? (
-            <TestsMenu
-              isOpen={this.state.panelType === PANEL_TYPE.TESTS}
-              tests={this.state.tests}
-              cases={this.state.testCases}
-              categories={this.state.testCategories}
-              assignment={this.state.assignment}
-              showLink={true}
-            />
-          ) : (
-            <span />
-          ),
+          <TestsMenu
+            isOpen={this.state.panelType === PANEL_TYPE.TESTS}
+            tests={this.state.tests}
+            cases={this.state.testCases}
+            categories={this.state.testCategories}
+            assignment={this.state.assignment}
+            emptyMessage="No tests have been defined for this assignment."
+            showLink={true}
+          />,
           <FileMenu
             key="file-menu"
             title="Files"
@@ -2059,22 +2066,18 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         siderTitles = [
           'Submission Info',
-          this.state.testCategories.length > 0 || this.isCourseAdmin(this.state.assignment) ? (
-            <div>
-              Tests{' '}
-              <Button
-                size="small"
-                icon="folder-open"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
-                }}
-              />
-            </div>
-          ) : (
-            undefined
-          ),
+          <div>
+            Tests{' '}
+            <Button
+              size="small"
+              icon="folder-open"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
+              }}
+            />
+          </div>,
           fileMenuTitle,
           'Rubric',
         ];
