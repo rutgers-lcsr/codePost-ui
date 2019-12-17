@@ -1275,7 +1275,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       forcedRubricMode: false,
       templateMode: false,
       fileTemplates: [],
-      testCategories: [],
+      testCategories: [-1],
       environment: null,
       showFrequentlyUsedRubricComments: false,
       allowLateUploads: false,
@@ -1408,6 +1408,90 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       ],
     };
 
+    const tests: SubmissionTestType[] = [
+      {
+        id: -1,
+        submission: 1,
+        testCase: -1,
+        logs: '',
+        passed: true,
+        testCategory: -1,
+        created: '2019-12-16T23:16:19.737805Z',
+        modified: '2019-12-16T23:16:19.737823Z',
+        isError: false,
+      },
+      {
+        id: -2,
+        submission: 1,
+        testCase: -2,
+        logs: `Traceback (most recent call last):
+  File "./Loops.py", line 37, in <module>
+    reverse([1, 2, 3])
+  File "./Loops.py", line 33, in reverse
+    reversed.append(intList[i])
+IndexError: list index out of range`,
+        passed: false,
+        testCategory: -1,
+        created: '2019-12-16T23:16:19.737805Z',
+        modified: '2019-12-16T23:16:19.737823Z',
+        isError: false,
+      },
+    ];
+
+    const testCategories: TestCategoryType[] = [
+      {
+        id: -1,
+        name: 'Correctness',
+        testCases: [-1, -2],
+        assignment: demoAssignment.id,
+      },
+    ];
+
+    const testCases: TestCasesByCategory = {
+      '-1': [
+        {
+          id: -1,
+          testCategory: -1,
+          sortKey: 0,
+          description: 'Test max [1,2,3]',
+          type: 'io',
+          pointsFail: 1,
+          pointsPass: 0,
+          text: '',
+          modified: '2019-12-16T23:09:44.686902Z',
+          function: 'max',
+          fileName: 'Loops.py',
+          expectedOutput: '3',
+          input: '[1,2,3]',
+          checkReturn: true,
+          exposed: false,
+          instances: [-1],
+          explanation: '',
+          lastSolutionRun: 0,
+        },
+        {
+          id: -2,
+          testCategory: -1,
+          sortKey: 0,
+          description: 'Test reverse [1,2,3]',
+          type: 'io',
+          pointsFail: -2,
+          pointsPass: 0,
+          text: '',
+          modified: '2019-12-16T23:09:44.686902Z',
+          function: 'reverse',
+          fileName: 'Loops.py',
+          expectedOutput: '[3,2,1]',
+          input: '[1,2,3]',
+          checkReturn: true,
+          exposed: false,
+          instances: [-1],
+          explanation: '',
+          lastSolutionRun: 0,
+        },
+      ],
+    };
+
     this.setState({
       assignment: demoAssignment,
       course: demoCourse,
@@ -1417,6 +1501,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       selectedFile: fileList.length > 0 ? fileList[0] : undefined,
       rubricCategories: rubricCategoryList,
       rubricComments: rubricCommentsMap,
+      tests,
+      testCategories,
+      testCases,
     });
   };
 
@@ -1659,6 +1746,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               updateVerticalOffset={this.setVerticalOffset}
             />
           );
+        } else if (this.state.panelType === PANEL_TYPE.TESTS) {
+          content = (
+            <TestsList tests={this.state.tests} cases={this.state.testCases} categories={this.state.testCategories} />
+          );
         }
 
         const onCancel = () => {
@@ -1728,7 +1819,23 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           </RubricManager>,
         ];
 
-        siderTitles = ['Submission Info', 'Tests', fileMenuTitle, 'Rubric'];
+        siderTitles = [
+          'Submission Info',
+          <div>
+            Tests{' '}
+            <Button
+              size="small"
+              icon="folder-open"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
+              }}
+            />
+          </div>,
+          fileMenuTitle,
+          'Rubric',
+        ];
 
         leftHeader = [
           <HeaderMenu
