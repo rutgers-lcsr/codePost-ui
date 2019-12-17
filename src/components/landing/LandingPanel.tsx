@@ -74,7 +74,15 @@ const LandingPanel = (props: IProps) => {
         {props.removeModelSmallScreen && windowSize.width < landingVars.breakpoints.removeModule ? (
           <div />
         ) : (
-          <div style={{ transform: `scale(${transform})` }}>{moduleDiv}</div>
+          <div
+            style={{
+              transform: `scale(${transform})`,
+              marginTop: transform < 1 ? (-(1 - transform) * props.moduleMaxHeight) / 2 : 0,
+              marginBottom: transform < 1 ? (-(1 - transform) * props.moduleMaxHeight) / 2 : 0,
+            }}
+          >
+            {moduleDiv}
+          </div>
         )}
       </div>
     );

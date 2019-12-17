@@ -1,8 +1,8 @@
 import React from 'react';
 
-const code = require('./Code.png');
-const jupyter = require('./Jupyter.png');
-const pdf = require('./PDF.png');
+const code = require('./Code.jpg');
+const jupyter = require('./Jupyter.jpg');
+const pdf = require('./PDF.jpg');
 
 interface IProps {
   index: number;
