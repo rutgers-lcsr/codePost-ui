@@ -1424,8 +1424,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         id: -2,
         submission: 1,
         testCase: -2,
-        logs: '',
-        passed: true,
+        logs: `Traceback (most recent call last):
+  File "./Loops.py", line 37, in <module>
+    reverse([1, 2, 3])
+  File "./Loops.py", line 33, in reverse
+    reversed.append(intList[i])
+IndexError: list index out of range`,
+        passed: false,
         testCategory: -1,
         created: '2019-12-16T23:16:19.737805Z',
         modified: '2019-12-16T23:16:19.737823Z',
@@ -1470,7 +1475,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           sortKey: 0,
           description: 'Test reverse [1,2,3]',
           type: 'io',
-          pointsFail: 1,
+          pointsFail: -2,
           pointsPass: 0,
           text: '',
           modified: '2019-12-16T23:09:44.686902Z',

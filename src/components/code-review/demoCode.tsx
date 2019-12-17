@@ -38,7 +38,7 @@ def max(intList):
 def reverse(intList):
 
   reversed = []
-  for i in range(len(intList) - 1, -1, -1):
+  for i in range(len(intList), -1, -1):
     reversed.append(intList[i])
 
   return reversed
