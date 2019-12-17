@@ -15,6 +15,11 @@ import { Link } from 'react-router-dom';
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
 
+import LogViewer from '../../../../components/core/LogViewer';
+
+/* codePost imports */
+import { AssignmentType } from '../../../../infrastructure/assignment';
+import { SubmissionType } from '../../../../infrastructure/submission';
 import { encodeForLink } from '../../../../components/core/URLutils';
 
 import { AssignmentType, CourseType, SubmissionType } from '../../../../infrastructure/types';
@@ -791,11 +796,8 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
                       iconStyle={{ paddingLeft: 5 }}
                     />
                   </div>
-                  <ul>
-                    {this.state.errorPaths.map((el, i) => {
-                      return <li key={i}>{el}</li>;
-                    })}
-                  </ul>
+                  <LogViewer text={this.state.errorPaths.join('\n')} />
+
                   <br />
                 </div>
               </div>
