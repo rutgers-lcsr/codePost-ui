@@ -18,10 +18,7 @@ import { tooltips } from '../../../../components/core/tooltips';
 import LogViewer from '../../../../components/core/LogViewer';
 
 /* codePost imports */
-import { AssignmentType } from '../../../../infrastructure/assignment';
-import { SubmissionType } from '../../../../infrastructure/submission';
 import { encodeForLink } from '../../../../components/core/URLutils';
-
 import { AssignmentType, CourseType, SubmissionType } from '../../../../infrastructure/types';
 
 import UploadForm from './UploadForm';
