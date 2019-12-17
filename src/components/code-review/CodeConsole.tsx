@@ -1823,10 +1823,11 @@ IndexError: list index out of range`,
           'Submission Info',
           <div>
             Tests{' '}
-            <Button
+            <CPButton
               size="small"
+              cpType={theme === 'light' ? 'secondary' : 'dark'}
               icon="folder-open"
-              onClick={(e) => {
+              onClick={(e: any) => {
                 e.preventDefault();
                 e.stopPropagation();
                 this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
@@ -1976,10 +1977,11 @@ IndexError: list index out of range`,
           'Submission Info',
           <div>
             Tests{' '}
-            <Button
+            <CPButton
               size="small"
+              cpType={theme === 'light' ? 'secondary' : 'dark'}
               icon="folder-open"
-              onClick={(e) => {
+              onClick={(e: any) => {
                 e.preventDefault();
                 e.stopPropagation();
                 this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
@@ -2175,10 +2177,11 @@ IndexError: list index out of range`,
           'Submission Info',
           <div>
             Tests{' '}
-            <Button
+            <CPButton
               size="small"
+              cpType={theme === 'light' ? 'secondary' : 'dark'}
               icon="folder-open"
-              onClick={(e) => {
+              onClick={(e: any) => {
                 e.preventDefault();
                 e.stopPropagation();
                 this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
