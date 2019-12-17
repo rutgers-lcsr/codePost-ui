@@ -136,6 +136,8 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
             return !LOCAL_SETTINGS.infoMenuHidden.getter();
           case 'file-menu':
             return !LOCAL_SETTINGS.fileMenuHidden.getter();
+          case 'tests-menu':
+            return !LOCAL_SETTINGS.testsMenuHidden.getter();
           case 'rubric-menu':
             return !LOCAL_SETTINGS.rubricMenuHidden.getter();
           default:
@@ -190,6 +192,9 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
               break;
             case 'file-menu':
               LOCAL_SETTINGS.fileMenuHidden.setter(keys.indexOf(indexString) === -1);
+              break;
+            case 'tests-menu':
+              LOCAL_SETTINGS.testsMenuHidden.setter(keys.indexOf(indexString) === -1);
               break;
             case 'rubric-menu':
               LOCAL_SETTINGS.rubricMenuHidden.setter(keys.indexOf(indexString) === -1);
