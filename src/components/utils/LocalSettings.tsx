@@ -86,6 +86,11 @@ const infoMenuHidden = generateSettingFunctions('infoMenuHidden', false, boolean
 // defalut value: false
 const fileMenuHidden = generateSettingFunctions('fileMenuHidden', false, booleanIParser, booleanOParser);
 
+// key: testsMenuHidden
+// return type: boolean. If true, tests menu section of code console will be collapsed.
+// defalut value: false
+const testsMenuHidden = generateSettingFunctions('testsMenuHidden', false, booleanIParser, booleanOParser);
+
 // key: rubricMenuHidden
 // return type: boolean. If true, rubric menu section of code console will be collapsed.
 // defalut value: false
@@ -127,6 +132,7 @@ const LOCAL_SETTINGS = {
   cursorMode,
   infoMenuHidden,
   fileMenuHidden,
+  testsMenuHidden,
   rubricMenuHidden,
   codeZoom,
   codeWidth,

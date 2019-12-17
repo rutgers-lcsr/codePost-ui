@@ -1781,6 +1781,7 @@ IndexError: list index out of range`,
             updateGrader={this.updateGrader}
           />,
           <TestsMenu
+            key="tests-menu"
             isOpen={this.state.panelType === PANEL_TYPE.TESTS}
             tests={this.state.tests}
             cases={this.state.testCases}
@@ -1973,6 +1974,7 @@ IndexError: list index out of range`,
             deleteStudentQuestion={this.deleteStudentQuestion}
           />,
           <TestsMenu
+            key="tests-menu"
             isOpen={this.state.panelType === PANEL_TYPE.TESTS}
             tests={this.state.tests}
             cases={this.state.testCases}
@@ -2140,6 +2142,7 @@ IndexError: list index out of range`,
             updateGrader={this.updateGrader}
           />,
           <TestsMenu
+            key="tests-menu"
             isOpen={this.state.panelType === PANEL_TYPE.TESTS}
             tests={this.state.tests}
             cases={this.state.testCases}
