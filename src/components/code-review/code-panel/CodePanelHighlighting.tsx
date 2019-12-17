@@ -184,16 +184,27 @@ class CodePanelHighlighting {
       return highlight;
     });
     // Don't mess with nested opacity for the cursor
-    if (!ids.includes('0') && !ids.includes(`${Number.MAX_SAFE_INTEGER}`) && false) {
+    if (!ids.includes('0') && !ids.includes(`${Number.MAX_SAFE_INTEGER}`)) {
       for (const [highlight, level] of Object.entries(styles)) {
         if (highlight === '0' || highlight === `${Number.MAX_SAFE_INTEGER}`) {
           continue;
         }
 
+        let rules;
+        let stylesheet;
+        // We don't want to inadvertently try to access .rules or .cssRules of an externally-loaded stylesheet,
+        // because of https://stackoverflow.com/questions/49088507/cannot-access-rules-in-external-cssstylesheet
+        // So, let's find the first one that isn't externally loaded, defined by .href === null.
+        for (let i = 0; i < document.styleSheets.length; i++) {
+          if (document.styleSheets[i].href === null) {
+            stylesheet = document.styleSheets[i] as CSSStyleSheet;
+            rules = stylesheet.rules || stylesheet.cssRules;
+            break;
+          }
+        }
+
         const className = `.highlight-${highlight}`;
-        const stylesheet = document.styleSheets[0] as CSSStyleSheet;
         const tint = 0.2 + 0.2 * level;
-        const rules = stylesheet.rules || stylesheet.cssRules;
 
         let ruleExists = false;
         for (let x in rules) {
@@ -207,7 +218,7 @@ class CodePanelHighlighting {
             break;
           }
         }
-        if (!ruleExists) {
+        if (!ruleExists && stylesheet) {
           stylesheet.insertRule(`.highlight-${highlight} {background-color: ${color}; opacity: ${tint} !important;}`);
         }
       }
