@@ -26,7 +26,7 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubric
 
 import { TestCaseType } from '../../infrastructure/types';
 
-import { Assignment, AssignmentType } from '../../infrastructure/assignment';
+import { Assignment, AssignmentType, AssignmentStudent } from '../../infrastructure/assignment';
 import { CommentIO, CommentType, UiComment } from '../../infrastructure/comment';
 import { Course, CourseType } from '../../infrastructure/course';
 import { FileType } from '../../infrastructure/file';
@@ -573,6 +573,17 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           selectedFile = files[0];
         }
 
+        // Read tests
+        const { testCases, testCategories } = await AssignmentStudent.readStudentTests(assignment.id);
+        const caseObj: TestCasesByCategory = {};
+        testCategories.forEach((category) => {
+          caseObj[category.id] = [];
+        });
+        testCases.forEach((testCase) => {
+          caseObj[testCase.testCategory] = [...caseObj[testCase.testCategory], testCase];
+        });
+        tests = submission.tests ? await Promise.all(submission.tests.map((id) => SubmissionTest.read(id))) : [];
+
         // then store it in state
         this.setState({
           noSave,
@@ -586,6 +597,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           isLoading: false,
           selectedFile,
           permissionLevel,
+          testCategories,
+          testCases: caseObj,
+          tests: SubmissionTest.getLatest(tests),
           isStudent:
             simulatingStudent ||
             (submission.students !== undefined && submission.students.indexOf(this.props.user.email) > -1),
@@ -1922,6 +1936,10 @@ IndexError: list index out of range`,
               zoom={this.state.codeZoom}
               updateVerticalOffset={this.setVerticalOffset}
             />
+          );
+        } else if (this.state.panelType === PANEL_TYPE.TESTS) {
+          content = (
+            <TestsList tests={this.state.tests} cases={this.state.testCases} categories={this.state.testCategories} />
           );
         }
 
