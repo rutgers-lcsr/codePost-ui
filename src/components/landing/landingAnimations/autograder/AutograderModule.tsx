@@ -3,15 +3,15 @@ import React, { useState } from 'react';
 import { Slider, Typography } from 'antd';
 
 const noCode = require('./IO.png');
-const unit = require('./Unit.png');
-const fileMode = require('./FileMode.png');
+const unit = require('./Unit.jpg');
+const fileMode = require('./FileMode.jpg');
 
 const AutograderModule = () => {
   const [index, setIndex] = useState(0);
 
-  const noCodeImg = <img style={{ marginTop: 30, marginLeft: 10 }} width={475} src={noCode} alt="" />;
-  const unitImg = <img style={{ marginTop: 30, marginLeft: 10 }} width={475} src={unit} alt="" />;
-  const fileModeImg = <img style={{ marginTop: 30, marginLeft: 10 }} width={475} src={fileMode} alt="" />;
+  const noCodeImg = <img style={{ marginTop: 5, marginLeft: 10 }} width={550} src={noCode} alt="" />;
+  const unitImg = <img style={{ marginTop: 6, marginLeft: 10 }} width={550} src={unit} alt="" />;
+  const fileModeImg = <img style={{ marginTop: 0, marginLeft: 5 }} width={550} src={fileMode} alt="" />;
 
   const handleChange = (e: any) => {
     setIndex(e);
@@ -34,7 +34,7 @@ const AutograderModule = () => {
       break;
   }
   return (
-    <div>
+    <div style={{ marginRight: 25 }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
         <Typography.Text
           className={index == 0 ? 'slider-text--active' : index == 1 ? 'slider-text' : 'slider-text--inactive'}
@@ -72,13 +72,37 @@ const AutograderModule = () => {
       </div>
       <div
         style={{
-          maxWidth: 480,
-          maxHeight: 340,
-          borderRadius: 8,
+          maxWidth: 550,
+          width: 550,
+          height: 390,
+          position: 'relative',
         }}
-        className={`display-flex justify-content-center align-items-center bevel`}
+        className={`display-flex justify-content-center align-items-center`}
       >
-        {imgToShow}
+        <div
+          style={{ position: 'absolute', maxWidth: 550, borderRadius: 8 }}
+          className={`display-flex justify-content-center align-items-center bevel autograder-image${
+            index === 0 ? '--active' : ''
+          }`}
+        >
+          {noCodeImg}
+        </div>
+        <div
+          style={{ position: 'absolute', maxWidth: 550, borderRadius: 8 }}
+          className={`display-flex justify-content-center align-items-center bevel autograder-image${
+            index === 1 ? '--active' : ''
+          }`}
+        >
+          {unitImg}
+        </div>
+        <div
+          style={{ position: 'absolute', maxWidth: 550, borderRadius: 8 }}
+          className={`display-flex justify-content-center align-items-center bevel autograder-image${
+            index === 2 ? '--active' : ''
+          }`}
+        >
+          {fileModeImg}
+        </div>
       </div>
     </div>
   );

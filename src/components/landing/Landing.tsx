@@ -80,7 +80,7 @@ class Landing extends React.PureComponent<{}, {}> {
         subTitle="Easily write and run tests against student code"
         type="right"
         moduleMaxWidth={595}
-        moduleMaxHeight={380}
+        moduleMaxHeight={550}
         textSize="normal"
         removeModelSmallScreen={false}
         module={<AutograderModule />}
@@ -184,6 +184,8 @@ class Landing extends React.PureComponent<{}, {}> {
 
     return (
       <LandingLayout
+        // @ts-ignore
+        location={this.props.location}
         topBar={<LandingHeader />}
         hero={<LandingHero />}
         testimonial={
