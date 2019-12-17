@@ -2,7 +2,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Badge, Button, Icon, Input, Popconfirm, Spin, Table, Tag } from 'antd';
+import { Badge, Button, Icon, Input, Popconfirm, Spin, Table, Tag, Switch } from 'antd';
 
 /* codePost imports */
 import CPButton from '../../../core/CPButton';
@@ -158,7 +158,7 @@ const RubricCategoryUI = ({
               &nbsp;
               {props.showExplanations ? (
                 <span style={{ verticalAlign: 'middle' }}>
-                  <CPTooltip title="Edit comment's explanation">
+                  <CPTooltip title="Edit comment's explanation" key={rubricComment.id}>
                     <CPButton
                       icon="edit"
                       style={{ background: thisComment.explanation ? '#f0fff7' : undefined }}
@@ -167,7 +167,11 @@ const RubricCategoryUI = ({
                       }}
                     />
                   </CPTooltip>
-                  <CPTooltip title="Delete comment's explanation">
+                  <CPTooltip
+                    title="Delete comment's explanation"
+                    key={rubricComment.id}
+                    disabled={!thisComment.explanation}
+                  >
                     <CPButton
                       icon="delete"
                       disabled={!thisComment.explanation}
@@ -185,11 +189,15 @@ const RubricCategoryUI = ({
           ),
           linked: (
             <span onClick={activateCommentExplorer}>
-              <Badge
-                count={thisComment.comments.length}
-                className="badge badge--standard"
-                style={{ backgroundColor: 'rgba(0,0,0,0.5)', cursor: 'pointer' }}
-              />
+              {props.instanceLists[thisComment.id] ? (
+                <Badge
+                  count={props.instanceLists[thisComment.id].length}
+                  className="badge badge--standard"
+                  style={{ backgroundColor: 'rgba(0,0,0,0.5)', cursor: 'pointer' }}
+                />
+              ) : (
+                <Spin />
+              )}
             </span>
           ),
           feedback: !props.commentFeedbackOn ? (
@@ -266,6 +274,10 @@ const RubricCategoryUI = ({
 
   const clearPointLimit = () => {
     helpers.setValue('pointLimit', null);
+  };
+
+  const toggleAtMostOnce = () => {
+    helpers.setValue('atMostOnce', !state.atMostOnce);
   };
 
   const titleLeft = [
@@ -362,14 +374,24 @@ const RubricCategoryUI = ({
     </div>
   ) : null;
 
+  const atMostOnceToggle = props.showAtMostOnce ? (
+    <div key="atMostOnce" style={{ maxWidth: 300 }}>
+      <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
+        "At Most Once" Mode{' '}
+        <CPTooltip infoIcon={true} title={'If applied, this category can be applied at most once to any submission.'} />
+      </div>
+      <Switch checked={state.atMostOnce} onChange={toggleAtMostOnce} />
+    </div>
+  ) : null;
+
   const contentLeft =
     props.windowwidth < 1200 ? (
       <div>
         <CPFlex left={[categoryName, categoryPoints]} right={[]} gutterSize={60} />
-        <CPFlex left={[helpText]} right={[]} gutterSize={60} style={{ paddingTop: 30 }} />
+        <CPFlex left={[helpText, atMostOnceToggle]} right={[]} gutterSize={60} style={{ paddingTop: 30 }} />
       </div>
     ) : (
-      <CPFlex left={[categoryName, categoryPoints]} right={[helpText]} gutterSize={60} />
+      <CPFlex left={[categoryName, categoryPoints, atMostOnceToggle]} right={[helpText]} gutterSize={60} />
     );
 
   const setExplanation = (draft?: string) => {
@@ -402,7 +424,8 @@ const RubricCategoryUI = ({
       </div>
       {activeComment ? (
         <ExplanationModal
-          rubricComment={activeComment}
+          title={activeComment.text}
+          startText={activeComment.explanation}
           onCancel={() => {
             setActiveComment(undefined);
           }}

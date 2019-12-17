@@ -9,7 +9,7 @@ import React from 'react';
 
 // We ignore eslint since Popover never explicitly used. We just use the classNames
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Button, Input, message, Popover, Tooltip } from 'antd';
+import { Button, Icon, Input, message, Popconfirm, Popover, Tooltip } from 'antd';
 
 /* codePost imports */
 
@@ -17,6 +17,8 @@ import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
 import CPPointInput from '../../core/CPPointInput';
 import CPTooltip from '../../core/CPTooltip';
+
+import { getOperatingSystem, OS } from '../../core/operatingSystem';
 
 import { tooltips } from '../../core/tooltips';
 
@@ -101,12 +103,16 @@ interface ICommentProps {
 
   hideAuthor: boolean;
   forcedRubricMode: boolean;
+
+  cursored: boolean;
 }
 
 interface ICommentState {
   status: CommentStatus;
   text: string;
   points: number;
+  showDeletePopover: boolean;
+  hasHover: boolean;
 }
 
 class Comment extends React.Component<ICommentProps, ICommentState> {
@@ -118,7 +124,14 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   }
 
   public componentDidMount() {
+    document.addEventListener('keydown', this.handleCursorHotkeys);
+    document.addEventListener('keydown', this.handleHotkeys);
     this.props.setCommentPlacements();
+  }
+
+  public componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleCursorHotkeys);
+    document.removeEventListener('keydown', this.handleHotkeys);
   }
 
   public componentDidUpdate(prevProps: ICommentProps) {
@@ -131,6 +144,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           points: prevProps.rubricComment.pointDelta,
         });
       } else {
+        const commentTextArea = document.getElementById('comment-text-area');
+        if (commentTextArea !== null) {
+          commentTextArea.focus();
+        }
+
         this.setState({
           points: UiComment.points(this.props.comment, this.props.rubricComment),
         });
@@ -172,15 +190,51 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         this.props.onDelete(this.props.comment);
       }
     }
+
+    if (!prevProps.cursored && this.props.cursored && prevProps.commentType !== 'active') {
+      const scrollArea = document.getElementById('code-scroll-area');
+      if (scrollArea !== null) {
+        setTimeout(() => {
+          if (
+            this.props.placement > scrollArea.scrollTop + window.innerHeight - 100 ||
+            this.props.placement < scrollArea.scrollTop
+          ) {
+            scrollArea.scrollTop = Math.max(0, this.props.placement - 100);
+          }
+        });
+      }
+    }
   }
 
-  public init = () => {
+  public init = (): ICommentState => {
     const text: string = this.props.comment.text ? this.props.comment.text : '';
     const points: number = UiComment.points(this.props.comment, this.props.rubricComment);
     const status: CommentStatus =
       text === '' && points === 0 && this.props.rubricComment === undefined ? 'edited' : 'idle';
-    return { text, points, status };
+    return { text, points, status, showDeletePopover: false, hasHover: false };
   };
+
+  /***********************************************************************************************/
+  /* Hover handlers
+  /***********************************************************************************************/
+
+  public onMouseEnter = () => {
+    this.highlightRelatedComment();
+    this.handleHoverEvent();
+  };
+
+  public onMouseLeave = () => {
+    this.unhighlightRelatedComment();
+    this.handleHoverEvent();
+  };
+
+  public handleHoverEvent = () => {
+    this.setState((oldState) => {
+      return { hasHover: !oldState.hasHover };
+    });
+  };
+
+  /***********************************************************************************************/
 
   public save = async () => {
     this.unhighlightRelatedComment();
@@ -198,6 +252,89 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       this.props.setCommentPlacements();
     } catch (error) {
       message.error(`Error saving comment: ${JSON.stringify(error)}`);
+    }
+  };
+
+  public handleCursorHotkeys = (e: any) => {
+    if (!this.props.cursored) {
+      return;
+    }
+
+    if (e.key === 'Enter' && !e.shiftKey && !this.state.showDeletePopover) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (this.props.commentType === 'active') {
+        this.props.changeActive(undefined);
+      } else {
+        this.props.changeActive(this.props.comment.id);
+      }
+    }
+
+    const os = getOperatingSystem();
+    const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+
+    if (e.key === 'd' && triggerKey) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!this.state.showDeletePopover) {
+        this.setState({ showDeletePopover: true });
+      } else {
+        this.confirmDelete(e);
+      }
+    }
+  };
+
+  public handleHotkeys = (e: any) => {
+    if (e.key === 'Escape') {
+      if (this.state.showDeletePopover) {
+        this.confirmCancelDelete(e);
+      } else {
+        this.props.changeActive(undefined);
+      }
+    }
+
+    if (this.state.showDeletePopover && e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+      this.confirmDelete(e);
+    }
+
+    if (this.props.commentType !== 'active') {
+      return;
+    }
+
+    const os = getOperatingSystem();
+    const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+
+    if (e.key === 'd' && triggerKey) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!this.state.showDeletePopover) {
+        this.setState({ showDeletePopover: true });
+      } else {
+        this.confirmDelete(e);
+      }
+    }
+
+    if (e.key === 'u' && triggerKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.removeRubricComment();
+    }
+
+    if (e.key === '[' && this.props.rubricComment === undefined && triggerKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.onMinus();
+    } else if (e.key === ']' && this.props.rubricComment === undefined && triggerKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.onPlus();
+    } else if (['[', ']'].includes(e.key) && triggerKey) {
+      e.preventDefault();
+      e.stopPropagation();
     }
   };
 
@@ -317,6 +454,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
   public handleShiftEnter = (e: any) => {
     if (e.key === 'Enter' && e.shiftKey) {
       e.preventDefault(); // skip OnChange method
+      e.stopPropagation();
       this.save();
       this.deactivate();
     }
@@ -346,6 +484,27 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         this.props.commentType === 'readonly' ? 'readonly' : 'active'
       }`;
     }
+  };
+
+  public showDeletePopover = () => {
+    this.setState({ showDeletePopover: true });
+  };
+
+  public hideDeletePopover = () => {
+    this.setState({ showDeletePopover: false });
+  };
+
+  public handleDeletePopoverVisibleChange = (showDeletePopover: boolean) => {
+    this.setState({ showDeletePopover });
+  };
+
+  public confirmDelete = (e: any) => {
+    this.delete(e);
+    this.setState({ showDeletePopover: false });
+  };
+
+  public confirmCancelDelete = (e: any) => {
+    this.setState({ showDeletePopover: false });
   };
 
   public render() {
@@ -446,6 +605,21 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     // ------------------ commentType ['active', 'inactive', 'readonly'] ------------------ //
     //////////////////////////////////////////////////////////////////////////////////////////
 
+    const popoverContent = (
+      <CPFlex
+        left={[]}
+        right={[
+          <CPButton cpType="secondary" size="small" style={{ width: '60px' }} onClick={this.confirmCancelDelete}>
+            No
+          </CPButton>,
+          <CPButton cpType="danger" size="small" style={{ width: '60px' }} onClick={this.confirmDelete}>
+            Yes
+          </CPButton>,
+        ]}
+        gutterSize={14}
+      />
+    );
+
     if (this.props.commentType === 'active') {
       const tooltip = this.props.rubricComment ? tooltips.grade.comments.pointsDisabled : null;
 
@@ -473,6 +647,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       commentElements.comment = (
         <CPTooltip title={forcedRubricTooltip} hideThisOnHideTips={true}>
           <TextArea
+            id="comment-text-area"
             autosize
             className="comment__text-area"
             value={this.state.text}
@@ -494,7 +669,18 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       );
 
       commentElements.saveButton = <CPButton cpType="secondary" icon="check" onClick={this.deactivate} />;
-      commentElements.deleteButton = <CPButton cpType="danger" icon="delete" onClick={this.delete} />;
+      commentElements.deleteButton = (
+        <Popover
+          title="Are you sure you want to delete this comment?"
+          visible={this.state.showDeletePopover}
+          onVisibleChange={this.handleDeletePopoverVisibleChange}
+          trigger="click"
+          placement="bottomRight"
+          content={popoverContent}
+        >
+          <CPButton cpType="danger" icon="delete" />
+        </Popover>
+      );
 
       if (this.props.rubricComment) {
         commentElements.rubricCommentAction = (
@@ -515,6 +701,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       shadow = { boxShadow: this.context.consoleTheme.commentShadow };
     }
 
+    const preventDefault = (e: any) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
     if (this.props.commentType === 'inactive') {
       commentElements.points = badge;
       commentElements.comment = (
@@ -522,7 +713,30 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           <BlockMarkdown source={this.state.text} />
         </div>
       );
-      commentElements.deleteButton = <CPButton cpType="danger" icon="delete" onClick={this.delete} />;
+      // Only shown delete button on inactive comment when the user is hovering
+      commentElements.deleteButton = this.state.hasHover ? (
+        <Popover
+          title="Are you sure you want to delete this comment?"
+          visible={this.state.showDeletePopover}
+          onVisibleChange={this.handleDeletePopoverVisibleChange}
+          trigger="click"
+          placement="bottomRight"
+          content={popoverContent}
+        >
+          <CPButton cpType="danger" icon="delete" onClick={preventDefault} />
+        </Popover>
+      ) : (
+        <Popover
+          title="Are you sure you want to delete this comment?"
+          visible={this.state.showDeletePopover}
+          onVisibleChange={this.handleDeletePopoverVisibleChange}
+          trigger="click"
+          placement="bottomRight"
+          content={popoverContent}
+        >
+          {null}
+        </Popover>
+      );
 
       onClick = this.onCommentClick;
       cursor = 'pointer';
@@ -650,27 +864,29 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         id={`comment-${this.props.comment.id}`}
         style={{ top: `${this.props.placement}px`, cursor, zIndex: 0 }}
         onClick={onClick}
-        onMouseEnter={this.highlightRelatedComment}
-        onMouseLeave={this.unhighlightRelatedComment}
+        onMouseEnter={this.onMouseEnter}
+        onMouseLeave={this.onMouseLeave}
         data-status={this.state.status}
       >
         <div className="ant-popover-content">
           <div
             className="ant-popover-arrow"
             style={{
-              borderColor:
-                this.props.comment.color !== undefined && this.props.comment.color !== null
-                  ? this.props.comment.color
-                  : this.context.consoleTheme.commentBody,
+              borderColor: this.props.cursored
+                ? 'lightblue'
+                : this.props.comment.color !== undefined && this.props.comment.color !== null
+                ? this.props.comment.color
+                : this.context.consoleTheme.commentBody,
             }}
           />
           <div className="ant-popover-inner" style={shadow}>
             <div
               style={{
-                backgroundColor:
-                  this.props.comment.color !== undefined && this.props.comment.color !== null
-                    ? this.props.comment.color
-                    : this.context.consoleTheme.commentBody,
+                backgroundColor: this.props.cursored
+                  ? 'lightblue'
+                  : this.props.comment.color !== undefined && this.props.comment.color !== null
+                  ? this.props.comment.color
+                  : this.context.consoleTheme.commentBody,
               }}
             >
               <div

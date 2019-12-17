@@ -14,6 +14,17 @@ const CONSOLE_FILEMENU_COMMENTS = 'Comments in file';
 const STUDENT_SUBHEADER_ASSIGNMENT = 'Assignment name';
 
 // Grade Tooltips
+const GRADE_HEADER_CURSORMODE = (
+  <div>
+    Toggle Cursor Mode
+    <br />
+    {`[${osControlKey()} shift y]`}
+    <br />
+    Shortcuts
+    <br />
+    {`[${osControlKey()} /]`}
+  </div>
+);
 const GRADE_HEADER_DARKMODE = (
   <div>
     Toggle Dark Mode
@@ -215,6 +226,7 @@ export const tooltips = {
   grade: {
     header: {
       darkMode: GRADE_HEADER_DARKMODE,
+      cursorMode: GRADE_HEADER_CURSORMODE,
       zoomIn: GRADE_HEADER_ZOOMIN,
       zoomOut: GRADE_HEADER_ZOOMOUT,
       grow: GRADE_HEADER_GROW,

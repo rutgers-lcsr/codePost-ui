@@ -36,6 +36,7 @@ export interface IRubricManagerParams {
 export interface IRubricManagerHelpers {
   loadAssignmentRubric: any;
   loadFeedbackScores: any;
+  loadInstanceLists: any;
   resetRubric: any;
   setNewRubric: any;
   replaceRubric: any;
@@ -75,6 +76,7 @@ export interface IRubricManagerProps {
   submissions: SubmissionType[];
 
   shouldLoadFeedback: boolean;
+  shouldLoadInstanceLists: boolean;
 
   onCancel: () => void;
 
@@ -134,6 +136,7 @@ export interface IRubricManagerState {
   // misc
   newObjectCounter: number;
   feedbackScores?: { [commentID: number]: IFeedbackScore };
+  instanceLists: { [commentID: number]: number[] };
 }
 
 /**********************************************************************************************************************/
@@ -178,15 +181,20 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
       savedRubricComments: defaultRubric ? defaultRubric.comments : {},
 
       newObjectCounter: -1,
+      instanceLists: {},
     };
     this.onUnload = this.onUnload.bind(this);
 
     if (!props.defaultRubric) {
-      this.loadAssignmentRubric(props.assignment, props.shouldLoadFeedback);
+      this.loadAssignmentRubric(props.assignment, props.shouldLoadInstanceLists, props.shouldLoadFeedback);
     }
   }
 
-  public loadAssignmentRubric = (assignment: AssignmentType, shouldLoadFeedback: boolean) => {
+  public loadAssignmentRubric = (
+    assignment: AssignmentType,
+    shouldLoadInstances: boolean,
+    shouldLoadFeedback: boolean,
+  ) => {
     return Assignment.readRubric(assignment.id)
       .then((rubric: RubricType) => {
         const commentMap = this.buildCommentMap(rubric.rubricCategories, rubric.rubricComments);
@@ -212,6 +220,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
             rubricComments: commentMap,
           });
         }
+
         this.setState(
           {
             rubricCategories: _.cloneDeep(rubric.rubricCategories),
@@ -224,6 +233,10 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
             if (shouldLoadFeedback) {
               this.loadFeedbackScores(rubric.rubricComments);
             }
+
+            if (shouldLoadInstances) {
+              this.loadInstanceLists(rubric.rubricComments);
+            }
           },
         );
       })
@@ -235,26 +248,13 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
   public loadFeedbackScores = async (rubricComments: RubricCommentType[]) => {
     const newMap: any = {};
     for (const rComment of rubricComments) {
-      // feedback scores
-      let numNegative = 0;
-      let numPositive = 0;
-      const totalComments = rComment.comments.length;
+      if (rComment.id > 0) {
+        const score = await RubricComment.readFeedbackScore(rComment.id);
 
-      if (totalComments === 0) {
-        newMap[rComment.id] = { negative: 0, positive: 0 };
-      } else {
-        for (const commentID of rComment.comments) {
-          const loadedComment = await CommentIO.read(commentID);
-          if (loadedComment.feedback === -1) {
-            numNegative = numNegative + 1;
-          } else if (loadedComment.feedback === 1) {
-            numPositive = numPositive + 1;
-          }
-        }
-
+        // feedback scores
         newMap[rComment.id] = {
-          negative: numNegative / totalComments,
-          positive: numPositive / totalComments,
+          negative: score.negative,
+          positive: score.positive,
         };
       }
     }
@@ -262,12 +262,31 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     this.setState({ feedbackScores: newMap });
   };
 
+  public loadInstanceLists = async (rubricComments: RubricCommentType[]) => {
+    const newMap: { [id: number]: number[] } = {};
+    for (const rComment of rubricComments) {
+      if (rComment.id > 0) {
+        const list = await RubricComment.readCommmentList(rComment.id);
+        newMap[rComment.id] = list.comments;
+      } else {
+        newMap[rComment.id] = [];
+      }
+    }
+
+    this.setState({ instanceLists: newMap });
+    return await newMap;
+  };
+
   public componentDidMount() {
     window.addEventListener('beforeunload', this.onUnload);
 
     if (this.props.reloadInterval !== undefined) {
       this.interval = window.setInterval(() => {
-        this.loadAssignmentRubric(this.props.assignment, this.props.shouldLoadFeedback);
+        this.loadAssignmentRubric(
+          this.props.assignment,
+          this.props.shouldLoadInstanceLists,
+          this.props.shouldLoadFeedback,
+        );
       }, this.props.reloadInterval);
     }
   }
@@ -278,7 +297,11 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         clearInterval(this.interval);
       } else {
         this.interval = window.setInterval(async () => {
-          await this.loadAssignmentRubric(this.props.assignment, this.props.shouldLoadFeedback);
+          await this.loadAssignmentRubric(
+            this.props.assignment,
+            this.props.shouldLoadInstanceLists,
+            this.props.shouldLoadFeedback,
+          );
         }, this.props.reloadInterval);
       }
     }
@@ -450,7 +473,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
                   // We don't want to pass in the ids of linked comments on update
                   // Passing in these comments can create race conditions
                   // An example is if a linked comment gets deleted between rubric saves
-                  const { category: rubricCategory, comments: linkedComments, ...payload } = comment;
+                  const { category: rubricCategory, ...payload } = comment;
                   return RubricComment.update(payload);
                 } else {
                   return Promise.resolve();
@@ -510,6 +533,10 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
             newRubric.rubricComments,
           );
 
+          if (this.props.shouldLoadInstanceLists) {
+            this.loadInstanceLists(newRubric.rubricComments);
+          }
+
           if (this.props.shouldLoadFeedback) {
             this.loadFeedbackScores(newRubric.rubricComments);
           }
@@ -528,16 +555,32 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     }
   };
 
-  public deleteLinkedComments = (rubricComment: RubricCommentType) => {
-    const promises = rubricComment.comments.map((commentID) => {
+  public deleteLinkedComments = async (rubricComment: RubricCommentType) => {
+    // If we've already loaded this comment's instances, use the cached value
+    let comments = [];
+    if (this.state.instanceLists) {
+      comments = this.state.instanceLists[rubricComment.id];
+    } else {
+      comments = (await RubricComment.readCommmentList(rubricComment.id)).comments;
+    }
+
+    const promises = comments.map((commentID) => {
       return CommentIO.delete(commentID);
     });
 
     return Promise.all(promises);
   };
 
-  public unlinkLinkedComments = (rubricComment: RubricCommentType) => {
-    const promises = rubricComment.comments.map((commentID) => {
+  public unlinkLinkedComments = async (rubricComment: RubricCommentType) => {
+    // If we've already loaded this comment's instances, use the cached value
+    let comments = [];
+    if (this.state.instanceLists) {
+      comments = this.state.instanceLists[rubricComment.id];
+    } else {
+      comments = (await RubricComment.readCommmentList(rubricComment.id)).comments;
+    }
+
+    const promises = comments.map((commentID) => {
       const payload = {
         id: commentID,
         text: rubricComment.text,
@@ -554,6 +597,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     deletedComments: RubricCommentType[],
     editedComments: RubricCommentType[],
     resolved: { [key: number]: RESOLUTION },
+    instanceLists: { [key: number]: number[] },
   ) => {
     const deleted = [];
     const edited = [];
@@ -561,7 +605,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     // Look up deleted comments in cached list (source of truth)
     for (const comment of deletedComments) {
       if (!Object.keys(resolved).includes(comment.id.toString())) {
-        if (comment.comments.length > 0) {
+        if (instanceLists[comment.id] && instanceLists[comment.id].length > 0) {
           deleted.push(comment);
         }
       }
@@ -569,7 +613,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
     for (const comment of editedComments) {
       if (!Object.keys(resolved).includes(comment.id.toString())) {
-        if (comment.comments.length > 0) {
+        if (instanceLists[comment.id] && instanceLists[comment.id].length > 0) {
           edited.push(comment);
         }
       }
@@ -582,7 +626,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     };
   };
 
-  public onSave = (fnc?: (rubric: any) => void, demoMode?: boolean) => {
+  public onSave = async (fnc?: (rubric: any) => void, demoMode?: boolean) => {
     const {
       rubricComments,
       rubricCategories,
@@ -592,6 +636,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
       deletedCategories,
       resolutions,
       confirmedPropagation,
+      instanceLists,
     } = this.state;
 
     if (this.state.errorObjects.length > 0) {
@@ -599,8 +644,11 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
       return;
     }
 
-    this.setState({ isSaving: true }, () => {
-      const conflicts = this.buildLinkedList(deletedComments, unsavedComments, resolutions);
+    this.setState({ isSaving: true }, async () => {
+      // Grab latest instances (in case we haven't loaded them yet, or they've changed)
+      const newLists = await this.loadInstanceLists(Object.values(rubricComments).flat());
+      const conflicts = this.buildLinkedList(deletedComments, unsavedComments, resolutions, newLists);
+
       // Do we need to figure out what to do with applied rubric comments that are being deleted?
       if (conflicts.deleted.length > 0) {
         this.setState({ linkedComments: conflicts.deleted, isSaving: false });
@@ -786,6 +834,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
       rubricComments: [], // ignored by API,
       sortKey: rubricCategories.length,
       helpText: '',
+      atMostOnce: false,
     };
 
     newComments[payload.id] = [];
@@ -1022,6 +1071,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
       helpers: {
         loadAssignmentRubric: this.loadAssignmentRubric,
         loadFeedbackScores: this.loadFeedbackScores,
+        loadInstanceLists: this.loadInstanceLists,
         resetRubric: this.resetRubric,
         setNewRubric: this.setNewRubric,
         replaceRubric: this.replaceRubric,

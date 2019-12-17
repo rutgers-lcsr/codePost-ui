@@ -7,10 +7,9 @@ import './styles/main.scss';
 
 import * as ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
-
-import 'typeface-lato';
-import 'typeface-muli';
-import 'typeface-pt-mono';
+// This shows up here because of https://github.com/react-dnd/react-dnd/issues/186#issuecomment-462128478
+import { DndProvider } from 'react-dnd';
+import HTML5Backend from 'react-dnd-html5-backend';
 
 import * as serviceWorker from './serviceWorker';
 
@@ -26,9 +25,11 @@ import ErrorBoundary from './components/core/ErrorBoundary';
 
 ReactDOM.render(
   <ErrorBoundary type="app">
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <DndProvider backend={HTML5Backend}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </DndProvider>
   </ErrorBoundary>,
   document.getElementById('root') as HTMLElement,
 );

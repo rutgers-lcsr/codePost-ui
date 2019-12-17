@@ -47,6 +47,16 @@
 
 .landing__testimonials {
   animation: fade-in-bottom 1.4s;
+
+  .BrainhubCarousel__arrows {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    padding: 16px;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+  }
 }
 
 #APIExample {
@@ -264,4 +274,63 @@
   -webkit-transition-duration: 0.5s;
   transition-duration: 0.5s;
   -webkit-transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.slider-text {
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.9);
+  transition: all 0.3s;
+  &--active {
+    font-weight: 500;
+    color: #24be85 !important;
+    transition: all 0.3s;
+  }
+  &--inactive {
+    font-weight: 500;
+    color: #aaaaaa !important;
+    transition: all 0.3s;
+  }
+}
+
+.ant-slider-dot {
+  margin-left: -6px !important;
+  top: -4px !important;
+  height: 12px !important;
+  width: 12px !important;
+}
+
+.annotation-image {
+  z-index: 1000;
+  transform: scale(0.8);
+  transition: all 0.3s;
+
+  &--active {
+    z-index: 2000;
+    transform: scale(1.4);
+    transition: all 0.3s;
+  }
+}
+
+.annotation-image {
+  z-index: 1000;
+  transform: scale(0.8);
+  transition: all 0.3s;
+
+  &--active {
+    z-index: 2000;
+    transform: scale(1.4);
+    transition: all 0.3s;
+  }
+}
+
+.autograder-image {
+  z-index: 1000;
+  transform: scale(0.6);
+  transition: all 0.3s;
+
+  &--active {
+    z-index: 2000;
+    transform: scale(1);
+    transition: all 0.3s;
+  }
 }

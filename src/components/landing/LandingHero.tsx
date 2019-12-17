@@ -15,7 +15,7 @@ import GradeAnimationVideo from './landingAnimations/grade/GradeAnimationVideo';
 
 const LandingHero = () => {
   const windowSize = useWindowSize();
-  const MAX_WIDTH = 595;
+  const MAX_WIDTH = 605;
   const MAX_HEIGHT = 385;
   const [modalShowing, setModalShowing] = React.useState(false);
 
@@ -34,15 +34,11 @@ const LandingHero = () => {
     >
       <div style={{ fontSize: 28, lineHeight: 1.45, fontWeight: 600, color: '#4A4A4A' }}>
         <span>
-          The easiest way to{' '}
+          The fastest, easiest way to give
           <Typography.Text mark className="codePost-title-highlight">
-            grade
+            programming
           </Typography.Text>{' '}
-          and{' '}
-          <Typography.Text mark className="codePost-title-highlight">
-            comment on
-          </Typography.Text>{' '}
-          student code
+          feedback to students
         </span>
       </div>
       <div
@@ -55,9 +51,9 @@ const LandingHero = () => {
           paddingBottom: windowSize.width < landingVars.breakpoints.hero ? 30 : 60,
         }}
       >
-        Give better feedback on programming assignments, so you can teach CS better and train good programmers.{' '}
+        Autograding, code annotation, rubrics, plagiarism detection, and more. &nbsp;
         <Link to="/pricing">
-          <span style={{ fontWeight: 600, color: '#24be85' }}>Free for colleges.</span>
+          <span style={{ fontWeight: 600, color: '#24be85' }}>Free for educators.</span>
         </Link>
       </div>
       <div
@@ -70,16 +66,16 @@ const LandingHero = () => {
       >
         <Link to="/signup">
           <CPButton style={{ width: 140, height: 50, fontSize: 17, display: 'inline' }} cpType="primary">
-            Sign Up
+            Sign up free
           </CPButton>
         </Link>
         &nbsp; &nbsp;
         <CPButton
           style={{ width: 160, height: 50, fontSize: 17, display: 'inline' }}
           cpType="secondary"
-          onClick={tryItClick}
+          id="calendly-button-hero"
         >
-          Try it out!
+          Schedule demo
         </CPButton>
       </div>
       <Modal
@@ -89,7 +85,7 @@ const LandingHero = () => {
         title="Try out codePost!"
       >
         <CPButton cpType="primary" block>
-          <a href={`/demo?product_tour_id=${CODE_TOUR_DEMO_ID}`} target="_blank" rel="noopener noreferrer">
+          <a href={`/demo`} target="_blank" rel="noopener noreferrer">
             Interactive code annotation demo
           </a>
         </CPButton>

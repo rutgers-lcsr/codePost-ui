@@ -6,7 +6,10 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Breadcrumb, Button, Card, Icon, Input, message, Progress, Select, Spin, Statistic, Typography } from 'antd';
+import { Breadcrumb, Button, Divider, Icon, Input, message, Progress, Select, Spin, Statistic, Typography } from 'antd';
+
+/* other library imports */
+import { RouteComponentProps } from 'react-router';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
@@ -15,8 +18,6 @@ import { SubmissionType } from '../../../../infrastructure/submission';
 import { UserType } from '../../../../infrastructure/user';
 
 import invokeAWSLambda from '../../../../components/core/invokeAWSLambda';
-
-import CPFlex from '../../../../components/core/CPFlex';
 
 import CPAdminDetail from '../../other/CPAdminDetail';
 
@@ -27,6 +28,10 @@ import MossResults from './MossResults';
 import { sendSlack } from '../../../core/slack';
 
 import queryString from 'query-string';
+
+import { encodeForLink } from '../../../core/URLutils';
+
+import { trackFeature } from '../../../../components/utils/Fullstory';
 
 const { Option } = Select;
 
@@ -39,14 +44,15 @@ const { Search } = Input;
 
 export interface IMossProps {
   /* assignment data */
-  assignment: AssignmentType;
+  assignment?: AssignmentType;
+  assignments: AssignmentType[];
+
   course: CourseType;
   submissions: SubmissionType[];
 
   user: UserType;
 
-  breadcrumbs: React.ReactElement[];
-  location: any;
+  breadcrumbs?: React.ReactElement[];
 }
 /**********************************************************************************************************************/
 
@@ -87,7 +93,7 @@ const msToString = (ms: number) => {
   return `${parseInt(hours) ? `${hours}hr` : ''}${minutes}m ${seconds}s`;
 };
 
-const Moss = (props: IMossProps) => {
+const Moss = (props: IMossProps & RouteComponentProps) => {
   const [submit, setSubmit] = React.useState(true);
   const [loading, setLoading] = React.useState(false);
   const [url, setUrl] = React.useState(null);
@@ -103,6 +109,10 @@ const Moss = (props: IMossProps) => {
   if (values.test !== undefined) {
     testMode = true;
   }
+
+  React.useEffect(() => {
+    trackFeature('Moss', {});
+  }, []);
 
   // const mockResults = [
   //   {
@@ -202,44 +212,46 @@ const Moss = (props: IMossProps) => {
   };
 
   const checkMoss = async () => {
-    sendSlack(
-      'Moss submission',
-      `${testMode ? 'TEST MODE\n' : ''} ${props.course.name} ${props.course.period} | ${props.assignment.name} `,
-    );
+    if (props.assignment) {
+      sendSlack(
+        'Moss submission',
+        `${testMode ? 'TEST MODE\n' : ''} ${props.course.name} ${props.course.period} | ${props.assignment.name} `,
+      );
 
-    const payload = {
-      course_id: props.course['id'],
-      assignment_id: props.assignment['id'],
-      api_key: `JWT ${localStorage.getItem('token')} `,
-      language,
-      moss_id: mossID,
-      email: props.user.email,
-      test_mode: testMode,
-    };
+      const payload = {
+        course_id: props.course['id'],
+        assignment_id: props.assignment['id'],
+        api_key: `JWT ${localStorage.getItem('token')} `,
+        language,
+        moss_id: mossID,
+        email: props.user.email,
+        test_mode: testMode,
+      };
 
-    const res: any = await invokeAWSLambda({
-      accessKey: 'AKIAV22BSJSCXXWUPZUD',
-      secretAccessKey: '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',
-      arn: 'arn:aws:lambda:us-east-2:401180085381:function:send-to-moss:Production',
-      payload,
-    });
+      const res: any = await invokeAWSLambda({
+        accessKey: 'AKIAV22BSJSCXXWUPZUD',
+        secretAccessKey: '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',
+        arn: 'arn:aws:lambda:us-east-2:401180085381:function:send-to-moss:Production',
+        payload,
+      });
 
-    if (res === 'DELAY') {
-      return Promise.reject("This is taking a while. We'll email you when this is done.");
-    } else {
-      // Uncaught Lambda Error
-      if (res.StatusCode !== 200) {
-        return Promise.reject('An unknown error occurred. Please try again or contact team@codepost.io.');
+      if (res === 'DELAY') {
+        return Promise.reject("This is taking a while. We'll email you when this is done.");
       } else {
-        const resPayload = await JSON.parse(res['Payload']);
-        // Completed Running Function
-        if (resPayload.hasOwnProperty('errorMessage')) {
-          const error = resPayload['errorMessage'];
-          return Promise.reject(error);
-        } else if (resPayload['statusCode'] !== '200') {
-          return Promise.reject(resPayload['body']);
+        // Uncaught Lambda Error
+        if (res.StatusCode !== 200) {
+          return Promise.reject('An unknown error occurred. Please try again or contact team@codepost.io.');
         } else {
-          return resPayload['body'];
+          const resPayload = await JSON.parse(res['Payload']);
+          // Completed Running Function
+          if (resPayload.hasOwnProperty('errorMessage')) {
+            const error = resPayload['errorMessage'];
+            return Promise.reject(error);
+          } else if (resPayload['statusCode'] !== '200') {
+            return Promise.reject(resPayload['body']);
+          } else {
+            return resPayload['body'];
+          }
         }
       }
     }
@@ -289,7 +301,6 @@ const Moss = (props: IMossProps) => {
     setLoading(false);
   };
 
-  const title = <div style={{ fontSize: '24px', fontWeight: 500 }}>Moss Plagiarism Detection </div>;
   const help = (
     <CPTooltip
       infoIcon={true}
@@ -326,55 +337,86 @@ const Moss = (props: IMossProps) => {
   const requestEmailSubject = 'New%20Moss%20Account';
   const requestEmailBody = `registeruser${escape('\r\n')} mail ${props.user.email} `;
 
+  const changeAssignment = (assignment: string) => {
+    props.history.push(
+      `/admin/${encodeForLink(props.course.name)}/${encodeForLink(
+        props.course.period,
+      )}/assignments/plagiarism/${encodeForLink(assignment)}`,
+    );
+  };
+
   // Should be refactored to use Form once this feature is built out
   const action = submit ? (
     <div style={{ padding: '40px 100px 0px 100px' }}>
       <div>
+        <Typography.Title level={3}>Select an assignment</Typography.Title>
+        <Select
+          placeholder="Select an assignment"
+          defaultValue={props.assignment ? props.assignment.name : undefined}
+          disabled={loading}
+          style={{ width: '350px' }}
+          onChange={changeAssignment}
+        >
+          {props.assignments.map((assignment) => (
+            <Option key={assignment.id} value={assignment.name}>
+              {assignment.name}
+            </Option>
+          ))}
+        </Select>
+        <div style={{ padding: '10px 0px' }}>
+          <Input
+            addonBefore="Moss ID Number"
+            value={mossID}
+            onChange={onMossIDChange}
+            style={{ width: '350px' }}
+            addonAfter={
+              <CPTooltip
+                title={
+                  <span>
+                    You can obtain a Moss ID by clicking{' '}
+                    <a
+                      href={`mailto: ${requestEmail}?subject=${requestEmailSubject}&body=${requestEmailBody} `}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      here
+                    </a>{' '}
+                    and sending the email as it appears.
+                  </span>
+                }
+              >
+                <Icon type="question-circle" />
+              </CPTooltip>
+            }
+          />
+        </div>
+        <Divider />
         <Statistic
           title="# Submissions"
-          value={props.submissions.length}
+          value={props.assignment ? props.submissions.length : '--'}
           style={{ display: 'inline-block', marginRight: '60px' }}
         />
-        <Statistic title="Estimated Time" value={msToString(submitTime)} style={{ display: 'inline-block' }} />
-      </div>
-      <div style={{ padding: '10px 0px' }}>
-        <Input
-          addonBefore="Moss ID Number"
-          value={mossID}
-          onChange={onMossIDChange}
-          style={{ width: '100%' }}
-          addonAfter={
-            <CPTooltip
-              title={
-                <span>
-                  You can obtain a Moss ID by clicking{' '}
-                  <a
-                    href={`mailto: ${requestEmail}?subject=${requestEmailSubject}&body=${requestEmailBody} `}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    here
-                  </a>{' '}
-                  and sending the email as it appears.
-                </span>
-              }
-            >
-              <Icon type="question-circle" />
-            </CPTooltip>
-          }
+        <Statistic
+          title="Estimated Time"
+          value={props.assignment ? msToString(submitTime) : '--'}
+          style={{ display: 'inline-block' }}
         />
       </div>
       <div style={{ padding: '10px 0px' }}>
         <Select
           placeholder="Programming Language (Moss supported)"
-          disabled={loading}
+          disabled={loading || !props.assignment}
           onChange={onLanguageChange}
-          style={{ width: '100%' }}
+          style={{ width: '350px' }}
         >
           {languageSelectData}
         </Select>
       </div>
       <div style={{ padding: '10px 0px', textAlign: 'center' }}>
-        <Button type="primary" disabled={loading || props.submissions.length === 0} onClick={onSubmit}>
+        <Button
+          type="primary"
+          disabled={loading || props.submissions.length === 0 || !props.assignment}
+          onClick={onSubmit}
+        >
           Go
         </Button>
       </div>
@@ -409,36 +451,26 @@ const Moss = (props: IMossProps) => {
     </div>
   );
 
-  const actionCard = (
-    <Card style={{ boxShadow: 'rgba(0, 0, 0, 0.1) 0px 2px 15px 0px', padding: '10px', margin: '15px', border: '0px' }}>
-      <CPFlex left={[title, help]} right={[toggle]} gutterSize={10} />
-      {action}
-    </Card>
-  );
-
   const resultsCard = results === undefined ? null : <MossResults results={results} />;
-
-  const content = (
-    <div>
-      {testMode ? <div style={{ fontSize: '40px', fontWeight: 600, textAlign: 'center' }}>TEST MODE</div> : null}
-      <div style={{ marginBottom: '30px' }}>{actionCard}</div>
-      <div>{resultsCard}</div>
-    </div>
-  );
 
   return (
     <CPAdminDetail
       breadcrumbs={
         <Breadcrumb>
           {props.breadcrumbs}
-          <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item>
-          <Breadcrumb.Item>Moss</Breadcrumb.Item>
+          <Breadcrumb.Item>Plagiarism Detection</Breadcrumb.Item>
+          {props.assignment ? <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item> : null}
         </Breadcrumb>
       }
       goBack={null}
-      title={`${props.assignment.name} | Moss`}
-      actions={[]}
-      content={content}
+      title={<span>Plagiarism Detection &nbsp; {help}</span>}
+      actions={[toggle]}
+      content={
+        <div>
+          {action}
+          {resultsCard}
+        </div>
+      }
     />
   );
 };

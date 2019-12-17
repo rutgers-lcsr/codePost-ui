@@ -20,8 +20,8 @@ import useWindowSize from '../core/useWindowSize';
 
 const buttonStyle = { fontSize: 18 };
 
-const studentImg = require('../../img/landing/compressed/student_cartoon.png');
-const teacherImg = require('../../img/landing/compressed/teacher_cartoon.png');
+const studentImg = require('../../img/landing/compressed/student_cartoon.jpg');
+const teacherImg = require('../../img/landing/compressed/teacher_cartoon.jpg');
 
 const SignUpManager = () => {
   const windowSize = useWindowSize();
@@ -62,19 +62,33 @@ const SignUpManager = () => {
                 </Link>
               </div>
             </div>
-            <img
-              src={teacherImg}
-              style={{ maxWidth: 500, paddingLeft: 70, display: windowSize.width < breakpoint ? 'none' : '' }}
-              alt=""
-            />
+            <div
+              style={{
+                minWidth: windowSize.width < breakpoint ? 0 : 500,
+                minHeight: windowSize.width < breakpoint ? 0 : 260,
+              }}
+            >
+              <img
+                src={teacherImg}
+                style={{ maxWidth: 500, paddingLeft: 70, display: windowSize.width < breakpoint ? 'none' : '' }}
+                alt=""
+              />
+            </div>
           </div>
           <Divider type={dividerType} style={{ fontSize: 250, marginTop: 35, marginBottom: 35 }} />
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <img
-              src={studentImg}
-              style={{ maxWidth: 500, paddingRight: 70, display: windowSize.width < breakpoint ? 'none' : '' }}
-              alt=""
-            />
+            <div
+              style={{
+                minWidth: windowSize.width < breakpoint ? 0 : 500,
+                minHeight: windowSize.width < breakpoint ? 0 : 260,
+              }}
+            >
+              <img
+                src={studentImg}
+                style={{ maxWidth: 500, paddingRight: 70, display: windowSize.width < breakpoint ? 'none' : '' }}
+                alt=""
+              />
+            </div>
             <div
               style={{
                 display: 'flex',

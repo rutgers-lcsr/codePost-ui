@@ -37,6 +37,9 @@ interface IProps {
   titleInfo?: string | React.ReactNode;
   onRowClick?: (record: any) => void;
   detail?: React.ReactNode;
+  components?: any;
+  onRow?: any;
+  expandAllRows?: boolean;
 }
 
 interface IState {
@@ -178,10 +181,13 @@ class TableDetail extends React.Component<IProps, IState> {
             <Table
               columns={newColumns}
               dataSource={data}
+              components={this.props.components}
+              defaultExpandAllRows={this.props.expandAllRows}
               onRow={
-                this.props.onRowClick === undefined
-                  ? undefined
-                  : (record, rowIndex) => {
+                this.props.onRow !== undefined
+                  ? this.props.onRow
+                  : this.props.onRowClick !== undefined
+                  ? (record, rowIndex) => {
                       return {
                         onClick: (event) => {
                           if (this.props.onRowClick) {
@@ -190,6 +196,7 @@ class TableDetail extends React.Component<IProps, IState> {
                         },
                       };
                     }
+                  : undefined
               }
               pagination={
                 this.props.pagination !== undefined

@@ -429,7 +429,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
         });
 
         // NOTE: graders in submission.students might be inactive
-        if (submission.grader) {
+        if (submission.grader && submission.grader in subsByGrader) {
           subsByGrader[submission.grader][assignment.id].push(submission);
         }
       });
@@ -517,12 +517,12 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
             }),
           ).then((newAssignments) => {
             this.props.addCourse(course);
-            this.props.history.push(`${formatCourseURL(course)}/assignments`);
+            this.props.history.push(`${formatCourseURL(course)}/assignments/overview`);
           });
         });
       } else {
         this.props.addCourse(course);
-        this.props.history.push(`${formatCourseURL(course)}/assignments`);
+        this.props.history.push(`${formatCourseURL(course)}/assignments/overview`);
       }
     });
   };
@@ -789,7 +789,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       });
   };
 
-  public createAssignment = (aName: string, aPoints: number): Promise<AssignmentType> => {
+  public createAssignment = (aName: string, aPoints: number, sortKey?: number): Promise<AssignmentType> => {
     const { currentCourse } = this.props;
     if (!currentCourse) {
       return Promise.reject();
@@ -803,6 +803,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       isReleased: false,
       hideGrades: false,
       rubricCategories: [],
+      sortKey,
     };
 
     return Assignment.create(payload).then((assignment: AssignmentType) => {
@@ -1041,7 +1042,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       newSubmissions[submission.assignment] = newAssignmentSubmissions;
       this.setState({ submissionsByStudent, submissions: newSubmissions });
       return Promise.all(filePromises).then(() => {
-        return;
+        return submission;
       });
     });
 

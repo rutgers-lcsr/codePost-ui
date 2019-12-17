@@ -44,6 +44,7 @@ export const SubmissionV = t.intersection(
       questionResponder: t.union([t.string, t.null]),
       questionDate: t.union([t.string, t.null]),
       responseDate: t.union([t.string, t.null]),
+      tests: t.array(t.number),
     }),
   ],
   'Submission',
@@ -69,6 +70,7 @@ export const StudentSubmissionV = t.intersection(
       responseDate: t.union([t.string, t.null]),
       dateUploaded: t.string,
       hasGrader: t.boolean,
+      tests: t.array(t.number),
     }),
   ],
   'Submission',
@@ -127,6 +129,7 @@ export const AnonymousSubmissionV = t.intersection(
       questionResponder: t.union([t.string, t.null]),
       questionDate: t.union([t.string, t.null]),
       responseDate: t.union([t.string, t.null]),
+      tests: t.array(t.number),
     }),
     t.partial({
       students: t.array(t.string),
@@ -151,6 +154,7 @@ export class Submission {
   public static readAnonymous = readObject(AnonymousSubmissionV, 'submissions');
   public static readReadOnly = readObject(StudentSubmissionV, 'submissions');
   public static readHistory = readObjectDetail(t.array(SubmissionHistoryV), 'submissions', 'history');
+
   public static updateHistory = updateObjectDetail(
     SubmissionHistoryV,
     SubmissionHistoryVPatch,

@@ -181,6 +181,7 @@ export const calculateGradingProgressStats = (
           numViewed += 1;
         } else if (
           assignment.isReleased &&
+          student in submissionsByStudent &&
           submissionsByStudent[student][assignment.id] &&
           submissionsByStudent[student][assignment.id].isFinalized
         ) {
