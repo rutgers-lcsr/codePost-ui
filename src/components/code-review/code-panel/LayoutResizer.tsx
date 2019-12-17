@@ -196,15 +196,7 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
     afterChange(newRanges);
   };
 
-  useHotkeys(LEFT_ARROW, () => shrink(80), undefined, props.isEditingComment);
-  useHotkeys(RIGHT_ARROW, () => grow(80), undefined, props.isEditingComment);
-
-  const tooltip = (
-    <div>
-      Resize window
-      <br />[{osControlKey()} + left / right arrow]
-    </div>
-  );
+  const tooltip = <div>Resize window</div>;
 
   const tipFormatter = (value: any) => {
     return tooltip;

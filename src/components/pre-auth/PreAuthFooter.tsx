@@ -21,7 +21,6 @@ const PreAuthFooter = () => {
 
   const content = (
     <div style={{ textAlign: 'center' }}>
-      <div style={{ color: '4d4d4d', fontSize: '14px' }}>Share on Snapchat!</div>
       <img
         alt="snapcode"
         src="https://codepost-videos.s3.us-east-2.amazonaws.com/snapcode.png"
@@ -56,7 +55,7 @@ const PreAuthFooter = () => {
           <Popover content={content}>
             <img
               alt="snapcode"
-              src="https://codepost-videos.s3.us-east-2.amazonaws.com/snapcode.png"
+              src="https://codepost-videos.s3.us-east-2.amazonaws.com/snapcode_dark.png"
               height="24"
               width="24"
               style={{ marginRight: '20px', cursor: 'pointer' }}

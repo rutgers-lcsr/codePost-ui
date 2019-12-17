@@ -23,6 +23,8 @@ import { CourseContext } from '../../core/Contexts';
 
 import { encodeForLink } from '../../core/URLutils';
 
+import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -36,6 +38,7 @@ interface IProps {
 }
 
 const TestsMenu = (props: IProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
   // Index tests by testCategory to access their data more easily when we loop
   // over testCategories below
   const testsByCategory = {} as { [id: number]: BasicTestResultType[] | SubmissionTestType[] };
@@ -107,7 +110,7 @@ const TestsMenu = (props: IProps) => {
         backgroundColor: props.isOpen ? '#f0fff7' : undefined,
       }}
     >
-      <div style={{ fontSize: 12, overflowX: 'auto' }}>
+      <div style={{ fontSize: 12, overflowX: 'auto', color: consoleTheme.text }}>
         {props.categories.length > 0 ? (
           <Table dataSource={data} columns={columns} size="small" pagination={false} bordered={false} />
         ) : (
@@ -115,6 +118,7 @@ const TestsMenu = (props: IProps) => {
             {props.emptyMessage}
             {props.showLink ? (
               <span>
+                {' '}
                 You can do so from the{' '}
                 <CourseContext.Consumer>
                   {(course) => (

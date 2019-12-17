@@ -65,6 +65,7 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
       const codeTemplate = document.getElementById('code-template');
 
       if (codeContainer !== null && codeMain !== null && commentsContainer !== null && comments !== null) {
+        //  parseInt(codeMain.style.marginLeft, 10)
         const codeMainWidth = codeContainer.offsetWidth;
         codeMain.style.setProperty('width', `${codeMainWidth}px`);
         if (codeSyntax !== null) {

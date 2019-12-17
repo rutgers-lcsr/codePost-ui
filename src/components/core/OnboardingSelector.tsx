@@ -78,7 +78,7 @@ const AdminOnboardingSelector = (props: IProps) => {
 
   // call prop function onClick which triggers tour
   const tour1 = (
-    <CPButton cpType="primary" block href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>
+    <CPButton cpType="primary" block href={`${CODE_DEMO}/`}>
       Annotate some code!
     </CPButton>
   );

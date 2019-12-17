@@ -85,7 +85,7 @@ const LandingHero = () => {
         title="Try out codePost!"
       >
         <CPButton cpType="primary" block>
-          <a href={`/demo?product_tour_id=${CODE_TOUR_DEMO_ID}`} target="_blank" rel="noopener noreferrer">
+          <a href={`/demo`} target="_blank" rel="noopener noreferrer">
             Interactive code annotation demo
           </a>
         </CPButton>

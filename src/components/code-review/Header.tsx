@@ -527,6 +527,8 @@ export const GradeButton = (props: IGradeButtonProps) => {
     setBreakdownVisible(!breakdownVisible);
   }
 
+  useHotkeys('b', handleClick, true);
+
   return (
     <div>
       <CPButton cpType={theme === 'light' ? 'secondary' : 'dark'} onClick={handleClick}>
@@ -704,11 +706,6 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
           </Link>
         </Menu.Item>
       ) : null}
-      {props.isStudent ? null : (
-        <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
-          <a href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>Redo tutorial</a>
-        </Menu.Item>
-      )}
       {props.isStudent || !props.hasExplanations ? null : (
         <Menu.Item key="explanations" style={itemStyle} className="header-menu" onClick={props.toggleShowExplanations}>
           Show rubric comment {props.showExplanations ? 'text' : ' explanations'}{' '}

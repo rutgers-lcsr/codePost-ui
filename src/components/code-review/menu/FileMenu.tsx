@@ -285,7 +285,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
   // FILE MEN BUILD
   public buildFileMenu = (sortedFiles: FileType[], files: FileType[]) => {
-    const shrunkSider = this.props.windowwidth < layoutVars.breakpoints.smallScreen.grade;
+    const shrunkSider = LOCAL_SETTINGS.siderWidth.getter() < 202;
     const { oldVersionsMap } = this.state;
 
     const codeFiles = files.map((file: FileType) => {

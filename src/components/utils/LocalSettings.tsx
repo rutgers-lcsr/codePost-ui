@@ -71,6 +71,11 @@ const intIParser = (value: number) => {
 // defalut value: false
 const darkMode = generateSettingFunctions('darkMode', false, booleanIParser, booleanOParser);
 
+// key: cursorMode
+// return type: boolean. If true = cursor mode is enabled. Else, cursor mode is not enabled.
+// defalut value: false
+const cursorMode = generateSettingFunctions('cursorMode', false, booleanIParser, booleanOParser);
+
 // key: infoMenuHidden
 // return type: boolean. If true, submission info section of code console will be collapsed.
 // defalut value: false
@@ -119,6 +124,7 @@ const mostRecentFile = generateSettingFunctions('mostRecentFile', 0, intIParser,
 /******************************************************************************************************************/
 const LOCAL_SETTINGS = {
   darkMode,
+  cursorMode,
   infoMenuHidden,
   fileMenuHidden,
   rubricMenuHidden,
