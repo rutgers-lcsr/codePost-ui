@@ -26,7 +26,7 @@ import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
-import { Assignment, AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
+import { AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
 import { CourseType } from '../../../infrastructure/course';
 import { SubmissionType } from '../../../infrastructure/submission';
 import { UserType } from '../../../infrastructure/user';
@@ -668,7 +668,6 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           },
         }),
         () => {
-          const match = this.props.assignments.find((el) => el.id === dragRow);
           this.props.assignments.forEach((assignment) => {
             const newKey = this.state.sortedOrder.indexOf(assignment.id);
             if (newKey !== assignment.sortKey) {

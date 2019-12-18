@@ -7,7 +7,6 @@ import * as React from 'react';
 
 import { HashLink as Link } from 'react-router-hash-link';
 
-import Carousel, { Dots } from '@brainhubeu/react-carousel';
 import '@brainhubeu/react-carousel/lib/style.css';
 
 import { Icon } from 'antd';
@@ -52,7 +51,6 @@ class Landing extends React.PureComponent<{}, {}> {
 
     // const calendlyDivTop = document.getElementById('calendly-button-top');
     const calendlyDivBottom = document.getElementById('calendly-button-bottom');
-    const calendlyDivFooter = document.getElementById('calendly-button-footer');
     calendlyDivBottom!.setAttribute(
       'onclick',
       "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;",

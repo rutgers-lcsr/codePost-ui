@@ -17,9 +17,9 @@ import { RubricComment, RubricCommentType } from '../../../infrastructure/rubric
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
-import useHotkeys, { E_KEY, O_KEY, S_KEY } from '../useHotkeys';
+import useHotkeys, { O_KEY, S_KEY } from '../useHotkeys';
 
-import { osControlKey, getOperatingSystem, OS } from '../../core/operatingSystem';
+import { osControlKey } from '../../core/operatingSystem';
 
 import CPButton from '../../core/CPButton';
 
@@ -140,17 +140,22 @@ const RubricMenuUI = ({
     };
 
     const handleKeydown = async (e: any) => {
-      const os = getOperatingSystem();
-      const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+      const el = document.getElementById('rubric-search');
+      let searchIsFocused = false;
+      if (el !== null) {
+        searchIsFocused = document.activeElement === el;
+      }
+
+      if (searchIsFocused && e.key === 'ArrowDown' && props.hasActiveComment) {
+        props.updateCursorDomain(CURSOR_DOMAIN.RUBRIC);
+      }
+
       if (props.showCursor === CURSOR_DOMAIN.RUBRIC && props.hasActiveComment) {
-        if (e.key === 'ArrowRight' && triggerKey) {
-          props.updateCursorDomain(CURSOR_DOMAIN.CODE);
-        } else if (e.key === 'ArrowDown') {
+        if (e.key === 'ArrowDown') {
           const rubricCommentCount = document.getElementsByClassName('rubric-row').length;
           setCursorIndex(Math.min(cursorIndex + 1, rubricCommentCount - 1));
           setTimeout(() => tryScroll(), 100);
         } else if (e.key === 'ArrowUp') {
-          const rubricCommentCount = document.getElementsByClassName('rubric-row').length;
           setCursorIndex(Math.max(cursorIndex - 1, 0));
           setTimeout(() => tryScroll(), 100);
         }
@@ -368,7 +373,7 @@ const RubricMenuUI = ({
     props.toggleEditRubricMode();
   };
 
-  useHotkeys(E_KEY, toggleEditRubricMode);
+  // useHotkeys(E_KEY, toggleEditRubricMode);
   useHotkeys(S_KEY, blurAndSave);
 
   let controls = null;

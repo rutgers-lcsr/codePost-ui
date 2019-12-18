@@ -9,7 +9,7 @@ import React, { useEffect, useState } from 'react';
 import { Layout, Typography } from 'antd';
 
 /* codePost object imports */
-import { BasicTestResultType, TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
+import { TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 import { SubmissionType } from '../../../../../infrastructure/submission';
 import { SourceFile, SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
@@ -26,7 +26,7 @@ import FileTag from './TestDefinitions/FileTag';
 
 import { CodeWindow } from './utils/CodeWindow';
 import { TestsChangeModal } from './TestDefinitions/TestsChangeModal';
-import { PsuedoTerminal, ILogType, RESULT_TYPE } from './TestDefinitions/PsuedoTerminal';
+import { PsuedoTerminal, ILogType } from './TestDefinitions/PsuedoTerminal';
 
 /* codePost util imports */
 import { awaitTestResult } from '../testResult';
