@@ -31,7 +31,7 @@ const AboutUs = (props: IProps) => {
           <br />
           <div>
             The original codePost was developed at Princeton University by a team of undergraduates. Back then, all
-            manual review of student code at Princeton used...pens and paper. codePost first (humble) goal was to
+            manual review of student code at Princeton used...pens and paper. codePost's first (humble) goal was to
             digitize that process to save paper.
           </div>
           <br />
@@ -39,8 +39,6 @@ const AboutUs = (props: IProps) => {
             Since, we’ve expanded to many more universities (and countries!), and we’re just getting started! If you
             have any ideas to help make codePost a better teaching tool, please let us know!
           </div>
-          <br />
-          <div>And if you are really excited about what we’re up to, consider joining us!</div>
         </div>
       </div>
     </PreAuthLayout>
