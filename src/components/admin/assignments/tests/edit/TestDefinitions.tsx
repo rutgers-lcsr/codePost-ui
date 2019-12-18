@@ -689,7 +689,7 @@ export const TestDefinitions = (props: IProps) => {
     );
   } else if (categories.length === 0 && panel == DETAIL_TYPE.EditTests) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <div>
         <span>
           <b>Instructions</b>: If you have an existing script with modular unit tests, or want to start fresh, click
           "Add Category". Otherwise, click "Enter File Mode". To learn more{' '}
@@ -701,17 +701,19 @@ export const TestDefinitions = (props: IProps) => {
           </a>
           .
         </span>
-        <Empty style={{ marginTop: '20px', maxWidth: '400px' }} description={<span> Get started.</span>}>
-          <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} />
-          {externalOnly ? (
-            <span />
-          ) : (
-            <span>
-              {' '}
-              &nbsp; <Button onClick={() => setPanel(DETAIL_TYPE.ViewSource)}>Enter File Mode</Button>{' '}
-            </span>
-          )}
-        </Empty>
+        <div className="display-flex flex-direction-column align-items-center">
+          <Empty style={{ marginTop: '20px', maxWidth: '400px' }} description={<span> Get started.</span>}>
+            <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} />
+            {externalOnly ? (
+              <span />
+            ) : (
+              <span>
+                {' '}
+                &nbsp; <Button onClick={() => setPanel(DETAIL_TYPE.ViewSource)}>Enter File Mode</Button>{' '}
+              </span>
+            )}
+          </Empty>
+        </div>
       </div>
     );
   } else {
