@@ -34,6 +34,7 @@ import GraderNav from './GraderNav';
 import RegradesPanel from './RegradesPanel';
 
 import RoleMenu from '../core/RoleMenu';
+import Referral from '../core/Referral';
 
 import CourseMenu from '../core/CourseMenu';
 import AssignmentMenu from '../core/AssignmentMenu';
@@ -201,6 +202,7 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
       <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}
       </span>,
+      <Referral key="referral" user={this.props.user} theme="light" />,
       <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.GRADER} theme="light" />,
       <CPTooltip key="settings" title={tooltips.management.header.settings} hideThisOnHideTips={true}>
         <Link className="internal-link" to="/settings">
