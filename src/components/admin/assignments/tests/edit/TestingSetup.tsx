@@ -339,6 +339,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
             style={{ minWidth: '125px', marginBottom: 15 }}
             defaultChecked={env && env.dumpMode}
             onChange={updateDumpMode}
+            disabled={!env}
           >
             Dump outputs to <Typography.Text code>_tests.txt</Typography.Text>
             &nbsp;
@@ -351,6 +352,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
             style={{ minWidth: '125px', marginLeft: 0 }}
             defaultChecked={env && env.testParsing}
             onChange={updateTestParsing}
+            disabled={!env}
           >
             Parse <Typography.Text code>TestOutput</Typography.Text> calls in source editor &nbsp;
             <CPTooltip
