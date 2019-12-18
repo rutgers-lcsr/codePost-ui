@@ -75,11 +75,6 @@ const LandingLayout = (props: IProps) => {
 
   const testimonialBackground = require('../../img/landing/compressed/backgrounds/testimonial.png');
   const testimonialBackgroundMobile = require('../../img/landing/compressed/backgrounds/testimonial-MOBILE.jpg');
-  const whyPanelBackgroundMobile = undefined;
-  const panelOneBackground = require('../../img/landing/compressed/backgrounds/panelOne.png');
-  const panelOneBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelOne-MOBILE.jpg');
-  const panelTwoBackground = undefined;
-  const panelTwoBackgroundMobile = undefined;
 
   return (
     <div

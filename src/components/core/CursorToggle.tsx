@@ -1,14 +1,10 @@
 import * as React from 'react';
 
-import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
-
 import { ReactComponent as HighlighterSvg } from '../../img/icons/highlighter.svg';
 import { ReactComponent as HighlighterSelectedSvg } from '../../img/icons/highlighterselected.svg';
 // import { ReactComponent as SunSvg } from '../../img/icons/sun.svg';
 
 import ToggleButton from 'react-toggle-button';
-
-import useHotkeys, { L_KEY } from '../code-review/useHotkeys';
 
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 

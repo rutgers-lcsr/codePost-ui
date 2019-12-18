@@ -8,12 +8,10 @@ import WistiaPlayer from 'react-player/lib/players/Wistia';
 import queryString from 'query-string';
 
 /* ant imports */
-import { Button, Icon, Select } from 'antd';
+import { Icon } from 'antd';
 
 /* codePost imports */
-import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
-
-const { Option } = Select;
+import withWindowWatcher from '../core/withWindowWatcher';
 
 interface IVideoSection {
   id: string;

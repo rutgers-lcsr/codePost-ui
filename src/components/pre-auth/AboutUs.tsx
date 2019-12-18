@@ -6,13 +6,9 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Icon, Table, Typography } from 'antd';
-
-/* other library imports */
-import { Link } from 'react-router-dom';
+import { Typography } from 'antd';
 
 /* codePost imports */
-import useWindowSize from '../core/useWindowSize';
 import PreAuthLayout from './PreAuthLayout';
 
 /**********************************************************************************************************************/

@@ -258,16 +258,6 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     }
   };
 
-  const deleteEnv = () => {
-    if (env !== undefined) {
-      Environment.delete(env.id);
-      setEnv(undefined);
-      setHelpers([]);
-      setSolutions([]);
-      setSourceFiles([]);
-    }
-  };
-
   const onChange = (val: string) => {
     setCurrTab(val);
 
