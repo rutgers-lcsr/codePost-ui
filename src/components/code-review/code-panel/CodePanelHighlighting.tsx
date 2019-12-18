@@ -184,7 +184,7 @@ class CodePanelHighlighting {
       return highlight;
     });
     // Don't mess with nested opacity for the cursor
-    if (!ids.includes('0') && !ids.includes(`${Number.MAX_SAFE_INTEGER}`) && false) {
+    if (!ids.includes('0') && !ids.includes(`${Number.MAX_SAFE_INTEGER}`)) {
       for (const [highlight, level] of Object.entries(styles)) {
         if (highlight === '0' || highlight === `${Number.MAX_SAFE_INTEGER}`) {
           continue;
