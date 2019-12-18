@@ -7,6 +7,8 @@ import { sendSlack } from './slack';
 
 import { UserType } from '../../infrastructure/user';
 
+import { trackFeature } from '../utils/Fullstory';
+
 import CPTooltip from './CPTooltip';
 
 type ThemeType = 'light' | 'dark';
@@ -26,6 +28,12 @@ interface IFormValues {
 
 const Referral = (props: IProps) => {
   const [visible, setVisible] = useState(false);
+
+  React.useEffect(() => {
+    if (visible) {
+      trackFeature('Referral', {});
+    }
+  }, [visible]);
 
   let formRef: any = React.createRef();
 
