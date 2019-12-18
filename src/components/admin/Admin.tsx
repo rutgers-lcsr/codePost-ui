@@ -26,6 +26,7 @@ import CourseSettingsPanel from './settings/CourseSettingsPanel';
 import CourseMenu from '../core/CourseMenu';
 import NewCourseDialog from './other/NewCourseDialog';
 import RoleMenu from '../core/RoleMenu';
+import Referral from '../core/Referral';
 
 /* types */
 import {
@@ -1070,6 +1071,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}
       </span>,
+      <Referral key="referral" user={this.props.user} theme="light" />,
       <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.ADMIN} theme="light" />,
       <CPTooltip key="settings" title={tooltips.management.header.settings} hideThisOnHideTips={true}>
         <Link className="internal-link" to="/settings">
