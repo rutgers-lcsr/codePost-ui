@@ -323,7 +323,7 @@ const CollectionCreateForm: any = Form.create()(
           onOk={onSave.bind({}, this.state.templates)}
           width={'45%'}
         >
-          <Form layout="horizontal" hideRequiredMark={true}>
+          <Form layout="horizontal" hideRequiredMark={true} style={{ maxHeight: '65vh', overflow: 'auto' }}>
             <Tabs defaultActiveKey="1">
               <Tabs.TabPane tab="General" key="1">
                 <Form.Item
