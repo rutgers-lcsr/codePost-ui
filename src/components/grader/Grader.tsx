@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Icon } from 'antd';
+import { Button, Icon, Layout } from 'antd';
 
 /* other library imports */
 import { Route, Link, Switch } from 'react-router-dom';
@@ -34,6 +34,7 @@ import GraderNav from './GraderNav';
 import RegradesPanel from './RegradesPanel';
 
 import RoleMenu from '../core/RoleMenu';
+import Referral from '../core/Referral';
 
 import CourseMenu from '../core/CourseMenu';
 import AssignmentMenu from '../core/AssignmentMenu';
@@ -201,6 +202,7 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
       <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}
       </span>,
+      <Referral key="referral" user={this.props.user} theme="light" />,
       <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.GRADER} theme="light" />,
       <CPTooltip key="settings" title={tooltips.management.header.settings} hideThisOnHideTips={true}>
         <Link className="internal-link" to="/settings">
@@ -235,7 +237,21 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
     return (
       <CPLayoutAdmin
         header={header}
-        detail={graderPanelContent}
+        detail={
+          <span>
+            <Layout.Footer
+              style={{ background: 'rgba(36, 190, 132, 0.13)', margin: '10px 60px 0 60px', padding: '18px 30px' }}
+            >
+              <b>Hi there!</b> Please take{' '}
+              <a href="https://forms.gle/DB8Up1EWjpyNoTHA7" target="_blank" rel="noopener noreferrer">
+                our end-of-semester survey
+              </a>
+              . Your feedback helps make codePost possible and keeps us improving.{' '}
+            </Layout.Footer>
+
+            {graderPanelContent}
+          </span>
+        }
         navigation={navigation}
         collapsible={true}
         role={USER_TYPE.GRADER}
