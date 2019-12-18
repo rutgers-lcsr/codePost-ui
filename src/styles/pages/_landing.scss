@@ -334,3 +334,26 @@
     transition: all 0.3s;
   }
 }
+
+#Hero {
+  .demo-link {
+    color: #aaaaaa;
+    .demo-link__arrow {
+      transform: translateX(0px);
+      transition: transform 0.3s ease;
+      margin-left: 5px;
+    }
+    &:hover {
+      transform: scale(1.02);
+      color: #7bd8b5;
+      .demo-link__arrow {
+        transform: translateX(5px);
+        transition: transform 0.3s ease;
+        margin-left: 5px;
+      }
+    }
+    &:focus {
+      color: #7bd8b5;
+    }
+  }
+}

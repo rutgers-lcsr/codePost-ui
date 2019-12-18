@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { Modal, Typography } from 'antd';
+import { Icon, Modal, Typography } from 'antd';
 
 import useWindowSize from '../core/useWindowSize';
 
@@ -114,21 +114,36 @@ const LandingHero = () => {
       className={`display-flex align-items-center justify-content-center flex-direction-${
         windowSize.width < landingVars.breakpoints.hero ? 'column' : 'row'
       }`}
+      id="Hero"
     >
       <div style={{ maxWidth: landingVars.maxWidths.heroText }}>{hero}</div>
-      <div
-        style={{
-          maxWidth: MAX_WIDTH,
-          maxHeight: MAX_HEIGHT,
-          minWidth: windowSize.width > landingVars.breakpoints.hero ? MAX_WIDTH : 0,
-          borderRadius: 5,
-          overflow: 'hidden',
-          boxShadow,
-          transform: windowSize.width < landingVars.breakpoints.hero ? `scale(${transformSmallScreen})` : '',
-        }}
-        className="display-flex justify-content-center align-items-center"
-      >
-        <GradeAnimationVideo width={610} height={390} controls={500} />
+      <div>
+        <div
+          style={{
+            maxWidth: MAX_WIDTH,
+            maxHeight: MAX_HEIGHT,
+            minWidth: windowSize.width > landingVars.breakpoints.hero ? MAX_WIDTH : 0,
+            borderRadius: 5,
+            overflow: 'hidden',
+            boxShadow,
+            transform: windowSize.width < landingVars.breakpoints.hero ? `scale(${transformSmallScreen})` : '',
+          }}
+          className="display-flex justify-content-center align-items-center"
+        >
+          <GradeAnimationVideo width={610} height={390} controls={500} />
+        </div>
+        <CPButton
+          key="Demo"
+          href="https://codepost.io/demo"
+          target="_blank"
+          cpType="link"
+          ghost={true}
+          style={{ fontWeight: 600, fontSize: 20, float: 'right', marginTop: 15 }}
+          className="demo-link"
+        >
+          Try it out
+          <Icon type="double-right" className="demo-link__arrow" />
+        </CPButton>
       </div>
     </div>
   );
