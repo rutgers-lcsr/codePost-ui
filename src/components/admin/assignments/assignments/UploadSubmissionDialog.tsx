@@ -37,7 +37,7 @@ import { UploadFile } from 'antd/lib/upload/interface';
 import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
 
 import TestsList from '../../../../components/code-review/code-panel/TestsList';
-import { TestCasesByCategory } from '../../../../components/core/testFetchUtils';
+import { StudentTestCasesByCategory } from '../../../../components/core/testFetchUtils';
 
 import { awaitTestResult } from '../../../../components/admin/assignments/tests/testResult';
 
@@ -91,7 +91,7 @@ interface IState {
   uploadDirectory: boolean;
 
   testCategories: TestCategoryType[];
-  testCases: TestCasesByCategory;
+  testCases: StudentTestCasesByCategory;
   submissionTests: SubmissionTestType[];
   submission?: StudentSubmissionType;
   loadingTests: boolean;
@@ -167,7 +167,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     if (this.props.isStudent && this.props.selectedAssignment) {
       this.setState({ loadingTests: true });
       const { testCases, testCategories } = await AssignmentStudent.readStudentTests(this.props.selectedAssignment.id);
-      const caseObj: TestCasesByCategory = {};
+      const caseObj: StudentTestCasesByCategory = {};
       testCategories.forEach((category) => {
         caseObj[category.id] = [];
       });

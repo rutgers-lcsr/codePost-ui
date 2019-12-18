@@ -73,7 +73,24 @@ const TestCaseVPost = t.intersection(
   'TestCasePost',
 );
 
+export const StudentTestCaseV = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      sortKey: t.number,
+      testCategory: t.number,
+      description: t.string,
+      pointsPass: t.number,
+      pointsFail: t.number,
+      exposed: t.boolean,
+      explanation: t.string,
+    }),
+  ],
+  'TestCase',
+);
+
 export type TestCaseType = t.TypeOf<typeof TestCaseV>;
+export type StudentTestCaseType = t.TypeOf<typeof StudentTestCaseV>;
 
 export class TestCase {
   public static create = createObject(TestCaseV, TestCaseVPost, 'testCases');

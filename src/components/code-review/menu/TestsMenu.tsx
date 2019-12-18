@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 /* codePost imports */
 import { AssignmentType, SubmissionTestType, TestCategoryType } from '../../../infrastructure/types';
 import { SubmissionTest } from '../../../infrastructure/submissionTest';
-import { TestCasesByCategory } from '../../core/testFetchUtils';
+import { TestCasesByCategory, StudentTestCasesByCategory } from '../../core/testFetchUtils';
 
 import { BasicTestResultType } from '../../../infrastructure/autograder/runTypes';
 import Badge from '../../core/Badge';
@@ -29,7 +29,7 @@ import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_c
 
 interface IProps {
   tests: SubmissionTestType[] | BasicTestResultType[];
-  cases: TestCasesByCategory;
+  cases: TestCasesByCategory | StudentTestCasesByCategory;
   categories: TestCategoryType[];
   isOpen: boolean;
   assignment: AssignmentType;

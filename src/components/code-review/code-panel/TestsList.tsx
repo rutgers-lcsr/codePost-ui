@@ -14,7 +14,7 @@ import ReactMarkdown from 'react-markdown';
 /* codePost imports */
 import { SubmissionTest, SubmissionTestType } from '../../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../../infrastructure/testCategory';
-import { TestCasesByCategory } from '../../core/testFetchUtils';
+import { TestCasesByCategory, StudentTestCasesByCategory } from '../../core/testFetchUtils';
 
 import { BasicTestResultType } from '../../../infrastructure/autograder/runTypes';
 
@@ -22,7 +22,7 @@ import { BasicTestResultType } from '../../../infrastructure/autograder/runTypes
 
 interface IProps {
   tests: SubmissionTestType[] | BasicTestResultType[];
-  cases: TestCasesByCategory;
+  cases: TestCasesByCategory | StudentTestCasesByCategory;
   categories: TestCategoryType[];
   isLoading?: boolean;
   hideNotRun?: boolean;
