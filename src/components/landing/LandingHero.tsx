@@ -125,6 +125,8 @@ const LandingHero = () => {
             minWidth: windowSize.width > landingVars.breakpoints.hero ? MAX_WIDTH : 0,
             borderRadius: 5,
             overflow: 'hidden',
+            marginTop: 10,
+            marginBottom: 15,
             boxShadow,
             transform: windowSize.width < landingVars.breakpoints.hero ? `scale(${transformSmallScreen})` : '',
           }}
@@ -138,7 +140,7 @@ const LandingHero = () => {
           target="_blank"
           cpType="link"
           ghost={true}
-          style={{ fontWeight: 600, fontSize: 20, float: 'right', marginTop: 15 }}
+          style={{ fontWeight: 600, fontSize: 20, float: 'right' }}
           className="demo-link"
         >
           Try it out
