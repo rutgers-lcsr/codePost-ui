@@ -400,12 +400,14 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         break;
       case STATUS.TESTING:
         content = (
-          <TestsList
-            tests={this.state.submissionTests}
-            cases={this.state.testCases}
-            categories={this.state.testCategories}
-            isLoading={this.state.loadingTests}
-          />
+          <div style={{ minHeight: 'calc(100vh - 300px)' }}>
+            <TestsList
+              tests={this.state.submissionTests}
+              cases={this.state.testCases}
+              categories={this.state.testCategories}
+              isLoading={this.state.loadingTests}
+            />
+          </div>
         );
         break;
       case STATUS.NONE:
@@ -656,7 +658,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         visible={true}
         title="Upload Submissions"
         onCancel={this.onCancel}
-        width={700}
+        width={800}
         footer={[goBackButton, goForwardButton]}
       >
         {content}
