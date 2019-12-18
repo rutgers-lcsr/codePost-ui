@@ -36,10 +36,6 @@ const shortcuts: IShortcutCategory[] = [
         keys: ['COMMAND', 'SHIFT', 'f'],
       },
       {
-        name: 'Edit Rubric (Admin)',
-        keys: ['COMMAND', 'e'],
-      },
-      {
         name: 'Claim Another',
         keys: ['COMMAND', 'SHIFT', 'p'],
       },
@@ -59,11 +55,11 @@ const shortcuts: IShortcutCategory[] = [
       },
       {
         name: 'Move Cursor to Code',
-        keys: ['COMMAND', 'LEFT'],
+        keys: ['COMMAND', 'SHIFT', 'E'],
       },
       {
         name: 'Move Cursor to Comments',
-        keys: ['COMMAND', 'RIGHT'],
+        keys: ['COMMAND', 'E'],
       },
       {
         name: 'Select Comments',

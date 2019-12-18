@@ -759,24 +759,22 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               this.blurActiveComment();
               this.setState({ showCursor: CURSOR_DOMAIN.RUBRIC });
             }
+          } else if (e.key === 'e' && triggerKey && e.shiftKey) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.setState({ showCursor: CURSOR_DOMAIN.CODE, activeCommentID: undefined });
           }
         } else {
-          if (e.key === 'ArrowLeft' && triggerKey && !e.shiftKey) {
+          if (e.key === 'e' && triggerKey && !e.shiftKey) {
             e.preventDefault();
             e.stopPropagation();
-            if (this.state.showCursor === CURSOR_DOMAIN.CODE) {
-              this.setState({ showCursor: CURSOR_DOMAIN.CODE_HIDDEN });
-            } else {
-              this.setState({ showCursor: CURSOR_DOMAIN.CODE });
-            }
-          } else if (e.key === 'ArrowRight' && triggerKey && !e.shiftKey) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (this.state.showCursor === CURSOR_DOMAIN.COMMENTS) {
-              this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS_HIDDEN });
-            } else if (this.state.comments[this.state.selectedFile.id].length > 0) {
+            if (this.state.comments[this.state.selectedFile.id].length > 0) {
               this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS });
             }
+          } else if (e.key === 'e' && triggerKey && e.shiftKey) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.setState({ showCursor: CURSOR_DOMAIN.CODE });
           }
         }
       }
