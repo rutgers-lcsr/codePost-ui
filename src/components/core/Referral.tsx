@@ -70,7 +70,7 @@ const Referral = (props: IProps) => {
       sendSlack(
         `Course referral from ${props.user.email}`,
         `Course: ${values.course}\nInstructor: ${values.instructor}\nEmail: ${values.email ||
-          ''}\nDescription: ${values.description || ''}\nCan use nane in referral: ${values.canUseReferralName}`,
+          ''}\nDescription: ${values.description || ''}\nCan use name in referral: ${values.canUseReferralName}`,
         '#24be85',
         '#user_referrals',
       );
