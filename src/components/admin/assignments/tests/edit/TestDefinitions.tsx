@@ -690,25 +690,29 @@ export const TestDefinitions = (props: IProps) => {
   } else if (categories.length === 0 && panel == DETAIL_TYPE.EditTests) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <span>
-          <b>Instructions</b>: If you have an existing script with modular unit tests, or want to start fresh, click
-          "Add Category". Otherwise, click "Enter File Mode". To learn more{' '}
-          <a
-            href="https://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
-            target="_blank"
-          >
-            click here
-          </a>
-          .
-        </span>
         <Empty style={{ marginTop: '20px', maxWidth: '400px' }} description={<span> Get started.</span>}>
           <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} />
           {externalOnly ? (
             <span />
           ) : (
             <span>
-              {' '}
-              &nbsp; <Button onClick={() => setPanel(DETAIL_TYPE.ViewSource)}>Enter File Mode</Button>{' '}
+              <span>
+                {' '}
+                &nbsp; <Button onClick={() => setPanel(DETAIL_TYPE.ViewSource)}>Enter File Mode</Button>{' '}
+              </span>
+              <br />
+              <br />
+              <span>
+                <b>Instructions</b>: If you have an existing script with modular unit tests, or want to start fresh,
+                click "Add Category". Otherwise, click "Enter File Mode". To learn more
+                <a
+                  href="https://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
+                  target="_blank"
+                >
+                  click here
+                </a>
+                .
+              </span>
             </span>
           )}
         </Empty>
