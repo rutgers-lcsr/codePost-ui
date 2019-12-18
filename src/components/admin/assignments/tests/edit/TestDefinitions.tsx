@@ -35,7 +35,7 @@ import {
 import { SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
 import { File } from '../../../../../infrastructure/file';
 import { Submission } from '../../../../../infrastructure/submission';
-import { BasicTestResultType, TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
+import { TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
 import { FILE_TYPE } from './TestingSetup';
 
 /* codePost component imports */
@@ -687,28 +687,33 @@ export const TestDefinitions = (props: IProps) => {
         <Spin style={{ marginTop: 15 }} />
       </div>
     );
-  } else if (categories.length === 0 && panel == DETAIL_TYPE.EditTests) {
+  } else if (categories.length === 0 && panel === DETAIL_TYPE.EditTests) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <span>
-          <b>Instructions</b>: If you have an existing script with modular unit tests, or want to start fresh, click
-          "Add Category". Otherwise, click "Enter File Mode". To learn more{' '}
-          <a
-            href="https://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
-            target="_blank"
-          >
-            click here
-          </a>
-          .
-        </span>
         <Empty style={{ marginTop: '20px', maxWidth: '400px' }} description={<span> Get started.</span>}>
           <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} />
           {externalOnly ? (
             <span />
           ) : (
             <span>
-              {' '}
-              &nbsp; <Button onClick={() => setPanel(DETAIL_TYPE.ViewSource)}>Enter File Mode</Button>{' '}
+              <span>
+                {' '}
+                &nbsp; <Button onClick={() => setPanel(DETAIL_TYPE.ViewSource)}>Enter File Mode</Button>{' '}
+              </span>
+              <br />
+              <br />
+              <span>
+                <b>Instructions</b>: If you have an existing script with modular unit tests, or want to start fresh,
+                click "Add Category". Otherwise, click "Enter File Mode". To learn more
+                <a
+                  href="https://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  click here
+                </a>
+                .
+              </span>
             </span>
           )}
         </Empty>
@@ -731,7 +736,11 @@ export const TestDefinitions = (props: IProps) => {
               syntax to structure your test results. If you use our syntax, new tests will automatically be created when
               you run the file, which you can edit attributes of (points, explanations) by exiting file mode. To learn
               more,{' '}
-              <a href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode" target="_blank">
+              <a
+                href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 click here
               </a>
               . To get started, create a new test file by clicking the "Add file" <Icon type="plus-circle" /> icon.

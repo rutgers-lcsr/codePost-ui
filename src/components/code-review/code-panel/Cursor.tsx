@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 export type LeadPosition = 'front' | 'back';
 
 export interface ICursorType {
@@ -266,7 +264,6 @@ export const shiftRight = (
       };
       // CMD-SHIFT-RIGHT: Clear the whole trailing top line
     } else if (triggerKey && cursor.startLine !== cursor.endLine) {
-      const nextLine = code[cursor.startLine + 1];
       return {
         ...cursor,
         startChar: 0,
@@ -291,7 +288,6 @@ export const shiftRight = (
     }
   } else {
     const leadCursor = right(code, front(cursor), optionKey, false, triggerKey);
-    const endLineLength = code[leadCursor.endLine];
 
     return {
       ...cursor,

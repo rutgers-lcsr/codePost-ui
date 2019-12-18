@@ -636,7 +636,6 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
       deletedCategories,
       resolutions,
       confirmedPropagation,
-      instanceLists,
     } = this.state;
 
     if (this.state.errorObjects.length > 0) {

@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import useWindowSize from '../core/useWindowSize';
 
-import { Button, Divider } from 'antd';
+import { Divider } from 'antd';
 
 import landingVars from '../../styles/pages/_landingVars';
 

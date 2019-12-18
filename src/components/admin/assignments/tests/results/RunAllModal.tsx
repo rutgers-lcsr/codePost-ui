@@ -21,7 +21,7 @@ interface IProps {
 }
 
 const RunAllModal = (props: IProps) => {
-  if (props.raw != '{}') {
+  if (props.raw !== '{}') {
     const castRaw = (props.raw as any) as IResultsType;
     const firstKey: number = parseInt(Object.keys(castRaw)[0], 10);
     return (

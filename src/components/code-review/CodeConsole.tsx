@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Empty, message, notification } from 'antd';
+import { Empty, message, notification } from 'antd';
 
 /* other library imports */
 import _ from 'lodash';
@@ -17,10 +17,6 @@ import moment from 'moment-timezone';
 import Loading from '../core/Loading';
 
 import { getOperatingSystem, OS } from '../core/operatingSystem';
-
-import CodePanelHighlighting from './code-panel/CodePanelHighlighting';
-
-import CodePanelSizing from './code-panel/CodePanelSizing';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from '../../types/common';
 
@@ -38,8 +34,6 @@ import { AnonymousSubmissionType, StudentSubmissionType, Submission } from '../.
 import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
 import { UserType } from '../../infrastructure/user';
 import { TestCategoryType } from '../../infrastructure/testCategory';
-
-import { wait } from '../../infrastructure/animation';
 
 import CPButton from '../core/CPButton';
 import CPFlex from '../core/CPFlex';

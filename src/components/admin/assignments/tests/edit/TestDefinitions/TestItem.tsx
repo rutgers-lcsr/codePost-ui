@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Divider, Form, Input, Select, Tag, message, Modal, Typography, Switch, InputNumber } from 'antd';
+import { Button, Divider, Form, Input, Select, message, Modal, Typography, Switch, InputNumber } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
 /* codePost object imports */
@@ -560,7 +560,11 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                         <span>
                           I/O tests are basic equivalence tests comparing the output of a student's command with the
                           expected output. To learn more, check out our guide to writing
-                          <a href="http://help.codepost.io/en/articles/3567215-writing-tests-i-o-tests" target="_blank">
+                          <a
+                            href="http://help.codepost.io/en/articles/3567215-writing-tests-i-o-tests"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             I/O tests.
                           </a>
                         </span>
@@ -570,6 +574,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                           <a
                             href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
                             target="_blank"
+                            rel="noopener noreferrer"
                           >
                             Shell tests.
                           </a>
@@ -581,6 +586,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                           <a
                             href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
                             target="_blank"
+                            rel="noopener noreferrer"
                           >
                             Unit tests.
                           </a>
@@ -590,7 +596,11 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                           File defined tests are created from running the scripts in file mode. You can edit certain
                           attributes of these tests (points, explanations), but there is no unique code block that maps
                           to each test, unlike tests created from the test editor (I/O, shell, unit).
-                          <a href="http://help.codepost.io/en/articles/3553024-writing-tests-file-mode" target="_blank">
+                          <a
+                            href="http://help.codepost.io/en/articles/3553024-writing-tests-file-mode"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             tests in file mode.
                           </a>
                         </span>
@@ -605,6 +615,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                           <a
                             href="http://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
                             target="_blank"
+                            rel="noopener noreferrer"
                           >
                             tests.
                           </a>
