@@ -257,7 +257,7 @@ export const ResultDetail = (props: IProps) => {
           </div>
           {submissionMenu}
         </Layout.Sider>
-        <Layout.Content>
+        <Layout.Content style={{ minHeight: 500 }}>
           {filterCase && testsToShow.length > 0 ? (
             <TestDetail testCase={filterCase} test={(testsToShow && testsToShow[0]) || undefined} />
           ) : testsToShow.length > 0 ? (
