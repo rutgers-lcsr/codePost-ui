@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Icon } from 'antd';
+import { Button, Icon, Layout } from 'antd';
 
 /* other library imports */
 import { Route, Link, Switch } from 'react-router-dom';
@@ -235,7 +235,21 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
     return (
       <CPLayoutAdmin
         header={header}
-        detail={graderPanelContent}
+        detail={
+          <span>
+            <Layout.Footer
+              style={{ background: 'rgba(36, 190, 132, 0.13)', margin: '10px 60px 0 60px', padding: '18px 30px' }}
+            >
+              <b>Hi there!</b> Please take{' '}
+              <a href="https://forms.gle/DB8Up1EWjpyNoTHA7" target="_blank" rel="noopener noreferrer">
+                our end-of-semester survey
+              </a>
+              . Your feedback helps make codePost possible and keeps us improving.{' '}
+            </Layout.Footer>
+
+            {graderPanelContent}
+          </span>
+        }
         navigation={navigation}
         collapsible={true}
         role={USER_TYPE.GRADER}
