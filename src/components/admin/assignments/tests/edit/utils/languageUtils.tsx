@@ -51,7 +51,7 @@ export const hasDependenciesSupport = (language: string) => {
 const languageWithNativeTestSupport = ['python-3.7', 'java', 'python-2.7'];
 
 // The languages for which custom dependencies are supported
-const languagesWithDependencySupport = ['python-3.7', 'python-2.7'];
+const languagesWithDependencySupport = ['python-3.7', 'python-2.7', 'java', 'c/c++', 'ubuntu', 'alpine'];
 
 /****************************** Test Templates *********************************/
 // Initial templates strings for different test and language types
