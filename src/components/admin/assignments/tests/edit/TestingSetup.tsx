@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Breadcrumb, Button, Tabs, Checkbox, message, Typography } from 'antd';
+import { Breadcrumb, Button, Collapse, Tabs, Checkbox, Modal, message, Typography } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -62,6 +62,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
 
   const [currTab, setCurrTab] = useState(defaultTab);
   const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
 
   const [solutions, setSolutions] = useState<SolutionFileType[]>([]);
   const [helpers, setHelpers] = useState<HelperFileType[]>([]);
@@ -70,6 +71,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
   /************************** Fetch data ******************************/
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       const currEnv = await fetchEnvironment(props.currentAssignment);
       setEnv(currEnv);
       if (currEnv) {
@@ -80,9 +82,10 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         const sourceFiles: SourceFileType[] = await fetchSourceFiles(currEnv);
         setSourceFiles(sourceFiles);
       }
+      setLoading(false);
     };
     fetchData();
-  }, [props.currentAssignment]);
+  }, [props.currentAssignment.id]);
 
   /************************** API / State change functions ******************************/
 
@@ -226,7 +229,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
 
   // ************************** Environment function **************************
 
-  const buildEnv = async (language: string, dependencies: string[]) => {
+  const buildEnv = async (language: string, dependencies: string[], buildType: string) => {
     let thisEnvironment = env;
     if (!thisEnvironment) {
       const payload = {
@@ -237,15 +240,44 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         dumpMode: false,
         testParsing: true,
         compileText: '',
+        buildType: 'default',
       };
       thisEnvironment = await Environment.create(payload);
     }
-    const newEnv = await Environment.build({
+    const buildResult = await Environment.build({
       id: thisEnvironment.id,
       dependencies: dependencies,
       language: language,
+      buildType: buildType,
     });
-    setEnv(newEnv);
+    if (buildResult.build.success) {
+      setEnv(buildResult.environment);
+      message.success('Environment updated');
+    } else {
+      Modal.error({
+        title: 'Build failed',
+        width: 700,
+        content: (
+          <div style={{ maxHeight: 'calc(100vh - 300px)', overflow: 'auto' }}>
+            The attempt to build an environment with the given specifications was unsuccesful. Please see the logs below
+            for more information:
+            <br />
+            <br />
+            <b>Logs:</b> <br />
+            <Collapse bordered={false}>
+              <Collapse.Panel header="Logs" key="1">
+                {buildResult.build.logs.map((l) => (
+                  <div>{l}</div>
+                ))}
+              </Collapse.Panel>
+              <Collapse.Panel header="Dockerfile" key="2">
+                <div style={{ whiteSpace: 'pre-wrap' }}>{buildResult.dockerfile}</div>
+              </Collapse.Panel>
+            </Collapse>
+          </div>
+        ),
+      });
+    }
   };
 
   const updateCompileText = async (compileText: string) => {
@@ -317,6 +349,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
           updateFile={updateFile}
           solutions={solutions}
           helpers={helpers}
+          loading={loading}
         />
       </TabPane>
       <TabPane tab={'Tests'} key={'tests'}>
@@ -331,6 +364,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
           solutions={solutions}
           helpers={helpers}
           sourceFiles={sourceFiles}
+          loading={loading}
         />
       </TabPane>
       <TabPane tab={'Settings'} key={'settings'}>

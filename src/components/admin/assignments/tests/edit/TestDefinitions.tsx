@@ -72,6 +72,7 @@ interface IProps {
   addFile: (type: FILE_TYPE, name: string, code: string) => Promise<void>;
   updateFile: (type: FILE_TYPE, id: number, newCode: string) => Promise<void>;
   deleteFile: (type: FILE_TYPE, id: number) => Promise<void>;
+  loading: boolean;
 }
 
 enum DETAIL_TYPE {
@@ -681,7 +682,7 @@ export const TestDefinitions = (props: IProps) => {
 
   const hasTests = Object.values(casesByCategory).some((el) => el.length > 0);
 
-  if (loading) {
+  if (loading || props.loading) {
     return (
       <div className="display-flex justify-content-center align-iterms-center">
         <Spin style={{ marginTop: 15 }} />
