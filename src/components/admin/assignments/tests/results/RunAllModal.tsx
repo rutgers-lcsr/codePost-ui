@@ -46,10 +46,10 @@ const RunAllModal = (props: IProps) => {
           const obj = castRaw[parseInt(key, 10)];
           const foundCase = props.cases.find((el) => el.id === parseInt(key, 10));
           return (
-            <div>
+            <div key={key}>
               {foundCase ? foundCase.description : ''}
               <Progress
-                successPercent={parseInt(((obj.passed / (obj.passed + obj.failed + obj.error)) * 100).toFixed(0), 0)}
+                percent={parseInt(((obj.passed / (obj.passed + obj.failed + obj.error)) * 100).toFixed(0), 10)}
                 showInfo={true}
               />
             </div>
