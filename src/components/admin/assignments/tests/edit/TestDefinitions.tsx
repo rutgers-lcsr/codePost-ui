@@ -713,6 +713,7 @@ export const TestDefinitions = (props: IProps) => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
+                  {' '}
                   click here
                 </a>
                 .
