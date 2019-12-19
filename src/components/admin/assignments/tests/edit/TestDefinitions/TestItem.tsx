@@ -326,10 +326,10 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
         <span style={{ ...textStyle, marginLeft: undefined }}>From</span>
         <Select disabled={this.props.isRunning} value={'io'} onChange={this.onTypeChange} style={inputStyle}>
           <Option key={'file'} value={'io'}>
-            File
+            file
           </Option>
           <Option key={'cli'} value={'io_cli'}>
-            Command Line
+            command line
           </Option>
         </Select>
         <span style={textStyle}>with name</span>
@@ -342,15 +342,23 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               },
             ],
           })(
-            <Select disabled={this.props.isRunning} onChange={this.onChangeFileName} style={inputStyle}>
-              {this.props.files.map((file) => {
-                return (
-                  <Option key={file.id} value={file.name}>
-                    {file.name}
-                  </Option>
-                );
-              })}
-            </Select>,
+            this.props.files.length > 0 ? (
+              <Select disabled={this.props.isRunning} onChange={this.onChangeFileName} style={inputStyle}>
+                {this.props.files.map((file) => {
+                  return (
+                    <Option key={file.id} value={file.name}>
+                      {file.name}
+                    </Option>
+                  );
+                })}
+              </Select>
+            ) : (
+              <Input
+                onChange={(e: any) => this.onChangeFileName(e.target.value)}
+                style={inputStyle}
+                placeholder="filename"
+              />
+            ),
           )}
         </Form.Item>
         <span style={textStyle}>, &nbsp; </span>
@@ -375,7 +383,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   required: true,
                 },
               ],
-            })(<Input placeholder={'Function or Method Name'} style={inputStyle} disabled={this.props.isRunning} />)}
+            })(<Input placeholder={'function / method'} style={inputStyle} disabled={this.props.isRunning} />)}
           </Form.Item>
         )}
         <span style={textStyle}>with arguments</span>
@@ -388,7 +396,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               },
             ],
           })(
-            <Input.TextArea placeholder={'Input'} disabled={this.props.isRunning} style={inputStyle} autosize={true} />,
+            <Input.TextArea placeholder={'input'} disabled={this.props.isRunning} style={inputStyle} autosize={true} />,
           )}
         </Form.Item>
         <span style={textStyle}>and expect the call to</span>
@@ -402,8 +410,8 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             ],
           })(
             <Select disabled={this.props.isRunning} style={inputStyle}>
-              <Option value={'return'}>Return</Option>
-              <Option value={'output'}>Output</Option>
+              <Option value={'return'}>return</Option>
+              <Option value={'output'}>output</Option>
             </Select>,
           )}
         </Form.Item>
