@@ -83,9 +83,13 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   const saveEnv = async () => {
     setLoading(true);
-    await props.buildEnv(language !== null ? language : '', dependencies);
-    setLoading(false);
-    message.success('Environment updated');
+    try {
+      await props.buildEnv(language !== null ? language : '', dependencies);
+      setLoading(false);
+      message.success('Environment updated');
+    } catch (err) {
+      setLoading(false);
+    }
   };
 
   const saveCompileText = async (newText: string) => {
@@ -95,6 +99,14 @@ export const EnvironmentSpecs = (props: IProps) => {
   /******************************* State Change Functions ****************************/
   const onLanguageChange = (value: string) => {
     setLanguage(value);
+    // if it's a new language, reset dependencies
+    if (!props.env || value !== props.env.language) {
+      setDependencies([]);
+    }
+    // if we return to old language, reset dependencies to props
+    if (props.env && value === props.env.language) {
+      setDependencies(JSON.parse(props.env.dependencies));
+    }
   };
 
   const onDependenciesChange = (newDependencies: string[]) => {
