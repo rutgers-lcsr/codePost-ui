@@ -1,19 +1,39 @@
+import React from 'react';
+
+import { Icon, Tooltip } from 'antd';
+
 const locale: { [language: string]: { [attr: string]: any } } = {
   java: {
-    dependencies: 'Upload dependencies as custom dependencies',
-    environment: 'Run on a Linux server in a container built from openjdk:8-jdk-alpine Docker image.',
+    base: false,
+    installCmd: 'apk add',
+    environment: 'Run on a Linux server in a container built from openjdk:8-jdk-alpine base image.',
   },
   'python-3.7': {
-    dependencies: 'Installed via pip',
-    environment: 'Run on a Linux server in a container built from python:3.7-alpine Docker image.',
+    base: false,
+    installCmd: 'pip install',
+    environment: 'Run on a Linux server in a container built from python:3.7-alpine base image.',
   },
   'python-2.7': {
-    dependencies: 'Installed via pip',
-    environment: 'Run on a Linux server in a container built from python:2.7-alpine Docker image.',
+    base: false,
+    installCmd: 'pip install',
+    environment: 'Run on a Linux server in a container built from python:2.7-alpine base image.',
   },
   'c/c++': {
-    dependencies: 'Upload dependencies as custom dependencies',
-    environment: 'Run on a Linux server in a container built from frolvlad/alpine-gxx Docker image.',
+    base: false,
+    installCmd: 'apk add',
+    environment: 'Run on a Linux server in a container built from frolvlad/alpine-gxx base image.',
+  },
+  ubuntu: {
+    base: true,
+    name: 'Custom (ubuntu)',
+    installCmd: 'apt-get -y install',
+    environment: 'Run on a Linux server in a container built from ubuntu:18.04 base image.',
+  },
+  alpine: {
+    base: true,
+    name: 'Custom (alpine-linux)',
+    installCmd: 'apk add',
+    environment: 'Run on a Linux server in a container built from alpine:3.7 base image.',
   },
 };
 

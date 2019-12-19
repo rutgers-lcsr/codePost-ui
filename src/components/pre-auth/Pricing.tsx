@@ -105,7 +105,7 @@ const Pricing = (props: IProps) => {
         >
           <div style={freeStyle}>
             <h3 style={{ fontWeight: 'bold', fontSize: 24, color: '#fff' }}>Teach</h3>
-            <em>For higher ed and teachers anywhere</em>
+            <em>For higher ed, non-profits, and high schools</em>
             <br />
             <br />
             <p style={{ fontSize: '18px', fontWeight: 'bold' }}>Free</p>
@@ -124,7 +124,7 @@ const Pricing = (props: IProps) => {
             <em>For bootcamps, for-profits, and large departments</em>
             <br />
             <br />
-            <p style={{ fontSize: '18px', fontWeight: 'bold' }}>$15 / student per course</p>
+            <p style={{ fontSize: '18px', fontWeight: 'bold' }}>$15 / student / course</p>
             <a href="mailto:team@codepost.io">
               <Button style={premiumButtonStyle}>
                 Coming soon <Icon type="arrow-right" />
