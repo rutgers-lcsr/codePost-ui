@@ -51,7 +51,7 @@ import FileTag from './TestDefinitions/FileTag';
 
 /* codePost utils imports */
 import { fetchTestData, TestCasesByCategory } from '../../../../core/testFetchUtils';
-import { hasNativeTestSupport } from './utils/languageUtils';
+import { hasNativeTestSupport, testTemplates } from './utils/languageUtils';
 
 import { IFolder, buildFolderMenu, createDirectoryStructure } from '../../../../code-review/menu/fileMenuUtils';
 
@@ -219,18 +219,21 @@ export const TestDefinitions = (props: IProps) => {
     // If a language doesn't have native support, default to a bash unit test
 
     const hasNativeSupport = !externalOnly && language && hasNativeTestSupport(language);
+    // if the test is connected to a sourcefile, set bash-group
+    // if the language is natively supported, set it as 'io'
+    // else, set the default to shell
+    // if it's a shell type,
+    const defaultType = sourceFile ? 'file' : hasNativeSupport ? 'io' : externalOnly ? 'external' : 'shell';
+    const defaultText = defaultType === 'shell' && language ? testTemplates[language]['shell'] : '';
     const dummyTestCase: TestCaseType = {
       id: -1,
       sortKey: 0,
       testCategory: category,
       description: name ? name : 'New Test',
-      // if the test is connected to a sourcefile, set bash-group
-      // if the language is natively supported, set it as 'io'
-      // else, set the default to bash-unit
-      type: sourceFile ? 'file' : hasNativeSupport ? 'io' : externalOnly ? 'external' : 'shell',
+      type: defaultType,
       pointsPass: 0,
       pointsFail: 0,
-      text: '',
+      text: defaultText,
       function: '',
       fileName: '',
       expectedOutput: '',
@@ -710,6 +713,7 @@ export const TestDefinitions = (props: IProps) => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
+                  {' '}
                   click here
                 </a>
                 .
