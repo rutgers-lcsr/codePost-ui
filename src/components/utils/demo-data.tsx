@@ -146,7 +146,7 @@ const demoAssignments = (courseID: number) => {
   return [
     {
       name: 'Hello World',
-      sortKey: 0,
+      sortKey: 2,
       points: 20,
       course: courseID,
       tests: [
@@ -407,7 +407,7 @@ class Test {
     },
     {
       name: 'Recursion',
-      sortKey: 2,
+      sortKey: 0,
       points: 20,
       course: courseID,
       tests: [
