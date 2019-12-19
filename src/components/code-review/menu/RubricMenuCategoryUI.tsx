@@ -7,15 +7,13 @@ import { Button, Divider, Icon, Input, Menu, Popover, Tag, Tooltip } from 'antd'
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
 import { AssignmentType } from '../../../infrastructure/assignment';
-import { RubricComment, RubricCommentType } from '../../../infrastructure/rubricComment';
+import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
 // import InlineMarkdown from '../../core/InlineMarkdown';
 import BlockMarkdown from '../../core/BlockMarkdown';
 
 import CPFlex from '../../core/CPFlex';
 import CPPointInput from '../../core/CPPointInput';
-
-import Badge from '../../core/Badge';
 
 import { CURSOR_DOMAIN } from '../CodeConsole';
 

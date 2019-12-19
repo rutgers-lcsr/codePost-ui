@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Card, Divider, Icon, Typography } from 'antd';
+import { Divider, Icon, Typography } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -29,11 +29,6 @@ interface IProps {
   user: UserType;
   handleLogout: () => void;
 }
-
-const buttonStyle = {
-  margin: '10px 0',
-  fontSize: '17px',
-};
 
 interface IRoleProps {
   title: string;

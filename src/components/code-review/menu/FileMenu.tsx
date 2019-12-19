@@ -25,8 +25,6 @@ import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_c
 
 import CodeConsole from '../CodeConsole';
 
-import layoutVars from '../../../styles/layout/_layoutVars';
-
 import Badge from '../../core/Badge';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';

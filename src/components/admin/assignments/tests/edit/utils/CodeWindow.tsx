@@ -31,9 +31,9 @@ export const CodeWindow = (props: IProps) => {
     setEditedCode(props.code);
   }, [props.code]);
   // ******************************* State change functions  *******************************
-  const onEdit = () => {
-    setEditedCode(props.code);
-  };
+  // const onEdit = () => {
+  //   setEditedCode(props.code);
+  // };
 
   const onSave = async () => {
     if (props.onSave) {

@@ -1,5 +1,4 @@
 import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
-import { SubmissionType } from '../../../../../infrastructure/submission';
 
 export const bySubmissionColumns = (categories: TestCategoryType[]) => {
   const columns = [

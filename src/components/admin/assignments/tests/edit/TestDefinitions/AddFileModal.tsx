@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 /* library imports */
-import { Button, Input, Modal, Icon, Select, Row, Tooltip } from 'antd';
+import { Input, Modal, Icon, Select, Row, Tooltip } from 'antd';
 
 /* codePost object imports */
 import { FILE_TYPE } from '../TestingSetup';

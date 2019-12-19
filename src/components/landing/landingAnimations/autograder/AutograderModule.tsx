@@ -17,19 +17,15 @@ const AutograderModule = () => {
     setIndex(e);
   };
 
-  let imgToShow;
   let text;
   switch (index) {
     case 0:
-      imgToShow = noCodeImg;
       text = 'Write tests without any code!';
       break;
     case 1:
-      imgToShow = unitImg;
       text = 'Write powerful unit tests.';
       break;
     case 2:
-      imgToShow = fileModeImg;
       text = 'Import your existing test scripts and run them as is.';
       break;
   }
@@ -37,7 +33,7 @@ const AutograderModule = () => {
     <div style={{ marginRight: 25 }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
         <Typography.Text
-          className={index == 0 ? 'slider-text--active' : index == 1 ? 'slider-text' : 'slider-text--inactive'}
+          className={index === 0 ? 'slider-text--active' : index === 1 ? 'slider-text' : 'slider-text--inactive'}
           style={{ marginRight: 15 }}
         >
           Simple
@@ -52,7 +48,7 @@ const AutograderModule = () => {
           value={index}
         />
         <Typography.Text
-          className={index == 2 ? 'slider-text--active' : index == 1 ? 'slider-text' : 'slider-text--inactive'}
+          className={index === 2 ? 'slider-text--active' : index === 1 ? 'slider-text' : 'slider-text--inactive'}
           style={{ marginLeft: 15 }}
         >
           Flexible

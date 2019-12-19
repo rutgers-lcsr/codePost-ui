@@ -31,7 +31,7 @@ const AnnotationModule = (props: IProps) => {
           position: 'absolute',
         }}
         className={`display-flex justify-content-center align-items-center bevel annotation-image${
-          props.index == 0 ? '--active' : ''
+          props.index === 0 ? '--active' : ''
         }`}
       >
         {codeImg}
@@ -43,7 +43,7 @@ const AnnotationModule = (props: IProps) => {
           position: 'absolute',
         }}
         className={`display-flex justify-content-center align-items-center bevel annotation-image${
-          props.index == 1 ? '--active' : ''
+          props.index === 1 ? '--active' : ''
         }`}
       >
         {jupyterImg}
@@ -55,7 +55,7 @@ const AnnotationModule = (props: IProps) => {
           position: 'absolute',
         }}
         className={`display-flex justify-content-center align-items-center bevel annotation-image${
-          props.index == 2 ? '--active' : ''
+          props.index === 2 ? '--active' : ''
         }`}
       >
         {pdfImg}

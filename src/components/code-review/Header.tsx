@@ -39,8 +39,6 @@ import useHotkeys, { F_KEY, MINUS_KEY, PLUS_KEY, P_KEY, V_KEY } from './useHotke
 
 import useWindowSize from '../core/useWindowSize';
 
-import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
-
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
 import { encodeForLink } from '../core/URLutils';
@@ -105,28 +103,28 @@ const Magnifier = (props: IMagnifierProps) => {
 
 /**********************************************************************************************************************/
 
-interface IResetProps {
-  updateVerticalOffset: (updater: (oldValue: number) => number) => void;
-}
+// interface IResetProps {
+//   updateVerticalOffset: (updater: (oldValue: number) => number) => void;
+// }
 
-const Reset = (props: IResetProps) => {
-  const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
+// const Reset = (props: IResetProps) => {
+//   const { consoleTheme } = React.useContext(ConsoleThemeContext);
+//   const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
 
-  function onClick() {
-    props.updateVerticalOffset(() => 0);
-  }
+//   function onClick() {
+//     props.updateVerticalOffset(() => 0);
+//   }
 
-  return (
-    <CPTooltip title={tooltips.grade.header.alignment} hideThisOnHideTips={true}>
-      <ButtonGroup>
-        <CPButton id="reset" cpType={cpType} small={true} onClick={onClick}>
-          <Icon type="redo" />
-        </CPButton>
-      </ButtonGroup>
-    </CPTooltip>
-  );
-};
+//   return (
+//     <CPTooltip title={tooltips.grade.header.alignment} hideThisOnHideTips={true}>
+//       <ButtonGroup>
+//         <CPButton id="reset" cpType={cpType} small={true} onClick={onClick}>
+//           <Icon type="redo" />
+//         </CPButton>
+//       </ButtonGroup>
+//     </CPTooltip>
+//   );
+// };
 
 /**********************************************************************************************************************/
 

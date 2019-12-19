@@ -1,7 +1,3 @@
-const domain = 'example.edu';
-const studentEmail = `student0@${domain}`;
-const sectionName = 'Section 42';
-
 export const demoFiles = [
   {
     id: 0,
