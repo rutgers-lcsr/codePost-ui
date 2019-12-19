@@ -704,7 +704,7 @@ export const TestDefinitions = (props: IProps) => {
               <br />
               <span>
                 <b>Instructions</b>: If you have an existing script with modular unit tests, or want to start fresh,
-                click "Add Category". Otherwise, click "Enter File Mode". To learn more
+                click "Add Category". Otherwise, click "Enter File Mode". To learn more{' '}
                 <a
                   href="https://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
                   target="_blank"
