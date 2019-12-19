@@ -49,6 +49,7 @@ interface IGraderState {
   sectionsLed: SectionType[];
   assignments: AssignmentType[];
   isLoading: boolean;
+  showBanner: boolean;
 }
 
 class Grader extends React.Component<IComponentProps, IGraderState> {
@@ -76,7 +77,14 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
             return currentCourse.sections.indexOf(section.id) !== -1;
           })
         : [],
+      showBanner: false,
     };
+  }
+
+  public componentDidMount() {
+    setTimeout(() => {
+      this.setState({ showBanner: true });
+    }, 1000);
   }
 
   public loadAssignments = async (course: CourseType) => {
@@ -239,15 +247,17 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
         header={header}
         detail={
           <span>
-            <Layout.Footer
-              style={{ background: 'rgba(36, 190, 132, 0.13)', margin: '10px 60px 0 60px', padding: '18px 30px' }}
-            >
-              <b>Hi there!</b> Please take{' '}
-              <a href="https://forms.gle/DB8Up1EWjpyNoTHA7" target="_blank" rel="noopener noreferrer">
-                our end-of-semester survey
-              </a>
-              . Your feedback helps make codePost possible and keeps us improving.{' '}
-            </Layout.Footer>
+            {this.state.showBanner ? (
+              <Layout.Footer
+                style={{ background: 'rgba(36, 190, 132, 0.13)', margin: '10px 60px 0 60px', padding: '18px 30px' }}
+              >
+                <b>Hi there!</b> Please take{' '}
+                <a href="https://forms.gle/DB8Up1EWjpyNoTHA7" target="_blank" rel="noopener noreferrer">
+                  our end-of-semester survey
+                </a>
+                . Your feedback helps make codePost possible and keeps us improving.{' '}
+              </Layout.Footer>
+            ) : null}
 
             {graderPanelContent}
           </span>
