@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 
 /* library imports */
-import { Modal, Button, Divider, Select, Typography, Empty, message } from 'antd';
+import { Modal, Button, Divider, Icon, Input, Select, Tooltip, Tag, Typography, Empty, message } from 'antd';
 
 /* codePost object imports */
 import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
@@ -28,6 +28,8 @@ import CPTooltip from '../../../../core/CPTooltip';
 import { FILE_TYPE } from './TestingSetup';
 
 import locale from './utils/languageLocale';
+
+import themeVars from '../../../../../styles/abstracts/_theme';
 
 const { Option } = Select;
 const { confirm } = Modal;
@@ -120,21 +122,26 @@ export const EnvironmentSpecs = (props: IProps) => {
   );
 
   // Fixme: refactor into util
-  const dependencyText = language && locale[language].dependencies;
+  const installText = (language && locale[language].installCmd) || '';
   const envSpecText = language && locale[language].environment;
 
   const selectDependencies = (
     // Disable selector if environment has a custom dockerfile defined
-    <Select
-      mode="tags"
-      style={{ minWidth: 300 }}
-      value={dependencies}
-      placeholder={dependencyText}
-      onChange={onDependenciesChange}
-      disabled={
-        language === null || !hasDependenciesSupport(language) || (props.env && props.env.dockerfile.length > 0)
-      }
-    />
+    <div style={{ marginLeft: 10 }}>
+      <Tooltip title="This is the install command run for all packages in this build.">
+        <Tag style={{ lineHeight: '32px', height: 32, marginRight: 5 }}>{installText}</Tag>
+      </Tooltip>
+      <Select
+        mode="tags"
+        style={{ minWidth: 300 }}
+        value={dependencies}
+        placeholder={'Add package to environment'}
+        onChange={onDependenciesChange}
+        disabled={
+          language === null || !hasDependenciesSupport(language) || (props.env && props.env.dockerfile.length > 0)
+        }
+      />
+    </div>
   );
 
   const customDockerFile = props.env && props.env.dockerfile && (
@@ -215,10 +222,12 @@ export const EnvironmentSpecs = (props: IProps) => {
         </div>
       </div>
       Language: {selectLanguage} &nbsp;
-      <CPTooltip infoIcon={true} title={envSpecText} />
+      <Tooltip title={envSpecText}>
+        <Icon type="database" theme="twoTone" twoToneColor={themeVars.theme.brandPrimary} />
+      </Tooltip>
       <br />
       <br />
-      Custom dependencies: {selectDependencies}
+      <div className="display-flex align-items-center">Install packages: {selectDependencies}</div>
       {customDockerFile}
       {props.env ? showAfterCreation : null}
     </div>
