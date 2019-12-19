@@ -10,6 +10,10 @@ import { CommentIO } from '../../infrastructure/comment';
 import { File } from '../../infrastructure/file';
 import { Submission } from '../../infrastructure/submission';
 
+import { TestCategory } from '../../infrastructure/testCategory';
+import { TestCase } from '../../infrastructure/testCase';
+import { Environment } from '../../infrastructure/autograder/environment';
+
 /* Import demo course data */
 import { demoAssignments, demoCourse, demoRoster, demoSections, demoSubmissions } from './demo-data';
 
@@ -48,7 +52,7 @@ const createDemoCourse = (email: string, username: string, org: string) => {
   });
 };
 
-const createAssignment = (course: CourseType, assignment: any) => {
+const createAssignment = async (course: CourseType, assignment: any) => {
   const assnPayload = {
     id: -1, // codePost convention
     name: assignment.name,
@@ -60,11 +64,29 @@ const createAssignment = (course: CourseType, assignment: any) => {
     hideGrades: false,
   };
 
-  return Assignment.create(assnPayload).then((assnObj: AssignmentType) => {
+  return Assignment.create(assnPayload).then(async (assnObj: AssignmentType) => {
     // Update course object with assignment ids. This step is necessary to allow
     // the Admin component to load these assignments when the active course is switched
     // to the newly created demo course in changeLoadedCourse.
     course.assignments.push(assnObj.id);
+
+    // Create environment for testing
+    const payload = {
+      id: -1,
+      language: 'java',
+      dependencies: JSON.stringify([]),
+      assignment: assnObj.id,
+      dumpMode: false,
+      testParsing: true,
+      compileText: '',
+    };
+    const thisEnvironment = await Environment.create(payload);
+
+    const newEnv = await Environment.build({
+      id: thisEnvironment.id,
+      dependencies: [],
+      language: 'java',
+    });
 
     // Create rubric
     const makeCategories = assignment.rubric.map((category: any) => {
@@ -96,7 +118,23 @@ const createAssignment = (course: CourseType, assignment: any) => {
       });
     });
 
-    return Promise.all(makeCategories).then(() => {
+    // Create tests
+    const makeTestCategories = assignment.tests.map((category: any) => {
+      const catPayload = {
+        id: -1,
+        assignment: assnObj.id,
+        name: category.category,
+      };
+
+      return TestCategory.create(catPayload).then((catObj) => {
+        const makeCases = category.cases.map((testCase: any) => {
+          const casePayload = { id: -1, testCategory: catObj.id, ...testCase };
+          return TestCase.create(casePayload);
+        });
+      });
+    });
+
+    return Promise.all([...makeCategories, ...makeTestCategories]).then(() => {
       return assnObj;
     });
   });
