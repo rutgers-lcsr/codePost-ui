@@ -154,7 +154,25 @@ const demoAssignments = (courseID: number) => {
           category: 'Run HelloWorld',
           cases: [
             {
-              description: 'Run HelloWorld',
+              description: 'Outputs "Hello, World"',
+              type: 'shell',
+              pointsFail: -1,
+              text: `# Run student code
+result=\$(java HelloWorld)
+
+# Grab length of output
+resultLen=\${#result}
+minLen=0
+
+if [ "/\$resultLen" -gt "\$minLen" ]
+ then
+   TestOutput true "passed"
+ else
+   TestOutput false "Prints nothing to stdout"
+fi`,
+            },
+            {
+              description: 'Outputs "Hello, World"',
               type: 'io_cli',
               pointsFail: -1,
               text: 'java HelloWorld',
@@ -172,15 +190,15 @@ const demoAssignments = (courseID: number) => {
           comments: [
             {
               text: 'You printed out the wrong string!',
-              points: 1,
+              points: 0,
             },
             {
               text: 'You forgot to print a newline at the end of your string!',
-              points: 1,
+              points: 0,
             },
             {
               text: "You didn't print anything out!",
-              points: 2,
+              points: 0,
             },
           ],
         },
@@ -331,16 +349,6 @@ class Test {
               function: 'contains',
               expectedOutput: 'false',
               input: 'new int[]{1,2,3}, 0',
-              checkReturn: true,
-            },
-            {
-              description: 'Test on [1] with 0',
-              type: 'io',
-              pointsFail: -1,
-              fileName: 'LoopUtils.java',
-              function: 'contains',
-              expectedOutput: 'false',
-              input: 'new int[]{1}, 0',
               checkReturn: true,
             },
             {
