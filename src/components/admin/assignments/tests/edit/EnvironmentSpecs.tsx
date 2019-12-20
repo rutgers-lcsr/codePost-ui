@@ -267,9 +267,9 @@ export const EnvironmentSpecs = (props: IProps) => {
       <br />
       <CodeWindow code={(props.env && props.env.compileText) || ''} name={'.sh'} onSave={saveCompileText} />
       <Divider />
-      <Typography.Title level={3}>3. Add custom dependencies</Typography.Title>
+      <Typography.Title level={3}>3. Add test helper files</Typography.Title>
       <span>
-        <b>Instructions</b>: Custom dependencies can be imported by tests, student code, or solution code.
+        <b>Instructions</b>: Helper files can be imported by tests, student code, or solution code.
       </span>
       <br />
       <br />
