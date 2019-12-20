@@ -146,7 +146,7 @@ const demoAssignments = (courseID: number) => {
   return [
     {
       name: 'Hello World',
-      sortKey: 2,
+      sortKey: 0,
       points: 20,
       course: courseID,
       tests: [
@@ -154,7 +154,7 @@ const demoAssignments = (courseID: number) => {
           category: 'Run HelloWorld',
           cases: [
             {
-              description: 'Outputs "Hello, World"',
+              description: 'Outputs something',
               type: 'shell',
               pointsFail: -1,
               text: `# Run student code
@@ -164,7 +164,7 @@ result=\$(java HelloWorld)
 resultLen=\${#result}
 minLen=0
 
-if [ "/\$resultLen" -gt "\$minLen" ]
+if [ "\$resultLen" -gt "\$minLen" ]
  then
    TestOutput true "passed"
  else
@@ -415,7 +415,7 @@ class Test {
     },
     {
       name: 'Recursion',
-      sortKey: 0,
+      sortKey: 2,
       points: 20,
       course: courseID,
       tests: [
