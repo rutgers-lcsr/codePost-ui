@@ -229,8 +229,8 @@ fi`,
               pointsFail: -1,
               fileName: 'LoopUtils.java',
               function: 'max',
-              expectedOutput: '3',
-              input: 'new int[]{1,2,3}',
+              expectedOutput: '1',
+              input: 'new int[]{1}',
               checkReturn: true,
             },
             {
@@ -308,15 +308,15 @@ class Test {
 };`,
             },
             {
-              description: 'Test on [1]',
+              description: 'Test on [1,2]',
               type: 'unit',
               pointsFail: -1,
               text: `import java.util.Arrays;
 
 class Test {
   static TestOutput Test() {
-    int[] toTest = new int[]{1};
-    int[] solution = new int[]{1};
+    int[] toTest = new int[]{1,2};
+    int[] solution = new int[]{2,1};
     int[] studentAnswer = LoopUtils.reverse(toTest);
     if (Arrays.equals(solution, studentAnswer)) {
       return new TestOutput(true, "passed");

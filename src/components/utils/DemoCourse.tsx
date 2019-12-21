@@ -10,7 +10,7 @@ import { CommentIO } from '../../infrastructure/comment';
 import { File } from '../../infrastructure/file';
 import { Submission } from '../../infrastructure/submission';
 
-import { TestCategory } from '../../infrastructure/testCategory';
+import { TestCategory, TestCategoryType } from '../../infrastructure/testCategory';
 import { TestCase } from '../../infrastructure/testCase';
 import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
 import { Environment } from '../../infrastructure/autograder/environment';
@@ -51,15 +51,18 @@ const createDemoCourse = async (email: string, username: string, org: string) =>
             // Generate SubmissionTests from cached JSON
             const subTestPromises = assignments.map(async (assignment) => {
               const [categories, casesByCategory] = await fetchTestData(assignment);
+              const testCategories = categories as TestCategoryType[]; // not clear why this is necessary
               const testCases = Object.values(casesByCategory).flat();
-              const updated = await Assignment.read(assignment.id);
               const thisSubmissions = await Assignment.readSubmissions(assignment.id);
 
               return demoSubmissionTests.map((subEl) => {
                 const subMatch = thisSubmissions.find((sub) => sub.students.indexOf(subEl.students[0]) > -1);
                 return subEl.tests.map((subTestEl) => {
+                  // Match submissionTest to newly created testCase object
                   const testCaseMatch = testCases.find((tc) => tc.description === subTestEl.testCase);
-                  if (testCaseMatch) {
+                  const testCategoryMatch = testCategories.find((cat) => cat.name === subTestEl.testCategory);
+
+                  if (testCaseMatch && testCategoryMatch) {
                     const payload = {
                       passed: subTestEl.passed,
                       logs: subTestEl.logs.length > 0 ? subTestEl.logs : '-',

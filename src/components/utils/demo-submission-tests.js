@@ -1,353 +1,470 @@
 export const demoSubmissionTests = [
   {
-    students: ['student2@codepost.io'],
+    students: ['student3@codepost.io'],
     tests: [
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [-1,-2,-3]' },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Test on random arrays' },
+      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
       {
-        passed: false,
+        passed: true,
         isError: false,
-        logs:
-          'No Result received.\n_test410.java:7: error: duplicate class: Test\nclass Test {\n^\n_test410.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test418.java:8: error: duplicate class: Test\nclass Test {\n^\n_test418.java:41: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
-        testCase: 'Test on [] with 0',
-      },
-      {
-        passed: false,
-        isError: false,
-        logs:
-          'No Result received.\n_test410.java:7: error: duplicate class: Test\nclass Test {\n^\n_test410.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test418.java:8: error: duplicate class: Test\nclass Test {\n^\n_test418.java:41: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
-        testCase: 'Test on [1,2,3] with 3',
-      },
-      {
-        passed: false,
-        isError: false,
-        logs:
-          'No Result received.\n_test410.java:7: error: duplicate class: Test\nclass Test {\n^\n_test410.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test418.java:8: error: duplicate class: Test\nclass Test {\n^\n_test418.java:41: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
-        testCase: 'Test on [1,2,3] with 0',
-      },
-      {
-        passed: false,
-        isError: false,
-        logs:
-          'No Result received.\n_test410.java:7: error: duplicate class: Test\nclass Test {\n^\n_test410.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test418.java:8: error: duplicate class: Test\nclass Test {\n^\n_test418.java:41: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
-        testCase: 'Test on [3,2,1]',
-      },
-      {
-        passed: false,
-        isError: false,
-        logs:
-          'No Result received.\n_test410.java:7: error: duplicate class: Test\nclass Test {\n^\n_test410.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test418.java:8: error: duplicate class: Test\nclass Test {\n^\n_test418.java:41: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
-        testCase: 'Test on [1]',
+        logs: 'Expected Hello, World. Received Hello, World.',
+        testCase: 'Outputs "Hello, World"',
+        testCategory: 'Run HelloWorld',
       },
     ],
   },
   {
-    students: ['student1@codepost.io', 'student6@codepost.io'],
+    students: ['student1@codepost.io'],
     tests: [
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3] with 3' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [] with 0' },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Test on [3,2,1]' },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Test on [1]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3] with 0' },
+      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
       {
-        passed: false,
+        passed: true,
         isError: false,
-        logs:
-          '\n=============================\nEXPECTED OUTPUT:\n-1\n------------------------------------------------------------\nACTUAL OUTPUT:\n0\n=============================\n',
-        testCase: 'Test on [-1,-2,-3]',
-      },
-      { passed: false, isError: false, logs: 'failed on []', testCase: 'Test on random arrays' },
-    ],
-  },
-  {
-    students: ['student0@codepost.io', 'student5@codepost.io'],
-    tests: [
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3] with 3' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [] with 0' },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Test on [3,2,1]' },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Test on [1]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3] with 0' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [-1,-2,-3]' },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Test on random arrays' },
-    ],
-  },
-  {
-    students: ['student4@codepost.io', 'student9@codepost.io'],
-    tests: [
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3] with 3' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [] with 0' },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Test on [3,2,1]' },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Test on [1]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3] with 0' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [-1,-2,-3]' },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Test on random arrays' },
-    ],
-  },
-  {
-    students: ['student3@codepost.io', 'student8@codepost.io'],
-    tests: [
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3] with 3' },
-      {
-        passed: false,
-        isError: false,
-        logs:
-          'java.lang.ArrayIndexOutOfBoundsException: 3\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat _test415.main(_test415.java:13)\n',
-        testCase: 'Test on [1,2,3]',
-      },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [] with 0' },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Test on [3,2,1]' },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Test on [1]' },
-      {
-        passed: false,
-        isError: false,
-        logs:
-          'java.lang.ArrayIndexOutOfBoundsException: 3\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat _test417.main(_test417.java:13)\n',
-        testCase: 'Test on [1]',
-      },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3] with 0' },
-      {
-        passed: false,
-        isError: false,
-        logs:
-          'java.lang.ArrayIndexOutOfBoundsException: 3\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat _test416.main(_test416.java:13)\n',
-        testCase: 'Test on [-1,-2,-3]',
-      },
-      {
-        passed: false,
-        isError: false,
-        logs:
-          'No Result received.\n_test410.java:7: error: duplicate class: Test\nclass Test {\n^\n_test410.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test418.java:8: error: duplicate class: Test\nclass Test {\n^\n_test418.java:41: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nException in thread "main" java.lang.ArrayIndexOutOfBoundsException: 0\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat Test.Test(_test418.java:31)\n\tat _test418.main(_test418.java:53)\n',
-        testCase: 'Test on random arrays',
+        logs: 'Expected Hello, World. Received Hello, World.',
+        testCase: 'Outputs "Hello, World"',
+        testCategory: 'Run HelloWorld',
       },
     ],
   },
   {
     students: ['student0@codepost.io'],
     tests: [
+      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
       {
         passed: true,
         isError: false,
         logs: 'Expected Hello, World. Received Hello, World.',
         testCase: 'Outputs "Hello, World"',
+        testCategory: 'Run HelloWorld',
       },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something' },
-    ],
-  },
-  {
-    students: ['student2@codepost.io'],
-    tests: [
-      {
-        passed: false,
-        isError: false,
-        logs: 'Expected Hello, World. Received Hello, wurld.',
-        testCase: 'Outputs "Hello, World"',
-      },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something' },
-    ],
-  },
-  {
-    students: ['student1@codepost.io'],
-    tests: [
-      {
-        passed: true,
-        isError: false,
-        logs: 'Expected Hello, World. Received Hello, World.',
-        testCase: 'Outputs "Hello, World"',
-      },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something' },
-    ],
-  },
-  {
-    students: ['student5@codepost.io'],
-    tests: [
-      {
-        passed: true,
-        isError: false,
-        logs: 'Expected Hello, World. Received Hello, World.',
-        testCase: 'Outputs "Hello, World"',
-      },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something' },
-    ],
-  },
-  {
-    students: ['student3@codepost.io'],
-    tests: [
-      {
-        passed: true,
-        isError: false,
-        logs: 'Expected Hello, World. Received Hello, World.',
-        testCase: 'Outputs "Hello, World"',
-      },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something' },
     ],
   },
   {
     students: ['student4@codepost.io'],
     tests: [
+      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
       {
         passed: true,
         isError: false,
         logs: 'Expected Hello, World. Received Hello, World.',
         testCase: 'Outputs "Hello, World"',
+        testCategory: 'Run HelloWorld',
       },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something' },
+    ],
+  },
+  {
+    students: ['student2@codepost.io'],
+    tests: [
+      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
+      {
+        passed: false,
+        isError: false,
+        logs: 'Expected Hello, World. Received Hello, wurld.',
+        testCase: 'Outputs "Hello, World"',
+        testCategory: 'Run HelloWorld',
+      },
+    ],
+  },
+  {
+    students: ['student5@codepost.io'],
+    tests: [
+      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
+      {
+        passed: true,
+        isError: false,
+        logs: 'Expected Hello, World. Received Hello, World.',
+        testCase: 'Outputs "Hello, World"',
+        testCategory: 'Run HelloWorld',
+      },
     ],
   },
   {
     students: ['student6@codepost.io'],
     tests: [
+      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
       {
         passed: true,
         isError: false,
         logs: 'Expected Hello, World. Received Hello, World.',
         testCase: 'Outputs "Hello, World"',
+        testCategory: 'Run HelloWorld',
       },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something' },
-    ],
-  },
-  {
-    students: ['student7@codepost.io'],
-    tests: [
-      {
-        passed: true,
-        isError: false,
-        logs: 'Expected Hello, World. Received Hello, World.',
-        testCase: 'Outputs "Hello, World"',
-      },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something' },
-    ],
-  },
-  {
-    students: ['student8@codepost.io'],
-    tests: [
-      {
-        passed: true,
-        isError: false,
-        logs: 'Expected Hello, World. Received Hello, World.',
-        testCase: 'Outputs "Hello, World"',
-      },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something' },
     ],
   },
   {
     students: ['student9@codepost.io'],
     tests: [
+      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
       {
         passed: true,
         isError: false,
         logs: 'Expected Hello, World. Received Hello, World.',
         testCase: 'Outputs "Hello, World"',
+        testCategory: 'Run HelloWorld',
       },
-      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something' },
     ],
   },
   {
-    students: ['student0@codepost.io', 'student5@codepost.io'],
+    students: ['student8@codepost.io'],
     tests: [
+      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
+      {
+        passed: true,
+        isError: false,
+        logs: 'Expected Hello, World. Received Hello, World.',
+        testCase: 'Outputs "Hello, World"',
+        testCategory: 'Run HelloWorld',
+      },
+    ],
+  },
+  {
+    students: ['student7@codepost.io'],
+    tests: [
+      { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
+      {
+        passed: true,
+        isError: false,
+        logs: 'Expected Hello, World. Received Hello, World.',
+        testCase: 'Outputs "Hello, World"',
+        testCategory: 'Run HelloWorld',
+      },
+    ],
+  },
+  {
+    students: ['student2@codepost.io'],
+    tests: [
+      { passed: true, isError: false, logs: '', testCase: 'Test on [] with 0', testCategory: 'LoopUtils.contains' },
+      { passed: true, isError: false, logs: 'passed', testCase: 'Test on [1,2]', testCategory: 'LoopUtils.reverse' },
+      { passed: true, isError: false, logs: 'passed', testCase: 'Test on [3,2,1]', testCategory: 'LoopUtils.reverse' },
       {
         passed: false,
         isError: false,
         logs:
-          '\n=============================\nEXPECTED OUTPUT:\ntrue\n------------------------------------------------------------\nACTUAL OUTPUT:\nfalse\n=============================\n',
-        testCase: 'Test on [1,2,3] with 3',
+          'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+        testCase: 'Test on [1,2,3]',
+        testCategory: 'LoopUtils.max',
       },
-      { passed: true, isError: false, logs: '', testCase: 'Test on []' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3] with 0' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [] with 3' },
+      {
+        passed: false,
+        isError: false,
+        logs:
+          'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+        testCase: 'Test on [1]',
+        testCategory: 'LoopUtils.max',
+      },
+      {
+        passed: false,
+        isError: false,
+        logs:
+          'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+        testCase: 'Test on [-1,-2,-3]',
+        testCategory: 'LoopUtils.max',
+      },
+      {
+        passed: false,
+        isError: false,
+        logs:
+          'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+        testCase: 'Test on random arrays',
+        testCategory: 'LoopUtils.max',
+      },
+      {
+        passed: false,
+        isError: false,
+        logs:
+          'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+        testCase: 'Test on [1,2,3] with 3',
+        testCategory: 'LoopUtils.contains',
+      },
+      {
+        passed: false,
+        isError: false,
+        logs:
+          'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+        testCase: 'Test on [1,2,3] with 0',
+        testCategory: 'LoopUtils.contains',
+      },
     ],
   },
   {
     students: ['student1@codepost.io', 'student6@codepost.io'],
     tests: [
       {
-        passed: false,
+        passed: true,
         isError: false,
-        logs:
-          '\n=============================\nEXPECTED OUTPUT:\ntrue\n------------------------------------------------------------\nACTUAL OUTPUT:\nfalse\n=============================\n',
+        logs: '',
         testCase: 'Test on [1,2,3] with 3',
+        testCategory: 'LoopUtils.contains',
       },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]', testCategory: 'LoopUtils.max' },
       {
         passed: false,
         isError: false,
         logs:
-          'java.lang.IllegalArgumentException: 1 > 0\n\tat java.util.Arrays.copyOfRange(Arrays.java:3591)\n\tat RecursionUtils.sum(RecursionUtils.java:22)\n\tat _test408.main(_test408.java:13)\n',
-        testCase: 'Test on []',
+          '\n=============================\nEXPECTED OUTPUT:\n-1\n------------------------------------------------------------\nACTUAL OUTPUT:\n0\n=============================\n',
+        testCase: 'Test on [-1,-2,-3]',
+        testCategory: 'LoopUtils.max',
       },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3] with 0' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [] with 3' },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [] with 0', testCategory: 'LoopUtils.contains' },
+      { passed: true, isError: false, logs: 'passed', testCase: 'Test on [1,2]', testCategory: 'LoopUtils.reverse' },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [1]', testCategory: 'LoopUtils.max' },
+      {
+        passed: false,
+        isError: false,
+        logs: 'failed on []',
+        testCase: 'Test on random arrays',
+        testCategory: 'LoopUtils.max',
+      },
+      {
+        passed: true,
+        isError: false,
+        logs: '',
+        testCase: 'Test on [1,2,3] with 0',
+        testCategory: 'LoopUtils.contains',
+      },
+      { passed: true, isError: false, logs: 'passed', testCase: 'Test on [3,2,1]', testCategory: 'LoopUtils.reverse' },
     ],
   },
   {
-    students: ['student2@codepost.io', 'student7@codepost.io'],
+    students: ['student0@codepost.io', 'student5@codepost.io'],
     tests: [
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3] with 3' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on []' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3] with 0' },
+      {
+        passed: true,
+        isError: false,
+        logs: '',
+        testCase: 'Test on [1,2,3] with 3',
+        testCategory: 'LoopUtils.contains',
+      },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]', testCategory: 'LoopUtils.max' },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [-1,-2,-3]', testCategory: 'LoopUtils.max' },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [] with 0', testCategory: 'LoopUtils.contains' },
+      { passed: true, isError: false, logs: 'passed', testCase: 'Test on [1,2]', testCategory: 'LoopUtils.reverse' },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [1]', testCategory: 'LoopUtils.max' },
+      {
+        passed: true,
+        isError: false,
+        logs: 'passed',
+        testCase: 'Test on random arrays',
+        testCategory: 'LoopUtils.max',
+      },
+      {
+        passed: true,
+        isError: false,
+        logs: '',
+        testCase: 'Test on [1,2,3] with 0',
+        testCategory: 'LoopUtils.contains',
+      },
+      { passed: true, isError: false, logs: 'passed', testCase: 'Test on [3,2,1]', testCategory: 'LoopUtils.reverse' },
+    ],
+  },
+  {
+    students: ['student3@codepost.io', 'student8@codepost.io'],
+    tests: [
+      {
+        passed: true,
+        isError: false,
+        logs: '',
+        testCase: 'Test on [1,2,3] with 3',
+        testCategory: 'LoopUtils.contains',
+      },
       {
         passed: false,
         isError: false,
         logs:
-          'java.lang.ArrayIndexOutOfBoundsException: 0\n\tat RecursionUtils.containsHelper(RecursionUtils.java:51)\n\tat RecursionUtils.contains(RecursionUtils.java:40)\n\tat _test414.main(_test414.java:13)\n',
-        testCase: 'Test on [] with 3',
+          'java.lang.ArrayIndexOutOfBoundsException: 3\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat _test610.main(_test610.java:13)\n',
+        testCase: 'Test on [1,2,3]',
+        testCategory: 'LoopUtils.max',
+      },
+      {
+        passed: false,
+        isError: false,
+        logs:
+          'java.lang.ArrayIndexOutOfBoundsException: 3\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat _test612.main(_test612.java:13)\n',
+        testCase: 'Test on [-1,-2,-3]',
+        testCategory: 'LoopUtils.max',
+      },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [] with 0', testCategory: 'LoopUtils.contains' },
+      { passed: true, isError: false, logs: 'failed', testCase: 'Test on [1,2]', testCategory: 'LoopUtils.reverse' },
+      {
+        passed: false,
+        isError: false,
+        logs:
+          'java.lang.ArrayIndexOutOfBoundsException: 1\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat _test611.main(_test611.java:13)\n',
+        testCase: 'Test on [1]',
+        testCategory: 'LoopUtils.max',
+      },
+      {
+        passed: true,
+        isError: false,
+        logs: '',
+        testCase: 'Test on [1,2,3] with 0',
+        testCategory: 'LoopUtils.contains',
+      },
+      { passed: true, isError: false, logs: 'passed', testCase: 'Test on [3,2,1]', testCategory: 'LoopUtils.reverse' },
+      {
+        passed: false,
+        isError: false,
+        logs:
+          'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nException in thread "main" java.lang.ArrayIndexOutOfBoundsException: 4\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat Test.Test(_test613.java:31)\n\tat _test613.main(_test613.java:53)\n',
+        testCase: 'Test on random arrays',
+        testCategory: 'LoopUtils.max',
       },
     ],
   },
   {
     students: ['student4@codepost.io', 'student9@codepost.io'],
     tests: [
-      { passed: true, isError: false, logs: '', testCase: 'Test on []' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]' },
       {
-        passed: false,
+        passed: true,
         isError: false,
-        logs:
-          'java.lang.ArrayIndexOutOfBoundsException: 0\n\tat RecursionUtils.containsHelper(RecursionUtils.java:49)\n\tat RecursionUtils.contains(RecursionUtils.java:38)\n\tat _test414.main(_test414.java:13)\n',
-        testCase: 'Test on [] with 3',
-      },
-      {
-        passed: false,
-        isError: false,
-        logs:
-          'No Result received.\nException in thread "main" java.lang.StackOverflowError\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils',
+        logs: '',
         testCase: 'Test on [1,2,3] with 3',
+        testCategory: 'LoopUtils.contains',
+      },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]', testCategory: 'LoopUtils.max' },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [-1,-2,-3]', testCategory: 'LoopUtils.max' },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [] with 0', testCategory: 'LoopUtils.contains' },
+      { passed: true, isError: false, logs: 'failed', testCase: 'Test on [1,2]', testCategory: 'LoopUtils.reverse' },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [1]', testCategory: 'LoopUtils.max' },
+      {
+        passed: true,
+        isError: false,
+        logs: 'passed',
+        testCase: 'Test on random arrays',
+        testCategory: 'LoopUtils.max',
+      },
+      {
+        passed: true,
+        isError: false,
+        logs: '',
+        testCase: 'Test on [1,2,3] with 0',
+        testCategory: 'LoopUtils.contains',
+      },
+      { passed: true, isError: false, logs: 'passed', testCase: 'Test on [3,2,1]', testCategory: 'LoopUtils.reverse' },
+    ],
+  },
+  {
+    students: ['student0@codepost.io', 'student5@codepost.io'],
+    tests: [
+      {
+        passed: true,
+        isError: false,
+        logs: '',
+        testCase: 'Test on [1,2,3] with 0',
+        testCategory: 'RecursionUtils.contains',
+      },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [1]', testCategory: 'RecursionUtils.sum' },
+      {
+        passed: true,
+        isError: false,
+        logs: '',
+        testCase: 'Test on [] with 3',
+        testCategory: 'RecursionUtils.contains',
+      },
+      { passed: true, isError: false, logs: '', testCase: 'Test on []', testCategory: 'RecursionUtils.sum' },
+      {
+        passed: false,
+        isError: false,
+        logs:
+          '\n=============================\nEXPECTED OUTPUT:\ntrue\n------------------------------------------------------------\nACTUAL OUTPUT:\nfalse\n=============================\n',
+        testCase: 'Test on [1,2,3] with 3',
+        testCategory: 'RecursionUtils.contains',
+      },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]', testCategory: 'RecursionUtils.sum' },
+    ],
+  },
+  {
+    students: ['student1@codepost.io', 'student6@codepost.io'],
+    tests: [
+      {
+        passed: true,
+        isError: false,
+        logs: '',
+        testCase: 'Test on [1,2,3] with 0',
+        testCategory: 'RecursionUtils.contains',
+      },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [1]', testCategory: 'RecursionUtils.sum' },
+      {
+        passed: true,
+        isError: false,
+        logs: '',
+        testCase: 'Test on [] with 3',
+        testCategory: 'RecursionUtils.contains',
       },
       {
         passed: false,
         isError: false,
         logs:
-          'No Result received.\nException in thread "main" java.lang.StackOverflowError\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils',
-        testCase: 'Test on [1,2,3] with 0',
+          'java.lang.IllegalArgumentException: 1 > 0\n\tat java.util.Arrays.copyOfRange(Arrays.java:3591)\n\tat RecursionUtils.sum(RecursionUtils.java:22)\n\tat _test621.main(_test621.java:13)\n',
+        testCase: 'Test on []',
+        testCategory: 'RecursionUtils.sum',
       },
+      {
+        passed: false,
+        isError: false,
+        logs:
+          '\n=============================\nEXPECTED OUTPUT:\ntrue\n------------------------------------------------------------\nACTUAL OUTPUT:\nfalse\n=============================\n',
+        testCase: 'Test on [1,2,3] with 3',
+        testCategory: 'RecursionUtils.contains',
+      },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]', testCategory: 'RecursionUtils.sum' },
+    ],
+  },
+  {
+    students: ['student2@codepost.io', 'student7@codepost.io'],
+    tests: [
+      {
+        passed: true,
+        isError: false,
+        logs: '',
+        testCase: 'Test on [1,2,3] with 0',
+        testCategory: 'RecursionUtils.contains',
+      },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [1]', testCategory: 'RecursionUtils.sum' },
+      {
+        passed: false,
+        isError: false,
+        logs:
+          'java.lang.ArrayIndexOutOfBoundsException: 0\n\tat RecursionUtils.containsHelper(RecursionUtils.java:51)\n\tat RecursionUtils.contains(RecursionUtils.java:40)\n\tat _test623.main(_test623.java:13)\n',
+        testCase: 'Test on [] with 3',
+        testCategory: 'RecursionUtils.contains',
+      },
+      { passed: true, isError: false, logs: '', testCase: 'Test on []', testCategory: 'RecursionUtils.sum' },
+      {
+        passed: true,
+        isError: false,
+        logs: '',
+        testCase: 'Test on [1,2,3] with 3',
+        testCategory: 'RecursionUtils.contains',
+      },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]', testCategory: 'RecursionUtils.sum' },
     ],
   },
   {
     students: ['student3@codepost.io', 'student8@codepost.io'],
     tests: [
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3] with 3' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on []' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1]' },
-      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3] with 0' },
+      {
+        passed: true,
+        isError: false,
+        logs: '',
+        testCase: 'Test on [1,2,3] with 0',
+        testCategory: 'RecursionUtils.contains',
+      },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [1]', testCategory: 'RecursionUtils.sum' },
       {
         passed: false,
         isError: false,
         logs:
-          'java.lang.ArrayIndexOutOfBoundsException: 0\n\tat RecursionUtils.containsHelper(RecursionUtils.java:51)\n\tat RecursionUtils.contains(RecursionUtils.java:40)\n\tat _test414.main(_test414.java:13)\n',
+          'java.lang.ArrayIndexOutOfBoundsException: 0\n\tat RecursionUtils.containsHelper(RecursionUtils.java:51)\n\tat RecursionUtils.contains(RecursionUtils.java:40)\n\tat _test623.main(_test623.java:13)\n',
         testCase: 'Test on [] with 3',
+        testCategory: 'RecursionUtils.contains',
+      },
+      { passed: true, isError: false, logs: '', testCase: 'Test on []', testCategory: 'RecursionUtils.sum' },
+      {
+        passed: true,
+        isError: false,
+        logs: '',
+        testCase: 'Test on [1,2,3] with 3',
+        testCategory: 'RecursionUtils.contains',
       },
       {
         passed: false,
@@ -355,6 +472,39 @@ export const demoSubmissionTests = [
         logs:
           'No Result received.\nException in thread "main" java.lang.StackOverflowError\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n',
         testCase: 'Test on [1,2,3]',
+        testCategory: 'RecursionUtils.sum',
+      },
+    ],
+  },
+  {
+    students: ['student4@codepost.io', 'student9@codepost.io'],
+    tests: [
+      { passed: true, isError: false, logs: '', testCase: 'Test on [1]', testCategory: 'RecursionUtils.sum' },
+      {
+        passed: false,
+        isError: false,
+        logs:
+          'java.lang.ArrayIndexOutOfBoundsException: 0\n\tat RecursionUtils.containsHelper(RecursionUtils.java:49)\n\tat RecursionUtils.contains(RecursionUtils.java:38)\n\tat _test623.main(_test623.java:13)\n',
+        testCase: 'Test on [] with 3',
+        testCategory: 'RecursionUtils.contains',
+      },
+      { passed: true, isError: false, logs: '', testCase: 'Test on []', testCategory: 'RecursionUtils.sum' },
+      { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]', testCategory: 'RecursionUtils.sum' },
+      {
+        passed: false,
+        isError: false,
+        logs:
+          'No Result received.\nException in thread "main" java.lang.StackOverflowError\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils',
+        testCase: 'Test on [1,2,3] with 3',
+        testCategory: 'RecursionUtils.contains',
+      },
+      {
+        passed: false,
+        isError: false,
+        logs:
+          'No Result received.\nException in thread "main" java.lang.StackOverflowError\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils',
+        testCase: 'Test on [1,2,3] with 0',
+        testCategory: 'RecursionUtils.contains',
       },
     ],
   },
