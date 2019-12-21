@@ -20,8 +20,6 @@ import { getOperatingSystem, OS } from '../core/operatingSystem';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from '../../types/common';
 
-import { TestCaseType } from '../../infrastructure/types';
-
 import { Assignment, AssignmentType, AssignmentStudent } from '../../infrastructure/assignment';
 import { CommentIO, CommentType, UiComment } from '../../infrastructure/comment';
 import { Course, CourseType } from '../../infrastructure/course';
@@ -34,6 +32,7 @@ import { AnonymousSubmissionType, StudentSubmissionType, Submission } from '../.
 import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
 import { UserType } from '../../infrastructure/user';
 import { TestCategoryType } from '../../infrastructure/testCategory';
+import { TestCaseType } from '../../infrastructure/types';
 
 import CPButton from '../core/CPButton';
 import CPFlex from '../core/CPFlex';
@@ -345,6 +344,18 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     return pointsPerCategoryWithCaps;
   };
 
+  public static pointsFromTests = (submissionTests: SubmissionTestType[], testCases: TestCaseType[]): number => {
+    return (
+      -1 *
+      SubmissionTest.getLatest(submissionTests)
+        .map((test) => {
+          const match = testCases.find((el) => el.id === test.testCase);
+          return test.passed ? match!.pointsPass : match!.pointsFail;
+        })
+        .reduce((el, acc) => el + acc, 0)
+    );
+  };
+
   public static calculateGrade = (
     assignment: AssignmentType,
     comments: IFileToCommentsMap,
@@ -366,18 +377,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     }, 0);
 
     /* grab latest submission tests */
-    const testPoints = SubmissionTest.getLatest(submissionTests)
-      .map((test) => {
-        const match = testCases.find((el) => el.id === test.testCase);
-        return test.passed ? match!.pointsPass : match!.pointsFail;
-      })
-      .reduce((el, acc) => el + acc, 0);
+    const testPoints = CodeConsole.pointsFromTests(submissionTests, testCases);
 
     let grade = 0;
     if (assignment.additiveGrading) {
-      grade = 0 - commentPoints - categoryPoints + testPoints;
+      grade = 0 - commentPoints - categoryPoints - testPoints;
     } else {
-      grade = assignment.points - commentPoints - categoryPoints + testPoints;
+      grade = assignment.points - commentPoints - categoryPoints - testPoints;
     }
 
     // Prevent floating point arithmetic causing weird rounding errors
@@ -1688,6 +1694,8 @@ IndexError: list index out of range`,
           comments={this.state.comments}
           commentRubricComments={this.state.commentRubricComments}
           files={this.state.files}
+          submissionTests={this.state.tests}
+          testCases={Object.values(this.state.testCases).flat()}
         />,
       ];
 
