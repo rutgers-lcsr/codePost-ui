@@ -62,7 +62,7 @@ import { sendSlack } from '../core/slack';
 
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
-import { fetchTestData, TestCasesByCategory } from '../core/testFetchUtils';
+import { fetchTestData, TestCasesByCategory, StudentTestCasesByCategory } from '../core/testFetchUtils';
 
 import {
   Controls,
@@ -132,7 +132,7 @@ interface ICodeConsoleState {
   fileTemplates?: FileTemplateType[];
   tests: SubmissionTestType[];
   testCategories: TestCategoryType[];
-  testCases: TestCasesByCategory;
+  testCases: TestCasesByCategory | StudentTestCasesByCategory;
 
   /* writer data */
   submission?: AnonymousSubmissionType;
@@ -575,7 +575,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         // Read tests
         const { testCases, testCategories } = await AssignmentStudent.readStudentTests(assignment.id);
-        const caseObj: TestCasesByCategory = {};
+        const caseObj: StudentTestCasesByCategory = {};
         testCategories.forEach((category) => {
           caseObj[category.id] = [];
         });
