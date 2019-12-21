@@ -30,6 +30,8 @@ import { CourseType } from '../../infrastructure/course';
 import { FileType } from '../../infrastructure/file';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../infrastructure/submission';
+import { TestCaseType } from '../../infrastructure/types';
+import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
 
@@ -340,6 +342,8 @@ interface IGradeBreakdownProps {
   comments: IFileToCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
   files: FileType[];
+  submissionTests: SubmissionTestType[];
+  testCases: TestCaseType[];
 }
 
 // FIXME: Although the calculate methods that compose this component are modularized,
@@ -352,6 +356,7 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
   const pointsPerCategory = CodeConsole.pointsPerCategory(props.commentRubricComments, currentCommentSet);
   const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(pointsPerCategory, props.rubricCategories);
   const genericPoints = CodeConsole.genericCommentPoints(props.comments);
+  const testPoints = CodeConsole.pointsFromTests(props.submissionTests, props.testCases);
 
   const categoryPoints = Object.values(pointsPerCategoryWithCaps).reduce((accumulator: number, current: number) => {
     return accumulator + current;
@@ -437,6 +442,10 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
       description: <span className="cp-label cp-label--italic">other</span>,
       value: styledLabel(genericPoints),
     },
+    {
+      description: <span className="cp-label cp-label--italic">~Tests~</span>,
+      value: styledLabel(testPoints),
+    },
   ];
 
   const categoriesTable = (
@@ -463,14 +472,17 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
       ? null
       : {
           description: <span className="cp-label">Net Point Delta</span>,
-          value: <span>{styledLabel(categoryPoints + genericPoints)}</span>,
+          value: <span>{styledLabel(categoryPoints + genericPoints + testPoints)}</span>,
         },
     {
       description: <span className="cp-label cp-label--very-bold">Final Grade</span>,
       value: (
         <span className="cp-label cp-label--very-bold">
-          {(props.assignment.additiveGrading ? 0 : props.assignment.points) - categoryPoints - genericPoints} /{' '}
-          {props.assignment.points}
+          {(props.assignment.additiveGrading ? 0 : props.assignment.points) -
+            categoryPoints -
+            genericPoints -
+            testPoints}{' '}
+          / {props.assignment.points}
         </span>
       ),
     },
@@ -513,6 +525,8 @@ interface IGradeButtonProps {
   comments: IFileToCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
   files: FileType[];
+  submissionTests: SubmissionTestType[];
+  testCases: TestCaseType[];
 }
 
 export const GradeButton = (props: IGradeButtonProps) => {
@@ -540,6 +554,8 @@ export const GradeButton = (props: IGradeButtonProps) => {
           comments={props.comments}
           commentRubricComments={props.commentRubricComments}
           files={props.files}
+          submissionTests={props.submissionTests}
+          testCases={props.testCases}
         />
       </Modal>
     </div>
