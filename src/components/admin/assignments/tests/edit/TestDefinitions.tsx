@@ -707,7 +707,7 @@ export const TestDefinitions = (props: IProps) => {
               <br />
               <span>
                 <b>Instructions</b>: If you have an existing script with modular unit tests, or want to start fresh,
-                click "Add Category". Otherwise, click "Enter File Mode". To learn more
+                click "Add Category". Otherwise, click "Enter File Mode". To learn more{' '}
                 <a
                   href="https://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
                   target="_blank"
@@ -730,16 +730,16 @@ export const TestDefinitions = (props: IProps) => {
           {panel === DETAIL_TYPE.EditTests ? (
             <span>
               <b>Instructions</b>: This editor shows all the tests you've created. You can create tests in two ways: in{' '}
-              <b style={{ fontWeight: 600 }}>this editor </b>(For test cases that have modular blocks of code) or in{' '}
+              <b style={{ fontWeight: 600 }}>this editor </b>(for test cases that have modular blocks of code) or in{' '}
               <b style={{ fontWeight: 600 }}>file mode </b>(if you want to run a script that includes multiple tests).
               To get started, click the "Add Test" <Icon type="file-add" /> icon.
             </span>
           ) : (
             <span>
-              <b>Instructions</b>: In file mode you can run your existing scripts to output logs, or use our custom
-              syntax to structure your test results. If you use our syntax, new tests will automatically be created when
-              you run the file, which you can edit attributes of (points, explanations) by exiting file mode. To learn
-              more,{' '}
+              <b>Instructions</b>: In file mode you can run your existing scripts to produce logs, or use codePost's
+              custom syntax to structure your test results. If you use our syntax, new tests will automatically be
+              created when you run your file. You can edit properties of these tests (e.g. points, explanation) by
+              exiting file mode. To learn more,{' '}
               <a
                 href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode"
                 target="_blank"
