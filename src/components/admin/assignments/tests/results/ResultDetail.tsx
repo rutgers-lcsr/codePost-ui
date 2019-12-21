@@ -11,7 +11,7 @@ import { TestCaseType } from '../../../../../infrastructure/testCase';
 
 import TestsList from '../../../../code-review/code-panel/TestsList';
 
-import { TestsBySubmission, TestCasesByCategory, TestsByCase, RESULT_STATUS } from '../../../../core/testFetchUtils';
+import { TestsBySubmission, TestCasesByCategory, RESULT_STATUS } from '../../../../core/testFetchUtils';
 
 interface IProps {
   visible: boolean;
@@ -56,7 +56,7 @@ export const ResultDetail = (props: IProps) => {
 
   const handleCategoryChange = (value: string) => {
     const categoryID = parseInt(value, 10);
-    const category = props.categories.find((c) => c.id == categoryID);
+    const category = props.categories.find((c) => c.id === categoryID);
     category ? setFilterCategory(category) : setFilterCategory(undefined);
   };
 
@@ -64,7 +64,7 @@ export const ResultDetail = (props: IProps) => {
     const caseID = parseInt(value, 10);
     const cases =
       filterCategory && filterCategory.id in props.casesByCategory ? props.casesByCategory[filterCategory.id] : [];
-    const testCase = cases.find((c) => c.id == caseID);
+    const testCase = cases.find((c) => c.id === caseID);
     testCase ? setFilterCase(testCase) : setFilterCase(undefined);
   };
 
@@ -257,7 +257,7 @@ export const ResultDetail = (props: IProps) => {
           </div>
           {submissionMenu}
         </Layout.Sider>
-        <Layout.Content>
+        <Layout.Content style={{ minHeight: 500 }}>
           {filterCase && testsToShow.length > 0 ? (
             <TestDetail testCase={filterCase} test={(testsToShow && testsToShow[0]) || undefined} />
           ) : testsToShow.length > 0 ? (

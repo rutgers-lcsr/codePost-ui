@@ -16,7 +16,7 @@ import CPButton from '../core/CPButton';
 
 import { createDemoCourse } from '../utils/DemoCourse';
 
-import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
+import { CODE_DEMO } from '../../routes';
 
 /**********************************************************************************************************************/
 

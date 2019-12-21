@@ -1,6 +1,6 @@
 /* codepost object imports */
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
-import { TestCase, TestCaseType } from '../../infrastructure/testCase';
+import { TestCase, TestCaseType, StudentTestCaseType } from '../../infrastructure/testCase';
 import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
 import { TestCategory, TestCategoryType } from '../../infrastructure/testCategory';
 import { AnonymousSubmissionType } from '../../infrastructure/submission';
@@ -28,6 +28,10 @@ export interface TestsByCase {
 
 export interface TestCasesByCategory {
   [categoryID: number]: TestCaseType[];
+}
+
+export interface StudentTestCasesByCategory {
+  [categoryID: number]: StudentTestCaseType[];
 }
 
 //********************************** Basic Fetch Utils *****************************

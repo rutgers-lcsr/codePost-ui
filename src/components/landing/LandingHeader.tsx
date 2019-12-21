@@ -42,7 +42,13 @@ const LandingHeader = () => {
     </Link>
   );
   const docs = (
-    <a style={{ ...linkStyle }} target="_blank" className="link--header" href="https://help.codepost.io">
+    <a
+      style={{ ...linkStyle }}
+      target="_blank"
+      className="link--header"
+      href="https://help.codepost.io"
+      rel="noopener noreferrer"
+    >
       Docs
     </a>
   );

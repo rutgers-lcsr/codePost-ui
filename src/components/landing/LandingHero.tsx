@@ -9,8 +9,6 @@ import CPButton from '../core/CPButton';
 
 import landingVars from '../../styles/pages/_landingVars';
 
-import { CODE_TOUR_DEMO_ID } from '../../routes';
-
 import GradeAnimationVideo from './landingAnimations/grade/GradeAnimationVideo';
 
 const LandingHero = () => {
@@ -18,10 +16,6 @@ const LandingHero = () => {
   const MAX_WIDTH = 605;
   const MAX_HEIGHT = 385;
   const [modalShowing, setModalShowing] = React.useState(false);
-
-  const tryItClick = () => {
-    setModalShowing(true);
-  };
 
   const hero = (
     <div

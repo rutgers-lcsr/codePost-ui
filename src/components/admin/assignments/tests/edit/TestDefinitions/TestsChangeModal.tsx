@@ -149,7 +149,7 @@ export const TestsChangeModal = (props: IProps) => {
       if (tests) {
         tests.forEach((t) => {
           // Syntax for the regex match is <TestOutput> <category> <test> <boolean> <log>
-          const [_, category, test, __, ___] = t.split(/(?:" | ")+/);
+          const [, category, test, ,] = t.split(/(?:" | ")+/);
 
           const categoryName = category.replace(/"/g, '');
           const testestName = test.replace(/"/g, '');
@@ -281,7 +281,6 @@ export const TestsChangeModal = (props: IProps) => {
 
   const deleteTests = (categoriesByName: { [categoryName: string]: TestCategoryType }) => {
     Object.keys(testsToDelete).forEach((catestName) => {
-      const catID = categoriesByName[catestName].id;
       testsToDelete[catestName].forEach((test) => {
         props.deleteTest(test);
       });
@@ -318,6 +317,7 @@ export const TestsChangeModal = (props: IProps) => {
         </div>
       );
       footer = [];
+      break;
     case STATUS.CONFIRM:
       const categoryColumns = [
         {

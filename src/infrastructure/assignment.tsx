@@ -14,7 +14,7 @@ import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
 import { AnonymousSubmissionV, StudentSubmissionV, SubmissionV } from './submission';
 import { SubmissionHistoryV } from './submissionHistory';
-import { TestCaseV } from './testCase';
+import { StudentTestCaseV } from './testCase';
 import { TestCategoryV } from './testCategory';
 
 const AssignmentV = t.intersection(
@@ -146,11 +146,12 @@ const RubricV = t.intersection(
   'Rubric',
 );
 
+// Only called by students - filters for only exposed test if assignment isn't published
 const TestsV = t.intersection(
   [
     GenericObject,
     t.type({
-      testCases: t.array(TestCaseV),
+      testCases: t.array(StudentTestCaseV),
       testCategories: t.array(TestCategoryV),
     }),
   ],
