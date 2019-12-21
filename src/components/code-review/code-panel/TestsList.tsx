@@ -15,6 +15,7 @@ import ReactMarkdown from 'react-markdown';
 import { SubmissionTest, SubmissionTestType } from '../../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../../infrastructure/testCategory';
 import { TestCasesByCategory } from '../../core/testFetchUtils';
+import useWindowSize from '../../core/useWindowSize';
 
 import { BasicTestResultType } from '../../../infrastructure/autograder/runTypes';
 
@@ -30,6 +31,8 @@ interface IProps {
 }
 
 const TestsList = (props: IProps) => {
+  const windowSize = useWindowSize();
+
   // Submission-level stats
   let passed = 0;
   let failed = 0;
@@ -96,8 +99,9 @@ const TestsList = (props: IProps) => {
     overflow: 'hidden',
   };
 
+  console.log('DISPLAYED');
   return (
-    <div style={{ margin: '20px', overflow: 'auto' }}>
+    <div id="tests-list" style={{ padding: '20px', overflow: 'auto', height: `${windowSize.height - 49}px` }}>
       {!props.hideSummary && (
         <div className="display-flex justify-content-center">
           <Card>
