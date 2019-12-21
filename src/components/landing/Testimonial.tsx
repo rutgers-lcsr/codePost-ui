@@ -24,13 +24,21 @@ const kateImg = require('./../../img/landing/compressed/kate_holdener.jpg');
 const nohaImg = require('./../../img/landing/compressed/noha_hazzazi.jpg');
 const abbasImg = require('./../../img/landing/compressed/abbas_attarwala.jpg');
 const kateKImg = require('./../../img/landing/compressed/kate_kharitonova.jpg');
+const chrisImg = require('./../../img/landing/compressed/chris_bourke.jpg');
 
 /*************************************************************************************/
 /* TEXT
 /*************************************************************************************/
 
+const defaultTextStyle: React.CSSProperties = {
+  fontStyle: 'italic',
+  fontSize: 16,
+  lineHeight: 1.57,
+  color: 'grey',
+};
+
 const adamText = (
-  <span style={{ fontStyle: 'italic' }}>
+  <span style={{ ...defaultTextStyle, fontSize: 15 }}>
     codePost has allowed me to{' '}
     <Typography.Text mark className="codePost-highlight">
       efficiently grade student code
@@ -44,7 +52,7 @@ const adamText = (
 );
 
 const eitanText = (
-  <span style={{ fontStyle: 'italic' }}>
+  <span style={defaultTextStyle}>
     codePost is the best way I have found to comment on and annotate students’ programming assignments. I find it{' '}
     <Typography.Text mark className="codePost-highlight">
       much easier to give programming feedback than any other system I have tried.
@@ -53,7 +61,7 @@ const eitanText = (
 );
 
 const bobText = (
-  <span style={{ fontStyle: 'italic' }}>
+  <span style={{ ...defaultTextStyle, fontSize: 18 }}>
     codePost has been a{' '}
     <Typography.Text mark className="codePost-highlight">
       paradigm shifting improvement
@@ -63,27 +71,27 @@ const bobText = (
 );
 
 const robertText = (
-  <span style={{ fontStyle: 'italic' }}>
+  <span style={defaultTextStyle}>
     codePost is a{' '}
     <Typography.Text mark className="codePost-highlight">
       game changer.
     </Typography.Text>{' '}
-    It has completely eliminated the need for students to print code for grading.{' '}
+    It has completely eliminated the need for students to print code for grading. It is honestly{' '}
     <Typography.Text mark className="codePost-highlight">
-      It is honestly easier to grade on codePost than any other method I've tried in the past.
+      easier to grade on codePost than any other method I've tried in the past.
     </Typography.Text>
   </span>
 );
 
 const niemaText = (
-  <span style={{ fontStyle: 'italic' }}>
+  <span style={{ ...defaultTextStyle, fontSize: 15 }}>
     With the rapid growth of C.S. education, I was{' '}
     <Typography.Text mark className="codePost-highlight">
       worried about how I would scale my courses
     </Typography.Text>{' '}
-    to meet the needs of my students.
+    to meet the needs of my students. With codePost's{' '}
     <Typography.Text mark className="codePost-highlight">
-      With codePost's intuitive UI and top-notch Python API
+      intuitive UI and top-notch Python API
     </Typography.Text>
     , I have been able to build workflows that have made all aspects of executing my course extremely streamlined,{' '}
     <Typography.Text mark className="codePost-highlight">
@@ -93,39 +101,48 @@ const niemaText = (
 );
 
 const kateText = (
-  <span style={{ fontStyle: 'italic' }}>
+  <span style={{ ...defaultTextStyle, fontSize: 15 }}>
     codePost improved my grading efficiency:{' '}
     <Typography.Text mark className="codePost-highlight">
       what used to take 4 hours to grade now takes 1 hour.
     </Typography.Text>{' '}
-    This tool allowed me to{' '}
+    This tool allowed me to automate the repetitive manual tasks and{' '}
     <Typography.Text mark className="codePost-highlight">
-      automate the repetitive manual tasks and focus my entire attention on the quality of students’ solutions.
+      focus my entire attention on the quality of students’ solutions.
     </Typography.Text>
   </span>
 );
 
 const nohaText = (
-  <span style={{ fontStyle: 'italic' }}>
+  <span style={{ ...defaultTextStyle, fontSize: 18 }}>
     codePost has been a great help as it{' '}
     <Typography.Text mark className="codePost-highlight">
-      saved me tons of time and allowed me to focus on my students more.
+      saved me tons of time{' '}
+    </Typography.Text>
+    and allowed me to{' '}
+    <Typography.Text mark className="codePost-highlight">
+      focus on my students more.
     </Typography.Text>
   </span>
 );
 
 const abbasText = (
-  <span style={{ fontStyle: 'italic' }}>
+  <span style={{ ...defaultTextStyle, fontSize: 15 }}>
     <Typography.Text mark className="codePost-highlight">
       My graders, myself and my students love codePost.
     </Typography.Text>{' '}
     The quality of feedback that I can provide to my students is far richer; my graders annotate problematic code and
-    provide high-quality feedback to my students that previously was difficult. I recommend codePost very highly!
+    provide high-quality feedback to my students that previously was difficult.
+    <div>
+      <Typography.Text mark className="codePost-highlight">
+        I recommend codePost very highly!
+      </Typography.Text>
+    </div>
   </span>
 );
 
 const kateKText = (
-  <span style={{ fontStyle: 'italic' }}>
+  <span style={{ ...defaultTextStyle, fontSize: 15 }}>
     The ability to see a properly-rendered Jupyter notebook in codePost has been{' '}
     <Typography.Text mark className="codePost-highlight">
       invaluable in our Data Science courses
@@ -135,6 +152,25 @@ const kateKText = (
       very responsive to our feedback
     </Typography.Text>{' '}
     and feature requests.
+  </span>
+);
+
+const chrisText = (
+  <span style={{ ...defaultTextStyle, fontSize: 13, lineHeight: 1.2 }}>
+    codePost has really improved the way that we grade and evaluate code. The rubric feature has ensured a{' '}
+    <Typography.Text mark className="codePost-highlight">
+      higher level of consistency
+    </Typography.Text>{' '}
+    across many graders. My favorite part has been its outstanding API and provided python wrapper library which allows
+    me to{' '}
+    <Typography.Text mark className="codePost-highlight">
+      fully automate
+    </Typography.Text>{' '}
+    the grading assignment process. I definitely saw a{' '}
+    <Typography.Text mark className="codePost-highlight">
+      greater improvement in students
+    </Typography.Text>{' '}
+    as a result of codePost.
   </span>
 );
 
@@ -162,8 +198,6 @@ const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name:
   return (
     <div
       style={{
-        fontSize: 16,
-        lineHeight: 1.57,
         maxWidth: windowSize.width < landingVars.breakpoints.testimonial ? 600 : 300,
         marginLeft: 15,
         marginBottom: windowSize.width < landingVars.breakpoints.testimonial ? 30 : 0,
@@ -180,31 +214,22 @@ const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name:
         </div>
       </div>
       <div style={{ height: windowSize.width < landingVars.breakpoints.testimonial ? 10 : 22 }} />
-      {props.text}
+      <div style={{ textAlign: 'center' }}>{props.text}</div>
     </div>
   );
 };
 
 const testimonials = [
-  <Testimonial text={<div>{adamText}</div>} name="Adam Blank" thumbnail={adamImg} school="Caltech" />,
-  <Testimonial text={<div>{bobText}</div>} name="Robert Sedgewick" thumbnail={bobImg} school="Princeton University" />,
-  <Testimonial
-    text={<div>{eitanText}</div>}
-    name="Eitan Mendelowitz"
-    thumbnail={eitanImg}
-    school="Mount Holyoke College"
-  />,
-  <Testimonial
-    text={<div>{robertText}</div>}
-    name="Robert Adams"
-    thumbnail={robertImg}
-    school="Grand Valley State University"
-  />,
-  <Testimonial text={<div>{kateText}</div>} name="Kate Holdener" thumbnail={kateImg} school="Saint Louis University" />,
-  <Testimonial text={<div>{niemaText}</div>} name="Niema Moshiri" thumbnail={niemaImg} school="UC San Diego" />,
-  <Testimonial text={<div>{nohaText}</div>} name="Noha Hazzazi" thumbnail={nohaImg} school="Howard University" />,
-  <Testimonial text={<div>{abbasText}</div>} name="Abbas Attarwala" thumbnail={abbasImg} school="Boston University" />,
-  <Testimonial text={<div>{kateKText}</div>} name="Kate Kharitonova" thumbnail={kateKImg} school="UC Santa Barbara" />,
+  <Testimonial text={adamText} name="Adam Blank" thumbnail={adamImg} school="Caltech" />,
+  <Testimonial text={bobText} name="Robert Sedgewick" thumbnail={bobImg} school="Princeton University" />,
+  <Testimonial text={eitanText} name="Eitan Mendelowitz" thumbnail={eitanImg} school="Mount Holyoke College" />,
+  <Testimonial text={robertText} name="Robert Adams" thumbnail={robertImg} school="Grand Valley State University" />,
+  <Testimonial text={kateText} name="Kate Holdener" thumbnail={kateImg} school="Saint Louis University" />,
+  <Testimonial text={niemaText} name="Niema Moshiri" thumbnail={niemaImg} school="UC San Diego" />,
+  <Testimonial text={nohaText} name="Noha Hazzazi" thumbnail={nohaImg} school="Howard University" />,
+  <Testimonial text={abbasText} name="Abbas Attarwala" thumbnail={abbasImg} school="Boston University" />,
+  <Testimonial text={kateKText} name="Kate Kharitonova" thumbnail={kateKImg} school="UC Santa Barbara" />,
+  <Testimonial text={chrisText} name="Chris Bourke" thumbnail={chrisImg} school="University of Nebraska" />,
 ];
 
 /*************************************************************************************/
