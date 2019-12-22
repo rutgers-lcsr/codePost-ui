@@ -1291,6 +1291,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       environment: null,
       showFrequentlyUsedRubricComments: false,
       allowLateUploads: false,
+      submissions_count: 0,
+      submissions_finalized_count: 0,
+      submissions_inprogress_count: 0,
+      submissions_unclaimed_count: 0,
+      submissions_missing_count: 0,
+      stats_max: 0,
+      stats_min: 0,
+      stats_mean: 0,
     };
 
     const demoCourse: CourseType = {

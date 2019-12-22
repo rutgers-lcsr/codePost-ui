@@ -103,13 +103,10 @@ export const calculateFullStats = (
   if (assignmentSubs === null) {
     return {
       ...progressStats,
-      // @ts-ignore
-      mean: assignment['stats_mean'],
+      mean: assignment.stats_mean,
       median,
-      // @ts-ignore
-      max: assignment['stats_max'],
-      // @ts-ignore
-      min: assignment['stats_min'],
+      max: assignment.stats_max,
+      min: assignment.stats_min,
     };
   }
 
@@ -174,16 +171,11 @@ export const calculateGradingProgressStats = (
 ): IGradingProgressStats => {
   if (submissions === null) {
     return {
-      // @ts-ignore
-      numSubmissions: assignment['submissions_count'],
-      // @ts-ignore
-      numGraded: assignment['submissions_finalized_count'],
-      // @ts-ignore
-      numInProgress: assignment['submissions_inprogress_count'],
-      // @ts-ignore
-      numUnclaimed: assignment['submissions_unclaimed_count'],
-      // @ts-ignore
-      numMissing: assignment['submissions_missing_count'],
+      numSubmissions: assignment.submissions_count,
+      numGraded: assignment.submissions_finalized_count,
+      numInProgress: assignment.submissions_inprogress_count,
+      numUnclaimed: assignment.submissions_unclaimed_count,
+      numMissing: assignment.submissions_missing_count,
       numUnviewed: null,
       numViewed: null,
     };
