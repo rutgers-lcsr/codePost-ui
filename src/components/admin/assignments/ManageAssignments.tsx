@@ -127,7 +127,9 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   {...subprops}
                   course={props.currentCourse!}
                   assignment={assignment}
-                  submissions={props.submissions[assignment.id]}
+                  submissions={
+                    props.submissions.hasOwnProperty(assignment.id) ? props.submissions[assignment.id] : null
+                  }
                   students={props.students}
                   submissionsByStudent={props.submissionsByStudent}
                   viewsBySubmission={props.viewsBySubmission}
@@ -302,9 +304,9 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
       <Route
         path={`${props.match.url}/overview`}
         exact={true}
-        render={(subprops: any) => (
-          <AssignmentsTable {...props} {...subprops} breadcrumbs={breadcrumbs} baseURL={props.match.url} />
-        )}
+        render={(subprops: any) => {
+          return <AssignmentsTable {...props} {...subprops} breadcrumbs={breadcrumbs} baseURL={props.match.url} />;
+        }}
       />
       <Route path={props.match.url} exact={true} render={() => <Redirect to={`${props.match.url}/overview`} />} />
     </div>

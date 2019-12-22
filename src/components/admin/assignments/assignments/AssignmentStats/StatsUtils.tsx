@@ -10,6 +10,7 @@ import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../..
 import { openSubmission } from '../../../other/AdminUtils';
 
 import CPButton from '../../../../core/CPButton';
+import Loading from '../../../../core/Loading';
 
 type alignType = 'left' | 'right' | 'center';
 
@@ -28,8 +29,8 @@ export interface IGradingProgressStats {
   numInProgress: number; // Number of submissions that have been claimed but not finalized
   numUnclaimed: number; // Number of submissions that have not been claimed
   numMissing: number; // Number of students with missing submissions
-  numUnviewed: number; // Number of students who have not viewed their finalized submissions
-  numViewed: number; // Number of students who have viewed their submissions
+  numUnviewed: number | null; // Number of students who have not viewed their finalized submissions
+  numViewed: number | null; // Number of students who have viewed their submissions
 }
 
 export interface IAssignmentProgressStatsMap {
@@ -63,7 +64,8 @@ export const calculateMultipleAssignmentProgressStats = (
   assignments.forEach((assignment) => {
     const stats = calculateGradingProgressStats(
       assignment,
-      submissions[assignment.id],
+      submissions.hasOwnProperty(assignment.id) ? submissions[assignment.id] : null,
+      // submissions[assignment.id],
       submissionsByStudent,
       viewsBySubmission,
       activeStudents,
@@ -76,7 +78,7 @@ export const calculateMultipleAssignmentProgressStats = (
 /* Calculate Full stats (progress + grade stats) */
 export const calculateFullStats = (
   assignment: AssignmentType,
-  submissions: SubmissionType[],
+  submissions: SubmissionType[] | null,
   submissionsByStudent: IStudentSubmissionsDataTable,
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
   activeStudents: string[],
@@ -98,6 +100,19 @@ export const calculateFullStats = (
   let min: number | null = null;
   let mean: number | null = null;
   let median: number | null = null;
+
+  if (assignmentSubs === null) {
+    return {
+      ...progressStats,
+      // @ts-ignore
+      mean: assignment['stats_mean'],
+      median,
+      // @ts-ignore
+      max: assignment['stats_max'],
+      // @ts-ignore
+      min: assignment['stats_min'],
+    };
+  }
 
   assignmentSubs.forEach((submission: SubmissionType) => {
     if (submission.isFinalized && submission.grade !== null) {
@@ -153,11 +168,28 @@ export const calculateFullStats = (
 /* Calculate Grading Progress stats only */
 export const calculateGradingProgressStats = (
   assignment: AssignmentType,
-  submissions: SubmissionType[],
+  submissions: SubmissionType[] | null,
   submissionsByStudent: IStudentSubmissionsDataTable,
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
   activeStudents: string[],
 ): IGradingProgressStats => {
+  if (submissions === null) {
+    return {
+      // @ts-ignore
+      numSubmissions: assignment['submissions_count'],
+      // @ts-ignore
+      numGraded: assignment['submissions_finalized_count'],
+      // @ts-ignore
+      numInProgress: assignment['submissions_inprogress_count'],
+      // @ts-ignore
+      numUnclaimed: assignment['submissions_unclaimed_count'],
+      // @ts-ignore
+      numMissing: assignment['submissions_missing_count'],
+      numUnviewed: null,
+      numViewed: null,
+    };
+  }
+
   const assignmentSubs = submissions;
   const numSubmissions = assignmentSubs.length;
 
@@ -304,22 +336,23 @@ export const filterDataByStat = (
 };
 
 // Get the subtitle text to pass to the drawer
-export const getDrawerTitle = (type: DRAWER_TYPE, contentLength: number) => {
+export const getDrawerTitle = (type: DRAWER_TYPE, contentLength: number | null) => {
+  const detail = contentLength === null ? '' : `(${contentLength})`;
   switch (type) {
     case DRAWER_TYPE.Submitted:
-      return `Total Submissions (${contentLength})`;
+      return `Total Submissions ${detail}`;
     case DRAWER_TYPE.Graded:
-      return `Finalized Submissions (${contentLength})`;
+      return `Finalized Submissions ${detail}`;
     case DRAWER_TYPE.InProgress:
-      return `Draft Submissions (${contentLength})`;
+      return `Draft Submissions ${detail}`;
     case DRAWER_TYPE.Unclaimed:
-      return `Unclaimed Submissions (${contentLength})`;
+      return `Unclaimed Submissions ${detail}`;
     case DRAWER_TYPE.Missing:
-      return `Students missing a submission (${contentLength})`;
+      return `Students missing a submission ${detail}`;
     case DRAWER_TYPE.Unviewed:
-      return `Unviewed submissions (${contentLength})`;
+      return `Unviewed submissions ${detail}`;
     case DRAWER_TYPE.Viewed:
-      return `Unviewed submissions (${contentLength})`;
+      return `Unviewed submissions ${detail}`;
     default:
       return '';
   }
@@ -327,73 +360,78 @@ export const getDrawerTitle = (type: DRAWER_TYPE, contentLength: number) => {
 
 export const StatsDrawer = (props: {
   type: DRAWER_TYPE;
-  content: { title: string; subtitle: string; content: Array<{ email: string; subID: number | null }> };
+  content: { title: string; subtitle: string; content: Array<{ email: string; subID: number | null }> | null };
   onClose: () => void;
   isVisible: boolean;
   uploadSubmission?: (assignmentName: string, students: string) => void;
 }) => {
-  // const alignCenter: alignType = 'center';
-  const alignLeft: alignType = 'left';
+  let body = <Loading />;
+  if (props.content.content !== null) {
+    // const alignCenter: alignType = 'center';
+    const alignLeft: alignType = 'left';
 
-  const drawerColumns: any[] = [
-    {
-      title: 'Students',
-      dataIndex: 'students',
-      key: 'students',
-      align: alignLeft,
-      defaultSortOrder: 'ascend',
-      sorter: (a: any, b: any) => {
-        return a.students.localeCompare(b.students);
+    const drawerColumns: any[] = [
+      {
+        title: 'Students',
+        dataIndex: 'students',
+        key: 'students',
+        align: alignLeft,
+        defaultSortOrder: 'ascend',
+        sorter: (a: any, b: any) => {
+          return a.students.localeCompare(b.students);
+        },
       },
-    },
-  ];
-  if (props.type !== undefined && props.type !== DRAWER_TYPE.Missing) {
-    drawerColumns.push({
-      title: 'Open',
-      dataIndex: 'open',
-      key: 'open',
-      align: alignLeft,
-    });
-  }
+    ];
+    if (props.type !== undefined && props.type !== DRAWER_TYPE.Missing) {
+      drawerColumns.push({
+        title: 'Open',
+        dataIndex: 'open',
+        key: 'open',
+        align: alignLeft,
+      });
+    }
 
-  if (props.type === DRAWER_TYPE.Missing) {
-    drawerColumns.push({
-      title: 'Upload',
-      dataIndex: 'upload',
-      key: 'upload',
-      align: 'center',
-    });
-  }
+    if (props.type === DRAWER_TYPE.Missing) {
+      drawerColumns.push({
+        title: 'Upload',
+        dataIndex: 'upload',
+        key: 'upload',
+        align: 'center',
+      });
+    }
 
-  const drawerData = props.content.content.map((el) => {
-    const openSub = () => openSubmission(el.subID!);
-    const onClick = () => {
-      if (props.uploadSubmission) {
-        props.uploadSubmission(props.content.title, el.email);
-      }
-    };
+    const drawerData = props.content.content.map((el) => {
+      const openSub = () => openSubmission(el.subID!);
+      const onClick = () => {
+        if (props.uploadSubmission) {
+          props.uploadSubmission(props.content.title, el.email);
+        }
+      };
 
-    return {
-      key: el.email,
-      students: el.email,
-      open: el.subID ? (
-        // eslint-disable-next-line jsx-a11y/anchor-is-valid
-        <a onClick={openSub} className="internal-link">
-          <Icon type="code" />
-        </a>
-      ) : (
-        undefined
-      ),
-      upload:
-        props.type === DRAWER_TYPE.Missing ? (
-          <CPButton icon="upload" onClick={onClick}>
-            Upload
-          </CPButton>
+      return {
+        key: el.email,
+        students: el.email,
+        open: el.subID ? (
+          // eslint-disable-next-line jsx-a11y/anchor-is-valid
+          <a onClick={openSub} className="internal-link">
+            <Icon type="code" />
+          </a>
         ) : (
           undefined
         ),
-    };
-  });
+        upload:
+          props.type === DRAWER_TYPE.Missing ? (
+            <CPButton icon="upload" onClick={onClick}>
+              Upload
+            </CPButton>
+          ) : (
+            undefined
+          ),
+      };
+    });
+
+    body = <Table columns={drawerColumns} dataSource={drawerData} pagination={false} />;
+  }
 
   return (
     <Drawer
@@ -404,7 +442,7 @@ export const StatsDrawer = (props: {
       visible={props.isVisible}
       width={600}
     >
-      <Table columns={drawerColumns} dataSource={drawerData} pagination={false} />
+      {body}
     </Drawer>
   );
 };

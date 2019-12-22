@@ -118,7 +118,7 @@ interface IManageAssignmentsState {
   drawerContent: {
     title: string;
     subtitle: string;
-    content: Array<{ email: string; subID: number | null }>;
+    content: Array<{ email: string; subID: number | null }> | null;
   };
   isDownloading: boolean;
   activeStudent?: string; // track student from drawer to upload component
@@ -129,7 +129,7 @@ interface IManageAssignmentsState {
 
 class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteComponentProps, IManageAssignmentsState> {
   public state: Readonly<IManageAssignmentsState> = {
-    drawerContent: { title: '', subtitle: '', content: [] },
+    drawerContent: { title: '', subtitle: '', content: null },
     isDownloading: false,
     sortedOrder: sortAssignments(this.props.assignments).map((el) => el.id),
   };
@@ -151,30 +151,43 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
   // be stored in state. We need to store the data in state of on render because
   // the drawer sliding takes time and looks bad if the data changes while it's sliding
   public openDrawer = (assignment: AssignmentType, type: DRAWER_TYPE) => {
-    const newContent: Array<{
-      email: string;
-      subID: number | null;
-    }> = filterDataByStat(
-      assignment,
-      this.props.submissionsByStudent,
-      type,
-      this.props.submissions[assignment.id],
-      this.props.viewsBySubmission,
-      this.props.students,
-    ).sort((a, b) => {
-      return a.email.localeCompare(b.email);
-    });
+    if (!this.props.submissions.hasOwnProperty(assignment.id)) {
+      const title = getDrawerTitle(type, null);
 
-    const title = getDrawerTitle(type, newContent.length);
+      this.setState({
+        drawerContent: {
+          title: assignment.name,
+          subtitle: title,
+          content: null,
+        },
+        drawerType: type,
+      });
+    } else {
+      const newContent: Array<{
+        email: string;
+        subID: number | null;
+      }> = filterDataByStat(
+        assignment,
+        this.props.submissionsByStudent,
+        type,
+        this.props.submissions[assignment.id],
+        this.props.viewsBySubmission,
+        this.props.students,
+      ).sort((a, b) => {
+        return a.email.localeCompare(b.email);
+      });
 
-    this.setState({
-      drawerContent: {
-        title: assignment.name,
-        subtitle: title,
-        content: newContent,
-      },
-      drawerType: type,
-    });
+      const title = getDrawerTitle(type, newContent.length);
+
+      this.setState({
+        drawerContent: {
+          title: assignment.name,
+          subtitle: title,
+          content: newContent,
+        },
+        drawerType: type,
+      });
+    }
   };
 
   public closeDrawer = () => {
