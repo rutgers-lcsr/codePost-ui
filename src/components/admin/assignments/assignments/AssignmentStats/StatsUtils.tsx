@@ -65,7 +65,6 @@ export const calculateMultipleAssignmentProgressStats = (
     const stats = calculateGradingProgressStats(
       assignment,
       submissions.hasOwnProperty(assignment.id) ? submissions[assignment.id] : null,
-      // submissions[assignment.id],
       submissionsByStudent,
       viewsBySubmission,
       activeStudents,

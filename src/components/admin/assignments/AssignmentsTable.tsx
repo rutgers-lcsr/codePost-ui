@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Tag, Typography } from 'antd';
+import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Tag, Typography, Spin } from 'antd';
 
 import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
@@ -330,7 +330,12 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
     actions = [
       <NewAssignmentDialog key={1} assignments={this.props.assignments} createAssignment={this.createAssignment} />,
       <Link to={`${this.props.baseURL}/download/grades`}>
-        <CPButton cpType="secondary" key={2} icon="download">
+        <CPButton
+          cpType="secondary"
+          key={2}
+          icon="download"
+          disabled={Object.keys(this.props.submissions).length === 0}
+        >
           Download grades
         </CPButton>
       </Link>,
@@ -373,7 +378,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           </Menu.Item>
           <Menu.Item key="2">
             <Link to={`${this.props.baseURL}/${encodedName}/download/grades`}>
-              <Icon type="download" />
+              {Object.keys(this.props.submissions).length === 0 ? <Spin size="small" /> : <Icon type="download" />}
               &nbsp; Download grades
             </Link>
           </Menu.Item>
