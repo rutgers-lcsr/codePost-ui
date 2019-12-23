@@ -12,7 +12,7 @@ import {
 
 import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
-import { AnonymousSubmissionV, StudentSubmissionV, SubmissionV } from './submission';
+import { AnonymousSubmissionV, StudentSubmissionV, SubmissionV, SubmissionInfoV } from './submission';
 import { SubmissionHistoryV } from './submissionHistory';
 import { StudentTestCaseV } from './testCase';
 import { TestCategoryV } from './testCategory';
@@ -175,7 +175,7 @@ export class Assignment {
   public static delete = deleteObject(AssignmentV, 'assignments');
 
   public static readRubric = readObjectDetail(RubricV, 'assignments', 'rubric');
-  public static readSubmissions = readObjectDetail(t.array(SubmissionV), 'assignments', 'submissions');
+  public static readSubmissions = readObjectDetail(t.array(SubmissionInfoV), 'assignments', 'submissions');
   public static readSubmissionsAnonymous = readObjectDetail(
     t.array(AnonymousSubmissionV),
     'assignments',

@@ -15,7 +15,7 @@ import { Course, CourseType } from '../../infrastructure/course';
 import CPTooltip from '../core/CPTooltip';
 import { tooltips } from '../core/tooltips';
 
-import { SubmissionType } from '../../infrastructure/submission';
+import { SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
 import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 
 import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
@@ -38,7 +38,7 @@ interface IViewAllProps {
 
 interface IViewAllState {
   graders: string[];
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
   selectedGraders: string[];
   isLoading: boolean;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
@@ -120,7 +120,7 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
     this.setState({ selectedGraders: newGraders });
   };
 
-  public openGradePage = (submission: SubmissionType) => {
+  public openGradePage = (submission: SubmissionInfoType) => {
     window.open(`/code/${submission.id}`);
   };
 

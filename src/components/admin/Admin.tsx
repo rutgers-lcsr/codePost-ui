@@ -44,7 +44,7 @@ import { File } from '../../infrastructure/file';
 import { RubricCategory } from '../../infrastructure/rubricCategory';
 import { RubricComment } from '../../infrastructure/rubricComment';
 import { Section, SectionType } from '../../infrastructure/section';
-import { Submission, SubmissionType } from '../../infrastructure/submission';
+import { Submission, SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
 import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 import { addToPayload } from '../../infrastructure/utils';
 
@@ -344,7 +344,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   public loadSubmissions = (course: CourseType) => {
     return Promise.all(
       course.assignments.map((assignmentID) => {
-        return Assignment.readSubmissions(assignmentID).then((subs: SubmissionType[]) => {
+        return Assignment.readSubmissions(assignmentID).then((subs: SubmissionInfoType[]) => {
           return {
             assignment: assignmentID,
             submissions: subs,

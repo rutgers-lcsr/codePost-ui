@@ -13,7 +13,7 @@ import moment from 'moment';
 
 /* codePost imports */
 import { AssignmentType } from '../../infrastructure/assignment';
-import { AnonymousSubmissionType, SubmissionType } from '../../infrastructure/submission';
+import { AnonymousSubmissionType, SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
 
 import CPTooltip from '../core/CPTooltip';
 
@@ -23,7 +23,7 @@ const { Text } = Typography;
 
 // Get the viewIcon for a submission
 const getViewIcon = (
-  submission: SubmissionType | null,
+  submission: SubmissionType | SubmissionInfoType | null,
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
   studentToLookup?: string,
 ) => {
@@ -117,7 +117,7 @@ export interface ISubDataBasic {
 
 // Return submission data in form suitable for presenting in an antd table
 const formatSub = (
-  sub?: SubmissionType | AnonymousSubmissionType | null,
+  sub?: SubmissionType | SubmissionInfoType | AnonymousSubmissionType | null,
   assignment?: AssignmentType,
 ): ISubDataBasic => {
   if (sub === undefined || sub === null) {

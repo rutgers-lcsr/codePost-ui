@@ -15,7 +15,7 @@ import { RouteComponentProps } from 'react-router';
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { SectionType } from '../../infrastructure/section';
-import { SubmissionType } from '../../infrastructure/submission';
+import { SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
 
 import SectionDetailPanel from './SectionDetailPanel';
 import GraderPanelBuilder from './GraderPanel';
@@ -35,7 +35,7 @@ interface IProps extends RouteComponentProps {
 }
 
 interface IState {
-  submissionsByAssignment: { [id: number]: SubmissionType[] };
+  submissionsByAssignment: { [id: number]: SubmissionInfoType[] };
   activeSection: SectionType;
   isLoading: boolean;
 }
@@ -62,7 +62,7 @@ class SectionPanel extends React.Component<IProps, IState> {
 
   public loadSubmissions = async (assignments: AssignmentType[], section: SectionType) => {
     this.setState({ isLoading: true }, async () => {
-      const toRet: SubmissionType[][] = [];
+      const toRet: SubmissionInfoType[][] = [];
       for (const assn of assignments) {
         toRet[assn.id] = [];
         for (const stu of section.students) {

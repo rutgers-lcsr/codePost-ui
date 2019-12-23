@@ -11,7 +11,7 @@ import { RouteComponentProps } from 'react-router';
 /* codePost imports */
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
-import { SubmissionType } from '../../infrastructure/submission';
+import { SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
 
 import ViewAllDetailPanel from './ViewAllDetailPanel';
 import GraderPanelBuilder from './GraderPanel';
@@ -27,7 +27,7 @@ interface IProps extends RouteComponentProps {
 }
 
 interface IState {
-  submissionsByAssignment: { [id: number]: SubmissionType[] };
+  submissionsByAssignment: { [id: number]: SubmissionInfoType[] };
   isLoading: boolean;
 }
 
@@ -58,7 +58,7 @@ class ViewAllPanel extends React.Component<IProps, IState> {
       }
 
       Promise.all(toRet).then((lists) => {
-        const mapper: { [id: number]: SubmissionType[] } = {};
+        const mapper: { [id: number]: SubmissionInfoType[] } = {};
         for (const list of lists) {
           if (list.length > 0) {
             mapper[list[0].assignment] = list;
