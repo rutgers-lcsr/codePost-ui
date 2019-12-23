@@ -369,7 +369,8 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
 
     // Disable changing the test type if there is no native test support
     const hasNativeSupport = hasNativeTestSupport(this.props.language);
-    const typesWithEditDisabled = ['file'];
+    const typesWithEditDisabled = ['file']; // Disable select
+    const typesWithRunDisabled = ['file', 'external']; // Disable definitions and pseudoterminal
 
     // Get appropriate body
     let testBody;
@@ -597,7 +598,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               </Form.Item>
             </div>
             <Divider />
-            {!typesWithEditDisabled.includes(this.state.testType) && (
+            {!typesWithRunDisabled.includes(this.state.testType) && (
               <div>
                 <Typography.Title level={4}>2. Definition</Typography.Title>
                 {testBody}
@@ -617,7 +618,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               </div>
             )}
           </Form>
-          {!typesWithEditDisabled.includes(this.state.testType) && (
+          {!typesWithRunDisabled.includes(this.state.testType) && (
             <div>
               <Divider />
               <Typography.Title level={4}>3. Results</Typography.Title>
