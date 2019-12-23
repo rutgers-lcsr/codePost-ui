@@ -692,9 +692,37 @@ export const TestDefinitions = (props: IProps) => {
       </div>
     );
   } else if (categories.length === 0 && panel === DETAIL_TYPE.EditTests) {
+    // No environment has been defined
+    if (!props.env) {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Empty
+            style={{ marginTop: '20px', maxWidth: '400px' }}
+            description={
+              <span>
+                {' '}
+                You haven't yet created an environment. Please create one before defining tests. If you are using the
+                API, and want to create tests without creating an environment,{' '}
+                <AddCategoryModal
+                  addCategory={addCategory}
+                  externalOnly={externalOnly}
+                  textLink={'click here to create a new category'}
+                />
+                .
+              </span>
+            }
+          />
+        </div>
+      );
+    }
+
+    // An environment has been defined
     return (
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <Empty style={{ marginTop: '20px', maxWidth: '400px' }} description={<span> Get started.</span>}>
+        <Empty
+          style={{ marginTop: '20px', maxWidth: '400px' }}
+          description={<span> You haven't yet created an environment. Please create one before defining tests.</span>}
+        >
           <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} />
           {externalOnly ? (
             <span />
