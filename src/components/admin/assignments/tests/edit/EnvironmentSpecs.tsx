@@ -68,6 +68,14 @@ export const EnvironmentSpecs = (props: IProps) => {
     }
   }, [props.env]);
 
+  useEffect(() => {
+    // If language was just created, launch a save
+    // We don't do this in the on save function because useState is asynchronous
+    if (!props.env && language) {
+      onSave();
+    }
+  }, [language]);
+
   const onSave = () => {
     if (props.env && language !== props.env.language) {
       confirm({
@@ -87,7 +95,7 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   const saveEnv = async () => {
     setBuildIsLoading(true);
-    if (buildType !== 'default' && props.env && buildType !== props.env.buildType) {
+    if (buildType !== 'default' && props.env && buildType !== props.env.buildType && language !== 'other') {
       confirm({
         title: `Are you sure you want to use a custom build?`,
         content:
