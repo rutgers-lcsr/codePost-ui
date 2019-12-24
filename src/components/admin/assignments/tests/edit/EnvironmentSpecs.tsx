@@ -233,9 +233,18 @@ export const EnvironmentSpecs = (props: IProps) => {
         mode="tags"
         style={{ minWidth: 300 }}
         value={dependencies}
-        placeholder={'Add package to environment'}
+        placeholder={'Type the package name and press tab'}
         onChange={onDependenciesChange}
         disabled={language === null || (props.env && props.env.dockerfile.length > 0)}
+        dropdownRender={(menu) =>
+          dependencies.length > 0 ? (
+            <div>
+              <div style={{ padding: '4px 8px', opacity: 0.5 }}>Type the package name and then press tab</div>
+            </div>
+          ) : (
+            <div />
+          )
+        }
       />
     </div>
   );
