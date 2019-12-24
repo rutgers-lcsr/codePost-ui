@@ -67,9 +67,9 @@ class RegradesPanel extends React.Component<IProps, IState> {
       const toRet = [];
       for (const assn of assignments) {
         if (grader !== undefined) {
-          toRet.push(Assignment.readSubmissions(assn.id, { grader }));
+          toRet.push(Assignment.readSubmissions(assn.id, { grader, ['compact']: 'True' }));
         } else {
-          toRet.push(Assignment.readSubmissions(assn.id));
+          toRet.push(Assignment.readSubmissions(assn.id, { ['compact']: 'True' }));
         }
       }
 
