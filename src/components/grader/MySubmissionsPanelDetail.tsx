@@ -107,7 +107,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
     }, LOADING_INTERVAL);
   }
 
-  public componentDidUpdate(oldProps: IProps) {
+  public componentDidUpdate(oldProps: IProps, prevState: IState) {
     if (oldProps.assignment !== this.props.assignment) {
       this.changeAssignment(this.props.assignment);
     }
@@ -140,6 +140,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
   public loadSubmissions = (currentAssignment: AssignmentType, user: string) => {
     return Assignment.readSubmissionsAnonymous(currentAssignment.id, {
       grader: user,
+      ['compact']: '1',
     });
   };
 

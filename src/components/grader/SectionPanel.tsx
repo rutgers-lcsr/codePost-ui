@@ -54,7 +54,7 @@ class SectionPanel extends React.Component<IProps, IState> {
     this.loadSubmissions(this.props.assignments, this.state.activeSection);
   }
 
-  public componentDidUpdate(oldProps: IProps) {
+  public componentDidUpdate(oldProps: IProps, prevState: IState) {
     if (oldProps.assignments !== this.props.assignments) {
       this.loadSubmissions(this.props.assignments, this.state.activeSection);
     }
@@ -66,7 +66,7 @@ class SectionPanel extends React.Component<IProps, IState> {
       for (const assn of assignments) {
         toRet[assn.id] = [];
         for (const stu of section.students) {
-          const value = await Assignment.readSubmissions(assn.id, { student: stu, ['compact']: '0' });
+          const value = await Assignment.readSubmissions(assn.id, { student: stu, ['compact']: '1' });
           if (value.length > 0) {
             toRet[assn.id].push(value[0]);
           }
