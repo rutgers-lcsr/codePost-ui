@@ -36,6 +36,7 @@ const RegradesDetailPanel = (props: IProps) => {
   const loadMySubmissions = async (currentAssignment: AssignmentType, user: string) => {
     const newSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id, {
       grader: user,
+      ['compact']: '1',
     });
     setSubmissions(newSubmissions);
     setLoading(false);
@@ -43,7 +44,7 @@ const RegradesDetailPanel = (props: IProps) => {
   };
 
   const loadAllSubmissions = async (currentAssignment: AssignmentType) => {
-    const newSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id);
+    const newSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id, { ['compact']: '1' });
     setSubmissions(newSubmissions);
     setLoading(false);
     return;
