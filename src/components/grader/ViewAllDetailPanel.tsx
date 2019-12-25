@@ -52,6 +52,9 @@ interface ITableRow extends ISubDataBasic {
 }
 
 class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
+  private timer: any;
+  private times: any = [];
+
   public state: Readonly<IViewAllState> = {
     graders: [],
     submissions: [],
@@ -64,7 +67,7 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
   public async initialLoad() {
     this.setState({ isLoading: true });
     const [submissions, viewsBySubmission, roster] = await Promise.all([
-      await Assignment.readSubmissions(this.props.assignment.id, { ['compact']: '0' }),
+      await Assignment.readSubmissions(this.props.assignment.id, { ['compact']: '1' }),
       await this.loadSubmissionsViews(),
       await Course.readRoster(this.props.course.id),
     ]);
@@ -78,12 +81,22 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
   }
 
   public componentDidMount() {
+    this.timer = Date.now();
+
     this.initialLoad();
   }
 
-  public componentDidUpdate(oldProps: IViewAllProps) {
+  public componentDidUpdate(oldProps: IViewAllProps, prevState: IViewAllState) {
     if (oldProps.assignment !== this.props.assignment) {
       this.initialLoad();
+    }
+
+    if (prevState.isLoading && !this.state.isLoading) {
+      const current = Date.now() - this.timer;
+
+      this.times = [...this.times, current];
+      console.log('SUBMISSIONS COMPLETE: ', current);
+      console.log(this.times.join('|'));
     }
   }
 
