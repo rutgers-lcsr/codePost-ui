@@ -53,6 +53,8 @@ const AssignmentV = t.intersection(
       environment: t.union([t.number, t.null]),
       showFrequentlyUsedRubricComments: t.boolean,
       allowLateUploads: t.boolean,
+    }),
+    t.partial({
       submissions_count: t.number,
       submissions_finalized_count: t.number,
       submissions_inprogress_count: t.number,

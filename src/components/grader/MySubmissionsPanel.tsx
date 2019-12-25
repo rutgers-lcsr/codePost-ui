@@ -65,7 +65,10 @@ class MySubmissionsPanel extends React.Component<IProps, {}> {
         assignment: assignment.name,
         submissions: assignment.submissions_count,
         finalized: assignment.submissions_finalized_count,
-        grade: assignment.submissions_count > 0 ? `${assignment.stats_mean.toFixed(1)}/${assignment.points}` : '--',
+        grade:
+          assignment.stats_mean && assignment.submissions_count && assignment.submissions_count > 0
+            ? `${assignment.stats_mean.toFixed(1)}/${assignment.points}`
+            : '--',
       };
     });
 

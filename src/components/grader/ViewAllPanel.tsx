@@ -60,10 +60,13 @@ class ViewAllPanel extends React.Component<IProps, {}> {
       return {
         key: assignment.id,
         assignment: assignment.name,
-        claimed: assignment.submissions_inprogress_count + assignment.submissions_finalized_count,
+        claimed:
+          assignment.submissions_inprogress_count && assignment.submissions_finalized_count
+            ? assignment.submissions_inprogress_count + assignment.submissions_finalized_count
+            : 0,
         finalized: assignment.submissions_finalized_count,
         grade:
-          assignment.submissions_finalized_count > 0
+          assignment.stats_mean && assignment.submissions_finalized_count && assignment.submissions_finalized_count > 0
             ? `${assignment.stats_mean.toFixed(1)}/${assignment.points}`
             : '--',
       };
