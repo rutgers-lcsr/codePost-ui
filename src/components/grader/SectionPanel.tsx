@@ -66,7 +66,7 @@ class SectionPanel extends React.Component<IProps, IState> {
       for (const assn of assignments) {
         toRet[assn.id] = [];
         for (const stu of section.students) {
-          const value = await Assignment.readSubmissions(assn.id, { student: stu, ['compact']: 'True' });
+          const value = await Assignment.readSubmissions(assn.id, { student: stu, ['compact']: '0' });
           if (value.length > 0) {
             toRet[assn.id].push(value[0]);
           }

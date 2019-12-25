@@ -54,7 +54,7 @@ class ViewAllPanel extends React.Component<IProps, IState> {
     this.setState({ isLoading: true }, () => {
       const toRet = [];
       for (const assn of assignments) {
-        toRet.push(Assignment.readSubmissions(assn.id, { ['compact']: 'True' }));
+        toRet.push(Assignment.readSubmissions(assn.id, { ['compact']: '0' }));
       }
 
       Promise.all(toRet).then((lists) => {

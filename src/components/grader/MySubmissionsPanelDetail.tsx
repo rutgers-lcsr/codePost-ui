@@ -24,7 +24,7 @@ import { formatSub, ISubDataBasic, sortByGrade } from './GraderUtils';
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { Section, SectionType } from '../../infrastructure/section';
-import { AnonymousSubmissionType, Submission, SubmissionType } from '../../infrastructure/submission';
+import { AnonymousSubmissionInfoType, Submission, SubmissionType } from '../../infrastructure/submission';
 import { compare } from '../utils/SortUtils';
 
 import { loadIDList } from '../../infrastructure/generics';
@@ -64,7 +64,7 @@ interface IState {
   /* data */
   currentSections: SectionType[];
   sections: SectionType[];
-  submissions: AnonymousSubmissionType[];
+  submissions: AnonymousSubmissionInfoType[];
 
   /* UI control */
   buttonState: BUTTON_STATE;
@@ -223,7 +223,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
   /* Utility functions
   /**********************************************************************************/
 
-  public openGradePage = (submission: AnonymousSubmissionType) => {
+  public openGradePage = (submission: AnonymousSubmissionInfoType) => {
     window.open(`/code/${submission.id}`);
   };
 

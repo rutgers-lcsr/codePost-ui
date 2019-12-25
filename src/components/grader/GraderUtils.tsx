@@ -13,7 +13,7 @@ import moment from 'moment';
 
 /* codePost imports */
 import { AssignmentType } from '../../infrastructure/assignment';
-import { AnonymousSubmissionType, SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
+import { AnonymousSubmissionInfoType, SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
 
 import CPTooltip from '../core/CPTooltip';
 
@@ -117,7 +117,7 @@ export interface ISubDataBasic {
 
 // Return submission data in form suitable for presenting in an antd table
 const formatSub = (
-  sub?: SubmissionType | SubmissionInfoType | AnonymousSubmissionType | null,
+  sub?: SubmissionType | SubmissionInfoType | AnonymousSubmissionInfoType | null,
   assignment?: AssignmentType,
 ): ISubDataBasic => {
   if (sub === undefined || sub === null) {

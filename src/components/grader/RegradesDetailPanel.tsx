@@ -11,7 +11,7 @@ import { Breadcrumb, Switch } from 'antd';
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
-import { AnonymousSubmissionType, Submission } from '../../infrastructure/submission';
+import { AnonymousSubmissionInfoType, Submission } from '../../infrastructure/submission';
 import { UserType } from '../../infrastructure/user';
 
 import RegradesTable from '../admin/assignments/assignments/AssignmentRegrades/RegradesTable';
@@ -28,7 +28,7 @@ interface IProps {
 }
 
 const RegradesDetailPanel = (props: IProps) => {
-  const [submissions, setSubmissions] = useState<AnonymousSubmissionType[]>([]);
+  const [submissions, setSubmissions] = useState<AnonymousSubmissionInfoType[]>([]);
   const [showStudentEmails, setShowStudentEmails] = useState(!props.isAnonymous);
   const [isLoading, setLoading] = useState(false);
   const [viewAll, setViewAll] = useState(false);
@@ -54,7 +54,7 @@ const RegradesDetailPanel = (props: IProps) => {
     viewAll ? loadAllSubmissions(props.assignment) : loadMySubmissions(props.assignment, props.user.email);
   };
 
-  const updateSubmission = (toUpdate: AnonymousSubmissionType) => {
+  const updateSubmission = (toUpdate: AnonymousSubmissionInfoType) => {
     /* Make sure we are acting on a submission linked to this course */
     const oldSubmission = submissions.find((el) => {
       return el.id === toUpdate.id;

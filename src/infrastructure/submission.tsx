@@ -74,6 +74,32 @@ export const SubmissionInfoV = t.intersection(
   'Submission',
 );
 
+export const AnonymousSubmissionInfoV = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      isFinalized: t.boolean,
+      assignment: t.number,
+      dateEdited: t.string,
+      dateUploaded: t.string,
+      grade: t.union([t.number, t.null]),
+      grader: t.union([t.string, t.null]),
+      questionIsOpen: t.boolean,
+      questionIsRegrade: t.boolean,
+      questionText: t.union([t.string, t.null]),
+      questionResponse: t.union([t.string, t.null]),
+      questionResponder: t.union([t.string, t.null]),
+      questionDate: t.union([t.string, t.null]),
+      responseDate: t.union([t.string, t.null]),
+      tests: t.array(t.number),
+    }),
+    t.partial({
+      students: t.array(t.string),
+    }),
+  ],
+  'Submission',
+);
+
 export const StudentSubmissionV = t.intersection(
   [
     GenericObject,
@@ -164,6 +190,7 @@ export const AnonymousSubmissionV = t.intersection(
 
 export type SubmissionType = t.TypeOf<typeof SubmissionV>;
 export type SubmissionInfoType = t.TypeOf<typeof SubmissionInfoV>;
+export type AnonymousSubmissionInfoType = t.TypeOf<typeof AnonymousSubmissionInfoV>;
 export type StudentSubmissionType = t.TypeOf<typeof StudentSubmissionV>;
 export type AnonymousSubmissionType = t.TypeOf<typeof AnonymousSubmissionV>;
 

@@ -64,7 +64,7 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
   public async initialLoad() {
     this.setState({ isLoading: true });
     const [submissions, viewsBySubmission, roster] = await Promise.all([
-      await Assignment.readSubmissions(this.props.assignment.id, { ['compact']: 'True' }),
+      await Assignment.readSubmissions(this.props.assignment.id, { ['compact']: '0' }),
       await this.loadSubmissionsViews(),
       await Course.readRoster(this.props.course.id),
     ]);

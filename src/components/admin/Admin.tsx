@@ -344,7 +344,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   public loadSubmissions = (course: CourseType) => {
     return Promise.all(
       course.assignments.map((assignmentID) => {
-        return Assignment.readSubmissions(assignmentID, { ['compact']: 'True' }).then((subs: SubmissionInfoType[]) => {
+        return Assignment.readSubmissions(assignmentID, { ['compact']: '1' }).then((subs: SubmissionInfoType[]) => {
           return {
             assignment: assignmentID,
             submissions: subs,
