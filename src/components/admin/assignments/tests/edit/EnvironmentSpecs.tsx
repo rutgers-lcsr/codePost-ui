@@ -24,8 +24,6 @@ import { Environment } from '../../../../../infrastructure/autograder/environmen
 import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
 import { HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
 
-import CPTooltip from '../../../../core/CPTooltip';
-
 import { FILE_TYPE } from './TestingSetup';
 
 import locale from './utils/languageLocale';
@@ -209,7 +207,7 @@ export const EnvironmentSpecs = (props: IProps) => {
   );
 
   const customBuildSelect = buildType !== 'default' && (
-    <Select value={buildType} onChange={onCustomBuildChange} style={{ minWidth: 150 }}>
+    <Select value={buildType} onChange={onCustomBuildChange} style={{ minWidth: 200 }}>
       <Option key={'alpine'} value={'alpine'}>
         Alpine-Linux
       </Option>
