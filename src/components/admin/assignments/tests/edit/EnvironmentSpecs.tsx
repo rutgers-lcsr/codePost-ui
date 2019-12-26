@@ -9,7 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button, Divider, Icon, Radio, Select, Spin, Tooltip, Tag, Typography, Empty } from 'antd';
 
 /* codePost object imports */
-import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
+import { Assignment, AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
 import { EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 
 /* codePost component imports */
@@ -74,8 +74,11 @@ export const EnvironmentSpecs = (props: IProps) => {
     }
   }, [language]);
 
-  const onSave = () => {
-    if (props.env && language !== props.env.language) {
+  const onSave = async () => {
+    const latestAssignment = await Assignment.read(props.currentAssignment.id);
+    // Show a warning if the language has changed or test categories have been defined already
+    if (props.env && language !== props.env.language && latestAssignment.testCategories.length > 0) {
+      // prompt warning
       confirm({
         title: `Are you sure you want to change the language of the environment?`,
         content: 'This may cause existing tests to stop working.',
@@ -93,7 +96,8 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   const saveEnv = async () => {
     setBuildIsLoading(true);
-    if (buildType !== 'default' && props.env && buildType !== props.env.buildType && language !== 'other') {
+    // Show a warning if a user is switching from default to a custom image
+    if (props.env && props.env.buildType === 'default' && buildType !== props.env.buildType && language !== 'other') {
       confirm({
         title: `Are you sure you want to use a custom build?`,
         content:
@@ -282,7 +286,7 @@ export const EnvironmentSpecs = (props: IProps) => {
       <br />
       <CodeWindow code={(props.env && props.env.compileText) || ''} name={'.sh'} onSave={saveCompileText} />
       <Divider />
-      <Typography.Title level={3}>3. Add test helper files</Typography.Title>
+      <Typography.Title level={3}>3. Add helper files</Typography.Title>
       <span>
         <b>Instructions</b>: Helper files can be imported by tests, student code, or solution code.
       </span>
