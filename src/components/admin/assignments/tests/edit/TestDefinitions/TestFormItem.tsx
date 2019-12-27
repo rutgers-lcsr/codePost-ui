@@ -200,7 +200,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
           style={radioGroupStyle}
         >
           <Radio.Button key={'file'} value={'io'} style={{ ...radioButtonStyle }}>
-            File
+            file
           </Radio.Button>
           <Radio.Button
             key={'cli'}
@@ -208,7 +208,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             className={'testitem__radio-inactive'}
             style={{ ...radioButtonStyle, lineHeight: '15px' }}
           >
-            Command Line
+            command line
           </Radio.Button>
         </Radio.Group>
         <span style={textStyle}>with name</span>
@@ -221,15 +221,28 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               },
             ],
           })(
-            <Select disabled={this.props.isRunning} onChange={this.onChangeFileName} style={inputStyle}>
-              {this.props.files.map((file) => {
-                return (
-                  <Option key={file.id} value={file.name}>
-                    {file.name}
-                  </Option>
-                );
-              })}
-            </Select>,
+            this.props.files.length > 0 ? (
+              <Select
+                disabled={this.props.isRunning}
+                placeholder="filename"
+                onChange={this.onChangeFileName}
+                style={inputStyle}
+              >
+                {this.props.files.map((file) => {
+                  return (
+                    <Option key={file.id} value={file.name}>
+                      {file.name}
+                    </Option>
+                  );
+                })}
+              </Select>
+            ) : (
+              <Input
+                onChange={(e: any) => this.onChangeFileName(e.target.value)}
+                style={inputStyle}
+                placeholder="filename"
+              />
+            ),
           )}
         </Form.Item>
         <span style={textStyle}>, &nbsp; </span>
@@ -258,7 +271,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   required: true,
                 },
               ],
-            })(<Input placeholder={'Function or Method Name'} style={inputStyle} disabled={this.props.isRunning} />)}
+            })(<Input placeholder={'function / method'} style={inputStyle} disabled={this.props.isRunning} />)}
           </Form.Item>
         )}
         <span style={textStyle}>with arguments</span>
@@ -288,7 +301,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             value={'return'}
             style={{ fontSize: 13 }}
           >
-            Return
+            return
           </Radio.Button>
           <Radio.Button
             key={'output'}
@@ -296,7 +309,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             value={'output'}
             style={{ fontSize: 13 }}
           >
-            Output
+            print
           </Radio.Button>
         </Radio.Group>
         <span style={{ ...textStyle, marginTop: 5 }}>the value</span>
@@ -340,10 +353,10 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             value={'io'}
             style={{ ...radioButtonStyle }}
           >
-            File
+            file
           </Radio.Button>
           <Radio.Button key={'cli'} value={'io_cli'} style={{ ...radioButtonStyle, lineHeight: '15px' }}>
-            Command Line
+            command line
           </Radio.Button>
         </Radio.Group>
         <span style={textStyle}>run the command</span>

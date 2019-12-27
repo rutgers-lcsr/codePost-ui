@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 /* codePost object imports */
 import { SubmissionType } from '../../../../../infrastructure/submission';
 import { AssignmentType } from '../../../../../infrastructure/assignment';
-import { SubmissionTest } from '../../../../../infrastructure/submissionTest';
+import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { TestCaseType } from '../../../../../infrastructure/testCase';
 
@@ -201,7 +201,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
         columns = bySubmissionColumns(categories);
         data = props.submissions.map((submission: SubmissionType) => {
           const actionsMenu = (
-            <Menu>
+            <Menu key={submission.id}>
               <Menu.Item key="run-tests" onClick={runTests.bind({}, submission)}>
                 <Icon type="caret-right" />
                 Run tests
@@ -229,7 +229,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
           let passed = 0;
 
           // Group the SubmissionTests by category
-          const testByCategory: any = {};
+          const testByCategory: { [id: number]: SubmissionTestType[] } = {};
           tests.forEach((test) => {
             (testByCategory[test.testCategory] && testByCategory[test.testCategory].push(test)) ||
               (testByCategory[test.testCategory] = [test]);
@@ -241,7 +241,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
           for (const category of categories) {
             const tests = testByCategory[category.id] || [];
             let categoryPassed = 0;
-            let categoryTotal = tests.length;
+            let categoryTotal = category.testCases.length;
             for (const t of tests) {
               categoryPassed += t.passed ? 1 : 0;
             }
