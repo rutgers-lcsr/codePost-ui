@@ -72,6 +72,7 @@ interface IProps {
   addFile: (type: FILE_TYPE, name: string, code: string) => Promise<void>;
   updateFile: (type: FILE_TYPE, id: number, newCode: string) => Promise<void>;
   deleteFile: (type: FILE_TYPE, id: number) => Promise<void>;
+  loading: boolean;
 }
 
 enum DETAIL_TYPE {
@@ -684,16 +685,44 @@ export const TestDefinitions = (props: IProps) => {
 
   const hasTests = Object.values(casesByCategory).some((el) => el.length > 0);
 
-  if (loading) {
+  if (loading || props.loading) {
     return (
       <div className="display-flex justify-content-center align-iterms-center">
         <Spin style={{ marginTop: 15 }} />
       </div>
     );
   } else if (categories.length === 0 && panel === DETAIL_TYPE.EditTests) {
+    // No environment has been defined
+    if (!props.env) {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Empty
+            style={{ marginTop: '20px', maxWidth: '400px' }}
+            description={
+              <span>
+                {' '}
+                You haven't yet created an environment. Please create one before defining tests. If you are using the
+                API, and want to create tests without creating an environment,{' '}
+                <AddCategoryModal
+                  addCategory={addCategory}
+                  externalOnly={externalOnly}
+                  textLink={'click here to create a new category'}
+                />
+                .
+              </span>
+            }
+          />
+        </div>
+      );
+    }
+
+    // An environment has been defined
     return (
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <Empty style={{ marginTop: '20px', maxWidth: '400px' }} description={<span> Get started.</span>}>
+        <Empty
+          style={{ marginTop: '20px', maxWidth: '400px' }}
+          description={<span> You haven't yet created an environment. Please create one before defining tests.</span>}
+        >
           <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} />
           {externalOnly ? (
             <span />

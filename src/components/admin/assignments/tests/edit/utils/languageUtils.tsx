@@ -37,21 +37,14 @@ export const extensionsByLanguage: { [language: string]: string } = {
 /****************************** Languages and Language support *********************************/
 
 // Languages supported
-export const languages = ['python-3.7', 'python-2.7', 'java', 'c/c++'];
+export const languages = ['python-3.7', 'python-2.7', 'java', 'c/c++', 'other'];
 
 export const hasNativeTestSupport = (language: string) => {
   return languageWithNativeTestSupport.includes(language);
 };
 
-export const hasDependenciesSupport = (language: string) => {
-  return languagesWithDependencySupport.includes(language);
-};
-
 // The languages for which I/o tests and native unit tests are supported
 const languageWithNativeTestSupport = ['python-3.7', 'java', 'python-2.7'];
-
-// The languages for which custom dependencies are supported
-const languagesWithDependencySupport = ['python-3.7', 'python-2.7', 'java', 'c/c++', 'ubuntu', 'alpine'];
 
 /****************************** Test Templates *********************************/
 // Initial templates strings for different test and language types

@@ -10,6 +10,7 @@ interface IUploadProps {
   addCategory: (name: string, proMode: boolean) => Promise<TestCategoryType>;
   externalOnly: boolean;
   icon?: boolean;
+  textLink?: string;
 }
 
 export const AddCategoryModal = (props: IUploadProps) => {
@@ -51,7 +52,9 @@ export const AddCategoryModal = (props: IUploadProps) => {
   /******************************* Return *****************************************/
   return (
     <span>
-      {props.icon ? (
+      {props.textLink ? (
+        <a onClick={toggleVisible}>{props.textLink}</a>
+      ) : props.icon ? (
         <Tooltip title="Add Category">
           <Icon type="folder-add" onClick={toggleVisible} />
         </Tooltip>
