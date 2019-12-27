@@ -39,7 +39,7 @@ const nodes: any[] = [
     icon: 'code',
     color: '#24be85',
     tint: 25,
-    popoverContent: `Integrate with your autograder to view test output alongside student code. Or use codePost's built-in autograder...coming soon.`,
+    popoverContent: `Use codePost's built in autograder, or integrate your autograder to view test output alongside student code.`,
   },
   {
     id: 4,

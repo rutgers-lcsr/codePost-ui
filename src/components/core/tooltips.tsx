@@ -14,6 +14,17 @@ const CONSOLE_FILEMENU_COMMENTS = 'Comments in file';
 const STUDENT_SUBHEADER_ASSIGNMENT = 'Assignment name';
 
 // Grade Tooltips
+const GRADE_HEADER_CURSORMODE = (
+  <div>
+    Toggle Cursor Mode
+    <br />
+    {`[${osControlKey()} shift y]`}
+    <br />
+    Shortcuts
+    <br />
+    {`[${osControlKey()} /]`}
+  </div>
+);
 const GRADE_HEADER_DARKMODE = (
   <div>
     Toggle Dark Mode
@@ -184,11 +195,11 @@ from the old course into your new course. All other information (including roste
 // ************************ Pre auth tooltips ************************
 const PREAUTH_CREATE_PROPRICING = (
   <span>
-    To sign up for Pro, please contact us at <a href="mailto:team@codepost.io">team@codepost.io</a>. To learn more about
-    Pro, check out our{' '}
+    To sign up for an Enterprise plan, please contact us at <a href="mailto:team@codepost.io">team@codepost.io</a>. To
+    learn more, check out our{' '}
     <Link to="/pricing" target="_blank">
-      Pricing
-    </Link>{' '}
+      Pricing.
+    </Link>
   </span>
 );
 const PREAUTH_NOMATCH_LIKE = 'Like';
@@ -215,6 +226,7 @@ export const tooltips = {
   grade: {
     header: {
       darkMode: GRADE_HEADER_DARKMODE,
+      cursorMode: GRADE_HEADER_CURSORMODE,
       zoomIn: GRADE_HEADER_ZOOMIN,
       zoomOut: GRADE_HEADER_ZOOMOUT,
       grow: GRADE_HEADER_GROW,

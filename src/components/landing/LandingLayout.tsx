@@ -5,16 +5,19 @@ import useWindowSize from '../core/useWindowSize';
 
 import landingVars from '../../styles/pages/_landingVars';
 
-import WistiaVideo from './WistiaVideo';
+import Video from './Video';
+
+import { EmailSubscribe } from './EmailSubscribe';
 
 interface IProps {
+  location: any;
   topBar: React.ReactNode;
   hero: React.ReactNode;
   testimonial: React.ReactNode;
-  whyPanel: React.ReactNode;
   panelOne: React.ReactNode;
   panelTwo: React.ReactNode;
   panelThree: React.ReactNode;
+  panelFour: React.ReactNode;
   getStarted: React.ReactNode;
   footer: React.ReactNode;
 }
@@ -72,12 +75,6 @@ const LandingLayout = (props: IProps) => {
 
   const testimonialBackground = require('../../img/landing/compressed/backgrounds/testimonial.png');
   const testimonialBackgroundMobile = require('../../img/landing/compressed/backgrounds/testimonial-MOBILE.jpg');
-  const whyPanelBackground = require('../../img/landing/compressed/backgrounds/panelTwo.png');
-  const whyPanelBackgroundMobile = undefined;
-  const panelOneBackground = require('../../img/landing/compressed/backgrounds/panelOne.png');
-  const panelOneBackgroundMobile = require('../../img/landing/compressed/backgrounds/panelOne-MOBILE.jpg');
-  const panelTwoBackground = undefined;
-  const panelTwoBackgroundMobile = undefined;
 
   return (
     <div
@@ -146,66 +143,22 @@ const LandingLayout = (props: IProps) => {
           </div>
         </div>
       </div>
-      <div
-        style={{ ...sectionStyle, paddingTop: 0, background: landingVars.backgrounds.panelOne }}
-        className={sectionClass}
-      >
-        <img
-          src={windowSize.width < landingVars.breakpoints.mobile ? panelOneBackgroundMobile : panelOneBackground}
-          style={{
-            ...backgroundImageStyle,
-            paddingTop:
-              windowSize.width < landingVars.breakpoints.mobile
-                ? landingVars.backgroundOffsets.panelOneMobile
-                : landingVars.backgroundOffsets.panelOne,
-          }}
-          alt=""
-        />
-        <div style={{ ...panelStyle, paddingBottom: 25, paddingTop: 100 }}>{props.panelOne}</div>
+      <div style={{ ...sectionStyle }} className={sectionClass}>
+        <div style={{ ...panelStyle }}>{props.panelOne}</div>
       </div>
-      <div style={{ ...sectionStyle, background: landingVars.backgrounds.whyPanel }} className={sectionClass}>
-        <img
-          src={windowSize.width < landingVars.breakpoints.mobile ? whyPanelBackgroundMobile : whyPanelBackground}
-          style={{
-            ...backgroundImageStyle,
-            paddingTop:
-              windowSize.width < landingVars.breakpoints.mobile
-                ? landingVars.backgroundOffsets.whyPanelMobile
-                : landingVars.backgroundOffsets.whyPanel,
-          }}
-          alt=""
-        />
-        <div
-          style={{
-            ...panelStyle,
-            paddingTop: 35,
-            maxWidth: landingVars.maxWidths.whyPanel,
-          }}
-        >
-          {props.whyPanel}
-        </div>
-      </div>
-      <div style={{ ...sectionStyle, background: landingVars.backgrounds.panelTwo }} className={sectionClass}>
-        <img
-          src={windowSize.width < landingVars.breakpoints.mobile ? panelTwoBackgroundMobile : panelTwoBackground}
-          style={{
-            ...backgroundImageStyle,
-            paddingTop:
-              windowSize.width < landingVars.breakpoints.mobile
-                ? landingVars.backgroundOffsets.panelTwoMobile
-                : landingVars.backgroundOffsets.panelTwo,
-          }}
-          alt=""
-        />
+      <div style={{ ...sectionStyle }} className={sectionClass}>
         <div style={panelStyle}>{props.panelTwo}</div>
       </div>
       <div style={{ ...sectionStyle, background: landingVars.backgrounds.panelThree }} className={sectionClass}>
         <div style={{ ...panelStyle }}>{props.panelThree}</div>
       </div>
+      <div style={{ ...sectionStyle, background: landingVars.backgrounds.panelThree }} className={sectionClass}>
+        <div style={{ ...panelStyle }}>{props.panelFour}</div>
+      </div>
       <Divider style={{ margin: 0 }} />
       <div style={{ ...sectionStyle }} className={sectionClass}>
-        <div style={{ ...panelStyle }}>
-          <WistiaVideo />
+        <div style={{ ...panelStyle, maxWidth: '1920px', textAlign: 'center' }}>
+          <Video location={props.location} />
         </div>
       </div>
 
@@ -221,8 +174,18 @@ const LandingLayout = (props: IProps) => {
             }}
           >
             {props.getStarted}
+            <div
+              style={{
+                width: '100%',
+                marginTop: 25,
+                padding: '0 25px',
+              }}
+            >
+              <EmailSubscribe />
+            </div>
           </div>
         </div>
+
         <div style={{ ...sectionStyle, background: landingVars.backgrounds.footer }} className={sectionClass}>
           <div style={{ maxWidth: landingVars.maxWidths.footer, width: '100%' }}>{props.footer}</div>
         </div>

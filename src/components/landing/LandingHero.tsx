@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { Modal, Typography } from 'antd';
+import { Icon, Modal, Typography } from 'antd';
 
 import useWindowSize from '../core/useWindowSize';
 
@@ -9,19 +9,13 @@ import CPButton from '../core/CPButton';
 
 import landingVars from '../../styles/pages/_landingVars';
 
-import { CODE_TOUR_DEMO_ID } from '../../routes';
-
 import GradeAnimationVideo from './landingAnimations/grade/GradeAnimationVideo';
 
 const LandingHero = () => {
   const windowSize = useWindowSize();
-  const MAX_WIDTH = 595;
+  const MAX_WIDTH = 605;
   const MAX_HEIGHT = 385;
   const [modalShowing, setModalShowing] = React.useState(false);
-
-  const tryItClick = () => {
-    setModalShowing(true);
-  };
 
   const hero = (
     <div
@@ -34,15 +28,11 @@ const LandingHero = () => {
     >
       <div style={{ fontSize: 28, lineHeight: 1.45, fontWeight: 600, color: '#4A4A4A' }}>
         <span>
-          The easiest way to{' '}
+          The fastest, easiest way to give
           <Typography.Text mark className="codePost-title-highlight">
-            grade
+            programming
           </Typography.Text>{' '}
-          and{' '}
-          <Typography.Text mark className="codePost-title-highlight">
-            comment on
-          </Typography.Text>{' '}
-          student code
+          feedback to students
         </span>
       </div>
       <div
@@ -55,9 +45,9 @@ const LandingHero = () => {
           paddingBottom: windowSize.width < landingVars.breakpoints.hero ? 30 : 60,
         }}
       >
-        Give better feedback on programming assignments, so you can teach CS better and train good programmers.{' '}
+        Autograding, code annotation, rubrics, plagiarism detection, and more. &nbsp;
         <Link to="/pricing">
-          <span style={{ fontWeight: 600, color: '#24be85' }}>Free for higher ed.</span>
+          <span style={{ fontWeight: 600, color: '#24be85' }}>Free for educators.</span>
         </Link>
       </div>
       <div
@@ -70,16 +60,16 @@ const LandingHero = () => {
       >
         <Link to="/signup">
           <CPButton style={{ width: 140, height: 50, fontSize: 17, display: 'inline' }} cpType="primary">
-            Sign Up
+            Sign up free
           </CPButton>
         </Link>
         &nbsp; &nbsp;
         <CPButton
           style={{ width: 160, height: 50, fontSize: 17, display: 'inline' }}
           cpType="secondary"
-          onClick={tryItClick}
+          id="calendly-button-hero"
         >
-          Try it out!
+          Schedule demo
         </CPButton>
       </div>
       <Modal
@@ -89,7 +79,7 @@ const LandingHero = () => {
         title="Try out codePost!"
       >
         <CPButton cpType="primary" block>
-          <a href={`/demo?product_tour_id=${CODE_TOUR_DEMO_ID}`} target="_blank" rel="noopener noreferrer">
+          <a href={`/demo`} target="_blank" rel="noopener noreferrer">
             Interactive code annotation demo
           </a>
         </CPButton>
@@ -118,21 +108,38 @@ const LandingHero = () => {
       className={`display-flex align-items-center justify-content-center flex-direction-${
         windowSize.width < landingVars.breakpoints.hero ? 'column' : 'row'
       }`}
+      id="Hero"
     >
       <div style={{ maxWidth: landingVars.maxWidths.heroText }}>{hero}</div>
-      <div
-        style={{
-          maxWidth: MAX_WIDTH,
-          maxHeight: MAX_HEIGHT,
-          minWidth: windowSize.width > landingVars.breakpoints.hero ? MAX_WIDTH : 0,
-          borderRadius: 5,
-          overflow: 'hidden',
-          boxShadow,
-          transform: windowSize.width < landingVars.breakpoints.hero ? `scale(${transformSmallScreen})` : '',
-        }}
-        className="display-flex justify-content-center align-items-center"
-      >
-        <GradeAnimationVideo width={610} height={390} controls={500} />
+      <div>
+        <div
+          style={{
+            maxWidth: MAX_WIDTH,
+            maxHeight: MAX_HEIGHT,
+            minWidth: windowSize.width > landingVars.breakpoints.hero ? MAX_WIDTH : 0,
+            borderRadius: 5,
+            overflow: 'hidden',
+            marginTop: 10,
+            marginBottom: 15,
+            boxShadow,
+            transform: windowSize.width < landingVars.breakpoints.hero ? `scale(${transformSmallScreen})` : '',
+          }}
+          className="display-flex justify-content-center align-items-center"
+        >
+          <GradeAnimationVideo width={610} height={390} controls={500} />
+        </div>
+        <CPButton
+          key="Demo"
+          href="https://codepost.io/demo"
+          target="_blank"
+          cpType="link"
+          ghost={true}
+          style={{ fontWeight: 600, fontSize: 20, float: 'right' }}
+          className="demo-link"
+        >
+          Try it out
+          <Icon type="double-right" className="demo-link__arrow" />
+        </CPButton>
       </div>
     </div>
   );

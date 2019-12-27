@@ -72,6 +72,18 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
   return (
     <Switch>
       <Route
+        path={`${props.match.url}/edit/:tabKey`}
+        render={(subprops: any) => (
+          <TestingSetup
+            {...subprops}
+            breadcrumbs={breadcrumbs}
+            currentAssignment={assignment}
+            submissions={props.submissions}
+            updateAssignment={updateAssignment}
+          />
+        )}
+      />
+      <Route
         path={`${props.match.url}/edit`}
         render={(subprops: any) => (
           <TestingSetup
@@ -83,6 +95,7 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
           />
         )}
       />
+
       <Route
         path={`${props.match.url}/results`}
         render={(subprops: any) => (

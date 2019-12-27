@@ -26,7 +26,7 @@ import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
-import { Assignment, AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
+import { AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
 import { CourseType } from '../../../infrastructure/course';
 import { SubmissionType } from '../../../infrastructure/submission';
 import { UserType } from '../../../infrastructure/user';
@@ -134,6 +134,12 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
     sortedOrder: sortAssignments(this.props.assignments).map((el) => el.id),
   };
 
+  public componentDidUpdate(oldProps: IManageAssignmentsProps) {
+    if (this.props.assignments !== oldProps.assignments) {
+      this.setState({ sortedOrder: sortAssignments(this.props.assignments).map((el) => el.id) });
+    }
+  }
+
   public calculateStats = memoizeOne(calculateMultipleAssignmentProgressStats);
 
   /******************************************************************************
@@ -213,16 +219,11 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
     let sortKey;
     if (sortedOrder.length > 0) {
       sortKey = sortedOrder[sortedOrder.length - 1] + 1;
+    } else {
+      sortKey = 0;
     }
 
-    return this.props.createAssignment(name, points, sortKey).then((assignment) => {
-      // If an assignment's ID isn't added to sortedOrder, it won't appear in the assignment table
-      this.setState((oldState) => {
-        return { sortedOrder: [...oldState.sortedOrder, assignment.id] };
-      });
-      message.success(`Successfully created ${name}`);
-      return assignment;
-    });
+    return this.props.createAssignment(name, points, sortKey);
   };
 
   /******************************************************************************
@@ -667,7 +668,6 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           },
         }),
         () => {
-          const match = this.props.assignments.find((el) => el.id === dragRow);
           this.props.assignments.forEach((assignment) => {
             const newKey = this.state.sortedOrder.indexOf(assignment.id);
             if (newKey !== assignment.sortKey) {

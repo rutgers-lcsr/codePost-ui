@@ -15,15 +15,15 @@ import { Link } from 'react-router-dom';
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
 
-import { encodeForLink } from '../../../../components/core/URLutils';
+import LogViewer from '../../../../components/core/LogViewer';
 
+/* codePost imports */
+import { encodeForLink } from '../../../../components/core/URLutils';
 import { AssignmentType, CourseType, SubmissionType } from '../../../../infrastructure/types';
 
 import UploadForm from './UploadForm';
 
 import { IntegrationButton, INTEGRATIONS } from '../../../landing/Integrations';
-
-import { resizeImage } from '../../other/AdminUtils';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
@@ -224,7 +224,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
   public readFiles = () => {
     const submissions = this.state.protoSubmissions;
 
-    submissions.map(async (submission) => {
+    submissions.map(async (submission, index: number) => {
       for (const file of submission.files) {
         try {
           const outputFiles = await readUploadedFile(file);
@@ -240,6 +240,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
 
   public tryToUpload = () => {
     const { fileMap, numFiles, overwriteMode } = this.state;
+
     const readFiles = Object.keys(fileMap).reduce((acc, el) => {
       const toAdd = typeof fileMap[el] === 'undefined' ? 0 : 1;
       return acc + toAdd;
@@ -790,11 +791,8 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
                       iconStyle={{ paddingLeft: 5 }}
                     />
                   </div>
-                  <ul>
-                    {this.state.errorPaths.map((el, i) => {
-                      return <li key={i}>{el}</li>;
-                    })}
-                  </ul>
+                  <LogViewer text={this.state.errorPaths.join('\n')} />
+
                   <br />
                 </div>
               </div>

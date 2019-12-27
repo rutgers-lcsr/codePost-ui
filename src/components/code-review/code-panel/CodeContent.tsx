@@ -19,6 +19,8 @@ import TemplateCode from './TemplateCode';
 
 import CodePanelSizing from './CodePanelSizing';
 
+import { CURSOR_DOMAIN } from '../CodeConsole';
+
 export interface ICodeContentCoreProps {
   file: FileType;
   comments: CommentType[];
@@ -32,6 +34,9 @@ export interface ICodeContentEditProps {
   commentCounter: number;
   addComment: (comment: CommentType, file: FileType) => void;
   fileTemplate?: FileTemplateType;
+  cursorMode: boolean;
+  showCursor: CURSOR_DOMAIN;
+  updateCursorDomain: (domain: CURSOR_DOMAIN) => void;
 }
 
 const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
@@ -174,7 +179,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
             style={{
               lineHeight: `${themeVars.grade.codeLineHeight}px`,
               fontSize: `${themeVars.grade.codeFontSize}px`,
-              paddingLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
+              marginLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
               paddingBottom: '10px',
             }}
           >
@@ -187,7 +192,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
           style={{
             lineHeight: `${themeVars.grade.codeLineHeight}px`,
             fontSize: `${themeVars.grade.codeFontSize}px`,
-            paddingLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
+            marginLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
             paddingBottom: '10px',
           }}
         >
@@ -196,6 +201,9 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
             commentCounter={props.commentCounter}
             addComment={addCommentAndIncrement}
             onHighlightClick={props.onHighlightClick}
+            cursorMode={props.cursorMode}
+            showCursor={props.showCursor}
+            updateCursorDomain={props.updateCursorDomain}
           />
         </div>
       </div>
@@ -209,6 +217,10 @@ const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICo
       return;
     };
 
+    public updateCursorDomain = (domain: CURSOR_DOMAIN) => {
+      return;
+    };
+
     public render() {
       return (
         <Component
@@ -216,6 +228,9 @@ const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICo
           addComment={this.addComment}
           commentCounter={-1}
           fileTemplate={undefined}
+          cursorMode={false}
+          showCursor={CURSOR_DOMAIN.CODE_HIDDEN}
+          updateCursorDomain={this.updateCursorDomain}
         />
       );
     }

@@ -24,7 +24,7 @@ import {
   CourseType,
 } from '../../../../infrastructure/types';
 import { AssignmentStudent } from '../../../../infrastructure/assignment';
-import { Submission } from '../../../../infrastructure/submission';
+import { Environment } from '../../../../infrastructure/autograder/environment';
 import { FileTemplate } from '../../../../infrastructure/fileTemplate';
 
 import CPTooltip from '../../../../components/core/CPTooltip';
@@ -37,7 +37,7 @@ import { UploadFile } from 'antd/lib/upload/interface';
 import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
 
 import TestsList from '../../../../components/code-review/code-panel/TestsList';
-import { TestCasesByCategory } from '../../../../components/core/testFetchUtils';
+import { StudentTestCasesByCategory } from '../../../../components/core/testFetchUtils';
 
 import { awaitTestResult } from '../../../../components/admin/assignments/tests/testResult';
 
@@ -91,7 +91,7 @@ interface IState {
   uploadDirectory: boolean;
 
   testCategories: TestCategoryType[];
-  testCases: TestCasesByCategory;
+  testCases: StudentTestCasesByCategory;
   submissionTests: SubmissionTestType[];
   submission?: StudentSubmissionType;
   loadingTests: boolean;
@@ -167,7 +167,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     if (this.props.isStudent && this.props.selectedAssignment) {
       this.setState({ loadingTests: true });
       const { testCases, testCategories } = await AssignmentStudent.readStudentTests(this.props.selectedAssignment.id);
-      const caseObj: TestCasesByCategory = {};
+      const caseObj: StudentTestCasesByCategory = {};
       testCategories.forEach((category) => {
         caseObj[category.id] = [];
       });
@@ -183,8 +183,11 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public runTests = async () => {
-    if (this.state.submission) {
-      const result = await Submission.run(this.state.submission.id);
+    if (this.state.submission && this.state.selectedAssignment && this.state.selectedAssignment.environment) {
+      const result = await Environment.run(this.state.selectedAssignment.environment, {
+        submission: this.state.submission.id.toString(),
+        simulate: 'False',
+      });
       awaitTestResult(result.task, this.setResults);
     }
   };
@@ -397,12 +400,14 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         break;
       case STATUS.TESTING:
         content = (
-          <TestsList
-            tests={this.state.submissionTests}
-            cases={this.state.testCases}
-            categories={this.state.testCategories}
-            isLoading={this.state.loadingTests}
-          />
+          <div style={{ minHeight: 'calc(100vh - 300px)' }}>
+            <TestsList
+              tests={this.state.submissionTests}
+              cases={this.state.testCases}
+              categories={this.state.testCategories}
+              isLoading={this.state.loadingTests}
+            />
+          </div>
         );
         break;
       case STATUS.NONE:
@@ -653,7 +658,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         visible={true}
         title="Upload Submissions"
         onCancel={this.onCancel}
-        width={700}
+        width={800}
         footer={[goBackButton, goForwardButton]}
       >
         {content}

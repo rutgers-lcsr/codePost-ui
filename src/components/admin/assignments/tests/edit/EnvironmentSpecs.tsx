@@ -6,11 +6,11 @@
 import React, { useState, useEffect } from 'react';
 
 /* library imports */
-import { Modal, Button, Divider, Select, Typography, Empty, message } from 'antd';
+import { Modal, Button, Divider, Icon, Input, Select, Tooltip, Tag, Typography, Empty, message } from 'antd';
 
 /* codePost object imports */
 import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
-import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
+import { EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 
 /* codePost component imports */
 import { CodeWindow } from './utils/CodeWindow';
@@ -29,6 +29,8 @@ import { FILE_TYPE } from './TestingSetup';
 
 import locale from './utils/languageLocale';
 
+import themeVars from '../../../../../styles/abstracts/_theme';
+
 const { Option } = Select;
 const { confirm } = Modal;
 
@@ -38,12 +40,11 @@ interface IProps {
   currentAssignment: AssignmentType;
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   env: EnvironmentType | undefined;
-  createEnv: (language: string, compileText: string, dependencies: string[]) => void;
-  updateEnv: (env: EnvironmentType) => void;
-  deleteEnv: () => void;
+  buildEnv: (language: string, dependencies: string[]) => Promise<void>;
+  updateCompileText: (compileText: string) => Promise<void>;
   helpers: SolutionFileType[] | HelperFileType[];
   solutions: SolutionFileType[] | HelperFileType[];
-  addFile: (type: FILE_TYPE, name: string, code: string) => Promise<void>;
+  addFile: (type: FILE_TYPE, name: string, code: string, path?: string) => Promise<void>;
   deleteFile: (type: FILE_TYPE, id: number) => Promise<void>;
   updateFile: (type: FILE_TYPE, id: number, newCode: string) => Promise<void>;
 }
@@ -59,64 +60,53 @@ export const EnvironmentSpecs = (props: IProps) => {
   useEffect(() => {
     if (props.env) {
       setLanguage(props.env.language);
+      setDependencies(JSON.parse(props.env.dependencies));
     }
   }, [props.env]);
 
-  const saveEnv = async () => {
-    if (!props.env) {
-      setLoading(true);
-      await props.createEnv(language !== null ? language : '', '', []);
-      setLoading(false);
-      message.success('Environment created');
+  const onSave = () => {
+    if (props.env && language !== props.env.language) {
+      confirm({
+        title: `Are you sure you want to change the language of the environment?`,
+        content: 'This may cause existing tests to stop working.',
+        onOk() {
+          saveEnv();
+        },
+        onCancel() {
+          return;
+        },
+      });
     } else {
-      setLoading(true);
-      const payload = {
-        id: props.env.id,
-        dependencies: dependencies,
-        language: language!,
-        simulate: false,
-      };
-      const newEnv = await Environment.updateBuild(payload);
-      if (newEnv) {
-        props.updateEnv(newEnv);
-      }
-      message.success('Environment saved');
+      saveEnv();
+    }
+  };
+
+  const saveEnv = async () => {
+    setLoading(true);
+    try {
+      await props.buildEnv(language !== null ? language : '', dependencies);
+      setLoading(false);
+      message.success('Environment updated');
+    } catch (err) {
       setLoading(false);
     }
   };
 
   const saveCompileText = async (newText: string) => {
-    if (!props.env) {
-      return;
-    }
-    const payload = {
-      id: props.env.id,
-      compileText: newText,
-    };
-    const newEnv = await Environment.update(payload);
-    if (newEnv) {
-      props.updateEnv(newEnv);
-    }
-  };
-
-  const deleteEnv = async () => {
-    if (props.env !== undefined) {
-      confirm({
-        title: 'Are you sure you want to delete your environment?',
-        content: 'This will delete all of your tests, too.',
-        onOk() {
-          return new Promise((resolve, reject) => {
-            setLanguage(null);
-            resolve(props.deleteEnv());
-          }).catch(() => console.log('Oops errors!'));
-        },
-      });
-    }
+    await props.updateCompileText(newText);
   };
 
   /******************************* State Change Functions ****************************/
   const onLanguageChange = (value: string) => {
     setLanguage(value);
+    // if it's a new language, reset dependencies
+    if (!props.env || value !== props.env.language) {
+      setDependencies([]);
+    }
+    // if we return to old language, reset dependencies to props
+    if (props.env && value === props.env.language) {
+      setDependencies(JSON.parse(props.env.dependencies));
+    }
   };
 
   const onDependenciesChange = (newDependencies: string[]) => {
@@ -126,11 +116,12 @@ export const EnvironmentSpecs = (props: IProps) => {
   /******************************* Return ****************************/
 
   const selectLanguage = (
+    // Disable selector if environment has a custom dockerfile defined
     <Select
-      value={language || undefined}
+      value={props.env && props.env.dockerfile.length > 0 ? 'Custom' : language || undefined}
       onChange={onLanguageChange}
       style={{ minWidth: 300 }}
-      disabled={props.env !== undefined}
+      disabled={props.env && props.env.dockerfile.length > 0}
     >
       {languages.map((language) => {
         return (
@@ -143,18 +134,30 @@ export const EnvironmentSpecs = (props: IProps) => {
   );
 
   // Fixme: refactor into util
-  const dependencyText = language && locale[language].dependencies;
+  const installText = (language && locale[language].installCmd) || '';
   const envSpecText = language && locale[language].environment;
 
   const selectDependencies = (
-    <Select
-      mode="tags"
-      style={{ minWidth: 300 }}
-      value={dependencies}
-      placeholder={dependencyText}
-      onChange={onDependenciesChange}
-      disabled={language === null || !hasDependenciesSupport(language)}
-    />
+    // Disable selector if environment has a custom dockerfile defined
+    <div style={{ marginLeft: 10 }}>
+      <Tooltip title="This is the install command run for all packages in this build.">
+        <Tag style={{ lineHeight: '32px', height: 32, marginRight: 5 }}>{installText}</Tag>
+      </Tooltip>
+      <Select
+        mode="tags"
+        style={{ minWidth: 300 }}
+        value={dependencies}
+        placeholder={'Add package to environment'}
+        onChange={onDependenciesChange}
+        disabled={
+          language === null || !hasDependenciesSupport(language) || (props.env && props.env.dockerfile.length > 0)
+        }
+      />
+    </div>
+  );
+
+  const customDockerFile = props.env && props.env.dockerfile && (
+    <span>Custom DockerFile:&nbsp;{props.env.dockerfile}</span>
   );
 
   if (props.env === undefined && language === null) {
@@ -174,19 +177,6 @@ export const EnvironmentSpecs = (props: IProps) => {
       </div>
     );
   }
-
-  // const errorPanel =
-  //   errorLogs.length === 0 ? (
-  //     <div />
-  //   ) : (
-  //     <Collapse bordered={false} defaultActiveKey={[]}>
-  //       <Panel header="Traceback" key="1">
-  //         {errorLogs.map((error, i) => {
-  //           return <div key={i}>{error}</div>;
-  //         })}
-  //       </Panel>
-  //     </Collapse>
-  //   );
 
   const showAfterCreation = (
     <div>
@@ -238,24 +228,19 @@ export const EnvironmentSpecs = (props: IProps) => {
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <Typography.Title level={3}>1. Define environment</Typography.Title>
         <div>
-          {props.env ? (
-            <Button type="danger" onClick={deleteEnv}>
-              Delete
-            </Button>
-          ) : (
-            undefined
-          )}
-          &nbsp;
-          <Button type="primary" onClick={saveEnv} loading={loading}>
-            {props.env ? 'Save' : 'Create'}
+          <Button type="primary" onClick={onSave} loading={loading}>
+            {props.env ? 'Update' : 'Create'}
           </Button>
         </div>
       </div>
       Language: {selectLanguage} &nbsp;
-      <CPTooltip infoIcon={true} title={envSpecText} />
+      <Tooltip title={envSpecText}>
+        <Icon type="database" theme="twoTone" twoToneColor={themeVars.theme.brandPrimary} />
+      </Tooltip>
       <br />
       <br />
-      Custom dependencies: {selectDependencies}
+      <div className="display-flex align-items-center">Install packages: {selectDependencies}</div>
+      {customDockerFile}
       {props.env ? showAfterCreation : null}
     </div>
   );

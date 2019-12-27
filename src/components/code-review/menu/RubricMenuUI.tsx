@@ -17,7 +17,7 @@ import { RubricComment, RubricCommentType } from '../../../infrastructure/rubric
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
-import useHotkeys, { E_KEY, O_KEY, S_KEY } from '../useHotkeys';
+import useHotkeys, { O_KEY, S_KEY } from '../useHotkeys';
 
 import { osControlKey } from '../../core/operatingSystem';
 
@@ -37,6 +37,8 @@ import { LinkedCommentsAlert, LinkedCommentsConfirm } from '../../admin/assignme
 
 import CPTooltip from '../../core/CPTooltip';
 import { tooltips } from '../../core/tooltips';
+
+import { CURSOR_DOMAIN } from '../CodeConsole';
 
 /**********************************************************************************************************************/
 
@@ -68,6 +70,9 @@ interface IRubricMenuUIProps extends IRubricManagerProps {
   }) => void;
   turnOnReload: () => void;
   turnOffReload: () => void;
+
+  showCursor: CURSOR_DOMAIN;
+  updateCursorDomain: (domain: CURSOR_DOMAIN) => void;
 }
 
 const RubricMenuUI = ({
@@ -88,7 +93,7 @@ const RubricMenuUI = ({
   const [changesMade, setChangesMade] = React.useState(false);
   const [confirmChanges, setConfirmChanges] = React.useState(false);
 
-  // console.log(props, state, helpers);
+  const [cursorIndex, setCursorIndex] = React.useState(0);
 
   const startEditing = (rubricCommentID: number) => {
     const newEditingStatuses = { ...editingStatuses, [rubricCommentID]: EDITING_STATUS.EDITING };
@@ -109,6 +114,59 @@ const RubricMenuUI = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  React.useEffect(() => {
+    const tryScroll = () => {
+      const rubricMenu = document.getElementById('rubric-menu');
+
+      if (rubricMenu !== null) {
+        let cursoredRows = document.getElementsByClassName('rubric-row-cursored');
+        if (cursoredRows.length > 0) {
+          const cursoredRow = cursoredRows[0];
+
+          const distance = cursoredRow.getBoundingClientRect().top - rubricMenu.getBoundingClientRect().top;
+
+          const rubricMenuVisibleHeight = rubricMenu.offsetHeight;
+
+          if (distance < 35) {
+            rubricMenu.scrollTop = rubricMenu.scrollTop - (35 - distance);
+          } else if (distance > rubricMenuVisibleHeight) {
+            const updatedScroll = distance - rubricMenuVisibleHeight;
+            const maxScrollTop = rubricMenu.scrollHeight - rubricMenu.offsetHeight;
+            rubricMenu.scrollTop = Math.min(rubricMenu.scrollTop + updatedScroll + 70, maxScrollTop);
+          }
+        }
+      }
+    };
+
+    const handleKeydown = async (e: any) => {
+      const el = document.getElementById('rubric-search');
+      let searchIsFocused = false;
+      if (el !== null) {
+        searchIsFocused = document.activeElement === el;
+      }
+
+      if (searchIsFocused && e.key === 'ArrowDown' && props.hasActiveComment) {
+        props.updateCursorDomain(CURSOR_DOMAIN.RUBRIC);
+      }
+
+      if (props.showCursor === CURSOR_DOMAIN.RUBRIC && props.hasActiveComment) {
+        if (e.key === 'ArrowDown') {
+          const rubricCommentCount = document.getElementsByClassName('rubric-row').length;
+          setCursorIndex(Math.min(cursorIndex + 1, rubricCommentCount - 1));
+          setTimeout(() => tryScroll(), 100);
+        } else if (e.key === 'ArrowUp') {
+          setCursorIndex(Math.max(cursorIndex - 1, 0));
+          setTimeout(() => tryScroll(), 100);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+    return () => {
+      document.removeEventListener('keydown', handleKeydown);
+    };
+  });
 
   useHotkeys(O_KEY, focusSearch);
 
@@ -139,6 +197,9 @@ const RubricMenuUI = ({
 
     let filteredCatgories;
     if (!props.editRubricMode && props.showFrequent) {
+      // Let's be type-safe
+      const rubricCommentList: RubricCommentType[] = Object.values(rubricComments).flat();
+
       noSort.push(-1000);
       freq = {
         id: -1000,
@@ -150,10 +211,10 @@ const RubricMenuUI = ({
         helpText: 'List of the 10 most frequently applied comments from this rubric.',
         atMostOnce: false,
       };
-      adjustedRubricComments[-1000] = Object.values(rubricComments)
-        .flat()
-        .filter((el) => el.comments.length > 0)
-        .sort((a, b) => b.comments.length - a.comments.length)
+
+      adjustedRubricComments[-1000] = rubricCommentList
+        .filter((el) => state.instanceLists[el.id] && state.instanceLists[el.id].length > 0)
+        .sort((a, b) => state.instanceLists[b.id].length - state.instanceLists[a.id].length)
         .slice(0, 10);
       filteredCatgories = [freq, ...rubricCategories.sort(RubricCategory.compare)];
     } else {
@@ -179,27 +240,30 @@ const RubricMenuUI = ({
       commentSearchTerm = '';
     }
 
+    let commentIndex = 0;
+
     return filteredCatgories.map((cat: RubricCategoryType, catIndex: number) => {
       const savedCategory = state.savedRubricCategories.find((el: any) => {
         return el.id === cat.id;
       });
 
-      // Don't sort comments which are custom sorted prior to this map
-      let comments: RubricCommentType[] = [];
-      if (cat.id in adjustedRubricComments) {
-        if (noSort.indexOf(cat.id) > -1) {
-          comments = adjustedRubricComments[cat.id];
-        } else {
-          comments = adjustedRubricComments[cat.id].sort(RubricComment.compare);
-        }
+      let filteredComments: RubricComment[] = [];
+      if (cat.id in rubricComments) {
+        filteredComments = rubricComments[cat.id]
+          .filter((rubricComment: RubricCommentType) => {
+            return rubricComment.text.toUpperCase().includes(commentSearchTerm.toUpperCase());
+          })
+          .sort(RubricComment.compare);
       }
 
-      return (
+      const thisIndex = commentIndex;
+
+      const rubricCategoryManager = (
         <RubricCategoryManager
           key={cat.id}
           rubricCategory={cat}
           savedRubricCategory={savedCategory}
-          rubricComments={comments}
+          rubricComments={filteredComments}
           savedRubricComments={savedCategory ? state.savedRubricComments[savedCategory.id] : undefined}
           updateCategory={helpers.updateRubricCategory}
           deleteCategory={helpers.deleteRubricCategory}
@@ -232,12 +296,19 @@ const RubricMenuUI = ({
               editRubricMode: props.editRubricMode,
               turnOnReload: props.turnOnReload,
               turnOffReload: props.turnOffReload,
+              showCursor: props.showCursor,
+              cursorIndex: cursorIndex,
+              commentIndex: thisIndex,
               showExplanations: props.showExplanations,
             };
             return <RubricMenuCategoryUI props={propsz} state={statez} helpers={helperz} />;
           }}
         </RubricCategoryManager>
       );
+
+      commentIndex = commentIndex + filteredComments.length;
+
+      return rubricCategoryManager;
     });
   };
 
@@ -302,7 +373,7 @@ const RubricMenuUI = ({
     props.toggleEditRubricMode();
   };
 
-  useHotkeys(E_KEY, toggleEditRubricMode);
+  // useHotkeys(E_KEY, toggleEditRubricMode);
   useHotkeys(S_KEY, blurAndSave);
 
   let controls = null;
@@ -400,6 +471,7 @@ const RubricMenuUI = ({
           onUnLink={onUnLink}
           onCancel={helpers.onLinkedAlertCancel}
           isVisible={state.linkedComments.length > 0}
+          numComments={state.linkedComments[0] ? state.instanceLists[state.linkedComments[0].id].length : 0}
         />
         <LinkedCommentsConfirm
           onAccept={onLinkedConfirmAccept}
@@ -474,7 +546,7 @@ const RubricMenuUI = ({
   if (state.loadComplete) {
     const rubricMenu = buildRubricMenu(state.rubricCategories, state.rubricComments);
 
-    content = <div id="rubric-menu">{rubricMenu}</div>;
+    content = <div id="rubric-menu-wrapper">{rubricMenu}</div>;
   }
 
   return (

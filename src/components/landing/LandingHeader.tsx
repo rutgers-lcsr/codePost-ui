@@ -42,7 +42,13 @@ const LandingHeader = () => {
     </Link>
   );
   const docs = (
-    <a style={{ ...linkStyle }} className="link--header" href="https://help.codepost.io">
+    <a
+      style={{ ...linkStyle }}
+      target="_blank"
+      className="link--header"
+      href="https://help.codepost.io"
+      rel="noopener noreferrer"
+    >
       Docs
     </a>
   );
@@ -57,7 +63,11 @@ const LandingHeader = () => {
     </Link>
   );
   const login = (
-    <Link style={{ ...linkStyle }} className="link--header" to="/login">
+    <Link
+      style={{ ...linkStyle, paddingRight: 30, paddingTop: smallScreen ? 15 : 20 }}
+      className="link--header"
+      to="/login"
+    >
       Login
     </Link>
   );
@@ -96,8 +106,8 @@ const LandingHeader = () => {
             width: '100%',
             paddingRight: 40,
             paddingLeft: 40,
-            paddingTop: 35,
-            paddingBottom: 35,
+            paddingTop: 30,
+            paddingBottom: 30,
           }}
           className="display-flex justify-content-space-between align-items-flex-end"
         >
@@ -111,7 +121,7 @@ const LandingHeader = () => {
           <div style={{ paddingBottom: 4 }}>
             {login}
             <Link to="/signup">
-              <CPButton style={{ width: 120, height: 40, fontSize: 17, marginLeft: 45 }} cpType="primary" key="SignUp">
+              <CPButton style={{ width: 120, height: 40, fontSize: 17, marginLeft: 15 }} cpType="primary" key="SignUp">
                 Sign Up
               </CPButton>
             </Link>

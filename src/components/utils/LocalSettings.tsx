@@ -71,6 +71,11 @@ const intIParser = (value: number) => {
 // defalut value: false
 const darkMode = generateSettingFunctions('darkMode', false, booleanIParser, booleanOParser);
 
+// key: cursorMode
+// return type: boolean. If true = cursor mode is enabled. Else, cursor mode is not enabled.
+// defalut value: false
+const cursorMode = generateSettingFunctions('cursorMode', false, booleanIParser, booleanOParser);
+
 // key: infoMenuHidden
 // return type: boolean. If true, submission info section of code console will be collapsed.
 // defalut value: false
@@ -80,6 +85,11 @@ const infoMenuHidden = generateSettingFunctions('infoMenuHidden', false, boolean
 // return type: boolean. If true, file menu section of code console will be collapsed.
 // defalut value: false
 const fileMenuHidden = generateSettingFunctions('fileMenuHidden', false, booleanIParser, booleanOParser);
+
+// key: testsMenuHidden
+// return type: boolean. If true, tests menu section of code console will be collapsed.
+// defalut value: false
+const testsMenuHidden = generateSettingFunctions('testsMenuHidden', false, booleanIParser, booleanOParser);
 
 // key: rubricMenuHidden
 // return type: boolean. If true, rubric menu section of code console will be collapsed.
@@ -119,8 +129,10 @@ const mostRecentFile = generateSettingFunctions('mostRecentFile', 0, intIParser,
 /******************************************************************************************************************/
 const LOCAL_SETTINGS = {
   darkMode,
+  cursorMode,
   infoMenuHidden,
   fileMenuHidden,
+  testsMenuHidden,
   rubricMenuHidden,
   codeZoom,
   codeWidth,

@@ -17,7 +17,9 @@ interface IProps {
   name: string;
   onSave?: (code: string) => Promise<void>;
   onChange?: (code: string) => void;
+  onDelete?: () => void;
   theme?: themeType;
+  height?: string;
 }
 
 export const CodeWindow = (props: IProps) => {
@@ -29,9 +31,9 @@ export const CodeWindow = (props: IProps) => {
     setEditedCode(props.code);
   }, [props.code]);
   // ******************************* State change functions  *******************************
-  const onEdit = () => {
-    setEditedCode(props.code);
-  };
+  // const onEdit = () => {
+  //   setEditedCode(props.code);
+  // };
 
   const onSave = async () => {
     if (props.onSave) {
@@ -65,10 +67,18 @@ export const CodeWindow = (props: IProps) => {
 
   // ******************************* Return  *******************************
   return (
-    <div style={{ fontSize: 12, minWidth: 300, width: '100%', position: 'relative' }}>
+    <div
+      style={{
+        fontSize: 12,
+        minWidth: 300,
+        width: '100%',
+        position: 'relative',
+        height: props.height || undefined,
+      }}
+    >
       {!props.onChange && (
         <Button
-          style={{ position: 'absolute', right: 15, zIndex: 100 }}
+          style={{ position: 'absolute', right: 15, top: '-34px', zIndex: 100 }}
           type={'primary'}
           ghost={!props.onSave}
           onClick={onSave}
@@ -80,7 +90,6 @@ export const CodeWindow = (props: IProps) => {
       )}
       <CodeMirror
         key={`codeMirror`}
-        className="ProMode-codeMirror"
         onBeforeChange={onBeforeChange}
         value={props.onSave ? editedCode : props.code}
         options={{

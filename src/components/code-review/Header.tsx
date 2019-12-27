@@ -23,10 +23,15 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 
 import { wait } from '../../infrastructure/animation';
 import { AssignmentType } from '../../infrastructure/assignment';
+import { Submission } from '../../infrastructure/submission';
+import { File } from '../../infrastructure/file';
+
 import { CourseType } from '../../infrastructure/course';
 import { FileType } from '../../infrastructure/file';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../infrastructure/submission';
+import { TestCaseType } from '../../infrastructure/types';
+import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
 
@@ -35,8 +40,6 @@ import CodeConsole from './CodeConsole';
 import useHotkeys, { F_KEY, MINUS_KEY, PLUS_KEY, P_KEY, V_KEY } from './useHotkeys';
 
 import useWindowSize from '../core/useWindowSize';
-
-import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
 
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
@@ -102,28 +105,28 @@ const Magnifier = (props: IMagnifierProps) => {
 
 /**********************************************************************************************************************/
 
-interface IResetProps {
-  updateVerticalOffset: (updater: (oldValue: number) => number) => void;
-}
+// interface IResetProps {
+//   updateVerticalOffset: (updater: (oldValue: number) => number) => void;
+// }
 
-const Reset = (props: IResetProps) => {
-  const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
+// const Reset = (props: IResetProps) => {
+//   const { consoleTheme } = React.useContext(ConsoleThemeContext);
+//   const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
 
-  function onClick() {
-    props.updateVerticalOffset(() => 0);
-  }
+//   function onClick() {
+//     props.updateVerticalOffset(() => 0);
+//   }
 
-  return (
-    <CPTooltip title={tooltips.grade.header.alignment} hideThisOnHideTips={true}>
-      <ButtonGroup>
-        <CPButton id="reset" cpType={cpType} small={true} onClick={onClick}>
-          <Icon type="redo" />
-        </CPButton>
-      </ButtonGroup>
-    </CPTooltip>
-  );
-};
+//   return (
+//     <CPTooltip title={tooltips.grade.header.alignment} hideThisOnHideTips={true}>
+//       <ButtonGroup>
+//         <CPButton id="reset" cpType={cpType} small={true} onClick={onClick}>
+//           <Icon type="redo" />
+//         </CPButton>
+//       </ButtonGroup>
+//     </CPTooltip>
+//   );
+// };
 
 /**********************************************************************************************************************/
 
@@ -151,20 +154,30 @@ export const ViewAsStudent = (props: IViewAsStudentProps) => {
 /**********************************************************************************************************************/
 
 interface IDownloadCodeProps {
-  files: FileType[];
+  submission: AnonymousSubmissionType;
 }
 
 export const DownloadCode = (props: IDownloadCodeProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
 
-  const onClick = () => {
-    if (props.files.length === 0) {
+  const onClick = async () => {
+    // We fetch the latest files because some files over the size limit have had their code
+    // replaced for rendering performance
+
+    const latestSubmission = await Submission.read(props.submission.id);
+    const files = await Promise.all(
+      latestSubmission.files.map((f) => {
+        return File.read(f);
+      }),
+    );
+
+    if (files.length === 0) {
       return;
     }
 
     const zip = new JSZip();
-    props.files.map((file: FileType) => {
+    files.map((file: FileType) => {
       let dir = zip;
       if (file.path !== null && file.path.length > 0) {
         const folders = file.path.split('/');
@@ -177,7 +190,7 @@ export const DownloadCode = (props: IDownloadCodeProps) => {
     });
 
     zip.generateAsync({ type: 'blob' }).then(function(content: any) {
-      saveAs(content, `submission-${props.files[0].submission}.zip`);
+      saveAs(content, `submission-${files[0].submission}.zip`);
     });
   };
 
@@ -369,6 +382,8 @@ interface IGradeBreakdownProps {
   comments: IFileToCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
   files: FileType[];
+  submissionTests: SubmissionTestType[];
+  testCases: TestCaseType[];
 }
 
 // FIXME: Although the calculate methods that compose this component are modularized,
@@ -381,6 +396,7 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
   const pointsPerCategory = CodeConsole.pointsPerCategory(props.commentRubricComments, currentCommentSet);
   const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(pointsPerCategory, props.rubricCategories);
   const genericPoints = CodeConsole.genericCommentPoints(props.comments);
+  const testPoints = CodeConsole.pointsFromTests(props.submissionTests, props.testCases);
 
   const categoryPoints = Object.values(pointsPerCategoryWithCaps).reduce((accumulator: number, current: number) => {
     return accumulator + current;
@@ -466,6 +482,10 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
       description: <span className="cp-label cp-label--italic">other</span>,
       value: styledLabel(genericPoints),
     },
+    {
+      description: <span className="cp-label cp-label--italic">~Tests~</span>,
+      value: styledLabel(testPoints),
+    },
   ];
 
   const categoriesTable = (
@@ -492,14 +512,17 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
       ? null
       : {
           description: <span className="cp-label">Net Point Delta</span>,
-          value: <span>{styledLabel(categoryPoints + genericPoints)}</span>,
+          value: <span>{styledLabel(categoryPoints + genericPoints + testPoints)}</span>,
         },
     {
       description: <span className="cp-label cp-label--very-bold">Final Grade</span>,
       value: (
         <span className="cp-label cp-label--very-bold">
-          {(props.assignment.additiveGrading ? 0 : props.assignment.points) - categoryPoints - genericPoints} /{' '}
-          {props.assignment.points}
+          {(props.assignment.additiveGrading ? 0 : props.assignment.points) -
+            categoryPoints -
+            genericPoints -
+            testPoints}{' '}
+          / {props.assignment.points}
         </span>
       ),
     },
@@ -542,6 +565,8 @@ interface IGradeButtonProps {
   comments: IFileToCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
   files: FileType[];
+  submissionTests: SubmissionTestType[];
+  testCases: TestCaseType[];
 }
 
 export const GradeButton = (props: IGradeButtonProps) => {
@@ -553,6 +578,8 @@ export const GradeButton = (props: IGradeButtonProps) => {
   function handleClick() {
     setBreakdownVisible(!breakdownVisible);
   }
+
+  useHotkeys('b', handleClick, true);
 
   return (
     <div>
@@ -567,6 +594,8 @@ export const GradeButton = (props: IGradeButtonProps) => {
           comments={props.comments}
           commentRubricComments={props.commentRubricComments}
           files={props.files}
+          submissionTests={props.submissionTests}
+          testCases={props.testCases}
         />
       </Modal>
     </div>
@@ -731,11 +760,6 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
           </Link>
         </Menu.Item>
       ) : null}
-      {props.isStudent ? null : (
-        <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
-          <a href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>Redo tutorial</a>
-        </Menu.Item>
-      )}
       {props.isStudent || !props.hasExplanations ? null : (
         <Menu.Item key="explanations" style={itemStyle} className="header-menu" onClick={props.toggleShowExplanations}>
           Show rubric comment {props.showExplanations ? 'text' : ' explanations'}{' '}

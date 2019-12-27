@@ -102,6 +102,21 @@ export class CommentIO {
     }
     return a.startLine - b.startLine;
   };
+
+  public static sortedIndex = (comments: CommentType[], insert: CommentType): number => {
+    let currIndex = 0;
+    const len = comments.length;
+    comments.some((comment: CommentType, index: number) => {
+      const cmp = CommentIO.compare(comment, insert) >= 0;
+      if (!cmp && index === len - 1) {
+        currIndex = len;
+      } else {
+        currIndex = index;
+      }
+      return cmp;
+    });
+    return currIndex;
+  };
 }
 
 /* tslint:disable:max-classes-per-file */

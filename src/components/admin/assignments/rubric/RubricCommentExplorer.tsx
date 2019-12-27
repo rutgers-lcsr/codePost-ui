@@ -13,7 +13,7 @@ import { openSubmission } from '../../other/AdminUtils';
 
 import { CommentIO, CommentType } from '../../../../infrastructure/comment';
 import { File, FileType } from '../../../../infrastructure/file';
-import { RubricCommentType } from '../../../../infrastructure/rubricComment';
+import { RubricCommentType, RubricComment } from '../../../../infrastructure/rubricComment';
 import { SubmissionType } from '../../../../infrastructure/submission';
 
 import CPTooltip from '../../../../components/core/CPTooltip';
@@ -61,10 +61,10 @@ class RubricCommentExplorer extends React.Component<IProps, IState> {
     });
   }
 
-  public readComments = (rubricComment: RubricCommentType) => {
-    const linkedComments = rubricComment.comments;
+  public readComments = async (rubricComment: RubricCommentType) => {
+    const linkedComments = await RubricComment.readCommmentList(rubricComment.id);
     return Promise.all(
-      linkedComments.map((id) => {
+      linkedComments.comments.map((id) => {
         return CommentIO.read(id);
       }),
     ).then((comments) => {

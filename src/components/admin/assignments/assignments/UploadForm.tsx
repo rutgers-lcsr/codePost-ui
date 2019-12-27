@@ -7,11 +7,9 @@ import ReactMarkdown from 'react-markdown';
 
 import BlockMarkdown from '../../../core/BlockMarkdown';
 
-import JSZip from 'jszip';
-
 import { UploadFile } from 'antd/lib/upload/interface';
 
-import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile, readZipTopLevel } from './FileReader';
+import { IProtoFileUpload, fileToProtoFileUpload, readZipTopLevel } from './FileReader';
 
 const Panel = Collapse.Panel;
 const Dragger = Upload.Dragger;

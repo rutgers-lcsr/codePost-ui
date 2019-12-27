@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Divider, Form, Input, Row, Select, Tag, message, Modal, Typography, Switch, InputNumber } from 'antd';
+import { Button, Divider, Form, Input, Select, message, Modal, Typography, Switch, InputNumber } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
 /* codePost object imports */
@@ -25,6 +25,8 @@ import ExplanationModal from '../../../../assignments/rubric/ExplanationModal';
 /* codePost util imports */
 import { testTemplates, hasNativeTestSupport, extensionsByLanguage } from '../utils/languageUtils';
 
+import CPTooltip from '../../../../../core/CPTooltip';
+
 import { ILogType, RESULT_TYPE } from './PsuedoTerminal';
 
 const { confirm } = Modal;
@@ -42,6 +44,7 @@ interface ITestItemProps {
   submissions: SubmissionType[];
   setTestSubject: (id: string) => void;
   activeSubmission?: SubmissionType;
+  updateTestStatus: (testID: number, status: number) => void;
 }
 
 interface IFormValues {
@@ -133,23 +136,44 @@ export const TestItem = (props: ITestItemProps) => {
     await saveTest(values, testType, explanation, codeString);
 
     if (props.testCase.id > 0) {
-      setIsRunning(true);
-      const payload = {
-        id: props.testCase.id,
-        submission: props.activeSubmission ? props.activeSubmission.id : undefined,
-      };
-      const result = await TestCase.run(payload);
-      awaitTestResult(result.task, callback);
+      if (!props.activeSubmission && props.files.length === 0) {
+        confirm({
+          title: 'Empty Solution code',
+          content: "You haven't uploaded any solution code. Do you still want to run this test?",
+          async onOk() {
+            setIsRunning(true);
+            const result = await TestCase.run(
+              props.testCase.id,
+              props.activeSubmission ? { submission: props.activeSubmission.id.toString() } : {},
+            );
+            awaitTestResult(result.task, callback);
+          },
+        });
+      } else {
+        setIsRunning(true);
+        const result = await TestCase.run(
+          props.testCase.id,
+          props.activeSubmission ? { submission: props.activeSubmission.id.toString() } : {},
+        );
+        awaitTestResult(result.task, callback);
+      }
     }
   };
 
   const callback = (response: TestEditorResultType) => {
     const result: BasicTestResultType = response.results[0];
+
     const formatted = {
-      log: result.logs,
+      log: `${response.logs}\n${result.logs}`,
       target: props.activeSubmission ? props.activeSubmission.students[0] : 'solution code',
       result: result.passed ? RESULT_TYPE.PASSED : result.isError ? RESULT_TYPE.ERROR : RESULT_TYPE.FAILED,
+      testCaseName: props.testCase.description,
     };
+
+    // FIXME: mutating state
+    if (!props.activeSubmission) {
+      props.updateTestStatus(props.testCase.id, formatted.result);
+    }
 
     setTestOutput(formatted);
     setIsRunning(false);
@@ -302,7 +326,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
         <span style={{ ...textStyle, marginLeft: undefined }}>From</span>
         <Select disabled={this.props.isRunning} value={'io'} onChange={this.onTypeChange} style={inputStyle}>
           <Option key={'file'} value={'io'}>
-            File
+            file
           </Option>
           <Option key={'cli'} value={'io_cli'}>
             command line
@@ -318,15 +342,23 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               },
             ],
           })(
-            <Select disabled={this.props.isRunning} onChange={this.onChangeFileName} style={inputStyle}>
-              {this.props.files.map((file) => {
-                return (
-                  <Option key={file.id} value={file.name}>
-                    {file.name}
-                  </Option>
-                );
-              })}
-            </Select>,
+            this.props.files.length > 0 ? (
+              <Select disabled={this.props.isRunning} onChange={this.onChangeFileName} style={inputStyle}>
+                {this.props.files.map((file) => {
+                  return (
+                    <Option key={file.id} value={file.name}>
+                      {file.name}
+                    </Option>
+                  );
+                })}
+              </Select>
+            ) : (
+              <Input
+                onChange={(e: any) => this.onChangeFileName(e.target.value)}
+                style={inputStyle}
+                placeholder="filename"
+              />
+            ),
           )}
         </Form.Item>
         <span style={textStyle}>, &nbsp; </span>
@@ -351,7 +383,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   required: true,
                 },
               ],
-            })(<Input placeholder={'Function or Method Name'} style={inputStyle} disabled={this.props.isRunning} />)}
+            })(<Input placeholder={'function / method'} style={inputStyle} disabled={this.props.isRunning} />)}
           </Form.Item>
         )}
         <span style={textStyle}>with arguments</span>
@@ -363,7 +395,9 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 required: false,
               },
             ],
-          })(<Input placeholder={'Input'} disabled={this.props.isRunning} style={inputStyle} />)}
+          })(
+            <Input.TextArea placeholder={'input'} disabled={this.props.isRunning} style={inputStyle} autosize={true} />,
+          )}
         </Form.Item>
         <span style={textStyle}>and expect the call to</span>
         <Form.Item label="">
@@ -376,8 +410,8 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             ],
           })(
             <Select disabled={this.props.isRunning} style={inputStyle}>
-              <Option value={'return'}>Return</Option>
-              <Option value={'output'}>Output</Option>
+              <Option value={'return'}>return</Option>
+              <Option value={'output'}>output</Option>
             </Select>,
           )}
         </Form.Item>
@@ -390,7 +424,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 required: false,
               },
             ],
-          })(<Input disabled={this.props.isRunning} style={inputStyle} />)}
+          })(<Input.TextArea disabled={this.props.isRunning} style={inputStyle} autosize={true} />)}
           <span style={{ marginLeft: '1px' }}>.</span>
         </Form.Item>
       </div>
@@ -446,7 +480,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
 
     // Disable changing the test type if there is no native test support
     const hasNativeSupport = hasNativeTestSupport(this.props.language);
-    const typesWithEditDisabled = ['file', 'external'];
+    const typesWithEditDisabled = ['file'];
 
     // Get appropriate body
     let testBody;
@@ -513,22 +547,106 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   }
                   style={{ width: 200 }}
                   value={
-                    this.state.testType == 'io_cli'
+                    this.state.testType === 'io_cli'
                       ? 'io'
-                      : this.state.testType == 'file'
+                      : this.state.testType === 'file'
                       ? 'File defined'
                       : this.state.testType
                   }
                 >
-                  <Option value={'io'}>Input / Output</Option>
-                  <Option value={'shell'}>Shell Script</Option>
-                  <Option value={'unit'}>
-                    Unit Test <Tag>BETA</Tag>
-                  </Option>
+                  <Option value={'io'}>Input / Output </Option>
+                  <Option value={'shell'}>Shell Script </Option>
+                  <Option value={'unit'}>Unit Test</Option>
+                  <Option value={'external'}>External</Option>
                 </Select>
+                &nbsp;
+                <CPTooltip
+                  hideThisOnHideTips={true}
+                  title={
+                    <span>
+                      {this.state.testType === 'io' || this.state.testType === 'io_cli' ? (
+                        <span>
+                          I/O tests are basic equivalence tests comparing the output of a student's command with the
+                          expected output. To learn more, check out our guide to writing
+                          <a
+                            href="http://help.codepost.io/en/articles/3567215-writing-tests-i-o-tests"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            I/O tests.
+                          </a>
+                        </span>
+                      ) : this.state.testType === 'shell' ? (
+                        <span>
+                          Shell tests are bash script unit tests. To learn more, check out our guide to writing
+                          <a
+                            href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Shell tests.
+                          </a>
+                        </span>
+                      ) : this.state.testType === 'unit' ? (
+                        <span>
+                          Unit tests are modular functions/classes written in the environment native language. Currently
+                          only java and python are supported. To learn more, check out our guide to writing
+                          <a
+                            href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Unit tests.
+                          </a>
+                        </span>
+                      ) : this.state.testType === 'file' ? (
+                        <span>
+                          File defined tests are created from running the scripts in file mode. You can edit certain
+                          attributes of these tests (points, explanations), but there is no unique code block that maps
+                          to each test, unlike tests created from the test editor (I/O, shell, unit).
+                          <a
+                            href="http://help.codepost.io/en/articles/3553024-writing-tests-file-mode"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            tests in file mode.
+                          </a>
+                        </span>
+                      ) : this.state.testType === 'external' ? (
+                        <span>
+                          External tests designate tests whose results can only be set via the API. If you run your test
+                          scripts locally and want to set the results with the codePost api, you'll use external tests.
+                        </span>
+                      ) : (
+                        <span>
+                          To learn more, check out our guide to writing
+                          <a
+                            href="http://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            tests.
+                          </a>
+                        </span>
+                      )}
+                    </span>
+                  }
+                  infoIcon={true}
+                />
               </div>{' '}
               &nbsp; &nbsp;
-              <Form.Item label="Exposed">
+              <Form.Item
+                label={
+                  <span>
+                    Exposed{' '}
+                    <CPTooltip
+                      hideThisOnHideTips={true}
+                      title="If student upload is turned on, exposed tests will be run when students upload their submission."
+                      infoIcon={true}
+                    />
+                  </span>
+                }
+              >
                 {getFieldDecorator('exposed', {
                   initialValue: testCase.exposed,
                   valuePropName: 'checked',
@@ -560,7 +678,18 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   ],
                 })(<InputNumber />)}
               </Form.Item>
-              <Form.Item label="Explanation">
+              <Form.Item
+                label={
+                  <span>
+                    Explanation{' '}
+                    <CPTooltip
+                      hideThisOnHideTips={true}
+                      title="An explanation that should be shown to students to explain the tests. This will be shown in the test summary students see in the code console."
+                      infoIcon={true}
+                    />
+                  </span>
+                }
+              >
                 <Button icon="edit" onClick={() => this.setState({ showExplanation: true })} />
                 {this.state.showExplanation ? (
                   <ExplanationModal

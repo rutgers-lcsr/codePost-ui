@@ -27,6 +27,7 @@ import { StudentSubmissionType, Submission } from '../../infrastructure/submissi
 import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
 
 import RoleMenu from '../core/RoleMenu';
+import Referral from '../core/Referral';
 
 import { TableDetail } from '../admin/other/TableDetail';
 
@@ -660,6 +661,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
       <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}
       </span>,
+      <Referral key="referral" user={this.props.user} theme="light" />,
       <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.STUDENT} theme="light" />,
       <Link className="internal-link" key="settings" to="/settings">
         <Icon type="setting" />

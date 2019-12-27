@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 /* codePost imports */
 import { AssignmentType, SubmissionTestType, TestCategoryType } from '../../../infrastructure/types';
 import { SubmissionTest } from '../../../infrastructure/submissionTest';
-import { TestCasesByCategory } from '../../core/testFetchUtils';
+import { TestCasesByCategory, StudentTestCasesByCategory } from '../../core/testFetchUtils';
 
 import { BasicTestResultType } from '../../../infrastructure/autograder/runTypes';
 import Badge from '../../core/Badge';
@@ -23,18 +23,22 @@ import { CourseContext } from '../../core/Contexts';
 
 import { encodeForLink } from '../../core/URLutils';
 
+import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
+
 /**********************************************************************************************************************/
 
 interface IProps {
   tests: SubmissionTestType[] | BasicTestResultType[];
-  cases: TestCasesByCategory;
+  cases: TestCasesByCategory | StudentTestCasesByCategory;
   categories: TestCategoryType[];
   isOpen: boolean;
   assignment: AssignmentType;
   showLink?: boolean;
+  emptyMessage: string;
 }
 
 const TestsMenu = (props: IProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
   // Index tests by testCategory to access their data more easily when we loop
   // over testCategories below
   const testsByCategory = {} as { [id: number]: BasicTestResultType[] | SubmissionTestType[] };
@@ -84,12 +88,6 @@ const TestsMenu = (props: IProps) => {
       }
     }
 
-    const badgeStyle = {
-      fontSize: 10,
-      padding: '0 2px',
-      opacity: props.isOpen ? 1 : 0.7,
-    };
-
     return {
       category: (
         <span>
@@ -112,12 +110,37 @@ const TestsMenu = (props: IProps) => {
         backgroundColor: props.isOpen ? '#f0fff7' : undefined,
       }}
     >
-      <div style={{ fontSize: 12, overflowX: 'auto' }}>
+      <div
+        className={`tests-menu${consoleTheme === consoleThemes.dark ? '--dark' : ''}`}
+        style={{ fontSize: 12, overflowX: 'auto', color: consoleTheme.text }}
+      >
         {props.categories.length > 0 ? (
           <Table dataSource={data} columns={columns} size="small" pagination={false} bordered={false} />
         ) : (
           <span>
-            Soon you’ll be able to show test output and run tests on student code using codePost! Ask us for access.
+            {props.emptyMessage}
+            {props.showLink ? (
+              <span>
+                {' '}
+                You can do so from the{' '}
+                <CourseContext.Consumer>
+                  {(course) => (
+                    <span>
+                      <Link
+                        to={`/admin/${encodeForLink(course.name)}/${encodeForLink(
+                          course.period,
+                        )}/assignments/tests/${encodeForLink(props.assignment.name)}/edit`}
+                      >
+                        Admin Console
+                      </Link>
+                      .
+                    </span>
+                  )}
+                </CourseContext.Consumer>
+              </span>
+            ) : (
+              ''
+            )}
           </span>
         )}
       </div>
