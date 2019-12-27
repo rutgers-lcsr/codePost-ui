@@ -154,6 +154,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         });
       }
 
+      if (this.props.rubricComment) {
+        if (this.props.rubricComment.instructionText && this.props.rubricComment.templateTextOn)
+          this.setState({ text: this.props.rubricComment.instructionText });
+      }
+
       this.props.setCommentPlacements();
       this.resetSaveTimeOut();
     }
@@ -650,6 +655,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
             id="comment-text-area"
             autosize
             className="comment__text-area"
+            placeholder={
+              this.props.rubricComment && !this.props.rubricComment.templateTextOn
+                ? this.props.rubricComment.instructionText
+                : undefined
+            }
             value={this.state.text}
             onChange={this.onChangeText}
             onPressEnter={this.handleShiftEnter}

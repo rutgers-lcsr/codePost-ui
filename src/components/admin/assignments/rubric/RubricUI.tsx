@@ -59,11 +59,13 @@ const RubricUI = ({
   const [showPointLimits, setShowPointLimits] = React.useState(false);
   const [showHelpText, setShowHelpText] = React.useState(false);
   const [showExplanations, setShowExplanations] = React.useState(false);
+  const [showInstructions, setShowInstructions] = React.useState(false);
   const [showAtMostOnce, setShowAtMostOnce] = React.useState(false);
 
   const [showPointLimitCheckbox, setShowPointLimitCheckbox] = React.useState(true);
   const [showHelpTextCheckbox, setShowHelpTextCheckbox] = React.useState(true);
   const [showExplanationsCheckbox, setShowExplanationsCheckbox] = React.useState(true);
+  const [showInstructionsCheckbox, setShowInstructionsCheckbox] = React.useState(true);
   const [showAtMostOnceCheckbox, setShowAtMostOnceCheckbox] = React.useState(true);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -88,6 +90,11 @@ const RubricUI = ({
         if (!showExplanations && rc.explanation) {
           setShowExplanations(true);
           setShowExplanationsCheckbox(false);
+        }
+
+        if (!showInstructions && rc.instructionText) {
+          setShowInstructions(true);
+          setShowInstructionsCheckbox(false);
         }
       }
     }
@@ -130,6 +137,7 @@ const RubricUI = ({
             showPointLimits={showPointLimits}
             showHelpText={showHelpText}
             showExplanations={showExplanations}
+            showInstructions={showInstructions}
             showAtMostOnce={showAtMostOnce}
             instanceLists={state.instanceLists}
           >
@@ -217,6 +225,10 @@ const RubricUI = ({
       setShowExplanations(!showExplanations);
     };
 
+    const toggleShowInstructions = () => {
+      setShowInstructions(!showInstructions);
+    };
+
     const toggleShowAtMostOnce = () => {
       setShowAtMostOnce(!showAtMostOnce);
     };
@@ -251,6 +263,17 @@ const RubricUI = ({
               Show explanation editors <Checkbox checked={showExplanations} onChange={toggleShowExplanations} />{' '}
               <CPTooltip
                 title={tooltips.admin.rubric.explanations}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
+          ) : null}
+          {showInstructionsCheckbox ? (
+            <div>
+              Show instruction editors <Checkbox checked={showInstructions} onChange={toggleShowInstructions} />{' '}
+              <CPTooltip
+                title={`An optional textarea that allows you to give graders instructions for personalizing a rubric comment.`}
                 infoIcon={true}
                 hideThisOnHideTips={true}
                 iconStyle={{ paddingLeft: 5 }}

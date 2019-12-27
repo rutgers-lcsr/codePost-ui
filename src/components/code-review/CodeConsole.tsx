@@ -1304,6 +1304,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       timezone: moment.tz.guess(),
       emailNewUsers: false,
       anonymousGradingDefault: false,
+      minComments: 0,
+      noUnfinalize: false,
     };
 
     const demoSubmission: AnonymousSubmissionType = {
@@ -1382,6 +1384,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           pointDelta: 1,
           sortKey: 0,
           explanation: '',
+          instructionText: '',
+          templateTextOn: false,
         },
         {
           id: 2,
@@ -1390,6 +1394,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           pointDelta: 1,
           sortKey: 1,
           explanation: '',
+          instructionText: '',
+          templateTextOn: false,
         },
         {
           id: 3,
@@ -1398,6 +1404,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           pointDelta: 1,
           sortKey: 2,
           explanation: '',
+          instructionText: '',
+          templateTextOn: false,
         },
       ],
       2: [
@@ -1408,6 +1416,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           pointDelta: 2,
           sortKey: 0,
           explanation: '',
+          instructionText: '',
+          templateTextOn: false,
         },
         {
           id: 5,
@@ -1416,6 +1426,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           pointDelta: 1,
           sortKey: 0,
           explanation: '',
+          instructionText: '',
+          templateTextOn: false,
         },
       ],
     };
@@ -1893,6 +1905,9 @@ IndexError: list index out of range`,
             key="subheader-finalize"
             submission={this.state.submission!}
             toggleFinalized={this.toggleFinalized}
+            numComments={Object.values(this.state.comments).flat().length}
+            minComments={this.state.course!.minComments}
+            canUnfinalize={true}
           />,
         ];
       } else if (this.state.permissionLevel === PERMISSION_LEVEL.READ) {
@@ -2050,6 +2065,9 @@ IndexError: list index out of range`,
             key="subheader-finalize"
             submission={this.state.submission!}
             toggleFinalized={this.toggleFinalized}
+            numComments={Object.values(this.state.comments).flat().length}
+            minComments={this.state.course!.minComments}
+            canUnfinalize={!this.state.course!.noUnfinalize || this.isCourseAdmin(this.state.assignment)}
           />,
         ];
 

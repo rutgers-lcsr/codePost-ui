@@ -242,9 +242,13 @@ export const Controls = (props: IControlsProps) => {
 };
 
 /**********************************************************************************************/
+
 interface IFinalizeButtonProps {
   submission: AnonymousSubmissionType;
   toggleFinalized: () => void;
+  numComments: number;
+  minComments: number;
+  canUnfinalize: boolean;
 }
 
 export const FinalizeButton = (props: IFinalizeButtonProps) => {
@@ -261,9 +265,41 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
     setNudge(false);
   };
 
+  const isFinalized = props.submission.isFinalized;
+
   const onClick = async () => {
+    if (isFinalized) {
+      if (props.canUnfinalize) {
+        executeToggle();
+      } else {
+        message.warning("You aren't able to unfinalize this submission.");
+      }
+    } else {
+      if (props.minComments > 0 && props.numComments < props.minComments) {
+        Modal.confirm({
+          title: `This submission has fewer than ${props.minComments} comments applied.`,
+          content: `Are you sure you want to finalize it? Submissions with fewer than ${props.minComments} comments will be flagged for quality control.`,
+          onOk() {
+            return finalize();
+          },
+        });
+      } else {
+        finalize();
+      }
+    }
+  };
+
+  const executeToggle = async () => {
     await props.toggleFinalized();
     setIsLoading(false);
+  };
+
+  const finalize = () => {
+    if (!props.submission.grader) {
+      message.warning('You must assign a grader before finalizing this submission.');
+    } else {
+      executeToggle();
+    }
   };
 
   useHotkeys(F_KEY, onClick, true);
@@ -303,19 +339,23 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
     };
   }, [props.submission]);
 
-  const isFinalized = props.submission.isFinalized;
-
   const finalizeNotice =
     props.submission.grader === null ? 'Assign a grader to this submission before finalizing it.' : null;
 
-  const toggleNotice =
-    finalizeNotice !== null
-      ? finalizeNotice
-      : !showTooltips
-      ? null
-      : props.submission.isFinalized
-      ? `This submission is finalized. Unfinalize to modify it. [${osControlKey()} shift f]`
-      : `This submission is unfinalized. Finalize it to mark it as complete. [${osControlKey()} shift f]`;
+  let toggleNotice;
+  if (isFinalized) {
+    if (props.canUnfinalize) {
+      toggleNotice = `This submission is finalized. Unfinalize to modify it. [${osControlKey()} shift f]`;
+    } else {
+      toggleNotice = "You aren't able to unfinalize this submission. Please contact an admin if you made a mistake";
+    }
+  } else {
+    if (!props.submission.grader) {
+      toggleNotice = `You must assign a grader before finalizing this submission.`;
+    } else {
+      toggleNotice = `This submission is unfinalized. Finalize it to mark it as complete. [${osControlKey()} shift f]`;
+    }
+  }
 
   return (
     <div ref={ref} id="submission-status-toggle" className={nudge ? 'wiggle' : ''}>
@@ -325,7 +365,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
         <Switch
           checked={isFinalized}
           onClick={onClick}
-          disabled={!isFinalized && props.submission.grader === null}
+          disabled={props.submission.grader === null || (isFinalized && !props.canUnfinalize)}
           loading={isLoading}
         />
       </CPTooltip>

@@ -87,6 +87,7 @@ export interface IRubricCategoryManagerProps extends IWithWindowWatcherProps {
   showPointLimits: boolean;
   showHelpText: boolean;
   showExplanations: boolean;
+  showInstructions: boolean;
   showAtMostOnce: boolean;
 
   children: (params: IRubricCategoryManagerParams) => React.ReactNode;
@@ -395,7 +396,13 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
       const payload: RubricCommentType = { ...rubricComment };
       this.props.updateComment(payload);
 
-      if (text !== match.text || pointDelta !== match.pointDelta || rubricComment.explanation !== match.explanation) {
+      if (
+        text !== match.text ||
+        pointDelta !== match.pointDelta ||
+        rubricComment.explanation !== match.explanation ||
+        rubricComment.instructionText !== match.instructionText ||
+        rubricComment.templateTextOn !== match.templateTextOn
+      ) {
         const hasCurrentError = this.state.hasError || this.state.hasCommentError;
         if (hasCurrentError && !this.state.hasError && valid) {
           // moving from error state to safe state
@@ -424,8 +431,20 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
       if (savedRubricComment) {
         const status = this.state.rubricCommentStatus[rubricComment.id];
         const newStatus = statusChange(
-          [savedRubricComment.text, savedRubricComment.pointDelta, savedRubricComment.explanation],
-          [localRubricComment.text, localRubricComment.pointDelta, localRubricComment.explanation],
+          [
+            savedRubricComment.text,
+            savedRubricComment.pointDelta,
+            savedRubricComment.explanation,
+            savedRubricComment.instructionText,
+            savedRubricComment.templateTextOn,
+          ],
+          [
+            localRubricComment.text,
+            localRubricComment.pointDelta,
+            localRubricComment.explanation,
+            localRubricComment.instructionText,
+            localRubricComment.templateTextOn,
+          ],
           status,
         );
         if (newStatus !== status) {
@@ -456,6 +475,7 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
           [key]: event,
         };
         break;
+      case 'boolean':
       case 'string':
         if (key !== 'pointDelta') {
           rubricComments[rubricCommentID] = {

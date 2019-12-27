@@ -13,6 +13,8 @@ export const defaultCourse: CourseType = {
   timezone: 'US/Eastern',
   emailNewUsers: false,
   anonymousGradingDefault: false,
+  minComments: 0,
+  noUnfinalize: false,
 };
 
 export const CourseContext = React.createContext<CourseType>(defaultCourse);
