@@ -192,7 +192,13 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     return (
       <div className="natural-language-form" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
         <span style={{ ...textStyle, marginLeft: undefined }}>From</span>
-        <Radio.Group value={'io'} onChange={this.onTypeChangeRadio} buttonStyle="solid" style={radioGroupStyle}>
+        <Radio.Group
+          disabled={this.props.isRunning}
+          value={'io'}
+          onChange={this.onTypeChangeRadio}
+          buttonStyle="solid"
+          style={radioGroupStyle}
+        >
           <Radio.Button key={'file'} value={'io'} style={{ ...radioButtonStyle }}>
             File
           </Radio.Button>
@@ -237,7 +243,11 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   required: true,
                 },
               ],
-            })(<Select style={inputStyle}>{functionOptions}</Select>)}
+            })(
+              <Select disabled={this.props.isRunning} style={inputStyle}>
+                {functionOptions}
+              </Select>,
+            )}
           </Form.Item>
         ) : (
           <Form.Item label="">
