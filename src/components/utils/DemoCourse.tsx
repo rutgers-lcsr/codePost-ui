@@ -126,6 +126,7 @@ const createAssignment = async (course: CourseType, assignment: any) => {
       dumpMode: false,
       testParsing: true,
       compileText: '',
+      buildType: 'default',
     };
     const thisEnvironment = await Environment.create(payload);
 
@@ -133,6 +134,7 @@ const createAssignment = async (course: CourseType, assignment: any) => {
       id: thisEnvironment.id,
       dependencies: [],
       language: 'java',
+      buildType: 'default',
     });
 
     // Create rubric
