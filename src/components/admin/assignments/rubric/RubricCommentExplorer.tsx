@@ -14,7 +14,7 @@ import { openSubmission } from '../../other/AdminUtils';
 import { CommentIO, CommentType } from '../../../../infrastructure/comment';
 import { File, FileType } from '../../../../infrastructure/file';
 import { RubricCommentType, RubricComment } from '../../../../infrastructure/rubricComment';
-import { SubmissionType } from '../../../../infrastructure/submission';
+import { Submission, SubmissionInfoType } from '../../../../infrastructure/submission';
 
 import CPTooltip from '../../../../components/core/CPTooltip';
 
@@ -24,7 +24,7 @@ interface IProps {
   rubricComment: RubricCommentType;
   closeCommentExplorer: () => void;
   isVisible: boolean;
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
 }
 
 interface IState {
@@ -76,10 +76,8 @@ class RubricCommentExplorer extends React.Component<IProps, IState> {
     return Promise.all(
       comments.map((comm) => {
         const fileID = comm.file;
-        return File.read(fileID).then((file: FileType) => {
-          const sub = this.props.submissions.find((el) => {
-            return el.files.includes(file.id);
-          });
+        return File.read(fileID).then(async (file: FileType) => {
+          const sub = await Submission.read(file.submission);
           return [comm.id, file.name, file.submission, sub ? sub.students : []];
         });
       }),

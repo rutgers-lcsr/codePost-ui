@@ -11,7 +11,7 @@ import { RouteComponentProps } from 'react-router';
 /* codePost imports */
 import { Assignment, AssignmentType, sortAssignments } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
-import { AnonymousSubmissionType } from '../../infrastructure/submission';
+import { AnonymousSubmissionInfoType } from '../../infrastructure/submission';
 
 import MySubmissionsPanelDetail from './MySubmissionsPanelDetail';
 
@@ -29,49 +29,7 @@ interface IProps extends RouteComponentProps {
   isAdmin: boolean;
 }
 
-interface IState {
-  submissionsByAssignment: { [id: number]: AnonymousSubmissionType[] };
-  isLoading: boolean;
-}
-
-class MySubmissionsPanel extends React.Component<IProps, IState> {
-  public constructor(props: IProps) {
-    super(props);
-    this.state = {
-      isLoading: true,
-      submissionsByAssignment: [],
-    };
-  }
-
-  public componentDidMount() {
-    this.loadSubmissions(this.props.assignments, this.props.graderEmail);
-  }
-
-  public componentDidUpdate(oldProps: IProps) {
-    if (oldProps.assignments !== this.props.assignments) {
-      this.loadSubmissions(this.props.assignments, this.props.graderEmail);
-    }
-  }
-
-  public loadSubmissions = (assignments: AssignmentType[], grader: string) => {
-    this.setState({ isLoading: true }, () => {
-      const toRet = [];
-      for (const assn of assignments) {
-        toRet.push(Assignment.readSubmissionsAnonymous(assn.id, { grader }));
-      }
-
-      Promise.all(toRet).then((lists) => {
-        const mapper: { [id: number]: AnonymousSubmissionType[] } = {};
-        for (const list of lists) {
-          if (list.length > 0) {
-            mapper[list[0].assignment] = list;
-          }
-        }
-        this.setState({ submissionsByAssignment: mapper, isLoading: false });
-      });
-    });
-  };
-
+class MySubmissionsPanel extends React.Component<IProps, {}> {
   public render() {
     const centerAlign: alignType = 'center';
     const columns = [
@@ -101,20 +59,15 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
       },
     ];
 
-    const submissions = this.state.submissionsByAssignment;
     const data = sortAssignments(this.props.assignments).map((assignment) => {
-      const list = assignment.id in submissions ? submissions[assignment.id] : [];
-      const numFinalized = list.filter((sub) => sub.isFinalized).length;
       return {
         key: assignment.id,
         assignment: assignment.name,
-        submissions: list.length,
-        finalized: numFinalized,
+        submissions: assignment.submissions_count,
+        finalized: assignment.submissions_finalized_count,
         grade:
-          numFinalized > 0
-            ? `${(list.reduce((acc, sub) => (sub.isFinalized ? sub.grade! + acc : acc), 0) / numFinalized).toFixed(
-                1,
-              )}/${assignment.points}`
+          assignment.stats_mean && assignment.submissions_count && assignment.submissions_count > 0
+            ? `${assignment.stats_mean.toFixed(1)}/${assignment.points}`
             : '--',
       };
     });
@@ -132,7 +85,7 @@ class MySubmissionsPanel extends React.Component<IProps, IState> {
         graderEmail={this.props.graderEmail}
         data={data}
         columns={columns}
-        isLoading={this.state.isLoading}
+        isLoading={false}
       />
     );
   }

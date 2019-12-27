@@ -15,7 +15,7 @@ import { RouteComponentProps } from 'react-router';
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { SectionType } from '../../infrastructure/section';
-import { SubmissionType } from '../../infrastructure/submission';
+import { SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
 
 import SectionDetailPanel from './SectionDetailPanel';
 import GraderPanelBuilder from './GraderPanel';
@@ -35,7 +35,7 @@ interface IProps extends RouteComponentProps {
 }
 
 interface IState {
-  submissionsByAssignment: { [id: number]: SubmissionType[] };
+  submissionsByAssignment: { [id: number]: SubmissionInfoType[] };
   activeSection: SectionType;
   isLoading: boolean;
 }
@@ -54,7 +54,7 @@ class SectionPanel extends React.Component<IProps, IState> {
     this.loadSubmissions(this.props.assignments, this.state.activeSection);
   }
 
-  public componentDidUpdate(oldProps: IProps) {
+  public componentDidUpdate(oldProps: IProps, prevState: IState) {
     if (oldProps.assignments !== this.props.assignments) {
       this.loadSubmissions(this.props.assignments, this.state.activeSection);
     }
@@ -62,11 +62,11 @@ class SectionPanel extends React.Component<IProps, IState> {
 
   public loadSubmissions = async (assignments: AssignmentType[], section: SectionType) => {
     this.setState({ isLoading: true }, async () => {
-      const toRet: SubmissionType[][] = [];
+      const toRet: SubmissionInfoType[][] = [];
       for (const assn of assignments) {
         toRet[assn.id] = [];
         for (const stu of section.students) {
-          const value = await Assignment.readSubmissions(assn.id, { student: stu });
+          const value = await Assignment.readSubmissions(assn.id, { student: stu, ['compact']: '1' });
           if (value.length > 0) {
             toRet[assn.id].push(value[0]);
           }

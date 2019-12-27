@@ -11,7 +11,7 @@ import { RouteComponentProps } from 'react-router';
 /* codePost imports */
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
-import { SubmissionType } from '../../infrastructure/submission';
+import { SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
 
 import ViewAllDetailPanel from './ViewAllDetailPanel';
 import GraderPanelBuilder from './GraderPanel';
@@ -26,49 +26,7 @@ interface IProps extends RouteComponentProps {
   course: CourseType;
 }
 
-interface IState {
-  submissionsByAssignment: { [id: number]: SubmissionType[] };
-  isLoading: boolean;
-}
-
-class ViewAllPanel extends React.Component<IProps, IState> {
-  public constructor(props: IProps) {
-    super(props);
-    this.state = {
-      submissionsByAssignment: [],
-      isLoading: true,
-    };
-  }
-
-  public componentDidMount() {
-    this.loadSubmissions(this.props.assignments);
-  }
-
-  public componentDidUpdate(oldProps: IProps) {
-    if (oldProps.assignments !== this.props.assignments) {
-      this.loadSubmissions(this.props.assignments);
-    }
-  }
-
-  public loadSubmissions = (assignments: AssignmentType[]) => {
-    this.setState({ isLoading: true }, () => {
-      const toRet = [];
-      for (const assn of assignments) {
-        toRet.push(Assignment.readSubmissions(assn.id));
-      }
-
-      Promise.all(toRet).then((lists) => {
-        const mapper: { [id: number]: SubmissionType[] } = {};
-        for (const list of lists) {
-          if (list.length > 0) {
-            mapper[list[0].assignment] = list;
-          }
-        }
-        this.setState({ submissionsByAssignment: mapper, isLoading: false });
-      });
-    });
-  };
-
+class ViewAllPanel extends React.Component<IProps, {}> {
   public render() {
     const centerAlign: alignType = 'center';
     const columns = [
@@ -98,20 +56,18 @@ class ViewAllPanel extends React.Component<IProps, IState> {
       },
     ];
 
-    const submissions = this.state.submissionsByAssignment;
     const data = this.props.assignments.map((assignment) => {
-      const list = assignment.id in submissions ? submissions[assignment.id] : [];
-      const numFinalized = list.filter((sub) => sub.isFinalized).length;
       return {
         key: assignment.id,
         assignment: assignment.name,
-        claimed: list.length,
-        finalized: numFinalized,
+        claimed:
+          assignment.submissions_inprogress_count && assignment.submissions_finalized_count
+            ? assignment.submissions_inprogress_count + assignment.submissions_finalized_count
+            : 0,
+        finalized: assignment.submissions_finalized_count,
         grade:
-          numFinalized > 0
-            ? `${(list.reduce((acc, sub) => (sub.isFinalized ? sub.grade! + acc : acc), 0) / numFinalized).toFixed(
-                1,
-              )}/${assignment.points}`
+          assignment.stats_mean && assignment.submissions_finalized_count && assignment.submissions_finalized_count > 0
+            ? `${assignment.stats_mean.toFixed(1)}/${assignment.points}`
             : '--',
       };
     });
@@ -127,7 +83,7 @@ class ViewAllPanel extends React.Component<IProps, IState> {
         title="View All"
         data={data}
         columns={columns}
-        isLoading={this.state.isLoading}
+        isLoading={false}
       />
     );
   }

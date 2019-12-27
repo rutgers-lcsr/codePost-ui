@@ -144,6 +144,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
       if (assignment.isReleased || assignment.allowStudentUpload || assignment.liveFeedbackMode) {
         submissions[assignment.id] = await AssignmentStudent.readSubmissions(assignment.id, {
           student: this.props.user.email,
+          ['compact']: '1',
         });
       }
     }

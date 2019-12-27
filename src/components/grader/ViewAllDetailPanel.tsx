@@ -15,7 +15,7 @@ import { Course, CourseType } from '../../infrastructure/course';
 import CPTooltip from '../core/CPTooltip';
 import { tooltips } from '../core/tooltips';
 
-import { SubmissionType } from '../../infrastructure/submission';
+import { SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
 import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 
 import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
@@ -38,7 +38,7 @@ interface IViewAllProps {
 
 interface IViewAllState {
   graders: string[];
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
   selectedGraders: string[];
   isLoading: boolean;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
@@ -52,6 +52,9 @@ interface ITableRow extends ISubDataBasic {
 }
 
 class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
+  private timer: any;
+  private times: any = [];
+
   public state: Readonly<IViewAllState> = {
     graders: [],
     submissions: [],
@@ -64,7 +67,7 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
   public async initialLoad() {
     this.setState({ isLoading: true });
     const [submissions, viewsBySubmission, roster] = await Promise.all([
-      await Assignment.readSubmissions(this.props.assignment.id),
+      await Assignment.readSubmissions(this.props.assignment.id, { ['compact']: '1' }),
       await this.loadSubmissionsViews(),
       await Course.readRoster(this.props.course.id),
     ]);
@@ -78,12 +81,22 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
   }
 
   public componentDidMount() {
+    this.timer = Date.now();
+
     this.initialLoad();
   }
 
-  public componentDidUpdate(oldProps: IViewAllProps) {
+  public componentDidUpdate(oldProps: IViewAllProps, prevState: IViewAllState) {
     if (oldProps.assignment !== this.props.assignment) {
       this.initialLoad();
+    }
+
+    if (prevState.isLoading && !this.state.isLoading) {
+      const current = Date.now() - this.timer;
+
+      this.times = [...this.times, current];
+      console.log('SUBMISSIONS COMPLETE: ', current);
+      console.log(this.times.join('|'));
     }
   }
 
@@ -120,7 +133,7 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
     this.setState({ selectedGraders: newGraders });
   };
 
-  public openGradePage = (submission: SubmissionType) => {
+  public openGradePage = (submission: SubmissionInfoType) => {
     window.open(`/code/${submission.id}`);
   };
 

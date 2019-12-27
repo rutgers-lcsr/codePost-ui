@@ -44,7 +44,7 @@ import { File } from '../../infrastructure/file';
 import { RubricCategory } from '../../infrastructure/rubricCategory';
 import { RubricComment } from '../../infrastructure/rubricComment';
 import { Section, SectionType } from '../../infrastructure/section';
-import { Submission, SubmissionType } from '../../infrastructure/submission';
+import { Submission, SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
 import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 import { addToPayload } from '../../infrastructure/utils';
 
@@ -100,8 +100,13 @@ const formatCourseURL = (course: CourseType) => {
 };
 
 class Admin extends React.Component<IComponentProps, IAdminState> {
+  private timer: any;
+  private times: any = [];
+
   public constructor(props: IComponentProps) {
     super(props);
+
+    this.timer = Date.now();
 
     if (this.props.currentCourse) {
       this.loadAllCourseData(this.props.currentCourse);
@@ -149,6 +154,44 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     document.title = 'codePost - Admin Console';
   }
 
+  public componentDidUpdate = (prevProps: any, prevState: any) => {
+    if (!prevState.submissionsLoadComplete && this.state.submissionsLoadComplete) {
+      const current = Date.now() - this.timer;
+
+      this.times = [...this.times, current];
+      console.log('SUBMISSIONS COMPLETE: ', current);
+      console.log(this.times.join('|'));
+    }
+
+    if (!prevState.rosterLoadComplete && this.state.rosterLoadComplete) {
+      const current = Date.now() - this.timer;
+      this.times = [...this.times, current];
+      console.log('ROSTER COMPLETE: ', current);
+      console.log(this.times.join('|'));
+    }
+
+    if (!prevState.sectionsLoadComplete && this.state.sectionsLoadComplete) {
+      const current = Date.now() - this.timer;
+      this.times = [...this.times, current];
+      console.log('SECTIONS COMPLETE: ', current);
+      console.log(this.times.join('|'));
+    }
+
+    if (!prevState.assignmentsLoadComplete && this.state.assignmentsLoadComplete) {
+      const current = Date.now() - this.timer;
+      this.times = [...this.times, current];
+      console.log('ASSIGNMENTS COMPLETE: ', current);
+      console.log(this.times.join('|'));
+    }
+
+    if (!prevState.submissionsbyUserLoadComplete && this.state.submissionsbyUserLoadComplete) {
+      const current = Date.now() - this.timer;
+      this.times = [...this.times, current];
+      console.log('SUBMISSIONS BY USER COMPLETE: ', current);
+      console.log(this.times.join('|'));
+    }
+  };
+
   /***********************************************************************************
   /* URL + UI handling methods
   /**********************************************************************************/
@@ -195,43 +238,55 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   /* objects.
   /**********************************************************************************/
   public loadAllCourseData = (course: CourseType) => {
-    this.loadAssignments(course).then((assignments) => {
-      // use currentCourse as a nonce to see if this request is still desired
-      if (this.props.currentCourse !== course) {
-        return;
-      }
-      if (this.state.submissionsLoadComplete && this.state.rosterLoadComplete) {
-        this.updateSubmissionsByUser(undefined, undefined, assignments, () => {
-          this.setState({ assignments, assignmentsLoadComplete: true });
-        });
-      } else {
-        this.setState({ assignments, assignmentsLoadComplete: true });
-      }
-    });
-
-    this.loadSubmissions(course).then((submissionList) => {
-      // use currentCourse as a nonce to see if this request is still desired
-      if (this.props.currentCourse !== course) {
-        return;
-      }
-      const submissionMap: any = {};
-      submissionList.forEach((submissionObj) => {
-        submissionMap[submissionObj.assignment] = submissionObj.submissions;
-      });
-      if (this.state.assignmentsLoadComplete && this.state.rosterLoadComplete) {
-        this.updateSubmissionsByUser(undefined, submissionMap, undefined, () => {
-          this.setState({
-            submissions: submissionMap,
-            submissionsLoadComplete: true,
+    this.loadAssignments(course)
+      .then((assignments) => {
+        // use currentCourse as a nonce to see if this request is still desired
+        if (this.props.currentCourse !== course) {
+          return;
+        }
+        if (this.state.submissionsLoadComplete && this.state.rosterLoadComplete) {
+          this.updateSubmissionsByUser(undefined, undefined, assignments, () => {
+            this.setState({ assignments, assignmentsLoadComplete: true });
           });
+        } else {
+          this.setState({ assignments, assignmentsLoadComplete: true });
+        }
+
+        console.log('assignments', assignments);
+      })
+      .then(() => {
+        this.loadSubmissions(course).then((submissionList) => {
+          // use currentCourse as a nonce to see if this request is still desired
+          if (this.props.currentCourse !== course) {
+            return;
+          }
+          const submissionMap: any = {};
+          submissionList.forEach((submissionObj) => {
+            submissionMap[submissionObj.assignment] = submissionObj.submissions;
+          });
+          if (this.state.assignmentsLoadComplete && this.state.rosterLoadComplete) {
+            this.updateSubmissionsByUser(undefined, submissionMap, undefined, () => {
+              this.setState({
+                submissions: submissionMap,
+                submissionsLoadComplete: true,
+              });
+            });
+          } else {
+            this.setState({
+              submissions: submissionMap,
+              submissionsLoadComplete: true,
+            });
+          }
         });
-      } else {
-        this.setState({
-          submissions: submissionMap,
-          submissionsLoadComplete: true,
+
+        this.loadViewsBySubmission(course).then((viewHistoryLists) => {
+          if (this.props.currentCourse !== course) {
+            return;
+          }
+          const viewsBySubmission = this.generateViewsBySubmissions(viewHistoryLists);
+          this.setState({ viewsBySubmission });
         });
-      }
-    });
+      });
 
     this.loadRoster(course).then((roster) => {
       // use currentCourse as a nonce to see if this request is still desired
@@ -277,14 +332,6 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
         sectionsLoadComplete: true,
       });
     });
-
-    this.loadViewsBySubmission(course).then((viewHistoryLists) => {
-      if (this.props.currentCourse !== course) {
-        return;
-      }
-      const viewsBySubmission = this.generateViewsBySubmissions(viewHistoryLists);
-      this.setState({ viewsBySubmission });
-    });
   };
 
   public loadAssignments = (course: CourseType) => {
@@ -297,7 +344,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   public loadSubmissions = (course: CourseType) => {
     return Promise.all(
       course.assignments.map((assignmentID) => {
-        return Assignment.readSubmissions(assignmentID).then((subs: SubmissionType[]) => {
+        return Assignment.readSubmissions(assignmentID, { ['compact']: '1' }).then((subs: SubmissionInfoType[]) => {
           return {
             assignment: assignmentID,
             submissions: subs,
@@ -1136,17 +1183,18 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
               />
             )}
           />
+          {/*          loadComplete={
+                  this.state.submissionsLoadComplete &&
+                  this.state.assignmentsLoadComplete &&
+                  this.state.submissionsbyUserLoadComplete
+                }*/}
           <Route
             path={`${this.props.match.url}/assignments`}
             render={(props: any) => (
               <ManageAssignments
                 {...props}
                 key="assignments"
-                loadComplete={
-                  this.state.submissionsLoadComplete &&
-                  this.state.assignmentsLoadComplete &&
-                  this.state.submissionsbyUserLoadComplete
-                }
+                loadComplete={this.state.assignmentsLoadComplete}
                 submissions={this.state.submissions}
                 currentCourse={this.props.currentCourse}
                 assignments={this.state.assignments}

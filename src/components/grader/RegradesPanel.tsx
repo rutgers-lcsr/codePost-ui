@@ -15,7 +15,7 @@ import { RouteComponentProps } from 'react-router';
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { UserType } from '../../infrastructure/user';
-import { SubmissionType } from '../../infrastructure/submission';
+import { SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
 
 import RegradesDetailPanel from './RegradesDetailPanel';
 
@@ -37,7 +37,7 @@ interface IProps extends RouteComponentProps {
 }
 
 interface IState {
-  submissionsByAssignment: { [id: number]: SubmissionType[] };
+  submissionsByAssignment: { [id: number]: SubmissionInfoType[] };
   isLoading: boolean;
   viewAll: boolean;
 }
@@ -67,14 +67,14 @@ class RegradesPanel extends React.Component<IProps, IState> {
       const toRet = [];
       for (const assn of assignments) {
         if (grader !== undefined) {
-          toRet.push(Assignment.readSubmissions(assn.id, { grader }));
+          toRet.push(Assignment.readSubmissions(assn.id, { grader, ['compact']: '1' }));
         } else {
-          toRet.push(Assignment.readSubmissions(assn.id));
+          toRet.push(Assignment.readSubmissions(assn.id, { ['compact']: '1' }));
         }
       }
 
       Promise.all(toRet).then((lists) => {
-        const mapper: { [id: number]: SubmissionType[] } = {};
+        const mapper: { [id: number]: SubmissionInfoType[] } = {};
         for (const list of lists) {
           if (list.length > 0) {
             mapper[list[0].assignment] = list;

@@ -14,7 +14,7 @@ import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtil
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { SectionType } from '../../infrastructure/section';
-import { Submission, SubmissionType } from '../../infrastructure/submission';
+import { Submission, SubmissionInfoType } from '../../infrastructure/submission';
 
 import { tooltips } from '../core/tooltips';
 
@@ -48,7 +48,7 @@ interface IState {
   /* data */
   activeSection: SectionType;
   submissionsBySection: {
-    [sectionID: number]: { [student: string]: SubmissionType | null };
+    [sectionID: number]: { [student: string]: SubmissionInfoType | null };
   };
   // Map: key = id, value = array of student emails who have viewed the submission
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
@@ -114,15 +114,16 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     for (const section of this.props.sections) {
       const mapValue: any = {};
       for (const student of section.students) {
-        mapValue[student] = await Assignment.readSubmissionsStudent(this.props.assignment.id, { student }).then(
-          (submissions) => {
-            if (submissions.length === 0) {
-              return null;
-            } else {
-              return submissions[0];
-            }
-          },
-        );
+        mapValue[student] = await Assignment.readSubmissions(this.props.assignment.id, {
+          student,
+          ['compact']: '1',
+        }).then((submissions) => {
+          if (submissions.length === 0) {
+            return null;
+          } else {
+            return submissions[0];
+          }
+        });
       }
       submissionMap[section.id] = mapValue;
     }
@@ -174,7 +175,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     }
   };
 
-  public openGradePage = (submission: SubmissionType) => {
+  public openGradePage = (submission: SubmissionInfoType) => {
     window.open(`/code/${submission.id}`);
   };
 
