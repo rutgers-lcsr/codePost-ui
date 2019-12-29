@@ -123,7 +123,7 @@
     border-radius: 3px !important;
     padding: 2px 5px 1px 5px !important;
     font-weight: 600 !important;
-    color: grey;
+    color: rgba(0, 0, 0, 0.55);
   }
 }
 
@@ -337,25 +337,34 @@
   }
 }
 
-#Hero {
-  .demo-link {
-    color: #aaaaaa;
-    .demo-link__arrow {
-      transform: translateX(0px);
+@mixin cpLink($name) {
+  color: #aaaaaa;
+  .#{$name}__arrow {
+    transform: translateX(0px);
+    transition: transform 0.3s ease;
+    margin-left: 5px;
+  }
+  &:hover {
+    transform: scale(1.02);
+    color: #7bd8b5;
+    .#{$name}__arrow {
+      transform: translateX(5px);
       transition: transform 0.3s ease;
       margin-left: 5px;
     }
-    &:hover {
-      transform: scale(1.02);
-      color: #7bd8b5;
-      .demo-link__arrow {
-        transform: translateX(5px);
-        transition: transform 0.3s ease;
-        margin-left: 5px;
-      }
-    }
-    &:focus {
-      color: #7bd8b5;
-    }
+  }
+  &:focus {
+    color: #7bd8b5;
+  }
+}
+#Hero {
+  .demo-link {
+    @include cpLink('demo-link');
+  }
+}
+
+#Testimonials {
+  .testimonials-link {
+    @include cpLink('testimonials-link');
   }
 }
