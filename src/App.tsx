@@ -178,8 +178,6 @@ class App extends React.Component<{}, IState> {
   };
 
   public messageHandler = (event: any) => {
-    console.log('message handler ->', event);
-
     if (!domains.includes(event.origin)) {
       return;
     }
