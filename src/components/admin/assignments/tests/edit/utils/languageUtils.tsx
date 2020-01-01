@@ -69,4 +69,9 @@ export const testTemplates: { [language: string]: { [type: string]: string } } =
     unit: '',
     shell: BASH_CPP_TEMPLATE,
   },
+  other: {
+    io: '',
+    unit: '',
+    shell: BASH_CPP_TEMPLATE,
+  },
 };
