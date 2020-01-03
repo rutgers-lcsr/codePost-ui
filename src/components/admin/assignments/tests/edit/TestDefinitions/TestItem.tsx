@@ -74,7 +74,10 @@ export const TestItem = (props: ITestItemProps) => {
         const methodNames: String[] = [];
         code.forEach((line) => {
           if (line.match(/(public|protected|private|static|\s) +[\w\<\>\[\]]+\s+(\w+) *\([^\)]*\) *(\{?|[^;])/)) {
-            const tokens = line.split('(')[0].split(' ');
+            const tokens = line
+              .split('(')[0]
+              .trim()
+              .split(' ');
             methodNames.push(tokens[tokens.length - 1]);
           }
         });
