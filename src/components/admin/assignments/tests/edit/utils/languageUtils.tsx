@@ -81,5 +81,5 @@ export const commandLineExamples: { [language: string]: string } = {
   'python-2.7': 'python HelloWorld.py',
   java: 'java HelloWorld',
   'c/c++': './HelloWorld',
-  other: 'echo HelloWorld',
+  other: 'echo Hello, World!',
 };
