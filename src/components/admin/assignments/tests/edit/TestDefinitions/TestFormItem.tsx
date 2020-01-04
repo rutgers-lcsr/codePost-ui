@@ -15,7 +15,7 @@ import { PsuedoTerminal } from './PsuedoTerminal';
 import ExplanationModal from '../../../../assignments/rubric/ExplanationModal';
 
 /* codePost util imports */
-import { testTemplates, hasNativeTestSupport, extensionsByLanguage } from '../utils/languageUtils';
+import { testTemplates, hasNativeTestSupport, extensionsByLanguage, commandLineExamples } from '../utils/languageUtils';
 
 import CPTooltip from '../../../../../core/CPTooltip';
 
@@ -342,26 +342,38 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
       maxWidth: 75,
     };
     const inputStyle: React.CSSProperties = { width: '200px', margin: '0px 5px' };
+    const placeholder: string = commandLineExamples[this.props.language] || 'echo HelloWorld';
+
+    // Disable button to switch to file if there is no native test support
+    const hasNativeSupport = hasNativeTestSupport(this.props.language);
 
     return (
       <div className="natural-language-form" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
         <span style={{ ...textStyle, marginLeft: undefined }}>From</span>
         <Radio.Group value={'io_cli'} onChange={this.onTypeChangeRadio} buttonStyle="solid" style={radioGroupStyle}>
+          {/* Disable file button if language doesn't have native support */}
+          {hasNativeSupport && (
+            <Radio.Button
+              key={'file'}
+              className={'testitem__radio-inactive'}
+              value={'io'}
+              style={{ ...radioButtonStyle }}
+            >
+              file
+            </Radio.Button>
+          )}
           <Radio.Button
-            key={'file'}
-            className={'testitem__radio-inactive'}
-            value={'io'}
-            style={{ ...radioButtonStyle }}
+            key={'cli'}
+            value={'io_cli'}
+            disabled={!hasNativeSupport}
+            style={{ ...radioButtonStyle, color: hasNativeSupport ? 'white' : 'black', lineHeight: '15px' }}
           >
-            file
-          </Radio.Button>
-          <Radio.Button key={'cli'} value={'io_cli'} style={{ ...radioButtonStyle, lineHeight: '15px' }}>
             command line
           </Radio.Button>
         </Radio.Group>
         <span style={textStyle}>run the command</span>
         <Input
-          placeholder={'Command'}
+          placeholder={placeholder}
           style={inputStyle}
           value={this.state.commandText}
           onChange={(e) => this.onChange(e.target.value)}
@@ -376,7 +388,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 required: false,
               },
             ],
-          })(<Input disabled={this.props.isRunning} style={inputStyle} />)}
+          })(<Input placeholder={'Hello World!'} disabled={this.props.isRunning} style={inputStyle} />)}
           <span style={{ marginLeft: '1px' }}>.</span>
         </Form.Item>
       </div>
@@ -388,9 +400,9 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     const { testCase, form } = this.props;
     const { getFieldDecorator } = form;
 
-    const name = this.state.testType === 'bash' ? '.sh' : extensionsByLanguage[this.props.language];
+    const name = this.state.testType === 'shell' ? '.sh' : extensionsByLanguage[this.props.language];
 
-    // Disable changing the test type if there is no native test support
+    // Disable some test types if there is no native support
     const hasNativeSupport = hasNativeTestSupport(this.props.language);
     const typesWithEditDisabled = ['file']; // Disable select
     const typesWithRunDisabled = ['file', 'external']; // Disable definitions and pseudoterminal
@@ -457,21 +469,20 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 Test Type: &nbsp;
                 <Select
                   onChange={this.onTypeChange}
-                  disabled={
-                    this.props.isRunning || !hasNativeSupport || typesWithEditDisabled.includes(this.state.testType)
-                  }
+                  disabled={this.props.isRunning || typesWithEditDisabled.includes(this.state.testType)}
                   style={{ width: 200 }}
                   value={
-                    this.state.testType === 'io_cli'
+                    this.state.testType === 'io_cli' && hasNativeSupport
                       ? 'io'
                       : this.state.testType === 'file'
                       ? 'File defined'
                       : this.state.testType
                   }
                 >
-                  <Option value={'io'}>Input / Output </Option>
-                  <Option value={'shell'}>Shell Script </Option>
-                  <Option value={'unit'}>Unit Test</Option>
+                  {/* If the language doesn't have native support, remove io_file and unit test options*/}
+                  <Option value={hasNativeSupport ? 'io' : 'io_cli'}>Input / Output </Option>
+                  {hasNativeSupport && <Option value={'unit'}>{`Unit Test (${this.props.language})`}</Option>}
+                  <Option value={'shell'}>Unit Test (Bash)</Option>
                   <Option value={'external'}>External</Option>
                 </Select>
                 &nbsp;

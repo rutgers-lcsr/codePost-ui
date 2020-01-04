@@ -75,3 +75,11 @@ export const testTemplates: { [language: string]: { [type: string]: string } } =
     shell: BASH_CPP_TEMPLATE,
   },
 };
+
+export const commandLineExamples: { [language: string]: string } = {
+  'python-3.7': 'python3 HelloWorld.py',
+  'python-2.7': 'python HelloWorld.py',
+  java: 'java HelloWorld',
+  'c/c++': './HelloWorld',
+  other: 'echo Hello, World!',
+};
