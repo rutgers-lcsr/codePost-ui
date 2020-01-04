@@ -224,8 +224,7 @@ export const TestDefinitions = (props: IProps) => {
     // if the language is natively supported, set it as 'io'
     // else, set the default to shell
     // if it's a shell type,
-    const defaultType = sourceFile ? 'file' : hasNativeSupport ? 'io' : externalOnly ? 'external' : 'shell';
-    const defaultText = defaultType === 'shell' && language ? testTemplates[language]['shell'] : '';
+    const defaultType = sourceFile ? 'file' : hasNativeSupport ? 'io' : externalOnly ? 'external' : 'io_cli';
     const dummyTestCase: TestCaseType = {
       id: -1,
       sortKey: 0,
@@ -234,7 +233,7 @@ export const TestDefinitions = (props: IProps) => {
       type: defaultType,
       pointsPass: 0,
       pointsFail: 0,
-      text: defaultText,
+      text: '',
       function: '',
       fileName: '',
       expectedOutput: '',
