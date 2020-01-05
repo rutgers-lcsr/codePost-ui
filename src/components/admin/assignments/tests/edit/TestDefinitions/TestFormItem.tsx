@@ -2,7 +2,7 @@
 import React from 'react';
 
 /* antd imports */
-import { Button, Divider, Form, Input, Select, Radio, Typography, Switch, InputNumber } from 'antd';
+import { Button, Collapse, Divider, Form, Input, Select, Row, Radio, Typography, Switch, InputNumber } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
 /* codePost object imports */
@@ -454,184 +454,193 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
         <div>
           <Typography.Title level={4}>1. Details</Typography.Title>
           <Form layout="inline">
-            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-              <Form.Item label="Test Name">
-                {getFieldDecorator('description', {
-                  initialValue: testCase.description,
-                  rules: [
-                    {
-                      required: true,
-                    },
-                  ],
-                })(<Input disabled={this.props.isRunning} />)}
-              </Form.Item>
-              <div style={{ alignItems: 'center' }}>
-                Test Type: &nbsp;
-                <Select
-                  onChange={this.onTypeChange}
-                  disabled={this.props.isRunning || typesWithEditDisabled.includes(this.state.testType)}
-                  style={{ width: 200 }}
-                  value={
-                    this.state.testType === 'io_cli' && hasNativeSupport
-                      ? 'io'
-                      : this.state.testType === 'file'
-                      ? 'File defined'
-                      : this.state.testType
-                  }
-                >
-                  {/* If the language doesn't have native support, remove io_file and unit test options*/}
-                  <Option value={hasNativeSupport ? 'io' : 'io_cli'}>Input / Output </Option>
-                  {hasNativeSupport && <Option value={'unit'}>{`Unit Test (${this.props.language})`}</Option>}
-                  <Option value={'shell'}>Unit Test (Bash)</Option>
-                  <Option value={'external'}>External</Option>
-                </Select>
-                &nbsp;
-                <CPTooltip
-                  hideThisOnHideTips={true}
-                  title={
-                    <span>
-                      {this.state.testType === 'io' || this.state.testType === 'io_cli' ? (
-                        <span>
-                          I/O tests are basic equivalence tests comparing the output of a student's command with the
-                          expected output. To learn more, check out our guide to writing
-                          <a
-                            href="http://help.codepost.io/en/articles/3567215-writing-tests-i-o-tests"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            I/O tests.
-                          </a>
-                        </span>
-                      ) : this.state.testType === 'shell' ? (
-                        <span>
-                          Shell tests are bash script unit tests. To learn more, check out our guide to writing
-                          <a
-                            href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Shell tests.
-                          </a>
-                        </span>
-                      ) : this.state.testType === 'unit' ? (
-                        <span>
-                          Unit tests are modular functions/classes written in the environment native language. Currently
-                          only java and python are supported. To learn more, check out our guide to writing
-                          <a
-                            href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Unit tests.
-                          </a>
-                        </span>
-                      ) : this.state.testType === 'file' ? (
-                        <span>
-                          File defined tests are created from running the scripts in file mode. You can edit certain
-                          attributes of these tests (points, explanations), but there is no unique code block that maps
-                          to each test, unlike tests created from the test editor (I/O, shell, unit).
-                          <a
-                            href="http://help.codepost.io/en/articles/3553024-writing-tests-file-mode"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            tests in file mode.
-                          </a>
-                        </span>
-                      ) : this.state.testType === 'external' ? (
-                        <span>
-                          External tests designate tests whose results can only be set via the API. If you run your test
-                          scripts locally and want to set the results with the codePost api, you'll use external tests.
-                        </span>
-                      ) : (
-                        <span>
-                          To learn more, check out our guide to writing
-                          <a
-                            href="http://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
+            <div style={{ display: 'flex', flexDirection: 'column', flexWrap: 'wrap' }}>
+              <Row style={{ padding: '0px 16px' }}>
+                <Form.Item label="Test Name">
+                  {getFieldDecorator('description', {
+                    initialValue: testCase.description,
+                    rules: [
+                      {
+                        required: true,
+                      },
+                    ],
+                  })(<Input disabled={this.props.isRunning} />)}
+                </Form.Item>
+                <Form.Item label="Test Type">
+                  <Select
+                    onChange={this.onTypeChange}
+                    disabled={this.props.isRunning || typesWithEditDisabled.includes(this.state.testType)}
+                    style={{ width: 200 }}
+                    value={
+                      this.state.testType === 'io_cli' && hasNativeSupport
+                        ? 'io'
+                        : this.state.testType === 'file'
+                        ? 'File defined'
+                        : this.state.testType
+                    }
+                  >
+                    {/* If the language doesn't have native support, remove io_file and unit test options*/}
+                    <Option value={hasNativeSupport ? 'io' : 'io_cli'}>Input / Output </Option>
+                    {hasNativeSupport && <Option value={'unit'}>{`Unit Test (${this.props.language})`}</Option>}
+                    <Option value={'shell'}>Unit Test (Bash)</Option>
+                    <Option value={'external'}>External</Option>
+                  </Select>
+                  &nbsp;
+                  <CPTooltip
+                    hideThisOnHideTips={true}
+                    title={
+                      <span>
+                        {this.state.testType === 'io' || this.state.testType === 'io_cli' ? (
+                          <span>
+                            I/O tests are basic equivalence tests comparing the output of a student's command with the
+                            expected output. To learn more, check out our guide to writing
+                            <a
+                              href="http://help.codepost.io/en/articles/3567215-writing-tests-i-o-tests"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              I/O tests.
+                            </a>
+                          </span>
+                        ) : this.state.testType === 'shell' ? (
+                          <span>
+                            Shell tests are bash script unit tests. To learn more, check out our guide to writing
+                            <a
+                              href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Shell tests.
+                            </a>
+                          </span>
+                        ) : this.state.testType === 'unit' ? (
+                          <span>
+                            Unit tests are modular functions/classes written in the environment native language.
+                            Currently only java and python are supported. To learn more, check out our guide to writing
+                            <a
+                              href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Unit tests.
+                            </a>
+                          </span>
+                        ) : this.state.testType === 'file' ? (
+                          <span>
+                            File defined tests are created from running the scripts in file mode. You can edit certain
+                            attributes of these tests (points, explanations), but there is no unique code block that
+                            maps to each test, unlike tests created from the test editor (I/O, shell, unit).
+                            <a
+                              href="http://help.codepost.io/en/articles/3553024-writing-tests-file-mode"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              tests in file mode.
+                            </a>
+                          </span>
+                        ) : this.state.testType === 'external' ? (
+                          <span>
+                            External tests designate tests whose results can only be set via the API. If you run your
+                            test scripts locally and want to set the results with the codePost api, you'll use external
                             tests.
-                          </a>
-                        </span>
-                      )}
-                    </span>
-                  }
-                  infoIcon={true}
-                />
-              </div>{' '}
-              &nbsp; &nbsp;
-              <Form.Item
-                label={
-                  <span>
-                    Exposed{' '}
-                    <CPTooltip
-                      hideThisOnHideTips={true}
-                      title="If student upload is turned on, exposed tests will be run when students upload their submission."
-                      infoIcon={true}
-                    />
-                  </span>
-                }
-              >
-                {getFieldDecorator('exposed', {
-                  initialValue: testCase.exposed,
-                  valuePropName: 'checked',
-                  rules: [
-                    {
-                      required: true,
-                    },
-                  ],
-                })(<Switch disabled={this.props.isRunning} />)}
-              </Form.Item>
-              &nbsp; &nbsp;
-              <Form.Item label="Points on Pass">
-                {getFieldDecorator('pointsPass', {
-                  initialValue: testCase.pointsPass,
-                  rules: [
-                    {
-                      required: true,
-                    },
-                  ],
-                })(<InputNumber />)}
-              </Form.Item>
-              <Form.Item label="Points on Fail">
-                {getFieldDecorator('pointsFail', {
-                  initialValue: testCase.pointsFail,
-                  rules: [
-                    {
-                      required: true,
-                    },
-                  ],
-                })(<InputNumber />)}
-              </Form.Item>
-              <Form.Item
-                label={
-                  <span>
-                    Explanation{' '}
-                    <CPTooltip
-                      hideThisOnHideTips={true}
-                      title="An explanation that should be shown to students to explain the tests. This will be shown in the test summary students see in the code console."
-                      infoIcon={true}
-                    />
-                  </span>
-                }
-              >
-                <Button icon="edit" onClick={() => this.setState({ showExplanation: true })} />
-                {this.state.showExplanation ? (
-                  <ExplanationModal
-                    title={testCase.description}
-                    startText={this.state.explanation}
-                    onCancel={() => this.setState({ showExplanation: false })}
-                    onSave={(draft?: string) => {
-                      draft
-                        ? this.setState({ explanation: draft, showExplanation: false })
-                        : this.setState({ explanation: '', showExplanation: false });
-                    }}
+                          </span>
+                        ) : (
+                          <span>
+                            To learn more, check out our guide to writing
+                            <a
+                              href="http://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              tests.
+                            </a>
+                          </span>
+                        )}
+                      </span>
+                    }
+                    infoIcon={true}
                   />
-                ) : null}
-              </Form.Item>
+                </Form.Item>
+              </Row>
+              <Row>
+                <Collapse bordered={false}>
+                  <Collapse.Panel key="1" header="More options" style={{ border: 0 }}>
+                    <div>
+                      <Form.Item
+                        label={
+                          <span>
+                            Exposed{' '}
+                            <CPTooltip
+                              hideThisOnHideTips={true}
+                              title="If student upload is turned on, exposed tests will be run when students upload their submission."
+                              infoIcon={true}
+                            />
+                          </span>
+                        }
+                      >
+                        {getFieldDecorator('exposed', {
+                          initialValue: testCase.exposed,
+                          valuePropName: 'checked',
+                          rules: [
+                            {
+                              required: true,
+                            },
+                          ],
+                        })(<Switch disabled={this.props.isRunning} />)}
+                      </Form.Item>
+                      &nbsp; &nbsp;
+                      <Form.Item label="Points on Pass">
+                        {getFieldDecorator('pointsPass', {
+                          initialValue: testCase.pointsPass,
+                          rules: [
+                            {
+                              required: true,
+                            },
+                          ],
+                        })(<InputNumber />)}
+                      </Form.Item>
+                      <Form.Item label="Points on Fail">
+                        {getFieldDecorator('pointsFail', {
+                          initialValue: testCase.pointsFail,
+                          rules: [
+                            {
+                              required: true,
+                            },
+                          ],
+                        })(<InputNumber />)}
+                      </Form.Item>
+                      <Form.Item
+                        label={
+                          <span>
+                            Explanation{' '}
+                            <CPTooltip
+                              hideThisOnHideTips={true}
+                              title="An explanation that should be shown to students to explain the tests. This will be shown in the test summary students see in the code console."
+                              infoIcon={true}
+                            />
+                          </span>
+                        }
+                      >
+                        <Button icon="edit" onClick={() => this.setState({ showExplanation: true })} />
+                        {this.state.showExplanation ? (
+                          <ExplanationModal
+                            title={testCase.description}
+                            startText={this.state.explanation}
+                            onCancel={() => this.setState({ showExplanation: false })}
+                            onSave={(draft?: string) => {
+                              draft
+                                ? this.setState({ explanation: draft, showExplanation: false })
+                                : this.setState({ explanation: '', showExplanation: false });
+                            }}
+                          />
+                        ) : null}
+                      </Form.Item>
+                    </div>
+                  </Collapse.Panel>
+                </Collapse>
+              </Row>
             </div>
-            <Divider />
+            <Divider style={{ marginTop: 12 }} />
             {!typesWithRunDisabled.includes(this.state.testType) && (
               <div>
                 <Typography.Title level={4}>2. Definition</Typography.Title>

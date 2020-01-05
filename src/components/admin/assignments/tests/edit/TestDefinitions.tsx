@@ -510,15 +510,22 @@ export const TestDefinitions = (props: IProps) => {
       const groups = [bashFile, helperFiles, submissionFiles, templates, sourceFiles];
 
       header = (
-        <div style={headerStyle}>
-          Source Files
-          <div>
-            <AddFileModal addFile={props.addFile} />
-            &nbsp; &nbsp;
-            <Tooltip title="Download">
-              <Icon type="download" onClick={download} />
+        <div>
+          <Button.Group style={{ display: 'flex', alignItems: 'flex-end' }}>
+            {externalOnly ? null : (
+              <Tooltip title="Exit File Mode">
+                <Button onClick={togglePanel} style={{ padding: '0px 7px' }}>
+                  <Icon type="arrow-left" style={{ fontSize: 10, marginRight: 2 }} />
+                  <Icon type="file" style={{ fontSize: 12 }} />
+                </Button>
+              </Tooltip>
+            )}
+            <Tooltip title="Download files">
+              <Button onClick={download} icon="download" style={{ minWidth: 40 }} />
             </Tooltip>
-          </div>
+            <AddFileModal addFile={props.addFile} />
+          </Button.Group>
+          <div style={headerStyle}>Files</div>
         </div>
       );
 
@@ -610,14 +617,20 @@ export const TestDefinitions = (props: IProps) => {
       break;
     case DETAIL_TYPE.EditTests:
       header = (
-        <div style={headerStyle}>
-          Tests
-          <div>
+        <div>
+          <Button.Group style={{ display: 'flex', alignItems: 'flex-end' }}>
+            {externalOnly ? null : (
+              <Tooltip title="Enter File Mode">
+                <Button onClick={togglePanel} style={{ padding: '0px 7px' }}>
+                  <Icon type="arrow-right" style={{ fontSize: 10, marginRight: 2 }} />
+                  <Icon type="file" style={{ fontSize: 12 }} />
+                </Button>
+              </Tooltip>
+            )}
             <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} icon={true} />
-            &nbsp; &nbsp;
             <AddTestModal addTest={addTest.bind({}, props.env ? props.env.language : '')} categories={categories} />
-            &nbsp; &nbsp;
-          </div>
+          </Button.Group>
+          <div style={headerStyle}>Tests</div>
         </div>
       );
       menu = (
@@ -757,17 +770,16 @@ export const TestDefinitions = (props: IProps) => {
         <div style={{ marginBottom: 15, marginLeft: 10, marginRight: 10 }}>
           {panel === DETAIL_TYPE.EditTests ? (
             <span>
-              <b>Instructions</b>: This editor shows all the tests you've created. You can create tests in two ways: in{' '}
-              <b style={{ fontWeight: 600 }}>this editor </b>(for test cases that have modular blocks of code) or in{' '}
-              <b style={{ fontWeight: 600 }}>file mode </b>(if you want to run a script that includes multiple tests).
-              To get started, click the "Add Test" <Icon type="file-add" /> icon.
+              <b>Instructions</b>: You can create tests in two ways: in <b style={{ fontWeight: 600 }}>this editor </b>
+              (for unit tests) or in <b style={{ fontWeight: 600 }}>file mode </b>(for a script that includes multiple
+              tests). To get started, click the "Add Test".
             </span>
           ) : (
             <span>
-              <b>Instructions</b>: In file mode you can run your existing scripts to produce logs, or use codePost's
-              custom syntax to structure your test results. If you use our syntax, new tests will automatically be
-              created when you run your file. You can edit properties of these tests (e.g. points, explanation) by
-              exiting file mode. To learn more,{' '}
+              <b>Instructions</b>: Import scripts by clicking "Add file". You can run them to produce logs, or use
+              codePost's custom syntax to structure your test results. If you use our syntax, new tests will
+              automatically be created when you run the file. You can edit properties of these tests by exiting file
+              mode. To learn more,{' '}
               <a
                 href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode"
                 target="_blank"
@@ -775,18 +787,13 @@ export const TestDefinitions = (props: IProps) => {
               >
                 click here
               </a>
-              . To get started, create a new test file by clicking the "Add file" <Icon type="plus-circle" /> icon.
+              .
             </span>
           )}
         </div>
         <div style={{ fontSize: 11 }}>
           <Layout>
             <Sider theme="light">
-              {externalOnly ? null : (
-                <Button style={{ width: '100%' }} onClick={togglePanel}>
-                  {panel === DETAIL_TYPE.ViewSource ? 'Exit File Mode' : 'Enter File Mode'}
-                </Button>
-              )}
               {header}
               {menu}
             </Sider>
