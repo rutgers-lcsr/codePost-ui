@@ -46,13 +46,13 @@ export const AddTestModal = (props: IUploadProps) => {
 
   /******************************* Return *****************************************/
   return (
-    <span>
-      <Tooltip title="Add Test">
-        <Icon type="file-add" onClick={toggleVisible} />
-      </Tooltip>
+    <React.Fragment>
+      <Button onClick={toggleVisible} style={{ height: 28, fontSize: 12, padding: '0px 9px' }} type="primary">
+        Add test
+      </Button>
       <Modal
         visible={visible && props.categories.length > 1}
-        title={`Add TestCase`}
+        title={`Create new test case`}
         onCancel={toggleVisible}
         width={400}
         footer={[
@@ -73,6 +73,6 @@ export const AddTestModal = (props: IUploadProps) => {
           ))}
         </Select>
       </Modal>
-    </span>
+    </React.Fragment>
   );
 };
