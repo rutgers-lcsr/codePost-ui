@@ -47,8 +47,8 @@ export const AddTestModal = (props: IUploadProps) => {
   /******************************* Return *****************************************/
   return (
     <React.Fragment>
-      <Button onClick={toggleVisible} style={{ fontSize: 12, padding: '0px 8px' }} type="primary">
-        Add Test
+      <Button onClick={toggleVisible} style={{ height: 28, fontSize: 12, padding: '0px 9px' }} type="primary">
+        Add test
       </Button>
       <Modal
         visible={visible && props.categories.length > 1}

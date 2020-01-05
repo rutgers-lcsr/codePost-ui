@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Layout, Menu, Icon, Empty, Modal, Spin, Badge, Tooltip } from 'antd';
+import { Button, Layout, Menu, Icon, Empty, Modal, Spin, Badge, Tag, Tooltip } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 import _ from 'lodash';
 
@@ -430,7 +430,7 @@ export const TestDefinitions = (props: IProps) => {
       title: 'Edit Tests',
       content: (
         <div>
-          <p>To edit this test, click "Exit File Mode."</p>
+          <p>To edit this test, click "Exit file mode."</p>
         </div>
       ),
     });
@@ -513,15 +513,15 @@ export const TestDefinitions = (props: IProps) => {
         <div>
           <Button.Group style={{ display: 'flex', alignItems: 'flex-end' }}>
             {externalOnly ? null : (
-              <Tooltip title="Exit File Mode">
-                <Button onClick={togglePanel} style={{ padding: '0px 7px' }}>
-                  <Icon type="arrow-left" style={{ fontSize: 10, marginRight: 2 }} />
+              <Tooltip title="Exit file mode">
+                <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28 }}>
+                  <Icon type="arrow-left" style={{ fontSize: 10, marginRight: 3 }} />
                   <Icon type="file" style={{ fontSize: 12 }} />
                 </Button>
               </Tooltip>
             )}
             <Tooltip title="Download files">
-              <Button onClick={download} icon="download" style={{ minWidth: 40 }} />
+              <Button onClick={download} icon="download" style={{ minWidth: 40, height: 28 }} />
             </Tooltip>
             <AddFileModal addFile={props.addFile} />
           </Button.Group>
@@ -620,9 +620,9 @@ export const TestDefinitions = (props: IProps) => {
         <div>
           <Button.Group style={{ display: 'flex', alignItems: 'flex-end' }}>
             {externalOnly ? null : (
-              <Tooltip title="Enter File Mode">
-                <Button onClick={togglePanel} style={{ padding: '0px 7px' }}>
-                  <Icon type="arrow-right" style={{ fontSize: 10, marginRight: 2 }} />
+              <Tooltip title="Enter file mode">
+                <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28 }}>
+                  <Icon type="arrow-right" style={{ fontSize: 10, marginRight: 3 }} />
                   <Icon type="file" style={{ fontSize: 12 }} />
                 </Button>
               </Tooltip>
@@ -742,13 +742,13 @@ export const TestDefinitions = (props: IProps) => {
             <span>
               <span>
                 {' '}
-                &nbsp; <Button onClick={() => setPanel(DETAIL_TYPE.ViewSource)}>Enter File Mode</Button>{' '}
+                &nbsp; <Button onClick={() => setPanel(DETAIL_TYPE.ViewSource)}>Enter file mode</Button>{' '}
               </span>
               <br />
               <br />
               <span>
                 <b>Instructions</b>: If you have an existing script with modular unit tests, or want to start fresh,
-                click "Add Category". Otherwise, click "Enter File Mode". To learn more{' '}
+                click "Add category". Otherwise, click "Enter file mode". To learn more{' '}
                 <a
                   href="https://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
                   target="_blank"

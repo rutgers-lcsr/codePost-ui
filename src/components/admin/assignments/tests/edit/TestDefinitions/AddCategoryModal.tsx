@@ -55,11 +55,11 @@ export const AddCategoryModal = (props: IUploadProps) => {
       {props.textLink ? (
         <a onClick={toggleVisible}>{props.textLink}</a>
       ) : props.icon ? (
-        <Button onClick={toggleVisible} style={{ fontSize: 12, padding: '0px 8px' }}>
-          Add Category
+        <Button onClick={toggleVisible} style={{ height: 28, fontSize: 12, padding: '0px 9px' }}>
+          Add category
         </Button>
       ) : (
-        <Button onClick={toggleVisible}>Add Test Category</Button>
+        <Button onClick={toggleVisible}>Add category</Button>
       )}
 
       <Modal
@@ -70,7 +70,7 @@ export const AddCategoryModal = (props: IUploadProps) => {
         width={400}
         style={{ padding: 25 }}
       >
-        <Input onChange={onChange} value={name} placeholder="Category Name" />
+        <Input onChange={onChange} value={name} placeholder="Category name" />
       </Modal>
     </React.Fragment>
   );

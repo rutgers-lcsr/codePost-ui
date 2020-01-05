@@ -70,8 +70,12 @@ export const AddFileModal = (props: IUploadProps) => {
 
   return (
     <React.Fragment>
-      <Button onClick={toggleVisible} style={{ fontSize: 12, padding: '0px 8px', width: '100%' }} type="primary">
-        Add File
+      <Button
+        onClick={toggleVisible}
+        style={{ height: 28, fontSize: 12, padding: '0px 8px', width: '100%' }}
+        type="primary"
+      >
+        Add file
       </Button>
       <Modal
         visible={visible}

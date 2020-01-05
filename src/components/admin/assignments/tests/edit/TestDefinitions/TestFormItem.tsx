@@ -2,7 +2,21 @@
 import React from 'react';
 
 /* antd imports */
-import { Button, Collapse, Divider, Form, Input, Select, Row, Radio, Typography, Switch, InputNumber } from 'antd';
+import {
+  Button,
+  Collapse,
+  Divider,
+  Form,
+  Input,
+  Select,
+  Row,
+  Radio,
+  Tag,
+  Tooltip,
+  Typography,
+  Switch,
+  InputNumber,
+} from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
 /* codePost object imports */
@@ -427,30 +441,35 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
 
     const pseudocode = this.getPseudoCode();
     return (
-      <div style={{ padding: '0 15px 15px 15px' }}>
-        <Typography.Title level={3} style={{ display: 'inline' }}>
-          Editing: {testCase.description}
-        </Typography.Title>
-        <div style={{ float: 'right' }}>
-          <Button
-            style={{ marginRight: 10 }}
-            type="primary"
-            onClick={this.props.saveTest.bind(
-              this,
-              this.state.testType,
-              this.state.explanation,
-              this.state.checkReturn,
-              this.state.commandText,
+      <div style={{ padding: '0px 15px' }}>
+        <div style={{ paddingBottom: 25, display: 'flex', justifyContent: 'space-between' }}>
+          <Typography.Title level={3} style={{ display: 'flex', alignItems: 'center' }}>
+            Editing: {testCase.description}&nbsp;&nbsp;
+            {this.props.testCase.exposed && (
+              <Tooltip title="Test result shown to student upon submit">
+                <Tag>Exposed</Tag>
+              </Tooltip>
             )}
-          >
-            Save
-          </Button>
-          <Button type="danger" onClick={this.props.deleteTest}>
-            Delete
-          </Button>
+          </Typography.Title>
+          <div>
+            <Button
+              style={{ marginRight: 10 }}
+              type="primary"
+              onClick={this.props.saveTest.bind(
+                this,
+                this.state.testType,
+                this.state.explanation,
+                this.state.checkReturn,
+                this.state.commandText,
+              )}
+            >
+              Save
+            </Button>
+            <Button type="danger" onClick={this.props.deleteTest}>
+              Delete
+            </Button>
+          </div>
         </div>
-        <div style={{ marginTop: '15px' }} />
-        <Divider />
         <div>
           <Typography.Title level={4}>1. Details</Typography.Title>
           <Form layout="inline">
