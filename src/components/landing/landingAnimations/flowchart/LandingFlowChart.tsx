@@ -165,10 +165,12 @@ const nodes: any[] = [
   },
 ];
 
-export const LandingFlowChart = () => {
+const LandingFlowChart = () => {
   return (
     <div className="flowChart">
       <FlowChart nodeList={nodes} canvasWidth={500} canvasHeight={400} />
     </div>
   );
 };
+
+export default LandingFlowChart;

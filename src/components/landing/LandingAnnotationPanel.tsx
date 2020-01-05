@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 
 import LandingPanel from './LandingPanel';
 
-import AnnotationModule from './landingAnimations/annotation/AnnotationModule';
+const AnnotationModule = React.lazy(() => import('./landingAnimations/annotation/AnnotationModule'));
 
 const LandingAnnotationPanel = () => {
   const [index, setIndex] = useState(0);
@@ -40,7 +40,11 @@ const LandingAnnotationPanel = () => {
       }
       title="ANNOTATE STUDENT CODE"
       subTitle="Effortlessly annotate and grade programming assignments"
-      module={<AnnotationModule index={index} />}
+      module={
+        <Suspense fallback={<div>Loading...</div>}>
+          <AnnotationModule index={index} />
+        </Suspense>
+      }
       type="left"
       moduleMaxWidth={595}
       moduleMaxHeight={380}

@@ -8,8 +8,9 @@ import useWindowSize from '../core/useWindowSize';
 import CPButton from '../core/CPButton';
 
 import landingVars from '../../styles/pages/_landingVars';
+import { Suspense } from 'react';
 
-import GradeAnimationVideo from './landingAnimations/grade/GradeAnimationVideo';
+const GradeAnimationVideo = React.lazy(() => import('./landingAnimations/grade/GradeAnimationVideo'));
 
 const LandingHero = () => {
   const windowSize = useWindowSize();
@@ -126,7 +127,9 @@ const LandingHero = () => {
           }}
           className="display-flex justify-content-center align-items-center"
         >
-          <GradeAnimationVideo width={610} height={390} controls={500} />
+          <Suspense fallback={<div style={{ width: 610, height: 390 }} />}>
+            <GradeAnimationVideo width={610} height={390} controls={500} />
+          </Suspense>
         </div>
         <CPButton
           key="Demo"
