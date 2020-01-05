@@ -31,7 +31,7 @@ import RouterLoading from './components/core/RouterLoading';
 
 import ForbiddenManager from './components/pre-auth/ForbiddenManager';
 
-import { identifyUserForFS, runFSSetup, shutdownFS } from './components/utils/Fullstory';
+import { identifyUserForFS, shutdownFS } from './components/utils/Fullstory';
 
 import { ShowTooltipContext } from './components/core/tooltips';
 
@@ -151,7 +151,7 @@ class App extends React.Component<{}, IState> {
         } else {
           if (prevState.isSuperUser) {
             // We need to start the FS session before we identify it
-            runFSSetup();
+            // runFSSetup();
             identifyUserForFS(this.state.user.email);
           } else {
             // FS session was initiated in componentDidMount
@@ -227,9 +227,9 @@ class App extends React.Component<{}, IState> {
   };
 
   public componentDidMount() {
-    if (inProduction && !this.state.isSuperUser) {
-      runFSSetup();
-    }
+    // if (inProduction && !this.state.isSuperUser) {
+    //   // runFSSetup();
+    // }
 
     window.addEventListener('message', this.messageHandler, false);
 
