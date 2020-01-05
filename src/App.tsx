@@ -182,16 +182,20 @@ class App extends React.Component<{}, IState> {
       return;
     }
 
-    const { data, key } = JSON.parse(event.data);
+    try {
+      const { data, key } = JSON.parse(event.data);
 
-    if (key !== 'token' || data === '') {
+      if (key !== 'token' || data === '') {
+        return;
+      }
+
+      localStorage.setItem(key, data);
+      this.setState({ has_token: true }, () => {
+        this.tryToLogin();
+      });
+    } finally {
       return;
     }
-
-    localStorage.setItem(key, data);
-    this.setState({ has_token: true }, () => {
-      this.tryToLogin();
-    });
   };
 
   public tryToLogin = () => {
