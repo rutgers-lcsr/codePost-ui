@@ -24,20 +24,11 @@ interface IProps {
 const TestsOverview = (props: IProps & RouteComponentProps) => {
   const columns = [
     { title: 'Assignment', key: 'assignment', dataIndex: 'assignment' },
-    { title: 'Edit', key: 'edit', dataIndex: 'edit', align: 'center' as const },
-    { title: 'Run', key: 'tests', dataIndex: 'tests', align: 'center' as const },
-    { title: 'Actions', key: 'actions', dataIndex: 'actions', align: 'center' as const },
+    { title: 'Edit tests', key: 'edit', dataIndex: 'edit', align: 'center' as const },
+    { title: 'View test results', key: 'tests', dataIndex: 'tests', align: 'center' as const },
   ];
 
   const data = props.assignments.map((assignment) => {
-    const menu = (
-      <Menu>
-        <Menu.Item key="1">
-          <Icon type="download" />
-          Download tests
-        </Menu.Item>
-      </Menu>
-    );
     return {
       assignment: assignment.name,
       tests: (
@@ -49,11 +40,6 @@ const TestsOverview = (props: IProps & RouteComponentProps) => {
         <Link to={`${props.match.url}/${encodeForLink(assignment.name)}/edit`}>
           <Button>{assignment.environment ? 'Edit' : 'Create'}</Button>
         </Link>
-      ),
-      actions: (
-        <Dropdown overlay={menu} trigger={['click']}>
-          <Icon type="menu" />
-        </Dropdown>
       ),
     };
   });

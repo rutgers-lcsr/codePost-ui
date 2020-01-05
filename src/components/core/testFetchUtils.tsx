@@ -58,8 +58,14 @@ export const fetchSolutionFiles = async (env: EnvironmentType) => {
 };
 
 export const fetchEnvironment = async (assignment: AssignmentType) => {
-  if (assignment.environment) {
-    return await Environment.read(assignment.environment);
+  // If assignment has an environment, fetch it
+  // We don't allow users to delete environments in the UI, so once an assignment has
+  // an environment, it won't change
+  // If the environment was recently created, we want to make sure the assignment id
+  // isn't out of date.
+  const latestAssignment = assignment.environment ? assignment : await Assignment.read(assignment.id);
+  if (latestAssignment.environment) {
+    return await Environment.read(latestAssignment.environment);
   }
 };
 

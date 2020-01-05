@@ -25,6 +25,7 @@ import { SignUpManager } from './SignUpManager';
 import TermsOfService from './TermsOfService';
 import WhyUse from './WhyUse';
 import AboutUs from './AboutUs';
+import { AllTestimonials } from '../landing/Testimonial';
 
 import Logout from '../core/Logout';
 
@@ -110,6 +111,11 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
               exact={true}
               path={'/about'}
               render={(props: any) => <AboutUs {...props} isLoggedIn={this.props.isLoggedIn} />}
+            />
+            <Route
+              exact={true}
+              path={'/testimonials'}
+              render={(props: any) => <AllTestimonials {...props} isLoggedIn={this.props.isLoggedIn} />}
             />
 
             <Route

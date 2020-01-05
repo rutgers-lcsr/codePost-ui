@@ -63,13 +63,13 @@ const managementSections: IVideoSection[] = [
   {
     id: 'adding-staff',
     name: 'Adding Staff',
-    timestamp: 34,
+    timestamp: 35,
     icon: 'user-add',
   },
   {
     id: 'grader-experience',
     name: 'Grader Experience',
-    timestamp: 130,
+    timestamp: 131,
     icon: 'coffee',
   },
   {
@@ -81,7 +81,7 @@ const managementSections: IVideoSection[] = [
   {
     id: 'quality-control',
     name: 'Quality Control',
-    timestamp: 303,
+    timestamp: 304,
     icon: 'pull-request',
   },
 ];
@@ -100,8 +100,17 @@ class Video extends React.Component<any, IVideoState> {
   public constructor(props: any) {
     super(props);
 
+    // This blob helps prevent a broken ref for the ReactPlayer onload
+    const values = queryString.parse(props.location.search);
+    let initialVideo = 'overview';
+    if (values.video !== undefined) {
+      if (values.video !== '1') {
+        initialVideo = 'management';
+      }
+    }
+
     this.state = {
-      selectedVideo: 'overview',
+      selectedVideo: initialVideo,
       videoSections: overviewSections,
       selectedSectionId: null,
       playedSeconds: 0,

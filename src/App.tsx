@@ -82,6 +82,8 @@ const anonymousUser: UserType = {
   codePostAdmin: false,
 };
 
+const domains = ['https://codepost.io', 'https://mooc.codepost.io', 'http://localhost:3001', 'http://localhost:3000'];
+
 /*****************************************************************************/
 
 const superUsers = ['james@codepost.io', 'vinay@codepost.io', 'richard@codepost.io'];
@@ -175,11 +177,28 @@ class App extends React.Component<{}, IState> {
     );
   };
 
-  public componentDidMount() {
-    if (inProduction && !this.state.isSuperUser) {
-      runFSSetup();
+  public messageHandler = (event: any) => {
+    if (!domains.includes(event.origin)) {
+      return;
     }
 
+    try {
+      const { data, key } = JSON.parse(event.data);
+
+      if (key !== 'token' || data === '') {
+        return;
+      }
+
+      localStorage.setItem(key, data);
+      this.setState({ has_token: true }, () => {
+        this.tryToLogin();
+      });
+    } finally {
+      return;
+    }
+  };
+
+  public tryToLogin = () => {
     if (this.state.has_token && !this.state.user) {
       fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
         headers: {
@@ -209,7 +228,21 @@ class App extends React.Component<{}, IState> {
     } else {
       this.setState({ triedLoading: true });
     }
+  };
+
+  public componentDidMount() {
+    if (inProduction && !this.state.isSuperUser) {
+      runFSSetup();
+    }
+
+    window.addEventListener('message', this.messageHandler, false);
+
+    this.tryToLogin();
   }
+
+  public componentWillUnmount = () => {
+    window.removeEventListener('message', this.messageHandler, false);
+  };
 
   // Adds a newly created course to the user's admin and grader course lists
   public addCreatedCourse = (course: CourseType) => {
