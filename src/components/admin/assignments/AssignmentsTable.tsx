@@ -380,12 +380,6 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           ) : (
             <div />
           )}
-          <Menu.Item key="moss">
-            <Link to={`${this.props.baseURL}/plagiarism/${encodedName}`}>
-              <Icon type="diff" />
-              &nbsp; Check Moss <Tag>BETA</Tag>
-            </Link>
-          </Menu.Item>
           <SubMenu
             key="4"
             title={
@@ -481,7 +475,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         assignment: <Text strong>{assignment.name}</Text>,
         published: (
           <span className="display-flex align-items-center justify-content-center">
-            <Popconfirm onConfirm={onConfirm} title={publishToggleText} icon={<Icon type="question-circle-o" />}>
+            <Popconfirm onConfirm={onConfirm} title={publishToggleText} icon={<Icon type="question-circle" />}>
               <Switch checked={assignment.isReleased} />
             </Popconfirm>
             {assignment.isReleased ? (
