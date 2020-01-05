@@ -24,8 +24,8 @@ interface IProps {
 const TestsOverview = (props: IProps & RouteComponentProps) => {
   const columns = [
     { title: 'Assignment', key: 'assignment', dataIndex: 'assignment' },
-    { title: 'Edit Tests', key: 'edit', dataIndex: 'edit', align: 'center' as const },
-    { title: 'See Test Results', key: 'tests', dataIndex: 'tests', align: 'center' as const },
+    { title: 'Edit tests', key: 'edit', dataIndex: 'edit', align: 'center' as const },
+    { title: 'View test results', key: 'tests', dataIndex: 'tests', align: 'center' as const },
   ];
 
   const data = props.assignments.map((assignment) => {
