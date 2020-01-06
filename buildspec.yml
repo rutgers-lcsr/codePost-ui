@@ -18,5 +18,7 @@ phases:
     commands:
       - echo "post_build step"
       - printenv
-      - aws s3 sync --delete build/ $S3_BUCKET --cache-control max-age=1209600
+      - aws s3 sync --delete build/ $S3_BUCKET --cache-control max-age=31536000,public
+      - aws s3 cp $S3_BUCKET/service-worker.js $S3_BUCKET/service-worker.js --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate
+      - aws s3 cp $S3_BUCKET/index.html $S3_BUCKET/index.html --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate
       - aws lambda invoke --function-name arn:aws:lambda:us-east-2:401180085381:function:invalidate_CF_from_S3 --payload $INVALIDATE_PAYLOAD --log-type Tail out
