@@ -72,7 +72,7 @@
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "start": "react-app-rewired start",
-    "build": "react-app-rewired build && rm build/**/*.map",
+    "build": "react-app-rewired build && rm build/static/**/*.map",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
     "lint:fix": "eslint './src/**/*.{ts,tsx}'"
