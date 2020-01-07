@@ -15,7 +15,14 @@ class WistiaVideo extends React.Component<{}, {}> {
       document.body.appendChild(script1);
       document.body.appendChild(script2);
     };
-    (window as any).onload = load_wistia();
+
+    window.addEventListener(
+      'load',
+      function(event) {
+        load_wistia();
+      },
+      false,
+    );
   }
 
   public render() {
