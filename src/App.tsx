@@ -435,18 +435,20 @@ class App extends React.Component<{}, IState> {
         );
       }
 
-      if (isAdmin || isGrader) {
-        (window as any).Intercom('boot', {
-          app_id: 'kg4u5rp1',
-          email: user.email,
-          user_id: user.email,
-          custom_launcher_selector: '#IntercomDefaultWidget',
-          isAdmin: String(isAdmin),
-          isGrader: String(isGrader),
-        });
-      } else {
-        (window as any).Intercom('shutdown');
-      }
+      setTimeout(function() {
+        if (isAdmin || isGrader) {
+          (window as any).Intercom('boot', {
+            app_id: 'kg4u5rp1',
+            email: user.email,
+            user_id: user.email,
+            custom_launcher_selector: '#IntercomDefaultWidget',
+            isAdmin: String(isAdmin),
+            isGrader: String(isGrader),
+          });
+        } else {
+          (window as any).Intercom('shutdown');
+        }
+      }, 10 * 1000);
 
       const consoleProps = {
         user: this.state.user,
@@ -586,10 +588,10 @@ class App extends React.Component<{}, IState> {
         </div>
       );
     } else {
-      (window as any).Intercom('boot', {
-        app_id: 'kg4u5rp1',
-        custom_launcher_selector: '#IntercomDefaultWidget',
-      });
+      // (window as any).Intercom('boot', {
+      //   app_id: 'kg4u5rp1',
+      //   custom_launcher_selector: '#IntercomDefaultWidget',
+      // });
       return <div />;
     }
   }
