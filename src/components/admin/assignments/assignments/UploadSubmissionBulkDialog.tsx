@@ -556,27 +556,64 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         if (this.props.students.length === 0) {
           content = (
             <div>
-              After you add students, you can upload their submissions in bulk here. <br />
+              After you add students, you can get their submissions into codePost in two ways:
+              <ul>
+                <li>
+                  Allowing students to submit directly (learn more{' '}
+                  <a
+                    href="https://help.codepost.io/en/articles/3381427-how-to-allow-students-to-upload-submissions-to-codepost"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    here
+                  </a>
+                  )
+                </li>
+                <li>
+                  Manually uploading submissions (learn more{' '}
+                  <a
+                    href="https://help.codepost.io/en/articles/3164723-how-to-upload-student-submissions"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    here
+                  </a>
+                  )
+                </li>
+              </ul>
               <br />{' '}
-              <Link
-                to={
-                  this.props.course
-                    ? `/admin/${encodeForLink(this.props.course.name)}/${encodeForLink(
-                        this.props.course.period,
-                      )}/roster/students`
-                    : ''
-                }
-              >
-                <Button>Add students</Button>
-              </Link>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Link
+                  to={
+                    this.props.course
+                      ? `/admin/${encodeForLink(this.props.course.name)}/${encodeForLink(
+                          this.props.course.period,
+                        )}/roster/students`
+                      : ''
+                  }
+                >
+                  <Button type="primary">Add students</Button>
+                </Link>
+              </div>
             </div>
           );
         } else {
           content = (
             <div>
+              <div>
+                <b>Tip:</b> Want to allow students to upload directly? Learn more{' '}
+                <a
+                  href="https://help.codepost.io/en/articles/3381427-how-to-allow-students-to-upload-submissions-to-codepost"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  here
+                </a>
+                .
+              </div>
               {!this.state.showImportOptions ? (
                 <div style={{ margin: '15px 0px' }}>
-                  Looking to import submissions from a third-party tool (like your LMS)?{' '}
+                  <b>Tip:</b> Looking to import submissions from a third-party tool (like your LMS)?{' '}
                   <span>
                     <Button size="small" onClick={this.showImportOptions}>
                       View instructions
@@ -628,7 +665,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
                   />
                 </div>
               )}
-
+              <Divider />
               <UploadForm rawFiles={this.state.rawFiles} setRawFiles={this.setRawFiles} mode={this.state.mode} />
             </div>
           );

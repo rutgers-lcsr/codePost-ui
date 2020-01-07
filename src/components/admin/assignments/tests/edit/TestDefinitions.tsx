@@ -728,12 +728,24 @@ export const TestDefinitions = (props: IProps) => {
       );
     }
 
-    // An environment has been defined
+    // An environment HAS been defined
     return (
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <Empty
           style={{ marginTop: '20px', maxWidth: '400px' }}
-          description={<span> You haven't yet created an environment. Please create one before defining tests.</span>}
+          description={
+            <span>
+              Create a test category to get started, or enter{' '}
+              <a
+                href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                file mode
+              </a>
+              .
+            </span>
+          }
         >
           <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} />
           {externalOnly ? (
@@ -747,8 +759,8 @@ export const TestDefinitions = (props: IProps) => {
               <br />
               <br />
               <span>
-                <b>Instructions</b>: If you have an existing script with modular unit tests, or want to start fresh,
-                click "Add category". Otherwise, click "Enter file mode". To learn more{' '}
+                <b>Tip</b>: If you're trying to port an existing test script you've already written, use file mode.
+                Otherwise, start by creating a category. For help getting started,
                 <a
                   href="https://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
                   target="_blank"
