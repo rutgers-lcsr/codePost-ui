@@ -113,36 +113,42 @@ const LandingHero = () => {
     >
       <div style={{ maxWidth: landingVars.maxWidths.heroText }}>{hero}</div>
       <div>
-        <div
-          style={{
-            maxWidth: MAX_WIDTH,
-            maxHeight: MAX_HEIGHT,
-            minWidth: windowSize.width > landingVars.breakpoints.hero ? MAX_WIDTH : 0,
-            borderRadius: 5,
-            overflow: 'hidden',
-            marginTop: 10,
-            marginBottom: 15,
-            boxShadow,
-            transform: windowSize.width < landingVars.breakpoints.hero ? `scale(${transformSmallScreen})` : '',
-          }}
-          className="display-flex justify-content-center align-items-center"
-        >
-          <Suspense fallback={<div style={{ width: 610, height: 390 }} />}>
-            <GradeAnimationVideo width={610} height={390} controls={500} />
-          </Suspense>
-        </div>
-        <CPButton
-          key="Demo"
-          href="https://codepost.io/demo"
-          target="_blank"
-          cpType="link"
-          ghost={true}
-          style={{ fontWeight: 600, fontSize: 20, float: 'right' }}
-          className="demo-link"
-        >
-          Try it out
-          <Icon type="double-right" className="demo-link__arrow" />
-        </CPButton>
+        {windowSize.width < landingVars.breakpoints.removeModule ? (
+          <div />
+        ) : (
+          <div>
+            <div
+              style={{
+                maxWidth: MAX_WIDTH,
+                maxHeight: MAX_HEIGHT,
+                minWidth: windowSize.width > landingVars.breakpoints.hero ? MAX_WIDTH : 0,
+                borderRadius: 5,
+                overflow: 'hidden',
+                marginTop: 10,
+                marginBottom: 15,
+                boxShadow,
+                transform: windowSize.width < landingVars.breakpoints.hero ? `scale(${transformSmallScreen})` : '',
+              }}
+              className="display-flex justify-content-center align-items-center"
+            >
+              <Suspense fallback={<div style={{ width: 610, height: 390 }} />}>
+                <GradeAnimationVideo width={610} height={390} controls={500} />
+              </Suspense>
+            </div>
+            <CPButton
+              key="Demo"
+              href="https://codepost.io/demo"
+              target="_blank"
+              cpType="link"
+              ghost={true}
+              style={{ fontWeight: 600, fontSize: 20, float: 'right' }}
+              className="demo-link"
+            >
+              Try it out
+              <Icon type="double-right" className="demo-link__arrow" />
+            </CPButton>
+          </div>
+        )}
       </div>
     </div>
   );

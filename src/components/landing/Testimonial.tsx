@@ -284,7 +284,10 @@ const Testimonials = () => {
 
   return (
     <div id="Testimonials">
-      <div className={'display-flex justify-content-center flex-direction-column align-items-center'}>
+      <div
+        className={'display-flex justify-content-center flex-direction-column align-items-center'}
+        style={{ textAlign: windowSize.width < landingVars.breakpoints.verticalPanels ? 'center' : 'left' }}
+      >
         <Typography.Title level={3}>codePost isn’t just another grading tool</Typography.Title>
         <span style={{ maxWidth: '700px', lineHeight: '24px', fontSize: '16px' }}>
           <p style={{ breakInside: 'avoid' }}>

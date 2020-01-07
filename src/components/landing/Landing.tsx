@@ -11,6 +11,8 @@ import '@brainhubeu/react-carousel/lib/style.css';
 
 import { Icon } from 'antd';
 
+import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
+
 /* codePost Imports */
 import landingVars from '../../styles/pages/_landingVars';
 import CPButton from '../core/CPButton';
@@ -36,7 +38,7 @@ const AutograderModule = React.lazy(() => import('./landingAnimations/autograder
 const LandingFlowChart = React.lazy(() => import('./landingAnimations/flowchart/LandingFlowChart'));
 /**********************************************************************************************************************/
 
-class Landing extends React.PureComponent<{}, {}> {
+class Landing extends React.Component<IWithWindowWatcherProps, {}> {
   public componentDidMount() {
     // Calendly widget setup
     const head = document.querySelector('head');
@@ -128,7 +130,7 @@ class Landing extends React.PureComponent<{}, {}> {
         moduleMaxWidth={700}
         moduleMaxHeight={405}
         textSize="normal"
-        removeModelSmallScreen={false}
+        removeModelSmallScreen={true}
         bevel={false}
         gutterSize={50}
       />
@@ -147,7 +149,12 @@ class Landing extends React.PureComponent<{}, {}> {
     );
     const panelFour = (
       <div className="display-flex align-items-center flex-direction-column">
-        <div style={{ marginBottom: 50, width: '100%' }}>
+        <div
+          style={{
+            marginBottom: 50,
+            width: '100%',
+          }}
+        >
           <LandingPanel
             text={
               <div>
@@ -183,9 +190,13 @@ class Landing extends React.PureComponent<{}, {}> {
             gutterSize={50}
           />
         </div>
-        <div style={{ maxWidth: landingVars.maxWidths.apiExample, width: '100%' }}>
-          <APIExample />
-        </div>
+        {this.props.windowwidth < landingVars.breakpoints.removeModule ? (
+          <div />
+        ) : (
+          <div style={{ maxWidth: landingVars.maxWidths.apiExample, width: '100%' }}>
+            <APIExample />
+          </div>
+        )}
       </div>
     );
 
@@ -215,4 +226,4 @@ class Landing extends React.PureComponent<{}, {}> {
   }
 }
 
-export default Landing;
+export default withWindowWatcher(Landing);
