@@ -662,6 +662,7 @@ export const SubheaderTitle = (props: ISubheaderTitleProps) => {
 interface IHeaderMenuProps {
   claimSubmission: () => void;
   isStudent: boolean;
+  isDemo?: boolean;
   hasExplanations: boolean;
   showExplanations: boolean;
   toggleShowExplanations: () => void;
@@ -701,7 +702,7 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
       <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
         Code Review Console
       </Menu.Item>
-      {props.isStudent ? null : (
+      {props.isStudent || props.isDemo ? null : (
         <Menu.Item key="claim" style={itemStyle} className="header-menu">
           <span onClick={props.claimSubmission}>
             <Icon type="plus-circle" /> Claim another submission{' '}
