@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { Slider, Typography } from 'antd';
 
-const noCode = require('./IO.png');
+const noCode = require('./IO.jpg');
 const unit = require('./Unit.jpg');
 const fileMode = require('./FileMode.jpg');
 
