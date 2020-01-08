@@ -81,6 +81,7 @@ export { default as CaretDownOutline } from '@ant-design/icons/lib/outline/Caret
 export { default as FilterOutline } from '@ant-design/icons/lib/outline/FilterOutline';
 export { default as BranchesOutline } from '@ant-design/icons/lib/outline/BranchesOutline';
 export { default as RightOutline } from '@ant-design/icons/lib/outline/RightOutline';
+export { default as CheckOutline } from '@ant-design/icons/lib/outline/CheckOutline';
 
 // Fill Icons
 export { default as PushpinFill } from '@ant-design/icons/lib/fill/PushpinFill';
