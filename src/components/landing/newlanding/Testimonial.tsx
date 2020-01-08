@@ -1,15 +1,15 @@
 import * as React from 'react';
 
-import useWindowSize from '../core/useWindowSize';
+import useWindowSize from '../../core/useWindowSize';
 
 import { Button, Divider, Icon, Typography } from 'antd';
 
-import landingVars from '../../styles/pages/_landingVars';
+import landingVars from '../../../styles/pages/_landingVars';
 
 import Carousel, { Dots } from '@brainhubeu/react-carousel';
 import '@brainhubeu/react-carousel/lib/style.css';
 
-import PreAuthLayout from '../pre-auth/PreAuthLayout';
+import PreAuthLayout from '../../pre-auth/PreAuthLayout';
 
 /*************************************************************************************/
 /* IMAGES

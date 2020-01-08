@@ -3,16 +3,16 @@ import { Link } from 'react-router-dom';
 
 import { Icon, Modal, Typography } from 'antd';
 
-import useWindowSize from '../core/useWindowSize';
+import useWindowSize from '../../core/useWindowSize';
 
-import CPButton from '../core/CPButton';
+import CPButton from '../../core/CPButton';
 
-import { Testimonials } from './Testimonial';
+import { Testimonials } from './../Testimonial';
 
-import landingVars from '../../styles/pages/_landingVars';
+import landingVars from '../../../styles/pages/_landingVars';
 import { Suspense } from 'react';
 
-const GradeAnimationVideo = React.lazy(() => import('./landingAnimations/grade/GradeAnimationVideo'));
+const GradeAnimationVideo = React.lazy(() => import('./../landingAnimations/grade/GradeAnimationVideo'));
 
 const SubHero = () => {
   const windowSize = useWindowSize();

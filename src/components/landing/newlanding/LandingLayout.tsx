@@ -1,13 +1,13 @@
 import { Divider } from 'antd';
 
 import React, { Suspense } from 'react';
-import useWindowSize from '../core/useWindowSize';
+import useWindowSize from '../../core/useWindowSize';
 
-import landingVars from '../../styles/pages/_landingVars';
+import landingVars from '../../../styles/pages/_landingVars';
 
-import { EmailSubscribe } from './EmailSubscribe';
+import { EmailSubscribe } from './../EmailSubscribe';
 
-const Video = React.lazy(() => import('./Video'));
+const Video = React.lazy(() => import('./../Video'));
 
 interface IProps {
   location: any;
@@ -74,8 +74,8 @@ const LandingLayout = (props: IProps) => {
         : landingVars.maxWidths.backgroundImageNormal,
   };
 
-  const testimonialBackground = require('../../img/landing/compressed/backgrounds/testimonial.png');
-  const testimonialBackgroundMobile = require('../../img/landing/compressed/backgrounds/testimonial-MOBILE.jpg');
+  const testimonialBackground = require('../../../img/landing/compressed/backgrounds/testimonial.png');
+  const testimonialBackgroundMobile = require('../../../img/landing/compressed/backgrounds/testimonial-MOBILE.jpg');
 
   return (
     <div

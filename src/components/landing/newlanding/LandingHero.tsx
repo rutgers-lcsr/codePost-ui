@@ -1,23 +1,16 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { Icon, Modal, Typography } from 'antd';
+import { Modal, Typography } from 'antd';
 
-import useWindowSize from '../core/useWindowSize';
+import useWindowSize from '../../core/useWindowSize';
 
-import CPButton from '../core/CPButton';
+import CPButton from '../../core/CPButton';
 
-import landingVars from '../../styles/pages/_landingVars';
-
-import { Testimonials } from './Testimonial';
-import { Suspense } from 'react';
-
-const GradeAnimationVideo = React.lazy(() => import('./landingAnimations/grade/GradeAnimationVideo'));
+import landingVars from '../../../styles/pages/_landingVars';
 
 const LandingHero = () => {
   const windowSize = useWindowSize();
-  const MAX_WIDTH = 605;
-  const MAX_HEIGHT = 385;
   const [modalShowing, setModalShowing] = React.useState(false);
 
   const hero = (
@@ -102,7 +95,7 @@ const LandingHero = () => {
       }`}
       id="Hero"
     >
-      <div style={{ maxWidth: 500 }}>{hero}</div>
+      <div style={{ maxWidth: 1000 }}>{hero}</div>
     </div>
   );
 };

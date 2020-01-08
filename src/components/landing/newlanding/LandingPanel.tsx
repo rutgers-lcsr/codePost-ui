@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import useWindowSize from '../core/useWindowSize';
+import useWindowSize from '../../core/useWindowSize';
 
-import landingVars from '../../styles/pages/_landingVars';
+import landingVars from '../../../styles/pages/_landingVars';
 
 type TextOrientation = 'right' | 'left';
 

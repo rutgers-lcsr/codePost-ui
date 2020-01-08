@@ -2,7 +2,7 @@ import React, { useState, Suspense } from 'react';
 
 import LandingPanel from './LandingPanel';
 
-const AnnotationModule = React.lazy(() => import('./landingAnimations/annotation/AnnotationModule'));
+const AnnotationModule = React.lazy(() => import('./../landingAnimations/annotation/AnnotationModule'));
 
 const LandingAnnotationPanel = () => {
   const [index, setIndex] = useState(0);
