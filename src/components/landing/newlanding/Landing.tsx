@@ -11,15 +11,15 @@ import '@brainhubeu/react-carousel/lib/style.css';
 
 import { Icon } from 'antd';
 
-import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
+import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 
 /* codePost Imports */
-import landingVars from '../../styles/pages/_landingVars';
-import CPButton from '../core/CPButton';
+import landingVars from '../../../styles/pages/_landingVars';
+import CPButton from '../../core/CPButton';
 
 // Section components
-import LandingGetStarted from './LandingGetStarted';
-import LandingHeader from './LandingHeader';
+import LandingGetStarted from './../LandingGetStarted';
+import LandingHeader from './../LandingHeader';
 import LandingHero from './LandingHero';
 import LandingLayout from './LandingLayout';
 import LandingPanel from './LandingPanel';
@@ -28,15 +28,15 @@ import LandingAnnotationPanel from './LandingAnnotationPanel';
 import SubHero from './SubHero';
 
 // Other design elements
-import PreAuthFooter from '../pre-auth/PreAuthFooter';
+import PreAuthFooter from '../../pre-auth/PreAuthFooter';
 
-import APIExample from './LandingAPIExample';
+import APIExample from './../LandingAPIExample';
 
 // import AutograderModule from './landingAnimations/autograder/AutograderModule';
 
-const Integrations = React.lazy(() => import('./Integrations'));
-const AutograderModule = React.lazy(() => import('./landingAnimations/autograder/AutograderModule'));
-const LandingFlowChart = React.lazy(() => import('./landingAnimations/flowchart/LandingFlowChart'));
+const Integrations = React.lazy(() => import('./../Integrations'));
+const AutograderModule = React.lazy(() => import('./../landingAnimations/autograder/AutograderModule'));
+const LandingFlowChart = React.lazy(() => import('./../landingAnimations/flowchart/LandingFlowChart'));
 /**********************************************************************************************************************/
 
 class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
