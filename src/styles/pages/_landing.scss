@@ -139,6 +139,28 @@
   }
 }
 
+.codePost-highlight-new {
+  mark {
+    background-color: #f5f5f5 !important;
+    border-radius: 3px !important;
+    padding: 2px 5px 1px 5px !important;
+    font-weight: 600 !important;
+    color: rgba(0, 0, 0, 0.55);
+  }
+}
+
+// Hero "code review" highlight
+.codePost-title-highlight-new {
+  font-family: PT Mono, monospace;
+  font-weight: 400;
+  mark {
+    background-color: #f7f7f7 !important;
+    border-radius: 4px !important;
+    padding: 3px 8px 2px 8px !important;
+    color: #8a8a8a;
+  }
+}
+
 // Why Panel codeMirror
 .bad-codemirror {
   .CodeMirror {

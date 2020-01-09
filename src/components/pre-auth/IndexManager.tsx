@@ -34,7 +34,7 @@ import { CODE_DEMO } from '../../routes';
 /**********************************************************************************************************************/
 
 const AsyncLanding = Loadable({
-  loader: () => import('../landing/Landing'),
+  loader: () => import('../landing/LandingABTest'),
   loading: () => <div />,
 });
 
