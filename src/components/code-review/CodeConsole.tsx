@@ -159,6 +159,8 @@ interface ICodeConsoleState {
   cursorMode: boolean;
   showCursor: CURSOR_DOMAIN;
   noSave?: boolean;
+
+  hideGrades: boolean;
 }
 
 export interface ICodeConsoleProps {
@@ -492,6 +494,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       showExplanations: false,
 
       panelType: PANEL_TYPE.FILE,
+      hideGrades: false,
     };
   }
 
@@ -1441,24 +1444,25 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       /* Build header
       /*********************************************************/
 
-      middleHeader = [
-        <GradeButton
-          key="subheader-grade"
-          assignment={this.state.assignment!}
-          submission={this.state.submission === undefined ? this.state.readOnlySubmission! : this.state.submission}
-          calculateGrade={this.calculateGradeFromState}
-          rubricCategories={this.state.rubricCategories}
-          comments={this.state.comments}
-          commentRubricComments={this.state.commentRubricComments}
-          files={this.state.files}
-          submissionTests={this.state.tests}
-          testCases={Object.values(this.state.testCases).flat()}
-        />,
-      ];
+      middleHeader = this.state.hideGrades
+        ? []
+        : [
+            <GradeButton
+              key="subheader-grade"
+              assignment={this.state.assignment!}
+              submission={this.state.submission === undefined ? this.state.readOnlySubmission! : this.state.submission}
+              calculateGrade={this.calculateGradeFromState}
+              rubricCategories={this.state.rubricCategories}
+              comments={this.state.comments}
+              commentRubricComments={this.state.commentRubricComments}
+              files={this.state.files}
+              submissionTests={this.state.tests}
+              testCases={Object.values(this.state.testCases).flat()}
+            />,
+          ];
 
       const fileMenuTitle = <FileMenuTitle key="files" files={this.state.files} />;
       if (this.props.inDemoMode) {
-        console.log('this.statepermiss', this.state.permissionLevel);
         if (this.state.permissionLevel === PERMISSION_LEVEL.READ) {
           if (this.state.selectedFile) {
             const code = (onHighlightClick: any) => (

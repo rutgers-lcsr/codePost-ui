@@ -302,6 +302,7 @@ IndexError: list index out of range`,
       permissionLevel: PERMISSION_LEVEL.READ,
       readOnlySubmission: demoSubmission,
       isStudent: true,
+      hideGrades: true,
     };
   } else {
     return {
@@ -319,6 +320,7 @@ IndexError: list index out of range`,
       testCases,
       permissionLevel: PERMISSION_LEVEL.WRITE,
       isStudent: false,
+      hideGrades: false,
     };
   }
 };
