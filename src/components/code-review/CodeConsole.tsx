@@ -508,6 +508,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       const queryValues = queryString.parse(this.props.location.search);
       if (queryValues.sample && queryValues.sample === '1') {
         this.loadDemoData([], true);
+      } else {
+        this.loadDemoData([], false);
       }
 
       this.setState({ isLoading: false });
@@ -1456,128 +1458,97 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
       const fileMenuTitle = <FileMenuTitle key="files" files={this.state.files} />;
       if (this.props.inDemoMode) {
+        console.log('this.statepermiss', this.state.permissionLevel);
         if (this.state.permissionLevel === PERMISSION_LEVEL.READ) {
-          if (this.state.permissionLevel === PERMISSION_LEVEL.READ) {
-            if (this.state.selectedFile) {
-              const code = (onHighlightClick: any) => (
-                <StudentCode
-                  key={this.state.selectedFile!.id}
-                  file={this.state.selectedFile!}
-                  comments={this.state.comments[this.state.selectedFile!.id]}
-                  readOnly={true}
-                  user={this.props.user.email}
-                  onHighlightClick={onHighlightClick}
-                  dimensions={this.state.dimensions}
-                />
-              );
+          if (this.state.selectedFile) {
+            const code = (onHighlightClick: any) => (
+              <StudentCode
+                key={this.state.selectedFile!.id}
+                file={this.state.selectedFile!}
+                comments={this.state.comments[this.state.selectedFile!.id]}
+                readOnly={true}
+                user={this.props.user.email}
+                onHighlightClick={onHighlightClick}
+                dimensions={this.state.dimensions}
+              />
+            );
 
-              const comments = (
-                <StudentComments
-                  isStudent={this.state.isStudent}
-                  comments={this.state.comments[this.state.selectedFile!.id]}
-                  rubricComments={this.state.commentRubricComments}
-                  file={this.state.selectedFile!}
-                  fileIDs={this.state.files.map((file: FileType) => {
-                    return file.id;
-                  })}
-                  verticalOffset={this.state.codeVerticalOffset}
-                  dimensions={this.state.dimensions}
-                  updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
-                  studentFeedbackOn={this.state.assignment.commentFeedback}
-                  hideAuthor={this.state.assignment.hideGradersFromStudents}
-                  additiveGrading={false}
-                  rubricCategories={this.state.rubricCategories}
-                />
-              );
-
-              content = (
-                <CodePanelLayout
-                  comments={comments}
-                  code={code}
-                  toolbarWidgets={toolbarWidgets}
-                  dimensions={this.state.dimensions}
-                  file={this.state.selectedFile}
-                  zoom={this.state.codeZoom}
-                  updateVerticalOffset={this.setVerticalOffset}
-                />
-              );
-            } else if (this.state.panelType === PANEL_TYPE.TESTS) {
-              content = (
-                <TestsList
-                  tests={this.state.tests}
-                  cases={this.state.testCases}
-                  categories={this.state.testCategories}
-                />
-              );
-            }
-
-            leftHeader = [
-              <HeaderMenu
-                key="menu"
-                claimSubmission={this.claimSubmission}
+            const comments = (
+              <StudentComments
                 isStudent={this.state.isStudent}
-                toggleShowExplanations={this.toggleShowExplanations}
-                showExplanations={this.state.showExplanations}
-                hasExplanations={Object.values(this.state.rubricComments)
-                  .flat()
-                  .some((el) => el.explanation)}
-                isAdmin={this.isCourseAdmin(this.state.assignment)}
-                course={this.state.course}
-                assignment={this.state.assignment}
-              />,
-              <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
-            ];
+                comments={this.state.comments[this.state.selectedFile!.id]}
+                rubricComments={this.state.commentRubricComments}
+                file={this.state.selectedFile!}
+                fileIDs={this.state.files.map((file: FileType) => {
+                  return file.id;
+                })}
+                verticalOffset={this.state.codeVerticalOffset}
+                dimensions={this.state.dimensions}
+                updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
+                studentFeedbackOn={this.state.assignment.commentFeedback}
+                hideAuthor={this.state.assignment.hideGradersFromStudents}
+                additiveGrading={false}
+                rubricCategories={this.state.rubricCategories}
+              />
+            );
 
-            rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
-
-            sider = [
-              <ReadOnlySubmissionInfo
-                key="submission-info"
-                title="Submission Info"
-                assignment={this.state.assignment}
-                readOnlySubmission={this.state.readOnlySubmission!}
-                submitStudentQuestion={this.submitStudentQuestion}
-                deleteStudentQuestion={this.deleteStudentQuestion}
-              />,
-              <TestsMenu
-                key="tests-menu"
-                isOpen={this.state.panelType === PANEL_TYPE.TESTS}
-                tests={this.state.tests}
-                cases={this.state.testCases}
-                categories={this.state.testCategories}
-                assignment={this.state.assignment}
-                emptyMessage="Your instructor didn't define any tests for this assignment. "
-              />,
-              <FileMenu
-                key="file-menu"
-                title="Files"
-                files={this.state.files}
-                comments={this.state.comments}
-                selectedFile={this.state.selectedFile}
-                getPointsInFile={this.getPointsInFile}
-                changeSelectedFile={this.changeSelectedFile}
-              />,
-            ];
-
-            siderTitles = [
-              'Submission Info',
-              <div>
-                Tests{' '}
-                <CPButton
-                  size="small"
-                  cpType={theme === 'light' ? 'secondary' : 'dark'}
-                  icon="folder-open"
-                  onClick={(e: any) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
-                  }}
-                  disabled={this.state.testCategories.length === 0}
-                />
-              </div>,
-              fileMenuTitle,
-            ];
+            content = (
+              <CodePanelLayout
+                comments={comments}
+                code={code}
+                toolbarWidgets={toolbarWidgets}
+                dimensions={this.state.dimensions}
+                file={this.state.selectedFile}
+                zoom={this.state.codeZoom}
+                updateVerticalOffset={this.setVerticalOffset}
+              />
+            );
+          } else if (this.state.panelType === PANEL_TYPE.TESTS) {
+            content = (
+              <TestsList tests={this.state.tests} cases={this.state.testCases} categories={this.state.testCategories} />
+            );
           }
+
+          leftHeader = [
+            <HeaderMenu
+              key="menu"
+              claimSubmission={this.claimSubmission}
+              isStudent={this.state.isStudent}
+              toggleShowExplanations={this.toggleShowExplanations}
+              showExplanations={this.state.showExplanations}
+              hasExplanations={Object.values(this.state.rubricComments)
+                .flat()
+                .some((el) => el.explanation)}
+              isAdmin={this.isCourseAdmin(this.state.assignment)}
+              course={this.state.course}
+              assignment={this.state.assignment}
+            />,
+            <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
+          ];
+
+          rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
+
+          sider = [
+            <ReadOnlySubmissionInfo
+              key="submission-info"
+              title="Submission Info"
+              assignment={this.state.assignment}
+              readOnlySubmission={this.state.readOnlySubmission!}
+              submitStudentQuestion={this.submitStudentQuestion}
+              deleteStudentQuestion={this.deleteStudentQuestion}
+            />,
+            <FileMenu
+              key="file-menu"
+              title="Files"
+              files={this.state.files}
+              comments={this.state.comments}
+              selectedFile={this.state.selectedFile}
+              getPointsInFile={this.getPointsInFile}
+              changeSelectedFile={this.changeSelectedFile}
+            />,
+          ];
+
+          siderTitles = ['Submission Info', fileMenuTitle];
         } else {
           if (this.state.selectedFile) {
             const demoCode = (onHighlightClick: any) => (

@@ -5,6 +5,7 @@ import { CourseType } from '../../infrastructure/course';
 import { AnonymousSubmissionType } from '../../infrastructure/submission';
 import { FileType } from '../../infrastructure/file';
 import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
+import { CommentType } from '../../infrastructure/comment';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../infrastructure/rubricComment';
 import { SubmissionTestType } from '../../infrastructure/submissionTest';
@@ -258,12 +259,40 @@ IndexError: list index out of range`,
   };
 
   if (studentSample !== undefined && studentSample) {
+    const comment = {
+      startLine: 12,
+      endLine: 12,
+      startChar: 4,
+      endChar: 17,
+      id: 1,
+      file: 1,
+      pointDelta: null,
+      text: '',
+      rubricComment: 1,
+      author: 'anonymous@university.edu',
+      feedback: 0,
+    };
+
+    commentMap[0] = [comment];
+
+    const commentRubricComments = {
+      1: {
+        id: 1,
+        text: 'Unnecessary comment - this code speaks for itself!',
+        category: 1,
+        pointDelta: 0,
+        sortKey: 0,
+        explanation: '',
+      },
+    };
+
     return {
       assignment: demoAssignment,
       course: demoCourse,
       submission: demoSubmission,
       files: fileList,
       comments: commentMap,
+      commentRubricComments,
       selectedFile: fileList.length > 0 ? fileList[0] : undefined,
       rubricCategories: rubricCategoryList,
       rubricComments: rubricCommentsMap,
@@ -281,6 +310,7 @@ IndexError: list index out of range`,
       submission: demoSubmission,
       files: fileList,
       comments: commentMap,
+      commentRubricComments: {},
       selectedFile: fileList.length > 0 ? fileList[0] : undefined,
       rubricCategories: rubricCategoryList,
       rubricComments: rubricCommentsMap,
