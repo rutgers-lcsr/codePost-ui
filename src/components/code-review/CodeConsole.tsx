@@ -1878,6 +1878,7 @@ IndexError: list index out of range`,
             key="menu"
             claimSubmission={this.claimSubmission}
             isStudent={this.state.isStudent}
+            isDemo={true}
             toggleShowExplanations={this.toggleShowExplanations}
             showExplanations={this.state.showExplanations}
             hasExplanations={Object.values(this.state.rubricComments)
