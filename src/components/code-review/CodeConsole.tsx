@@ -79,7 +79,7 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 
 import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
 
-import { loadDemo } from './demo';
+import { loadDemoGrader, loadDemoStudent } from './demo';
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 
@@ -1274,7 +1274,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /* Demo data
   /***********************************************************************************************/
   public loadDemoData = (files: any[], studentSample?: boolean) => {
-    const demoState = loadDemo(files, this.props.user.email, studentSample);
+    const demoState =
+      studentSample !== undefined && studentSample
+        ? loadDemoStudent(files, this.props.user.email)
+        : loadDemoGrader(files, this.props.user.email);
 
     this.setState(demoState);
   };
@@ -1363,6 +1366,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /**********************************************************************************/
 
   public render() {
+    console.log('comments', this.state.comments);
+    console.log('crub', this.state.commentRubricComments);
     if (this.state.isLoading) {
       return <Loading />;
     }

@@ -1,4 +1,4 @@
-import { demoFiles } from './demoCode';
+import { demoFilesGrader, demoFilesStudent } from './demoCode';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
@@ -16,7 +16,7 @@ import { PERMISSION_LEVEL } from './CodeConsole';
 
 import moment from 'moment-timezone';
 
-export const loadDemo = (files: any[], user: string | null, studentSample?: boolean) => {
+export const loadDemoGrader = (files: any[], user: string | null) => {
   const demoAssignment: AssignmentType = {
     id: -1,
     name: 'codePost Demo',
@@ -98,8 +98,8 @@ export const loadDemo = (files: any[], user: string | null, studentSample?: bool
       commentMap[index] = [];
     });
   } else {
-    fileList[0] = demoFiles[0];
-    fileList[1] = demoFiles[1];
+    fileList[0] = demoFilesGrader[0];
+    fileList[1] = demoFilesGrader[1];
     commentMap[0] = [];
     commentMap[1] = [];
   }
@@ -258,69 +258,227 @@ IndexError: list index out of range`,
     ],
   };
 
-  if (studentSample !== undefined && studentSample) {
-    const comment = {
-      startLine: 12,
-      endLine: 12,
-      startChar: 4,
-      endChar: 17,
+  return {
+    assignment: demoAssignment,
+    course: demoCourse,
+    submission: demoSubmission,
+    files: fileList,
+    comments: commentMap,
+    commentRubricComments: {},
+    selectedFile: fileList.length > 0 ? fileList[0] : undefined,
+    rubricCategories: rubricCategoryList,
+    rubricComments: rubricCommentsMap,
+    tests,
+    testCategories,
+    testCases,
+    permissionLevel: PERMISSION_LEVEL.WRITE,
+    isStudent: false,
+    hideGrades: false,
+  };
+};
+
+export const loadDemoStudent = (files: any[], user: string | null) => {
+  const demoAssignment: AssignmentType = {
+    id: -1,
+    name: 'codePost Demo',
+    isReleased: false,
+    hideGrades: false,
+    rubricCategories: [],
+    course: -1,
+    sortKey: 0,
+    anonymousGrading: false,
+    allowRegradeRequests: false,
+    regradeDeadline: '',
+    hideGradersFromStudents: false,
+    mean: null,
+    median: null,
+    points: 20,
+    commentFeedback: true,
+    allowStudentUpload: false,
+    uploadDueDate: '',
+    liveFeedbackMode: false,
+    collaborativeRubricMode: false,
+    additiveGrading: false,
+    forcedRubricMode: false,
+    templateMode: false,
+    fileTemplates: [],
+    testCategories: [-1],
+    environment: null,
+    showFrequentlyUsedRubricComments: false,
+    allowLateUploads: false,
+  };
+
+  const demoCourse: CourseType = {
+    id: -1,
+    name: 'Demo',
+    period: 'demo',
+    assignments: [-1],
+    sections: [],
+    sendReleasedSubmissionsToBack: false,
+    showStudentsStatistics: false,
+    timezone: moment.tz.guess(),
+    emailNewUsers: false,
+    anonymousGradingDefault: false,
+  };
+
+  const demoSubmission: AnonymousSubmissionType = {
+    id: 1,
+    isFinalized: false,
+    files: [1, 2, 3],
+    students: ['student1@example.edu'],
+    assignment: -1,
+    dateEdited: '',
+    dateUploaded: moment().toString(),
+    grade: null,
+    grader: user,
+    questionText: '',
+    questionIsOpen: false,
+    questionResponder: 'grader0@example.edu',
+    questionResponse: '',
+    questionIsRegrade: false,
+    questionDate: '',
+    responseDate: '',
+    tests: [],
+  };
+
+  const comments = [
+    {
+      startLine: 11,
+      endLine: 11,
+      startChar: 0,
+      endChar: 18,
       id: 1,
       file: 1,
       pointDelta: null,
       text: '',
-      rubricComment: 1,
-      author: 'anonymous@university.edu',
+      rubricComment: 6,
+      author: '',
       feedback: 0,
-    };
+    },
+    {
+      startLine: 28,
+      endLine: 28,
+      startChar: 2,
+      endChar: 8,
+      id: 2,
+      file: 1,
+      pointDelta: null,
+      text: '',
+      rubricComment: 3,
+      author: '',
+      feedback: 0,
+    },
+  ];
 
-    commentMap[0] = [comment];
+  const fileList: FileType[] = [];
+  const commentMap: any = {};
+  if (files.length > 0) {
+    files.forEach((file, index) => {
+      fileList.push({
+        id: index,
+        code: file.data,
+        comments: [],
+        extension: file.name.split('.')[1],
+        name: file.name,
+        submission: 1,
+        path: null,
+        created: '',
+      });
 
-    const commentRubricComments = {
-      1: {
-        id: 1,
-        text: 'Unnecessary comment - this code speaks for itself!',
+      commentMap[index] = [];
+    });
+  } else {
+    fileList[0] = demoFilesStudent[0];
+    fileList[1] = demoFilesStudent[1];
+    commentMap[0] = comments;
+    commentMap[1] = [];
+  }
+
+  const rubricCategoryList: RubricCategoryType[] = [
+    {
+      id: 1,
+      name: 'Style',
+      rubricComments: [],
+      assignment: 1,
+      pointLimit: null,
+      sortKey: 0,
+      helpText: '',
+      atMostOnce: false,
+    },
+    {
+      id: 2,
+      name: 'Performance',
+      rubricComments: [],
+      assignment: 1,
+      pointLimit: null,
+      sortKey: 1,
+      helpText: '',
+      atMostOnce: false,
+    },
+  ];
+
+  const rubricCommentsMap: IRubricCategoryToRubricCommentsMap = {
+    1: [
+      {
+        id: 3,
+        text:
+          "This is too generic of a variable name that doesn't describe value. What would be better would be something like `reversed`.",
         category: 1,
+        pointDelta: 0,
+        sortKey: 2,
+        explanation: '',
+      },
+    ],
+    2: [
+      {
+        id: 6,
+        text:
+          'This function will correctly sort the list, though very slowly in the worst case! The implementation here is known as [Bubble Sort](https://algs4.cs.princeton.edu/21elementary/Bubble.java.html). If the list is in reverse order, then every element will need to be swapped, resulting in `O(n^2)` runtime complexity in the worst case. For other ideas of how to sort a list, checkout the [Algs4 cheatsheet](https://algs4.cs.princeton.edu/cheatsheet/).',
+        category: 2,
         pointDelta: 0,
         sortKey: 0,
         explanation: '',
       },
-    };
+    ],
+  };
 
-    return {
-      assignment: demoAssignment,
-      course: demoCourse,
-      submission: demoSubmission,
-      files: fileList,
-      comments: commentMap,
-      commentRubricComments,
-      selectedFile: fileList.length > 0 ? fileList[0] : undefined,
-      rubricCategories: rubricCategoryList,
-      rubricComments: rubricCommentsMap,
-      tests: [],
-      testCategories: [],
-      testCases: {},
-      permissionLevel: PERMISSION_LEVEL.READ,
-      readOnlySubmission: demoSubmission,
-      isStudent: true,
-      hideGrades: true,
-    };
-  } else {
-    return {
-      assignment: demoAssignment,
-      course: demoCourse,
-      submission: demoSubmission,
-      files: fileList,
-      comments: commentMap,
-      commentRubricComments: {},
-      selectedFile: fileList.length > 0 ? fileList[0] : undefined,
-      rubricCategories: rubricCategoryList,
-      rubricComments: rubricCommentsMap,
-      tests,
-      testCategories,
-      testCases,
-      permissionLevel: PERMISSION_LEVEL.WRITE,
-      isStudent: false,
-      hideGrades: false,
-    };
-  }
+  const commentRubricComments = {
+    1: {
+      id: 6,
+      text:
+        'This function will correctly sort the list, though very slowly in the worst case! The implementation here is known as [Bubble Sort](https://algs4.cs.princeton.edu/21elementary/Bubble.java.html). If the list is in reverse order, then every element will need to be swapped, resulting in `O(n^2)` runtime complexity in the worst case. For other ideas of how to sort a list, checkout the [Algs4 cheatsheet](https://algs4.cs.princeton.edu/cheatsheet/).',
+      category: 2,
+      pointDelta: 0,
+      sortKey: 0,
+      explanation: '',
+    },
+    2: {
+      id: 3,
+      text:
+        "This is too generic of a variable name that doesn't describe value. What would be better would be something like `reversed`.",
+      category: 1,
+      pointDelta: 0,
+      sortKey: 2,
+      explanation: '',
+    },
+  };
+
+  return {
+    assignment: demoAssignment,
+    course: demoCourse,
+    submission: demoSubmission,
+    files: fileList,
+    comments: commentMap,
+    commentRubricComments,
+    selectedFile: fileList.length > 0 ? fileList[0] : undefined,
+    rubricCategories: rubricCategoryList,
+    rubricComments: rubricCommentsMap,
+    tests: [],
+    testCategories: [],
+    testCases: {},
+    permissionLevel: PERMISSION_LEVEL.READ,
+    readOnlySubmission: demoSubmission,
+    isStudent: true,
+    hideGrades: true,
+  };
 };
