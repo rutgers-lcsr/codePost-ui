@@ -15,18 +15,18 @@ import PreAuthLayout from '../../pre-auth/PreAuthLayout';
 /* IMAGES
 /*************************************************************************************/
 
-const adamImg = require('./../../img/landing/compressed/adam_blank.jpeg');
-const eitanImg = require('./../../img/landing/compressed/eitan_mendelowitz.jpg');
-const bobImg = require('./../../img/landing/compressed/bob_sedgewick.jpg');
-const robertImg = require('./../../img/landing/compressed/robert_adams.jpg');
-const niemaImg = require('./../../img/landing/compressed/niema_moshiri.jpg');
-const kateImg = require('./../../img/landing/compressed/kate_holdener.jpg');
-const nohaImg = require('./../../img/landing/compressed/noha_hazzazi.jpg');
-const abbasImg = require('./../../img/landing/compressed/abbas_attarwala.jpg');
-const kateKImg = require('./../../img/landing/compressed/kate_kharitonova.jpg');
-const chrisImg = require('./../../img/landing/compressed/chris_bourke.jpg');
-const alekseyImg = require('./../../img/landing/compressed/aleksey_gurtovoy.jpg');
-const michaelImg = require('./../../img/landing/compressed/michael_clarkson.jpg');
+const adamImg = require('../../../img/landing/compressed/adam_blank.jpeg');
+const eitanImg = require('../../../img/landing/compressed/eitan_mendelowitz.jpg');
+const bobImg = require('../../../img/landing/compressed/bob_sedgewick.jpg');
+const robertImg = require('../../../img/landing/compressed/robert_adams.jpg');
+const niemaImg = require('../../../img/landing/compressed/niema_moshiri.jpg');
+const kateImg = require('../../../img/landing/compressed/kate_holdener.jpg');
+const nohaImg = require('../../../img/landing/compressed/noha_hazzazi.jpg');
+const abbasImg = require('../../../img/landing/compressed/abbas_attarwala.jpg');
+const kateKImg = require('../../../img/landing/compressed/kate_kharitonova.jpg');
+const chrisImg = require('../../../img/landing/compressed/chris_bourke.jpg');
+const alekseyImg = require('../../../img/landing/compressed/aleksey_gurtovoy.jpg');
+const michaelImg = require('../../../img/landing/compressed/michael_clarkson.jpg');
 
 /*************************************************************************************/
 /* TEXT
@@ -42,11 +42,11 @@ const defaultTextStyle: React.CSSProperties = {
 const adamText = (
   <span style={{ ...defaultTextStyle, fontSize: '94%' }}>
     codePost has allowed me to{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       efficiently grade student code
     </Typography.Text>{' '}
     on its quality without sacrificing my high standard of feedback. Its{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       first-class API
     </Typography.Text>{' '}
     makes it uniquely malleable to my different courses with very different requirements.
@@ -56,7 +56,7 @@ const adamText = (
 const eitanText = (
   <span style={{ ...defaultTextStyle, fontSize: '100%' }}>
     codePost is the best way I have found to comment on and annotate students’ programming assignments. I find it{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       much easier to give programming feedback than any other system I have tried.
     </Typography.Text>
   </span>
@@ -65,7 +65,7 @@ const eitanText = (
 const bobText = (
   <span style={{ ...defaultTextStyle, fontSize: '107%' }}>
     codePost has been a{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       paradigm shifting improvement
     </Typography.Text>{' '}
     to how we grade computer science at Princeton.
@@ -75,11 +75,11 @@ const bobText = (
 const robertText = (
   <span style={{ ...defaultTextStyle, fontSize: '97%' }}>
     codePost is a{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       game changer.
     </Typography.Text>{' '}
     It has completely eliminated the need for students to print code for grading. It is honestly{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       easier to grade on codePost than any other method I've tried in the past.
     </Typography.Text>
   </span>
@@ -88,15 +88,15 @@ const robertText = (
 const niemaText = (
   <span style={{ ...defaultTextStyle, fontSize: '94%' }}>
     With the rapid growth of C.S. education, I was{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       worried about how I would scale my courses
     </Typography.Text>{' '}
     to meet the needs of my students. With codePost's{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       intuitive UI and top-notch Python API
     </Typography.Text>
     , I have been able to build workflows that have made all aspects of executing my course extremely streamlined,{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       even with >500 students.
     </Typography.Text>
   </span>
@@ -105,11 +105,11 @@ const niemaText = (
 const kateText = (
   <span style={{ ...defaultTextStyle, fontSize: '87%' }}>
     codePost improved my grading efficiency:{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       what used to take 4 hours to grade now takes 1 hour.
     </Typography.Text>{' '}
     This tool allowed me to automate the repetitive manual tasks and{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       focus my entire attention on the quality of students’ solutions.
     </Typography.Text>
   </span>
@@ -118,11 +118,11 @@ const kateText = (
 const nohaText = (
   <span style={{ ...defaultTextStyle, fontSize: '107%' }}>
     codePost has been a great help as it{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       saved me tons of time{' '}
     </Typography.Text>
     and allowed me to{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       focus on my students more.
     </Typography.Text>
   </span>
@@ -130,13 +130,13 @@ const nohaText = (
 
 const abbasText = (
   <span style={{ ...defaultTextStyle, fontSize: '94%' }}>
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       My graders, myself and my students love codePost.
     </Typography.Text>{' '}
     The quality of feedback that I can provide to my students is far richer; my graders annotate problematic code and
     provide high-quality feedback to my students that previously was difficult.
     <div>
-      <Typography.Text mark className="codePost-highlight">
+      <Typography.Text mark className="codePost-highlight-new">
         I recommend codePost very highly!
       </Typography.Text>
     </div>
@@ -146,11 +146,11 @@ const abbasText = (
 const kateKText = (
   <span style={{ ...defaultTextStyle, fontSize: '92%' }}>
     The ability to see a properly-rendered Jupyter notebook in codePost has been{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       invaluable in our Data Science courses
     </Typography.Text>
     . codePost's team has also been{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       very responsive to our feedback
     </Typography.Text>{' '}
     and feature requests.
@@ -160,15 +160,15 @@ const kateKText = (
 const chrisText = (
   <span style={{ ...defaultTextStyle, fontSize: '83%' }}>
     codePost has really improved the way that we grade and evaluate code. The rubric feature has ensured a{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       higher level of consistency
     </Typography.Text>{' '}
     across many graders. My favorite part has been its outstanding API and wrapper library which allows me to{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       fully automate
     </Typography.Text>{' '}
     the grading assignment process. I definitely saw a{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       greater improvement in students
     </Typography.Text>{' '}
     as a result of codePost.
@@ -178,12 +178,12 @@ const chrisText = (
 const alekseyText = (
   <span style={{ ...defaultTextStyle, fontSize: '88%' }}>
     codePost{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       changed not only the way I grade assignments, but also the way I teach.
     </Typography.Text>{' '}
     The ability to provide students with personalized, targeted feedback on their submissions at scale allowed me to
     experiment with things like graded in-class assignments and feel{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       more connected with each student and their learning journey.
     </Typography.Text>
   </span>
@@ -192,7 +192,7 @@ const alekseyText = (
 const michaelText = (
   <span style={{ ...defaultTextStyle, fontSize: '94%' }}>
     codePost's annotation UI has made it{' '}
-    <Typography.Text mark className="codePost-highlight">
+    <Typography.Text mark className="codePost-highlight-new">
       much easier to give comprehensive and consistent feedback
     </Typography.Text>{' '}
     to students about their code quality. The codePost team has been a pleasure to work with, even adding a major

@@ -7,7 +7,7 @@ import useWindowSize from '../../core/useWindowSize';
 
 import CPButton from '../../core/CPButton';
 
-import { Testimonials } from './../Testimonial';
+import { Testimonials } from './Testimonial';
 
 import landingVars from '../../../styles/pages/_landingVars';
 import { Suspense } from 'react';

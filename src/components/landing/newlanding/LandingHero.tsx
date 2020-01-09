@@ -24,7 +24,7 @@ const LandingHero = () => {
       <div style={{ fontSize: 36, lineHeight: 1.45, fontWeight: 600, color: '#4A4A4A' }}>
         <span>
           The fastest, easiest way for instructors to give{' '}
-          <Typography.Text mark className="codePost-title-highlight">
+          <Typography.Text mark className="codePost-title-highlight-new">
             programming feedback
           </Typography.Text>{' '}
           to students
