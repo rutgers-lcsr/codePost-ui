@@ -244,6 +244,7 @@ export const TestDefinitions = (props: IProps) => {
       instances: [],
       explanation: '',
       lastSolutionRun: RESULT_TYPE.NONE,
+      outputIsFile: false,
     };
 
     const newTestCase = await saveTest(dummyTestCase);

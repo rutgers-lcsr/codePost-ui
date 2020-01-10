@@ -58,6 +58,7 @@ interface IState {
   showExplanation: boolean;
   explanation: string;
   checkReturn: boolean;
+  outputIsFile: boolean;
 }
 
 class TestFormItem extends React.Component<ITestFormItemProps, IState> {
@@ -70,6 +71,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
       showExplanation: false,
       explanation: props.testCase.explanation,
       checkReturn: props.testCase.checkReturn,
+      outputIsFile: props.testCase.outputIsFile,
     };
   }
 
@@ -109,6 +111,11 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
 
   public onChangeFileName = (newName: string) => {
     this.setState({ selectedFileName: newName });
+  };
+
+  public onChangeOutputIsFile = (val: string) => {
+    const outputIsFile = val === 'file';
+    this.setState({ outputIsFile });
   };
 
   public getPseudoCode = () => {
@@ -360,6 +367,8 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
 
     // Disable button to switch to file if there is no native test support
     const hasNativeSupport = hasNativeTestSupport(this.props.language);
+
+    // Selector to choose whether an output is a file or a string
 
     return (
       <div className="natural-language-form" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
