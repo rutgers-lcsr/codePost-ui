@@ -512,7 +512,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                         {this.state.testType === 'io' || this.state.testType === 'io_cli' ? (
                           <span>
                             I/O tests are basic equivalence tests comparing the output of a student's command with the
-                            expected output. To learn more, check out our guide to writing
+                            expected output. To learn more, check out our guide to writing{' '}
                             <a
                               href="http://help.codepost.io/en/articles/3567215-writing-tests-i-o-tests"
                               target="_blank"
@@ -523,7 +523,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                           </span>
                         ) : this.state.testType === 'shell' ? (
                           <span>
-                            Shell tests are bash script unit tests. To learn more, check out our guide to writing
+                            Shell tests are bash script unit tests. To learn more, check out our guide to writing{' '}
                             <a
                               href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
                               target="_blank"
@@ -535,7 +535,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                         ) : this.state.testType === 'unit' ? (
                           <span>
                             Unit tests are modular functions/classes written in the environment native language.
-                            Currently only java and python are supported. To learn more, check out our guide to writing
+                            Currently only java and python are supported. To learn more, check out our guide to writing{' '}
                             <a
                               href="http://help.codepost.io/en/articles/3550423-writing-tests-shell-and-unit-tests"
                               target="_blank"
@@ -565,7 +565,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                           </span>
                         ) : (
                           <span>
-                            To learn more, check out our guide to writing
+                            To learn more, check out our guide to writing{' '}
                             <a
                               href="http://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
                               target="_blank"
