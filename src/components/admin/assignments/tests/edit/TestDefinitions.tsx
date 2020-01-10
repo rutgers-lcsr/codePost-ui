@@ -137,7 +137,7 @@ export const TestDefinitions = (props: IProps) => {
       };
       fetchData();
     }
-  }, [props.env]);
+  }, [props.env, props.sourceFiles.length]);
 
   // When the test changes, we want to reset the active submission
   // We only change it when the test.id changes, because we update the test on run (solutionStatus)
