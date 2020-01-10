@@ -46,7 +46,7 @@ export const ResultDetail = (props: IProps) => {
   useEffect(() => {
     const newSub = props.filterSubmission
       ? props.filterSubmission
-      : props.submissions.length > 0
+      : props.submissions !== undefined && props.submissions.length > 0
       ? props.submissions[0]
       : undefined;
     props.visible && setFilterSubmission(newSub);
@@ -226,13 +226,15 @@ export const ResultDetail = (props: IProps) => {
 
   const submissionMenu = (
     <Menu selectedKeys={selectedKeys}>
-      {props.submissions.map((s) => {
-        return (
-          <Menu.Item key={s.id.toString()} disabled={isInactive(s)} onClick={handleSubmissionChange.bind({}, s)}>
-            {s.students.toString()}
-          </Menu.Item>
-        );
-      })}
+      {props.submissions !== undefined
+        ? props.submissions.map((s) => {
+            return (
+              <Menu.Item key={s.id.toString()} disabled={isInactive(s)} onClick={handleSubmissionChange.bind({}, s)}>
+                {s.students.toString()}
+              </Menu.Item>
+            );
+          })
+        : null}
     </Menu>
   );
 
