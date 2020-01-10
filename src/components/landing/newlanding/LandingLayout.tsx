@@ -163,7 +163,7 @@ const LandingLayout = (props: IProps) => {
           {props.subHero}
         </div>
       </div>
-      <Divider />
+      <Divider style={{ margin: 0 }} />
       <div style={{ ...sectionStyle }} className={sectionClass}>
         <div style={{ ...panelStyle }}>{props.panelOne}</div>
       </div>

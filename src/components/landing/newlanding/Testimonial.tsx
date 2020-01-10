@@ -269,7 +269,18 @@ const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name:
         </div>
       </div>
       <div style={{ height: windowSize.width < landingVars.breakpoints.testimonial ? 10 : 22 }} />
-      <div style={{ fontSize: 22 }}>{props.text}</div>
+      <div
+        style={{
+          fontSize:
+            windowSize.width < landingVars.breakpoints.mobile
+              ? 16
+              : windowSize.width < landingVars.breakpoints.verticalPanels
+              ? 18
+              : 22,
+        }}
+      >
+        {props.text}
+      </div>
     </div>
   );
 };

@@ -27,12 +27,16 @@ const SubHero = () => {
 
   return (
     <div>
-      <div className={'display-flex justify-content-center align-items-center'}>
+      <div
+        className={`display-flex ${
+          windowSize.width < landingVars.breakpoints.verticalPanels ? 'flex-direction-column' : ''
+        } justify-content-center align-items-center`}
+      >
         <div
           className={'display-flex flex-direction-column justify-content-center align-items-center'}
           style={{
             textAlign: 'center',
-            paddingRight: 50,
+            paddingRight: windowSize.width < landingVars.breakpoints.verticalPanels ? 0 : 50,
           }}
         >
           <Typography.Title level={3}>codePost isn’t just another grading tool</Typography.Title>
