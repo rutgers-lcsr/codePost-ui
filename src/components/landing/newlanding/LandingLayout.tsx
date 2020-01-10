@@ -49,6 +49,11 @@ const LandingLayout = (props: IProps) => {
       ? landingVars.Vpadding.headerSmallScreen
       : landingVars.Vpadding.headerNormal;
 
+  const horizontalPaddingHero =
+    windowSize.width < landingVars.breakpoints.mobile
+      ? landingVars.Hpadding.panelMobile
+      : landingVars.Hpadding.panelNormal;
+
   const panelStyle = {
     maxWidth: landingVars.maxWidths.panel,
     paddingTop: verticalPaddingPanel,
@@ -100,7 +105,12 @@ const LandingLayout = (props: IProps) => {
         </div>
       </div>
       <div
-        style={{ ...sectionStyle, background: landingVars.backgrounds.hero, paddingLeft: 75, paddingRight: 75 }}
+        style={{
+          ...sectionStyle,
+          background: landingVars.backgrounds.hero,
+          paddingLeft: horizontalPaddingHero,
+          paddingRight: horizontalPaddingHero,
+        }}
         className={sectionClass}
       >
         <div
@@ -119,8 +129,8 @@ const LandingLayout = (props: IProps) => {
         style={{
           ...sectionStyle,
           background: landingVars.backgrounds.hero,
-          paddingLeft: 75,
-          paddingRight: 75,
+          paddingLeft: 50,
+          paddingRight: 50,
           marginTop: 25,
         }}
         className={sectionClass}
@@ -163,7 +173,7 @@ const LandingLayout = (props: IProps) => {
           {props.subHero}
         </div>
       </div>
-      <Divider />
+      <Divider style={{ margin: 0 }} />
       <div style={{ ...sectionStyle }} className={sectionClass}>
         <div style={{ ...panelStyle }}>{props.panelOne}</div>
       </div>

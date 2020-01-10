@@ -11,7 +11,11 @@ import landingVars from '../../../styles/pages/_landingVars';
 
 const LandingHero = () => {
   const windowSize = useWindowSize();
+
+  const isMobile = windowSize.width < landingVars.breakpoints.mobile;
   const [modalShowing, setModalShowing] = React.useState(false);
+
+  const buttonStyle = { width: isMobile ? 170 : 220, height: 60, fontSize: isMobile ? 16 : 22, display: 'inline' };
 
   const hero = (
     <div
@@ -21,7 +25,7 @@ const LandingHero = () => {
       }}
       className="display-flex flex-direction-column justify-content-flex-start align-items-center"
     >
-      <div style={{ fontSize: 36, lineHeight: 1.45, fontWeight: 600, color: '#4A4A4A' }}>
+      <div style={{ fontSize: isMobile ? 24 : 36, lineHeight: 1.45, fontWeight: 600, color: '#4A4A4A' }}>
         <span>
           The fastest, easiest way for instructors to give{' '}
           <Typography.Text mark className="codePost-title-highlight-new">
@@ -30,9 +34,9 @@ const LandingHero = () => {
           to students
         </span>
       </div>
-      <div
+      <h1
         style={{
-          fontSize: 24,
+          fontSize: isMobile ? 20 : 24,
           lineHeight: 1.67,
           fontWeight: 400,
           color: '#606060',
@@ -42,23 +46,21 @@ const LandingHero = () => {
       >
         Autograder, code commenting, rubrics, plagiarism checker, and more. &nbsp;
         <span style={{ fontWeight: 600, color: '#476b63' }}>Free for educators.</span>
-      </div>
+      </h1>
       <div
         style={{
           width: '100%',
         }}
-        className={`landing__heroButtons display-flex align-items-center justify-content-center`}
+        className={`landing__heroButtons display-flex ${
+          windowSize.width < landingVars.breakpoints.removeModule ? 'flex-direction-column' : ''
+        } align-items-center justify-content-center`}
       >
-        <CPButton
-          style={{ width: 220, height: 75, fontSize: 24, display: 'inline' }}
-          cpType="secondary"
-          id="calendly-button-hero"
-        >
+        <CPButton style={buttonStyle} cpType="secondary" id="calendly-button-hero">
           Schedule demo
         </CPButton>
         &nbsp; &nbsp;
         <Link to="/signup/create">
-          <CPButton style={{ width: 220, height: 75, fontSize: 24, display: 'inline' }} cpType="primary">
+          <CPButton style={buttonStyle} cpType="primary">
             Sign up free
           </CPButton>
         </Link>
@@ -90,12 +92,10 @@ const LandingHero = () => {
       style={{
         width: '100%',
       }}
-      className={`display-flex align-items-center justify-content-center flex-direction-${
-        windowSize.width < landingVars.breakpoints.hero ? 'column' : 'row'
-      }`}
+      className={`display-flex align-items-center justify-content-center`}
       id="Hero"
     >
-      <div style={{ maxWidth: 1000 }}>{hero}</div>
+      <div style={{ maxWidth: 1000, width: 'inherit' }}>{hero}</div>
     </div>
   );
 };

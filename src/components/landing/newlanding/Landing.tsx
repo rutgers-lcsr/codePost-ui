@@ -39,6 +39,13 @@ const AutograderModule = React.lazy(() => import('./../landingAnimations/autogra
 const LandingFlowChart = React.lazy(() => import('./../landingAnimations/flowchart/LandingFlowChart'));
 /**********************************************************************************************************************/
 
+const buImg = require('../../../img/landing/compressed/logos/bu.png');
+const caltechImg = require('../../../img/landing/compressed/logos/caltech.png');
+const princetonImg = require('../../../img/landing/compressed/logos/princeton.png');
+const iowaImg = require('../../../img/landing/compressed/logos/iowa.png');
+const ucsdImg = require('../../../img/landing/compressed/logos/ucsd.png');
+const cornellImg = require('../../../img/landing/compressed/logos/cornell.png');
+
 class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
   public componentDidMount() {
     // Calendly widget setup
@@ -179,7 +186,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
                 </div>
               </div>
             }
-            title="Api-first: open and interoperable"
+            title="API-first: open and interoperable"
             subTitle="Write short scripts with the codePost API"
             module={panelFourModule}
             type="right"
@@ -200,8 +207,15 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
       </div>
     );
 
-    const schoolStyle = { maxWidth: 115, fontWeight: 600, textAlign: 'center' as 'center' };
-
+    const schoolStyle = {
+      minWidth: 70,
+      paddingTop: 5,
+      paddingBottom: 5,
+      maxWidth: 115,
+      fontWeight: 600,
+      textAlign: 'center' as 'center',
+    };
+    const logoWidth = this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 70 : 115;
     return (
       <LandingLayout
         // @ts-ignore
@@ -210,9 +224,11 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
         hero={<LandingHero />}
         testimonial={
           <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-            <div style={{ opacity: 0.6, maxWidth: 1000 }}>
+            <div style={{ width: 'inherit', opacity: 0.6, maxWidth: 1000 }}>
               <div style={{ float: 'left', fontSize: 22, fontWeight: 600, marginBottom: 20 }}>
-                Trusted by Instructors at top Computer Science programs
+                {this.props.windowwidth < landingVars.breakpoints.mobile
+                  ? 'Trusted by'
+                  : 'Trusted by instructors at top Computer Science programs'}
               </div>
               <div
                 style={{
@@ -222,14 +238,27 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
                   opacity: 1,
                   fontSize: 18,
                   justifyContent: 'space-between',
+                  flexWrap: 'wrap',
                 }}
               >
-                <div style={{ ...schoolStyle, color: 'rgba(188, 38, 26)' }}>Boston University</div>
-                <div style={{ ...schoolStyle, color: 'rgba(231,115,55)' }}>California Institute of Technology</div>
-                <div style={{ ...schoolStyle, color: 'rgba(233,137,64)' }}>Princeton University</div>
-                <div style={{ ...schoolStyle, color: '#c6a438' }}>University of Iowa</div>
-                <div style={{ ...schoolStyle, color: 'rgba(21, 39,70)' }}>UC San Diego</div>
-                <div style={{ ...schoolStyle, color: 'rgba(156,35,38)' }}>Cornell University</div>
+                <div style={{ ...schoolStyle, color: 'rgba(188, 38, 26)' }}>
+                  <img src={buImg} width={logoWidth} />
+                </div>
+                <div style={{ ...schoolStyle, color: 'rgba(231,115,55)' }}>
+                  <img src={caltechImg} width={logoWidth} />
+                </div>
+                <div style={{ ...schoolStyle, color: 'rgba(233,137,64)' }}>
+                  <img src={princetonImg} width={logoWidth} />
+                </div>
+                <div style={{ ...schoolStyle, color: '#c6a438' }}>
+                  <img src={iowaImg} width={logoWidth} />
+                </div>
+                <div style={{ ...schoolStyle, color: 'rgba(21, 39,70)' }}>
+                  <img src={ucsdImg} width={logoWidth} />
+                </div>
+                <div style={{ ...schoolStyle, color: 'rgba(156,35,38)' }}>
+                  <img src={cornellImg} width={logoWidth - 20} />
+                </div>
               </div>
             </div>
           </div>
