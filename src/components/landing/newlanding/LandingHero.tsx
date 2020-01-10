@@ -34,7 +34,7 @@ const LandingHero = () => {
           to students
         </span>
       </div>
-      <div
+      <h1
         style={{
           fontSize: isMobile ? 20 : 24,
           lineHeight: 1.67,
@@ -46,7 +46,7 @@ const LandingHero = () => {
       >
         Autograder, code commenting, rubrics, plagiarism checker, and more. &nbsp;
         <span style={{ fontWeight: 600, color: '#476b63' }}>Free for educators.</span>
-      </div>
+      </h1>
       <div
         style={{
           width: '100%',
