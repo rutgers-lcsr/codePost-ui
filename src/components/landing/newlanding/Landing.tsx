@@ -207,7 +207,14 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
       </div>
     );
 
-    const schoolStyle = { maxWidth: 115, fontWeight: 600, textAlign: 'center' as 'center' };
+    const schoolStyle = {
+      minWidth: 70,
+      paddingTop: 5,
+      paddingBottom: 5,
+      maxWidth: 115,
+      fontWeight: 600,
+      textAlign: 'center' as 'center',
+    };
     const logoWidth = this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 70 : 115;
     return (
       <LandingLayout
@@ -231,6 +238,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
                   opacity: 1,
                   fontSize: 18,
                   justifyContent: 'space-between',
+                  flexWrap: 'wrap',
                 }}
               >
                 <div style={{ ...schoolStyle, color: 'rgba(188, 38, 26)' }}>
