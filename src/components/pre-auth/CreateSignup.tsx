@@ -249,21 +249,13 @@ class CreateSignup extends React.Component<IProps, IState> {
    *
    */
   public render() {
-    const spacing = <div style={{ paddingTop: this.props.windowwidth < 700 ? 10 : 40 }} />;
+    const spacing = <div style={{ paddingTop: this.props.windowwidth < 700 ? 10 : 20 }} />;
 
     let content;
     switch (this.state.status) {
       case STATUS.INPUT:
         content = (
           <div>
-            Tier: &nbsp; &nbsp;
-            <Radio.Group defaultValue={1}>
-              <Radio value={1}>Teach</Radio>
-              <Radio value={2} disabled={true}>
-                Enterprise
-              </Radio>
-            </Radio.Group>
-            <CPTooltip placement={'bottom'} title={tooltips.preauth.create.proPricing} infoIcon={true} />
             {spacing}
             <Input
               placeholder={'Your email'}
@@ -299,10 +291,14 @@ class CreateSignup extends React.Component<IProps, IState> {
               </div>
             ) : null}
             <div>
-              <br />
-              <br />
-              <Checkbox value={this.state.check2} onChange={this.toggleCheck.bind(this, 'check2')} /> I agree to the
-              codePost <Link to="/terms">Terms of Service</Link> and <Link to="/privacy">Privacy Policy</Link>.
+              <div style={{ paddingTop: 80 }} />
+              <Checkbox
+                value={this.state.check2}
+                onChange={this.toggleCheck.bind(this, 'check2')}
+                style={{ marginRight: 10 }}
+              />
+              I agree to the codePost <Link to="/terms">Terms of Service</Link> and{' '}
+              <Link to="/privacy">Privacy Policy</Link>.
             </div>
             {spacing}
             <div style={{ display: 'flex' }}>
@@ -322,14 +318,17 @@ class CreateSignup extends React.Component<IProps, IState> {
                   !this.state.check2
                 }
               >
-                Continue
+                Continue to codePost
               </CPButton>
             </div>
             {spacing}
             <Divider />
-            <span>
+            <div>
+              Trying to sign up as a student? <Link to="/signup/join">Click here.</Link>
+            </div>
+            <div style={{ marginTop: 5 }}>
               Having trouble? Contact us at <b>team@codepost.io</b>.{spacing}
-            </span>
+            </div>
           </div>
         );
         break;
@@ -442,13 +441,13 @@ class CreateSignup extends React.Component<IProps, IState> {
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyContent: 'center',
             flexDirection,
             paddingTop: 20,
           }}
         >
-          <div>
-            <Typography.Title level={1}>Create a new course with codePost</Typography.Title>
+          <div style={{ marginRight: this.props.windowwidth < 750 ? 0 : 25 }}>
+            <Typography.Title level={1}>Sign up as an instructor</Typography.Title>
             <div style={{ maxWidth: 600 }}>{content}</div>
           </div>
           {this.state.status === STATUS.INPUT ? (

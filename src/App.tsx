@@ -31,7 +31,7 @@ import RouterLoading from './components/core/RouterLoading';
 
 import ForbiddenManager from './components/pre-auth/ForbiddenManager';
 
-import { identifyUserForFS, runFSSetup, shutdownFS } from './components/utils/Fullstory';
+import { identifyUserForFS, shutdownFS } from './components/utils/Fullstory';
 
 import { ShowTooltipContext } from './components/core/tooltips';
 
@@ -151,7 +151,7 @@ class App extends React.Component<{}, IState> {
         } else {
           if (prevState.isSuperUser) {
             // We need to start the FS session before we identify it
-            runFSSetup();
+            // runFSSetup();
             identifyUserForFS(this.state.user.email);
           } else {
             // FS session was initiated in componentDidMount
@@ -205,25 +205,37 @@ class App extends React.Component<{}, IState> {
           Authorization: `JWT ${localStorage.getItem('token')} `,
         },
       })
-        .then((res) => {
+        .then(async (res) => {
           if (res.ok) {
-            return res.json();
+            const json = await res.json();
+            this.setState((oldState) => {
+              return {
+                user: json,
+                triedLoading: true,
+                isSuperUser: superUsers.indexOf(json.email) > -1 || oldState.isSuperUser,
+              };
+            });
+            this.refreshToken();
+          } else if (res.status === 401) {
+            // A status code of 401 indicates that the provided token is invalid => the user needs
+            // to login again, so we log them out.
+            this.setState({ triedLoading: true });
+            this.handleLogout();
+          } else {
+            // A different error status code indicates some contextual problem, like a network connectivity problem.
+            // If this happens, try every 1s to login every 1s.
+            //
+            // Issue with this approach: if our API server is unavailable, the site will appear as a blank page
+            // (rather than showing users the pre-auth site).
+            setTimeout(() => {
+              this.tryToLogin();
+            }, 1000);
           }
-          return Promise.reject();
-        })
-        .then((json) => {
-          this.setState((oldState) => {
-            return {
-              user: json,
-              triedLoading: true,
-              isSuperUser: superUsers.indexOf(json.email) > -1 || oldState.isSuperUser,
-            };
-          });
-          this.refreshToken();
         })
         .catch((error) => {
-          this.setState({ triedLoading: true });
-          this.handleLogout();
+          setTimeout(() => {
+            this.tryToLogin();
+          }, 1000);
         });
     } else {
       this.setState({ triedLoading: true });
@@ -231,9 +243,9 @@ class App extends React.Component<{}, IState> {
   };
 
   public componentDidMount() {
-    if (inProduction && !this.state.isSuperUser) {
-      runFSSetup();
-    }
+    // if (inProduction && !this.state.isSuperUser) {
+    //   // runFSSetup();
+    // }
 
     window.addEventListener('message', this.messageHandler, false);
 
@@ -334,9 +346,6 @@ class App extends React.Component<{}, IState> {
         setInterval(this.refreshToken, REFRESH_INT);
         (window as any).gtag('set', { user_id: json.user.id });
         (window as any).gtag('set', 'organization', json.user.organization);
-      })
-      .catch((error) => {
-        this.handleLogout();
       });
   };
 

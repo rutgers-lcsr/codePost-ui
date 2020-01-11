@@ -10,6 +10,8 @@ export const RubricCommentV = t.intersection(
       category: t.number,
       sortKey: t.number,
       explanation: t.string,
+      instructionText: t.string,
+      templateTextOn: t.boolean,
     }),
   ],
   'RubricComment',
@@ -93,6 +95,8 @@ export const RubricCommentMock: RubricCommentType = {
   category: 1,
   sortKey: 0,
   explanation: '',
+  instructionText: '',
+  templateTextOn: false,
 };
 
 // export { RubricCommentType, RubricCommentPatchType, RubricComment, RubricCommentV, RubricCommentMock };

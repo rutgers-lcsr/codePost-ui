@@ -188,7 +188,7 @@ const TestsList = (props: IProps) => {
                 </span>
               ),
               points,
-              logs: result ? result.logs : '--',
+              logs: <span style={{ whiteSpace: 'pre' }}>{result ? result.logs : '--'}</span>,
               explanation: <ReactMarkdown>{testCase.explanation}</ReactMarkdown>,
             };
           });

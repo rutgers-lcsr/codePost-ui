@@ -1,13 +1,13 @@
 import { Divider } from 'antd';
 
-import * as React from 'react';
+import React, { Suspense } from 'react';
 import useWindowSize from '../core/useWindowSize';
 
 import landingVars from '../../styles/pages/_landingVars';
 
-import Video from './Video';
-
 import { EmailSubscribe } from './EmailSubscribe';
+
+const Video = React.lazy(() => import('./Video'));
 
 interface IProps {
   location: any;
@@ -158,10 +158,11 @@ const LandingLayout = (props: IProps) => {
       <Divider style={{ margin: 0 }} />
       <div style={{ ...sectionStyle }} className={sectionClass}>
         <div style={{ ...panelStyle, maxWidth: '1920px', textAlign: 'center' }}>
-          <Video location={props.location} />
+          <Suspense fallback={<div style={{ width: '100%', height: 400 }} />}>
+            <Video location={props.location} />
+          </Suspense>
         </div>
       </div>
-
       <div>
         <Divider style={{ margin: 0 }} />
         <div style={{ ...sectionStyle, background: landingVars.backgrounds.getStarted }} className={sectionClass}>

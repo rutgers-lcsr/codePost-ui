@@ -12,7 +12,13 @@ import {
 
 import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
-import { AnonymousSubmissionV, StudentSubmissionV, SubmissionV } from './submission';
+import {
+  AnonymousSubmissionV,
+  StudentSubmissionV,
+  SubmissionV,
+  SubmissionInfoV,
+  AnonymousSubmissionInfoV,
+} from './submission';
 import { SubmissionHistoryV } from './submissionHistory';
 import { StudentTestCaseV } from './testCase';
 import { TestCategoryV } from './testCategory';
@@ -47,6 +53,16 @@ const AssignmentV = t.intersection(
       environment: t.union([t.number, t.null]),
       showFrequentlyUsedRubricComments: t.boolean,
       allowLateUploads: t.boolean,
+    }),
+    t.partial({
+      submissions_count: t.number,
+      submissions_finalized_count: t.number,
+      submissions_inprogress_count: t.number,
+      submissions_unclaimed_count: t.number,
+      submissions_missing_count: t.number,
+      stats_max: t.number,
+      stats_min: t.number,
+      stats_mean: t.number,
     }),
   ],
   'Assignment',
@@ -167,9 +183,9 @@ export class Assignment {
   public static delete = deleteObject(AssignmentV, 'assignments');
 
   public static readRubric = readObjectDetail(RubricV, 'assignments', 'rubric');
-  public static readSubmissions = readObjectDetail(t.array(SubmissionV), 'assignments', 'submissions');
+  public static readSubmissions = readObjectDetail(t.array(SubmissionInfoV), 'assignments', 'submissions');
   public static readSubmissionsAnonymous = readObjectDetail(
-    t.array(AnonymousSubmissionV),
+    t.array(AnonymousSubmissionInfoV),
     'assignments',
     'submissions',
   );
