@@ -8,6 +8,7 @@ import LandingNew from './newlanding/Landing.tsx';
 const Landing = (props: any) => {
   // Set up an A/B Test
   // FIXME: Standardize this code to make a standard A/B test function
+  // Code for this inspired by: https://medium.com/adhawk-engineering/how-to-add-google-optimize-a-b-testing-to-your-react-app-in-10-lines-of-code-8310b58e51f4
   const [variant, setVariant] = useState(0);
   const [loaded, setLoaded] = useState(false);
 
@@ -25,7 +26,7 @@ const Landing = (props: any) => {
       console.log('trying');
       timesRun += 1;
       if ((window as any).google_optimize !== undefined) {
-        const variant = (window as any).google_optimize.get('g9Q7V62ERN6WIYJcHTmRgw');
+        const variant = (window as any).google_optimize.get('3QqwNXa5QM2R_SgYK6dSVw');
         console.log(variant);
         if (variant !== undefined) {
           setVariant(variant);
