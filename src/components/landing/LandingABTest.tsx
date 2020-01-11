@@ -23,7 +23,7 @@ const Landing = (props: any) => {
     };
 
     (window as any).gtag('event', 'optimize.callback', {
-      name: '56AzdZRTRx6XXg4crK_5Ew',
+      name: 'MIgnvH68SVqyGeOz7dwPNQ',
       callback: callback,
     });
 
