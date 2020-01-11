@@ -18,10 +18,12 @@ const Landing = (props: any) => {
         console.log(value);
         setVariant(value);
       }
+      console.log(value);
       setLoaded(true);
     };
-    (window as any).dataLayer.push('optimize.callback', {
-      name: '3QqwNXa5QM2R_SgYK6dSVw',
+
+    (window as any).gtag('event', 'optimize.callback', {
+      name: '56AzdZRTRx6XXg4crK_5Ew',
       callback: callback,
     });
 
