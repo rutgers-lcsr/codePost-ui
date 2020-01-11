@@ -58,6 +58,8 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     timezone: moment.tz.guess(),
     emailNewUsers: false,
     anonymousGradingDefault: false,
+    minComments: 0,
+    noUnfinalize: false,
   };
 
   const demoSubmission: AnonymousSubmissionType = {
@@ -136,6 +138,8 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
         pointDelta: 1,
         sortKey: 0,
         explanation: '',
+        instructionText: '',
+        templateTextOn: false,
       },
       {
         id: 2,
@@ -144,6 +148,8 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
         pointDelta: 1,
         sortKey: 1,
         explanation: '',
+        instructionText: '',
+        templateTextOn: false,
       },
       {
         id: 3,
@@ -152,6 +158,8 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
         pointDelta: 1,
         sortKey: 2,
         explanation: '',
+        instructionText: '',
+        templateTextOn: false,
       },
     ],
     2: [
@@ -162,6 +170,8 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
         pointDelta: 2,
         sortKey: 0,
         explanation: '',
+        instructionText: '',
+        templateTextOn: false,
       },
       {
         id: 5,
@@ -170,6 +180,8 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
         pointDelta: 1,
         sortKey: 0,
         explanation: '',
+        instructionText: '',
+        templateTextOn: false,
       },
     ],
   };
@@ -319,6 +331,8 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     timezone: moment.tz.guess(),
     emailNewUsers: false,
     anonymousGradingDefault: false,
+    minComments: 0,
+    noUnfinalize: false,
   };
 
   const demoSubmission: AnonymousSubmissionType = {
@@ -427,6 +441,8 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
         pointDelta: 0,
         sortKey: 2,
         explanation: '',
+        instructionText: '',
+        templateTextOn: false,
       },
     ],
     2: [
@@ -438,6 +454,8 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
         pointDelta: 0,
         sortKey: 0,
         explanation: '',
+        instructionText: '',
+        templateTextOn: false,
       },
     ],
   };
@@ -451,6 +469,8 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
       pointDelta: 0,
       sortKey: 0,
       explanation: '',
+      instructionText: '',
+      templateTextOn: false,
     },
     2: {
       id: 3,
@@ -460,6 +480,8 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
       pointDelta: 0,
       sortKey: 2,
       explanation: '',
+      instructionText: '',
+      templateTextOn: false,
     },
   };
 
