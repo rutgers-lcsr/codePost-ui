@@ -8,49 +8,33 @@ import LandingNew from './newlanding/Landing.tsx';
 const Landing = (props: any) => {
   // Set up an A/B Test
   // FIXME: Standardize this code to make a standard A/B test function
-  const [variant, setVariant] = useState(0);
+  const [variant, setVariant] = useState('0');
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const fetchvariant = async () => {
-      if ((window as any).dataLayer) {
-        const promise = (window as any).dataLayer.push({ event: 'optimize.activate' });
-        await promise;
+    const callback = (value: string) => {
+      if (value !== undefined) {
+        setVariant(value);
       }
+      setLoaded(true);
     };
-    fetchvariant();
 
-    let timesRun = 0; // we don't want our interval to stall indefinetely
-    const interval = setInterval(() => {
-      console.log('trying');
-      timesRun += 1;
-      if ((window as any).google_optimize !== undefined) {
-        const variant = (window as any).google_optimize.get('g9Q7V62ERN6WIYJcHTmRgw');
-        console.log(variant);
-        if (variant !== undefined) {
-          setVariant(variant);
-          setLoaded(true);
-          clearInterval(interval);
-        }
-      }
-      if (timesRun > 10) {
-        setLoaded(true);
-        clearInterval(interval);
-      }
-    }, 100);
+    (window as any).gtag('event', 'optimize.callback', {
+      name: 'AXIof_9-TwKggJ3Zp9wpCg',
+      callback: callback,
+    });
 
-    return () => {
-      clearInterval(interval);
-    };
-    // Should implement useCallback()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // in case it never gets called, load anywy
+    setTimeout(function() {
+      setLoaded(true);
+    }, 1000);
   }, []);
 
   if (!loaded) {
     return <div />;
   }
 
-  if (variant === 1) {
+  if (variant === '1') {
     return <LandingNew {...props} />;
   }
 
