@@ -254,6 +254,20 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             );
           })
         : [];
+
+    // Selector to choose whether an output is a file or a string
+    const outputTypeSelect = (
+      <Select
+        disabled={this.props.isRunning}
+        value={this.state.outputIsFile ? 'file' : 'constant'}
+        onChange={this.onChangeOutputType}
+        style={{ width: 120 }}
+      >
+        <Select.Option value={'constant'}>Constant</Select.Option>
+        <Select.Option value={'file'}>File</Select.Option>
+      </Select>
+    );
+
     return (
       <div className="natural-language-form" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', width: '100%', flexWrap: 'wrap' }}>
@@ -414,10 +428,11 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 },
               ],
             })(
-              <Input.TextArea
+              <Input
+                addonBefore={outputTypeSelect}
                 disabled={this.props.isRunning}
                 style={{ minWidth: 250, marginLeft: 5 }}
-                autosize={true}
+                placeholder={'output'}
               />,
             )}
             <span style={{ marginLeft: '1px' }}>.</span>
