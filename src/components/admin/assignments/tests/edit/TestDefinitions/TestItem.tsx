@@ -90,23 +90,35 @@ export const TestItem = (props: ITestItemProps) => {
     }
   };
 
-  const handleCreate = (testType: string, explanation: string, checkReturn: boolean, codeString?: string) => {
+  const handleCreate = (
+    testType: string,
+    explanation: string,
+    checkReturn: boolean,
+    outputIsFile: boolean,
+    codeString?: string,
+  ) => {
     const form = formRef.props.form;
     form.validateFields((err: any, values: IFormValues) => {
       if (err) {
         return;
       }
-      saveTest(values, testType, explanation, checkReturn, codeString);
+      saveTest(values, testType, explanation, checkReturn, outputIsFile, codeString);
     });
   };
 
-  const handleRun = (testType: string, explanation: string, checkReturn: boolean, codeString?: string) => {
+  const handleRun = (
+    testType: string,
+    explanation: string,
+    checkReturn: boolean,
+    outputIsFile: boolean,
+    codeString?: string,
+  ) => {
     const form = formRef.props.form;
     form.validateFields((err: any, values: IFormValues) => {
       if (err) {
         return;
       }
-      runTest(values, testType, explanation, checkReturn, codeString);
+      runTest(values, testType, explanation, checkReturn, outputIsFile, codeString);
     });
   };
 
@@ -133,9 +145,10 @@ export const TestItem = (props: ITestItemProps) => {
     testType: string,
     explanation: string,
     checkReturn: boolean,
+    outputIsFile: boolean,
     codeString?: string,
   ) => {
-    await saveTest(values, testType, explanation, checkReturn, codeString);
+    await saveTest(values, testType, explanation, checkReturn, outputIsFile, codeString);
 
     if (props.testCase.id > 0) {
       if (!props.activeSubmission && props.files.length === 0) {
@@ -186,6 +199,7 @@ export const TestItem = (props: ITestItemProps) => {
     testType: string,
     explanation: string,
     checkReturn: boolean,
+    outputIsFile: boolean,
     codeString?: string,
   ) => {
     const testCaseCopy = { ...props.testCase };
@@ -201,6 +215,7 @@ export const TestItem = (props: ITestItemProps) => {
     testCaseCopy.pointsPass = values.pointsPass;
     testCaseCopy.pointsFail = values.pointsFail;
     testCaseCopy.explanation = explanation;
+    testCaseCopy.outputIsFile = outputIsFile;
 
     // Warn user if they are modifying an instantiated SubmissionTest in a way that
     // will propagate to instances.

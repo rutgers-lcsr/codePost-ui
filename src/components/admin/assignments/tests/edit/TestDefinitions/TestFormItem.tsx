@@ -39,11 +39,23 @@ const { Option } = Select;
 
 interface ITestFormItemProps extends FormComponentProps {
   testCase: TestCaseType;
-  saveTest: () => void;
+  saveTest: (
+    testType: string,
+    explanation: string,
+    checkReturn: boolean,
+    outputIsFile: boolean,
+    codeString?: string,
+  ) => void;
   deleteTest: () => Promise<void>;
   files: SolutionFileType[];
   log?: ILogType;
-  runTest: () => void;
+  runTest: (
+    testType: string,
+    explanation: string,
+    checkReturn: boolean,
+    outputIsFile: boolean,
+    codeString?: string,
+  ) => void;
   isRunning: boolean;
   language: string;
   submissions: SubmissionType[];
@@ -118,6 +130,28 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     this.setState({ outputIsFile });
   };
 
+  /******************************* API Change Functions ****************************/
+  public onSave = () => {
+    this.props.saveTest(
+      this.state.testType,
+      this.state.explanation,
+      this.state.checkReturn,
+      this.state.outputIsFile,
+      this.state.commandText,
+    );
+  };
+
+  public onRun = () => {
+    this.props.runTest(
+      this.state.testType,
+      this.state.explanation,
+      this.state.checkReturn,
+      this.state.outputIsFile,
+      this.state.commandText,
+    );
+  };
+
+  /******************************* Render helper Functions ****************************/
   public getPseudoCode = () => {
     const missingArgStyle = { color: '#BBBBBB', fontWeight: 300, fontStyle: 'italic' };
     const filledArgStyle = { color: 'grey', fontWeight: 600 };
@@ -128,7 +162,9 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
       console.log(file);
       const input = this.props.form.getFieldValue('input') || 'input';
       const func = this.props.form.getFieldValue('function') || 'function';
-      const output = this.props.form.getFieldValue('expectedOutput') || 'output';
+      const output = this.state.outputIsFile
+        ? `cat ${this.props.form.getFieldValue('expectedOutput') || 'outputFile'}`
+        : this.props.form.getFieldValue('expectedOutput') || 'output';
       const enclosingStartBrace = this.state.checkReturn ? '' : 'print(';
       const enclosingEndBrace = this.state.checkReturn ? '' : ')';
 
@@ -161,7 +197,9 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     if (this.state.testType == 'io_cli') {
       const command = this.state.commandText || 'command';
       const input = this.props.form.getFieldValue('input') || 'input';
-      const output = this.props.form.getFieldValue('expectedOutput') || 'output';
+      const output = this.state.outputIsFile
+        ? `cat ${this.props.form.getFieldValue('expectedOutput') || 'outputFile'}`
+        : this.props.form.getFieldValue('expectedOutput') || 'output';
 
       return (
         <div style={{ color: '#707070', fontWeight: 500, fontSize: 14 }}>
@@ -539,17 +577,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             )}
           </Typography.Title>
           <div>
-            <Button
-              style={{ marginRight: 10 }}
-              type="primary"
-              onClick={this.props.saveTest.bind(
-                this,
-                this.state.testType,
-                this.state.explanation,
-                this.state.checkReturn,
-                this.state.commandText,
-              )}
-            >
+            <Button style={{ marginRight: 10 }} type="primary" onClick={this.onSave}>
               Save
             </Button>
             <Button type="danger" onClick={this.props.deleteTest}>
@@ -775,13 +803,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 <PsuedoTerminal
                   log={this.props.log}
                   isRunning={this.props.isRunning}
-                  runTest={this.props.runTest.bind(
-                    this,
-                    this.state.testType,
-                    this.state.explanation,
-                    this.state.checkReturn,
-                    this.state.commandText,
-                  )}
+                  runTest={this.onRun}
                   submissions={this.props.submissions}
                   setTestSubject={this.props.setTestSubject}
                 />
