@@ -171,7 +171,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
             text={
               <div>
                 <div style={{ paddingBottom: 15 }}>
-                  Wallet gardens are a big pain. That's why we built the codePost API. It allows you to
+                  Closed platforms are a pain. That's why we built the codePost API. It allows you to
                   <ul>
                     <li>
                       <span style={{ fontWeight: 600 }}>integrate with other software</span>, like your LMS,

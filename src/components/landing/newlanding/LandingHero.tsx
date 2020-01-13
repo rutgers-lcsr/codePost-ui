@@ -31,7 +31,7 @@ const LandingHero = () => {
           <Typography.Text mark className="codePost-title-highlight-new">
             student code
           </Typography.Text>
-          , built for instructors
+          . Built for instructors.
         </span>
       </div>
       <h1
