@@ -230,10 +230,16 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
         hero={<LandingHero />}
         testimonial={
           <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-            <div style={{ width: 'inherit', opacity: 0.6, maxWidth: 1000 }}>
+            <div
+              style={{
+                width: 'inherit',
+                opacity: 0.6,
+                maxWidth: this.props.windowwidth < landingVars.breakpoints.mobile ? 275 : 1000,
+              }}
+            >
               <div style={{ float: 'left', fontSize: 22, fontWeight: 600, marginBottom: 20 }}>
                 {this.props.windowwidth < landingVars.breakpoints.mobile
-                  ? 'Trusted by'
+                  ? 'Trusted by instructors at:'
                   : 'Trusted by instructors at top Computer Science programs'}
               </div>
               <div
