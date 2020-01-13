@@ -77,11 +77,15 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
         text={
           <div>
             <div style={{ paddingBottom: 15 }}>
-              Identify correctness mistakes efficiently. codePost:{' '}
-              <ul>
-                <li>provides tools to help you write tests without overhead</li>{' '}
-                <li>makes it easy to run tests and report results</li>
-              </ul>
+              Identify correctness mistakes efficiently, in courses of all sizes. Take advantage of simple no-code
+              tests, or write flexible tests using short scripts. All tests run on codePost servers, and{' '}
+              <a
+                href="https://help.codepost.io/en/articles/3550689-what-languages-does-the-codepost-autograder-support"
+                target="_blank"
+              >
+                <span style={{ fontWeight: 600, cursor: 'pointer' }}>all major languages are supported</span>
+              </a>
+              .
             </div>
           </div>
         }
@@ -128,7 +132,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
             </Link>
           </div>
         }
-        title="All-in-one tool"
+        title="One tool to rule them all"
         subTitle="Everything you need to run your course"
         module={
           <Suspense fallback={<div style={{ width: 500, height: 400 }} />}>
@@ -167,22 +171,24 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
             text={
               <div>
                 <div style={{ paddingBottom: 15 }}>
-                  Integrating tools is a big pain. That's why we built the codePost API. It allows you to
+                  Wallet gardens are a big pain. That's why we built the codePost API. It allows you to
                   <ul>
                     <li>
-                      <span style={{ fontWeight: 600 }}>integrate with other software</span>, such as your LMS,
-                      autograder, and version control systems,
+                      <span style={{ fontWeight: 600 }}>integrate with other software</span>, like your LMS,
                     </li>
                     <li>
-                      <span style={{ fontWeight: 600 }}>automate common tasks</span>, such as synchronizing rosters from
-                      your Registrar or LMS, and
+                      <span style={{ fontWeight: 600 }}>automate common tasks</span>, such as syncing rosters from your
+                      registrar, and
                     </li>
                     <li>
-                      <span style={{ fontWeight: 600 }}>analyze your course data</span>, so that you can find and track
-                      insights against your goals.
+                      <span style={{ fontWeight: 600 }}>analyze your course data</span>.
                     </li>
                   </ul>
-                  It's actually easy to use - you can write useful, short scripts in 10 minutes.
+                  You can write useful, short scripts in 10 minutes. Or take advantage of our{' '}
+                  <a href="https://codepost.io/integrations" target="_blank">
+                    <span style={{ fontWeight: 600, cursor: 'pointer' }}>native integrations</span>
+                  </a>
+                  .
                 </div>
               </div>
             }

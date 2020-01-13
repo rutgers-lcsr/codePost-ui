@@ -19,8 +19,7 @@ const LandingAnnotationPanel = () => {
             >
               code
             </span>{' '}
-            with easy-to-read comments. You and your course staff can provide custom feedback, as well as apply
-            standardized rubrics. And we support{' '}
+            with easy-to-read comments. Write custom comments, or apply a standardized rubric. We support commenting on{' '}
             <span
               style={{ color: index === 1 ? '#24be85' : '', fontWeight: 600, cursor: 'pointer' }}
               onClick={setIndex.bind({}, 1)}
@@ -39,7 +38,7 @@ const LandingAnnotationPanel = () => {
         </div>
       }
       title="Code commenting"
-      subTitle="Effortlessly annotate and grade programming assignments"
+      subTitle="Effortlessly annotate programming assignments"
       module={
         <Suspense fallback={<div>Loading...</div>}>
           <AnnotationModule index={index} />
