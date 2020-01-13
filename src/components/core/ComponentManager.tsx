@@ -21,6 +21,8 @@ import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
 import { CourseContext } from '../core/Contexts';
 
+import { encodeForRoute } from '../core/URLutils';
+
 /**********************************************************************************************************************/
 
 interface IComponentManagerProps extends RouteComponentProps<{}> {
@@ -42,7 +44,7 @@ export interface IComponentProps extends IComponentManagerProps {
 }
 
 const formURL = (baseURL: string, course: CourseType, page?: string) => {
-  return `${baseURL}/${course.name}/${course.period}/${page !== undefined ? page : ''}`;
+  return `${baseURL}/${encodeForRoute(course.name)}/${encodeForRoute(course.period)}/${page !== undefined ? page : ''}`;
 };
 
 const ComponentManager = (MyComponent: React.ComponentType<IComponentProps>, defaultPage?: string) => {

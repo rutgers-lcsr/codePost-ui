@@ -111,13 +111,16 @@ export const fetchTestCasesByCategory = async (categories: TestCategoryType[]) =
 // For a list of submissions, create a {submissionID: SubmissionTest[]} object
 export const fetchTestsBySubmission = async (submissions: AnonymousSubmissionType[]) => {
   const toRet: TestsBySubmission = {};
-  const submissionPromises = submissions.map(async (submission) => {
-    const testPromises = submission.tests.map((id) => {
-      return SubmissionTest.read(id);
-    });
-    const tests = await Promise.all(testPromises);
-    toRet[submission.id] = tests;
-  });
+  const submissionPromises =
+    submissions !== undefined
+      ? submissions.map(async (submission) => {
+          const testPromises = submission.tests.map((id) => {
+            return SubmissionTest.read(id);
+          });
+          const tests = await Promise.all(testPromises);
+          toRet[submission.id] = tests;
+        })
+      : [];
   await Promise.all(submissionPromises);
   return toRet;
 };

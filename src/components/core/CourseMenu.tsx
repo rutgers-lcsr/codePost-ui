@@ -14,6 +14,8 @@ import { Menu } from 'antd';
 /* codePost imports */
 import { CourseType } from '../../infrastructure/course';
 
+import { encodeForLink } from '../core/URLutils';
+
 import CPDropdown from './CPDropdown';
 
 /**********************************************************************************************************************/
@@ -32,7 +34,7 @@ const CourseMenu = (props: IProps) => {
         return (
           <Menu.Item key={course.id}>
             <Link
-              to={`/${props.base}/${encodeURIComponent(course.name)}/${encodeURIComponent(course.period)}/${
+              to={`/${props.base}/${encodeForLink(course.name)}/${encodeForLink(course.period)}/${
                 props.panel !== undefined ? props.panel : ''
               }`}
             >

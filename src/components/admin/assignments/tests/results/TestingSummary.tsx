@@ -109,7 +109,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       setFetchLoading(false);
     };
     fetchData();
-  }, [props.currentAssignment]);
+  }, [props.currentAssignment, props.submissions]);
 
   // ******************************* API / State change functions  *******************************
   const runAllProgressCallback = (result: any) => {
@@ -199,69 +199,72 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     switch (summaryType) {
       case SUMMARY_TYPE.BySubmission:
         columns = bySubmissionColumns(categories);
-        data = props.submissions.map((submission: SubmissionType) => {
-          const actionsMenu = (
-            <Menu key={submission.id}>
-              <Menu.Item key="run-tests" onClick={runTests.bind({}, submission)}>
-                <Icon type="caret-right" />
-                Run tests
-              </Menu.Item>
-              <Menu.Item key="submission" onClick={openSubmission.bind({}, submission.id)}>
-                <Icon type="code" />
-                Open submission
-              </Menu.Item>
-            </Menu>
-          );
+        data =
+          props.submissions !== undefined
+            ? props.submissions.map((submission: SubmissionType) => {
+                const actionsMenu = (
+                  <Menu key={submission.id}>
+                    <Menu.Item key="run-tests" onClick={runTests.bind({}, submission)}>
+                      <Icon type="caret-right" />
+                      Run tests
+                    </Menu.Item>
+                    <Menu.Item key="submission" onClick={openSubmission.bind({}, submission.id)}>
+                      <Icon type="code" />
+                      Open submission
+                    </Menu.Item>
+                  </Menu>
+                );
 
-          const toRet: any = {
-            students: submission.students.join(','),
-            key: `submission-${submission.id}`,
-            actions: subsLoading.includes(submission.id) ? (
-              <Icon type="loading" />
-            ) : (
-              <Dropdown overlay={actionsMenu} trigger={['click']}>
-                <Icon type="menu" />
-              </Dropdown>
-            ),
-          };
+                const toRet: any = {
+                  students: submission.students.join(','),
+                  key: `submission-${submission.id}`,
+                  actions: subsLoading.includes(submission.id) ? (
+                    <Icon type="loading" />
+                  ) : (
+                    <Dropdown overlay={actionsMenu} trigger={['click']}>
+                      <Icon type="menu" />
+                    </Dropdown>
+                  ),
+                };
 
-          const tests = SubmissionTest.getLatest(testsBySubmission[submission.id] || []);
-          let passed = 0;
+                const tests = SubmissionTest.getLatest(testsBySubmission[submission.id] || []);
+                let passed = 0;
 
-          // Group the SubmissionTests by category
-          const testByCategory: { [id: number]: SubmissionTestType[] } = {};
-          tests.forEach((test) => {
-            (testByCategory[test.testCategory] && testByCategory[test.testCategory].push(test)) ||
-              (testByCategory[test.testCategory] = [test]);
-            if (test.passed) {
-              passed += 1;
-            }
-          });
+                // Group the SubmissionTests by category
+                const testByCategory: { [id: number]: SubmissionTestType[] } = {};
+                tests.forEach((test) => {
+                  (testByCategory[test.testCategory] && testByCategory[test.testCategory].push(test)) ||
+                    (testByCategory[test.testCategory] = [test]);
+                  if (test.passed) {
+                    passed += 1;
+                  }
+                });
 
-          for (const category of categories) {
-            const tests = testByCategory[category.id] || [];
-            let categoryPassed = 0;
-            let categoryTotal = category.testCases.length;
-            for (const t of tests) {
-              categoryPassed += t.passed ? 1 : 0;
-            }
-            toRet[category.id] = (
-              <div
-                className="text-link"
-                onClick={openDetail.bind({}, category, undefined, undefined, submission)}
-              >{`${categoryPassed} / ${categoryTotal}`}</div>
-            );
-          }
+                for (const category of categories) {
+                  const tests = testByCategory[category.id] || [];
+                  let categoryPassed = 0;
+                  let categoryTotal = category.testCases.length;
+                  for (const t of tests) {
+                    categoryPassed += t.passed ? 1 : 0;
+                  }
+                  toRet[category.id] = (
+                    <div
+                      className="text-link"
+                      onClick={openDetail.bind({}, category, undefined, undefined, submission)}
+                    >{`${categoryPassed} / ${categoryTotal}`}</div>
+                  );
+                }
 
-          const summaryString = totalTests === 0 ? '-- / --' : `${passed} / ${totalTests}`;
+                const summaryString = totalTests === 0 ? '-- / --' : `${passed} / ${totalTests}`;
 
-          toRet['summary'] = (
-            <div className="text-link" onClick={openDetail.bind({}, undefined, undefined, undefined, submission)}>
-              {summaryString}
-            </div>
-          );
-          return toRet;
-        });
+                toRet['summary'] = (
+                  <div className="text-link" onClick={openDetail.bind({}, undefined, undefined, undefined, submission)}>
+                    {summaryString}
+                  </div>
+                );
+                return toRet;
+              })
+            : null;
         break;
       case SUMMARY_TYPE.ByTest:
         columns = byTestColumns;
@@ -415,7 +418,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       onCancel={onCloseRunAll}
       cases={Object.values(testCasesByCategory).flat()}
       raw={progress}
-      numSubmissions={props.submissions.length}
+      numSubmissions={props.submissions !== undefined ? props.submissions.length : 0}
     />,
     <Modal
       visible={modalStatus === MODAL_STATUS.PendingRunAll}
@@ -426,7 +429,8 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     >
       <div style={{ fontSize: 16 }}>
         <div>
-          Estimated time to complete: <b>{getEstimate(props.submissions.length)}</b>
+          Estimated time to complete:{' '}
+          <b>{getEstimate(props.submissions !== undefined ? props.submissions.length : 0)}</b>
         </div>
         <br />
         <div>

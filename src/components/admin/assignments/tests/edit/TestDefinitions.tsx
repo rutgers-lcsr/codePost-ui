@@ -784,8 +784,8 @@ export const TestDefinitions = (props: IProps) => {
           {panel === DETAIL_TYPE.EditTests ? (
             <span>
               <b>Instructions</b>: You can create tests in two ways: in <b style={{ fontWeight: 600 }}>this editor </b>
-              (for isolated unit tests) or in <b style={{ fontWeight: 600 }}>file mode </b>(for a script that includes
-              multiple tests). To get started, click the "Add Test".
+              (for isolated unit tests) or in <b style={{ fontWeight: 600 }}>file mode </b>(for a general script that
+              includes multiple tests). To get started, click the "Add Test".
             </span>
           ) : (
             <span>
