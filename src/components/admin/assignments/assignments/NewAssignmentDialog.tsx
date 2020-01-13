@@ -6,8 +6,11 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Form, Input, InputNumber, Modal } from 'antd';
+import { Form, Input, InputNumber, Modal, Radio, DatePicker } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
+
+/* other library imports */
+import moment from 'moment-timezone';
 
 /* codePost imports */
 import CPButton from '../../../../components/core/CPButton';
@@ -18,16 +21,24 @@ import { AssignmentType } from '../../../../infrastructure/assignment';
 
 interface IProps {
   assignments: AssignmentType[];
-  createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<AssignmentType>;
+  createAssignment: (
+    assignmentName: string,
+    assignmentPoints: number,
+    upload: boolean,
+    dueDate?: string,
+  ) => Promise<AssignmentType>;
+  timezone: string;
 }
 
 interface IState {
   dialogVisible: boolean;
+  studentsCanUpload: boolean;
 }
 
 class NewAssignmentDialog extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     dialogVisible: false,
+    studentsCanUpload: false,
   };
 
   private formRef: React.RefObject<FormComponentProps> = React.createRef();
@@ -39,6 +50,12 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
     });
   };
 
+  public toggleStudentUpload = () => {
+    this.setState((oldState: IState) => {
+      return { studentsCanUpload: !oldState.studentsCanUpload };
+    });
+  };
+
   public handleCreate = () => {
     const formRefCast: any = this.formRef;
     const form = formRefCast.props.form;
@@ -47,14 +64,14 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
         return;
       }
 
-      this.createNewAssignment(values.name, values.points);
+      this.createNewAssignment(values.name, values.points, this.state.studentsCanUpload, values.uploadDueDate);
       form.resetFields();
       this.setState({ dialogVisible: false });
     });
   };
 
-  public createNewAssignment = (name: string, points: number) => {
-    this.props.createAssignment(name, points);
+  public createNewAssignment = (name: string, points: number, upload: boolean, uploadDueDate: string) => {
+    this.props.createAssignment(name, points, upload, uploadDueDate);
     this.toggleDialog();
   };
 
@@ -74,6 +91,9 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
           onCancel={this.toggleDialog}
           onCreate={this.handleCreate}
           assignments={this.props.assignments}
+          toggleStudentUpload={this.toggleStudentUpload}
+          studentsCanUpload={this.state.studentsCanUpload}
+          timezone={this.props.timezone}
         />
       </div>
     );
@@ -85,6 +105,9 @@ interface IFormProps extends FormComponentProps {
   onCreate: () => Promise<void>;
   onCancel: () => void;
   assignments: AssignmentType[];
+  toggleStudentUpload: () => void;
+  studentsCanUpload: boolean;
+  timezone: string;
 }
 
 // FIXME: figure out how to type output of Form.create HOC
@@ -148,6 +171,24 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
                 ],
               })(<InputNumber min={0} />)}
             </Form.Item>
+            <span>Do you want students to be able to submit directly to codePost?</span>
+            <br />
+            <Radio checked={this.props.studentsCanUpload} onChange={this.props.toggleStudentUpload}>
+              Yes
+            </Radio>
+            <Radio checked={!this.props.studentsCanUpload} onChange={this.props.toggleStudentUpload}>
+              No
+            </Radio>
+            <br />
+            <br />
+            {this.props.studentsCanUpload ? (
+              <Form.Item label="Set a due date. You'll be able to edit this later.">
+                {getFieldDecorator('uploadDueDate', {
+                  valuePropName: 'value',
+                  initialValue: moment().tz(this.props.timezone),
+                })(<DatePicker showTime placeholder="Click to select" />)}
+              </Form.Item>
+            ) : null}
           </Form>
         </Modal>
       );
