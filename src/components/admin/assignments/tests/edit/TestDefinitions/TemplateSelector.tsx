@@ -1,34 +1,69 @@
 /* react imports */
 import React, { useState } from 'react';
 
+import { Controlled as CodeMirror } from 'react-codemirror2';
+
 /* library imports */
 import { Button, Modal, Select, Icon, Tooltip, Table } from 'antd';
-
-import { TestCategoryType } from '../../../../../../infrastructure/testCategory';
 
 interface IProps {
   populateDefinition: (template: string) => void;
   language: string;
 }
 
+/************************************************************************************/
+/* Test definitions go here
+/************************************************************************************/
+
 const dataSource = [
   {
     key: '1',
     test: 'Check if code compiles',
-    code: `javac *.java && TestOutput true "Compiled!" || TestOutput false "Didn't compile."`,
   },
   {
     key: '2',
     test: 'Check for keyword in output',
-    code: `result=$(java files.HelloWorld)
-if echo $result | grep "Hello World"
+  },
+];
+
+const codeMap: { [id: string]: any } = {
+  '1': {
+    java: `javac *.java && TestOutput true "Compiled!" || TestOutput false "Didn't compile"`,
+    ['c/c++']: `g++ -o hello hello.cpp && TestOutput true "Compiled!" || TestOutput false "Didn't compile"`,
+  },
+  '2': {
+    java: `result=$(java HelloWorld)
+if echo $result | grep "world"
     then
         TestOutput true "good job!"
     else
-        TestOutput false "Wrong result: Expected Hello World. $result provided"
+        TestOutput false "Couldn't find 'world' in output"
+fi`,
+    ['c/c++']: `result=$(./HelloWorld)
+if echo $result | grep "world"
+    then
+        TestOutput true "good job!"
+    else
+        TestOutput false "Couldn't find 'world' in output"
+fi`,
+    ['python-3.7']: `result=$(python HelloWorld.py)
+if echo $result | grep "world"
+    then
+        TestOutput true "good job!"
+    else
+        TestOutput false "Couldn't find 'world' in output"
+fi`,
+    ['python-2.7']: `result=$(python HelloWorld.py)
+if echo $result | grep "world"
+    then
+        TestOutput true "good job!"
+    else
+        TestOutput false "Couldn't find 'world' in output"
 fi`,
   },
-];
+};
+
+/************************************************************************************/
 
 const columns = [
   {
@@ -43,11 +78,11 @@ const columns = [
   },
 ];
 
+/************************************************************************************/
+
 export const TemplateSelector = (props: IProps) => {
-  /******************************* State Variables ****************************/
   const [visible, setVisible] = useState(false);
 
-  /******************************* State Change Functions ****************************/
   const toggleVisible = () => {
     setVisible(!visible);
   };
@@ -57,9 +92,38 @@ export const TemplateSelector = (props: IProps) => {
     setVisible(false);
   };
 
-  const data = dataSource.map((el) => {
-    return { ...el, select: <Button onClick={() => selectAndClose(el.code)}>Select</Button> };
-  });
+  const data = dataSource
+    .map((el) => {
+      const code = codeMap[el.key][props.language];
+      return {
+        ...el,
+        select: <Button onClick={() => selectAndClose(code)}>Select</Button>,
+        code,
+      };
+    })
+    .filter((el) => el.code);
+
+  const expandedRowRender = (record: any, index: number, indent: any, expanded: boolean) => {
+    const columns = [{ title: `Code`, dataIndex: 'code', key: 'code' }];
+    const data = [
+      {
+        code: (
+          <CodeMirror
+            key={`codeMirror`}
+            value={record.code}
+            onBeforeChange={() => 5}
+            options={{
+              theme: 'neo',
+              readOnly: true,
+              lineWrapping: true,
+              lineNumbers: true,
+            }}
+          />
+        ),
+      },
+    ];
+    return <Table columns={columns} dataSource={data} pagination={false} />;
+  };
 
   /******************************* Return *****************************************/
   return (
@@ -78,7 +142,7 @@ export const TemplateSelector = (props: IProps) => {
           </Button>,
         ]}
       >
-        <Table dataSource={data} columns={columns} pagination={false} />
+        <Table dataSource={data} columns={columns} pagination={false} expandedRowRender={expandedRowRender} />
       </Modal>
     </React.Fragment>
   );
