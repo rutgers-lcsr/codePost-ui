@@ -860,7 +860,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       hideGrades: false,
       rubricCategories: [],
       sortKey,
-      allowStudentUpload: true,
+      allowStudentUpload: studentUpload,
       uploadDueDate: dueDate,
     };
 
