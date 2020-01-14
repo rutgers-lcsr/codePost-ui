@@ -508,6 +508,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       allowGradersToEditRubric: false,
       minComments: 0,
       noUnfinalize: false,
+      archived: false,
     };
 
     return Course.create(payload).then((course: CourseType) => {

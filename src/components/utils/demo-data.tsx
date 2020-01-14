@@ -86,6 +86,7 @@ const demoCourse = (testName: string) => {
     allowGradersToEditRubric: false,
     minComments: 0,
     noUnfinalize: false,
+    archived: false,
   };
 };
 

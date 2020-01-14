@@ -15,6 +15,7 @@ export const defaultCourse: CourseType = {
   anonymousGradingDefault: false,
   minComments: 0,
   noUnfinalize: false,
+  archived: false,
 };
 
 export const CourseContext = React.createContext<CourseType>(defaultCourse);
