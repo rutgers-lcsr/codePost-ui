@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 
-import { File as CodePostFile } from '../../../../infrastructure/file';
+import { File as CPFile } from '../../../../infrastructure/file';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
@@ -13,13 +13,27 @@ export interface IProtoFileUpload {
   extension: string;
   data: string | ArrayBuffer | null;
   zipSource?: string;
+  file: File | UploadFile;
 }
 
-export const fileToProtoFileUpload = (inputFile: File | UploadFile, zipSource?: string): IProtoFileUpload => {
+export interface codePostFile extends UploadFile {
+  pathOverride?: string;
+}
+
+export const fileToProtoFileUpload = (
+  inputFile: codePostFile | File | UploadFile,
+  zipSource?: string,
+): IProtoFileUpload => {
   let longname: string = inputFile.name;
 
+  console.log(inputFile);
+
   // @ts-ignore
-  if (inputFile.webkitRelativePath && inputFile.webkitRelativePath !== '') {
+  if (inputFile.pathOverride) {
+    // @ts-ignore
+    longname = inputFile.pathOverride;
+    // @ts-ignore
+  } else if (inputFile.webkitRelativePath && inputFile.webkitRelativePath !== '') {
     // @ts-ignore
     longname = inputFile.webkitRelativePath;
   }
@@ -31,7 +45,7 @@ export const fileToProtoFileUpload = (inputFile: File | UploadFile, zipSource?: 
     .trim()
     .toLowerCase();
   const name = split[split.length - 1];
-  const extension = CodePostFile.extension(inputFile.name);
+  const extension = CPFile.extension(name);
 
   return {
     longname,
@@ -40,6 +54,7 @@ export const fileToProtoFileUpload = (inputFile: File | UploadFile, zipSource?: 
     extension,
     data: '', // placeholder
     zipSource,
+    file: inputFile,
   };
 };
 

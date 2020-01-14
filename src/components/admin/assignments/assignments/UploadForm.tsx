@@ -9,22 +9,30 @@ import BlockMarkdown from '../../../core/BlockMarkdown';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
-import { IProtoFileUpload, fileToProtoFileUpload, readZipTopLevel } from './FileReader';
+import { codePostFile, IProtoFileUpload, fileToProtoFileUpload, readZipTopLevel } from './FileReader';
+
+import { UploadFlow } from './UploadExternal';
 
 const Panel = Collapse.Panel;
 const Dragger = Upload.Dragger;
 
 interface IUploadFormProps {
-  rawFiles: UploadFile[];
+  rawFiles: codePostFile[];
   setRawFiles: any;
+  processSubmissionsFromFiles: (
+    files: codePostFile[],
+    getStudentsFromFile: (file: IProtoFileUpload) => string[],
+  ) => void;
+  showImportOptions: boolean;
   mode?: string;
+  students: string[];
 }
 
 const UploadForm = (props: IUploadFormProps) => {
   let content;
   switch (props.mode) {
     case 'canvas':
-      content = <Canvas {...props} />;
+      content = <UploadFlow {...props} />;
       break;
     case 'blackboard':
       content = <Blackboard {...props} />;
@@ -42,7 +50,11 @@ const UploadForm = (props: IUploadFormProps) => {
       content = <div>Can't find what you're looking for? Let us know at team@codepost.io.</div>;
       break;
     default:
-      content = <Normal {...props} />;
+      if (!props.showImportOptions) {
+        content = <Normal {...props} />;
+      } else {
+        content = <div />;
+      }
   }
 
   return content;

@@ -27,7 +27,7 @@ import { IntegrationButton, INTEGRATIONS } from '../../../landing/Integrations';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
-import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
+import { codePostFile, IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
 
 const Panel = Collapse.Panel;
 const { Step } = Steps;
@@ -108,7 +108,7 @@ interface IState {
   numFiles: number;
 
   /* raw file objects (unread) for passing to validation function */
-  rawFiles: UploadFile[];
+  rawFiles: codePostFile[];
 
   /* overwrite mode toggle */
   overwriteMode: boolean;
@@ -227,7 +227,16 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     submissions.map(async (submission, index: number) => {
       for (const file of submission.files) {
         try {
-          const outputFiles = await readUploadedFile(file);
+          console.log('READING FILE', file);
+          let outputFiles;
+          // @ts-ignore FIXME
+          if (file.file) {
+            // @ts-ignore
+            outputFiles = await readUploadedFile(file.file);
+          } else {
+            outputFiles = await readUploadedFile(file);
+          }
+          console.log(outputFiles);
           outputFiles.map((outputFile: IProtoFileUpload) => {
             this.setState({ fileMap: { ...this.state.fileMap, [outputFile.longname]: outputFile.data } });
           });
@@ -272,9 +281,9 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     const promises = toUpload.map((submission) => {
       const files: any[] = [];
       submission.files.forEach((file: any) => {
-        let path: string = file.webkitRelativePath;
+        let path: string = file.webkitRelativePath || file.pathOverride;
         let fileName: string = file.name;
-        if (file.webkitRelativePath === '') {
+        if (path === '') {
           path = file.name;
           fileName = file.name.split('/').slice(-1)[0];
         }
@@ -401,30 +410,48 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     return true;
   };
 
-  public onFileDrop = async (acceptedFiles: UploadFile[]) => {
-    const folderMap: any = {};
+  // Returns true if any of the provided students already have a submission
+  // Else returns false
+  public hasExistingSubmission = (emails: string[]) => {
+    const { studentMap } = this.state;
+    for (const email of emails) {
+      if (studentMap[email] === STUDENT_STATUS.EXISTING) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  public validateFile = (file: IProtoFileUpload) => {
+    const errors: string[] = [];
+    // Check if any of the folders start with .
+    const hasSystemFolders = file.longname.split('/').find((pathEl: string) => {
+      return pathEl.startsWith('.');
+    });
+
+    if (hasSystemFolders) {
+      errors.push(`Cannot have a folder that starts with .: ${file.longname}`);
+    }
+
+    return errors;
+  };
+
+  public validateStudents = (files: codePostFile[], getStudentsFromFile: (file: IProtoFileUpload) => string[]) => {
     const students = this.props.students;
-    const studentMap = this.state.studentMap;
-    const invalidPaths: string[] = [];
+
     const alreadySeen: { [student: string]: boolean } = {};
+    const folderMap: any = {};
+    const errors: string[] = [];
 
-    /*************************************************************
-    Types of errors to check for:
-    - path doesn't follow TLD/<students>/file
-    - path contains invalid <students>
-    - path contains a student listed in a different folder
-    - path contains a student multiple times
-    /*************************************************************/
-    acceptedFiles.forEach((newFile: any) => {
-      const protoFileUpload: IProtoFileUpload = fileToProtoFileUpload(newFile);
-
-      const folderName = protoFileUpload.path.split('/')[1];
-      const emails = folderName.split(',');
+    files.forEach((newFile: codePostFile) => {
+      const protoFileUpload = fileToProtoFileUpload(newFile);
+      const emails = getStudentsFromFile(protoFileUpload);
+      const folderName = emails.toString();
 
       if (!this.allStudentsValid(emails, students)) {
-        invalidPaths.push(`Folder refers to invalid student: ${folderName}`);
+        errors.push(`Folder refers to invalid student: ${folderName}`);
       } else if (!this.noDuplicates(emails)) {
-        invalidPaths.push(`Folder contains duplicate students: ${folderName}`);
+        errors.push(`Folder contains duplicate students: ${folderName}`);
       } else {
         // No need to check folders which we've already validated
         if (!(folderName in folderMap)) {
@@ -436,20 +463,14 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
 
           if (validEmails.length !== emails.length) {
             // Some email in the folder name was invalid
-            invalidPaths.push(`Contains a duplicate student: ${protoFileUpload.longname}`);
+            errors.push(`Contains a duplicate student: ${protoFileUpload.longname}`);
           } else {
-            let noCollisions = true;
-            for (const email of emails) {
-              if (studentMap[email] === STUDENT_STATUS.EXISTING) {
-                noCollisions = false;
-                break;
-              }
-            }
+            const hasCollision = this.hasExistingSubmission(emails);
 
             folderMap[folderName] = {
               files: [],
               students: validEmails,
-              isCollision: !noCollisions,
+              isCollision: hasCollision,
             };
 
             validEmails.forEach((el) => {
@@ -460,25 +481,60 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       }
     });
 
+    return [folderMap, errors];
+  };
+
+  public getStudentsFromFile = (file: IProtoFileUpload) => {
+    const folderName = file.path.split('/')[1];
+    return folderName.split(',');
+  };
+
+  public externalProcessSubmissions = async (
+    acceptedFiles: codePostFile[],
+    getStudentsFromFile: (file: IProtoFileUpload) => string[],
+  ) => {
+    await this.processSubmissionsFromFiles(acceptedFiles, getStudentsFromFile);
+    this.setState({ status: STATUS.UPLOADED });
+  };
+
+  public processSubmissionsFromFiles = async (
+    acceptedFiles: codePostFile[],
+    getStudentsFromFile: (file: IProtoFileUpload) => string[],
+  ) => {
+    /*************************************************************
+    Types of errors to check for:
+    - path doesn't follow TLD/<students>/file
+    - path contains invalid <students>
+    - path contains a student listed in a different folder
+    - path contains a student multiple times
+    /*************************************************************/
+
+    // Make sure the files have valid students
+    const [folderMap, errors] = this.validateStudents(acceptedFiles, getStudentsFromFile);
+
+    console.log('folderMap', folderMap);
+    const invalidPaths: string[] = errors;
+
     // Sort files into appropriate protoSubmissions
     let numFiles = 0;
-    acceptedFiles.forEach((el: any) => {
-      const protoFileUpload: IProtoFileUpload = fileToProtoFileUpload(el);
-      const folderName = protoFileUpload.path.split('/')[1];
+    acceptedFiles.forEach((file: codePostFile) => {
+      // const folderName = file.path.split('/')[1];
+      const protoFile = fileToProtoFileUpload(file);
 
-      if (
-        protoFileUpload.longname.split('/').find((pathEl: string) => {
-          return pathEl.startsWith('.');
-        })
-      ) {
-        invalidPaths.push(`Cannot have a folder that starts with .: ${protoFileUpload.longname}`);
+      const fileErrors = this.validateFile(protoFile);
+      if (fileErrors.length > 0) {
+        invalidPaths.concat(fileErrors);
       } else {
+        const students = getStudentsFromFile(protoFile);
+        const folderName = students.toString();
         if (folderName in folderMap) {
-          folderMap[folderName].files.push(el);
+          folderMap[folderName].files.push(file);
           numFiles = numFiles + 1;
         }
       }
     });
+
+    console.log('FOLDERMAP', folderMap);
 
     // Remove protoSubmissions which have no files (because all of the files are invalid)
     Object.keys(folderMap).forEach((key) => {
@@ -487,19 +543,23 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       }
     });
 
+    const protoSubmissions: IProtoSubmission[] = Object.keys(folderMap).map((key) => {
+      return folderMap[key];
+    });
+
+    console.log('SUBMISSIONS', protoSubmissions);
+
     this.setState({
-      protoSubmissions: Object.keys(folderMap).map((key) => {
-        return folderMap[key];
-      }),
+      protoSubmissions,
       fileMap: {},
       numFiles,
-      errorPaths: invalidPaths,
+      errorPaths: errors,
     });
   };
 
   public toggleOverwriteMode = () => {
     this.setState({ overwriteMode: !this.state.overwriteMode }, () => {
-      this.onFileDrop(this.state.rawFiles);
+      this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile);
     });
   };
 
@@ -507,7 +567,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     if (newStatus === STATUS.NONE) {
       this.setState({ status: newStatus, rawFiles: [] });
     } else if (newStatus === STATUS.UPLOADED) {
-      this.onFileDrop(this.state.rawFiles);
+      this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile);
       this.setState({ status: newStatus });
     }
   };
@@ -520,7 +580,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     }
   };
 
-  public setRawFiles = (rawFiles: UploadFile[]) => {
+  public setRawFiles = (rawFiles: codePostFile[]) => {
     this.setState({ rawFiles });
   };
 
@@ -583,53 +643,67 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
                     </Button>
                   </span>
                 </div>
-              ) : (
-                <div
-                  style={{
-                    margin: '15px 0px',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  <IntegrationButton
-                    integration={INTEGRATIONS['canvas']}
-                    onClick={this.onIntegrationClick}
-                    active={this.state.mode === 'canvas'}
-                  />
-                  <div style={{ width: '20px' }} />
-                  <IntegrationButton
-                    integration={INTEGRATIONS['blackboard']}
-                    onClick={this.onIntegrationClick}
-                    active={this.state.mode === 'blackboard'}
-                  />
-                  <div style={{ width: '20px' }} />
-                  <IntegrationButton
-                    integration={INTEGRATIONS['brightspace']}
-                    onClick={this.onIntegrationClick}
-                    active={this.state.mode === 'brightspace'}
-                  />
-                  <div style={{ width: '20px' }} />
-                  <IntegrationButton
-                    integration={INTEGRATIONS['github']}
-                    onClick={this.onIntegrationClick}
-                    active={this.state.mode === 'github'}
-                  />
-                  <div style={{ width: '20px' }} />
-                  <IntegrationButton
-                    integration={INTEGRATIONS['jupyter']}
-                    onClick={this.onIntegrationClick}
-                    active={this.state.mode === 'jupyter'}
-                  />
-                  <div style={{ width: '20px' }} />
-                  <IntegrationButton
-                    integration={INTEGRATIONS['more']}
-                    onClick={this.onIntegrationClick}
-                    active={this.state.mode === 'more'}
-                  />
+              ) : !this.state.mode || this.state.mode === 'more' ? (
+                <div style={{ margin: '15px 0px' }}>
+                  <Typography.Title level={4} style={{ marginBottom: 15 }}>
+                    Choose a tool to import from:
+                  </Typography.Title>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <IntegrationButton
+                      integration={INTEGRATIONS['canvas']}
+                      onClick={this.onIntegrationClick}
+                      active={this.state.mode === 'canvas'}
+                    />
+                    <div style={{ width: '20px' }} />
+                    <IntegrationButton
+                      integration={INTEGRATIONS['blackboard']}
+                      onClick={this.onIntegrationClick}
+                      active={this.state.mode === 'blackboard'}
+                    />
+                    <div style={{ width: '20px' }} />
+                    <IntegrationButton
+                      integration={INTEGRATIONS['brightspace']}
+                      onClick={this.onIntegrationClick}
+                      active={this.state.mode === 'brightspace'}
+                    />
+                    <div style={{ width: '20px' }} />
+                    <IntegrationButton
+                      integration={INTEGRATIONS['github']}
+                      onClick={this.onIntegrationClick}
+                      active={this.state.mode === 'github'}
+                    />
+                    <div style={{ width: '20px' }} />
+                    <IntegrationButton
+                      integration={INTEGRATIONS['jupyter']}
+                      onClick={this.onIntegrationClick}
+                      active={this.state.mode === 'jupyter'}
+                    />
+                    <div style={{ width: '20px' }} />
+                    <IntegrationButton
+                      integration={INTEGRATIONS['more']}
+                      onClick={this.onIntegrationClick}
+                      active={this.state.mode === 'more'}
+                    />
+                  </div>
                 </div>
+              ) : (
+                <div />
               )}
 
-              <UploadForm rawFiles={this.state.rawFiles} setRawFiles={this.setRawFiles} mode={this.state.mode} />
+              <UploadForm
+                processSubmissionsFromFiles={this.externalProcessSubmissions}
+                rawFiles={this.state.rawFiles}
+                setRawFiles={this.setRawFiles}
+                mode={this.state.mode}
+                showImportOptions={this.state.showImportOptions}
+                students={this.props.students}
+              />
             </div>
           );
         }
@@ -983,10 +1057,19 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         break;
     }
 
+    const title =
+      this.state.mode && this.state.mode !== 'more' ? (
+        <span>
+          <span style={{ color: '#24be85' }}>{this.state.mode} import:</span> {this.props.assignment.name}
+        </span>
+      ) : (
+        <span>Upload Submissions: {this.props.assignment.name}</span>
+      );
+
     return (
       <Modal
         visible={true}
-        title={`Upload Submissions: ${this.props.assignment.name}`}
+        title={title}
         width={900}
         onCancel={this.props.onCancel}
         footer={[goBackButton, goForwardButton]}
