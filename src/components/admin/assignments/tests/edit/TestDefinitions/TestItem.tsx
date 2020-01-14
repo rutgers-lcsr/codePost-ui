@@ -148,9 +148,9 @@ export const TestItem = (props: ITestItemProps) => {
     outputIsFile: boolean,
     codeString?: string,
   ) => {
-    await saveTest(values, testType, explanation, checkReturn, outputIsFile, codeString);
+    const updatedTest = await saveTest(values, testType, explanation, checkReturn, outputIsFile, codeString);
 
-    if (props.testCase.id > 0) {
+    if (updatedTest && updatedTest.id > 0) {
       if (!props.activeSubmission && props.files.length === 0) {
         confirm({
           title: 'Empty Solution code',
@@ -158,36 +158,35 @@ export const TestItem = (props: ITestItemProps) => {
           async onOk() {
             setIsRunning(true);
             const result = await TestCase.run(
-              props.testCase.id,
+              updatedTest.id,
               props.activeSubmission ? { submission: props.activeSubmission.id.toString() } : {},
             );
-            awaitTestResult(result.task, callback);
+            awaitTestResult(result.task, callback.bind({}, updatedTest));
           },
         });
       } else {
         setIsRunning(true);
         const result = await TestCase.run(
-          props.testCase.id,
+          updatedTest.id,
           props.activeSubmission ? { submission: props.activeSubmission.id.toString() } : {},
         );
-        awaitTestResult(result.task, callback);
+        awaitTestResult(result.task, callback.bind({}, updatedTest));
       }
     }
   };
 
-  const callback = (response: TestEditorResultType) => {
+  const callback = (testCase: TestCaseType, response: TestEditorResultType) => {
     const result: BasicTestResultType = response.results[0];
 
     const formatted = {
       log: `${response.logs}\n${result.logs}`,
       target: props.activeSubmission ? props.activeSubmission.students[0] : 'solution code',
       result: result.passed ? RESULT_TYPE.PASSED : result.isError ? RESULT_TYPE.ERROR : RESULT_TYPE.FAILED,
-      testCaseName: props.testCase.description,
+      testCaseName: testCase.description,
     };
 
-    // FIXME: mutating state
     if (!props.activeSubmission) {
-      props.updateTestStatus(props.testCase.id, formatted.result);
+      props.updateTestStatus(testCase.id, formatted.result);
     }
 
     setTestOutput(formatted);
@@ -220,8 +219,9 @@ export const TestItem = (props: ITestItemProps) => {
     // Warn user if they are modifying an instantiated SubmissionTest in a way that
     // will propagate to instances.
     const execute = async () => {
-      await props.saveTest(testCaseCopy);
+      const test = await props.saveTest(testCaseCopy);
       message.success('Test saved');
+      return test;
     };
     if (props.testCase.instances.length > 0) {
       const prop_fields: Array<keyof TestCaseType> = ['pointsPass', 'pointsFail'];
@@ -229,17 +229,15 @@ export const TestItem = (props: ITestItemProps) => {
         confirm({
           title: <span>Are you sure you want to modify this TestCase? You have already run it on submissions.</span>,
           content: 'This decision cannot be reversed.',
-          onOk() {
-            return new Promise((resolve, reject) => {
-              return resolve(execute());
-            }).catch(() => console.log('Oops errors!'));
+          async onOk() {
+            return await execute();
           },
         });
       } else {
-        execute();
+        return await execute();
       }
     } else {
-      execute();
+      return await execute();
     }
   };
 
