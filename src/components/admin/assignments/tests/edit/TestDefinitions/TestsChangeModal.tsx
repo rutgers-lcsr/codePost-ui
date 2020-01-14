@@ -123,7 +123,7 @@ export const TestsChangeModal = (props: IProps) => {
 
   const checkForErrors = (currentCode: string) => {
     const errors: { lineNumber: number; log: string }[] = [];
-    const re = /^([^#]*\s)*TestOutput (?!("([^"]+?)" "([^"]+?)" (true|false)( "([^"]*?)")?)).*/g;
+    const re = /^([^#]*\s)*TestOutput(?!([ ]{1,}"([^"]+?)"[ ]{1,}"([^"]+?)"[ ]{1,}(true|false)( "([^"]*?)")?)).*/g;
     const lines = currentCode.split('\n');
 
     lines.forEach((l, i) => {
@@ -140,7 +140,7 @@ export const TestsChangeModal = (props: IProps) => {
   const parseTests = (sourceFiles: SourceFileType[], currentFile: IBasicFile, currentCode: string) => {
     const parsedTests: { [categoryName: string]: Set<string> } = {};
     sourceFiles.forEach((f) => {
-      const re = /TestOutput "([^"]+?)" "([^"]+?)" (true|false)( "([^"]*?)")?/g;
+      const re = /TestOutput[ ]{1,}"([^"]+?)"[ ]{1,}"([^"]+?)"[ ]{1,}(true|false)([ ]{1,}"([^"]*?)")?/g;
 
       // The current file is updated, so we want to use the latest code
       const code = f.id === currentFile.id && currentFile.type === FILE_TYPE.SOURCEFILE ? currentCode : f.code;
