@@ -51,7 +51,13 @@ export interface IManageAssignmentsProps {
   loadComplete: boolean;
 
   /* object-level REST operations */
-  createAssignment: (assignmentName: string, assignmentPoints: number, sortKey?: number) => Promise<AssignmentType>;
+  createAssignment: (
+    assignmentName: string,
+    assignmentPoints: number,
+    upload: boolean,
+    dueDate?: string,
+    sortKey?: number,
+  ) => Promise<AssignmentType>;
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
 
