@@ -182,7 +182,7 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
             <br />
             <br />
             {this.props.studentsCanUpload ? (
-              <Form.Item label="Set a due date. You'll be able to edit this later.">
+              <Form.Item label="Set a due date. You'll be able to edit this later in the assignment settings.">
                 {getFieldDecorator('uploadDueDate', {
                   valuePropName: 'value',
                   initialValue: moment().tz(this.props.timezone),
