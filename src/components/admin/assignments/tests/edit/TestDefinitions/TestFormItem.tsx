@@ -26,6 +26,7 @@ import { SolutionFileType } from '../../../../../../infrastructure/autograder/so
 /* codePost component imports */
 import { CodeWindow } from '../utils/CodeWindow';
 import { PsuedoTerminal } from './PsuedoTerminal';
+import { TemplateSelector } from './TemplateSelector';
 import ExplanationModal from '../../../../assignments/rubric/ExplanationModal';
 
 /* codePost util imports */
@@ -662,7 +663,17 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             <Divider style={{ marginTop: 12 }} />
             {!typesWithRunDisabled.includes(this.state.testType) && (
               <div>
-                <Typography.Title level={4}>2. Definition</Typography.Title>
+                <Typography.Title level={4}>
+                  2. Definition{' '}
+                  {this.state.testType === 'shell' ? (
+                    <TemplateSelector
+                      populateDefinition={(code: string) => {
+                        this.setState({ commandText: code });
+                      }}
+                      language={this.props.language}
+                    />
+                  ) : null}
+                </Typography.Title>
                 {testBody}
               </div>
             )}

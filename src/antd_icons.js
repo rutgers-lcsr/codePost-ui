@@ -50,6 +50,7 @@ export { default as TagOutline } from '@ant-design/icons/lib/outline/TagOutline'
 export { default as CloseOutline } from '@ant-design/icons/lib/outline/CloseOutline';
 export { default as DashboardOutline } from '@ant-design/icons/lib/outline/DashboardOutline';
 export { default as LineChartOutline } from '@ant-design/icons/lib/outline/LineChartOutline';
+export { default as UpOutline } from '@ant-design/icons/lib/outline/UpOutline';
 export { default as DownOutline } from '@ant-design/icons/lib/outline/DownOutline';
 export { default as SmileOutline } from '@ant-design/icons/lib/outline/SmileOutline';
 export { default as AuditOutline } from '@ant-design/icons/lib/outline/AuditOutline';
@@ -82,6 +83,7 @@ export { default as FilterOutline } from '@ant-design/icons/lib/outline/FilterOu
 export { default as BranchesOutline } from '@ant-design/icons/lib/outline/BranchesOutline';
 export { default as RightOutline } from '@ant-design/icons/lib/outline/RightOutline';
 export { default as CheckOutline } from '@ant-design/icons/lib/outline/CheckOutline';
+export { default as LoadingOutline } from '@ant-design/icons/lib/outline/LoadingOutline';
 
 // Fill Icons
 export { default as PushpinFill } from '@ant-design/icons/lib/fill/PushpinFill';

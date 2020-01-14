@@ -27,11 +27,11 @@ const LandingHero = () => {
     >
       <div style={{ fontSize: isMobile ? 24 : 36, lineHeight: 1.45, fontWeight: 600, color: '#4A4A4A' }}>
         <span>
-          The fastest, easiest way for instructors to give{' '}
+          The best way to grade{' '}
           <Typography.Text mark className="codePost-title-highlight-new">
-            programming feedback
-          </Typography.Text>{' '}
-          to students
+            student code
+          </Typography.Text>
+          . Built for instructors.
         </span>
       </div>
       <h1
@@ -44,8 +44,8 @@ const LandingHero = () => {
           paddingBottom: windowSize.width < landingVars.breakpoints.hero ? 30 : 45,
         }}
       >
-        Autograder, code commenting, rubrics, plagiarism checker, and more. &nbsp;
-        <span style={{ fontWeight: 600, color: '#476b63' }}>Free for educators.</span>
+        Autograder, code commenting, and other tools to help you give amazing feedback, quickly. &nbsp;
+        <span style={{ fontWeight: 600, color: '#476b63' }}>Free for higher ed.</span>
       </h1>
       <div
         style={{
