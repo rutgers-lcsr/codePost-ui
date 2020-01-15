@@ -440,11 +440,12 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       </div>
     </Modal>,
   ];
+
   return (
     <div>
       <TableDetail
         loadComplete={!fetchLoading}
-        isEmpty={Object.keys(testCasesByCategory).length === 0}
+        isEmpty={Object.keys(testCasesByCategory).length === 0 || props.submissions.length === 0}
         title={`${props.currentAssignment.name} | Tests Summary`}
         breadcrumbs={
           <Breadcrumb>
@@ -453,7 +454,11 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
             <Breadcrumb.Item>Results</Breadcrumb.Item>
           </Breadcrumb>
         }
-        emptyNode={'Create some tests and you will be able to run them here'}
+        emptyNode={
+          Object.keys(testCasesByCategory).length === 0
+            ? 'Create some tests and you will be able to run them here'
+            : 'Upload a submission for your students to see test results.'
+        }
         actions={actions}
         columns={columns}
         data={data}
