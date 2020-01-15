@@ -79,7 +79,7 @@ interface IProps {
 
   /* UI control */
   isDisabled: boolean;
-  emailUsers: boolean;
+  emailNewUsers: boolean;
 
   /* object level REST operations */
   changeRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
@@ -510,7 +510,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         key: 'deleted',
       },
       {
-        title: 'Added: ',
+        title: `Added (${this.props.emailNewUsers ? 'will' : "won't"} be emailed):`,
         items: Object.keys(changes.added),
         key: 'added',
       },
@@ -698,6 +698,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             roleType={this.props.roleType}
             sections={this.props.sections}
             rosterInput={this.state.rosterInput}
+            emailNewUsers={this.props.emailNewUsers}
           />
         );
         break;
@@ -823,8 +824,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
 
     return (
       <div>
-        <CPButton icon="upload" cpType="secondary" onClick={this.toggleDialog}>
-          {'Upload roster'}
+        <CPButton icon="user-add" cpType="primary" onClick={this.toggleDialog}>
+          {`Add ${this.props.roleType}s`}
         </CPButton>
         <Modal
           visible={this.state.dialogVisible}
