@@ -219,6 +219,20 @@
   }
 }
 
+.landing__link {
+  color: #24be85;
+  transition: 0.3s ease;
+
+  &:hover {
+    color: #aaa;
+    transition: 0.3s ease;
+  }
+  &:focus {
+    color: #aaa;
+    transition: 0.3s ease;
+  }
+}
+
 #panelTwo .landing__link {
   color: #24be85;
   transition: 0.3s ease;
