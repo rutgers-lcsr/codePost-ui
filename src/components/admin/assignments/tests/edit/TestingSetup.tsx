@@ -36,7 +36,7 @@ const { TabPane } = Tabs;
 interface IProps {
   currentAssignment: AssignmentType;
   submissions: SubmissionType[];
-  updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
+  updateAssignment: (assignmentID: number, field: string, value: number) => void;
   breadcrumbs?: React.ReactElement[];
   match: any;
 }
@@ -244,6 +244,8 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         allowNetworkAccess: false,
       };
       thisEnvironment = await Environment.create(payload);
+      // Update the assignment environment field
+      props.updateAssignment(props.currentAssignment.id, 'environment', thisEnvironment.id);
     }
     const buildResult = await Environment.build({
       id: thisEnvironment.id,
@@ -319,7 +321,6 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       <TabPane tab={'Environment'} key={'environment'}>
         <EnvironmentSpecs
           currentAssignment={props.currentAssignment}
-          updateAssignment={props.updateAssignment}
           env={env}
           buildEnv={buildEnv}
           updateCompileText={updateCompileText}
