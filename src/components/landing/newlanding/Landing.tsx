@@ -83,7 +83,9 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
                 href="https://help.codepost.io/en/articles/3550689-what-languages-does-the-codepost-autograder-support"
                 target="_blank"
               >
-                <span style={{ fontWeight: 600, cursor: 'pointer' }}>all major languages are supported</span>
+                <span style={{ fontWeight: 500, cursor: 'pointer' }} className="landing__link">
+                  all major languages are supported
+                </span>
               </a>
               .
             </div>
@@ -186,7 +188,9 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
                   </ul>
                   You can write useful, short scripts in 10 minutes. Or take advantage of our{' '}
                   <a href="https://codepost.io/integrations" target="_blank">
-                    <span style={{ fontWeight: 600, cursor: 'pointer' }}>native integrations</span>
+                    <span style={{ fontWeight: 500, cursor: 'pointer' }} className="landing__link">
+                      native integrations
+                    </span>
                   </a>
                   .
                 </div>
