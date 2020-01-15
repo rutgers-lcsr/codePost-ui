@@ -149,7 +149,7 @@ export const TestsChangeModal = (props: IProps) => {
       if (tests) {
         tests.forEach((t) => {
           // Syntax for the regex match is <TestOutput> <category> <test> <boolean> <log>
-          const [, category, test, ,] = t.split(/(?:" | ")+/);
+          const [, category, test, ,] = t.split(/(?:"[ ]{1,}|[ ]{1,}")+/);
 
           const categoryName = category.replace(/"/g, '');
           const testestName = test.replace(/"/g, '');
