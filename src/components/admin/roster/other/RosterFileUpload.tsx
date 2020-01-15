@@ -247,6 +247,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           `${Object.keys(diff.added).length} ${this.props.roleType}s | ${this.props.course.name} ${
             this.props.course.period
           }`,
+          '#24be85',
+          '#user_notifications',
         );
 
         promises.push(
@@ -355,6 +357,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           `${Object.keys(diff.added).length} ${this.props.roleType}s | ${this.props.course.name} ${
             this.props.course.period
           }`,
+          '#24be85',
+          '#user_notifications',
         );
         promises.push(this.props.changeRoster(newGraders, USER_APP.Grader));
       }
@@ -371,6 +375,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           `${Object.keys(diff.added).length} ${this.props.roleType}s | ${this.props.course.name} ${
             this.props.course.period
           }`,
+          '#24be85',
+          '#user_notifications',
         );
         promises.push(this.props.changeRoster(newAdmins, USER_APP.CourseAdmin));
       }
@@ -634,7 +640,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         items: Object.keys(changes.deleted),
       },
       {
-        title: 'Added: ',
+        title: `Added (${this.props.emailNewUsers ? 'will' : "won't"} be emailed):`,
         items: Object.keys(changes.added),
       },
     ];
