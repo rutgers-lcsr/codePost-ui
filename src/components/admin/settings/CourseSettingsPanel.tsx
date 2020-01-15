@@ -99,6 +99,11 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
 
       this.props.updateSettings(payload).then(() => {
         message.success('Your settings were saved!');
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+
         this.setState({ isLoading: false, isDirty: false });
       });
     });
