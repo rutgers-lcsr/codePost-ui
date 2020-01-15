@@ -159,37 +159,37 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       const current = Date.now() - this.timer;
 
       this.times = [...this.times, current];
-      console.log('SUBMISSIONS COMPLETE: ', current);
-      console.log(this.times.join('|'));
+      // console.log('SUBMISSIONS COMPLETE: ', current);
+      // console.log(this.times.join('|'));
     }
 
-    if (!prevState.rosterLoadComplete && this.state.rosterLoadComplete) {
-      const current = Date.now() - this.timer;
-      this.times = [...this.times, current];
-      console.log('ROSTER COMPLETE: ', current);
-      console.log(this.times.join('|'));
-    }
+    // if (!prevState.rosterLoadComplete && this.state.rosterLoadComplete) {
+    //   const current = Date.now() - this.timer;
+    //   this.times = [...this.times, current];
+    //   console.log('ROSTER COMPLETE: ', current);
+    //   console.log(this.times.join('|'));
+    // }
 
-    if (!prevState.sectionsLoadComplete && this.state.sectionsLoadComplete) {
-      const current = Date.now() - this.timer;
-      this.times = [...this.times, current];
-      console.log('SECTIONS COMPLETE: ', current);
-      console.log(this.times.join('|'));
-    }
+    // if (!prevState.sectionsLoadComplete && this.state.sectionsLoadComplete) {
+    //   const current = Date.now() - this.timer;
+    //   this.times = [...this.times, current];
+    //   console.log('SECTIONS COMPLETE: ', current);
+    //   console.log(this.times.join('|'));
+    // }
 
-    if (!prevState.assignmentsLoadComplete && this.state.assignmentsLoadComplete) {
-      const current = Date.now() - this.timer;
-      this.times = [...this.times, current];
-      console.log('ASSIGNMENTS COMPLETE: ', current);
-      console.log(this.times.join('|'));
-    }
+    // if (!prevState.assignmentsLoadComplete && this.state.assignmentsLoadComplete) {
+    //   const current = Date.now() - this.timer;
+    //   this.times = [...this.times, current];
+    //   console.log('ASSIGNMENTS COMPLETE: ', current);
+    //   console.log(this.times.join('|'));
+    // }
 
-    if (!prevState.submissionsbyUserLoadComplete && this.state.submissionsbyUserLoadComplete) {
-      const current = Date.now() - this.timer;
-      this.times = [...this.times, current];
-      console.log('SUBMISSIONS BY USER COMPLETE: ', current);
-      console.log(this.times.join('|'));
-    }
+    // if (!prevState.submissionsbyUserLoadComplete && this.state.submissionsbyUserLoadComplete) {
+    //   const current = Date.now() - this.timer;
+    //   this.times = [...this.times, current];
+    //   console.log('SUBMISSIONS BY USER COMPLETE: ', current);
+    //   console.log(this.times.join('|'));
+    // }
   };
 
   /***********************************************************************************
@@ -251,8 +251,6 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
         } else {
           this.setState({ assignments, assignmentsLoadComplete: true });
         }
-
-        console.log('assignments', assignments);
       })
       .then(() => {
         this.loadSubmissions(course).then((submissionList) => {

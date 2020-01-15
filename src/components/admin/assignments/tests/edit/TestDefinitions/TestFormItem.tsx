@@ -119,7 +119,6 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     const failStyle = { color: 'red', opacity: 0.4, fontWeight: 500 };
     if (this.state.testType == 'io') {
       let file = this.props.form.getFieldValue('fileName') || 'file';
-      console.log(file);
       const input = this.props.form.getFieldValue('input') || 'input';
       const func = this.props.form.getFieldValue('function') || 'function';
       const output = this.props.form.getFieldValue('expectedOutput') || 'output';

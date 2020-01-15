@@ -495,7 +495,6 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
     this.setState({ rubricComments }, () => {
       this.updateCommentStatus(rubricComments[rubricCommentID]);
       if (key !== 'text') {
-        console.log('bump');
         this.saveComment(rubricCommentID);
       }
     });

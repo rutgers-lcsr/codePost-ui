@@ -96,16 +96,16 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
       const current = Date.now() - this.timer;
 
       this.times = [...this.times, current];
-      console.log('ASSIGNMENTS COMPLETE: ', current);
-      console.log(this.times.join('|'));
+      // console.log('ASSIGNMENTS COMPLETE: ', current);
+      // console.log(this.times.join('|'));
     }
 
-    if (!prevState.sectionsLed && this.state.sectionsLed) {
-      const current = Date.now() - this.timer;
-      this.times = [...this.times, current];
-      console.log('SECTIONS COMPLETE: ', current);
-      console.log(this.times.join('|'));
-    }
+    // if (!prevState.sectionsLed && this.state.sectionsLed) {
+    //   const current = Date.now() - this.timer;
+    //   this.times = [...this.times, current];
+    //   console.log('SECTIONS COMPLETE: ', current);
+    //   console.log(this.times.join('|'));
+    // }
   };
 
   public loadAssignments = async (course: CourseType) => {

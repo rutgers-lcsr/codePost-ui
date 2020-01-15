@@ -91,13 +91,13 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
       this.initialLoad();
     }
 
-    if (prevState.isLoading && !this.state.isLoading) {
-      const current = Date.now() - this.timer;
+    // if (prevState.isLoading && !this.state.isLoading) {
+    //   const current = Date.now() - this.timer;
 
-      this.times = [...this.times, current];
-      console.log('SUBMISSIONS COMPLETE: ', current);
-      console.log(this.times.join('|'));
-    }
+    //   this.times = [...this.times, current];
+    //   console.log('SUBMISSIONS COMPLETE: ', current);
+    //   console.log(this.times.join('|'));
+    // }
   }
 
   public loadSubmissionsViews = async () => {

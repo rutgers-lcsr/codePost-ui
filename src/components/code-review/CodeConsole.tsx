@@ -1366,8 +1366,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /**********************************************************************************/
 
   public render() {
-    console.log('comments', this.state.comments);
-    console.log('crub', this.state.commentRubricComments);
     if (this.state.isLoading) {
       return <Loading />;
     }
