@@ -19,7 +19,7 @@ import { awaitTestResult } from '../../testResult';
 
 /* codePost util imports */
 
-import { ILogType, RESULT_TYPE } from './PsuedoTerminal';
+import { ILogType, RESULT_TYPE } from './PseudoTerminal';
 
 import WrappedTestFormItem from './TestFormItem';
 

@@ -55,7 +55,7 @@ import { hasNativeTestSupport, testTemplates } from './utils/languageUtils';
 
 import { IFolder, buildFolderMenu, createDirectoryStructure } from '../../../../code-review/menu/fileMenuUtils';
 
-import { RESULT_TYPE } from './TestDefinitions/PsuedoTerminal';
+import { RESULT_TYPE } from './TestDefinitions/PseudoTerminal';
 
 const { Sider, Content } = Layout;
 

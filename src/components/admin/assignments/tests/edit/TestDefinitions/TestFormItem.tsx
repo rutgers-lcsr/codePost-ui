@@ -25,7 +25,7 @@ import { SolutionFileType } from '../../../../../../infrastructure/autograder/so
 
 /* codePost component imports */
 import { CodeWindow } from '../utils/CodeWindow';
-import { PsuedoTerminal } from './PsuedoTerminal';
+import { PseudoTerminal } from './PseudoTerminal';
 import { TemplateSelector } from './TemplateSelector';
 import ExplanationModal from '../../../../assignments/rubric/ExplanationModal';
 
@@ -34,7 +34,7 @@ import { testTemplates, hasNativeTestSupport, extensionsByLanguage, commandLineE
 
 import CPTooltip from '../../../../../core/CPTooltip';
 
-import { ILogType } from './PsuedoTerminal';
+import { ILogType } from './PseudoTerminal';
 
 const { Option } = Select;
 
@@ -696,7 +696,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               <Divider />
               <Typography.Title level={4}>3. Results</Typography.Title>
               <div>
-                <PsuedoTerminal
+                <PseudoTerminal
                   log={this.props.log}
                   isRunning={this.props.isRunning}
                   runTest={this.props.runTest.bind(
