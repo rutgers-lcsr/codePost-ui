@@ -71,7 +71,6 @@ const getResultTag = (results: RESULT_TYPE[]) => {
 
 export const PsuedoTerminal = (props: IResultProps) => {
   const [logs, setLogs] = React.useState([] as ILogType[][]);
-  console.log(props);
 
   React.useEffect(() => {
     if (props.log !== undefined) {
