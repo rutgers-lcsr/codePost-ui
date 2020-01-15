@@ -396,7 +396,9 @@ const CollectionCreateForm: any = Form.create()(
                   {getFieldDecorator('uploadDueDate', {
                     initialValue: this.props.assignment.uploadDueDate
                       ? moment(this.props.assignment.uploadDueDate).tz(this.props.timezone)
-                      : moment().tz(this.props.timezone),
+                      : moment()
+                          .endOf('day')
+                          .tz(this.props.timezone),
                     valuePropName: 'value',
                     rules: [
                       {
