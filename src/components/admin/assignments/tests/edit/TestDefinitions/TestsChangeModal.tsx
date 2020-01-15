@@ -187,6 +187,10 @@ export const TestsChangeModal = (props: IProps) => {
         if (c.type === 'file') {
           (categoryName in casesByCategoryName && (casesByCategoryName[categoryName][c.description] = c)) ||
             (casesByCategoryName[categoryName] = { [c.description]: c });
+        } else {
+          // Even if the category doesn't have file tests, we still want to include the category so
+          // we don't end up creating duplicates
+          !(categoryName in casesByCategoryName) && (casesByCategoryName[categoryName] = {});
         }
       });
     });
