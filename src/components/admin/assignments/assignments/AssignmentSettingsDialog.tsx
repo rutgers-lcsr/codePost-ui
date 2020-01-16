@@ -398,8 +398,8 @@ const CollectionCreateForm: any = Form.create()(
                     initialValue: this.props.assignment.uploadDueDate
                       ? moment(this.props.assignment.uploadDueDate).tz(this.props.timezone)
                       : moment()
-                          .endOf('day')
-                          .tz(this.props.timezone),
+                          .tz(this.props.timezone)
+                          .endOf('day'),
                     valuePropName: 'value',
                     rules: [
                       {

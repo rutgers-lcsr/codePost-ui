@@ -186,8 +186,8 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
                 {getFieldDecorator('uploadDueDate', {
                   valuePropName: 'value',
                   initialValue: moment()
-                    .endOf('day')
-                    .tz(this.props.timezone),
+                    .tz(this.props.timezone)
+                    .endOf('day'),
                 })(<DatePicker showTime placeholder="Click to select" />)}
               </Form.Item>
             ) : null}
