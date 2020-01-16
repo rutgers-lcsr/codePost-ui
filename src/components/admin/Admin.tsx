@@ -854,7 +854,13 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     this.setState({ assignments: newAssignments });
   };
 
-  public createAssignment = (aName: string, aPoints: number, sortKey?: number): Promise<AssignmentType> => {
+  public createAssignment = (
+    aName: string,
+    aPoints: number,
+    studentUpload: boolean,
+    dueDate?: string,
+    sortKey?: number,
+  ): Promise<AssignmentType> => {
     const { currentCourse } = this.props;
     if (!currentCourse) {
       return Promise.reject();
@@ -869,6 +875,8 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       hideGrades: false,
       rubricCategories: [],
       sortKey,
+      allowStudentUpload: studentUpload,
+      uploadDueDate: dueDate,
     };
 
     return Assignment.create(payload).then((assignment: AssignmentType) => {
