@@ -372,6 +372,16 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     setModalStatus(MODAL_STATUS.None);
     setProgress('{}');
   };
+
+  const hasExternalTests = () => {
+    let hasExternal = false;
+    Object.keys(testCasesByCategory).forEach((category: string) => {
+      testCasesByCategory[parseInt(category, 10)].forEach((test) => test.type === 'external' && (hasExternal = true));
+    });
+
+    return hasExternal;
+  };
+
   actions = [
     <Radio.Group value={SUMMARY_TYPE[summaryType]} onChange={onSummaryTypeChange} buttonStyle="solid">
       <Tooltip title="Summary by submission">
@@ -428,6 +438,13 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       title="Confirm Run All Tests"
     >
       <div style={{ fontSize: 16 }}>
+        {hasExternalTests() && (
+          <div style={{ fontSize: 14, marginBottom: 15, color: 'orange' }}>
+            WARNING: You have some tests with type 'external'. External tests are to be set using the API, and will not
+            be run when you run tests in the codePost autograder. If you would like them to be run in the codePost
+            autograder, then please change the test type.
+          </div>
+        )}
         <div>
           Estimated time to complete:{' '}
           <b>{getEstimate(props.submissions !== undefined ? props.submissions.length : 0)}</b>
@@ -440,11 +457,12 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       </div>
     </Modal>,
   ];
+
   return (
     <div>
       <TableDetail
         loadComplete={!fetchLoading}
-        isEmpty={Object.keys(testCasesByCategory).length === 0}
+        isEmpty={Object.keys(testCasesByCategory).length === 0 || props.submissions.length === 0}
         title={`${props.currentAssignment.name} | Tests Summary`}
         breadcrumbs={
           <Breadcrumb>
@@ -453,7 +471,11 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
             <Breadcrumb.Item>Results</Breadcrumb.Item>
           </Breadcrumb>
         }
-        emptyNode={'Create some tests and you will be able to run them here'}
+        emptyNode={
+          Object.keys(testCasesByCategory).length === 0
+            ? 'Create some tests and you will be able to run them here'
+            : 'Upload a submission for your students to see test results.'
+        }
         actions={actions}
         columns={columns}
         data={data}
