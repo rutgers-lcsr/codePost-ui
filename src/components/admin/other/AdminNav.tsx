@@ -100,7 +100,9 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
             <Link to={`${this.props.baseURL}/assignments/rubrics`}>Rubrics</Link>
           </Menu.Item>
           <Menu.Item key="assignments/tests">
-            <Link to={`${this.props.baseURL}/assignments/tests`}>Tests</Link>
+            <Link to={`${this.props.baseURL}/assignments/tests`}>
+              Tests &nbsp;<Tag color="#595959">BETA</Tag>
+            </Link>
           </Menu.Item>
           <Menu.Item key="assignments/plagiarism">
             <Link to={`${this.props.baseURL}/assignments/plagiarism`}>Plagiarism</Link>

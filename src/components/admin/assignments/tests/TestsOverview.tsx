@@ -48,7 +48,11 @@ const TestsOverview = (props: IProps & RouteComponentProps) => {
     <TableDetail
       loadComplete={true}
       pagination={props.assignments.length < 10 ? false : undefined}
-      title={<div className="display-flex align-items-center">Tests</div>}
+      title={
+        <div className="display-flex align-items-center">
+          Tests &nbsp;<Tag>BETA</Tag>
+        </div>
+      }
       isEmpty={false}
       emptyNode={
         <Empty
