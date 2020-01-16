@@ -242,7 +242,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   {...subprops}
                   breadcrumbs={breadcrumbs}
                   activeAssignment={assignment}
-                  submissions={props.submissions[assignment.id]}
+                  submissions={props.submissions[assignment.id] || []}
                   user={props.user}
                   updateAssignment={props.shallowUpdateAssignment}
                 />
