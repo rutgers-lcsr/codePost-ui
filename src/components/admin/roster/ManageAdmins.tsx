@@ -141,15 +141,9 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
           changeRoster={this.props.updateRoster}
           isDisabled={false}
           updateSection={this.props.updateSection}
-          emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
+          emailNewUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
           createSection={this.props.createSection}
           course={this.props.currentCourse}
-        />,
-        <AddAdminDialog
-          key={3}
-          admins={this.props.admins}
-          addAdmin={this.addAdmin}
-          willEmailUser={this.props.currentCourse.emailNewUsers}
         />,
       ];
 
