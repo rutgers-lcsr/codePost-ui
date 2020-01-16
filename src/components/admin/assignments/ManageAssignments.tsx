@@ -60,6 +60,7 @@ export interface IManageAssignmentsProps {
   ) => Promise<AssignmentType>;
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
+  shallowUpdateAssignment: (assignmentID: number, field: string, value: number) => void;
 
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
@@ -247,9 +248,9 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   {...subprops}
                   breadcrumbs={breadcrumbs}
                   activeAssignment={assignment}
-                  submissions={props.submissions[assignment.id]}
+                  submissions={props.submissions[assignment.id] || []}
                   user={props.user}
-                  updateAssignment={props.updateAssignment}
+                  updateAssignment={props.shallowUpdateAssignment}
                 />
               )}
             />

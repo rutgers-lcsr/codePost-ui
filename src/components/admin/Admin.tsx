@@ -839,6 +839,21 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       });
   };
 
+  public shallowUpdateAssignment = (assignmentID: number, field: string, value: number) => {
+    const { assignments } = this.state;
+    const newAssignments: AssignmentType[] = [];
+    assignments.forEach((assn) => {
+      if (assn.id === assignmentID) {
+        const updatedAssignment = { ...assn, [field]: value };
+        console.log(updatedAssignment);
+        newAssignments.push(updatedAssignment);
+      } else {
+        newAssignments.push(assn);
+      }
+    });
+    this.setState({ assignments: newAssignments });
+  };
+
   public createAssignment = (
     aName: string,
     aPoints: number,
@@ -1219,6 +1234,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 myEmail={this.props.user.email}
                 user={this.props.user}
                 location={this.props.location}
+                shallowUpdateAssignment={this.shallowUpdateAssignment}
               />
             )}
           />
