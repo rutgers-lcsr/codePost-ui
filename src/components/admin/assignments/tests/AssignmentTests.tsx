@@ -30,7 +30,7 @@ interface IProps {
   activeAssignment: AssignmentType;
   submissions: SubmissionType[];
   user: UserType;
-  updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
+  updateAssignment: (assignmentID: number, field: string, value: number) => void;
   breadcrumbs?: React.ReactElement[];
 }
 
@@ -49,10 +49,6 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
   }, [props.activeAssignment]);
 
   // ***************** API / State change functions ***********************
-  const updateAssignment = async (patchObj: AssignmentPatchType) => {
-    const newAssignment = await Assignment.update(patchObj);
-    setAssignment(newAssignment);
-  };
 
   const breadcrumbs = [
     ...(props.breadcrumbs ? props.breadcrumbs : []),
@@ -79,7 +75,7 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
             breadcrumbs={breadcrumbs}
             currentAssignment={assignment}
             submissions={props.submissions}
-            updateAssignment={updateAssignment}
+            updateAssignment={props.updateAssignment}
           />
         )}
       />
@@ -91,7 +87,7 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
             breadcrumbs={breadcrumbs}
             currentAssignment={assignment}
             submissions={props.submissions}
-            updateAssignment={updateAssignment}
+            updateAssignment={props.updateAssignment}
           />
         )}
       />

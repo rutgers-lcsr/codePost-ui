@@ -36,7 +36,7 @@ const { TabPane } = Tabs;
 interface IProps {
   currentAssignment: AssignmentType;
   submissions: SubmissionType[];
-  updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
+  updateAssignment: (assignmentID: number, field: string, value: number) => void;
   breadcrumbs?: React.ReactElement[];
   match: any;
 }
@@ -241,8 +241,11 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         testParsing: true,
         compileText: '',
         buildType: 'default',
+        allowNetworkAccess: false,
       };
       thisEnvironment = await Environment.create(payload);
+      // Update the assignment environment field
+      props.updateAssignment(props.currentAssignment.id, 'environment', thisEnvironment.id);
     }
     const buildResult = await Environment.build({
       id: thisEnvironment.id,
@@ -300,23 +303,11 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     props.history.push(newUrl);
   };
 
-  const updateDumpMode = async (e: any) => {
+  const updateEnvSetting = async (field: string, e: any) => {
     if (env) {
       const payload = {
         id: env.id,
-        dumpMode: e.target.checked,
-      };
-      const newEnv = await Environment.update(payload);
-      message.success(e.target.checked ? 'Setting enabled' : 'Setting disabled');
-      setEnv(newEnv);
-    }
-  };
-
-  const updateTestParsing = async (e: any) => {
-    if (env) {
-      const payload = {
-        id: env.id,
-        testParsing: e.target.checked,
+        [field]: e.target.checked,
       };
       const newEnv = await Environment.update(payload);
       message.success(e.target.checked ? 'Setting enabled' : 'Setting disabled');
@@ -330,7 +321,6 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       <TabPane tab={'Environment'} key={'environment'}>
         <EnvironmentSpecs
           currentAssignment={props.currentAssignment}
-          updateAssignment={props.updateAssignment}
           env={env}
           buildEnv={buildEnv}
           updateCompileText={updateCompileText}
@@ -361,8 +351,8 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
           <Checkbox
             style={{ minWidth: '125px', marginBottom: 15 }}
-            defaultChecked={env && env.dumpMode}
-            onChange={updateDumpMode}
+            checked={env && env.dumpMode}
+            onChange={updateEnvSetting.bind({}, 'dumpMode')}
             disabled={!env}
           >
             Dump outputs to <Typography.Text code>_tests.txt</Typography.Text>
@@ -374,14 +364,26 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
           </Checkbox>
           <Checkbox
             style={{ minWidth: '125px', marginLeft: 0 }}
-            defaultChecked={env && env.testParsing}
-            onChange={updateTestParsing}
+            checked={env && env.testParsing}
+            onChange={updateEnvSetting.bind({}, 'testParsing')}
             disabled={!env}
           >
             Parse <Typography.Text code>TestOutput</Typography.Text> calls in source editor &nbsp;
             <CPTooltip
               infoIcon={true}
               title="You should turn this off if you are making bash TestOutput calls in non-bash files (e.g., Makefile, helper python subprocess, etc.)"
+            />
+          </Checkbox>
+          <Checkbox
+            style={{ minWidth: '125px', marginLeft: 0 }}
+            checked={env && env.allowNetworkAccess}
+            onChange={updateEnvSetting.bind({}, 'allowNetworkAccess')}
+            disabled={!env}
+          >
+            Allow network access in containers (Not recommended) &nbsp;
+            <CPTooltip
+              infoIcon={true}
+              title="Enabling this setting will allow student code to have access to the internet. Unless your course requires it (e.g., database connections), it's not recommended to turn this on, as it may allow students to perform unsafe actions (e.g., emailing themselves the test contents)."
             />
           </Checkbox>
         </div>

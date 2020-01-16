@@ -102,3 +102,5 @@ export { default as CloseCircleFill } from '@ant-design/icons/lib/fill/CloseCirc
 export { default as DatabaseTwoTone } from '@ant-design/icons/lib/twotone/DatabaseTwoTone';
 export { default as TagTwoTone } from '@ant-design/icons/lib/twotone/TagTwoTone';
 export { default as MinusCircleTwoTone } from '@ant-design/icons/lib/twotone/MinusCircleTwoTone';
+export { default as CheckCircleTwoTone } from '@ant-design/icons/lib/twotone/CheckCircleTwoTone';
+export { default as InfoCircleTwoTone } from '@ant-design/icons/lib/twotone/InfoCircleTwoTone';

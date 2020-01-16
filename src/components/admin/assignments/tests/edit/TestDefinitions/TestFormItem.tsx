@@ -40,11 +40,23 @@ const { Option } = Select;
 
 interface ITestFormItemProps extends FormComponentProps {
   testCase: TestCaseType;
-  saveTest: () => void;
+  saveTest: (
+    testType: string,
+    explanation: string,
+    checkReturn: boolean,
+    outputIsFile: boolean,
+    codeString?: string,
+  ) => void;
   deleteTest: () => Promise<void>;
   files: SolutionFileType[];
   log?: ILogType;
-  runTest: () => void;
+  runTest: (
+    testType: string,
+    explanation: string,
+    checkReturn: boolean,
+    outputIsFile: boolean,
+    codeString?: string,
+  ) => void;
   isRunning: boolean;
   language: string;
   submissions: SubmissionType[];
@@ -59,6 +71,7 @@ interface IState {
   showExplanation: boolean;
   explanation: string;
   checkReturn: boolean;
+  outputIsFile: boolean;
 }
 
 class TestFormItem extends React.Component<ITestFormItemProps, IState> {
@@ -71,6 +84,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
       showExplanation: false,
       explanation: props.testCase.explanation,
       checkReturn: props.testCase.checkReturn,
+      outputIsFile: props.testCase.outputIsFile,
     };
   }
 
@@ -112,6 +126,33 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     this.setState({ selectedFileName: newName });
   };
 
+  public onChangeOutputType = (val: string) => {
+    const outputIsFile = val === 'file';
+    this.setState({ outputIsFile });
+  };
+
+  /******************************* API Change Functions ****************************/
+  public onSave = () => {
+    this.props.saveTest(
+      this.state.testType,
+      this.state.explanation,
+      this.state.checkReturn,
+      this.state.outputIsFile,
+      this.state.commandText,
+    );
+  };
+
+  public onRun = () => {
+    this.props.runTest(
+      this.state.testType,
+      this.state.explanation,
+      this.state.checkReturn,
+      this.state.outputIsFile,
+      this.state.commandText,
+    );
+  };
+
+  /******************************* Render helper Functions ****************************/
   public getPseudoCode = () => {
     const missingArgStyle = { color: '#BBBBBB', fontWeight: 300, fontStyle: 'italic' };
     const filledArgStyle = { color: 'grey', fontWeight: 600 };
@@ -122,7 +163,9 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
       console.log(file);
       const input = this.props.form.getFieldValue('input') || 'input';
       const func = this.props.form.getFieldValue('function') || 'function';
-      const output = this.props.form.getFieldValue('expectedOutput') || 'output';
+      const output = this.state.outputIsFile
+        ? `cat ${this.props.form.getFieldValue('expectedOutput') || 'outputFile'}`
+        : this.props.form.getFieldValue('expectedOutput') || 'output';
       const enclosingStartBrace = this.state.checkReturn ? '' : 'print(';
       const enclosingEndBrace = this.state.checkReturn ? '' : ')';
 
@@ -155,7 +198,9 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     if (this.state.testType == 'io_cli') {
       const command = this.state.commandText || 'command';
       const input = this.props.form.getFieldValue('input') || 'input';
-      const output = this.props.form.getFieldValue('expectedOutput') || 'output';
+      const output = this.state.outputIsFile
+        ? `cat ${this.props.form.getFieldValue('expectedOutput') || 'outputFile'}`
+        : this.props.form.getFieldValue('expectedOutput') || 'output';
 
       return (
         <div style={{ color: '#707070', fontWeight: 500, fontSize: 14 }}>
@@ -179,7 +224,13 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
 
   public buildIOBasic = (testCase: TestCaseType) => {
     const { getFieldDecorator } = this.props.form;
-    const textStyle: React.CSSProperties = { whiteSpace: 'nowrap', marginRight: '4px', marginLeft: '4px' };
+    const textStyle: React.CSSProperties = {
+      whiteSpace: 'nowrap',
+      marginRight: '4px',
+      marginLeft: '4px',
+      fontWeight: 600,
+      color: 'grey',
+    };
     const radioGroupStyle: React.CSSProperties = { display: 'flex', margin: 10 };
 
     const radioButtonStyle: React.CSSProperties = {
@@ -204,148 +255,203 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             );
           })
         : [];
+
+    // Selector to choose whether an output is a file or a string
+    const outputTypeSelect = (
+      <Select
+        disabled={this.props.isRunning}
+        value={this.state.outputIsFile ? 'file' : 'constant'}
+        onChange={this.onChangeOutputType}
+        style={{ width: 120 }}
+      >
+        <Select.Option value={'constant'}>Constant</Select.Option>
+        <Select.Option value={'file'}>File</Select.Option>
+      </Select>
+    );
+
     return (
       <div className="natural-language-form" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-        <span style={{ ...textStyle, marginLeft: undefined }}>From</span>
-        <Radio.Group
-          disabled={this.props.isRunning}
-          value={'io'}
-          onChange={this.onTypeChangeRadio}
-          buttonStyle="solid"
-          style={radioGroupStyle}
-        >
-          <Radio.Button key={'file'} value={'io'} style={{ ...radioButtonStyle }}>
-            file
-          </Radio.Button>
-          <Radio.Button
-            key={'cli'}
-            value={'io_cli'}
-            className={'testitem__radio-inactive'}
-            style={{ ...radioButtonStyle, lineHeight: '15px' }}
+        <div style={{ display: 'flex', alignItems: 'center', width: '100%', flexWrap: 'wrap' }}>
+          <span style={{ ...textStyle, marginLeft: undefined }}>From</span>
+          <Radio.Group
+            disabled={this.props.isRunning}
+            value={'io'}
+            onChange={this.onTypeChangeRadio}
+            buttonStyle="solid"
+            style={radioGroupStyle}
           >
-            command line
-          </Radio.Button>
-        </Radio.Group>
-        <span style={textStyle}>with name</span>
-        <Form.Item label="">
-          {getFieldDecorator('fileName', {
-            initialValue: testCase.fileName,
-            rules: [
-              {
-                required: true,
-              },
-            ],
-          })(
-            this.props.files.length > 0 ? (
-              <Select
-                disabled={this.props.isRunning}
-                placeholder="filename"
-                onChange={this.onChangeFileName}
-                style={inputStyle}
-              >
-                {this.props.files.map((file) => {
-                  return (
-                    <Option key={file.id} value={file.name}>
-                      {file.name}
-                    </Option>
-                  );
-                })}
-              </Select>
-            ) : (
-              <Input
-                onChange={(e: any) => this.onChangeFileName(e.target.value)}
-                style={inputStyle}
-                placeholder="filename"
-              />
-            ),
-          )}
-        </Form.Item>
-        <span style={textStyle}>, &nbsp; </span>
-        <span style={textStyle}>run</span>
-        {this.props.methodsByFile && this.props.methodsByFile[this.state.selectedFileName] ? (
+            <Radio.Button key={'file'} value={'io'} style={{ ...radioButtonStyle }}>
+              file
+            </Radio.Button>
+            <Radio.Button
+              key={'cli'}
+              value={'io_cli'}
+              className={'testitem__radio-inactive'}
+              style={{ ...radioButtonStyle, lineHeight: '15px' }}
+            >
+              command line
+            </Radio.Button>
+          </Radio.Group>
+          <span style={textStyle}>with name</span>
           <Form.Item label="">
-            {getFieldDecorator('function', {
-              initialValue: testCase.function,
+            {getFieldDecorator('fileName', {
+              initialValue: testCase.fileName,
               rules: [
                 {
                   required: true,
                 },
               ],
             })(
-              <Select disabled={this.props.isRunning} style={inputStyle}>
-                {functionOptions}
-              </Select>,
+              this.props.files.length > 0 ? (
+                <Select
+                  disabled={this.props.isRunning}
+                  placeholder="filename"
+                  onChange={this.onChangeFileName}
+                  style={inputStyle}
+                >
+                  {this.props.files.map((file) => {
+                    return (
+                      <Option key={file.id} value={file.name}>
+                        {file.name}
+                      </Option>
+                    );
+                  })}
+                </Select>
+              ) : (
+                <Input
+                  onChange={(e: any) => this.onChangeFileName(e.target.value)}
+                  style={inputStyle}
+                  placeholder="filename"
+                />
+              ),
             )}
           </Form.Item>
-        ) : (
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            width: '100%',
+            flexWrap: 'wrap',
+            marginTop: 10,
+            marginLeft: 20,
+          }}
+        >
+          <span style={textStyle}>run</span>
+          {this.props.methodsByFile && this.props.methodsByFile[this.state.selectedFileName] ? (
+            <Form.Item label="">
+              {getFieldDecorator('function', {
+                initialValue: testCase.function,
+                rules: [
+                  {
+                    required: true,
+                  },
+                ],
+              })(
+                <Select disabled={this.props.isRunning} style={inputStyle}>
+                  {functionOptions}
+                </Select>,
+              )}
+            </Form.Item>
+          ) : (
+            <Form.Item label="">
+              {getFieldDecorator('function', {
+                initialValue: testCase.function,
+                rules: [
+                  {
+                    required: true,
+                  },
+                ],
+              })(<Input placeholder={'function / method'} style={inputStyle} disabled={this.props.isRunning} />)}
+            </Form.Item>
+          )}
+          <span style={textStyle}>with arguments</span>
           <Form.Item label="">
-            {getFieldDecorator('function', {
-              initialValue: testCase.function,
+            {getFieldDecorator('input', {
+              initialValue: testCase.input,
               rules: [
                 {
-                  required: true,
+                  required: false,
                 },
               ],
-            })(<Input placeholder={'function / method'} style={inputStyle} disabled={this.props.isRunning} />)}
+            })(
+              <Input.TextArea
+                placeholder={'Input'}
+                disabled={this.props.isRunning}
+                style={{ minWidth: 240, marginLeft: 5 }}
+                autosize={true}
+              />,
+            )}
           </Form.Item>
-        )}
-        <span style={textStyle}>with arguments</span>
-        <Form.Item label="">
-          {getFieldDecorator('input', {
-            initialValue: testCase.input,
-            rules: [
-              {
-                required: false,
-              },
-            ],
-          })(
-            <Input.TextArea placeholder={'Input'} disabled={this.props.isRunning} style={inputStyle} autosize={true} />,
-          )}
-        </Form.Item>
-        <span style={{ ...textStyle, marginTop: 5 }}>and expect the call to</span>
-        <Radio.Group
-          disabled={this.props.isRunning}
-          value={this.state.checkReturn ? 'return' : 'output'}
-          onChange={this.onReturnChange}
-          buttonStyle="solid"
-          style={{ padding: '7px 5px 0px 5px' }}
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            width: '100%',
+            flexWrap: 'wrap',
+            marginTop: 15,
+            marginLeft: 40,
+          }}
         >
-          <Radio.Button
-            key={'return'}
-            className={!this.state.checkReturn ? 'testitem__radio-inactive' : ''}
-            value={'return'}
-            style={{ fontSize: 13 }}
+          <span style={{ ...textStyle, marginTop: 5 }}>and expect the call to</span>
+          <Radio.Group
+            disabled={this.props.isRunning}
+            value={this.state.checkReturn ? 'return' : 'output'}
+            onChange={this.onReturnChange}
+            buttonStyle="solid"
+            style={{ padding: '7px 5px 0px 5px' }}
           >
-            return
-          </Radio.Button>
-          <Radio.Button
-            key={'output'}
-            className={this.state.checkReturn ? 'testitem__radio-inactive' : ''}
-            value={'output'}
-            style={{ fontSize: 13 }}
-          >
-            print
-          </Radio.Button>
-        </Radio.Group>
-        <span style={{ ...textStyle, marginTop: 5 }}>the value</span>
-        <Form.Item label="">
-          {getFieldDecorator('expectedOutput', {
-            initialValue: testCase.expectedOutput,
-            rules: [
-              {
-                required: false,
-              },
-            ],
-          })(<Input.TextArea disabled={this.props.isRunning} style={inputStyle} autosize={true} />)}
-          <span style={{ marginLeft: '1px' }}>.</span>
-        </Form.Item>
+            <Radio.Button
+              key={'return'}
+              className={!this.state.checkReturn ? 'testitem__radio-inactive' : ''}
+              value={'return'}
+              style={{ fontSize: 13 }}
+            >
+              return
+            </Radio.Button>
+            <Radio.Button
+              key={'output'}
+              className={this.state.checkReturn ? 'testitem__radio-inactive' : ''}
+              value={'output'}
+              style={{ fontSize: 13 }}
+            >
+              print
+            </Radio.Button>
+          </Radio.Group>
+          <span style={{ ...textStyle, marginTop: 5 }}>the value</span>
+          <Form.Item label="">
+            {getFieldDecorator('expectedOutput', {
+              initialValue: testCase.expectedOutput,
+              rules: [
+                {
+                  required: false,
+                },
+              ],
+            })(
+              <Input
+                addonBefore={outputTypeSelect}
+                disabled={this.props.isRunning}
+                style={{ minWidth: 250, marginLeft: 5 }}
+                placeholder={'output'}
+              />,
+            )}
+            <span style={{ marginLeft: '1px' }}>.</span>
+          </Form.Item>
+        </div>
       </div>
     );
   };
 
   public buildIOCL = (testCase: TestCaseType) => {
     const { getFieldDecorator } = this.props.form;
-    const textStyle: React.CSSProperties = { whiteSpace: 'nowrap', marginRight: '4px', marginLeft: '4px' };
+    const textStyle: React.CSSProperties = {
+      whiteSpace: 'nowrap',
+      marginRight: '4px',
+      marginLeft: '4px',
+      fontWeight: 600,
+      color: 'grey',
+    };
     const radioGroupStyle: React.CSSProperties = { display: 'flex', margin: 10 };
     const radioButtonStyle: React.CSSProperties = {
       fontSize: 12,
@@ -356,56 +462,90 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
       width: 75,
       maxWidth: 75,
     };
-    const inputStyle: React.CSSProperties = { width: '200px', margin: '0px 5px' };
+    const inputStyle: React.CSSProperties = { minWidth: '200px', margin: '0px 5px' };
     const placeholder: string = commandLineExamples[this.props.language] || 'echo HelloWorld';
 
     // Disable button to switch to file if there is no native test support
     const hasNativeSupport = hasNativeTestSupport(this.props.language);
 
+    // Selector to choose whether an output is a file or a string
+    const outputTypeSelect = (
+      <Select
+        disabled={this.props.isRunning}
+        value={this.state.outputIsFile ? 'file' : 'constant'}
+        onChange={this.onChangeOutputType}
+        style={{ width: 120 }}
+      >
+        <Select.Option value={'constant'}>Constant</Select.Option>
+        <Select.Option value={'file'}>File</Select.Option>
+      </Select>
+    );
+
     return (
       <div className="natural-language-form" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-        <span style={{ ...textStyle, marginLeft: undefined }}>From</span>
-        <Radio.Group value={'io_cli'} onChange={this.onTypeChangeRadio} buttonStyle="solid" style={radioGroupStyle}>
-          {/* Disable file button if language doesn't have native support */}
-          {hasNativeSupport && (
+        <div style={{ display: 'flex', alignItems: 'center', width: '100%', flexWrap: 'wrap' }}>
+          <span style={{ ...textStyle, marginLeft: undefined }}>From</span>
+          <Radio.Group value={'io_cli'} onChange={this.onTypeChangeRadio} buttonStyle="solid" style={radioGroupStyle}>
+            {/* Disable file button if language doesn't have native support */}
+            {hasNativeSupport && (
+              <Radio.Button
+                key={'file'}
+                className={'testitem__radio-inactive'}
+                value={'io'}
+                style={{ ...radioButtonStyle }}
+              >
+                file
+              </Radio.Button>
+            )}
             <Radio.Button
-              key={'file'}
-              className={'testitem__radio-inactive'}
-              value={'io'}
-              style={{ ...radioButtonStyle }}
+              key={'cli'}
+              value={'io_cli'}
+              disabled={!hasNativeSupport}
+              style={{ ...radioButtonStyle, color: hasNativeSupport ? 'white' : 'black', lineHeight: '15px' }}
             >
-              file
+              command line
             </Radio.Button>
-          )}
-          <Radio.Button
-            key={'cli'}
-            value={'io_cli'}
-            disabled={!hasNativeSupport}
-            style={{ ...radioButtonStyle, color: hasNativeSupport ? 'white' : 'black', lineHeight: '15px' }}
-          >
-            command line
-          </Radio.Button>
-        </Radio.Group>
-        <span style={textStyle}>run the command</span>
-        <Input
-          placeholder={placeholder}
-          style={inputStyle}
-          value={this.state.commandText}
-          onChange={(e) => this.onChange(e.target.value)}
-          disabled={this.props.isRunning}
-        />
-        <span style={textStyle}>and expect the call to output the value</span>
-        <Form.Item label="">
-          {getFieldDecorator('expectedOutput', {
-            initialValue: testCase.expectedOutput,
-            rules: [
-              {
-                required: false,
-              },
-            ],
-          })(<Input placeholder={'Hello World!'} disabled={this.props.isRunning} style={inputStyle} />)}
-          <span style={{ marginLeft: '1px' }}>.</span>
-        </Form.Item>
+          </Radio.Group>
+          <span style={textStyle}>run the command</span>
+          <Input.TextArea
+            placeholder={placeholder}
+            style={{ ...inputStyle, width: 250 }}
+            value={this.state.commandText}
+            onChange={(e) => this.onChange(e.target.value)}
+            disabled={this.props.isRunning}
+            autoSize={true}
+          />
+        </div>
+        <div
+          style={{
+            marginLeft: 20,
+            display: 'flex',
+            alignItems: 'center',
+            marginTop: 10,
+            width: '100%',
+            flexWrap: 'wrap',
+          }}
+        >
+          <span style={textStyle}>and expect the call to print the value equal to </span>
+          <Form.Item label="">
+            {getFieldDecorator('expectedOutput', {
+              initialValue: testCase.expectedOutput,
+              rules: [
+                {
+                  required: false,
+                },
+              ],
+            })(
+              <Input
+                addonBefore={outputTypeSelect}
+                placeholder={this.state.outputIsFile ? 'helloOutput.txt' : 'Hello World!'}
+                disabled={this.props.isRunning}
+                style={{ ...inputStyle, minWidth: 300 }}
+              />,
+            )}
+            <span style={{ marginLeft: '1px' }}>.</span>
+          </Form.Item>
+        </div>
       </div>
     );
   };
@@ -453,17 +593,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             )}
           </Typography.Title>
           <div>
-            <Button
-              style={{ marginRight: 10 }}
-              type="primary"
-              onClick={this.props.saveTest.bind(
-                this,
-                this.state.testType,
-                this.state.explanation,
-                this.state.checkReturn,
-                this.state.commandText,
-              )}
-            >
+            <Button style={{ marginRight: 10 }} type="primary" onClick={this.onSave}>
               Save
             </Button>
             <Button type="danger" onClick={this.props.deleteTest}>
@@ -699,13 +829,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 <PsuedoTerminal
                   log={this.props.log}
                   isRunning={this.props.isRunning}
-                  runTest={this.props.runTest.bind(
-                    this,
-                    this.state.testType,
-                    this.state.explanation,
-                    this.state.checkReturn,
-                    this.state.commandText,
-                  )}
+                  runTest={this.onRun}
                   submissions={this.props.submissions}
                   setTestSubject={this.props.setTestSubject}
                 />

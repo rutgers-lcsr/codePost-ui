@@ -352,6 +352,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       SubmissionTest.getLatest(submissionTests)
         .map((test) => {
           const match = testCases.find((el) => el.id === test.testCase);
+
+          if (match === undefined) {
+            return 0;
+          }
+
           return test.passed ? match!.pointsPass : match!.pointsFail;
         })
         .reduce((el, acc) => el + acc, 0)
