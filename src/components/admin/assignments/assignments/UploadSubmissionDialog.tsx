@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Icon, message, Modal, Progress, Switch, Upload, Table, Tag } from 'antd';
+import { Button, Icon, Input, message, Modal, Progress, Switch, Upload, Table, Tag, Typography } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -93,6 +93,8 @@ interface IState {
   testCategories: TestCategoryType[];
   testCases: StudentTestCasesByCategory;
   submissionTests: SubmissionTestType[];
+  // If the admin turns off exposeDumpLogs then the log will be none
+  testsLog: string | null;
   submission?: StudentSubmissionType;
   loadingTests: boolean;
 
@@ -118,6 +120,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     testCases: {},
     testCategories: [],
     submissionTests: [],
+    testsLog: null,
     loadingTests: false,
     fileTemplates: [],
   };
@@ -179,7 +182,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public setResults = (result: SubmissionTestResultType) => {
-    this.setState({ submissionTests: result, loadingTests: false });
+    this.setState({ submissionTests: result.submissionTests, testsLog: result.logs, loadingTests: false });
   };
 
   public runTests = async () => {
@@ -409,6 +412,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               cases={this.state.testCases}
               categories={this.state.testCategories}
               isLoading={this.state.loadingTests}
+              logs={this.state.testsLog === null ? undefined : this.state.testsLog}
             />
           </div>
         );
