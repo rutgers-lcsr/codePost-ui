@@ -243,6 +243,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         buildType: 'default',
         allowNetworkAccess: false,
         maxStudentTestRuns: null,
+        exposeDumpLogs: false,
       };
       thisEnvironment = await Environment.create(payload);
       // Update the assignment environment field
@@ -378,21 +379,35 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
               />
             )}
           </div>
-          <Checkbox
-            style={{ minWidth: '125px', marginBottom: 15 }}
-            checked={env && env.dumpMode}
-            onChange={(e) => {
-              updateEnvSetting('dumpMode', e.target.checked);
-            }}
-            disabled={!env}
-          >
-            Dump outputs to <Typography.Text code>_tests.txt</Typography.Text>
-            &nbsp;
-            <CPTooltip
-              infoIcon={true}
-              title="When this setting is enabled, a file called _tests.txt containing the raw output of your tests will be added to every student's submission."
-            />
-          </Checkbox>
+          <div>
+            <Checkbox
+              style={{ minWidth: '125px', marginBottom: 15 }}
+              checked={env && env.dumpMode}
+              onChange={(e) => {
+                updateEnvSetting('dumpMode', e.target.checked);
+              }}
+              disabled={!env}
+            >
+              Dump outputs to <Typography.Text code>_tests.txt</Typography.Text>
+              &nbsp;
+              <CPTooltip
+                infoIcon={true}
+                title="When this setting is enabled, a file called _tests.txt containing the raw output of your tests will be added to every student's submission."
+              />
+            </Checkbox>
+            {env && env.dumpMode && (
+              <Checkbox
+                style={{ minWidth: '125px', marginBottom: 15 }}
+                checked={env && env.exposeDumpLogs}
+                onChange={(e) => {
+                  updateEnvSetting('exposeDumpLogs', e.target.checked);
+                }}
+                disabled={!env}
+              >
+                Expose outputs to students on submit
+              </Checkbox>
+            )}
+          </div>
           <Checkbox
             style={{ minWidth: '125px', marginLeft: 0 }}
             checked={env && env.testParsing}
