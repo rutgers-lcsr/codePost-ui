@@ -187,6 +187,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       const result = await Environment.run(this.state.selectedAssignment.environment, {
         submission: this.state.submission.id.toString(),
         simulate: 'False',
+        exposedOnly: 'True',
       });
       awaitTestResult(result.task, this.setResults);
     }
@@ -226,15 +227,17 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public upload = () => {
-    if (this.state.selectedAssignment !== null) {
+    if (this.state.selectedAssignment) {
       this.setState({ status: STATUS.SAVING }, () => {
-        if (this.state.selectedAssignment !== null) {
+        if (this.state.selectedAssignment) {
+          const shouldRunTests = this.props.canRunTests && this.state.testCategories.length > 0;
           this.props
+            // @ts-ignore
             .uploadSubmission(this.state.selectedAssignment!, this.state.selectedStudents, this.state.files)
-            .then((newSubmission: StudentSubmissionType) => {
+            .then((newSubmission: StudentSubmissionType | SubmissionType) => {
               this.setState({
                 submission: newSubmission,
-                status: this.props.isStudent && this.state.testCategories.length > 0 ? STATUS.TESTING : STATUS.COMPLETE,
+                status: shouldRunTests ? STATUS.TESTING : STATUS.COMPLETE,
                 files: [],
                 fileList: [],
                 rejectedFiles: [],
@@ -242,7 +245,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 selectedAssignment: this.props.selectedAssignment ? this.props.selectedAssignment : undefined,
               });
             })
-            .catch((error) => {
+            .catch((error: any) => {
               /* eslint-disable no-multi-str */
               message.error(
                 'Sorry, something went wrong. Please try uploading again.\
@@ -534,6 +537,9 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         } else {
           content = (
             <div>
+              {this.props.beforeUploadMessage && (
+                <div style={{ marginBottom: 15 }}>{this.props.beforeUploadMessage}</div>
+              )}
               Assignment:
               <Select
                 defaultValue={
