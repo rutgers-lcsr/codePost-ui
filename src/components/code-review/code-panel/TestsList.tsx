@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Badge, Card, Table, Collapse, Statistic, Spin } from 'antd';
+import { Badge, Card, Input, Table, Collapse, Statistic, Spin, Typography } from 'antd';
 
 /* other library imports */
 import ReactMarkdown from 'react-markdown';
@@ -27,6 +27,7 @@ interface IProps {
   isLoading?: boolean;
   hideNotRun?: boolean;
   hideSummary?: boolean;
+  logs?: string;
 }
 
 const TestsList = (props: IProps) => {
@@ -227,6 +228,12 @@ const TestsList = (props: IProps) => {
           );
         })}
       </Collapse>
+      {props.logs && (
+        <div>
+          <Typography.Title level={4}>Logs</Typography.Title>
+          <Input.TextArea disabled={true} value={props.logs} style={{ color: 'black' }} autosize={true} />
+        </div>
+      )}
     </div>
   );
 };
