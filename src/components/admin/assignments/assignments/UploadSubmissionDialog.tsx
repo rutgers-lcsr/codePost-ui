@@ -23,7 +23,7 @@ import {
   FileTemplateType,
   CourseType,
 } from '../../../../infrastructure/types';
-import { AssignmentStudent } from '../../../../infrastructure/assignment';
+import { AssignmentStudent, AssignmentStudentType } from '../../../../infrastructure/assignment';
 import { Environment } from '../../../../infrastructure/autograder/environment';
 import { FileTemplate } from '../../../../infrastructure/fileTemplate';
 
@@ -52,21 +52,21 @@ import { encodeForLink } from '../../../../components/core/URLutils';
 interface IProps {
   isVisible: boolean;
   onCancel: () => void;
-  assignments: AssignmentType[];
-  selectedAssignment?: AssignmentType;
+  assignments: (AssignmentType | AssignmentStudentType)[];
+  selectedAssignment?: AssignmentType | AssignmentStudentType;
   students: string[];
   selectedStudents: string[];
   submissions: IStudentSubmissionsDataTable;
-  uploadSubmission: (
-    assignment: AssignmentType,
-    partners: string[],
-    files: any[],
-  ) => Promise<StudentSubmissionType | SubmissionType>;
+  uploadSubmission:
+    | ((assignment: AssignmentStudentType, partners: string[], files: any[]) => Promise<StudentSubmissionType>)
+    | ((assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>);
 
   disableStudentSelect?: boolean;
   onSuccess?: () => void;
   isStudent?: boolean;
   course?: CourseType;
+  canRunTests?: boolean;
+  beforeUploadMessage?: React.ReactNode;
 }
 
 enum STATUS {
@@ -78,7 +78,7 @@ enum STATUS {
 
 interface IState {
   selectedStudents: string[];
-  selectedAssignment?: AssignmentType;
+  selectedAssignment?: AssignmentType | AssignmentStudentType;
   // List of files in codePost format for upload
   files: IProtoFileUpload[];
   // List of files in ant format. Required to make make the dialog a controlled list so we
@@ -100,7 +100,7 @@ interface IState {
 }
 
 class UploadSubmissionDialog extends React.Component<IProps, IState> {
-  public assignmentOptions = this.props.assignments.map((assignment, i) => {
+  public assignmentOptions = this.props.assignments.map((assignment: AssignmentType | AssignmentStudentType, i) => {
     return {
       value: assignment.id,
       label: assignment.name,
@@ -158,7 +158,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
   }
 
-  public loadTemplates = (assignment: AssignmentType) => {
+  public loadTemplates = (assignment: AssignmentType | AssignmentStudentType) => {
     const promises = assignment.fileTemplates.map((el) => FileTemplate.read(el));
     Promise.all(promises).then((fileTemplates) => this.setState({ fileTemplates }));
   };
@@ -290,7 +290,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   public buildStudentOptions = (
     students: string[],
     submissions: IStudentSubmissionsDataTable,
-    assignment?: AssignmentType,
+    assignment?: AssignmentType | AssignmentStudentType,
   ) => {
     /* FIXME: should use react-select type definition */
     const toRet: any = [
