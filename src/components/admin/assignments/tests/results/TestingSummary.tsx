@@ -462,7 +462,10 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     <div>
       <TableDetail
         loadComplete={!fetchLoading}
-        isEmpty={Object.keys(testCasesByCategory).length === 0 || props.submissions.length === 0}
+        isEmpty={
+          (Object.keys(testCasesByCategory).length === 0 && env && env.sourceFiles.length === 0) ||
+          props.submissions.length === 0
+        }
         title={`${props.currentAssignment.name} | Tests Summary`}
         breadcrumbs={
           <Breadcrumb>
