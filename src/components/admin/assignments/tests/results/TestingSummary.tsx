@@ -118,7 +118,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
 
   const runAllCallback = (result: SubmissionTestResultType) => {
     const newTestBySub: TestsBySubmission = {};
-    for (const test of result) {
+    for (const test of result.submissionTests) {
       const subID = test.submission;
       newTestBySub[subID] = (newTestBySub[subID] && [...newTestBySub[subID], test]) || [test];
     }
@@ -132,7 +132,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
 
   const callback = (sub: SubmissionType, result: SubmissionTestResultType) => {
     const newTestBySub = { ...testsBySubmission };
-    newTestBySub[sub.id] = result;
+    newTestBySub[sub.id] = result.submissionTests;
     setTestsBySubmission(newTestBySub);
     const newLoadingSubs = subsLoading.filter((id) => {
       return id !== sub.id;
