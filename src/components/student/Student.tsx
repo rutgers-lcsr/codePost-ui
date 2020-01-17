@@ -17,9 +17,9 @@ import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWa
 
 import CPFlex from '../core/CPFlex';
 
-import { IAssignmentToSubmissionStudentMap, ICourseToAssignmentMap, USER_TYPE } from '../../types/common';
+import { IAssignmentToSubmissionStudentMap, ICourseToAssignmentStudentMap, USER_TYPE } from '../../types/common';
 
-import { AssignmentStudent, AssignmentType, sortAssignments } from '../../infrastructure/assignment';
+import { AssignmentStudent, AssignmentStudentType, sortAssignments } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { loadIDList } from '../../infrastructure/generics';
 import { StudentSubmissionType, Submission } from '../../infrastructure/submission';
@@ -52,7 +52,7 @@ const { Text } = Typography;
 /**********************************************************************************************************************/
 
 interface IStudentState {
-  assignments: ICourseToAssignmentMap;
+  assignments: ICourseToAssignmentStudentMap;
   submissions: IAssignmentToSubmissionStudentMap;
   viewsBySubmission: { [submissionID: number]: boolean };
 
@@ -61,7 +61,7 @@ interface IStudentState {
   isLoadingSubmissions: boolean;
 
   currentPanel: CURRENT_PANEL;
-  detailAssignment?: AssignmentType;
+  detailAssignment?: AssignmentStudentType;
   detailSubmission?: StudentSubmissionType;
 }
 
@@ -138,7 +138,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     });
   };
 
-  public loadSubmissions = async (assignments: AssignmentType[]) => {
+  public loadSubmissions = async (assignments: AssignmentStudentType[]) => {
     const submissions: any = {};
     for (const assignment of assignments) {
       if (assignment.isReleased || assignment.allowStudentUpload || assignment.liveFeedbackMode) {
@@ -194,7 +194,11 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     return;
   };
 
-  public changePanel = (newPanel: CURRENT_PANEL, assignment?: AssignmentType, submission?: StudentSubmissionType) => {
+  public changePanel = (
+    newPanel: CURRENT_PANEL,
+    assignment?: AssignmentStudentType,
+    submission?: StudentSubmissionType,
+  ) => {
     this.setState({ currentPanel: newPanel, detailAssignment: assignment, detailSubmission: submission });
   };
 
@@ -204,7 +208,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
   };
 
   // Upload a submission as a student
-  public uploadSubmission = (isNew: boolean, assignment: AssignmentType, partners: string[], files: any[]) => {
+  public uploadSubmission = (isNew: boolean, assignment: AssignmentStudentType, partners: string[], files: any[]) => {
     if (partners.length === 0) {
       return Promise.reject();
     }
@@ -252,7 +256,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     }
   };
 
-  public getUploadContent = (assignment: AssignmentType, submission?: StudentSubmissionType) => {
+  public getUploadContent = (assignment: AssignmentStudentType, submission?: StudentSubmissionType) => {
     if (!assignment.allowStudentUpload) {
       // Case 0: Student upload not allowed
       return <div />;
@@ -394,7 +398,10 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
   /* Content area
   /**********************************************************************************/
 
-  public buildAssignmentsTable = (assignments: AssignmentType[], submissions: IAssignmentToSubmissionStudentMap) => {
+  public buildAssignmentsTable = (
+    assignments: AssignmentStudentType[],
+    submissions: IAssignmentToSubmissionStudentMap,
+  ) => {
     const modifyIf = (modMap: { [statusTarget: number]: number }) => {
       return (value: any, row: any, index: number) => {
         const obj = {
