@@ -129,7 +129,7 @@ const createAssignment = async (course: CourseType, assignment: any) => {
       buildType: 'default',
       allowNetworkAccess: false,
       maxStudentTestRuns: null,
-      exposeDumpFile: false,
+      exposeDumpLogs: false,
     };
     const thisEnvironment = await Environment.create(payload);
 
