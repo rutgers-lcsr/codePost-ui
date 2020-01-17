@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Breadcrumb, Button, Collapse, Tabs, Checkbox, Modal, message, Typography } from 'antd';
+import { Breadcrumb, Button, Collapse, InputNumber, Tabs, Checkbox, Modal, message, Typography } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -242,6 +242,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         compileText: '',
         buildType: 'default',
         allowNetworkAccess: false,
+        maxStudentTestRuns: null,
       };
       thisEnvironment = await Environment.create(payload);
       // Update the assignment environment field
@@ -303,14 +304,17 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     props.history.push(newUrl);
   };
 
-  const updateEnvSetting = async (field: string, e: any) => {
+  const updateEnvSetting = async (field: string, value: any) => {
     if (env) {
       const payload = {
         id: env.id,
-        [field]: e.target.checked,
+        [field]: value,
       };
       const newEnv = await Environment.update(payload);
-      message.success(e.target.checked ? 'Setting enabled' : 'Setting disabled');
+      if (typeof value === 'boolean') {
+        // we only show message for boolean settings. Numerical or string fields would be really annoying
+        message.success(value ? 'Setting enabled' : 'Setting disabled');
+      }
       setEnv(newEnv);
     }
   };
@@ -349,10 +353,37 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       </TabPane>
       <TabPane tab={'Settings'} key={'settings'}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+          <div>
+            <Checkbox
+              style={{ minWidth: '125px', marginLeft: 0 }}
+              checked={env && env.maxStudentTestRuns !== null}
+              onChange={(e) => {
+                updateEnvSetting('maxStudentTestRuns', e.target.checked ? 10 : null);
+              }}
+              disabled={!env}
+            >
+              Limit the number of times exposed tests are run on student submit
+              <CPTooltip
+                infoIcon={true}
+                title="Enabling this setting will limit the amount of times students see exposed tests on student submit. After this number has been exceeded, they can still submit, but won't see test results."
+              />
+            </Checkbox>
+            {env && env.maxStudentTestRuns !== null && (
+              <InputNumber
+                min={1}
+                value={env && env.maxStudentTestRuns}
+                onChange={(value) => {
+                  updateEnvSetting('maxStudentTestRuns', value);
+                }}
+              />
+            )}
+          </div>
           <Checkbox
             style={{ minWidth: '125px', marginBottom: 15 }}
             checked={env && env.dumpMode}
-            onChange={updateEnvSetting.bind({}, 'dumpMode')}
+            onChange={(e) => {
+              updateEnvSetting('dumpMode', e.target.checked);
+            }}
             disabled={!env}
           >
             Dump outputs to <Typography.Text code>_tests.txt</Typography.Text>
@@ -365,7 +396,9 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
           <Checkbox
             style={{ minWidth: '125px', marginLeft: 0 }}
             checked={env && env.testParsing}
-            onChange={updateEnvSetting.bind({}, 'testParsing')}
+            onChange={(e) => {
+              updateEnvSetting('testParsing', e.target.checked);
+            }}
             disabled={!env}
           >
             Parse <Typography.Text code>TestOutput</Typography.Text> calls in source editor &nbsp;
@@ -377,7 +410,9 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
           <Checkbox
             style={{ minWidth: '125px', marginLeft: 0 }}
             checked={env && env.allowNetworkAccess}
-            onChange={updateEnvSetting.bind({}, 'allowNetworkAccess')}
+            onChange={(e) => {
+              updateEnvSetting('allowNetworkAccess', e.target.checked);
+            }}
             disabled={!env}
           >
             Allow network access in containers (Not recommended) &nbsp;
