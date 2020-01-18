@@ -244,6 +244,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         allowNetworkAccess: false,
         maxStudentTestRuns: null,
         exposeDumpLogs: false,
+        maxExposedFailedTests: null,
       };
       thisEnvironment = await Environment.create(payload);
       // Update the assignment environment field
@@ -436,6 +437,31 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
               title="Enabling this setting will allow student code to have access to the internet. Unless your course requires it (e.g., database connections), it's not recommended to turn this on, as it may allow students to perform unsafe actions (e.g., emailing themselves the test contents)."
             />
           </Checkbox>
+          <div>
+            <Checkbox
+              style={{ minWidth: '125px', marginLeft: 0 }}
+              checked={env && env.maxExposedFailedTests !== null}
+              onChange={(e) => {
+                updateEnvSetting('maxExposedFailedTests', e.target.checked ? 3 : null);
+              }}
+              disabled={!env}
+            >
+              Limit the number of failed tests that are exposed to students
+              <CPTooltip
+                infoIcon={true}
+                title="Enabling this setting will limit the amount of failed tests a student is exposed to when they submit. This is a helpful feature if you'd like your students to slowly work through failed tests, and encourage them to write their own tests."
+              />
+            </Checkbox>
+            {env && env.maxExposedFailedTests !== null && (
+              <InputNumber
+                min={1}
+                value={env && env.maxExposedFailedTests}
+                onChange={(value) => {
+                  updateEnvSetting('maxExposedFailedTests', value);
+                }}
+              />
+            )}
+          </div>
         </div>
       </TabPane>
     </Tabs>
