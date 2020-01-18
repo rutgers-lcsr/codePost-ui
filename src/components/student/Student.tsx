@@ -194,12 +194,27 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     return;
   };
 
-  public changePanel = (
+  public changePanel = async (
     newPanel: CURRENT_PANEL,
     assignment?: AssignmentStudentType,
     submission?: StudentSubmissionType,
   ) => {
-    this.setState({ currentPanel: newPanel, detailAssignment: assignment, detailSubmission: submission });
+    // We  get the latest submission on submission select to get the most up to date test runs remaining
+    // The alternative would be to store the updated submission in state on submit, but we'd get api errors if students
+    // submit through multiple tabs / think they might be able to game the system
+    let latestSubmission: StudentSubmissionType | undefined;
+    if (submission) {
+      const fetchSubmissions = await AssignmentStudent.readSubmissions(submission.assignment, {
+        student: this.props.user.email,
+        ['compact']: '1',
+      });
+      latestSubmission = fetchSubmissions.length > 0 ? fetchSubmissions[0] : undefined;
+    }
+    this.setState({
+      currentPanel: newPanel,
+      detailAssignment: assignment,
+      detailSubmission: latestSubmission || submission,
+    });
   };
 
   public getFileExtension = (fileName: string): string => {
