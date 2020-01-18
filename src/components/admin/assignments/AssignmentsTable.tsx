@@ -79,7 +79,13 @@ export interface IManageAssignmentsProps {
   loadComplete: boolean;
 
   /* object-level REST operations */
-  createAssignment: (assignmentName: string, assignmentPoints: number, sortKey?: number) => Promise<AssignmentType>;
+  createAssignment: (
+    assignmentName: string,
+    assignmentPoints: number,
+    upload: boolean,
+    dueDate?: string,
+    sortKey?: number,
+  ) => Promise<AssignmentType>;
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
 
@@ -225,7 +231,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
     this.setState({ activeStudent: undefined });
   };
 
-  public createAssignment = (name: string, points: number) => {
+  public createAssignment = (name: string, points: number, upload: boolean, dueDate?: string) => {
     const { sortedOrder } = this.state;
 
     // Place assignment at the end of the assignment list
@@ -236,7 +242,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
       sortKey = 0;
     }
 
-    return this.props.createAssignment(name, points, sortKey);
+    return this.props.createAssignment(name, points, upload, dueDate, sortKey);
   };
 
   /******************************************************************************
@@ -328,7 +334,12 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
     ];
 
     actions = [
-      <NewAssignmentDialog key={1} assignments={this.props.assignments} createAssignment={this.createAssignment} />,
+      <NewAssignmentDialog
+        key={1}
+        assignments={this.props.assignments}
+        createAssignment={this.createAssignment}
+        timezone={this.props.currentCourse.timezone}
+      />,
       <Link to={`${this.props.baseURL}/download/grades`}>
         <CPButton
           cpType="secondary"
@@ -707,6 +718,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
               key={1}
               assignments={this.props.assignments}
               createAssignment={this.props.createAssignment}
+              timezone={this.props.currentCourse.timezone}
             />
           </Empty>
         }

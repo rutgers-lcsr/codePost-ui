@@ -127,6 +127,7 @@ const createAssignment = async (course: CourseType, assignment: any) => {
       testParsing: true,
       compileText: '',
       buildType: 'default',
+      allowNetworkAccess: false,
     };
     const thisEnvironment = await Environment.create(payload);
 

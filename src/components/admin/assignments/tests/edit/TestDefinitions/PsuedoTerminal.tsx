@@ -39,6 +39,7 @@ interface IResultProps {
   defaultFile?: string;
   setTestSubject: (id: string) => void;
   updateFile?: (file: string) => void;
+  overrideText?: string;
 }
 
 const getResultSpan = (resultType: RESULT_TYPE) => {
@@ -161,7 +162,7 @@ export const PsuedoTerminal = (props: IResultProps) => {
             loading={props.isRunning}
             style={{ background: 'gray', height: '25px', marginTop: '2px', marginRight: '10px' }}
           >
-            Run
+            {props.overrideText || 'Run'}
           </Button>
         ) : (
           undefined
