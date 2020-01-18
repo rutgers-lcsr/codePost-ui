@@ -22,6 +22,7 @@ const TestEditorResult = t.type({
 const SubmissionTestResult = t.type({
   logs: t.union([t.string, t.null]),
   submissionTests: t.array(SubmissionTestV),
+  message: t.string,
 });
 
 export type SubmissionTestResultType = t.TypeOf<typeof SubmissionTestResult>;

@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Icon, Input, message, Modal, Progress, Switch, Upload, Table, Tag, Typography } from 'antd';
+import { Alert, Button, Icon, Input, message, Modal, Progress, Switch, Upload, Table, Tag, Typography } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -92,13 +92,16 @@ interface IState {
 
   testCategories: TestCategoryType[];
   testCases: StudentTestCasesByCategory;
-  submissionTests: SubmissionTestType[];
-  // If the admin turns off exposeDumpLogs then the log will be none
-  testsLog: string | null;
+
   submission?: StudentSubmissionType;
   loadingTests: boolean;
 
   fileTemplates: FileTemplateType[];
+
+  // Test results
+  submissionTests: SubmissionTestType[];
+  testsLog: string | null; // If the admin turns off exposeDumpLogs then the log will be none
+  runMessage: string; // A message to show students from the result of their run
 }
 
 class UploadSubmissionDialog extends React.Component<IProps, IState> {
@@ -123,6 +126,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     testsLog: null,
     loadingTests: false,
     fileTemplates: [],
+    runMessage: '',
   };
 
   public toggleState = (key: keyof IState) => (prevState: IState): IState => ({
@@ -161,7 +165,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
 
     if (prevProps.isVisible && !this.props.isVisible) {
-      this.setState({ submissionTests: [], testCategories: [], testCases: {} });
+      this.setState({ submissionTests: [], testsLog: null, runMessage: '' });
     }
   }
 
@@ -186,11 +190,18 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public setResults = (result: SubmissionTestResultType) => {
-    this.setState({ submissionTests: result.submissionTests, testsLog: result.logs, loadingTests: false });
+    this.setState({
+      submissionTests: result.submissionTests,
+      testsLog: result.logs,
+      loadingTests: false,
+      runMessage: result.message,
+    });
   };
 
   public runTests = async () => {
     if (this.state.submission && this.state.selectedAssignment && this.state.selectedAssignment.environment) {
+      // Make sure the loading is set
+      this.setState({ loadingTests: true });
       const result = await Environment.run(this.state.selectedAssignment.environment, {
         submission: this.state.submission.id.toString(),
         simulate: 'False',
@@ -417,6 +428,8 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               categories={this.state.testCategories}
               isLoading={this.state.loadingTests}
               logs={this.state.testsLog === null ? undefined : this.state.testsLog}
+              hideNotRun={true}
+              message={this.state.runMessage ? <Alert type="warning" message={this.state.runMessage} /> : <div />}
             />
           </div>
         );
