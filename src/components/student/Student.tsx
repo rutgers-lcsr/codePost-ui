@@ -259,13 +259,13 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     const submissions = assignment ? this.state.submissions[assignment.id] : undefined;
 
     if (!assignment || !submissions || !submissions[0]) {
-      this.changePanel(CURRENT_PANEL.TABLE, undefined);
+      this.changePanel(CURRENT_PANEL.TABLE, undefined, undefined);
       return;
     }
 
     if (assignment.liveFeedbackMode) {
       openSubmission(submissions[0].id);
-      this.changePanel(CURRENT_PANEL.TABLE, undefined);
+      this.changePanel(CURRENT_PANEL.TABLE, undefined, undefined);
     } else {
       this.changePanel(CURRENT_PANEL.VIEWFILES, assignment, undefined);
     }
@@ -648,7 +648,8 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
           <Alert
             message={
               <span>
-                You have used <b>{numUsed}</b> test runs so far. You have <b>{numRemaining}</b> test runs remaining.{' '}
+                You have used <b>{numUsed}</b> test runs so far. You have <b>{numRemaining}</b> test{' '}
+                {numRemaining === 1 ? 'run' : 'runs'} remaining.{' '}
                 {numRemaining === 0 ? ' You can still continue to submit, but no additional tests will be run' : ''}
               </span>
             }
@@ -696,7 +697,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
           <ViewUpload
             isVisible={this.state.currentPanel === CURRENT_PANEL.VIEWFILES}
             assignment={this.state.detailAssignment}
-            onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, undefined)}
+            onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, undefined, undefined)}
           />
         </div>
       );
