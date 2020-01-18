@@ -142,7 +142,11 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
   public componentDidUpdate(prevProps: IProps, prevState: IState) {
     if (prevProps.selectedAssignment !== this.props.selectedAssignment) {
-      this.setState({ selectedAssignment: this.props.selectedAssignment });
+      this.setState({
+        selectedAssignment: this.props.selectedAssignment,
+        testCategories: [],
+        testCases: [],
+      });
       if (this.props.selectedAssignment) {
         this.loadTemplates(this.props.selectedAssignment);
         this.loadTests();
