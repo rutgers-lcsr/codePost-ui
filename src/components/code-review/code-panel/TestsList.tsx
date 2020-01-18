@@ -28,6 +28,7 @@ interface IProps {
   hideNotRun?: boolean;
   hideSummary?: boolean;
   logs?: string;
+  message?: React.ReactNode;
 }
 
 const TestsList = (props: IProps) => {
@@ -102,6 +103,7 @@ const TestsList = (props: IProps) => {
   console.log('DISPLAYED');
   return (
     <div id="tests-list" style={{ padding: '20px', overflow: 'auto', height: `${windowSize.height - 49}px` }}>
+      {<div style={{ marginBottom: 15 }}>{props.message}</div> || <div />}
       {!props.hideSummary && (
         <div className="display-flex justify-content-center">
           <Card>
@@ -116,11 +118,13 @@ const TestsList = (props: IProps) => {
                 title="Failed"
                 value={props.isLoading ? 'Running...' : `${failed}`}
               />
-              <Statistic
-                style={{ textAlign: 'center', margin: '0px 30px' }}
-                title="Not Run"
-                value={props.isLoading ? 'Running...' : `${total - passed - failed}`}
-              />
+              {!props.hideNotRun && (
+                <Statistic
+                  style={{ textAlign: 'center', margin: '0px 30px' }}
+                  title="Not Run"
+                  value={props.isLoading ? 'Running...' : `${total - passed - failed}`}
+                />
+              )}
               <Statistic
                 style={{ textAlign: 'center', margin: '0px 30px' }}
                 title="Summary"
@@ -207,13 +211,11 @@ const TestsList = (props: IProps) => {
                 <span>
                   {category.name}
                   &nbsp;
-                  {props.isLoading ? (
-                    <Spin />
-                  ) : !props.hideNotRun ? (
+                  {!props.isLoading ? (
                     <span>
                       <Badge count={numPassed} style={{ backgroundColor: '#52c41a' }} />
                       <Badge count={numFailed} style={{ backgroundColor: 'red' }} />
-                      <Badge count={numNotRun} style={{ backgroundColor: 'gray' }} />
+                      {!props.hideNotRun && <Badge count={numNotRun} style={{ backgroundColor: 'gray' }} />}
                     </span>
                   ) : (
                     <div />
@@ -223,7 +225,13 @@ const TestsList = (props: IProps) => {
               key={index}
               style={customPanelStyle}
             >
-              <Table columns={columns} dataSource={data} pagination={false} expandedRowRender={expandedRowRender} />
+              <Table
+                columns={columns}
+                loading={props.isLoading}
+                dataSource={data}
+                pagination={false}
+                expandedRowRender={expandedRowRender}
+              />
             </Collapse.Panel>
           );
         })}
