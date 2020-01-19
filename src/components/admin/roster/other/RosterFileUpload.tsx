@@ -246,7 +246,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           'Updated roster',
           `${Object.keys(diff.added).length} ${this.props.roleType}s | ${this.props.course.name} ${
             this.props.course.period
-          }`,
+          }\n
+          _[${Object.keys(diff.added).join(', ')}]_`,
           '#24be85',
           '#user_notifications',
         );
@@ -356,7 +357,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           'Updated roster',
           `${Object.keys(diff.added).length} ${this.props.roleType}s | ${this.props.course.name} ${
             this.props.course.period
-          }`,
+          }\n
+          _[${Object.keys(diff.added).join(', ')}]_`,
           '#24be85',
           '#user_notifications',
         );
@@ -374,7 +376,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           'Updated roster',
           `${Object.keys(diff.added).length} ${this.props.roleType}s | ${this.props.course.name} ${
             this.props.course.period
-          }`,
+          }\n
+          _[${Object.keys(diff.added).join(', ')}]_`,
           '#24be85',
           '#user_notifications',
         );
