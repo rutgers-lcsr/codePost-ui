@@ -416,7 +416,7 @@ const CollectionCreateForm: any = Form.create()(
                     onSelectChange={this.setSelectedTemplates}
                     selectedKeys={this.state.selectedTemplates}
                     titles={['Optional', 'Required']}
-                    render={(item) => item.title}
+                    render={(item: any) => item.title}
                     footer={() => (
                       <Button size="small" style={{ float: 'right', margin: 5 }} onClick={this.deleteTemplates}>
                         delete

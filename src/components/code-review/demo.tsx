@@ -60,6 +60,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     anonymousGradingDefault: false,
     minComments: 0,
     noUnfinalize: false,
+    archived: false,
   };
 
   const demoSubmission: AnonymousSubmissionType = {
@@ -335,6 +336,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     anonymousGradingDefault: false,
     minComments: 0,
     noUnfinalize: false,
+    archived: false,
   };
 
   const demoSubmission: AnonymousSubmissionType = {
