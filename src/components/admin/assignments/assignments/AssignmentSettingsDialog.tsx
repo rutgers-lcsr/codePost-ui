@@ -323,6 +323,7 @@ const CollectionCreateForm: any = Form.create()(
           onCancel={onCancel}
           onOk={onSave.bind({}, this.state.templates)}
           width={'45%'}
+          maskClosable={false}
         >
           <Form
             layout="horizontal"
