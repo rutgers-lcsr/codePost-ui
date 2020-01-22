@@ -33,13 +33,13 @@ const Scholarship = (props: IProps) => {
     <div>
       <Typography.Title level={2}>About this scholarship</Typography.Title>
       <div style={{ marginBottom: 25 }}>
-        Our mission at codePost is to advance Computer Science education by empowering educators to give higher-quality
-        feedback at scale.
+        Our mission at codePost is to <b style={{ fontWeight: 600 }}>advance Computer Science education</b> by
+        empowering educators to give higher-quality feedback at scale.
       </div>
       <div style={{ marginBottom: 25 }}>
         We know firsthand that{' '}
         <span style={{ fontWeight: 600, color: '#24be85' }}>
-          Computer Science students play key roles in improving CS education.
+          Computer Science students play key roles in advancing CS education.
         </span>
       </div>
 
@@ -55,7 +55,7 @@ const Scholarship = (props: IProps) => {
       </div>
 
       <div style={{ marginBottom: 25, fontWeight: 500 }}>
-        Through this scholarship, we want to recognize these superstars, and encourage them to continue advancing
+        Through this scholarship, we want to recognize these individuals, and encourage them to continue improving
         Computer Science education.
       </div>
     </div>
@@ -68,14 +68,16 @@ const Scholarship = (props: IProps) => {
       <div style={{ marginBottom: 25 }}>
         <div style={{ marginBottom: 15 }}>
           We first built codePost as undergraduate students at Princeton University, inspired to improve our
-          department's grading process, which was using... pen and paper.
+          department's grading process.
         </div>
         <div style={{ marginBottom: 15 }}>
-          codePost is now used across 40+ CS departments across the world, and has been used to provide better feedback
-          to tens of thousands of students, while saving instructors countless hours.
+          It’s now used across 40+ CS departments across the world, and has been used to provide better feedback to tens
+          of thousands of students, while saving instructors countless hours.
         </div>
         <div style={{ marginBottom: 15 }}>
-          And it all started as a small project by a few CS students looking to make an impact!
+          It all started as a small project by a few CS students, and we wouldn’t be where we are today without the
+          support and encouragement of our instructors and our department. We want to give back, by supporting other CS
+          students that are working towards making an impact in their field.
         </div>
       </div>
     </div>
@@ -132,6 +134,16 @@ const Scholarship = (props: IProps) => {
             <li>Tangible improvements made to CS education within their school or community</li>
           </ul>
         </div>
+      </div>
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: 15 }}>
+        <Button
+          href="https://bold.org/scholarships/codepost-computer-science-education-scholarship/"
+          type="primary"
+          target="_blank"
+          style={{ fontSize: 24, width: 175, height: 70, lineHeight: '70px' }}
+        >
+          Apply
+        </Button>
       </div>
     </div>
   );
