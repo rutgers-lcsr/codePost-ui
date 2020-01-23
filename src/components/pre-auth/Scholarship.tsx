@@ -71,8 +71,7 @@ const Scholarship = (props: IProps) => {
       </Typography.Title>
       <div style={{ marginBottom: 25 }}>
         <div style={{ marginBottom: 15 }}>
-          We first built codePost as undergraduate students at Princeton University, inspired to improve our
-          department's grading process.
+          We first built codePost as undergraduate students, inspired to improve our department's grading process.
         </div>
         <div style={{ marginBottom: 15 }}>
           It’s now used across 40+ CS departments across the world, and has been used to provide better feedback to tens
