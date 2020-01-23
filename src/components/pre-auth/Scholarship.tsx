@@ -80,8 +80,8 @@ const Scholarship = (props: IProps) => {
         </div>
         <div style={{ marginBottom: 15 }}>
           During this journey, we have experienced first-hand the value that personalized instruction can give to the
-          development of CS students. With this scholarship, we hope to give back to those educators that make this part
-          of their mission.
+          development of CS students. With this scholarship, we hope to give back to those educators that make this a
+          part of their mission.
         </div>
       </div>
     </div>
