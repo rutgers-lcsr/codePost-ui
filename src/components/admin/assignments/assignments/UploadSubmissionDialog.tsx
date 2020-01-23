@@ -179,12 +179,15 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       this.setState({ loadingTests: true });
       const { testCases, testCategories } = await AssignmentStudent.readStudentTests(this.props.selectedAssignment.id);
       const caseObj: StudentTestCasesByCategory = {};
+      console.log('test cases');
+      console.log(testCases);
       testCategories.forEach((category) => {
         caseObj[category.id] = [];
       });
       testCases.forEach((testCase) => {
         caseObj[testCase.testCategory] = [...caseObj[testCase.testCategory], testCase];
       });
+      console.log(caseObj);
       this.setState({ testCategories, testCases: caseObj });
     }
   };
@@ -424,11 +427,12 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           <div style={{ minHeight: 'calc(100vh - 300px)' }}>
             <TestsList
               tests={this.state.submissionTests}
+              redactNotShown={true}
+              hideNotRun={false}
               cases={this.state.testCases}
               categories={this.state.testCategories}
               isLoading={this.state.loadingTests}
               logs={this.state.testsLog === null ? undefined : this.state.testsLog}
-              hideNotRun={true}
               message={this.state.runMessage ? <Alert type="warning" message={this.state.runMessage} /> : <div />}
             />
           </div>
