@@ -174,15 +174,9 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
           changeRoster={this.props.updateRoster}
           isDisabled={false}
           updateSection={this.props.updateSection}
-          emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
+          emailNewUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
           createSection={this.props.createSection}
           course={this.props.currentCourse}
-        />,
-        <AddGraderDialog
-          key={3}
-          graders={this.props.graders}
-          addGrader={this.addGrader}
-          willEmailUser={this.props.currentCourse.emailNewUsers}
         />,
       ];
 
@@ -310,13 +304,6 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
             }}
             description={<span>No graders yet</span>}
           >
-            <AddGraderDialog
-              key={0}
-              addGrader={this.addGrader}
-              graders={this.props.graders}
-              willEmailUser={this.props.currentCourse.emailNewUsers}
-            />
-            <br />
             <RosterFileUpload
               key={1}
               roleType="grader"
@@ -328,7 +315,7 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
               changeRoster={this.props.updateRoster}
               isDisabled={false}
               updateSection={this.props.updateSection}
-              emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
+              emailNewUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
               createSection={this.props.createSection}
               course={this.props.currentCourse}
             />

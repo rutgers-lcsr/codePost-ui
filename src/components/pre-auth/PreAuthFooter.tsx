@@ -11,7 +11,10 @@ const PreAuthFooter = () => {
 
   const flexDirection = windowSize.width < breakpoint ? 'column' : 'row';
   const logoTextAlign = windowSize.width < breakpoint ? 'center' : 'left';
-  const mobileFlexStyle = windowSize.width < breakpoint ? { display: 'flex', fontSize: 10 } : {};
+  const mobileFlexStyle =
+    windowSize.width < breakpoint
+      ? { display: 'flex', fontSize: 10, flexWrap: 'wrap' as 'wrap', justifyContent: 'center' }
+      : {};
   const horizontalPadding = windowSize.width < breakpoint ? 0 : 65; // For mobile view we want less horizontal padding
 
   // We need some horitzontal padding on mobile to make sure the intercom button doesn't block the terms
@@ -72,6 +75,9 @@ const PreAuthFooter = () => {
           </a>{' '}
           <Link style={linkStyle} to="/about">
             About us
+          </Link>{' '}
+          <Link style={linkStyle} to="/scholarships/computer-science-education">
+            Scholarship
           </Link>{' '}
           <Link style={linkStyle} to="/terms">
             Terms

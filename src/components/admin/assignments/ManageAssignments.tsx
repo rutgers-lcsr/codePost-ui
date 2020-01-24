@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Breadcrumb } from 'antd';
+import { Breadcrumb, Tag } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -87,7 +87,11 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
     return;
   };
 
-  const breadcrumbs = [<Breadcrumb.Item key="0">Assignments</Breadcrumb.Item>];
+  const breadcrumbs = [
+    <Breadcrumb.Item key="0">
+      {props.currentCourse !== undefined && props.currentCourse.archived ? <Tag>Archived</Tag> : null}Assignments
+    </Breadcrumb.Item>,
+  ];
 
   return (
     <div>
@@ -279,7 +283,9 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
       <Route
         path={`${props.match.url}/rubrics`}
         exact={true}
-        render={(subprops: any) => <RubricOverview {...subprops} assignments={props.assignments} />}
+        render={(subprops: any) => (
+          <RubricOverview {...subprops} assignments={props.assignments} course={props.currentCourse} />
+        )}
       />
       <Route
         path={`${props.match.url}/plagiarism`}

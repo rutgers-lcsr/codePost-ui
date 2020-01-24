@@ -1,6 +1,6 @@
 {
   "name": "core",
-  "version": "2.1.59",
+  "version": "2.2.01",
   "private": true,
   "dependencies": {
     "@brainhubeu/react-carousel": "^1.10.27",
@@ -9,7 +9,7 @@
     "@types/react": "^16.9.2",
     "@types/react-dom": "16.9.0",
     "@types/react-router": "^5.1.1",
-    "antd": "^3.25.3",
+    "antd": "^3.26.7",
     "array-move": "^2.1.0",
     "aws-sdk": "^2.524.0",
     "babel-plugin-import": "^1.12.1",
