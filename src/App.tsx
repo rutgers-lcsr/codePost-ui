@@ -103,9 +103,11 @@ interface IState {
 }
 
 class App extends React.Component<{}, IState> {
+  private loginCount: number;
   public constructor(props: any) {
     super(props);
     console.log(...consoleArt);
+    this.loginCount = 0;
     this.state = {
       error: '',
       has_token: localStorage.getItem('token') ? true : false,
@@ -191,6 +193,7 @@ class App extends React.Component<{}, IState> {
 
       localStorage.setItem(key, data);
       this.setState({ has_token: true }, () => {
+        this.loginCount += 1;
         this.tryToLogin();
       });
     } finally {
@@ -199,7 +202,7 @@ class App extends React.Component<{}, IState> {
   };
 
   public tryToLogin = () => {
-    if (this.state.has_token && !this.state.user) {
+    if (this.state.has_token && !this.state.user && this.loginCount < 4) {
       fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')} `,
@@ -228,12 +231,14 @@ class App extends React.Component<{}, IState> {
             // Issue with this approach: if our API server is unavailable, the site will appear as a blank page
             // (rather than showing users the pre-auth site).
             setTimeout(() => {
+              this.loginCount += 1;
               this.tryToLogin();
             }, 1000);
           }
         })
         .catch((error) => {
           setTimeout(() => {
+            this.loginCount += 1;
             this.tryToLogin();
           }, 1000);
         });
