@@ -395,7 +395,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
                 }}
                 disabled={!env}
               >
-                Limit the number of failed tests that are exposed to students &nbsp;
+                Limit the number of failed tests per category that are exposed to students &nbsp;
               </Checkbox>
               {env && env.maxExposedFailedTests !== null && (
                 <span>
@@ -407,7 +407,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
                       updateEnvSetting('maxExposedFailedTests', value);
                     }}
                   />{' '}
-                  &nbsp; failed tests{' '}
+                  &nbsp; failed tests per category{' '}
                 </span>
               )}
               <CPTooltip
