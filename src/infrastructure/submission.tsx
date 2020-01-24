@@ -45,7 +45,6 @@ export const SubmissionV = t.intersection(
       questionDate: t.union([t.string, t.null]),
       responseDate: t.union([t.string, t.null]),
       tests: t.array(t.number),
-      testRunsCompleted: t.number,
     }),
   ],
   'Submission',
@@ -70,7 +69,6 @@ export const SubmissionInfoV = t.intersection(
       questionDate: t.union([t.string, t.null]),
       responseDate: t.union([t.string, t.null]),
       tests: t.array(t.number),
-      testRunsCompleted: t.number,
     }),
   ],
   'Submission',
@@ -94,7 +92,6 @@ export const AnonymousSubmissionInfoV = t.intersection(
       questionDate: t.union([t.string, t.null]),
       responseDate: t.union([t.string, t.null]),
       tests: t.array(t.number),
-      testRunsCompleted: t.number,
     }),
     t.partial({
       students: t.array(t.string),
@@ -109,7 +106,6 @@ export const StudentSubmissionV = t.intersection(
     t.type({
       isFinalized: t.boolean,
       assignment: t.number,
-      testRunsCompleted: t.number,
     }),
     t.partial({
       students: t.array(t.string),

@@ -2,7 +2,7 @@
  * Common Types
  */
 
-import { AssignmentType, AssignmentStudentType } from '../infrastructure/assignment';
+import { AssignmentType } from '../infrastructure/assignment';
 import { CommentType } from '../infrastructure/comment';
 import { RubricCategoryType } from '../infrastructure/rubricCategory';
 import { RubricCommentType } from '../infrastructure/rubricComment';
@@ -99,10 +99,6 @@ export interface IRubricCategoryToRubricCommentsMap {
 
 export interface ICourseToAssignmentMap {
   [courseID: number]: AssignmentType[];
-}
-
-export interface ICourseToAssignmentStudentMap {
-  [courseID: number]: AssignmentStudentType[];
 }
 
 export interface ICommentToRubricCommentMap {

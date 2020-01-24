@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Badge, Card, Input, Table, Collapse, Statistic, Spin, Typography } from 'antd';
+import { Badge, Card, Table, Collapse, Statistic, Spin } from 'antd';
 
 /* other library imports */
 import ReactMarkdown from 'react-markdown';
@@ -27,27 +27,10 @@ interface IProps {
   isLoading?: boolean;
   hideNotRun?: boolean;
   hideSummary?: boolean;
-  showLogs?: boolean;
-  logs?: string;
-  message?: React.ReactNode;
-  redactNotShown?: boolean;
 }
 
 const TestsList = (props: IProps) => {
   const windowSize = useWindowSize();
-
-  if (props.isLoading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-        <div>
-          <Spin />
-          <br />
-          <br />
-          <b>Running tests</b>
-        </div>
-      </div>
-    );
-  }
 
   // Submission-level stats
   let passed = 0;
@@ -75,10 +58,6 @@ const TestsList = (props: IProps) => {
     } else {
       failed += 1;
     }
-  }
-
-  if (props.redactNotShown) {
-    failed = total - passed;
   }
 
   // Top-level columns used used to display individual test information
@@ -119,27 +98,32 @@ const TestsList = (props: IProps) => {
     overflow: 'hidden',
   };
 
+  console.log('DISPLAYED');
   return (
-    <div id="tests-list" style={{ padding: '20px', overflow: 'auto' }}>
-      {<div style={{ marginBottom: 15 }}>{props.message}</div> || <div />}
+    <div id="tests-list" style={{ padding: '20px', overflow: 'auto', height: `${windowSize.height - 49}px` }}>
       {!props.hideSummary && (
         <div className="display-flex justify-content-center">
           <Card>
             <div className="display-flex justify-content-center">
-              <Statistic style={{ textAlign: 'center', margin: '0px 30px' }} title="Passed" value={`${passed}`} />
-              <Statistic style={{ textAlign: 'center', margin: '0px 30px' }} title="Failed" value={`${failed}`} />
-              {!props.hideNotRun ||
-                (props.redactNotShown && (
-                  <Statistic
-                    style={{ textAlign: 'center', margin: '0px 30px' }}
-                    title="Not Run"
-                    value={`${total - passed - failed}`}
-                  />
-                ))}
+              <Statistic
+                style={{ textAlign: 'center', margin: '0px 30px' }}
+                title="Passed"
+                value={props.isLoading ? 'Running...' : `${passed}`}
+              />
+              <Statistic
+                style={{ textAlign: 'center', margin: '0px 30px' }}
+                title="Failed"
+                value={props.isLoading ? 'Running...' : `${failed}`}
+              />
+              <Statistic
+                style={{ textAlign: 'center', margin: '0px 30px' }}
+                title="Not Run"
+                value={props.isLoading ? 'Running...' : `${total - passed - failed}`}
+              />
               <Statistic
                 style={{ textAlign: 'center', margin: '0px 30px' }}
                 title="Summary"
-                value={`${passed}/${total}`}
+                value={props.isLoading ? 'Running...' : `${passed}/${total}`}
               />
             </div>
           </Card>
@@ -151,12 +135,10 @@ const TestsList = (props: IProps) => {
           const theseTests = testsByCategory[category.id];
           // @ts-ignore
           const numPassed = theseTests.reduce((acc: number, el: any) => acc + (el.passed === true ? 1 : 0), 0);
-          const numFailed = props.redactNotShown
-            ? props.cases[category.id].length - numPassed
-            : theseTests.length - numPassed;
+          const numFailed = theseTests.length - numPassed;
           const numNotRun = props.cases[category.id].length - theseTests.length;
 
-          // If we want to hide the not run, then we filter out tests for which we don't have a submission test
+          // If we want to hide the not run, then we fitler out tests for which we don't have a submission test
           const testCases = !props.hideNotRun
             ? props.cases[category.id]
             : props.cases[category.id].filter((tc) => {
@@ -184,18 +166,13 @@ const TestsList = (props: IProps) => {
                 badgeStatus = 'error';
                 break;
               default:
-                if (props.redactNotShown) {
-                  badgeString = 'Failed';
-                  badgeStatus = 'error';
-                } else {
-                  badgeString = 'Never run';
-                  badgeStatus = 'default';
-                }
+                badgeString = 'Never run';
+                badgeStatus = 'default';
             }
 
             let points = '--';
-            if (result || props.redactNotShown) {
-              if (result && result.passed) {
+            if (result) {
+              if (result.passed) {
                 points = `${testCase.pointsPass > 0 ? '+' : ''}${testCase.pointsPass}`;
               } else {
                 points = `${testCase.pointsFail > 0 ? '+' : ''}${testCase.pointsFail}`;
@@ -203,7 +180,7 @@ const TestsList = (props: IProps) => {
             }
 
             return {
-              case: props.redactNotShown && !result ? 'HIDDEN' : testCase.description,
+              case: testCase.description,
               passed: (
                 <span>
                   <Badge status={badgeStatus} />
@@ -212,11 +189,7 @@ const TestsList = (props: IProps) => {
               ),
               points,
               logs: <span style={{ whiteSpace: 'pre' }}>{result ? result.logs : '--'}</span>,
-              explanation: (
-                <ReactMarkdown>
-                  {testCase.explanation && props.hideNotRun && !testOutcome ? 'HIDDEN' : testCase.explanation}
-                </ReactMarkdown>
-              ),
+              explanation: <ReactMarkdown>{testCase.explanation}</ReactMarkdown>,
             };
           });
 
@@ -233,35 +206,27 @@ const TestsList = (props: IProps) => {
                 <span>
                   {category.name}
                   &nbsp;
-                  <span>
-                    <Badge count={numPassed} style={{ backgroundColor: '#52c41a' }} />
-                    <Badge count={numFailed} style={{ backgroundColor: 'red' }} />
-                    {!props.hideNotRun && !props.redactNotShown && (
+                  {props.isLoading ? (
+                    <Spin />
+                  ) : !props.hideNotRun ? (
+                    <span>
+                      <Badge count={numPassed} style={{ backgroundColor: '#52c41a' }} />
+                      <Badge count={numFailed} style={{ backgroundColor: 'red' }} />
                       <Badge count={numNotRun} style={{ backgroundColor: 'gray' }} />
-                    )}
-                  </span>
+                    </span>
+                  ) : (
+                    <div />
+                  )}
                 </span>
               }
               key={index}
               style={customPanelStyle}
             >
-              <Table
-                columns={columns}
-                loading={props.isLoading}
-                dataSource={data}
-                pagination={false}
-                expandedRowRender={expandedRowRender}
-              />
+              <Table columns={columns} dataSource={data} pagination={false} expandedRowRender={expandedRowRender} />
             </Collapse.Panel>
           );
         })}
       </Collapse>
-      {props.showLogs && (
-        <div>
-          <Typography.Title level={4}>Logs</Typography.Title>
-          <Input.TextArea disabled={true} value={props.logs} style={{ color: 'black' }} autosize={true} />
-        </div>
-      )}
     </div>
   );
 };
