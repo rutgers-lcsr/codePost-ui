@@ -84,6 +84,8 @@ export { default as BranchesOutline } from '@ant-design/icons/lib/outline/Branch
 export { default as RightOutline } from '@ant-design/icons/lib/outline/RightOutline';
 export { default as CheckOutline } from '@ant-design/icons/lib/outline/CheckOutline';
 export { default as LoadingOutline } from '@ant-design/icons/lib/outline/LoadingOutline';
+export { default as Calculator } from '@ant-design/icons/lib/outline/CalculatorOutline';
+export { default as PaperClip } from '@ant-design/icons/lib/outline/PaperClipOutline';
 export { default as CalendarOutline } from '@ant-design/icons/lib/outline/CalendarOutline';
 export { default as CrownOutline } from '@ant-design/icons/lib/outline/CrownOutline';
 
