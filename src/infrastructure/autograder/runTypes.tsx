@@ -19,11 +19,7 @@ const TestEditorResult = t.type({
   results: t.array(BasicTestResult),
 });
 
-const SubmissionTestResult = t.type({
-  logs: t.union([t.string, t.null]),
-  submissionTests: t.array(SubmissionTestV),
-  message: t.string,
-});
+const SubmissionTestResult = t.array(SubmissionTestV);
 
 export type SubmissionTestResultType = t.TypeOf<typeof SubmissionTestResult>;
 export type BasicTestResultType = t.TypeOf<typeof BasicTestResult>;
