@@ -82,7 +82,7 @@ const anonymousUser: UserType = {
   codePostAdmin: false,
 };
 
-const domains = ['https://codepost.io', 'https://mooc.codepost.io', 'http://localhost:3001', 'http://localhost:3000'];
+const domains = ['https://mooc.codepost.io', 'http://localhost:3001'];
 
 /*****************************************************************************/
 
