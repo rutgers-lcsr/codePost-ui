@@ -630,34 +630,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
         }
       };
 
-      // Checking test runs against max test runs logic
-      const allowedToRunTests =
-        this.state.detailAssignment &&
-        (!this.state.detailAssignment.maxStudentTestRuns ||
-          !this.state.detailSubmission ||
-          !this.state.detailSubmission.testRunsCompleted ||
-          this.state.detailSubmission.testRunsCompleted < this.state.detailAssignment.maxStudentTestRuns);
-
-      let testMessage = undefined;
-      if (this.state.detailAssignment && this.state.detailAssignment.maxStudentTestRuns) {
-        const numUsed = this.state.detailSubmission ? this.state.detailSubmission.testRunsCompleted : 0;
-        const numRemaining = this.state.detailSubmission
-          ? this.state.detailAssignment.maxStudentTestRuns - this.state.detailSubmission.testRunsCompleted
-          : this.state.detailAssignment.maxStudentTestRuns;
-        testMessage = (
-          <Alert
-            message={
-              <span>
-                You have used <b>{numUsed}</b> test runs so far. You have <b>{numRemaining}</b> test{' '}
-                {numRemaining === 1 ? 'run' : 'runs'} remaining.{' '}
-                {numRemaining === 0 ? ' You can still continue to submit, but no additional tests will be run' : ''}
-              </span>
-            }
-            type={numRemaining === 0 ? 'error' : numRemaining === 1 ? 'warning' : 'info'}
-          />
-        );
-      }
-
       studentContent = (
         <div>
           <TableDetail
@@ -686,13 +658,15 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
                 ? this.state.detailSubmission.students
                 : [this.props.user.email]
             }
-            submissions={{}}
+            submissions={
+              this.state.detailSubmission
+                ? { [this.props.user.email]: { [this.state.detailSubmission.assignment]: this.state.detailSubmission } }
+                : { [this.props.user.email]: {} }
+            }
             uploadSubmission={this.uploadSubmission.bind(this, this.state.currentPanel === CURRENT_PANEL.UPLOADFILES)}
             disableStudentSelect={true}
             onSuccess={this.onUploadSuccess}
             isStudent={true}
-            canRunTests={allowedToRunTests}
-            beforeUploadMessage={testMessage}
           />
           <ViewUpload
             isVisible={this.state.currentPanel === CURRENT_PANEL.VIEWFILES}

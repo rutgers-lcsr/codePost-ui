@@ -27,6 +27,7 @@ interface IProps {
   isLoading?: boolean;
   hideNotRun?: boolean;
   hideSummary?: boolean;
+  showLogs?: boolean;
   logs?: string;
   message?: React.ReactNode;
   redactNotShown?: boolean;
@@ -34,6 +35,19 @@ interface IProps {
 
 const TestsList = (props: IProps) => {
   const windowSize = useWindowSize();
+
+  if (props.isLoading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+        <div>
+          <Spin />
+          <br />
+          <br />
+          <b>Running tests</b>
+        </div>
+      </div>
+    );
+  }
 
   // Submission-level stats
   let passed = 0;
@@ -106,34 +120,26 @@ const TestsList = (props: IProps) => {
   };
 
   return (
-    <div id="tests-list" style={{ padding: '20px', overflow: 'auto', height: `${windowSize.height - 49}px` }}>
+    <div id="tests-list" style={{ padding: '20px', overflow: 'auto' }}>
       {<div style={{ marginBottom: 15 }}>{props.message}</div> || <div />}
       {!props.hideSummary && (
         <div className="display-flex justify-content-center">
           <Card>
             <div className="display-flex justify-content-center">
-              <Statistic
-                style={{ textAlign: 'center', margin: '0px 30px' }}
-                title="Passed"
-                value={props.isLoading ? 'Running...' : `${passed}`}
-              />
-              <Statistic
-                style={{ textAlign: 'center', margin: '0px 30px' }}
-                title="Failed"
-                value={props.isLoading ? 'Running...' : `${failed}`}
-              />
+              <Statistic style={{ textAlign: 'center', margin: '0px 30px' }} title="Passed" value={`${passed}`} />
+              <Statistic style={{ textAlign: 'center', margin: '0px 30px' }} title="Failed" value={`${failed}`} />
               {!props.hideNotRun ||
                 (props.redactNotShown && (
                   <Statistic
                     style={{ textAlign: 'center', margin: '0px 30px' }}
                     title="Not Run"
-                    value={props.isLoading ? 'Running...' : `${total - passed - failed}`}
+                    value={`${total - passed - failed}`}
                   />
                 ))}
               <Statistic
                 style={{ textAlign: 'center', margin: '0px 30px' }}
                 title="Summary"
-                value={props.isLoading ? 'Running...' : `${passed}/${total}`}
+                value={`${passed}/${total}`}
               />
             </div>
           </Card>
@@ -178,10 +184,7 @@ const TestsList = (props: IProps) => {
                 badgeStatus = 'error';
                 break;
               default:
-                if (props.isLoading) {
-                  badgeString = 'Running...';
-                  badgeStatus = 'default';
-                } else if (props.redactNotShown) {
+                if (props.redactNotShown) {
                   badgeString = 'Failed';
                   badgeStatus = 'error';
                 } else {
@@ -230,17 +233,13 @@ const TestsList = (props: IProps) => {
                 <span>
                   {category.name}
                   &nbsp;
-                  {!props.isLoading ? (
-                    <span>
-                      <Badge count={numPassed} style={{ backgroundColor: '#52c41a' }} />
-                      <Badge count={numFailed} style={{ backgroundColor: 'red' }} />
-                      {!props.hideNotRun && !props.redactNotShown && (
-                        <Badge count={numNotRun} style={{ backgroundColor: 'gray' }} />
-                      )}
-                    </span>
-                  ) : (
-                    <div />
-                  )}
+                  <span>
+                    <Badge count={numPassed} style={{ backgroundColor: '#52c41a' }} />
+                    <Badge count={numFailed} style={{ backgroundColor: 'red' }} />
+                    {!props.hideNotRun && !props.redactNotShown && (
+                      <Badge count={numNotRun} style={{ backgroundColor: 'gray' }} />
+                    )}
+                  </span>
                 </span>
               }
               key={index}
@@ -257,7 +256,7 @@ const TestsList = (props: IProps) => {
           );
         })}
       </Collapse>
-      {props.logs && (
+      {props.showLogs && (
         <div>
           <Typography.Title level={4}>Logs</Typography.Title>
           <Input.TextArea disabled={true} value={props.logs} style={{ color: 'black' }} autosize={true} />

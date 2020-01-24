@@ -54,6 +54,7 @@ const AssignmentV = t.intersection(
       showFrequentlyUsedRubricComments: t.boolean,
       allowLateUploads: t.boolean,
       maxStudentTestRuns: t.union([t.null, t.number]),
+      exposeDumpLogs: t.union([t.null, t.boolean]),
     }),
     t.partial({
       submissions_count: t.number,
@@ -96,6 +97,7 @@ const AssignmentVStudent = t.intersection(
       mean: t.union([t.number, t.null, t.undefined]),
       median: t.union([t.number, t.null, t.undefined]),
       points: t.number,
+      exposeDumpLogs: t.union([t.null, t.boolean]),
     }),
   ],
   'Assignment',
