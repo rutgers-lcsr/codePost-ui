@@ -58,6 +58,7 @@ export const TestItem = (props: ITestItemProps) => {
   let formRef: any = React.createRef();
   const [testOutput, setTestOutput] = useState<ILogType | undefined>(undefined);
   const [isRunning, setIsRunning] = useState(false);
+  const [hasInstanceMethods, setHasInstanceMethods] = useState(false);
   const [methodsByFile, setMethodsByFile] = useState<{ [name: string]: string[] }>({});
 
   useEffect(() => {
@@ -72,8 +73,13 @@ export const TestItem = (props: ITestItemProps) => {
       props.files.forEach((f) => {
         const code = f.code.split('\n');
         const methodNames: String[] = [];
+
+        const instanceMethods = code.filter((line) =>
+          line.match(/(public|protected|private|static|\s) +[\w\<\>\[\]]+\s+(\w+) *\([^\)]*\) *(\{?|[^;])/),
+        );
+
         code.forEach((line) => {
-          if (line.match(/(public|protected|private|static|\s) +[\w\<\>\[\]]+\s+(\w+) *\([^\)]*\) *(\{?|[^;])/)) {
+          if (line.match(/(public|protected|private|\s) static +[\w\<\>\[\]]+\s+(\w+) *\([^\)]*\) *(\{?|[^;])/)) {
             const tokens = line
               .split('(')[0]
               .trim()
@@ -81,11 +87,14 @@ export const TestItem = (props: ITestItemProps) => {
             methodNames.push(tokens[tokens.length - 1]);
           }
         });
+
         setMethodsByFile((prevState) => {
           const newState: any = { ...prevState };
           newState[f.name] = methodNames;
           return newState;
         });
+
+        setHasInstanceMethods(instanceMethods.length > methodNames.length);
       });
     }
   };
@@ -261,6 +270,7 @@ export const TestItem = (props: ITestItemProps) => {
       submissions={props.submissions}
       setTestSubject={props.setTestSubject}
       methodsByFile={methodsByFile}
+      hasInstanceMethods={hasInstanceMethods}
     />
   );
 };
