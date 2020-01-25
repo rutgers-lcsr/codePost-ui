@@ -86,7 +86,7 @@ const AutograderDetail = (props: IProps) => {
   const title = (
     <div>
       <Typography.Title level={2}>codePost Autograder</Typography.Title>
-      <div style={{ marginTop: 15, fontSize: 24 }}>Easy to use, flexible, and powerful.</div>
+      <div style={{ marginTop: 15, fontSize: 24, color: '#24be85' }}>Easy to use, flexible, and powerful.</div>
     </div>
   );
 
@@ -289,7 +289,6 @@ const AutograderDetail = (props: IProps) => {
   // codePost server; codePost results
   const cpServer_cPresults = (
     <div>
-      <div style={{ marginTop: panelMargin }} />
       {module_result_codePost_summary}
       <div style={{ marginTop: panelMargin }} />
       {module_result_codePost_exposedTests}
@@ -301,7 +300,6 @@ const AutograderDetail = (props: IProps) => {
   // codePost server; plaintext results
   const cpServer_plainText = (
     <div>
-      <div style={{ marginTop: panelMargin }} />
       {module_result_plainText}
       <div style={{ marginTop: panelMargin }} />
       {module_run_fileMode}
@@ -311,7 +309,6 @@ const AutograderDetail = (props: IProps) => {
   // user server; codePost results
   const ownServer_cPresults = (
     <div>
-      <div style={{ marginTop: panelMargin }} />
       {module_result_codePost_summary}
       <div style={{ marginTop: panelMargin }} />
       {module_run_api}
@@ -321,7 +318,6 @@ const AutograderDetail = (props: IProps) => {
   // user server; plaintext results
   const ownServer_plaintext = (
     <div>
-      <div style={{ marginTop: panelMargin }} />
       {module_result_plainText}
       <div style={{ marginTop: panelMargin }} />
       {module_run_user_upload}
@@ -363,8 +359,8 @@ const AutograderDetail = (props: IProps) => {
           style={{
             display: 'flex',
             flexDirection: isMobile ? 'column' : 'row',
-            marginTop: 40,
-            marginBottom: 20,
+            marginTop: 60,
+            marginBottom: 50,
             fontSize: 16,
           }}
         >
