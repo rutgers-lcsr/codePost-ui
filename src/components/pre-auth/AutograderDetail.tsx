@@ -6,10 +6,7 @@
 import React, { useState } from 'react';
 
 /* ant imports */
-import { Button, Radio, Icon, Divider, Typography } from 'antd';
-
-/* other library imports */
-import { Link } from 'react-router-dom';
+import { Radio, Typography } from 'antd';
 
 /* codePost imports */
 import useWindowSize from '../core/useWindowSize';
@@ -34,8 +31,6 @@ const AutograderDetail = (props: IProps) => {
 
   const breakpoint = 700;
   const windowSize = useWindowSize();
-  const flexDirection = windowSize.width < breakpoint ? 'column' : 'row';
-
   const isMobile = windowSize.width < breakpoint;
 
   const radioGroupStyle: React.CSSProperties = { display: 'flex', margin: 10 };
@@ -51,12 +46,18 @@ const AutograderDetail = (props: IProps) => {
     lineHeight: '50px',
   };
 
+  // ****************************** Header ********************************
+
   const runGroup = (
     <Radio.Group value={runCP ? 0 : 1} onChange={() => setRunCP(!runCP)} buttonStyle="solid" style={radioGroupStyle}>
-      <Radio.Button key={'run-0'} value={0} style={{ ...radioButtonStyle }}>
+      <Radio.Button key={'run-0'} value={0} style={{ ...radioButtonStyle, fontWeight: runCP ? 600 : 400 }}>
         codePost
       </Radio.Button>
-      <Radio.Button key={'run-1'} value={1} style={{ ...radioButtonStyle, paddingTop: 8, lineHeight: '20px' }}>
+      <Radio.Button
+        key={'run-1'}
+        value={1}
+        style={{ ...radioButtonStyle, fontWeight: runCP ? 400 : 600, paddingTop: 8, lineHeight: '20px' }}
+      >
         My own system
       </Radio.Button>
     </Radio.Group>
@@ -69,10 +70,14 @@ const AutograderDetail = (props: IProps) => {
       buttonStyle="solid"
       style={radioGroupStyle}
     >
-      <Radio.Button key={'result-0'} value={0} style={{ ...radioButtonStyle, paddingTop: 8, lineHeight: '20px' }}>
+      <Radio.Button
+        key={'result-0'}
+        value={0}
+        style={{ ...radioButtonStyle, paddingTop: 8, lineHeight: '20px', fontWeight: resultCP ? 600 : 400 }}
+      >
         codePost objects
       </Radio.Button>
-      <Radio.Button key={'result-1'} value={1} style={{ ...radioButtonStyle }}>
+      <Radio.Button key={'result-1'} value={1} style={{ ...radioButtonStyle, fontWeight: resultCP ? 400 : 600 }}>
         Plaintext file
       </Radio.Button>
     </Radio.Group>
@@ -81,16 +86,16 @@ const AutograderDetail = (props: IProps) => {
   const title = (
     <div>
       <Typography.Title level={2}>codePost Autograder</Typography.Title>
-      <div style={{ marginTop: 15, fontSize: 24 }}>
-        Flexible to your desired set up, powerful enough for your needs.
-      </div>
+      <div style={{ marginTop: 15, fontSize: 24 }}>Easy to use, flexible, and powerful.</div>
     </div>
   );
 
-  // ****************************** Modules ********************************
-
+  // ****************************** Module Creation ********************************
   const imgstyle = { maxWidth: 550 };
   const divStyle = { borderRadius: 8 };
+  const moduleMaxWidth = 550;
+  const moduleMaxHeight = 550;
+  const gutterSize = 100;
 
   const module_result_plainText = (
     <LandingPanel
@@ -106,15 +111,15 @@ const AutograderDetail = (props: IProps) => {
       title="Plaintext test results"
       subTitle=""
       type="left"
-      moduleMaxWidth={595}
-      moduleMaxHeight={550}
+      moduleMaxWidth={moduleMaxWidth}
+      moduleMaxHeight={moduleMaxHeight}
       removeModelSmallScreen={false}
       module={
         <div style={divStyle} className="display-flex justify-content-center align-items-center bevel">
           <img src={result_plainText} style={imgstyle} />
         </div>
       }
-      gutterSize={100}
+      gutterSize={gutterSize}
     />
   );
 
@@ -132,15 +137,15 @@ const AutograderDetail = (props: IProps) => {
       title="Import scripts as is"
       subTitle=""
       type="right"
-      moduleMaxWidth={595}
-      moduleMaxHeight={550}
+      moduleMaxWidth={moduleMaxWidth}
+      moduleMaxHeight={moduleMaxHeight}
       removeModelSmallScreen={false}
       module={
         <div style={divStyle} className="display-flex justify-content-center align-items-center bevel">
           <img src={run_codePost_fileMode} style={imgstyle} />
         </div>
       }
-      gutterSize={100}
+      gutterSize={gutterSize}
     />
   );
 
@@ -149,25 +154,24 @@ const AutograderDetail = (props: IProps) => {
       text={
         <div>
           <ul style={{ paddingBottom: 15 }}>
-            <li>Structured results</li>
-            <li>Optional explanations</li>
-            <li>Automatically add or deduct points</li>
-            <li>Student performance insights, by test</li>
+            <li>Automatically add or deduct points per test</li>
+            <li>Add explanations to each test</li>
+            <li>Pass/fail insights, by test</li>
           </ul>
         </div>
       }
-      title="codePost test results"
+      title="Structured test results"
       subTitle=""
       type="left"
-      moduleMaxWidth={595}
-      moduleMaxHeight={550}
+      moduleMaxWidth={moduleMaxWidth}
+      moduleMaxHeight={moduleMaxHeight}
       removeModelSmallScreen={false}
       module={
         <div style={divStyle} className="display-flex justify-content-center align-items-center bevel">
           <img src={result_codePost_summary} style={imgstyle} />
         </div>
       }
-      gutterSize={100}
+      gutterSize={gutterSize}
     />
   );
 
@@ -176,25 +180,27 @@ const AutograderDetail = (props: IProps) => {
       text={
         <div>
           <ul style={{ paddingBottom: 15 }}>
-            <li>Expose a subset of tests to be run on student submit</li>
-            <li>Avoid situations where students submit code that doesn't work or compile</li>
+            <li>
+              Expose a subset of tests to be run on student submit: avoid situations where students submit code that
+              doesn't work or compile
+            </li>
             <li>Set limits on the amount of tests runs</li>
-            <li>Set requirements on the files that need to be uploaded</li>
+            <li>Set requirements for the file names that need to be uploaded</li>
           </ul>
         </div>
       }
       title="Tests on student submit"
       subTitle=""
       type="right"
-      moduleMaxWidth={595}
-      moduleMaxHeight={550}
+      moduleMaxWidth={moduleMaxWidth}
+      moduleMaxHeight={moduleMaxHeight}
       removeModelSmallScreen={false}
       module={
         <div style={divStyle} className="display-flex justify-content-center align-items-center bevel">
           <img src={result_codePost_exposedTests} style={imgstyle} />
         </div>
       }
-      gutterSize={100}
+      gutterSize={gutterSize}
     />
   );
 
@@ -203,8 +209,8 @@ const AutograderDetail = (props: IProps) => {
       text={
         <div>
           <ul style={{ paddingBottom: 15 }}>
-            <li>Ease to use test editor</li>
-            <li>Can write tests with no code, or code snippets</li>
+            <li>Easy to use test editor</li>
+            <li>Multiple test options: No code tests, Unit tests, Bash scripts, etc.</li>
             <li>Tests run in isolation, so one failed test wont impact other tests</li>
           </ul>
         </div>
@@ -212,15 +218,15 @@ const AutograderDetail = (props: IProps) => {
       title="User-friendly test editor"
       subTitle=""
       type="left"
-      moduleMaxWidth={595}
-      moduleMaxHeight={550}
+      moduleMaxWidth={moduleMaxWidth}
+      moduleMaxHeight={moduleMaxHeight}
       removeModelSmallScreen={false}
       module={
         <div style={divStyle} className="display-flex justify-content-center align-items-center bevel">
           <img src={run_codePost_editor} style={imgstyle} />
         </div>
       }
-      gutterSize={100}
+      gutterSize={gutterSize}
     />
   );
 
@@ -238,15 +244,15 @@ const AutograderDetail = (props: IProps) => {
       title="Run your tests and upload them"
       subTitle=""
       type="right"
-      moduleMaxWidth={595}
-      moduleMaxHeight={550}
+      moduleMaxWidth={moduleMaxWidth}
+      moduleMaxHeight={moduleMaxHeight}
       removeModelSmallScreen={false}
       module={
         <div style={divStyle} className="display-flex justify-content-center align-items-center bevel">
           <img src={run_user_upload} style={imgstyle} />
         </div>
       }
-      gutterSize={100}
+      gutterSize={gutterSize}
     />
   );
 
@@ -263,22 +269,24 @@ const AutograderDetail = (props: IProps) => {
       title="Set test results with the codePost API"
       subTitle=""
       type="right"
-      moduleMaxWidth={595}
-      moduleMaxHeight={550}
+      moduleMaxWidth={moduleMaxWidth}
+      moduleMaxHeight={moduleMaxHeight}
       removeModelSmallScreen={false}
       module={
-        <div>
+        <div style={{ minHeight: 200, display: 'flex', alignItems: 'center' }}>
           <span style={{ fontSize: 40 }}>
-            codePost <span style={{ color: '#24be85' }}>API</span>
+            code<b>Post</b> <span style={{ color: '#24be85' }}>API</span>
           </span>
         </div>
       }
-      gutterSize={100}
+      gutterSize={gutterSize}
     />
   );
 
-  const panelMargin = 75;
+  // ****************************** Module Groupings ********************************
+  const panelMargin = 100;
 
+  // codePost server; codePost results
   const cpServer_cPresults = (
     <div>
       <div style={{ marginTop: panelMargin }} />
@@ -290,6 +298,7 @@ const AutograderDetail = (props: IProps) => {
     </div>
   );
 
+  // codePost server; plaintext results
   const cpServer_plainText = (
     <div>
       <div style={{ marginTop: panelMargin }} />
@@ -299,6 +308,7 @@ const AutograderDetail = (props: IProps) => {
     </div>
   );
 
+  // user server; codePost results
   const ownServer_cPresults = (
     <div>
       <div style={{ marginTop: panelMargin }} />
@@ -308,6 +318,7 @@ const AutograderDetail = (props: IProps) => {
     </div>
   );
 
+  // user server; plaintext results
   const ownServer_plaintext = (
     <div>
       <div style={{ marginTop: panelMargin }} />
@@ -335,6 +346,7 @@ const AutograderDetail = (props: IProps) => {
     default:
   }
 
+  // ****************************** render ********************************
   return (
     <PreAuthLayout isLoggedIn={props.isLoggedIn}>
       <div
@@ -347,16 +359,32 @@ const AutograderDetail = (props: IProps) => {
         }}
       >
         {title}
-        <div style={{ display: 'flex', marginTop: 40, marginBottom: 20, fontSize: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            marginTop: 40,
+            marginBottom: 20,
+            fontSize: 16,
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: 'center' }}>
             I want to <b style={{ fontWeight: 600, marginLeft: 4, marginRight: 4 }}> run tests </b> on {runGroup}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', marginLeft: 30 }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: isMobile ? 'column' : 'row',
+              alignItems: 'center',
+              marginLeft: isMobile ? 0 : 30,
+              marginTop: isMobile ? 15 : 0,
+            }}
+          >
             I want to see <b style={{ fontWeight: 600, marginLeft: 4, marginRight: 4 }}> test results </b> in{' '}
             {resultGroup}
           </div>
         </div>
-        <div>{moduleToShow}</div>
+        <div style={{ width: '100%' }}>{moduleToShow}</div>
       </div>
     </PreAuthLayout>
   );
