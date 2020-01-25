@@ -116,7 +116,7 @@ const nodes: any[] = [
   },
   {
     id: 12,
-    title: 'Collect',
+    title: 'Submit',
     position: { x: 0, y: 20 },
     outgoingNodes: [13],
     icon: 'dummy',
