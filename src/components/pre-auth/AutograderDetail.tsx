@@ -78,7 +78,7 @@ const AutograderDetail = (props: IProps) => {
         codePost objects
       </Radio.Button>
       <Radio.Button key={'result-1'} value={1} style={{ ...radioButtonStyle, fontWeight: resultCP ? 400 : 600 }}>
-        Plaintext file
+        Basic text file
       </Radio.Button>
     </Radio.Group>
   );
@@ -376,7 +376,7 @@ const AutograderDetail = (props: IProps) => {
               marginTop: isMobile ? 15 : 0,
             }}
           >
-            I want to see <b style={{ fontWeight: 600, marginLeft: 4, marginRight: 4 }}> test results </b> in{' '}
+            I want to view <b style={{ fontWeight: 600, marginLeft: 4, marginRight: 4 }}> test results </b> as{' '}
             {resultGroup}
           </div>
         </div>
