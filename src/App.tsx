@@ -218,7 +218,7 @@ class App extends React.Component<{}, IState> {
                 isSuperUser: superUsers.indexOf(json.email) > -1 || oldState.isSuperUser,
               };
             });
-            this.refreshToken();
+            // this.refreshToken();
           } else if (res.status === 401) {
             // A status code of 401 indicates that the provided token is invalid => the user needs
             // to login again, so we log them out.
