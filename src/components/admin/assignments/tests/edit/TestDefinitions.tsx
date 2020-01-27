@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Layout, Menu, Icon, Empty, Modal, Skeleton, Spin, Badge, Tag, Tooltip } from 'antd';
+import { Alert, Button, Layout, Menu, Icon, Empty, Modal, Skeleton, Spin, Badge, Tag, Tooltip, Typography } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 import _ from 'lodash';
 
@@ -58,6 +58,7 @@ import { IFolder, buildFolderMenu, createDirectoryStructure } from '../../../../
 import { RESULT_TYPE } from './TestDefinitions/PseudoTerminal';
 
 const { Sider, Content } = Layout;
+const { Paragraph } = Typography;
 
 /**********************************************************************************************************************/
 
@@ -792,38 +793,40 @@ export const TestDefinitions = (props: IProps) => {
       </div>
     );
   } else {
+    const instructions =
+      panel === DETAIL_TYPE.EditTests ? (
+        <Paragraph ellipsis={{ rows: 1, expandable: true }}>
+          <b>Instructions</b>: You can create tests in two ways: in <b style={{ fontWeight: 600 }}>this editor </b>
+          (for isolated unit tests) or in <b style={{ fontWeight: 600 }}>file mode </b>(for a general script that
+          includes multiple tests). To get started, click the "Add Test".
+        </Paragraph>
+      ) : (
+        <Paragraph ellipsis={{ rows: 1, expandable: true }}>
+          <b>Instructions</b>: Import scripts by clicking "Add file". You can run them to produce logs, or use
+          codePost's custom syntax to structure your test results. If you use our syntax, new tests will automatically
+          be created when you run the file. You can edit properties of these tests by exiting file mode. To learn more,{' '}
+          <a
+            href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            click here
+          </a>
+          .
+        </Paragraph>
+      );
     return (
       <div>
-        <div style={{ marginBottom: 15, marginLeft: 10, marginRight: 10 }}>
-          {panel === DETAIL_TYPE.EditTests ? (
-            <span>
-              <b>Instructions</b>: You can create tests in two ways: in <b style={{ fontWeight: 600 }}>this editor </b>
-              (for isolated unit tests) or in <b style={{ fontWeight: 600 }}>file mode </b>(for a general script that
-              includes multiple tests). To get started, click the "Add Test".
-            </span>
-          ) : (
-            <span>
-              <b>Instructions</b>: Import scripts by clicking "Add file". You can run them to produce logs, or use
-              codePost's custom syntax to structure your test results. If you use our syntax, new tests will
-              automatically be created when you run the file. You can edit properties of these tests by exiting file
-              mode. To learn more,{' '}
-              <a
-                href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                click here
-              </a>
-              .
-            </span>
-          )}
+        <div style={{ marginBottom: 15, marginLeft: 30, marginRight: 30 }}>
+          <Alert message={instructions} type="info" />
         </div>
         <div style={{ fontSize: 11 }}>
-          <Layout>
+          <Layout style={{ border: '1px solid #ececec', borderRadius: '4px' }}>
             <Sider theme="light">
               {header}
               {menu}
             </Sider>
+            <div style={{ width: '5px', backgroundColor: 'rgb(221, 221, 221)' }} />
             {hasTests || panel === DETAIL_TYPE.ViewSource ? (
               content
             ) : (
