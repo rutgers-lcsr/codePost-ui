@@ -84,6 +84,7 @@ interface IProps {
   isStudent?: boolean;
   course?: CourseType;
   title?: string;
+  infoMessage?: string;
 }
 
 enum STATUS {
@@ -689,6 +690,9 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
           content = (
             <div>
+              {this.props.infoMessage && (
+                <Alert message={this.props.infoMessage} type={'info'} style={{ margin: '10px 0px' }} />
+              )}
               Assignment:
               <Select
                 defaultValue={

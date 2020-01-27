@@ -395,6 +395,11 @@ class StudentDetail extends React.Component<IProps, IState> {
             this.state.submissionsMap[this.state.assignmentToUpload.id] &&
             'Add / update files'
           }
+          infoMessage={
+            this.state.assignmentToUpload &&
+            this.state.submissionsMap[this.state.assignmentToUpload.id] &&
+            'If you upload a file that already exists in the submission, the older versions wil be visible (along with any comments). If you want all existing files to be deleted before upload, click "Replace Files" in the submission menu instead.'
+          }
         />
       </div>
     );
