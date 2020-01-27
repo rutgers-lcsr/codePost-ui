@@ -85,9 +85,21 @@ class StudentDetail extends React.Component<IProps, IState> {
   public reUploadSubmission = (toRemove: SubmissionType) => {
     confirm({
       title: 'Are you sure you want to re-upload files for this submission?',
-      content: `This action will delete all existing files and comments for this submission. The following students are associated with this submission: ${toRemove.students.join(
-        ',',
-      )}.`,
+      content: (
+        <div>
+          <br />
+          <div>
+            This action <b>cannot</b> be undone and will delete all existing files and comments for this submission.{' '}
+          </div>
+          <br />
+          <div>The following students are associated with this submission:</div>
+          <ul>
+            {toRemove.students.map((student: string) => {
+              return <li>{student}</li>;
+            })}
+          </ul>
+        </div>
+      ),
       onOk: () => {
         this.props.deleteSubmission(toRemove).then(() => {
           console.log(toRemove.assignment);
