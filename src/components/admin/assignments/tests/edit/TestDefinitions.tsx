@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Layout, Menu, Icon, Empty, Modal, Spin, Badge, Tag, Tooltip } from 'antd';
+import { Button, Layout, Menu, Icon, Empty, Modal, Skeleton, Spin, Badge, Tag, Tooltip } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 import _ from 'lodash';
 
@@ -714,8 +714,8 @@ export const TestDefinitions = (props: IProps) => {
 
   if (loading || props.loading) {
     return (
-      <div className="display-flex justify-content-center align-iterms-center">
-        <Spin style={{ marginTop: 15 }} />
+      <div className="display-flex justify-content-center align-items-center">
+        <Skeleton active />
       </div>
     );
   } else if (categories.length === 0 && panel === DETAIL_TYPE.EditTests) {
