@@ -9,6 +9,7 @@ interface IRosterInputProps {
   roleType: any;
   sections: any;
   rosterInput: string;
+  emailNewUsers: boolean;
 }
 
 const RosterInput = (props: IRosterInputProps) => {
@@ -100,6 +101,10 @@ ${props.roleType}3@myschool.edu,P02
     <div className="roster-input">
       Follow the instructions below to update the course roster. You'll have the chance to review any changes before
       they are made after uploading your file.
+      <br />
+      <br />
+      Based on your course settings, any new users {props.emailNewUsers ? <b>will</b> : <b>won't</b>} be emailed when
+      they are added to your course.
       <br />
       <br />
       <Card {...tabProps} size="small" actions={[uploadButton, reviewButton]}>

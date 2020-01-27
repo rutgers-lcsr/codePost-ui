@@ -60,6 +60,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     anonymousGradingDefault: false,
     minComments: 0,
     noUnfinalize: false,
+    archived: false,
   };
 
   const demoSubmission: AnonymousSubmissionType = {
@@ -246,6 +247,7 @@ IndexError: list index out of range`,
         instances: [-1],
         explanation: '',
         lastSolutionRun: 0,
+        outputIsFile: false,
       },
       {
         id: -2,
@@ -266,6 +268,7 @@ IndexError: list index out of range`,
         instances: [-1],
         explanation: '',
         lastSolutionRun: 0,
+        outputIsFile: false,
       },
     ],
   };
@@ -333,6 +336,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     anonymousGradingDefault: false,
     minComments: 0,
     noUnfinalize: false,
+    archived: false,
   };
 
   const demoSubmission: AnonymousSubmissionType = {

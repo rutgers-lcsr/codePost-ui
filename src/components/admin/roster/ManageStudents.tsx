@@ -167,16 +167,9 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
           changeRoster={this.props.updateRoster}
           isDisabled={false}
           updateSection={this.props.updateSection}
-          emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
+          emailNewUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
           createSection={this.props.createSection}
           course={this.props.currentCourse}
-        />,
-        <AddStudentDialog
-          key={2}
-          willEmailUser={this.props.currentCourse.emailNewUsers}
-          sections={this.props.sections}
-          addStudent={this.addStudent}
-          students={this.props.students}
         />,
       ];
 
@@ -342,14 +335,6 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
             }}
             description={<span>No students yet</span>}
           >
-            <AddStudentDialog
-              key={0}
-              willEmailUser={this.props.currentCourse.emailNewUsers}
-              sections={this.props.sections}
-              addStudent={this.addStudent}
-              students={this.props.students}
-            />
-            <br />
             <RosterFileUpload
               key={1}
               roleType="student"
@@ -361,7 +346,7 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
               changeRoster={this.props.updateRoster}
               isDisabled={false}
               updateSection={this.props.updateSection}
-              emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
+              emailNewUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
               createSection={this.props.createSection}
               course={this.props.currentCourse}
             />

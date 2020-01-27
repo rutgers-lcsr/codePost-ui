@@ -40,6 +40,7 @@ const OnboardingSelector = (props: IOnboardingSelectorProps) => {
       footer={props.footerButtons}
       width={600}
       closable={props.closable === undefined ? true : props.closable}
+      maskClosable={false}
     >
       {props.message}
       <br />
@@ -106,6 +107,10 @@ const AdminOnboardingSelector = (props: IProps) => {
     </CPButton>
   );
 
+  const hangTight = loading ? (
+    <div style={{ textAlign: 'center', fontWeight: 500 }}>(This may take a minute. Please don't refresh the page.)</div>
+  ) : null;
+
   const message = `Want to learn how codePost works in less
      than 5 minutes? Choose from one of the options below.`;
 
@@ -119,7 +124,7 @@ const AdminOnboardingSelector = (props: IProps) => {
           Welcome to the codePost Admin Console! <Icon type="smile" theme="twoTone" twoToneColor={'#24be85'} />
         </span>
       }
-      options={[tour1, tour2]}
+      options={[tour1, tour2, hangTight]}
       visible={props.visible}
       onCancel={props.onCancel}
       message={message}

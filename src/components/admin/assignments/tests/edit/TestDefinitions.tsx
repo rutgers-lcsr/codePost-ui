@@ -96,6 +96,9 @@ export const TestDefinitions = (props: IProps) => {
 
   // Edit Tests variables
   const [activeTest, setActiveTest] = useState<TestCaseType | undefined>(undefined);
+  const [newTestCounter, setNewTestCounter] = useState(-1);
+  // Hack to keep the same component mounted when a new test is saved and the id changes
+  const [activeID, setActiveID] = useState<number | undefined>(undefined);
 
   // Source Editor / Eject mode variables
   const [tests, setTests] = useState<TestTemplateType[]>([]);
@@ -117,7 +120,8 @@ export const TestDefinitions = (props: IProps) => {
       setCategories(_categories);
       setCasesByCategory(_casesByCategory);
       if (activeTest === undefined) {
-        if (_categories.length > 0 && activeTest === undefined) setActiveTest(_casesByCategory[_categories[0].id][0]);
+        if (_categories.length > 0 && activeTest === undefined)
+          updateActiveTest(_casesByCategory[_categories[0].id][0]);
       }
       if (_categories.length === 0 && props.sourceFiles.length > 0) {
         setPanel(DETAIL_TYPE.ViewSource);
@@ -205,14 +209,16 @@ export const TestDefinitions = (props: IProps) => {
     }
 
     replaceTestCase(newTest, testcase.id);
-    setActiveTest(newTest);
+    // We don't change the active test id because if a test id is changing, we don't
+    // want the component to remount (causes choppy run behavior)
+    updateActiveTest(newTest, true);
     return newTest;
   };
 
   const updateTestStatus = async (testCaseID: number, result: number) => {
     const newTest = await TestCase.update({ id: testCaseID, lastSolutionRun: result });
     replaceTestCase(newTest, testCaseID);
-    setActiveTest(newTest);
+    updateActiveTest(newTest, true);
   };
 
   const addTest = async (language: string | null, category: number, sourceFile?: boolean, name?: string) => {
@@ -226,7 +232,7 @@ export const TestDefinitions = (props: IProps) => {
     // if it's a shell type,
     const defaultType = sourceFile ? 'file' : hasNativeSupport ? 'io' : externalOnly ? 'external' : 'io_cli';
     const dummyTestCase: TestCaseType = {
-      id: -1,
+      id: newTestCounter,
       sortKey: 0,
       testCategory: category,
       description: name ? name : 'New Test',
@@ -244,28 +250,32 @@ export const TestDefinitions = (props: IProps) => {
       instances: [],
       explanation: '',
       lastSolutionRun: RESULT_TYPE.NONE,
+      outputIsFile: false,
     };
+    setNewTestCounter((prevState) => prevState - 1);
 
-    const newTestCase = await saveTest(dummyTestCase);
+    // const newTestCase = await saveTest(dummyTestCase);
     setCasesByCategory((prevState) => {
       const newCases = { ...prevState };
-      const oldTests = (newCases[newTestCase.testCategory] && casesByCategory[newTestCase.testCategory]) || [];
-      newCases[newTestCase.testCategory] = [...oldTests, newTestCase];
+      const oldTests = (newCases[dummyTestCase.testCategory] && casesByCategory[dummyTestCase.testCategory]) || [];
+      newCases[dummyTestCase.testCategory] = [...oldTests, dummyTestCase];
       return newCases;
     });
-    setActiveTest(newTestCase);
+    updateActiveTest(dummyTestCase);
   };
 
   const deleteTest = async (testCase: TestCaseType) => {
-    await TestCase.delete(testCase.id);
+    if (testCase.id > 0) {
+      await TestCase.delete(testCase.id);
+    }
 
     // Load new test
     const sorted = TestCase.sort(casesByCategory[testCase.testCategory]);
     const index = sorted.findIndex((el) => el.id === testCase.id);
     if (index === 0) {
-      (sorted.length > 1 && setActiveTest(sorted[1])) || setActiveTest(undefined);
+      (sorted.length > 1 && updateActiveTest(sorted[1])) || updateActiveTest(undefined);
     } else {
-      setActiveTest(sorted[index - 1]);
+      updateActiveTest(sorted[index - 1]);
     }
 
     setCasesByCategory((prevState) => {
@@ -278,6 +288,11 @@ export const TestDefinitions = (props: IProps) => {
   };
 
   /******************************* State Change Functions  ****************************/
+
+  const updateActiveTest = (newActive: TestCaseType | undefined, dontUpdateID?: boolean) => {
+    setActiveTest(newActive);
+    if (!dontUpdateID && newActive) setActiveID(newActive.id);
+  };
 
   const replaceTestCase = (newCase: TestCaseType, oldID: number) => {
     setCasesByCategory((prevState) => {
@@ -658,7 +673,7 @@ export const TestDefinitions = (props: IProps) => {
                           key={el.id}
                           style={{ height: 'fit-content', minHeight: 40 }}
                           onClick={() => {
-                            setActiveTest(el);
+                            updateActiveTest(el);
                           }}
                         >
                           {el.description} &nbsp; {buildStatusBadge(el.lastSolutionRun)}
@@ -677,7 +692,7 @@ export const TestDefinitions = (props: IProps) => {
           <div>
             {activeTest && (
               <TestItem
-                key={activeTest.id}
+                key={activeID}
                 currentAssignment={props.currentAssignment}
                 testCase={activeTest}
                 saveTest={saveTest}

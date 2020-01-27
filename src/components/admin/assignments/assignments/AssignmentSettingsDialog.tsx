@@ -9,6 +9,7 @@ import * as React from 'react';
 import { Button, DatePicker, Form, Input, InputNumber, message, Modal, Switch, Tabs, Tag, Transfer, Table } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
+/* other library imports */
 import moment from 'moment-timezone';
 
 /* codePost imports */
@@ -322,6 +323,7 @@ const CollectionCreateForm: any = Form.create()(
           onCancel={onCancel}
           onOk={onSave.bind({}, this.state.templates)}
           width={'45%'}
+          maskClosable={false}
         >
           <Form
             layout="horizontal"
@@ -396,7 +398,9 @@ const CollectionCreateForm: any = Form.create()(
                   {getFieldDecorator('uploadDueDate', {
                     initialValue: this.props.assignment.uploadDueDate
                       ? moment(this.props.assignment.uploadDueDate).tz(this.props.timezone)
-                      : moment().tz(this.props.timezone),
+                      : moment()
+                          .tz(this.props.timezone)
+                          .endOf('day'),
                     valuePropName: 'value',
                     rules: [
                       {
@@ -415,7 +419,7 @@ const CollectionCreateForm: any = Form.create()(
                     onSelectChange={this.setSelectedTemplates}
                     selectedKeys={this.state.selectedTemplates}
                     titles={['Optional', 'Required']}
-                    render={(item) => item.title}
+                    render={(item: any) => item.title}
                     footer={() => (
                       <Button size="small" style={{ float: 'right', margin: 5 }} onClick={this.deleteTemplates}>
                         delete

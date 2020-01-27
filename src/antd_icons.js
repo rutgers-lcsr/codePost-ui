@@ -84,6 +84,8 @@ export { default as BranchesOutline } from '@ant-design/icons/lib/outline/Branch
 export { default as RightOutline } from '@ant-design/icons/lib/outline/RightOutline';
 export { default as CheckOutline } from '@ant-design/icons/lib/outline/CheckOutline';
 export { default as LoadingOutline } from '@ant-design/icons/lib/outline/LoadingOutline';
+export { default as CalendarOutline } from '@ant-design/icons/lib/outline/CalendarOutline';
+export { default as CrownOutline } from '@ant-design/icons/lib/outline/CrownOutline';
 
 // Fill Icons
 export { default as PushpinFill } from '@ant-design/icons/lib/fill/PushpinFill';
@@ -94,8 +96,13 @@ export { default as BackwardFill } from '@ant-design/icons/lib/fill/BackwardFill
 export { default as EditFill } from '@ant-design/icons/lib/fill/EditFill';
 export { default as LikeFill } from '@ant-design/icons/lib/fill/LikeFill';
 export { default as DislikeFill } from '@ant-design/icons/lib/fill/DislikeFill';
+export { default as CheckCircleFill } from '@ant-design/icons/lib/fill/CheckCircleFill';
+export { default as ExclamationCircleFill } from '@ant-design/icons/lib/fill/ExclamationCircleFill';
+export { default as CloseCircleFill } from '@ant-design/icons/lib/fill/CloseCircleFill';
 
 // TwoTone Icons
 export { default as DatabaseTwoTone } from '@ant-design/icons/lib/twotone/DatabaseTwoTone';
 export { default as TagTwoTone } from '@ant-design/icons/lib/twotone/TagTwoTone';
 export { default as MinusCircleTwoTone } from '@ant-design/icons/lib/twotone/MinusCircleTwoTone';
+export { default as CheckCircleTwoTone } from '@ant-design/icons/lib/twotone/CheckCircleTwoTone';
+export { default as InfoCircleTwoTone } from '@ant-design/icons/lib/twotone/InfoCircleTwoTone';

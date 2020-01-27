@@ -41,6 +41,7 @@ interface IResultProps {
   defaultFile?: string;
   setTestSubject: (id: string) => void;
   updateFile?: (file: string) => void;
+  overrideText?: string;
 }
 
 const getResultSpan = (resultType: RESULT_TYPE) => {
@@ -218,7 +219,7 @@ export const PseudoTerminal = (props: IResultProps) => {
           <Icon type="loading" />
         </div>
       ) : null}
-      <div>Run</div>
+      <div>{props.overrideText || 'Run'}</div>
     </div>
   ) : null;
 

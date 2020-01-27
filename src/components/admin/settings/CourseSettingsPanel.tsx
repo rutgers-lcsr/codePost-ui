@@ -95,10 +95,16 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
         anonymousGradingDefault: values.anonymousGradingDefault,
         assignments: [], // ignored by API
         sections: [], // ignored by API
+        archived: values.archived,
       };
 
       this.props.updateSettings(payload).then(() => {
         message.success('Your settings were saved!');
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+
         this.setState({ isLoading: false, isDirty: false });
       });
     });
@@ -265,6 +271,19 @@ const SettingsForm: any = Form.create()(
                   })}
                 </Select>,
               )}
+            </Form.Item>
+          ),
+        },
+        {
+          key: '6',
+          setting: <Text strong>Archived</Text>,
+          description: 'When a Course is Archived, its content will not be editable.',
+          action: (
+            <Form.Item>
+              {getFieldDecorator('archived', {
+                initialValue: this.props.thisCourse.archived,
+                valuePropName: 'checked',
+              })(<Switch onChange={this.props.makeDirty} />)}
             </Form.Item>
           ),
         },
