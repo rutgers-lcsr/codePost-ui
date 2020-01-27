@@ -82,6 +82,7 @@ export { default as CaretDownOutline } from '@ant-design/icons/lib/outline/Caret
 export { default as FilterOutline } from '@ant-design/icons/lib/outline/FilterOutline';
 export { default as BranchesOutline } from '@ant-design/icons/lib/outline/BranchesOutline';
 export { default as RightOutline } from '@ant-design/icons/lib/outline/RightOutline';
+export { default as LeftOutline } from '@ant-design/icons/lib/outline/LeftOutline';
 export { default as CheckOutline } from '@ant-design/icons/lib/outline/CheckOutline';
 export { default as LoadingOutline } from '@ant-design/icons/lib/outline/LoadingOutline';
 export { default as CalendarOutline } from '@ant-design/icons/lib/outline/CalendarOutline';
