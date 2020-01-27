@@ -84,7 +84,7 @@ interface IProps {
   isStudent?: boolean;
   course?: CourseType;
   title?: string;
-  infoMessage?: string;
+  infoMessage?: React.ReactNode;
 }
 
 enum STATUS {
