@@ -1073,6 +1073,28 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     return split.length === 1 ? 'txt' : split[split.length - 1];
   };
 
+  public addFilesToSubmission = (submission: SubmissionType, files: any[]) => {
+    const filePromises = files.map((file: any) => {
+      const ext = this.getFileExtension(file.name);
+      const filePayload = {
+        id: -1,
+        name: file.name,
+        extension: ext,
+        code: file.data,
+        submission: submission.id,
+        comments: [],
+        path: file.path ? file.path : null,
+      };
+      return File.create(filePayload);
+    });
+
+    return Promise.all(filePromises).then((files) => {
+      const newSubmission = { ...submission };
+      newSubmission.files = files.map((f) => f.id);
+      return newSubmission;
+    });
+  };
+
   // Upload a submission in cautious mode
   public uploadSubmission = (assignment: AssignmentType, partners: string[], files: any[]) => {
     if (partners.length === 0) {
@@ -1089,19 +1111,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
     const submissionPromise = Submission.create(submissionPayload).then((submission: SubmissionType) => {
       // Create each file
-      const filePromises = files.map((file: any) => {
-        const ext = this.getFileExtension(file.name);
-        const filePayload = {
-          id: -1,
-          name: file.name,
-          extension: ext,
-          code: file.data,
-          submission: submission.id,
-          comments: [],
-          path: file.path ? file.path : null,
-        };
-        return File.create(filePayload);
-      });
+      const filesPromise = this.addFilesToSubmission(submission, files);
 
       const { submissionsByStudent, submissions } = this.state;
       partners.forEach((student) => {
@@ -1115,8 +1125,9 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       const newAssignmentSubmissions = [...newSubmissions[submission.assignment], submission];
       newSubmissions[submission.assignment] = newAssignmentSubmissions;
       this.setState({ submissionsByStudent, submissions: newSubmissions });
-      return Promise.all(filePromises).then(() => {
-        return submission;
+
+      return filesPromise.then((newSubmission) => {
+        return newSubmission;
       });
     });
 
@@ -1197,6 +1208,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 graders={this.state.graders}
                 changeSubmissionGrader={this.changeSubmissionGrader}
                 uploadSubmission={this.uploadSubmission}
+                addFilesToSubmission={this.addFilesToSubmission}
                 viewsBySubmission={this.state.viewsBySubmission}
                 students={this.state.students}
                 inactiveStudents={this.state.inactiveStudents}

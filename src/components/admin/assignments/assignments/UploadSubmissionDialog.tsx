@@ -83,6 +83,8 @@ interface IProps {
   onSuccess?: () => void;
   isStudent?: boolean;
   course?: CourseType;
+  title?: string;
+  infoMessage?: React.ReactNode;
 }
 
 enum STATUS {
@@ -688,6 +690,9 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
           content = (
             <div>
+              {this.props.infoMessage && (
+                <Alert message={this.props.infoMessage} type={'info'} style={{ margin: '10px 0px' }} />
+              )}
               Assignment:
               <Select
                 defaultValue={
@@ -765,7 +770,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     return (
       <Modal
         visible={true}
-        title="Upload Submissions"
+        title={this.props.title || 'Upload Submissions'}
         onCancel={this.onCancel}
         width={800}
         footer={[goBackButton, goForwardButton]}

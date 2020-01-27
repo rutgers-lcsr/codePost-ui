@@ -191,7 +191,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
           style={{ minWidth: 280 }}
           onSelect={this.onFileSelect.bind(this, true)}
         >
-          <Menu.SubMenu key={`${path}-old-versions`} title="File History">
+          <Menu.SubMenu key={`${path}-old-versions`} title={`${currentFile.name} history`}>
             <Menu.Item key={`file-${currentFile.id}`} style={{ minWidth: 200 }}>
               {
                 <div className="display-flex align-items-center justify-content-space-between">
@@ -331,18 +331,25 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             <div style={{ display: 'inline-block', width: '8px' }} />
             <div
               style={{
-                display: 'inline-block',
-                maxWidth: !shrunkSider ? '134px' : '124px',
                 minWidth: !shrunkSider ? 0 : '124px',
                 verticalAlign: 'middle',
-                overflow: 'hidden',
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis',
                 fontSize: 12,
+                display: 'inline-block',
               }}
               title={file.name}
             >
-              {file.name}
+              <span
+                style={{
+                  maxWidth: !shrunkSider ? '134px' : '124px',
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                  textOverflow: 'ellipsis',
+                  display: 'inline-block',
+                  verticalAlign: 'middle',
+                }}
+              >
+                {file.name}
+              </span>
               {oldVersionsMenu}
             </div>
           </div>

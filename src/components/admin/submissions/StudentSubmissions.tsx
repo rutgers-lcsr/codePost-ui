@@ -21,6 +21,7 @@ import { openSubmission } from '../other/AdminUtils';
 
 import { AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
+import { FileType } from '../../../infrastructure/file';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
@@ -49,7 +50,7 @@ export interface IByStudentProps extends RouteComponentProps {
   graders: string[];
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>;
-
+  addFilesToSubmission: (submission: SubmissionType, files: any[]) => Promise<SubmissionType>;
   baseURL: string;
 }
 
@@ -127,6 +128,7 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                 graders={this.props.graders}
                 submissions={this.props.submissionsByStudent}
                 uploadSubmission={this.props.uploadSubmission}
+                addFilesToSubmission={this.props.addFilesToSubmission}
                 students={Object.keys(this.props.submissionsByStudent)}
                 student={student}
                 viewsBySubmission={this.props.viewsBySubmission}
