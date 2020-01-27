@@ -6,7 +6,23 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Alert, Button, Layout, Menu, Icon, Empty, Modal, Skeleton, Spin, Badge, Tag, Tooltip, Typography } from 'antd';
+import {
+  Alert,
+  Button,
+  Dropdown,
+  Layout,
+  Menu,
+  Popconfirm,
+  Icon,
+  Empty,
+  Modal,
+  Skeleton,
+  Spin,
+  Badge,
+  Tag,
+  Tooltip,
+  Typography,
+} from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 import _ from 'lodash';
 
@@ -548,7 +564,7 @@ export const TestDefinitions = (props: IProps) => {
       const buildFileMenu = (groupIndex: number, files: IBasicFile[]) => {
         return files.map((f) => {
           return (
-            <Menu.Item key={`${groupIndex}-${f.id}`} style={{ height: 'fit-content', minHeight: 40 }}>
+            <Menu.Item key={`${groupIndex}-${f.id}`}>
               <FileTag type={f.type} small={true} />
               &nbsp;
               {f.name}
@@ -572,7 +588,7 @@ export const TestDefinitions = (props: IProps) => {
               return [buildFileMenu(groupIndex, directoryStructure.files), folders];
             })}
           </Menu>
-          <div>
+          <div className="tests-menu">
             <div style={{ ...headerStyle, marginTop: 10 }}>Tests</div>
             <Menu
               selectedKeys={[]}
@@ -649,8 +665,10 @@ export const TestDefinitions = (props: IProps) => {
           <div style={headerStyle}>Tests</div>
         </div>
       );
+
+      // <EditObjectModal item={category} updateItem={updateCategoryName} deleteItem={deleteCategory} />
       menu = (
-        <div>
+        <div className="tests-menu">
           <Menu
             defaultOpenKeys={categories.map((el) => el.id.toString())}
             mode="inline"
@@ -658,21 +676,59 @@ export const TestDefinitions = (props: IProps) => {
             style={{ height: '100%' }}
           >
             {TestCategory.sort(categories).map((category) => {
+              const deleteThisCategory = (e: any) => {
+                deleteCategory(category.id);
+              };
+
+              const addTestToThisCategory = (e: any) => {
+                e.preventDefault();
+                e.stopPropagation();
+                addTest(props.env ? props.env.language : '', category.id);
+              };
+
+              const actions = (
+                <Menu>
+                  <Menu.Item style={{ paddingRight: '48px' }}>
+                    <EditObjectModal item={category} updateItem={updateCategoryName} deleteItem={deleteCategory} />
+                  </Menu.Item>
+                  <Menu.Item style={{ paddingRight: '48px' }}>
+                    <span onClick={addTestToThisCategory}>Add Test</span>
+                  </Menu.Item>
+                  <Menu.Item style={{ paddingRight: '48px', color: '#f5222d' }}>
+                    <Popconfirm
+                      title="Are you sure delete this category?"
+                      onConfirm={deleteThisCategory}
+                      onCancel={() => {}}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      Delete Category
+                    </Popconfirm>
+                  </Menu.Item>
+                </Menu>
+              );
               return (
                 <Menu.SubMenu
                   key={category.id}
                   title={
                     <span>
+                      <Icon type="folder" />
                       {category.name}{' '}
-                      <EditObjectModal item={category} updateItem={updateCategoryName} deleteItem={deleteCategory} />
+                      <Dropdown overlay={actions}>
+                        <Icon type="more" style={{ position: 'absolute', right: '0px', top: '8px', fontWeight: 900 }} />
+                      </Dropdown>
                     </span>
                   }
                 >
-                  {category.id in casesByCategory
-                    ? TestCase.sort(casesByCategory[category.id]).map((el) => (
+                  {category.id in casesByCategory ? (
+                    casesByCategory[category.id].length === 0 ? (
+                      <Menu.Item key={category.id * -1}>
+                        <span style={{ color: '#888888' }}>No tests yet...</span>
+                      </Menu.Item>
+                    ) : (
+                      TestCase.sort(casesByCategory[category.id]).map((el) => (
                         <Menu.Item
                           key={el.id}
-                          style={{ height: 'fit-content', minHeight: 40 }}
                           onClick={() => {
                             updateActiveTest(el);
                           }}
@@ -680,7 +736,8 @@ export const TestDefinitions = (props: IProps) => {
                           {el.description} &nbsp; {buildStatusBadge(el.lastSolutionRun)}
                         </Menu.Item>
                       ))
-                    : null}
+                    )
+                  ) : null}
                 </Menu.SubMenu>
               );
             })}
