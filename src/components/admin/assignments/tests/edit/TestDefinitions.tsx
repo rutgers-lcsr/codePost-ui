@@ -264,6 +264,9 @@ export const TestDefinitions = (props: IProps) => {
       return newCases;
     });
     updateActiveTest(dummyTestCase);
+
+    // If the test is file defined, save the test
+    if (sourceFile) saveTest(dummyTestCase);
   };
 
   const deleteTest = async (testCase: TestCaseType) => {
