@@ -67,6 +67,7 @@ interface IProps {
   onSuccess?: () => void;
   isStudent?: boolean;
   course?: CourseType;
+  title?: string;
 }
 
 enum STATUS {
@@ -656,7 +657,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     return (
       <Modal
         visible={true}
-        title="Upload Submissions"
+        title={this.props.title || 'Upload Submissions'}
         onCancel={this.onCancel}
         width={800}
         footer={[goBackButton, goForwardButton]}
