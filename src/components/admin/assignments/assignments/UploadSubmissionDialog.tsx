@@ -6,7 +6,21 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Icon, message, Modal, Progress, Switch, Upload, Table, Tag } from 'antd';
+import {
+  Alert,
+  Button,
+  Icon,
+  Input,
+  message,
+  Modal,
+  Progress,
+  Switch,
+  Upload,
+  Table,
+  Tag,
+  Typography,
+  Divider,
+} from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -23,7 +37,7 @@ import {
   FileTemplateType,
   CourseType,
 } from '../../../../infrastructure/types';
-import { AssignmentStudent } from '../../../../infrastructure/assignment';
+import { AssignmentStudent, AssignmentStudentType } from '../../../../infrastructure/assignment';
 import { Environment } from '../../../../infrastructure/autograder/environment';
 import { FileTemplate } from '../../../../infrastructure/fileTemplate';
 
@@ -52,16 +66,18 @@ import { encodeForLink } from '../../../../components/core/URLutils';
 interface IProps {
   isVisible: boolean;
   onCancel: () => void;
-  assignments: AssignmentType[];
-  selectedAssignment?: AssignmentType;
+  assignments: (AssignmentType | AssignmentStudentType)[];
+  selectedAssignment?: AssignmentType | AssignmentStudentType;
   students: string[];
   selectedStudents: string[];
-  submissions: IStudentSubmissionsDataTable;
-  uploadSubmission: (
-    assignment: AssignmentType,
-    partners: string[],
-    files: any[],
-  ) => Promise<StudentSubmissionType | SubmissionType>;
+  submissions: {
+    [userEmail: string]: {
+      [assignmentID: number]: SubmissionType | StudentSubmissionType;
+    };
+  };
+  uploadSubmission:
+    | ((assignment: AssignmentStudentType, partners: string[], files: any[]) => Promise<StudentSubmissionType>)
+    | ((assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>);
 
   disableStudentSelect?: boolean;
   onSuccess?: () => void;
@@ -79,7 +95,7 @@ enum STATUS {
 
 interface IState {
   selectedStudents: string[];
-  selectedAssignment?: AssignmentType;
+  selectedAssignment?: AssignmentType | AssignmentStudentType;
   // List of files in codePost format for upload
   files: IProtoFileUpload[];
   // List of files in ant format. Required to make make the dialog a controlled list so we
@@ -93,15 +109,20 @@ interface IState {
 
   testCategories: TestCategoryType[];
   testCases: StudentTestCasesByCategory;
-  submissionTests: SubmissionTestType[];
+
   submission?: StudentSubmissionType;
   loadingTests: boolean;
 
   fileTemplates: FileTemplateType[];
+
+  // Test results
+  submissionTests: SubmissionTestType[];
+  testsLog: string | null; // If the admin turns off exposeDumpLogs then the log will be none
+  runMessage: string; // A message to show students from the result of their run
 }
 
 class UploadSubmissionDialog extends React.Component<IProps, IState> {
-  public assignmentOptions = this.props.assignments.map((assignment, i) => {
+  public assignmentOptions = this.props.assignments.map((assignment: AssignmentType | AssignmentStudentType, i) => {
     return {
       value: assignment.id,
       label: assignment.name,
@@ -119,9 +140,15 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     testCases: {},
     testCategories: [],
     submissionTests: [],
+    testsLog: null,
     loadingTests: false,
     fileTemplates: [],
+    runMessage: '',
   };
+
+  /********************************************************************************************************/
+  /* Lifecycle methods
+  /********************************************************************************************************/
 
   public toggleState = (key: keyof IState) => (prevState: IState): IState => ({
     ...prevState,
@@ -140,10 +167,19 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
   public componentDidUpdate(prevProps: IProps, prevState: IState) {
     if (prevProps.selectedAssignment !== this.props.selectedAssignment) {
-      this.setState({ selectedAssignment: this.props.selectedAssignment });
+      this.setState({
+        selectedAssignment: this.props.selectedAssignment,
+        testCategories: [],
+        testCases: [],
+      });
       if (this.props.selectedAssignment) {
         this.loadTemplates(this.props.selectedAssignment);
         this.loadTests();
+        if (this.props.selectedStudents.length > 0) {
+          this.setState({
+            submission: this.props.submissions[this.props.selectedStudents[0]][this.props.selectedAssignment.id],
+          });
+        }
       }
     }
     if (prevProps.selectedStudents !== this.props.selectedStudents) {
@@ -155,11 +191,15 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
 
     if (prevProps.isVisible && !this.props.isVisible) {
-      this.setState({ submissionTests: [], testCategories: [], testCases: {} });
+      this.setState({ submissionTests: [], testsLog: null, runMessage: '' });
     }
   }
 
-  public loadTemplates = (assignment: AssignmentType) => {
+  /********************************************************************************************************/
+  /* Loading and data formatting methods
+  /********************************************************************************************************/
+
+  public loadTemplates = (assignment: AssignmentType | AssignmentStudentType) => {
     const promises = assignment.fileTemplates.map((el) => FileTemplate.read(el));
     Promise.all(promises).then((fileTemplates) => this.setState({ fileTemplates }));
   };
@@ -179,119 +219,16 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
   };
 
-  public setResults = (result: SubmissionTestResultType) => {
-    this.setState({ submissionTests: result, loadingTests: false });
-  };
-
-  public runTests = async () => {
-    if (this.state.submission && this.state.selectedAssignment && this.state.selectedAssignment.environment) {
-      const result = await Environment.run(this.state.selectedAssignment.environment, {
-        submission: this.state.submission.id.toString(),
-        simulate: 'False',
-      });
-      awaitTestResult(result.task, this.setResults);
-    }
-  };
-
-  public changeStudents = (options: any) => {
-    const students = options.map((option: any) => option.value);
-    this.setState({ selectedStudents: students });
-  };
-
-  public changeAssignment = (option: any) => {
-    const selectedAssignment = this.props.assignments.find((assn) => {
-      return assn.id === option.value;
-    });
-
-    this.setState({ selectedAssignment, selectedStudents: [] });
-  };
-
-  public cancel = () => {
-    this.setState({ status: STATUS.NONE, files: [], fileList: [], rejectedFiles: [] });
-    this.props.onCancel();
-  };
-
-  public onSuccess = () => {
-    this.setState({ status: STATUS.NONE, files: [], fileList: [], rejectedFiles: [] });
-    this.props.onSuccess ? this.props.onSuccess() : this.props.onCancel();
-  };
-
-  public toggleDirectoryUpload = () => {
-    this.setState({
-      status: STATUS.NONE,
-      files: [],
-      fileList: [],
-      rejectedFiles: [],
-      uploadDirectory: !this.state.uploadDirectory,
-    });
-  };
-
-  public upload = () => {
-    if (this.state.selectedAssignment !== null) {
-      this.setState({ status: STATUS.SAVING }, () => {
-        if (this.state.selectedAssignment !== null) {
-          this.props
-            .uploadSubmission(this.state.selectedAssignment!, this.state.selectedStudents, this.state.files)
-            .then((newSubmission: StudentSubmissionType) => {
-              this.setState({
-                submission: newSubmission,
-                status: this.props.isStudent && this.state.testCategories.length > 0 ? STATUS.TESTING : STATUS.COMPLETE,
-                files: [],
-                fileList: [],
-                rejectedFiles: [],
-                selectedStudents: this.props.selectedStudents,
-                selectedAssignment: this.props.selectedAssignment ? this.props.selectedAssignment : undefined,
-              });
-            })
-            .catch((error) => {
-              /* eslint-disable no-multi-str */
-              message.error(
-                'Sorry, something went wrong. Please try uploading again.\
-                If the problem persists, contact the codePost team.',
-              );
-              /* eslint-enable no-multi-str */
-              const payload = {
-                error: error.toString(),
-                errorDetail: JSON.stringify(error, Object.getOwnPropertyNames(error)),
-                url: window.location.href,
-              };
-
-              slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, payload);
-
-              this.cancel();
-            });
-        }
-      });
-    }
-  };
-
-  public onRemove = (file: UploadFile) => {
-    const protoFileUpload = fileToProtoFileUpload(file);
-
-    const files = this.state.files.filter((f: IProtoFileUpload) => {
-      return (
-        f.longname !== protoFileUpload.longname &&
-        (f.zipSource === undefined || f.zipSource !== protoFileUpload.zipSource)
-      );
-    });
-
-    const fileList = this.state.fileList.filter((f: UploadFile) => {
-      return f.name !== protoFileUpload.longname;
-    });
-
-    this.setState({ files, fileList });
-  };
-
-  public changeStatus = (newStatus: STATUS) => {
-    this.setState({ status: newStatus });
-  };
-
   /* build a list of two student groups: missing submissions and not missing submissions */
   /* use these two groups to populate select */
   public buildStudentOptions = (
     students: string[],
-    submissions: IStudentSubmissionsDataTable,
-    assignment?: AssignmentType,
+    submissions: {
+      [userEmail: string]: {
+        [assignmentID: number]: SubmissionType | StudentSubmissionType;
+      };
+    },
+    assignment?: AssignmentType | AssignmentStudentType,
   ) => {
     /* FIXME: should use react-select type definition */
     const toRet: any = [
@@ -326,9 +263,107 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     return toRet;
   };
 
+  /********************************************************************************************************/
+  /* State handlers
+  /********************************************************************************************************/
+
+  public changeStudents = (options: any) => {
+    const students = options.map((option: any) => option.value);
+    this.setState({ selectedStudents: students });
+  };
+
+  public changeAssignment = (option: any) => {
+    const selectedAssignment = this.props.assignments.find((assn) => {
+      return assn.id === option.value;
+    });
+
+    this.setState({ selectedAssignment, selectedStudents: [] });
+  };
+
+  public cancel = () => {
+    this.setState({ status: STATUS.NONE, files: [], fileList: [], rejectedFiles: [] });
+    this.props.onCancel();
+  };
+
+  public onSuccess = () => {
+    this.setState({ status: STATUS.NONE, files: [], fileList: [], rejectedFiles: [] });
+    this.props.onSuccess ? this.props.onSuccess() : this.props.onCancel();
+  };
+
+  public toggleDirectoryUpload = () => {
+    this.setState({
+      status: STATUS.NONE,
+      files: [],
+      fileList: [],
+      rejectedFiles: [],
+      uploadDirectory: !this.state.uploadDirectory,
+    });
+  };
+
+  public onRemove = (file: UploadFile) => {
+    const protoFileUpload = fileToProtoFileUpload(file);
+
+    const files = this.state.files.filter((f: IProtoFileUpload) => {
+      return (
+        f.longname !== protoFileUpload.longname &&
+        (f.zipSource === undefined || f.zipSource !== protoFileUpload.zipSource)
+      );
+    });
+
+    const fileList = this.state.fileList.filter((f: UploadFile) => {
+      return f.name !== protoFileUpload.longname;
+    });
+
+    this.setState({ files, fileList });
+  };
+
   public onCancel = () => {
     this.setState({ files: [], fileList: [], rejectedFiles: [], status: STATUS.NONE });
     this.props.onCancel();
+  };
+
+  /********************************************************************************************************/
+  /* Submission upload
+  /********************************************************************************************************/
+
+  public upload = () => {
+    if (this.state.selectedAssignment) {
+      this.setState({ status: STATUS.SAVING }, () => {
+        if (this.state.selectedAssignment) {
+          this.props
+            // @ts-ignore
+            .uploadSubmission(this.state.selectedAssignment!, this.state.selectedStudents, this.state.files)
+            .then((newSubmission: StudentSubmissionType | SubmissionType) => {
+              this.setState({
+                submission: newSubmission,
+                status: this.shouldRunTests() ? STATUS.TESTING : STATUS.COMPLETE,
+                files: [],
+                fileList: [],
+                rejectedFiles: [],
+                selectedStudents: this.props.selectedStudents,
+                selectedAssignment: this.props.selectedAssignment ? this.props.selectedAssignment : undefined,
+              });
+            })
+            .catch((error: any) => {
+              /* eslint-disable no-multi-str */
+              message.error(
+                'Sorry, something went wrong. Please try uploading again.\
+                If the problem persists, contact the codePost team.',
+              );
+              /* eslint-enable no-multi-str */
+              const payload = {
+                error: error.toString(),
+                errorDetail: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+                url: window.location.href,
+              };
+
+              slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, payload);
+
+              this.cancel();
+            });
+        }
+      });
+    }
   };
 
   // FIXME: this method of reading file contents relies on a race win, since
@@ -362,6 +397,53 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     return Promise.reject();
   };
 
+  /********************************************************************************************************/
+  /* Testing infrastructure
+  /********************************************************************************************************/
+
+  /* Utility function used to determine whether we should run automated tests against student code when
+   * code is uploaded.
+   */
+  public shouldRunTests = () => {
+    const testsToRun =
+      (this.state.selectedAssignment && this.state.selectedAssignment.exposeDumpLogs) ||
+      this.state.testCategories.length > 0;
+
+    // Has the student surpassed the maximum submission limit?
+    const runsSoFar = this.state.submission ? this.state.submission.testRunsCompleted : 0;
+    const maxRuns =
+      this.state.selectedAssignment && this.state.selectedAssignment.maxStudentTestRuns
+        ? this.state.selectedAssignment.maxStudentTestRuns
+        : -1;
+
+    return testsToRun && (maxRuns < 0 || runsSoFar < maxRuns);
+  };
+
+  public setResults = (result: SubmissionTestResultType) => {
+    console.log('DONE');
+    this.setState({
+      submissionTests: result.submissionTests,
+      testsLog: result.logs,
+      loadingTests: false,
+      runMessage: result.message,
+    });
+  };
+
+  public runTests = async () => {
+    if (this.shouldRunTests()) {
+      // Make sure the loading is set
+      this.setState({ loadingTests: true });
+      const result = await Environment.run(this.state.selectedAssignment!.environment!, {
+        submission: this.state.submission!.id.toString(),
+        simulate: 'False',
+        exposedOnly: 'True',
+      });
+      awaitTestResult(result.task, this.setResults);
+    }
+  };
+
+  /********************************************************************************************************/
+
   public render() {
     const { isVisible } = this.props;
     const { status } = this.state;
@@ -370,17 +452,9 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       return <div />;
     }
 
-    const disableUpload = !(
-      this.state.selectedStudents.length > 0 &&
-      this.state.files.length > 0 &&
-      this.state.selectedAssignment
-    );
-
-    const areRequiredFilesPresent = this.state.fileTemplates.every(
-      (ft) => !ft.required || this.state.files.some((el) => el.name === ft.name),
-    );
-
     let content;
+    let goForwardButton = null;
+    let goBackButton = null;
     switch (status) {
       case STATUS.COMPLETE:
         content = (
@@ -391,6 +465,18 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             Upload complete!
           </div>
         );
+
+        goBackButton = (
+          <Button key="back" onClick={this.cancel.bind(this, undefined)}>
+            Close
+          </Button>
+        );
+
+        goForwardButton = (
+          <Button key="submit" type="primary" onClick={this.onSuccess}>
+            View files
+          </Button>
+        );
         break;
       case STATUS.SAVING:
         content = (
@@ -400,13 +486,24 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         );
         break;
       case STATUS.TESTING:
+        goBackButton = (
+          <Button key="back" onClick={this.cancel.bind(this, undefined)} disabled={this.state.loadingTests}>
+            Close
+          </Button>
+        );
         content = (
-          <div style={{ minHeight: 'calc(100vh - 300px)' }}>
+          <div>
             <TestsList
               tests={this.state.submissionTests}
+              redactNotShown={true}
+              hideNotRun={false}
               cases={this.state.testCases}
               categories={this.state.testCategories}
               isLoading={this.state.loadingTests}
+              logs={this.state.testsLog === null ? undefined : this.state.testsLog}
+              showLogs={this.state.selectedAssignment!.exposeDumpLogs === true}
+              message={this.state.runMessage ? <Alert type="warning" message={this.state.runMessage} /> : <div />}
+              hideSummary={this.state.testCategories.length === 0}
             />
           </div>
         );
@@ -513,6 +610,38 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
         const unzippedFiles = this.state.files.filter((el) => el.zipSource !== undefined);
 
+        /*****************************************************************************************/
+        /* Build buttons
+        /*****************************************************************************************/
+        goBackButton = (
+          <Button key="back" onClick={this.cancel.bind(this, undefined)}>
+            Cancel
+          </Button>
+        );
+
+        const disableUpload = !(
+          this.state.selectedStudents.length > 0 &&
+          this.state.files.length > 0 &&
+          this.state.selectedAssignment
+        );
+
+        const areRequiredFilesPresent = this.state.fileTemplates.every(
+          (ft) => !ft.required || this.state.files.some((el) => el.name === ft.name),
+        );
+
+        goForwardButton = (
+          <Button
+            key="submit"
+            type="primary"
+            disabled={disableUpload || !areRequiredFilesPresent}
+            onClick={this.upload}
+          >
+            Upload {this.shouldRunTests() && <Icon type="calculator" />}
+          </Button>
+        );
+
+        /*****************************************************************************************/
+
         // Address https://github.com/codepost-io/codePost-ui/issues/1039
         if (!this.props.isStudent && this.props.students.length === 0) {
           content = (
@@ -533,6 +662,31 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             </div>
           );
         } else {
+          // Is this student allowed to run tests?
+          const testsToRun =
+            (this.state.selectedAssignment && this.state.selectedAssignment.exposeDumpLogs) ||
+            this.state.testCategories.length > 0;
+          const runsSoFar = this.state.submission ? this.state.submission.testRunsCompleted : 0;
+          const maxRuns = this.state.selectedAssignment ? this.state.selectedAssignment.maxStudentTestRuns || -1 : -1;
+          const allowedToRunTests = testsToRun && (maxRuns < 0 || runsSoFar < maxRuns);
+
+          let testMessage;
+          if (this.state.selectedAssignment && this.state.selectedAssignment.maxStudentTestRuns) {
+            const numRemaining = Math.max(maxRuns - runsSoFar, 0);
+            testMessage = (
+              <Alert
+                message={
+                  <span>
+                    You have used <b>{runsSoFar}</b> test runs so far. You have <b>{numRemaining}</b> test{' '}
+                    {numRemaining === 1 ? 'run' : 'runs'} remaining.{' '}
+                    {numRemaining === 0 ? ' You can still continue to submit, but no additional tests will be run' : ''}
+                  </span>
+                }
+                type={numRemaining === 0 ? 'error' : numRemaining === 1 ? 'warning' : 'info'}
+              />
+            );
+          }
+
           content = (
             <div>
               Assignment:
@@ -562,7 +716,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 onChange={this.changeStudents}
                 isDisabled={this.props.disableStudentSelect}
               />
-              <br />
+              <Divider />
               {/*  beforeUpload prop stops Upload component from trying to upload files to external server */}
               {/*  FIXME: we should prevent users from uploading image files here */}
               {fileList}
@@ -597,60 +751,15 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               </span>
               <br />
               {rejectedFiles}
+              {testMessage && (
+                <div>
+                  <Divider />
+                  <div style={{ marginBottom: 15 }}>{testMessage}</div>
+                </div>
+              )}
             </div>
           );
         }
-        break;
-    }
-
-    // modal's back button
-    let goBackButton;
-    switch (this.state.status) {
-      case STATUS.NONE:
-        goBackButton = (
-          <Button key="back" onClick={this.cancel.bind(this, undefined)}>
-            Cancel
-          </Button>
-        );
-        break;
-      case STATUS.SAVING:
-        goBackButton = (
-          <Button key="back" disabled={true}>
-            Cancel
-          </Button>
-        );
-        break;
-    }
-
-    // modal's forward button
-    let goForwardButton = null;
-    switch (this.state.status) {
-      case STATUS.NONE:
-        goForwardButton = (
-          <Button
-            key="submit"
-            type="primary"
-            disabled={disableUpload || !areRequiredFilesPresent}
-            onClick={this.upload}
-          >
-            Upload
-          </Button>
-        );
-        break;
-      case STATUS.SAVING:
-        goForwardButton = (
-          <Button key="submit" type="primary" disabled={true} loading={true}>
-            Upload
-          </Button>
-        );
-        break;
-      case STATUS.TESTING:
-      case STATUS.COMPLETE:
-        goForwardButton = (
-          <Button key="submit" type="primary" onClick={this.onSuccess} disabled={this.state.loadingTests}>
-            Close
-          </Button>
-        );
         break;
     }
 

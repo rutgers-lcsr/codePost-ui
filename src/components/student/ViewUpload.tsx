@@ -11,7 +11,7 @@ import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { Button, Layout, Menu, Modal, Spin } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
-import { AssignmentStudent, AssignmentType } from '../../infrastructure/assignment';
+import { AssignmentStudent, AssignmentStudentType } from '../../infrastructure/assignment';
 import { File } from '../../infrastructure/file';
 
 import ReactMarkdown from 'react-markdown';
@@ -20,7 +20,7 @@ const { Sider, Content } = Layout;
 
 interface IProps {
   isVisible: boolean;
-  assignment?: AssignmentType;
+  assignment?: AssignmentStudentType;
   onCancel: () => void;
 }
 
