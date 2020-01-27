@@ -48,6 +48,12 @@ class AssignmentSettingsDialog extends React.Component<IProps, IState> {
     this.loadTemplates();
   }
 
+  public componentDidUpdate(oldProps: IProps) {
+    if (oldProps.isVisible === false && this.props.isVisible === true) {
+      this.loadTemplates();
+    }
+  }
+
   public loadTemplates = () => {
     const promises = this.props.currentAssignment.fileTemplates.map((el) => FileTemplate.read(el));
     Promise.all(promises).then((fileTemplates) => this.setState({ fileTemplates }));
