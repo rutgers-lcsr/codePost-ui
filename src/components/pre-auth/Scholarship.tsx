@@ -48,7 +48,7 @@ const Scholarship = (props: IProps) => {
       </div>
 
       <div style={{ marginBottom: 25 }}>
-        It’s within the DNA of budding programmers to seek out real-world problems and build solutions to them. students
+        It’s within the DNA of budding programmers to seek out real-world problems and build solutions to them. Students
         often contribute to CS education in their schools in a number of ways, from building tools to serving as
         teaching assistants to mentoring younger students.
       </div>
@@ -71,17 +71,16 @@ const Scholarship = (props: IProps) => {
       </Typography.Title>
       <div style={{ marginBottom: 25 }}>
         <div style={{ marginBottom: 15 }}>
-          We first built codePost as undergraduate students at Princeton University, inspired to improve our
-          department's grading process.
+          We first built codePost as undergraduate students, inspired to improve our department's grading process.
         </div>
         <div style={{ marginBottom: 15 }}>
           It’s now used across 40+ CS departments across the world, and has been used to provide better feedback to tens
           of thousands of students, while saving instructors countless hours.
         </div>
         <div style={{ marginBottom: 15 }}>
-          It all started as a small project by a few CS students, and we wouldn’t be where we are today without the
-          support and encouragement of our instructors and our department. We want to give back, by supporting other CS
-          students that are working towards making an impact in their field.
+          During this journey, we have experienced first-hand the value that personalized instruction can give to the
+          development of CS students. With this scholarship, we hope to give back to those educators that make this a
+          part of their mission.
         </div>
       </div>
     </div>

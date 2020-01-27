@@ -248,8 +248,8 @@ const RubricMenuUI = ({
       });
 
       let filteredComments: RubricComment[] = [];
-      if (cat.id in rubricComments) {
-        filteredComments = rubricComments[cat.id]
+      if (cat.id in adjustedRubricComments) {
+        filteredComments = adjustedRubricComments[cat.id]
           .filter((rubricComment: RubricCommentType) => {
             return rubricComment.text.toUpperCase().includes(commentSearchTerm.toUpperCase());
           })

@@ -75,7 +75,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
     const panelTwo = (
       <LandingPanel
         text={
-          <div>
+          <div id="panel">
             <div style={{ paddingBottom: 15 }}>
               Identify correctness mistakes efficiently, in courses of all sizes. Take advantage of simple no-code
               tests, or write flexible tests using short scripts. All tests run on codePost servers, and{' '}
@@ -89,6 +89,17 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
               </a>
               .
             </div>
+            <Link to="/autograder" target="_blank">
+              <CPButton
+                key="panelTwoButton"
+                cpType="link"
+                style={{ background: 'white', fontSize: 16, padding: 0 }}
+                className="landing__link"
+              >
+                Learn more
+                <Icon type="arrow-right" className="landing__link__arrow" />
+              </CPButton>
+            </Link>
           </div>
         }
         title="Autograder"
@@ -109,7 +120,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
     const panelThree = (
       <LandingPanel
         text={
-          <div id="panelTwo">
+          <div id="panel">
             <div style={{ paddingBottom: 15 }}>
               Use codePost to do everything from collecting student work, to distributing results, and everything in
               between.

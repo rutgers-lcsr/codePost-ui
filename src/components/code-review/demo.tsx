@@ -45,6 +45,8 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     environment: null,
     showFrequentlyUsedRubricComments: false,
     allowLateUploads: false,
+    maxStudentTestRuns: null,
+    exposeDumpLogs: false,
   };
 
   const demoCourse: CourseType = {
@@ -321,6 +323,8 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     environment: null,
     showFrequentlyUsedRubricComments: false,
     allowLateUploads: false,
+    maxStudentTestRuns: null,
+    exposeDumpLogs: false,
   };
 
   const demoCourse: CourseType = {
