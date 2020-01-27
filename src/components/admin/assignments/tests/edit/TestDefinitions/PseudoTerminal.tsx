@@ -47,11 +47,11 @@ interface IResultProps {
 const getResultSpan = (resultType: RESULT_TYPE) => {
   switch (resultType) {
     case RESULT_TYPE.PASSED:
-      return <span style={{ color: '#24be85' }}>PASSED</span>;
+      return <span style={{ color: '#24be85', fontWeight: 600, fontSize: 16 }}>PASSED</span>;
     case RESULT_TYPE.FAILED:
-      return <span style={{ color: '#f5222d' }}>FAILED</span>;
+      return <span style={{ color: '#f5222d', fontWeight: 600, fontSize: 16 }}>FAILED</span>;
     case RESULT_TYPE.ERROR:
-      return <span style={{ color: '#eb6f00' }}>ERROR</span>;
+      return <span style={{ color: '#eb6f00', fontWeight: 600, fontSize: 16 }}>ERROR</span>;
   }
 };
 
