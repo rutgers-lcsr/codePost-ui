@@ -92,21 +92,24 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   // ************************** Fetch Data ******************************
   useEffect(() => {
     const fetchData = async () => {
-      setFetchLoading(true);
-      const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
-      setCategories(categories);
-      setTestCasesByCategory(casesByCategory);
-      const currEnv = await fetchEnvironment(props.currentAssignment);
-      setEnv(currEnv);
+      if (props.submissions.length > 0 && props.currentAssignment) {
+        setFetchLoading(true);
+        const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
+        setCategories(categories);
+        setTestCasesByCategory(casesByCategory);
+        const currEnv = await fetchEnvironment(props.currentAssignment);
+        setEnv(currEnv);
 
-      const tests = await fetchTestsBySubmission(props.submissions);
-      setTestsBySubmission(tests);
-      const [passed, failed, error]: any = getTestsByCase(tests, casesByCategory);
+        const tests = await fetchTestsBySubmission(props.submissions);
+        setTestsBySubmission(tests);
+        const [passed, failed, error]: any = getTestsByCase(tests, casesByCategory);
 
-      setPassedByCase(passed);
-      setFailedByCase(failed);
-      setErrorByCase(error);
-      setFetchLoading(false);
+        setPassedByCase(passed);
+        setFailedByCase(failed);
+        setErrorByCase(error);
+        console.log('LOADING', fetchLoading);
+        setFetchLoading(false);
+      }
     };
     fetchData();
   }, [props.currentAssignment, props.submissions]);
