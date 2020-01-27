@@ -599,16 +599,30 @@ export const TestDefinitions = (props: IProps) => {
             >
               {TestCategory.sort(categories).map((category) => {
                 return (
-                  <Menu.SubMenu key={category.id} title={category.name}>
-                    {category.id in casesByCategory
-                      ? TestCase.sort(casesByCategory[category.id]).map((el) => {
+                  <Menu.SubMenu
+                    key={category.id}
+                    title={
+                      <span>
+                        <Icon type="folder" />
+                        {category.name}{' '}
+                      </span>
+                    }
+                  >
+                    {category.id in casesByCategory ? (
+                      casesByCategory[category.id].length === 0 ? (
+                        <Menu.Item key={category.id * -1}>
+                          <span style={{ color: '#888888' }}>No tests yet...</span>
+                        </Menu.Item>
+                      ) : (
+                        TestCase.sort(casesByCategory[category.id]).map((el) => {
                           return (
-                            <Menu.Item key={el.id} style={{ height: 'fit-content', minHeight: 40 }}>
+                            <Menu.Item key={el.id}>
                               {el.description} &nbsp; {buildStatusBadge(el.lastSolutionRun)}
                             </Menu.Item>
                           );
                         })
-                      : null}
+                      )
+                    ) : null}
                   </Menu.SubMenu>
                 );
               })}
