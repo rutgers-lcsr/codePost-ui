@@ -61,6 +61,17 @@ class AssignmentSettingsDialog extends React.Component<IProps, IState> {
 
   public updateSettings = (values: IFormValues) => {
     const { currentAssignment } = this.props;
+
+    let templateMode = false;
+    if (this.state.fileTemplates !== undefined && this.state.fileTemplates.length > 0) {
+      const filtered = this.state.fileTemplates.filter((template: FileTemplateType) => {
+        return template.code !== '';
+      });
+      if (filtered.length > 0) {
+        templateMode = true;
+      }
+    }
+
     const payload = {
       id: currentAssignment.id,
       name: values.name,
@@ -77,7 +88,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, IState> {
       liveFeedbackMode: values.liveFeedbackMode,
       additiveGrading: values.additiveGrading,
       forcedRubricMode: values.forcedRubricMode,
-      templateMode: values.templateMode,
+      templateMode,
       showFrequentlyUsedRubricComments: values.showFrequentlyUsedRubricComments,
       allowLateUploads: values.allowLateUploads,
     };
@@ -271,8 +282,9 @@ const CollectionCreateForm: any = Form.create()(
     public updateTemplateCode = (id: number, newCode: string) => {
       this.setState((oldState: IFormState) => {
         const old = oldState.templates.find((el) => el.id === id);
+        const templates = [...oldState.templates.filter((el) => el.id !== id), { ...old!, code: newCode }];
         return {
-          templates: [...oldState.templates.filter((el) => el.id !== id), { ...old!, code: newCode }],
+          templates,
         };
       });
     };
