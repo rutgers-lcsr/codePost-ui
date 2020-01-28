@@ -16,7 +16,7 @@ import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { TestCaseType } from '../../../../../infrastructure/testCase';
 
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
-import { SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
+import { RunAllResultType, SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
 
 import { awaitTestResult } from '../testResult';
 
@@ -119,9 +119,9 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     setProgress(result);
   };
 
-  const runAllCallback = (result: SubmissionTestResultType) => {
+  const runAllCallback = (result: RunAllResultType) => {
     const newTestBySub: TestsBySubmission = {};
-    for (const test of result.submissionTests) {
+    for (const test of result) {
       const subID = test.submission;
       newTestBySub[subID] = (newTestBySub[subID] && [...newTestBySub[subID], test]) || [test];
     }
