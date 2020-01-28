@@ -107,7 +107,6 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
         setPassedByCase(passed);
         setFailedByCase(failed);
         setErrorByCase(error);
-        console.log('LOADING', fetchLoading);
         setFetchLoading(false);
       }
     };
