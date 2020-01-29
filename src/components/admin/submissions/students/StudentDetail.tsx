@@ -343,6 +343,7 @@ class StudentDetail extends React.Component<IProps, IState> {
           submissions={this.props.submissions}
           uploadSubmission={this.props.uploadSubmission}
           selectedAssignment={this.state.assignmentToUpload}
+          onSuccess={openSubmission}
         />
       </div>
     );
