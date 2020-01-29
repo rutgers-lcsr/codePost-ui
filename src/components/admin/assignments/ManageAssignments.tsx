@@ -63,6 +63,7 @@ export interface IManageAssignmentsProps {
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
   shallowUpdateAssignment: (assignmentID: number, field: string, value: number) => void;
+  bulkUpdateSubmissions: (assignmentID: number, getPayload: (sub: SubmissionType) => any) => Promise<void>;
 
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
@@ -260,6 +261,23 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                     {...subprops}
                     activeAssignment={assignment}
                     detailType={DETAIL_TYPE.Upload_Import}
+                    baseURL={props.match.url}
+                    breadcrumbs={breadcrumbs}
+                  />
+                )
+              }
+            />
+            <Route
+              path={`${props.match.url}/${encodedName}/bulk-edit`}
+              render={(subprops: any) =>
+                !props.submissionsLoadComplete ? (
+                  <Loading />
+                ) : (
+                  <AssignmentsTable
+                    {...props}
+                    {...subprops}
+                    activeAssignment={assignment}
+                    detailType={DETAIL_TYPE.BulkSubmissionEdit}
                     baseURL={props.match.url}
                     breadcrumbs={breadcrumbs}
                   />

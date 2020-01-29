@@ -959,6 +959,24 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   // submissionsByStudent (map: student email => {assignment id => submission})
   // submissionsByGrader (map: grader email => {assignment id => submission list})
 
+  public bulkUpdateSubmissions = (assignmentID: number, getPayload: (sub: SubmissionType) => any) => {
+    const { submissions } = this.state;
+    const submissionsToUpdate = submissions[assignmentID];
+
+    const promises = submissionsToUpdate.map((s) => {
+      const payload = getPayload(s);
+      return Submission.update(payload);
+    });
+
+    return Promise.all(promises).then((updatedSubmissions: SubmissionType[]) => {
+      const newSubmissions = { ...submissions };
+      newSubmissions[assignmentID] = updatedSubmissions;
+      this.setState({
+        submissions: newSubmissions,
+      });
+    });
+  };
+
   public updateSubmission = (toUpdate: SubmissionType) => {
     const { submissions, submissionsByStudent, submissionsByGrader } = this.state;
 
@@ -1238,6 +1256,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 user={this.props.user}
                 location={this.props.location}
                 shallowUpdateAssignment={this.shallowUpdateAssignment}
+                bulkUpdateSubmissions={this.bulkUpdateSubmissions}
               />
             )}
           />
