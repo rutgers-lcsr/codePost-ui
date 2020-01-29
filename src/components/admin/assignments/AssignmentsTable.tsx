@@ -59,6 +59,8 @@ import SendEmailModal from '../other/SendEmailModal';
 
 import { encodeForLink } from '../../core/URLutils';
 
+import { openSubmission } from '../other/AdminUtils';
+
 const { Text } = Typography;
 const SubMenu = Menu.SubMenu;
 
@@ -599,6 +601,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
               submissions={this.props.submissionsByStudent}
               uploadSubmission={this.props.uploadSubmission}
               course={this.props.currentCourse}
+              onSuccess={openSubmission}
             />
           );
           break;
