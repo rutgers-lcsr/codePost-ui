@@ -25,6 +25,9 @@ const SubmissionTestResult = t.type({
   message: t.string,
 });
 
+const RunAllResult = t.array(SubmissionTestV);
+
 export type SubmissionTestResultType = t.TypeOf<typeof SubmissionTestResult>;
+export type RunAllResultType = t.TypeOf<typeof RunAllResult>;
 export type BasicTestResultType = t.TypeOf<typeof BasicTestResult>;
 export type TestEditorResultType = t.TypeOf<typeof TestEditorResult>;

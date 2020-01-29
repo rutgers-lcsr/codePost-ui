@@ -223,14 +223,28 @@ export const TestsChangeModal = (props: IProps) => {
     Object.keys(casesByCategoryName).forEach((categName) => {
       // Check for deleted categories
       if (!(categName in parsedTests)) {
-        // We store the test names as well to display in the confirmation modal
-        categsToDelete[categName] = new Set(Object.keys(casesByCategoryName[categName]));
-        return;
+        // check to see if the category contains test cases that aren't file defined
+        let canDelete = true;
+        const thisCategory = props.categories.find((c) => c.name == categName);
+        if (thisCategory && props.casesByCategory[thisCategory.id] !== undefined) {
+          const thisCategoryCases = props.casesByCategory[thisCategory.id];
+          // If the category has no cases then it can't be file defined
+          if (thisCategoryCases.length === 0) canDelete = false;
+          // If any of the cases aren't file defined, set canDelete to false
+          thisCategoryCases.forEach((c) => c.type !== 'file' && (canDelete = false));
+        }
+
+        if (canDelete) {
+          // We store the test names as well to display in the confirmation modal
+          categsToDelete[categName] = new Set(Object.keys(casesByCategoryName[categName]));
+          // We don't need to loop through the test cases if the category is to be deleted, so we return
+          return;
+        }
       }
 
       // Check for deleted tests in existing categories
       Object.keys(casesByCategoryName[categName]).forEach((testName) => {
-        if (!parsedTests[categName].has(testName)) {
+        if (!(categName in parsedTests) || !parsedTests[categName].has(testName)) {
           const test = { ...casesByCategoryName[categName][testName] };
           (categName in casesToDelete && casesToDelete[categName].push(test)) || (casesToDelete[categName] = [test]);
         }

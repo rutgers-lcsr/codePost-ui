@@ -86,6 +86,7 @@ export const StudentTestCaseV = t.intersection(
       pointsPass: t.number,
       pointsFail: t.number,
       explanation: t.string,
+      exposed: t.boolean,
     }),
   ],
   'TestCase',
