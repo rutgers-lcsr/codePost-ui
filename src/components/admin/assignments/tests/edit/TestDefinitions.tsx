@@ -570,13 +570,34 @@ export const TestDefinitions = (props: IProps) => {
 
       const buildFileMenu = (groupIndex: number, files: IBasicFile[]) => {
         return files.map((f) => {
+          const deleteThisFile = () => {
+            props.deleteFile(FILE_TYPE.SOURCEFILE, f.id);
+          };
+          const actions = (
+            <Menu>
+              <Menu.Item style={{ paddingRight: '48px', color: '#f5222d' }}>
+                <Popconfirm
+                  title="Are you sure delete this file?"
+                  onConfirm={deleteThisFile}
+                  onCancel={() => {}}
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  Delete File
+                </Popconfirm>
+              </Menu.Item>
+            </Menu>
+          );
+
           return (
             <Menu.Item key={`${groupIndex}-${f.id}`}>
               <FileTag type={f.type} small={true} />
               &nbsp;
               {f.name}
               {f.type === FILE_TYPE.SOURCEFILE && (
-                <EditObjectModal item={f} deleteItem={props.deleteFile.bind({}, FILE_TYPE.SOURCEFILE)} />
+                <Dropdown overlay={actions}>
+                  <Icon type="more" style={{ position: 'absolute', right: '0px', top: '8px', fontWeight: 900 }} />
+                </Dropdown>
               )}
             </Menu.Item>
           );
