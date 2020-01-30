@@ -79,7 +79,7 @@ export const TestItem = (props: ITestItemProps) => {
         );
 
         code.forEach((line) => {
-          if (line.match(/(public|protected|private|\s) static +[\w\<\>\[\]]+\s+(\w+) *\([^\)]*\) *(\{?|[^;])/)) {
+          if (line.match(/(public|protected|private|\s)?static +[\w\<\>\[\]]+\s+(\w+) *\([^\)]*\) *(\{?|[^;])/)) {
             const tokens = line
               .split('(')[0]
               .trim()
