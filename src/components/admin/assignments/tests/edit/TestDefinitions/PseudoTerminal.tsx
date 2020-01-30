@@ -119,10 +119,7 @@ export const PseudoTerminal = (props: IResultProps) => {
       : props.env.buildType === 'default'
       ? props.env.language
       : props.env.buildType;
-  const envSpecText = lookupValue && locale[lookupValue].pseudoterminal;
-  console.log('asf', lookupValue, envSpecText);
-
-  console.log('logs', logs);
+  const envSpecText = lookupValue && locale[lookupValue] !== undefined ? locale[lookupValue].pseudoterminal : null;
 
   const logElem = (
     <div

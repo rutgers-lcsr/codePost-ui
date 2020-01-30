@@ -589,7 +589,7 @@ export const TestDefinitions = (props: IProps) => {
             })}
           </Menu>
           <div className="tests-menu">
-            <div style={{ ...headerStyle, marginTop: 10 }}>Tests</div>
+            <div style={{ ...headerStyle, marginTop: 10 }}>Test Categories</div>
             <Menu
               selectedKeys={[]}
               defaultOpenKeys={categories.map((el) => el.id.toString())}
@@ -676,7 +676,7 @@ export const TestDefinitions = (props: IProps) => {
             <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} icon={true} />
             <AddTestModal addTest={addTest.bind({}, props.env ? props.env.language : '')} categories={categories} />
           </Button.Group>
-          <div style={headerStyle}>Tests</div>
+          <div style={headerStyle}>Test Categories</div>
         </div>
       );
 
