@@ -16,7 +16,7 @@ import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { TestCaseType } from '../../../../../infrastructure/testCase';
 
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
-import { SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
+import { RunAllResultType, SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
 
 import { awaitTestResult } from '../testResult';
 
@@ -92,21 +92,23 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   // ************************** Fetch Data ******************************
   useEffect(() => {
     const fetchData = async () => {
-      setFetchLoading(true);
-      const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
-      setCategories(categories);
-      setTestCasesByCategory(casesByCategory);
-      const currEnv = await fetchEnvironment(props.currentAssignment);
-      setEnv(currEnv);
+      if (props.submissions.length > 0 && props.currentAssignment) {
+        setFetchLoading(true);
+        const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
+        setCategories(categories);
+        setTestCasesByCategory(casesByCategory);
+        const currEnv = await fetchEnvironment(props.currentAssignment);
+        setEnv(currEnv);
 
-      const tests = await fetchTestsBySubmission(props.submissions);
-      setTestsBySubmission(tests);
-      const [passed, failed, error]: any = getTestsByCase(tests, casesByCategory);
+        const tests = await fetchTestsBySubmission(props.submissions);
+        setTestsBySubmission(tests);
+        const [passed, failed, error]: any = getTestsByCase(tests, casesByCategory);
 
-      setPassedByCase(passed);
-      setFailedByCase(failed);
-      setErrorByCase(error);
-      setFetchLoading(false);
+        setPassedByCase(passed);
+        setFailedByCase(failed);
+        setErrorByCase(error);
+        setFetchLoading(false);
+      }
     };
     fetchData();
   }, [props.currentAssignment, props.submissions]);
@@ -116,7 +118,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     setProgress(result);
   };
 
-  const runAllCallback = (result: SubmissionTestResultType) => {
+  const runAllCallback = (result: RunAllResultType) => {
     const newTestBySub: TestsBySubmission = {};
     for (const test of result) {
       const subID = test.submission;
@@ -132,7 +134,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
 
   const callback = (sub: SubmissionType, result: SubmissionTestResultType) => {
     const newTestBySub = { ...testsBySubmission };
-    newTestBySub[sub.id] = result;
+    newTestBySub[sub.id] = result.submissionTests;
     setTestsBySubmission(newTestBySub);
     const newLoadingSubs = subsLoading.filter((id) => {
       return id !== sub.id;
@@ -462,7 +464,10 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     <div>
       <TableDetail
         loadComplete={!fetchLoading}
-        isEmpty={Object.keys(testCasesByCategory).length === 0 || props.submissions.length === 0}
+        isEmpty={
+          (Object.keys(testCasesByCategory).length === 0 && env && env.sourceFiles.length === 0) ||
+          props.submissions.length === 0
+        }
         title={`${props.currentAssignment.name} | Tests Summary`}
         breadcrumbs={
           <Breadcrumb>

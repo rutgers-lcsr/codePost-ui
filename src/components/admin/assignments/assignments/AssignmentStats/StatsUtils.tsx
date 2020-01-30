@@ -418,10 +418,26 @@ export const StatsDrawer = (props: {
           ) : (
             undefined
           ),
+        submission: el.subID,
       };
     });
 
-    body = <Table columns={drawerColumns} dataSource={drawerData} pagination={false} />;
+    body = (
+      <Table
+        columns={drawerColumns}
+        dataSource={drawerData}
+        pagination={false}
+        onRow={(record, rowIndex) => {
+          return {
+            onClick: (event) => {
+              if (record.submission) {
+                openSubmission(record.submission);
+              }
+            },
+          };
+        }}
+      />
+    );
   }
 
   return (

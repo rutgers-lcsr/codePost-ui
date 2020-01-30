@@ -1,5 +1,7 @@
 import JSZip from 'jszip';
 
+import { message } from 'antd';
+
 import { File as CodePostFile } from '../../../../infrastructure/file';
 
 import { UploadFile } from 'antd/lib/upload/interface';
@@ -63,6 +65,7 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
       if (reader.result instanceof ArrayBuffer) {
         // Handle zip files
         const zipper = new JSZip();
+        const FILE_SIZE_LIMIT_IN_BYTES = 3e6; // 3 megabytes
 
         zipper
           .loadAsync(reader.result)
@@ -88,8 +91,17 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
                 return zippedFile.async('blob').then(async (blob: Blob) => {
                   // Recursively read the new files, but we need to cast the
                   // Blob object into a File
-                  const unzippedFile = await readUploadedFile(new File([blob], zippedFile.name), outputFile.longname);
-                  return unzippedFile;
+                  if (blob.size < FILE_SIZE_LIMIT_IN_BYTES) {
+                    const unzippedFile = await readUploadedFile(new File([blob], zippedFile.name), outputFile.longname);
+                    return unzippedFile;
+                  } else {
+                    message.warning(
+                      `${zippedFile.name} exceeds file size limit of ${FILE_SIZE_LIMIT_IN_BYTES /
+                        1e6} MB and cannot be uploaded (its size is ${(blob.size / 1e6).toFixed(1)} MB).`,
+                      10,
+                    );
+                    return undefined;
+                  }
                 });
               }
             });

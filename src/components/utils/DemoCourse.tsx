@@ -19,7 +19,7 @@ import { fetchTestData } from '../core/testFetchUtils';
 
 /* Import demo course data */
 import { demoAssignments, demoCourse, demoRoster, demoSections, demoSubmissions } from './demo-data';
-import { demoSubmissionTests } from './demo-submission-tests';
+import { getDemoSubmissionTests } from './demo-submission-tests';
 
 const createDemoCourse = async (email: string, username: string, org: string) => {
   const payload = demoCourse(username);
@@ -55,6 +55,7 @@ const createDemoCourse = async (email: string, username: string, org: string) =>
               const testCases = Object.values(casesByCategory).flat();
               const thisSubmissions = await Assignment.readSubmissions(assignment.id);
 
+              const demoSubmissionTests = getDemoSubmissionTests(org);
               return demoSubmissionTests.map((subEl) => {
                 const subMatch = thisSubmissions.find((sub) => sub.students.indexOf(subEl.students[0]) > -1);
                 return subEl.tests.map((subTestEl) => {
@@ -62,12 +63,12 @@ const createDemoCourse = async (email: string, username: string, org: string) =>
                   const testCaseMatch = testCases.find((tc) => tc.description === subTestEl.testCase);
                   const testCategoryMatch = testCategories.find((cat) => cat.name === subTestEl.testCategory);
 
-                  if (testCaseMatch && testCategoryMatch) {
+                  if (subMatch && testCaseMatch && testCategoryMatch) {
                     const payload = {
                       passed: subTestEl.passed,
                       logs: subTestEl.logs.length > 0 ? subTestEl.logs : '-',
-                      submission: subMatch!.id,
-                      testCase: testCaseMatch!.id,
+                      submission: subMatch.id,
+                      testCase: testCaseMatch.id,
                       id: -1,
                       testCategory: -1,
                       created: '',
@@ -128,6 +129,9 @@ const createAssignment = async (course: CourseType, assignment: any) => {
       compileText: '',
       buildType: 'default',
       allowNetworkAccess: false,
+      maxStudentTestRuns: null,
+      exposeDumpLogs: false,
+      maxExposedFailedTests: null,
     };
     const thisEnvironment = await Environment.create(payload);
 

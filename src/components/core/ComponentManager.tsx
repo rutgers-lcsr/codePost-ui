@@ -21,7 +21,7 @@ import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
 import { CourseContext } from '../core/Contexts';
 
-import { encodeForRoute } from '../core/URLutils';
+import { encodeForRoute, encodeForLink } from '../core/URLutils';
 
 /**********************************************************************************************************************/
 
@@ -45,6 +45,10 @@ export interface IComponentProps extends IComponentManagerProps {
 
 const formURL = (baseURL: string, course: CourseType, page?: string) => {
   return `${baseURL}/${encodeForRoute(course.name)}/${encodeForRoute(course.period)}/${page !== undefined ? page : ''}`;
+};
+
+const formURLforLink = (baseURL: string, course: CourseType, page?: string) => {
+  return `${baseURL}/${encodeForLink(course.name)}/${encodeForLink(course.period)}/${page !== undefined ? page : ''}`;
 };
 
 const ComponentManager = (MyComponent: React.ComponentType<IComponentProps>, defaultPage?: string) => {
@@ -75,7 +79,7 @@ const ComponentManager = (MyComponent: React.ComponentType<IComponentProps>, def
                 return course.id === storedID;
               });
               if (found !== undefined) {
-                return <Redirect to={formURL(props.match.url, found, defaultPage)} />;
+                return <Redirect to={formURLforLink(props.match.url, found, defaultPage)} />;
               }
             }
 
@@ -83,7 +87,7 @@ const ComponentManager = (MyComponent: React.ComponentType<IComponentProps>, def
               const lastResort = props.initialCourses.sort((a, b) => {
                 return b.id - a.id;
               })[0];
-              return <Redirect to={formURL(props.match.url, lastResort, defaultPage)} />;
+              return <Redirect to={formURLforLink(props.match.url, lastResort, defaultPage)} />;
             }
 
             return <MyComponent {...props} {...subprops} currentCourse={undefined} />;

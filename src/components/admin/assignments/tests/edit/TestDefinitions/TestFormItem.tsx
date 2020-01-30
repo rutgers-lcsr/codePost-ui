@@ -64,6 +64,7 @@ interface ITestFormItemProps extends FormComponentProps {
   setTestSubject: (id: string) => void;
   methodsByFile: { [name: string]: string[] };
   env?: EnvironmentType;
+  hasInstanceMethods: boolean;
 }
 
 interface IState {
@@ -349,7 +350,28 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   },
                 ],
               })(
-                <Select disabled={this.props.isRunning} style={inputStyle}>
+                <Select
+                  disabled={this.props.isRunning}
+                  style={inputStyle}
+                  dropdownRender={(menu) => {
+                    return this.props.hasInstanceMethods ? (
+                      <div>
+                        <div style={{ padding: '4px 8px' }}>
+                          <em>Static methods only</em>
+                          &nbsp;
+                          <CPTooltip
+                            infoIcon={true}
+                            title="To test a non-static method, select 'Unit Test' next to 'Test Type'."
+                          />
+                        </div>
+                        <Divider style={{ margin: '4px 0' }} />
+                        {menu}
+                      </div>
+                    ) : (
+                      menu
+                    );
+                  }}
+                >
                   {functionOptions}
                 </Select>,
               )}

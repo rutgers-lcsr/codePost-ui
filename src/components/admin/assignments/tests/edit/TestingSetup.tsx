@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Breadcrumb, Button, Collapse, Tabs, Checkbox, Modal, message, Typography } from 'antd';
+import { Breadcrumb, Button, Collapse, InputNumber, Tabs, Checkbox, Modal, message, Typography } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -242,6 +242,9 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         compileText: '',
         buildType: 'default',
         allowNetworkAccess: false,
+        maxStudentTestRuns: null,
+        exposeDumpLogs: false,
+        maxExposedFailedTests: null,
       };
       thisEnvironment = await Environment.create(payload);
       // Update the assignment environment field
@@ -303,14 +306,17 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     props.history.push(newUrl);
   };
 
-  const updateEnvSetting = async (field: string, e: any) => {
+  const updateEnvSetting = async (field: string, value: any) => {
     if (env) {
       const payload = {
         id: env.id,
-        [field]: e.target.checked,
+        [field]: value,
       };
       const newEnv = await Environment.update(payload);
-      message.success(e.target.checked ? 'Setting enabled' : 'Setting disabled');
+      if (typeof value === 'boolean') {
+        // we only show message for boolean settings. Numerical or string fields would be really annoying
+        message.success(value ? 'Setting enabled' : 'Setting disabled');
+      }
       setEnv(newEnv);
     }
   };
@@ -348,44 +354,131 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         />
       </TabPane>
       <TabPane tab={'Settings'} key={'settings'}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-          <Checkbox
-            style={{ minWidth: '125px', marginBottom: 15 }}
-            checked={env && env.dumpMode}
-            onChange={updateEnvSetting.bind({}, 'dumpMode')}
-            disabled={!env}
-          >
-            Dump outputs to <Typography.Text code>_tests.txt</Typography.Text>
-            &nbsp;
-            <CPTooltip
-              infoIcon={true}
-              title="When this setting is enabled, a file called _tests.txt containing the raw output of your tests will be added to every student's submission."
-            />
-          </Checkbox>
-          <Checkbox
-            style={{ minWidth: '125px', marginLeft: 0 }}
-            checked={env && env.testParsing}
-            onChange={updateEnvSetting.bind({}, 'testParsing')}
-            disabled={!env}
-          >
-            Parse <Typography.Text code>TestOutput</Typography.Text> calls in source editor &nbsp;
-            <CPTooltip
-              infoIcon={true}
-              title="You should turn this off if you are making bash TestOutput calls in non-bash files (e.g., Makefile, helper python subprocess, etc.)"
-            />
-          </Checkbox>
-          <Checkbox
-            style={{ minWidth: '125px', marginLeft: 0 }}
-            checked={env && env.allowNetworkAccess}
-            onChange={updateEnvSetting.bind({}, 'allowNetworkAccess')}
-            disabled={!env}
-          >
-            Allow network access in containers (Not recommended) &nbsp;
-            <CPTooltip
-              infoIcon={true}
-              title="Enabling this setting will allow student code to have access to the internet. Unless your course requires it (e.g., database connections), it's not recommended to turn this on, as it may allow students to perform unsafe actions (e.g., emailing themselves the test contents)."
-            />
-          </Checkbox>
+        <div style={{ padding: '15px 25px' }}>
+          <div style={{ marginBottom: 20, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <Typography.Title level={4}>Student submit</Typography.Title>
+            <div>
+              <Checkbox
+                style={{ minWidth: '125px', marginLeft: 0, marginBottom: 15 }}
+                checked={env && env.maxStudentTestRuns !== null}
+                onChange={(e) => {
+                  updateEnvSetting('maxStudentTestRuns', e.target.checked ? 10 : null);
+                }}
+                disabled={!env}
+              >
+                Limit the number of times exposed tests are run on student submit
+              </Checkbox>
+              {env && env.maxStudentTestRuns !== null && (
+                <span>
+                  to &nbsp;{' '}
+                  <InputNumber
+                    min={1}
+                    value={env && env.maxStudentTestRuns}
+                    onChange={(value) => {
+                      updateEnvSetting('maxStudentTestRuns', value);
+                    }}
+                  />
+                  &nbsp; times{' '}
+                </span>
+              )}
+              <CPTooltip
+                infoIcon={true}
+                title="Enabling this setting will limit the amount of times students see exposed tests on student submit. After this number has been exceeded, they can still submit, but won't see test results."
+              />
+            </div>
+            <div>
+              <Checkbox
+                style={{ minWidth: '125px', marginLeft: 0, marginBottom: 15 }}
+                checked={env && env.maxExposedFailedTests !== null}
+                onChange={(e) => {
+                  updateEnvSetting('maxExposedFailedTests', e.target.checked ? 3 : null);
+                }}
+                disabled={!env}
+              >
+                Limit the number of failed tests per category that are exposed to students &nbsp;
+              </Checkbox>
+              {env && env.maxExposedFailedTests !== null && (
+                <span>
+                  to &nbsp;{' '}
+                  <InputNumber
+                    min={1}
+                    value={env && env.maxExposedFailedTests}
+                    onChange={(value) => {
+                      updateEnvSetting('maxExposedFailedTests', value);
+                    }}
+                  />{' '}
+                  &nbsp; failed tests per category{' '}
+                </span>
+              )}
+              <CPTooltip
+                infoIcon={true}
+                title="Enabling this setting will limit the amount of failed tests a student is exposed to when they submit. This is a helpful feature if you'd like your students to slowly work through failed tests, and encourage them to write their own tests."
+              />
+            </div>
+          </div>
+          <div style={{ marginBottom: 20, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <Typography.Title level={4}>Running tests</Typography.Title>
+            <div>
+              <Checkbox
+                style={{ minWidth: '125px', marginBottom: 15 }}
+                checked={env && env.dumpMode}
+                onChange={(e) => {
+                  updateEnvSetting('dumpMode', e.target.checked);
+                }}
+                disabled={!env}
+              >
+                Dump outputs to <Typography.Text code>_tests.txt</Typography.Text>
+                &nbsp;
+                <CPTooltip
+                  infoIcon={true}
+                  title="When this setting is enabled, a file called _tests.txt containing the raw output of your tests will be added to every student's submission."
+                />
+              </Checkbox>
+              {env && env.dumpMode && (
+                <Checkbox
+                  style={{ minWidth: '125px', marginBottom: 15 }}
+                  checked={env && env.exposeDumpLogs}
+                  onChange={(e) => {
+                    updateEnvSetting('exposeDumpLogs', e.target.checked);
+                  }}
+                  disabled={!env}
+                >
+                  Expose outputs to students on submit
+                </Checkbox>
+              )}
+            </div>
+            <Checkbox
+              style={{ minWidth: '125px', marginLeft: 0, marginBottom: 15 }}
+              checked={env && env.allowNetworkAccess}
+              onChange={(e) => {
+                updateEnvSetting('allowNetworkAccess', e.target.checked);
+              }}
+              disabled={!env}
+            >
+              Allow network access in containers (Not recommended) &nbsp;
+              <CPTooltip
+                infoIcon={true}
+                title="Enabling this setting will allow student code to have access to the internet. Unless your course requires it (e.g., database connections), it's not recommended to turn this on, as it may allow students to perform unsafe actions (e.g., emailing themselves the test contents)."
+              />
+            </Checkbox>
+          </div>
+          <div style={{ marginBottom: 20, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <Typography.Title level={4}>Writing tests</Typography.Title>
+            <Checkbox
+              style={{ minWidth: '125px', marginLeft: 0, marginBottom: 15 }}
+              checked={env && env.testParsing}
+              onChange={(e) => {
+                updateEnvSetting('testParsing', e.target.checked);
+              }}
+              disabled={!env}
+            >
+              Parse <Typography.Text code>TestOutput</Typography.Text> calls in source editor &nbsp;
+              <CPTooltip
+                infoIcon={true}
+                title="You should turn this off if you are making bash TestOutput calls in non-bash files (e.g., Makefile, helper python subprocess, etc.)"
+              />
+            </Checkbox>
+          </div>
         </div>
       </TabPane>
     </Tabs>

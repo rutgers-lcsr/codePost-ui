@@ -21,6 +21,7 @@ import IntegrationsPage from './IntegrationsPage';
 import JoinSignup from './JoinSignup';
 import Pricing from './Pricing';
 import Scholarship from './Scholarship';
+import AutograderDetail from './AutograderDetail';
 import PrivacyPolicy from './PrivacyPolicy';
 import { SignUpManager } from './SignUpManager';
 import TermsOfService from './TermsOfService';
@@ -97,6 +98,11 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
               exact={true}
               path={'/scholarships/computer-science-education'}
               render={(props: any) => <Scholarship {...props} isLoggedIn={this.props.isLoggedIn} />}
+            />
+            <Route
+              exact={true}
+              path={'/autograder'}
+              render={(props: any) => <AutograderDetail {...props} isLoggedIn={this.props.isLoggedIn} />}
             />
             <Route
               exact={true}
