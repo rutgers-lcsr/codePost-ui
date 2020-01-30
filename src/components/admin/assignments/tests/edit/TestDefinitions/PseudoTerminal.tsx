@@ -14,8 +14,11 @@ import { Resizable } from 're-resizable';
 
 /* codePost imports  */
 import { SubmissionType } from '../../../../../../infrastructure/submission';
+import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
 import CPFlex from '../../../../../core/CPFlex';
 import { copyTextToClipboard } from '../../../../../utils/Browser';
+
+import locale from '../utils/languageLocale';
 
 /**********************************************************************************************************************/
 
@@ -43,6 +46,7 @@ interface IResultProps {
   setTestSubject: (id: string) => void;
   updateFile?: (file: string) => void;
   overrideText?: string;
+  env?: EnvironmentType;
 }
 
 const getResultSpan = (resultType: RESULT_TYPE) => {
@@ -109,21 +113,33 @@ export const PseudoTerminal = (props: IResultProps) => {
     }
   }
 
+  const lookupValue =
+    props.env === undefined
+      ? 'undefined'
+      : props.env.buildType === 'default'
+      ? props.env.language
+      : props.env.buildType;
+  const envSpecText = lookupValue && locale[lookupValue].pseudoterminal;
+  console.log('asf', lookupValue, envSpecText);
+
+  console.log('logs', logs);
+
   const logElem = (
     <div
       id="pseudoterminal"
       style={{
         height: '100%',
-        background: 'black',
         width: '100%',
-        padding: '15px 5px 5px 15px',
+        padding: '8px 5px 5px 15px',
         color: 'white',
         fontSize: '13px',
       }}
     >
+      <div style={{ paddingBottom: '6px', color: '#A9A9A9' }}>{envSpecText}</div>
       {logs.map((logList, i) => (
         <span key={i}>
           Running...
+          <br />
           <br />
           {logList.length > 1 ? (
             logList.map((log) => (
@@ -288,7 +304,7 @@ export const PseudoTerminal = (props: IResultProps) => {
           topLeft: false,
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'black' }}>
           <div>{header}</div>
           <div style={{ flexGrow: 1, overflow: 'auto' }}>{logElem}</div>
         </div>

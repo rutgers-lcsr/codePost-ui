@@ -249,6 +249,7 @@ export const TestItem = (props: ITestItemProps) => {
   /******************************* Return ****************************************/
   return (
     <WrappedTestFormItem
+      env={props.env}
       testCase={props.testCase}
       saveTest={handleCreate}
       deleteTest={handleDelete}

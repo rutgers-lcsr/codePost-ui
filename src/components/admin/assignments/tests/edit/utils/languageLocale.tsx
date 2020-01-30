@@ -12,6 +12,11 @@ const locale: { [language: string]: { [attr: string]: any } } = {
         <a href="https://hub.docker.com/_/openjdk">openjdk:8-jdk-alpine</a> base image.
       </span>
     ),
+    pseudoterminal: (
+      <span>
+        [Running on Linux | <a href="https://hub.docker.com/_/openjdk">openjdk:8-jdk-alpine</a>]
+      </span>
+    ),
   },
   'python-3.7': {
     base: false,
@@ -20,6 +25,11 @@ const locale: { [language: string]: { [attr: string]: any } } = {
       <span>
         Run on a Linux server in a container built from{' '}
         <a href="https://hub.docker.com/_/python">python:3.7-slim-buster</a> base image.
+      </span>
+    ),
+    pseudoterminal: (
+      <span>
+        [Running on Linux | <a href="https://hub.docker.com/_/python">python:3.7-slim-buster</a>]
       </span>
     ),
   },
@@ -32,6 +42,11 @@ const locale: { [language: string]: { [attr: string]: any } } = {
         <a href="https://hub.docker.com/_/python">python:2.7-slim-buster</a> base image.
       </span>
     ),
+    pseudoterminal: (
+      <span>
+        [Running on Linux | <a href="https://hub.docker.com/_/python">python:2.7-slim-buster</a>]
+      </span>
+    ),
   },
   'c/c++': {
     base: false,
@@ -40,6 +55,11 @@ const locale: { [language: string]: { [attr: string]: any } } = {
       <span>
         Run on a Linux server in a container built from{' '}
         <a href="https://hub.docker.com/r/frolvlad/alpine-gxx/">frolvlad/alpine-gxx</a> base image.
+      </span>
+    ),
+    pseudoterminal: (
+      <span>
+        [Running on Linux | <a href="https://hub.docker.com/r/frolvlad/alpine-gxx/">frolvlad/alpine-gxx</a>]
       </span>
     ),
   },
@@ -53,6 +73,11 @@ const locale: { [language: string]: { [attr: string]: any } } = {
         image.
       </span>
     ),
+    pseudoterminal: (
+      <span>
+        [Running on Linux | <a href="https://hub.docker.com/_/ubuntu/">ubuntu:18.04</a>]
+      </span>
+    ),
   },
   alpine: {
     base: true,
@@ -62,6 +87,11 @@ const locale: { [language: string]: { [attr: string]: any } } = {
       <span>
         Run on a Linux server in a container built from <a href="https://hub.docker.com/_/alpine/">alpine:3.7</a> base
         image.
+      </span>
+    ),
+    pseudoterminal: (
+      <span>
+        [Running on Linux | <a href="https://hub.docker.com/_/alpine/">alpine:3.7</a>]
       </span>
     ),
   },

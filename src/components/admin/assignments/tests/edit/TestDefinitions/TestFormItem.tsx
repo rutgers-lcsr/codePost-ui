@@ -22,6 +22,7 @@ import { FormComponentProps } from 'antd/lib/form';
 /* codePost object imports */
 import { TestCaseType, SubmissionType } from '../../../../../../infrastructure/types';
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
+import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
 
 /* codePost component imports */
 import { CodeWindow } from '../utils/CodeWindow';
@@ -62,6 +63,7 @@ interface ITestFormItemProps extends FormComponentProps {
   submissions: SubmissionType[];
   setTestSubject: (id: string) => void;
   methodsByFile: { [name: string]: string[] };
+  env?: EnvironmentType;
 }
 
 interface IState {
@@ -831,6 +833,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   runTest={this.onRun}
                   submissions={this.props.submissions}
                   setTestSubject={this.props.setTestSubject}
+                  env={this.props.env}
                 />
               </div>
             </div>
