@@ -402,7 +402,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           <Menu.Item key="3">
             <Link to={`${this.props.baseURL}/${encodedName}/stats`}>
               <Icon type="bar-chart" />
-              &nbsp; View Stats
+              &nbsp; View stats
             </Link>
           </Menu.Item>
           {assignment.allowRegradeRequests ? (
@@ -420,7 +420,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
             title={
               <span>
                 <Icon type="upload" />
-                <span>&nbsp; Upload submissions</span>
+                &nbsp; Upload submissions
               </span>
             }
           >
@@ -445,8 +445,8 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           </SubMenu>
           <Menu.Item key="5">
             <Link to={`${this.props.baseURL}/${encodedName}/bulk-edit`}>
-              <Icon type="bar-chart" />
-              &nbsp; Bulk Submission Actions
+              <Icon type="edit" />
+              &nbsp; Bulk edit
             </Link>
           </Menu.Item>
           <Menu.Item key="6">
