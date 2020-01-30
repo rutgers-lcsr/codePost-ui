@@ -169,7 +169,7 @@ const TestsList = (props: IProps) => {
                     return theseTests.find((el) => el.testCase === tc.id);
                   });
 
-              const data = testCases.map((testCase) => {
+              const data = testCases.sort((a, b) => a.id - b.id).map((testCase) => {
                 const result = theseTests.find((el) => el.testCase === testCase.id);
 
                 // Did submission pass this test?
@@ -219,9 +219,7 @@ const TestsList = (props: IProps) => {
                   points,
                   logs: <span style={{ whiteSpace: 'pre' }}>{result ? result.logs : '--'}</span>,
                   explanation: (
-                    <ReactMarkdown>
-                      {testCase.explanation && props.hideNotRun && !testOutcome ? 'HIDDEN' : testCase.explanation}
-                    </ReactMarkdown>
+                    <ReactMarkdown>{props.redactNotShown && !result ? '' : testCase.explanation}</ReactMarkdown>
                   ),
                 };
               });

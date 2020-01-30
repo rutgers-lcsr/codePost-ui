@@ -462,6 +462,12 @@ class App extends React.Component<{}, IState> {
           isAdmin: String(isAdmin),
           isGrader: String(isGrader),
         });
+      } else if (isStudent) {
+        (window as any).Intercom('boot', {
+          app_id: 'kg4u5rp1',
+          custom_launcher_selector: '#IntercomDefaultWidget',
+          isStudent: String(isStudent),
+        });
       } else {
         (window as any).Intercom('shutdown');
       }
