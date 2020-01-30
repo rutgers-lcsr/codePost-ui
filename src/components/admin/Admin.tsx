@@ -159,36 +159,36 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       const current = Date.now() - this.timer;
 
       this.times = [...this.times, current];
-      console.log('SUBMISSIONS COMPLETE: ', current);
-      console.log(this.times.join('|'));
+      // console.log('SUBMISSIONS COMPLETE: ', current);
+      // console.log(this.times.join('|'));
     }
 
     if (!prevState.rosterLoadComplete && this.state.rosterLoadComplete) {
       const current = Date.now() - this.timer;
       this.times = [...this.times, current];
-      console.log('ROSTER COMPLETE: ', current);
-      console.log(this.times.join('|'));
+      // console.log('ROSTER COMPLETE: ', current);
+      // console.log(this.times.join('|'));
     }
 
     if (!prevState.sectionsLoadComplete && this.state.sectionsLoadComplete) {
       const current = Date.now() - this.timer;
       this.times = [...this.times, current];
-      console.log('SECTIONS COMPLETE: ', current);
-      console.log(this.times.join('|'));
+      // console.log('SECTIONS COMPLETE: ', current);
+      // console.log(this.times.join('|'));
     }
 
     if (!prevState.assignmentsLoadComplete && this.state.assignmentsLoadComplete) {
       const current = Date.now() - this.timer;
       this.times = [...this.times, current];
-      console.log('ASSIGNMENTS COMPLETE: ', current);
-      console.log(this.times.join('|'));
+      // console.log('ASSIGNMENTS COMPLETE: ', current);
+      // console.log(this.times.join('|'));
     }
 
     if (!prevState.submissionsbyUserLoadComplete && this.state.submissionsbyUserLoadComplete) {
       const current = Date.now() - this.timer;
       this.times = [...this.times, current];
-      console.log('SUBMISSIONS BY USER COMPLETE: ', current);
-      console.log(this.times.join('|'));
+      // console.log('SUBMISSIONS BY USER COMPLETE: ', current);
+      // console.log(this.times.join('|'));
     }
   };
 
@@ -959,6 +959,25 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   // submissionsByStudent (map: student email => {assignment id => submission})
   // submissionsByGrader (map: grader email => {assignment id => submission list})
 
+  public bulkUpdateSubmissions = (assignmentID: number, getPayload: (sub: SubmissionType) => any) => {
+    const { submissions } = this.state;
+    const submissionsToUpdate = submissions[assignmentID];
+
+    const promises = submissionsToUpdate.map((s) => {
+      const payload = getPayload(s);
+      return Submission.update(payload);
+    });
+
+    return Promise.all(promises).then((updatedSubmissions: SubmissionType[]) => {
+      const newSubmissions = { ...submissions };
+      newSubmissions[assignmentID] = updatedSubmissions;
+      this.updateSubmissionsByUser(undefined, newSubmissions, undefined);
+      this.setState({
+        submissions: newSubmissions,
+      });
+    });
+  };
+
   public updateSubmission = (toUpdate: SubmissionType) => {
     const { submissions, submissionsByStudent, submissionsByGrader } = this.state;
 
@@ -1073,6 +1092,28 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     return split.length === 1 ? 'txt' : split[split.length - 1];
   };
 
+  public addFilesToSubmission = (submission: SubmissionType, files: any[]) => {
+    const filePromises = files.map((file: any) => {
+      const ext = this.getFileExtension(file.name);
+      const filePayload = {
+        id: -1,
+        name: file.name,
+        extension: ext,
+        code: file.data,
+        submission: submission.id,
+        comments: [],
+        path: file.path ? file.path : null,
+      };
+      return File.create(filePayload);
+    });
+
+    return Promise.all(filePromises).then((files) => {
+      const newSubmission = { ...submission };
+      newSubmission.files = files.map((f) => f.id);
+      return newSubmission;
+    });
+  };
+
   // Upload a submission in cautious mode
   public uploadSubmission = (assignment: AssignmentType, partners: string[], files: any[]) => {
     if (partners.length === 0) {
@@ -1089,19 +1130,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
     const submissionPromise = Submission.create(submissionPayload).then((submission: SubmissionType) => {
       // Create each file
-      const filePromises = files.map((file: any) => {
-        const ext = this.getFileExtension(file.name);
-        const filePayload = {
-          id: -1,
-          name: file.name,
-          extension: ext,
-          code: file.data,
-          submission: submission.id,
-          comments: [],
-          path: file.path ? file.path : null,
-        };
-        return File.create(filePayload);
-      });
+      const filesPromise = this.addFilesToSubmission(submission, files);
 
       const { submissionsByStudent, submissions } = this.state;
       partners.forEach((student) => {
@@ -1115,8 +1144,9 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       const newAssignmentSubmissions = [...newSubmissions[submission.assignment], submission];
       newSubmissions[submission.assignment] = newAssignmentSubmissions;
       this.setState({ submissionsByStudent, submissions: newSubmissions });
-      return Promise.all(filePromises).then(() => {
-        return submission;
+
+      return filesPromise.then((newSubmission) => {
+        return newSubmission;
       });
     });
 
@@ -1197,6 +1227,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 graders={this.state.graders}
                 changeSubmissionGrader={this.changeSubmissionGrader}
                 uploadSubmission={this.uploadSubmission}
+                addFilesToSubmission={this.addFilesToSubmission}
                 viewsBySubmission={this.state.viewsBySubmission}
                 students={this.state.students}
                 inactiveStudents={this.state.inactiveStudents}
@@ -1219,6 +1250,8 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 {...props}
                 key="assignments"
                 loadComplete={this.state.assignmentsLoadComplete}
+                submissionsLoadComplete={this.state.submissionsLoadComplete}
+                submissionsByUserLoadComplete={this.state.submissionsbyUserLoadComplete}
                 submissions={this.state.submissions}
                 currentCourse={this.props.currentCourse}
                 assignments={this.state.assignments}
@@ -1236,6 +1269,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 user={this.props.user}
                 location={this.props.location}
                 shallowUpdateAssignment={this.shallowUpdateAssignment}
+                bulkUpdateSubmissions={this.bulkUpdateSubmissions}
               />
             )}
           />

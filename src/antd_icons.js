@@ -88,6 +88,7 @@ export { default as Calculator } from '@ant-design/icons/lib/outline/CalculatorO
 export { default as PaperClip } from '@ant-design/icons/lib/outline/PaperClipOutline';
 export { default as CalendarOutline } from '@ant-design/icons/lib/outline/CalendarOutline';
 export { default as CrownOutline } from '@ant-design/icons/lib/outline/CrownOutline';
+export { default as FileAddOutline } from '@ant-design/icons/lib/outline/FileAddOutline';
 
 // Fill Icons
 export { default as PushpinFill } from '@ant-design/icons/lib/fill/PushpinFill';

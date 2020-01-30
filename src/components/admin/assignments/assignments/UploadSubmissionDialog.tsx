@@ -80,9 +80,11 @@ interface IProps {
     | ((assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>);
 
   disableStudentSelect?: boolean;
-  onSuccess?: () => void;
+  onSuccess?: (newSubmissionID: number) => void;
   isStudent?: boolean;
   course?: CourseType;
+  title?: string;
+  infoMessage?: React.ReactNode;
 }
 
 enum STATUS {
@@ -287,7 +289,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
   public onSuccess = () => {
     this.setState({ status: STATUS.NONE, files: [], fileList: [], rejectedFiles: [] });
-    this.props.onSuccess ? this.props.onSuccess() : this.props.onCancel();
+    this.props.onSuccess ? this.props.onSuccess(this.state.submission!.id) : this.props.onCancel();
   };
 
   public toggleDirectoryUpload = () => {
@@ -420,7 +422,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public setResults = (result: SubmissionTestResultType) => {
-    console.log('DONE');
     this.setState({
       submissionTests: result.submissionTests,
       testsLog: result.logs,
@@ -689,6 +690,9 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
           content = (
             <div>
+              {this.props.infoMessage && (
+                <Alert message={this.props.infoMessage} type={'info'} style={{ margin: '10px 0px' }} />
+              )}
               Assignment:
               <Select
                 defaultValue={
@@ -766,7 +770,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     return (
       <Modal
         visible={true}
-        title="Upload Submissions"
+        title={this.props.title || 'Upload Submissions'}
         onCancel={this.onCancel}
         width={800}
         footer={[goBackButton, goForwardButton]}

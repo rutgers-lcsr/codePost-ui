@@ -59,6 +59,9 @@ import SendEmailModal from '../other/SendEmailModal';
 
 import { encodeForLink } from '../../core/URLutils';
 
+import { openSubmission } from '../other/AdminUtils';
+import BulkSubmissionEdit from './assignments/BulkSubmissionEdit';
+
 const { Text } = Typography;
 const SubMenu = Menu.SubMenu;
 
@@ -93,6 +96,8 @@ export interface IManageAssignmentsProps {
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   updateSubmission: (submission: SubmissionType) => Promise<void>;
 
+  bulkUpdateSubmissions: (assignmentID: number, getPayload: (sub: SubmissionType) => any) => Promise<void>;
+
   /* Refresh course */
   refreshCourseData: () => void;
 
@@ -117,6 +122,7 @@ export enum DETAIL_TYPE {
   Delete,
   Drawer,
   DownloadGrades,
+  BulkSubmissionEdit,
 }
 
 interface IManageAssignmentsState {
@@ -381,7 +387,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
               &nbsp; Edit tests
             </Link>
           </Menu.Item>
-          <Menu.Item key="tests">
+          <Menu.Item key="plagiarism">
             <Link to={`${this.props.baseURL}/plagiarism/${encodedName}`}>
               <Icon type="diff" />
               &nbsp; Check for plagiarism
@@ -396,7 +402,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           <Menu.Item key="3">
             <Link to={`${this.props.baseURL}/${encodedName}/stats`}>
               <Icon type="bar-chart" />
-              &nbsp; View Stats
+              &nbsp; View stats
             </Link>
           </Menu.Item>
           {assignment.allowRegradeRequests ? (
@@ -414,7 +420,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
             title={
               <span>
                 <Icon type="upload" />
-                <span>&nbsp; Upload submissions</span>
+                &nbsp; Upload submissions
               </span>
             }
           >
@@ -438,13 +444,19 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
             </Menu.Item>
           </SubMenu>
           <Menu.Item key="5">
+            <Link to={`${this.props.baseURL}/${encodedName}/bulk-edit`}>
+              <Icon type="edit" />
+              &nbsp; Bulk edit
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="6">
             <Link to={`${this.props.baseURL}/${encodedName}/settings`}>
               <Icon type="setting" />
               &nbsp; Settings
             </Link>
           </Menu.Item>
           <Menu.Divider />
-          <Menu.Item key="6" style={{ color: 'red' }}>
+          <Menu.Item key="7" style={{ color: 'red' }}>
             <Link to={`${this.props.baseURL}/${encodedName}/delete`}>
               <Icon type="delete" />
               &nbsp; Delete assignment
@@ -599,6 +611,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
               submissions={this.props.submissionsByStudent}
               uploadSubmission={this.props.uploadSubmission}
               course={this.props.currentCourse}
+              onSuccess={openSubmission}
             />
           );
           break;
@@ -653,6 +666,18 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
               students={this.props.students}
               currentCourse={this.props.currentCourse!}
               onCancel={cancel}
+            />
+          );
+          break;
+        case DETAIL_TYPE.BulkSubmissionEdit:
+          detailComponent = (
+            <BulkSubmissionEdit
+              activeAssignment={this.props.activeAssignment}
+              submissions={this.props.submissions[this.props.activeAssignment.id]}
+              bulkUpdateSubmissions={this.props.bulkUpdateSubmissions}
+              currentCourse={this.props.currentCourse!}
+              onCancel={cancel}
+              myEmail={this.props.myEmail}
             />
           );
           break;

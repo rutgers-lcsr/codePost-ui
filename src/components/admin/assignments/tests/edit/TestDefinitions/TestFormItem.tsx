@@ -62,6 +62,7 @@ interface ITestFormItemProps extends FormComponentProps {
   submissions: SubmissionType[];
   setTestSubject: (id: string) => void;
   methodsByFile: { [name: string]: string[] };
+  hasInstanceMethods: boolean;
 }
 
 interface IState {
@@ -160,7 +161,6 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     const failStyle = { color: 'red', opacity: 0.4, fontWeight: 500 };
     if (this.state.testType == 'io') {
       let file = this.props.form.getFieldValue('fileName') || 'file';
-      console.log(file);
       const input = this.props.form.getFieldValue('input') || 'input';
       const func = this.props.form.getFieldValue('function') || 'function';
       const output = this.state.outputIsFile
@@ -348,7 +348,28 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   },
                 ],
               })(
-                <Select disabled={this.props.isRunning} style={inputStyle}>
+                <Select
+                  disabled={this.props.isRunning}
+                  style={inputStyle}
+                  dropdownRender={(menu) => {
+                    return this.props.hasInstanceMethods ? (
+                      <div>
+                        <div style={{ padding: '4px 8px' }}>
+                          <em>Static methods only</em>
+                          &nbsp;
+                          <CPTooltip
+                            infoIcon={true}
+                            title="To test a non-static method, select 'Unit Test' next to 'Test Type'."
+                          />
+                        </div>
+                        <Divider style={{ margin: '4px 0' }} />
+                        {menu}
+                      </div>
+                    ) : (
+                      menu
+                    );
+                  }}
+                >
                   {functionOptions}
                 </Select>,
               )}
