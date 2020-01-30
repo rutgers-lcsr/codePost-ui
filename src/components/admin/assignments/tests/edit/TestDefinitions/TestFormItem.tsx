@@ -356,6 +356,11 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                       <div>
                         <div style={{ padding: '4px 8px' }}>
                           <em>Static methods only</em>
+                          &nbsp;
+                          <CPTooltip
+                            infoIcon={true}
+                            title="To test a non-static method, select 'Unit Test' next to 'Test Type'."
+                          />
                         </div>
                         <Divider style={{ margin: '4px 0' }} />
                         {menu}
