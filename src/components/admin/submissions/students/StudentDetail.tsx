@@ -399,6 +399,7 @@ class StudentDetail extends React.Component<IProps, IState> {
           submissions={this.props.submissions}
           uploadSubmission={this.uploadSubmission}
           selectedAssignment={this.state.assignmentToUpload}
+          onSuccess={openSubmission}
           disableStudentSelect={
             this.state.assignmentToUpload && this.state.submissionsMap[this.state.assignmentToUpload.id] ? true : false
           }

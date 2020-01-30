@@ -49,6 +49,8 @@ export interface IManageAssignmentsProps {
 
   /* loading state */
   loadComplete: boolean;
+  submissionsLoadComplete: boolean;
+  submissionsByUserLoadComplete: boolean;
 
   /* object-level REST operations */
   createAssignment: (
@@ -82,7 +84,6 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
   if (!props.loadComplete) {
     return <Loading />;
   }
-
   const cancel = () => {
     return;
   };
@@ -153,19 +154,23 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             />
             <Route
               path={`${props.match.url}/${encodedName}/regrades`}
-              render={(subprops: any) => (
-                <AssignmentRegrades
-                  {...subprops}
-                  assignment={assignment}
-                  submissions={props.submissions[assignment.id]}
-                  refreshCourseData={props.refreshCourseData}
-                  onCancel={cancel}
-                  user={props.user}
-                  updateSubmission={props.updateSubmission}
-                  currentCourse={props.currentCourse!}
-                  breadcrumbs={breadcrumbs}
-                />
-              )}
+              render={(subprops: any) =>
+                !props.submissionsLoadComplete ? (
+                  <Loading />
+                ) : (
+                  <AssignmentRegrades
+                    {...subprops}
+                    assignment={assignment}
+                    submissions={props.submissions[assignment.id]}
+                    refreshCourseData={props.refreshCourseData}
+                    onCancel={cancel}
+                    user={props.user}
+                    updateSubmission={props.updateSubmission}
+                    currentCourse={props.currentCourse!}
+                    breadcrumbs={breadcrumbs}
+                  />
+                )
+              }
             />
             <Route
               path={`${props.match.url}/${encodedName}/settings`}
@@ -182,16 +187,20 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             />
             <Route
               path={`${props.match.url}/${encodedName}/download/grades`}
-              render={(subprops: any) => (
-                <AssignmentsTable
-                  {...props}
-                  {...subprops}
-                  activeAssignment={assignment}
-                  detailType={DETAIL_TYPE.DownloadGrades}
-                  baseURL={props.match.url}
-                  breadcrumbs={breadcrumbs}
-                />
-              )}
+              render={(subprops: any) =>
+                !props.submissionsByUserLoadComplete ? (
+                  <Loading />
+                ) : (
+                  <AssignmentsTable
+                    {...props}
+                    {...subprops}
+                    activeAssignment={assignment}
+                    detailType={DETAIL_TYPE.DownloadGrades}
+                    baseURL={props.match.url}
+                    breadcrumbs={breadcrumbs}
+                  />
+                )
+              }
             />
             <Route
               path={`${props.match.url}/${encodedName}/delete`}
@@ -208,42 +217,54 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             />
             <Route
               path={`${props.match.url}/${encodedName}/upload/single`}
-              render={(subprops: any) => (
-                <AssignmentsTable
-                  {...props}
-                  {...subprops}
-                  activeAssignment={assignment}
-                  detailType={DETAIL_TYPE.Upload_Single}
-                  baseURL={props.match.url}
-                  breadcrumbs={breadcrumbs}
-                />
-              )}
+              render={(subprops: any) =>
+                !props.submissionsByUserLoadComplete ? (
+                  <Loading />
+                ) : (
+                  <AssignmentsTable
+                    {...props}
+                    {...subprops}
+                    activeAssignment={assignment}
+                    detailType={DETAIL_TYPE.Upload_Single}
+                    baseURL={props.match.url}
+                    breadcrumbs={breadcrumbs}
+                  />
+                )
+              }
             />
             <Route
               path={`${props.match.url}/${encodedName}/upload/multiple`}
-              render={(subprops: any) => (
-                <AssignmentsTable
-                  {...props}
-                  {...subprops}
-                  activeAssignment={assignment}
-                  detailType={DETAIL_TYPE.Upload_Multiple}
-                  baseURL={props.match.url}
-                  breadcrumbs={breadcrumbs}
-                />
-              )}
+              render={(subprops: any) =>
+                !props.submissionsLoadComplete ? (
+                  <Loading />
+                ) : (
+                  <AssignmentsTable
+                    {...props}
+                    {...subprops}
+                    activeAssignment={assignment}
+                    detailType={DETAIL_TYPE.Upload_Multiple}
+                    baseURL={props.match.url}
+                    breadcrumbs={breadcrumbs}
+                  />
+                )
+              }
             />
             <Route
               path={`${props.match.url}/${encodedName}/upload/import`}
-              render={(subprops: any) => (
-                <AssignmentsTable
-                  {...props}
-                  {...subprops}
-                  activeAssignment={assignment}
-                  detailType={DETAIL_TYPE.Upload_Import}
-                  baseURL={props.match.url}
-                  breadcrumbs={breadcrumbs}
-                />
-              )}
+              render={(subprops: any) =>
+                !props.submissionsLoadComplete ? (
+                  <Loading />
+                ) : (
+                  <AssignmentsTable
+                    {...props}
+                    {...subprops}
+                    activeAssignment={assignment}
+                    detailType={DETAIL_TYPE.Upload_Import}
+                    baseURL={props.match.url}
+                    breadcrumbs={breadcrumbs}
+                  />
+                )
+              }
             />
             <Route
               path={`${props.match.url}/tests/${encodedName}`}
@@ -260,16 +281,20 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             />
             <Route
               path={`${props.match.url}/plagiarism/${encodedName}`}
-              render={(subprops: any) => (
-                <Moss
-                  {...subprops}
-                  course={props.currentCourse!}
-                  assignment={assignment}
-                  assignments={props.assignments}
-                  submissions={props.submissions[assignment.id]}
-                  user={props.user}
-                />
-              )}
+              render={(subprops: any) =>
+                !props.submissionsLoadComplete ? (
+                  <Loading />
+                ) : (
+                  <Moss
+                    {...subprops}
+                    course={props.currentCourse!}
+                    assignment={assignment}
+                    assignments={props.assignments}
+                    submissions={props.submissions[assignment.id]}
+                    user={props.user}
+                  />
+                )
+              }
             />
           </div>
         );
@@ -304,15 +329,19 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
       <Route
         path={`${props.match.url}/download/grades`}
         exact={true}
-        render={(subprops: any) => (
-          <AssignmentsTable
-            {...props}
-            {...subprops}
-            breadcrumbs={breadcrumbs}
-            detailType={DETAIL_TYPE.DownloadGrades}
-            baseURL={props.match.url}
-          />
-        )}
+        render={(subprops: any) =>
+          !props.submissionsByUserLoadComplete ? (
+            <Loading />
+          ) : (
+            <AssignmentsTable
+              {...props}
+              {...subprops}
+              breadcrumbs={breadcrumbs}
+              detailType={DETAIL_TYPE.DownloadGrades}
+              baseURL={props.match.url}
+            />
+          )
+        }
       />
       <Route
         path={`${props.match.url}/overview`}

@@ -254,17 +254,16 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     });
   };
 
-  public onUploadSuccess = () => {
+  public onUploadSuccess = (newSubmissionID: number) => {
     const assignment = this.state.detailAssignment;
-    const submissions = assignment ? this.state.submissions[assignment.id] : undefined;
 
-    if (!assignment || !submissions || !submissions[0]) {
+    if (!assignment) {
       this.changePanel(CURRENT_PANEL.TABLE, undefined, undefined);
       return;
     }
 
     if (assignment.liveFeedbackMode) {
-      openSubmission(submissions[0].id);
+      openSubmission(newSubmissionID);
       this.changePanel(CURRENT_PANEL.TABLE, undefined, undefined);
     } else {
       this.changePanel(CURRENT_PANEL.VIEWFILES, assignment, undefined);
@@ -433,17 +432,11 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     };
 
     const aligner: 'left' | 'center' | 'right' = 'center';
-    let columns = [
+    let columns: any[] = [
       {
         title: 'Assignment',
         dataIndex: 'assignment',
         key: 'assignment',
-      },
-      {
-        title: 'Stats',
-        dataIndex: 'stats',
-        key: 'stats',
-        align: aligner,
       },
       {
         title: 'Partners',
@@ -487,12 +480,24 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
       align: aligner,
     };
 
-    // If one assignment has studentUpload, add the uploadColumn to the columns
+    const statsColumn = {
+      title: 'Stats',
+      dataIndex: 'stats',
+      key: 'stats',
+      align: aligner,
+    };
+
     if (assignments) {
+      // If one assignment has studentUpload, add the uploadColumn to the columns
       columns = assignments.some((assn) => {
         return assn.allowStudentUpload;
       })
         ? [...columns, uploadColumn]
+        : columns;
+      columns = assignments.some((assn) => {
+        return assn.mean || assn.median;
+      })
+        ? [...columns, statsColumn]
         : columns;
     }
 
