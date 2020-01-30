@@ -240,7 +240,7 @@ export class AssignmentStudent {
     'studentUpload',
   );
   public static readStudentUpload = readObjectDetail(StudentUploadData, 'assignments', 'studentUpload');
-  public static readStudentTests = readObjectDetail(TestsV, 'assignments', 'tests');
+  public static readStudentTests = readObjectDetail(TestsV, 'assignments', 'studentTests');
 }
 
 interface sortableObject {

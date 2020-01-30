@@ -134,12 +134,7 @@ export const TestDefinitions = (props: IProps) => {
 
   useEffect(() => {
     if (props.env !== undefined) {
-      const fetchData = async () => {
-        const source: TestsSourceType = await Environment.eject(props.env!.id);
-        setMain(source.main);
-        setTests(source.templates);
-      };
-      fetchData();
+      updateSourceFiles();
     }
   }, [props.env, props.sourceFiles.length]);
 
@@ -156,6 +151,13 @@ export const TestDefinitions = (props: IProps) => {
     setCurrentFiles(props.solutions);
   }, [props.solutions]);
 
+  /******************************* Source file functions  ****************************/
+
+  const updateSourceFiles = async () => {
+    const source: TestsSourceType = await Environment.eject(props.env!.id);
+    setMain(source.main);
+    setTests(source.templates);
+  };
   /******************************* TestCategory functions  ****************************/
 
   const addCategory = async (name: string) => {
@@ -262,6 +264,9 @@ export const TestDefinitions = (props: IProps) => {
       return newCases;
     });
     updateActiveTest(dummyTestCase);
+
+    // If the test is file defined, save the test
+    if (sourceFile) saveTest(dummyTestCase);
   };
 
   const deleteTest = async (testCase: TestCaseType) => {
@@ -318,8 +323,10 @@ export const TestDefinitions = (props: IProps) => {
 
   const togglePanel = () => {
     if (panel === DETAIL_TYPE.EditTests) {
-      setCurrentFiles(props.solutions);
-      setPanel(DETAIL_TYPE.ViewSource);
+      updateSourceFiles().then(() => {
+        setCurrentFiles(props.solutions);
+        setPanel(DETAIL_TYPE.ViewSource);
+      });
     } else {
       setPanel(DETAIL_TYPE.EditTests);
     }

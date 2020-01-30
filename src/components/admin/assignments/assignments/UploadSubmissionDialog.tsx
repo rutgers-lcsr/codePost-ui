@@ -210,10 +210,11 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       this.setState({ loadingTests: true });
       const { testCases, testCategories } = await AssignmentStudent.readStudentTests(this.props.selectedAssignment.id);
       const caseObj: StudentTestCasesByCategory = {};
+      const exposedTestCases = testCases.filter((t) => t.exposed);
       testCategories.forEach((category) => {
         caseObj[category.id] = [];
       });
-      testCases.forEach((testCase) => {
+      exposedTestCases.forEach((testCase) => {
         caseObj[testCase.testCategory] = [...caseObj[testCase.testCategory], testCase];
       });
       this.setState({ testCategories, testCases: caseObj });
