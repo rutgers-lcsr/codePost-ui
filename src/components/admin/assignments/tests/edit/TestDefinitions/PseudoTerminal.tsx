@@ -10,6 +10,7 @@ import { Button, Tag, Select, Icon, Tooltip } from 'antd';
 
 /* other library imports */
 import { animateScroll } from 'react-scroll';
+import { Resizable } from 're-resizable';
 
 /* codePost imports  */
 import { SubmissionType } from '../../../../../../infrastructure/submission';
@@ -112,12 +113,11 @@ export const PseudoTerminal = (props: IResultProps) => {
     <div
       id="pseudoterminal"
       style={{
-        height: 200,
+        height: '100%',
         background: 'black',
         width: '100%',
         padding: '15px 5px 5px 15px',
         color: 'white',
-        overflowY: 'scroll',
         fontSize: '13px',
       }}
     >
@@ -270,8 +270,29 @@ export const PseudoTerminal = (props: IResultProps) => {
 
   return (
     <div className="pseudo-terminal">
-      {header}
-      <div style={{ height: '200px', width: '100%', overflow: 'auto' }}>{logElem}</div>
+      <Resizable
+        defaultSize={{
+          height: 350,
+          width: '100%',
+        }}
+        minHeight={180}
+        style={{ marginBottom: '10px' }}
+        enable={{
+          top: false,
+          right: false,
+          bottom: true,
+          left: false,
+          topRight: false,
+          bottomRight: false,
+          bottomLeft: false,
+          topLeft: false,
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <div>{header}</div>
+          <div style={{ flexGrow: 1, overflow: 'auto' }}>{logElem}</div>
+        </div>
+      </Resizable>
     </div>
   );
 };

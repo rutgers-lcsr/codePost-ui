@@ -892,7 +892,7 @@ export const TestDefinitions = (props: IProps) => {
           <Alert message={instructions} type="info" />
         </div>
         <div style={{ fontSize: 11 }}>
-          <Layout style={{ border: '1px solid #ececec', borderRadius: '4px' }}>
+          <Layout style={{ border: '1px solid #ececec', borderRadius: '4px', marginBottom: '120px' }}>
             <Sider theme="light">
               {header}
               {menu}
