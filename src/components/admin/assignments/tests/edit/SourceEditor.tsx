@@ -153,6 +153,7 @@ export const SourceEditor = (props: IProps) => {
         files={props.sourceFiles.map((el) => el.name)}
         defaultFile="main.sh"
         updateFile={setFileToRun}
+        env={props.env}
       />
     </div>
   );

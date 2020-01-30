@@ -25,4 +25,10 @@
   .ant-dropdown-menu-item {
     padding-right: 20px !important;
   }
+
+  &__files {
+    .ant-menu-item {
+      padding-left: 12px !important;
+    }
+  }
 }

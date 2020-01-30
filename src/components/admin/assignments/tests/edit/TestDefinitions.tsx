@@ -585,16 +585,18 @@ export const TestDefinitions = (props: IProps) => {
 
       menu = (
         <div>
-          <Menu onClick={changeIndex} mode="inline" selectedKeys={[index]}>
-            {groups.map((group: IBasicFile[], groupIndex) => {
-              const directoryStructure = createDirectoryStructure<IBasicFile>(group);
-              const buildFile = buildFileMenu.bind({}, groupIndex);
-              const folders = directoryStructure.folders.map((f: IFolder<IBasicFile>) => {
-                return buildFolderMenu('', f, buildFile);
-              });
-              return [buildFileMenu(groupIndex, directoryStructure.files), folders];
-            })}
-          </Menu>
+          <div className="tests-menu tests-menu__files">
+            <Menu onClick={changeIndex} mode="inline" selectedKeys={[index]}>
+              {groups.map((group: IBasicFile[], groupIndex) => {
+                const directoryStructure = createDirectoryStructure<IBasicFile>(group);
+                const buildFile = buildFileMenu.bind({}, groupIndex);
+                const folders = directoryStructure.folders.map((f: IFolder<IBasicFile>) => {
+                  return buildFolderMenu('', f, buildFile);
+                });
+                return [buildFileMenu(groupIndex, directoryStructure.files), folders];
+              })}
+            </Menu>
+          </div>
           <div className="tests-menu">
             <div style={{ ...headerStyle, marginTop: 10 }}>Test Categories</div>
             <Menu
