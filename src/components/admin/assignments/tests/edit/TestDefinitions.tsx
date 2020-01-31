@@ -486,10 +486,10 @@ export const TestDefinitions = (props: IProps) => {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    background: '#ccc',
-    padding: '0 15px',
+    background: 'rgb(217,217,217)',
+    padding: '6px 15px',
     fontSize: '14px',
-    height: '30px',
+    fontWeight: 600,
   };
 
   switch (panel) {
@@ -553,7 +553,7 @@ export const TestDefinitions = (props: IProps) => {
           <Button.Group style={{ display: 'flex', alignItems: 'flex-end' }}>
             {externalOnly ? null : (
               <Tooltip title="Exit file mode">
-                <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28 }}>
+                <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28, borderBottomLeftRadius: '0px' }}>
                   <Icon type="arrow-left" style={{ fontSize: 10, marginRight: 3 }} />
                   <Icon type="file" style={{ fontSize: 12 }} />
                 </Button>
@@ -697,7 +697,7 @@ export const TestDefinitions = (props: IProps) => {
           <Button.Group style={{ display: 'flex', alignItems: 'flex-end' }}>
             {externalOnly ? null : (
               <Tooltip title="Enter file mode">
-                <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28 }}>
+                <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28, borderBottomLeftRadius: '0px' }}>
                   <Icon type="arrow-right" style={{ fontSize: 10, marginRight: 3 }} />
                   <Icon type="file" style={{ fontSize: 12 }} />
                 </Button>
@@ -927,7 +927,7 @@ export const TestDefinitions = (props: IProps) => {
               {header}
               {menu}
             </Sider>
-            <div style={{ width: '5px', backgroundColor: 'rgb(221, 221, 221)' }} />
+            <div style={{ width: '5px', backgroundColor: 'rgb(217, 217, 217)' }} />
             {hasTests || panel === DETAIL_TYPE.ViewSource ? (
               content
             ) : (

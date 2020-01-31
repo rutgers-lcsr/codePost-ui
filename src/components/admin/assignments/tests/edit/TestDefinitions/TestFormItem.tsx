@@ -737,7 +737,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               </Row>
               <Row>
                 <Collapse bordered={false}>
-                  <Collapse.Panel key="1" header="More options" style={{ border: 0 }}>
+                  <Collapse.Panel key="1" header="More options" style={{ border: 0, backgroundColor: '#f5f5f7' }}>
                     <div>
                       <Form.Item
                         label={

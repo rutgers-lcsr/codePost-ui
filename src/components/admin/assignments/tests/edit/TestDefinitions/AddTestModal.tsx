@@ -47,7 +47,20 @@ export const AddTestModal = (props: IUploadProps) => {
   /******************************* Return *****************************************/
   return (
     <React.Fragment>
-      <Button onClick={toggleVisible} style={{ height: 28, fontSize: 12, padding: '0px 9px' }} type="primary">
+      <Button
+        onClick={toggleVisible}
+        style={{
+          height: 28,
+          fontSize: 12,
+          padding: '0px 9px',
+          borderColor: 'rgb(217,217,217)',
+          borderTopRightRadius: '0px',
+          borderBottomRightRadius: '0px',
+          boxShadow: 'none',
+          textShadow: 'none',
+        }}
+        type="primary"
+      >
         Add test
       </Button>
       <Modal
