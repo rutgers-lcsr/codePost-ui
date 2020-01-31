@@ -86,8 +86,12 @@ class RegradesPanel extends React.Component<IProps, IState> {
   };
 
   toggleViewAll = () => {
-    this.setState((oldState) => ({ viewAll: !oldState.viewAll }));
-    this.loadSubmissions(this.props.assignments);
+    this.setState(
+      (oldState) => ({ viewAll: !oldState.viewAll }),
+      () => {
+        this.loadSubmissions(this.props.assignments, this.state.viewAll ? undefined : this.props.user.email);
+      },
+    );
   };
 
   public render() {
