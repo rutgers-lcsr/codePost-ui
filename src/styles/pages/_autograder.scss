@@ -10,6 +10,16 @@
       height: fit-content;
     }
   }
+
+  .cm-s-neo {
+    background-color: #fafafa;
+  }
+
+  .cm-s-neo .CodeMirror-linenumber {
+    color: #bdbdbd;
+    padding-right: 1px;
+    border-right: 2px solid #bdbdbd;
+  }
 }
 
 .ProMode-codeMirror {
