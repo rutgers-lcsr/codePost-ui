@@ -303,7 +303,9 @@ export const PseudoTerminal = (props: IResultProps) => {
       >
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'black' }}>
           <div>{header}</div>
-          <div style={{ flexGrow: 1, overflow: 'auto' }}>{logElem}</div>
+          <div id="pseudoterminal-body" style={{ flexGrow: 1, overflow: 'auto' }}>
+            {logElem}
+          </div>
         </div>
       </Resizable>
     </div>
