@@ -589,6 +589,11 @@ export const TestDefinitions = (props: IProps) => {
             </Menu>
           );
 
+          const stop = (e: any) => {
+            e.preventDefault();
+            e.stopPropagation();
+          };
+
           return (
             <Menu.Item key={`${groupIndex}-${f.id}`}>
               <FileTag type={f.type} small={true} />
@@ -596,7 +601,11 @@ export const TestDefinitions = (props: IProps) => {
               {f.name}
               {f.type === FILE_TYPE.SOURCEFILE && (
                 <Dropdown overlay={actions}>
-                  <Icon type="more" style={{ position: 'absolute', right: '0px', top: '8px', fontWeight: 900 }} />
+                  <Icon
+                    type="more"
+                    onClick={stop}
+                    style={{ position: 'absolute', right: '0px', top: '8px', fontWeight: 900 }}
+                  />
                 </Dropdown>
               )}
             </Menu.Item>
@@ -730,6 +739,11 @@ export const TestDefinitions = (props: IProps) => {
                 addTest(props.env ? props.env.language : '', category.id);
               };
 
+              const stop = (e: any) => {
+                e.preventDefault();
+                e.stopPropagation();
+              };
+
               const actions = (
                 <Menu>
                   <Menu.Item style={{ paddingRight: '48px' }}>
@@ -759,7 +773,11 @@ export const TestDefinitions = (props: IProps) => {
                       <Icon type="folder" />
                       {category.name}{' '}
                       <Dropdown overlay={actions}>
-                        <Icon type="more" style={{ position: 'absolute', right: '0px', top: '8px', fontWeight: 900 }} />
+                        <Icon
+                          type="more"
+                          onClick={stop}
+                          style={{ position: 'absolute', right: '0px', top: '8px', fontWeight: 900 }}
+                        />
                       </Dropdown>
                     </span>
                   }
