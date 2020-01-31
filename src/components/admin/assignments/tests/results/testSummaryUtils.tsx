@@ -10,9 +10,10 @@ export const bySubmissionColumns = (categories: TestCategoryType[]) => {
     ...TestCategory.sort(categories).map((category) => {
       return {
         title: category.name,
-        dataIndex: category.id.toString(),
+        dataIndex: category.name,
         key: category.id.toString(),
         align: 'center' as 'center',
+        sorter: (a: any, b: any) => a[category.id] - b[category.id],
       };
     }),
     {
@@ -20,6 +21,7 @@ export const bySubmissionColumns = (categories: TestCategoryType[]) => {
       dataIndex: 'summary',
       key: 'summary',
       align: 'center' as 'center',
+      sorter: (a: any, b: any) => a.passed - b.passed,
     },
     {
       title: 'Actions',
@@ -42,23 +44,27 @@ export const byTestColumns = [
     dataIndex: 'passed',
     key: 'passed',
     align: 'center' as 'center',
+    sorter: (a: any, b: any) => a.passedValue - b.passedValue,
   },
   {
     title: 'Failed',
     dataIndex: 'failed',
     key: 'failed',
     align: 'center' as 'center',
+    sorter: (a: any, b: any) => a.failedValue - b.failedValue,
   },
   {
     title: 'Error',
     dataIndex: 'error',
     key: 'error',
     align: 'center' as 'center',
+    sorter: (a: any, b: any) => a.errorValue - b.errorValue,
   },
   {
     title: 'Not run',
     dataIndex: 'notRun',
     key: 'notRun',
     align: 'center' as 'center',
+    sorter: (a: any, b: any) => a.nullValue - b.nullValue,
   },
 ];
