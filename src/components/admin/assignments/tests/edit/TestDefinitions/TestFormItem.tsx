@@ -815,7 +815,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             </div>
             <Divider style={{ marginTop: 12 }} />
             {!typesWithRunDisabled.includes(this.state.testType) && (
-              <div>
+              <div className="tests__edit-definition">
                 <Typography.Title level={4}>
                   2. Definition{' '}
                   {this.state.testType === 'shell' ? (
