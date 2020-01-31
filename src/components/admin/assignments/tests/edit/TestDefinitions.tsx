@@ -9,6 +9,7 @@ import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Button,
+  Collapse,
   Dropdown,
   Layout,
   Menu,
@@ -68,6 +69,8 @@ import FileTag from './TestDefinitions/FileTag';
 /* codePost utils imports */
 import { fetchTestData, TestCasesByCategory } from '../../../../core/testFetchUtils';
 import { hasNativeTestSupport, testTemplates } from './utils/languageUtils';
+
+import { LOCAL_SETTINGS } from '../../../../utils/LocalSettings';
 
 import { IFolder, buildFolderMenu, createDirectoryStructure } from '../../../../code-review/menu/fileMenuUtils';
 
@@ -914,16 +917,21 @@ export const TestDefinitions = (props: IProps) => {
   } else {
     const instructions =
       panel === DETAIL_TYPE.EditTests ? (
-        <Paragraph ellipsis={{ rows: 1, expandable: true }}>
-          <b>Instructions</b>: You can create tests in two ways: in <b style={{ fontWeight: 600 }}>this editor </b>
+        <Paragraph>
+          You can create tests in two ways: in <b style={{ fontWeight: 600 }}>this editor </b>
           (for isolated unit tests) or in <b style={{ fontWeight: 600 }}>file mode </b>(for a general script that
-          includes multiple tests). To get started, click the "Add Test".
+          includes multiple tests). <br />
+          <br />
+          To get started, click the <b style={{ fontWeight: 600 }}>"Add Test"</b> button.
         </Paragraph>
       ) : (
-        <Paragraph ellipsis={{ rows: 1, expandable: true }}>
-          <b>Instructions</b>: Import scripts by clicking "Add file". You can run them to produce logs, or use
-          codePost's custom syntax to structure your test results. If you use our syntax, new tests will automatically
-          be created when you run the file. You can edit properties of these tests by exiting file mode. To learn more,{' '}
+        <Paragraph>
+          Import scripts by clicking <b style={{ fontWeight: 600 }}>"Add file"</b>. You can run them to produce logs, or
+          use codePost's custom syntax to structure your test results. If you use our syntax, new tests will
+          automatically be created when you run the file. You can edit properties of these tests by exiting file mode.{' '}
+          <br />
+          <br />
+          To learn more,{' '}
           <a
             href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode"
             target="_blank"
@@ -934,10 +942,21 @@ export const TestDefinitions = (props: IProps) => {
           .
         </Paragraph>
       );
+
+    const onInstructionsChange = (keys: any) => {
+      LOCAL_SETTINGS.autograderInstructionsVisible.setter(keys.length > 0);
+    };
+
+    const defaultActiveKey = LOCAL_SETTINGS.autograderInstructionsVisible.getter() ? ['1'] : [];
+
     return (
       <div>
         <div style={{ marginBottom: 15, marginLeft: 30, marginRight: 30 }}>
-          <Alert message={instructions} type="info" />
+          <Collapse bordered={false} defaultActiveKey={defaultActiveKey} onChange={onInstructionsChange}>
+            <Collapse.Panel header="Instructions" key="1" style={{ backgroundColor: 'white' }}>
+              <Alert message={instructions} type="info" />
+            </Collapse.Panel>
+          </Collapse>
         </div>
         <div style={{ fontSize: 11 }}>
           <Layout style={{ border: '1px solid #ececec', borderRadius: '4px', marginBottom: '120px' }}>
