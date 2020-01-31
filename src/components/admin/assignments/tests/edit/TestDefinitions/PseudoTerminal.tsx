@@ -232,7 +232,7 @@ export const PseudoTerminal = (props: IResultProps) => {
           <Icon type="loading" />
         </div>
       ) : null}
-      <div>{props.overrideText || 'Run'}</div>
+      <div style={{ fontSize: '16px', transform: 'translateY(2px)' }}>{props.overrideText || 'Run'}</div>
     </div>
   ) : null;
 
