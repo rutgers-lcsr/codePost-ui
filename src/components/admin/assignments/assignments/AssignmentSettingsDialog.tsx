@@ -328,7 +328,8 @@ const CollectionCreateForm: any = Form.create()(
           okText="Save"
           onCancel={onCancel}
           onOk={onSave.bind({}, this.state.templates)}
-          width={'45%'}
+          width={'80%'}
+          style={{ maxWidth: 1000 }}
           maskClosable={false}
         >
           <Form
@@ -358,7 +359,7 @@ const CollectionCreateForm: any = Form.create()(
                       },
                       { validator: this.validateName },
                     ],
-                  })(<Input />)}
+                  })(<Input style={{ maxWidth: 300 }} />)}
                 </Form.Item>
                 <Form.Item
                   label="Points"
