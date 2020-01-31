@@ -49,7 +49,14 @@ const FileTag = (props: IProps) => {
   }
 
   const tag = (
-    <Tag color={color} style={{ padding: '0px 5px', width: '28px', textAlign: 'center' }}>
+    <Tag
+      color={color}
+      style={{
+        padding: '0px 5px',
+        width: props.small ? '28px' : undefined,
+        textAlign: props.small ? 'center' : undefined,
+      }}
+    >
       {props.small ? abbrev : name}
     </Tag>
   );
