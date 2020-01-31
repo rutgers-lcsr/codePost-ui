@@ -1698,6 +1698,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                     this.state.assignment !== undefined
                       ? this.state.assignment.showFrequentlyUsedRubricComments
                       : false,
+                  course: this.state.course!,
                 };
                 return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
               }}
@@ -2076,6 +2077,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 showExplanations: this.state.showExplanations,
                 showFrequent:
                   this.state.assignment !== undefined ? this.state.assignment.showFrequentlyUsedRubricComments : false,
+                course: this.state.course!,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}
