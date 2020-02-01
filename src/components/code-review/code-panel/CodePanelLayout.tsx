@@ -77,7 +77,7 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
 
         const commentsContainerHeight =
           this.props.windowheight - commentsContainer.getBoundingClientRect().top - themeVars.grade.marginBottom;
-        commentsContainer.style.setProperty('height', `${commentsContainerHeight}px`);
+        commentsContainer.style.setProperty('min-height', `${commentsContainerHeight}px`);
       }
     }
   };
@@ -151,6 +151,7 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
                 className="code-panel--comments"
                 style={{
                   minWidth: `${this.props.dimensions.commentsWidth}px`,
+                  height: 'fit-content',
                 }}
               >
                 {this.props.comments}
