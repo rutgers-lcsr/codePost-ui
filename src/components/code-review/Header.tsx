@@ -757,7 +757,7 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
           <Link
             to={`/admin/${encodeForLink(props.course.name)}/${encodeForLink(
               props.course.period,
-            )}/assignments/${encodeForLink(props.assignment.name)}/rubric`}
+            )}/assignments/rubrics/${encodeForLink(props.assignment.name)}`}
           >
             <Icon type="edit" /> Open rubric in Admin Console
           </Link>

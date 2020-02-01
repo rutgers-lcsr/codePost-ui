@@ -24,6 +24,10 @@ const dataSource = [
     key: '2',
     test: 'Check for keyword in output',
   },
+  {
+    key: '3',
+    test: 'Compare to solution code',
+  },
 ];
 
 const codeMap: { [id: string]: any } = {
@@ -59,6 +63,52 @@ if echo $result | grep "world"
         TestOutput true "good job!"
     else
         TestOutput false "Couldn't find 'world' in output"
+fi`,
+  },
+  '3': {
+    java: `studentValue=$(java HelloWorld)
+
+# you must upload solution code as helper files to run alongside student code
+solutionValue=$(java solution/HelloWorld)
+
+if [ "$studentValue" == "$solutionValue" ]
+    then
+        TestOutput true "good job!"
+    else
+        TestOutput false "Didn't match solution"
+fi`,
+    ['c/c++']: `studentValue=$(./HelloWorld)
+
+# you must upload solution code as helper files to run alongside student code
+solutionValue=$(./solution/HelloWorld)
+
+if [ "$studentValue" == "$solutionValue" ]
+    then
+        TestOutput true "good job!"
+    else
+        TestOutput false "Didn't match solution"
+fi`,
+    ['python-3.7']: `studentValue=$(python HelloWorld.py)
+
+# you must upload solution code as helper files to run alongside student code
+solutionValue=$(python solution/HelloWorld.py)
+
+if [ "$studentValue" == "$solutionValue" ]
+    then
+        TestOutput true "good job!"
+    else
+        TestOutput false "Didn't match solution"
+fi`,
+    ['python-2.7']: `studentValue=$(python HelloWorld.py)
+
+# you must upload solution code as helper files to run alongside student code
+solutionValue=$(python solution/HelloWorld.py)
+
+if [ "$studentValue" == "$solutionValue" ]
+    then
+        TestOutput true "good job!"
+    else
+        TestOutput false "Didn't match solution"
 fi`,
   },
 };
@@ -128,7 +178,7 @@ export const TemplateSelector = (props: IProps) => {
   /******************************* Return *****************************************/
   return (
     <React.Fragment>
-      <Button onClick={toggleVisible} style={{ height: 28, fontSize: 12, padding: '0px 9px' }}>
+      <Button type="primary" onClick={toggleVisible} style={{ height: 28, fontSize: 12, padding: '0px 9px' }}>
         Choose from template
       </Button>
       <Modal

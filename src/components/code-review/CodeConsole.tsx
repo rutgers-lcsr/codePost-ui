@@ -1656,6 +1656,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               assignment={this.state.assignment}
               emptyMessage="Your instructor didn't define any tests for this assignment. "
               showLink={true}
+              onClick={(e: any) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
+              }}
             />,
             <FileMenu
               key="file-menu"
@@ -1697,6 +1702,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                     this.state.assignment !== undefined
                       ? this.state.assignment.showFrequentlyUsedRubricComments
                       : false,
+                  course: this.state.course!,
                 };
                 return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
               }}
@@ -1856,6 +1862,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             categories={this.state.testCategories}
             assignment={this.state.assignment}
             emptyMessage="Your instructor didn't define any tests for this assignment. "
+            onClick={(e: any) => {
+              e.preventDefault();
+              e.stopPropagation();
+              this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
+            }}
           />,
           <FileMenu
             key="file-menu"
@@ -2029,6 +2040,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             assignment={this.state.assignment}
             emptyMessage="No tests have been defined for this assignment."
             showLink={true}
+            onClick={(e: any) => {
+              e.preventDefault();
+              e.stopPropagation();
+              this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
+            }}
           />,
           <FileMenu
             key="file-menu"
@@ -2067,6 +2083,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 showExplanations: this.state.showExplanations,
                 showFrequent:
                   this.state.assignment !== undefined ? this.state.assignment.showFrequentlyUsedRubricComments : false,
+                course: this.state.course!,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}

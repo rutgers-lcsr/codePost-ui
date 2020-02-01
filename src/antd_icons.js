@@ -104,6 +104,8 @@ export { default as DislikeFill } from '@ant-design/icons/lib/fill/DislikeFill';
 export { default as CheckCircleFill } from '@ant-design/icons/lib/fill/CheckCircleFill';
 export { default as ExclamationCircleFill } from '@ant-design/icons/lib/fill/ExclamationCircleFill';
 export { default as CloseCircleFill } from '@ant-design/icons/lib/fill/CloseCircleFill';
+export { default as CaretUpFill } from '@ant-design/icons/lib/fill/CaretUpFill';
+export { default as CaretDownFill } from '@ant-design/icons/lib/fill/CaretDownFill';
 
 // TwoTone Icons
 export { default as DatabaseTwoTone } from '@ant-design/icons/lib/twotone/DatabaseTwoTone';
