@@ -62,6 +62,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     anonymousGradingDefault: false,
     minComments: 0,
     noUnfinalize: false,
+    lateDaysAllowable: null,
     archived: false,
   };
 
@@ -340,6 +341,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     anonymousGradingDefault: false,
     minComments: 0,
     noUnfinalize: false,
+    lateDaysAllowable: null,
     archived: false,
   };
 
