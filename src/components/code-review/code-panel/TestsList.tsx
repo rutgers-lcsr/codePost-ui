@@ -169,60 +169,62 @@ const TestsList = (props: IProps) => {
                     return theseTests.find((el) => el.testCase === tc.id);
                   });
 
-              const data = testCases.sort((a, b) => a.id - b.id).map((testCase) => {
-                const result = theseTests.find((el) => el.testCase === testCase.id);
+              const data = testCases
+                .sort((a, b) => a.id - b.id)
+                .map((testCase) => {
+                  const result = theseTests.find((el) => el.testCase === testCase.id);
 
-                // Did submission pass this test?
-                let testOutcome;
-                if (result) {
-                  testOutcome = result.passed;
-                }
+                  // Did submission pass this test?
+                  let testOutcome;
+                  if (result) {
+                    testOutcome = result.passed;
+                  }
 
-                let badgeStatus: 'success' | 'error' | 'default' | 'processing' | 'warning' | undefined;
-                let badgeString;
-                switch (testOutcome) {
-                  case true:
-                    badgeStatus = 'success';
-                    badgeString = 'Passed';
-                    break;
-                  case false:
-                    badgeString = 'Failed';
-                    badgeStatus = 'error';
-                    break;
-                  default:
-                    if (props.redactNotShown) {
+                  let badgeStatus: 'success' | 'error' | 'default' | 'processing' | 'warning' | undefined;
+                  let badgeString;
+                  switch (testOutcome) {
+                    case true:
+                      badgeStatus = 'success';
+                      badgeString = 'Passed';
+                      break;
+                    case false:
                       badgeString = 'Failed';
                       badgeStatus = 'error';
-                    } else {
-                      badgeString = 'Never run';
-                      badgeStatus = 'default';
-                    }
-                }
-
-                let points = '--';
-                if (result || props.redactNotShown) {
-                  if (result && result.passed) {
-                    points = `${testCase.pointsPass > 0 ? '+' : ''}${testCase.pointsPass}`;
-                  } else {
-                    points = `${testCase.pointsFail > 0 ? '+' : ''}${testCase.pointsFail}`;
+                      break;
+                    default:
+                      if (props.redactNotShown) {
+                        badgeString = 'Failed';
+                        badgeStatus = 'error';
+                      } else {
+                        badgeString = 'Never run';
+                        badgeStatus = 'default';
+                      }
                   }
-                }
 
-                return {
-                  case: props.redactNotShown && !result ? 'HIDDEN' : testCase.description,
-                  passed: (
-                    <span>
-                      <Badge status={badgeStatus} />
-                      {badgeString}
-                    </span>
-                  ),
-                  points,
-                  logs: <span style={{ whiteSpace: 'pre' }}>{result ? result.logs : '--'}</span>,
-                  explanation: (
-                    <ReactMarkdown>{props.redactNotShown && !result ? '' : testCase.explanation}</ReactMarkdown>
-                  ),
-                };
-              });
+                  let points = '--';
+                  if (result || props.redactNotShown) {
+                    if (result && result.passed) {
+                      points = `${testCase.pointsPass > 0 ? '+' : ''}${testCase.pointsPass}`;
+                    } else {
+                      points = `${testCase.pointsFail > 0 ? '+' : ''}${testCase.pointsFail}`;
+                    }
+                  }
+
+                  return {
+                    case: props.redactNotShown && !result ? 'HIDDEN' : testCase.description,
+                    passed: (
+                      <span>
+                        <Badge status={badgeStatus} />
+                        {badgeString}
+                      </span>
+                    ),
+                    points,
+                    logs: <span style={{ whiteSpace: 'pre' }}>{result ? result.logs : '--'}</span>,
+                    explanation: (
+                      <ReactMarkdown>{props.redactNotShown && !result ? '' : testCase.explanation}</ReactMarkdown>
+                    ),
+                  };
+                });
 
               // Show logs when a test is expanded
               const expandedRowRender = (record: any, index: number, indent: any, expanded: boolean) => {

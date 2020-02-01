@@ -22,10 +22,11 @@ import { FormComponentProps } from 'antd/lib/form';
 /* codePost object imports */
 import { TestCaseType, SubmissionType } from '../../../../../../infrastructure/types';
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
+import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
 
 /* codePost component imports */
 import { CodeWindow } from '../utils/CodeWindow';
-import { PsuedoTerminal } from './PsuedoTerminal';
+import { PseudoTerminal } from './PseudoTerminal';
 import { TemplateSelector } from './TemplateSelector';
 import ExplanationModal from '../../../../assignments/rubric/ExplanationModal';
 
@@ -34,7 +35,7 @@ import { testTemplates, hasNativeTestSupport, extensionsByLanguage, commandLineE
 
 import CPTooltip from '../../../../../core/CPTooltip';
 
-import { ILogType } from './PsuedoTerminal';
+import { ILogType } from './PseudoTerminal';
 
 const { Option } = Select;
 
@@ -62,6 +63,7 @@ interface ITestFormItemProps extends FormComponentProps {
   submissions: SubmissionType[];
   setTestSubject: (id: string) => void;
   methodsByFile: { [name: string]: string[] };
+  env?: EnvironmentType;
   hasInstanceMethods: boolean;
 }
 
@@ -735,7 +737,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               </Row>
               <Row>
                 <Collapse bordered={false}>
-                  <Collapse.Panel key="1" header="More options" style={{ border: 0 }}>
+                  <Collapse.Panel key="1" header="More options" style={{ border: 0, backgroundColor: '#f5f5f7' }}>
                     <div>
                       <Form.Item
                         label={
@@ -813,7 +815,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             </div>
             <Divider style={{ marginTop: 12 }} />
             {!typesWithRunDisabled.includes(this.state.testType) && (
-              <div>
+              <div className="tests__edit-definition">
                 <Typography.Title level={4}>
                   2. Definition{' '}
                   {this.state.testType === 'shell' ? (
@@ -847,12 +849,13 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
               <Divider />
               <Typography.Title level={4}>3. Results</Typography.Title>
               <div>
-                <PsuedoTerminal
+                <PseudoTerminal
                   log={this.props.log}
                   isRunning={this.props.isRunning}
                   runTest={this.onRun}
                   submissions={this.props.submissions}
                   setTestSubject={this.props.setTestSubject}
+                  env={this.props.env}
                 />
               </div>
             </div>

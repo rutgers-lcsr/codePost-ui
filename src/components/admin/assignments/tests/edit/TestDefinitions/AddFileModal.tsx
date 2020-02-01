@@ -72,7 +72,17 @@ export const AddFileModal = (props: IUploadProps) => {
     <React.Fragment>
       <Button
         onClick={toggleVisible}
-        style={{ height: 28, fontSize: 12, padding: '0px 8px', width: '100%' }}
+        style={{
+          height: 28,
+          fontSize: 12,
+          padding: '0px 8px',
+          width: '100%',
+          borderColor: 'rgb(217,217,217)',
+          borderTopRightRadius: '0px',
+          borderBottomRightRadius: '0px',
+          boxShadow: 'none',
+          textShadow: 'none',
+        }}
         type="primary"
       >
         Add file

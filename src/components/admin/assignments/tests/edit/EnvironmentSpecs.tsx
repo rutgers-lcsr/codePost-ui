@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 
 /* library imports */
-import { Modal, Button, Divider, Icon, Radio, Select, Spin, Tooltip, Tag, Typography, Empty } from 'antd';
+import { Modal, Button, Divider, Icon, Radio, Select, Skeleton, Spin, Tooltip, Tag, Typography, Empty } from 'antd';
 
 /* codePost object imports */
 import { Assignment, AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
@@ -166,8 +166,8 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   if (props.loading) {
     return (
-      <div className="display-flex justify-content-center align-iterms-center">
-        <Spin style={{ marginTop: 15 }} />
+      <div className="display-flex justify-content-center align-items-center">
+        <Skeleton active />
       </div>
     );
   }

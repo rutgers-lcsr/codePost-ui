@@ -6,7 +6,24 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Layout, Menu, Icon, Empty, Modal, Spin, Badge, Tag, Tooltip } from 'antd';
+import {
+  Alert,
+  Button,
+  Collapse,
+  Dropdown,
+  Layout,
+  Menu,
+  Popconfirm,
+  Icon,
+  Empty,
+  Modal,
+  Skeleton,
+  Spin,
+  Badge,
+  Tag,
+  Tooltip,
+  Typography,
+} from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 import _ from 'lodash';
 
@@ -53,11 +70,14 @@ import FileTag from './TestDefinitions/FileTag';
 import { fetchTestData, TestCasesByCategory } from '../../../../core/testFetchUtils';
 import { hasNativeTestSupport, testTemplates } from './utils/languageUtils';
 
+import { LOCAL_SETTINGS } from '../../../../utils/LocalSettings';
+
 import { IFolder, buildFolderMenu, createDirectoryStructure } from '../../../../code-review/menu/fileMenuUtils';
 
-import { RESULT_TYPE } from './TestDefinitions/PsuedoTerminal';
+import { RESULT_TYPE } from './TestDefinitions/PseudoTerminal';
 
 const { Sider, Content } = Layout;
+const { Paragraph } = Typography;
 
 /**********************************************************************************************************************/
 
@@ -469,10 +489,10 @@ export const TestDefinitions = (props: IProps) => {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    background: '#ccc',
-    padding: '0 15px',
+    background: 'rgb(217,217,217)',
+    padding: '6px 15px',
     fontSize: '14px',
-    height: '30px',
+    fontWeight: 600,
   };
 
   switch (panel) {
@@ -536,7 +556,7 @@ export const TestDefinitions = (props: IProps) => {
           <Button.Group style={{ display: 'flex', alignItems: 'flex-end' }}>
             {externalOnly ? null : (
               <Tooltip title="Exit file mode">
-                <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28 }}>
+                <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28, borderBottomLeftRadius: '0px' }}>
                   <Icon type="arrow-left" style={{ fontSize: 10, marginRight: 3 }} />
                   <Icon type="file" style={{ fontSize: 12 }} />
                 </Button>
@@ -553,13 +573,43 @@ export const TestDefinitions = (props: IProps) => {
 
       const buildFileMenu = (groupIndex: number, files: IBasicFile[]) => {
         return files.map((f) => {
+          const deleteThisFile = () => {
+            props.deleteFile(FILE_TYPE.SOURCEFILE, f.id);
+          };
+          const actions = (
+            <Menu>
+              <Menu.Item style={{ paddingRight: '48px', color: '#f5222d' }}>
+                <Popconfirm
+                  title="Are you sure delete this file?"
+                  onConfirm={deleteThisFile}
+                  onCancel={() => {}}
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  Delete File
+                </Popconfirm>
+              </Menu.Item>
+            </Menu>
+          );
+
+          const stop = (e: any) => {
+            e.preventDefault();
+            e.stopPropagation();
+          };
+
           return (
-            <Menu.Item key={`${groupIndex}-${f.id}`} style={{ height: 'fit-content', minHeight: 40 }}>
+            <Menu.Item key={`${groupIndex}-${f.id}`}>
               <FileTag type={f.type} small={true} />
               &nbsp;
               {f.name}
               {f.type === FILE_TYPE.SOURCEFILE && (
-                <EditObjectModal item={f} deleteItem={props.deleteFile.bind({}, FILE_TYPE.SOURCEFILE)} />
+                <Dropdown overlay={actions}>
+                  <Icon
+                    type="more"
+                    onClick={stop}
+                    style={{ position: 'absolute', right: '0px', top: '8px', fontWeight: 900 }}
+                  />
+                </Dropdown>
               )}
             </Menu.Item>
           );
@@ -568,18 +618,20 @@ export const TestDefinitions = (props: IProps) => {
 
       menu = (
         <div>
-          <Menu onClick={changeIndex} mode="inline" selectedKeys={[index]}>
-            {groups.map((group: IBasicFile[], groupIndex) => {
-              const directoryStructure = createDirectoryStructure<IBasicFile>(group);
-              const buildFile = buildFileMenu.bind({}, groupIndex);
-              const folders = directoryStructure.folders.map((f: IFolder<IBasicFile>) => {
-                return buildFolderMenu('', f, buildFile);
-              });
-              return [buildFileMenu(groupIndex, directoryStructure.files), folders];
-            })}
-          </Menu>
-          <div>
-            <div style={{ ...headerStyle, marginTop: 10 }}>Tests</div>
+          <div className="tests-menu tests-menu__files">
+            <Menu onClick={changeIndex} mode="inline" selectedKeys={[index]}>
+              {groups.map((group: IBasicFile[], groupIndex) => {
+                const directoryStructure = createDirectoryStructure<IBasicFile>(group);
+                const buildFile = buildFileMenu.bind({}, groupIndex);
+                const folders = directoryStructure.folders.map((f: IFolder<IBasicFile>) => {
+                  return buildFolderMenu('', f, buildFile);
+                });
+                return [buildFileMenu(groupIndex, directoryStructure.files), folders];
+              })}
+            </Menu>
+          </div>
+          <div className="tests-menu">
+            <div style={{ ...headerStyle, marginTop: 10 }}>Test Categories</div>
             <Menu
               selectedKeys={[]}
               defaultOpenKeys={categories.map((el) => el.id.toString())}
@@ -589,16 +641,30 @@ export const TestDefinitions = (props: IProps) => {
             >
               {TestCategory.sort(categories).map((category) => {
                 return (
-                  <Menu.SubMenu key={category.id} title={category.name}>
-                    {category.id in casesByCategory
-                      ? TestCase.sort(casesByCategory[category.id]).map((el) => {
+                  <Menu.SubMenu
+                    key={category.id}
+                    title={
+                      <span>
+                        <Icon type="folder" />
+                        {category.name}{' '}
+                      </span>
+                    }
+                  >
+                    {category.id in casesByCategory ? (
+                      casesByCategory[category.id].length === 0 ? (
+                        <Menu.Item key={category.id * -1}>
+                          <span style={{ color: '#888888' }}>No tests yet...</span>
+                        </Menu.Item>
+                      ) : (
+                        TestCase.sort(casesByCategory[category.id]).map((el) => {
                           return (
-                            <Menu.Item key={el.id} style={{ height: 'fit-content', minHeight: 40 }}>
+                            <Menu.Item key={el.id}>
                               {el.description} &nbsp; {buildStatusBadge(el.lastSolutionRun)}
                             </Menu.Item>
                           );
                         })
-                      : null}
+                      )
+                    ) : null}
                   </Menu.SubMenu>
                 );
               })}
@@ -643,7 +709,7 @@ export const TestDefinitions = (props: IProps) => {
           <Button.Group style={{ display: 'flex', alignItems: 'flex-end' }}>
             {externalOnly ? null : (
               <Tooltip title="Enter file mode">
-                <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28 }}>
+                <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28, borderBottomLeftRadius: '0px' }}>
                   <Icon type="arrow-right" style={{ fontSize: 10, marginRight: 3 }} />
                   <Icon type="file" style={{ fontSize: 12 }} />
                 </Button>
@@ -652,11 +718,13 @@ export const TestDefinitions = (props: IProps) => {
             <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} icon={true} />
             <AddTestModal addTest={addTest.bind({}, props.env ? props.env.language : '')} categories={categories} />
           </Button.Group>
-          <div style={headerStyle}>Tests</div>
+          <div style={headerStyle}>Test Categories</div>
         </div>
       );
+
+      // <EditObjectModal item={category} updateItem={updateCategoryName} deleteItem={deleteCategory} />
       menu = (
-        <div>
+        <div className="tests-menu">
           <Menu
             defaultOpenKeys={categories.map((el) => el.id.toString())}
             mode="inline"
@@ -664,21 +732,68 @@ export const TestDefinitions = (props: IProps) => {
             style={{ height: '100%' }}
           >
             {TestCategory.sort(categories).map((category) => {
+              const deleteThisCategory = (e: any) => {
+                deleteCategory(category.id);
+              };
+
+              const addTestToThisCategory = (e: any) => {
+                e.preventDefault();
+                e.stopPropagation();
+                addTest(props.env ? props.env.language : '', category.id);
+              };
+
+              const stop = (e: any) => {
+                e.preventDefault();
+                e.stopPropagation();
+              };
+
+              const actions = (
+                <Menu>
+                  <Menu.Item style={{ paddingRight: '48px' }}>
+                    <EditObjectModal item={category} updateItem={updateCategoryName} deleteItem={deleteCategory} />
+                  </Menu.Item>
+                  <Menu.Item style={{ paddingRight: '48px' }}>
+                    <span onClick={addTestToThisCategory}>Add Test</span>
+                  </Menu.Item>
+                  <Menu.Item style={{ paddingRight: '48px', color: '#f5222d' }}>
+                    <Popconfirm
+                      title="Are you sure delete this category?"
+                      onConfirm={deleteThisCategory}
+                      onCancel={() => {}}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      Delete Category
+                    </Popconfirm>
+                  </Menu.Item>
+                </Menu>
+              );
               return (
                 <Menu.SubMenu
                   key={category.id}
                   title={
                     <span>
+                      <Icon type="folder" />
                       {category.name}{' '}
-                      <EditObjectModal item={category} updateItem={updateCategoryName} deleteItem={deleteCategory} />
+                      <Dropdown overlay={actions}>
+                        <Icon
+                          type="more"
+                          onClick={stop}
+                          style={{ position: 'absolute', right: '0px', top: '8px', fontWeight: 900 }}
+                        />
+                      </Dropdown>
                     </span>
                   }
                 >
-                  {category.id in casesByCategory
-                    ? TestCase.sort(casesByCategory[category.id]).map((el) => (
+                  {category.id in casesByCategory ? (
+                    casesByCategory[category.id].length === 0 ? (
+                      <Menu.Item key={category.id * -1}>
+                        <span style={{ color: '#888888' }}>No tests yet...</span>
+                      </Menu.Item>
+                    ) : (
+                      TestCase.sort(casesByCategory[category.id]).map((el) => (
                         <Menu.Item
                           key={el.id}
-                          style={{ height: 'fit-content', minHeight: 40 }}
                           onClick={() => {
                             updateActiveTest(el);
                           }}
@@ -686,7 +801,8 @@ export const TestDefinitions = (props: IProps) => {
                           {el.description} &nbsp; {buildStatusBadge(el.lastSolutionRun)}
                         </Menu.Item>
                       ))
-                    : null}
+                    )
+                  ) : null}
                 </Menu.SubMenu>
               );
             })}
@@ -721,8 +837,8 @@ export const TestDefinitions = (props: IProps) => {
 
   if (loading || props.loading) {
     return (
-      <div className="display-flex justify-content-center align-iterms-center">
-        <Spin style={{ marginTop: 15 }} />
+      <div className="display-flex justify-content-center align-items-center">
+        <Skeleton active />
       </div>
     );
   } else if (categories.length === 0 && panel === DETAIL_TYPE.EditTests) {
@@ -799,38 +915,56 @@ export const TestDefinitions = (props: IProps) => {
       </div>
     );
   } else {
+    const instructions =
+      panel === DETAIL_TYPE.EditTests ? (
+        <Paragraph>
+          You can create tests in two ways: in <b style={{ fontWeight: 600 }}>this editor </b>
+          (for isolated unit tests) or in <b style={{ fontWeight: 600 }}>file mode </b>(for a general script that
+          includes multiple tests). <br />
+          <br />
+          To get started, click the <b style={{ fontWeight: 600 }}>"Add Test"</b> button.
+        </Paragraph>
+      ) : (
+        <Paragraph>
+          Import scripts by clicking <b style={{ fontWeight: 600 }}>"Add file"</b>. You can run them to produce logs, or
+          use codePost's custom syntax to structure your test results. If you use our syntax, new tests will
+          automatically be created when you run the file. You can edit properties of these tests by exiting file mode.{' '}
+          <br />
+          <br />
+          To learn more,{' '}
+          <a
+            href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            click here
+          </a>
+          .
+        </Paragraph>
+      );
+
+    const onInstructionsChange = (keys: any) => {
+      LOCAL_SETTINGS.autograderInstructionsVisible.setter(keys.length > 0);
+    };
+
+    const defaultActiveKey = LOCAL_SETTINGS.autograderInstructionsVisible.getter() ? ['1'] : [];
+
     return (
       <div>
-        <div style={{ marginBottom: 15, marginLeft: 10, marginRight: 10 }}>
-          {panel === DETAIL_TYPE.EditTests ? (
-            <span>
-              <b>Instructions</b>: You can create tests in two ways: in <b style={{ fontWeight: 600 }}>this editor </b>
-              (for isolated unit tests) or in <b style={{ fontWeight: 600 }}>file mode </b>(for a general script that
-              includes multiple tests). To get started, click the "Add Test".
-            </span>
-          ) : (
-            <span>
-              <b>Instructions</b>: Import scripts by clicking "Add file". You can run them to produce logs, or use
-              codePost's custom syntax to structure your test results. If you use our syntax, new tests will
-              automatically be created when you run the file. You can edit properties of these tests by exiting file
-              mode. To learn more,{' '}
-              <a
-                href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                click here
-              </a>
-              .
-            </span>
-          )}
+        <div style={{ marginBottom: 15, marginLeft: 30, marginRight: 30 }}>
+          <Collapse bordered={false} defaultActiveKey={defaultActiveKey} onChange={onInstructionsChange}>
+            <Collapse.Panel header="Instructions" key="1" style={{ backgroundColor: 'white' }}>
+              <Alert message={instructions} type="info" />
+            </Collapse.Panel>
+          </Collapse>
         </div>
         <div style={{ fontSize: 11 }}>
-          <Layout>
+          <Layout style={{ border: '1px solid #ececec', borderRadius: '4px', marginBottom: '120px' }}>
             <Sider theme="light">
               {header}
               {menu}
             </Sider>
+            <div style={{ width: '5px', backgroundColor: 'rgb(217, 217, 217)' }} />
             {hasTests || panel === DETAIL_TYPE.ViewSource ? (
               content
             ) : (

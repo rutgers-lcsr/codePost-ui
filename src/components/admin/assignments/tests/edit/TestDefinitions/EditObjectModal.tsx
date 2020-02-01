@@ -42,7 +42,6 @@ export const EditObjectModal = (props: IUploadProps) => {
 
   /******************************* State Change Functions ****************************/
   const toggleVisible = (e: any) => {
-    e.stopPropagation();
     setVisible(!visible);
   };
 
@@ -68,7 +67,7 @@ export const EditObjectModal = (props: IUploadProps) => {
   /******************************* Return *****************************************/
   return (
     <span>
-      <Icon type="edit" onClick={toggleVisible} />
+      <span onClick={toggleVisible}>Rename</span>
       <Modal
         visible={visible}
         title={`Edit: ${props.item.name}`}
@@ -77,9 +76,6 @@ export const EditObjectModal = (props: IUploadProps) => {
         footer={[
           <Button key="cancel" onClick={toggleVisible}>
             Cancel
-          </Button>,
-          <Button key="delete" type="danger" loading={loading} onClick={onDelete}>
-            Delete
           </Button>,
           <Button key="save" type="primary" loading={loading} disabled={!props.updateItem} onClick={onSave}>
             Save
