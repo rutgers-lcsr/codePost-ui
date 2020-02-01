@@ -178,7 +178,7 @@ export const TemplateSelector = (props: IProps) => {
   /******************************* Return *****************************************/
   return (
     <React.Fragment>
-      <Button onClick={toggleVisible} style={{ height: 28, fontSize: 12, padding: '0px 9px' }}>
+      <Button type="primary" onClick={toggleVisible} style={{ height: 28, fontSize: 12, padding: '0px 9px' }}>
         Choose from template
       </Button>
       <Modal
