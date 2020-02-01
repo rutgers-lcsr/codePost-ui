@@ -1185,6 +1185,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         (oldState: ICodeConsoleState) => {
           // We need to update the submission object in the same way it would be updated
           // if update below was actually sent.
+
           return {
             submission: {
               ...oldState.submission!,
@@ -1204,10 +1205,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return;
     }
 
-    const payload = {
+    let payload: any = {
       id: this.state.submission.id,
       isFinalized: !this.state.submission.isFinalized,
     };
+
+    // if trying to finalize with only one grader available, set the grader
+    if (this.state.graders.length === 1 && !this.state.submission.isFinalized) {
+      payload = { ...payload, grader: this.state.graders[0] };
+    }
 
     try {
       const submission = await Submission.update(payload);
@@ -1371,8 +1377,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /**********************************************************************************/
 
   public render() {
-    console.log('comments', this.state.comments);
-    console.log('crub', this.state.commentRubricComments);
     if (this.state.isLoading) {
       return <Loading />;
     }
@@ -1698,6 +1702,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                     this.state.assignment !== undefined
                       ? this.state.assignment.showFrequentlyUsedRubricComments
                       : false,
+                  course: this.state.course!,
                 };
                 return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
               }}
@@ -1767,6 +1772,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               numComments={Object.values(this.state.comments).flat().length}
               minComments={this.state.course!.minComments}
               canUnfinalize={true}
+              isOnlyGrader={this.state.graders.length === 1}
             />,
           ];
         }
@@ -1933,6 +1939,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             numComments={Object.values(this.state.comments).flat().length}
             minComments={this.state.course!.minComments}
             canUnfinalize={!this.state.course!.noUnfinalize || this.isCourseAdmin(this.state.assignment)}
+            isOnlyGrader={this.state.graders.length === 1}
           />,
         ];
 
@@ -2076,6 +2083,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
                 showExplanations: this.state.showExplanations,
                 showFrequent:
                   this.state.assignment !== undefined ? this.state.assignment.showFrequentlyUsedRubricComments : false,
+                course: this.state.course!,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}

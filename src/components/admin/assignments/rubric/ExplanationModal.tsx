@@ -31,7 +31,7 @@ const ExplanationModal = (props: IProps) => {
           <Input.TextArea
             defaultValue={draft}
             onChange={onChange}
-            placeholder="Use this space to write an explanation for students."
+            placeholder="Use this space to write an explanation for students (Markdown)"
             autosize={{ minRows: 10, maxRows: 12 }}
           />
         </Tabs.TabPane>

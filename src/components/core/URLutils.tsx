@@ -1,3 +1,5 @@
+import { CourseType, AssignmentType } from '../../infrastructure/types';
+
 // React-router automatically encodes URI components.
 //
 // However, there is no isomorphism between the space of possible URLs.
@@ -23,4 +25,10 @@ export const encodeForLink = (pathComponent: string) => {
 // https://github.com/ReactTraining/react-router/blob/v3/docs/guides/RouteMatching.md
 export const encodeForRoute = (pathComponent: string) => {
   return encodeForLink(pathComponent);
+};
+
+export const getRubricURL = (course: CourseType, assignment: AssignmentType) => {
+  return `admin/${encodeForLink(course.name)}/${encodeForLink(course.period)}/assignments/rubrics/${encodeForLink(
+    assignment.name,
+  )}`;
 };

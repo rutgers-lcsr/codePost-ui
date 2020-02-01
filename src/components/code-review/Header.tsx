@@ -249,6 +249,7 @@ interface IFinalizeButtonProps {
   numComments: number;
   minComments: number;
   canUnfinalize: boolean;
+  isOnlyGrader: boolean;
 }
 
 export const FinalizeButton = (props: IFinalizeButtonProps) => {
@@ -295,7 +296,8 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   };
 
   const finalize = () => {
-    if (!props.submission.grader) {
+    // If the submission doesn't have a grader and there are multiple graders in the course, make the user finalize it
+    if (!props.submission.grader && !props.isOnlyGrader) {
       message.warning('You must assign a grader before finalizing this submission.');
     } else {
       executeToggle();
@@ -350,7 +352,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
       toggleNotice = "You aren't able to unfinalize this submission. Please contact an admin if you made a mistake";
     }
   } else {
-    if (!props.submission.grader) {
+    if (!props.submission.grader && !props.isOnlyGrader) {
       toggleNotice = `You must assign a grader before finalizing this submission.`;
     } else {
       toggleNotice = `This submission is unfinalized. Finalize it to mark it as complete. [${osControlKey()} shift f]`;
@@ -365,7 +367,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
         <Switch
           checked={isFinalized}
           onClick={onClick}
-          disabled={props.submission.grader === null || (isFinalized && !props.canUnfinalize)}
+          disabled={(props.submission.grader === null && !props.isOnlyGrader) || (isFinalized && !props.canUnfinalize)}
           loading={isLoading}
         />
       </CPTooltip>
@@ -755,7 +757,7 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
           <Link
             to={`/admin/${encodeForLink(props.course.name)}/${encodeForLink(
               props.course.period,
-            )}/assignments/${encodeForLink(props.assignment.name)}/rubric`}
+            )}/assignments/rubrics/${encodeForLink(props.assignment.name)}`}
           >
             <Icon type="edit" /> Open rubric in Admin Console
           </Link>

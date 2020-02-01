@@ -126,6 +126,16 @@ const defaultAssignment = generateSettingFunctions('defaultAssignment', 0, intIP
 // defalut value: 0
 const mostRecentFile = generateSettingFunctions('mostRecentFile', 0, intIParser, intOParser);
 
+// key: rubricMenuHidden
+// return type: boolean. If true, rubric menu section of code console will be collapsed.
+// defalut value: false
+const autograderInstructionsVisible = generateSettingFunctions(
+  'autograderInstructionsVisible',
+  true,
+  booleanIParser,
+  booleanOParser,
+);
+
 /******************************************************************************************************************/
 const LOCAL_SETTINGS = {
   darkMode,
@@ -140,6 +150,7 @@ const LOCAL_SETTINGS = {
   defaultCourse,
   defaultAssignment,
   mostRecentFile,
+  autograderInstructionsVisible,
 };
 
 export { LOCAL_SETTINGS, clearLocalSettings };

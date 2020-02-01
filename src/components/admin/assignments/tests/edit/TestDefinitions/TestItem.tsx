@@ -19,7 +19,7 @@ import { awaitTestResult } from '../../testResult';
 
 /* codePost util imports */
 
-import { ILogType, RESULT_TYPE } from './PsuedoTerminal';
+import { ILogType, RESULT_TYPE } from './PseudoTerminal';
 
 import WrappedTestFormItem from './TestFormItem';
 
@@ -258,6 +258,7 @@ export const TestItem = (props: ITestItemProps) => {
   /******************************* Return ****************************************/
   return (
     <WrappedTestFormItem
+      env={props.env}
       testCase={props.testCase}
       saveTest={handleCreate}
       deleteTest={handleDelete}

@@ -249,12 +249,15 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
                   for (const t of tests) {
                     categoryPassed += t.passed ? 1 : 0;
                   }
-                  toRet[category.id] = (
+                  toRet[category.name] = (
                     <div
                       className="text-link"
                       onClick={openDetail.bind({}, category, undefined, undefined, submission)}
                     >{`${categoryPassed} / ${categoryTotal}`}</div>
                   );
+
+                  // For sorting (key specified in testSummaryUtils)
+                  toRet[category.id] = categoryPassed;
                 }
 
                 const summaryString = totalTests === 0 ? '-- / --' : `${passed} / ${totalTests}`;
@@ -264,6 +267,10 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
                     {summaryString}
                   </div>
                 );
+
+                // For sorting (key specified in testSummaryUtils)
+                toRet['passed'] = passed;
+
                 return toRet;
               })
             : null;
@@ -357,6 +364,10 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
                 {`${Math.floor((error / Math.max(1, props.submissions.length * numTests)) * 100)}%`}
               </div>
             ),
+            passedValue: passed / Math.max(1, props.submissions.length * numTests),
+            failedValue: failed / Math.max(1, props.submissions.length * numTests),
+            errorValue: error / Math.max(1, props.submissions.length * numTests),
+            nullValue: notRun / Math.max(1, props.submissions.length * numTests),
             key: `category-${category.id}`,
           };
         });
