@@ -13,7 +13,6 @@ import moment from 'moment';
 
 /* codePost imports */
 import { AssignmentType } from '../../../infrastructure/assignment';
-// import { CourseType } from '../../../infrastructure/course';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../../infrastructure/submission';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
@@ -46,7 +45,7 @@ interface ISubmissionReadProps {
 interface ISubmissionInfoWriteProps {
   graders: string[];
   isCourseAdmin: boolean;
-  // course: CourseType;
+  courseLateDayCreditsAllowable: number | null;
   updateGrader: (
     submission: AnonymousSubmissionType,
     graderUsername: string | undefined,
@@ -68,16 +67,17 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
 
         let useLateDayCredits;
 
-        if (true) {
+        if (props.courseLateDayCreditsAllowable !== null) {
+          // @ts-ignore
+          const arr = [...Array(props.courseLateDayCreditsAllowable).keys(), props.courseLateDayCreditsAllowable];
           const content = (
             <div>
               <span>Use</span>
               <span style={{ margin: '0px 4px' }}>
                 <Select defaultValue="0" size="small" style={{ width: 50 }}>
-                  <Select.Option value="0">0</Select.Option>
-                  <Select.Option value="1">Lucy</Select.Option>
-                  <Select.Option value="2">2</Select.Option>
-                  <Select.Option value="3">3</Select.Option>
+                  {arr.map((index: number) => {
+                    return <Select.Option value={index.toString()}>{index}</Select.Option>;
+                  })}
                 </Select>
               </span>
               <span>Late Day Credits</span>
@@ -159,6 +159,7 @@ const makeReadOnly = (Component: React.ComponentType<ISubmissionReadProps & ISub
         <Component
           {...(this.props as ISubmissionReadProps)}
           updateGrader={this.updateGrader}
+          courseLateDayCreditsAllowable={null}
           isCourseAdmin={false}
           graders={[]}
         />

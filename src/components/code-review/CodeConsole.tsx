@@ -1643,6 +1643,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               title="Submission Info"
               assignment={this.state.assignment!}
               submission={this.state.submission!}
+              courseLateDayCreditsAllowable={this.state.course!.lateDayCreditsAllowable}
               graders={this.state.graders}
               isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
               updateGrader={this.updateGrader}
@@ -2026,6 +2027,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             key="submission-info"
             title="Submission Info"
             assignment={this.state.assignment}
+            courseLateDayCreditsAllowable={this.state.course!.lateDayCreditsAllowable}
             submission={this.state.submission!}
             graders={this.state.graders}
             isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
