@@ -388,9 +388,19 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           .includes(f.longname);
       });
 
+      const fileNames = outputFiles
+        .map((f: any) => {
+          return [f.longname, f.zipSource];
+        })
+        .flat();
+
       const newFileListItem = { ...file, name: ProtoFileUpload.longname };
 
-      this.setState({ fileList: [...newFileList, newFileListItem], files: [...newFiles, ...outputFiles] });
+      this.setState({
+        // Don't show files in the list that won't get uploaded
+        fileList: fileNames.includes(ProtoFileUpload.longname) ? [...newFileList, newFileListItem] : newFileList,
+        files: [...newFiles, ...outputFiles],
+      });
     } catch (e) {
       this.setState({ rejectedFiles: [...this.state.rejectedFiles, ProtoFileUpload.longname] });
       message.error(e);
@@ -560,7 +570,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         const settingList = (
           <span>
             {settings.map((setting) => (
-              <span>
+              <span key={setting.setting}>
                 {setting.setting} <CPTooltip title={setting.tooltip} infoIcon={true} /> &nbsp;{' '}
                 <Switch
                   checked={this.getState(setting.variable)}
