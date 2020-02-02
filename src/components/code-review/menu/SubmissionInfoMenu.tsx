@@ -6,13 +6,14 @@
 import React, { useState } from 'react';
 
 /* antd imports */
-import { Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tag, Typography } from 'antd';
+import { Alert, Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tag, Typography } from 'antd';
 
 /* other library imports */
 import moment from 'moment';
 
 /* codePost imports */
 import { AssignmentType } from '../../../infrastructure/assignment';
+// import { CourseType } from '../../../infrastructure/course';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../../infrastructure/submission';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
@@ -45,6 +46,7 @@ interface ISubmissionReadProps {
 interface ISubmissionInfoWriteProps {
   graders: string[];
   isCourseAdmin: boolean;
+  // course: CourseType;
   updateGrader: (
     submission: AnonymousSubmissionType,
     graderUsername: string | undefined,
@@ -57,15 +59,51 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
   let submitted;
   if (props.submission !== undefined) {
     if (props.submission) {
-      const isLate =
-        props.assignment.uploadDueDate &&
-        Date.parse(props.submission.dateUploaded) > Date.parse(props.assignment.uploadDueDate);
-      submitted = (
-        <span>
-          Uploaded: <CodePostDate datetime={props.submission.dateUploaded} />{' '}
-          {isLate ? <Tag color="volcano">LATE</Tag> : ''}
-        </span>
-      );
+      if (props.assignment.uploadDueDate) {
+        const isLate = Date.parse(props.submission.dateUploaded) > Date.parse(props.assignment.uploadDueDate);
+
+        const uploaded = moment(props.submission.dateUploaded);
+        const due = moment(props.assignment.uploadDueDate);
+        const daysLate = uploaded.diff(due, 'days') + 1;
+
+        let useLateDayCredits;
+
+        if (true) {
+          const content = (
+            <div>
+              <span>Use</span>
+              <span style={{ margin: '0px 4px' }}>
+                <Select defaultValue="0" size="small" style={{ width: 50 }}>
+                  <Select.Option value="0">0</Select.Option>
+                  <Select.Option value="1">Lucy</Select.Option>
+                  <Select.Option value="2">2</Select.Option>
+                  <Select.Option value="3">3</Select.Option>
+                </Select>
+              </span>
+              <span>Late Day Credits</span>
+            </div>
+          );
+
+          useLateDayCredits = (
+            <div className="submission-info__late-day-credits">
+              <Alert message={content} type="info" />
+            </div>
+          );
+        }
+
+        submitted = (
+          <div>
+            <div>
+              Uploaded: <CodePostDate datetime={props.submission.dateUploaded} />{' '}
+            </div>
+            <div>
+              Due: <CodePostDate datetime={props.assignment.uploadDueDate} />{' '}
+              {isLate ? <Tag color="volcano">LATE {daysLate}</Tag> : ''}
+            </div>
+            {useLateDayCredits}
+          </div>
+        );
+      }
     }
   }
 

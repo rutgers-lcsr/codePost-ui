@@ -85,3 +85,15 @@
     }
   }
 }
+
+.submission-info__late-day-credits {
+  width: 230px;
+  margin: 2px 0px;
+
+  .ant-alert {
+    font-size: 12px;
+  }
+  .ant-alert.ant-alert-no-icon {
+    padding: 2px 5px;
+  }
+}
