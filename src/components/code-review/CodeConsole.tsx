@@ -973,6 +973,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public addLateDayCreditComment = (lateDayCreditsUsed: number) => {
+    if (this.state.submission === undefined) {
+      return;
+    }
+
     if (this.state.files.length === 0) {
       return;
     }
@@ -991,11 +995,33 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       rubricComment: null,
       author: this.props.user.email,
       feedback: 0,
-      color: '#fabe58',
       tags: ['late days'],
     };
 
+    // Clear previous LateDay comments
+    for (const fileID of Object.keys(this.state.comments)) {
+      const promises = this.state.comments[+fileID].map(async (comment: CommentType) => {
+        if (comment.tags !== undefined && comment.tags.includes('late days')) {
+          await this.deleteComment(comment);
+        }
+      });
+    }
+
+    const submissionPayload = {
+      id: this.state.submission!.id,
+      lateDayCreditsUsed,
+    };
+
+    Submission.update(submissionPayload);
+    // patch submission.latedaycomments
+    // if successful
+    // find comments by tag
+    // delete
+
     this.addComment(lateDayCreditComment, firstFile);
+    this.saveComment(lateDayCreditComment);
+    this.setState({ activeCommentID: undefined });
+    // save comment
   };
 
   // Usually adds a blank comment to the submission state
@@ -1403,6 +1429,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /**********************************************************************************/
 
   public render() {
+    console.log('comments', this.state.comments);
+
     if (this.state.isLoading) {
       return <Loading />;
     }

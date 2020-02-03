@@ -84,6 +84,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     questionDate: '',
     responseDate: '',
     tests: [],
+    lateDayCreditsUsed: 0,
   };
 
   const fileList: FileType[] = [];
@@ -363,6 +364,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     questionDate: '',
     responseDate: '',
     tests: [],
+    lateDayCreditsUsed: 0,
   };
 
   const comments = [

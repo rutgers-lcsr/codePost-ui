@@ -80,7 +80,12 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
             <div>
               <span>Use</span>
               <span style={{ margin: '0px 4px' }}>
-                <Select onChange={onChange} defaultValue="0" size="small" style={{ width: 50 }}>
+                <Select
+                  onChange={onChange}
+                  defaultValue={props.submission.lateDayCreditsUsed}
+                  size="small"
+                  style={{ width: 50 }}
+                >
                   {arr.map((index: number) => {
                     return <Select.Option value={index.toString()}>{index}</Select.Option>;
                   })}
@@ -92,7 +97,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
 
           useLateDayCredits = (
             <div className="submission-info__late-day-credits">
-              <Alert message={content} type="info" />
+              <Alert message={content} type="warning" />
             </div>
           );
         }
