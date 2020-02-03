@@ -84,9 +84,9 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
       // NOTE: in the future, we could decide to only show this onboarding modal if we think
       // the admin is "new". Some heuristics:
       //    * first assignment created
-      //    * no studetns
+      //    * no students
       //    * no submissions in course
-      if (true) {
+      if (this.props.assignments.length < 2) {
         this.props.history.push(`${this.props.baseURL}/${encodeForLink(values.name)}/onboarding`);
       }
     });
