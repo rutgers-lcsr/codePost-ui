@@ -973,6 +973,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public addLateDayCreditComment = (lateDayCreditsUsed: number) => {
+    // -- Add a LateDayCredit Comment --
+    //
+    // * Clear the submission of all other comments tagged with 'late days'
+    // * Update Submission.lateDayCreditsUsed
+    // * Add, save the template comment
+    // * Unfocus the new comment
     if (this.state.submission === undefined) {
       return;
     }
@@ -983,6 +989,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     const firstFile = this.state.files[0];
 
+    const text = `${lateDayCreditsUsed} late day credits
+
+Days late:
+Credits used:
+`;
+
     const lateDayCreditComment: CommentType = {
       startLine: 0,
       endLine: 0,
@@ -991,7 +1003,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       id: this.state.commentCounter,
       file: firstFile.id,
       pointDelta: 0.0,
-      text: `${lateDayCreditsUsed} late day credits.`,
+      text,
       rubricComment: null,
       author: this.props.user.email,
       feedback: 0,
@@ -1013,15 +1025,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     };
 
     Submission.update(submissionPayload);
-    // patch submission.latedaycomments
-    // if successful
-    // find comments by tag
-    // delete
-
     this.addComment(lateDayCreditComment, firstFile);
     this.saveComment(lateDayCreditComment);
     this.setState({ activeCommentID: undefined });
-    // save comment
   };
 
   // Usually adds a blank comment to the submission state

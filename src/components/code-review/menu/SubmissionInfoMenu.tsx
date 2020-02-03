@@ -70,7 +70,6 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
 
         if (props.courseLateDayCreditsAllowable !== null) {
           const onChange = (val: any) => {
-            console.log('changing val', val);
             props.addLateDayCreditComment(val);
           };
 
@@ -109,7 +108,13 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
             </div>
             <div>
               Due: <CodePostDate datetime={props.assignment.uploadDueDate} />{' '}
-              {isLate ? <Tag color="volcano">LATE {daysLate}</Tag> : ''}
+              {isLate ? (
+                <Tag color="volcano">
+                  LATE {daysLate} {daysLate === 1 ? 'DAY' : 'DAYS'}
+                </Tag>
+              ) : (
+                ''
+              )}
             </div>
             {useLateDayCredits}
           </div>
