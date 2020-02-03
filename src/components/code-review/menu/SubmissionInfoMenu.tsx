@@ -56,6 +56,10 @@ interface ISubmissionInfoWriteProps {
 const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
+  const [lateDaySelectValue, setLateDaySelectValue] = React.useState(
+    props.submission !== undefined ? props.submission.lateDayCreditsUsed : 0,
+  );
+
   let submitted;
   if (props.submission !== undefined) {
     if (props.submission) {
@@ -69,8 +73,11 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
         let useLateDayCredits;
 
         if (props.courseLateDayCreditsAllowable !== null) {
-          const onChange = (val: any) => {
-            props.addLateDayCreditComment(val);
+          const onChange = async (val: any) => {
+            const success = await props.addLateDayCreditComment(val);
+            if (success) {
+              setLateDaySelectValue(val);
+            }
           };
 
           // @ts-ignore
@@ -81,7 +88,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
               <span style={{ margin: '0px 4px' }}>
                 <Select
                   onChange={onChange}
-                  defaultValue={props.submission.lateDayCreditsUsed}
+                  value={lateDaySelectValue}
                   size="small"
                   style={{ width: 50 }}
                   disabled={props.submission.isFinalized}

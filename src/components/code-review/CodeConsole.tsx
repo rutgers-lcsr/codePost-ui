@@ -980,6 +980,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     // * Update Submission.lateDayCreditsUsed
     // * Add, save the template comment
     // * Unfocus the new comment
+
+    console.log('ADDING LATE DAY COMMENT');
+
     if (this.state.course === undefined || this.state.course.lateDayCreditsAllowable === null) {
       return;
     }
@@ -1050,8 +1053,9 @@ Days late (after credit):  ${daysLateAfterCredit}
       this.addComment(lateDayCreditComment, firstFile);
       this.saveComment(lateDayCreditComment);
       this.setState({ activeCommentID: undefined });
+      return true;
     } catch (err) {
-      // console.log('err', err);
+      return false;
     }
   };
 
@@ -1263,6 +1267,7 @@ Days late (after credit):  ${daysLateAfterCredit}
       return;
     }
 
+    console.log('TOGGLING FINALIZE');
     if (this.props.inDemoMode || this.state.noSave) {
       this.setState(
         (oldState: ICodeConsoleState) => {
