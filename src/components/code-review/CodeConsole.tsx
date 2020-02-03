@@ -61,6 +61,7 @@ import { openSubmissionInSameTab } from '../admin/other/AdminUtils';
 import { sendSlack } from '../core/slack';
 
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+import { getDaysLate } from '../utils/LateDays';
 
 import { fetchTestData, TestCasesByCategory, StudentTestCasesByCategory } from '../core/testFetchUtils';
 
@@ -979,6 +980,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     // * Update Submission.lateDayCreditsUsed
     // * Add, save the template comment
     // * Unfocus the new comment
+    if (this.state.course === undefined || this.state.course.lateDayCreditsAllowable === null) {
+      return;
+    }
+
+    if (this.state.assignment === undefined || !this.state.assignment.allowStudentUpload) {
+      return;
+    }
+
     if (this.state.submission === undefined) {
       return;
     }
@@ -989,10 +998,16 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     const firstFile = this.state.files[0];
 
-    const text = `${lateDayCreditsUsed} late day credits
+    const daysLate = getDaysLate(this.state.assignment, this.state.submission);
+    const daysLateAfterCredit = daysLate - lateDayCreditsUsed;
 
-Days late:
-Credits used:
+    const text = `**${lateDayCreditsUsed} Late Day Credit${lateDayCreditsUsed === 1 ? '' : 's'} Used**
+
+\`\`\`
+Days late:                 ${daysLate}
+Days late (after credit):  ${daysLateAfterCredit}
+Credits remaining:         2
+\`\`\`
 `;
 
     const lateDayCreditComment: CommentType = {

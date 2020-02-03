@@ -84,6 +84,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
                   defaultValue={props.submission.lateDayCreditsUsed}
                   size="small"
                   style={{ width: 50 }}
+                  disabled={props.submission.isFinalized}
                 >
                   {arr.map((index: number) => {
                     return <Select.Option value={index.toString()}>{index}</Select.Option>;
