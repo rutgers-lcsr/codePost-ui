@@ -19,6 +19,7 @@ import { IStudentSubmissionsDataTable } from '../../../types/common';
 
 import { openSubmission } from '../other/AdminUtils';
 
+import { CourseType } from '../../../infrastructure/course';
 import { AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
 import { FileType } from '../../../infrastructure/file';
@@ -38,6 +39,8 @@ import Loading from '../../../components/core/Loading';
 export interface IByStudentProps extends RouteComponentProps {
   /* UI control */
   loadComplete: boolean;
+
+  course: CourseType;
 
   /* submissions data */
   assignments: AssignmentType[];
@@ -123,6 +126,7 @@ class StudentData extends React.Component<IByStudentProps, IState> {
             render={(subprops: any) => (
               <StudentDetail
                 {...subprops}
+                course={this.props.course}
                 baseURL={this.props.match.url}
                 assignments={this.props.assignments}
                 graders={this.props.graders}

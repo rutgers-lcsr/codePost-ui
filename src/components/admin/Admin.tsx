@@ -1214,6 +1214,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
               <SubmissionsManager
                 {...props}
                 key="submissions"
+                course={this.props.currentCourse}
                 loadComplete={this.state.submissionsbyUserLoadComplete && this.state.assignmentsLoadComplete}
                 assignments={this.state.assignments}
                 submissionsByStudent={this.state.submissionsByStudent}
