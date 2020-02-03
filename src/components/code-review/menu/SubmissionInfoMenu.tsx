@@ -6,10 +6,11 @@
 import React, { useState } from 'react';
 
 /* antd imports */
-import { Alert, Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tag, Typography } from 'antd';
+import { Alert, Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tabs, Tag, Typography } from 'antd';
 
 /* other library imports */
 import moment from 'moment';
+import ReactMarkdown from 'react-markdown';
 
 /* codePost imports */
 import { AssignmentType } from '../../../infrastructure/assignment';
@@ -509,6 +510,17 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
           </div>
         );
       }
+
+      const instructions = (
+        <div>
+          {props.assignment.regradeInstructions === '' ? null : (
+            <div style={{ marginBottom: '12px' }}>
+              <ReactMarkdown>{props.assignment.regradeInstructions}</ReactMarkdown>
+            </div>
+          )}
+          <div style={{ fontWeight: 600 }}>{deadline}</div>
+        </div>
+      );
       return (
         <div>
           <div style={buttonStyle}>
@@ -522,10 +534,20 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
             title="Submit a question or regrade request"
             footer={[cancelButton, submitButton]}
           >
-            <Text type="warning" style={{ marginBottom: 15 }}>
-              {deadline}
-            </Text>
-            <TextArea autosize={{ minRows: 4, maxRows: 8 }} value={questionText} onChange={changeQuestionText} />
+            <Alert message={instructions} type="info" />
+            <br />
+            <Tabs defaultActiveKey="1">
+              <Tabs.TabPane key="1" tab="Write">
+                <Input.TextArea
+                  defaultValue={questionText}
+                  onChange={changeQuestionText}
+                  autosize={{ minRows: 10, maxRows: 16 }}
+                />
+              </Tabs.TabPane>
+              <Tabs.TabPane key="2" tab="Preview">
+                <ReactMarkdown>{questionText}</ReactMarkdown>
+              </Tabs.TabPane>
+            </Tabs>
             {props.assignment.allowRegradeRequests ? (
               <div style={{ paddingTop: 15, ...regradeTextStyle }}>
                 Ask for a regrade: <Switch disabled={false} checked={questionIsRegrade} onChange={toggleIsRegrade} />
