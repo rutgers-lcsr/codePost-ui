@@ -981,8 +981,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     // * Add, save the template comment
     // * Unfocus the new comment
 
-    console.log('ADDING LATE DAY COMMENT');
-
     if (this.state.course === undefined || this.state.course.lateDayCreditsAllowable === null) {
       return;
     }
@@ -1267,7 +1265,6 @@ Days late (after credit):  ${daysLateAfterCredit}
       return;
     }
 
-    console.log('TOGGLING FINALIZE');
     if (this.props.inDemoMode || this.state.noSave) {
       this.setState(
         (oldState: ICodeConsoleState) => {
