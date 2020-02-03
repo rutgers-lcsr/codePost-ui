@@ -15,30 +15,38 @@ import moment from 'moment-timezone';
 /* codePost imports */
 import CPButton from '../../../../components/core/CPButton';
 
-import { AssignmentType } from '../../../../infrastructure/assignment';
+import AssignmentSetupDialog from './AssignmentSetupDialog';
+
+import { CourseType, AssignmentType } from '../../../../infrastructure/types';
 
 /**********************************************************************************************************************/
 
 interface IProps {
   assignments: AssignmentType[];
+  hasStudents: boolean;
   createAssignment: (
     assignmentName: string,
     assignmentPoints: number,
     upload: boolean,
     dueDate?: string,
   ) => Promise<AssignmentType>;
-  timezone: string;
+  course: CourseType;
 }
 
 interface IState {
   dialogVisible: boolean;
   studentsCanUpload: boolean;
+  isLoading: boolean;
+  setupMode: boolean;
+  newAssignment?: AssignmentType;
 }
 
 class NewAssignmentDialog extends React.Component<IProps, {}> {
   public state: Readonly<IState> = {
     dialogVisible: false,
     studentsCanUpload: false,
+    setupMode: false,
+    isLoading: false,
   };
 
   private formRef: React.RefObject<FormComponentProps> = React.createRef();
@@ -59,24 +67,39 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
   public handleCreate = () => {
     const formRefCast: any = this.formRef;
     const form = formRefCast.props.form;
-    form.validateFields((err: any, values: any) => {
+    form.validateFields(async (err: any, values: any) => {
       if (err) {
         return;
       }
 
-      this.createNewAssignment(values.name, values.points, this.state.studentsCanUpload, values.uploadDueDate);
-      form.resetFields();
-      this.setState({ dialogVisible: false });
+      this.setState({ isLoading: true });
+      const newAssignment = await this.createNewAssignment(
+        values.name,
+        values.points,
+        this.state.studentsCanUpload,
+        values.uploadDueDate,
+      );
+
+      // options: only show if (a) first assignment and/or (b) no students and/or (c) no submissions
+      if (true) {
+        this.setState({ setupMode: true, newAssignment, isLoading: true });
+      } else {
+        form.resetFields();
+        this.setState({ dialogVisible: false, isLoading: false });
+      }
     });
   };
 
   public createNewAssignment = (name: string, points: number, upload: boolean, uploadDueDate: string) => {
-    this.props.createAssignment(name, points, upload, uploadDueDate);
-    this.toggleDialog();
+    return this.props.createAssignment(name, points, upload, uploadDueDate);
   };
 
   public saveFormRef = (formRef: any) => {
     this.formRef = formRef;
+  };
+
+  public reset = () => {
+    this.setState({ dialogVisible: false, isLoading: false, setupMode: false });
   };
 
   public render() {
@@ -85,16 +108,26 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
         <CPButton onClick={this.toggleDialog} cpType="primary" icon="plus-circle">
           Add assignment
         </CPButton>
-        <CollectionCreateForm
-          wrappedComponentRef={this.saveFormRef}
-          visible={this.state.dialogVisible}
-          onCancel={this.toggleDialog}
-          onCreate={this.handleCreate}
-          assignments={this.props.assignments}
-          toggleStudentUpload={this.toggleStudentUpload}
-          studentsCanUpload={this.state.studentsCanUpload}
-          timezone={this.props.timezone}
-        />
+        {this.state.setupMode ? (
+          <AssignmentSetupDialog
+            assignment={this.state.newAssignment!}
+            hasStudents={this.props.hasStudents}
+            course={this.props.course}
+            onClose={this.reset}
+          />
+        ) : (
+          <CollectionCreateForm
+            wrappedComponentRef={this.saveFormRef}
+            visible={this.state.dialogVisible}
+            onCancel={this.toggleDialog}
+            onCreate={this.handleCreate}
+            assignments={this.props.assignments}
+            toggleStudentUpload={this.toggleStudentUpload}
+            studentsCanUpload={this.state.studentsCanUpload}
+            timezone={this.props.course.timezone}
+            loading={this.state.isLoading}
+          />
+        )}
       </div>
     );
   }
@@ -108,6 +141,7 @@ interface IFormProps extends FormComponentProps {
   toggleStudentUpload: () => void;
   studentsCanUpload: boolean;
   timezone: string;
+  loading: boolean;
 }
 
 // FIXME: figure out how to type output of Form.create HOC
@@ -143,7 +177,14 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
       const { visible, onCancel, onCreate, form } = this.props;
       const { getFieldDecorator } = form;
       return (
-        <Modal visible={visible} title="Create an assignment" okText="Create" onCancel={onCancel} onOk={onCreate}>
+        <Modal
+          visible={visible}
+          title="Create an assignment"
+          okText="Create"
+          onCancel={onCancel}
+          onOk={onCreate}
+          confirmLoading={this.props.loading}
+        >
           <Form layout="vertical">
             <Form.Item label="Name">
               {getFieldDecorator('name', {

@@ -285,6 +285,23 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
               }
             />
             <Route
+              path={`${props.match.url}/${encodedName}/onboarding`}
+              render={(subprops: any) =>
+                !props.submissionsLoadComplete ? (
+                  <Loading />
+                ) : (
+                  <AssignmentsTable
+                    {...props}
+                    {...subprops}
+                    activeAssignment={assignment}
+                    detailType={DETAIL_TYPE.Onboarding}
+                    baseURL={props.match.url}
+                    breadcrumbs={breadcrumbs}
+                  />
+                )
+              }
+            />
+            <Route
               path={`${props.match.url}/tests/${encodedName}`}
               render={(subprops: any) => (
                 <AssignmentTests

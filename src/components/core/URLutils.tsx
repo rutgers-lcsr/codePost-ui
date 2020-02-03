@@ -32,3 +32,25 @@ export const getRubricURL = (course: CourseType, assignment: AssignmentType) => 
     assignment.name,
   )}`;
 };
+
+export const getUploadSubmissionsURL = (course: CourseType, assignment: AssignmentType) => {
+  return `admin/${encodeForLink(course.name)}/${encodeForLink(course.period)}/assignments/${encodeForLink(
+    assignment.name,
+  )}/upload/single`;
+};
+
+export const getRosterURL = (course: CourseType) => {
+  return `admin/${encodeForLink(course.name)}/${encodeForLink(course.period)}/roster`;
+};
+
+export const getTestsURL = (course: CourseType, assignment: AssignmentType) => {
+  return `admin/${encodeForLink(course.name)}/${encodeForLink(course.period)}/assignments/tests/${encodeForLink(
+    assignment.name,
+  )}/edit/environment`;
+};
+
+export const getSettingsURL = (course: CourseType, assignment: AssignmentType) => {
+  return `admin/${encodeForLink(course.name)}/${encodeForLink(course.period)}/assignments/${encodeForLink(
+    assignment.name,
+  )}/settings`;
+};
