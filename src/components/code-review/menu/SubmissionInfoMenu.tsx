@@ -50,6 +50,7 @@ interface ISubmissionInfoWriteProps {
     submission: AnonymousSubmissionType,
     graderUsername: string | undefined,
   ) => Promise<AnonymousSubmissionType>;
+  addLateDayCreditComment: any;
 }
 
 const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps) => {
@@ -68,13 +69,18 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
         let useLateDayCredits;
 
         if (props.courseLateDayCreditsAllowable !== null) {
+          const onChange = (val: any) => {
+            console.log('changing val', val);
+            props.addLateDayCreditComment(val);
+          };
+
           // @ts-ignore
           const arr = [...Array(props.courseLateDayCreditsAllowable).keys(), props.courseLateDayCreditsAllowable];
           const content = (
             <div>
               <span>Use</span>
               <span style={{ margin: '0px 4px' }}>
-                <Select defaultValue="0" size="small" style={{ width: 50 }}>
+                <Select onChange={onChange} defaultValue="0" size="small" style={{ width: 50 }}>
                   {arr.map((index: number) => {
                     return <Select.Option value={index.toString()}>{index}</Select.Option>;
                   })}
@@ -154,6 +160,10 @@ const makeReadOnly = (Component: React.ComponentType<ISubmissionReadProps & ISub
       return Promise.resolve(submission);
     };
 
+    public addLateDayCreditComment = (lateDayCreditsUsed: number) => {
+      return;
+    };
+
     public render() {
       return (
         <Component
@@ -162,6 +172,7 @@ const makeReadOnly = (Component: React.ComponentType<ISubmissionReadProps & ISub
           courseLateDayCreditsAllowable={null}
           isCourseAdmin={false}
           graders={[]}
+          addLateDayCreditComment={this.addLateDayCreditComment}
         />
       );
     }

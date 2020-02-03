@@ -972,6 +972,32 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     return newSubmission;
   };
 
+  public addLateDayCreditComment = (lateDayCreditsUsed: number) => {
+    if (this.state.files.length === 0) {
+      return;
+    }
+
+    const firstFile = this.state.files[0];
+
+    const lateDayCreditComment: CommentType = {
+      startLine: 0,
+      endLine: 0,
+      startChar: 0,
+      endChar: 1,
+      id: this.state.commentCounter,
+      file: firstFile.id,
+      pointDelta: 0.0,
+      text: `${lateDayCreditsUsed} late day credits.`,
+      rubricComment: null,
+      author: this.props.user.email,
+      feedback: 0,
+      color: '#fabe58',
+      tags: ['late days'],
+    };
+
+    this.addComment(lateDayCreditComment, firstFile);
+  };
+
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType) => {
     const comments = CodeConsole.addCommentToState(this.state.comments, comment, file);
@@ -1647,6 +1673,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               graders={this.state.graders}
               isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
               updateGrader={this.updateGrader}
+              addLateDayCreditComment={this.addLateDayCreditComment}
             />,
             <TestsMenu
               key="tests-menu"
@@ -2032,6 +2059,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             graders={this.state.graders}
             isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
             updateGrader={this.updateGrader}
+            addLateDayCreditComment={this.addLateDayCreditComment}
           />,
           <TestsMenu
             key="tests-menu"
