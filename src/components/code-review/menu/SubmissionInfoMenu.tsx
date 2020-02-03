@@ -73,7 +73,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
 
         let useLateDayCredits;
 
-        if (props.courseLateDayCreditsAllowable !== null) {
+        if (props.courseLateDayCreditsAllowable !== null && isLate) {
           const onChange = async (val: any) => {
             const success = await props.addLateDayCreditComment(val);
             if (success) {
