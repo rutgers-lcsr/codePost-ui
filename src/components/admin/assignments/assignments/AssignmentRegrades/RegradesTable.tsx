@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 
-import { Divider, Dropdown, Icon, Input, Menu, Modal, Table, Tag, Typography } from 'antd';
+import { Divider, Dropdown, Icon, Input, Menu, message, Modal, Table, Tag, Typography } from 'antd';
 
 /* codePost imports */
-import { AssignmentType } from '../../../../../infrastructure/assignment';
+import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
 import { AnonymousSubmissionInfoType, SubmissionType } from '../../../../../infrastructure/submission';
+import RegradeInstructionsModal from './RegradeInstructionsModal';
 
 import { UserType } from '../../../../../infrastructure/user';
 
@@ -49,6 +50,8 @@ const RegradesTable = (props: IRegradesTableProps) => {
   );
   const [responseText, setResponseText] = useState('');
   const [modalReadOnly, setModalReadOnly] = useState(true);
+
+  const [instructionsModalVisible, setInstructionsModalVisible] = useState(false);
 
   // *********************** STATE CHANGE FUNCTIONS *************************
   const toggleModal = (readOnly: boolean, submission?: SubmissionType | AnonymousSubmissionInfoType) => {
@@ -103,6 +106,28 @@ const RegradesTable = (props: IRegradesTableProps) => {
     toggleModal(true, undefined);
   };
 
+  const openInstructionsModal = () => {
+    setInstructionsModalVisible(true);
+  };
+
+  const closeInstructionsModal = () => {
+    setInstructionsModalVisible(false);
+  };
+
+  const saveInstructions = async (instructions: string) => {
+    const payload = {
+      id: props.assignment.id,
+      regradeInstructions: instructions,
+    };
+
+    try {
+      await Assignment.update(payload);
+      message.success('Successfully updated instructions!');
+      closeInstructionsModal();
+    } catch (err) {
+      // unsuccessful
+    }
+  };
   // *********************** TABLE HELPER FUNCTIONS *************************
   const getResponseStatus = (submission: SubmissionType | AnonymousSubmissionInfoType) => {
     if (submission.questionResponder !== props.user.email || !submission.questionIsOpen) {
@@ -336,6 +361,20 @@ const RegradesTable = (props: IRegradesTableProps) => {
 
   return (
     <div>
+      <CPButton
+        cpType="secondary"
+        icon="info-circle"
+        style={{ marginBottom: 10, marginRight: 10 }}
+        onClick={openInstructionsModal}
+      >
+        Edit Instructions
+      </CPButton>
+      <RegradeInstructionsModal
+        visible={instructionsModalVisible}
+        instructions={props.assignment.regradeInstructions}
+        cancel={closeInstructionsModal}
+        save={saveInstructions}
+      />
       <CPButton cpType="secondary" icon="reload" style={{ marginBottom: 10 }} onClick={props.refreshCourseData}>
         Refresh Data
       </CPButton>
