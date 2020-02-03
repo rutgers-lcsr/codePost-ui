@@ -973,7 +973,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     return newSubmission;
   };
 
-  public addLateDayCreditComment = (lateDayCreditsUsed: number) => {
+  public addLateDayCreditComment = async (lateDayCreditsUsed: number) => {
     // -- Add a LateDayCredit Comment --
     //
     // * Clear the submission of all other comments tagged with 'late days'
@@ -1006,7 +1006,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 \`\`\`
 Days late:                 ${daysLate}
 Days late (after credit):  ${daysLateAfterCredit}
-Credits remaining:         2
 \`\`\`
 `;
 
@@ -1025,24 +1024,35 @@ Credits remaining:         2
       tags: ['late days'],
     };
 
-    // Clear previous LateDay comments
-    for (const fileID of Object.keys(this.state.comments)) {
-      const promises = this.state.comments[+fileID].map(async (comment: CommentType) => {
-        if (comment.tags !== undefined && comment.tags.includes('late days')) {
-          await this.deleteComment(comment);
-        }
-      });
-    }
-
     const submissionPayload = {
       id: this.state.submission!.id,
       lateDayCreditsUsed,
     };
 
-    Submission.update(submissionPayload);
-    this.addComment(lateDayCreditComment, firstFile);
-    this.saveComment(lateDayCreditComment);
-    this.setState({ activeCommentID: undefined });
+    try {
+      await Submission.update(submissionPayload);
+
+      let promises: Promise<any>[] = [];
+      // Clear previous LateDay comments
+      for (const fileID of Object.keys(this.state.comments)) {
+        promises = [
+          ...promises,
+          ...this.state.comments[+fileID].map(async (comment: CommentType) => {
+            if (comment.tags !== undefined && comment.tags.includes('late days')) {
+              await this.deleteComment(comment);
+            }
+          }),
+        ];
+      }
+
+      await Promise.all(promises);
+
+      this.addComment(lateDayCreditComment, firstFile);
+      this.saveComment(lateDayCreditComment);
+      this.setState({ activeCommentID: undefined });
+    } catch (err) {
+      // console.log('err', err);
+    }
   };
 
   // Usually adds a blank comment to the submission state
