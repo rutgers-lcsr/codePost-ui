@@ -12,40 +12,39 @@ import { FormComponentProps } from 'antd/lib/form';
 /* other library imports */
 import moment from 'moment-timezone';
 
+import { RouteComponentProps } from 'react-router';
+
 /* codePost imports */
 import CPButton from '../../../../components/core/CPButton';
 
-import AssignmentSetupDialog from './AssignmentSetupDialog';
+import { AssignmentType } from '../../../../infrastructure/types';
 
-import { CourseType, AssignmentType } from '../../../../infrastructure/types';
+import { encodeForLink } from '../../../core/URLutils';
 
 /**********************************************************************************************************************/
 
 interface IProps {
   assignments: AssignmentType[];
-  hasStudents: boolean;
   createAssignment: (
     assignmentName: string,
     assignmentPoints: number,
     upload: boolean,
     dueDate?: string,
   ) => Promise<AssignmentType>;
-  course: CourseType;
+  baseURL: string;
+  timezone: string;
 }
 
 interface IState {
   dialogVisible: boolean;
   studentsCanUpload: boolean;
   isLoading: boolean;
-  setupMode: boolean;
-  newAssignment?: AssignmentType;
 }
 
-class NewAssignmentDialog extends React.Component<IProps, {}> {
+class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, {}> {
   public state: Readonly<IState> = {
     dialogVisible: false,
     studentsCanUpload: false,
-    setupMode: false,
     isLoading: false,
   };
 
@@ -80,12 +79,15 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
         values.uploadDueDate,
       );
 
-      // options: only show if (a) first assignment and/or (b) no students and/or (c) no submissions
+      this.setState({ dialogVisible: false, isLoading: false });
+
+      // NOTE: in the future, we could decide to only show this onboarding modal if we think
+      // the admin is "new". Some heuristics:
+      //    * first assignment created
+      //    * no studetns
+      //    * no submissions in course
       if (true) {
-        this.setState({ setupMode: true, newAssignment, isLoading: true });
-      } else {
-        form.resetFields();
-        this.setState({ dialogVisible: false, isLoading: false });
+        this.props.history.push(`${this.props.baseURL}/${encodeForLink(values.name)}/onboarding`);
       }
     });
   };
@@ -108,26 +110,17 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
         <CPButton onClick={this.toggleDialog} cpType="primary" icon="plus-circle">
           Add assignment
         </CPButton>
-        {this.state.setupMode ? (
-          <AssignmentSetupDialog
-            assignment={this.state.newAssignment!}
-            hasStudents={this.props.hasStudents}
-            course={this.props.course}
-            onClose={this.reset}
-          />
-        ) : (
-          <CollectionCreateForm
-            wrappedComponentRef={this.saveFormRef}
-            visible={this.state.dialogVisible}
-            onCancel={this.toggleDialog}
-            onCreate={this.handleCreate}
-            assignments={this.props.assignments}
-            toggleStudentUpload={this.toggleStudentUpload}
-            studentsCanUpload={this.state.studentsCanUpload}
-            timezone={this.props.course.timezone}
-            loading={this.state.isLoading}
-          />
-        )}
+        <CollectionCreateForm
+          wrappedComponentRef={this.saveFormRef}
+          visible={this.state.dialogVisible}
+          onCancel={this.toggleDialog}
+          onCreate={this.handleCreate}
+          assignments={this.props.assignments}
+          toggleStudentUpload={this.toggleStudentUpload}
+          studentsCanUpload={this.state.studentsCanUpload}
+          timezone={this.props.timezone}
+          loading={this.state.isLoading}
+        />
       </div>
     );
   }

@@ -347,8 +347,8 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         key={1}
         assignments={this.props.assignments}
         createAssignment={this.createAssignment}
-        course={this.props.currentCourse}
-        hasStudents={this.props.students.length > 0}
+        timezone={this.props.currentCourse.timezone}
+        {...this.props}
       />,
       <Link to={`${this.props.baseURL}/download/grades`}>
         <CPButton
@@ -763,8 +763,9 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
               key={1}
               assignments={this.props.assignments}
               createAssignment={this.props.createAssignment}
-              course={this.props.currentCourse}
-              hasStudents={this.props.students.length > 0}
+              baseURL={this.props.baseURL}
+              timezone={this.props.currentCourse.timezone}
+              {...this.props}
             />
           </Empty>
         }
