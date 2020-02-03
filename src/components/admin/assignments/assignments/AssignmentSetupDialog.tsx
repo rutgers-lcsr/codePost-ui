@@ -95,7 +95,10 @@ const AssignmentSetupDialog = (props: IProps) => {
       onCancel={props.onClose}
       onOk={props.onClose}
     >
-      <b>Now that your assignment has been created, here are some next steps.</b>
+      <b>
+        Now that your assignment has been created, here are some next steps. You can access this list from this
+        assignment's "Actions" menu by selecting "Get started".
+      </b>
       <br />
       <br />
       {options}
