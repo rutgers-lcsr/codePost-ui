@@ -132,13 +132,7 @@ const Normal = (props: IUploadFormProps) => {
       <Switch checked={zipMode} onChange={onChange} /> <span> Upload Zip File</span>
       <br />
       <br />
-      <Dragger
-        showUploadList={false}
-        directory={!zipMode}
-        multiple={false}
-        beforeUpload={beforeUpload}
-        accept={zipMode ? 'zip' : undefined}
-      >
+      <Dragger showUploadList={false} directory={true} multiple={false} beforeUpload={beforeUpload}>
         <p className="ant-upload-drag-icon">
           <Icon type="inbox" />
         </p>
