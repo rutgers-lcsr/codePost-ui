@@ -8,13 +8,15 @@ import React, { useEffect, useState } from 'react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
-import { Button, Layout, Menu, Modal, Spin } from 'antd';
+import { Button, Layout, Menu, Modal, Spin, Tag } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 import { AssignmentStudent, AssignmentStudentType } from '../../infrastructure/assignment';
 import { File } from '../../infrastructure/file';
 
 import ReactMarkdown from 'react-markdown';
+
+// import { Document, Page } from 'react-pdf';
 
 const { Sider, Content } = Layout;
 
@@ -58,47 +60,63 @@ function ViewUpload(props: IProps) {
     </Button>
   );
 
+  let content;
+
+  if (!loadComplete) {
+    content = <Spin />;
+  } else if (files.length === 0) {
+    content = <div>No files for this submission</div>;
+  } else {
+    let fileContent;
+
+    if (File.codeType(files[parseInt(currentIndex, 10)]) === 'image') {
+      fileContent = <ReactMarkdown>{'![](' + files[parseInt(currentIndex, 10)].code + ')'}</ReactMarkdown>;
+    } else if (File.codeType(files[parseInt(currentIndex, 10)]) === 'pdf') {
+      fileContent = (
+        <div style={{ padding: '30px', textAlign: 'center' }}>
+          <Tag>PDF preview coming soon...</Tag>
+        </div>
+      );
+    } else {
+      fileContent = (
+        <SyntaxHighlighter
+          language={File.language(files[parseInt(currentIndex, 10)])}
+          style={googlecode}
+          showLineNumbers={true}
+          wrapLines={true}
+        >
+          {files[parseInt(currentIndex, 10)].code}
+        </SyntaxHighlighter>
+      );
+    }
+
+    content = (
+      <div>
+        <Layout>
+          <Sider theme="light">
+            <Menu selectedKeys={[currentIndex]} mode="inline" onClick={changeIndex}>
+              {files.map((file, index) => {
+                const pathName = `${file.path ? `${file.path}/` : ''}`;
+                return (
+                  <Menu.Item key={index.toString()} style={{ height: 'fit-content', minHeight: 40 }}>
+                    <div style={{ lineHeight: pathName ? 1.5 : 3, marginTop: 4 }}>
+                      <div style={{ fontSize: 10, fontStyle: 'italic', whiteSpace: 'normal' }}>{pathName}</div>
+                      <div>{file.name}</div>
+                    </div>
+                  </Menu.Item>
+                );
+              })}
+            </Menu>
+          </Sider>
+          <Content style={{ maxHeight: '70vh', overflow: 'auto' }}>{fileContent}</Content>
+        </Layout>
+      </div>
+    );
+  }
+
   return (
     <Modal visible={props.isVisible} title="Submitted Files" onCancel={props.onCancel} footer={[cancel]} width={1100}>
-      {!loadComplete ? (
-        <Spin />
-      ) : files.length === 0 ? (
-        <div>No files for this submission</div>
-      ) : (
-        <div>
-          <Layout>
-            <Sider theme="light">
-              <Menu selectedKeys={[currentIndex]} mode="inline" onClick={changeIndex}>
-                {files.map((file, index) => {
-                  const pathName = `${file.path ? `${file.path}/` : ''}`;
-                  return (
-                    <Menu.Item key={index.toString()} style={{ height: 'fit-content', minHeight: 40 }}>
-                      <div style={{ lineHeight: pathName ? 1.5 : 3, marginTop: 4 }}>
-                        <div style={{ fontSize: 10, fontStyle: 'italic', whiteSpace: 'normal' }}>{pathName}</div>
-                        <div>{file.name}</div>
-                      </div>
-                    </Menu.Item>
-                  );
-                })}
-              </Menu>
-            </Sider>
-            <Content style={{ maxHeight: '70vh', overflow: 'auto' }}>
-              {File.codeType(files[parseInt(currentIndex, 10)]) === 'image' ? (
-                <ReactMarkdown>{'![](' + files[parseInt(currentIndex, 10)].code + ')'}</ReactMarkdown>
-              ) : (
-                <SyntaxHighlighter
-                  language={File.language(files[parseInt(currentIndex, 10)])}
-                  style={googlecode}
-                  showLineNumbers={true}
-                  wrapLines={true}
-                >
-                  {files[parseInt(currentIndex, 10)].code}
-                </SyntaxHighlighter>
-              )}
-            </Content>
-          </Layout>
-        </div>
-      )}
+      {content}
     </Modal>
   );
 }
