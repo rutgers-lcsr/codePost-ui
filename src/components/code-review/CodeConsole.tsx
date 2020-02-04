@@ -61,6 +61,7 @@ import { openSubmissionInSameTab } from '../admin/other/AdminUtils';
 import { sendSlack } from '../core/slack';
 
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+import { getDaysLate } from '../utils/LateDays';
 
 import { fetchTestData, TestCasesByCategory, StudentTestCasesByCategory } from '../core/testFetchUtils';
 
@@ -972,6 +973,90 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     return newSubmission;
   };
 
+  public addLateDayCreditComment = async (lateDayCreditsUsed: number) => {
+    // -- Add a LateDayCredit Comment --
+    //
+    // * Clear the submission of all other comments tagged with 'late days'
+    // * Update Submission.lateDayCreditsUsed
+    // * Add, save the template comment
+    // * Unfocus the new comment
+
+    if (this.state.course === undefined || this.state.course.lateDayCreditsAllowable === null) {
+      return;
+    }
+
+    if (this.state.assignment === undefined || !this.state.assignment.allowStudentUpload) {
+      return;
+    }
+
+    if (this.state.submission === undefined) {
+      return;
+    }
+
+    if (this.state.files.length === 0) {
+      return;
+    }
+
+    const firstFile = this.state.files[0];
+
+    const daysLate = getDaysLate(this.state.assignment, this.state.submission);
+    const daysLateAfterCredit = daysLate - lateDayCreditsUsed;
+
+    const text = `**${lateDayCreditsUsed} Late Day Credit${lateDayCreditsUsed === 1 ? '' : 's'} Used**
+
+\`\`\`
+Days late:                 ${daysLate}
+Days late (after credit):  ${daysLateAfterCredit}
+\`\`\`
+`;
+
+    const lateDayCreditComment: CommentType = {
+      startLine: 0,
+      endLine: 0,
+      startChar: 0,
+      endChar: 1,
+      id: this.state.commentCounter,
+      file: firstFile.id,
+      pointDelta: 0.0,
+      text,
+      rubricComment: null,
+      author: this.props.user.email,
+      feedback: 0,
+      tags: ['late days'],
+    };
+
+    const submissionPayload = {
+      id: this.state.submission!.id,
+      lateDayCreditsUsed,
+    };
+
+    try {
+      await Submission.update(submissionPayload);
+
+      let promises: Promise<any>[] = [];
+      // Clear previous LateDay comments
+      for (const fileID of Object.keys(this.state.comments)) {
+        promises = [
+          ...promises,
+          ...this.state.comments[+fileID].map(async (comment: CommentType) => {
+            if (comment.tags !== undefined && comment.tags.includes('late days')) {
+              await this.deleteComment(comment);
+            }
+          }),
+        ];
+      }
+
+      await Promise.all(promises);
+
+      this.addComment(lateDayCreditComment, firstFile);
+      this.saveComment(lateDayCreditComment);
+      this.setState({ activeCommentID: undefined });
+      return true;
+    } catch (err) {
+      return false;
+    }
+  };
+
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType) => {
     const comments = CodeConsole.addCommentToState(this.state.comments, comment, file);
@@ -1643,9 +1728,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
               title="Submission Info"
               assignment={this.state.assignment!}
               submission={this.state.submission!}
+              courseLateDayCreditsAllowable={this.state.course!.lateDayCreditsAllowable}
               graders={this.state.graders}
               isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
               updateGrader={this.updateGrader}
+              addLateDayCreditComment={this.addLateDayCreditComment}
             />,
             <TestsMenu
               key="tests-menu"
@@ -2026,10 +2113,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             key="submission-info"
             title="Submission Info"
             assignment={this.state.assignment}
+            courseLateDayCreditsAllowable={this.state.course!.lateDayCreditsAllowable}
             submission={this.state.submission!}
             graders={this.state.graders}
             isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
             updateGrader={this.updateGrader}
+            addLateDayCreditComment={this.addLateDayCreditComment}
           />,
           <TestsMenu
             key="tests-menu"

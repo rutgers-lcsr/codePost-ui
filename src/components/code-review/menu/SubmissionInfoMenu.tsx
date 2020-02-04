@@ -6,10 +6,11 @@
 import React, { useState } from 'react';
 
 /* antd imports */
-import { Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tag, Typography } from 'antd';
+import { Alert, Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tabs, Tag, Typography } from 'antd';
 
 /* other library imports */
 import moment from 'moment';
+import ReactMarkdown from 'react-markdown';
 
 /* codePost imports */
 import { AssignmentType } from '../../../infrastructure/assignment';
@@ -45,27 +46,89 @@ interface ISubmissionReadProps {
 interface ISubmissionInfoWriteProps {
   graders: string[];
   isCourseAdmin: boolean;
+  courseLateDayCreditsAllowable: number | null;
   updateGrader: (
     submission: AnonymousSubmissionType,
     graderUsername: string | undefined,
   ) => Promise<AnonymousSubmissionType>;
+  addLateDayCreditComment: any;
 }
 
 const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
+  const [lateDaySelectValue, setLateDaySelectValue] = React.useState(
+    props.submission !== undefined ? props.submission.lateDayCreditsUsed : 0,
+  );
+
   let submitted;
   if (props.submission !== undefined) {
     if (props.submission) {
-      const isLate =
-        props.assignment.uploadDueDate &&
-        Date.parse(props.submission.dateUploaded) > Date.parse(props.assignment.uploadDueDate);
-      submitted = (
-        <span>
-          Uploaded: <CodePostDate datetime={props.submission.dateUploaded} />{' '}
-          {isLate ? <Tag color="volcano">LATE</Tag> : ''}
-        </span>
-      );
+      if (props.assignment.uploadDueDate) {
+        const isLate = Date.parse(props.submission.dateUploaded) > Date.parse(props.assignment.uploadDueDate);
+
+        const uploaded = moment(props.submission.dateUploaded);
+        const due = moment(props.assignment.uploadDueDate);
+        const daysLate = uploaded.diff(due, 'days') + 1;
+
+        let useLateDayCredits;
+
+        if (props.courseLateDayCreditsAllowable !== null && isLate) {
+          const onChange = async (val: any) => {
+            const success = await props.addLateDayCreditComment(val);
+            if (success) {
+              setLateDaySelectValue(val);
+            }
+          };
+
+          // @ts-ignore
+          const arr = [...Array(props.courseLateDayCreditsAllowable).keys(), props.courseLateDayCreditsAllowable];
+          const content = (
+            <div>
+              <span>Use</span>
+              <span style={{ margin: '0px 4px' }}>
+                <Select
+                  onChange={onChange}
+                  value={lateDaySelectValue}
+                  size="small"
+                  style={{ width: 50 }}
+                  disabled={props.submission.isFinalized}
+                >
+                  {arr.map((index: number) => {
+                    return <Select.Option value={index.toString()}>{index}</Select.Option>;
+                  })}
+                </Select>
+              </span>
+              <span>Late Day Credits</span>
+            </div>
+          );
+
+          useLateDayCredits = (
+            <div className="submission-info__late-day-credits">
+              <Alert message={content} type="warning" />
+            </div>
+          );
+        }
+
+        submitted = (
+          <div>
+            <div>
+              Uploaded: <CodePostDate datetime={props.submission.dateUploaded} />{' '}
+            </div>
+            <div>
+              Due: <CodePostDate datetime={props.assignment.uploadDueDate} />{' '}
+              {isLate ? (
+                <Tag color="volcano">
+                  LATE {daysLate} {daysLate === 1 ? 'DAY' : 'DAYS'}
+                </Tag>
+              ) : (
+                ''
+              )}
+            </div>
+            {useLateDayCredits}
+          </div>
+        );
+      }
     }
   }
 
@@ -116,13 +179,19 @@ const makeReadOnly = (Component: React.ComponentType<ISubmissionReadProps & ISub
       return Promise.resolve(submission);
     };
 
+    public addLateDayCreditComment = (lateDayCreditsUsed: number) => {
+      return;
+    };
+
     public render() {
       return (
         <Component
           {...(this.props as ISubmissionReadProps)}
           updateGrader={this.updateGrader}
+          courseLateDayCreditsAllowable={null}
           isCourseAdmin={false}
           graders={[]}
+          addLateDayCreditComment={this.addLateDayCreditComment}
         />
       );
     }
@@ -441,6 +510,17 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
           </div>
         );
       }
+
+      const instructions = (
+        <div>
+          {props.assignment.regradeInstructions === '' ? null : (
+            <div style={{ marginBottom: '12px' }}>
+              <ReactMarkdown>{props.assignment.regradeInstructions}</ReactMarkdown>
+            </div>
+          )}
+          <div style={{ fontWeight: 600 }}>{deadline}</div>
+        </div>
+      );
       return (
         <div>
           <div style={buttonStyle}>
@@ -454,10 +534,20 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
             title="Submit a question or regrade request"
             footer={[cancelButton, submitButton]}
           >
-            <Text type="warning" style={{ marginBottom: 15 }}>
-              {deadline}
-            </Text>
-            <TextArea autosize={{ minRows: 4, maxRows: 8 }} value={questionText} onChange={changeQuestionText} />
+            <Alert message={instructions} type="info" />
+            <br />
+            <Tabs defaultActiveKey="1">
+              <Tabs.TabPane key="1" tab="Write">
+                <Input.TextArea
+                  defaultValue={questionText}
+                  onChange={changeQuestionText}
+                  autosize={{ minRows: 10, maxRows: 16 }}
+                />
+              </Tabs.TabPane>
+              <Tabs.TabPane key="2" tab="Preview">
+                <ReactMarkdown>{questionText}</ReactMarkdown>
+              </Tabs.TabPane>
+            </Tabs>
             {props.assignment.allowRegradeRequests ? (
               <div style={{ paddingTop: 15, ...regradeTextStyle }}>
                 Ask for a regrade: <Switch disabled={false} checked={questionIsRegrade} onChange={toggleIsRegrade} />
