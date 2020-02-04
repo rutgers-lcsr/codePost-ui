@@ -107,9 +107,11 @@ const Normal = (props: IUploadFormProps) => {
       file2.txt
   \`\`\``;
 
-  const beforeUpload = zipMode
-    ? beforeUploadZip(props.rawFiles, props.setRawFiles)
-    : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+  const beforeUpload = beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+
+  // const beforeUpload = zipMode
+  //   ? beforeUploadZip(props.rawFiles, props.setRawFiles)
+  //   : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
 
   const onChange = (checked: boolean) => {
     setZipMode(checked);
@@ -155,9 +157,10 @@ const Normal = (props: IUploadFormProps) => {
 
 const Canvas = (props: IUploadFormProps) => {
   const [zipMode, setZipMode] = React.useState(false);
-  const beforeUpload = zipMode
-    ? beforeUploadZip(props.rawFiles, props.setRawFiles)
-    : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+  const beforeUpload = beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+  // const beforeUpload = zipMode
+  //   ? beforeUploadZip(props.rawFiles, props.setRawFiles)
+  //   : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
 
   const onChange = (checked: boolean) => {
     setZipMode(checked);
@@ -281,9 +284,10 @@ You can also fork \`canvas_to_codePost_manual.py\` [here](https://github.com/cod
 
 const Brightspace = (props: IUploadFormProps) => {
   const [zipMode, setZipMode] = React.useState(false);
-  const beforeUpload = zipMode
-    ? beforeUploadZip(props.rawFiles, props.setRawFiles)
-    : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+  const beforeUpload = beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+  // const beforeUpload = zipMode
+  //   ? beforeUploadZip(props.rawFiles, props.setRawFiles)
+  //   : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
 
   const onChange = (checked: boolean) => {
     setZipMode(checked);
@@ -345,9 +349,10 @@ You can also fork \`brightspace_to_codepost_manual.py\` [here](https://github.co
 
 const Blackboard = (props: IUploadFormProps) => {
   const [zipMode, setZipMode] = React.useState(false);
-  const beforeUpload = zipMode
-    ? beforeUploadZip(props.rawFiles, props.setRawFiles)
-    : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+  const beforeUpload = beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+  // const beforeUpload = zipMode
+  //   ? beforeUploadZip(props.rawFiles, props.setRawFiles)
+  //   : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
 
   const onChange = (checked: boolean) => {
     setZipMode(checked);
@@ -412,9 +417,10 @@ You can also fork \`blackboard_to_codepost_manual.py\` [here](https://github.com
 
 const GitHub = (props: IUploadFormProps) => {
   const [zipMode, setZipMode] = React.useState(false);
-  const beforeUpload = zipMode
-    ? beforeUploadZip(props.rawFiles, props.setRawFiles)
-    : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+  const beforeUpload = beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+  // const beforeUpload = zipMode
+  //   ? beforeUploadZip(props.rawFiles, props.setRawFiles)
+  //   : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
 
   const onChange = (checked: boolean) => {
     setZipMode(checked);
@@ -482,9 +488,10 @@ Upload a folder with the following file structure.
   \`\`\``;
 
   const [zipMode, setZipMode] = React.useState(false);
-  const beforeUpload = zipMode
-    ? beforeUploadZip(props.rawFiles, props.setRawFiles)
-    : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+  const beforeUpload = beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+  // const beforeUpload = zipMode
+  //   ? beforeUploadZip(props.rawFiles, props.setRawFiles)
+  //   : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
 
   const onChange = (checked: boolean) => {
     setZipMode(checked);
