@@ -365,7 +365,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
           });
 
           if (reMatch) {
-            reMatch.students.filter((el) => {
+            reMatch.students = reMatch.students.filter((el) => {
               return !this.isEqual(el, student);
             });
           } else {
