@@ -96,7 +96,7 @@ interface IState {
   uploadMap: { [student: string]: UPLOAD_STATUS };
 
   /* Used to store the contents of files */
-  fileMap: { [fileName: string]: string | ArrayBuffer | null };
+  fileMap: { [submitters: string]: { [fileName: string]: string | ArrayBuffer | null } };
 
   /* stores progress */
   status: STATUS;
@@ -225,12 +225,24 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     const submissions = this.state.protoSubmissions;
 
     submissions.map(async (submission, index: number) => {
+      const submitters = submission.students.join(',');
       for (const file of submission.files) {
         try {
-          const outputFiles = await readUploadedFile(file);
-          outputFiles.map((outputFile: IProtoFileUpload) => {
-            this.setState({ fileMap: { ...this.state.fileMap, [outputFile.longname]: outputFile.data } });
-          });
+          if (file.type === 'application/zip' || ['.zip'].includes(file.name)) {
+            const outputFiles = await readUploadedFile(file);
+
+            outputFiles.map((outputFile: IProtoFileUpload) => {
+              const fullName = `anydirname/${submission.students.join(',')}/${outputFile.longname}`;
+              const subfiles = { ...this.state.fileMap[submitters], [fullName]: outputFile.data };
+              this.setState({ fileMap: { ...this.state.fileMap, [submitters]: subfiles } });
+            });
+          } else {
+            const outputFiles = await readUploadedFile(file);
+            outputFiles.map((outputFile: IProtoFileUpload) => {
+              const subfiles = { ...this.state.fileMap[submitters], [outputFile.longname]: outputFile.data };
+              this.setState({ fileMap: { ...this.state.fileMap, [submitters]: subfiles } });
+            });
+          }
         } catch (e) {
           this.setState({ errorPaths: [...this.state.errorPaths, e], status: STATUS.FILE_ERROR });
         }
@@ -242,8 +254,12 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     const { fileMap, numFiles, overwriteMode } = this.state;
 
     const readFiles = Object.keys(fileMap).reduce((acc, el) => {
-      const toAdd = typeof fileMap[el] === 'undefined' ? 0 : 1;
-      return acc + toAdd;
+      const subTotal = Object.keys(fileMap[el]).reduce((acc2: any, el2: any) => {
+        const toAdd = typeof fileMap[el][el2] === 'undefined' ? 0 : 1;
+        return acc2 + toAdd;
+      }, 0);
+
+      return acc + subTotal;
     }, 0);
 
     if (readFiles === numFiles) {
@@ -271,24 +287,24 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     // tslint:enable
     const promises = toUpload.map((submission) => {
       const files: any[] = [];
-      submission.files.forEach((file: any) => {
-        let path: string = file.webkitRelativePath;
-        let fileName: string = file.name;
-        if (file.webkitRelativePath === '') {
-          path = file.name;
-          fileName = file.name.split('/').slice(-1)[0];
-        }
-        // const pathDirs = file.webkitRelativePath.split('/');
-        const pathDirs = path.split('/');
-        // Want to ignore first (root dir, student email) two and last element (file name) of split
-        const filePath = pathDirs.length > 3 ? pathDirs.slice(2, pathDirs.length - 1).join('/') : null;
-        const payload = {
-          name: fileName,
-          data: fileMap[path],
-          path: filePath,
-        };
-        files.push(payload);
-      });
+
+      const submitter = submission.students.join(',');
+
+      if (fileMap.hasOwnProperty(submitter)) {
+        Object.keys(fileMap[submitter]).forEach((fullname: string) => {
+          const path = fullname;
+          const fileName = fullname.split('/').slice(-1)[0];
+          const pathDirs = path.split('/');
+          // Want to ignore first (root dir, student email) two and last element (file name) of split
+          const filePath = pathDirs.length > 3 ? pathDirs.slice(2, pathDirs.length - 1).join('/') : null;
+          const payload = {
+            name: fileName,
+            data: fileMap[submitter][path],
+            path: filePath,
+          };
+          files.push(payload);
+        });
+      }
       return this.props
         .uploadSubmission(this.props.assignment, submission.students, files)
         .then((newSub) => {
@@ -873,8 +889,12 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         break;
       case STATUS.READING:
         const readFiles = Object.keys(this.state.fileMap).reduce((acc, el) => {
-          const toAdd = typeof this.state.fileMap[el] === 'undefined' ? 0 : 1;
-          return acc + toAdd;
+          const subTotal = Object.keys(this.state.fileMap[el]).reduce((acc2: any, el2: any) => {
+            const toAdd = typeof this.state.fileMap[el][el2] === 'undefined' ? 0 : 1;
+            return acc2 + toAdd;
+          }, 0);
+
+          return acc + subTotal;
         }, 0);
         content = (
           <div>
