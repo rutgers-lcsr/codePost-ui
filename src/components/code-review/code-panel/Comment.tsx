@@ -884,7 +884,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
             style={{
               borderColor: this.props.cursored
                 ? 'lightblue'
-                : this.props.comment.tags !== undefined && this.props.comment.tags.includes('late days')
+                : this.props.comment.tags !== undefined && this.props.comment.tags.includes('late')
                 ? '#fffbe6'
                 : this.props.comment.color !== undefined && this.props.comment.color !== null
                 ? this.props.comment.color
@@ -896,7 +896,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
               style={{
                 backgroundColor: this.props.cursored
                   ? 'lightblue'
-                  : this.props.comment.tags !== undefined && this.props.comment.tags.includes('late days')
+                  : this.props.comment.tags !== undefined && this.props.comment.tags.includes('late')
                   ? '#fffbe6'
                   : this.props.comment.color !== undefined && this.props.comment.color !== null
                   ? this.props.comment.color

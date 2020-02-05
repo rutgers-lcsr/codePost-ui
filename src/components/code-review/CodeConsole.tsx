@@ -976,7 +976,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   public addLateDayCreditComment = async (lateDayCreditsUsed: number) => {
     // -- Add a LateDayCredit Comment --
     //
-    // * Clear the submission of all other comments tagged with 'late days'
+    // * Clear the submission of all other comments tagged with 'late'
     // * Update Submission.lateDayCreditsUsed
     // * Add, save the template comment
     // * Unfocus the new comment
@@ -1022,7 +1022,7 @@ Days late (after credit):  ${daysLateAfterCredit}
       rubricComment: null,
       author: this.props.user.email,
       feedback: 0,
-      tags: ['late days'],
+      tags: ['late'],
     };
 
     const submissionPayload = {
@@ -1039,7 +1039,7 @@ Days late (after credit):  ${daysLateAfterCredit}
         promises = [
           ...promises,
           ...this.state.comments[+fileID].map(async (comment: CommentType) => {
-            if (comment.tags !== undefined && comment.tags.includes('late days')) {
+            if (comment.tags !== undefined && comment.tags.includes('late')) {
               await this.deleteComment(comment);
             }
           }),
