@@ -16,7 +16,10 @@ import { File } from '../../infrastructure/file';
 
 import ReactMarkdown from 'react-markdown';
 
-// import { Document, Page } from 'react-pdf';
+import { Document, Page } from 'react-pdf';
+
+import { pdfjs } from 'react-pdf';
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 const { Sider, Content } = Layout;
 
@@ -30,6 +33,12 @@ function ViewUpload(props: IProps) {
   const [currentIndex, setIndex] = useState('0');
   const [files, setFiles] = useState<any[]>([]);
   const [loadComplete, setLoadComplete] = useState(false);
+
+  const [numPages, setNumPages] = useState<number | null>(null);
+
+  const onDocumentLoadSuccess = (pdf: any) => {
+    setNumPages(pdf.numPages);
+  };
 
   const fetchUpload = async () => {
     if (props.assignment && props.isVisible) {
@@ -72,9 +81,14 @@ function ViewUpload(props: IProps) {
     if (File.codeType(files[parseInt(currentIndex, 10)]) === 'image') {
       fileContent = <ReactMarkdown>{'![](' + files[parseInt(currentIndex, 10)].code + ')'}</ReactMarkdown>;
     } else if (File.codeType(files[parseInt(currentIndex, 10)]) === 'pdf') {
+      const file = files[parseInt(currentIndex, 10)];
       fileContent = (
         <div style={{ padding: '30px', textAlign: 'center' }}>
-          <Tag>PDF preview coming soon...</Tag>
+          <Document file={file.code} onLoadSuccess={onDocumentLoadSuccess}>
+            {Array.from(new Array(numPages), (el, index) => (
+              <Page key={`page_${index + 1}`} pageNumber={index + 1} renderTextLayer={false} />
+            ))}
+          </Document>
         </div>
       );
     } else {
