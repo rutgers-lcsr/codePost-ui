@@ -331,7 +331,6 @@ export const TestDefinitions = (props: IProps) => {
   };
 
   const handleDelete = (testCase: TestCaseType) => {
-    console.log(testCase);
     Modal.confirm({
       title: (
         <span>
