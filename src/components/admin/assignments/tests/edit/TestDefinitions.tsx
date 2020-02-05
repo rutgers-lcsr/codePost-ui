@@ -330,6 +330,23 @@ export const TestDefinitions = (props: IProps) => {
     });
   };
 
+  const handleDelete = (testCase: TestCaseType) => {
+    console.log(testCase);
+    Modal.confirm({
+      title: (
+        <span>
+          Are you sure you want to delete <b>{testCase.description}</b>?
+        </span>
+      ),
+      content: 'This decision cannot be reversed.',
+      onOk() {
+        return new Promise((resolve, reject) => {
+          return resolve(deleteTest(testCase));
+        }).catch(() => console.log('Oops errors!'));
+      },
+    });
+  };
+
   /******************************* State Change Functions  ****************************/
 
   const updateActiveTest = (newActive: TestCaseType | undefined, dontUpdateID?: boolean) => {
@@ -843,6 +860,9 @@ export const TestDefinitions = (props: IProps) => {
                                 childToRender={<span>Duplicate Test</span>}
                               />
                             </Menu.Item>
+                            <Menu.Item style={{ paddingRight: '48px', color: '#f5222d' }}>
+                              <span onClick={handleDelete.bind({}, el)}>Delete Test</span>
+                            </Menu.Item>
                           </Menu>
                         );
                         return (
@@ -883,7 +903,7 @@ export const TestDefinitions = (props: IProps) => {
                 saveTest={saveTest}
                 files={props.solutions}
                 env={props.env}
-                deleteTest={deleteTest}
+                handleDelete={handleDelete}
                 submissions={props.submissions}
                 setTestSubject={setTestSubject}
                 activeSubmission={activeSubmission}

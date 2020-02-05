@@ -31,7 +31,7 @@ interface ITestItemProps {
   currentAssignment: AssignmentType;
   testCase: TestCaseType;
   saveTest: (test: TestCaseType) => Promise<TestCaseType>;
-  deleteTest: (test: TestCaseType) => Promise<void>;
+  handleDelete: (test: TestCaseType) => void;
   files: SolutionFileType[];
   env?: EnvironmentType;
   submissions: SubmissionType[];
@@ -128,22 +128,6 @@ export const TestItem = (props: ITestItemProps) => {
         return;
       }
       runTest(values, testType, explanation, checkReturn, outputIsFile, codeString);
-    });
-  };
-
-  const handleDelete = () => {
-    confirm({
-      title: (
-        <span>
-          Are you sure you want to delete <b>{props.testCase.description}</b>?
-        </span>
-      ),
-      content: 'This decision cannot be reversed.',
-      onOk() {
-        return new Promise((resolve, reject) => {
-          return resolve(props.deleteTest(props.testCase));
-        }).catch(() => console.log('Oops errors!'));
-      },
     });
   };
 
@@ -261,7 +245,7 @@ export const TestItem = (props: ITestItemProps) => {
       env={props.env}
       testCase={props.testCase}
       saveTest={handleCreate}
-      deleteTest={handleDelete}
+      deleteTest={props.handleDelete.bind({}, props.testCase)}
       runTest={handleRun}
       files={props.files}
       wrappedComponentRef={saveFormRef}
