@@ -87,7 +87,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
       showExplanation: false,
       explanation: props.testCase.explanation,
       checkReturn: props.testCase.checkReturn,
-      outputType: 'constant',
+      outputType: this.getOutputFromTestCase(props.testCase),
     };
   }
 
