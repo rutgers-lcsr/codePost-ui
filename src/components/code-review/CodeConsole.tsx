@@ -1011,8 +1011,8 @@ Days late (after credit):  ${daysLateAfterCredit}
 `;
 
     const lateDayCreditComment: CommentType = {
-      startLine: 0,
-      endLine: 0,
+      startLine: 1,
+      endLine: 1,
       startChar: 0,
       endChar: 1,
       id: this.state.commentCounter,
@@ -1465,6 +1465,8 @@ Days late (after credit):  ${daysLateAfterCredit}
     if (this.state.isLoading) {
       return <Loading />;
     }
+
+    console.log('COMMENTS', this.state.comments);
 
     const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
 
