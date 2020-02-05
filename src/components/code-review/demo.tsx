@@ -27,6 +27,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     sortKey: 0,
     anonymousGrading: false,
     allowRegradeRequests: false,
+    regradeInstructions: '',
     regradeDeadline: '',
     hideGradersFromStudents: false,
     mean: null,
@@ -62,6 +63,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     anonymousGradingDefault: false,
     minComments: 0,
     noUnfinalize: false,
+    lateDayCreditsAllowable: null,
     archived: false,
   };
 
@@ -83,6 +85,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     questionDate: '',
     responseDate: '',
     tests: [],
+    lateDayCreditsUsed: 0,
   };
 
   const fileList: FileType[] = [];
@@ -305,6 +308,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     sortKey: 0,
     anonymousGrading: false,
     allowRegradeRequests: false,
+    regradeInstructions: '',
     regradeDeadline: '',
     hideGradersFromStudents: false,
     mean: null,
@@ -340,6 +344,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     anonymousGradingDefault: false,
     minComments: 0,
     noUnfinalize: false,
+    lateDayCreditsAllowable: null,
     archived: false,
   };
 
@@ -361,6 +366,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     questionDate: '',
     responseDate: '',
     tests: [],
+    lateDayCreditsUsed: 0,
   };
 
   const comments = [

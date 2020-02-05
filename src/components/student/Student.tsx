@@ -299,7 +299,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
         <Text>{dueDate}</Text>
         {dueDatePassed ? (
           <span>
-            &nbsp; <Tag color="volcano">PASSED</Tag>
+            &nbsp; <Tag color="volcano">Due date passed</Tag>
           </span>
         ) : null}
       </span>

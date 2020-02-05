@@ -92,6 +92,7 @@ export { default as CrownOutline } from '@ant-design/icons/lib/outline/CrownOutl
 export { default as MoreOutline } from '@ant-design/icons/lib/outline/MoreOutline';
 export { default as FileAddOutline } from '@ant-design/icons/lib/outline/FileAddOutline';
 export { default as CompassOutline } from '@ant-design/icons/lib/outline/CompassOutline';
+export { default as ReloadOutline } from '@ant-design/icons/lib/outline/ReloadOutline';
 
 // Fill Icons
 export { default as PushpinFill } from '@ant-design/icons/lib/fill/PushpinFill';
