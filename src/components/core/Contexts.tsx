@@ -15,6 +15,7 @@ export const defaultCourse: CourseType = {
   anonymousGradingDefault: false,
   minComments: 0,
   noUnfinalize: false,
+  lateDayCreditsAllowable: null,
   archived: false,
 };
 

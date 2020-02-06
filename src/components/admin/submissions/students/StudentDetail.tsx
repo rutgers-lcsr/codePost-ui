@@ -16,6 +16,7 @@ import { Link } from 'react-router-dom';
 /* codePost imports */
 import { openSubmission } from '../../other/AdminUtils';
 
+import { CourseType } from '../../../../infrastructure/course';
 import { AssignmentType, sortAssignments } from '../../../../infrastructure/assignment';
 import { SubmissionType } from '../../../../infrastructure/submission';
 import { FileType } from '../../../../infrastructure/file';
@@ -34,6 +35,7 @@ const confirm = Modal.confirm;
 /**********************************************************************************************************************/
 
 interface IProps {
+  course: CourseType;
   onBack: () => void;
   students: string[];
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
@@ -200,7 +202,7 @@ class StudentDetail extends React.Component<IProps, IState> {
     // });
 
     const aligner: 'left' | 'center' | 'right' = 'center';
-    const columns = [
+    let columns = [
       {
         title: 'Open',
         dataIndex: 'open',
@@ -253,6 +255,15 @@ class StudentDetail extends React.Component<IProps, IState> {
         align: aligner,
       },
     ];
+
+    if (this.props.course !== undefined && this.props.course.lateDayCreditsAllowable !== null) {
+      columns.splice(columns.length - 1, 0, {
+        title: 'Late Day Credits Used',
+        dataIndex: 'lateDayCreditsUsed',
+        key: 'lateDayCreditsUsed',
+        align: aligner,
+      });
+    }
 
     const data = sortAssignments(this.props.assignments).map((assignment) => {
       const submission = this.state.submissionsMap[assignment.id];
@@ -355,6 +366,7 @@ class StudentDetail extends React.Component<IProps, IState> {
         grade: gradeString,
         grader: graderElement,
         status: this.getStatus(submission),
+        lateDayCreditsUsed: submission !== undefined ? submission.lateDayCreditsUsed : '',
         viewed: submission ? this.getViewIcon(submission, this.props.student) : '--',
         actions: (
           <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>

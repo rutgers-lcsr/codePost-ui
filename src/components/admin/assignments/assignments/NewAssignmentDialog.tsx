@@ -12,10 +12,14 @@ import { FormComponentProps } from 'antd/lib/form';
 /* other library imports */
 import moment from 'moment-timezone';
 
+import { RouteComponentProps } from 'react-router';
+
 /* codePost imports */
 import CPButton from '../../../../components/core/CPButton';
 
-import { AssignmentType } from '../../../../infrastructure/assignment';
+import { AssignmentType } from '../../../../infrastructure/types';
+
+import { encodeForLink } from '../../../core/URLutils';
 
 /**********************************************************************************************************************/
 
@@ -27,18 +31,21 @@ interface IProps {
     upload: boolean,
     dueDate?: string,
   ) => Promise<AssignmentType>;
+  baseURL: string;
   timezone: string;
 }
 
 interface IState {
   dialogVisible: boolean;
   studentsCanUpload: boolean;
+  isLoading: boolean;
 }
 
-class NewAssignmentDialog extends React.Component<IProps, {}> {
+class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, {}> {
   public state: Readonly<IState> = {
     dialogVisible: false,
     studentsCanUpload: false,
+    isLoading: false,
   };
 
   private formRef: React.RefObject<FormComponentProps> = React.createRef();
@@ -59,24 +66,42 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
   public handleCreate = () => {
     const formRefCast: any = this.formRef;
     const form = formRefCast.props.form;
-    form.validateFields((err: any, values: any) => {
+    form.validateFields(async (err: any, values: any) => {
       if (err) {
         return;
       }
 
-      this.createNewAssignment(values.name, values.points, this.state.studentsCanUpload, values.uploadDueDate);
-      form.resetFields();
-      this.setState({ dialogVisible: false });
+      this.setState({ isLoading: true });
+      const newAssignment = await this.createNewAssignment(
+        values.name,
+        values.points,
+        this.state.studentsCanUpload,
+        values.uploadDueDate,
+      );
+
+      this.setState({ dialogVisible: false, isLoading: false });
+
+      // NOTE: in the future, we could decide to only show this onboarding modal if we think
+      // the admin is "new". Some heuristics:
+      //    * first assignment created
+      //    * no students
+      //    * no submissions in course
+      if (this.props.assignments.length < 2) {
+        this.props.history.push(`${this.props.baseURL}/${encodeForLink(values.name)}/onboarding`);
+      }
     });
   };
 
   public createNewAssignment = (name: string, points: number, upload: boolean, uploadDueDate: string) => {
-    this.props.createAssignment(name, points, upload, uploadDueDate);
-    this.toggleDialog();
+    return this.props.createAssignment(name, points, upload, uploadDueDate);
   };
 
   public saveFormRef = (formRef: any) => {
     this.formRef = formRef;
+  };
+
+  public reset = () => {
+    this.setState({ dialogVisible: false, isLoading: false, setupMode: false });
   };
 
   public render() {
@@ -94,6 +119,7 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
           toggleStudentUpload={this.toggleStudentUpload}
           studentsCanUpload={this.state.studentsCanUpload}
           timezone={this.props.timezone}
+          loading={this.state.isLoading}
         />
       </div>
     );
@@ -108,6 +134,7 @@ interface IFormProps extends FormComponentProps {
   toggleStudentUpload: () => void;
   studentsCanUpload: boolean;
   timezone: string;
+  loading: boolean;
 }
 
 // FIXME: figure out how to type output of Form.create HOC
@@ -143,7 +170,14 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
       const { visible, onCancel, onCreate, form } = this.props;
       const { getFieldDecorator } = form;
       return (
-        <Modal visible={visible} title="Create an assignment" okText="Create" onCancel={onCancel} onOk={onCreate}>
+        <Modal
+          visible={visible}
+          title="Create an assignment"
+          okText="Create"
+          onCancel={onCancel}
+          onOk={onCreate}
+          confirmLoading={this.props.loading}
+        >
           <Form layout="vertical">
             <Form.Item label="Name">
               {getFieldDecorator('name', {

@@ -62,6 +62,8 @@ import { encodeForLink } from '../../core/URLutils';
 import { openSubmission } from '../other/AdminUtils';
 import BulkSubmissionEdit from './assignments/BulkSubmissionEdit';
 
+import AssignmentSetupDialog from './assignments/AssignmentSetupDialog';
+
 const { Text } = Typography;
 const SubMenu = Menu.SubMenu;
 
@@ -123,6 +125,7 @@ export enum DETAIL_TYPE {
   Drawer,
   DownloadGrades,
   BulkSubmissionEdit,
+  Onboarding,
 }
 
 interface IManageAssignmentsState {
@@ -345,6 +348,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         assignments={this.props.assignments}
         createAssignment={this.createAssignment}
         timezone={this.props.currentCourse.timezone}
+        {...this.props}
       />,
       <Link to={`${this.props.baseURL}/download/grades`}>
         <CPButton
@@ -447,6 +451,12 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
             <Link to={`${this.props.baseURL}/${encodedName}/bulk-edit`}>
               <Icon type="edit" />
               &nbsp; Bulk edit
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="onboarding">
+            <Link to={`${this.props.baseURL}/${encodedName}/onboarding`}>
+              <Icon type="compass" />
+              &nbsp; Get started
             </Link>
           </Menu.Item>
           <Menu.Item key="6">
@@ -681,6 +691,16 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
             />
           );
           break;
+        case DETAIL_TYPE.Onboarding:
+          detailComponent = (
+            <AssignmentSetupDialog
+              course={this.props.currentCourse}
+              hasStudents={this.props.students.length > 0}
+              onClose={cancel}
+              assignment={this.props.activeAssignment}
+            />
+          );
+          break;
       }
     } else if (this.props.detailType) {
       switch (this.props.detailType) {
@@ -743,7 +763,9 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
               key={1}
               assignments={this.props.assignments}
               createAssignment={this.props.createAssignment}
+              baseURL={this.props.baseURL}
               timezone={this.props.currentCourse.timezone}
+              {...this.props}
             />
           </Empty>
         }
