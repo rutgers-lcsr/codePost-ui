@@ -435,7 +435,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     const max_size_bytes = 500000;
 
     return files.map((file: FileType) => {
-      const size_bytes = new TextEncoder().encode(file.code).length;
+      const size_bytes = new Blob([file.code]).size;
 
       const bounce =
         !['.pdf', 'pdf', 'jpg', '.jpg', 'jpeg', '.jpeg', 'png', '.png', 'ipynb', '.ipynb'].includes(file.extension) &&
@@ -1465,8 +1465,6 @@ Days late (after credit):  ${daysLateAfterCredit}
     if (this.state.isLoading) {
       return <Loading />;
     }
-
-    console.log('COMMENTS', this.state.comments);
 
     const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
 
