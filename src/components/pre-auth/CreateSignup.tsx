@@ -446,15 +446,21 @@ class CreateSignup extends React.Component<IProps, IState> {
           <div style={{ marginRight: this.props.windowwidth < 750 ? 0 : 25 }}>
             <Typography.Title level={1}>Sign up as an instructor</Typography.Title>
             <Alert
-              message="Are you a student?"
-              description={
-                <div>
-                  Sign up by <Link to="/signup/join">clicking here</Link>.
+              message={
+                <div style={{ color: 'rgba(0,0,0,0.6)' }}>
+                  <Icon type="info-circle" theme="twoTone" twoToneColor="#bbbbbb" style={{ marginRight: 5 }} />{' '}
+                  <b style={{ fontWeight: 500 }}>Not an instructor?</b> If you're a student, sign up by{' '}
+                  <Link to="/signup/join">clicking here</Link>.
                 </div>
               }
               type="info"
-              showIcon
-              style={{ paddingTop: '10px', paddingBottom: '10px' }}
+              style={{
+                paddingTop: '5px',
+                paddingBottom: '5px',
+                marginBottom: '15px',
+                backgroundColor: '#f7f7f7',
+                borderColor: 'rgba(0,0,0,.05)',
+              }}
             />
             <div style={{ maxWidth: 600 }}>{content}</div>
           </div>
