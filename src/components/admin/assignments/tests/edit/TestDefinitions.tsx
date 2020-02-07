@@ -385,7 +385,7 @@ export const TestDefinitions = (props: IProps) => {
 
     //
     const formatted = {
-      log: response.logs,
+      log: <span style={{ color: '#678CAB' }}>{response.logs}</span>,
       target: activeSubmission ? activeSubmission.students[0] : 'solution code',
       result: RESULT_TYPE.NONE,
       testCaseName: '',

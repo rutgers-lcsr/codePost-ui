@@ -188,7 +188,12 @@ export const TestItem = (props: ITestItemProps) => {
     const result: BasicTestResultType = response.results[0];
 
     const formatted = {
-      log: `${response.logs}\n${result.logs}`,
+      log: (
+        <span>
+          <span style={{ color: '#678CAB' }}>{response.logs}</span>
+          {`\n${result.logs}`}
+        </span>
+      ),
       target: props.activeSubmission ? props.activeSubmission.students[0] : 'solution code',
       result: result.passed ? RESULT_TYPE.PASSED : result.isError ? RESULT_TYPE.ERROR : RESULT_TYPE.FAILED,
       testCaseName: testCase.description,

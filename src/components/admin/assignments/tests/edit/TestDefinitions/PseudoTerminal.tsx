@@ -30,7 +30,7 @@ export enum RESULT_TYPE {
 }
 
 export interface ILogType {
-  log: string;
+  log: string | React.ReactElement;
   result: RESULT_TYPE;
   target: string;
   testCaseName: string;
@@ -136,18 +136,20 @@ export const PseudoTerminal = (props: IResultProps) => {
       <div style={{ paddingBottom: '6px', color: '#A9A9A9' }}>{envSpecText}</div>
       {logs.map((logList, i) => (
         <span key={i}>
-          ___________________________________________________________________________
-          <br />
-          Running...
+          <span style={{ color: '#A9A9A9' }}>
+            ___________________________________________________________________________
+            <br />
+            Running...
+          </span>
           <br />
           <br />
           {logList.length > 1 ? (
             logList.map((log) => (
               <span>
                 {log.testCaseName.length > 0 ? (
-                  <span>
+                  <span style={{ color: '#A9A9A9' }}>
                     ################################################### <br />
-                    Logs: {log.testCaseName}
+                    Result: {log.testCaseName}
                   </span>
                 ) : null}
                 <div style={{ whiteSpace: 'pre-wrap' }}>{log.log}</div>
@@ -174,9 +176,11 @@ export const PseudoTerminal = (props: IResultProps) => {
       ))}
       {props.isRunning ? (
         <div>
-          ___________________________________________________________________________
-          <br />
-          Running...
+          <span style={{ color: '#A9A9A9' }}>
+            ___________________________________________________________________________
+            <br />
+            Running...
+          </span>
         </div>
       ) : null}
     </div>
@@ -275,6 +279,31 @@ export const PseudoTerminal = (props: IResultProps) => {
     </div>
   );
 
+  const colorInfo = (
+    <Tooltip
+      title={
+        <div style={{ padding: 5 }}>
+          <div style={{ fontWeight: 600, color: '#24be85', marginBottom: 5 }}>Color Key:</div>
+          <div style={{ color: 'white', marginBottom: 3 }}>[White] Test logs (shown to student)</div>
+          <div style={{ color: '#678CAB', marginBottom: 3 }}>
+            [Blue] Outputs (only shown to student if "dump outputs" setting is turned on)
+          </div>
+          <div style={{ color: '#A9A9A9' }}>[Grey] System info (never shown to student)</div>
+        </div>
+      }
+      overlayStyle={{ minWidth: 300, backgroundColor: 'rgba(25,25,25,1)' }}
+    >
+      <Icon
+        type="font-colors"
+        style={{
+          padding: '4px 12px',
+          color: 'grey',
+          fontSize: 14,
+        }}
+      />
+    </Tooltip>
+  );
+
   const header = (
     <CPFlex
       style={{
@@ -284,7 +313,7 @@ export const PseudoTerminal = (props: IResultProps) => {
         color: 'rgb(36, 190, 133)',
         borderBottom: '1px solid rgb(101,101,101)',
       }}
-      left={[clear, copy]}
+      left={[clear, copy, colorInfo]}
       right={[selectFile, selectCode, resultTag, runButton]}
       gutterSize={5}
     />
