@@ -98,12 +98,12 @@ export const PseudoTerminal = (props: IResultProps) => {
   /* build pseudo-terminal */
   const scrollToBottom = () => {
     animateScroll.scrollToBottom({
-      containerId: 'pseudoterminal',
+      containerId: 'pseudoterminal-body',
       animate: false,
     });
   };
 
-  React.useEffect(scrollToBottom, [logs]);
+  React.useEffect(scrollToBottom, [logs, props.isRunning]);
 
   let resultTag;
   if (props.log) {
@@ -136,6 +136,8 @@ export const PseudoTerminal = (props: IResultProps) => {
       <div style={{ paddingBottom: '6px', color: '#A9A9A9' }}>{envSpecText}</div>
       {logs.map((logList, i) => (
         <span key={i}>
+          ___________________________________________________________________________
+          <br />
           Running...
           <br />
           <br />
@@ -170,7 +172,13 @@ export const PseudoTerminal = (props: IResultProps) => {
           )}
         </span>
       ))}
-      {props.isRunning ? 'Running...' : null}
+      {props.isRunning ? (
+        <div>
+          ___________________________________________________________________________
+          <br />
+          Running...
+        </div>
+      ) : null}
     </div>
   );
 
