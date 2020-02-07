@@ -13,6 +13,7 @@ import {
   Dropdown,
   Layout,
   Menu,
+  message,
   Popconfirm,
   Icon,
   Empty,
@@ -60,7 +61,7 @@ import { TestItem } from './TestDefinitions/TestItem';
 import { AddCategoryModal } from './TestDefinitions/AddCategoryModal';
 import { AddFileModal } from './TestDefinitions/AddFileModal';
 import { EditObjectModal } from './TestDefinitions/EditObjectModal';
-import { AddTestModal } from './TestDefinitions/AddTestModal';
+import { CategorySelectModal } from './TestDefinitions/CategorySelectModal';
 import CPTooltip from '../../../../core/CPTooltip';
 import { SourceEditor } from './SourceEditor';
 
@@ -243,6 +244,29 @@ export const TestDefinitions = (props: IProps) => {
     updateActiveTest(newTest, true);
   };
 
+  const duplicateTest = async (testToCopy: TestCaseType, category: number) => {
+    const newTestCase = {
+      ...testToCopy,
+      testCategory: category,
+      id: newTestCounter,
+      description: `${testToCopy.description} (2)`,
+    };
+    setNewTestCounter((prevState) => prevState - 1);
+
+    setCasesByCategory((prevState) => {
+      const newCases = { ...prevState };
+      const oldTests = (newCases[newTestCase.testCategory] && casesByCategory[newTestCase.testCategory]) || [];
+      newCases[newTestCase.testCategory] = [...oldTests, newTestCase];
+      return newCases;
+    });
+    updateActiveTest(newTestCase);
+
+    // Save the test. Although a broken I/O test that is duplicated will cause issues, it's more unnatural for users to not realize their duplicated test isn't saved
+    saveTest(newTestCase);
+
+    message.success('Test copied!');
+  };
+
   const addTest = async (language: string | null, category: number, sourceFile?: boolean, name?: string) => {
     const externalOnly = !props.env || !props.env.language;
     // If a language doesn't have native support, default to a bash unit test
@@ -278,7 +302,6 @@ export const TestDefinitions = (props: IProps) => {
     };
     setNewTestCounter((prevState) => prevState - 1);
 
-    // const newTestCase = await saveTest(dummyTestCase);
     setCasesByCategory((prevState) => {
       const newCases = { ...prevState };
       const oldTests = (newCases[dummyTestCase.testCategory] && casesByCategory[dummyTestCase.testCategory]) || [];
@@ -311,6 +334,22 @@ export const TestDefinitions = (props: IProps) => {
         ? newCases[testCase.testCategory].filter((el) => el.id !== testCase.id)
         : [];
       return newCases;
+    });
+  };
+
+  const handleDelete = (testCase: TestCaseType) => {
+    Modal.confirm({
+      title: (
+        <span>
+          Are you sure you want to delete <b>{testCase.description}</b>?
+        </span>
+      ),
+      content: 'This decision cannot be reversed.',
+      onOk() {
+        return new Promise((resolve, reject) => {
+          return resolve(deleteTest(testCase));
+        }).catch(() => console.log('Oops errors!'));
+      },
     });
   };
 
@@ -706,6 +745,23 @@ export const TestDefinitions = (props: IProps) => {
 
       break;
     case DETAIL_TYPE.EditTests:
+      const addTestButton = (
+        <Button
+          style={{
+            height: 28,
+            fontSize: 12,
+            padding: '0px 9px',
+            borderColor: 'rgb(217,217,217)',
+            borderTopRightRadius: '0px',
+            borderBottomRightRadius: '0px',
+            boxShadow: 'none',
+            textShadow: 'none',
+          }}
+          type="primary"
+        >
+          Add Test
+        </Button>
+      );
       header = (
         <div>
           <Button.Group style={{ display: 'flex', alignItems: 'flex-end' }}>
@@ -718,7 +774,12 @@ export const TestDefinitions = (props: IProps) => {
               </Tooltip>
             )}
             <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} icon={true} />
-            <AddTestModal addTest={addTest.bind({}, props.env ? props.env.language : '')} categories={categories} />
+            <CategorySelectModal
+              onSelect={addTest.bind({}, props.env ? props.env.language : '')}
+              title="Create a new test case"
+              categories={categories}
+              childToRender={addTestButton}
+            />
           </Button.Group>
           <div style={headerStyle}>Test Categories</div>
         </div>
@@ -770,6 +831,7 @@ export const TestDefinitions = (props: IProps) => {
                   </Menu.Item>
                 </Menu>
               );
+
               return (
                 <Menu.SubMenu
                   key={category.id}
@@ -793,16 +855,43 @@ export const TestDefinitions = (props: IProps) => {
                         <span style={{ color: '#888888' }}>No tests yet...</span>
                       </Menu.Item>
                     ) : (
-                      TestCase.sort(casesByCategory[category.id]).map((el) => (
-                        <Menu.Item
-                          key={el.id}
-                          onClick={() => {
-                            updateActiveTest(el);
-                          }}
-                        >
-                          {el.description} &nbsp; {buildStatusBadge(el.lastSolutionRun)}
-                        </Menu.Item>
-                      ))
+                      TestCase.sort(casesByCategory[category.id]).map((el) => {
+                        const testActions = (
+                          <Menu>
+                            <Menu.Item style={{ paddingRight: '48px' }}>
+                              <CategorySelectModal
+                                onSelect={duplicateTest.bind({}, el)}
+                                title={`Create a copy of: ${el.description}`}
+                                categories={categories}
+                                childToRender={<span>Duplicate Test</span>}
+                                defaultCategory={
+                                  activeTest ? categories.find((el) => el.id === activeTest.testCategory) : undefined
+                                }
+                              />
+                            </Menu.Item>
+                            <Menu.Item style={{ paddingRight: '48px', color: '#f5222d' }}>
+                              <span onClick={handleDelete.bind({}, el)}>Delete Test</span>
+                            </Menu.Item>
+                          </Menu>
+                        );
+                        return (
+                          <Menu.Item
+                            key={el.id}
+                            onClick={() => {
+                              updateActiveTest(el);
+                            }}
+                          >
+                            {el.description} &nbsp; {buildStatusBadge(el.lastSolutionRun)}{' '}
+                            <Dropdown overlay={testActions}>
+                              <Icon
+                                type="more"
+                                onClick={stop}
+                                style={{ position: 'absolute', right: '0px', top: '8px', fontWeight: 900 }}
+                              />
+                            </Dropdown>
+                          </Menu.Item>
+                        );
+                      })
                     )
                   ) : null}
                 </Menu.SubMenu>
@@ -823,7 +912,7 @@ export const TestDefinitions = (props: IProps) => {
                 saveTest={saveTest}
                 files={props.solutions}
                 env={props.env}
-                deleteTest={deleteTest}
+                handleDelete={handleDelete}
                 submissions={props.submissions}
                 setTestSubject={setTestSubject}
                 activeSubmission={activeSubmission}
