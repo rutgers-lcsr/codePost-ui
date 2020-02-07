@@ -16,6 +16,7 @@ import moment from 'moment-timezone';
 import { AssignmentType, FileTemplateType } from '../../../../infrastructure/types';
 import { AssignmentPatchType } from '../../../../infrastructure/assignment';
 import { FileTemplate } from '../../../../infrastructure/fileTemplate';
+import InputNumberMultiple from '../../settings/InputNumberMultiple';
 
 import UploadFileTemplates from './UploadFileTemplates';
 
@@ -91,6 +92,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, IState> {
       templateMode,
       showFrequentlyUsedRubricComments: values.showFrequentlyUsedRubricComments,
       allowLateUploads: values.allowLateUploads,
+      lateDeductions: values.lateDeductions,
     };
 
     this.props.onSave(payload).then(() => {
@@ -181,6 +183,7 @@ interface IFormValues {
   templateMode: boolean;
   showFrequentlyUsedRubricComments: boolean;
   allowLateUploads: boolean;
+  lateDeductions: number[];
 }
 
 interface IFormState {
@@ -466,6 +469,21 @@ const CollectionCreateForm: any = Form.create()(
                   })(<Switch disabled={!form.getFieldValue('allowStudentUpload')} />)}
                 </Form.Item>
                 <Form.Item
+                  label="Late deductions"
+                  extra={
+                    <div>
+                      <Tag>NEW</Tag>Automatically deduct points for each day late.
+                    </div>
+                  }
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 16 }}
+                >
+                  {getFieldDecorator('lateDeductions', {
+                    initialValue: this.props.assignment.lateDeductions,
+                    // @ts-ignore
+                  })(<InputNumberMultiple />)}
+                </Form.Item>
+                <Form.Item
                   label="Live feedback mode"
                   extra={
                     <div>
@@ -585,7 +603,7 @@ const CollectionCreateForm: any = Form.create()(
                   extra={
                     <div>
                       When enabled, an assignment's 10 most frequently applied rubric comments will be shown within the
-                      code console to make them easily accessible.
+                      code console to them easily accessible.
                     </div>
                   }
                   labelCol={{ span: 6 }}

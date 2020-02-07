@@ -8,18 +8,6 @@ interface IInputNumberMultipleProps {
 }
 
 class InputNumberMultiple extends React.Component<IInputNumberMultipleProps, {}> {
-  // public handleOnOffChange = (status: any) => {
-  //   if (status === 'On') {
-  //     this.triggerChange(0);
-  //   } else {
-  //     this.triggerChange(null);
-  //   }
-  // };
-
-  // public handleNumberChange = (value: any) => {
-  //   this.triggerChange(value);
-  // };
-
   public addRow = () => {
     const updated = [...this.props.value, 0];
     this.props.onChange(updated);

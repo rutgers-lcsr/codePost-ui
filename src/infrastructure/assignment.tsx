@@ -56,6 +56,7 @@ const AssignmentV = t.intersection(
       allowLateUploads: t.boolean,
       maxStudentTestRuns: t.union([t.null, t.number]),
       exposeDumpLogs: t.union([t.null, t.boolean]),
+      lateDeductions: t.array(t.number),
     }),
     t.partial({
       submissions_count: t.number,
@@ -84,6 +85,7 @@ const AssignmentVStudent = t.intersection(
       maxStudentTestRuns: t.union([t.null, t.number]),
       sortKey: t.number,
       environment: t.union([t.number, t.null]),
+      lateDeductions: t.array(t.number),
     }),
     t.partial({
       hideGrades: t.boolean,
@@ -150,6 +152,7 @@ const AssignmentVPatch = t.intersection(
       sortKey: t.number,
       allowLateUploads: t.boolean,
       showFrequentlyUsedRubricComments: t.boolean,
+      lateDeductions: t.array(t.number),
     }),
   ],
   'AssignmentPatch',

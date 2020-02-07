@@ -48,6 +48,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     allowLateUploads: false,
     maxStudentTestRuns: null,
     exposeDumpLogs: false,
+    lateDeductions: [],
   };
 
   const demoCourse: CourseType = {
@@ -329,6 +330,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     allowLateUploads: false,
     maxStudentTestRuns: null,
     exposeDumpLogs: false,
+    lateDeductions: [],
   };
 
   const demoCourse: CourseType = {
