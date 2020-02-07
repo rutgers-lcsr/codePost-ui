@@ -323,9 +323,6 @@ class CreateSignup extends React.Component<IProps, IState> {
             </div>
             {spacing}
             <Divider />
-            <div>
-              Trying to sign up as a student? <Link to="/signup/join">Click here.</Link>
-            </div>
             <div style={{ marginTop: 5 }}>
               Having trouble? Contact us at <b>team@codepost.io</b>.{spacing}
             </div>
@@ -448,6 +445,17 @@ class CreateSignup extends React.Component<IProps, IState> {
         >
           <div style={{ marginRight: this.props.windowwidth < 750 ? 0 : 25 }}>
             <Typography.Title level={1}>Sign up as an instructor</Typography.Title>
+            <Alert
+              message="Are you a student?"
+              description={
+                <div>
+                  Sign up by <Link to="/signup/join">clicking here</Link>.
+                </div>
+              }
+              type="info"
+              showIcon
+              style={{ paddingTop: '10px', paddingBottom: '10px' }}
+            />
             <div style={{ maxWidth: 600 }}>{content}</div>
           </div>
           {this.state.status === STATUS.INPUT ? (
