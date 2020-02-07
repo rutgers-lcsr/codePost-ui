@@ -245,7 +245,12 @@ export const TestDefinitions = (props: IProps) => {
   };
 
   const duplicateTest = async (testToCopy: TestCaseType, category: number) => {
-    const newTestCase = { ...testToCopy, testCategory: category, id: newTestCounter };
+    const newTestCase = {
+      ...testToCopy,
+      testCategory: category,
+      id: newTestCounter,
+      description: `${testToCopy.description} (2)`,
+    };
     setNewTestCounter((prevState) => prevState - 1);
 
     setCasesByCategory((prevState) => {
@@ -854,9 +859,12 @@ export const TestDefinitions = (props: IProps) => {
                             <Menu.Item style={{ paddingRight: '48px' }}>
                               <CategorySelectModal
                                 onSelect={duplicateTest.bind({}, el)}
-                                title={`Create a copy of test case ${el.description}`}
+                                title={`Create a copy of: ${el.description}`}
                                 categories={categories}
                                 childToRender={<span>Duplicate Test</span>}
+                                defaultCategory={
+                                  activeTest ? categories.find((el) => el.id === activeTest.testCategory) : undefined
+                                }
                               />
                             </Menu.Item>
                             <Menu.Item style={{ paddingRight: '48px', color: '#f5222d' }}>

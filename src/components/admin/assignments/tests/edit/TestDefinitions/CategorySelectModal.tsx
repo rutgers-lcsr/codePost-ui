@@ -12,12 +12,15 @@ interface IUploadProps {
   categories: TestCategoryType[];
   childToRender: React.ReactElement;
   title: string;
+  defaultCategory?: TestCategoryType;
 }
 
 export const CategorySelectModal = (props: IUploadProps) => {
   /******************************* State Variables ****************************/
   const [visible, setVisible] = useState(false);
-  const [category, setCategory] = useState<number | undefined>(undefined);
+  const [category, setCategory] = useState<number | undefined>(
+    props.defaultCategory ? props.defaultCategory.id : undefined,
+  );
 
   // If the user has only created a single category, don't make them choose it
   // through a modal: select it automatically.
@@ -29,6 +32,12 @@ export const CategorySelectModal = (props: IUploadProps) => {
       }
     }
   }, [visible]);
+
+  React.useEffect(() => {
+    if (props.defaultCategory) {
+      setCategory(props.defaultCategory.id);
+    }
+  }, [props.defaultCategory]);
 
   /******************************* API / State Change Functions ****************************/
   const onSave = async () => {
@@ -68,7 +77,11 @@ export const CategorySelectModal = (props: IUploadProps) => {
         ]}
       >
         Category:{' '}
-        <Select onChange={onChange} style={{ width: '100%' }}>
+        <Select
+          defaultValue={props.defaultCategory ? props.defaultCategory.name : undefined}
+          onChange={onChange}
+          style={{ width: '100%' }}
+        >
           {props.categories.map((el) => (
             <Select.Option key={el.id} value={el.id}>
               {el.name}
