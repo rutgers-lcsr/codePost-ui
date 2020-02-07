@@ -39,8 +39,6 @@ import layoutVars from '../../styles/layout/_layoutVars';
 
 import UploadSubmissionDialog from '../admin/assignments/assignments/UploadSubmissionDialog';
 
-import ViewUpload from './ViewUpload';
-
 import { IComponentProps } from '../core/ComponentManager';
 
 import CourseMenu from '../core/CourseMenu';
@@ -316,9 +314,9 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     // If the student can upload, give them the option to POST or PATCH submission
     let buttonText;
     if (hasSubmission) {
-      buttonText = 'Replace files';
+      buttonText = 'View assignment';
     } else {
-      buttonText = 'Upload files';
+      buttonText = 'View assignment';
     }
     const uploadButton = (
       <Button
@@ -363,21 +361,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
       </Button>
     );
 
-    // If the student has uploaded, give them the option to view their uploaded files, unless
-    // their submission is viewable in the code console
-    const viewButton =
-      assignment.liveFeedbackMode ||
-      !hasSubmission ||
-      (hasSubmission && submission!.isFinalized && assignment.isReleased) ? null : (
-        <Button
-          icon="eye"
-          style={{ maxWidth: 160 }}
-          onClick={this.changePanel.bind(this, CURRENT_PANEL.VIEWFILES, assignment, undefined)}
-        >
-          View files
-        </Button>
-      );
-
     // Special case: if assignment.liveFeedbackMode is turned on, give the student the option to add files
     const addFileButton =
       !assignment.liveFeedbackMode || !hasSubmission ? null : (
@@ -405,7 +388,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
           <div style={{ marginLeft: 15 }} />
           {uploadButton}
           <div style={{ marginLeft: 15 }} />
-          {viewButton}
           {addFileButton}
         </div>
       </div>
@@ -676,11 +658,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
             disableStudentSelect={true}
             onSuccess={this.onUploadSuccess}
             isStudent={true}
-          />
-          <ViewUpload
-            isVisible={this.state.currentPanel === CURRENT_PANEL.VIEWFILES}
-            assignment={this.state.detailAssignment}
-            onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, undefined, undefined)}
           />
         </div>
       );

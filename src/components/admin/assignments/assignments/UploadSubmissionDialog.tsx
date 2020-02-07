@@ -68,6 +68,8 @@ import { encodeForLink } from '../../../../components/core/URLutils';
 
 import { CodePostDate } from '../../../../components/utils/DateUtils';
 
+import ViewUpload from '../../../../components/student/ViewUpload';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -236,11 +238,8 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
   public loadTestResults = async (sub?: StudentSubmissionType | SubmissionType) => {
     if (sub) {
-      const betterSub = await Submission.readReadOnly(sub.id);
-
-      if (betterSub && betterSub.tests) {
-        console.log('BUMPPPP');
-        const tests = await Promise.all(betterSub.tests.map((id) => SubmissionTest.read(id)));
+      if (sub && sub.tests) {
+        const tests = await Promise.all(sub.tests.map((id) => SubmissionTest.read(id)));
         this.setState({ submissionTests: SubmissionTest.getLatest(tests) });
       }
     }
@@ -807,7 +806,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         visible={true}
         title={this.props.title || 'Upload Submissions'}
         onCancel={this.onCancel}
-        width={800}
+        width={1100}
         footer={[goBackButton, goForwardButton]}
       >
         {status === STATUS.NONE ? (
@@ -817,7 +816,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             </Tabs.TabPane>
 
             {this.state.selectedAssignment && this.state.selectedAssignment.explanation.length > 0 ? (
-              <Tabs.TabPane tab="Assignment" key="2">
+              <Tabs.TabPane tab="Instructions" key="2">
                 <ReactMarkdown>{this.state.selectedAssignment.explanation}</ReactMarkdown>
               </Tabs.TabPane>
             ) : null}
@@ -852,6 +851,12 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                     hideSummary={this.state.testCategories.length === 0}
                   />
                 </div>
+              </Tabs.TabPane>
+            ) : null}
+
+            {this.state.submission ? (
+              <Tabs.TabPane tab="Last submission" key="4">
+                <ViewUpload assignment={this.state.selectedAssignment} />
               </Tabs.TabPane>
             ) : null}
           </Tabs>
