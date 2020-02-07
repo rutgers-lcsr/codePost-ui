@@ -78,6 +78,7 @@ const anonymousUser: UserType = {
   superGraderCourses: [],
   courseadminCourses: [],
   leaderSections: [],
+  student_sections: [],
   showProductTips: true,
   codePostAdmin: false,
 };

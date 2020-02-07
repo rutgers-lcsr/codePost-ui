@@ -20,12 +20,15 @@ import {
   Tag,
   Typography,
   Divider,
+  Tabs,
 } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
 
 import { Link } from 'react-router-dom';
+
+import ReactMarkdown from 'react-markdown';
 
 /* codePost imports */
 import {
@@ -40,6 +43,8 @@ import {
 import { AssignmentStudent, AssignmentStudentType } from '../../../../infrastructure/assignment';
 import { Environment } from '../../../../infrastructure/autograder/environment';
 import { FileTemplate } from '../../../../infrastructure/fileTemplate';
+import { SubmissionTest } from '../../../../infrastructure/submissionTest';
+import { Submission } from '../../../../infrastructure/submission';
 
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
@@ -60,6 +65,8 @@ import { SubmissionTestResultType } from '../../../../infrastructure/autograder/
 import { slack } from '../../../../components/core/slack';
 
 import { encodeForLink } from '../../../../components/core/URLutils';
+
+import { CodePostDate } from '../../../../components/utils/DateUtils';
 
 /**********************************************************************************************************************/
 
@@ -167,7 +174,10 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   }
 
   public componentDidUpdate(prevProps: IProps, prevState: IState) {
-    if (prevProps.selectedAssignment !== this.props.selectedAssignment) {
+    if (
+      prevProps.selectedAssignment !== this.props.selectedAssignment ||
+      (!prevProps.isVisible && this.props.isVisible)
+    ) {
       this.setState({
         selectedAssignment: this.props.selectedAssignment,
         testCategories: [],
@@ -180,6 +190,9 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           this.setState({
             submission: this.props.submissions[this.props.selectedStudents[0]][this.props.selectedAssignment.id],
           });
+          this.loadTestResults(
+            this.props.submissions[this.props.selectedStudents[0]][this.props.selectedAssignment.id],
+          );
         }
       }
     }
@@ -218,6 +231,18 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         caseObj[testCase.testCategory] = [...caseObj[testCase.testCategory], testCase];
       });
       this.setState({ testCategories, testCases: caseObj });
+    }
+  };
+
+  public loadTestResults = async (sub?: StudentSubmissionType | SubmissionType) => {
+    if (sub) {
+      const betterSub = await Submission.readReadOnly(sub.id);
+
+      if (betterSub && betterSub.tests) {
+        console.log('BUMPPPP');
+        const tests = await Promise.all(betterSub.tests.map((id) => SubmissionTest.read(id)));
+        this.setState({ submissionTests: SubmissionTest.getLatest(tests) });
+      }
     }
   };
 
@@ -503,7 +528,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           </Button>
         );
         content = (
-          <div style={{ minHeight: 400, height: 'calc(100vh - 300px)' }}>
+          <div style={{ minHeight: 400, height: 'calc(100vh - 400px)' }}>
             <TestsList
               tests={this.state.submissionTests}
               redactNotShown={true}
@@ -785,7 +810,54 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         width={800}
         footer={[goBackButton, goForwardButton]}
       >
-        {content}
+        {status === STATUS.NONE ? (
+          <Tabs defaultActiveKey="1">
+            <Tabs.TabPane tab="Submit" key="1">
+              {content}
+            </Tabs.TabPane>
+
+            {this.state.selectedAssignment && this.state.selectedAssignment.explanation.length > 0 ? (
+              <Tabs.TabPane tab="Assignment" key="2">
+                <ReactMarkdown>{this.state.selectedAssignment.explanation}</ReactMarkdown>
+              </Tabs.TabPane>
+            ) : null}
+
+            {this.state.testCategories.length > 0 ? (
+              <Tabs.TabPane tab="Tests" key="3">
+                <div style={{ minHeight: 400, height: 'calc(100vh - 400px)' }}>
+                  <TestsList
+                    tests={this.state.submissionTests}
+                    redactNotShown={false}
+                    hideNotRun={false}
+                    cases={this.state.testCases}
+                    categories={this.state.testCategories}
+                    isLoading={false}
+                    logs={this.state.testsLog === null ? undefined : this.state.testsLog}
+                    showLogs={false}
+                    message={
+                      this.state.submissionTests.length > 0 ? (
+                        <Alert
+                          type="info"
+                          message="Showing previous results"
+                          description={
+                            <p>
+                              Last submission at: <CodePostDate datetime={this.state.submission!.dateUploaded || ''} />.
+                            </p>
+                          }
+                        />
+                      ) : (
+                        undefined
+                      )
+                    }
+                    hideSummary={this.state.testCategories.length === 0}
+                  />
+                </div>
+              </Tabs.TabPane>
+            ) : null}
+          </Tabs>
+        ) : (
+          content
+        )}
       </Modal>
     );
   }

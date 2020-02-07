@@ -132,8 +132,8 @@ const TestsList = (props: IProps) => {
                 <div className="display-flex justify-content-center">
                   <Statistic style={{ textAlign: 'center', margin: '0px 30px' }} title="Passed" value={`${passed}`} />
                   <Statistic style={{ textAlign: 'center', margin: '0px 30px' }} title="Failed" value={`${failed}`} />
-                  {!props.hideNotRun ||
-                    (props.redactNotShown && (
+                  {!props.hideNotRun &&
+                    (props.redactNotShown || (
                       <Statistic
                         style={{ textAlign: 'center', margin: '0px 30px' }}
                         title="Not Run"

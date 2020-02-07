@@ -131,7 +131,11 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     ).then((assignments) => {
       const toRet: any = {};
       courses.forEach((course, i) => {
-        toRet[course.id] = assignments[i];
+        toRet[course.id] = assignments[i].filter(
+          (a) =>
+            a.isVisible &&
+            !a.hideFrom.some((shouldHide: number) => this.props.user.student_sections.indexOf(shouldHide) > -1),
+        );
       });
 
       return toRet;

@@ -27,8 +27,7 @@ import { Link } from 'react-router-dom';
 
 /* codePost imports */
 import { AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
-import { CourseType } from '../../../infrastructure/course';
-import { SubmissionType } from '../../../infrastructure/submission';
+import { CourseType, SubmissionType, SectionType } from '../../../infrastructure/types';
 import { UserType } from '../../../infrastructure/user';
 
 import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../types/common';
@@ -79,6 +78,7 @@ export interface IManageAssignmentsProps {
   submissionsByStudent: IStudentSubmissionsDataTable;
   currentCourse: CourseType;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
+  sections: SectionType[];
 
   /* loading state */
   loadComplete: boolean;
@@ -269,6 +269,22 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         dataIndex: 'assignment',
         key: 'assignment',
         className: 'draggable',
+      },
+      {
+        title: (
+          <div>
+            Visible
+            <CPTooltip
+              title={tooltips.admin.assignments.published}
+              infoIcon={true}
+              hideThisOnHideTips={true}
+              iconStyle={{ paddingLeft: 5 }}
+            />
+          </div>
+        ),
+        dataIndex: 'visible',
+        key: 'visible',
+        align: aligner,
       },
       {
         title: (
@@ -521,9 +537,23 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         });
       };
 
+      const toggleVisible = () => {
+        const oldVal = assignment.isVisible;
+
+        this.props
+          .updateAssignment({
+            id: assignment.id,
+            isVisible: !assignment.isVisible,
+          })
+          .then(() => {
+            message.success(`Assignment made ${oldVal ? 'in' : ''}visible.`);
+          });
+      };
+
       return {
         key: assignment.id,
         assignment: <Text strong>{assignment.name}</Text>,
+        visible: <Switch checked={assignment.isVisible} onChange={toggleVisible} />,
         published: (
           <span className="display-flex align-items-center justify-content-center">
             <Popconfirm onConfirm={onConfirm} title={publishToggleText} icon={<Icon type="question-circle" />}>
@@ -606,6 +636,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
               currentAssignment={this.props.activeAssignment!}
               assignments={this.props.assignments}
               timezone={this.props.currentCourse.timezone}
+              sections={this.props.sections}
             />
           );
           break;
