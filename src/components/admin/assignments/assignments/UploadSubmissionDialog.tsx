@@ -801,6 +801,8 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         break;
     }
 
+    // We don't want to show
+
     return (
       <Modal
         visible={true}
@@ -809,7 +811,9 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         width={1100}
         footer={[goBackButton, goForwardButton]}
       >
-        {status === STATUS.NONE ? (
+        {status !== STATUS.NONE || !this.props.isStudent ? (
+          content
+        ) : (
           <Tabs defaultActiveKey="1">
             <Tabs.TabPane tab="Submit" key="1">
               {content}
@@ -860,8 +864,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               </Tabs.TabPane>
             ) : null}
           </Tabs>
-        ) : (
-          content
         )}
       </Modal>
     );
