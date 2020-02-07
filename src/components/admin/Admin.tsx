@@ -853,6 +853,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     aName: string,
     aPoints: number,
     studentUpload: boolean,
+    isVisible: boolean,
     dueDate?: string,
     sortKey?: number,
   ): Promise<AssignmentType> => {
@@ -872,6 +873,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       sortKey,
       allowStudentUpload: studentUpload,
       uploadDueDate: dueDate,
+      isVisible,
     };
 
     return Assignment.create(payload).then((assignment: AssignmentType) => {

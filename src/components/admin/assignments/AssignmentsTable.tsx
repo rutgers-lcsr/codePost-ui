@@ -88,6 +88,7 @@ export interface IManageAssignmentsProps {
     assignmentName: string,
     assignmentPoints: number,
     upload: boolean,
+    isVisible: boolean,
     dueDate?: string,
     sortKey?: number,
   ) => Promise<AssignmentType>;
@@ -240,7 +241,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
     this.setState({ activeStudent: undefined });
   };
 
-  public createAssignment = (name: string, points: number, upload: boolean, dueDate?: string) => {
+  public createAssignment = (name: string, points: number, upload: boolean, isVisible: boolean, dueDate?: string) => {
     const { sortedOrder } = this.state;
 
     // Place assignment at the end of the assignment list
@@ -251,7 +252,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
       sortKey = 0;
     }
 
-    return this.props.createAssignment(name, points, upload, dueDate, sortKey);
+    return this.props.createAssignment(name, points, upload, isVisible, dueDate, sortKey);
   };
 
   /******************************************************************************
@@ -275,7 +276,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           <div>
             Visible
             <CPTooltip
-              title={tooltips.admin.assignments.published}
+              title={'If visible, students can see the assignment in the Student Console.'}
               infoIcon={true}
               hideThisOnHideTips={true}
               iconStyle={{ paddingLeft: 5 }}
