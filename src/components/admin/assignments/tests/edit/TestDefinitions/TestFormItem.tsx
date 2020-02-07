@@ -297,7 +297,9 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
         style={{ width: 150 }}
       >
         <Select.Option value={'constant'}>Constant (strict)</Select.Option>
-        <Select.Option value={'flex'}>Constant (flex)</Select.Option>
+        <Select.Option value={'flex'}>
+          Constant (flex) <CPTooltip infoIcon={true} title="Ignores whitespace, case, and newlines." />
+        </Select.Option>
         <Select.Option value={'regexp'}>Regexp</Select.Option>
         <Select.Option value={'file'}>File</Select.Option>
       </Select>
@@ -532,7 +534,9 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
         style={{ width: 150 }}
       >
         <Select.Option value={'constant'}>Constant (strict)</Select.Option>
-        <Select.Option value={'flex'}>Constant (flex)</Select.Option>
+        <Select.Option value={'flex'}>
+          Constant (flex) <CPTooltip infoIcon={true} title="Ignores whitespace, case, and newlines." />
+        </Select.Option>
         <Select.Option value={'regexp'}>Regexp</Select.Option>
         <Select.Option value={'file'}>File</Select.Option>
       </Select>
