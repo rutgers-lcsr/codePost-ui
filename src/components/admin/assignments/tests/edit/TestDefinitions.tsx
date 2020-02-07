@@ -273,6 +273,8 @@ export const TestDefinitions = (props: IProps) => {
       explanation: '',
       lastSolutionRun: RESULT_TYPE.NONE,
       outputIsFile: false,
+      outputIsRegexp: false,
+      isFlexible: false,
     };
     setNewTestCounter((prevState) => prevState - 1);
 
