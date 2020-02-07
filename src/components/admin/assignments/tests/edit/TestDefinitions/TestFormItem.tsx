@@ -62,6 +62,7 @@ interface ITestFormItemProps extends FormComponentProps {
   language: string;
   submissions: SubmissionType[];
   setTestSubject: (id: string) => void;
+  activeSubmission?: SubmissionType;
   methodsByFile: { [name: string]: string[] };
   env?: EnvironmentType;
   hasInstanceMethods: boolean;
@@ -889,6 +890,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   runTest={this.onRun}
                   submissions={this.props.submissions}
                   setTestSubject={this.props.setTestSubject}
+                  activeSubmission={this.props.activeSubmission}
                   env={this.props.env}
                 />
               </div>

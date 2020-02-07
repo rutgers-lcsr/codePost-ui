@@ -47,6 +47,7 @@ interface IResultProps {
   updateFile?: (file: string) => void;
   overrideText?: string;
   env?: EnvironmentType;
+  activeSubmission?: SubmissionType;
 }
 
 const getResultSpan = (resultType: RESULT_TYPE) => {
@@ -207,11 +208,11 @@ export const PseudoTerminal = (props: IResultProps) => {
       style={{ height: '24px', minWidth: '180px', fontSize: '12px' }}
       size="small"
       showSearch
-      defaultValue="0"
+      value={props.activeSubmission ? props.activeSubmission.id.toString() : '0'}
       filterOption={(input, option: any) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
     >
       {props.submissions.map((sub, i) => (
-        <Select.Option key={i} value={sub.id}>
+        <Select.Option key={i} value={sub.id.toString()}>
           {sub.students[0]}
         </Select.Option>
       ))}

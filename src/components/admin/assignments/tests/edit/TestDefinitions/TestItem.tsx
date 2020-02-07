@@ -273,6 +273,7 @@ export const TestItem = (props: ITestItemProps) => {
       language={props.env ? props.env.language : ''}
       submissions={props.submissions}
       setTestSubject={props.setTestSubject}
+      activeSubmission={props.activeSubmission}
       methodsByFile={methodsByFile}
       hasInstanceMethods={hasInstanceMethods}
     />
