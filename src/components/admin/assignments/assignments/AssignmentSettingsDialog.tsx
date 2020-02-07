@@ -455,10 +455,6 @@ const CollectionCreateForm: any = Form.create()(
                   >
                     {getFieldDecorator('hideFrom', {
                       initialValue: this.props.assignment.hideFrom,
-                      rules: [
-                        { required: true, message: 'Please specify a point value' },
-                        { validator: this.validatePoints },
-                      ],
                     })(
                       <Select mode="multiple">
                         {this.props.sections.map((section) => (
