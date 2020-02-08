@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Checkbox, Breadcrumb, Empty } from 'antd';
+import { Checkbox, Breadcrumb, Empty, Modal } from 'antd';
 
 /* codePost imports */
 import RubricCommentExplorer from './RubricCommentExplorer';
@@ -54,6 +54,9 @@ const RubricUI = ({
   helpers: IRubricManagerHelpers;
 }) => {
   const { rubricCategories, rubricComments, loadComplete } = state;
+
+  /* settings modal display */
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
 
   /* optional rubric fields */
   const [showPointLimits, setShowPointLimits] = React.useState(false);
@@ -152,7 +155,98 @@ const RubricUI = ({
       helpers.onSave(undefined);
     };
 
+    /************************************************************************/
+    /* Settings modal
+    /************************************************************************/
+
+    const toggleShowPointLimit = () => {
+      setShowPointLimits(!showPointLimits);
+    };
+
+    const toggleShowHelpText = () => {
+      setShowHelpText(!showHelpText);
+    };
+
+    const toggleShowExplanations = () => {
+      setShowExplanations(!showExplanations);
+    };
+
+    const toggleShowInstructions = () => {
+      setShowInstructions(!showInstructions);
+    };
+
+    const toggleShowAtMostOnce = () => {
+      setShowAtMostOnce(!showAtMostOnce);
+    };
+
+    const settingsModal = (
+      <Modal title="Rubric settings" visible={settingsOpen} footer={null} onCancel={() => setSettingsOpen(false)}>
+        <div>
+          {showPointLimitCheckbox ? (
+            <div>
+              Show point limits <Checkbox checked={showPointLimits} onChange={toggleShowPointLimit} />{' '}
+              <CPTooltip
+                title={tooltips.admin.rubric.categoryPointLimit}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
+          ) : null}
+          {showHelpTextCheckbox ? (
+            <div>
+              Show help text <Checkbox checked={showHelpText} onChange={toggleShowHelpText} />{' '}
+              <CPTooltip
+                title={tooltips.admin.rubric.categoryHelpText}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
+          ) : null}
+          {showExplanationsCheckbox ? (
+            <div>
+              Show explanation editors <Checkbox checked={showExplanations} onChange={toggleShowExplanations} />{' '}
+              <CPTooltip
+                title={tooltips.admin.rubric.explanations}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
+          ) : null}
+          {showInstructionsCheckbox ? (
+            <div>
+              Show instruction editors <Checkbox checked={showInstructions} onChange={toggleShowInstructions} />{' '}
+              <CPTooltip
+                title={`An optional textarea that allows you to give graders instructions for personalizing a rubric comment.`}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
+          ) : null}
+          {showAtMostOnceCheckbox ? (
+            <div>
+              Show "At Most Once" toggle <Checkbox checked={showAtMostOnce} onChange={toggleShowAtMostOnce} />{' '}
+              <CPTooltip
+                title={'Show the option to require a rubric category be applied at most once.'}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
+          ) : null}
+        </div>
+      </Modal>
+    );
+
+    /************************************************************************/
+
     const actions = [
+      <CPButton cpType="secondary" icon="setting" onClick={() => setSettingsOpen(!settingsOpen)}>
+        Settings
+      </CPButton>,
       <RubricFileUpload
         key="2"
         assignment={props.assignment}
@@ -213,85 +307,9 @@ const RubricUI = ({
       helpers.onLinkedCommentsResolve(state.linkedComments[0], RESOLUTION.UNLINK);
     };
 
-    const toggleShowPointLimit = () => {
-      setShowPointLimits(!showPointLimits);
-    };
-
-    const toggleShowHelpText = () => {
-      setShowHelpText(!showHelpText);
-    };
-
-    const toggleShowExplanations = () => {
-      setShowExplanations(!showExplanations);
-    };
-
-    const toggleShowInstructions = () => {
-      setShowInstructions(!showInstructions);
-    };
-
-    const toggleShowAtMostOnce = () => {
-      setShowAtMostOnce(!showAtMostOnce);
-    };
-
     const content = (
       <div>
-        <div className="display-flex flex-direction-column align-items-flex-end" style={{ marginBottom: '10px' }}>
-          {showPointLimitCheckbox ? (
-            <div>
-              Show point limits <Checkbox checked={showPointLimits} onChange={toggleShowPointLimit} />{' '}
-              <CPTooltip
-                title={tooltips.admin.rubric.categoryPointLimit}
-                infoIcon={true}
-                hideThisOnHideTips={true}
-                iconStyle={{ paddingLeft: 5 }}
-              />
-            </div>
-          ) : null}
-          {showHelpTextCheckbox ? (
-            <div>
-              Show help text <Checkbox checked={showHelpText} onChange={toggleShowHelpText} />{' '}
-              <CPTooltip
-                title={tooltips.admin.rubric.categoryHelpText}
-                infoIcon={true}
-                hideThisOnHideTips={true}
-                iconStyle={{ paddingLeft: 5 }}
-              />
-            </div>
-          ) : null}
-          {showExplanationsCheckbox ? (
-            <div>
-              Show explanation editors <Checkbox checked={showExplanations} onChange={toggleShowExplanations} />{' '}
-              <CPTooltip
-                title={tooltips.admin.rubric.explanations}
-                infoIcon={true}
-                hideThisOnHideTips={true}
-                iconStyle={{ paddingLeft: 5 }}
-              />
-            </div>
-          ) : null}
-          {showInstructionsCheckbox ? (
-            <div>
-              Show instruction editors <Checkbox checked={showInstructions} onChange={toggleShowInstructions} />{' '}
-              <CPTooltip
-                title={`An optional textarea that allows you to give graders instructions for personalizing a rubric comment.`}
-                infoIcon={true}
-                hideThisOnHideTips={true}
-                iconStyle={{ paddingLeft: 5 }}
-              />
-            </div>
-          ) : null}
-          {showAtMostOnceCheckbox ? (
-            <div>
-              Show "At Most Once" toggle <Checkbox checked={showAtMostOnce} onChange={toggleShowAtMostOnce} />{' '}
-              <CPTooltip
-                title={'Show the option to require a rubric category be applied at most once.'}
-                infoIcon={true}
-                hideThisOnHideTips={true}
-                iconStyle={{ paddingLeft: 5 }}
-              />
-            </div>
-          ) : null}
-        </div>
+        {settingsModal}
         {categoryTables}
         <CPButton cpType="primary" onClick={addRubricCategory}>
           Add New Category
