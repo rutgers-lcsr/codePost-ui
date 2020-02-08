@@ -279,7 +279,8 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     const hasSubmission = submission !== undefined;
 
     // Algorithm for computing
-    const dueDatePassed = assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now();
+    const two_hours = 3.6e6 * 2; // ms grace period
+    const dueDatePassed = assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) + two_hours <= Date.now();
     const isFinalized = submission !== undefined && submission.isFinalized;
     const canUploadLate = assignment.allowLateUploads;
 
