@@ -503,7 +503,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           </Button>
         );
         content = (
-          <div>
+          <div style={{ minHeight: 400, height: 'calc(100vh - 300px)' }}>
             <TestsList
               tests={this.state.submissionTests}
               redactNotShown={true}

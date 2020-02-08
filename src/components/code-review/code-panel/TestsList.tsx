@@ -38,7 +38,9 @@ const TestsList = (props: IProps) => {
 
   if (props.isLoading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+      <div
+        style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}
+      >
         <div>
           <Spin />
           <br />
@@ -120,9 +122,9 @@ const TestsList = (props: IProps) => {
   };
 
   return (
-    <div style={{ position: 'relative', height: '100%', width: '100%' }}>
+    <div style={{ position: 'relative', height: '100%', width: '100%', overflow: 'auto' }}>
       <div style={{ position: 'absolute', width: 'inherit', padding: '25px 50px' }}>
-        <div id="tests-list" style={{ overflow: 'auto', height: '100%', width: '100%' }}>
+        <div id="tests-list" style={{ height: '100%', width: '100%' }}>
           {<div style={{ marginBottom: 15 }}>{props.message}</div> || <div />}
           {!props.hideSummary && (
             <div className="display-flex justify-content-center">
