@@ -159,13 +159,6 @@ export const TestDefinitions = (props: IProps) => {
     }
   }, [props.env, props.sourceFiles.length]);
 
-  // When the test changes, we want to reset the active submission
-  // We only change it when the test.id changes, because we update the test on run (solutionStatus)
-  useEffect(() => {
-    setActiveSubmission(undefined);
-    setCurrentFiles(props.solutions);
-  }, [activeTest && activeTest.id]);
-
   // If solution files get updated (for example in file mode, update the current files)
   useEffect(() => {
     setActiveSubmission(undefined);
@@ -431,7 +424,7 @@ export const TestDefinitions = (props: IProps) => {
 
     //
     const formatted = {
-      log: response.logs,
+      log: <span style={{ color: '#678CAB' }}>{response.logs}</span>,
       target: activeSubmission ? activeSubmission.students[0] : 'solution code',
       result: RESULT_TYPE.NONE,
       testCaseName: '',
