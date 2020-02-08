@@ -229,6 +229,20 @@ const StudentUploadData = t.intersection([
   }),
 ]);
 
+// Type for getting and patching student upload
+const StudentUploadInformation = t.intersection([
+  t.type({
+    daysLate: t.number,
+    pointsOff: t.number,
+  }),
+  t.partial({
+    lateDayCreditsAvailable: t.number,
+    lateDayCreditsToUse: t.number,
+    adjustedDaysLate: t.number,
+  }),
+]);
+export type StudentUploadInformationType = t.TypeOf<typeof StudentUploadInformation>;
+
 // tslint:disable
 export class AssignmentStudent {
   public static read = readObject(AssignmentVStudent, 'assignments');
@@ -247,6 +261,8 @@ export class AssignmentStudent {
   );
   public static readStudentUpload = readObjectDetail(StudentUploadData, 'assignments', 'studentUpload');
   public static readStudentTests = readObjectDetail(TestsV, 'assignments', 'studentTests');
+
+  public static beforeStudentUpload = readObjectDetail(StudentUploadInformation, 'assignments', 'beforeStudentUpload');
 }
 
 interface sortableObject {
