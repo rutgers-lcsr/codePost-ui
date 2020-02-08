@@ -637,6 +637,38 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     return { columns, data };
   };
 
+  public calculateLateDayCreditsAvailable = (submissions: IAssignmentToSubmissionStudentMap): number => {
+    if (!this.props.currentCourse || this.props.currentCourse.lateDayCreditsAllowable === null) {
+      return 0;
+    }
+
+    let totalUsed = 0;
+
+    Object.keys(submissions).forEach((assignmentID: string) => {
+      const subTotal = submissions[+assignmentID].reduce((acc: number, sub: StudentSubmissionType) => {
+        if (sub.lateDayCreditsUsed !== undefined) {
+          return acc + sub.lateDayCreditsUsed;
+        } else {
+          return acc;
+        }
+      }, 0);
+
+      totalUsed += subTotal;
+    });
+
+    return this.props.currentCourse.lateDayCreditsAllowable - totalUsed;
+  };
+
+  public getLateDayCreditsComponent = () => {
+    if (!this.props.currentCourse || this.props.currentCourse.lateDayCreditsAllowable === null) {
+      return null;
+    }
+
+    const lateDayCreditsAvailable = this.calculateLateDayCreditsAvailable(this.state.submissions);
+
+    return <div>Late Day Credits: {this.state.isLoadingSubmissions ? '--' : lateDayCreditsAvailable}</div>;
+  };
+
   /***********************************************************************************
   /* Render function
   /**********************************************************************************/
@@ -657,6 +689,8 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
       // Assignments haven't finished loading
       studentContent = <Spin />;
     } else {
+      const lateDayCredits = this.getLateDayCreditsComponent();
+
       const assignmentList = assignments[currentCourse.id];
       const { columns, data } = this.buildAssignmentsTable(assignmentList, submissions);
       const rowClassName = (record: any, index: number) => {
@@ -674,7 +708,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
             isEmpty={assignmentList.length === 0}
             title={`${currentCourse.name} | ${currentCourse.period}`}
             emptyNode={<div>Empty...</div>}
-            actions={[]}
+            actions={[lateDayCredits]}
             columns={columns}
             data={data}
             pagination={false}
