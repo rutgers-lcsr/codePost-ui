@@ -85,7 +85,7 @@ ${props.roleType}3@myschool.edu,P02
     <div>
       <Upload beforeUpload={beforeUpload} showUploadList={false}>
         <Button>
-          <Icon type="upload" /> Upload a CSV or text file
+          <Icon type="upload" /> Upload a .txt file
         </Button>
       </Upload>
       <Tooltip
