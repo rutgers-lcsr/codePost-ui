@@ -458,8 +458,6 @@ class CreateSignup extends React.Component<IProps, IState> {
                 paddingTop: '5px',
                 paddingBottom: '5px',
                 marginBottom: '15px',
-                backgroundColor: '#f7f7f7',
-                borderColor: 'rgba(0,0,0,.05)',
               }}
             />
             <div style={{ maxWidth: 600 }}>{content}</div>
