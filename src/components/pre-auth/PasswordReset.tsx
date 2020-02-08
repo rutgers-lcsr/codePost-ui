@@ -196,7 +196,10 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
 
         content = (
           <div>
-            <Typography.Title level={4}>Whoops. There's something wrong with your link.</Typography.Title>
+            <Typography.Title level={4}>There's something wrong with your link.</Typography.Title>Make sure you haven't
+            received a more recent email from us (only the latest link will work).
+            <br />
+            <br />
             <div>{newLinkMessage}</div>
           </div>
         );
