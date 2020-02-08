@@ -377,12 +377,17 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
         >
           {buttonText}
         </Button>
-        <LateSubmissionModal
-          visible={this.state.lateSubmissionModalAssignment !== null}
-          assignment={assignment}
-          onCancel={this.closeLateSubmissionModalAssignment}
-          onOk={this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission)}
-        />
+        {dueDatePassed ? (
+          <LateSubmissionModal
+            visible={
+              this.state.lateSubmissionModalAssignment !== null &&
+              this.state.lateSubmissionModalAssignment.id === assignment.id
+            }
+            assignment={assignment}
+            onCancel={this.closeLateSubmissionModalAssignment}
+            onOk={this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission)}
+          />
+        ) : null}
       </span>
     );
 
