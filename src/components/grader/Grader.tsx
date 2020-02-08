@@ -85,11 +85,12 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
     };
   }
 
-  public componentDidMount() {
-    setTimeout(() => {
-      this.setState({ showBanner: true });
-    }, 1000);
-  }
+  // ADD THIS BACK TO TURN ON THE SURVEY AGAIN
+  // public componentDidMount() {
+  //   setTimeout(() => {
+  //     this.setState({ showBanner: true });
+  //   }, 1000);
+  // }
 
   public componentDidUpdate = (prevProps: any, prevState: any) => {
     if (!prevState.assignments && this.state.assignments) {

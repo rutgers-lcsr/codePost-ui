@@ -116,7 +116,7 @@ const ADMIN_GRADERSUBMISSIONS_EXPANDASSIGNMENT = 'View graded submissions for th
 
 const ADMIN_ASSIGNMENTS_PUBLISHED = (
   <div>
-    If published, students with finalized submissions can view their submission and feedback.
+    If published (and visible), students with finalized submissions can view their submission and feedback.
     <div style={{ height: 10 }} />
     If not published, no student will be able to view their submissions.
   </div>
