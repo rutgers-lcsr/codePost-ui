@@ -1,6 +1,8 @@
 /* codepost object imports */
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { TestCase, TestCaseType, StudentTestCaseType } from '../../infrastructure/testCase';
+import { Submission } from '../../infrastructure/submission';
+
 import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
 import { TestCategory, TestCategoryType } from '../../infrastructure/testCategory';
 import { AnonymousSubmissionType } from '../../infrastructure/submission';
@@ -114,10 +116,7 @@ export const fetchTestsBySubmission = async (submissions: AnonymousSubmissionTyp
   const submissionPromises =
     submissions !== undefined
       ? submissions.map(async (submission) => {
-          const testPromises = submission.tests.map((id) => {
-            return SubmissionTest.read(id);
-          });
-          const tests = await Promise.all(testPromises);
+          const tests = await Submission.readTests(submission.id);
           toRet[submission.id] = tests;
         })
       : [];
