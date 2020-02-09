@@ -573,9 +573,15 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         visible: <Switch checked={assignment.isVisible} onChange={toggleVisible} />,
         published: (
           <span className="display-flex align-items-center justify-content-center">
-            <Popconfirm onConfirm={onConfirm} title={publishToggleText} icon={<Icon type="question-circle" />}>
-              <Switch checked={assignment.isReleased} />
-            </Popconfirm>
+            {!assignment.isVisible ? (
+              <Tooltip title={'Your assignment cannot be published unless it is made visible to students.'}>
+                <Switch disabled={!assignment.isVisible} checked={assignment.isReleased} />
+              </Tooltip>
+            ) : (
+              <Popconfirm onConfirm={onConfirm} title={publishToggleText} icon={<Icon type="question-circle" />}>
+                <Switch disabled={!assignment.isVisible} checked={assignment.isReleased} />
+              </Popconfirm>
+            )}
             {assignment.isReleased ? (
               <span>
                 &nbsp; &nbsp;
