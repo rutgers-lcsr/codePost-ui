@@ -342,7 +342,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             .then((newSubmission: StudentSubmissionType | SubmissionType) => {
               const shouldRun = this.shouldRunTests();
               if (shouldRun) {
-                this.runTests();
+                this.runTests(newSubmission);
               }
               this.setState({
                 submission: newSubmission,
@@ -441,20 +441,27 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public setResults = (result: SubmissionTestResultType) => {
-    this.setState({
-      submissionTests: result.submissionTests,
-      testsLog: result.logs,
-      loadingTests: false,
-      runMessage: result.message,
+    // Note: we need to increment the testRunsCompleted in state, because a student could go back to the upload tab (without refreshing submission) and re-upload
+    this.setState((prevState) => {
+      return {
+        ...prevState,
+        submissionTests: result.submissionTests,
+        testsLog: result.logs,
+        loadingTests: false,
+        runMessage: result.message,
+        submission: prevState.submission
+          ? { ...prevState.submission, testRunsCompleted: prevState.submission.testRunsCompleted + 1 }
+          : undefined,
+      };
     });
   };
 
-  public runTests = async () => {
+  public runTests = async (submission: StudentSubmissionType | SubmissionType) => {
     if (this.shouldRunTests()) {
       // Make sure the loading is set
       this.setState({ loadingTests: true });
       const result = await Environment.run(this.state.selectedAssignment!.environment!, {
-        submission: this.state.submission!.id.toString(),
+        submission: submission.id.toString(),
         simulate: 'False',
         exposedOnly: 'True',
       });
