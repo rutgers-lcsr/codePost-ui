@@ -31,7 +31,7 @@ interface ITestItemProps {
   currentAssignment: AssignmentType;
   testCase: TestCaseType;
   saveTest: (test: TestCaseType) => Promise<TestCaseType>;
-  deleteTest: (test: TestCaseType) => Promise<void>;
+  handleDelete: (test: TestCaseType) => void;
   files: SolutionFileType[];
   env?: EnvironmentType;
   submissions: SubmissionType[];
@@ -103,7 +103,7 @@ export const TestItem = (props: ITestItemProps) => {
     testType: string,
     explanation: string,
     checkReturn: boolean,
-    outputIsFile: boolean,
+    outputType: string,
     codeString?: string,
   ) => {
     const form = formRef.props.form;
@@ -111,7 +111,7 @@ export const TestItem = (props: ITestItemProps) => {
       if (err) {
         return;
       }
-      saveTest(values, testType, explanation, checkReturn, outputIsFile, codeString);
+      saveTest(values, testType, explanation, checkReturn, outputType, codeString);
     });
   };
 
@@ -119,7 +119,7 @@ export const TestItem = (props: ITestItemProps) => {
     testType: string,
     explanation: string,
     checkReturn: boolean,
-    outputIsFile: boolean,
+    outputType: string,
     codeString?: string,
   ) => {
     const form = formRef.props.form;
@@ -127,23 +127,7 @@ export const TestItem = (props: ITestItemProps) => {
       if (err) {
         return;
       }
-      runTest(values, testType, explanation, checkReturn, outputIsFile, codeString);
-    });
-  };
-
-  const handleDelete = () => {
-    confirm({
-      title: (
-        <span>
-          Are you sure you want to delete <b>{props.testCase.description}</b>?
-        </span>
-      ),
-      content: 'This decision cannot be reversed.',
-      onOk() {
-        return new Promise((resolve, reject) => {
-          return resolve(props.deleteTest(props.testCase));
-        }).catch(() => console.log('Oops errors!'));
-      },
+      runTest(values, testType, explanation, checkReturn, outputType, codeString);
     });
   };
 
@@ -154,10 +138,10 @@ export const TestItem = (props: ITestItemProps) => {
     testType: string,
     explanation: string,
     checkReturn: boolean,
-    outputIsFile: boolean,
+    outputType: string,
     codeString?: string,
   ) => {
-    const updatedTest = await saveTest(values, testType, explanation, checkReturn, outputIsFile, codeString);
+    const updatedTest = await saveTest(values, testType, explanation, checkReturn, outputType, codeString);
 
     if (updatedTest && updatedTest.id > 0) {
       if (!props.activeSubmission && props.files.length === 0) {
@@ -188,7 +172,12 @@ export const TestItem = (props: ITestItemProps) => {
     const result: BasicTestResultType = response.results[0];
 
     const formatted = {
-      log: `${response.logs}\n${result.logs}`,
+      log: (
+        <span>
+          <span style={{ color: '#678CAB' }}>{response.logs}</span>
+          {`\n${result.logs}`}
+        </span>
+      ),
       target: props.activeSubmission ? props.activeSubmission.students[0] : 'solution code',
       result: result.passed ? RESULT_TYPE.PASSED : result.isError ? RESULT_TYPE.ERROR : RESULT_TYPE.FAILED,
       testCaseName: testCase.description,
@@ -207,7 +196,7 @@ export const TestItem = (props: ITestItemProps) => {
     testType: string,
     explanation: string,
     checkReturn: boolean,
-    outputIsFile: boolean,
+    outputType: string,
     codeString?: string,
   ) => {
     const testCaseCopy = { ...props.testCase };
@@ -223,7 +212,10 @@ export const TestItem = (props: ITestItemProps) => {
     testCaseCopy.pointsPass = values.pointsPass;
     testCaseCopy.pointsFail = values.pointsFail;
     testCaseCopy.explanation = explanation;
-    testCaseCopy.outputIsFile = outputIsFile;
+
+    testCaseCopy.outputIsFile = outputType === 'file';
+    testCaseCopy.isFlexible = outputType === 'flex';
+    testCaseCopy.outputIsRegexp = outputType === 'regexp';
 
     // Warn user if they are modifying an instantiated SubmissionTest in a way that
     // will propagate to instances.
@@ -261,7 +253,7 @@ export const TestItem = (props: ITestItemProps) => {
       env={props.env}
       testCase={props.testCase}
       saveTest={handleCreate}
-      deleteTest={handleDelete}
+      deleteTest={props.handleDelete.bind({}, props.testCase)}
       runTest={handleRun}
       files={props.files}
       wrappedComponentRef={saveFormRef}
@@ -270,6 +262,7 @@ export const TestItem = (props: ITestItemProps) => {
       language={props.env ? props.env.language : ''}
       submissions={props.submissions}
       setTestSubject={props.setTestSubject}
+      activeSubmission={props.activeSubmission}
       methodsByFile={methodsByFile}
       hasInstanceMethods={hasInstanceMethods}
     />

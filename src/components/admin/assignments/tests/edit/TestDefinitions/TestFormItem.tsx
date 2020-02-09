@@ -45,7 +45,7 @@ interface ITestFormItemProps extends FormComponentProps {
     testType: string,
     explanation: string,
     checkReturn: boolean,
-    outputIsFile: boolean,
+    outputType: string,
     codeString?: string,
   ) => void;
   deleteTest: () => Promise<void>;
@@ -55,13 +55,14 @@ interface ITestFormItemProps extends FormComponentProps {
     testType: string,
     explanation: string,
     checkReturn: boolean,
-    outputIsFile: boolean,
+    outputType: string,
     codeString?: string,
   ) => void;
   isRunning: boolean;
   language: string;
   submissions: SubmissionType[];
   setTestSubject: (id: string) => void;
+  activeSubmission?: SubmissionType;
   methodsByFile: { [name: string]: string[] };
   env?: EnvironmentType;
   hasInstanceMethods: boolean;
@@ -74,7 +75,7 @@ interface IState {
   showExplanation: boolean;
   explanation: string;
   checkReturn: boolean;
-  outputIsFile: boolean;
+  outputType: 'constant' | 'flex' | 'regexp' | 'file';
 }
 
 class TestFormItem extends React.Component<ITestFormItemProps, IState> {
@@ -87,7 +88,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
       showExplanation: false,
       explanation: props.testCase.explanation,
       checkReturn: props.testCase.checkReturn,
-      outputIsFile: props.testCase.outputIsFile,
+      outputType: this.getOutputFromTestCase(props.testCase),
     };
   }
 
@@ -130,8 +131,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
   };
 
   public onChangeOutputType = (val: string) => {
-    const outputIsFile = val === 'file';
-    this.setState({ outputIsFile });
+    this.setState({ outputType: val as 'constant' | 'flex' | 'regexp' | 'file' });
   };
 
   /******************************* API Change Functions ****************************/
@@ -140,7 +140,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
       this.state.testType,
       this.state.explanation,
       this.state.checkReturn,
-      this.state.outputIsFile,
+      this.state.outputType,
       this.state.commandText,
     );
   };
@@ -150,12 +150,28 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
       this.state.testType,
       this.state.explanation,
       this.state.checkReturn,
-      this.state.outputIsFile,
+      this.state.outputType,
       this.state.commandText,
     );
   };
 
-  /******************************* Render helper Functions ****************************/
+  /***********************************************************************************/
+  /* Helpers
+  /***********************************************************************************/
+
+  public getOutputFromTestCase = (testCase: TestCaseType) => {
+    if (testCase.outputIsRegexp) {
+      return 'regexp';
+    } else if (testCase.outputIsFile) {
+      return 'file';
+    } else if (testCase.isFlexible) {
+      return 'flex';
+    } else {
+      return 'constant';
+    }
+  };
+
+  /******************************* Render helper functions ****************************/
   public getPseudoCode = () => {
     const missingArgStyle = { color: '#BBBBBB', fontWeight: 300, fontStyle: 'italic' };
     const filledArgStyle = { color: 'grey', fontWeight: 600 };
@@ -165,9 +181,23 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
       let file = this.props.form.getFieldValue('fileName') || 'file';
       const input = this.props.form.getFieldValue('input') || 'input';
       const func = this.props.form.getFieldValue('function') || 'function';
-      const output = this.state.outputIsFile
-        ? `cat ${this.props.form.getFieldValue('expectedOutput') || 'outputFile'}`
-        : this.props.form.getFieldValue('expectedOutput') || 'output';
+
+      let output;
+      switch (this.state.outputType) {
+        case 'constant':
+          output = this.props.form.getFieldValue('expectedOutput') || 'output';
+          break;
+        case 'flex':
+          output = this.props.form.getFieldValue('expectedOutput') || 'output';
+          break;
+        case 'regexp':
+          output = this.props.form.getFieldValue('expectedOutput') || 'output';
+          break;
+        case 'file':
+          output = `cat ${this.props.form.getFieldValue('expectedOutput') || 'outputFile'}`;
+          break;
+      }
+
       const enclosingStartBrace = this.state.checkReturn ? '' : 'print(';
       const enclosingEndBrace = this.state.checkReturn ? '' : ')';
 
@@ -200,9 +230,10 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     if (this.state.testType == 'io_cli') {
       const command = this.state.commandText || 'command';
       const input = this.props.form.getFieldValue('input') || 'input';
-      const output = this.state.outputIsFile
-        ? `cat ${this.props.form.getFieldValue('expectedOutput') || 'outputFile'}`
-        : this.props.form.getFieldValue('expectedOutput') || 'output';
+      const output =
+        this.state.outputType === 'file'
+          ? `cat ${this.props.form.getFieldValue('expectedOutput') || 'outputFile'}`
+          : this.props.form.getFieldValue('expectedOutput') || 'output';
 
       return (
         <div style={{ color: '#707070', fontWeight: 500, fontSize: 14 }}>
@@ -261,12 +292,16 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     // Selector to choose whether an output is a file or a string
     const outputTypeSelect = (
       <Select
+        defaultValue={this.getOutputFromTestCase(this.props.testCase)}
         disabled={this.props.isRunning}
-        value={this.state.outputIsFile ? 'file' : 'constant'}
         onChange={this.onChangeOutputType}
-        style={{ width: 120 }}
+        style={{ width: 150 }}
       >
-        <Select.Option value={'constant'}>Constant</Select.Option>
+        <Select.Option value={'constant'}>Constant (strict)</Select.Option>
+        <Select.Option value={'flex'}>
+          Constant (flex) <CPTooltip infoIcon={true} title="Ignores whitespace, case, and newlines." />
+        </Select.Option>
+        <Select.Option value={'regexp'}>Regexp</Select.Option>
         <Select.Option value={'file'}>File</Select.Option>
       </Select>
     );
@@ -494,12 +529,16 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     // Selector to choose whether an output is a file or a string
     const outputTypeSelect = (
       <Select
+        defaultValue={this.getOutputFromTestCase(this.props.testCase)}
         disabled={this.props.isRunning}
-        value={this.state.outputIsFile ? 'file' : 'constant'}
         onChange={this.onChangeOutputType}
-        style={{ width: 120 }}
+        style={{ width: 150 }}
       >
-        <Select.Option value={'constant'}>Constant</Select.Option>
+        <Select.Option value={'constant'}>Constant (strict)</Select.Option>
+        <Select.Option value={'flex'}>
+          Constant (flex) <CPTooltip infoIcon={true} title="Ignores whitespace, case, and newlines." />
+        </Select.Option>
+        <Select.Option value={'regexp'}>Regexp</Select.Option>
         <Select.Option value={'file'}>File</Select.Option>
       </Select>
     );
@@ -561,7 +600,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             })(
               <Input
                 addonBefore={outputTypeSelect}
-                placeholder={this.state.outputIsFile ? 'helloOutput.txt' : 'Hello World!'}
+                placeholder={this.state.outputType === 'file' ? 'helloOutput.txt' : 'Hello World!'}
                 disabled={this.props.isRunning}
                 style={{ ...inputStyle, minWidth: 300 }}
               />,
@@ -855,6 +894,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   runTest={this.onRun}
                   submissions={this.props.submissions}
                   setTestSubject={this.props.setTestSubject}
+                  activeSubmission={this.props.activeSubmission}
                   env={this.props.env}
                 />
               </div>
