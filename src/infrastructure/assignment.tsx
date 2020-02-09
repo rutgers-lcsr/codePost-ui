@@ -106,7 +106,6 @@ const AssignmentVStudent = t.intersection(
       median: t.union([t.number, t.null, t.undefined]),
       points: t.number,
       exposeDumpLogs: t.union([t.null, t.boolean]),
-      tests: t.array(t.number),
     }),
   ],
   'Assignment',
