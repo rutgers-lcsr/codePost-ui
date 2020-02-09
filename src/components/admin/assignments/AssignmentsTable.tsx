@@ -558,7 +558,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         published: (
           <span className="display-flex align-items-center justify-content-center">
             <Popconfirm onConfirm={onConfirm} title={publishToggleText} icon={<Icon type="question-circle" />}>
-              <Switch checked={assignment.isReleased} />
+              <Switch checked={assignment.isReleased} disabled={!assignment.isVisible} />
             </Popconfirm>
             {assignment.isReleased ? (
               <span>
