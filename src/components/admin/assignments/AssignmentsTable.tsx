@@ -276,7 +276,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           <div>
             Visible
             <CPTooltip
-              title={'If visible, students can see the assignment name in the Student Console.'}
+              title={'If visible, students can see the assignment in the Student Console.'}
               infoIcon={true}
               hideThisOnHideTips={true}
               iconStyle={{ paddingLeft: 5 }}
