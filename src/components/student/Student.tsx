@@ -72,7 +72,6 @@ enum SUBMISSION_STATUS {
 
 enum CURRENT_PANEL {
   TABLE,
-  VIEWFILES,
   UPLOADFILES,
   ADDFILES,
 }
@@ -267,8 +266,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     if (assignment.liveFeedbackMode) {
       openSubmission(newSubmissionID);
       this.changePanel(CURRENT_PANEL.TABLE, undefined, undefined);
-    } else {
-      this.changePanel(CURRENT_PANEL.VIEWFILES, assignment, undefined);
     }
   };
 
@@ -638,8 +635,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
           <UploadSubmissionDialog
             isVisible={
               this.state.currentPanel === CURRENT_PANEL.UPLOADFILES ||
-              this.state.currentPanel === CURRENT_PANEL.ADDFILES ||
-              this.state.currentPanel === CURRENT_PANEL.VIEWFILES
+              this.state.currentPanel === CURRENT_PANEL.ADDFILES
             }
             onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, this.state.detailAssignment, undefined)}
             assignments={[]}
@@ -655,11 +651,10 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
                 ? { [this.props.user.email]: { [this.state.detailSubmission.assignment]: this.state.detailSubmission } }
                 : { [this.props.user.email]: {} }
             }
-            uploadSubmission={this.uploadSubmission.bind(this, this.state.currentPanel === CURRENT_PANEL.UPLOADFILES)}
+            uploadSubmission={this.uploadSubmission.bind(this, this.state.currentPanel !== CURRENT_PANEL.ADDFILES)}
             disableStudentSelect={true}
             onSuccess={this.onUploadSuccess}
             isStudent={true}
-            activeTab={this.state.currentPanel === CURRENT_PANEL.VIEWFILES ? '4' : undefined}
           />
         </div>
       );
