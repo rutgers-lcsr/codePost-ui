@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Tag, Typography, Spin } from 'antd';
+import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Tooltip, Typography, Spin } from 'antd';
 
 import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
@@ -276,7 +276,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           <div>
             Visible
             <CPTooltip
-              title={'If visible, students can see the assignment in the Student Console.'}
+              title={'If visible, students can see the assignment name in the Student Console.'}
               infoIcon={true}
               hideThisOnHideTips={true}
               iconStyle={{ paddingLeft: 5 }}
@@ -553,7 +553,23 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
 
       return {
         key: assignment.id,
-        assignment: <Text strong>{assignment.name}</Text>,
+        assignment: (
+          <Text strong>
+            {assignment.name}
+            {assignment.hideFrom.length > 0 && (
+              <Tooltip
+                title={`Assignment hidden from the following sections: ${assignment.hideFrom
+                  .map((sectionID) => {
+                    const thisSection = this.props.sections.find((s) => s.id === sectionID);
+                    return thisSection ? thisSection.name : '';
+                  })
+                  .join(', ')}`}
+              >
+                <Icon type="eye-invisible" style={{ marginLeft: 5 }} />
+              </Tooltip>
+            )}
+          </Text>
+        ),
         visible: <Switch checked={assignment.isVisible} onChange={toggleVisible} />,
         published: (
           <span className="display-flex align-items-center justify-content-center">

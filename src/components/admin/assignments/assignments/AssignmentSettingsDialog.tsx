@@ -10,6 +10,7 @@ import {
   Checkbox,
   Button,
   DatePicker,
+  Empty,
   Form,
   Input,
   InputNumber,
@@ -126,24 +127,29 @@ class AssignmentSettingsDialog extends React.Component<IProps, IState> {
   public handleCreate = (fileTemplates: FileTemplateType[]) => {
     const formRefCast: any = this.formRef;
     const form = formRefCast.props.form;
-    form.validateFields((err: any, values: IFormValues) => {
+    form.validateFields(async (err: any, values: IFormValues) => {
       if (err) {
         return;
       }
 
+      const fileTemplatePromises: any[] = [];
       for (const ft of fileTemplates) {
         if (ft.id > 0) {
-          FileTemplate.update(ft);
+          fileTemplatePromises.push(FileTemplate.update(ft));
         } else {
-          FileTemplate.create(ft);
+          fileTemplatePromises.push(FileTemplate.create(ft));
         }
       }
 
       for (const ft of this.state.fileTemplates) {
         if (!fileTemplates.some((el) => el.id === ft.id)) {
-          FileTemplate.delete(ft.id);
+          fileTemplatePromises.push(FileTemplate.delete(ft.id));
         }
       }
+
+      // Block assignment update on file templates update so the file templates field is updated on
+      // Assignment.patch
+      await Promise.all(fileTemplatePromises);
 
       this.updateSettings(values);
     });
@@ -278,6 +284,7 @@ const CollectionCreateForm: any = Form.create()(
               id: -1 * oldState.templates.length,
             },
           ],
+          newTemplate: '',
         };
       });
     };
@@ -361,6 +368,7 @@ const CollectionCreateForm: any = Form.create()(
     public render() {
       const { visible, onCancel, onSave, form } = this.props;
       const { getFieldDecorator } = form;
+      const tabPaneStyle = { maxHeight: 'calc(100vh - 350px)', overflow: 'auto' };
       return (
         <Modal
           visible={visible}
@@ -372,13 +380,9 @@ const CollectionCreateForm: any = Form.create()(
           style={{ maxWidth: 1000 }}
           maskClosable={false}
         >
-          <Form
-            layout="horizontal"
-            hideRequiredMark={true}
-            style={{ maxHeight: 'calc(100vh - 300px)', overflow: 'auto' }}
-          >
+          <Form layout="horizontal" hideRequiredMark={true}>
             <Tabs defaultActiveKey="1">
-              <Tabs.TabPane tab="General" key="1">
+              <Tabs.TabPane tab="General" key="1" style={tabPaneStyle}>
                 <Form.Item
                   label="Name"
                   extra="Must be unique within this course."
@@ -465,7 +469,7 @@ const CollectionCreateForm: any = Form.create()(
                   </Form.Item>
                 ) : null}
               </Tabs.TabPane>
-              <Tabs.TabPane tab="Submission" key="2">
+              <Tabs.TabPane tab="Submission" key="2" style={tabPaneStyle}>
                 <Form.Item
                   label="Allow student upload"
                   extra={
@@ -522,8 +526,21 @@ const CollectionCreateForm: any = Form.create()(
                       </Button>
                     )}
                     onChange={this.switchTemplates}
+                    locale={{
+                      notFoundContent: (
+                        <Empty
+                          image={Empty.PRESENTED_IMAGE_SIMPLE}
+                          description={<div style={{ fontWeight: 500 }}>Add a file in the input below.</div>}
+                        />
+                      ),
+                    }}
                   />
-                  <Input onChange={this.changeTemplateText} placeholder="file name" style={{ width: '72%' }} />
+                  <Input
+                    onChange={this.changeTemplateText}
+                    value={this.state.newTemplate}
+                    placeholder="file name"
+                    style={{ width: '72%' }}
+                  />
                   <Button onClick={this.addTemplate}>Add</Button>
                 </Form.Item>
                 <Form.Item
@@ -559,7 +576,7 @@ const CollectionCreateForm: any = Form.create()(
                   })(<Switch />)}
                 </Form.Item>
               </Tabs.TabPane>
-              <Tabs.TabPane tab="Grading" key="3">
+              <Tabs.TabPane tab="Grading" key="3" style={tabPaneStyle}>
                 <Form.Item
                   label="Anonymous grading"
                   extra={
@@ -631,7 +648,8 @@ const CollectionCreateForm: any = Form.create()(
                   extra={
                     <div>
                       Use file templates to help speed up grading by de-emphasizing template-provided versus
-                      student-written code. Template names must match submission file names.
+                      student-written code. Template files names must match a file added as a "Submission File".
+                      <br />
                     </div>
                   }
                   labelCol={{ span: 6 }}
@@ -655,6 +673,19 @@ const CollectionCreateForm: any = Form.create()(
                         };
                       })}
                     pagination={false}
+                    locale={{
+                      emptyText: (
+                        <Empty
+                          image={Empty.PRESENTED_IMAGE_SIMPLE}
+                          description={
+                            <div style={{ fontWeight: 500 }}>
+                              No files. In order to upload template code, the file must first be added as an Optional or
+                              Required <b>Submission File</b> in the <b>Submission tab</b>.
+                            </div>
+                          }
+                        />
+                      ),
+                    }}
                   />
                 </Form.Item>
                 <Form.Item
@@ -674,7 +705,7 @@ const CollectionCreateForm: any = Form.create()(
                   })(<Switch />)}
                 </Form.Item>
               </Tabs.TabPane>
-              <Tabs.TabPane tab="Publishing" key="4">
+              <Tabs.TabPane tab="Publishing" key="4" style={tabPaneStyle}>
                 <Form.Item
                   label="Hide graders"
                   extra={

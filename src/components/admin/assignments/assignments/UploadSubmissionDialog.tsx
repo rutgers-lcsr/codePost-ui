@@ -49,8 +49,6 @@ import { Submission } from '../../../../infrastructure/submission';
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
 
-import { IStudentSubmissionsDataTable } from '../../../../types/common';
-
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
@@ -239,7 +237,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   public loadTestResults = async (sub?: StudentSubmissionType | SubmissionType) => {
     if (sub) {
       if (sub && sub.tests) {
-        const tests = await Promise.all(sub.tests.map((id) => SubmissionTest.read(id)));
+        const tests = await Submission.readTests(sub.id);
         this.setState({ submissionTests: SubmissionTest.getLatest(tests) });
       }
     }
@@ -841,11 +839,11 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                       this.state.submissionTests.length > 0 ? (
                         <Alert
                           type="info"
-                          message="Showing previous results"
-                          description={
-                            <p>
-                              Last submission at: <CodePostDate datetime={this.state.submission!.dateUploaded || ''} />.
-                            </p>
+                          message={
+                            <div>
+                              Showing results from last submission at:{' '}
+                              <CodePostDate datetime={this.state.submission!.dateUploaded || ''} />
+                            </div>
                           }
                         />
                       ) : (
