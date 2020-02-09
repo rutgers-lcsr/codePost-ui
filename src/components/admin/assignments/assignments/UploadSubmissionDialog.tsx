@@ -92,6 +92,7 @@ interface IProps {
   course?: CourseType;
   title?: string;
   infoMessage?: React.ReactNode;
+  activeTab?: string;
 }
 
 enum STATUS {
@@ -812,7 +813,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         {status !== STATUS.NONE || !this.props.isStudent ? (
           content
         ) : (
-          <Tabs defaultActiveKey="1">
+          <Tabs defaultActiveKey={this.props.activeTab || '1'}>
             <Tabs.TabPane tab="Submit" key="1">
               {content}
             </Tabs.TabPane>

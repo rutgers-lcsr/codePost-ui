@@ -638,7 +638,8 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
           <UploadSubmissionDialog
             isVisible={
               this.state.currentPanel === CURRENT_PANEL.UPLOADFILES ||
-              this.state.currentPanel === CURRENT_PANEL.ADDFILES
+              this.state.currentPanel === CURRENT_PANEL.ADDFILES ||
+              this.state.currentPanel === CURRENT_PANEL.VIEWFILES
             }
             onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, this.state.detailAssignment, undefined)}
             assignments={[]}
@@ -658,6 +659,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
             disableStudentSelect={true}
             onSuccess={this.onUploadSuccess}
             isStudent={true}
+            activeTab={this.state.currentPanel === CURRENT_PANEL.VIEWFILES ? '4' : undefined}
           />
         </div>
       );
