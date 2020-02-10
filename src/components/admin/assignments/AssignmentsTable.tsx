@@ -787,6 +787,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           index,
           moveRow: moveRow,
         })}
+        pagination={this.props.assignments.length < 10 ? false : undefined}
       />
     );
   }
