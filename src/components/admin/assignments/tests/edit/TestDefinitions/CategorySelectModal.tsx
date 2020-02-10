@@ -2,35 +2,47 @@
 import React, { useState } from 'react';
 
 /* library imports */
-import { Button, Modal, Select, Icon, Tooltip } from 'antd';
+import { Button, Modal, Select } from 'antd';
 
 import { TestCategoryType } from '../../../../../../infrastructure/testCategory';
 
 interface IUploadProps {
-  addTest: (id: number) => Promise<void>;
+  // Function to call on category choose
+  onSelect: (id: number) => Promise<void>;
   categories: TestCategoryType[];
+  childToRender: React.ReactElement;
+  title: string;
+  defaultCategory?: TestCategoryType;
 }
 
-export const AddTestModal = (props: IUploadProps) => {
+export const CategorySelectModal = (props: IUploadProps) => {
   /******************************* State Variables ****************************/
   const [visible, setVisible] = useState(false);
-  const [category, setCategory] = useState<number | undefined>(undefined);
+  const [category, setCategory] = useState<number | undefined>(
+    props.defaultCategory ? props.defaultCategory.id : undefined,
+  );
 
   // If the user has only created a single category, don't make them choose it
   // through a modal: select it automatically.
   React.useEffect(() => {
     if (visible) {
       if (props.categories.length === 1) {
-        props.addTest(props.categories[0].id);
+        props.onSelect(props.categories[0].id);
         toggleVisible();
       }
     }
   }, [visible]);
 
+  React.useEffect(() => {
+    if (props.defaultCategory) {
+      setCategory(props.defaultCategory.id);
+    }
+  }, [props.defaultCategory]);
+
   /******************************* API / State Change Functions ****************************/
   const onSave = async () => {
     if (category) {
-      props.addTest(category);
+      props.onSelect(category);
       toggleVisible();
     }
   };
@@ -47,25 +59,12 @@ export const AddTestModal = (props: IUploadProps) => {
   /******************************* Return *****************************************/
   return (
     <React.Fragment>
-      <Button
-        onClick={toggleVisible}
-        style={{
-          height: 28,
-          fontSize: 12,
-          padding: '0px 9px',
-          borderColor: 'rgb(217,217,217)',
-          borderTopRightRadius: '0px',
-          borderBottomRightRadius: '0px',
-          boxShadow: 'none',
-          textShadow: 'none',
-        }}
-        type="primary"
-      >
-        Add test
-      </Button>
+      {React.cloneElement(props.childToRender, {
+        onClick: toggleVisible,
+      })}
       <Modal
         visible={visible && props.categories.length > 1}
-        title={`Create new test case`}
+        title={props.title}
         onCancel={toggleVisible}
         width={400}
         footer={[
@@ -78,7 +77,11 @@ export const AddTestModal = (props: IUploadProps) => {
         ]}
       >
         Category:{' '}
-        <Select onChange={onChange} style={{ width: '100%' }}>
+        <Select
+          defaultValue={props.defaultCategory ? props.defaultCategory.name : undefined}
+          onChange={onChange}
+          style={{ width: '100%' }}
+        >
           {props.categories.map((el) => (
             <Select.Option key={el.id} value={el.id}>
               {el.name}

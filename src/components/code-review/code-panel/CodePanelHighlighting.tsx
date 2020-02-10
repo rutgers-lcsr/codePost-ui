@@ -183,8 +183,14 @@ class CodePanelHighlighting {
     const ids: string[] = Object.entries(styles).map(([highlight, level]) => {
       return highlight;
     });
+
+    // In Firefox, stylesheet.insertRule produces a SecurityError
+    // https://stackoverflow.com/questions/15229330/attempt-to-add-a-rule-to-a-css-stylesheet-gives-the-operation-is-insecure-in-f
+    // So, we ditch the following calculation on Firefox
+    const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+
     // Don't mess with nested opacity for the cursor
-    if (!ids.includes('0') && !ids.includes(`${Number.MAX_SAFE_INTEGER}`)) {
+    if (!ids.includes('0') && !ids.includes(`${Number.MAX_SAFE_INTEGER}`) && !isFirefox) {
       for (const [highlight, level] of Object.entries(styles)) {
         if (highlight === '0' || highlight === `${Number.MAX_SAFE_INTEGER}`) {
           continue;
@@ -218,6 +224,7 @@ class CodePanelHighlighting {
             break;
           }
         }
+
         if (!ruleExists && stylesheet) {
           stylesheet.insertRule(`.highlight-${highlight} {background-color: ${color}; opacity: ${tint} !important;}`);
         }
