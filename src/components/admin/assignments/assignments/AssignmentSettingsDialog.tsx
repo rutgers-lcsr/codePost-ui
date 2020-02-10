@@ -467,7 +467,12 @@ const CollectionCreateForm: any = Form.create()(
                   label="Late deductions"
                   extra={
                     <div>
-                      <Tag>NEW</Tag>Automatically deduct points for each day late.
+                      <Tag>NEW</Tag>Automatically deduct points for each day late.{' '}
+                      {form.getFieldValue('lateDeductions') && form.getFieldValue('lateDeductions').length > 1 && (
+                        <span>
+                          <b>Note</b>: late day deductions are not cumulative.
+                        </span>
+                      )}
                     </div>
                   }
                   labelCol={{ span: 6 }}
@@ -476,7 +481,7 @@ const CollectionCreateForm: any = Form.create()(
                   {getFieldDecorator('lateDeductions', {
                     initialValue: this.props.assignment.lateDeductions,
                     // @ts-ignore
-                  })(<InputNumberMultiple />)}
+                  })(<InputNumberMultiple emptyMessage="Add a late deduction" />)}
                 </Form.Item>
                 <Form.Item
                   label="Live feedback mode"

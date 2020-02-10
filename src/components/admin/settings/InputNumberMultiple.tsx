@@ -1,10 +1,11 @@
 import * as React from 'react';
 
-import { Icon, Input, InputNumber } from 'antd';
+import { Icon, Input, InputNumber, Button } from 'antd';
 
 interface IInputNumberMultipleProps {
   value: number[];
   onChange: any;
+  emptyMessage?: string;
 }
 
 class InputNumberMultiple extends React.Component<IInputNumberMultipleProps, {}> {
@@ -59,13 +60,17 @@ class InputNumberMultiple extends React.Component<IInputNumberMultipleProps, {}>
             />
           </span>
         ) : null}
-        <span>
-          <Icon
-            type="plus-circle"
-            style={{ color: '#24be85', paddingLeft: '10px', cursor: 'pointer' }}
-            onClick={this.addRow}
-          />
-        </span>
+        {this.props.value.length === 0 && this.props.emptyMessage ? (
+          <Button onClick={this.addRow}>{this.props.emptyMessage}</Button>
+        ) : (
+          <span>
+            <Icon
+              type="plus-circle"
+              style={{ color: '#24be85', paddingLeft: '10px', cursor: 'pointer' }}
+              onClick={this.addRow}
+            />
+          </span>
+        )}
       </span>
     );
   }
