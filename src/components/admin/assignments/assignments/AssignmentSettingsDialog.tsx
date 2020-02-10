@@ -394,11 +394,7 @@ const CollectionCreateForm: any = Form.create()(
               <Tabs.TabPane tab="Submission" key="2">
                 <Form.Item
                   label="Allow student upload"
-                  extra={
-                    <div>
-                      <Tag>NEW</Tag>When enabled, students can upload submissions before the given due date.
-                    </div>
-                  }
+                  extra={<div>When enabled, students can upload submissions before the given due date.</div>}
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 16 }}
                 >
@@ -456,8 +452,7 @@ const CollectionCreateForm: any = Form.create()(
                   label="Allow late submissions"
                   extra={
                     <div>
-                      <Tag>NEW</Tag> When enabled, students will be allowed to submit after this assignment's due date
-                      has passed.
+                      When enabled, students will be allowed to submit after this assignment's due date has passed.
                     </div>
                   }
                   labelCol={{ span: 6 }}
@@ -487,8 +482,8 @@ const CollectionCreateForm: any = Form.create()(
                   label="Live feedback mode"
                   extra={
                     <div>
-                      <Tag>NEW</Tag> Students can see their feedback and comments without the submission being finalized
-                      or published. Ideal for office hours or ungraded feedback.
+                      Students can see their feedback and comments without the submission being finalized or published.
+                      Ideal for office hours or ungraded feedback.
                     </div>
                   }
                   labelCol={{ span: 6 }}
@@ -523,11 +518,7 @@ const CollectionCreateForm: any = Form.create()(
                 </Form.Item>
                 <Form.Item
                   label="Additive grading"
-                  extra={
-                    <div>
-                      <Tag>NEW</Tag> Start submission scores at 0 instead of at an assignment's point value.
-                    </div>
-                  }
+                  extra={<div>Start submission scores at 0 instead of at an assignment's point value.</div>}
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 16 }}
                 >
@@ -538,11 +529,7 @@ const CollectionCreateForm: any = Form.create()(
                 </Form.Item>
                 <Form.Item
                   label="Rubric-only mode"
-                  extra={
-                    <div>
-                      <Tag>NEW</Tag> Require graders to link all submission comments to a Rubric Comment.
-                    </div>
-                  }
+                  extra={<div>Require graders to link all submission comments to a Rubric Comment.</div>}
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 15 }}
                 >
@@ -603,7 +590,7 @@ const CollectionCreateForm: any = Form.create()(
                   extra={
                     <div>
                       When enabled, an assignment's 10 most frequently applied rubric comments will be shown within the
-                      code console to them easily accessible.
+                      code console to make them easily accessible.
                     </div>
                   }
                   labelCol={{ span: 6 }}
