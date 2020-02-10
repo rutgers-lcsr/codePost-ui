@@ -809,8 +809,8 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 <div style={{ minHeight: 400, height: 'calc(100vh - 400px)' }}>
                   <TestsList
                     tests={this.state.submissionTests}
-                    redactNotShown={false}
-                    hideNotRun={false}
+                    hideNotRun={this.state.selectedAssignment!.nudgeMode}
+                    redactNotShown={this.state.selectedAssignment!.nudgeMode}
                     cases={this.state.testCases}
                     categories={this.state.testCategories}
                     isLoading={this.state.loadingTests}

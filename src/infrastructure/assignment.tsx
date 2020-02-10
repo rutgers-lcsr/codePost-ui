@@ -59,6 +59,7 @@ const AssignmentV = t.intersection(
       explanation: t.string,
       isVisible: t.boolean,
       hideFrom: t.array(t.number),
+      nudgeMode: t.boolean,
     }),
     t.partial({
       submissions_count: t.number,
@@ -90,6 +91,7 @@ const AssignmentVStudent = t.intersection(
       explanation: t.string,
       isVisible: t.boolean,
       hideFrom: t.array(t.number),
+      nudgeMode: t.boolean,
     }),
     t.partial({
       hideGrades: t.boolean,
