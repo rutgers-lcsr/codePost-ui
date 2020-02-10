@@ -80,13 +80,13 @@ export class File {
   };
 
   public static codeType = (file: FileType): CodeType => {
-    return JupyterExtensions.includes(file.extension)
+    return JupyterExtensions.includes(file.extension.toLowerCase())
       ? 'jupyter'
-      : MarkdownExtensions.includes(file.extension)
+      : MarkdownExtensions.includes(file.extension.toLowerCase())
       ? 'markdown'
-      : ImageExtensions.includes(file.extension)
+      : ImageExtensions.includes(file.extension.toLowerCase())
       ? 'image'
-      : PDFExtensions.includes(file.extension)
+      : PDFExtensions.includes(file.extension.toLowerCase())
       ? 'pdf'
       : 'code';
   };

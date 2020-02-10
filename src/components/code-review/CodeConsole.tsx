@@ -438,8 +438,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       const size_bytes = new Blob([file.code]).size;
 
       const bounce =
-        !['.pdf', 'pdf', 'jpg', '.jpg', 'jpeg', '.jpeg', 'png', '.png', 'ipynb', '.ipynb'].includes(file.extension) &&
-        size_bytes > max_size_bytes;
+        !['.pdf', 'pdf', 'jpg', '.jpg', 'jpeg', '.jpeg', 'png', '.png', 'ipynb', '.ipynb'].includes(
+          file.extension.toLowerCase(),
+        ) && size_bytes > max_size_bytes;
       if (bounce) {
         return {
           ...file,
