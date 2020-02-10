@@ -130,7 +130,7 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
       } else {
         let data: any = readerResult;
 
-        if (['png', 'jpeg', 'jpg'].includes(outputFile.extension) && typeof data === 'string') {
+        if (['png', 'jpeg', 'jpg'].includes(outputFile.extension.toLowerCase()) && typeof data === 'string') {
           data = await resizeImage(data);
         }
 
@@ -143,7 +143,7 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
       }
     };
 
-    if (inputFile.type.includes('image') || ['png', 'jpeg', 'jpg'].includes(outputFile.extension)) {
+    if (inputFile.type.includes('image') || ['png', 'jpeg', 'jpg'].includes(outputFile.extension.toLowerCase())) {
       reader.readAsDataURL(inputFile);
     } else if (inputFile.type.includes('pdf') || ['pdf'].includes(outputFile.extension)) {
       reader.readAsDataURL(inputFile);
