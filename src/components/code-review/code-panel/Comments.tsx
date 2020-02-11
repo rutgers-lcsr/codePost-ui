@@ -58,6 +58,8 @@ interface ICommentsEditProps {
 
   showCursor: CURSOR_DOMAIN;
   showExplanations: boolean;
+
+  scrollTo?: number;
 }
 
 interface ICommentPlacement {
