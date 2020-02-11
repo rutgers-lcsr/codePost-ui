@@ -54,8 +54,10 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
   if (size_bytes > FILE_SIZE_LIMIT_IN_BYTES) {
     message.warning(
       `${inputFile.name} exceeds file size limit of ${FILE_SIZE_LIMIT_IN_BYTES /
-        1e6} MB and cannot be uploaded (its size is ${(size_bytes / 1e6).toFixed(1)} MB).`,
-      10,
+        1e6} MB and cannot be uploaded (its size is ${(size_bytes / 1e6).toFixed(
+        1,
+      )} MB). Please try using a compression tool for your file and re-uploading.\nIf you need help, please contact us at team@codepost.io.`,
+      15,
     );
     return Promise.resolve([]);
   }
