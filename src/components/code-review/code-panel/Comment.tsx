@@ -887,7 +887,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     // ---------------------------------- Components -------------------------------------- //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    const titleLeft = [commentElements.line, commentElements.share, commentElements.status];
+    let titleLeft = [commentElements.line, commentElements.share, commentElements.status];
+    // FIXME: Implement comment deep-linking and scrolling for block rendered files
+    if (['markdown', 'jupyter', 'pdf'].includes(File.codeType(this.props.file))) {
+      titleLeft = [commentElements.line, commentElements.status];
+    }
 
     const titleRight = [commentElements.points];
 
