@@ -590,6 +590,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     const shareComment = (e: any) => {
       e.preventDefault();
+      e.stopPropagation();
       const link = `https://codepost.io/code/${this.props.file.submission}/?comment=${this.props.comment.id}`;
       const element = document.createElement('textarea');
       element.value = link;
