@@ -256,12 +256,13 @@ const CollectionCreateForm: any = Form.create()(
 
     public addTemplate = () => {
       this.setState((oldState: IFormState) => {
+        const extension = oldState.newTemplate.split('.').length > 1 ? oldState.newTemplate.split('.')[1] : 'txt';
         return {
           templates: [
             ...oldState.templates,
             {
               code: '',
-              extension: oldState.newTemplate.split('.')[1],
+              extension,
               name: oldState.newTemplate,
               assignment: this.props.assignment.id,
               path: '',
