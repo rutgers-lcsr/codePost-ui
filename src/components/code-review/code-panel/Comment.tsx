@@ -623,7 +623,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         commentElements.status = (
           <span
             className="cp-label--small cp-label--italic"
-            style={{ color: this.context.consoleTheme.commentTitleText }}
+            style={{ color: this.context.consoleTheme.commentTitleText, marginLeft: '-9px' }}
           >
             {!this.state.text ? '' : 'Saving...'}
           </span>
