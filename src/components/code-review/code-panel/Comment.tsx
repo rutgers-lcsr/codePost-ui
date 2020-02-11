@@ -600,7 +600,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       message.info('Link copied to clipboard!');
     };
 
-    commentElements.share = <Icon type="link" onClick={shareComment} style={{ cursor: 'pointer' }} />;
+    commentElements.share = (
+      <span id="comment-share">
+        <Icon type="link" onClick={shareComment} style={{ cursor: 'pointer' }} />
+      </span>
+    );
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // -------------------- commentStatus ['edited', 'saved', 'error'] -------------------- //

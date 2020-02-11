@@ -259,11 +259,15 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const showTooltips = React.useContext(ShowTooltipContext);
 
   const [nudge, setNudge] = React.useState(false);
-  const triggerNudge = async () => {
-    setNudge(true);
-    message.warning('Unfinalize to modify this submission →');
-    await wait(1200); // two wiggles
-    setNudge(false);
+  const triggerNudge = async (event: any) => {
+    const safeAreaIDs = ['comment-share'];
+    const safeAreas = safeAreaIDs.map((id) => document.getElementById(id));
+    if (!safeAreas.some((area) => area !== null && area.contains(event.target))) {
+      setNudge(true);
+      message.warning('Unfinalize to modify this submission →');
+      await wait(1200); // two wiggles
+      setNudge(false);
+    }
   };
 
   const isFinalized = props.submission.isFinalized;
