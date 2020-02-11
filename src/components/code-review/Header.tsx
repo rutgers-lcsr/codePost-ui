@@ -260,8 +260,10 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
 
   const [nudge, setNudge] = React.useState(false);
   const triggerNudge = async (event: any) => {
-    const safeAreaIDs = ['comment-share'];
-    const safeAreas = safeAreaIDs.map((id) => document.getElementById(id));
+    const safeAreaClasses = ['comment-share'];
+    const safeAreas = safeAreaClasses
+      .map((id) => Array.prototype.slice.call(document.getElementsByClassName(id))) // HTMLCollection => array
+      .flat();
     if (!safeAreas.some((area) => area !== null && area.contains(event.target))) {
       setNudge(true);
       message.warning('Unfinalize to modify this submission →');
