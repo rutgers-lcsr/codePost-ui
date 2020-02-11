@@ -15,7 +15,7 @@ export function awaitTestResult(id: string, callback: (result: any) => any, prog
         '#autograder_bugs',
       );
       message.error(
-        'Sorry, it looks like we’re experiencing heavier than normal test wait times. Please try again in a few minutes, or contact the codePost team.',
+        'Your test is taking longer than usual to complete. Please try again in a few minutes, or contact the codePost team using the chatbox on the bottom right of this page if the problem persists.',
         25,
       );
       window.clearInterval(interval);
