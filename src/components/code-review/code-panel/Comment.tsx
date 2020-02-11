@@ -525,6 +525,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       saveButton: null,
       deleteButton: null,
       author: null,
+      share: null,
     };
 
     let onClick;
@@ -582,6 +583,24 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         </span>
       );
     }
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // ------------------------------------- share ---------------------------------------- //
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+    const shareComment = (e: any) => {
+      e.preventDefault();
+      const link = `https://codepost.io/code/${this.props.file.submission}/?comment=${this.props.comment.id}`;
+      const element = document.createElement('textarea');
+      element.value = link;
+      document.body.appendChild(element);
+      element.select();
+      document.execCommand('copy');
+      document.body.removeChild(element);
+      message.info('Link copied to clipboard!');
+    };
+
+    commentElements.share = <Icon type="link" onClick={shareComment} style={{ cursor: 'pointer' }} />;
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // -------------------- commentStatus ['edited', 'saved', 'error'] -------------------- //
@@ -856,7 +875,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     // ---------------------------------- Components -------------------------------------- //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    const titleLeft = [commentElements.line, commentElements.status];
+    const titleLeft = [commentElements.line, commentElements.share, commentElements.status];
 
     const titleRight = [commentElements.points];
 
