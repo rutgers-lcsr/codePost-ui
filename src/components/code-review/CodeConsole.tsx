@@ -2099,7 +2099,7 @@ Days late (after credit):  ${daysLateAfterCredit}
               forcedRubricMode={this.state.assignment.forcedRubricMode}
               rubricCategories={this.state.rubricCategories}
               showCursor={this.state.showCursor}
-              scrollTo={parseInt(queryString.parse(this.props.location.search).comment as string)}
+              scrollToCommentID={parseInt(queryString.parse(this.props.location.search).comment as string)}
             />
           );
 
