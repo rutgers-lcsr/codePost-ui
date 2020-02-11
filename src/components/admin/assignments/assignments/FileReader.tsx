@@ -50,8 +50,10 @@ const FILE_SIZE_LIMIT_IN_BYTES = 3e6; // 3 megabytes
 export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<IProtoFileUpload[]> => {
   const reader = new FileReader();
 
+  let outputFile = fileToProtoFileUpload(inputFile, zipSource);
+
   const allowBigUploadFile =
-    inputFile.type.includes('pdf') || ['pdf', 'PDF'].includes(inputFile.extension.toLowerCase());
+    inputFile.type.includes('pdf') || ['pdf', 'PDF'].includes(outputFile.extension.toLowerCase());
 
   const size_bytes = inputFile.size;
   if (!allowBigUploadFile && size_bytes > FILE_SIZE_LIMIT_IN_BYTES) {
@@ -62,8 +64,6 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
     );
     return Promise.resolve([]);
   }
-
-  let outputFile = fileToProtoFileUpload(inputFile, zipSource);
 
   return new Promise((resolve, reject) => {
     reader.onerror = () => {
@@ -146,11 +146,11 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
       }
     };
 
-    if (inputFile.type.includes('image') || ['png', 'jpeg', 'jpg'].includes(inputFile.extension.toLowerCase())) {
+    if (inputFile.type.includes('image') || ['png', 'jpeg', 'jpg'].includes(outputFile.extension.toLowerCase())) {
       reader.readAsDataURL(inputFile);
-    } else if (inputFile.type.includes('pdf') || ['pdf'].includes(inputFile.extension)) {
+    } else if (inputFile.type.includes('pdf') || ['pdf'].includes(outputFile.extension)) {
       reader.readAsDataURL(inputFile);
-    } else if (inputFile.type === 'application/zip' || ['zip'].includes(inputFile.extension)) {
+    } else if (inputFile.type === 'application/zip' || ['zip'].includes(outputFile.extension)) {
       reader.readAsArrayBuffer(inputFile);
     } else {
       reader.readAsText(inputFile);
