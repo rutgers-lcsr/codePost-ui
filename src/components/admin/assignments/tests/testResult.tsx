@@ -1,3 +1,5 @@
+import { sendSlack } from '../../../core/slack';
+
 const MAX_TRIES = 25;
 
 export function awaitTestResult(id: string, callback: (result: any) => any, progressCallback?: (progress: any) => any) {
@@ -5,6 +7,12 @@ export function awaitTestResult(id: string, callback: (result: any) => any, prog
   const interval = setInterval(() => {
     checkAndRefreshTimer(id, interval, callback, progressCallback);
     if (++tries === MAX_TRIES && !progressCallback) {
+      sendSlack(
+        'No test result received after polling - infinite loop',
+        window.location.href,
+        '#cc0000',
+        '#autograder_bugs',
+      );
       window.clearInterval(interval);
     }
   }, 2000);
