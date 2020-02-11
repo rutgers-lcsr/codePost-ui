@@ -396,6 +396,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           forcedRubricMode={this.props.forcedRubricMode}
           rubricCategories={this.props.rubricCategories}
           cursored={cursored}
+          isSpotlit={comment.id === this.props.scrollToCommentID}
         />
       );
     });

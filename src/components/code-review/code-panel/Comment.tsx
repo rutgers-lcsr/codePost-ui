@@ -106,6 +106,7 @@ interface ICommentProps {
   forcedRubricMode: boolean;
 
   cursored: boolean;
+  isSpotlit?: boolean;
 }
 
 interface ICommentState {
@@ -604,7 +605,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     };
 
     commentElements.share = (
-      <span id="comment-share">
+      <span className="comment-share">
         <CPButton
           type="secondary"
           onClick={shareComment}
@@ -929,13 +930,14 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           <div className="ant-popover-inner" style={shadow}>
             <div
               style={{
-                backgroundColor: this.props.cursored
-                  ? 'lightblue'
-                  : this.props.comment.tags !== undefined && this.props.comment.tags.includes('late')
-                  ? '#fffbe6'
-                  : this.props.comment.color !== undefined && this.props.comment.color !== null
-                  ? this.props.comment.color
-                  : this.context.consoleTheme.commentBody,
+                backgroundColor:
+                  this.props.cursored || this.props.isSpotlit
+                    ? 'lightblue'
+                    : this.props.comment.tags !== undefined && this.props.comment.tags.includes('late')
+                    ? '#fffbe6'
+                    : this.props.comment.color !== undefined && this.props.comment.color !== null
+                    ? this.props.comment.color
+                    : this.context.consoleTheme.commentBody,
               }}
             >
               <div
