@@ -603,7 +603,12 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     commentElements.share = (
       <span id="comment-share">
-        <Icon type="link" onClick={shareComment} style={{ cursor: 'pointer' }} />
+        <CPButton
+          type="secondary"
+          onClick={shareComment}
+          icon="link"
+          style={{ cursor: 'pointer', border: '0px', backgroundColor: 'transparent', marginLeft: '-9px' }}
+        />
       </span>
     );
 
