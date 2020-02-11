@@ -12,6 +12,7 @@ import React from 'react';
 import { Button, Icon, Input, message, Popconfirm, Popover, Tooltip } from 'antd';
 
 /* codePost imports */
+import { hostname } from '../../../serviceWorker';
 
 import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
@@ -591,7 +592,8 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     const shareComment = (e: any) => {
       e.preventDefault();
       e.stopPropagation();
-      const link = `https://codepost.io/code/${this.props.file.submission}/?comment=${this.props.comment.id}`;
+      const host = hostname();
+      const link = `${host}/code/${this.props.file.submission}/?comment=${this.props.comment.id}`;
       const element = document.createElement('textarea');
       element.value = link;
       document.body.appendChild(element);
