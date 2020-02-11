@@ -1,4 +1,5 @@
 import { sendSlack } from '../../../core/slack';
+import { message } from 'antd';
 
 const MAX_TRIES = 25;
 
@@ -12,6 +13,10 @@ export function awaitTestResult(id: string, callback: (result: any) => any, prog
         window.location.href,
         '#cc0000',
         '#autograder_bugs',
+      );
+      message.error(
+        'Sorry, it looks like we’re experiencing heavier than normal test wait times. Please try again in a few minutes, or contact the codePost team.',
+        25,
       );
       window.clearInterval(interval);
     }
