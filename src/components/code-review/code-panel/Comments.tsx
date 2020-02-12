@@ -40,6 +40,7 @@ interface ICommentsCoreProps extends IWithWindowWatcherProps {
   studentFeedbackOn: boolean;
   hideAuthor: boolean;
   rubricCategories: RubricCategoryType[];
+  scrollToCommentID?: number;
 }
 
 interface ICommentsEditProps {
@@ -130,10 +131,35 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
     }
   };
 
+  public jumpToComment = async (commentID: number) => {
+    await Animation.wait(1);
+
+    const codeScrollArea = document.getElementById('code-scroll-area');
+    if (codeScrollArea !== null) {
+      const commentPlacement = this.state.placements.find((value: ICommentPlacement) => {
+        return value.commentID === commentID;
+      });
+
+      if (commentPlacement !== undefined) {
+        this.setState({
+          fileScrollPositions: {
+            ...this.state.fileScrollPositions,
+            [this.props.file.id]: commentPlacement.placement,
+          },
+        });
+        codeScrollArea.scrollTop = commentPlacement.placement;
+      }
+    }
+  };
+
   public componentDidMount() {
     document.addEventListener('mousedown', this.handleClickOutside);
     document.addEventListener('keydown', this.handleCursor);
     document.addEventListener('keydown', this.handleKeyPress);
+
+    if (this.props.scrollToCommentID !== undefined) {
+      this.jumpToComment(this.props.scrollToCommentID);
+    }
 
     // FIXME: This is a hack to trigger comment placements to reload after a PDF has loaded.
     // The PDF can take some time to load, and if the placement isn't triggered the comments will stay on top
@@ -370,6 +396,7 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
           forcedRubricMode={this.props.forcedRubricMode}
           rubricCategories={this.props.rubricCategories}
           cursored={cursored}
+          isSpotlit={comment.id === this.props.scrollToCommentID}
         />
       );
     });
