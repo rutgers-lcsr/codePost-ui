@@ -1,0 +1,139 @@
+import * as React from 'react';
+
+import { Modal, Spin } from 'antd';
+
+import ReactMarkdown from 'react-markdown';
+import moment from 'moment-timezone';
+import { CodePostDate } from '../utils/DateUtils';
+
+import {
+  AssignmentStudent,
+  AssignmentStudentType,
+  StudentUploadInformationType,
+} from '../../infrastructure/assignment';
+
+interface ILateSubmissionModalProps {
+  visible: boolean;
+  assignment: AssignmentStudentType;
+  onOk: any;
+  onCancel: any;
+}
+
+const LateSubmissionModal = (props: ILateSubmissionModalProps) => {
+  const [studentUploadInformation, setStudentUploadInformation] = React.useState<StudentUploadInformationType | null>(
+    null,
+  );
+
+  let lateDayCreditsTemplate = '';
+
+  if (
+    studentUploadInformation !== null &&
+    studentUploadInformation.lateDayCreditsAvailable !== undefined &&
+    studentUploadInformation.lateDayCreditsToUse !== undefined &&
+    studentUploadInformation.adjustedDaysLate !== undefined
+  ) {
+    lateDayCreditsTemplate = `
+
+You have ${studentUploadInformation.lateDayCreditsAvailable} unused late day credit${
+      studentUploadInformation.lateDayCreditsAvailable === 1 ? '' : 's'
+    } and **${studentUploadInformation.lateDayCreditsToUse} credit${
+      studentUploadInformation.lateDayCreditsToUse === 1 ? '' : 's'
+    } will be applied to this submission**. After the adjustment, the submission will be ${
+      studentUploadInformation.adjustedDaysLate
+    } day${studentUploadInformation.adjustedDaysLate === 1 ? '' : 's'} late.
+
+`;
+  }
+
+  let penaltyTemplate = '';
+
+  if (studentUploadInformation !== null) {
+    if (studentUploadInformation.pointsOff === 0) {
+      penaltyTemplate = 'No penalty will be applied to the submission.';
+    } else {
+      penaltyTemplate = `A **penalty of ${studentUploadInformation.pointsOff} point${
+        studentUploadInformation.pointsOff === 1 ? '' : 's'
+      }** will be applied to the submission.`;
+    }
+  }
+
+  const lateSubmissionTemplate =
+    studentUploadInformation === null
+      ? ''
+      : `
+
+-------
+
+The due date has passed and your submission is **${studentUploadInformation.daysLate} day${
+          studentUploadInformation.daysLate === 1 ? '' : 's'
+        } late**. ${lateDayCreditsTemplate}
+
+${penaltyTemplate}
+
+Please contact your instructor if you have any questions.
+`;
+
+  const times =
+    props.assignment.uploadDueDate === undefined || props.assignment.uploadDueDate === null ? null : (
+      <div style={{ paddingBottom: '14px' }}>
+        <table>
+          <tr>
+            <td style={{ fontStyle: 'italic', fontWeight: 500 }}>Time Due:</td>
+            <td>
+              <CodePostDate datetime={props.assignment.uploadDueDate} />
+            </td>
+          </tr>
+          <tr>
+            <td style={{ fontStyle: 'italic', fontWeight: 500 }}>Time Now:</td>
+            <td>
+              <CodePostDate datetime={moment()} />
+            </td>
+          </tr>
+        </table>
+      </div>
+    );
+
+  React.useEffect(() => {
+    const getStudentUploadInformation = async () => {
+      setStudentUploadInformation(null);
+      const studentUploadInformation = await AssignmentStudent.beforeStudentUpload(props.assignment.id);
+      setStudentUploadInformation(studentUploadInformation);
+    };
+
+    if (props.visible) {
+      getStudentUploadInformation();
+    }
+  }, [props.visible]);
+
+  let content;
+
+  if (studentUploadInformation === null) {
+    content = (
+      <div>
+        <Spin />
+      </div>
+    );
+  } else {
+    content = (
+      <div className="markdown-table">
+        {times}
+        <ReactMarkdown>{lateSubmissionTemplate}</ReactMarkdown>
+      </div>
+    );
+  }
+
+  return (
+    <Modal
+      title="Confirm late submission"
+      visible={props.visible}
+      onOk={props.onOk}
+      onCancel={props.onCancel}
+      okText={'Continue'}
+      destroyOnClose={true}
+    >
+      {content}
+    </Modal>
+  );
+};
+
+export default LateSubmissionModal;
