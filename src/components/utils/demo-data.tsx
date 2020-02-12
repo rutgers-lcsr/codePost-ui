@@ -84,6 +84,10 @@ const demoCourse = (testName: string) => {
     emailNewUsers: false,
     anonymousGradingDefault: false,
     allowGradersToEditRubric: false,
+    minComments: 0,
+    noUnfinalize: false,
+    lateDayCreditsAllowable: null,
+    archived: false,
   };
 };
 
@@ -149,6 +153,40 @@ const demoAssignments = (courseID: number) => {
       sortKey: 0,
       points: 20,
       course: courseID,
+      tests: [
+        {
+          category: 'Run HelloWorld',
+          cases: [
+            {
+              description: 'Outputs something',
+              type: 'shell',
+              pointsFail: -1,
+              text: `# Run student code
+result=\$(java HelloWorld)
+
+# Grab length of output
+resultLen=\${#result}
+minLen=0
+
+if [ "\$resultLen" -gt "\$minLen" ]
+ then
+   TestOutput true "passed"
+ else
+   TestOutput false "Prints nothing to stdout"
+fi`,
+            },
+            {
+              description: 'Outputs "Hello, World"',
+              type: 'io_cli',
+              pointsFail: -1,
+              text: 'java HelloWorld',
+              explanation: 'This test ensures that your program prints `"Hello, World"` to standard output.',
+              expectedOutput: 'Hello, World',
+              checkReturn: true,
+            },
+          ],
+        },
+      ],
       rubric: [
         {
           category: 'Correctness',
@@ -156,15 +194,15 @@ const demoAssignments = (courseID: number) => {
           comments: [
             {
               text: 'You printed out the wrong string!',
-              points: 1,
+              points: 0,
             },
             {
               text: 'You forgot to print a newline at the end of your string!',
-              points: 1,
+              points: 0,
             },
             {
               text: "You didn't print anything out!",
-              points: 2,
+              points: 0,
             },
           ],
         },
@@ -172,9 +210,164 @@ const demoAssignments = (courseID: number) => {
     },
     {
       name: 'Loops',
-      sortKey: 0,
+      sortKey: 1,
       points: 20,
       course: courseID,
+      tests: [
+        {
+          category: 'LoopUtils.max',
+          cases: [
+            {
+              description: 'Test on [1,2,3]',
+              type: 'io',
+              pointsFail: -1,
+              fileName: 'LoopUtils.java',
+              function: 'max',
+              expectedOutput: '3',
+              input: 'new int[]{1,2,3}',
+              checkReturn: true,
+            },
+            {
+              description: 'Test on [1]',
+              type: 'io',
+              pointsFail: -1,
+              fileName: 'LoopUtils.java',
+              function: 'max',
+              expectedOutput: '1',
+              input: 'new int[]{1}',
+              checkReturn: true,
+            },
+            {
+              description: 'Test on [-1,-2,-3]',
+              type: 'io',
+              pointsFail: -1,
+              fileName: 'LoopUtils.java',
+              function: 'max',
+              expectedOutput: '-1',
+              input: 'new int[]{-1,-2,-3}',
+              checkReturn: true,
+            },
+            {
+              description: 'Test on random arrays',
+              type: 'unit',
+              pointsFail: -1,
+              text: `import java.util.Random;
+import java.util.Arrays;
+
+class Test {
+  static TestOutput Test() {
+
+    // Source of randomness
+    Random rd = new Random();
+
+    // Test parameters
+    int NUM_TESTS = 100;
+    int MAX_SIZE = 20;
+
+    for (int i = 0; i < NUM_TESTS; i++) {
+
+      // Generate random array
+      int[] toTest = new int[rd.nextInt(MAX_SIZE)];
+      int solution = Integer.MIN_VALUE; // calculate solution while we're at it
+      for (int j = 0; j < toTest.length; j++) {
+        toTest[j] = rd.nextInt();
+        if (toTest[j] > solution) {
+          solution = toTest[j];
+        }
+      }
+
+      // Check to see if student code matches solution we just calculated
+      int studentAnswer = LoopUtils.max(toTest);
+      if (solution != studentAnswer) {
+        return new TestOutput(false, "failed on " + Arrays.toString(toTest));
+      }
+    }
+
+    return new TestOutput(true, "passed");
+  }
+};`,
+            },
+          ],
+        },
+        {
+          category: 'LoopUtils.reverse',
+          cases: [
+            {
+              description: 'Test on [3,2,1]',
+              type: 'unit',
+              pointsFail: -1,
+              text: `import java.util.Arrays;
+
+class Test {
+  static TestOutput Test() {
+    int[] toTest = new int[]{3,2,1};
+    int[] solution = new int[]{1,2,3};
+    int[] studentAnswer = LoopUtils.reverse(toTest);
+    if (Arrays.equals(solution, studentAnswer)) {
+      return new TestOutput(true, "passed");
+    } else {
+      return new TestOutput(true, "failed");
+    }
+  }
+};`,
+            },
+            {
+              description: 'Test on [1,2]',
+              type: 'unit',
+              pointsFail: -1,
+              text: `import java.util.Arrays;
+
+class Test {
+  static TestOutput Test() {
+    int[] toTest = new int[]{1,2};
+    int[] solution = new int[]{2,1};
+    int[] studentAnswer = LoopUtils.reverse(toTest);
+    if (Arrays.equals(solution, studentAnswer)) {
+      return new TestOutput(true, "passed");
+    } else {
+      return new TestOutput(true, "failed");
+    }
+  }
+};`,
+            },
+          ],
+        },
+        {
+          category: 'LoopUtils.contains',
+          cases: [
+            {
+              description: 'Test on [1,2,3] with 3',
+              type: 'io',
+              pointsFail: -1,
+              fileName: 'LoopUtils.java',
+              function: 'contains',
+              expectedOutput: 'true',
+              input: 'new int[]{1,2,3}, 2',
+              checkReturn: true,
+            },
+            {
+              description: 'Test on [1,2,3] with 0',
+              type: 'io',
+              pointsFail: -1,
+              fileName: 'LoopUtils.java',
+              function: 'contains',
+              expectedOutput: 'false',
+              input: 'new int[]{1,2,3}, 0',
+              checkReturn: true,
+            },
+            {
+              description: 'Test on [] with 0',
+              type: 'io',
+              pointsFail: -1,
+              fileName: 'LoopUtils.java',
+              function: 'contains',
+              expectedOutput: 'false',
+              input: 'new int[]{}, 0',
+              checkReturn: true,
+            },
+          ],
+        },
+      ],
       rubric: [
         {
           category: 'Max',
@@ -226,9 +419,81 @@ const demoAssignments = (courseID: number) => {
     },
     {
       name: 'Recursion',
-      sortKey: 0,
+      sortKey: 2,
       points: 20,
       course: courseID,
+      tests: [
+        {
+          category: 'RecursionUtils.sum',
+          cases: [
+            {
+              description: 'Test on [1,2,3]',
+              type: 'io',
+              pointsFail: -1,
+              fileName: 'RecursionUtils.java',
+              function: 'sum',
+              expectedOutput: '6',
+              input: 'new int[]{1,2,3}',
+              checkReturn: true,
+            },
+            {
+              description: 'Test on [1]',
+              type: 'io',
+              pointsFail: -1,
+              fileName: 'RecursionUtils.java',
+              function: 'sum',
+              expectedOutput: '1',
+              input: 'new int[]{1}',
+              checkReturn: true,
+            },
+            {
+              description: 'Test on []',
+              type: 'io',
+              pointsFail: -1,
+              fileName: 'RecursionUtils.java',
+              function: 'sum',
+              expectedOutput: '0',
+              input: 'new int[]{}',
+              checkReturn: true,
+            },
+          ],
+        },
+        {
+          category: 'RecursionUtils.contains',
+          cases: [
+            {
+              description: 'Test on [1,2,3] with 3',
+              type: 'io',
+              pointsFail: -1,
+              fileName: 'RecursionUtils.java',
+              function: 'contains',
+              expectedOutput: 'true',
+              input: 'new int[]{1,2,3},3',
+              checkReturn: true,
+            },
+            {
+              description: 'Test on [1,2,3] with 0',
+              type: 'io',
+              pointsFail: -1,
+              fileName: 'RecursionUtils.java',
+              function: 'contains',
+              expectedOutput: 'false',
+              input: 'new int[]{1,2,3},0',
+              checkReturn: true,
+            },
+            {
+              description: 'Test on [] with 3',
+              type: 'io',
+              pointsFail: -1,
+              fileName: 'RecursionUtils.java',
+              function: 'contains',
+              expectedOutput: 'false',
+              input: 'new int[]{},3',
+              checkReturn: true,
+            },
+          ],
+        },
+      ],
       rubric: [
         {
           category: 'sum',

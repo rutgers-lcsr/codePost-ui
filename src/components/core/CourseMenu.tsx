@@ -14,6 +14,8 @@ import { Menu } from 'antd';
 /* codePost imports */
 import { CourseType } from '../../infrastructure/course';
 
+import { encodeForLink } from '../core/URLutils';
+
 import CPDropdown from './CPDropdown';
 
 /**********************************************************************************************************************/
@@ -26,17 +28,23 @@ interface IProps {
 }
 
 const CourseMenu = (props: IProps) => {
+  const sortArchived = (a: CourseType, b: CourseType) => {
+    return a.archived === b.archived ? 0 : a.archived ? 1 : -1;
+  };
+
   const menu = (
     <Menu>
-      {props.courses.map((course, i) => {
+      {props.courses.sort(sortArchived).map((course, i) => {
         return (
           <Menu.Item key={course.id}>
             <Link
-              to={`/${props.base}/${encodeURIComponent(course.name)}/${encodeURIComponent(course.period)}/${
+              to={`/${props.base}/${encodeForLink(course.name)}/${encodeForLink(course.period)}/${
                 props.panel !== undefined ? props.panel : ''
               }`}
             >
-              <span>{`${course.name} | ${course.period}`}</span>
+              <span
+                style={{ color: course.archived ? 'rgba(0, 0, 0, 0.3)' : 'default' }}
+              >{`${course.name} | ${course.period}`}</span>
             </Link>
           </Menu.Item>
         );

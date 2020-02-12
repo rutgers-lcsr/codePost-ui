@@ -4,6 +4,7 @@ import { animated } from 'react-spring';
 import { FileMock } from '../../../../infrastructure/file';
 
 import Comment from '../../../../components/code-review/code-panel/Comment';
+
 export type CPCommentType = 'readonly' | 'active' | 'inactive';
 
 const SimpleComment = (props: {
@@ -35,6 +36,7 @@ const SimpleComment = (props: {
   const AnimatedComment = animated(Comment);
   return (
     <AnimatedComment
+      showExplanations={false}
       rubricCategories={[]}
       additiveGrading={false}
       isStudent={false}
@@ -52,6 +54,7 @@ const SimpleComment = (props: {
       studentFeedbackOn={false}
       hideAuthor={true}
       forcedRubricMode={false}
+      cursored={false}
     />
   );
 };

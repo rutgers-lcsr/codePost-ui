@@ -65,6 +65,7 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
       const codeTemplate = document.getElementById('code-template');
 
       if (codeContainer !== null && codeMain !== null && commentsContainer !== null && comments !== null) {
+        //  parseInt(codeMain.style.marginLeft, 10)
         const codeMainWidth = codeContainer.offsetWidth;
         codeMain.style.setProperty('width', `${codeMainWidth}px`);
         if (codeSyntax !== null) {
@@ -76,7 +77,7 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
 
         const commentsContainerHeight =
           this.props.windowheight - commentsContainer.getBoundingClientRect().top - themeVars.grade.marginBottom;
-        commentsContainer.style.setProperty('height', `${commentsContainerHeight}px`);
+        commentsContainer.style.setProperty('min-height', `${commentsContainerHeight}px`);
       }
     }
   };
@@ -150,6 +151,7 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
                 className="code-panel--comments"
                 style={{
                   minWidth: `${this.props.dimensions.commentsWidth}px`,
+                  height: 'fit-content',
                 }}
               >
                 {this.props.comments}

@@ -6,21 +6,21 @@
 import * as React from 'react';
 
 /* other library imports */
-import { RouteComponentProps, generatePath } from 'react-router';
+import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
 /* ant imports */
 import { Menu, Icon } from 'antd';
 
 /* codePost imports */
-import { AssignmentType } from '../../infrastructure/assignment';
+import { AssignmentType, sortAssignments } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 
 import CPDropdown from './CPDropdown';
 
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
-import { encodeForReactRouter } from '../core/URLutils';
+import { encodeForLink } from '../core/URLutils';
 
 /**********************************************************************************************************************/
 
@@ -33,7 +33,7 @@ interface IProps extends RouteComponentProps<{ assignment: string; panel: string
 const AssignmentMenu = (props: IProps) => {
   const clear = () => {
     LOCAL_SETTINGS.defaultAssignment.setter(0);
-    props.history.push(generatePath(props.match.path, { panel: props.match.params.panel, assignment: undefined }));
+    props.history.push(`${props.baseURL}/${props.match.params.panel}/`);
   };
 
   const menu = (
@@ -43,8 +43,8 @@ const AssignmentMenu = (props: IProps) => {
           <Icon type="close" /> <em>Clear assignment</em>
         </span>
       </Menu.Item>
-      {props.assignments.map((assignment) => {
-        const path = generatePath(props.match.path, { panel: props.match.params.panel, assignment: assignment.name });
+      {sortAssignments(props.assignments).map((assignment) => {
+        const path = `${props.baseURL}/${props.match.params.panel}/${encodeForLink(assignment.name)}`;
         return (
           <Menu.Item key={assignment.id}>
             <Link to={path}>
@@ -61,9 +61,7 @@ const AssignmentMenu = (props: IProps) => {
     selectorText = 'Select an assignment';
   }
 
-  const currentAssignment = props.assignments.find(
-    (el) => encodeForReactRouter(el.name) === props.match.params.assignment,
-  );
+  const currentAssignment = props.assignments.find((el) => encodeForLink(el.name) === props.match.params.assignment);
   if (currentAssignment) {
     selectorText = currentAssignment.name;
   }

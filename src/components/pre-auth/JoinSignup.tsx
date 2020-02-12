@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Alert, Input, Spin, Typography } from 'antd';
+import { Alert, Input, Spin, Typography, Checkbox } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -20,6 +20,7 @@ import CPButton from '../core/CPButton';
 
 interface IState {
   email: string;
+  acceptedTerms: boolean;
 
   // Join Flow states
   hasSubmitted: boolean;
@@ -31,6 +32,7 @@ class JoinSignup extends React.Component<{}, IState> {
     email: '',
     hasSubmitted: false,
     confirmEmailSent: false,
+    acceptedTerms: false,
   };
 
   public handleChange = (name: string, event: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,6 +41,12 @@ class JoinSignup extends React.Component<{}, IState> {
       const newState: any = { ...prevstate };
       newState[name] = newValue;
       return newState;
+    });
+  };
+
+  public toggleTerms = () => {
+    this.setState((oldState: IState) => {
+      return { acceptedTerms: !oldState.acceptedTerms };
     });
   };
 
@@ -97,12 +105,16 @@ class JoinSignup extends React.Component<{}, IState> {
             Don't forget to use your organization's <Typography.Text code>.edu</Typography.Text> address!
           </div>
           <br />
+          <Checkbox onChange={this.toggleTerms} /> I agree to the codePost <Link to="/terms">Terms of Service</Link> and{' '}
+          <Link to="/privacy">Privacy Policy</Link>.
+          <br />
+          <br />
           <div style={{ display: 'flex' }}>
             <Link to="/signup">
               <CPButton cpType="secondary">Back</CPButton>
             </Link>
             &nbsp; &nbsp; &nbsp; &nbsp;
-            <CPButton cpType="primary" onClick={this.handleSignup}>
+            <CPButton cpType="primary" onClick={this.handleSignup} disabled={!this.state.acceptedTerms}>
               Continue
             </CPButton>
           </div>

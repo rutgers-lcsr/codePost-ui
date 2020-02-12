@@ -24,7 +24,7 @@ import { formatSub, ISubDataBasic, sortByGrade } from './GraderUtils';
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { Section, SectionType } from '../../infrastructure/section';
-import { AnonymousSubmissionType, Submission, SubmissionType } from '../../infrastructure/submission';
+import { AnonymousSubmissionInfoType, Submission, SubmissionType } from '../../infrastructure/submission';
 import { compare } from '../utils/SortUtils';
 
 import { loadIDList } from '../../infrastructure/generics';
@@ -64,7 +64,7 @@ interface IState {
   /* data */
   currentSections: SectionType[];
   sections: SectionType[];
-  submissions: AnonymousSubmissionType[];
+  submissions: AnonymousSubmissionInfoType[];
 
   /* UI control */
   buttonState: BUTTON_STATE;
@@ -107,7 +107,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
     }, LOADING_INTERVAL);
   }
 
-  public componentDidUpdate(oldProps: IProps) {
+  public componentDidUpdate(oldProps: IProps, prevState: IState) {
     if (oldProps.assignment !== this.props.assignment) {
       this.changeAssignment(this.props.assignment);
     }
@@ -140,6 +140,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
   public loadSubmissions = (currentAssignment: AssignmentType, user: string) => {
     return Assignment.readSubmissionsAnonymous(currentAssignment.id, {
       grader: user,
+      ['compact']: '1',
     });
   };
 
@@ -223,7 +224,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
   /* Utility functions
   /**********************************************************************************/
 
-  public openGradePage = (submission: AnonymousSubmissionType) => {
+  public openGradePage = (submission: AnonymousSubmissionInfoType) => {
     window.open(`/code/${submission.id}`);
   };
 

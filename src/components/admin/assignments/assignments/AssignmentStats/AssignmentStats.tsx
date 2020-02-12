@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Breadcrumb, Card, Col, Progress, Row, Statistic, Table, Typography } from 'antd';
+import { Breadcrumb, Card, Col, Progress, Row, Statistic, Table, Typography, Spin } from 'antd';
 
 import CPButton from '../../../../../components/core/CPButton';
 import CPTooltip from '../../../../../components/core/CPTooltip';
@@ -43,7 +43,7 @@ export interface IProps {
   /* assignment data */
   course: CourseType;
   assignment: AssignmentType;
-  submissions: SubmissionType[];
+  submissions: SubmissionType[] | null;
   students: string[]; // emails
   submissionsByStudent: IStudentSubmissionsDataTable;
 
@@ -64,7 +64,7 @@ interface IState {
   drawerContent: {
     title: string;
     subtitle: string;
-    content: Array<{ email: string; subID: number | null }>;
+    content: Array<{ email: string; subID: number | null }> | null;
   };
   isLoading: boolean;
   drawerOpen: boolean;
@@ -72,7 +72,7 @@ interface IState {
 
 /**********************************************************************************************************************/
 
-class ManageAssignments extends React.Component<IProps, IState> {
+class AssignmentStats extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     drawerContent: { title: '', subtitle: '', content: [] },
     isLoading: false,
@@ -96,29 +96,43 @@ class ManageAssignments extends React.Component<IProps, IState> {
   // be stored in state. We need to store the data in state of on render because
   // the drawer sliding takes time and looks bad if the data changes while it's sliding
   public openDrawer = (assignment: AssignmentType, type: DRAWER_TYPE) => {
-    const newContent: Array<{
-      email: string;
-      subID: number | null;
-    }> = filterDataByStat(
-      assignment,
-      this.props.submissionsByStudent,
-      type,
-      this.props.submissions,
-      this.props.viewsBySubmission,
-      this.props.students,
-    );
+    if (this.props.submissions === null) {
+      const title = getDrawerTitle(type, null);
 
-    const title = getDrawerTitle(type, newContent.length);
+      this.setState({
+        drawerContent: {
+          title: assignment.name,
+          subtitle: title,
+          content: null,
+        },
+        drawerType: type,
+        drawerOpen: true,
+      });
+    } else {
+      const newContent: Array<{
+        email: string;
+        subID: number | null;
+      }> = filterDataByStat(
+        assignment,
+        this.props.submissionsByStudent,
+        type,
+        this.props.submissions,
+        this.props.viewsBySubmission,
+        this.props.students,
+      );
 
-    this.setState({
-      drawerContent: {
-        title: assignment.name,
-        subtitle: title,
-        content: newContent,
-      },
-      drawerType: type,
-      drawerOpen: true,
-    });
+      const title = getDrawerTitle(type, newContent.length);
+
+      this.setState({
+        drawerContent: {
+          title: assignment.name,
+          subtitle: title,
+          content: newContent,
+        },
+        drawerType: type,
+        drawerOpen: true,
+      });
+    }
   };
 
   public closeDrawer = () => {
@@ -256,7 +270,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
                     onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Unviewed)}
                     className="text-link"
                   >
-                    {numUnviewed}
+                    {numUnviewed !== null ? numUnviewed : <Spin size="small" />}
                   </span>
                 ),
               },
@@ -276,7 +290,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
                     onClick={this.openDrawer.bind(this, this.props.assignment, DRAWER_TYPE.Viewed)}
                     className="text-link"
                   >
-                    {numViewed}
+                    {numViewed !== null ? numViewed : <Spin size="small" />}
                   </span>
                 ),
               },
@@ -354,7 +368,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
             <Statistic title="Mean" value={mean ? mean : '--'} suffix={`/ ${this.props.assignment.points}`} />
           </Col>
           <Col span={6}>
-            <Statistic title="Median" value={median ? median : '--'} suffix={`/ ${this.props.assignment.points}`} />
+            <Statistic title="Median" value={median ? median : '...'} suffix={`/ ${this.props.assignment.points}`} />
           </Col>
           <Col span={6}>
             <Statistic title="Max" value={max ? max : '--'} suffix={`/ ${this.props.assignment.points}`} />
@@ -378,7 +392,7 @@ class ManageAssignments extends React.Component<IProps, IState> {
         />
       );
 
-    const reminderEmails = this.sendReminders(this.props.submissions);
+    const reminderEmails = this.props.submissions !== null ? this.sendReminders(this.props.submissions) : [];
 
     const divStyle = { padding: '20px 40px' };
     content = (
@@ -466,4 +480,4 @@ class ManageAssignments extends React.Component<IProps, IState> {
   }
 }
 
-export default ManageAssignments;
+export default AssignmentStats;

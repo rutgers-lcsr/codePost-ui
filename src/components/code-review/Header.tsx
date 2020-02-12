@@ -23,21 +23,27 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 
 import { wait } from '../../infrastructure/animation';
 import { AssignmentType } from '../../infrastructure/assignment';
+import { Submission } from '../../infrastructure/submission';
+import { File } from '../../infrastructure/file';
+
+import { CourseType } from '../../infrastructure/course';
 import { FileType } from '../../infrastructure/file';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../infrastructure/submission';
+import { TestCaseType } from '../../infrastructure/types';
+import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
 
 import CodeConsole from './CodeConsole';
 
-import useHotkeys, { F_KEY, MINUS_KEY, PLUS_KEY, P_KEY } from './useHotkeys';
+import useHotkeys, { F_KEY, MINUS_KEY, PLUS_KEY, P_KEY, V_KEY } from './useHotkeys';
 
 import useWindowSize from '../core/useWindowSize';
 
-import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
-
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+
+import { encodeForLink } from '../core/URLutils';
 
 const ButtonGroup = Button.Group;
 
@@ -99,28 +105,28 @@ const Magnifier = (props: IMagnifierProps) => {
 
 /**********************************************************************************************************************/
 
-interface IResetProps {
-  updateVerticalOffset: (updater: (oldValue: number) => number) => void;
-}
+// interface IResetProps {
+//   updateVerticalOffset: (updater: (oldValue: number) => number) => void;
+// }
 
-const Reset = (props: IResetProps) => {
-  const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
+// const Reset = (props: IResetProps) => {
+//   const { consoleTheme } = React.useContext(ConsoleThemeContext);
+//   const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
 
-  function onClick() {
-    props.updateVerticalOffset(() => 0);
-  }
+//   function onClick() {
+//     props.updateVerticalOffset(() => 0);
+//   }
 
-  return (
-    <CPTooltip title={tooltips.grade.header.alignment} hideThisOnHideTips={true}>
-      <ButtonGroup>
-        <CPButton id="reset" cpType={cpType} small={true} onClick={onClick}>
-          <Icon type="redo" />
-        </CPButton>
-      </ButtonGroup>
-    </CPTooltip>
-  );
-};
+//   return (
+//     <CPTooltip title={tooltips.grade.header.alignment} hideThisOnHideTips={true}>
+//       <ButtonGroup>
+//         <CPButton id="reset" cpType={cpType} small={true} onClick={onClick}>
+//           <Icon type="redo" />
+//         </CPButton>
+//       </ButtonGroup>
+//     </CPTooltip>
+//   );
+// };
 
 /**********************************************************************************************************************/
 
@@ -148,20 +154,30 @@ export const ViewAsStudent = (props: IViewAsStudentProps) => {
 /**********************************************************************************************************************/
 
 interface IDownloadCodeProps {
-  files: FileType[];
+  submission: AnonymousSubmissionType;
 }
 
 export const DownloadCode = (props: IDownloadCodeProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
 
-  const onClick = () => {
-    if (props.files.length === 0) {
+  const onClick = async () => {
+    // We fetch the latest files because some files over the size limit have had their code
+    // replaced for rendering performance
+
+    const latestSubmission = await Submission.read(props.submission.id);
+    const files = await Promise.all(
+      latestSubmission.files.map((f) => {
+        return File.read(f);
+      }),
+    );
+
+    if (files.length === 0) {
       return;
     }
 
     const zip = new JSZip();
-    props.files.map((file: FileType) => {
+    files.map((file: FileType) => {
       let dir = zip;
       if (file.path !== null && file.path.length > 0) {
         const folders = file.path.split('/');
@@ -174,7 +190,7 @@ export const DownloadCode = (props: IDownloadCodeProps) => {
     });
 
     zip.generateAsync({ type: 'blob' }).then(function(content: any) {
-      saveAs(content, `submission-${props.files[0].submission}.zip`);
+      saveAs(content, `submission-${files[0].submission}.zip`);
     });
   };
 
@@ -203,8 +219,8 @@ export const Controls = (props: IControlsProps) => {
   const windowSize = useWindowSize();
   const controls = (
     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-      <Reset key="reset" updateVerticalOffset={props.updateVerticalOffset} />
-      <div style={{ width: '20px' }} />
+      {/*      <Reset key="reset" updateVerticalOffset={props.updateVerticalOffset} />
+      <div style={{ width: '20px' }} />*/}
       <Magnifier key="zoom" updateZoom={props.updateZoom} />
     </div>
   );
@@ -228,9 +244,14 @@ export const Controls = (props: IControlsProps) => {
 };
 
 /**********************************************************************************************/
+
 interface IFinalizeButtonProps {
   submission: AnonymousSubmissionType;
   toggleFinalized: () => void;
+  numComments: number;
+  minComments: number;
+  canUnfinalize: boolean;
+  isOnlyGrader: boolean;
 }
 
 export const FinalizeButton = (props: IFinalizeButtonProps) => {
@@ -240,16 +261,55 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const showTooltips = React.useContext(ShowTooltipContext);
 
   const [nudge, setNudge] = React.useState(false);
-  const triggerNudge = async () => {
-    setNudge(true);
-    message.warning('Unfinalize to modify this submission →');
-    await wait(1200); // two wiggles
-    setNudge(false);
+  const triggerNudge = async (event: any) => {
+    const safeAreaClasses = ['comment-share'];
+    const safeAreas = safeAreaClasses
+      .map((id) => Array.prototype.slice.call(document.getElementsByClassName(id))) // HTMLCollection => array
+      .flat();
+    if (!safeAreas.some((area) => area !== null && area.contains(event.target))) {
+      setNudge(true);
+      message.warning('Unfinalize to modify this submission →');
+      await wait(1200); // two wiggles
+      setNudge(false);
+    }
   };
 
+  const isFinalized = props.submission.isFinalized;
+
   const onClick = async () => {
+    if (isFinalized) {
+      if (props.canUnfinalize) {
+        executeToggle();
+      } else {
+        message.warning("You aren't able to unfinalize this submission.");
+      }
+    } else {
+      if (props.minComments > 0 && props.numComments < props.minComments) {
+        Modal.confirm({
+          title: `This submission has fewer than ${props.minComments} comments applied.`,
+          content: `Are you sure you want to finalize it? Submissions with fewer than ${props.minComments} comments will be flagged for quality control.`,
+          onOk() {
+            return finalize();
+          },
+        });
+      } else {
+        finalize();
+      }
+    }
+  };
+
+  const executeToggle = async () => {
     await props.toggleFinalized();
     setIsLoading(false);
+  };
+
+  const finalize = () => {
+    // If the submission doesn't have a grader and there are multiple graders in the course, make the user finalize it
+    if (!props.submission.grader && !props.isOnlyGrader) {
+      message.warning('You must assign a grader before finalizing this submission.');
+    } else {
+      executeToggle();
+    }
   };
 
   useHotkeys(F_KEY, onClick, true);
@@ -295,19 +355,23 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
     };
   }, [props.submission]);
 
-  const isFinalized = props.submission.isFinalized;
-
   const finalizeNotice =
     props.submission.grader === null ? 'Assign a grader to this submission before finalizing it.' : null;
 
-  const toggleNotice =
-    finalizeNotice !== null
-      ? finalizeNotice
-      : !showTooltips
-      ? null
-      : props.submission.isFinalized
-      ? `This submission is finalized. Unfinalize to modify it. [${osControlKey()} shift f]`
-      : `This submission is unfinalized. Finalize it to mark it as complete. [${osControlKey()} shift f]`;
+  let toggleNotice;
+  if (isFinalized) {
+    if (props.canUnfinalize) {
+      toggleNotice = `This submission is finalized. Unfinalize to modify it. [${osControlKey()} shift f]`;
+    } else {
+      toggleNotice = "You aren't able to unfinalize this submission. Please contact an admin if you made a mistake";
+    }
+  } else {
+    if (!props.submission.grader && !props.isOnlyGrader) {
+      toggleNotice = `You must assign a grader before finalizing this submission.`;
+    } else {
+      toggleNotice = `This submission is unfinalized. Finalize it to mark it as complete. [${osControlKey()} shift f]`;
+    }
+  }
 
   return (
     <div ref={ref} id="submission-status-toggle" className={nudge ? 'wiggle' : ''}>
@@ -317,7 +381,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
         <Switch
           checked={isFinalized}
           onClick={onClick}
-          disabled={!isFinalized && props.submission.grader === null}
+          disabled={(props.submission.grader === null && !props.isOnlyGrader) || (isFinalized && !props.canUnfinalize)}
           loading={isLoading}
         />
       </CPTooltip>
@@ -334,6 +398,8 @@ interface IGradeBreakdownProps {
   comments: IFileToCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
   files: FileType[];
+  submissionTests: SubmissionTestType[];
+  testCases: TestCaseType[];
 }
 
 // FIXME: Although the calculate methods that compose this component are modularized,
@@ -346,6 +412,7 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
   const pointsPerCategory = CodeConsole.pointsPerCategory(props.commentRubricComments, currentCommentSet);
   const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(pointsPerCategory, props.rubricCategories);
   const genericPoints = CodeConsole.genericCommentPoints(props.comments);
+  const testPoints = CodeConsole.pointsFromTests(props.submissionTests, props.testCases);
 
   const categoryPoints = Object.values(pointsPerCategoryWithCaps).reduce((accumulator: number, current: number) => {
     return accumulator + current;
@@ -431,6 +498,10 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
       description: <span className="cp-label cp-label--italic">other</span>,
       value: styledLabel(genericPoints),
     },
+    {
+      description: <span className="cp-label cp-label--italic">~Tests~</span>,
+      value: styledLabel(testPoints),
+    },
   ];
 
   const categoriesTable = (
@@ -457,14 +528,17 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
       ? null
       : {
           description: <span className="cp-label">Net Point Delta</span>,
-          value: <span>{styledLabel(categoryPoints + genericPoints)}</span>,
+          value: <span>{styledLabel(categoryPoints + genericPoints + testPoints)}</span>,
         },
     {
       description: <span className="cp-label cp-label--very-bold">Final Grade</span>,
       value: (
         <span className="cp-label cp-label--very-bold">
-          {(props.assignment.additiveGrading ? 0 : props.assignment.points) - categoryPoints - genericPoints} /{' '}
-          {props.assignment.points}
+          {(props.assignment.additiveGrading ? 0 : props.assignment.points) -
+            categoryPoints -
+            genericPoints -
+            testPoints}{' '}
+          / {props.assignment.points}
         </span>
       ),
     },
@@ -507,6 +581,8 @@ interface IGradeButtonProps {
   comments: IFileToCommentsMap;
   commentRubricComments: ICommentToRubricCommentMap;
   files: FileType[];
+  submissionTests: SubmissionTestType[];
+  testCases: TestCaseType[];
 }
 
 export const GradeButton = (props: IGradeButtonProps) => {
@@ -518,6 +594,8 @@ export const GradeButton = (props: IGradeButtonProps) => {
   function handleClick() {
     setBreakdownVisible(!breakdownVisible);
   }
+
+  useHotkeys('b', handleClick, true);
 
   return (
     <div>
@@ -532,6 +610,8 @@ export const GradeButton = (props: IGradeButtonProps) => {
           comments={props.comments}
           commentRubricComments={props.commentRubricComments}
           files={props.files}
+          submissionTests={props.submissionTests}
+          testCases={props.testCases}
         />
       </Modal>
     </div>
@@ -587,17 +667,17 @@ export const StatusTags = (props: IStatusTagsProps) => {
       tooltipText = 'student cannot view';
       break;
     case 1:
-      tagColor = theme === 'light' ? 'orange' : '#fa8c16';
+      tagColor = theme === 'light' ? 'gold' : '#fa8c16';
       tagText = 'finalized but not published';
       tooltipText = 'student cannot view';
       break;
     case 2:
-      tagColor = theme === 'light' ? 'red' : '#f5222d';
+      tagColor = theme === 'light' ? 'orange' : '#fa8c16';
       tagText = 'published but not finalized';
       tooltipText = 'student cannot view';
       break;
     case 3:
-      tagColor = theme === 'light' ? 'gold' : '#faad14';
+      tagColor = theme === 'light' ? '#22be84' : '#22be84';
       tagText = 'finalized and published';
       tooltipText = 'student can view';
       break;
@@ -638,12 +718,20 @@ export const SubheaderTitle = (props: ISubheaderTitleProps) => {
 interface IHeaderMenuProps {
   claimSubmission: () => void;
   isStudent: boolean;
+  isDemo?: boolean;
+  hasExplanations: boolean;
+  showExplanations: boolean;
+  toggleShowExplanations: () => void;
+  isAdmin: boolean;
+  course?: CourseType;
+  assignment: AssignmentType;
 }
 
 export const HeaderMenu = (props: IHeaderMenuProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   useHotkeys(P_KEY, props.claimSubmission, true);
+  useHotkeys(V_KEY, props.toggleShowExplanations, true, !props.hasExplanations);
 
   const groupStyle = {
     padding: '5px 20px',
@@ -670,7 +758,7 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
       <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
         Code Review Console
       </Menu.Item>
-      {props.isStudent ? null : (
+      {props.isStudent || props.isDemo ? null : (
         <Menu.Item key="claim" style={itemStyle} className="header-menu">
           <span onClick={props.claimSubmission}>
             <Icon type="plus-circle" /> Claim another submission{' '}
@@ -678,9 +766,21 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
           </span>
         </Menu.Item>
       )}
-      {props.isStudent ? null : (
-        <Menu.Item key="setting:2" style={itemStyle} className="header-menu">
-          <a href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>Redo tutorial</a>
+      {props.isAdmin && props.course ? (
+        <Menu.Item key="rubric" style={itemStyle} className="header-menu">
+          <Link
+            to={`/admin/${encodeForLink(props.course.name)}/${encodeForLink(
+              props.course.period,
+            )}/assignments/rubrics/${encodeForLink(props.assignment.name)}`}
+          >
+            <Icon type="edit" /> Open rubric in Admin Console
+          </Link>
+        </Menu.Item>
+      ) : null}
+      {props.isStudent || !props.hasExplanations ? null : (
+        <Menu.Item key="explanations" style={itemStyle} className="header-menu" onClick={props.toggleShowExplanations}>
+          Show rubric comment {props.showExplanations ? 'text' : ' explanations'}{' '}
+          <span style={{ color: '#ccc' }}>[{osControlKey()} shift v]</span>
         </Menu.Item>
       )}
       <Menu.Item key="setting:3" style={itemStyle} className="header-menu" onClick={openIntercom}>

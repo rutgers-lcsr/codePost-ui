@@ -37,6 +37,16 @@
   }
 }
 
+.tests-menu--dark {
+  .ant-table-header-column {
+    color: $neutralDarkMainText;
+  }
+
+  .ant-table-row {
+    color: $neutralDarkMainText;
+  }
+}
+
 // Submenu for folder directories
 #file-menu {
   .sider-submenu {
@@ -73,5 +83,17 @@
     .ant-menu-item {
       padding-left: 16px !important;
     }
+  }
+}
+
+.submission-info__late-day-credits {
+  width: 230px;
+  margin: 4px 0px;
+
+  .ant-alert {
+    font-size: 12px;
+  }
+  .ant-alert.ant-alert-no-icon {
+    padding: 2px 5px;
   }
 }

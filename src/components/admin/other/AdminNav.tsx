@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Icon, Menu } from 'antd';
+import { Icon, Menu, Tag } from 'antd';
 
 import { Link } from 'react-router-dom';
 
@@ -49,7 +49,10 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
     const routes = [
       'submissions/by_student',
       'submissions/by_grader',
-      'assignments/',
+      'assignments/overview',
+      'assignments/rubrics',
+      'assignments/tests',
+      'assignments/plagiarism',
       'roster/students',
       'roster/graders',
       'roster/admins',
@@ -57,19 +60,17 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
       'settings/',
     ];
 
-    const match = routes
-      .indexOf(
-        `${this.props.match.params.panel1}/${
-          this.props.match.params.panel2 !== undefined ? this.props.match.params.panel2 : ''
-        }`,
-      )
-      .toString();
+    const routeString = `${this.props.match.params.panel1}/${
+      this.props.match.params.panel2 !== undefined ? this.props.match.params.panel2 : ''
+    }`;
+
+    const match = routes.indexOf(routeString).toString();
 
     // default to /assignments
     if (match === '-1') {
-      return '2';
+      return '/assignments/overview';
     } else {
-      return match;
+      return routeString;
     }
   };
 
@@ -82,12 +83,31 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
 
   public render() {
     const main = (
-      <Menu
-        theme="dark"
-        defaultOpenKeys={['submissions', 'roster']}
-        selectedKeys={[this.getDefaultSelectedKey()]}
-        mode="inline"
-      >
+      <Menu theme="dark" defaultOpenKeys={['assignments']} selectedKeys={[this.getDefaultSelectedKey()]} mode="inline">
+        <SubMenu
+          key="assignments"
+          title={
+            <span>
+              <Icon type="file-text" />
+              <span>Assignments</span>
+            </span>
+          }
+        >
+          <Menu.Item key="assignments/overview">
+            <Link to={`${this.props.baseURL}/assignments/overview`}>Overview</Link>
+          </Menu.Item>
+          <Menu.Item key="assignments/rubrics">
+            <Link to={`${this.props.baseURL}/assignments/rubrics`}>Rubrics</Link>
+          </Menu.Item>
+          <Menu.Item key="assignments/tests">
+            <Link to={`${this.props.baseURL}/assignments/tests`}>
+              Tests &nbsp;<Tag color="#595959">BETA</Tag>
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="assignments/plagiarism">
+            <Link to={`${this.props.baseURL}/assignments/plagiarism`}>Plagiarism</Link>
+          </Menu.Item>
+        </SubMenu>
         <SubMenu
           key="submissions"
           title={
@@ -97,21 +117,13 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
             </span>
           }
         >
-          <Menu.Item key="0">
+          <Menu.Item key="submissions/by_student">
             <Link to={`${this.props.baseURL}/submissions/by_student`}>By Student</Link>
           </Menu.Item>
-          <Menu.Item key="1">
+          <Menu.Item key="submissions/by_grader">
             <Link to={`${this.props.baseURL}/submissions/by_grader`}>By Grader</Link>
           </Menu.Item>
         </SubMenu>
-        <Menu.Item key="2">
-          <Link to={`${this.props.baseURL}/assignments`}>
-            <span>
-              <Icon type="file-text" />
-              <span>Assignments</span>
-            </span>
-          </Link>
-        </Menu.Item>
         <SubMenu
           key="roster"
           title={
@@ -121,20 +133,20 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
             </span>
           }
         >
-          <Menu.Item key="3">
+          <Menu.Item key="roster/students">
             <Link to={`${this.props.baseURL}/roster/students`}>Students</Link>
           </Menu.Item>
-          <Menu.Item key="4">
+          <Menu.Item key="roster/graders">
             <Link to={`${this.props.baseURL}/roster/graders`}>Graders</Link>
           </Menu.Item>
-          <Menu.Item key="5">
+          <Menu.Item key="roster/admins">
             <Link to={`${this.props.baseURL}/roster/admins`}>Admins</Link>
           </Menu.Item>
-          <Menu.Item key="6">
+          <Menu.Item key="roster/sections">
             <Link to={`${this.props.baseURL}/roster/sections`}>Sections</Link>
           </Menu.Item>
         </SubMenu>
-        <Menu.Item key="7">
+        <Menu.Item key="settings">
           <Link to={`${this.props.baseURL}/settings`}>
             <span>
               <Icon type="setting" />
@@ -148,10 +160,6 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
     const footer = (
       <div>
         <Menu theme="dark" mode="inline" selectedKeys={[]}>
-          <Menu.Item key="features" onClick={this.openLink.bind(this, 'https://codepost.io/why-use-codePost')}>
-            <Icon type="star" />
-            <span>Features</span>
-          </Menu.Item>
           <Menu.Item key="docs" onClick={this.openLink.bind(this, 'https://help.codepost.io')}>
             <Icon type="pushpin" />
             <span>Docs</span>

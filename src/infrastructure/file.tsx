@@ -56,8 +56,9 @@ export type FileType = t.TypeOf<typeof FileV>;
 const MarkdownExtensions = ['md', '.md'];
 const JupyterExtensions = ['ipynb', '.ipynb'];
 const ImageExtensions = ['png', '.png', '.jpeg', 'jpeg', '.jpg', 'jpg'];
+const PDFExtensions = ['pdf', '.pdf'];
 
-type CodeType = 'code' | 'markdown' | 'jupyter' | 'image';
+type CodeType = 'code' | 'markdown' | 'jupyter' | 'image' | 'pdf';
 
 export class File {
   public static create = createObject(FileV, FileVPost, 'files');
@@ -71,22 +72,27 @@ export class File {
     return LangMap.languages(extension)[0];
   };
 
+  // FIXME: replace language with this
+  public static language2 = (fileExtension: string) => {
+    const extensionMatch = /^(?:\.?)(.*)/;
+    const extension = extensionMatch.exec(fileExtension)![1];
+    return LangMap.languages(extension)[0];
+  };
+
   public static codeType = (file: FileType): CodeType => {
-    return JupyterExtensions.includes(file.extension)
+    return JupyterExtensions.includes(file.extension.toLowerCase())
       ? 'jupyter'
-      : MarkdownExtensions.includes(file.extension)
+      : MarkdownExtensions.includes(file.extension.toLowerCase())
       ? 'markdown'
-      : ImageExtensions.includes(file.extension)
+      : ImageExtensions.includes(file.extension.toLowerCase())
       ? 'image'
+      : PDFExtensions.includes(file.extension.toLowerCase())
+      ? 'pdf'
       : 'code';
   };
 
   public static extension = (filename: string): string => {
-    const l = filename.split('.').length;
-    if (l > 0) {
-      return filename.split('.')[l - 1];
-    }
-    return '';
+    return filename.slice(((filename.lastIndexOf('.') - 1) >>> 0) + 2);
   };
 }
 

@@ -22,6 +22,8 @@ const CommentV = t.intersection(
     t.partial({
       author: t.string,
       isSaved: t.boolean,
+      color: t.union([t.string, t.null]),
+      tags: t.array(t.string),
     }),
   ],
   'Comment',
@@ -41,6 +43,7 @@ const CommentVPatch = t.intersection(
       file: t.number,
       rubricComment: t.union([t.number, t.null]),
       color: t.union([t.string, t.null]),
+      tags: t.array(t.string),
     }),
   ],
   'CommentVPatch',
@@ -102,6 +105,21 @@ export class CommentIO {
       return a.startChar - b.startChar;
     }
     return a.startLine - b.startLine;
+  };
+
+  public static sortedIndex = (comments: CommentType[], insert: CommentType): number => {
+    let currIndex = 0;
+    const len = comments.length;
+    comments.some((comment: CommentType, index: number) => {
+      const cmp = CommentIO.compare(comment, insert) >= 0;
+      if (!cmp && index === len - 1) {
+        currIndex = len;
+      } else {
+        currIndex = index;
+      }
+      return cmp;
+    });
+    return currIndex;
   };
 }
 

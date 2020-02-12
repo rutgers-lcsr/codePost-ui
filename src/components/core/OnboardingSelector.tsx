@@ -16,9 +16,7 @@ import CPButton from '../core/CPButton';
 
 import { createDemoCourse } from '../utils/DemoCourse';
 
-import { acceptedFiles } from '../admin/assignments/assignments/AcceptedFileTypes';
-
-import { CODE_DEMO, CODE_TOUR_ID } from '../../routes';
+import { CODE_DEMO } from '../../routes';
 
 /**********************************************************************************************************************/
 
@@ -42,6 +40,7 @@ const OnboardingSelector = (props: IOnboardingSelectorProps) => {
       footer={props.footerButtons}
       width={600}
       closable={props.closable === undefined ? true : props.closable}
+      maskClosable={false}
     >
       {props.message}
       <br />
@@ -80,7 +79,7 @@ const AdminOnboardingSelector = (props: IProps) => {
 
   // call prop function onClick which triggers tour
   const tour1 = (
-    <CPButton cpType="primary" block href={`${CODE_DEMO}/?product_tour_id=${CODE_TOUR_ID}`}>
+    <CPButton cpType="primary" block href={`${CODE_DEMO}/`}>
       Annotate some code!
     </CPButton>
   );
@@ -89,7 +88,7 @@ const AdminOnboardingSelector = (props: IProps) => {
     setLoading(true);
     if (!props.demoCourseExists) {
       createDemoCourse(props.email, `${props.email.split('@')[0]}'s course`, props.email.split('@')[1]).then(
-        (course) => {
+        (course: CourseType) => {
           setLoading(false);
           props.onDemoCreate(course);
         },
@@ -108,6 +107,10 @@ const AdminOnboardingSelector = (props: IProps) => {
     </CPButton>
   );
 
+  const hangTight = loading ? (
+    <div style={{ textAlign: 'center', fontWeight: 500 }}>(This may take a minute. Please don't refresh the page.)</div>
+  ) : null;
+
   const message = `Want to learn how codePost works in less
      than 5 minutes? Choose from one of the options below.`;
 
@@ -121,7 +124,7 @@ const AdminOnboardingSelector = (props: IProps) => {
           Welcome to the codePost Admin Console! <Icon type="smile" theme="twoTone" twoToneColor={'#24be85'} />
         </span>
       }
-      options={[tour1, tour2]}
+      options={[tour1, tour2, hangTight]}
       visible={props.visible}
       onCancel={props.onCancel}
       message={message}
@@ -132,13 +135,6 @@ const AdminOnboardingSelector = (props: IProps) => {
 };
 
 /**********************************************************************************************************************/
-
-const toRemove = ['.ipynb', '.md'];
-const editedAcceptedFiles = acceptedFiles
-  .filter((el) => {
-    return toRemove.indexOf(el) === -1;
-  })
-  .join();
 
 interface ICodeConsoleOnboardingProps {
   visible: boolean;
@@ -242,13 +238,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
     };
 
     const uploader = (
-      <Upload
-        beforeUpload={beforeUpload}
-        listType="text"
-        multiple={true}
-        onChange={onChange}
-        accept={editedAcceptedFiles}
-      >
+      <Upload beforeUpload={beforeUpload} listType="text" multiple={true} onChange={onChange}>
         <CPButton cpType="secondary">
           <Icon type="upload" /> Click to Upload
         </CPButton>

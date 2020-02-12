@@ -126,16 +126,19 @@ class RubricFileUpload extends React.Component<IProps, IState> {
         pointLimit: newCategory.pointLimit,
         sortKey: index,
         helpText: newCategory.helpText,
+        atMostOnce: false,
       };
 
       newCategory.rubricComments.forEach((newComment: IDownloadComment, indexComment: number) => {
         commentList.push({
           id: commentID,
           text: newComment.text,
+          explanation: '', // FIXME
           pointDelta: newComment.pointDelta,
           category: categoryPayload.id,
-          comments: [],
           sortKey: indexComment,
+          instructionText: '',
+          templateTextOn: false,
         });
         commentID = commentID - 1;
       });

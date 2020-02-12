@@ -1,0 +1,472 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
+import React, { useEffect, useState } from 'react';
+
+/* library imports */
+import { Button, Divider, Modal, Spin, Steps, Table, Tag } from 'antd';
+import _ from 'lodash';
+
+/* codePost object imports */
+import { IBasicFile } from './../TestDefinitions';
+import { SourceFileType } from '../../../../../../infrastructure/autograder/sourceFile';
+import { TestCaseType } from '../../../../../../infrastructure/testCase';
+import { TestCategoryType } from '../../../../../../infrastructure/types';
+import { FILE_TYPE } from '../TestingSetup';
+
+/* codePost interface imports */
+import { TestCasesByCategory } from '../../../../../core/testFetchUtils';
+
+interface IProps {
+  // files
+  sourceFiles: SourceFileType[];
+  currentFile: IBasicFile;
+  currentFileCode: string;
+
+  // tests
+  casesByCategory: TestCasesByCategory;
+  categories: TestCategoryType[];
+  addCategory: (name: string) => Promise<TestCategoryType>;
+  deleteCategory: (id: number) => Promise<void>;
+  addTest: (language: string | null, category: number, sourceFile?: boolean, name?: string) => Promise<void>;
+  deleteTest: (testCase: TestCaseType) => Promise<void>;
+
+  // misc
+  checkChanges: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}
+
+// Misc interfaces to help with handling diff storage
+interface ICaseNamesByCategoryName {
+  [categoryName: string]: Set<string>;
+}
+
+interface ICasesByCategoryName {
+  [categoryName: string]: TestCaseType[];
+}
+
+enum STATUS {
+  PARSING = 0,
+  CONFIRM = 1,
+  SUCCESS = 2,
+}
+
+export const TestsChangeModal = (props: IProps) => {
+  /******************************* State Variables ****************************/
+  const [categoriesToAdd, setCategoriesToAdd] = useState<ICaseNamesByCategoryName>({});
+  const [categoriesToDelete, setCategoriesToDelete] = useState<ICaseNamesByCategoryName>({});
+  const [testsToAdd, setTestsToAdd] = useState<ICaseNamesByCategoryName>({});
+  const [testsToDelete, setTestsToDelete] = useState<ICasesByCategoryName>({});
+  const [status, setStatus] = useState<STATUS>(STATUS.PARSING);
+  const [visible, setVisible] = useState(false);
+
+  /******************************* State Variables ****************************/
+  useEffect(() => {
+    if (props.checkChanges) {
+      setStatus(STATUS.PARSING);
+      const errors = checkForErrors(props.currentFileCode);
+      if (errors.length > 0) {
+        props.onCancel();
+        Modal.error({
+          width: 550,
+          title: 'TestOutput syntax errors',
+          content: (
+            <div>
+              {errors.map((error) => {
+                return (
+                  <div>
+                    Line {error.lineNumber}: {error.log}
+                  </div>
+                );
+              })}
+              <Divider />
+              <div>
+                <div style={{ fontWeight: 600, marginBottom: 10 }}> Correct syntax examples:</div>
+                <div style={{ fontWeight: 500, fontStyle: 'italic' }}>
+                  <div>TestOutput "Category 1" "Test 1" true "Great job!"</div>
+                  <div>TestOutput "Style" "Checking for header" false "This is incorrect."</div>
+                  <div>TestOutput "Algorithms" "O(N) test" true</div>
+                </div>
+              </div>
+            </div>
+          ),
+        });
+      } else {
+        // No errors
+        const parsedTests = parseTests(props.sourceFiles, props.currentFile, props.currentFileCode);
+        const [newCategories, deletedCategories, newTests, deletedTests]: any = compareDiff(
+          parsedTests,
+          props.casesByCategory,
+        );
+        setCategoriesToAdd(newCategories);
+        setCategoriesToDelete(deletedCategories);
+        setTestsToAdd(newTests);
+        setTestsToDelete(deletedTests);
+        if (
+          _.isEmpty(newCategories) &&
+          _.isEmpty(deletedCategories) &&
+          _.isEmpty(newTests) &&
+          _.isEmpty(deletedTests)
+        ) {
+          props.onConfirm();
+          props.onCancel();
+        } else {
+          setVisible(true);
+          setStatus(STATUS.CONFIRM);
+        }
+      }
+    }
+  }, [props.checkChanges]);
+
+  const checkForErrors = (currentCode: string) => {
+    const errors: { lineNumber: number; log: string }[] = [];
+    const re = /^([^#]*\s)*TestOutput(?!([ ]{1,}"([^"]+?)"[ ]{1,}"([^"]+?)"[ ]{1,}(true|false)( "([^"]*?)")?)).*/g;
+    const lines = currentCode.split('\n');
+
+    lines.forEach((l, i) => {
+      const t = l.match(re);
+      if (t) {
+        errors.push({ lineNumber: i, log: t.toString() });
+      }
+    });
+
+    return errors;
+  };
+
+  // ********************* GET DIFF BETWEEN FILES ******************************
+  const parseTests = (sourceFiles: SourceFileType[], currentFile: IBasicFile, currentCode: string) => {
+    const parsedTests: { [categoryName: string]: Set<string> } = {};
+    sourceFiles.forEach((f) => {
+      const re = /TestOutput[ ]{1,}"([^"]+?)"[ ]{1,}"([^"]+?)"[ ]{1,}(true|false)([ ]{1,}"([^"]*?)")?/g;
+
+      // The current file is updated, so we want to use the latest code
+      const code = f.id === currentFile.id && currentFile.type === FILE_TYPE.SOURCEFILE ? currentCode : f.code;
+      const tests = code.match(re);
+
+      if (tests) {
+        tests.forEach((t) => {
+          // Syntax for the regex match is <TestOutput> <category> <test> <boolean> <log>
+          const [, category, test, ,] = t.split(/(?:"[ ]{1,}|[ ]{1,}")+/);
+
+          const categoryName = category.replace(/"/g, '');
+          const testestName = test.replace(/"/g, '');
+
+          if (categoryName in parsedTests) {
+            parsedTests[categoryName].add(testestName);
+          } else {
+            parsedTests[categoryName] = new Set<string>([testestName]);
+          }
+        });
+      }
+    });
+    return parsedTests;
+  };
+
+  const compareDiff = (parsedTests: { [categoryName: string]: Set<string> }, casesByCategory: TestCasesByCategory) => {
+    // 1. Pre-process data to make comparison faster
+    //    a) We get categories by id for fast lookup
+    //    b) We get test cases by name by category name. That way we can find the
+    //       testcase obj corresponding to a (categoryName, testCaseName) in O(1)
+    const categoriesByID: { [categoryID: number]: TestCategoryType } = props.categories.reduce(
+      (acc: { [categoryID: number]: TestCategoryType }, val) => {
+        acc[val.id] = val;
+        return acc;
+      },
+      {},
+    );
+
+    const casesByCategoryName: { [categoryName: string]: { [testCaseName: string]: TestCaseType } } = {};
+    Object.keys(props.casesByCategory).forEach((cat) => {
+      const cases = casesByCategory[parseInt(cat, 10)];
+      const categoryName = categoriesByID[parseInt(cat, 10)].name;
+      cases.forEach((c) => {
+        // We want to ignore any non file-defined tests in the comparison
+        if (c.type === 'file') {
+          (categoryName in casesByCategoryName && (casesByCategoryName[categoryName][c.description] = c)) ||
+            (casesByCategoryName[categoryName] = { [c.description]: c });
+        } else {
+          // Even if the category doesn't have file tests, we still want to include the category so
+          // we don't end up creating duplicates
+          !(categoryName in casesByCategoryName) && (casesByCategoryName[categoryName] = {});
+        }
+      });
+    });
+
+    // 2. Create result data structures
+    const categsToAdd: ICaseNamesByCategoryName = {};
+    const categsToDelete: ICaseNamesByCategoryName = {};
+    const casesToAdd: ICaseNamesByCategoryName = {};
+    const casesToDelete: ICasesByCategoryName = {};
+
+    // 3. Go through new data structure and find diffs to add
+    // For clarity on names vs. objects, we adopt the following:
+    Object.keys(parsedTests).forEach((categName) => {
+      // Check for new categories
+      if (!(categName in casesByCategoryName)) {
+        categsToAdd[categName] = new Set(parsedTests[categName]);
+        return;
+      }
+
+      // Check for new tests in existing categories
+      parsedTests[categName].forEach((testName) => {
+        if (!(testName in casesByCategoryName[categName])) {
+          (categName in casesToAdd && casesToAdd[categName].add(testName)) ||
+            (casesToAdd[categName] = new Set([testName]));
+        }
+      });
+    });
+
+    // 4. Go through old data structure and find diffs to delete
+    Object.keys(casesByCategoryName).forEach((categName) => {
+      // Check for deleted categories
+      if (!(categName in parsedTests)) {
+        // check to see if the category contains test cases that aren't file defined
+        let canDelete = true;
+        const thisCategory = props.categories.find((c) => c.name == categName);
+        if (thisCategory && props.casesByCategory[thisCategory.id] !== undefined) {
+          const thisCategoryCases = props.casesByCategory[thisCategory.id];
+          // If the category has no cases then it can't be file defined
+          if (thisCategoryCases.length === 0) canDelete = false;
+          // If any of the cases aren't file defined, set canDelete to false
+          thisCategoryCases.forEach((c) => c.type !== 'file' && (canDelete = false));
+        }
+
+        if (canDelete) {
+          // We store the test names as well to display in the confirmation modal
+          categsToDelete[categName] = new Set(Object.keys(casesByCategoryName[categName]));
+          // We don't need to loop through the test cases if the category is to be deleted, so we return
+          return;
+        }
+      }
+
+      // Check for deleted tests in existing categories
+      Object.keys(casesByCategoryName[categName]).forEach((testName) => {
+        if (!(categName in parsedTests) || !parsedTests[categName].has(testName)) {
+          const test = { ...casesByCategoryName[categName][testName] };
+          (categName in casesToDelete && casesToDelete[categName].push(test)) || (casesToDelete[categName] = [test]);
+        }
+      });
+    });
+
+    return [categsToAdd, categsToDelete, casesToAdd, casesToDelete];
+  };
+
+  // ********************* API Chamges ******************************
+
+  const onConfirm = async () => {
+    const categoriesByName: { [categoryName: string]: TestCategoryType } = props.categories.reduce(
+      (acc: { [categoryName: string]: TestCategoryType }, val) => {
+        acc[val.name] = val;
+        return acc;
+      },
+      {},
+    );
+    createCategories();
+    deleteCategories(categoriesByName);
+    createTests(categoriesByName);
+    deleteTests(categoriesByName);
+    props.onConfirm();
+    setStatus(STATUS.SUCCESS);
+  };
+
+  const createCategories = () => {
+    Object.keys(categoriesToAdd).forEach(async (catestName) => {
+      const newCat = await props.addCategory(catestName);
+      categoriesToAdd[catestName].forEach((testestName) => {
+        props.addTest(null, newCat.id, true, testestName);
+      });
+    });
+  };
+
+  const deleteCategories = (categoriesByName: { [categoryName: string]: TestCategoryType }) => {
+    Object.keys(categoriesToDelete).forEach((catestName) => {
+      const catID = categoriesByName[catestName].id;
+      props.deleteCategory(catID);
+    });
+  };
+
+  const createTests = (categoriesByName: { [categoryName: string]: TestCategoryType }) => {
+    Object.keys(testsToAdd).forEach((catestName) => {
+      const catID = categoriesByName[catestName].id;
+      testsToAdd[catestName].forEach((testestName) => {
+        props.addTest(null, catID, true, testestName);
+      });
+    });
+  };
+
+  const deleteTests = (categoriesByName: { [categoryName: string]: TestCategoryType }) => {
+    Object.keys(testsToDelete).forEach((catestName) => {
+      testsToDelete[catestName].forEach((test) => {
+        props.deleteTest(test);
+      });
+    });
+  };
+
+  const onCancel = () => {
+    setVisible(false);
+    props.onCancel();
+  };
+
+  // ********************* GET DIFF BETWEEN FILES ******************************
+
+  const steps = [
+    {
+      title: 'Check for Changes',
+    },
+    {
+      title: 'Confirm Changes',
+    },
+    {
+      title: 'Done!',
+    },
+  ];
+
+  let content;
+  let footer;
+  switch (status) {
+    case STATUS.PARSING:
+      content = (
+        <div>
+          <Spin />
+          Just a moment, we're parsing your changes...{' '}
+        </div>
+      );
+      footer = [];
+      break;
+    case STATUS.CONFIRM:
+      const categoryColumns = [
+        {
+          title: 'Name',
+          dataIndex: 'name',
+          key: 'name',
+        },
+        {
+          title: 'Change',
+          dataIndex: 'change',
+          key: 'change',
+        },
+      ];
+
+      const caseColumns = [
+        {
+          title: 'Category',
+          dataIndex: 'category',
+          key: 'category',
+        },
+        {
+          title: 'Name',
+          dataIndex: 'name',
+          key: 'name',
+        },
+        {
+          title: 'Change',
+          dataIndex: 'change',
+          key: 'change',
+        },
+      ];
+
+      const newCategoryRows = Object.keys(categoriesToAdd).map((name) => {
+        return {
+          name: name,
+          change: <Tag color="green">ADDED</Tag>,
+        };
+      });
+
+      const deleteCategoryRows = Object.keys(categoriesToDelete).map((name) => {
+        return {
+          name: name,
+          change: <Tag color="volcano">DELETED</Tag>,
+        };
+      });
+
+      const changedCategoryRows = [...newCategoryRows, ...deleteCategoryRows];
+      const changedCaseRows: any = [];
+      Object.keys(categoriesToAdd).forEach((c) => {
+        categoriesToAdd[c].forEach((name) => {
+          changedCaseRows.push({
+            name: name,
+            category: c,
+            change: <Tag color="green">ADDED</Tag>,
+          });
+        });
+      });
+
+      Object.keys(testsToAdd).forEach((c) => {
+        testsToAdd[c].forEach((name) => {
+          changedCaseRows.push({
+            name: name,
+            category: c,
+            change: <Tag color="green">ADDED</Tag>,
+          });
+        });
+      });
+
+      Object.keys(categoriesToDelete).forEach((c) => {
+        categoriesToDelete[c].forEach((name) => {
+          changedCaseRows.push({
+            name: name,
+            category: c,
+            change: <Tag color="volcano">DELETED</Tag>,
+          });
+        });
+      });
+
+      Object.keys(testsToDelete).forEach((c) => {
+        testsToDelete[c].forEach((testCase) => {
+          changedCaseRows.push({
+            name: testCase.description,
+            category: c,
+            change: <Tag color="volcano">DELETED</Tag>,
+          });
+        });
+      });
+      content = (
+        <div>
+          <Divider>Changed Test Categories</Divider>
+          <Table size="small" style={{ lineHeight: 1 }} columns={categoryColumns} dataSource={changedCategoryRows} />
+          <Divider>Changed Test Cases</Divider>
+          <Table size="small" style={{ lineHeight: 1 }} columns={caseColumns} dataSource={changedCaseRows} />
+        </div>
+      );
+      const okButton = (
+        <Button onClick={onConfirm} type="primary">
+          Ok
+        </Button>
+      );
+      const cancelButton = <Button onClick={onCancel}>Cancel</Button>;
+      footer = [cancelButton, okButton];
+      break;
+    case STATUS.SUCCESS:
+      const doneButton = (
+        <Button onClick={onCancel} type="primary">
+          Done
+        </Button>
+      );
+      content = <div>Success!</div>;
+      footer = [doneButton];
+      break;
+  }
+
+  return (
+    <div>
+      <Modal
+        visible={visible}
+        title={`Save test changes`}
+        onCancel={onCancel}
+        width={700}
+        destroyOnClose={true}
+        footer={footer}
+      >
+        <Steps size="small" current={status}>
+          {steps.map((item) => {
+            return <Steps.Step key={item.title} title={item.title} />;
+          })}
+        </Steps>
+        {content}
+      </Modal>
+    </div>
+  );
+};

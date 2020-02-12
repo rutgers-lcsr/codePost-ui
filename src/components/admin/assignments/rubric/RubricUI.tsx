@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Checkbox, Breadcrumb, Empty } from 'antd';
+import { Checkbox, Breadcrumb, Empty, Modal } from 'antd';
 
 /* codePost imports */
 import RubricCommentExplorer from './RubricCommentExplorer';
@@ -40,6 +40,8 @@ import { tooltips } from '../../../core/tooltips';
 
 interface IRubricUIProps extends IRubricManagerProps {
   breadcrumbs: React.ReactElement[];
+  baseURL: string;
+  history: any;
 }
 
 const RubricUI = ({
@@ -52,10 +54,22 @@ const RubricUI = ({
   helpers: IRubricManagerHelpers;
 }) => {
   const { rubricCategories, rubricComments, loadComplete } = state;
+
+  /* settings modal display */
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
+
+  /* optional rubric fields */
   const [showPointLimits, setShowPointLimits] = React.useState(false);
   const [showHelpText, setShowHelpText] = React.useState(false);
+  const [showExplanations, setShowExplanations] = React.useState(false);
+  const [showInstructions, setShowInstructions] = React.useState(false);
+  const [showAtMostOnce, setShowAtMostOnce] = React.useState(false);
+
   const [showPointLimitCheckbox, setShowPointLimitCheckbox] = React.useState(true);
   const [showHelpTextCheckbox, setShowHelpTextCheckbox] = React.useState(true);
+  const [showExplanationsCheckbox, setShowExplanationsCheckbox] = React.useState(true);
+  const [showInstructionsCheckbox, setShowInstructionsCheckbox] = React.useState(true);
+  const [showAtMostOnceCheckbox, setShowAtMostOnceCheckbox] = React.useState(true);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
@@ -68,6 +82,23 @@ const RubricUI = ({
       if (!showHelpText && (typeof cat.helpText === 'string' && cat.helpText.length > 0)) {
         setShowHelpText(true);
         setShowHelpTextCheckbox(false);
+      }
+
+      if (!showAtMostOnce && cat.atMostOnce) {
+        setShowAtMostOnce(true);
+        setShowAtMostOnceCheckbox(false);
+      }
+
+      for (const rc of rubricComments[cat.id]) {
+        if (!showExplanations && rc.explanation) {
+          setShowExplanations(true);
+          setShowExplanationsCheckbox(false);
+        }
+
+        if (!showInstructions && rc.instructionText) {
+          setShowInstructions(true);
+          setShowInstructionsCheckbox(false);
+        }
       }
     }
   });
@@ -108,19 +139,114 @@ const RubricUI = ({
             commentFeedbackOn={props.assignment.commentFeedback}
             showPointLimits={showPointLimits}
             showHelpText={showHelpText}
+            showExplanations={showExplanations}
+            showInstructions={showInstructions}
+            showAtMostOnce={showAtMostOnce}
+            instanceLists={state.instanceLists}
           >
             {({ propz, statez, helperz }: IRubricCategoryManagerParams) => {
-              return <RubricCategoryUI props={propz} state={statez} helpers={helperz} />;
+              return <RubricCategoryUI props={{ ...propz, baseURL: props.baseURL }} state={statez} helpers={helperz} />;
             }}
           </RubricCategoryManager>
         );
       });
 
     const onSave = (e: any) => {
-      helpers.onSave(undefined, e);
+      helpers.onSave(undefined);
     };
 
+    /************************************************************************/
+    /* Settings modal
+    /************************************************************************/
+
+    const toggleShowPointLimit = () => {
+      setShowPointLimits(!showPointLimits);
+    };
+
+    const toggleShowHelpText = () => {
+      setShowHelpText(!showHelpText);
+    };
+
+    const toggleShowExplanations = () => {
+      setShowExplanations(!showExplanations);
+    };
+
+    const toggleShowInstructions = () => {
+      setShowInstructions(!showInstructions);
+    };
+
+    const toggleShowAtMostOnce = () => {
+      setShowAtMostOnce(!showAtMostOnce);
+    };
+
+    const settingsModal = (
+      <Modal title="Rubric settings" visible={settingsOpen} footer={null} onCancel={() => setSettingsOpen(false)}>
+        <div>
+          {showPointLimitCheckbox ? (
+            <div>
+              Show point limits <Checkbox checked={showPointLimits} onChange={toggleShowPointLimit} />{' '}
+              <CPTooltip
+                title={tooltips.admin.rubric.categoryPointLimit}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
+          ) : null}
+          {showHelpTextCheckbox ? (
+            <div>
+              Show help text <Checkbox checked={showHelpText} onChange={toggleShowHelpText} />{' '}
+              <CPTooltip
+                title={tooltips.admin.rubric.categoryHelpText}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
+          ) : null}
+          {showExplanationsCheckbox ? (
+            <div>
+              Show explanation editors <Checkbox checked={showExplanations} onChange={toggleShowExplanations} />{' '}
+              <CPTooltip
+                title={tooltips.admin.rubric.explanations}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
+          ) : null}
+          {showInstructionsCheckbox ? (
+            <div>
+              Show instruction editors <Checkbox checked={showInstructions} onChange={toggleShowInstructions} />{' '}
+              <CPTooltip
+                title={`An optional textarea that allows you to give graders instructions for personalizing a rubric comment.`}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
+          ) : null}
+          {showAtMostOnceCheckbox ? (
+            <div>
+              Show "At Most Once" toggle <Checkbox checked={showAtMostOnce} onChange={toggleShowAtMostOnce} />{' '}
+              <CPTooltip
+                title={'Show the option to require a rubric category be applied at most once.'}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 5 }}
+              />
+            </div>
+          ) : null}
+        </div>
+      </Modal>
+    );
+
+    /************************************************************************/
+
     const actions = [
+      <CPButton cpType="secondary" icon="setting" onClick={() => setSettingsOpen(!settingsOpen)}>
+        Settings
+      </CPButton>,
       <RubricFileUpload
         key="2"
         assignment={props.assignment}
@@ -181,40 +307,9 @@ const RubricUI = ({
       helpers.onLinkedCommentsResolve(state.linkedComments[0], RESOLUTION.UNLINK);
     };
 
-    const toggleShowPointLimit = () => {
-      setShowPointLimits(!showPointLimits);
-    };
-
-    const toggleShowHelpText = () => {
-      setShowHelpText(!showHelpText);
-    };
-
     const content = (
       <div>
-        <div className="display-flex flex-direction-column align-items-flex-end" style={{ marginBottom: '10px' }}>
-          {showPointLimitCheckbox ? (
-            <div>
-              Show point limits <Checkbox checked={showPointLimits} onChange={toggleShowPointLimit} />{' '}
-              <CPTooltip
-                title={tooltips.admin.rubric.categoryPointLimit}
-                infoIcon={true}
-                hideThisOnHideTips={true}
-                iconStyle={{ paddingLeft: 5 }}
-              />
-            </div>
-          ) : null}
-          {showHelpTextCheckbox ? (
-            <div>
-              Show help text <Checkbox checked={showHelpText} onChange={toggleShowHelpText} />{' '}
-              <CPTooltip
-                title={tooltips.admin.rubric.categoryHelpText}
-                infoIcon={true}
-                hideThisOnHideTips={true}
-                iconStyle={{ paddingLeft: 5 }}
-              />
-            </div>
-          ) : null}
-        </div>
+        {settingsModal}
         {categoryTables}
         <CPButton cpType="primary" onClick={addRubricCategory}>
           Add New Category
@@ -233,6 +328,7 @@ const RubricUI = ({
           onUnLink={onUnLink}
           onCancel={helpers.onLinkedAlertCancel}
           isVisible={state.linkedComments.length > 0}
+          numComments={state.linkedComments[0] ? state.instanceLists[state.linkedComments[0].id].length : 0}
         />
         <LinkedCommentsConfirm
           onAccept={helpers.onLinkedConfirmAccept}
@@ -245,33 +341,34 @@ const RubricUI = ({
     );
 
     return (
-      <CPAdminRubric
-        actions={actions}
-        title="Rubric"
-        content={content}
-        goBack={null}
-        isEmpty={state.rubricCategories.length === 0}
-        emptyNode={
-          <Empty
-            imageStyle={{
-              height: 60,
-            }}
-            description={<span>No rubric yet</span>}
-          >
-            <CPButton cpType="primary" onClick={addRubricCategory}>
-              Create a category
-            </CPButton>
-          </Empty>
-        }
-        breadcrumbs={
-          <Breadcrumb>
-            {props.breadcrumbs}
-            <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item>
-            <Breadcrumb.Item>Edit rubric</Breadcrumb.Item>
-          </Breadcrumb>
-        }
-        titleInfo={tooltips.admin.rubric.title}
-      />
+      <span>
+        <CPAdminRubric
+          actions={actions}
+          title="Rubric"
+          content={content}
+          goBack={null}
+          isEmpty={state.rubricCategories.length === 0}
+          emptyNode={
+            <Empty
+              imageStyle={{
+                height: 60,
+              }}
+              description={<span>No rubric yet</span>}
+            >
+              <CPButton cpType="primary" onClick={addRubricCategory}>
+                Create a category
+              </CPButton>
+            </Empty>
+          }
+          breadcrumbs={
+            <Breadcrumb>
+              {props.breadcrumbs}
+              <Breadcrumb.Item key={props.assignment.name}>{props.assignment.name}</Breadcrumb.Item>
+            </Breadcrumb>
+          }
+          titleInfo={tooltips.admin.rubric.title}
+        />
+      </span>
     );
   } else {
     return <Loading />;

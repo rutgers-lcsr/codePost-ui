@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import { Breadcrumb, Form, Input, message, Select, Switch, Table, Typography } from 'antd';
+import { Breadcrumb, Form, Input, InputNumber, message, Select, Switch, Table, Typography } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
 import CPButton from '../../../components/core/CPButton';
@@ -14,6 +14,7 @@ import CPAdminDetail from '../other/CPAdminDetail';
 
 /* codePost imports */
 import { CoursePatchType, CourseType } from '../../../infrastructure/course';
+import InputNumberOrNull from './InputNumberOrNull';
 
 import { timezones } from '../other/timezones';
 
@@ -93,12 +94,19 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
         emailNewUsers: values.emailNewUsers,
         allowGradersToEditRubric: values.allowGradersToEditRubric,
         anonymousGradingDefault: values.anonymousGradingDefault,
+        lateDayCreditsAllowable: values.lateDayCreditsAllowable,
         assignments: [], // ignored by API
         sections: [], // ignored by API
+        archived: values.archived,
       };
 
       this.props.updateSettings(payload).then(() => {
         message.success('Your settings were saved!');
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+
         this.setState({ isLoading: false, isDirty: false });
       });
     });
@@ -248,6 +256,20 @@ const SettingsForm: any = Form.create()(
         },
         {
           key: '5',
+          setting: <Text strong>Late Day Credits Allowed</Text>,
+          description:
+            "The maximum number of Late Day Credits a student can use. Only used if the Assignment Setting 'Allow Student Upload' is turned on.",
+          action: (
+            <Form.Item>
+              {getFieldDecorator('lateDayCreditsAllowable', {
+                initialValue: this.props.thisCourse.lateDayCreditsAllowable,
+                // @ts-ignore
+              })(<InputNumberOrNull onChange={this.props.makeDirty} />)}
+            </Form.Item>
+          ),
+        },
+        {
+          key: '6',
           setting: <Text strong>Course timezone</Text>,
           description: 'Timezone in which all time fields for this course (for all users) will appear.',
           action: (
@@ -265,6 +287,19 @@ const SettingsForm: any = Form.create()(
                   })}
                 </Select>,
               )}
+            </Form.Item>
+          ),
+        },
+        {
+          key: '7',
+          setting: <Text strong>Archived</Text>,
+          description: 'When a Course is Archived, its content will not be editable.',
+          action: (
+            <Form.Item>
+              {getFieldDecorator('archived', {
+                initialValue: this.props.thisCourse.archived,
+                valuePropName: 'checked',
+              })(<Switch onChange={this.props.makeDirty} />)}
             </Form.Item>
           ),
         },

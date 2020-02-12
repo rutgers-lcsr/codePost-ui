@@ -1,0 +1,543 @@
+export function getDemoSubmissionTests(domain: string) {
+  return [
+    {
+      students: [`student3@${domain}`],
+      tests: [
+        { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
+        {
+          passed: true,
+          isError: false,
+          logs: 'Expected Hello, World. Received Hello, World.',
+          testCase: 'Outputs "Hello, World"',
+          testCategory: 'Run HelloWorld',
+        },
+      ],
+    },
+    {
+      students: [`student1@${domain}`],
+      tests: [
+        { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
+        {
+          passed: true,
+          isError: false,
+          logs: 'Expected Hello, World. Received Hello, World.',
+          testCase: 'Outputs "Hello, World"',
+          testCategory: 'Run HelloWorld',
+        },
+      ],
+    },
+    {
+      students: [`student0@${domain}`],
+      tests: [
+        { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
+        {
+          passed: true,
+          isError: false,
+          logs: 'Expected Hello, World. Received Hello, World.',
+          testCase: 'Outputs "Hello, World"',
+          testCategory: 'Run HelloWorld',
+        },
+      ],
+    },
+    {
+      students: [`student4@${domain}`],
+      tests: [
+        { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
+        {
+          passed: true,
+          isError: false,
+          logs: 'Expected Hello, World. Received Hello, World.',
+          testCase: 'Outputs "Hello, World"',
+          testCategory: 'Run HelloWorld',
+        },
+      ],
+    },
+    {
+      students: [`student2@${domain}`],
+      tests: [
+        { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
+        {
+          passed: false,
+          isError: false,
+          logs: 'Expected Hello, World. Received Hello, wurld.',
+          testCase: 'Outputs "Hello, World"',
+          testCategory: 'Run HelloWorld',
+        },
+      ],
+    },
+    {
+      students: [`student5@${domain}`],
+      tests: [
+        { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
+        {
+          passed: true,
+          isError: false,
+          logs: 'Expected Hello, World. Received Hello, World.',
+          testCase: 'Outputs "Hello, World"',
+          testCategory: 'Run HelloWorld',
+        },
+      ],
+    },
+    {
+      students: [`student6@${domain}`],
+      tests: [
+        { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
+        {
+          passed: true,
+          isError: false,
+          logs: 'Expected Hello, World. Received Hello, World.',
+          testCase: 'Outputs "Hello, World"',
+          testCategory: 'Run HelloWorld',
+        },
+      ],
+    },
+    {
+      students: [`student9@${domain}`],
+      tests: [
+        { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
+        {
+          passed: true,
+          isError: false,
+          logs: 'Expected Hello, World. Received Hello, World.',
+          testCase: 'Outputs "Hello, World"',
+          testCategory: 'Run HelloWorld',
+        },
+      ],
+    },
+    {
+      students: [`student8@${domain}`],
+      tests: [
+        { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
+        {
+          passed: true,
+          isError: false,
+          logs: 'Expected Hello, World. Received Hello, World.',
+          testCase: 'Outputs "Hello, World"',
+          testCategory: 'Run HelloWorld',
+        },
+      ],
+    },
+    {
+      students: [`student7@${domain}`],
+      tests: [
+        { passed: true, isError: false, logs: 'passed', testCase: 'Outputs something', testCategory: 'Run HelloWorld' },
+        {
+          passed: true,
+          isError: false,
+          logs: 'Expected Hello, World. Received Hello, World.',
+          testCase: 'Outputs "Hello, World"',
+          testCategory: 'Run HelloWorld',
+        },
+      ],
+    },
+    {
+      students: [`student2@${domain}`],
+      tests: [
+        { passed: true, isError: false, logs: '', testCase: 'Test on [] with 0', testCategory: 'LoopUtils.contains' },
+        { passed: true, isError: false, logs: 'passed', testCase: 'Test on [1,2]', testCategory: 'LoopUtils.reverse' },
+        {
+          passed: true,
+          isError: false,
+          logs: 'passed',
+          testCase: 'Test on [3,2,1]',
+          testCategory: 'LoopUtils.reverse',
+        },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+          testCase: 'Test on [1,2,3]',
+          testCategory: 'LoopUtils.max',
+        },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+          testCase: 'Test on [1]',
+          testCategory: 'LoopUtils.max',
+        },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+          testCase: 'Test on [-1,-2,-3]',
+          testCategory: 'LoopUtils.max',
+        },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+          testCase: 'Test on random arrays',
+          testCategory: 'LoopUtils.max',
+        },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+          testCase: 'Test on [1,2,3] with 3',
+          testCategory: 'LoopUtils.contains',
+        },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+          testCase: 'Test on [1,2,3] with 0',
+          testCategory: 'LoopUtils.contains',
+        },
+      ],
+    },
+    {
+      students: [`student1@${domain}`, `student6@${domain}`],
+      tests: [
+        {
+          passed: true,
+          isError: false,
+          logs: '',
+          testCase: 'Test on [1,2,3] with 3',
+          testCategory: 'LoopUtils.contains',
+        },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]', testCategory: 'LoopUtils.max' },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            '\n=============================\nEXPECTED OUTPUT:\n-1\n------------------------------------------------------------\nACTUAL OUTPUT:\n0\n=============================\n',
+          testCase: 'Test on [-1,-2,-3]',
+          testCategory: 'LoopUtils.max',
+        },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [] with 0', testCategory: 'LoopUtils.contains' },
+        { passed: true, isError: false, logs: 'passed', testCase: 'Test on [1,2]', testCategory: 'LoopUtils.reverse' },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [1]', testCategory: 'LoopUtils.max' },
+        {
+          passed: false,
+          isError: false,
+          logs: 'failed on []',
+          testCase: 'Test on random arrays',
+          testCategory: 'LoopUtils.max',
+        },
+        {
+          passed: true,
+          isError: false,
+          logs: '',
+          testCase: 'Test on [1,2,3] with 0',
+          testCategory: 'LoopUtils.contains',
+        },
+        {
+          passed: true,
+          isError: false,
+          logs: 'passed',
+          testCase: 'Test on [3,2,1]',
+          testCategory: 'LoopUtils.reverse',
+        },
+      ],
+    },
+    {
+      students: [`student0@${domain}`, `student5@${domain}`],
+      tests: [
+        {
+          passed: true,
+          isError: false,
+          logs: '',
+          testCase: 'Test on [1,2,3] with 3',
+          testCategory: 'LoopUtils.contains',
+        },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]', testCategory: 'LoopUtils.max' },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [-1,-2,-3]', testCategory: 'LoopUtils.max' },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [] with 0', testCategory: 'LoopUtils.contains' },
+        { passed: true, isError: false, logs: 'passed', testCase: 'Test on [1,2]', testCategory: 'LoopUtils.reverse' },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [1]', testCategory: 'LoopUtils.max' },
+        {
+          passed: true,
+          isError: false,
+          logs: 'passed',
+          testCase: 'Test on random arrays',
+          testCategory: 'LoopUtils.max',
+        },
+        {
+          passed: true,
+          isError: false,
+          logs: '',
+          testCase: 'Test on [1,2,3] with 0',
+          testCategory: 'LoopUtils.contains',
+        },
+        {
+          passed: true,
+          isError: false,
+          logs: 'passed',
+          testCase: 'Test on [3,2,1]',
+          testCategory: 'LoopUtils.reverse',
+        },
+      ],
+    },
+    {
+      students: [`student3@${domain}`, `student8@${domain}`],
+      tests: [
+        {
+          passed: true,
+          isError: false,
+          logs: '',
+          testCase: 'Test on [1,2,3] with 3',
+          testCategory: 'LoopUtils.contains',
+        },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            'java.lang.ArrayIndexOutOfBoundsException: 3\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat _test610.main(_test610.java:13)\n',
+          testCase: 'Test on [1,2,3]',
+          testCategory: 'LoopUtils.max',
+        },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            'java.lang.ArrayIndexOutOfBoundsException: 3\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat _test612.main(_test612.java:13)\n',
+          testCase: 'Test on [-1,-2,-3]',
+          testCategory: 'LoopUtils.max',
+        },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [] with 0', testCategory: 'LoopUtils.contains' },
+        { passed: true, isError: false, logs: 'failed', testCase: 'Test on [1,2]', testCategory: 'LoopUtils.reverse' },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            'java.lang.ArrayIndexOutOfBoundsException: 1\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat _test611.main(_test611.java:13)\n',
+          testCase: 'Test on [1]',
+          testCategory: 'LoopUtils.max',
+        },
+        {
+          passed: true,
+          isError: false,
+          logs: '',
+          testCase: 'Test on [1,2,3] with 0',
+          testCategory: 'LoopUtils.contains',
+        },
+        {
+          passed: true,
+          isError: false,
+          logs: 'passed',
+          testCase: 'Test on [3,2,1]',
+          testCategory: 'LoopUtils.reverse',
+        },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nException in thread "main" java.lang.ArrayIndexOutOfBoundsException: 4\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat Test.Test(_test613.java:31)\n\tat _test613.main(_test613.java:53)\n',
+          testCase: 'Test on random arrays',
+          testCategory: 'LoopUtils.max',
+        },
+      ],
+    },
+    {
+      students: [`student4@${domain}`, `student9@${domain}`],
+      tests: [
+        {
+          passed: true,
+          isError: false,
+          logs: '',
+          testCase: 'Test on [1,2,3] with 3',
+          testCategory: 'LoopUtils.contains',
+        },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]', testCategory: 'LoopUtils.max' },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [-1,-2,-3]', testCategory: 'LoopUtils.max' },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [] with 0', testCategory: 'LoopUtils.contains' },
+        { passed: true, isError: false, logs: 'failed', testCase: 'Test on [1,2]', testCategory: 'LoopUtils.reverse' },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [1]', testCategory: 'LoopUtils.max' },
+        {
+          passed: true,
+          isError: false,
+          logs: 'passed',
+          testCase: 'Test on random arrays',
+          testCategory: 'LoopUtils.max',
+        },
+        {
+          passed: true,
+          isError: false,
+          logs: '',
+          testCase: 'Test on [1,2,3] with 0',
+          testCategory: 'LoopUtils.contains',
+        },
+        {
+          passed: true,
+          isError: false,
+          logs: 'passed',
+          testCase: 'Test on [3,2,1]',
+          testCategory: 'LoopUtils.reverse',
+        },
+      ],
+    },
+    {
+      students: [`student0@${domain}`, `student5@${domain}`],
+      tests: [
+        {
+          passed: true,
+          isError: false,
+          logs: '',
+          testCase: 'Test on [1,2,3] with 0',
+          testCategory: 'RecursionUtils.contains',
+        },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [1]', testCategory: 'RecursionUtils.sum' },
+        {
+          passed: true,
+          isError: false,
+          logs: '',
+          testCase: 'Test on [] with 3',
+          testCategory: 'RecursionUtils.contains',
+        },
+        { passed: true, isError: false, logs: '', testCase: 'Test on []', testCategory: 'RecursionUtils.sum' },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            '\n=============================\nEXPECTED OUTPUT:\ntrue\n------------------------------------------------------------\nACTUAL OUTPUT:\nfalse\n=============================\n',
+          testCase: 'Test on [1,2,3] with 3',
+          testCategory: 'RecursionUtils.contains',
+        },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]', testCategory: 'RecursionUtils.sum' },
+      ],
+    },
+    {
+      students: [`student1@${domain}`, `student6@${domain}`],
+      tests: [
+        {
+          passed: true,
+          isError: false,
+          logs: '',
+          testCase: 'Test on [1,2,3] with 0',
+          testCategory: 'RecursionUtils.contains',
+        },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [1]', testCategory: 'RecursionUtils.sum' },
+        {
+          passed: true,
+          isError: false,
+          logs: '',
+          testCase: 'Test on [] with 3',
+          testCategory: 'RecursionUtils.contains',
+        },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            'java.lang.IllegalArgumentException: 1 > 0\n\tat java.util.Arrays.copyOfRange(Arrays.java:3591)\n\tat RecursionUtils.sum(RecursionUtils.java:22)\n\tat _test621.main(_test621.java:13)\n',
+          testCase: 'Test on []',
+          testCategory: 'RecursionUtils.sum',
+        },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            '\n=============================\nEXPECTED OUTPUT:\ntrue\n------------------------------------------------------------\nACTUAL OUTPUT:\nfalse\n=============================\n',
+          testCase: 'Test on [1,2,3] with 3',
+          testCategory: 'RecursionUtils.contains',
+        },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]', testCategory: 'RecursionUtils.sum' },
+      ],
+    },
+    {
+      students: [`student2@${domain}`, `student7@${domain}`],
+      tests: [
+        {
+          passed: true,
+          isError: false,
+          logs: '',
+          testCase: 'Test on [1,2,3] with 0',
+          testCategory: 'RecursionUtils.contains',
+        },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [1]', testCategory: 'RecursionUtils.sum' },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            'java.lang.ArrayIndexOutOfBoundsException: 0\n\tat RecursionUtils.containsHelper(RecursionUtils.java:51)\n\tat RecursionUtils.contains(RecursionUtils.java:40)\n\tat _test623.main(_test623.java:13)\n',
+          testCase: 'Test on [] with 3',
+          testCategory: 'RecursionUtils.contains',
+        },
+        { passed: true, isError: false, logs: '', testCase: 'Test on []', testCategory: 'RecursionUtils.sum' },
+        {
+          passed: true,
+          isError: false,
+          logs: '',
+          testCase: 'Test on [1,2,3] with 3',
+          testCategory: 'RecursionUtils.contains',
+        },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]', testCategory: 'RecursionUtils.sum' },
+      ],
+    },
+    {
+      students: [`student3@${domain}`, `student8@${domain}`],
+      tests: [
+        {
+          passed: true,
+          isError: false,
+          logs: '',
+          testCase: 'Test on [1,2,3] with 0',
+          testCategory: 'RecursionUtils.contains',
+        },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [1]', testCategory: 'RecursionUtils.sum' },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            'java.lang.ArrayIndexOutOfBoundsException: 0\n\tat RecursionUtils.containsHelper(RecursionUtils.java:51)\n\tat RecursionUtils.contains(RecursionUtils.java:40)\n\tat _test623.main(_test623.java:13)\n',
+          testCase: 'Test on [] with 3',
+          testCategory: 'RecursionUtils.contains',
+        },
+        { passed: true, isError: false, logs: '', testCase: 'Test on []', testCategory: 'RecursionUtils.sum' },
+        {
+          passed: true,
+          isError: false,
+          logs: '',
+          testCase: 'Test on [1,2,3] with 3',
+          testCategory: 'RecursionUtils.contains',
+        },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            'No Result received.\nException in thread "main" java.lang.StackOverflowError\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n',
+          testCase: 'Test on [1,2,3]',
+          testCategory: 'RecursionUtils.sum',
+        },
+      ],
+    },
+    {
+      students: [`student4@${domain}`, `student9@${domain}`],
+      tests: [
+        { passed: true, isError: false, logs: '', testCase: 'Test on [1]', testCategory: 'RecursionUtils.sum' },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            'java.lang.ArrayIndexOutOfBoundsException: 0\n\tat RecursionUtils.containsHelper(RecursionUtils.java:49)\n\tat RecursionUtils.contains(RecursionUtils.java:38)\n\tat _test623.main(_test623.java:13)\n',
+          testCase: 'Test on [] with 3',
+          testCategory: 'RecursionUtils.contains',
+        },
+        { passed: true, isError: false, logs: '', testCase: 'Test on []', testCategory: 'RecursionUtils.sum' },
+        { passed: true, isError: false, logs: '', testCase: 'Test on [1,2,3]', testCategory: 'RecursionUtils.sum' },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            'No Result received.\nException in thread "main" java.lang.StackOverflowError\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils',
+          testCase: 'Test on [1,2,3] with 3',
+          testCategory: 'RecursionUtils.contains',
+        },
+        {
+          passed: false,
+          isError: false,
+          logs:
+            'No Result received.\nException in thread "main" java.lang.StackOverflowError\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils',
+          testCase: 'Test on [1,2,3] with 0',
+          testCategory: 'RecursionUtils.contains',
+        },
+      ],
+    },
+  ];
+}

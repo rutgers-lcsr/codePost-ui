@@ -19,8 +19,10 @@ import { IStudentSubmissionsDataTable } from '../../../types/common';
 
 import { openSubmission } from '../other/AdminUtils';
 
+import { CourseType } from '../../../infrastructure/course';
 import { AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
+import { FileType } from '../../../infrastructure/file';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
@@ -38,6 +40,8 @@ export interface IByStudentProps extends RouteComponentProps {
   /* UI control */
   loadComplete: boolean;
 
+  course: CourseType;
+
   /* submissions data */
   assignments: AssignmentType[];
   submissionsByStudent: IStudentSubmissionsDataTable;
@@ -48,8 +52,8 @@ export interface IByStudentProps extends RouteComponentProps {
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   graders: string[];
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
-
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>;
+  addFilesToSubmission: (submission: SubmissionType, files: any[]) => Promise<SubmissionType>;
   baseURL: string;
 }
 
@@ -122,11 +126,13 @@ class StudentData extends React.Component<IByStudentProps, IState> {
             render={(subprops: any) => (
               <StudentDetail
                 {...subprops}
+                course={this.props.course}
                 baseURL={this.props.match.url}
                 assignments={this.props.assignments}
                 graders={this.props.graders}
                 submissions={this.props.submissionsByStudent}
                 uploadSubmission={this.props.uploadSubmission}
+                addFilesToSubmission={this.props.addFilesToSubmission}
                 students={Object.keys(this.props.submissionsByStudent)}
                 student={student}
                 viewsBySubmission={this.props.viewsBySubmission}
@@ -313,7 +319,7 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                     {this.props.assignments.length === 0 ? (
                       <span>
                         {numStudents === 0 ? <span>&nbsp; &nbsp;</span> : null}
-                        <Link to={`${this.props.baseURL}/assignments`}>
+                        <Link to={`${this.props.baseURL}/assignments/overview`}>
                           <CPButton cpType="primary" key={2} icon="plus-circle">
                             Add an assignment
                           </CPButton>

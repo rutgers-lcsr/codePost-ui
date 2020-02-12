@@ -112,7 +112,7 @@ const DownloadGrades = (props: IProps) => {
   const downloadAllGrades = (zeroForMissing?: boolean) => {
     const csv = getAllGrades(props.assignments, props.students, zeroForMissing).join('\n');
     const a = document.createElement('a');
-    a.href = `data:text/csv;charset=utf-8,${csv}`;
+    a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
     a.download = `${props.currentCourse.name}-${props.currentCourse.period}-grades.csv`;
 
     document.body.appendChild(a);

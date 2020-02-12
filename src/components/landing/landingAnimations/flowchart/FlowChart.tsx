@@ -69,9 +69,10 @@ export const FlowChart = (props: IProps) => {
       }
     });
   });
-  const arrows = arrowPositions.map((arrowPosition) => {
+  const arrows = arrowPositions.map((arrowPosition, i) => {
     return (
       <FlowArrow
+        key={i.toString()}
         start={arrowPosition.start}
         end={arrowPosition.end}
         canvasWidth={props.canvasWidth}

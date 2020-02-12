@@ -71,6 +71,11 @@ const intIParser = (value: number) => {
 // defalut value: false
 const darkMode = generateSettingFunctions('darkMode', false, booleanIParser, booleanOParser);
 
+// key: cursorMode
+// return type: boolean. If true = cursor mode is enabled. Else, cursor mode is not enabled.
+// defalut value: false
+const cursorMode = generateSettingFunctions('cursorMode', false, booleanIParser, booleanOParser);
+
 // key: infoMenuHidden
 // return type: boolean. If true, submission info section of code console will be collapsed.
 // defalut value: false
@@ -80,6 +85,11 @@ const infoMenuHidden = generateSettingFunctions('infoMenuHidden', false, boolean
 // return type: boolean. If true, file menu section of code console will be collapsed.
 // defalut value: false
 const fileMenuHidden = generateSettingFunctions('fileMenuHidden', false, booleanIParser, booleanOParser);
+
+// key: testsMenuHidden
+// return type: boolean. If true, tests menu section of code console will be collapsed.
+// defalut value: false
+const testsMenuHidden = generateSettingFunctions('testsMenuHidden', false, booleanIParser, booleanOParser);
 
 // key: rubricMenuHidden
 // return type: boolean. If true, rubric menu section of code console will be collapsed.
@@ -93,8 +103,13 @@ const codeZoom = generateSettingFunctions('codeZoom', 1.0, floatIParser, floatOP
 
 // key: codeWidth
 // return type: float. Represents the width (in pixels) of the code displayed in the code console
-// defalut value: 1.0
+// defalut value: 0.0
 const codeWidth = generateSettingFunctions('codeWidth', 0, floatIParser, floatOParser);
+
+// key: siderWidth
+// return type: float. Represents the width (in pixels) of the sider displayed in the code console
+// defalut value: 300.0
+const siderWidth = generateSettingFunctions('siderWidth', 300.0, floatIParser, floatOParser);
 
 // key: defaultCourse
 // return type: int. Represents the id of the default course rendered in the admin console
@@ -106,16 +121,36 @@ const defaultCourse = generateSettingFunctions('defaultCourse', 0, intIParser, i
 // defalut value: 0
 const defaultAssignment = generateSettingFunctions('defaultAssignment', 0, intIParser, intOParser);
 
+// key: mostRecentFile
+// return type: int. Represents the id of the most recently visited file
+// defalut value: 0
+const mostRecentFile = generateSettingFunctions('mostRecentFile', 0, intIParser, intOParser);
+
+// key: rubricMenuHidden
+// return type: boolean. If true, rubric menu section of code console will be collapsed.
+// defalut value: false
+const autograderInstructionsVisible = generateSettingFunctions(
+  'autograderInstructionsVisible',
+  true,
+  booleanIParser,
+  booleanOParser,
+);
+
 /******************************************************************************************************************/
 const LOCAL_SETTINGS = {
   darkMode,
+  cursorMode,
   infoMenuHidden,
   fileMenuHidden,
+  testsMenuHidden,
   rubricMenuHidden,
   codeZoom,
   codeWidth,
+  siderWidth,
   defaultCourse,
   defaultAssignment,
+  mostRecentFile,
+  autograderInstructionsVisible,
 };
 
 export { LOCAL_SETTINGS, clearLocalSettings };

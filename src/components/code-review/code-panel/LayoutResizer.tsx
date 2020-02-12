@@ -12,11 +12,7 @@ import { ShowTooltipContext } from '../../core/tooltips';
 
 import themeVars from '../../../styles/abstracts/_theme.js';
 
-import useHotkeys, { LEFT_ARROW, RIGHT_ARROW } from '../useHotkeys';
-
 import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
-
-import { osControlKey } from '../../core/operatingSystem';
 
 const createSliderWithTooltip = Slider.createSliderWithTooltip;
 const Range = createSliderWithTooltip(Slider.Range);
@@ -176,35 +172,7 @@ const LayoutResizer = (props: ILayoutResizerProps) => {
     props.setDimensions({ codeWidth: r[1], commentsWidth: r[3] - r[2] + 20 });
   };
 
-  const grow = (n: number) => {
-    const newRanges = [ranges[0], ranges[1] + n, ranges[2] + n, ranges[3] + n + n];
-
-    setRanges(newRanges);
-    afterChange(newRanges);
-  };
-
-  const shrink = (n: number) => {
-    const n0 = 0;
-    const n1 = Math.max(ranges[1] - n, absoluteCodeWidthMinimum);
-    const n2 = n1 + 20;
-    const n3 =
-      ranges[3] - n - n - n2 > absoluteCommentsWidthMinimum ? ranges[3] - n - n : n2 + absoluteCommentsWidthMinimum;
-
-    const newRanges = [n0, n1, n2, n3];
-
-    setRanges(newRanges);
-    afterChange(newRanges);
-  };
-
-  useHotkeys(LEFT_ARROW, () => shrink(80), undefined, props.isEditingComment);
-  useHotkeys(RIGHT_ARROW, () => grow(80), undefined, props.isEditingComment);
-
-  const tooltip = (
-    <div>
-      Resize window
-      <br />[{osControlKey()} + left / right arrow]
-    </div>
-  );
+  const tooltip = <div>Resize window</div>;
 
   const tipFormatter = (value: any) => {
     return tooltip;

@@ -38,6 +38,7 @@ export interface IRubricCategoryManagerState {
   name: string;
   pointLimit: number | null;
   helpText: string;
+  atMostOnce: boolean;
   status: STATUS;
 
   /* local rubric comment data */
@@ -57,6 +58,7 @@ export interface IRubricCategoryManagerProps extends IWithWindowWatcherProps {
   rubricComments: RubricCommentType[];
   index: number;
   numCategories: number;
+  instanceLists: { [id: number]: number[] };
 
   // saved data
   savedRubricCategory?: RubricCategoryType;
@@ -84,6 +86,9 @@ export interface IRubricCategoryManagerProps extends IWithWindowWatcherProps {
   commentFeedbackOn: boolean;
   showPointLimits: boolean;
   showHelpText: boolean;
+  showExplanations: boolean;
+  showInstructions: boolean;
+  showAtMostOnce: boolean;
 
   children: (params: IRubricCategoryManagerParams) => React.ReactNode;
 }
@@ -118,6 +123,7 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
       name: props.rubricCategory.name,
       pointLimit: props.rubricCategory.pointLimit,
       helpText: props.rubricCategory.helpText ? props.rubricCategory.helpText : '',
+      atMostOnce: props.rubricCategory.atMostOnce,
       status: typeof props.savedRubricCategory === 'undefined' ? STATUS.UNSAVED : STATUS.NONE,
       rubricComments: this.buildLocalRubricCommentsStructure(props.rubricComments),
       rubricCommentStatus: this.initializeRubricCommentStatus(props.rubricComments),
@@ -215,11 +221,16 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
 
   public updateCategoryStatus = () => {
     const { savedRubricCategory } = this.props;
-    const { name, pointLimit, helpText, status } = this.state;
+    const { name, pointLimit, helpText, status, atMostOnce } = this.state;
     if (savedRubricCategory) {
       const newStatus = statusChange(
-        [savedRubricCategory.name, savedRubricCategory.pointLimit, savedRubricCategory.helpText],
-        [name, pointLimit, helpText],
+        [
+          savedRubricCategory.name,
+          savedRubricCategory.pointLimit,
+          savedRubricCategory.helpText,
+          savedRubricCategory.atMostOnce,
+        ],
+        [name, pointLimit, helpText, atMostOnce],
         status,
       );
       if (newStatus !== status) {
@@ -243,10 +254,11 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
         const newState: any = { ...prevstate };
         let newVal = value;
         if (label === 'pointLimit') {
-          if (value !== null) {
-            newVal = parseFloat(value);
-          } else {
+          // Note: isNaN('') returns false, isNaN(null) returns false
+          if (value === '' || value === null || isNaN(value)) {
             newVal = null;
+          } else {
+            newVal = parseFloat(value);
           }
         }
 
@@ -255,7 +267,7 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
       },
       () => {
         this.updateCategoryStatus();
-        if (label === 'pointLimit') {
+        if (label === 'pointLimit' || label === 'atMostOnce') {
           this.saveCategory();
         }
       },
@@ -306,19 +318,21 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
 
   public saveCategory = () => {
     const { rubricCategory } = this.props;
-    const { name, pointLimit, helpText } = this.state;
+    const { name, pointLimit, helpText, atMostOnce } = this.state;
 
     if (
       rubricCategory.id < 0 ||
       name !== rubricCategory.name ||
       pointLimit !== rubricCategory.pointLimit ||
-      helpText !== rubricCategory.helpText
+      helpText !== rubricCategory.helpText ||
+      atMostOnce !== rubricCategory.atMostOnce
     ) {
       const { valid, message } = this.validateCategory(name, helpText, pointLimit);
       const payload: RubricCategoryType = Object.assign({}, this.props.rubricCategory);
       payload.name = this.state.name;
       payload.pointLimit = this.state.pointLimit;
       payload.helpText = this.state.helpText;
+      payload.atMostOnce = this.state.atMostOnce;
 
       // have to take into account the possibility of a comment error here
       this.props.updateCategory(payload, !valid || this.state.hasCommentError);
@@ -382,7 +396,13 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
       const payload: RubricCommentType = { ...rubricComment };
       this.props.updateComment(payload);
 
-      if (text !== match.text || pointDelta !== match.pointDelta) {
+      if (
+        text !== match.text ||
+        pointDelta !== match.pointDelta ||
+        rubricComment.explanation !== match.explanation ||
+        rubricComment.instructionText !== match.instructionText ||
+        rubricComment.templateTextOn !== match.templateTextOn
+      ) {
         const hasCurrentError = this.state.hasError || this.state.hasCommentError;
         if (hasCurrentError && !this.state.hasError && valid) {
           // moving from error state to safe state
@@ -411,8 +431,20 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
       if (savedRubricComment) {
         const status = this.state.rubricCommentStatus[rubricComment.id];
         const newStatus = statusChange(
-          [savedRubricComment.text, savedRubricComment.pointDelta],
-          [localRubricComment.text, localRubricComment.pointDelta],
+          [
+            savedRubricComment.text,
+            savedRubricComment.pointDelta,
+            savedRubricComment.explanation,
+            savedRubricComment.instructionText,
+            savedRubricComment.templateTextOn,
+          ],
+          [
+            localRubricComment.text,
+            localRubricComment.pointDelta,
+            localRubricComment.explanation,
+            localRubricComment.instructionText,
+            localRubricComment.templateTextOn,
+          ],
           status,
         );
         if (newStatus !== status) {
@@ -436,12 +468,14 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
   public updateRubricComment = (rubricCommentID: number, key: string, event: any) => {
     const rubricComments = { ...this.state.rubricComments };
     switch (typeof event) {
+      case 'undefined':
       case 'number':
         rubricComments[rubricCommentID] = {
           ...rubricComments[rubricCommentID],
           [key]: event,
         };
         break;
+      case 'boolean':
       case 'string':
         if (key !== 'pointDelta') {
           rubricComments[rubricCommentID] = {
@@ -453,14 +487,14 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
       case 'object':
         rubricComments[rubricCommentID] = {
           ...rubricComments[rubricCommentID],
-          [key]: event.target.value,
+          [key]: event === null ? 0 : event.target.value,
         };
         break;
     }
 
     this.setState({ rubricComments }, () => {
       this.updateCommentStatus(rubricComments[rubricCommentID]);
-      if (key === 'pointDelta') {
+      if (key !== 'text') {
         this.saveComment(rubricCommentID);
       }
     });

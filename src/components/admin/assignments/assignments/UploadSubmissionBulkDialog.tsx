@@ -9,21 +9,25 @@ import React from 'react';
 import { Button, Collapse, Divider, Modal, Progress, Steps, Switch, Table, Tag, Typography } from 'antd';
 
 /* other library imports */
+import { Link } from 'react-router-dom';
 
+/* codePost imports */
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
 
-/* codePost imports */
-import { AssignmentType } from '../../../../infrastructure/assignment';
-import { SubmissionType } from '../../../../infrastructure/submission';
+import LogViewer from '../../../../components/core/LogViewer';
 
-import { acceptedFilesSet } from './AcceptedFileTypes';
+/* codePost imports */
+import { encodeForLink } from '../../../../components/core/URLutils';
+import { AssignmentType, CourseType, SubmissionType } from '../../../../infrastructure/types';
 
 import UploadForm from './UploadForm';
 
 import { IntegrationButton, INTEGRATIONS } from '../../../landing/Integrations';
 
-import { resizeImage } from '../../other/AdminUtils';
+import { UploadFile } from 'antd/lib/upload/interface';
+
+import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
 
 const Panel = Collapse.Panel;
 const { Step } = Steps;
@@ -51,6 +55,7 @@ interface IProps {
   updateSubmission: (submission: SubmissionType) => Promise<void>;
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
   showImportOptions?: boolean;
+  course: CourseType;
 }
 
 interface IProtoSubmission {
@@ -91,7 +96,7 @@ interface IState {
   uploadMap: { [student: string]: UPLOAD_STATUS };
 
   /* Used to store the contents of files */
-  fileMap: { [fileName: string]: string };
+  fileMap: { [submitters: string]: { [fileName: string]: string | ArrayBuffer | null } };
 
   /* stores progress */
   status: STATUS;
@@ -103,7 +108,7 @@ interface IState {
   numFiles: number;
 
   /* raw file objects (unread) for passing to validation function */
-  rawFiles: File[];
+  rawFiles: UploadFile[];
 
   /* overwrite mode toggle */
   overwriteMode: boolean;
@@ -218,40 +223,28 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
 
   public readFiles = () => {
     const submissions = this.state.protoSubmissions;
-    submissions.forEach((submission) => {
-      for (const file of submission.files) {
-        const anyFile: any = file;
-        const studentsReader = new FileReader();
-        studentsReader.onabort = () => console.log('file reading was aborted');
-        studentsReader.onerror = () => {
-          const errorPaths = this.state.errorPaths;
-          const newMessage = `Failed to read file: ${anyFile.webkitRelativePath}`;
-          this.setState({
-            errorPaths: [...errorPaths, newMessage],
-            status: STATUS.FILE_ERROR,
-          });
-        };
-        studentsReader.onload = async () => {
-          let result: any = studentsReader.result;
-          const fileMap = this.state.fileMap;
-          if (typeof result === 'string') {
-            const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
-            // Optimization: The resizing takes time so we only want to do it on bigger images (>50Kb)
-            if (['png', 'jpeg', 'jpg'].includes(extension) && file.size > 50000) {
-              // We want to limit the image to a certain size so we don't slow down file load
-              result = await resizeImage(result);
-            }
-            const cleanedResult = result.replace(/\0/g, '');
-            fileMap[anyFile.webkitRelativePath] = cleanedResult;
-            this.setState({ fileMap });
-          }
-        };
 
-        const extension = file.name.includes('.') ? file.name.split('.').slice(-1)[0] : '';
-        if (['png', 'jpg', 'jpeg'].includes(extension)) {
-          studentsReader.readAsDataURL(file);
-        } else {
-          studentsReader.readAsBinaryString(file);
+    submissions.map(async (submission, index: number) => {
+      const submitters = submission.students.join(',');
+      for (const file of submission.files) {
+        try {
+          if (file.type === 'application/zip' || ['.zip'].includes(file.name)) {
+            const outputFiles = await readUploadedFile(file);
+
+            outputFiles.map((outputFile: IProtoFileUpload) => {
+              const fullName = `anydirname/${submission.students.join(',')}/${outputFile.longname}`;
+              const subfiles = { ...this.state.fileMap[submitters], [fullName]: outputFile.data };
+              this.setState({ fileMap: { ...this.state.fileMap, [submitters]: subfiles } });
+            });
+          } else {
+            const outputFiles = await readUploadedFile(file);
+            outputFiles.map((outputFile: IProtoFileUpload) => {
+              const subfiles = { ...this.state.fileMap[submitters], [outputFile.longname]: outputFile.data };
+              this.setState({ fileMap: { ...this.state.fileMap, [submitters]: subfiles } });
+            });
+          }
+        } catch (e) {
+          this.setState({ errorPaths: [...this.state.errorPaths, e], status: STATUS.FILE_ERROR });
         }
       }
     });
@@ -259,9 +252,14 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
 
   public tryToUpload = () => {
     const { fileMap, numFiles, overwriteMode } = this.state;
+
     const readFiles = Object.keys(fileMap).reduce((acc, el) => {
-      const toAdd = typeof fileMap[el] === 'undefined' ? 0 : 1;
-      return acc + toAdd;
+      const subTotal = Object.keys(fileMap[el]).reduce((acc2: any, el2: any) => {
+        const toAdd = typeof fileMap[el][el2] === 'undefined' ? 0 : 1;
+        return acc2 + toAdd;
+      }, 0);
+
+      return acc + subTotal;
     }, 0);
 
     if (readFiles === numFiles) {
@@ -289,17 +287,24 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     // tslint:enable
     const promises = toUpload.map((submission) => {
       const files: any[] = [];
-      submission.files.forEach((file: any) => {
-        const pathDirs = file.webkitRelativePath.split('/');
-        // Want to ignore first (root dir, student email) two and last element (file name) of split
-        const filePath = pathDirs.length > 3 ? pathDirs.slice(2, pathDirs.length - 1).join('/') : null;
-        const payload = {
-          name: file.name,
-          data: fileMap[file.webkitRelativePath],
-          path: filePath,
-        };
-        files.push(payload);
-      });
+
+      const submitter = submission.students.join(',');
+
+      if (fileMap.hasOwnProperty(submitter)) {
+        Object.keys(fileMap[submitter]).forEach((fullname: string) => {
+          const path = fullname;
+          const fileName = fullname.split('/').slice(-1)[0];
+          const pathDirs = path.split('/');
+          // Want to ignore first (root dir, student email) two and last element (file name) of split
+          const filePath = pathDirs.length > 3 ? pathDirs.slice(2, pathDirs.length - 1).join('/') : null;
+          const payload = {
+            name: fileName,
+            data: fileMap[submitter][path],
+            path: filePath,
+          };
+          files.push(payload);
+        });
+      }
       return this.props
         .uploadSubmission(this.props.assignment, submission.students, files)
         .then((newSub) => {
@@ -360,7 +365,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
           });
 
           if (reMatch) {
-            reMatch.students.filter((el) => {
+            reMatch.students = reMatch.students.filter((el) => {
               return !this.isEqual(el, student);
             });
           } else {
@@ -412,7 +417,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     return true;
   };
 
-  public onFileDrop = (acceptedFiles: File[]) => {
+  public onFileDrop = async (acceptedFiles: UploadFile[]) => {
     const folderMap: any = {};
     const students = this.props.students;
     const studentMap = this.state.studentMap;
@@ -426,26 +431,16 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     - path contains a student listed in a different folder
     - path contains a student multiple times
     /*************************************************************/
-
-    // WARNING:
-    // casting File (newFile) to any to access webkitRelativePath property
-    // this property is experimental and not on a standards track
-    // https://developer.mozilla.org/en-US/docs/Web/API/File/webkitRelativePath
     acceptedFiles.forEach((newFile: any) => {
-      // FIXME: webkit prefix only used in Chrome. Extend to Edge and Firefox
-      // by detecting browser and removing prefix if necessary
-      const path: string = newFile.webkitRelativePath;
+      const protoFileUpload: IProtoFileUpload = fileToProtoFileUpload(newFile);
 
-      const folderName = path
-        .split('/')[1]
-        .trim()
-        .toLowerCase();
+      const folderName = protoFileUpload.path.split('/')[1];
       const emails = folderName.split(',');
 
       if (!this.allStudentsValid(emails, students)) {
-        invalidPaths.push(`Folder refers to invalid student: ${path}`);
+        invalidPaths.push(`Folder refers to invalid student: ${folderName}`);
       } else if (!this.noDuplicates(emails)) {
-        invalidPaths.push(`Folder contains duplicate students: ${path}`);
+        invalidPaths.push(`Folder contains duplicate students: ${folderName}`);
       } else {
         // No need to check folders which we've already validated
         if (!(folderName in folderMap)) {
@@ -457,7 +452,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
 
           if (validEmails.length !== emails.length) {
             // Some email in the folder name was invalid
-            invalidPaths.push(`Contains a duplicate student: ${path}`);
+            invalidPaths.push(`Contains a duplicate student: ${protoFileUpload.longname}`);
           } else {
             let noCollisions = true;
             for (const email of emails) {
@@ -484,16 +479,15 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     // Sort files into appropriate protoSubmissions
     let numFiles = 0;
     acceptedFiles.forEach((el: any) => {
-      const folderName = el.webkitRelativePath.split('/')[1].toLowerCase();
-      const extension = el.name.includes('.') ? el.name.split('.').slice(-1)[0] : '';
-      if (!acceptedFilesSet.has(`.${extension}`)) {
-        invalidPaths.push(`File type not accepted: ${el.webkitRelativePath}`);
-      } else if (
-        el.webkitRelativePath.split('/').find((pathEl: string) => {
+      const protoFileUpload: IProtoFileUpload = fileToProtoFileUpload(el);
+      const folderName = protoFileUpload.path.split('/')[1];
+
+      if (
+        protoFileUpload.longname.split('/').find((pathEl: string) => {
           return pathEl.startsWith('.');
         })
       ) {
-        invalidPaths.push(`Cannot have a folder that starts with .: ${el.webkitRelativePath}`);
+        invalidPaths.push(`Cannot have a folder that starts with .: ${protoFileUpload.longname}`);
       } else {
         if (folderName in folderMap) {
           folderMap[folderName].files.push(el);
@@ -542,7 +536,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     }
   };
 
-  public setRawFiles = (rawFiles: File[]) => {
+  public setRawFiles = (rawFiles: UploadFile[]) => {
     this.setState({ rawFiles });
   };
 
@@ -575,66 +569,124 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     let numToUpload = 0;
     switch (this.state.status) {
       case STATUS.NONE:
-        content = (
-          <div>
-            {!this.state.showImportOptions ? (
-              <div style={{ margin: '15px 0px' }}>
-                Looking to import submissions from a third-party tool (like your LMS)?{' '}
-                <span>
-                  <Button size="small" onClick={this.showImportOptions}>
-                    View instructions
-                  </Button>
-                </span>
+        if (this.props.students.length === 0) {
+          content = (
+            <div>
+              After you add students, you can get their submissions into codePost in two ways:
+              <ul>
+                <li>
+                  Allowing students to submit directly (learn more{' '}
+                  <a
+                    href="https://help.codepost.io/en/articles/3381427-how-to-allow-students-to-upload-submissions-to-codepost"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    here
+                  </a>
+                  )
+                </li>
+                <li>
+                  Manually uploading submissions (learn more{' '}
+                  <a
+                    href="https://help.codepost.io/en/articles/3164723-how-to-upload-student-submissions"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    here
+                  </a>
+                  )
+                </li>
+              </ul>
+              <br />{' '}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Link
+                  to={
+                    this.props.course
+                      ? `/admin/${encodeForLink(this.props.course.name)}/${encodeForLink(
+                          this.props.course.period,
+                        )}/roster/students`
+                      : ''
+                  }
+                >
+                  <Button type="primary">Add students</Button>
+                </Link>
               </div>
-            ) : (
-              <div
-                style={{
-                  margin: '15px 0px',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                <IntegrationButton
-                  integration={INTEGRATIONS['canvas']}
-                  onClick={this.onIntegrationClick}
-                  active={this.state.mode === 'canvas'}
-                />
-                <div style={{ width: '20px' }} />
-                <IntegrationButton
-                  integration={INTEGRATIONS['blackboard']}
-                  onClick={this.onIntegrationClick}
-                  active={this.state.mode === 'blackboard'}
-                />
-                <div style={{ width: '20px' }} />
-                <IntegrationButton
-                  integration={INTEGRATIONS['brightspace']}
-                  onClick={this.onIntegrationClick}
-                  active={this.state.mode === 'brightspace'}
-                />
-                <div style={{ width: '20px' }} />
-                <IntegrationButton
-                  integration={INTEGRATIONS['github']}
-                  onClick={this.onIntegrationClick}
-                  active={this.state.mode === 'github'}
-                />
-                <div style={{ width: '20px' }} />
-                <IntegrationButton
-                  integration={INTEGRATIONS['jupyter']}
-                  onClick={this.onIntegrationClick}
-                  active={this.state.mode === 'jupyter'}
-                />
-                <div style={{ width: '20px' }} />
-                <IntegrationButton
-                  integration={INTEGRATIONS['more']}
-                  onClick={this.onIntegrationClick}
-                  active={this.state.mode === 'more'}
-                />
+            </div>
+          );
+        } else {
+          content = (
+            <div>
+              <div>
+                <b>Tip:</b> Want to allow students to upload directly? Learn more{' '}
+                <a
+                  href="https://help.codepost.io/en/articles/3381427-how-to-allow-students-to-upload-submissions-to-codepost"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  here
+                </a>
+                .
               </div>
-            )}
+              {!this.state.showImportOptions ? (
+                <div style={{ margin: '15px 0px' }}>
+                  <b>Tip:</b> Looking to import submissions from a third-party tool (like your LMS)?{' '}
+                  <span>
+                    <Button size="small" onClick={this.showImportOptions}>
+                      View instructions
+                    </Button>
+                  </span>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    margin: '15px 0px',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <IntegrationButton
+                    integration={INTEGRATIONS['canvas']}
+                    onClick={this.onIntegrationClick}
+                    active={this.state.mode === 'canvas'}
+                  />
+                  <div style={{ width: '20px' }} />
+                  <IntegrationButton
+                    integration={INTEGRATIONS['blackboard']}
+                    onClick={this.onIntegrationClick}
+                    active={this.state.mode === 'blackboard'}
+                  />
+                  <div style={{ width: '20px' }} />
+                  <IntegrationButton
+                    integration={INTEGRATIONS['brightspace']}
+                    onClick={this.onIntegrationClick}
+                    active={this.state.mode === 'brightspace'}
+                  />
+                  <div style={{ width: '20px' }} />
+                  <IntegrationButton
+                    integration={INTEGRATIONS['github']}
+                    onClick={this.onIntegrationClick}
+                    active={this.state.mode === 'github'}
+                  />
+                  <div style={{ width: '20px' }} />
+                  <IntegrationButton
+                    integration={INTEGRATIONS['jupyter']}
+                    onClick={this.onIntegrationClick}
+                    active={this.state.mode === 'jupyter'}
+                  />
+                  <div style={{ width: '20px' }} />
+                  <IntegrationButton
+                    integration={INTEGRATIONS['more']}
+                    onClick={this.onIntegrationClick}
+                    active={this.state.mode === 'more'}
+                  />
+                </div>
+              )}
+              <Divider />
+              <UploadForm rawFiles={this.state.rawFiles} setRawFiles={this.setRawFiles} mode={this.state.mode} />
+            </div>
+          );
+        }
 
-            <UploadForm rawFiles={this.state.rawFiles} setRawFiles={this.setRawFiles} mode={this.state.mode} />
-          </div>
-        );
         break;
       case STATUS.FILE_ERROR:
       case STATUS.UPLOADED:
@@ -792,11 +844,8 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
                       iconStyle={{ paddingLeft: 5 }}
                     />
                   </div>
-                  <ul>
-                    {this.state.errorPaths.map((el, i) => {
-                      return <li key={i}>{el}</li>;
-                    })}
-                  </ul>
+                  <LogViewer text={this.state.errorPaths.join('\n')} />
+
                   <br />
                 </div>
               </div>
@@ -840,8 +889,12 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         break;
       case STATUS.READING:
         const readFiles = Object.keys(this.state.fileMap).reduce((acc, el) => {
-          const toAdd = typeof this.state.fileMap[el] === 'undefined' ? 0 : 1;
-          return acc + toAdd;
+          const subTotal = Object.keys(this.state.fileMap[el]).reduce((acc2: any, el2: any) => {
+            const toAdd = typeof this.state.fileMap[el][el2] === 'undefined' ? 0 : 1;
+            return acc2 + toAdd;
+          }, 0);
+
+          return acc + subTotal;
         }, 0);
         content = (
           <div>
@@ -878,7 +931,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
           },
         ];
 
-        const tableRows = this.state.protoSubmissions.map((protoSubmission) => {
+        const tableRows = this.state.protoSubmissions.map((protoSubmission: IProtoSubmission, index: number) => {
           const students = protoSubmission.students;
           let status;
           switch (this.state.uploadMap[students[0]]) {
@@ -898,6 +951,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
               break;
           }
           return {
+            key: index,
             students: protoSubmission.students.join(', '),
             status,
           };

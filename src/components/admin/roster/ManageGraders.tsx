@@ -11,6 +11,8 @@ import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Switch } from 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
 import memoizeOne from 'memoize-one';
+import { Link } from 'react-router-dom';
+import { RouteComponentProps } from 'react-router';
 
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
@@ -63,8 +65,8 @@ interface IState {
   activeGrader: string;
 }
 
-class ManageGraders extends React.Component<IManageGradersProps, IState> {
-  public constructor(props: IManageGradersProps) {
+class ManageGraders extends React.Component<IManageGradersProps & RouteComponentProps, IState> {
+  public constructor(props: IManageGradersProps & RouteComponentProps) {
     super(props);
     this.state = {
       activeGrader: '',
@@ -172,15 +174,9 @@ class ManageGraders extends React.Component<IManageGradersProps, IState> {
           changeRoster={this.props.updateRoster}
           isDisabled={false}
           updateSection={this.props.updateSection}
-          emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
+          emailNewUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
           createSection={this.props.createSection}
           course={this.props.currentCourse}
-        />,
-        <AddGraderDialog
-          key={3}
-          graders={this.props.graders}
-          addGrader={this.addGrader}
-          willEmailUser={this.props.currentCourse.emailNewUsers}
         />,
       ];
 
@@ -270,6 +266,11 @@ class ManageGraders extends React.Component<IManageGradersProps, IState> {
                 Send activation email
               </Menu.Item>
             )}
+            <Menu.Item key="profile">
+              <Link to={this.props.match.url.replace('roster/graders', `submissions/by_grader/${graderEmail}`)}>
+                <Icon type="folder-open" /> &nbsp; Open profile
+              </Link>
+            </Menu.Item>
             <Menu.Item key="1" onClick={this.removeGrader.bind(this, graderEmail)}>
               <Icon type="user-delete" />
               Unenroll
@@ -303,13 +304,6 @@ class ManageGraders extends React.Component<IManageGradersProps, IState> {
             }}
             description={<span>No graders yet</span>}
           >
-            <AddGraderDialog
-              key={0}
-              addGrader={this.addGrader}
-              graders={this.props.graders}
-              willEmailUser={this.props.currentCourse.emailNewUsers}
-            />
-            <br />
             <RosterFileUpload
               key={1}
               roleType="grader"
@@ -321,7 +315,7 @@ class ManageGraders extends React.Component<IManageGradersProps, IState> {
               changeRoster={this.props.updateRoster}
               isDisabled={false}
               updateSection={this.props.updateSection}
-              emailUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
+              emailNewUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
               createSection={this.props.createSection}
               course={this.props.currentCourse}
             />

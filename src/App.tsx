@@ -31,7 +31,7 @@ import RouterLoading from './components/core/RouterLoading';
 
 import ForbiddenManager from './components/pre-auth/ForbiddenManager';
 
-import { identifyUserForFS, runFSSetup, shutdownFS } from './components/utils/Fullstory';
+import { runFSSetup, identifyUserForFS, shutdownFS } from './components/utils/Fullstory';
 
 import { ShowTooltipContext } from './components/core/tooltips';
 
@@ -82,6 +82,8 @@ const anonymousUser: UserType = {
   codePostAdmin: false,
 };
 
+const domains = ['https://mooc.codepost.io', 'http://localhost:3001'];
+
 /*****************************************************************************/
 
 const superUsers = ['james@codepost.io', 'vinay@codepost.io', 'richard@codepost.io'];
@@ -101,9 +103,11 @@ interface IState {
 }
 
 class App extends React.Component<{}, IState> {
+  private loginCount: number;
   public constructor(props: any) {
     super(props);
     console.log(...consoleArt);
+    this.loginCount = 0;
     this.state = {
       error: '',
       has_token: localStorage.getItem('token') ? true : false,
@@ -175,41 +179,87 @@ class App extends React.Component<{}, IState> {
     );
   };
 
-  public componentDidMount() {
-    if (inProduction && !this.state.isSuperUser) {
-      runFSSetup();
+  public messageHandler = (event: any) => {
+    if (!domains.includes(event.origin)) {
+      return;
     }
 
-    if (this.state.has_token && !this.state.user) {
+    try {
+      const { data, key } = JSON.parse(event.data);
+
+      if (key !== 'token' || data === '') {
+        return;
+      }
+
+      localStorage.setItem(key, data);
+      this.setState({ has_token: true }, () => {
+        this.loginCount += 1;
+        this.tryToLogin();
+      });
+    } finally {
+      return;
+    }
+  };
+
+  public tryToLogin = () => {
+    if (this.state.has_token && !this.state.user && this.loginCount < 4) {
       fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')} `,
         },
       })
-        .then((res) => {
+        .then(async (res) => {
           if (res.ok) {
-            return res.json();
+            const json = await res.json();
+            this.setState((oldState) => {
+              return {
+                user: json,
+                triedLoading: true,
+                isSuperUser: superUsers.indexOf(json.email) > -1 || oldState.isSuperUser,
+              };
+            });
+            // this.refreshToken();
+          } else if (res.status === 401) {
+            // A status code of 401 indicates that the provided token is invalid => the user needs
+            // to login again, so we log them out.
+            this.setState({ triedLoading: true });
+            this.handleLogout();
+          } else {
+            // A different error status code indicates some contextual problem, like a network connectivity problem.
+            // If this happens, try every 1s to login every 1s.
+            //
+            // Issue with this approach: if our API server is unavailable, the site will appear as a blank page
+            // (rather than showing users the pre-auth site).
+            setTimeout(() => {
+              this.loginCount += 1;
+              this.tryToLogin();
+            }, 1000);
           }
-          return Promise.reject();
-        })
-        .then((json) => {
-          this.setState((oldState) => {
-            return {
-              user: json,
-              triedLoading: true,
-              isSuperUser: superUsers.indexOf(json.email) > -1 || oldState.isSuperUser,
-            };
-          });
-          this.refreshToken();
         })
         .catch((error) => {
-          this.setState({ triedLoading: true });
-          this.handleLogout();
+          setTimeout(() => {
+            this.loginCount += 1;
+            this.tryToLogin();
+          }, 1000);
         });
     } else {
       this.setState({ triedLoading: true });
     }
+  };
+
+  public componentDidMount() {
+    if (inProduction && !this.state.isSuperUser) {
+      runFSSetup();
+    }
+
+    window.addEventListener('message', this.messageHandler, false);
+
+    this.tryToLogin();
   }
+
+  public componentWillUnmount = () => {
+    window.removeEventListener('message', this.messageHandler, false);
+  };
 
   // Adds a newly created course to the user's admin and grader course lists
   public addCreatedCourse = (course: CourseType) => {
@@ -301,9 +351,6 @@ class App extends React.Component<{}, IState> {
         setInterval(this.refreshToken, REFRESH_INT);
         (window as any).gtag('set', { user_id: json.user.id });
         (window as any).gtag('set', 'organization', json.user.organization);
-      })
-      .catch((error) => {
-        this.handleLogout();
       });
   };
 
@@ -414,6 +461,12 @@ class App extends React.Component<{}, IState> {
           custom_launcher_selector: '#IntercomDefaultWidget',
           isAdmin: String(isAdmin),
           isGrader: String(isGrader),
+        });
+      } else if (isStudent) {
+        (window as any).Intercom('boot', {
+          app_id: 'kg4u5rp1',
+          custom_launcher_selector: '#IntercomDefaultWidget',
+          isStudent: String(isStudent),
         });
       } else {
         (window as any).Intercom('shutdown');

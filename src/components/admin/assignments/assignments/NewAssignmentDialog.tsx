@@ -6,28 +6,46 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Form, Input, InputNumber, Modal } from 'antd';
+import { Form, Input, InputNumber, Modal, Radio, DatePicker } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
+
+/* other library imports */
+import moment from 'moment-timezone';
+
+import { RouteComponentProps } from 'react-router';
 
 /* codePost imports */
 import CPButton from '../../../../components/core/CPButton';
 
-import { AssignmentType } from '../../../../infrastructure/assignment';
+import { AssignmentType } from '../../../../infrastructure/types';
+
+import { encodeForLink } from '../../../core/URLutils';
 
 /**********************************************************************************************************************/
 
 interface IProps {
   assignments: AssignmentType[];
-  createAssignment: (assignmentName: string, assignmentPoints: number) => Promise<AssignmentType>;
+  createAssignment: (
+    assignmentName: string,
+    assignmentPoints: number,
+    upload: boolean,
+    dueDate?: string,
+  ) => Promise<AssignmentType>;
+  baseURL: string;
+  timezone: string;
 }
 
 interface IState {
   dialogVisible: boolean;
+  studentsCanUpload: boolean;
+  isLoading: boolean;
 }
 
-class NewAssignmentDialog extends React.Component<IProps, {}> {
+class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, {}> {
   public state: Readonly<IState> = {
     dialogVisible: false,
+    studentsCanUpload: false,
+    isLoading: false,
   };
 
   private formRef: React.RefObject<FormComponentProps> = React.createRef();
@@ -39,27 +57,51 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
     });
   };
 
+  public toggleStudentUpload = () => {
+    this.setState((oldState: IState) => {
+      return { studentsCanUpload: !oldState.studentsCanUpload };
+    });
+  };
+
   public handleCreate = () => {
     const formRefCast: any = this.formRef;
     const form = formRefCast.props.form;
-    form.validateFields((err: any, values: any) => {
+    form.validateFields(async (err: any, values: any) => {
       if (err) {
         return;
       }
 
-      this.createNewAssignment(values.name, values.points);
-      form.resetFields();
-      this.setState({ dialogVisible: false });
+      this.setState({ isLoading: true });
+      const newAssignment = await this.createNewAssignment(
+        values.name,
+        values.points,
+        this.state.studentsCanUpload,
+        values.uploadDueDate,
+      );
+
+      this.setState({ dialogVisible: false, isLoading: false });
+
+      // NOTE: in the future, we could decide to only show this onboarding modal if we think
+      // the admin is "new". Some heuristics:
+      //    * first assignment created
+      //    * no students
+      //    * no submissions in course
+      if (this.props.assignments.length < 2) {
+        this.props.history.push(`${this.props.baseURL}/${encodeForLink(values.name)}/onboarding`);
+      }
     });
   };
 
-  public createNewAssignment = (name: string, points: number) => {
-    this.props.createAssignment(name, points);
-    this.toggleDialog();
+  public createNewAssignment = (name: string, points: number, upload: boolean, uploadDueDate: string) => {
+    return this.props.createAssignment(name, points, upload, uploadDueDate);
   };
 
   public saveFormRef = (formRef: any) => {
     this.formRef = formRef;
+  };
+
+  public reset = () => {
+    this.setState({ dialogVisible: false, isLoading: false, setupMode: false });
   };
 
   public render() {
@@ -74,6 +116,10 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
           onCancel={this.toggleDialog}
           onCreate={this.handleCreate}
           assignments={this.props.assignments}
+          toggleStudentUpload={this.toggleStudentUpload}
+          studentsCanUpload={this.state.studentsCanUpload}
+          timezone={this.props.timezone}
+          loading={this.state.isLoading}
         />
       </div>
     );
@@ -82,9 +128,13 @@ class NewAssignmentDialog extends React.Component<IProps, {}> {
 
 interface IFormProps extends FormComponentProps {
   visible: boolean;
-  onCreate: () => void;
+  onCreate: () => Promise<void>;
   onCancel: () => void;
   assignments: AssignmentType[];
+  toggleStudentUpload: () => void;
+  studentsCanUpload: boolean;
+  timezone: string;
+  loading: boolean;
 }
 
 // FIXME: figure out how to type output of Form.create HOC
@@ -120,7 +170,14 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
       const { visible, onCancel, onCreate, form } = this.props;
       const { getFieldDecorator } = form;
       return (
-        <Modal visible={visible} title="Create an assignment" okText="Create" onCancel={onCancel} onOk={onCreate}>
+        <Modal
+          visible={visible}
+          title="Create an assignment"
+          okText="Create"
+          onCancel={onCancel}
+          onOk={onCreate}
+          confirmLoading={this.props.loading}
+        >
           <Form layout="vertical">
             <Form.Item label="Name">
               {getFieldDecorator('name', {
@@ -148,6 +205,26 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
                 ],
               })(<InputNumber min={0} />)}
             </Form.Item>
+            <span>Do you want students to be able to submit directly to codePost?</span>
+            <br />
+            <Radio checked={this.props.studentsCanUpload} onChange={this.props.toggleStudentUpload}>
+              Yes
+            </Radio>
+            <Radio checked={!this.props.studentsCanUpload} onChange={this.props.toggleStudentUpload}>
+              No
+            </Radio>
+            <br />
+            <br />
+            {this.props.studentsCanUpload ? (
+              <Form.Item label="Set a due date. You'll be able to edit this later in the assignment settings.">
+                {getFieldDecorator('uploadDueDate', {
+                  valuePropName: 'value',
+                  initialValue: moment()
+                    .tz(this.props.timezone)
+                    .endOf('day'),
+                })(<DatePicker showTime placeholder="Click to select" />)}
+              </Form.Item>
+            ) : null}
           </Form>
         </Modal>
       );

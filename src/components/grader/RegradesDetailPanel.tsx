@@ -11,7 +11,7 @@ import { Breadcrumb, Switch } from 'antd';
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
-import { AnonymousSubmissionType, Submission } from '../../infrastructure/submission';
+import { AnonymousSubmissionInfoType, Submission } from '../../infrastructure/submission';
 import { UserType } from '../../infrastructure/user';
 
 import RegradesTable from '../admin/assignments/assignments/AssignmentRegrades/RegradesTable';
@@ -28,7 +28,7 @@ interface IProps {
 }
 
 const RegradesDetailPanel = (props: IProps) => {
-  const [submissions, setSubmissions] = useState<AnonymousSubmissionType[]>([]);
+  const [submissions, setSubmissions] = useState<AnonymousSubmissionInfoType[]>([]);
   const [showStudentEmails, setShowStudentEmails] = useState(!props.isAnonymous);
   const [isLoading, setLoading] = useState(false);
   const [viewAll, setViewAll] = useState(false);
@@ -36,6 +36,7 @@ const RegradesDetailPanel = (props: IProps) => {
   const loadMySubmissions = async (currentAssignment: AssignmentType, user: string) => {
     const newSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id, {
       grader: user,
+      ['compact']: '1',
     });
     setSubmissions(newSubmissions);
     setLoading(false);
@@ -43,7 +44,7 @@ const RegradesDetailPanel = (props: IProps) => {
   };
 
   const loadAllSubmissions = async (currentAssignment: AssignmentType) => {
-    const newSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id);
+    const newSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id, { ['compact']: '1' });
     setSubmissions(newSubmissions);
     setLoading(false);
     return;
@@ -54,7 +55,7 @@ const RegradesDetailPanel = (props: IProps) => {
     viewAll ? loadAllSubmissions(props.assignment) : loadMySubmissions(props.assignment, props.user.email);
   };
 
-  const updateSubmission = (toUpdate: AnonymousSubmissionType) => {
+  const updateSubmission = (toUpdate: AnonymousSubmissionInfoType) => {
     /* Make sure we are acting on a submission linked to this course */
     const oldSubmission = submissions.find((el) => {
       return el.id === toUpdate.id;
@@ -82,7 +83,7 @@ const RegradesDetailPanel = (props: IProps) => {
     refreshSubmissions();
     // Really, refreshSubmissions() should implement React.useCallback()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.assignment]);
+  }, [props.assignment, viewAll]);
 
   // Filtering for relevant submissions to only show the 'reveal students` button if there are non-zero regrades
   const regradeSubmissions = submissions.filter((submission) => {

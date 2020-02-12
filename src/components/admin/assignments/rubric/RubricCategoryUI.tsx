@@ -2,7 +2,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Badge, Button, Icon, Input, Popconfirm, Spin, Table, Tag } from 'antd';
+import { Badge, Button, Icon, Input, Popconfirm, Spin, Table, Tag, Switch } from 'antd';
 
 /* codePost imports */
 import CPButton from '../../../core/CPButton';
@@ -17,9 +17,11 @@ import {
   IRubricCategoryManagerHelpers,
 } from '../../../core/rubric/RubricCategoryManager';
 
-import { RubricCommentType } from '../../../../infrastructure/rubricComment';
+import { RubricComment, RubricCommentType } from '../../../../infrastructure/rubricComment';
 
 import { DIRECTION } from '../../../../types/common';
+
+import ExplanationModal from './ExplanationModal';
 
 const { TextArea } = Input;
 
@@ -63,6 +65,18 @@ const commentTableColumns = [
     align: aligner,
   },
   {
+    title: 'Explanations',
+    key: 'explanation',
+    dataIndex: 'explanation',
+    align: aligner,
+  },
+  {
+    title: 'Instructions',
+    key: 'instruction',
+    dataIndex: 'instruction',
+    align: aligner,
+  },
+  {
     title: (
       <div>
         Feedback
@@ -86,20 +100,31 @@ const commentTableColumns = [
   },
 ];
 
+interface IProps {
+  baseURL: string;
+}
+
+interface IState {
+  activeComment?: RubricCommentType;
+}
+
 const RubricCategoryUI = ({
   props,
   state,
   helpers,
 }: {
-  props: IRubricCategoryManagerProps;
+  props: IRubricCategoryManagerProps & IProps;
   state: IRubricCategoryManagerState;
   helpers: IRubricCategoryManagerHelpers;
 }) => {
+  const [activeComment, setActiveComment] = React.useState(undefined as RubricCommentType | undefined);
+  const [activeField, setActiveField] = React.useState<'explanation' | 'instructionText'>('explanation');
+
   const buildCommentTableData = (
     rubricComments: RubricCommentType[],
     commentMap: { [id: number]: RubricCommentType },
   ) => {
-    return rubricComments.map((rubricComment) => {
+    return rubricComments.sort(RubricComment.compare).map((rubricComment) => {
       const thisComment = commentMap[rubricComment.id];
 
       let thisFeedback;
@@ -116,6 +141,10 @@ const RubricCategoryUI = ({
           helpers.updateRubricComment(thisComment.id, 'pointDelta', e);
         };
 
+        const onDeleteField = (field: string) => {
+          helpers.updateRubricComment(thisComment.id, field, '');
+        };
+
         const saveComment = () => {
           helpers.saveComment(thisComment.id);
         };
@@ -130,17 +159,88 @@ const RubricCategoryUI = ({
 
         return {
           key: thisComment.id,
-          text: <TextArea autosize value={thisComment.text} onChange={onChangeText} onBlur={saveComment} />,
+          text: (
+            <span style={{ display: 'flex' }}>
+              <TextArea
+                autosize
+                value={thisComment.text}
+                onChange={onChangeText}
+                onBlur={saveComment}
+                style={{ width: '80%' }}
+              />
+              &nbsp;
+            </span>
+          ),
           deduction: (
             <CPPointInput value={-thisComment.pointDelta} size="small" onChange={onChangePointDelta} disabled={false} />
           ),
           linked: (
             <span onClick={activateCommentExplorer}>
-              <Badge
-                count={thisComment.comments.length}
-                className="badge badge--standard"
-                style={{ backgroundColor: 'rgba(0,0,0,0.5)', cursor: 'pointer' }}
-              />
+              {props.instanceLists[thisComment.id] ? (
+                <Badge
+                  count={props.instanceLists[thisComment.id].length}
+                  className="badge badge--standard"
+                  style={{ backgroundColor: 'rgba(0,0,0,0.5)', cursor: 'pointer' }}
+                />
+              ) : (
+                <Spin />
+              )}
+            </span>
+          ),
+          explanation: props.showExplanations ? (
+            <span style={{ verticalAlign: 'middle' }}>
+              <CPTooltip title="Edit comment's explanation" key={rubricComment.id}>
+                <CPButton
+                  icon="edit"
+                  style={{ background: thisComment.explanation ? '#f0fff7' : undefined }}
+                  onClick={() => {
+                    setActiveComment(thisComment);
+                    setActiveField('explanation');
+                  }}
+                />
+              </CPTooltip>
+              <CPTooltip
+                title="Delete comment's explanation"
+                key={rubricComment.id}
+                disabled={!thisComment.explanation}
+              >
+                <CPButton
+                  icon="delete"
+                  disabled={!thisComment.explanation}
+                  onClick={() => {
+                    onDeleteField('explanation');
+                  }}
+                />
+              </CPTooltip>
+            </span>
+          ) : (
+            undefined
+          ),
+          instruction: (
+            <span style={{ verticalAlign: 'middle' }}>
+              <CPTooltip title="Edit comment's instructions" key={rubricComment.id}>
+                <CPButton
+                  icon="edit"
+                  style={{ background: thisComment.instructionText ? '#f0fff7' : undefined }}
+                  onClick={() => {
+                    setActiveComment(thisComment);
+                    setActiveField('instructionText');
+                  }}
+                />
+              </CPTooltip>
+              <CPTooltip
+                title="Delete comment's instructions"
+                key={rubricComment.id}
+                disabled={!thisComment.instructionText}
+              >
+                <CPButton
+                  icon="delete"
+                  disabled={!thisComment.instructionText}
+                  onClick={() => {
+                    onDeleteField('instructionText');
+                  }}
+                />
+              </CPTooltip>
             </span>
           ),
           feedback: !props.commentFeedbackOn ? (
@@ -217,6 +317,10 @@ const RubricCategoryUI = ({
 
   const clearPointLimit = () => {
     helpers.setValue('pointLimit', null);
+  };
+
+  const toggleAtMostOnce = () => {
+    helpers.setValue('atMostOnce', !state.atMostOnce);
   };
 
   const titleLeft = [
@@ -313,15 +417,40 @@ const RubricCategoryUI = ({
     </div>
   ) : null;
 
+  const atMostOnceToggle = props.showAtMostOnce ? (
+    <div key="atMostOnce" style={{ maxWidth: 300 }}>
+      <div className="cp-label cp-label--bold" style={{ marginBottom: '7px' }}>
+        "At Most Once" Mode{' '}
+        <CPTooltip infoIcon={true} title={'If applied, this category can be applied at most once to any submission.'} />
+      </div>
+      <Switch checked={state.atMostOnce} onChange={toggleAtMostOnce} />
+    </div>
+  ) : null;
+
   const contentLeft =
     props.windowwidth < 1200 ? (
       <div>
         <CPFlex left={[categoryName, categoryPoints]} right={[]} gutterSize={60} />
-        <CPFlex left={[helpText]} right={[]} gutterSize={60} style={{ paddingTop: 30 }} />
+        <CPFlex left={[helpText, atMostOnceToggle]} right={[]} gutterSize={60} style={{ paddingTop: 30 }} />
       </div>
     ) : (
-      <CPFlex left={[categoryName, categoryPoints]} right={[helpText]} gutterSize={60} />
+      <CPFlex left={[categoryName, categoryPoints, atMostOnceToggle]} right={[helpText]} gutterSize={60} />
     );
+
+  const setField = (field: 'explanation' | 'instructionText', draft?: string) => {
+    if (activeComment) {
+      helpers.updateRubricComment(activeComment.id, field, draft);
+      setActiveComment(undefined);
+    }
+  };
+
+  const toRemove: string[] = [];
+  if (!props.showExplanations) {
+    toRemove.push('explanation');
+  }
+  if (!props.showInstructions) {
+    toRemove.push('instruction');
+  }
 
   return (
     <div className="cp-rubric-category">
@@ -332,7 +461,7 @@ const RubricCategoryUI = ({
         {contentLeft}
         <div style={{ height: '40px' }} />
         <Table
-          columns={commentTableColumns}
+          columns={commentTableColumns.filter((el) => toRemove.indexOf(el.key) === -1)}
           dataSource={data}
           pagination={false}
           locale={{ emptyText: 'No comments yet' }}
@@ -344,6 +473,39 @@ const RubricCategoryUI = ({
           </span>
         </div>
       </div>
+      {activeComment ? (
+        <ExplanationModal
+          title={activeComment.text}
+          startText={activeComment[activeField]}
+          onCancel={() => {
+            setActiveComment(undefined);
+          }}
+          onSave={setField.bind({}, activeField)}
+          extra={
+            activeField === 'instructionText' ? (
+              <span>
+                Use as template:{' '}
+                <Switch
+                  defaultChecked={activeComment.templateTextOn}
+                  onChange={() =>
+                    helpers.updateRubricComment(activeComment.id, 'templateTextOn', !activeComment.templateTextOn)
+                  }
+                />
+                <CPTooltip
+                  title={
+                    'If on, this instruction text will be made available for graders to edit directly in the custom text area of a rubric comment instance.'
+                  }
+                  infoIcon={true}
+                  hideThisOnHideTips={true}
+                  iconStyle={{ paddingLeft: 5 }}
+                />
+              </span>
+            ) : (
+              undefined
+            )
+          }
+        />
+      ) : null}
     </div>
   );
 };

@@ -7,17 +7,21 @@ import * as React from 'react';
 
 /* antd imports */
 // @ts-ignore
-import { Icon, Input, Popconfirm, Tag } from 'antd';
+import { Icon, Input, Popconfirm, Tag, Empty } from 'antd';
 
 /* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
 
-import { RubricCategory, RubricCategoryType } from '../../../infrastructure/rubricCategory';
-import { RubricComment, RubricCommentType } from '../../../infrastructure/rubricComment';
+import { CourseType, RubricCategoryType, RubricCommentType } from '../../../infrastructure/types';
+
+import { RubricCategory } from '../../../infrastructure/rubricCategory';
+import { RubricComment } from '../../../infrastructure/rubricComment';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
-import useHotkeys, { E_KEY, O_KEY, S_KEY } from '../useHotkeys';
+import useHotkeys, { O_KEY, S_KEY } from '../useHotkeys';
+
+import { osControlKey } from '../../core/operatingSystem';
 
 import CPButton from '../../core/CPButton';
 
@@ -36,6 +40,10 @@ import { LinkedCommentsAlert, LinkedCommentsConfirm } from '../../admin/assignme
 import CPTooltip from '../../core/CPTooltip';
 import { tooltips } from '../../core/tooltips';
 
+import { CURSOR_DOMAIN } from '../CodeConsole';
+
+import { getRubricURL } from '../../core/URLutils';
+
 /**********************************************************************************************************************/
 
 enum EDITING_STATUS {
@@ -47,8 +55,14 @@ interface IRubricMenuUIProps extends IRubricManagerProps {
   /* is the user allowed to edit the rubric? */
   canUserEdit: boolean;
 
+  /* should we show the frequent comments synthetic category? */
+  showFrequent: boolean;
+
   /* if true, simulate rubric save */
   demoMode: boolean;
+
+  /* decides whether to show text or explanations */
+  showExplanations: boolean;
 
   handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
   hasActiveComment: boolean;
@@ -60,6 +74,10 @@ interface IRubricMenuUIProps extends IRubricManagerProps {
   }) => void;
   turnOnReload: () => void;
   turnOffReload: () => void;
+
+  showCursor: CURSOR_DOMAIN;
+  updateCursorDomain: (domain: CURSOR_DOMAIN) => void;
+  course: CourseType;
 }
 
 const RubricMenuUI = ({
@@ -80,7 +98,7 @@ const RubricMenuUI = ({
   const [changesMade, setChangesMade] = React.useState(false);
   const [confirmChanges, setConfirmChanges] = React.useState(false);
 
-  // console.log(props, state, helpers);
+  const [cursorIndex, setCursorIndex] = React.useState(0);
 
   const startEditing = (rubricCommentID: number) => {
     const newEditingStatuses = { ...editingStatuses, [rubricCommentID]: EDITING_STATUS.EDITING };
@@ -101,6 +119,59 @@ const RubricMenuUI = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  React.useEffect(() => {
+    const tryScroll = () => {
+      const rubricMenu = document.getElementById('rubric-menu');
+
+      if (rubricMenu !== null) {
+        let cursoredRows = document.getElementsByClassName('rubric-row-cursored');
+        if (cursoredRows.length > 0) {
+          const cursoredRow = cursoredRows[0];
+
+          const distance = cursoredRow.getBoundingClientRect().top - rubricMenu.getBoundingClientRect().top;
+
+          const rubricMenuVisibleHeight = rubricMenu.offsetHeight;
+
+          if (distance < 35) {
+            rubricMenu.scrollTop = rubricMenu.scrollTop - (35 - distance);
+          } else if (distance > rubricMenuVisibleHeight) {
+            const updatedScroll = distance - rubricMenuVisibleHeight;
+            const maxScrollTop = rubricMenu.scrollHeight - rubricMenu.offsetHeight;
+            rubricMenu.scrollTop = Math.min(rubricMenu.scrollTop + updatedScroll + 70, maxScrollTop);
+          }
+        }
+      }
+    };
+
+    const handleKeydown = async (e: any) => {
+      const el = document.getElementById('rubric-search');
+      let searchIsFocused = false;
+      if (el !== null) {
+        searchIsFocused = document.activeElement === el;
+      }
+
+      if (searchIsFocused && e.key === 'ArrowDown' && props.hasActiveComment) {
+        props.updateCursorDomain(CURSOR_DOMAIN.RUBRIC);
+      }
+
+      if (props.showCursor === CURSOR_DOMAIN.RUBRIC && props.hasActiveComment) {
+        if (e.key === 'ArrowDown') {
+          const rubricCommentCount = document.getElementsByClassName('rubric-row').length;
+          setCursorIndex(Math.min(cursorIndex + 1, rubricCommentCount - 1));
+          setTimeout(() => tryScroll(), 100);
+        } else if (e.key === 'ArrowUp') {
+          setCursorIndex(Math.max(cursorIndex - 1, 0));
+          setTimeout(() => tryScroll(), 100);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+    return () => {
+      document.removeEventListener('keydown', handleKeydown);
+    };
+  });
 
   useHotkeys(O_KEY, focusSearch);
 
@@ -123,8 +194,38 @@ const RubricMenuUI = ({
 
     // If user has specified a category with category:[some text], respect it
     const categoryMatches = searchTerm.match(/(category:[a-z0-9]+)|(category:"[a-z0-9\s]+")/i);
+    let adjustedRubricComments = { ...rubricComments };
 
-    let filteredCatgories = rubricCategories.sort(RubricCategory.compare);
+    // Create a category of frequently used comments
+    let freq: RubricCategoryType;
+    const noSort: number[] = [];
+
+    let filteredCatgories;
+    if (!props.editRubricMode && props.showFrequent) {
+      // Let's be type-safe
+      const rubricCommentList: RubricCommentType[] = Object.values(rubricComments).flat();
+
+      noSort.push(-1000);
+      freq = {
+        id: -1000,
+        name: 'Frequently used',
+        rubricComments: [],
+        assignment: -1,
+        pointLimit: null,
+        sortKey: 0,
+        helpText: 'List of the 10 most frequently applied comments from this rubric.',
+        atMostOnce: false,
+      };
+
+      adjustedRubricComments[-1000] = rubricCommentList
+        .filter((el) => state.instanceLists[el.id] && state.instanceLists[el.id].length > 0)
+        .sort((a, b) => state.instanceLists[b.id].length - state.instanceLists[a.id].length)
+        .slice(0, 10);
+      filteredCatgories = [freq, ...rubricCategories.sort(RubricCategory.compare)];
+    } else {
+      filteredCatgories = rubricCategories.sort(RubricCategory.compare);
+    }
+
     let commentSearchTerm = searchTerm;
     if (categoryMatches !== null && categoryMatches.length > 0) {
       const categoryName = categoryMatches[0].split(':')[1].slice(1, -1);
@@ -144,17 +245,30 @@ const RubricMenuUI = ({
       commentSearchTerm = '';
     }
 
+    let commentIndex = 0;
+
     return filteredCatgories.map((cat: RubricCategoryType, catIndex: number) => {
       const savedCategory = state.savedRubricCategories.find((el: any) => {
         return el.id === cat.id;
       });
 
-      return (
+      let filteredComments: RubricComment[] = [];
+      if (cat.id in adjustedRubricComments) {
+        filteredComments = adjustedRubricComments[cat.id]
+          .filter((rubricComment: RubricCommentType) => {
+            return rubricComment.text.toUpperCase().includes(commentSearchTerm.toUpperCase());
+          })
+          .sort(RubricComment.compare);
+      }
+
+      const thisIndex = commentIndex;
+
+      const rubricCategoryManager = (
         <RubricCategoryManager
           key={cat.id}
           rubricCategory={cat}
           savedRubricCategory={savedCategory}
-          rubricComments={cat.id in rubricComments ? rubricComments[cat.id].sort(RubricComment.compare) : []}
+          rubricComments={filteredComments}
           savedRubricComments={savedCategory ? state.savedRubricComments[savedCategory.id] : undefined}
           updateCategory={helpers.updateRubricCategory}
           deleteCategory={helpers.deleteRubricCategory}
@@ -187,11 +301,19 @@ const RubricMenuUI = ({
               editRubricMode: props.editRubricMode,
               turnOnReload: props.turnOnReload,
               turnOffReload: props.turnOffReload,
+              showCursor: props.showCursor,
+              cursorIndex: cursorIndex,
+              commentIndex: thisIndex,
+              showExplanations: props.showExplanations,
             };
             return <RubricMenuCategoryUI props={propsz} state={statez} helpers={helperz} />;
           }}
         </RubricCategoryManager>
       );
+
+      commentIndex = commentIndex + filteredComments.length;
+
+      return rubricCategoryManager;
     });
   };
 
@@ -256,7 +378,7 @@ const RubricMenuUI = ({
     props.toggleEditRubricMode();
   };
 
-  useHotkeys(E_KEY, toggleEditRubricMode);
+  // useHotkeys(E_KEY, toggleEditRubricMode);
   useHotkeys(S_KEY, blurAndSave);
 
   let controls = null;
@@ -308,7 +430,7 @@ const RubricMenuUI = ({
         onCancel={onCancel}
       >
         <CPButton cpType="primary" icon="plus" style={{ minWidth: '80px' }}>
-          Add Category
+          Category
         </CPButton>
       </Popconfirm>,
       <div key="gap1" style={{ width: '10px' }} />,
@@ -354,6 +476,7 @@ const RubricMenuUI = ({
           onUnLink={onUnLink}
           onCancel={helpers.onLinkedAlertCancel}
           isVisible={state.linkedComments.length > 0}
+          numComments={state.linkedComments[0] ? state.instanceLists[state.linkedComments[0].id].length : 0}
         />
         <LinkedCommentsConfirm
           onAccept={onLinkedConfirmAccept}
@@ -386,7 +509,8 @@ const RubricMenuUI = ({
     const iconType = props.editRubricMode ? 'backward' : 'edit';
     searchBar = (
       <Input
-        placeholder="Search rubric... (⌘ O)"
+        allowClear
+        placeholder={`Search rubric... (${osControlKey()} O)`}
         id="rubric-search"
         onChange={onSearch}
         value={searchTerm}
@@ -409,7 +533,7 @@ const RubricMenuUI = ({
   } else {
     searchBar = (
       <Input
-        placeholder="Search rubric... (⌘ O)"
+        placeholder={`Search rubric... (${osControlKey()} O)`}
         id="rubric-search"
         onChange={onSearch}
         value={searchTerm}
@@ -425,31 +549,64 @@ const RubricMenuUI = ({
 
   let content = <Loading />;
   if (state.loadComplete) {
-    const rubricMenu = buildRubricMenu(state.rubricCategories, state.rubricComments);
+    if (state.rubricCategories.length === 0) {
+      const emptySyle: React.CSSProperties = {
+        padding: '12px',
+      };
 
-    content = <div id="rubric-menu">{rubricMenu}</div>;
+      let emptyContent;
+      if (props.canUserEdit) {
+        emptyContent = (
+          <div>
+            Create your rubric either by clicking the green pen above, or visiting the{' '}
+            <a href={`/${getRubricURL(props.course, props.assignment)}`} target="_blank">
+              Rubric Editor
+            </a>{' '}
+            in the Admin Console.
+          </div>
+        );
+      } else {
+        emptyContent = <div>No rubric yet</div>;
+      }
+
+      content = (
+        <div style={emptySyle}>
+          <Empty
+            imageStyle={{
+              height: 60,
+            }}
+            description={emptyContent}
+          />
+        </div>
+      );
+    } else {
+      const rubricMenu = buildRubricMenu(state.rubricCategories, state.rubricComments);
+      content = <div id="rubric-menu-wrapper">{rubricMenu}</div>;
+    }
   }
 
   return (
-    <div style={{ marginTop: '8px' }}>
+    <div style={{ marginTop: '8px' }} id="rubric-menu-container">
       <div
         id="rubric-menu-title"
         style={{ marginBottom: '5px', width: '100%', textAlign: 'center', padding: '0px 10px' }}
       >
         <div style={{ textAlign: 'right' }}>
-          <Tag
-            style={{
-              background: consoleTheme.siderBg,
-              color: consoleTheme.siderTitle,
-              borderStyle: 'dashed',
-              marginBottom: '4px',
-              marginRight: '0px',
-              cursor: 'pointer',
-            }}
-            onClick={insertCategorySearch}
-          >
-            category:
-          </Tag>
+          <CPTooltip title={tooltips.grade.rubric.categorySearch} hideThisOnHideTips={true}>
+            <Tag
+              style={{
+                background: consoleTheme.siderBg,
+                color: consoleTheme.siderTitle,
+                borderStyle: 'dashed',
+                marginBottom: '4px',
+                marginRight: '0px',
+                cursor: 'pointer',
+              }}
+              onClick={insertCategorySearch}
+            >
+              category:
+            </Tag>
+          </CPTooltip>
         </div>
         {searchBar}
       </div>

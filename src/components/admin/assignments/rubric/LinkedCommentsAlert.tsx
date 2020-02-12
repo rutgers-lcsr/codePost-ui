@@ -21,6 +21,7 @@ interface IPropsLinkedCommentsAlert {
   onUnLink: () => void;
   onCancel: (revert: boolean) => void;
   isVisible: boolean;
+  numComments: number;
 }
 
 const LinkedCommentsAlert = (props: IPropsLinkedCommentsAlert) => {
@@ -52,9 +53,7 @@ const LinkedCommentsAlert = (props: IPropsLinkedCommentsAlert) => {
       <b>Comment</b>: {props.rubricComment.text}
       <br />
       <br />
-      {`> Applied to ${props.rubricComment.comments.length} submission${
-        props.rubricComment.comments.length === 1 ? '' : 's'
-      }`}
+      {`> Applied to ${props.numComments} submission${props.numComments === 1 ? '' : 's'}`}
       <br />
       <br />
       <br />
@@ -132,8 +131,8 @@ const LinkedCommentsConfirm = (props: IPropsConfirm) => {
       <h3>Changed Comments</h3>
       <ul>
         {contentEditedComments.map((el) => {
-          if (el.id > 0 && el.comments.length > 0) {
-            return <li>{el.text}</li>;
+          if (el.id) {
+            return <li key={el.text}>{el.text}</li>;
           } else {
             return undefined;
           }

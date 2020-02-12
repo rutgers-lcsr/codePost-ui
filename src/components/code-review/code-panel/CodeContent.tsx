@@ -14,9 +14,12 @@ import themeVars from '../../../styles/abstracts/_theme.js';
 
 import Code from './Code';
 import Markdown from './Markdown';
+import { Pdf } from './Pdf';
 import TemplateCode from './TemplateCode';
 
 import CodePanelSizing from './CodePanelSizing';
+
+import { CURSOR_DOMAIN } from '../CodeConsole';
 
 export interface ICodeContentCoreProps {
   file: FileType;
@@ -31,6 +34,9 @@ export interface ICodeContentEditProps {
   commentCounter: number;
   addComment: (comment: CommentType, file: FileType) => void;
   fileTemplate?: FileTemplateType;
+  cursorMode: boolean;
+  showCursor: CURSOR_DOMAIN;
+  updateCursorDomain: (domain: CURSOR_DOMAIN) => void;
 }
 
 const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
@@ -101,6 +107,40 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
         </div>
       </div>
     );
+  } else if (File.codeType(props.file) === 'pdf') {
+    const { addComment, ...codeProps } = { ...props };
+    return (
+      <div
+        id="code-container"
+        className="code-container"
+        style={{
+          width: `${props.dimensions.codeWidth}px`,
+          overflowX: 'hidden',
+          backgroundColor: consoleTheme.codeBg,
+          border: `1px solid ${consoleTheme.codeBorder}`,
+        }}
+      >
+        <div
+          id="code-main"
+          className="code code--markdown"
+          style={{
+            lineHeight: `${themeVars.grade.codeLineHeight}px`,
+            fontSize: `${themeVars.grade.codeFontSize}px`,
+            paddingLeft: '20px',
+            backgroundColor: 'white',
+            paddingTop: '3px',
+            paddingRight: '20px',
+          }}
+        >
+          <Pdf
+            key={props.file.id}
+            {...codeProps}
+            commentCounter={props.commentCounter}
+            addComment={addCommentAndIncrement}
+          />
+        </div>
+      </div>
+    );
   } else {
     const { addComment, ...codeProps } = { ...props };
 
@@ -139,7 +179,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
             style={{
               lineHeight: `${themeVars.grade.codeLineHeight}px`,
               fontSize: `${themeVars.grade.codeFontSize}px`,
-              paddingLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
+              marginLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
               paddingBottom: '10px',
             }}
           >
@@ -152,7 +192,7 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
           style={{
             lineHeight: `${themeVars.grade.codeLineHeight}px`,
             fontSize: `${themeVars.grade.codeFontSize}px`,
-            paddingLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
+            marginLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
             paddingBottom: '10px',
           }}
         >
@@ -161,6 +201,9 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
             commentCounter={props.commentCounter}
             addComment={addCommentAndIncrement}
             onHighlightClick={props.onHighlightClick}
+            cursorMode={props.cursorMode}
+            showCursor={props.showCursor}
+            updateCursorDomain={props.updateCursorDomain}
           />
         </div>
       </div>
@@ -174,6 +217,10 @@ const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICo
       return;
     };
 
+    public updateCursorDomain = (domain: CURSOR_DOMAIN) => {
+      return;
+    };
+
     public render() {
       return (
         <Component
@@ -181,6 +228,9 @@ const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICo
           addComment={this.addComment}
           commentCounter={-1}
           fileTemplate={undefined}
+          cursorMode={false}
+          showCursor={CURSOR_DOMAIN.CODE_HIDDEN}
+          updateCursorDomain={this.updateCursorDomain}
         />
       );
     }

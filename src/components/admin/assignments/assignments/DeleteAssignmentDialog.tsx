@@ -22,15 +22,22 @@ interface IProps {
 
 interface IState {
   typedName: string;
+  isDeleting: boolean;
 }
 
 class DeleteAssignmentDialog extends React.Component<IProps, IState> {
   public state: Readonly<IState> = {
     typedName: '',
+    isDeleting: false,
   };
 
   public changeTypedName = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ typedName: e.target.value });
+  };
+
+  public delete = () => {
+    this.setState({ isDeleting: true });
+    this.props.onDelete();
   };
 
   public render() {
@@ -54,8 +61,6 @@ class DeleteAssignmentDialog extends React.Component<IProps, IState> {
         visible={this.props.isVisible}
         title={`Delete assignment: ${this.props.assignmentName}`}
         okText="Delete"
-        onCancel={this.props.onCancel}
-        onOk={this.props.onDelete}
         footer={[
           <CPButton cpType="secondary" key="back" onClick={this.props.onCancel}>
             Cancel
@@ -64,7 +69,8 @@ class DeleteAssignmentDialog extends React.Component<IProps, IState> {
             key="submit"
             disabled={this.state.typedName !== this.props.assignmentName}
             cpType="danger"
-            onClick={this.props.onDelete}
+            loading={this.state.isDeleting}
+            onClick={this.delete}
           >
             Delete
           </CPButton>,
