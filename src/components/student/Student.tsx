@@ -39,6 +39,7 @@ import layoutVars from '../../styles/layout/_layoutVars';
 
 import UploadSubmissionDialog from '../admin/assignments/assignments/UploadSubmissionDialog';
 
+import LateSubmissionModal from './LateSubmissionModal';
 import ViewUpload from './ViewUpload';
 
 import { IComponentProps } from '../core/ComponentManager';
@@ -63,6 +64,8 @@ interface IStudentState {
   currentPanel: CURRENT_PANEL;
   detailAssignment?: AssignmentStudentType;
   detailSubmission?: StudentSubmissionType;
+
+  lateSubmissionModalAssignment: AssignmentStudentType | null;
 }
 
 enum SUBMISSION_STATUS {
@@ -92,6 +95,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
       currentPanel: CURRENT_PANEL.TABLE,
       detailAssignment: undefined,
       detailSubmission: undefined,
+      lateSubmissionModalAssignment: null,
     };
   }
 
@@ -194,6 +198,14 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     return;
   };
 
+  public openLateSubmissionModalAssignment = (assignment: AssignmentStudentType) => {
+    this.setState({ lateSubmissionModalAssignment: assignment });
+  };
+
+  public closeLateSubmissionModalAssignment = () => {
+    this.setState({ lateSubmissionModalAssignment: null });
+  };
+
   public changePanel = async (
     newPanel: CURRENT_PANEL,
     assignment?: AssignmentStudentType,
@@ -214,6 +226,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
       currentPanel: newPanel,
       detailAssignment: assignment,
       detailSubmission: latestSubmission || submission,
+      lateSubmissionModalAssignment: null,
     });
   };
 
@@ -279,7 +292,8 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     const hasSubmission = submission !== undefined;
 
     // Algorithm for computing
-    const dueDatePassed = assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) <= Date.now();
+    const two_hours = 3.6e6 * 2; // ms grace period
+    const dueDatePassed = assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) + two_hours <= Date.now();
     const isFinalized = submission !== undefined && submission.isFinalized;
     const canUploadLate = assignment.allowLateUploads;
 
@@ -317,46 +331,64 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
       buttonText = 'Upload files';
     }
     const uploadButton = (
-      <Button
-        icon="upload"
-        type="primary"
-        style={{ maxWidth: 180 }}
-        disabled={!canUpload}
-        onClick={() => {
-          if (submission && assignment.liveFeedbackMode) {
-            Modal.confirm({
-              title: 'Confirm file replacement',
-              content: (
-                <div>
-                  <p>
-                    Replacing your files will delete existing files and file versions, including any comments on those
-                    files.
-                  </p>
-                  <p>If you want to add a file to your submission or update a file click 'Add/Update files' instead.</p>
-                  <p>
-                    <b>Are you sure you want to continue?</b>
-                  </p>
-                </div>
-              ),
-              okText: 'Continue',
-              cancelText: 'Cancel',
-              onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),
-            });
-          } else if (dueDatePassed) {
-            Modal.confirm({
-              title: 'Confirm late submission',
-              content: `The due date for this submission has passed, so your submission will be logged as late.`,
-              okText: 'Continue',
-              cancelText: 'Cancel',
-              onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),
-            });
-          } else {
-            this.changePanel(CURRENT_PANEL.UPLOADFILES, assignment, submission);
-          }
-        }}
-      >
-        {buttonText}
-      </Button>
+      <span>
+        <Button
+          icon="upload"
+          type="primary"
+          style={{ maxWidth: 180 }}
+          disabled={!canUpload}
+          onClick={() => {
+            if (submission && assignment.liveFeedbackMode) {
+              Modal.confirm({
+                title: 'Confirm file replacement',
+                content: (
+                  <div>
+                    <p>
+                      Replacing your files will delete existing files and file versions, including any comments on those
+                      files.
+                    </p>
+                    <p>
+                      If you want to add a file to your submission or update a file click 'Add/Update files' instead.
+                    </p>
+                    <p>
+                      <b>Are you sure you want to continue?</b>
+                    </p>
+                  </div>
+                ),
+                okText: 'Continue',
+                cancelText: 'Cancel',
+                onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),
+              });
+            } else if (dueDatePassed) {
+              this.openLateSubmissionModalAssignment(assignment);
+              {
+                /*Modal.confirm({
+                title: 'Confirm late submission',
+                content: `The due date for this submission has passed, so your submission will be logged as late.`,
+                okText: 'Continue',
+                cancelText: 'Cancel',
+                onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),
+              });*/
+              }
+            } else {
+              this.changePanel(CURRENT_PANEL.UPLOADFILES, assignment, submission);
+            }
+          }}
+        >
+          {buttonText}
+        </Button>
+        {dueDatePassed ? (
+          <LateSubmissionModal
+            visible={
+              this.state.lateSubmissionModalAssignment !== null &&
+              this.state.lateSubmissionModalAssignment.id === assignment.id
+            }
+            assignment={assignment}
+            onCancel={this.closeLateSubmissionModalAssignment}
+            onOk={this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission)}
+          />
+        ) : null}
+      </span>
     );
 
     // If the student has uploaded, give them the option to view their uploaded files, unless
@@ -605,6 +637,38 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     return { columns, data };
   };
 
+  public calculateLateDayCreditsAvailable = (submissions: IAssignmentToSubmissionStudentMap): number => {
+    if (!this.props.currentCourse || this.props.currentCourse.lateDayCreditsAllowable === null) {
+      return 0;
+    }
+
+    let totalUsed = 0;
+
+    Object.keys(submissions).forEach((assignmentID: string) => {
+      const subTotal = submissions[+assignmentID].reduce((acc: number, sub: StudentSubmissionType) => {
+        if (sub.lateDayCreditsUsed !== undefined) {
+          return acc + sub.lateDayCreditsUsed;
+        } else {
+          return acc;
+        }
+      }, 0);
+
+      totalUsed += subTotal;
+    });
+
+    return this.props.currentCourse.lateDayCreditsAllowable - totalUsed;
+  };
+
+  public getLateDayCreditsComponent = () => {
+    if (!this.props.currentCourse || this.props.currentCourse.lateDayCreditsAllowable === null) {
+      return null;
+    }
+
+    const lateDayCreditsAvailable = this.calculateLateDayCreditsAvailable(this.state.submissions);
+
+    return <div>Late Day Credits: {this.state.isLoadingSubmissions ? '--' : lateDayCreditsAvailable}</div>;
+  };
+
   /***********************************************************************************
   /* Render function
   /**********************************************************************************/
@@ -625,6 +689,8 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
       // Assignments haven't finished loading
       studentContent = <Spin />;
     } else {
+      const lateDayCredits = this.getLateDayCreditsComponent();
+
       const assignmentList = assignments[currentCourse.id];
       const { columns, data } = this.buildAssignmentsTable(assignmentList, submissions);
       const rowClassName = (record: any, index: number) => {
@@ -642,7 +708,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
             isEmpty={assignmentList.length === 0}
             title={`${currentCourse.name} | ${currentCourse.period}`}
             emptyNode={<div>Empty...</div>}
-            actions={[]}
+            actions={[lateDayCredits]}
             columns={columns}
             data={data}
             pagination={false}

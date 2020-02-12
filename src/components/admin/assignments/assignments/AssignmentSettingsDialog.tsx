@@ -30,6 +30,7 @@ import moment from 'moment-timezone';
 import { AssignmentType, FileTemplateType } from '../../../../infrastructure/types';
 import { AssignmentPatchType } from '../../../../infrastructure/assignment';
 import { FileTemplate } from '../../../../infrastructure/fileTemplate';
+import InputNumberMultiple from '../../settings/InputNumberMultiple';
 
 import UploadFileTemplates from './UploadFileTemplates';
 
@@ -105,6 +106,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, IState> {
       templateMode,
       showFrequentlyUsedRubricComments: values.showFrequentlyUsedRubricComments,
       allowLateUploads: values.allowLateUploads,
+      lateDeductions: values.lateDeductions,
     };
 
     this.props.onSave(payload).then(() => {
@@ -200,6 +202,7 @@ interface IFormValues {
   templateMode: boolean;
   showFrequentlyUsedRubricComments: boolean;
   allowLateUploads: boolean;
+  lateDeductions: number[];
 }
 
 interface IFormState {
@@ -409,11 +412,7 @@ const CollectionCreateForm: any = Form.create()(
               <Tabs.TabPane tab="Submission" key="2" style={tabPaneStyle}>
                 <Form.Item
                   label="Allow student upload"
-                  extra={
-                    <div>
-                      <Tag>NEW</Tag>When enabled, students can upload submissions before the given due date.
-                    </div>
-                  }
+                  extra={<div>When enabled, students can upload submissions before the given due date.</div>}
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 16 }}
                 >
@@ -484,8 +483,7 @@ const CollectionCreateForm: any = Form.create()(
                   label="Allow late submissions"
                   extra={
                     <div>
-                      <Tag>NEW</Tag> When enabled, students will be allowed to submit after this assignment's due date
-                      has passed.
+                      When enabled, students will be allowed to submit after this assignment's due date has passed.
                     </div>
                   }
                   labelCol={{ span: 6 }}
@@ -497,11 +495,31 @@ const CollectionCreateForm: any = Form.create()(
                   })(<Switch disabled={!form.getFieldValue('allowStudentUpload')} />)}
                 </Form.Item>
                 <Form.Item
+                  label="Late deductions"
+                  extra={
+                    <div>
+                      <Tag>NEW</Tag>Automatically deduct points for each day late.{' '}
+                      {form.getFieldValue('lateDeductions') && form.getFieldValue('lateDeductions').length > 1 && (
+                        <span>
+                          <b>Note</b>: late day deductions are not cumulative.
+                        </span>
+                      )}
+                    </div>
+                  }
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 16 }}
+                >
+                  {getFieldDecorator('lateDeductions', {
+                    initialValue: this.props.assignment.lateDeductions,
+                    // @ts-ignore
+                  })(<InputNumberMultiple emptyMessage="Add a late deduction" />)}
+                </Form.Item>
+                <Form.Item
                   label="Live feedback mode"
                   extra={
                     <div>
-                      <Tag>NEW</Tag> Students can see their feedback and comments without the submission being finalized
-                      or published. Ideal for office hours or ungraded feedback.
+                      Students can see their feedback and comments without the submission being finalized or published.
+                      Ideal for office hours or ungraded feedback.
                     </div>
                   }
                   labelCol={{ span: 6 }}
@@ -536,11 +554,7 @@ const CollectionCreateForm: any = Form.create()(
                 </Form.Item>
                 <Form.Item
                   label="Additive grading"
-                  extra={
-                    <div>
-                      <Tag>NEW</Tag> Start submission scores at 0 instead of at an assignment's point value.
-                    </div>
-                  }
+                  extra={<div>Start submission scores at 0 instead of at an assignment's point value.</div>}
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 16 }}
                 >
@@ -551,11 +565,7 @@ const CollectionCreateForm: any = Form.create()(
                 </Form.Item>
                 <Form.Item
                   label="Rubric-only mode"
-                  extra={
-                    <div>
-                      <Tag>NEW</Tag> Require graders to link all submission comments to a Rubric Comment.
-                    </div>
-                  }
+                  extra={<div>Require graders to link all submission comments to a Rubric Comment.</div>}
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 15 }}
                 >

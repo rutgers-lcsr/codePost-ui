@@ -1024,11 +1024,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     const daysLate = getDaysLate(this.state.assignment, this.state.submission);
     const daysLateAfterCredit = daysLate - lateDayCreditsUsed;
 
-    const text = `**${lateDayCreditsUsed} Late Day Credit${lateDayCreditsUsed === 1 ? '' : 's'} Used**
-
+    const text = `
 \`\`\`
-Days late:                 ${daysLate}
-Days late (after credit):  ${daysLateAfterCredit}
+Days Late:                 ${daysLate}
+Late Credits Used:         ${lateDayCreditsUsed}
+Days Late (After Credit):  ${daysLateAfterCredit}
 \`\`\`
 `;
 
