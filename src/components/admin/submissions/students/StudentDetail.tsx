@@ -19,7 +19,6 @@ import { openSubmission } from '../../other/AdminUtils';
 import { CourseType } from '../../../../infrastructure/course';
 import { AssignmentType, sortAssignments } from '../../../../infrastructure/assignment';
 import { SubmissionType } from '../../../../infrastructure/submission';
-import { FileType } from '../../../../infrastructure/file';
 
 import { TableDetail } from '../../other/TableDetail';
 
@@ -30,8 +29,12 @@ import { tooltips } from '../../../../components/core/tooltips';
 
 import { IStudentSubmissionsDataTable } from '../../../../types/common';
 
-const confirm = Modal.confirm;
+import { Environment } from '../../../../infrastructure/autograder/environment';
+import { SubmissionTestResultType } from '../../../../infrastructure/autograder/runTypes';
 
+import { awaitTestResult } from '../../assignments/tests/testResult';
+
+const confirm = Modal.confirm;
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -62,6 +65,8 @@ interface IState {
   submissionsMap: {
     [assignmentID: number]: SubmissionType;
   };
+
+  subsRunning: number[];
 }
 
 class StudentDetail extends React.Component<IProps, IState> {
@@ -69,6 +74,7 @@ class StudentDetail extends React.Component<IProps, IState> {
     uploadSubmissionVisible: false,
     selectedSubmission: '',
     submissionsMap: this.props.submissions[this.props.student],
+    subsRunning: [],
   };
 
   // ******************************************** API changes **************************************************
@@ -82,6 +88,22 @@ class StudentDetail extends React.Component<IProps, IState> {
       },
       okText: 'Remove',
     });
+  };
+
+  public callback = (sub: SubmissionType, result: SubmissionTestResultType) => {
+    this.setState((prevState, props) => ({ subsRunning: prevState.subsRunning.filter((id) => id !== sub.id) }));
+    message.success('Test run completed!');
+  };
+
+  public runTests = async (assignment: AssignmentType, sub: SubmissionType) => {
+    if (assignment.environment) {
+      this.setState((prevState, props) => ({ subsRunning: [...prevState.subsRunning, sub.id] }));
+      const result = await Environment.run(assignment.environment, {
+        submission: sub.id.toString(),
+        simulate: 'False',
+      });
+      awaitTestResult(result.task, this.callback.bind({}, sub));
+    }
   };
 
   public reUploadSubmission = (toRemove: SubmissionType) => {
@@ -292,7 +314,17 @@ class StudentDetail extends React.Component<IProps, IState> {
               <Icon type="file-add" /> Add / Update files
             </span>
           </Menu.Item>
-
+          {assignment.environment && (
+            <Menu.Item
+              key="3"
+              disabled={this.state.subsRunning.includes(submission.id)}
+              onClick={this.runTests.bind(this, assignment, submission)}
+            >
+              <span>
+                <Icon type={this.state.subsRunning.includes(submission.id) ? 'loading' : 'caret-right'} /> Run Tests
+              </span>
+            </Menu.Item>
+          )}
           <Menu.Divider />
           <Menu.Item key="4" style={{ color: 'red' }} onClick={this.removeSubmission.bind(this, submission)}>
             <Icon type="delete" />

@@ -438,8 +438,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       const size_bytes = new Blob([file.code]).size;
 
       const bounce =
-        !['.pdf', 'pdf', 'jpg', '.jpg', 'jpeg', '.jpeg', 'png', '.png', 'ipynb', '.ipynb'].includes(file.extension) &&
-        size_bytes > max_size_bytes;
+        !['.pdf', 'pdf', 'jpg', '.jpg', 'jpeg', '.jpeg', 'png', '.png', 'ipynb', '.ipynb'].includes(
+          file.extension.toLowerCase(),
+        ) && size_bytes > max_size_bytes;
       if (bounce) {
         return {
           ...file,
@@ -510,16 +511,24 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public async componentDidMount() {
     document.addEventListener('keydown', this.handleCursor);
+    const queryValues = queryString.parse(this.props.location.search);
 
     if (this.props.inDemoMode) {
       document.title = 'codePost | Code Console Demo';
 
-      const queryValues = queryString.parse(this.props.location.search);
+      /**********************************************************************************/
+      /* BEGIN: QUERY ARG PARSING
+      /**********************************************************************************/
+
       if (queryValues.sample && queryValues.sample === '1') {
         this.loadDemoData([], true);
       } else {
         this.loadDemoData([], false);
       }
+
+      /**********************************************************************************/
+      /* END: QUERY ARG PARSING
+      /**********************************************************************************/
 
       this.setState({ isLoading: false });
       return;
@@ -583,11 +592,18 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         files = CodeConsole.fileBouncer(files);
 
-        selectedFile = files.find((f: FileType) => {
-          return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
-        });
         if (selectedFile === undefined && files.length > 0) {
-          selectedFile = files[0];
+          if (typeof queryValues.comment === 'string') {
+            const matchingFile = files.find((el) =>
+              el.comments.some((c) => c === parseInt(queryValues.comment as string)),
+            );
+            selectedFile = matchingFile || files[0];
+          } else {
+            selectedFile =
+              files.find((f: FileType) => {
+                return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
+              }) || files[0];
+          }
         }
 
         // Read tests
@@ -673,12 +689,18 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         files = CodeConsole.fileBouncer(files);
 
-        selectedFile = files.find((f: FileType) => {
-          return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
-        });
-
         if (selectedFile === undefined && files.length > 0) {
-          selectedFile = files[0];
+          if (typeof queryValues.comment === 'string') {
+            const matchingFile = files.find((el) =>
+              el.comments.some((c) => c === parseInt(queryValues.comment as string)),
+            );
+            selectedFile = matchingFile || files[0];
+          } else {
+            selectedFile =
+              files.find((f: FileType) => {
+                return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
+              }) || files[0];
+          }
         }
 
         tests = await Promise.all(writableSubmission.tests.map((id) => SubmissionTest.read(id)));
@@ -1893,6 +1915,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={false}
               rubricCategories={this.state.rubricCategories}
+              scrollToCommentID={parseInt(queryString.parse(this.props.location.search).comment as string)}
             />
           );
 
@@ -2084,6 +2107,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               forcedRubricMode={this.state.assignment.forcedRubricMode}
               rubricCategories={this.state.rubricCategories}
               showCursor={this.state.showCursor}
+              scrollToCommentID={parseInt(queryString.parse(this.props.location.search).comment as string)}
             />
           );
 

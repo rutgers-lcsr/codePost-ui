@@ -21,7 +21,7 @@ function openSubmissionInSameTab(submissionID: number | string) {
 // Resize Image takes an image (in base64 string) and resizes it to a smaller image
 // This is to prevent slowness for our submission load and not to overload our db
 // It keeps the aspect ratio, and sets the max(width, height) = MAX_IMAGE_SIZE
-const MAX_IMAGE_SIZE = 500; // Max pixels for width or height
+const MAX_IMAGE_SIZE = 1500; // Max pixels for width or height
 const resizeImage = (imageStringInBase64: string) => {
   return new Promise(function(resolved, rejected) {
     var i = new Image();
