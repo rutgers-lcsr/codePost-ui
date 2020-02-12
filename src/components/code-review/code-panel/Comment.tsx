@@ -12,6 +12,7 @@ import React from 'react';
 import { Button, Icon, Input, message, Popconfirm, Popover, Tooltip } from 'antd';
 
 /* codePost imports */
+import { hostname } from '../../../serviceWorker';
 
 import CPButton from '../../core/CPButton';
 import CPFlex from '../../core/CPFlex';
@@ -105,6 +106,7 @@ interface ICommentProps {
   forcedRubricMode: boolean;
 
   cursored: boolean;
+  isSpotlit?: boolean;
 }
 
 interface ICommentState {
@@ -525,6 +527,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       saveButton: null,
       deleteButton: null,
       author: null,
+      share: null,
     };
 
     let onClick;
@@ -584,6 +587,35 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
+    // ------------------------------------- share ---------------------------------------- //
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+    const shareComment = (e: any) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const host = hostname();
+      const link = `${host}/code/${this.props.file.submission}/?comment=${this.props.comment.id}`;
+      const element = document.createElement('textarea');
+      element.value = link;
+      document.body.appendChild(element);
+      element.select();
+      document.execCommand('copy');
+      document.body.removeChild(element);
+      message.info('Link copied to clipboard!');
+    };
+
+    commentElements.share = (
+      <span className="comment-share">
+        <CPButton
+          type="secondary"
+          onClick={shareComment}
+          icon="link"
+          style={{ cursor: 'pointer', border: '0px', backgroundColor: 'transparent', marginLeft: '-9px' }}
+        />
+      </span>
+    );
+
+    //////////////////////////////////////////////////////////////////////////////////////////
     // -------------------- commentStatus ['edited', 'saved', 'error'] -------------------- //
     //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -592,7 +624,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         commentElements.status = (
           <span
             className="cp-label--small cp-label--italic"
-            style={{ color: this.context.consoleTheme.commentTitleText }}
+            style={{ color: this.context.consoleTheme.commentTitleText, marginLeft: '-9px' }}
           >
             {!this.state.text ? '' : 'Saving...'}
           </span>
@@ -856,7 +888,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     // ---------------------------------- Components -------------------------------------- //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    const titleLeft = [commentElements.line, commentElements.status];
+    let titleLeft = [commentElements.line, commentElements.share, commentElements.status];
+    // FIXME: Implement comment deep-linking and scrolling for block rendered files
+    if (['markdown', 'jupyter', 'pdf'].includes(File.codeType(this.props.file))) {
+      titleLeft = [commentElements.line, commentElements.status];
+    }
 
     const titleRight = [commentElements.points];
 
@@ -894,13 +930,14 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           <div className="ant-popover-inner" style={shadow}>
             <div
               style={{
-                backgroundColor: this.props.cursored
-                  ? 'lightblue'
-                  : this.props.comment.tags !== undefined && this.props.comment.tags.includes('late')
-                  ? '#fffbe6'
-                  : this.props.comment.color !== undefined && this.props.comment.color !== null
-                  ? this.props.comment.color
-                  : this.context.consoleTheme.commentBody,
+                backgroundColor:
+                  this.props.cursored || this.props.isSpotlit
+                    ? 'lightblue'
+                    : this.props.comment.tags !== undefined && this.props.comment.tags.includes('late')
+                    ? '#fffbe6'
+                    : this.props.comment.color !== undefined && this.props.comment.color !== null
+                    ? this.props.comment.color
+                    : this.context.consoleTheme.commentBody,
               }}
             >
               <div
