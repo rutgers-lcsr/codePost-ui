@@ -52,6 +52,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     isVisible: true,
     hideFrom: [],
     nudgeMode: false,
+    lateDeductions: [],
   };
 
   const demoCourse: CourseType = {
@@ -341,6 +342,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     isVisible: true,
     hideFrom: [],
     nudgeMode: false,
+    lateDeductions: [],
   };
 
   const demoCourse: CourseType = {

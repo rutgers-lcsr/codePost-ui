@@ -93,7 +93,9 @@ export { default as MoreOutline } from '@ant-design/icons/lib/outline/MoreOutlin
 export { default as FileAddOutline } from '@ant-design/icons/lib/outline/FileAddOutline';
 export { default as CompassOutline } from '@ant-design/icons/lib/outline/CompassOutline';
 export { default as ReloadOutline } from '@ant-design/icons/lib/outline/ReloadOutline';
+export { default as ContainerOutline } from '@ant-design/icons/lib/outline/ContainerOutline';
 export { default as FontColorsOutline } from '@ant-design/icons/lib/outline/FontColorsOutline';
+export { default as LinkOutline } from '@ant-design/icons/lib/outline/LinkOutline';
 
 // Fill Icons
 export { default as PushpinFill } from '@ant-design/icons/lib/fill/PushpinFill';

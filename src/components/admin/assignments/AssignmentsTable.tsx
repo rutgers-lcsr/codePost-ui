@@ -832,7 +832,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
             <Breadcrumb.Item>Overview</Breadcrumb.Item>
           </Breadcrumb>
         }
-        titleInfo={tooltips.admin.graderRoster.title}
+        titleInfo={'Use this space to add assignments to your course, and edit existing ones.'}
         drawer={drawerComponent}
         hideSearch={true}
         detail={detailComponent}
@@ -841,6 +841,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           index,
           moveRow: moveRow,
         })}
+        pagination={this.props.assignments.length < 10 ? false : undefined}
       />
     );
   }
