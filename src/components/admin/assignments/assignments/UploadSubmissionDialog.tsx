@@ -219,7 +219,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   public loadTestResults = async (sub?: StudentSubmissionType | SubmissionType) => {
     if (sub) {
       if (sub && sub.tests) {
-        const tests = await Submission.readTests(sub.id);
+        const tests = await Submission.readTests(sub.id, { isStudentMode: 'True' });
         this.setState({ submissionTests: SubmissionTest.getLatest(tests) });
       }
     }
@@ -772,14 +772,15 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         break;
     }
 
-    // We show tests tab if there are test categories and test cases, or if there is a log to show
+    // We show tests tab if:
+    //   Case A: There are test categories, and the student is not seeing the assignment for the first time in nudge mode
+    //   Case B: There is a log to show. For example, assignments that only use file mode
+    //   Case C: Tests are loading. This is for assignments that use file mode, and we want to show the students that tests are running
     // Also show it if loading, if the tests are running
+
     const showTestsTab =
       (this.state.testCategories.length > 0 &&
-        Object.keys(this.state.testCases).reduce(
-          (acc, val) => acc + this.state.testCases[parseInt(val, 10)].length,
-          0,
-        ) > 0) ||
+        (!this.state.selectedAssignment!.nudgeMode || this.state.submissionTests.length > 0)) ||
       this.state.testsLog ||
       this.state.loadingTests;
 
@@ -813,7 +814,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 <div style={{ minHeight: 400, height: 'calc(100vh - 400px)' }}>
                   <TestsList
                     tests={this.state.submissionTests}
-                    hideNotRun={this.state.selectedAssignment!.nudgeMode}
+                    hideNotRun={false}
                     redactNotShown={this.state.selectedAssignment!.nudgeMode}
                     cases={this.state.testCases}
                     categories={this.state.testCategories}
