@@ -773,6 +773,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
 
     // We show tests tab if there are test categories and test cases, or if there is a log to show
+    // Also show it if loading, if the tests are running
     const showTestsTab =
       (this.state.testCategories.length > 0 &&
         Object.keys(this.state.testCases).reduce(
