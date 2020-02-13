@@ -60,6 +60,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     rubricComment: null,
     author: props.user,
     feedback: 0,
+    color: '',
   };
 
   const addNewComment = async (startLine: number, endLine: number, startChar: number, endChar: number) => {
@@ -75,6 +76,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
       rubricComment: null,
       author: props.user,
       feedback: 0,
+      color: '',
     };
 
     props.addComment(newComment, props.file);
@@ -250,7 +252,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
       startChar = temp1 < temp2 ? temp1 : temp2;
       endChar = temp1 < temp2 ? temp2 : temp1;
     }
-    
+
     await addNewComment(startLine, endLine, startChar, endChar);
   };
 

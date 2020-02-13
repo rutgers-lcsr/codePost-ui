@@ -84,7 +84,6 @@ import { loadDemoGrader, loadDemoStudent } from './demo';
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 
-
 import { helpQueryMap } from './HelpQueries';
 
 import TestsMenu from './menu/TestsMenu';
@@ -1055,6 +1054,7 @@ Days late (after credit):  ${daysLateAfterCredit}
       author: this.props.user.email,
       feedback: 0,
       tags: ['late'],
+      color: '',
     };
 
     const submissionPayload = {
@@ -2360,12 +2360,12 @@ Days late (after credit):  ${daysLateAfterCredit}
       {
         value: 'Open rubric editor',
         label: 'Open rubric editor',
-        link: `/admin/${this.state.course!.name}/${this.state.course!.period}/assignments/${
+        link: `/admin/${this.state.course!.name}/${this.state.course!.period}/assignments/rubrics/${
           this.state.assignment!.name
-        }/rubric`,
+        }`,
         kind: 'link',
       },
-      { value: 'view stats', label: 'view stats', kind: 'dashboard', populator: viewStats },
+      { value: 'View stats', label: 'View stats', kind: 'dashboard', populator: viewStats },
       ...helpQueryMap,
     ];
 
@@ -2375,6 +2375,7 @@ Days late (after credit):  ${daysLateAfterCredit}
     (window as any).setFoobarParams('grader', this.state.graders);
     (window as any).setFoobarParams('student', this.state.students);
     (window as any).setFoobarParams('file', this.state.files.map((file) => file.name));
+    (window as any).foobarIsActive = true; // lift off
 
     /*************************************************************************************/
 

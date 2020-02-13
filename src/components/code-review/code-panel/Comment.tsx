@@ -39,6 +39,9 @@ import { wait } from '../../../infrastructure/animation';
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
 import { findBlockElement } from './BlockUtils.tsx';
+
+import CommentToRubric from './CommentToRubric';
+
 /**********************************************************************************************************************/
 
 export type UICommentType = 'readonly' | 'active' | 'inactive';
@@ -115,6 +118,7 @@ interface ICommentState {
   points: number;
   showDeletePopover: boolean;
   hasHover: boolean;
+  makeRubric: boolean;
 }
 
 class Comment extends React.Component<ICommentProps, ICommentState> {
@@ -167,23 +171,34 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
     if (this.props.commentType !== prevProps.commentType) {
       this.props.setCommentPlacements();
+    }
+
+    /**********************************************************************************/
+    /* BEGIN: FOOBAR CONFIG
+    /**********************************************************************************/
+    if (this.props.commentType !== prevProps.commentType) {
+      const makeColor = (color: string) => {
+        let hexVal = '#fff';
+        switch (color) {
+          case 'red':
+            hexVal = '#D08B79';
+            break;
+          case 'green':
+            hexVal = '#A4D079';
+            break;
+          case 'purple':
+            hexVal = '#ABAEEF';
+            break;
+        }
+        this.save(hexVal);
+      };
+
+      const makeRubricComment = () => {
+        this.setState({ makeRubric: true });
+      };
+
       if (this.props.commentType === 'active') {
         (window as any).setFoobarParams('color', ['red', 'green', 'purple']);
-        const makeColor = (color: string) => {
-          let hexVal = '#fff';
-          switch (color) {
-            case 'red':
-              hexVal = '#D08B79';
-              break;
-            case 'green':
-              hexVal = '#A4D079';
-              break;
-            case 'purple':
-              hexVal = '#ABAEEF';
-              break;
-          }
-          this.save(hexVal);
-        };
         (window as any).addToFoobar({
           label: 'Set comment color to {{color}}',
           value: 'Set comment color to ',
@@ -193,10 +208,20 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
             callback: makeColor,
           },
         });
+        (window as any).addToFoobar({
+          label: 'Add comment to rubric',
+          value: 'Add comment to rubric',
+          kind: 'action',
+          callback: makeRubricComment,
+        });
       } else {
         (window as any).removeFromFoobar('Set comment color to {{color}}');
+        (window as any).removeFromFoobar('Add comment to rubric');
       }
     }
+    /**********************************************************************************/
+    /* END: FOOBAR CONFIG
+    /**********************************************************************************/
 
     // If a comment is finalized, then reset the state
     if (['active', 'inactive'].includes(prevProps.commentType) && this.props.commentType === 'readonly') {
@@ -247,7 +272,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     const points: number = UiComment.points(this.props.comment, this.props.rubricComment);
     const status: CommentStatus =
       text === '' && points === 0 && this.props.rubricComment === undefined ? 'edited' : 'idle';
-    return { text, points, status, showDeletePopover: false, hasHover: false };
+    return { text, points, status, showDeletePopover: false, hasHover: false, makeRubric: false };
   };
 
   /***********************************************************************************************/
@@ -256,17 +281,15 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
   public onMouseEnter = () => {
     this.highlightRelatedComment();
-    this.handleHoverEvent();
   };
 
   public onMouseLeave = () => {
     this.unhighlightRelatedComment();
-    this.handleHoverEvent();
   };
 
   /***********************************************************************************************/
 
-  public save = async () => {
+  public save = async (hexVal?: string) => {
     this.unhighlightRelatedComment();
 
     const comment = {
@@ -274,7 +297,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       text: this.state.text,
       pointDelta: this.props.rubricComment ? null : this.state.points,
       rubricComment: this.props.rubricComment ? this.props.rubricComment.id : null,
-      color: colorHex ? colorHex : this.props.comment.color,
+      color: hexVal ? hexVal : this.props.comment.color,
     };
 
     try {
@@ -992,6 +1015,13 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           </div>
         </div>
         {feedback}
+        <CommentToRubric
+          initialText={this.state.text}
+          initialPointDelta={this.state.points}
+          visible={this.state.makeRubric}
+          rubricCategories={this.props.rubricCategories}
+          onCancel={() => this.setState({ makeRubric: false })}
+        />
       </div>
     );
   }

@@ -40,6 +40,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
         rubricComment: null,
         author: props.user,
         feedback: 0,
+        color: '',
       };
 
       props.addComment(newComment, props.file);
