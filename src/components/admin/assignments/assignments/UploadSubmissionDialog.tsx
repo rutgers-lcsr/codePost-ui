@@ -287,7 +287,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public cancel = () => {
-    this.setState({ status: STATUS.NONE, files: [], fileList: [], rejectedFiles: [] });
+    this.setState({ status: STATUS.NONE, files: [], fileList: [], rejectedFiles: [], activeTab: '1' });
     this.props.onCancel();
   };
 
@@ -321,11 +321,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     });
 
     this.setState({ files, fileList });
-  };
-
-  public onCancel = () => {
-    this.setState({ files: [], fileList: [], rejectedFiles: [], status: STATUS.NONE });
-    this.props.onCancel();
   };
 
   /********************************************************************************************************/
@@ -777,13 +772,21 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         break;
     }
 
-    // We don't want to show
+    // We show tests tab if there are test categories and test cases, or if there is a log to show
+    const showTestsTab =
+      (this.state.testCategories.length > 0 &&
+        Object.keys(this.state.testCases).reduce(
+          (acc, val) => acc + this.state.testCases[parseInt(val, 10)].length,
+          0,
+        ) > 0) ||
+      this.state.testsLog ||
+      this.state.loadingTests;
 
     return (
       <Modal
         visible={true}
         title={this.props.title || 'Upload Submissions'}
-        onCancel={this.onCancel}
+        onCancel={this.cancel}
         width={1100}
         footer={[goBackButton, goForwardButton]}
       >
@@ -804,7 +807,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               </Tabs.TabPane>
             ) : null}
 
-            {this.state.testCategories.length > 0 ? (
+            {showTestsTab && (
               <Tabs.TabPane tab="Tests" key="3">
                 <div style={{ minHeight: 400, height: 'calc(100vh - 400px)' }}>
                   <TestsList
@@ -836,7 +839,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                   />
                 </div>
               </Tabs.TabPane>
-            ) : null}
+            )}
 
             {this.state.submission ? (
               <Tabs.TabPane tab="Last submission" key="4">
