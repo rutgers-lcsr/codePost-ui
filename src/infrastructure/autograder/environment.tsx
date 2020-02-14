@@ -31,6 +31,7 @@ const EnvironmentV = t.intersection(
       maxStudentTestRuns: t.union([t.null, t.number]),
       exposeDumpLogs: t.boolean,
       maxExposedFailedTests: t.union([t.null, t.number]),
+      dockerDependencies: t.string,
     }),
     t.partial({}),
   ],
@@ -43,7 +44,6 @@ const EnvironmentVPost = t.intersection(
     t.type({
       language: t.string,
       assignment: t.number,
-      dependencies: t.string,
       compileText: t.string,
       dumpMode: t.boolean,
       testParsing: t.boolean,
@@ -52,6 +52,7 @@ const EnvironmentVPost = t.intersection(
       maxStudentTestRuns: t.union([t.null, t.number]),
       exposeDumpLogs: t.boolean,
       maxExposedFailedTests: t.union([t.null, t.number]),
+      dockerDependencies: t.string,
     }),
     t.partial({}),
   ],
@@ -63,7 +64,6 @@ const EnvironmentVPatch = t.intersection(
     GenericObject,
     t.partial({
       language: t.string,
-      dependencies: t.string,
       compileText: t.string,
       dumpMode: t.boolean,
       testParsing: t.boolean,
@@ -71,6 +71,7 @@ const EnvironmentVPatch = t.intersection(
       allowNetworkAccess: t.boolean,
       maxStudentTestRuns: t.union([t.null, t.number]),
       maxExposedFailedTests: t.union([t.null, t.number]),
+      dockerDependencies: t.string,
     }),
   ],
   'EnvironmentPatch',
@@ -79,7 +80,7 @@ const EnvironmentVPatch = t.intersection(
 const BuildData = t.intersection([
   GenericObject,
   t.type({
-    dependencies: t.array(t.string),
+    dockerDependencies: t.string,
     language: t.string,
     buildType: t.string,
   }),
