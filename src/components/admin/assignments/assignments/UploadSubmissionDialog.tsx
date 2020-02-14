@@ -218,10 +218,8 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
   public loadTestResults = async (sub?: StudentSubmissionType | SubmissionType) => {
     if (sub) {
-      if (sub && sub.tests) {
-        const tests = await Submission.readTests(sub.id, { isStudentMode: 'True' });
-        this.setState({ submissionTests: SubmissionTest.getLatest(tests) });
-      }
+      const tests = await Submission.readTests(sub.id, { isStudentMode: 'True' });
+      this.setState({ submissionTests: SubmissionTest.getLatest(tests) });
     }
   };
 
@@ -834,6 +832,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                             }
                           />
                         )}
+                        <br />
                         {this.state.runMessage && <Alert type="warning" message={this.state.runMessage} />}
                       </div>
                     }
