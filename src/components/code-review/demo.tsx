@@ -48,6 +48,10 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     allowLateUploads: false,
     maxStudentTestRuns: null,
     exposeDumpLogs: false,
+    explanation: '',
+    isVisible: true,
+    hideFrom: [],
+    nudgeMode: false,
     lateDeductions: [],
   };
 
@@ -334,6 +338,10 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     allowLateUploads: false,
     maxStudentTestRuns: null,
     exposeDumpLogs: false,
+    explanation: '',
+    isVisible: true,
+    hideFrom: [],
+    nudgeMode: false,
     lateDeductions: [],
   };
 

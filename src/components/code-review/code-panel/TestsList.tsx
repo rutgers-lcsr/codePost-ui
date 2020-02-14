@@ -25,12 +25,12 @@ interface IProps {
   cases: TestCasesByCategory | StudentTestCasesByCategory;
   categories: TestCategoryType[];
   isLoading?: boolean;
-  hideNotRun?: boolean;
+  hideNotRun?: boolean; // Don't show the tests that haven't been run
   hideSummary?: boolean;
   showLogs?: boolean;
   logs?: string;
   message?: React.ReactNode;
-  redactNotShown?: boolean;
+  redactNotShown?: boolean; // Mark the tests that haven't been run as "failed" and hide the info.
 }
 
 const TestsList = (props: IProps) => {
@@ -132,14 +132,13 @@ const TestsList = (props: IProps) => {
                 <div className="display-flex justify-content-center">
                   <Statistic style={{ textAlign: 'center', margin: '0px 30px' }} title="Passed" value={`${passed}`} />
                   <Statistic style={{ textAlign: 'center', margin: '0px 30px' }} title="Failed" value={`${failed}`} />
-                  {!props.hideNotRun ||
-                    (props.redactNotShown && (
-                      <Statistic
-                        style={{ textAlign: 'center', margin: '0px 30px' }}
-                        title="Not Run"
-                        value={`${total - passed - failed}`}
-                      />
-                    ))}
+                  {!props.hideNotRun && !props.redactNotShown && (
+                    <Statistic
+                      style={{ textAlign: 'center', margin: '0px 30px' }}
+                      title="Not Run"
+                      value={`${total - passed - failed}`}
+                    />
+                  )}
                   <Statistic
                     style={{ textAlign: 'center', margin: '0px 30px' }}
                     title="Summary"
