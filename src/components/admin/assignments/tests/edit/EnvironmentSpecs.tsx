@@ -241,9 +241,6 @@ export const EnvironmentSpecs = (props: IProps) => {
   const selectDependencies = (
     // Disable selector if environment has a custom dockerfile defined
     <div style={{ marginLeft: 10, display: 'flex', flexDirection: 'column' }}>
-      <div>
-        <Tag style={{ lineHeight: '32px', height: 32, marginRight: 5 }}>{`Example: ${installText} <PackageName>`}</Tag>
-      </div>
       <Input.TextArea
         autosize={{ minRows: 2, maxRows: 8 }}
         disabled={language === null || (props.env && props.env.dockerfile.length > 0)}
@@ -342,7 +339,24 @@ export const EnvironmentSpecs = (props: IProps) => {
       <span style={{ lineHeight: '32px' }}>Build Type:</span> {buildOptions} {customBuildSelect}
       <br />
       <br />
-      <div className="display-flex align-items-center">Install packages: {selectDependencies}</div>
+      <div className="display-flex">
+        <div className="display-flex flex-direction-column">
+          <span>
+            Install packages:{' '}
+            <Tooltip title="Add line-delimited install commands">
+              <Icon type="info" />
+            </Tooltip>
+          </span>{' '}
+          <div>
+            <div style={{ fontStyle: 'italic', color: 'grey', marginRight: 10 }}>
+              <div>Example:</div>
+              <div>{`${installText} Package1`}</div>
+              <div>{`${installText} Package2`}</div>
+            </div>
+          </div>
+        </div>{' '}
+        {selectDependencies}
+      </div>
       {customDockerFile}
       {props.env ? showAfterCreation : null}
     </div>
