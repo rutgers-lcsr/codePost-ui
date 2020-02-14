@@ -756,8 +756,16 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 {unzippedFiles.length > 0 ? (
                   <span>
                     <br />
-                    <b>The following files will be unzipped on upload:</b>{' '}
-                    {unzippedFiles.map((el) => `${el.path}/${el.name}`).join(', ')}
+                    <b>The following files will be unzipped and uploaded with the submission:</b>{' '}
+                    <ul>
+                      {unzippedFiles.map((el) => {
+                        return (
+                          <li>
+                            {el.path}/{el.name}
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </span>
                 ) : (
                   <div />
