@@ -229,13 +229,13 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
 
   // ************************** Environment function **************************
 
-  const buildEnv = async (language: string, dependencies: string[], buildType: string) => {
+  const buildEnv = async (language: string, dependencies: string, buildType: string) => {
     let thisEnvironment = env;
     if (!thisEnvironment) {
       const payload = {
         id: -1,
         language,
-        dependencies: JSON.stringify(dependencies),
+        dockerRunInstructions: dependencies ? dependencies.split('\n') : [],
         assignment: props.currentAssignment.id,
         dumpMode: false,
         testParsing: true,
@@ -252,7 +252,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     }
     const buildResult = await Environment.build({
       id: thisEnvironment.id,
-      dependencies: dependencies,
+      dockerRunInstructions: dependencies ? dependencies.split('\n') : [],
       language: language,
       buildType: buildType,
     });
