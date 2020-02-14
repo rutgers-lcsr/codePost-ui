@@ -238,16 +238,21 @@ export const EnvironmentSpecs = (props: IProps) => {
   );
 
   //************ 1C. ENVIRONMENT -  SELECT DEPENDENCIES
+  const placeholder = `// new line separated
+${installText} Package1
+${installText} Package2
+...`;
+
   const selectDependencies = (
     // Disable selector if environment has a custom dockerfile defined
-    <div style={{ marginLeft: 10, display: 'flex', flexDirection: 'column' }}>
-      <Input.TextArea
-        autosize={{ minRows: 2, maxRows: 8 }}
-        disabled={language === null || (props.env && props.env.dockerfile.length > 0)}
-        value={dependencies}
-        onChange={onDependenciesChange}
-      />
-    </div>
+    <Input.TextArea
+      autosize={{ minRows: 4, maxRows: 8 }}
+      disabled={language === null || (props.env && props.env.dockerfile.length > 0)}
+      value={dependencies}
+      onChange={onDependenciesChange}
+      placeholder={placeholder}
+      style={{ marginLeft: '15px', width: '50%' }}
+    />
   );
 
   //************ 1D. ENVIRONMENT - SHOW CUSTOM DOCKERFILE IF IT EXISTS
@@ -347,13 +352,6 @@ export const EnvironmentSpecs = (props: IProps) => {
               <Icon type="info" />
             </Tooltip>
           </span>{' '}
-          <div>
-            <div style={{ fontStyle: 'italic', color: 'grey', marginRight: 10 }}>
-              <div>Example:</div>
-              <div>{`${installText} Package1`}</div>
-              <div>{`${installText} Package2`}</div>
-            </div>
-          </div>
         </div>{' '}
         {selectDependencies}
       </div>
