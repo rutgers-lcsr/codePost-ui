@@ -66,7 +66,7 @@ export const EnvironmentSpecs = (props: IProps) => {
   /******************************* State Variables ****************************/
   const [language, setLanguage] = useState<string | null>(props.env ? props.env.language : null);
   const [buildType, setBuildType] = useState<string>(props.env ? props.env.buildType : 'default');
-  const [dependencies, setDependencies] = useState<string>(props.env ? props.env.dockerDependencies : '');
+  const [dependencies, setDependencies] = useState<string>(props.env ? props.env.dockerRunInstructions.join('\n') : '');
   const [buildIsLoading, setBuildIsLoading] = useState(false);
 
   /******************************* API / State Change Functions ****************************/
@@ -74,7 +74,7 @@ export const EnvironmentSpecs = (props: IProps) => {
   useEffect(() => {
     if (props.env) {
       setLanguage(props.env.language);
-      setDependencies(props.env.dockerDependencies);
+      setDependencies(props.env.dockerRunInstructions.join('\n'));
       setBuildType(props.env.buildType);
     }
   }, [props.env]);
