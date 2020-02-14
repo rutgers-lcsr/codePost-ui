@@ -24,7 +24,7 @@ import CPButton from '../../../../components/core/CPButton';
 
 /* file types allowed for roster upload */
 enum FILE_UPLOAD_TYPE {
-  csv,
+  txt,
 }
 
 interface IProps {
@@ -95,7 +95,7 @@ class DownloadRoster extends React.Component<IProps, IState> {
     super(props);
     this.state = {
       dialogVisible: false,
-      fileType: FILE_UPLOAD_TYPE.csv, // set json as default dowbnload type
+      fileType: FILE_UPLOAD_TYPE.txt, // set json as default dowbnload type
       includeSections: false,
     };
   }
@@ -120,9 +120,9 @@ class DownloadRoster extends React.Component<IProps, IState> {
     const a = document.createElement('a');
     let extension;
     switch (this.state.fileType) {
-      case FILE_UPLOAD_TYPE.csv:
-        a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(dataToDownload.join('\n'))}`;
-        extension = 'csv';
+      case FILE_UPLOAD_TYPE.txt:
+        a.href = `data:text/txt;charset=utf-8,${encodeURIComponent(dataToDownload.join('\n'))}`;
+        extension = 'txt';
         break;
     }
 
@@ -230,7 +230,7 @@ class DownloadRoster extends React.Component<IProps, IState> {
           ]}
         >
           Click <b>Download</b> to save a copy of your <b>{this.props.downloadType.toLowerCase()}</b> roster to a{' '}
-          <Typography.Text code>.csv</Typography.Text>
+          <Typography.Text code>.txt</Typography.Text>
           file.
           <br />
           <br />

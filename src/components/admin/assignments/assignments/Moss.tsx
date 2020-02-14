@@ -38,7 +38,7 @@ const { Option } = Select;
 const { Paragraph } = Typography;
 
 const ButtonGroup = Button.Group;
-const { Search } = Input;
+const { Search, TextArea } = Input;
 
 /**********************************************************************************************************************/
 
@@ -99,6 +99,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
   const [url, setUrl] = React.useState(null);
   const [language, setLanguage] = React.useState('');
   const [mossID, setMossID] = React.useState('');
+  const [excludedFiles, setExcludedFiles] = React.useState('');
   const [hanging, setHanging] = React.useState(false);
 
   const estimate = props.submissions.length * props.submissions.length * 80;
@@ -226,6 +227,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
         moss_id: mossID,
         email: props.user.email,
         test_mode: testMode,
+        excluded_files: excludedFiles,
       };
 
       const res: any = await invokeAWSLambda({
@@ -301,6 +303,10 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
     setLoading(false);
   };
 
+  const onChangeExcludedFiles = (e: any) => {
+    setExcludedFiles(e.target.value);
+  };
+
   const help = (
     <CPTooltip
       infoIcon={true}
@@ -344,6 +350,8 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
       )}/assignments/plagiarism/${encodeForLink(assignment)}`,
     );
   };
+
+  const excludedFilesPlaceholder = 'Excluded file names (line separated)';
 
   // Should be refactored to use Form once this feature is built out
   const action = submit ? (
@@ -389,6 +397,13 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
             }
           />
         </div>
+        <TextArea
+          placeholder={excludedFilesPlaceholder}
+          style={{ width: '350px' }}
+          autoSize
+          value={excludedFiles}
+          onChange={onChangeExcludedFiles}
+        />
         <Divider />
         <Statistic
           title="# Submissions"

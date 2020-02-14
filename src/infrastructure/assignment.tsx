@@ -12,7 +12,13 @@ import {
 
 import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
-import { AnonymousSubmissionV, StudentSubmissionV, SubmissionV } from './submission';
+import {
+  AnonymousSubmissionV,
+  StudentSubmissionV,
+  SubmissionV,
+  SubmissionInfoV,
+  AnonymousSubmissionInfoV,
+} from './submission';
 import { SubmissionHistoryV } from './submissionHistory';
 import { StudentTestCaseV } from './testCase';
 import { TestCategoryV } from './testCategory';
@@ -36,6 +42,7 @@ const AssignmentV = t.intersection(
       anonymousGrading: t.boolean,
       collaborativeRubricMode: t.boolean,
       allowRegradeRequests: t.boolean,
+      regradeInstructions: t.string,
       regradeDeadline: t.union([t.null, t.string]),
       hideGradersFromStudents: t.boolean,
       forcedRubricMode: t.boolean,
@@ -47,6 +54,19 @@ const AssignmentV = t.intersection(
       environment: t.union([t.number, t.null]),
       showFrequentlyUsedRubricComments: t.boolean,
       allowLateUploads: t.boolean,
+      maxStudentTestRuns: t.union([t.null, t.number]),
+      exposeDumpLogs: t.union([t.null, t.boolean]),
+      lateDeductions: t.array(t.number),
+    }),
+    t.partial({
+      submissions_count: t.number,
+      submissions_finalized_count: t.number,
+      submissions_inprogress_count: t.number,
+      submissions_unclaimed_count: t.number,
+      submissions_missing_count: t.number,
+      stats_max: t.number,
+      stats_min: t.number,
+      stats_mean: t.number,
     }),
   ],
   'Assignment',
@@ -62,6 +82,10 @@ const AssignmentVStudent = t.intersection(
       course: t.number,
       allowLateUploads: t.boolean,
       fileTemplates: t.array(t.number),
+      maxStudentTestRuns: t.union([t.null, t.number]),
+      sortKey: t.number,
+      environment: t.union([t.number, t.null]),
+      lateDeductions: t.array(t.number),
     }),
     t.partial({
       hideGrades: t.boolean,
@@ -69,14 +93,15 @@ const AssignmentVStudent = t.intersection(
       additiveGrading: t.boolean,
       uploadDueDate: t.union([t.string, t.null]),
       liveFeedbackMode: t.boolean,
-      sortKey: t.number,
       anonymousGrading: t.boolean,
       allowRegradeRequests: t.boolean,
+      regradeInstructions: t.string,
       regradeDeadline: t.union([t.null, t.string]),
       hideGradersFromStudents: t.boolean,
       mean: t.union([t.number, t.null, t.undefined]),
       median: t.union([t.number, t.null, t.undefined]),
       points: t.number,
+      exposeDumpLogs: t.union([t.null, t.boolean]),
     }),
   ],
   'Assignment',
@@ -115,6 +140,7 @@ const AssignmentVPatch = t.intersection(
       hideGradersFromStudents: t.boolean,
       commentFeedback: t.boolean,
       allowRegradeRequests: t.boolean,
+      regradeInstructions: t.string,
       regradeDeadline: t.union([t.null, t.string]),
       allowStudentUpload: t.boolean,
       uploadDueDate: t.union([t.string, t.null]),
@@ -126,12 +152,14 @@ const AssignmentVPatch = t.intersection(
       sortKey: t.number,
       allowLateUploads: t.boolean,
       showFrequentlyUsedRubricComments: t.boolean,
+      lateDeductions: t.array(t.number),
     }),
   ],
   'AssignmentPatch',
 );
 
 export type AssignmentType = t.TypeOf<typeof AssignmentV>;
+export type AssignmentStudentType = t.TypeOf<typeof AssignmentVStudent>;
 export type AssignmentPatchType = t.TypeOf<typeof AssignmentVPatch>;
 
 const RubricV = t.intersection(
@@ -167,9 +195,9 @@ export class Assignment {
   public static delete = deleteObject(AssignmentV, 'assignments');
 
   public static readRubric = readObjectDetail(RubricV, 'assignments', 'rubric');
-  public static readSubmissions = readObjectDetail(t.array(SubmissionV), 'assignments', 'submissions');
+  public static readSubmissions = readObjectDetail(t.array(SubmissionInfoV), 'assignments', 'submissions');
   public static readSubmissionsAnonymous = readObjectDetail(
-    t.array(AnonymousSubmissionV),
+    t.array(AnonymousSubmissionInfoV),
     'assignments',
     'submissions',
   );
@@ -201,6 +229,20 @@ const StudentUploadData = t.intersection([
   }),
 ]);
 
+// Type for getting and patching student upload
+const StudentUploadInformation = t.intersection([
+  t.type({
+    daysLate: t.number,
+    pointsOff: t.number,
+  }),
+  t.partial({
+    lateDayCreditsAvailable: t.number,
+    lateDayCreditsToUse: t.number,
+    adjustedDaysLate: t.number,
+  }),
+]);
+export type StudentUploadInformationType = t.TypeOf<typeof StudentUploadInformation>;
+
 // tslint:disable
 export class AssignmentStudent {
   public static read = readObject(AssignmentVStudent, 'assignments');
@@ -218,12 +260,19 @@ export class AssignmentStudent {
     'studentUpload',
   );
   public static readStudentUpload = readObjectDetail(StudentUploadData, 'assignments', 'studentUpload');
-  public static readStudentTests = readObjectDetail(TestsV, 'assignments', 'tests');
+  public static readStudentTests = readObjectDetail(TestsV, 'assignments', 'studentTests');
+
+  public static beforeStudentUpload = readObjectDetail(StudentUploadInformation, 'assignments', 'beforeStudentUpload');
 }
 
-export const sortAssignments = (assignments: AssignmentType[]): AssignmentType[] => {
+interface sortableObject {
+  id: number;
+  sortKey: number;
+}
+
+export function sortAssignments<T extends sortableObject>(objs: T[]): T[] {
   // First sort by Assignment 'sortKey', then by ID
-  const compareAssignments = (a: AssignmentType, b: AssignmentType) => {
+  const compareObjs = (a: T, b: T) => {
     if (a.sortKey === b.sortKey) {
       return a.id - b.id; // lower ids first
     } else {
@@ -231,7 +280,7 @@ export const sortAssignments = (assignments: AssignmentType[]): AssignmentType[]
     }
   };
 
-  return assignments.sort(compareAssignments);
-};
+  return objs.sort(compareObjs);
+}
 
 // export { AssignmentType, AssignmentPatchType, AssignmentStudent, Assignment, sortAssignments, RubricType };

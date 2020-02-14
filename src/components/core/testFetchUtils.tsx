@@ -1,6 +1,8 @@
 /* codepost object imports */
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { TestCase, TestCaseType, StudentTestCaseType } from '../../infrastructure/testCase';
+import { Submission } from '../../infrastructure/submission';
+
 import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
 import { TestCategory, TestCategoryType } from '../../infrastructure/testCategory';
 import { AnonymousSubmissionType } from '../../infrastructure/submission';
@@ -58,8 +60,14 @@ export const fetchSolutionFiles = async (env: EnvironmentType) => {
 };
 
 export const fetchEnvironment = async (assignment: AssignmentType) => {
-  if (assignment.environment) {
-    return await Environment.read(assignment.environment);
+  // If assignment has an environment, fetch it
+  // We don't allow users to delete environments in the UI, so once an assignment has
+  // an environment, it won't change
+  // If the environment was recently created, we want to make sure the assignment id
+  // isn't out of date.
+  const latestAssignment = assignment.environment ? assignment : await Assignment.read(assignment.id);
+  if (latestAssignment.environment) {
+    return await Environment.read(latestAssignment.environment);
   }
 };
 
@@ -105,13 +113,13 @@ export const fetchTestCasesByCategory = async (categories: TestCategoryType[]) =
 // For a list of submissions, create a {submissionID: SubmissionTest[]} object
 export const fetchTestsBySubmission = async (submissions: AnonymousSubmissionType[]) => {
   const toRet: TestsBySubmission = {};
-  const submissionPromises = submissions.map(async (submission) => {
-    const testPromises = submission.tests.map((id) => {
-      return SubmissionTest.read(id);
-    });
-    const tests = await Promise.all(testPromises);
-    toRet[submission.id] = tests;
-  });
+  const submissionPromises =
+    submissions !== undefined
+      ? submissions.map(async (submission) => {
+          const tests = await Submission.readTests(submission.id);
+          toRet[submission.id] = tests;
+        })
+      : [];
   await Promise.all(submissionPromises);
   return toRet;
 };

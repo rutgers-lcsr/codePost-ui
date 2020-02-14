@@ -6,34 +6,94 @@ const locale: { [language: string]: { [attr: string]: any } } = {
   java: {
     base: false,
     installCmd: 'apk add',
-    environment: 'Run on a Linux server in a container built from openjdk:8-jdk-alpine base image.',
+    environment: (
+      <span>
+        Run on a Linux server in a container built from{' '}
+        <a href="https://hub.docker.com/_/openjdk">openjdk:8-jdk-alpine</a> base image.
+      </span>
+    ),
+    pseudoterminal: (
+      <span>
+        [Running on Linux | <a href="https://hub.docker.com/_/openjdk">openjdk:8-jdk-alpine</a>]
+      </span>
+    ),
   },
   'python-3.7': {
     base: false,
     installCmd: 'pip install',
-    environment: 'Run on a Linux server in a container built from python:3.7-alpine base image.',
+    environment: (
+      <span>
+        Run on a Linux server in a container built from{' '}
+        <a href="https://hub.docker.com/_/python">python:3.7-slim-buster</a> base image.
+      </span>
+    ),
+    pseudoterminal: (
+      <span>
+        [Running on Linux | <a href="https://hub.docker.com/_/python">python:3.7-slim-buster</a>]
+      </span>
+    ),
   },
   'python-2.7': {
     base: false,
     installCmd: 'pip install',
-    environment: 'Run on a Linux server in a container built from python:2.7-alpine base image.',
+    environment: (
+      <span>
+        Run on a Linux server in a container built from{' '}
+        <a href="https://hub.docker.com/_/python">python:2.7-slim-buster</a> base image.
+      </span>
+    ),
+    pseudoterminal: (
+      <span>
+        [Running on Linux | <a href="https://hub.docker.com/_/python">python:2.7-slim-buster</a>]
+      </span>
+    ),
   },
   'c/c++': {
     base: false,
     installCmd: 'apk add',
-    environment: 'Run on a Linux server in a container built from frolvlad/alpine-gxx base image.',
+    environment: (
+      <span>
+        Run on a Linux server in a container built from{' '}
+        <a href="https://hub.docker.com/r/frolvlad/alpine-gxx/">frolvlad/alpine-gxx</a> base image.
+      </span>
+    ),
+    pseudoterminal: (
+      <span>
+        [Running on Linux | <a href="https://hub.docker.com/r/frolvlad/alpine-gxx/">frolvlad/alpine-gxx</a>]
+      </span>
+    ),
   },
   ubuntu: {
     base: true,
     name: 'Custom (ubuntu)',
     installCmd: 'apt-get -y install',
-    environment: 'Run on a Linux server in a container built from ubuntu:18.04 base image.',
+    environment: (
+      <span>
+        Run on a Linux server in a container built from <a href="https://hub.docker.com/_/ubuntu/">ubuntu:18.04</a> base
+        image.
+      </span>
+    ),
+    pseudoterminal: (
+      <span>
+        [Running on Linux | <a href="https://hub.docker.com/_/ubuntu/">ubuntu:18.04</a>]
+      </span>
+    ),
   },
   alpine: {
     base: true,
     name: 'Custom (alpine-linux)',
     installCmd: 'apk add',
-    environment: 'Run on a Linux server in a container built from alpine:3.7 base image.',
+    environment: (
+      <span>
+        Run on a Linux server in a container built from <a href="https://hub.docker.com/_/alpine/">alpine:3.7</a> base
+        image.
+      </span>
+    ),
+    pseudoterminal: (
+      <span>
+        [Running on Linux | <a href="https://hub.docker.com/_/alpine/">alpine:3.7</a>]
+      </span>
+    ),
   },
 };
 

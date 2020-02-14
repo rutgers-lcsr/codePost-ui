@@ -40,18 +40,14 @@ const sections = [
     name: 'annotate',
     features: [
       'Make inline comments easily, with markdown',
-      <span key="template">
-        Gray out template code &nbsp; <Tag>BETA</Tag>
-      </span>,
+      <span key="template">Gray out template code</span>,
       'Annotate IPython / Jupyter notebooks',
       <span key="text">
         Annotate short-answer questions (<Typography.Text code>.txt</Typography.Text> or{' '}
         <Typography.Text code>.md</Typography.Text>)
       </span>,
       'Apply rubric items while grading',
-      <span key="template">
-        Collaboratively create the rubric &nbsp; <Tag>BETA</Tag>
-      </span>,
+      <span key="template">Collaboratively create the rubric</span>,
       'Dark Mode!',
     ],
     spotlights: [
@@ -124,9 +120,7 @@ const sections = [
     name: 'instructors',
     features: [
       'Make sure everything gets graded',
-      <span key="moss">
-        Do plagiarism detection with Moss &nbsp; <Tag>BETA</Tag>
-      </span>,
+      <span key="moss">Do plagiarism detection with Moss</span>,
       'Grade student work anonymously',
       'Make changes to rubrics after grading',
       'Distribute work to a team of graders',

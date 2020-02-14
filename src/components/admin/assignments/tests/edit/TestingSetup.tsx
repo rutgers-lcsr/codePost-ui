@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Breadcrumb, Button, Tabs, Checkbox, message, Typography } from 'antd';
+import { Breadcrumb, Button, Collapse, InputNumber, Tabs, Checkbox, Modal, message, Typography } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -36,7 +36,7 @@ const { TabPane } = Tabs;
 interface IProps {
   currentAssignment: AssignmentType;
   submissions: SubmissionType[];
-  updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
+  updateAssignment: (assignmentID: number, field: string, value: number) => void;
   breadcrumbs?: React.ReactElement[];
   match: any;
 }
@@ -62,6 +62,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
 
   const [currTab, setCurrTab] = useState(defaultTab);
   const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
 
   const [solutions, setSolutions] = useState<SolutionFileType[]>([]);
   const [helpers, setHelpers] = useState<HelperFileType[]>([]);
@@ -70,6 +71,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
   /************************** Fetch data ******************************/
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       const currEnv = await fetchEnvironment(props.currentAssignment);
       setEnv(currEnv);
       if (currEnv) {
@@ -80,9 +82,10 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         const sourceFiles: SourceFileType[] = await fetchSourceFiles(currEnv);
         setSourceFiles(sourceFiles);
       }
+      setLoading(false);
     };
     fetchData();
-  }, [props.currentAssignment]);
+  }, [props.currentAssignment.id]);
 
   /************************** API / State change functions ******************************/
 
@@ -226,26 +229,61 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
 
   // ************************** Environment function **************************
 
-  const buildEnv = async (language: string, dependencies: string[]) => {
+  const buildEnv = async (language: string, dependencies: string, buildType: string) => {
     let thisEnvironment = env;
     if (!thisEnvironment) {
       const payload = {
         id: -1,
         language,
-        dependencies: JSON.stringify(dependencies),
+        dockerRunInstructions: dependencies ? dependencies.split('\n') : [],
         assignment: props.currentAssignment.id,
         dumpMode: false,
         testParsing: true,
         compileText: '',
+        buildType: 'default',
+        allowNetworkAccess: false,
+        maxStudentTestRuns: null,
+        exposeDumpLogs: false,
+        maxExposedFailedTests: null,
       };
       thisEnvironment = await Environment.create(payload);
+      // Update the assignment environment field
+      props.updateAssignment(props.currentAssignment.id, 'environment', thisEnvironment.id);
     }
-    const newEnv = await Environment.build({
+    const buildResult = await Environment.build({
       id: thisEnvironment.id,
-      dependencies: dependencies,
+      dockerRunInstructions: dependencies ? dependencies.split('\n') : [],
       language: language,
+      buildType: buildType,
     });
-    setEnv(newEnv);
+    if (buildResult.build.success) {
+      setEnv(buildResult.environment);
+      message.success('Environment updated');
+    } else {
+      Modal.error({
+        title: 'Build failed',
+        width: 700,
+        content: (
+          <div style={{ maxHeight: 'calc(100vh - 300px)', overflow: 'auto' }}>
+            The attempt to build an environment with the given specifications was unsuccesful. Please see the logs below
+            for more information:
+            <br />
+            <br />
+            <b>Logs:</b> <br />
+            <Collapse bordered={false}>
+              <Collapse.Panel header="Logs" key="1">
+                {buildResult.build.logs.map((l) => (
+                  <div>{l}</div>
+                ))}
+              </Collapse.Panel>
+              <Collapse.Panel header="Dockerfile" key="2">
+                <div style={{ whiteSpace: 'pre-wrap' }}>{buildResult.dockerfile}</div>
+              </Collapse.Panel>
+            </Collapse>
+          </div>
+        ),
+      });
+    }
   };
 
   const updateCompileText = async (compileText: string) => {
@@ -268,26 +306,17 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     props.history.push(newUrl);
   };
 
-  const updateDumpMode = async (e: any) => {
+  const updateEnvSetting = async (field: string, value: any) => {
     if (env) {
       const payload = {
         id: env.id,
-        dumpMode: e.target.checked,
+        [field]: value,
       };
       const newEnv = await Environment.update(payload);
-      message.success(e.target.checked ? 'Setting enabled' : 'Setting disabled');
-      setEnv(newEnv);
-    }
-  };
-
-  const updateTestParsing = async (e: any) => {
-    if (env) {
-      const payload = {
-        id: env.id,
-        testParsing: e.target.checked,
-      };
-      const newEnv = await Environment.update(payload);
-      message.success(e.target.checked ? 'Setting enabled' : 'Setting disabled');
+      if (typeof value === 'boolean') {
+        // we only show message for boolean settings. Numerical or string fields would be really annoying
+        message.success(value ? 'Setting enabled' : 'Setting disabled');
+      }
       setEnv(newEnv);
     }
   };
@@ -298,7 +327,6 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       <TabPane tab={'Environment'} key={'environment'}>
         <EnvironmentSpecs
           currentAssignment={props.currentAssignment}
-          updateAssignment={props.updateAssignment}
           env={env}
           buildEnv={buildEnv}
           updateCompileText={updateCompileText}
@@ -307,6 +335,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
           updateFile={updateFile}
           solutions={solutions}
           helpers={helpers}
+          loading={loading}
         />
       </TabPane>
       <TabPane tab={'Tests'} key={'tests'}>
@@ -321,35 +350,135 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
           solutions={solutions}
           helpers={helpers}
           sourceFiles={sourceFiles}
+          loading={loading}
         />
       </TabPane>
       <TabPane tab={'Settings'} key={'settings'}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-          <Checkbox
-            style={{ minWidth: '125px', marginBottom: 15 }}
-            defaultChecked={env && env.dumpMode}
-            onChange={updateDumpMode}
-            disabled={!env}
-          >
-            Dump outputs to <Typography.Text code>_tests.txt</Typography.Text>
-            &nbsp;
-            <CPTooltip
-              infoIcon={true}
-              title="When this setting is enabled, a file called _tests.txt containing the raw output of your tests will be added to every student's submission."
-            />
-          </Checkbox>
-          <Checkbox
-            style={{ minWidth: '125px', marginLeft: 0 }}
-            defaultChecked={env && env.testParsing}
-            onChange={updateTestParsing}
-            disabled={!env}
-          >
-            Parse <Typography.Text code>TestOutput</Typography.Text> calls in source editor &nbsp;
-            <CPTooltip
-              infoIcon={true}
-              title="You should turn this off if you are making bash TestOutput calls in non-bash files (e.g., Makefile, helper python subprocess, etc.)"
-            />
-          </Checkbox>
+        <div style={{ padding: '15px 25px' }}>
+          <div style={{ marginBottom: 20, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <Typography.Title level={4}>Student submit</Typography.Title>
+            <div>
+              <Checkbox
+                style={{ minWidth: '125px', marginLeft: 0, marginBottom: 15 }}
+                checked={env && env.maxStudentTestRuns !== null}
+                onChange={(e) => {
+                  updateEnvSetting('maxStudentTestRuns', e.target.checked ? 10 : null);
+                }}
+                disabled={!env}
+              >
+                Limit the number of times exposed tests are run on student submit
+              </Checkbox>
+              {env && env.maxStudentTestRuns !== null && (
+                <span>
+                  to &nbsp;{' '}
+                  <InputNumber
+                    min={1}
+                    value={env && env.maxStudentTestRuns}
+                    onChange={(value) => {
+                      updateEnvSetting('maxStudentTestRuns', value);
+                    }}
+                  />
+                  &nbsp; times{' '}
+                </span>
+              )}
+              <CPTooltip
+                infoIcon={true}
+                title="Enabling this setting will limit the amount of times students see exposed tests on student submit. After this number has been exceeded, they can still submit, but won't see test results."
+              />
+            </div>
+            <div>
+              <Checkbox
+                style={{ minWidth: '125px', marginLeft: 0, marginBottom: 15 }}
+                checked={env && env.maxExposedFailedTests !== null}
+                onChange={(e) => {
+                  updateEnvSetting('maxExposedFailedTests', e.target.checked ? 3 : null);
+                }}
+                disabled={!env}
+              >
+                Limit the number of failed tests per category that are exposed to students &nbsp;
+              </Checkbox>
+              {env && env.maxExposedFailedTests !== null && (
+                <span>
+                  to &nbsp;{' '}
+                  <InputNumber
+                    min={1}
+                    value={env && env.maxExposedFailedTests}
+                    onChange={(value) => {
+                      updateEnvSetting('maxExposedFailedTests', value);
+                    }}
+                  />{' '}
+                  &nbsp; failed tests per category{' '}
+                </span>
+              )}
+              <CPTooltip
+                infoIcon={true}
+                title="Enabling this setting will limit the amount of failed tests a student is exposed to when they submit. This is a helpful feature if you'd like your students to slowly work through failed tests, and encourage them to write their own tests."
+              />
+            </div>
+          </div>
+          <div style={{ marginBottom: 20, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <Typography.Title level={4}>Running tests</Typography.Title>
+            <div>
+              <Checkbox
+                style={{ minWidth: '125px', marginBottom: 15 }}
+                checked={env && env.dumpMode}
+                onChange={(e) => {
+                  updateEnvSetting('dumpMode', e.target.checked);
+                }}
+                disabled={!env}
+              >
+                Dump outputs to <Typography.Text code>_tests.txt</Typography.Text>
+                &nbsp;
+                <CPTooltip
+                  infoIcon={true}
+                  title="When this setting is enabled, a file called _tests.txt containing the raw output of your tests will be added to every student's submission."
+                />
+              </Checkbox>
+              {env && env.dumpMode && (
+                <Checkbox
+                  style={{ minWidth: '125px', marginBottom: 15 }}
+                  checked={env && env.exposeDumpLogs}
+                  onChange={(e) => {
+                    updateEnvSetting('exposeDumpLogs', e.target.checked);
+                  }}
+                  disabled={!env}
+                >
+                  Expose outputs to students on submit
+                </Checkbox>
+              )}
+            </div>
+            <Checkbox
+              style={{ minWidth: '125px', marginLeft: 0, marginBottom: 15 }}
+              checked={env && env.allowNetworkAccess}
+              onChange={(e) => {
+                updateEnvSetting('allowNetworkAccess', e.target.checked);
+              }}
+              disabled={!env}
+            >
+              Allow network access in containers (Not recommended) &nbsp;
+              <CPTooltip
+                infoIcon={true}
+                title="Enabling this setting will allow student code to have access to the internet. Unless your course requires it (e.g., database connections), it's not recommended to turn this on, as it may allow students to perform unsafe actions (e.g., emailing themselves the test contents)."
+              />
+            </Checkbox>
+          </div>
+          <div style={{ marginBottom: 20, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <Typography.Title level={4}>Writing tests</Typography.Title>
+            <Checkbox
+              style={{ minWidth: '125px', marginLeft: 0, marginBottom: 15 }}
+              checked={env && env.testParsing}
+              onChange={(e) => {
+                updateEnvSetting('testParsing', e.target.checked);
+              }}
+              disabled={!env}
+            >
+              Parse <Typography.Text code>TestOutput</Typography.Text> calls in source editor &nbsp;
+              <CPTooltip
+                infoIcon={true}
+                title="You should turn this off if you are making bash TestOutput calls in non-bash files (e.g., Makefile, helper python subprocess, etc.)"
+              />
+            </Checkbox>
+          </div>
         </div>
       </TabPane>
     </Tabs>

@@ -123,7 +123,7 @@ export const TestsChangeModal = (props: IProps) => {
 
   const checkForErrors = (currentCode: string) => {
     const errors: { lineNumber: number; log: string }[] = [];
-    const re = /^([^#]*\s)*TestOutput (?!("([^"]+?)" "([^"]+?)" (true|false)( "([^"]*?)")?)).*/g;
+    const re = /^([^#]*\s)*TestOutput(?!([ ]{1,}"([^"]+?)"[ ]{1,}"([^"]+?)"[ ]{1,}(true|false)( "([^"]*?)")?)).*/g;
     const lines = currentCode.split('\n');
 
     lines.forEach((l, i) => {
@@ -140,7 +140,7 @@ export const TestsChangeModal = (props: IProps) => {
   const parseTests = (sourceFiles: SourceFileType[], currentFile: IBasicFile, currentCode: string) => {
     const parsedTests: { [categoryName: string]: Set<string> } = {};
     sourceFiles.forEach((f) => {
-      const re = /TestOutput "([^"]+?)" "([^"]+?)" (true|false)( "([^"]*?)")?/g;
+      const re = /TestOutput[ ]{1,}"([^"]+?)"[ ]{1,}"([^"]+?)"[ ]{1,}(true|false)([ ]{1,}"([^"]*?)")?/g;
 
       // The current file is updated, so we want to use the latest code
       const code = f.id === currentFile.id && currentFile.type === FILE_TYPE.SOURCEFILE ? currentCode : f.code;
@@ -149,7 +149,7 @@ export const TestsChangeModal = (props: IProps) => {
       if (tests) {
         tests.forEach((t) => {
           // Syntax for the regex match is <TestOutput> <category> <test> <boolean> <log>
-          const [, category, test, ,] = t.split(/(?:" | ")+/);
+          const [, category, test, ,] = t.split(/(?:"[ ]{1,}|[ ]{1,}")+/);
 
           const categoryName = category.replace(/"/g, '');
           const testestName = test.replace(/"/g, '');
@@ -187,6 +187,10 @@ export const TestsChangeModal = (props: IProps) => {
         if (c.type === 'file') {
           (categoryName in casesByCategoryName && (casesByCategoryName[categoryName][c.description] = c)) ||
             (casesByCategoryName[categoryName] = { [c.description]: c });
+        } else {
+          // Even if the category doesn't have file tests, we still want to include the category so
+          // we don't end up creating duplicates
+          !(categoryName in casesByCategoryName) && (casesByCategoryName[categoryName] = {});
         }
       });
     });
@@ -219,14 +223,28 @@ export const TestsChangeModal = (props: IProps) => {
     Object.keys(casesByCategoryName).forEach((categName) => {
       // Check for deleted categories
       if (!(categName in parsedTests)) {
-        // We store the test names as well to display in the confirmation modal
-        categsToDelete[categName] = new Set(Object.keys(casesByCategoryName[categName]));
-        return;
+        // check to see if the category contains test cases that aren't file defined
+        let canDelete = true;
+        const thisCategory = props.categories.find((c) => c.name == categName);
+        if (thisCategory && props.casesByCategory[thisCategory.id] !== undefined) {
+          const thisCategoryCases = props.casesByCategory[thisCategory.id];
+          // If the category has no cases then it can't be file defined
+          if (thisCategoryCases.length === 0) canDelete = false;
+          // If any of the cases aren't file defined, set canDelete to false
+          thisCategoryCases.forEach((c) => c.type !== 'file' && (canDelete = false));
+        }
+
+        if (canDelete) {
+          // We store the test names as well to display in the confirmation modal
+          categsToDelete[categName] = new Set(Object.keys(casesByCategoryName[categName]));
+          // We don't need to loop through the test cases if the category is to be deleted, so we return
+          return;
+        }
       }
 
       // Check for deleted tests in existing categories
       Object.keys(casesByCategoryName[categName]).forEach((testName) => {
-        if (!parsedTests[categName].has(testName)) {
+        if (!(categName in parsedTests) || !parsedTests[categName].has(testName)) {
           const test = { ...casesByCategoryName[categName][testName] };
           (categName in casesToDelete && casesToDelete[categName].push(test)) || (casesToDelete[categName] = [test]);
         }

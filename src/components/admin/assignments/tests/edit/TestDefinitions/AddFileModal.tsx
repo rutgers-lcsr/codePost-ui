@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 /* library imports */
-import { Input, Modal, Icon, Select, Row, Tooltip } from 'antd';
+import { Button, Input, Modal, Icon, Select, Row, Tooltip } from 'antd';
 
 /* codePost object imports */
 import { FILE_TYPE } from '../TestingSetup';
@@ -69,10 +69,24 @@ export const AddFileModal = (props: IUploadProps) => {
   useHotkeys(M_KEY, setVisible.bind({}, true));
 
   return (
-    <span>
-      <Tooltip title="Add File">
-        <Icon type="plus-circle" onClick={toggleVisible} />
-      </Tooltip>
+    <React.Fragment>
+      <Button
+        onClick={toggleVisible}
+        style={{
+          height: 28,
+          fontSize: 12,
+          padding: '0px 8px',
+          width: '100%',
+          borderColor: 'rgb(217,217,217)',
+          borderTopRightRadius: '0px',
+          borderBottomRightRadius: '0px',
+          boxShadow: 'none',
+          textShadow: 'none',
+        }}
+        type="primary"
+      >
+        Add file
+      </Button>
       <Modal
         visible={visible}
         title="Add new file"
@@ -94,6 +108,6 @@ export const AddFileModal = (props: IUploadProps) => {
           );
         })}
       </Modal>
-    </span>
+    </React.Fragment>
   );
 };

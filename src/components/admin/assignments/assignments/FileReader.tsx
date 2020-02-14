@@ -1,6 +1,8 @@
 import JSZip from 'jszip';
 
-import { File as CPFile } from '../../../../infrastructure/file';
+import { message } from 'antd';
+
+import { File as CodePostFile } from '../../../../infrastructure/file';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
@@ -58,8 +60,22 @@ export const fileToProtoFileUpload = (
   };
 };
 
+const FILE_SIZE_LIMIT_IN_BYTES = 3e6; // 3 megabytes
+
 export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<IProtoFileUpload[]> => {
   const reader = new FileReader();
+
+  const size_bytes = inputFile.size;
+  if (size_bytes > FILE_SIZE_LIMIT_IN_BYTES) {
+    message.warning(
+      `${inputFile.name} exceeds file size limit of ${FILE_SIZE_LIMIT_IN_BYTES /
+        1e6} MB and cannot be uploaded (its size is ${(size_bytes / 1e6).toFixed(
+        1,
+      )} MB). Please try using a compression tool for your file and re-uploading.\nIf you need help, please contact us at team@codepost.io.`,
+      15,
+    );
+    return Promise.resolve([]);
+  }
 
   let outputFile = fileToProtoFileUpload(inputFile, zipSource);
 
@@ -103,8 +119,18 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
                 return zippedFile.async('blob').then(async (blob: Blob) => {
                   // Recursively read the new files, but we need to cast the
                   // Blob object into a File
-                  const unzippedFile = await readUploadedFile(new File([blob], zippedFile.name), outputFile.longname);
-                  return unzippedFile;
+                  if (blob.size < FILE_SIZE_LIMIT_IN_BYTES) {
+                    const unzippedFile = await readUploadedFile(new File([blob], zippedFile.name), outputFile.longname);
+                    return unzippedFile;
+                  } else {
+                    message.warning(
+                      `${zippedFile.name} exceeds file size limit of ${FILE_SIZE_LIMIT_IN_BYTES /
+                        1e6} MB and cannot be uploaded (its size is ${(blob.size / 1e6).toFixed(1)} MB).
+                        The rest of the zip contents will attempt to be uploaded (see details below).`,
+                      10,
+                    );
+                    return undefined;
+                  }
                 });
               }
             });
@@ -122,7 +148,7 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
       } else {
         let data: any = readerResult;
 
-        if (['png', 'jpeg', 'jpg'].includes(outputFile.extension) && typeof data === 'string') {
+        if (['png', 'jpeg', 'jpg'].includes(outputFile.extension.toLowerCase()) && typeof data === 'string') {
           data = await resizeImage(data);
         }
 
@@ -135,7 +161,7 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
       }
     };
 
-    if (inputFile.type.includes('image') || ['png', 'jpeg', 'jpg'].includes(outputFile.extension)) {
+    if (inputFile.type.includes('image') || ['png', 'jpeg', 'jpg'].includes(outputFile.extension.toLowerCase())) {
       reader.readAsDataURL(inputFile);
     } else if (inputFile.type.includes('pdf') || ['pdf'].includes(outputFile.extension)) {
       reader.readAsDataURL(inputFile);

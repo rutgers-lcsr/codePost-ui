@@ -116,7 +116,7 @@ const nodes: any[] = [
   },
   {
     id: 12,
-    title: 'Collect',
+    title: 'Submit',
     position: { x: 0, y: 20 },
     outgoingNodes: [13],
     icon: 'dummy',
@@ -165,10 +165,12 @@ const nodes: any[] = [
   },
 ];
 
-export const LandingFlowChart = () => {
+const LandingFlowChart = () => {
   return (
     <div className="flowChart">
       <FlowChart nodeList={nodes} canvasWidth={500} canvasHeight={400} />
     </div>
   );
 };
+
+export default LandingFlowChart;

@@ -96,7 +96,7 @@ interface IState {
   uploadMap: { [student: string]: UPLOAD_STATUS };
 
   /* Used to store the contents of files */
-  fileMap: { [fileName: string]: string | ArrayBuffer | null };
+  fileMap: { [submitters: string]: { [fileName: string]: string | ArrayBuffer | null } };
 
   /* stores progress */
   status: STATUS;
@@ -225,6 +225,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     const submissions = this.state.protoSubmissions;
 
     submissions.map(async (submission, index: number) => {
+      const submitters = submission.students.join(',');
       for (const file of submission.files) {
         try {
           console.log('READING FILE', file);
@@ -236,10 +237,18 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
           } else {
             outputFiles = await readUploadedFile(file);
           }
-          console.log(outputFiles);
-          outputFiles.map((outputFile: IProtoFileUpload) => {
-            this.setState({ fileMap: { ...this.state.fileMap, [outputFile.longname]: outputFile.data } });
-          });
+          if (file.type === 'application/zip' || ['.zip'].includes(file.name)) {
+            outputFiles.map((outputFile: IProtoFileUpload) => {
+              const fullName = `anydirname/${submission.students.join(',')}/${outputFile.longname}`;
+              const subfiles = { ...this.state.fileMap[submitters], [fullName]: outputFile.data };
+              this.setState({ fileMap: { ...this.state.fileMap, [submitters]: subfiles } });
+            });
+          } else {
+            outputFiles.map((outputFile: IProtoFileUpload) => {
+              const subfiles = { ...this.state.fileMap[submitters], [outputFile.longname]: outputFile.data };
+              this.setState({ fileMap: { ...this.state.fileMap, [submitters]: subfiles } });
+            });
+          }
         } catch (e) {
           this.setState({ errorPaths: [...this.state.errorPaths, e], status: STATUS.FILE_ERROR });
         }
@@ -251,8 +260,12 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     const { fileMap, numFiles, overwriteMode } = this.state;
 
     const readFiles = Object.keys(fileMap).reduce((acc, el) => {
-      const toAdd = typeof fileMap[el] === 'undefined' ? 0 : 1;
-      return acc + toAdd;
+      const subTotal = Object.keys(fileMap[el]).reduce((acc2: any, el2: any) => {
+        const toAdd = typeof fileMap[el][el2] === 'undefined' ? 0 : 1;
+        return acc2 + toAdd;
+      }, 0);
+
+      return acc + subTotal;
     }, 0);
 
     if (readFiles === numFiles) {
@@ -280,24 +293,43 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     // tslint:enable
     const promises = toUpload.map((submission) => {
       const files: any[] = [];
-      submission.files.forEach((file: any) => {
-        let path: string = file.webkitRelativePath || file.pathOverride;
-        let fileName: string = file.name;
-        if (path === '') {
-          path = file.name;
-          fileName = file.name.split('/').slice(-1)[0];
-        }
-        // const pathDirs = file.webkitRelativePath.split('/');
-        const pathDirs = path.split('/');
-        // Want to ignore first (root dir, student email) two and last element (file name) of split
-        const filePath = pathDirs.length > 3 ? pathDirs.slice(2, pathDirs.length - 1).join('/') : null;
-        const payload = {
-          name: fileName,
-          data: fileMap[path],
-          path: filePath,
-        };
-        files.push(payload);
-      });
+
+      // submission.files.forEach((file: any) => {
+      //   let path: string = file.webkitRelativePath || file.pathOverride;
+      //   let fileName: string = file.name;
+      //   if (path === '') {
+      //     path = file.name;
+      //     fileName = file.name.split('/').slice(-1)[0];
+      //   }
+      //   // const pathDirs = file.webkitRelativePath.split('/');
+      //   const pathDirs = path.split('/');
+      //   // Want to ignore first (root dir, student email) two and last element (file name) of split
+      //   const filePath = pathDirs.length > 3 ? pathDirs.slice(2, pathDirs.length - 1).join('/') : null;
+      //   const payload = {
+      //     name: fileName,
+      //     data: fileMap[path],
+      //     path: filePath,
+      //   };
+      //   files.push(payload);
+      // });
+
+      const submitter = submission.students.join(',');
+
+      if (fileMap.hasOwnProperty(submitter)) {
+        Object.keys(fileMap[submitter]).forEach((fullname: string) => {
+          const path = fullname;
+          const fileName = fullname.split('/').slice(-1)[0];
+          const pathDirs = path.split('/');
+          // Want to ignore first (root dir, student email) two and last element (file name) of split
+          const filePath = pathDirs.length > 3 ? pathDirs.slice(2, pathDirs.length - 1).join('/') : null;
+          const payload = {
+            name: fileName,
+            data: fileMap[submitter][path],
+            path: filePath,
+          };
+          files.push(payload);
+        });
+      }
       return this.props
         .uploadSubmission(this.props.assignment, submission.students, files)
         .then((newSub) => {
@@ -358,7 +390,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
           });
 
           if (reMatch) {
-            reMatch.students.filter((el) => {
+            reMatch.students = reMatch.students.filter((el) => {
               return !this.isEqual(el, student);
             });
           } else {
@@ -616,27 +648,64 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         if (this.props.students.length === 0) {
           content = (
             <div>
-              After you add students, you can upload their submissions in bulk here. <br />
+              After you add students, you can get their submissions into codePost in two ways:
+              <ul>
+                <li>
+                  Allowing students to submit directly (learn more{' '}
+                  <a
+                    href="https://help.codepost.io/en/articles/3381427-how-to-allow-students-to-upload-submissions-to-codepost"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    here
+                  </a>
+                  )
+                </li>
+                <li>
+                  Manually uploading submissions (learn more{' '}
+                  <a
+                    href="https://help.codepost.io/en/articles/3164723-how-to-upload-student-submissions"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    here
+                  </a>
+                  )
+                </li>
+              </ul>
               <br />{' '}
-              <Link
-                to={
-                  this.props.course
-                    ? `/admin/${encodeForLink(this.props.course.name)}/${encodeForLink(
-                        this.props.course.period,
-                      )}/roster/students`
-                    : ''
-                }
-              >
-                <Button>Add students</Button>
-              </Link>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Link
+                  to={
+                    this.props.course
+                      ? `/admin/${encodeForLink(this.props.course.name)}/${encodeForLink(
+                          this.props.course.period,
+                        )}/roster/students`
+                      : ''
+                  }
+                >
+                  <Button type="primary">Add students</Button>
+                </Link>
+              </div>
             </div>
           );
         } else {
           content = (
             <div>
+              <div>
+                <b>Tip:</b> Want to allow students to upload directly? Learn more{' '}
+                <a
+                  href="https://help.codepost.io/en/articles/3381427-how-to-allow-students-to-upload-submissions-to-codepost"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  here
+                </a>
+                .
+              </div>
               {!this.state.showImportOptions ? (
                 <div style={{ margin: '15px 0px' }}>
-                  Looking to import submissions from a third-party tool (like your LMS)?{' '}
+                  <b>Tip:</b> Looking to import submissions from a third-party tool (like your LMS)?{' '}
                   <span>
                     <Button size="small" onClick={this.showImportOptions}>
                       View instructions
@@ -695,7 +764,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
               ) : (
                 <div />
               )}
-
+              <Divider />
               <UploadForm
                 processSubmissionsFromFiles={this.externalProcessSubmissions}
                 rawFiles={this.state.rawFiles}
@@ -910,8 +979,12 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         break;
       case STATUS.READING:
         const readFiles = Object.keys(this.state.fileMap).reduce((acc, el) => {
-          const toAdd = typeof this.state.fileMap[el] === 'undefined' ? 0 : 1;
-          return acc + toAdd;
+          const subTotal = Object.keys(this.state.fileMap[el]).reduce((acc2: any, el2: any) => {
+            const toAdd = typeof this.state.fileMap[el][el2] === 'undefined' ? 0 : 1;
+            return acc2 + toAdd;
+          }, 0);
+
+          return acc + subTotal;
         }, 0);
         content = (
           <div>

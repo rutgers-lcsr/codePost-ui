@@ -3,13 +3,15 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
+import React, { Suspense } from 'react';
 
 import { HashLink as Link } from 'react-router-hash-link';
 
 import '@brainhubeu/react-carousel/lib/style.css';
 
 import { Icon } from 'antd';
+
+import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
 
 /* codePost Imports */
 import landingVars from '../../styles/pages/_landingVars';
@@ -23,21 +25,20 @@ import LandingLayout from './LandingLayout';
 import LandingPanel from './LandingPanel';
 import LandingAnnotationPanel from './LandingAnnotationPanel';
 
-import { LandingFlowChart } from './landingAnimations/flowchart/LandingFlowChart';
-
 // Other design elements
 import PreAuthFooter from '../pre-auth/PreAuthFooter';
 import { Testimonials } from './Testimonial';
 
 import APIExample from './LandingAPIExample';
 
-import AutograderModule from './landingAnimations/autograder/AutograderModule';
+// import AutograderModule from './landingAnimations/autograder/AutograderModule';
 
-import Integrations from './Integrations';
-
+const Integrations = React.lazy(() => import('./Integrations'));
+const AutograderModule = React.lazy(() => import('./landingAnimations/autograder/AutograderModule'));
+const LandingFlowChart = React.lazy(() => import('./landingAnimations/flowchart/LandingFlowChart'));
 /**********************************************************************************************************************/
 
-class Landing extends React.PureComponent<{}, {}> {
+class Landing extends React.Component<IWithWindowWatcherProps, {}> {
   public componentDidMount() {
     // Calendly widget setup
     const head = document.querySelector('head');
@@ -81,7 +82,11 @@ class Landing extends React.PureComponent<{}, {}> {
         moduleMaxHeight={550}
         textSize="normal"
         removeModelSmallScreen={false}
-        module={<AutograderModule />}
+        module={
+          <Suspense fallback={<div style={{ width: 480, height: 550 }} />}>
+            <AutograderModule />
+          </Suspense>
+        }
         gutterSize={50}
       />
     );
@@ -116,12 +121,16 @@ class Landing extends React.PureComponent<{}, {}> {
         }
         title="COMPLETE FEEDBACK WORKFLOW"
         subTitle="Everything you need to run your course"
-        module={<LandingFlowChart />}
+        module={
+          <Suspense fallback={<div style={{ width: 500, height: 400 }} />}>
+            <LandingFlowChart />
+          </Suspense>
+        }
         type="left"
         moduleMaxWidth={700}
         moduleMaxHeight={405}
         textSize="normal"
-        removeModelSmallScreen={false}
+        removeModelSmallScreen={true}
         bevel={false}
         gutterSize={50}
       />
@@ -130,15 +139,22 @@ class Landing extends React.PureComponent<{}, {}> {
     const panelFourModule = (
       <div className="display-flex align-items-center">
         <div style={{ display: 'inline-block', width: '500px' }}>
-          <Integrations
-            integrations={['canvas', 'blackboard', 'jupyter', 'moss', 'github', 'jsfiddle', 'homegrown', 'more']}
-          />
+          <Suspense fallback={<div style={{ width: 500, height: 400 }} />}>
+            <Integrations
+              integrations={['canvas', 'blackboard', 'jupyter', 'moss', 'github', 'jsfiddle', 'homegrown', 'more']}
+            />
+          </Suspense>
         </div>
       </div>
     );
     const panelFour = (
       <div className="display-flex align-items-center flex-direction-column">
-        <div style={{ marginBottom: 50, width: '100%' }}>
+        <div
+          style={{
+            marginBottom: 50,
+            width: '100%',
+          }}
+        >
           <LandingPanel
             text={
               <div>
@@ -174,9 +190,13 @@ class Landing extends React.PureComponent<{}, {}> {
             gutterSize={50}
           />
         </div>
-        <div style={{ maxWidth: landingVars.maxWidths.apiExample, width: '100%' }}>
-          <APIExample />
-        </div>
+        {this.props.windowwidth < landingVars.breakpoints.removeModule ? (
+          <div />
+        ) : (
+          <div style={{ maxWidth: landingVars.maxWidths.apiExample, width: '100%' }}>
+            <APIExample />
+          </div>
+        )}
       </div>
     );
 
@@ -206,4 +226,4 @@ class Landing extends React.PureComponent<{}, {}> {
   }
 }
 
-export default Landing;
+export default withWindowWatcher(Landing);

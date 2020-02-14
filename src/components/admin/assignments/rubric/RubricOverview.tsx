@@ -7,11 +7,12 @@ import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
-import { Button, Breadcrumb, Empty } from 'antd';
+import { Button, Breadcrumb, Empty, Tag } from 'antd';
 
 import { TableDetail } from '../../other/TableDetail';
 
 import { AssignmentType } from '../../../../infrastructure/assignment';
+import { CourseType } from '../../../../infrastructure/course';
 
 import { encodeForLink } from '../../../core/URLutils';
 
@@ -19,6 +20,7 @@ import { encodeForLink } from '../../../core/URLutils';
 
 interface IProps {
   assignments: AssignmentType[];
+  course: CourseType | undefined;
 }
 
 const RubricOverview = (props: IProps & RouteComponentProps) => {
@@ -59,7 +61,9 @@ const RubricOverview = (props: IProps & RouteComponentProps) => {
       actions={[]}
       breadcrumbs={
         <Breadcrumb>
-          <Breadcrumb.Item>Assignments</Breadcrumb.Item>
+          <Breadcrumb.Item>
+            {props.course !== undefined && props.course.archived ? <Tag>Archived</Tag> : null}Assignments
+          </Breadcrumb.Item>
           <Breadcrumb.Item>Rubrics</Breadcrumb.Item>
         </Breadcrumb>
       }

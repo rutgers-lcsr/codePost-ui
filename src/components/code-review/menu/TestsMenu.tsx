@@ -35,6 +35,7 @@ interface IProps {
   assignment: AssignmentType;
   showLink?: boolean;
   emptyMessage: string;
+  onClick?: (e: any) => void;
 }
 
 const TestsMenu = (props: IProps) => {
@@ -109,6 +110,7 @@ const TestsMenu = (props: IProps) => {
         paddingTop: '10px',
         backgroundColor: props.isOpen ? '#f0fff7' : undefined,
       }}
+      onClick={props.onClick}
     >
       <div
         className={`tests-menu${consoleTheme === consoleThemes.dark ? '--dark' : ''}`}

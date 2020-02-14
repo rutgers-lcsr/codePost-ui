@@ -6,15 +6,31 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, DatePicker, Form, Input, InputNumber, message, Modal, Switch, Tabs, Tag, Transfer, Table } from 'antd';
+import {
+  Button,
+  DatePicker,
+  Empty,
+  Form,
+  Input,
+  InputNumber,
+  message,
+  Modal,
+  Switch,
+  Tabs,
+  Tag,
+  Transfer,
+  Table,
+} from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
+/* other library imports */
 import moment from 'moment-timezone';
 
 /* codePost imports */
 import { AssignmentType, FileTemplateType } from '../../../../infrastructure/types';
 import { AssignmentPatchType } from '../../../../infrastructure/assignment';
 import { FileTemplate } from '../../../../infrastructure/fileTemplate';
+import InputNumberMultiple from '../../settings/InputNumberMultiple';
 
 import UploadFileTemplates from './UploadFileTemplates';
 
@@ -47,6 +63,12 @@ class AssignmentSettingsDialog extends React.Component<IProps, IState> {
     this.loadTemplates();
   }
 
+  public componentDidUpdate(oldProps: IProps) {
+    if (oldProps.isVisible === false && this.props.isVisible === true) {
+      this.loadTemplates();
+    }
+  }
+
   public loadTemplates = () => {
     const promises = this.props.currentAssignment.fileTemplates.map((el) => FileTemplate.read(el));
     Promise.all(promises).then((fileTemplates) => this.setState({ fileTemplates }));
@@ -54,6 +76,17 @@ class AssignmentSettingsDialog extends React.Component<IProps, IState> {
 
   public updateSettings = (values: IFormValues) => {
     const { currentAssignment } = this.props;
+
+    let templateMode = false;
+    if (this.state.fileTemplates !== undefined && this.state.fileTemplates.length > 0) {
+      const filtered = this.state.fileTemplates.filter((template: FileTemplateType) => {
+        return template.code !== '';
+      });
+      if (filtered.length > 0) {
+        templateMode = true;
+      }
+    }
+
     const payload = {
       id: currentAssignment.id,
       name: values.name,
@@ -70,9 +103,10 @@ class AssignmentSettingsDialog extends React.Component<IProps, IState> {
       liveFeedbackMode: values.liveFeedbackMode,
       additiveGrading: values.additiveGrading,
       forcedRubricMode: values.forcedRubricMode,
-      templateMode: values.templateMode,
+      templateMode,
       showFrequentlyUsedRubricComments: values.showFrequentlyUsedRubricComments,
       allowLateUploads: values.allowLateUploads,
+      lateDeductions: values.lateDeductions,
     };
 
     this.props.onSave(payload).then(() => {
@@ -88,24 +122,29 @@ class AssignmentSettingsDialog extends React.Component<IProps, IState> {
   public handleCreate = (fileTemplates: FileTemplateType[]) => {
     const formRefCast: any = this.formRef;
     const form = formRefCast.props.form;
-    form.validateFields((err: any, values: IFormValues) => {
+    form.validateFields(async (err: any, values: IFormValues) => {
       if (err) {
         return;
       }
 
+      const fileTemplatePromises: any[] = [];
       for (const ft of fileTemplates) {
         if (ft.id > 0) {
-          FileTemplate.update(ft);
+          fileTemplatePromises.push(FileTemplate.update(ft));
         } else {
-          FileTemplate.create(ft);
+          fileTemplatePromises.push(FileTemplate.create(ft));
         }
       }
 
       for (const ft of this.state.fileTemplates) {
         if (!fileTemplates.some((el) => el.id === ft.id)) {
-          FileTemplate.delete(ft.id);
+          fileTemplatePromises.push(FileTemplate.delete(ft.id));
         }
       }
+
+      // Block assignment update on file templates update so the file templates field is updated on
+      // Assignment.patch
+      await Promise.all(fileTemplatePromises);
 
       this.updateSettings(values);
     });
@@ -163,6 +202,7 @@ interface IFormValues {
   templateMode: boolean;
   showFrequentlyUsedRubricComments: boolean;
   allowLateUploads: boolean;
+  lateDeductions: number[];
 }
 
 interface IFormState {
@@ -219,12 +259,13 @@ const CollectionCreateForm: any = Form.create()(
 
     public addTemplate = () => {
       this.setState((oldState: IFormState) => {
+        const extension = oldState.newTemplate.split('.').length > 1 ? oldState.newTemplate.split('.')[1] : 'txt';
         return {
           templates: [
             ...oldState.templates,
             {
               code: '',
-              extension: oldState.newTemplate.split('.')[1],
+              extension,
               name: oldState.newTemplate,
               assignment: this.props.assignment.id,
               path: '',
@@ -232,6 +273,7 @@ const CollectionCreateForm: any = Form.create()(
               id: -1 * oldState.templates.length,
             },
           ],
+          newTemplate: '',
         };
       });
     };
@@ -264,8 +306,9 @@ const CollectionCreateForm: any = Form.create()(
     public updateTemplateCode = (id: number, newCode: string) => {
       this.setState((oldState: IFormState) => {
         const old = oldState.templates.find((el) => el.id === id);
+        const templates = [...oldState.templates.filter((el) => el.id !== id), { ...old!, code: newCode }];
         return {
-          templates: [...oldState.templates.filter((el) => el.id !== id), { ...old!, code: newCode }],
+          templates,
         };
       });
     };
@@ -314,6 +357,7 @@ const CollectionCreateForm: any = Form.create()(
     public render() {
       const { visible, onCancel, onSave, form } = this.props;
       const { getFieldDecorator } = form;
+      const tabPaneStyle = { maxHeight: 'calc(100vh - 350px)', overflow: 'auto' };
       return (
         <Modal
           visible={visible}
@@ -321,15 +365,13 @@ const CollectionCreateForm: any = Form.create()(
           okText="Save"
           onCancel={onCancel}
           onOk={onSave.bind({}, this.state.templates)}
-          width={'45%'}
+          width={'80%'}
+          style={{ maxWidth: 1000 }}
+          maskClosable={false}
         >
-          <Form
-            layout="horizontal"
-            hideRequiredMark={true}
-            style={{ maxHeight: 'calc(100vh - 300px)', overflow: 'auto' }}
-          >
+          <Form layout="horizontal" hideRequiredMark={true}>
             <Tabs defaultActiveKey="1">
-              <Tabs.TabPane tab="General" key="1">
+              <Tabs.TabPane tab="General" key="1" style={tabPaneStyle}>
                 <Form.Item
                   label="Name"
                   extra="Must be unique within this course."
@@ -350,7 +392,7 @@ const CollectionCreateForm: any = Form.create()(
                       },
                       { validator: this.validateName },
                     ],
-                  })(<Input />)}
+                  })(<Input style={{ maxWidth: 300 }} />)}
                 </Form.Item>
                 <Form.Item
                   label="Points"
@@ -367,14 +409,10 @@ const CollectionCreateForm: any = Form.create()(
                   })(<InputNumber min={0} />)}
                 </Form.Item>
               </Tabs.TabPane>
-              <Tabs.TabPane tab="Submission" key="2">
+              <Tabs.TabPane tab="Submission" key="2" style={tabPaneStyle}>
                 <Form.Item
                   label="Allow student upload"
-                  extra={
-                    <div>
-                      <Tag>NEW</Tag>When enabled, students can upload submissions before the given due date.
-                    </div>
-                  }
+                  extra={<div>When enabled, students can upload submissions before the given due date.</div>}
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 16 }}
                 >
@@ -396,7 +434,9 @@ const CollectionCreateForm: any = Form.create()(
                   {getFieldDecorator('uploadDueDate', {
                     initialValue: this.props.assignment.uploadDueDate
                       ? moment(this.props.assignment.uploadDueDate).tz(this.props.timezone)
-                      : moment().tz(this.props.timezone),
+                      : moment()
+                          .tz(this.props.timezone)
+                          .endOf('day'),
                     valuePropName: 'value',
                     rules: [
                       {
@@ -415,23 +455,35 @@ const CollectionCreateForm: any = Form.create()(
                     onSelectChange={this.setSelectedTemplates}
                     selectedKeys={this.state.selectedTemplates}
                     titles={['Optional', 'Required']}
-                    render={(item) => item.title}
+                    render={(item: any) => item.title}
                     footer={() => (
                       <Button size="small" style={{ float: 'right', margin: 5 }} onClick={this.deleteTemplates}>
                         delete
                       </Button>
                     )}
                     onChange={this.switchTemplates}
+                    locale={{
+                      notFoundContent: (
+                        <Empty
+                          image={Empty.PRESENTED_IMAGE_SIMPLE}
+                          description={<div style={{ fontWeight: 500 }}>Add a file in the input below.</div>}
+                        />
+                      ),
+                    }}
                   />
-                  <Input onChange={this.changeTemplateText} placeholder="file name" style={{ width: '72%' }} />
+                  <Input
+                    onChange={this.changeTemplateText}
+                    value={this.state.newTemplate}
+                    placeholder="file name"
+                    style={{ width: '72%' }}
+                  />
                   <Button onClick={this.addTemplate}>Add</Button>
                 </Form.Item>
                 <Form.Item
                   label="Allow late submissions"
                   extra={
                     <div>
-                      <Tag>NEW</Tag> When enabled, students will be allowed to submit after this assignment's due date
-                      has passed.
+                      When enabled, students will be allowed to submit after this assignment's due date has passed.
                     </div>
                   }
                   labelCol={{ span: 6 }}
@@ -443,11 +495,31 @@ const CollectionCreateForm: any = Form.create()(
                   })(<Switch disabled={!form.getFieldValue('allowStudentUpload')} />)}
                 </Form.Item>
                 <Form.Item
+                  label="Late deductions"
+                  extra={
+                    <div>
+                      <Tag>NEW</Tag>Automatically deduct points for each day late.{' '}
+                      {form.getFieldValue('lateDeductions') && form.getFieldValue('lateDeductions').length > 1 && (
+                        <span>
+                          <b>Note</b>: late day deductions are not cumulative.
+                        </span>
+                      )}
+                    </div>
+                  }
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 16 }}
+                >
+                  {getFieldDecorator('lateDeductions', {
+                    initialValue: this.props.assignment.lateDeductions,
+                    // @ts-ignore
+                  })(<InputNumberMultiple emptyMessage="Add a late deduction" />)}
+                </Form.Item>
+                <Form.Item
                   label="Live feedback mode"
                   extra={
                     <div>
-                      <Tag>NEW</Tag> Students can see their feedback and comments without the submission being finalized
-                      or published. Ideal for office hours or ungraded feedback.
+                      Students can see their feedback and comments without the submission being finalized or published.
+                      Ideal for office hours or ungraded feedback.
                     </div>
                   }
                   labelCol={{ span: 6 }}
@@ -459,7 +531,7 @@ const CollectionCreateForm: any = Form.create()(
                   })(<Switch />)}
                 </Form.Item>
               </Tabs.TabPane>
-              <Tabs.TabPane tab="Grading" key="3">
+              <Tabs.TabPane tab="Grading" key="3" style={tabPaneStyle}>
                 <Form.Item
                   label="Anonymous grading"
                   extra={
@@ -482,11 +554,7 @@ const CollectionCreateForm: any = Form.create()(
                 </Form.Item>
                 <Form.Item
                   label="Additive grading"
-                  extra={
-                    <div>
-                      <Tag>NEW</Tag> Start submission scores at 0 instead of at an assignment's point value.
-                    </div>
-                  }
+                  extra={<div>Start submission scores at 0 instead of at an assignment's point value.</div>}
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 16 }}
                 >
@@ -497,11 +565,7 @@ const CollectionCreateForm: any = Form.create()(
                 </Form.Item>
                 <Form.Item
                   label="Rubric-only mode"
-                  extra={
-                    <div>
-                      <Tag>NEW</Tag> Require graders to link all submission comments to a Rubric Comment.
-                    </div>
-                  }
+                  extra={<div>Require graders to link all submission comments to a Rubric Comment.</div>}
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 15 }}
                 >
@@ -531,7 +595,8 @@ const CollectionCreateForm: any = Form.create()(
                   extra={
                     <div>
                       Use file templates to help speed up grading by de-emphasizing template-provided versus
-                      student-written code. Template names must match submission file names.
+                      student-written code. Template files names must match a file added as a "Submission File".
+                      <br />
                     </div>
                   }
                   labelCol={{ span: 6 }}
@@ -555,6 +620,19 @@ const CollectionCreateForm: any = Form.create()(
                         };
                       })}
                     pagination={false}
+                    locale={{
+                      emptyText: (
+                        <Empty
+                          image={Empty.PRESENTED_IMAGE_SIMPLE}
+                          description={
+                            <div style={{ fontWeight: 500 }}>
+                              No files. In order to upload template code, the file must first be added as an Optional or
+                              Required <b>Submission File</b> in the <b>Submission tab</b>.
+                            </div>
+                          }
+                        />
+                      ),
+                    }}
                   />
                 </Form.Item>
                 <Form.Item
@@ -574,7 +652,7 @@ const CollectionCreateForm: any = Form.create()(
                   })(<Switch />)}
                 </Form.Item>
               </Tabs.TabPane>
-              <Tabs.TabPane tab="Publishing" key="4">
+              <Tabs.TabPane tab="Publishing" key="4" style={tabPaneStyle}>
                 <Form.Item
                   label="Hide graders"
                   extra={

@@ -26,6 +26,12 @@ const EnvironmentV = t.intersection(
       dumpMode: t.boolean,
       testParsing: t.boolean,
       dockerfile: t.string,
+      buildType: t.string,
+      allowNetworkAccess: t.boolean,
+      maxStudentTestRuns: t.union([t.null, t.number]),
+      exposeDumpLogs: t.boolean,
+      maxExposedFailedTests: t.union([t.null, t.number]),
+      dockerRunInstructions: t.array(t.string),
     }),
     t.partial({}),
   ],
@@ -38,10 +44,15 @@ const EnvironmentVPost = t.intersection(
     t.type({
       language: t.string,
       assignment: t.number,
-      dependencies: t.string,
       compileText: t.string,
       dumpMode: t.boolean,
       testParsing: t.boolean,
+      buildType: t.string,
+      allowNetworkAccess: t.boolean,
+      maxStudentTestRuns: t.union([t.null, t.number]),
+      exposeDumpLogs: t.boolean,
+      maxExposedFailedTests: t.union([t.null, t.number]),
+      dockerRunInstructions: t.array(t.string),
     }),
     t.partial({}),
   ],
@@ -53,10 +64,14 @@ const EnvironmentVPatch = t.intersection(
     GenericObject,
     t.partial({
       language: t.string,
-      dependencies: t.string,
       compileText: t.string,
       dumpMode: t.boolean,
       testParsing: t.boolean,
+      buildType: t.string,
+      allowNetworkAccess: t.boolean,
+      maxStudentTestRuns: t.union([t.null, t.number]),
+      maxExposedFailedTests: t.union([t.null, t.number]),
+      dockerRunInstructions: t.array(t.string),
     }),
   ],
   'EnvironmentPatch',
@@ -65,10 +80,20 @@ const EnvironmentVPatch = t.intersection(
 const BuildData = t.intersection([
   GenericObject,
   t.type({
-    dependencies: t.array(t.string),
+    dockerRunInstructions: t.array(t.string),
     language: t.string,
+    buildType: t.string,
   }),
 ]);
+
+const BuildResponse = t.type({
+  environment: EnvironmentV,
+  build: t.type({
+    success: t.boolean,
+    logs: t.array(t.string),
+  }),
+  dockerfile: t.string,
+});
 
 const RunAllData = t.intersection([
   GenericObject,
@@ -94,6 +119,8 @@ const TestsSource = t.intersection([
   }),
 ]);
 
+const Dockerfile = t.string;
+
 export type TestTemplateType = t.TypeOf<typeof TestTemplate>;
 export type TestsSourceType = t.TypeOf<typeof TestsSource>;
 
@@ -105,8 +132,9 @@ export class Environment {
   public static delete = deleteObject(EnvironmentV, 'autograder/environments');
   public static update = updateObject(EnvironmentV, EnvironmentVPatch, 'autograder/environments');
 
-  public static build = updateObjectDetail(EnvironmentV, BuildData, 'autograder/environments', 'build');
+  public static build = updateObjectDetail(BuildResponse, BuildData, 'autograder/environments', 'build');
   public static eject = readObjectDetail(TestsSource, 'autograder/environments', 'eject');
   public static runAll = updateObjectDetail(TaskV, RunAllData, 'autograder/environments', 'runAll');
   public static run = readObjectDetail(TaskV, 'autograder/environments', 'run');
+  public static dockerfile = readObjectDetail(Dockerfile, 'autograder/environments', 'dockerfile');
 }

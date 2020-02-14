@@ -26,7 +26,7 @@ import FileTag from './TestDefinitions/FileTag';
 
 import { CodeWindow } from './utils/CodeWindow';
 import { TestsChangeModal } from './TestDefinitions/TestsChangeModal';
-import { PsuedoTerminal, ILogType } from './TestDefinitions/PsuedoTerminal';
+import { PseudoTerminal, ILogType } from './TestDefinitions/PseudoTerminal';
 
 /* codePost util imports */
 import { awaitTestResult } from '../testResult';
@@ -144,7 +144,7 @@ export const SourceEditor = (props: IProps) => {
         }
         height={'350px'}
       />
-      <PsuedoTerminal
+      <PseudoTerminal
         log={logs}
         isRunning={running}
         runTest={runTest}
@@ -153,6 +153,7 @@ export const SourceEditor = (props: IProps) => {
         files={props.sourceFiles.map((el) => el.name)}
         defaultFile="main.sh"
         updateFile={setFileToRun}
+        env={props.env}
       />
     </div>
   );

@@ -61,6 +61,7 @@ import { openSubmissionInSameTab } from '../admin/other/AdminUtils';
 import { sendSlack } from '../core/slack';
 
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+import { getDaysLate } from '../utils/LateDays';
 
 import { fetchTestData, TestCasesByCategory, StudentTestCasesByCategory } from '../core/testFetchUtils';
 
@@ -79,7 +80,7 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 
 import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
 
-import { demoFiles } from './demoCode';
+import { loadDemoGrader, loadDemoStudent } from './demo';
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 
@@ -91,7 +92,7 @@ import { CourseContext, defaultCourse } from '../core/Contexts';
 /**********************************************************************************************************************/
 
 /* f(logged in user, submission) */
-enum PERMISSION_LEVEL {
+export enum PERMISSION_LEVEL {
   NOT_FOUND,
   NONE,
   READ,
@@ -159,6 +160,8 @@ interface ICodeConsoleState {
   cursorMode: boolean;
   showCursor: CURSOR_DOMAIN;
   noSave?: boolean;
+
+  hideGrades: boolean;
 }
 
 export interface ICodeConsoleProps {
@@ -350,6 +353,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       SubmissionTest.getLatest(submissionTests)
         .map((test) => {
           const match = testCases.find((el) => el.id === test.testCase);
+
+          if (match === undefined) {
+            return 0;
+          }
+
           return test.passed ? match!.pointsPass : match!.pointsFail;
         })
         .reduce((el, acc) => el + acc, 0)
@@ -427,11 +435,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     const max_size_bytes = 500000;
 
     return files.map((file: FileType) => {
-      const size_bytes = new TextEncoder().encode(file.code).length;
+      const size_bytes = new Blob([file.code]).size;
 
       const bounce =
-        !['.pdf', 'pdf', 'jpg', '.jpg', 'jpeg', '.jpeg', 'png', '.png', 'ipynb', '.ipynb'].includes(file.extension) &&
-        size_bytes > max_size_bytes;
+        !['.pdf', 'pdf', 'jpg', '.jpg', 'jpeg', '.jpeg', 'png', '.png', 'ipynb', '.ipynb'].includes(
+          file.extension.toLowerCase(),
+        ) && size_bytes > max_size_bytes;
       if (bounce) {
         return {
           ...file,
@@ -492,6 +501,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       showExplanations: false,
 
       panelType: PANEL_TYPE.FILE,
+      hideGrades: false,
     };
   }
 
@@ -501,9 +511,25 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public async componentDidMount() {
     document.addEventListener('keydown', this.handleCursor);
+    const queryValues = queryString.parse(this.props.location.search);
 
     if (this.props.inDemoMode) {
       document.title = 'codePost | Code Console Demo';
+
+      /**********************************************************************************/
+      /* BEGIN: QUERY ARG PARSING
+      /**********************************************************************************/
+
+      if (queryValues.sample && queryValues.sample === '1') {
+        this.loadDemoData([], true);
+      } else {
+        this.loadDemoData([], false);
+      }
+
+      /**********************************************************************************/
+      /* END: QUERY ARG PARSING
+      /**********************************************************************************/
+
       this.setState({ isLoading: false });
       return;
     }
@@ -566,11 +592,18 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         files = CodeConsole.fileBouncer(files);
 
-        selectedFile = files.find((f: FileType) => {
-          return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
-        });
         if (selectedFile === undefined && files.length > 0) {
-          selectedFile = files[0];
+          if (typeof queryValues.comment === 'string') {
+            const matchingFile = files.find((el) =>
+              el.comments.some((c) => c === parseInt(queryValues.comment as string)),
+            );
+            selectedFile = matchingFile || files[0];
+          } else {
+            selectedFile =
+              files.find((f: FileType) => {
+                return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
+              }) || files[0];
+          }
         }
 
         // Read tests
@@ -656,12 +689,18 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         files = CodeConsole.fileBouncer(files);
 
-        selectedFile = files.find((f: FileType) => {
-          return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
-        });
-
         if (selectedFile === undefined && files.length > 0) {
-          selectedFile = files[0];
+          if (typeof queryValues.comment === 'string') {
+            const matchingFile = files.find((el) =>
+              el.comments.some((c) => c === parseInt(queryValues.comment as string)),
+            );
+            selectedFile = matchingFile || files[0];
+          } else {
+            selectedFile =
+              files.find((f: FileType) => {
+                return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
+              }) || files[0];
+          }
         }
 
         tests = await Promise.all(writableSubmission.tests.map((id) => SubmissionTest.read(id)));
@@ -956,6 +995,90 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     return newSubmission;
   };
 
+  public addLateDayCreditComment = async (lateDayCreditsUsed: number) => {
+    // -- Add a LateDayCredit Comment --
+    //
+    // * Clear the submission of all other comments tagged with 'late'
+    // * Update Submission.lateDayCreditsUsed
+    // * Add, save the template comment
+    // * Unfocus the new comment
+
+    if (this.state.course === undefined || this.state.course.lateDayCreditsAllowable === null) {
+      return;
+    }
+
+    if (this.state.assignment === undefined || !this.state.assignment.allowStudentUpload) {
+      return;
+    }
+
+    if (this.state.submission === undefined) {
+      return;
+    }
+
+    if (this.state.files.length === 0) {
+      return;
+    }
+
+    const firstFile = this.state.files[0];
+
+    const daysLate = getDaysLate(this.state.assignment, this.state.submission);
+    const daysLateAfterCredit = daysLate - lateDayCreditsUsed;
+
+    const text = `
+\`\`\`
+Days Late:                 ${daysLate}
+Late Credits Used:         ${lateDayCreditsUsed}
+Days Late (After Credit):  ${daysLateAfterCredit}
+\`\`\`
+`;
+
+    const lateDayCreditComment: CommentType = {
+      startLine: 1,
+      endLine: 1,
+      startChar: 0,
+      endChar: 1,
+      id: this.state.commentCounter,
+      file: firstFile.id,
+      pointDelta: 0.0,
+      text,
+      rubricComment: null,
+      author: this.props.user.email,
+      feedback: 0,
+      tags: ['late'],
+    };
+
+    const submissionPayload = {
+      id: this.state.submission!.id,
+      lateDayCreditsUsed,
+    };
+
+    try {
+      await Submission.update(submissionPayload);
+
+      let promises: Promise<any>[] = [];
+      // Clear previous LateDay comments
+      for (const fileID of Object.keys(this.state.comments)) {
+        promises = [
+          ...promises,
+          ...this.state.comments[+fileID].map(async (comment: CommentType) => {
+            if (comment.tags !== undefined && comment.tags.includes('late')) {
+              await this.deleteComment(comment);
+            }
+          }),
+        ];
+      }
+
+      await Promise.all(promises);
+
+      this.addComment(lateDayCreditComment, firstFile);
+      this.saveComment(lateDayCreditComment);
+      this.setState({ activeCommentID: undefined });
+      return true;
+    } catch (err) {
+      return false;
+    }
+  };
+
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType) => {
     const comments = CodeConsole.addCommentToState(this.state.comments, comment, file);
@@ -1169,6 +1292,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         (oldState: ICodeConsoleState) => {
           // We need to update the submission object in the same way it would be updated
           // if update below was actually sent.
+
           return {
             submission: {
               ...oldState.submission!,
@@ -1188,10 +1312,15 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       return;
     }
 
-    const payload = {
+    let payload: any = {
       id: this.state.submission.id,
       isFinalized: !this.state.submission.isFinalized,
     };
+
+    // if trying to finalize with only one grader available, set the grader
+    if (this.state.graders.length === 1 && !this.state.submission.isFinalized) {
+      payload = { ...payload, grader: this.state.graders[0] };
+    }
 
     try {
       const submission = await Submission.update(payload);
@@ -1262,261 +1391,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /***********************************************************************************************/
   /* Demo data
   /***********************************************************************************************/
-  public loadDemoData = (files: any[]) => {
-    const demoAssignment: AssignmentType = {
-      id: -1,
-      name: 'codePost Demo',
-      isReleased: false,
-      hideGrades: false,
-      rubricCategories: [],
-      course: -1,
-      sortKey: 0,
-      anonymousGrading: false,
-      allowRegradeRequests: false,
-      regradeDeadline: '',
-      hideGradersFromStudents: false,
-      mean: null,
-      median: null,
-      points: 20,
-      commentFeedback: true,
-      allowStudentUpload: false,
-      uploadDueDate: '',
-      liveFeedbackMode: false,
-      collaborativeRubricMode: false,
-      additiveGrading: false,
-      forcedRubricMode: false,
-      templateMode: false,
-      fileTemplates: [],
-      testCategories: [-1],
-      environment: null,
-      showFrequentlyUsedRubricComments: false,
-      allowLateUploads: false,
-    };
+  public loadDemoData = (files: any[], studentSample?: boolean) => {
+    const demoState =
+      studentSample !== undefined && studentSample
+        ? loadDemoStudent(files, this.props.user.email)
+        : loadDemoGrader(files, this.props.user.email);
 
-    const demoCourse: CourseType = {
-      id: -1,
-      name: 'Demo',
-      period: 'demo',
-      assignments: [-1],
-      sections: [],
-      sendReleasedSubmissionsToBack: false,
-      showStudentsStatistics: false,
-      timezone: moment.tz.guess(),
-      emailNewUsers: false,
-      anonymousGradingDefault: false,
-    };
-
-    const demoSubmission: AnonymousSubmissionType = {
-      id: 1,
-      isFinalized: false,
-      files: [1, 2, 3],
-      students: ['student1@example.edu'],
-      assignment: -1,
-      dateEdited: '',
-      dateUploaded: moment().toString(),
-      grade: null,
-      grader: this.props.user.email,
-      questionText: '',
-      questionIsOpen: false,
-      questionResponder: 'grader0@example.edu',
-      questionResponse: '',
-      questionIsRegrade: false,
-      questionDate: '',
-      responseDate: '',
-      tests: [],
-    };
-
-    const fileList: FileType[] = [];
-    const commentMap: any = {};
-    if (files.length > 0) {
-      files.forEach((file, index) => {
-        fileList.push({
-          id: index,
-          code: file.data,
-          comments: [],
-          extension: file.name.split('.')[1],
-          name: file.name,
-          submission: 1,
-          path: null,
-          created: '',
-        });
-
-        commentMap[index] = [];
-      });
-    } else {
-      fileList[0] = demoFiles[0];
-      fileList[1] = demoFiles[1];
-      commentMap[0] = [];
-      commentMap[1] = [];
-    }
-
-    const rubricCategoryList: RubricCategoryType[] = [
-      {
-        id: 1,
-        name: 'Style',
-        rubricComments: [],
-        assignment: 1,
-        pointLimit: null,
-        sortKey: 0,
-        helpText: '',
-        atMostOnce: false,
-      },
-      {
-        id: 2,
-        name: 'Performance',
-        rubricComments: [],
-        assignment: 1,
-        pointLimit: null,
-        sortKey: 1,
-        helpText: '',
-        atMostOnce: false,
-      },
-    ];
-
-    const rubricCommentsMap: IRubricCategoryToRubricCommentsMap = {
-      1: [
-        {
-          id: 1,
-          text: 'Unnecessary comment - this code speaks for itself!',
-          category: 1,
-          pointDelta: 1,
-          sortKey: 0,
-          explanation: '',
-        },
-        {
-          id: 2,
-          text: 'Code not separated by newlines into logical blocks',
-          category: 1,
-          pointDelta: 1,
-          sortKey: 1,
-          explanation: '',
-        },
-        {
-          id: 3,
-          text: "Generic variable name (e.g. `x`) that doesn't describe value",
-          category: 1,
-          pointDelta: 1,
-          sortKey: 2,
-          explanation: '',
-        },
-      ],
-      2: [
-        {
-          id: 4,
-          text: 'Sorting followed by binary search would be faster than performing a `O(n^2)` search every time',
-          category: 2,
-          pointDelta: 2,
-          sortKey: 0,
-          explanation: '',
-        },
-        {
-          id: 5,
-          text: 'Memoization would improve performance, since these values are frequently recomputed',
-          category: 2,
-          pointDelta: 1,
-          sortKey: 0,
-          explanation: '',
-        },
-      ],
-    };
-
-    const tests: SubmissionTestType[] = [
-      {
-        id: -1,
-        submission: 1,
-        testCase: -1,
-        logs: '',
-        passed: true,
-        testCategory: -1,
-        created: '2019-12-16T23:16:19.737805Z',
-        modified: '2019-12-16T23:16:19.737823Z',
-        isError: false,
-      },
-      {
-        id: -2,
-        submission: 1,
-        testCase: -2,
-        logs: `Traceback (most recent call last):
-  File "./Loops.py", line 37, in <module>
-    reverse([1, 2, 3])
-  File "./Loops.py", line 33, in reverse
-    reversed.append(intList[i])
-IndexError: list index out of range`,
-        passed: false,
-        testCategory: -1,
-        created: '2019-12-16T23:16:19.737805Z',
-        modified: '2019-12-16T23:16:19.737823Z',
-        isError: false,
-      },
-    ];
-
-    const testCategories: TestCategoryType[] = [
-      {
-        id: -1,
-        name: 'Correctness',
-        testCases: [-1, -2],
-        assignment: demoAssignment.id,
-      },
-    ];
-
-    const testCases: TestCasesByCategory = {
-      '-1': [
-        {
-          id: -1,
-          testCategory: -1,
-          sortKey: 0,
-          description: 'Test max [1,2,3]',
-          type: 'io',
-          pointsFail: 1,
-          pointsPass: 0,
-          text: '',
-          modified: '2019-12-16T23:09:44.686902Z',
-          function: 'max',
-          fileName: 'Loops.py',
-          expectedOutput: '3',
-          input: '[1,2,3]',
-          checkReturn: true,
-          exposed: false,
-          instances: [-1],
-          explanation: '',
-          lastSolutionRun: 0,
-        },
-        {
-          id: -2,
-          testCategory: -1,
-          sortKey: 0,
-          description: 'Test reverse [1,2,3]',
-          type: 'io',
-          pointsFail: -2,
-          pointsPass: 0,
-          text: '',
-          modified: '2019-12-16T23:09:44.686902Z',
-          function: 'reverse',
-          fileName: 'Loops.py',
-          expectedOutput: '[3,2,1]',
-          input: '[1,2,3]',
-          checkReturn: true,
-          exposed: false,
-          instances: [-1],
-          explanation: '',
-          lastSolutionRun: 0,
-        },
-      ],
-    };
-
-    this.setState({
-      assignment: demoAssignment,
-      course: demoCourse,
-      submission: demoSubmission,
-      files: fileList,
-      comments: commentMap,
-      selectedFile: fileList.length > 0 ? fileList[0] : undefined,
-      rubricCategories: rubricCategoryList,
-      rubricComments: rubricCommentsMap,
-      tests,
-      testCategories,
-      testCases,
-    });
+    this.setState(demoState);
   };
 
   public setDimensions = (dimensions: CodeConsoleDimensionsType) => {
@@ -1684,217 +1565,326 @@ IndexError: list index out of range`,
       /* Build header
       /*********************************************************/
 
-      middleHeader = [
-        <GradeButton
-          key="subheader-grade"
-          assignment={this.state.assignment!}
-          submission={this.state.submission === undefined ? this.state.readOnlySubmission! : this.state.submission}
-          calculateGrade={this.calculateGradeFromState}
-          rubricCategories={this.state.rubricCategories}
-          comments={this.state.comments}
-          commentRubricComments={this.state.commentRubricComments}
-          files={this.state.files}
-          submissionTests={this.state.tests}
-          testCases={Object.values(this.state.testCases).flat()}
-        />,
-      ];
+      middleHeader = this.state.hideGrades
+        ? []
+        : [
+            <GradeButton
+              key="subheader-grade"
+              assignment={this.state.assignment!}
+              submission={this.state.submission === undefined ? this.state.readOnlySubmission! : this.state.submission}
+              calculateGrade={this.calculateGradeFromState}
+              rubricCategories={this.state.rubricCategories}
+              comments={this.state.comments}
+              commentRubricComments={this.state.commentRubricComments}
+              files={this.state.files}
+              submissionTests={this.state.tests}
+              testCases={Object.values(this.state.testCases).flat()}
+            />,
+          ];
 
       const fileMenuTitle = <FileMenuTitle key="files" files={this.state.files} />;
       if (this.props.inDemoMode) {
-        if (this.state.selectedFile) {
-          const demoCode = (onHighlightClick: any) => (
-            <GradeCode
-              key={this.state.selectedFile!.id}
-              file={this.state.selectedFile!}
-              comments={this.state.comments[this.state.selectedFile!.id]}
-              readOnly={this.state.submission!.isFinalized}
-              addComment={this.addComment}
-              user={this.props.user.email}
-              onHighlightClick={onHighlightClick}
-              dimensions={this.state.dimensions}
-              commentCounter={this.state.commentCounter}
-              fileTemplate={undefined}
-              cursorMode={this.state.cursorMode}
-              showCursor={this.state.showCursor}
-              updateCursorDomain={this.updateCursorDomain}
-            />
-          );
+        if (this.state.permissionLevel === PERMISSION_LEVEL.READ) {
+          if (this.state.selectedFile) {
+            const code = (onHighlightClick: any) => (
+              <StudentCode
+                key={this.state.selectedFile!.id}
+                file={this.state.selectedFile!}
+                comments={this.state.comments[this.state.selectedFile!.id]}
+                readOnly={true}
+                user={this.props.user.email}
+                onHighlightClick={onHighlightClick}
+                dimensions={this.state.dimensions}
+              />
+            );
 
-          const demoComments = (
-            <GradeComments
+            const comments = (
+              <StudentComments
+                isStudent={this.state.isStudent}
+                comments={this.state.comments[this.state.selectedFile!.id]}
+                rubricComments={this.state.commentRubricComments}
+                file={this.state.selectedFile!}
+                fileIDs={this.state.files.map((file: FileType) => {
+                  return file.id;
+                })}
+                verticalOffset={this.state.codeVerticalOffset}
+                dimensions={this.state.dimensions}
+                updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
+                studentFeedbackOn={this.state.assignment.commentFeedback}
+                hideAuthor={this.state.assignment.hideGradersFromStudents}
+                additiveGrading={false}
+                rubricCategories={this.state.rubricCategories}
+              />
+            );
+
+            content = (
+              <CodePanelLayout
+                comments={comments}
+                code={code}
+                toolbarWidgets={toolbarWidgets}
+                dimensions={this.state.dimensions}
+                file={this.state.selectedFile}
+                zoom={this.state.codeZoom}
+                updateVerticalOffset={this.setVerticalOffset}
+              />
+            );
+          } else if (this.state.panelType === PANEL_TYPE.TESTS) {
+            content = (
+              <TestsList tests={this.state.tests} cases={this.state.testCases} categories={this.state.testCategories} />
+            );
+          }
+
+          leftHeader = [
+            <HeaderMenu
+              key="menu"
+              claimSubmission={this.claimSubmission}
               isStudent={this.state.isStudent}
+              toggleShowExplanations={this.toggleShowExplanations}
               showExplanations={this.state.showExplanations}
-              comments={this.state.comments[this.state.selectedFile!.id]}
-              rubricComments={this.state.commentRubricComments}
-              readOnly={this.state.submission!.isFinalized}
-              file={this.state.selectedFile!}
-              fileIDs={this.state.files.map((file: FileType) => {
-                return file.id;
-              })}
-              activeCommentID={this.state.activeCommentID}
-              changeActive={this.changeActiveComment}
-              deleteComment={this.deleteComment}
-              saveComment={this.saveComment}
-              removeRubricComment={this.removeRubricComment}
-              oldCommentIDs={this.state.oldCommentIDs}
-              verticalOffset={this.state.codeVerticalOffset}
-              dimensions={this.state.dimensions}
-              updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
-              studentFeedbackOn={this.state.assignment.commentFeedback}
-              hideAuthor={this.state.assignment.hideGradersFromStudents}
-              additiveGrading={this.state.assignment.additiveGrading}
-              forcedRubricMode={this.state.assignment.forcedRubricMode}
-              rubricCategories={this.state.rubricCategories}
-              showCursor={this.state.showCursor}
-            />
-          );
+              hasExplanations={Object.values(this.state.rubricComments)
+                .flat()
+                .some((el) => el.explanation)}
+              isAdmin={this.isCourseAdmin(this.state.assignment)}
+              course={this.state.course}
+              assignment={this.state.assignment}
+            />,
+            <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
+          ];
 
-          content = (
-            <CodePanelLayout
-              comments={demoComments}
-              code={demoCode}
-              toolbarWidgets={toolbarWidgets}
-              dimensions={this.state.dimensions}
-              file={this.state.selectedFile}
-              zoom={this.state.codeZoom}
-              updateVerticalOffset={this.setVerticalOffset}
-            />
-          );
-        } else if (this.state.panelType === PANEL_TYPE.TESTS) {
-          content = (
-            <TestsList tests={this.state.tests} cases={this.state.testCases} categories={this.state.testCategories} />
-          );
-        }
+          rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
 
-        const onCancel = () => {
-          return;
-        };
+          sider = [
+            <ReadOnlySubmissionInfo
+              key="submission-info"
+              title="Submission Info"
+              assignment={this.state.assignment}
+              readOnlySubmission={this.state.readOnlySubmission!}
+              submitStudentQuestion={this.submitStudentQuestion}
+              deleteStudentQuestion={this.deleteStudentQuestion}
+            />,
+            <FileMenu
+              key="file-menu"
+              title="Files"
+              files={this.state.files}
+              comments={this.state.comments}
+              selectedFile={this.state.selectedFile}
+              getPointsInFile={this.getPointsInFile}
+              changeSelectedFile={this.changeSelectedFile}
+            />,
+          ];
 
-        sider = [
-          <SubmissionInfo
-            key="submission-info"
-            title="Submission Info"
-            assignment={this.state.assignment!}
-            submission={this.state.submission!}
-            graders={this.state.graders}
-            isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
-            updateGrader={this.updateGrader}
-          />,
-          <TestsMenu
-            key="tests-menu"
-            isOpen={this.state.panelType === PANEL_TYPE.TESTS}
-            tests={this.state.tests}
-            cases={this.state.testCases}
-            categories={this.state.testCategories}
-            assignment={this.state.assignment}
-            emptyMessage="Your instructor didn't define any tests for this assignment. "
-            showLink={true}
-          />,
-          <FileMenu
-            key="file-menu"
-            title="Files"
-            files={this.state.files}
-            comments={this.state.comments}
-            selectedFile={this.state.selectedFile}
-            getPointsInFile={this.getPointsInFile}
-            changeSelectedFile={this.changeSelectedFile}
-          />,
-          <RubricManager
-            key="rubric-menu"
-            shouldLoadFeedback={false}
-            shouldLoadInstanceLists={this.state.assignment.showFrequentlyUsedRubricComments}
-            assignment={this.state.assignment}
-            submissions={[]}
-            onCancel={onCancel}
-            defaultRubric={{
-              categories: this.state.rubricCategories,
-              comments: _.flatten(Object.values(this.state.rubricComments)),
-            }}
-          >
-            {({ props, state, helpers }: IRubricManagerParams) => {
-              const propz = {
-                ...props,
-                handleRubricCommentClick: this.onRubricCommentClick,
-                hasActiveComment: this.state.activeCommentID !== undefined,
-                toggleEditRubricMode: this.toggleEditRubricMode,
-                editRubricMode: this.state.editRubricMode,
-                setRubric: this.setRubric,
-                turnOnReload: this.turnOnReload,
-                turnOffReload: this.turnOffReload,
-                canUserEdit: true, // showcase in-console rubric editing in demo
-                demoMode: true,
-                showCursor: this.state.showCursor,
-                updateCursorDomain: this.updateCursorDomain,
-                showExplanations: this.state.showExplanations,
-                showFrequent:
-                  this.state.assignment !== undefined ? this.state.assignment.showFrequentlyUsedRubricComments : false,
-              };
-              return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
-            }}
-          </RubricManager>,
-        ];
+          siderTitles = ['Submission Info', fileMenuTitle];
+        } else {
+          if (this.state.selectedFile) {
+            const demoCode = (onHighlightClick: any) => (
+              <GradeCode
+                key={this.state.selectedFile!.id}
+                file={this.state.selectedFile!}
+                comments={this.state.comments[this.state.selectedFile!.id]}
+                readOnly={this.state.submission!.isFinalized}
+                addComment={this.addComment}
+                user={this.props.user.email}
+                onHighlightClick={onHighlightClick}
+                dimensions={this.state.dimensions}
+                commentCounter={this.state.commentCounter}
+                fileTemplate={undefined}
+                cursorMode={this.state.cursorMode}
+                showCursor={this.state.showCursor}
+                updateCursorDomain={this.updateCursorDomain}
+              />
+            );
 
-        siderTitles = [
-          'Submission Info',
-          <div>
-            Tests{' '}
-            <CPButton
-              size="small"
-              cpType={theme === 'light' ? 'secondary' : 'dark'}
-              icon="folder-open"
+            const demoComments = (
+              <GradeComments
+                isStudent={this.state.isStudent}
+                showExplanations={this.state.showExplanations}
+                comments={this.state.comments[this.state.selectedFile!.id]}
+                rubricComments={this.state.commentRubricComments}
+                readOnly={this.state.submission!.isFinalized}
+                file={this.state.selectedFile!}
+                fileIDs={this.state.files.map((file: FileType) => {
+                  return file.id;
+                })}
+                activeCommentID={this.state.activeCommentID}
+                changeActive={this.changeActiveComment}
+                deleteComment={this.deleteComment}
+                saveComment={this.saveComment}
+                removeRubricComment={this.removeRubricComment}
+                oldCommentIDs={this.state.oldCommentIDs}
+                verticalOffset={this.state.codeVerticalOffset}
+                dimensions={this.state.dimensions}
+                updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
+                studentFeedbackOn={this.state.assignment.commentFeedback}
+                hideAuthor={this.state.assignment.hideGradersFromStudents}
+                additiveGrading={this.state.assignment.additiveGrading}
+                forcedRubricMode={this.state.assignment.forcedRubricMode}
+                rubricCategories={this.state.rubricCategories}
+                showCursor={this.state.showCursor}
+              />
+            );
+
+            content = (
+              <CodePanelLayout
+                comments={demoComments}
+                code={demoCode}
+                toolbarWidgets={toolbarWidgets}
+                dimensions={this.state.dimensions}
+                file={this.state.selectedFile}
+                zoom={this.state.codeZoom}
+                updateVerticalOffset={this.setVerticalOffset}
+              />
+            );
+          } else if (this.state.panelType === PANEL_TYPE.TESTS) {
+            content = (
+              <TestsList tests={this.state.tests} cases={this.state.testCases} categories={this.state.testCategories} />
+            );
+          }
+
+          const onCancel = () => {
+            return;
+          };
+
+          sider = [
+            <SubmissionInfo
+              key="submission-info"
+              title="Submission Info"
+              assignment={this.state.assignment!}
+              submission={this.state.submission!}
+              courseLateDayCreditsAllowable={this.state.course!.lateDayCreditsAllowable}
+              graders={this.state.graders}
+              isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
+              updateGrader={this.updateGrader}
+              addLateDayCreditComment={this.addLateDayCreditComment}
+            />,
+            <TestsMenu
+              key="tests-menu"
+              isOpen={this.state.panelType === PANEL_TYPE.TESTS}
+              tests={this.state.tests}
+              cases={this.state.testCases}
+              categories={this.state.testCategories}
+              assignment={this.state.assignment}
+              emptyMessage="Your instructor didn't define any tests for this assignment. "
+              showLink={true}
               onClick={(e: any) => {
                 e.preventDefault();
                 e.stopPropagation();
                 this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
               }}
-            />
-          </div>,
-          fileMenuTitle,
-          'Rubric',
-        ];
+            />,
+            <FileMenu
+              key="file-menu"
+              title="Files"
+              files={this.state.files}
+              comments={this.state.comments}
+              selectedFile={this.state.selectedFile}
+              getPointsInFile={this.getPointsInFile}
+              changeSelectedFile={this.changeSelectedFile}
+            />,
+            <RubricManager
+              key="rubric-menu"
+              shouldLoadFeedback={false}
+              shouldLoadInstanceLists={this.state.assignment.showFrequentlyUsedRubricComments}
+              assignment={this.state.assignment}
+              submissions={[]}
+              onCancel={onCancel}
+              defaultRubric={{
+                categories: this.state.rubricCategories,
+                comments: _.flatten(Object.values(this.state.rubricComments)),
+              }}
+            >
+              {({ props, state, helpers }: IRubricManagerParams) => {
+                const propz = {
+                  ...props,
+                  handleRubricCommentClick: this.onRubricCommentClick,
+                  hasActiveComment: this.state.activeCommentID !== undefined,
+                  toggleEditRubricMode: this.toggleEditRubricMode,
+                  editRubricMode: this.state.editRubricMode,
+                  setRubric: this.setRubric,
+                  turnOnReload: this.turnOnReload,
+                  turnOffReload: this.turnOffReload,
+                  canUserEdit: true, // showcase in-console rubric editing in demo
+                  demoMode: true,
+                  showCursor: this.state.showCursor,
+                  updateCursorDomain: this.updateCursorDomain,
+                  showExplanations: this.state.showExplanations,
+                  showFrequent:
+                    this.state.assignment !== undefined
+                      ? this.state.assignment.showFrequentlyUsedRubricComments
+                      : false,
+                  course: this.state.course!,
+                };
+                return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
+              }}
+            </RubricManager>,
+          ];
 
-        leftHeader = [
-          <HeaderMenu
-            key="menu"
-            claimSubmission={this.claimSubmission}
-            isStudent={this.state.isStudent}
-            toggleShowExplanations={this.toggleShowExplanations}
-            showExplanations={this.state.showExplanations}
-            hasExplanations={Object.values(this.state.rubricComments)
-              .flat()
-              .some((el) => el.explanation)}
-            isAdmin={this.isCourseAdmin(this.state.assignment)}
-            course={this.state.course}
-            assignment={this.state.assignment}
-          />,
-          <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
-        ];
+          siderTitles = [
+            'Submission Info',
+            <div>
+              Tests{' '}
+              <CPButton
+                size="small"
+                cpType={theme === 'light' ? 'secondary' : 'dark'}
+                icon="folder-open"
+                onClick={(e: any) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
+                }}
+              />
+            </div>,
+            fileMenuTitle,
+            'Rubric',
+          ];
 
-        const signupButton =
-          this.props.user.id === -1 ? (
-            <CPButton key="sign-up" cpType="primary">
-              <a href="/signup/create" target="_blank">
-                Sign up!
-              </a>
-            </CPButton>
-          ) : null;
+          leftHeader = [
+            <HeaderMenu
+              key="menu"
+              claimSubmission={this.claimSubmission}
+              isStudent={this.state.isStudent}
+              isDemo={true}
+              toggleShowExplanations={this.toggleShowExplanations}
+              showExplanations={this.state.showExplanations}
+              hasExplanations={Object.values(this.state.rubricComments)
+                .flat()
+                .some((el) => el.explanation)}
+              isAdmin={this.isCourseAdmin(this.state.assignment)}
+              course={this.state.course}
+              assignment={this.state.assignment}
+            />,
+            <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
+          ];
 
-        rightHeader = [
-          signupButton,
-          <CursorToggle
-            key="cursor-toggle"
-            toggleCursorMode={this.toggleCursorMode}
-            cursorMode={this.state.cursorMode}
-            small={true}
-          />,
-          <ThemeToggle key="theme-toggle" small={true} />,
-          controls,
-          <FinalizeButton
-            key="subheader-finalize"
-            submission={this.state.submission!}
-            toggleFinalized={this.toggleFinalized}
-          />,
-        ];
+          const signupButton =
+            this.props.user.id === -1 ? (
+              <CPButton key="sign-up" cpType="primary">
+                <a href="/signup/create" target="_blank">
+                  Sign up!
+                </a>
+              </CPButton>
+            ) : null;
+
+          rightHeader = [
+            signupButton,
+            <CursorToggle
+              key="cursor-toggle"
+              toggleCursorMode={this.toggleCursorMode}
+              cursorMode={this.state.cursorMode}
+              small={true}
+            />,
+            <ThemeToggle key="theme-toggle" small={true} />,
+            controls,
+            <FinalizeButton
+              key="subheader-finalize"
+              submission={this.state.submission!}
+              toggleFinalized={this.toggleFinalized}
+              numComments={Object.values(this.state.comments).flat().length}
+              minComments={this.state.course!.minComments}
+              canUnfinalize={true}
+              isOnlyGrader={this.state.graders.length === 1}
+            />,
+          ];
+        }
       } else if (this.state.permissionLevel === PERMISSION_LEVEL.READ) {
         if (this.state.selectedFile) {
           const code = (onHighlightClick: any) => (
@@ -1925,6 +1915,7 @@ IndexError: list index out of range`,
               hideAuthor={this.state.assignment.hideGradersFromStudents}
               additiveGrading={false}
               rubricCategories={this.state.rubricCategories}
+              scrollToCommentID={parseInt(queryString.parse(this.props.location.search).comment as string)}
             />
           );
 
@@ -1981,6 +1972,11 @@ IndexError: list index out of range`,
             categories={this.state.testCategories}
             assignment={this.state.assignment}
             emptyMessage="Your instructor didn't define any tests for this assignment. "
+            onClick={(e: any) => {
+              e.preventDefault();
+              e.stopPropagation();
+              this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
+            }}
           />,
           <FileMenu
             key="file-menu"
@@ -2050,6 +2046,10 @@ IndexError: list index out of range`,
             key="subheader-finalize"
             submission={this.state.submission!}
             toggleFinalized={this.toggleFinalized}
+            numComments={Object.values(this.state.comments).flat().length}
+            minComments={this.state.course!.minComments}
+            canUnfinalize={!this.state.course!.noUnfinalize || this.isCourseAdmin(this.state.assignment)}
+            isOnlyGrader={this.state.graders.length === 1}
           />,
         ];
 
@@ -2107,6 +2107,7 @@ IndexError: list index out of range`,
               forcedRubricMode={this.state.assignment.forcedRubricMode}
               rubricCategories={this.state.rubricCategories}
               showCursor={this.state.showCursor}
+              scrollToCommentID={parseInt(queryString.parse(this.props.location.search).comment as string)}
             />
           );
 
@@ -2136,10 +2137,12 @@ IndexError: list index out of range`,
             key="submission-info"
             title="Submission Info"
             assignment={this.state.assignment}
+            courseLateDayCreditsAllowable={this.state.course!.lateDayCreditsAllowable}
             submission={this.state.submission!}
             graders={this.state.graders}
             isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
             updateGrader={this.updateGrader}
+            addLateDayCreditComment={this.addLateDayCreditComment}
           />,
           <TestsMenu
             key="tests-menu"
@@ -2150,6 +2153,11 @@ IndexError: list index out of range`,
             assignment={this.state.assignment}
             emptyMessage="No tests have been defined for this assignment."
             showLink={true}
+            onClick={(e: any) => {
+              e.preventDefault();
+              e.stopPropagation();
+              this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
+            }}
           />,
           <FileMenu
             key="file-menu"
@@ -2188,6 +2196,7 @@ IndexError: list index out of range`,
                 showExplanations: this.state.showExplanations,
                 showFrequent:
                   this.state.assignment !== undefined ? this.state.assignment.showFrequentlyUsedRubricComments : false,
+                course: this.state.course!,
               };
               return <RubricMenuUI props={propz} state={state} helpers={helpers} />;
             }}

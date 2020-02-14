@@ -16,6 +16,7 @@ import { Link } from 'react-router-dom';
 /* codePost imports */
 import { openSubmission } from '../../other/AdminUtils';
 
+import { CourseType } from '../../../../infrastructure/course';
 import { AssignmentType, sortAssignments } from '../../../../infrastructure/assignment';
 import { SubmissionType } from '../../../../infrastructure/submission';
 
@@ -28,11 +29,16 @@ import { tooltips } from '../../../../components/core/tooltips';
 
 import { IStudentSubmissionsDataTable } from '../../../../types/common';
 
-const confirm = Modal.confirm;
+import { Environment } from '../../../../infrastructure/autograder/environment';
+import { SubmissionTestResultType } from '../../../../infrastructure/autograder/runTypes';
 
+import { awaitTestResult } from '../../assignments/tests/testResult';
+
+const confirm = Modal.confirm;
 /**********************************************************************************************************************/
 
 interface IProps {
+  course: CourseType;
   onBack: () => void;
   students: string[];
   deleteSubmission: (submission: SubmissionType) => Promise<void>;
@@ -40,6 +46,8 @@ interface IProps {
   graders: string[];
   submissions: IStudentSubmissionsDataTable;
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>;
+  addFilesToSubmission: (submission: SubmissionType, files: any[]) => Promise<SubmissionType>;
+
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
   student: string;
@@ -57,6 +65,8 @@ interface IState {
   submissionsMap: {
     [assignmentID: number]: SubmissionType;
   };
+
+  subsRunning: number[];
 }
 
 class StudentDetail extends React.Component<IProps, IState> {
@@ -64,7 +74,82 @@ class StudentDetail extends React.Component<IProps, IState> {
     uploadSubmissionVisible: false,
     selectedSubmission: '',
     submissionsMap: this.props.submissions[this.props.student],
+    subsRunning: [],
   };
+
+  // ******************************************** API changes **************************************************
+
+  public removeSubmission = (toRemove: SubmissionType) => {
+    confirm({
+      title: 'Are you sure you want to remove this submission?',
+      content: `The following students are associated with this submission: ${toRemove.students.join(',')}.`,
+      onOk: () => {
+        return this.props.deleteSubmission(toRemove);
+      },
+      okText: 'Remove',
+    });
+  };
+
+  public callback = (sub: SubmissionType, result: SubmissionTestResultType) => {
+    this.setState((prevState, props) => ({ subsRunning: prevState.subsRunning.filter((id) => id !== sub.id) }));
+    message.success('Test run completed!');
+  };
+
+  public runTests = async (assignment: AssignmentType, sub: SubmissionType) => {
+    if (assignment.environment) {
+      this.setState((prevState, props) => ({ subsRunning: [...prevState.subsRunning, sub.id] }));
+      const result = await Environment.run(assignment.environment, {
+        submission: sub.id.toString(),
+        simulate: 'False',
+      });
+      awaitTestResult(result.task, this.callback.bind({}, sub));
+    }
+  };
+
+  public reUploadSubmission = (toRemove: SubmissionType) => {
+    confirm({
+      title: 'Are you sure you want to re-upload files for this submission?',
+      content: (
+        <div>
+          <br />
+          <div>
+            This action <b>cannot</b> be undone and will delete all existing files and comments for this submission.{' '}
+          </div>
+          <br />
+          <div>The following students are associated with this submission:</div>
+          <ul>
+            {toRemove.students.map((student: string) => {
+              return <li>{student}</li>;
+            })}
+          </ul>
+        </div>
+      ),
+      onOk: () => {
+        this.props.deleteSubmission(toRemove).then(() => {
+          console.log(toRemove.assignment);
+          this.toggleUploadSubmissionVisible(toRemove.assignment);
+        });
+      },
+      okText: 'Remove',
+    });
+  };
+
+  public uploadSubmission = (assignment: AssignmentType, partners: string[], files: any[]) => {
+    const submission = this.state.submissionsMap[assignment.id];
+    if (submission) {
+      return this.props.addFilesToSubmission(submission, files);
+    } else {
+      return this.props.uploadSubmission(assignment, partners, files);
+    }
+  };
+
+  public changeGrader = (submission: SubmissionType, newGrader: string | undefined) => {
+    this.props.changeSubmissionGrader(submission, newGrader).then(() => {
+      message.success('Updated grader');
+    });
+  };
+
+  // ******************************************** State changes **************************************************
 
   public toggleUploadSubmissionVisible = (assignmentToUpload?: number) => {
     if (assignmentToUpload === undefined) {
@@ -86,22 +171,7 @@ class StudentDetail extends React.Component<IProps, IState> {
     this.setState({ selectedSubmission: assignment });
   };
 
-  public changeGrader = (submission: SubmissionType, newGrader: string | undefined) => {
-    this.props.changeSubmissionGrader(submission, newGrader).then(() => {
-      message.success('Updated grader');
-    });
-  };
-
-  public removeSubmission = (toRemove: SubmissionType) => {
-    confirm({
-      title: 'Are you sure you want to remove this submission?',
-      content: `The following students are associated with this submission: ${toRemove.students.join(',')}.`,
-      onOk: () => {
-        return this.props.deleteSubmission(toRemove);
-      },
-      okText: 'Remove',
-    });
-  };
+  // ******************************************** Render helpers **************************************************
 
   public getViewIcon = (submission: SubmissionType, student: string) => {
     if (!(submission.id in this.props.viewsBySubmission) || !submission.isFinalized) {
@@ -154,7 +224,7 @@ class StudentDetail extends React.Component<IProps, IState> {
     // });
 
     const aligner: 'left' | 'center' | 'right' = 'center';
-    const columns = [
+    let columns = [
       {
         title: 'Open',
         dataIndex: 'open',
@@ -208,6 +278,15 @@ class StudentDetail extends React.Component<IProps, IState> {
       },
     ];
 
+    if (this.props.course !== undefined && this.props.course.lateDayCreditsAllowable !== null) {
+      columns.splice(columns.length - 1, 0, {
+        title: 'Late Day Credits Used',
+        dataIndex: 'lateDayCreditsUsed',
+        key: 'lateDayCreditsUsed',
+        align: aligner,
+      });
+    }
+
     const data = sortAssignments(this.props.assignments).map((assignment) => {
       const submission = this.state.submissionsMap[assignment.id];
       let gradeString = 'Not submitted';
@@ -225,7 +304,27 @@ class StudentDetail extends React.Component<IProps, IState> {
               <Icon type="code" /> Open submission
             </span>
           </Menu.Item>
-
+          <Menu.Item key="1" onClick={this.reUploadSubmission.bind(this, submission)}>
+            <span>
+              <Icon type="redo" /> Replace files
+            </span>
+          </Menu.Item>
+          <Menu.Item key="2" onClick={this.toggleUploadSubmissionVisible.bind(this, assignment.id)}>
+            <span>
+              <Icon type="file-add" /> Add / Update files
+            </span>
+          </Menu.Item>
+          {assignment.environment && (
+            <Menu.Item
+              key="3"
+              disabled={this.state.subsRunning.includes(submission.id)}
+              onClick={this.runTests.bind(this, assignment, submission)}
+            >
+              <span>
+                <Icon type={this.state.subsRunning.includes(submission.id) ? 'loading' : 'caret-right'} /> Run Tests
+              </span>
+            </Menu.Item>
+          )}
           <Menu.Divider />
           <Menu.Item key="4" style={{ color: 'red' }} onClick={this.removeSubmission.bind(this, submission)}>
             <Icon type="delete" />
@@ -299,6 +398,7 @@ class StudentDetail extends React.Component<IProps, IState> {
         grade: gradeString,
         grader: graderElement,
         status: this.getStatus(submission),
+        lateDayCreditsUsed: submission !== undefined ? submission.lateDayCreditsUsed : '',
         viewed: submission ? this.getViewIcon(submission, this.props.student) : '--',
         actions: (
           <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>
@@ -341,8 +441,33 @@ class StudentDetail extends React.Component<IProps, IState> {
           selectedStudents={[this.props.student]}
           students={this.props.students}
           submissions={this.props.submissions}
-          uploadSubmission={this.props.uploadSubmission}
+          uploadSubmission={this.uploadSubmission}
           selectedAssignment={this.state.assignmentToUpload}
+          onSuccess={openSubmission}
+          disableStudentSelect={
+            this.state.assignmentToUpload && this.state.submissionsMap[this.state.assignmentToUpload.id] ? true : false
+          }
+          title={
+            this.state.assignmentToUpload &&
+            this.state.submissionsMap[this.state.assignmentToUpload.id] &&
+            'Add / update files'
+          }
+          infoMessage={
+            this.state.assignmentToUpload &&
+            this.state.submissionsMap[this.state.assignmentToUpload.id] && (
+              <div>
+                <div>
+                  If you upload a file that already exists in the submission, the older versions (including comments)
+                  wil be visible in the submission history.
+                </div>
+                <br />
+                <div>
+                  If you want all existing files to be deleted before upload, click <b>Replace Files</b> in the
+                  submission menu instead.
+                </div>
+              </div>
+            )
+          }
         />
       </div>
     );

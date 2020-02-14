@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Button, Card, Icon, Input, Upload } from 'antd';
+import { Button, Card, Icon, Input, Tooltip, Upload } from 'antd';
 
 const { TextArea } = Input;
 
@@ -9,6 +9,7 @@ interface IRosterInputProps {
   roleType: any;
   sections: any;
   rosterInput: string;
+  emailNewUsers: boolean;
 }
 
 const RosterInput = (props: IRosterInputProps) => {
@@ -81,11 +82,35 @@ ${props.roleType}3@myschool.edu,P02
     props.onRosterUpload(rosterString);
   };
   const uploadButton = (
-    <Upload beforeUpload={beforeUpload} showUploadList={false}>
-      <Button>
-        <Icon type="upload" /> Upload a CSV or text file
-      </Button>
-    </Upload>
+    <div>
+      <Upload beforeUpload={beforeUpload} showUploadList={false}>
+        <Button>
+          <Icon type="upload" /> Upload a .txt file
+        </Button>
+      </Upload>
+      <Tooltip
+        title={
+          <div>
+            <div style={{ marginBottom: 10 }}>
+              <b style={{ fontWeight: 600 }}>Upload format:</b>
+              <div>One line per email{props.roleType === 'student' && ' with a comma preceding the section'}.</div>
+            </div>
+            <div style={{ marginBottom: 10 }}>
+              <b style={{ fontWeight: 600 }}>Example:</b>
+              <div style={{ fontStyle: 'italic' }}>{formatSamples.without}</div>
+            </div>
+            {props.roleType === 'student' && (
+              <div>
+                <b style={{ fontWeight: 600 }}>Example with sections:</b>
+                <div style={{ fontStyle: 'italic' }}>{formatSamples.with}</div>
+              </div>
+            )}
+          </div>
+        }
+      >
+        <Icon type="info-circle" theme="twoTone" twoToneColor="#24be85" style={{ marginLeft: 10 }} />
+      </Tooltip>
+    </div>
   );
 
   const tabProps = props.roleType === 'student' ? { tabList, activeTabKey: currentTab, onTabChange } : {};
@@ -100,6 +125,10 @@ ${props.roleType}3@myschool.edu,P02
     <div className="roster-input">
       Follow the instructions below to update the course roster. You'll have the chance to review any changes before
       they are made after uploading your file.
+      <br />
+      <br />
+      Based on your course settings, any new users {props.emailNewUsers ? <b>will</b> : <b>won't</b>} be emailed when
+      they are added to your course.
       <br />
       <br />
       <Card {...tabProps} size="small" actions={[uploadButton, reviewButton]}>

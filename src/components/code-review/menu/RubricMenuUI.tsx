@@ -7,13 +7,15 @@ import * as React from 'react';
 
 /* antd imports */
 // @ts-ignore
-import { Icon, Input, Popconfirm, Tag } from 'antd';
+import { Icon, Input, Popconfirm, Tag, Empty } from 'antd';
 
 /* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
 
-import { RubricCategory, RubricCategoryType } from '../../../infrastructure/rubricCategory';
-import { RubricComment, RubricCommentType } from '../../../infrastructure/rubricComment';
+import { CourseType, RubricCategoryType, RubricCommentType } from '../../../infrastructure/types';
+
+import { RubricCategory } from '../../../infrastructure/rubricCategory';
+import { RubricComment } from '../../../infrastructure/rubricComment';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
@@ -39,6 +41,8 @@ import CPTooltip from '../../core/CPTooltip';
 import { tooltips } from '../../core/tooltips';
 
 import { CURSOR_DOMAIN } from '../CodeConsole';
+
+import { getRubricURL } from '../../core/URLutils';
 
 /**********************************************************************************************************************/
 
@@ -73,6 +77,7 @@ interface IRubricMenuUIProps extends IRubricManagerProps {
 
   showCursor: CURSOR_DOMAIN;
   updateCursorDomain: (domain: CURSOR_DOMAIN) => void;
+  course: CourseType;
 }
 
 const RubricMenuUI = ({
@@ -248,8 +253,8 @@ const RubricMenuUI = ({
       });
 
       let filteredComments: RubricComment[] = [];
-      if (cat.id in rubricComments) {
-        filteredComments = rubricComments[cat.id]
+      if (cat.id in adjustedRubricComments) {
+        filteredComments = adjustedRubricComments[cat.id]
           .filter((rubricComment: RubricCommentType) => {
             return rubricComment.text.toUpperCase().includes(commentSearchTerm.toUpperCase());
           })
@@ -425,7 +430,7 @@ const RubricMenuUI = ({
         onCancel={onCancel}
       >
         <CPButton cpType="primary" icon="plus" style={{ minWidth: '80px' }}>
-          Add Category
+          Category
         </CPButton>
       </Popconfirm>,
       <div key="gap1" style={{ width: '10px' }} />,
@@ -544,9 +549,40 @@ const RubricMenuUI = ({
 
   let content = <Loading />;
   if (state.loadComplete) {
-    const rubricMenu = buildRubricMenu(state.rubricCategories, state.rubricComments);
+    if (state.rubricCategories.length === 0) {
+      const emptySyle: React.CSSProperties = {
+        padding: '12px',
+      };
 
-    content = <div id="rubric-menu-wrapper">{rubricMenu}</div>;
+      let emptyContent;
+      if (props.canUserEdit) {
+        emptyContent = (
+          <div>
+            Create your rubric either by clicking the green pen above, or visiting the{' '}
+            <a href={`/${getRubricURL(props.course, props.assignment)}`} target="_blank">
+              Rubric Editor
+            </a>{' '}
+            in the Admin Console.
+          </div>
+        );
+      } else {
+        emptyContent = <div>No rubric yet</div>;
+      }
+
+      content = (
+        <div style={emptySyle}>
+          <Empty
+            imageStyle={{
+              height: 60,
+            }}
+            description={emptyContent}
+          />
+        </div>
+      );
+    } else {
+      const rubricMenu = buildRubricMenu(state.rubricCategories, state.rubricComments);
+      content = <div id="rubric-menu-wrapper">{rubricMenu}</div>;
+    }
   }
 
   return (

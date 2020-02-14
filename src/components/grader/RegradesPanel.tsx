@@ -15,7 +15,7 @@ import { RouteComponentProps } from 'react-router';
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { UserType } from '../../infrastructure/user';
-import { SubmissionType } from '../../infrastructure/submission';
+import { AnonymousSubmissionInfoType } from '../../infrastructure/submission';
 
 import RegradesDetailPanel from './RegradesDetailPanel';
 
@@ -37,7 +37,7 @@ interface IProps extends RouteComponentProps {
 }
 
 interface IState {
-  submissionsByAssignment: { [id: number]: SubmissionType[] };
+  submissionsByAssignment: { [id: number]: AnonymousSubmissionInfoType[] };
   isLoading: boolean;
   viewAll: boolean;
 }
@@ -67,14 +67,14 @@ class RegradesPanel extends React.Component<IProps, IState> {
       const toRet = [];
       for (const assn of assignments) {
         if (grader !== undefined) {
-          toRet.push(Assignment.readSubmissions(assn.id, { grader }));
+          toRet.push(Assignment.readSubmissionsAnonymous(assn.id, { grader, ['compact']: '1' }));
         } else {
-          toRet.push(Assignment.readSubmissions(assn.id));
+          toRet.push(Assignment.readSubmissionsAnonymous(assn.id, { ['compact']: '1' }));
         }
       }
 
       Promise.all(toRet).then((lists) => {
-        const mapper: { [id: number]: SubmissionType[] } = {};
+        const mapper: { [id: number]: AnonymousSubmissionInfoType[] } = {};
         for (const list of lists) {
           if (list.length > 0) {
             mapper[list[0].assignment] = list;
@@ -86,8 +86,12 @@ class RegradesPanel extends React.Component<IProps, IState> {
   };
 
   toggleViewAll = () => {
-    this.setState((oldState) => ({ viewAll: !oldState.viewAll }));
-    this.loadSubmissions(this.props.assignments);
+    this.setState(
+      (oldState) => ({ viewAll: !oldState.viewAll }),
+      () => {
+        this.loadSubmissions(this.props.assignments, this.state.viewAll ? undefined : this.props.user.email);
+      },
+    );
   };
 
   public render() {
@@ -127,7 +131,7 @@ class RegradesPanel extends React.Component<IProps, IState> {
     const submissions = this.state.submissionsByAssignment;
     const data = this.props.assignments.map((assignment) => {
       const list = assignment.id in submissions ? submissions[assignment.id] : [];
-      const regradeSubmissions = list.filter((submission) => {
+      const regradeSubmissions = list.filter((submission: AnonymousSubmissionInfoType) => {
         return (
           submission.questionIsOpen ||
           submission.questionText ||
@@ -140,7 +144,7 @@ class RegradesPanel extends React.Component<IProps, IState> {
         assignment: assignment.name,
         total: list.length,
         regrades: regradeSubmissions.length,
-        open: regradeSubmissions.filter((sub) => sub.questionIsOpen).length,
+        open: regradeSubmissions.filter((sub: AnonymousSubmissionInfoType) => sub.questionIsOpen).length,
         key: assignment.id,
       };
     });

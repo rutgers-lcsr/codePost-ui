@@ -80,7 +80,12 @@ const LandingHeader = () => {
   if (windowSize.width < landingVars.breakpoints.header) {
     // Small Screen View
     return (
-      <Collapse bordered={false} expandIconPosition="right" expandIcon={expandIcon}>
+      <Collapse
+        bordered={false}
+        expandIconPosition="right"
+        expandIcon={expandIcon}
+        style={{ backgroundColor: 'white' }}
+      >
         <Panel header={logo} style={{ paddingBottom: 5, paddingTop: 5 }} key="1">
           <div className="display-flex flex-direction-column align-items-left justify-content-space-between">
             {docs}

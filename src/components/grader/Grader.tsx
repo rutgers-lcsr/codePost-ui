@@ -53,8 +53,12 @@ interface IGraderState {
 }
 
 class Grader extends React.Component<IComponentProps, IGraderState> {
+  private timer: any;
+  private times: any = [];
+
   public constructor(props: IComponentProps) {
     super(props);
+    this.timer = Date.now();
     document.title = 'codePost - Grader Console';
     const { currentCourse, superGraderCourses, sectionsLed } = props;
 
@@ -86,6 +90,23 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
       this.setState({ showBanner: true });
     }, 1000);
   }
+
+  public componentDidUpdate = (prevProps: any, prevState: any) => {
+    if (!prevState.assignments && this.state.assignments) {
+      const current = Date.now() - this.timer;
+
+      this.times = [...this.times, current];
+      // console.log('ASSIGNMENTS COMPLETE: ', current);
+      // console.log(this.times.join('|'));
+    }
+
+    // if (!prevState.sectionsLed && this.state.sectionsLed) {
+    //   const current = Date.now() - this.timer;
+    //   this.times = [...this.times, current];
+    //   console.log('SECTIONS COMPLETE: ', current);
+    //   console.log(this.times.join('|'));
+    // }
+  };
 
   public loadAssignments = async (course: CourseType) => {
     return loadIDList(course.assignments, Assignment);

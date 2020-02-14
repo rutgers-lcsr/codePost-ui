@@ -20,11 +20,14 @@ import FAQs from './FAQs';
 import IntegrationsPage from './IntegrationsPage';
 import JoinSignup from './JoinSignup';
 import Pricing from './Pricing';
+import Scholarship from './Scholarship';
+import AutograderDetail from './AutograderDetail';
 import PrivacyPolicy from './PrivacyPolicy';
 import { SignUpManager } from './SignUpManager';
 import TermsOfService from './TermsOfService';
 import WhyUse from './WhyUse';
 import AboutUs from './AboutUs';
+import { AllTestimonials } from '../landing/Testimonial';
 
 import Logout from '../core/Logout';
 
@@ -33,7 +36,7 @@ import { CODE_DEMO } from '../../routes';
 /**********************************************************************************************************************/
 
 const AsyncLanding = Loadable({
-  loader: () => import('../landing/Landing'),
+  loader: () => import('../landing/LandingABTest'),
   loading: () => <div />,
 });
 
@@ -93,6 +96,16 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
             />
             <Route
               exact={true}
+              path={'/scholarships/computer-science-education'}
+              render={(props: any) => <Scholarship {...props} isLoggedIn={this.props.isLoggedIn} />}
+            />
+            <Route
+              exact={true}
+              path={'/autograder'}
+              render={(props: any) => <AutograderDetail {...props} isLoggedIn={this.props.isLoggedIn} />}
+            />
+            <Route
+              exact={true}
               path={'/faqs'}
               render={(props: any) => <FAQs {...props} isLoggedIn={this.props.isLoggedIn} />}
             />
@@ -110,6 +123,11 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
               exact={true}
               path={'/about'}
               render={(props: any) => <AboutUs {...props} isLoggedIn={this.props.isLoggedIn} />}
+            />
+            <Route
+              exact={true}
+              path={'/testimonials'}
+              render={(props: any) => <AllTestimonials {...props} isLoggedIn={this.props.isLoggedIn} />}
             />
 
             <Route

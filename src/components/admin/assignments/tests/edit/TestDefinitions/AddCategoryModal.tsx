@@ -10,6 +10,7 @@ interface IUploadProps {
   addCategory: (name: string, proMode: boolean) => Promise<TestCategoryType>;
   externalOnly: boolean;
   icon?: boolean;
+  textLink?: string;
 }
 
 export const AddCategoryModal = (props: IUploadProps) => {
@@ -50,25 +51,27 @@ export const AddCategoryModal = (props: IUploadProps) => {
 
   /******************************* Return *****************************************/
   return (
-    <span>
-      {props.icon ? (
-        <Tooltip title="Add Category">
-          <Icon type="folder-add" onClick={toggleVisible} />
-        </Tooltip>
+    <React.Fragment>
+      {props.textLink ? (
+        <a onClick={toggleVisible}>{props.textLink}</a>
+      ) : props.icon ? (
+        <Button onClick={toggleVisible} style={{ height: 28, fontSize: 12, padding: '0px 9px' }}>
+          Add category
+        </Button>
       ) : (
-        <Button onClick={toggleVisible}>Add Test Category</Button>
+        <Button onClick={toggleVisible}>Add category</Button>
       )}
 
       <Modal
         visible={visible}
-        title="Add new test category"
+        title="Create new test category"
         onCancel={toggleVisible}
         onOk={onSave}
         width={400}
         style={{ padding: 25 }}
       >
-        <Input onChange={onChange} value={name} placeholder="Category Name" />
+        <Input onChange={onChange} value={name} placeholder="Category name" />
       </Modal>
-    </span>
+    </React.Fragment>
   );
 };

@@ -6,7 +6,25 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Button, Layout, Menu, Icon, Empty, Modal, Spin, Badge, Tooltip } from 'antd';
+import {
+  Alert,
+  Button,
+  Collapse,
+  Dropdown,
+  Layout,
+  Menu,
+  message,
+  Popconfirm,
+  Icon,
+  Empty,
+  Modal,
+  Skeleton,
+  Spin,
+  Badge,
+  Tag,
+  Tooltip,
+  Typography,
+} from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 import _ from 'lodash';
 
@@ -43,7 +61,7 @@ import { TestItem } from './TestDefinitions/TestItem';
 import { AddCategoryModal } from './TestDefinitions/AddCategoryModal';
 import { AddFileModal } from './TestDefinitions/AddFileModal';
 import { EditObjectModal } from './TestDefinitions/EditObjectModal';
-import { AddTestModal } from './TestDefinitions/AddTestModal';
+import { CategorySelectModal } from './TestDefinitions/CategorySelectModal';
 import CPTooltip from '../../../../core/CPTooltip';
 import { SourceEditor } from './SourceEditor';
 
@@ -53,11 +71,14 @@ import FileTag from './TestDefinitions/FileTag';
 import { fetchTestData, TestCasesByCategory } from '../../../../core/testFetchUtils';
 import { hasNativeTestSupport, testTemplates } from './utils/languageUtils';
 
+import { LOCAL_SETTINGS } from '../../../../utils/LocalSettings';
+
 import { IFolder, buildFolderMenu, createDirectoryStructure } from '../../../../code-review/menu/fileMenuUtils';
 
-import { RESULT_TYPE } from './TestDefinitions/PsuedoTerminal';
+import { RESULT_TYPE } from './TestDefinitions/PseudoTerminal';
 
 const { Sider, Content } = Layout;
+const { Paragraph } = Typography;
 
 /**********************************************************************************************************************/
 
@@ -72,6 +93,7 @@ interface IProps {
   addFile: (type: FILE_TYPE, name: string, code: string) => Promise<void>;
   updateFile: (type: FILE_TYPE, id: number, newCode: string) => Promise<void>;
   deleteFile: (type: FILE_TYPE, id: number) => Promise<void>;
+  loading: boolean;
 }
 
 enum DETAIL_TYPE {
@@ -95,6 +117,9 @@ export const TestDefinitions = (props: IProps) => {
 
   // Edit Tests variables
   const [activeTest, setActiveTest] = useState<TestCaseType | undefined>(undefined);
+  const [newTestCounter, setNewTestCounter] = useState(-1);
+  // Hack to keep the same component mounted when a new test is saved and the id changes
+  const [activeID, setActiveID] = useState<number | undefined>(undefined);
 
   // Source Editor / Eject mode variables
   const [tests, setTests] = useState<TestTemplateType[]>([]);
@@ -116,7 +141,8 @@ export const TestDefinitions = (props: IProps) => {
       setCategories(_categories);
       setCasesByCategory(_casesByCategory);
       if (activeTest === undefined) {
-        if (_categories.length > 0 && activeTest === undefined) setActiveTest(_casesByCategory[_categories[0].id][0]);
+        if (_categories.length > 0 && activeTest === undefined)
+          updateActiveTest(_casesByCategory[_categories[0].id][0]);
       }
       if (_categories.length === 0 && props.sourceFiles.length > 0) {
         setPanel(DETAIL_TYPE.ViewSource);
@@ -129,21 +155,9 @@ export const TestDefinitions = (props: IProps) => {
 
   useEffect(() => {
     if (props.env !== undefined) {
-      const fetchData = async () => {
-        const source: TestsSourceType = await Environment.eject(props.env!.id);
-        setMain(source.main);
-        setTests(source.templates);
-      };
-      fetchData();
+      updateSourceFiles();
     }
-  }, [props.env]);
-
-  // When the test changes, we want to reset the active submission
-  // We only change it when the test.id changes, because we update the test on run (solutionStatus)
-  useEffect(() => {
-    setActiveSubmission(undefined);
-    setCurrentFiles(props.solutions);
-  }, [activeTest && activeTest.id]);
+  }, [props.env, props.sourceFiles.length]);
 
   // If solution files get updated (for example in file mode, update the current files)
   useEffect(() => {
@@ -151,6 +165,13 @@ export const TestDefinitions = (props: IProps) => {
     setCurrentFiles(props.solutions);
   }, [props.solutions]);
 
+  /******************************* Source file functions  ****************************/
+
+  const updateSourceFiles = async () => {
+    const source: TestsSourceType = await Environment.eject(props.env!.id);
+    setMain(source.main);
+    setTests(source.templates);
+  };
   /******************************* TestCategory functions  ****************************/
 
   const addCategory = async (name: string) => {
@@ -204,14 +225,39 @@ export const TestDefinitions = (props: IProps) => {
     }
 
     replaceTestCase(newTest, testcase.id);
-    setActiveTest(newTest);
+    // We don't change the active test id because if a test id is changing, we don't
+    // want the component to remount (causes choppy run behavior)
+    updateActiveTest(newTest, true);
     return newTest;
   };
 
   const updateTestStatus = async (testCaseID: number, result: number) => {
     const newTest = await TestCase.update({ id: testCaseID, lastSolutionRun: result });
     replaceTestCase(newTest, testCaseID);
-    setActiveTest(newTest);
+    updateActiveTest(newTest, true);
+  };
+
+  const duplicateTest = async (testToCopy: TestCaseType, category: number) => {
+    const newTestCase = {
+      ...testToCopy,
+      testCategory: category,
+      id: newTestCounter,
+      description: `${testToCopy.description} (2)`,
+    };
+    setNewTestCounter((prevState) => prevState - 1);
+
+    setCasesByCategory((prevState) => {
+      const newCases = { ...prevState };
+      const oldTests = (newCases[newTestCase.testCategory] && casesByCategory[newTestCase.testCategory]) || [];
+      newCases[newTestCase.testCategory] = [...oldTests, newTestCase];
+      return newCases;
+    });
+    updateActiveTest(newTestCase);
+
+    // Save the test. Although a broken I/O test that is duplicated will cause issues, it's more unnatural for users to not realize their duplicated test isn't saved
+    saveTest(newTestCase);
+
+    message.success('Test copied!');
   };
 
   const addTest = async (language: string | null, category: number, sourceFile?: boolean, name?: string) => {
@@ -223,17 +269,16 @@ export const TestDefinitions = (props: IProps) => {
     // if the language is natively supported, set it as 'io'
     // else, set the default to shell
     // if it's a shell type,
-    const defaultType = sourceFile ? 'file' : hasNativeSupport ? 'io' : externalOnly ? 'external' : 'shell';
-    const defaultText = defaultType === 'shell' && language ? testTemplates[language]['shell'] : '';
+    const defaultType = sourceFile ? 'file' : hasNativeSupport ? 'io' : externalOnly ? 'external' : 'io_cli';
     const dummyTestCase: TestCaseType = {
-      id: -1,
+      id: newTestCounter,
       sortKey: 0,
       testCategory: category,
       description: name ? name : 'New Test',
       type: defaultType,
       pointsPass: 0,
       pointsFail: 0,
-      text: defaultText,
+      text: '',
       function: '',
       fileName: '',
       expectedOutput: '',
@@ -244,28 +289,36 @@ export const TestDefinitions = (props: IProps) => {
       instances: [],
       explanation: '',
       lastSolutionRun: RESULT_TYPE.NONE,
+      outputIsFile: false,
+      outputIsRegexp: false,
+      isFlexible: false,
     };
+    setNewTestCounter((prevState) => prevState - 1);
 
-    const newTestCase = await saveTest(dummyTestCase);
     setCasesByCategory((prevState) => {
       const newCases = { ...prevState };
-      const oldTests = (newCases[newTestCase.testCategory] && casesByCategory[newTestCase.testCategory]) || [];
-      newCases[newTestCase.testCategory] = [...oldTests, newTestCase];
+      const oldTests = (newCases[dummyTestCase.testCategory] && casesByCategory[dummyTestCase.testCategory]) || [];
+      newCases[dummyTestCase.testCategory] = [...oldTests, dummyTestCase];
       return newCases;
     });
-    setActiveTest(newTestCase);
+    updateActiveTest(dummyTestCase);
+
+    // If the test is file defined, save the test
+    if (sourceFile) saveTest(dummyTestCase);
   };
 
   const deleteTest = async (testCase: TestCaseType) => {
-    await TestCase.delete(testCase.id);
+    if (testCase.id > 0) {
+      await TestCase.delete(testCase.id);
+    }
 
     // Load new test
     const sorted = TestCase.sort(casesByCategory[testCase.testCategory]);
     const index = sorted.findIndex((el) => el.id === testCase.id);
     if (index === 0) {
-      (sorted.length > 1 && setActiveTest(sorted[1])) || setActiveTest(undefined);
+      (sorted.length > 1 && updateActiveTest(sorted[1])) || updateActiveTest(undefined);
     } else {
-      setActiveTest(sorted[index - 1]);
+      updateActiveTest(sorted[index - 1]);
     }
 
     setCasesByCategory((prevState) => {
@@ -277,7 +330,28 @@ export const TestDefinitions = (props: IProps) => {
     });
   };
 
+  const handleDelete = (testCase: TestCaseType) => {
+    Modal.confirm({
+      title: (
+        <span>
+          Are you sure you want to delete <b>{testCase.description}</b>?
+        </span>
+      ),
+      content: 'This decision cannot be reversed.',
+      onOk() {
+        return new Promise((resolve, reject) => {
+          return resolve(deleteTest(testCase));
+        }).catch(() => console.log('Oops errors!'));
+      },
+    });
+  };
+
   /******************************* State Change Functions  ****************************/
+
+  const updateActiveTest = (newActive: TestCaseType | undefined, dontUpdateID?: boolean) => {
+    setActiveTest(newActive);
+    if (!dontUpdateID && newActive) setActiveID(newActive.id);
+  };
 
   const replaceTestCase = (newCase: TestCaseType, oldID: number) => {
     setCasesByCategory((prevState) => {
@@ -303,8 +377,10 @@ export const TestDefinitions = (props: IProps) => {
 
   const togglePanel = () => {
     if (panel === DETAIL_TYPE.EditTests) {
-      setCurrentFiles(props.solutions);
-      setPanel(DETAIL_TYPE.ViewSource);
+      updateSourceFiles().then(() => {
+        setCurrentFiles(props.solutions);
+        setPanel(DETAIL_TYPE.ViewSource);
+      });
     } else {
       setPanel(DETAIL_TYPE.EditTests);
     }
@@ -348,7 +424,7 @@ export const TestDefinitions = (props: IProps) => {
 
     //
     const formatted = {
-      log: response.logs,
+      log: <span style={{ color: '#678CAB' }}>{response.logs}</span>,
       target: activeSubmission ? activeSubmission.students[0] : 'solution code',
       result: RESULT_TYPE.NONE,
       testCaseName: '',
@@ -430,7 +506,7 @@ export const TestDefinitions = (props: IProps) => {
       title: 'Edit Tests',
       content: (
         <div>
-          <p>To edit this test, click "Exit File Mode."</p>
+          <p>To edit this test, click "Exit file mode."</p>
         </div>
       ),
     });
@@ -447,10 +523,10 @@ export const TestDefinitions = (props: IProps) => {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    background: '#ccc',
-    padding: '0 15px',
+    background: 'rgb(217,217,217)',
+    padding: '6px 15px',
     fontSize: '14px',
-    height: '30px',
+    fontWeight: 600,
   };
 
   switch (panel) {
@@ -510,27 +586,64 @@ export const TestDefinitions = (props: IProps) => {
       const groups = [bashFile, helperFiles, submissionFiles, templates, sourceFiles];
 
       header = (
-        <div style={headerStyle}>
-          Source Files
-          <div>
-            <AddFileModal addFile={props.addFile} />
-            &nbsp; &nbsp;
-            <Tooltip title="Download">
-              <Icon type="download" onClick={download} />
+        <div>
+          <Button.Group style={{ display: 'flex', alignItems: 'flex-end' }}>
+            {externalOnly ? null : (
+              <Tooltip title="Exit file mode">
+                <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28, borderBottomLeftRadius: '0px' }}>
+                  <Icon type="arrow-left" style={{ fontSize: 10, marginRight: 3 }} />
+                  <Icon type="file" style={{ fontSize: 12 }} />
+                </Button>
+              </Tooltip>
+            )}
+            <Tooltip title="Download files">
+              <Button onClick={download} icon="download" style={{ minWidth: 40, height: 28 }} />
             </Tooltip>
-          </div>
+            <AddFileModal addFile={props.addFile} />
+          </Button.Group>
+          <div style={headerStyle}>Files</div>
         </div>
       );
 
       const buildFileMenu = (groupIndex: number, files: IBasicFile[]) => {
         return files.map((f) => {
+          const deleteThisFile = () => {
+            props.deleteFile(FILE_TYPE.SOURCEFILE, f.id);
+          };
+          const actions = (
+            <Menu>
+              <Menu.Item style={{ paddingRight: '48px', color: '#f5222d' }}>
+                <Popconfirm
+                  title="Are you sure delete this file?"
+                  onConfirm={deleteThisFile}
+                  onCancel={() => {}}
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  Delete File
+                </Popconfirm>
+              </Menu.Item>
+            </Menu>
+          );
+
+          const stop = (e: any) => {
+            e.preventDefault();
+            e.stopPropagation();
+          };
+
           return (
-            <Menu.Item key={`${groupIndex}-${f.id}`} style={{ height: 'fit-content', minHeight: 40 }}>
+            <Menu.Item key={`${groupIndex}-${f.id}`}>
               <FileTag type={f.type} small={true} />
               &nbsp;
               {f.name}
               {f.type === FILE_TYPE.SOURCEFILE && (
-                <EditObjectModal item={f} deleteItem={props.deleteFile.bind({}, FILE_TYPE.SOURCEFILE)} />
+                <Dropdown overlay={actions}>
+                  <Icon
+                    type="more"
+                    onClick={stop}
+                    style={{ position: 'absolute', right: '0px', top: '8px', fontWeight: 900 }}
+                  />
+                </Dropdown>
               )}
             </Menu.Item>
           );
@@ -539,18 +652,20 @@ export const TestDefinitions = (props: IProps) => {
 
       menu = (
         <div>
-          <Menu onClick={changeIndex} mode="inline" selectedKeys={[index]}>
-            {groups.map((group: IBasicFile[], groupIndex) => {
-              const directoryStructure = createDirectoryStructure<IBasicFile>(group);
-              const buildFile = buildFileMenu.bind({}, groupIndex);
-              const folders = directoryStructure.folders.map((f: IFolder<IBasicFile>) => {
-                return buildFolderMenu('', f, buildFile);
-              });
-              return [buildFileMenu(groupIndex, directoryStructure.files), folders];
-            })}
-          </Menu>
-          <div>
-            <div style={{ ...headerStyle, marginTop: 10 }}>Tests</div>
+          <div className="tests-menu tests-menu__files">
+            <Menu onClick={changeIndex} mode="inline" selectedKeys={[index]}>
+              {groups.map((group: IBasicFile[], groupIndex) => {
+                const directoryStructure = createDirectoryStructure<IBasicFile>(group);
+                const buildFile = buildFileMenu.bind({}, groupIndex);
+                const folders = directoryStructure.folders.map((f: IFolder<IBasicFile>) => {
+                  return buildFolderMenu('', f, buildFile);
+                });
+                return [buildFileMenu(groupIndex, directoryStructure.files), folders];
+              })}
+            </Menu>
+          </div>
+          <div className="tests-menu">
+            <div style={{ ...headerStyle, marginTop: 10 }}>Test Categories</div>
             <Menu
               selectedKeys={[]}
               defaultOpenKeys={categories.map((el) => el.id.toString())}
@@ -560,16 +675,30 @@ export const TestDefinitions = (props: IProps) => {
             >
               {TestCategory.sort(categories).map((category) => {
                 return (
-                  <Menu.SubMenu key={category.id} title={category.name}>
-                    {category.id in casesByCategory
-                      ? TestCase.sort(casesByCategory[category.id]).map((el) => {
+                  <Menu.SubMenu
+                    key={category.id}
+                    title={
+                      <span>
+                        <Icon type="folder" />
+                        {category.name}{' '}
+                      </span>
+                    }
+                  >
+                    {category.id in casesByCategory ? (
+                      casesByCategory[category.id].length === 0 ? (
+                        <Menu.Item key={category.id * -1}>
+                          <span style={{ color: '#888888' }}>No tests yet...</span>
+                        </Menu.Item>
+                      ) : (
+                        TestCase.sort(casesByCategory[category.id]).map((el) => {
                           return (
-                            <Menu.Item key={el.id} style={{ height: 'fit-content', minHeight: 40 }}>
+                            <Menu.Item key={el.id}>
                               {el.description} &nbsp; {buildStatusBadge(el.lastSolutionRun)}
                             </Menu.Item>
                           );
                         })
-                      : null}
+                      )
+                    ) : null}
                   </Menu.SubMenu>
                 );
               })}
@@ -609,19 +738,49 @@ export const TestDefinitions = (props: IProps) => {
 
       break;
     case DETAIL_TYPE.EditTests:
+      const addTestButton = (
+        <Button
+          style={{
+            height: 28,
+            fontSize: 12,
+            padding: '0px 9px',
+            borderColor: 'rgb(217,217,217)',
+            borderTopRightRadius: '0px',
+            borderBottomRightRadius: '0px',
+            boxShadow: 'none',
+            textShadow: 'none',
+          }}
+          type="primary"
+        >
+          Add Test
+        </Button>
+      );
       header = (
-        <div style={headerStyle}>
-          Tests
-          <div>
+        <div>
+          <Button.Group style={{ display: 'flex', alignItems: 'flex-end' }}>
+            {externalOnly ? null : (
+              <Tooltip title="Enter file mode">
+                <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28, borderBottomLeftRadius: '0px' }}>
+                  <Icon type="arrow-right" style={{ fontSize: 10, marginRight: 3 }} />
+                  <Icon type="file" style={{ fontSize: 12 }} />
+                </Button>
+              </Tooltip>
+            )}
             <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} icon={true} />
-            &nbsp; &nbsp;
-            <AddTestModal addTest={addTest.bind({}, props.env ? props.env.language : '')} categories={categories} />
-            &nbsp; &nbsp;
-          </div>
+            <CategorySelectModal
+              onSelect={addTest.bind({}, props.env ? props.env.language : '')}
+              title="Create a new test case"
+              categories={categories}
+              childToRender={addTestButton}
+            />
+          </Button.Group>
+          <div style={headerStyle}>Test Categories</div>
         </div>
       );
+
+      // <EditObjectModal item={category} updateItem={updateCategoryName} deleteItem={deleteCategory} />
       menu = (
-        <div>
+        <div className="tests-menu">
           <Menu
             defaultOpenKeys={categories.map((el) => el.id.toString())}
             mode="inline"
@@ -629,29 +788,105 @@ export const TestDefinitions = (props: IProps) => {
             style={{ height: '100%' }}
           >
             {TestCategory.sort(categories).map((category) => {
+              const deleteThisCategory = (e: any) => {
+                deleteCategory(category.id);
+              };
+
+              const addTestToThisCategory = (e: any) => {
+                e.preventDefault();
+                e.stopPropagation();
+                addTest(props.env ? props.env.language : '', category.id);
+              };
+
+              const stop = (e: any) => {
+                e.preventDefault();
+                e.stopPropagation();
+              };
+
+              const actions = (
+                <Menu>
+                  <Menu.Item style={{ paddingRight: '48px' }}>
+                    <EditObjectModal item={category} updateItem={updateCategoryName} deleteItem={deleteCategory} />
+                  </Menu.Item>
+                  <Menu.Item style={{ paddingRight: '48px' }}>
+                    <span onClick={addTestToThisCategory}>Add Test</span>
+                  </Menu.Item>
+                  <Menu.Item style={{ paddingRight: '48px', color: '#f5222d' }}>
+                    <Popconfirm
+                      title="Are you sure delete this category?"
+                      onConfirm={deleteThisCategory}
+                      onCancel={() => {}}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      Delete Category
+                    </Popconfirm>
+                  </Menu.Item>
+                </Menu>
+              );
+
               return (
                 <Menu.SubMenu
                   key={category.id}
                   title={
                     <span>
+                      <Icon type="folder" />
                       {category.name}{' '}
-                      <EditObjectModal item={category} updateItem={updateCategoryName} deleteItem={deleteCategory} />
+                      <Dropdown overlay={actions}>
+                        <Icon
+                          type="more"
+                          onClick={stop}
+                          style={{ position: 'absolute', right: '0px', top: '8px', fontWeight: 900 }}
+                        />
+                      </Dropdown>
                     </span>
                   }
                 >
-                  {category.id in casesByCategory
-                    ? TestCase.sort(casesByCategory[category.id]).map((el) => (
-                        <Menu.Item
-                          key={el.id}
-                          style={{ height: 'fit-content', minHeight: 40 }}
-                          onClick={() => {
-                            setActiveTest(el);
-                          }}
-                        >
-                          {el.description} &nbsp; {buildStatusBadge(el.lastSolutionRun)}
-                        </Menu.Item>
-                      ))
-                    : null}
+                  {category.id in casesByCategory ? (
+                    casesByCategory[category.id].length === 0 ? (
+                      <Menu.Item key={category.id * -1}>
+                        <span style={{ color: '#888888' }}>No tests yet...</span>
+                      </Menu.Item>
+                    ) : (
+                      TestCase.sort(casesByCategory[category.id]).map((el) => {
+                        const testActions = (
+                          <Menu>
+                            <Menu.Item style={{ paddingRight: '48px' }}>
+                              <CategorySelectModal
+                                onSelect={duplicateTest.bind({}, el)}
+                                title={`Create a copy of: ${el.description}`}
+                                categories={categories}
+                                childToRender={<span>Duplicate Test</span>}
+                                defaultCategory={
+                                  activeTest ? categories.find((el) => el.id === activeTest.testCategory) : undefined
+                                }
+                              />
+                            </Menu.Item>
+                            <Menu.Item style={{ paddingRight: '48px', color: '#f5222d' }}>
+                              <span onClick={handleDelete.bind({}, el)}>Delete Test</span>
+                            </Menu.Item>
+                          </Menu>
+                        );
+                        return (
+                          <Menu.Item
+                            key={el.id}
+                            onClick={() => {
+                              updateActiveTest(el);
+                            }}
+                          >
+                            {el.description} &nbsp; {buildStatusBadge(el.lastSolutionRun)}{' '}
+                            <Dropdown overlay={testActions}>
+                              <Icon
+                                type="more"
+                                onClick={stop}
+                                style={{ position: 'absolute', right: '0px', top: '8px', fontWeight: 900 }}
+                              />
+                            </Dropdown>
+                          </Menu.Item>
+                        );
+                      })
+                    )
+                  ) : null}
                 </Menu.SubMenu>
               );
             })}
@@ -664,13 +899,13 @@ export const TestDefinitions = (props: IProps) => {
           <div>
             {activeTest && (
               <TestItem
-                key={activeTest.id}
+                key={activeID}
                 currentAssignment={props.currentAssignment}
                 testCase={activeTest}
                 saveTest={saveTest}
                 files={props.solutions}
                 env={props.env}
-                deleteTest={deleteTest}
+                handleDelete={handleDelete}
                 submissions={props.submissions}
                 setTestSubject={setTestSubject}
                 activeSubmission={activeSubmission}
@@ -684,16 +919,56 @@ export const TestDefinitions = (props: IProps) => {
 
   const hasTests = Object.values(casesByCategory).some((el) => el.length > 0);
 
-  if (loading) {
+  if (loading || props.loading) {
     return (
-      <div className="display-flex justify-content-center align-iterms-center">
-        <Spin style={{ marginTop: 15 }} />
+      <div className="display-flex justify-content-center align-items-center">
+        <Skeleton active />
       </div>
     );
   } else if (categories.length === 0 && panel === DETAIL_TYPE.EditTests) {
+    // No environment has been defined
+    if (!props.env) {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Empty
+            style={{ marginTop: '20px', maxWidth: '400px' }}
+            description={
+              <span>
+                {' '}
+                You haven't yet created an environment. Please create one before defining tests. If you are using the
+                API, and want to create tests without creating an environment,{' '}
+                <AddCategoryModal
+                  addCategory={addCategory}
+                  externalOnly={externalOnly}
+                  textLink={'click here to create a new category'}
+                />
+                .
+              </span>
+            }
+          />
+        </div>
+      );
+    }
+
+    // An environment HAS been defined
     return (
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <Empty style={{ marginTop: '20px', maxWidth: '400px' }} description={<span> Get started.</span>}>
+        <Empty
+          style={{ marginTop: '20px', maxWidth: '400px' }}
+          description={
+            <span>
+              Create a test category to get started, or enter{' '}
+              <a
+                href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                file mode
+              </a>
+              .
+            </span>
+          }
+        >
           <AddCategoryModal addCategory={addCategory} externalOnly={externalOnly} />
           {externalOnly ? (
             <span />
@@ -701,13 +976,13 @@ export const TestDefinitions = (props: IProps) => {
             <span>
               <span>
                 {' '}
-                &nbsp; <Button onClick={() => setPanel(DETAIL_TYPE.ViewSource)}>Enter File Mode</Button>{' '}
+                &nbsp; <Button onClick={() => setPanel(DETAIL_TYPE.ViewSource)}>Enter file mode</Button>{' '}
               </span>
               <br />
               <br />
               <span>
-                <b>Instructions</b>: If you have an existing script with modular unit tests, or want to start fresh,
-                click "Add Category". Otherwise, click "Enter File Mode". To learn more{' '}
+                <b>Tip</b>: If you're trying to port an existing test script you've already written, use file mode.
+                Otherwise, start by creating a category. For help getting started,
                 <a
                   href="https://help.codepost.io/en/articles/3550395-creating-tests-for-the-codepost-autograder"
                   target="_blank"
@@ -724,44 +999,56 @@ export const TestDefinitions = (props: IProps) => {
       </div>
     );
   } else {
+    const instructions =
+      panel === DETAIL_TYPE.EditTests ? (
+        <Paragraph>
+          You can create tests in two ways: in <b style={{ fontWeight: 600 }}>this editor </b>
+          (for isolated unit tests) or in <b style={{ fontWeight: 600 }}>file mode </b>(for a general script that
+          includes multiple tests). <br />
+          <br />
+          To get started, click the <b style={{ fontWeight: 600 }}>"Add Test"</b> button.
+        </Paragraph>
+      ) : (
+        <Paragraph>
+          Import scripts by clicking <b style={{ fontWeight: 600 }}>"Add file"</b>. You can run them to produce logs, or
+          use codePost's custom syntax to structure your test results. If you use our syntax, new tests will
+          automatically be created when you run the file. You can edit properties of these tests by exiting file mode.{' '}
+          <br />
+          <br />
+          To learn more,{' '}
+          <a
+            href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            click here
+          </a>
+          .
+        </Paragraph>
+      );
+
+    const onInstructionsChange = (keys: any) => {
+      LOCAL_SETTINGS.autograderInstructionsVisible.setter(keys.length > 0);
+    };
+
+    const defaultActiveKey = LOCAL_SETTINGS.autograderInstructionsVisible.getter() ? ['1'] : [];
+
     return (
       <div>
-        <div style={{ marginBottom: 15, marginLeft: 10, marginRight: 10 }}>
-          {panel === DETAIL_TYPE.EditTests ? (
-            <span>
-              <b>Instructions</b>: This editor shows all the tests you've created. You can create tests in two ways: in{' '}
-              <b style={{ fontWeight: 600 }}>this editor </b>(for test cases that have modular blocks of code) or in{' '}
-              <b style={{ fontWeight: 600 }}>file mode </b>(if you want to run a script that includes multiple tests).
-              To get started, click the "Add Test" <Icon type="file-add" /> icon.
-            </span>
-          ) : (
-            <span>
-              <b>Instructions</b>: In file mode you can run your existing scripts to produce logs, or use codePost's
-              custom syntax to structure your test results. If you use our syntax, new tests will automatically be
-              created when you run your file. You can edit properties of these tests (e.g. points, explanation) by
-              exiting file mode. To learn more,{' '}
-              <a
-                href="https://help.codepost.io/en/articles/3553024-writing-tests-file-mode"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                click here
-              </a>
-              . To get started, create a new test file by clicking the "Add file" <Icon type="plus-circle" /> icon.
-            </span>
-          )}
+        <div style={{ marginBottom: 15, marginLeft: 30, marginRight: 30 }}>
+          <Collapse bordered={false} defaultActiveKey={defaultActiveKey} onChange={onInstructionsChange}>
+            <Collapse.Panel header="Instructions" key="1" style={{ backgroundColor: 'white' }}>
+              <Alert message={instructions} type="info" />
+            </Collapse.Panel>
+          </Collapse>
         </div>
         <div style={{ fontSize: 11 }}>
-          <Layout>
+          <Layout style={{ border: '1px solid #ececec', borderRadius: '4px', marginBottom: '120px' }}>
             <Sider theme="light">
-              {externalOnly ? null : (
-                <Button style={{ width: '100%' }} onClick={togglePanel}>
-                  {panel === DETAIL_TYPE.ViewSource ? 'Exit File Mode' : 'Enter File Mode'}
-                </Button>
-              )}
               {header}
               {menu}
             </Sider>
+            <div style={{ width: '5px', backgroundColor: 'rgb(217, 217, 217)' }} />
             {hasTests || panel === DETAIL_TYPE.ViewSource ? (
               content
             ) : (

@@ -16,7 +16,7 @@ import { CommentIO, CommentType } from './comment';
 import { File, FileType } from './file';
 import { RubricComment } from './rubricComment';
 import { SubmissionHistoryV, SubmissionHistoryVPatch } from './submissionHistory';
-
+import { SubmissionTestV } from './submissionTest';
 import { slack } from '../components/core/slack';
 
 import { message } from 'antd';
@@ -45,6 +45,61 @@ export const SubmissionV = t.intersection(
       questionDate: t.union([t.string, t.null]),
       responseDate: t.union([t.string, t.null]),
       tests: t.array(t.number),
+      testRunsCompleted: t.number,
+      lateDayCreditsUsed: t.number,
+    }),
+  ],
+  'Submission',
+);
+
+export const SubmissionInfoV = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      isFinalized: t.boolean,
+      students: t.array(t.string),
+      assignment: t.number,
+      dateEdited: t.string,
+      dateUploaded: t.string,
+      grade: t.union([t.number, t.null]),
+      grader: t.union([t.string, t.null]),
+      questionIsOpen: t.boolean,
+      questionIsRegrade: t.boolean,
+      questionText: t.union([t.string, t.null]),
+      questionResponse: t.union([t.string, t.null]),
+      questionResponder: t.union([t.string, t.null]),
+      questionDate: t.union([t.string, t.null]),
+      responseDate: t.union([t.string, t.null]),
+      tests: t.array(t.number),
+      testRunsCompleted: t.number,
+    }),
+  ],
+  'Submission',
+);
+
+export const AnonymousSubmissionInfoV = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      isFinalized: t.boolean,
+      assignment: t.number,
+      dateEdited: t.string,
+      dateUploaded: t.string,
+      grade: t.union([t.number, t.null]),
+      grader: t.union([t.string, t.null]),
+      questionIsOpen: t.boolean,
+      questionIsRegrade: t.boolean,
+      questionText: t.union([t.string, t.null]),
+      questionResponse: t.union([t.string, t.null]),
+      questionResponder: t.union([t.string, t.null]),
+      questionDate: t.union([t.string, t.null]),
+      responseDate: t.union([t.string, t.null]),
+      tests: t.array(t.number),
+      testRunsCompleted: t.number,
+      lateDayCreditsUsed: t.number,
+    }),
+    t.partial({
+      students: t.array(t.string),
     }),
   ],
   'Submission',
@@ -56,6 +111,7 @@ export const StudentSubmissionV = t.intersection(
     t.type({
       isFinalized: t.boolean,
       assignment: t.number,
+      testRunsCompleted: t.number,
     }),
     t.partial({
       students: t.array(t.string),
@@ -71,6 +127,7 @@ export const StudentSubmissionV = t.intersection(
       dateUploaded: t.string,
       hasGrader: t.boolean,
       tests: t.array(t.number),
+      lateDayCreditsUsed: t.number,
     }),
   ],
   'Submission',
@@ -106,6 +163,7 @@ const SubmissionVPatch = t.intersection(
       questionText: t.union([t.string, t.null]),
       questionResponse: t.union([t.string, t.null]),
       questionResponder: t.union([t.string, t.null]),
+      lateDayCreditsUsed: t.number,
     }),
   ],
   'SubmissionPatch',
@@ -130,6 +188,7 @@ export const AnonymousSubmissionV = t.intersection(
       questionDate: t.union([t.string, t.null]),
       responseDate: t.union([t.string, t.null]),
       tests: t.array(t.number),
+      lateDayCreditsUsed: t.number,
     }),
     t.partial({
       students: t.array(t.string),
@@ -139,6 +198,8 @@ export const AnonymousSubmissionV = t.intersection(
 );
 
 export type SubmissionType = t.TypeOf<typeof SubmissionV>;
+export type SubmissionInfoType = t.TypeOf<typeof SubmissionInfoV>;
+export type AnonymousSubmissionInfoType = t.TypeOf<typeof AnonymousSubmissionInfoV>;
 export type StudentSubmissionType = t.TypeOf<typeof StudentSubmissionV>;
 export type AnonymousSubmissionType = t.TypeOf<typeof AnonymousSubmissionV>;
 
@@ -154,6 +215,7 @@ export class Submission {
   public static readAnonymous = readObject(AnonymousSubmissionV, 'submissions');
   public static readReadOnly = readObject(StudentSubmissionV, 'submissions');
   public static readHistory = readObjectDetail(t.array(SubmissionHistoryV), 'submissions', 'history');
+  public static readTests = readObjectDetail(t.array(SubmissionTestV), 'submissions', 'submissionTests');
 
   public static updateHistory = updateObjectDetail(
     SubmissionHistoryV,

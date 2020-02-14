@@ -16,7 +16,7 @@ import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { TestCaseType } from '../../../../../infrastructure/testCase';
 
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
-import { SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
+import { RunAllResultType, SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
 
 import { awaitTestResult } from '../testResult';
 
@@ -92,31 +92,33 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   // ************************** Fetch Data ******************************
   useEffect(() => {
     const fetchData = async () => {
-      setFetchLoading(true);
-      const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
-      setCategories(categories);
-      setTestCasesByCategory(casesByCategory);
-      const currEnv = await fetchEnvironment(props.currentAssignment);
-      setEnv(currEnv);
+      if (props.submissions.length > 0 && props.currentAssignment) {
+        setFetchLoading(true);
+        const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
+        setCategories(categories);
+        setTestCasesByCategory(casesByCategory);
+        const currEnv = await fetchEnvironment(props.currentAssignment);
+        setEnv(currEnv);
 
-      const tests = await fetchTestsBySubmission(props.submissions);
-      setTestsBySubmission(tests);
-      const [passed, failed, error]: any = getTestsByCase(tests, casesByCategory);
+        const tests = await fetchTestsBySubmission(props.submissions);
+        setTestsBySubmission(tests);
+        const [passed, failed, error]: any = getTestsByCase(tests, casesByCategory);
 
-      setPassedByCase(passed);
-      setFailedByCase(failed);
-      setErrorByCase(error);
-      setFetchLoading(false);
+        setPassedByCase(passed);
+        setFailedByCase(failed);
+        setErrorByCase(error);
+        setFetchLoading(false);
+      }
     };
     fetchData();
-  }, [props.currentAssignment]);
+  }, [props.currentAssignment, props.submissions]);
 
   // ******************************* API / State change functions  *******************************
   const runAllProgressCallback = (result: any) => {
     setProgress(result);
   };
 
-  const runAllCallback = (result: SubmissionTestResultType) => {
+  const runAllCallback = (result: RunAllResultType) => {
     const newTestBySub: TestsBySubmission = {};
     for (const test of result) {
       const subID = test.submission;
@@ -132,7 +134,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
 
   const callback = (sub: SubmissionType, result: SubmissionTestResultType) => {
     const newTestBySub = { ...testsBySubmission };
-    newTestBySub[sub.id] = result;
+    newTestBySub[sub.id] = result.submissionTests;
     setTestsBySubmission(newTestBySub);
     const newLoadingSubs = subsLoading.filter((id) => {
       return id !== sub.id;
@@ -199,69 +201,79 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     switch (summaryType) {
       case SUMMARY_TYPE.BySubmission:
         columns = bySubmissionColumns(categories);
-        data = props.submissions.map((submission: SubmissionType) => {
-          const actionsMenu = (
-            <Menu key={submission.id}>
-              <Menu.Item key="run-tests" onClick={runTests.bind({}, submission)}>
-                <Icon type="caret-right" />
-                Run tests
-              </Menu.Item>
-              <Menu.Item key="submission" onClick={openSubmission.bind({}, submission.id)}>
-                <Icon type="code" />
-                Open submission
-              </Menu.Item>
-            </Menu>
-          );
+        data =
+          props.submissions !== undefined
+            ? props.submissions.map((submission: SubmissionType) => {
+                const actionsMenu = (
+                  <Menu key={submission.id}>
+                    <Menu.Item key="run-tests" onClick={runTests.bind({}, submission)}>
+                      <Icon type="caret-right" />
+                      Run tests
+                    </Menu.Item>
+                    <Menu.Item key="submission" onClick={openSubmission.bind({}, submission.id)}>
+                      <Icon type="code" />
+                      Open submission
+                    </Menu.Item>
+                  </Menu>
+                );
 
-          const toRet: any = {
-            students: submission.students.join(','),
-            key: `submission-${submission.id}`,
-            actions: subsLoading.includes(submission.id) ? (
-              <Icon type="loading" />
-            ) : (
-              <Dropdown overlay={actionsMenu} trigger={['click']}>
-                <Icon type="menu" />
-              </Dropdown>
-            ),
-          };
+                const toRet: any = {
+                  students: submission.students.join(','),
+                  key: `submission-${submission.id}`,
+                  actions: subsLoading.includes(submission.id) ? (
+                    <Icon type="loading" />
+                  ) : (
+                    <Dropdown overlay={actionsMenu} trigger={['click']}>
+                      <Icon type="menu" />
+                    </Dropdown>
+                  ),
+                };
 
-          const tests = SubmissionTest.getLatest(testsBySubmission[submission.id] || []);
-          let passed = 0;
+                const tests = SubmissionTest.getLatest(testsBySubmission[submission.id] || []);
+                let passed = 0;
 
-          // Group the SubmissionTests by category
-          const testByCategory: { [id: number]: SubmissionTestType[] } = {};
-          tests.forEach((test) => {
-            (testByCategory[test.testCategory] && testByCategory[test.testCategory].push(test)) ||
-              (testByCategory[test.testCategory] = [test]);
-            if (test.passed) {
-              passed += 1;
-            }
-          });
+                // Group the SubmissionTests by category
+                const testByCategory: { [id: number]: SubmissionTestType[] } = {};
+                tests.forEach((test) => {
+                  (testByCategory[test.testCategory] && testByCategory[test.testCategory].push(test)) ||
+                    (testByCategory[test.testCategory] = [test]);
+                  if (test.passed) {
+                    passed += 1;
+                  }
+                });
 
-          for (const category of categories) {
-            const tests = testByCategory[category.id] || [];
-            let categoryPassed = 0;
-            let categoryTotal = category.testCases.length;
-            for (const t of tests) {
-              categoryPassed += t.passed ? 1 : 0;
-            }
-            toRet[category.id] = (
-              <div
-                className="text-link"
-                onClick={openDetail.bind({}, category, undefined, undefined, submission)}
-              >{`${categoryPassed} / ${categoryTotal}`}</div>
-            );
-          }
+                for (const category of categories) {
+                  const tests = testByCategory[category.id] || [];
+                  let categoryPassed = 0;
+                  let categoryTotal = category.testCases.length;
+                  for (const t of tests) {
+                    categoryPassed += t.passed ? 1 : 0;
+                  }
+                  toRet[category.name] = (
+                    <div
+                      className="text-link"
+                      onClick={openDetail.bind({}, category, undefined, undefined, submission)}
+                    >{`${categoryPassed} / ${categoryTotal}`}</div>
+                  );
 
-          const summaryString = totalTests === 0 ? '-- / --' : `${passed} / ${totalTests}`;
+                  // For sorting (key specified in testSummaryUtils)
+                  toRet[category.id] = categoryPassed;
+                }
 
-          toRet['summary'] = (
-            <div className="text-link" onClick={openDetail.bind({}, undefined, undefined, undefined, submission)}>
-              {summaryString}
-            </div>
-          );
-          return toRet;
-        });
+                const summaryString = totalTests === 0 ? '-- / --' : `${passed} / ${totalTests}`;
+
+                toRet['summary'] = (
+                  <div className="text-link" onClick={openDetail.bind({}, undefined, undefined, undefined, submission)}>
+                    {summaryString}
+                  </div>
+                );
+
+                // For sorting (key specified in testSummaryUtils)
+                toRet['passed'] = passed;
+
+                return toRet;
+              })
+            : null;
         break;
       case SUMMARY_TYPE.ByTest:
         columns = byTestColumns;
@@ -352,6 +364,10 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
                 {`${Math.floor((error / Math.max(1, props.submissions.length * numTests)) * 100)}%`}
               </div>
             ),
+            passedValue: passed / Math.max(1, props.submissions.length * numTests),
+            failedValue: failed / Math.max(1, props.submissions.length * numTests),
+            errorValue: error / Math.max(1, props.submissions.length * numTests),
+            nullValue: notRun / Math.max(1, props.submissions.length * numTests),
             key: `category-${category.id}`,
           };
         });
@@ -369,6 +385,16 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     setModalStatus(MODAL_STATUS.None);
     setProgress('{}');
   };
+
+  const hasExternalTests = () => {
+    let hasExternal = false;
+    Object.keys(testCasesByCategory).forEach((category: string) => {
+      testCasesByCategory[parseInt(category, 10)].forEach((test) => test.type === 'external' && (hasExternal = true));
+    });
+
+    return hasExternal;
+  };
+
   actions = [
     <Radio.Group value={SUMMARY_TYPE[summaryType]} onChange={onSummaryTypeChange} buttonStyle="solid">
       <Tooltip title="Summary by submission">
@@ -415,7 +441,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       onCancel={onCloseRunAll}
       cases={Object.values(testCasesByCategory).flat()}
       raw={progress}
-      numSubmissions={props.submissions.length}
+      numSubmissions={props.submissions !== undefined ? props.submissions.length : 0}
     />,
     <Modal
       visible={modalStatus === MODAL_STATUS.PendingRunAll}
@@ -425,8 +451,16 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       title="Confirm Run All Tests"
     >
       <div style={{ fontSize: 16 }}>
+        {hasExternalTests() && (
+          <div style={{ fontSize: 14, marginBottom: 15, color: 'orange' }}>
+            WARNING: You have some tests with type 'external'. External tests are to be set using the API, and will not
+            be run when you run tests in the codePost autograder. If you would like them to be run in the codePost
+            autograder, then please change the test type.
+          </div>
+        )}
         <div>
-          Estimated time to complete: <b>{getEstimate(props.submissions.length)}</b>
+          Estimated time to complete:{' '}
+          <b>{getEstimate(props.submissions !== undefined ? props.submissions.length : 0)}</b>
         </div>
         <br />
         <div>
@@ -436,11 +470,15 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
       </div>
     </Modal>,
   ];
+
   return (
     <div>
       <TableDetail
         loadComplete={!fetchLoading}
-        isEmpty={Object.keys(testCasesByCategory).length === 0}
+        isEmpty={
+          (Object.keys(testCasesByCategory).length === 0 && env && env.sourceFiles.length === 0) ||
+          props.submissions.length === 0
+        }
         title={`${props.currentAssignment.name} | Tests Summary`}
         breadcrumbs={
           <Breadcrumb>
@@ -449,7 +487,11 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
             <Breadcrumb.Item>Results</Breadcrumb.Item>
           </Breadcrumb>
         }
-        emptyNode={'Create some tests and you will be able to run them here'}
+        emptyNode={
+          Object.keys(testCasesByCategory).length === 0
+            ? 'Create some tests and you will be able to run them here'
+            : 'Upload a submission for your students to see test results.'
+        }
         actions={actions}
         columns={columns}
         data={data}
