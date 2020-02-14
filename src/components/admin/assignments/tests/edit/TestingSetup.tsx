@@ -235,7 +235,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       const payload = {
         id: -1,
         language,
-        dockerRunInstructions: dependencies.split('\n'),
+        dockerRunInstructions: dependencies ? dependencies.split('\n') : [],
         assignment: props.currentAssignment.id,
         dumpMode: false,
         testParsing: true,
@@ -252,7 +252,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     }
     const buildResult = await Environment.build({
       id: thisEnvironment.id,
-      dockerRunInstructions: dependencies.split('\n'),
+      dockerRunInstructions: dependencies ? dependencies.split('\n') : [],
       language: language,
       buildType: buildType,
     });
