@@ -263,7 +263,7 @@ const TestsList = (props: IProps) => {
               );
             })}
           </Collapse>
-          {props.showLogs && (
+          {props.showLogs && props.logs && (
             <div>
               <Typography.Title level={4}>Logs</Typography.Title>
               <Input.TextArea disabled={true} value={props.logs} style={{ color: 'black' }} autosize={true} />
