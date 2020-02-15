@@ -77,7 +77,6 @@ enum SUBMISSION_STATUS {
 
 enum CURRENT_PANEL {
   TABLE,
-  VIEWFILES,
   UPLOADFILES,
   ADDFILES,
 }
@@ -135,7 +134,11 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     ).then((assignments) => {
       const toRet: any = {};
       courses.forEach((course, i) => {
-        toRet[course.id] = assignments[i];
+        toRet[course.id] = assignments[i].filter(
+          (a) =>
+            a.isVisible &&
+            !a.hideFrom.some((shouldHide: number) => this.props.user.student_sections.indexOf(shouldHide) > -1),
+        );
       });
 
       return toRet;
@@ -278,8 +281,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     if (assignment.liveFeedbackMode) {
       openSubmission(newSubmissionID);
       this.changePanel(CURRENT_PANEL.TABLE, undefined, undefined);
-    } else {
-      this.changePanel(CURRENT_PANEL.VIEWFILES, assignment, undefined);
     }
   };
 
@@ -326,9 +327,9 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     // If the student can upload, give them the option to POST or PATCH submission
     let buttonText;
     if (hasSubmission) {
-      buttonText = 'Replace files';
+      buttonText = 'View assignment';
     } else {
-      buttonText = 'Upload files';
+      buttonText = 'View assignment';
     }
     const uploadButton = (
       <span>
@@ -391,21 +392,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
       </span>
     );
 
-    // If the student has uploaded, give them the option to view their uploaded files, unless
-    // their submission is viewable in the code console
-    const viewButton =
-      assignment.liveFeedbackMode ||
-      !hasSubmission ||
-      (hasSubmission && submission!.isFinalized && assignment.isReleased) ? null : (
-        <Button
-          icon="eye"
-          style={{ maxWidth: 160 }}
-          onClick={this.changePanel.bind(this, CURRENT_PANEL.VIEWFILES, assignment, undefined)}
-        >
-          View files
-        </Button>
-      );
-
     // Special case: if assignment.liveFeedbackMode is turned on, give the student the option to add files
     const addFileButton =
       !assignment.liveFeedbackMode || !hasSubmission ? null : (
@@ -433,7 +419,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
           <div style={{ marginLeft: 15 }} />
           {uploadButton}
           <div style={{ marginLeft: 15 }} />
-          {viewButton}
           {addFileButton}
         </div>
       </div>
@@ -734,15 +719,10 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
                 ? { [this.props.user.email]: { [this.state.detailSubmission.assignment]: this.state.detailSubmission } }
                 : { [this.props.user.email]: {} }
             }
-            uploadSubmission={this.uploadSubmission.bind(this, this.state.currentPanel === CURRENT_PANEL.UPLOADFILES)}
+            uploadSubmission={this.uploadSubmission.bind(this, this.state.currentPanel !== CURRENT_PANEL.ADDFILES)}
             disableStudentSelect={true}
             onSuccess={this.onUploadSuccess}
             isStudent={true}
-          />
-          <ViewUpload
-            isVisible={this.state.currentPanel === CURRENT_PANEL.VIEWFILES}
-            assignment={this.state.detailAssignment}
-            onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, undefined, undefined)}
           />
         </div>
       );

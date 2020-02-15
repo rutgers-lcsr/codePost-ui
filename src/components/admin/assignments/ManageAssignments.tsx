@@ -14,8 +14,7 @@ import { Route, Link, Redirect } from 'react-router-dom';
 
 /* codePost imports */
 import { AssignmentPatchType, AssignmentType } from '../../../infrastructure/assignment';
-import { CourseType } from '../../../infrastructure/course';
-import { SubmissionType } from '../../../infrastructure/submission';
+import { CourseType, SubmissionType, SectionType } from '../../../infrastructure/types';
 import { UserType } from '../../../infrastructure/user';
 
 import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../types/common';
@@ -46,6 +45,7 @@ export interface IManageAssignmentsProps {
   submissionsByStudent: IStudentSubmissionsDataTable;
   currentCourse: CourseType | undefined;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
+  sections: SectionType[];
 
   /* loading state */
   loadComplete: boolean;
@@ -183,6 +183,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   detailType={DETAIL_TYPE.Settings}
                   baseURL={props.match.url}
                   breadcrumbs={breadcrumbs}
+                  sections={props.sections}
                 />
               )}
             />
@@ -199,6 +200,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                     detailType={DETAIL_TYPE.DownloadGrades}
                     baseURL={props.match.url}
                     breadcrumbs={breadcrumbs}
+                    sections={props.sections}
                   />
                 )
               }
@@ -213,6 +215,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   detailType={DETAIL_TYPE.Delete}
                   baseURL={props.match.url}
                   breadcrumbs={breadcrumbs}
+                  sections={props.sections}
                 />
               )}
             />
@@ -229,6 +232,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                     detailType={DETAIL_TYPE.Upload_Single}
                     baseURL={props.match.url}
                     breadcrumbs={breadcrumbs}
+                    sections={props.sections}
                   />
                 )
               }
@@ -246,6 +250,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                     detailType={DETAIL_TYPE.Upload_Multiple}
                     baseURL={props.match.url}
                     breadcrumbs={breadcrumbs}
+                    sections={props.sections}
                   />
                 )
               }
@@ -263,6 +268,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                     detailType={DETAIL_TYPE.Upload_Import}
                     baseURL={props.match.url}
                     breadcrumbs={breadcrumbs}
+                    sections={props.sections}
                   />
                 )
               }
@@ -280,6 +286,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                     detailType={DETAIL_TYPE.BulkSubmissionEdit}
                     baseURL={props.match.url}
                     breadcrumbs={breadcrumbs}
+                    sections={props.sections}
                   />
                 )
               }
@@ -297,6 +304,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                     detailType={DETAIL_TYPE.Onboarding}
                     baseURL={props.match.url}
                     breadcrumbs={breadcrumbs}
+                    sections={props.sections}
                   />
                 )
               }
@@ -311,6 +319,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   submissions={props.submissions[assignment.id] || []}
                   user={props.user}
                   updateAssignment={props.shallowUpdateAssignment}
+                  sections={props.sections}
                 />
               )}
             />
@@ -374,6 +383,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
               breadcrumbs={breadcrumbs}
               detailType={DETAIL_TYPE.DownloadGrades}
               baseURL={props.match.url}
+              sections={props.sections}
             />
           )
         }

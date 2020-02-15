@@ -110,7 +110,8 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
                   } else {
                     message.warning(
                       `${zippedFile.name} exceeds file size limit of ${FILE_SIZE_LIMIT_IN_BYTES /
-                        1e6} MB and cannot be uploaded (its size is ${(blob.size / 1e6).toFixed(1)} MB).`,
+                        1e6} MB and cannot be uploaded (its size is ${(blob.size / 1e6).toFixed(1)} MB).
+                        The rest of the zip contents will attempt to be uploaded (see details below).`,
                       10,
                     );
                     return undefined;

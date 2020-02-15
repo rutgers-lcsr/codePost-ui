@@ -6,7 +6,21 @@
 import React, { useState, useEffect } from 'react';
 
 /* library imports */
-import { Modal, Button, Divider, Icon, Radio, Select, Skeleton, Spin, Tooltip, Tag, Typography, Empty } from 'antd';
+import {
+  Modal,
+  Button,
+  Divider,
+  Icon,
+  Input,
+  Radio,
+  Select,
+  Skeleton,
+  Spin,
+  Tooltip,
+  Tag,
+  Typography,
+  Empty,
+} from 'antd';
 
 /* codePost object imports */
 import { Assignment, AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
@@ -38,7 +52,7 @@ const { confirm } = Modal;
 interface IProps {
   currentAssignment: AssignmentType;
   env: EnvironmentType | undefined;
-  buildEnv: (language: string, dependencies: string[], buildType: string) => Promise<void>;
+  buildEnv: (language: string, dependencies: string, buildType: string) => Promise<void>;
   updateCompileText: (compileText: string) => Promise<void>;
   helpers: SolutionFileType[] | HelperFileType[];
   solutions: SolutionFileType[] | HelperFileType[];
@@ -52,7 +66,7 @@ export const EnvironmentSpecs = (props: IProps) => {
   /******************************* State Variables ****************************/
   const [language, setLanguage] = useState<string | null>(props.env ? props.env.language : null);
   const [buildType, setBuildType] = useState<string>(props.env ? props.env.buildType : 'default');
-  const [dependencies, setDependencies] = useState<string[]>(props.env ? JSON.parse(props.env.dependencies) : []);
+  const [dependencies, setDependencies] = useState<string>(props.env ? props.env.dockerRunInstructions.join('\n') : '');
   const [buildIsLoading, setBuildIsLoading] = useState(false);
 
   /******************************* API / State Change Functions ****************************/
@@ -60,7 +74,7 @@ export const EnvironmentSpecs = (props: IProps) => {
   useEffect(() => {
     if (props.env) {
       setLanguage(props.env.language);
-      setDependencies(JSON.parse(props.env.dependencies));
+      setDependencies(props.env.dockerRunInstructions.join('\n'));
       setBuildType(props.env.buildType);
     }
   }, [props.env]);
@@ -133,7 +147,7 @@ export const EnvironmentSpecs = (props: IProps) => {
 
     // if it's a new language, reset dependencies
     if (!props.env || value !== props.env.language) {
-      setDependencies([]);
+      setDependencies('');
       setBuildType(value === 'other' ? 'alpine' : 'default');
     }
     // if we return to old language, reset dependencies to props
@@ -143,15 +157,15 @@ export const EnvironmentSpecs = (props: IProps) => {
     }
   };
 
-  const onDependenciesChange = (newDependencies: string[]) => {
-    setDependencies(newDependencies);
+  const onDependenciesChange = (event: any) => {
+    setDependencies(event.target.value);
   };
 
   const onBuildTypeChange = (e: any) => {
     const newBuildType = e.target.value === 'default' ? 'default' : 'alpine';
     setBuildType(newBuildType);
     if (!props.env || newBuildType !== props.env.buildType) {
-      setDependencies([]);
+      setDependencies('');
     }
     if (props.env && newBuildType === props.env.buildType) {
       setDependencies(JSON.parse(props.env.dependencies));
@@ -224,30 +238,21 @@ export const EnvironmentSpecs = (props: IProps) => {
   );
 
   //************ 1C. ENVIRONMENT -  SELECT DEPENDENCIES
+  const placeholder = `// new line separated
+${installText} Package1
+${installText} Package2
+...`;
+
   const selectDependencies = (
     // Disable selector if environment has a custom dockerfile defined
-    <div style={{ marginLeft: 10 }}>
-      <Tooltip title="This is the install command run for all packages in this build.">
-        <Tag style={{ lineHeight: '32px', height: 32, marginRight: 5 }}>{installText}</Tag>
-      </Tooltip>
-      <Select
-        mode="tags"
-        style={{ minWidth: 300 }}
-        value={dependencies}
-        placeholder={'Type the package name and press tab'}
-        onChange={onDependenciesChange}
-        disabled={language === null || (props.env && props.env.dockerfile.length > 0)}
-        dropdownRender={(menu) =>
-          dependencies.length > 0 ? (
-            <div>
-              <div style={{ padding: '4px 8px', opacity: 0.5 }}>Type the package name and then press tab</div>
-            </div>
-          ) : (
-            <div />
-          )
-        }
-      />
-    </div>
+    <Input.TextArea
+      autosize={{ minRows: 4, maxRows: 8 }}
+      disabled={language === null || (props.env && props.env.dockerfile.length > 0)}
+      value={dependencies}
+      onChange={onDependenciesChange}
+      placeholder={placeholder}
+      style={{ marginLeft: '15px', width: '50%' }}
+    />
   );
 
   //************ 1D. ENVIRONMENT - SHOW CUSTOM DOCKERFILE IF IT EXISTS
@@ -339,7 +344,17 @@ export const EnvironmentSpecs = (props: IProps) => {
       <span style={{ lineHeight: '32px' }}>Build Type:</span> {buildOptions} {customBuildSelect}
       <br />
       <br />
-      <div className="display-flex align-items-center">Install packages: {selectDependencies}</div>
+      <div className="display-flex">
+        <div className="display-flex flex-direction-column">
+          <span>
+            Install packages:{' '}
+            <Tooltip title="Add line-delimited install commands">
+              <Icon type="info" />
+            </Tooltip>
+          </span>{' '}
+        </div>{' '}
+        {selectDependencies}
+      </div>
       {customDockerFile}
       {props.env ? showAfterCreation : null}
     </div>

@@ -24,9 +24,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 const { Sider, Content } = Layout;
 
 interface IProps {
-  isVisible: boolean;
   assignment?: AssignmentStudentType;
-  onCancel: () => void;
 }
 
 function ViewUpload(props: IProps) {
@@ -41,7 +39,7 @@ function ViewUpload(props: IProps) {
   };
 
   const fetchUpload = async () => {
-    if (props.assignment && props.isVisible) {
+    if (props.assignment) {
       const data = await AssignmentStudent.readStudentUpload(props.assignment.id);
       setFiles(data.files);
       setLoadComplete(true);
@@ -57,24 +55,16 @@ function ViewUpload(props: IProps) {
     fetchUpload();
     // Should implement useCallback();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.assignment, props.isVisible]);
+  }, [props.assignment]);
 
   const changeIndex = (e: ClickParam) => {
     setIndex(e.key);
   };
 
-  const cancel = (
-    <Button key="back" onClick={props.onCancel}>
-      Cancel
-    </Button>
-  );
-
-  let content;
-
   if (!loadComplete) {
-    content = <Spin />;
+    return <Spin />;
   } else if (files.length === 0) {
-    content = <div>No files for this submission</div>;
+    return <div>No files for this submission</div>;
   } else {
     let fileContent;
 
@@ -104,7 +94,7 @@ function ViewUpload(props: IProps) {
       );
     }
 
-    content = (
+    return (
       <div>
         <Layout>
           <Sider theme="light">
@@ -127,12 +117,6 @@ function ViewUpload(props: IProps) {
       </div>
     );
   }
-
-  return (
-    <Modal visible={props.isVisible} title="Submitted Files" onCancel={props.onCancel} footer={[cancel]} width={1100}>
-      {content}
-    </Modal>
-  );
 }
 
 export default ViewUpload;

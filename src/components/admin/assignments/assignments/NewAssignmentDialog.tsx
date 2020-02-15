@@ -29,6 +29,7 @@ interface IProps {
     assignmentName: string,
     assignmentPoints: number,
     upload: boolean,
+    isVisible: boolean,
     dueDate?: string,
   ) => Promise<AssignmentType>;
   baseURL: string;
@@ -38,6 +39,7 @@ interface IProps {
 interface IState {
   dialogVisible: boolean;
   studentsCanUpload: boolean;
+  isAssignmentVisible: boolean;
   isLoading: boolean;
 }
 
@@ -45,6 +47,7 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
   public state: Readonly<IState> = {
     dialogVisible: false,
     studentsCanUpload: false,
+    isAssignmentVisible: false,
     isLoading: false,
   };
 
@@ -55,11 +58,21 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
     this.setState({
       dialogVisible: !dialogVisible,
     });
+    const formRefCast: any = this.formRef;
+    const form = formRefCast.props.form;
+    form.resetFields();
+    this.setState({ studentsCanUpload: false });
   };
 
   public toggleStudentUpload = () => {
     this.setState((oldState: IState) => {
       return { studentsCanUpload: !oldState.studentsCanUpload };
+    });
+  };
+
+  public toggleIsAssignmentVisible = () => {
+    this.setState((oldState: IState) => {
+      return { isAssignmentVisible: !oldState.isAssignmentVisible };
     });
   };
 
@@ -76,6 +89,7 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
         values.name,
         values.points,
         this.state.studentsCanUpload,
+        this.state.isAssignmentVisible,
         values.uploadDueDate,
       );
 
@@ -92,8 +106,14 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
     });
   };
 
-  public createNewAssignment = (name: string, points: number, upload: boolean, uploadDueDate: string) => {
-    return this.props.createAssignment(name, points, upload, uploadDueDate);
+  public createNewAssignment = (
+    name: string,
+    points: number,
+    upload: boolean,
+    isVisible: boolean,
+    uploadDueDate: string,
+  ) => {
+    return this.props.createAssignment(name, points, upload, isVisible, uploadDueDate);
   };
 
   public saveFormRef = (formRef: any) => {
@@ -101,7 +121,7 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
   };
 
   public reset = () => {
-    this.setState({ dialogVisible: false, isLoading: false, setupMode: false });
+    this.setState({ dialogVisible: false, isLoading: false, setupMode: false, studentsCanUpload: false });
   };
 
   public render() {
@@ -117,6 +137,8 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
           onCreate={this.handleCreate}
           assignments={this.props.assignments}
           toggleStudentUpload={this.toggleStudentUpload}
+          toggleIsAssignmentVisible={this.toggleIsAssignmentVisible}
+          isAssignmentVisible={this.state.isAssignmentVisible}
           studentsCanUpload={this.state.studentsCanUpload}
           timezone={this.props.timezone}
           loading={this.state.isLoading}
@@ -132,7 +154,9 @@ interface IFormProps extends FormComponentProps {
   onCancel: () => void;
   assignments: AssignmentType[];
   toggleStudentUpload: () => void;
+  toggleIsAssignmentVisible: () => void;
   studentsCanUpload: boolean;
+  isAssignmentVisible: boolean;
   timezone: string;
   loading: boolean;
 }
@@ -216,14 +240,27 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
             <br />
             <br />
             {this.props.studentsCanUpload ? (
-              <Form.Item label="Set a due date. You'll be able to edit this later in the assignment settings.">
-                {getFieldDecorator('uploadDueDate', {
-                  valuePropName: 'value',
-                  initialValue: moment()
-                    .tz(this.props.timezone)
-                    .endOf('day'),
-                })(<DatePicker showTime placeholder="Click to select" />)}
-              </Form.Item>
+              <span>
+                <Form.Item label="Set a due date. You'll be able to edit this later in the assignment settings.">
+                  {getFieldDecorator('uploadDueDate', {
+                    valuePropName: 'value',
+                    initialValue: moment()
+                      .tz(this.props.timezone)
+                      .endOf('day'),
+                  })(<DatePicker showTime placeholder="Click to select" />)}
+                </Form.Item>
+                <span>
+                  Do you want students to be able to submit right away? If not, you can choose when to make your
+                  assignment visible.
+                </span>
+                <br />
+                <Radio checked={this.props.isAssignmentVisible} onChange={this.props.toggleIsAssignmentVisible}>
+                  Yes
+                </Radio>
+                <Radio checked={!this.props.isAssignmentVisible} onChange={this.props.toggleIsAssignmentVisible}>
+                  No
+                </Radio>
+              </span>
             ) : null}
           </Form>
         </Modal>

@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Tag, Typography, Spin } from 'antd';
+import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Tooltip, Typography, Spin } from 'antd';
 
 import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
@@ -27,8 +27,7 @@ import { Link } from 'react-router-dom';
 
 /* codePost imports */
 import { AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
-import { CourseType } from '../../../infrastructure/course';
-import { SubmissionType } from '../../../infrastructure/submission';
+import { CourseType, SubmissionType, SectionType } from '../../../infrastructure/types';
 import { UserType } from '../../../infrastructure/user';
 
 import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../types/common';
@@ -79,6 +78,7 @@ export interface IManageAssignmentsProps {
   submissionsByStudent: IStudentSubmissionsDataTable;
   currentCourse: CourseType;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
+  sections: SectionType[];
 
   /* loading state */
   loadComplete: boolean;
@@ -88,6 +88,7 @@ export interface IManageAssignmentsProps {
     assignmentName: string,
     assignmentPoints: number,
     upload: boolean,
+    isVisible: boolean,
     dueDate?: string,
     sortKey?: number,
   ) => Promise<AssignmentType>;
@@ -240,7 +241,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
     this.setState({ activeStudent: undefined });
   };
 
-  public createAssignment = (name: string, points: number, upload: boolean, dueDate?: string) => {
+  public createAssignment = (name: string, points: number, upload: boolean, isVisible: boolean, dueDate?: string) => {
     const { sortedOrder } = this.state;
 
     // Place assignment at the end of the assignment list
@@ -251,7 +252,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
       sortKey = 0;
     }
 
-    return this.props.createAssignment(name, points, upload, dueDate, sortKey);
+    return this.props.createAssignment(name, points, upload, isVisible, dueDate, sortKey);
   };
 
   /******************************************************************************
@@ -269,6 +270,22 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         dataIndex: 'assignment',
         key: 'assignment',
         className: 'draggable',
+      },
+      {
+        title: (
+          <div>
+            Visible
+            <CPTooltip
+              title={'If visible, students can see the assignment in the Student Console.'}
+              infoIcon={true}
+              hideThisOnHideTips={true}
+              iconStyle={{ paddingLeft: 5 }}
+            />
+          </div>
+        ),
+        dataIndex: 'visible',
+        key: 'visible',
+        align: aligner,
       },
       {
         title: (
@@ -521,14 +538,50 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         });
       };
 
+      const toggleVisible = () => {
+        const oldVal = assignment.isVisible;
+
+        this.props
+          .updateAssignment({
+            id: assignment.id,
+            isVisible: !assignment.isVisible,
+          })
+          .then(() => {
+            message.success(`Assignment made ${oldVal ? 'in' : ''}visible.`);
+          });
+      };
+
       return {
         key: assignment.id,
-        assignment: <Text strong>{assignment.name}</Text>,
+        assignment: (
+          <Text strong>
+            {assignment.name}
+            {assignment.hideFrom.length > 0 && (
+              <Tooltip
+                title={`Assignment hidden from the following sections: ${assignment.hideFrom
+                  .map((sectionID) => {
+                    const thisSection = this.props.sections.find((s) => s.id === sectionID);
+                    return thisSection ? thisSection.name : '';
+                  })
+                  .join(', ')}`}
+              >
+                <Icon type="eye-invisible" style={{ marginLeft: 5 }} />
+              </Tooltip>
+            )}
+          </Text>
+        ),
+        visible: <Switch checked={assignment.isVisible} onChange={toggleVisible} />,
         published: (
           <span className="display-flex align-items-center justify-content-center">
-            <Popconfirm onConfirm={onConfirm} title={publishToggleText} icon={<Icon type="question-circle" />}>
-              <Switch checked={assignment.isReleased} />
-            </Popconfirm>
+            {!assignment.isVisible && !assignment.isReleased ? (
+              <Tooltip title={'Your assignment cannot be published unless it is made visible to students.'}>
+                <Switch disabled={true} checked={assignment.isReleased} />
+              </Tooltip>
+            ) : (
+              <Popconfirm onConfirm={onConfirm} title={publishToggleText} icon={<Icon type="question-circle" />}>
+                <Switch checked={assignment.isReleased} />
+              </Popconfirm>
+            )}
             {assignment.isReleased ? (
               <span>
                 &nbsp; &nbsp;
@@ -606,6 +659,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
               currentAssignment={this.props.activeAssignment!}
               assignments={this.props.assignments}
               timezone={this.props.currentCourse.timezone}
+              sections={this.props.sections}
             />
           );
           break;

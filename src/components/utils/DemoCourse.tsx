@@ -122,7 +122,7 @@ const createAssignment = async (course: CourseType, assignment: any) => {
     const payload = {
       id: -1,
       language: 'java',
-      dependencies: JSON.stringify([]),
+      dockerRunInstructions: [],
       assignment: assnObj.id,
       dumpMode: false,
       testParsing: true,
@@ -137,7 +137,7 @@ const createAssignment = async (course: CourseType, assignment: any) => {
 
     const newEnv = await Environment.build({
       id: thisEnvironment.id,
-      dependencies: [],
+      dockerRunInstructions: [],
       language: 'java',
       buildType: 'default',
     });

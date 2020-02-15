@@ -7,6 +7,7 @@ import * as React from 'react';
 
 /* ant imports */
 import {
+  Checkbox,
   Button,
   DatePicker,
   Empty,
@@ -20,6 +21,7 @@ import {
   Tag,
   Transfer,
   Table,
+  Select,
 } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
@@ -27,12 +29,14 @@ import { FormComponentProps } from 'antd/lib/form';
 import moment from 'moment-timezone';
 
 /* codePost imports */
-import { AssignmentType, FileTemplateType } from '../../../../infrastructure/types';
+import { AssignmentType, FileTemplateType, SectionType } from '../../../../infrastructure/types';
 import { AssignmentPatchType } from '../../../../infrastructure/assignment';
 import { FileTemplate } from '../../../../infrastructure/fileTemplate';
 import InputNumberMultiple from '../../settings/InputNumberMultiple';
 
 import UploadFileTemplates from './UploadFileTemplates';
+
+import ReactMarkdown from 'react-markdown';
 
 /**********************************************************************************************************************/
 
@@ -43,6 +47,7 @@ interface IProps {
   currentAssignment: AssignmentType;
   assignments: AssignmentType[];
   timezone: string;
+  sections: SectionType[];
 }
 
 interface IState {
@@ -106,6 +111,8 @@ class AssignmentSettingsDialog extends React.Component<IProps, IState> {
       templateMode,
       showFrequentlyUsedRubricComments: values.showFrequentlyUsedRubricComments,
       allowLateUploads: values.allowLateUploads,
+      explanation: values.explanation,
+      hideFrom: values.hideFrom,
       lateDeductions: values.lateDeductions,
     };
 
@@ -165,6 +172,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, IState> {
         assignments={this.props.assignments}
         initialTemplateFiles={this.state.fileTemplates}
         timezone={this.props.timezone}
+        sections={this.props.sections}
       />
     );
   }
@@ -182,6 +190,7 @@ interface IFormProps extends FormComponentProps {
   assignments: AssignmentType[];
   initialTemplateFiles: FileTemplateType[];
   timezone: string;
+  sections: SectionType[];
 }
 
 interface IFormValues {
@@ -202,6 +211,8 @@ interface IFormValues {
   templateMode: boolean;
   showFrequentlyUsedRubricComments: boolean;
   allowLateUploads: boolean;
+  explanation: string;
+  hideFrom: string[];
   lateDeductions: number[];
 }
 
@@ -212,6 +223,8 @@ interface IFormState {
   templates: FileTemplateType[];
   newTemplate: string;
   selectedTemplates: string[];
+  explanationPreview: boolean;
+  explanation: string;
 }
 
 // FIXME: figure out how to type output of Form.create HOC
@@ -226,6 +239,8 @@ const CollectionCreateForm: any = Form.create()(
         templates: props.initialTemplateFiles,
         newTemplate: '',
         selectedTemplates: [],
+        explanationPreview: false,
+        explanation: this.props.assignment.explanation,
       };
     }
 
@@ -408,6 +423,55 @@ const CollectionCreateForm: any = Form.create()(
                     ],
                   })(<InputNumber min={0} />)}
                 </Form.Item>
+                <Form.Item
+                  label="Explanation"
+                  extra={
+                    <div>
+                      Description of the assignment, visible to students. Preview:{' '}
+                      <Checkbox
+                        defaultChecked={this.state.explanationPreview}
+                        onChange={() =>
+                          this.setState((oldState) => {
+                            return { explanationPreview: !oldState.explanationPreview };
+                          })
+                        }
+                      />
+                    </div>
+                  }
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 16 }}
+                >
+                  {getFieldDecorator('explanation', {
+                    initialValue: this.state.explanation,
+                  })(
+                    this.state.explanationPreview ? (
+                      <ReactMarkdown>{this.state.explanation}</ReactMarkdown>
+                    ) : (
+                      <Input.TextArea
+                        placeholder="Type text or Markdown"
+                        onChange={(e: any) => this.setState({ explanation: e.target.value })}
+                      />
+                    ),
+                  )}
+                </Form.Item>
+                {this.props.sections.length > 0 ? (
+                  <Form.Item
+                    label="Hide from"
+                    extra="Sections from which to hide this assignment."
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 16 }}
+                  >
+                    {getFieldDecorator('hideFrom', {
+                      initialValue: this.props.assignment.hideFrom,
+                    })(
+                      <Select mode="multiple">
+                        {this.props.sections.map((section) => (
+                          <Select.Option value={section.id}>{section.name}</Select.Option>
+                        ))}
+                      </Select>,
+                    )}
+                  </Form.Item>
+                ) : null}
               </Tabs.TabPane>
               <Tabs.TabPane tab="Submission" key="2" style={tabPaneStyle}>
                 <Form.Item
