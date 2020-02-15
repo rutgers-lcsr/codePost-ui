@@ -178,6 +178,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           });
           this.loadTestResults(
             this.props.submissions[this.props.selectedStudents[0]][this.props.selectedAssignment.id],
+            this.props.selectedAssignment.exposeDumpLogs === true,
           );
         }
       }
@@ -216,10 +217,10 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
   };
 
-  public loadTestResults = async (sub?: StudentSubmissionType | SubmissionType) => {
+  public loadTestResults = async (sub: StudentSubmissionType | SubmissionType | undefined, loadLogs: boolean) => {
     if (sub) {
-      const tests = await Submission.readTests(sub.id, { isStudentMode: 'True' });
-      this.setState({ submissionTests: SubmissionTest.getLatest(tests) });
+      const results = await Submission.readTestResults(sub.id, { isStudentMode: 'True' });
+      this.setState({ submissionTests: SubmissionTest.getLatest(results.submissionTests), testsLog: results.logs });
     }
   };
 
@@ -825,7 +826,9 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                     cases={this.state.testCases}
                     categories={this.state.testCategories}
                     isLoading={this.state.loadingTests}
-                    logs={this.state.testsLog === null ? undefined : this.state.testsLog}
+                    logs={
+                      this.state.testsLog === null || this.state.testsLog.length === 0 ? undefined : this.state.testsLog
+                    }
                     showLogs={this.state.selectedAssignment!.exposeDumpLogs === true}
                     message={
                       <div>
