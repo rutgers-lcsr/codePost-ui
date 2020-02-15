@@ -203,6 +203,17 @@ export type AnonymousSubmissionInfoType = t.TypeOf<typeof AnonymousSubmissionInf
 export type StudentSubmissionType = t.TypeOf<typeof StudentSubmissionV>;
 export type AnonymousSubmissionType = t.TypeOf<typeof AnonymousSubmissionV>;
 
+const TestResultsV = t.intersection(
+  [
+    t.type({
+      submissionTests: t.array(SubmissionTestV),
+      logs: t.string,
+    }),
+    t.partial({}),
+  ],
+  'TestResults',
+);
+
 /*****************************************************************************/
 /* Methods exposed
 /*****************************************************************************/
@@ -215,7 +226,7 @@ export class Submission {
   public static readAnonymous = readObject(AnonymousSubmissionV, 'submissions');
   public static readReadOnly = readObject(StudentSubmissionV, 'submissions');
   public static readHistory = readObjectDetail(t.array(SubmissionHistoryV), 'submissions', 'history');
-  public static readTests = readObjectDetail(t.array(SubmissionTestV), 'submissions', 'submissionTests');
+  public static readTestResults = readObjectDetail(TestResultsV, 'submissions', 'testResults');
 
   public static updateHistory = updateObjectDetail(
     SubmissionHistoryV,
