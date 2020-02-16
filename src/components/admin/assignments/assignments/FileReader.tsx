@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 
 import { message } from 'antd';
 
-import { File as CodePostFile } from '../../../../infrastructure/file';
+import { File as CPFile } from '../../../../infrastructure/file';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 

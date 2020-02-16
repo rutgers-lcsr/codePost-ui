@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 
-import { Button, Icon, List, Upload, Slider, Select, Steps, Table, Typography } from 'antd';
+import { Button, Collapse, Icon, Input, List, Modal, Upload, Slider, Select, Statistic, Table, Typography } from 'antd';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { codePostFile, IProtoFileUpload, fileToProtoFileUpload, readZipTopLevel } from './FileReader';
+
+import LogViewer from '../../..//core/LogViewer';
 
 interface IUploadFormProps {
   rawFiles: codePostFile[];
@@ -311,6 +313,29 @@ interface IStepTwoProps {
 }
 
 const StepTwoMapStudent = (props: IStepTwoProps) => {
+  const [showUpload, setShowUpload] = useState(false);
+  const [newMapping, setNewMapping] = useState<{ [id: string]: string }>({});
+  const [loading, setLoading] = useState(false);
+
+  React.useEffect(() => {
+    console.log('loading mapping');
+  }, []);
+
+  React.useEffect(() => {
+    setLoading(true);
+    const folderNameByID: { [id: string]: string } = {};
+    Object.keys(props.folderMap).forEach((folderName) => {
+      const id = getIdentifierFromFolder(folderName, props.idIndex);
+      folderNameByID[id] = folderName;
+    });
+    Object.keys(newMapping).forEach((identifier) => {
+      if (identifier in folderNameByID && identifier in newMapping) {
+        props.setStudent(folderNameByID[identifier], newMapping[identifier]);
+      }
+    });
+    setLoading(false);
+  }, [newMapping]);
+
   const columns = [
     {
       title: 'Zip Name',
@@ -329,14 +354,22 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
     },
   ];
 
-  const data = Object.keys(props.folderMap).map((folderName) => {
-    const elems = folderName.split('_');
-    const id = elems.length < props.idIndex + 1 ? elems[elems.length - 1] : elems[props.idIndex];
+  const mappedStudents = Object.keys(props.folderMap)
+    .filter((folderName) => props.folderMap[folderName])
+    .map((folderName) => props.folderMap[folderName]);
 
+  const data = Object.keys(props.folderMap).map((folderName) => {
+    const id = getIdentifierFromFolder(folderName, props.idIndex);
     const studentSelect = (
-      <Select onChange={(e: string) => props.setStudent(folderName, e)}>
+      <Select
+        value={props.folderMap[folderName] || undefined}
+        onChange={(e: string) => props.setStudent(folderName, e)}
+        style={{ minWidth: 250 }}
+      >
         {props.students.map((student) => (
-          <Select.Option value={student}>{student}</Select.Option>
+          <Select.Option value={student} disabled={mappedStudents.includes(student)}>
+            {student}
+          </Select.Option>
         ))}
       </Select>
     );
@@ -350,8 +383,152 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
 
   return (
     <div>
-      <Button onClick={props.onUpload}>Upload</Button>
-      <Table columns={columns} dataSource={data} />
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <div style={{ display: 'flex' }}>
+          <Statistic title="Total submissions" value={Object.keys(props.folderMap).length} />{' '}
+          <Statistic title="Mapped students" value={mappedStudents.length} />
+        </div>
+      </div>
+      <Button type="primary" onClick={() => setShowUpload(true)}>
+        Upload a mapping
+      </Button>
+      <MappingUpload
+        isVisible={showUpload}
+        onCancel={() => setShowUpload(false)}
+        onSave={setNewMapping}
+        folderMap={props.folderMap}
+        idIndex={props.idIndex}
+        students={props.students}
+      />
+      <Table columns={columns} pagination={{ pageSize: 10 }} dataSource={data} />
+      <div style={{ float: 'right' }}>
+        <Button
+          onClick={props.onUpload}
+          disabled={mappedStudents.length !== Object.keys(props.folderMap).length}
+          type="primary"
+        >
+          Next
+        </Button>
+      </div>
     </div>
   );
+};
+
+interface IMappingUploadProps {
+  onSave: (newMapping: { [id: string]: string }) => void;
+  onCancel: () => void;
+  isVisible: boolean;
+  folderMap: FolderToStudentMap;
+  idIndex: number;
+  students: string[];
+}
+
+const MappingUpload = (props: IMappingUploadProps) => {
+  const [stringMap, setStringMap] = useState(folderMapToString(props.folderMap, props.idIndex));
+  const [errors, setErrors] = useState<string[]>([]);
+
+  const downloadTemplate = () => {
+    const a = document.createElement('a');
+    a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(folderMapToString(props.folderMap, props.idIndex))}`;
+    a.download = `Roster_Mapping.csv`;
+    document.body.appendChild(a);
+    a.click();
+  };
+
+  const beforeUpload = (file: any, fileList: any) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      console.log(typeof reader.result);
+      if (typeof reader.result === 'string') {
+        console.log(reader.result);
+        setStringMap(reader.result);
+      }
+    };
+    reader.readAsText(file);
+
+    // prevent Ant upload component from trying to post file
+    return false;
+  };
+
+  const validateMapping = () => {
+    const errors: string[] = [];
+    const rows = stringMap.split('\n');
+    const validRows: { [email: string]: string } = {};
+    const identifierList = Object.keys(props.folderMap).map((folderName) =>
+      getIdentifierFromFolder(folderName, props.idIndex),
+    );
+
+    rows.forEach((row) => {
+      if (!row.match(/\w+,\w+/g)) {
+        errors.push(`Row doesn't match <identifier>,<email> syntax: ${row}`);
+        return;
+      }
+      const [identifier, email] = row.split(',');
+
+      if (!identifierList.includes(identifier)) {
+        errors.push(`Identifier ${identifier} not in list of folder names.`);
+        return;
+      }
+      if (!props.students.includes(email)) {
+        errors.push(`Student ${email} not enrolled in this course.`);
+        return;
+      }
+
+      if (identifier in validRows) {
+        errors.push(`Identifier ${identifier} included twice in csv.`);
+        return;
+      }
+
+      if (Object.values(validRows).includes(email)) {
+        errors.push(`Student ${email} included twice in csv.`);
+        return;
+      }
+
+      validRows[identifier] = email;
+    });
+
+    setErrors(errors);
+    if (errors.length === 0) {
+      props.onSave(validRows);
+      props.onCancel();
+    }
+  };
+
+  const saveBtn = <Button onClick={validateMapping}>Save</Button>;
+
+  return (
+    <Modal title="Upload a mapping" visible={props.isVisible} onCancel={props.onCancel} footer={[saveBtn]}>
+      {errors.length > 0 && (
+        <div>
+          Errors:
+          <LogViewer text={errors.join('\n')} />
+        </div>
+      )}
+      <div style={{ marginBottom: 10 }}>
+        <Button type="default" onClick={downloadTemplate} style={{ marginRight: 5 }}>
+          Download .csv template
+        </Button>
+        <Upload beforeUpload={beforeUpload} showUploadList={false}>
+          <Button type="primary">
+            <Icon type="upload" /> Upload a .csv file
+          </Button>
+        </Upload>
+      </div>
+      <Input.TextArea rows={6} value={stringMap} onChange={(e: any) => setStringMap(e.target.value)} />
+    </Modal>
+  );
+};
+
+// Helpers
+const getIdentifierFromFolder = (folderName: string, idIndex: number) => {
+  const elems = folderName.split('_');
+  return elems.length < idIndex + 1 ? elems[elems.length - 1] : elems[idIndex];
+};
+
+const folderMapToString = (folderMap: FolderToStudentMap, idIndex: number) => {
+  const stringArr = Object.keys(folderMap).map((folderName) => {
+    const identifier = getIdentifierFromFolder(folderName, idIndex);
+    return `${identifier},${folderMap[folderName] || ''}`;
+  });
+  return stringArr.join('\n');
 };
