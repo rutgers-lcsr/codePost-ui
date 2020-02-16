@@ -51,9 +51,7 @@ You have ${studentUploadInformation.lateDayCreditsAvailable} unused late day cre
     if (studentUploadInformation.pointsOff === 0) {
       penaltyTemplate = 'No penalty will be applied to the submission.';
     } else {
-      penaltyTemplate = `A **penalty of ${studentUploadInformation.pointsOff} point${
-        studentUploadInformation.pointsOff === 1 ? '' : 's'
-      }** will be applied to the submission.`;
+      penaltyTemplate = `A will be applied to the submission.`;
     }
   }
 
@@ -70,7 +68,7 @@ The due date has passed and your submission is **${studentUploadInformation.days
 
 ${penaltyTemplate}
 
-Please contact your instructor if you have any questions.
+Please see the course policy or contact your instructor if you have any questions.
 `;
 
   const times =
