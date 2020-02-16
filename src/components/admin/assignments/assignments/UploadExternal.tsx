@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Button, Collapse, Icon, Input, List, Modal, Upload, Slider, Select, Statistic, Table, Typography } from 'antd';
+import { Alert, Button, Icon, Input, List, Modal, Upload, Slider, Select, Statistic, Table, Typography } from 'antd';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
@@ -126,7 +126,7 @@ export const UploadFlow = (props: IUploadFormProps) => {
     case 1:
       content = <StepOneSelectUserName nextStep={nextStep} setUserIndex={setUserIndex} folderMap={map} />;
       title = "Select the student's unique identifier";
-      subtitle = 'This is to identify the canvas ID to which this submission belongs to.';
+      subtitle = 'This is to identify the LMS ID from the file name.';
       break;
     case 2:
       content = (
@@ -144,7 +144,7 @@ export const UploadFlow = (props: IUploadFormProps) => {
           onUpload={onUpload}
         />
       );
-      title = 'Map the canvas unique identifier to codePost emails';
+      title = 'Map the LMS unique identifier to codePost emails';
       break;
     default:
       content = <div />;
@@ -153,9 +153,10 @@ export const UploadFlow = (props: IUploadFormProps) => {
 
   return (
     <div>
-      <Typography.Title level={4} style={{ marginBottom: 15 }}>
-        {title}
-      </Typography.Title>
+      <div style={{ marginBottom: 15 }}>
+        <Typography.Title level={4}>{title}</Typography.Title>
+        <div style={{ color: 'grey' }}>{subtitle}</div>
+      </div>
       {content}
     </div>
   );
@@ -384,14 +385,30 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <div style={{ display: 'flex' }}>
-          <Statistic title="Total submissions" value={Object.keys(props.folderMap).length} />{' '}
-          <Statistic title="Mapped students" value={mappedStudents.length} />
+        <div style={{ display: 'flex', textAlign: 'center' }}>
+          <Statistic
+            title="Total submissions"
+            value={Object.keys(props.folderMap).length}
+            style={{ marginRight: 20 }}
+          />{' '}
+          <Statistic
+            title="Mapped submissions"
+            value={mappedStudents.length}
+            valueStyle={{ color: '#24be85' }}
+            style={{ marginRight: 20 }}
+          />
+          <Statistic
+            title="Unmapped submissions"
+            value={Object.keys(props.folderMap).length - mappedStudents.length}
+            valueStyle={{ color: '#fab1a0' }}
+          />
         </div>
       </div>
-      <Button type="primary" onClick={() => setShowUpload(true)}>
-        Upload a mapping
-      </Button>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Button type="primary" onClick={() => setShowUpload(true)} style={{ marginBottom: 10 }}>
+          Upload a mapping
+        </Button>
+      </div>
       <MappingUpload
         isVisible={showUpload}
         onCancel={() => setShowUpload(false)}
@@ -498,15 +515,21 @@ const MappingUpload = (props: IMappingUploadProps) => {
 
   return (
     <Modal title="Upload a mapping" visible={props.isVisible} onCancel={props.onCancel} footer={[saveBtn]}>
+      <Alert
+        type="info"
+        message="You only need to create this mapping once. When you save it, this csv will be stored in your course, and will be
+              automatically used for future uploads."
+        style={{ marginBottom: 15 }}
+      />
       {errors.length > 0 && (
         <div>
           Errors:
           <LogViewer text={errors.join('\n')} />
         </div>
       )}
-      <div style={{ marginBottom: 10 }}>
+      <div style={{ marginBottom: 10, float: 'right' }}>
         <Button type="default" onClick={downloadTemplate} style={{ marginRight: 5 }}>
-          Download .csv template
+          <Icon type="download" /> Download .csv template
         </Button>
         <Upload beforeUpload={beforeUpload} showUploadList={false}>
           <Button type="primary">
