@@ -1139,7 +1139,15 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     const title =
       this.state.mode && this.state.mode !== 'more' ? (
         <span>
-          <span style={{ color: '#24be85' }}>{this.state.mode} import:</span> {this.props.assignment.name}
+          <img
+            src={INTEGRATIONS[this.state.mode].logo}
+            style={{ width: '25px', marginRight: 5, marginBottom: 3 }}
+            alt=""
+          />
+          <span style={{ color: '#24be85' }}>
+            {this.state.mode.charAt(0).toUpperCase() + this.state.mode.slice(1)} import:
+          </span>{' '}
+          {this.props.assignment.name}
         </span>
       ) : (
         <span>Upload Submissions: {this.props.assignment.name}</span>
