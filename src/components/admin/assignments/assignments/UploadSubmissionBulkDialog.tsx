@@ -590,9 +590,15 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
   };
 
   public toggleOverwriteMode = () => {
-    this.setState({ overwriteMode: !this.state.overwriteMode }, () => {
-      this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile);
-    });
+    // this.setState({ overwriteMode: !this.state.overwriteMode }, () => {
+    //   this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile);
+    // });
+    // CHECK FOR REVIEWER: Why do we need to call process Submissions from files again after overwrite mode is toggled?
+    // Old Code:
+    // this.setState({ overwriteMode: !this.state.overwriteMode }, () => {
+    //   this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile);
+    // });
+    this.setState({ overwriteMode: !this.state.overwriteMode });
   };
 
   public changeStatus = (newStatus: STATUS) => {
