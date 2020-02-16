@@ -30,7 +30,8 @@ const LateSubmissionModal = (props: ILateSubmissionModalProps) => {
     studentUploadInformation !== null &&
     studentUploadInformation.lateDayCreditsAvailable !== undefined &&
     studentUploadInformation.lateDayCreditsToUse !== undefined &&
-    studentUploadInformation.adjustedDaysLate !== undefined
+    studentUploadInformation.adjustedDaysLate !== undefined &&
+    props.assignment.lateDeductions.length > 0
   ) {
     lateDayCreditsTemplate = `
 
@@ -47,11 +48,11 @@ You have ${studentUploadInformation.lateDayCreditsAvailable} unused late day cre
 
   let penaltyTemplate = '';
 
-  if (studentUploadInformation !== null) {
+  if (studentUploadInformation !== null && props.assignment.lateDeductions.length > 0) {
     if (studentUploadInformation.pointsOff === 0) {
       penaltyTemplate = 'No penalty will be applied to the submission.';
     } else {
-      penaltyTemplate = `A will be applied to the submission.`;
+      penaltyTemplate = `A penalty will be applied to the submission.`;
     }
   }
 
