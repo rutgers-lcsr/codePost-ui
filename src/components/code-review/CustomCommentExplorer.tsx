@@ -61,6 +61,7 @@ const CustomCommentExplorer = (props: IProps) => {
       title: 'Text',
       dataIndex: 'text',
       key: 'text',
+      sorter: (a: any, b: any) => a.text.localeCompare(b.text),
     },
   ];
 

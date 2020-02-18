@@ -2419,6 +2419,8 @@ Days late (after credit):  ${daysLateAfterCredit}
     (window as any).setFoobarParams('student', this.state.students);
     (window as any).setFoobarParams('file', this.state.files.map((file) => file.name));
     (window as any).foobarIsActive = true; // lift off
+    (window as any).foobarUser = this.props.user.email; // for logging
+    (window as any).foobarURL = this.props.match.url; // for logging
 
     /*************************************************************************************/
 
