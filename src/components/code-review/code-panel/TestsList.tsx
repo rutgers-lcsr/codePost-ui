@@ -253,6 +253,7 @@ const TestsList = (props: IProps) => {
                   style={customPanelStyle}
                 >
                   <Table
+                    scroll={{ x: true }}
                     columns={columns}
                     loading={props.isLoading}
                     dataSource={data}
