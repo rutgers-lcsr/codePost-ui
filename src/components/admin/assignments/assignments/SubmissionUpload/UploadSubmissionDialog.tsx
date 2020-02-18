@@ -36,30 +36,30 @@ import {
   StudentSubmissionType,
   FileTemplateType,
   CourseType,
-} from '../../../../infrastructure/types';
-import { AssignmentStudent, AssignmentStudentType } from '../../../../infrastructure/assignment';
-import { Environment } from '../../../../infrastructure/autograder/environment';
-import { FileTemplate } from '../../../../infrastructure/fileTemplate';
+} from '../../../../../infrastructure/types';
+import { AssignmentStudent, AssignmentStudentType } from '../../../../../infrastructure/assignment';
+import { Environment } from '../../../../../infrastructure/autograder/environment';
+import { FileTemplate } from '../../../../../infrastructure/fileTemplate';
 
-import CPTooltip from '../../../../components/core/CPTooltip';
-import { tooltips } from '../../../../components/core/tooltips';
+import CPTooltip from '../../../../../components/core/CPTooltip';
+import { tooltips } from '../../../../../components/core/tooltips';
 
-import { IStudentSubmissionsDataTable } from '../../../../types/common';
+import { IStudentSubmissionsDataTable } from '../../../../../types/common';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
 
-import TestsList from '../../../../components/code-review/code-panel/TestsList';
-import { StudentTestCasesByCategory } from '../../../../components/core/testFetchUtils';
+import TestsList from '../../../../../components/code-review/code-panel/TestsList';
+import { StudentTestCasesByCategory } from '../../../../../components/core/testFetchUtils';
 
-import { awaitTestResult } from '../../../../components/admin/assignments/tests/testResult';
+import { awaitTestResult } from '../../../../../components/admin/assignments/tests/testResult';
 
-import { SubmissionTestResultType } from '../../../../infrastructure/autograder/runTypes';
+import { SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
 
-import { slack } from '../../../../components/core/slack';
+import { slack } from '../../../../../components/core/slack';
 
-import { encodeForLink } from '../../../../components/core/URLutils';
+import { encodeForLink } from '../../../../../components/core/URLutils';
 
 /**********************************************************************************************************************/
 

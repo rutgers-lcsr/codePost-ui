@@ -1,29 +1,16 @@
 import React, { useState } from 'react';
 
-import {
-  Alert,
-  Button,
-  Icon,
-  Input,
-  List,
-  message,
-  Modal,
-  Upload,
-  Slider,
-  Select,
-  Statistic,
-  Table,
-  Typography,
-} from 'antd';
+import { Button, Icon, List, message, Upload, Slider, Select, Statistic, Table, Typography } from 'antd';
 
-import { UploadFile } from 'antd/lib/upload/interface';
+import { codePostFile, IProtoFileUpload } from './FileReader';
 
-import { codePostFile, IProtoFileUpload, fileToProtoFileUpload, readZipTopLevel } from './FileReader';
+import { CourseType } from '../../../../../infrastructure/types';
 
-import { CourseType } from '../../../../infrastructure/types';
+import { Course } from '../../../../../infrastructure/course';
 
-import LogViewer from '../../..//core/LogViewer';
-import { Course } from '../../../../infrastructure/course';
+import LMSRosterMapUpload from './LMSRosterMapUpload';
+
+import { FolderToStudentMap, getIdentifierFromFolder, beforeLMSImport } from './LMSImportHelpers';
 
 interface IUploadFormProps {
   rawFiles: codePostFile[];
@@ -37,64 +24,11 @@ interface IUploadFormProps {
   course: CourseType;
 }
 
-const beforeUploadDirectory = (files: UploadFile[], callback: any) => {
-  const beforeUpload = async (file: File, fileList: File[]) => {
-    let newList: codePostFile[] = [];
-    if (fileList.length > 1) {
-      // Case 1: use has selected a folder via menu, which will place all files into
-      // fileList
-      const promises = fileList.map(async (thisFile) => {
-        console.log('THIS FILE', thisFile);
-        if (thisFile.name.endsWith('.zip')) {
-          const unzippedFiles = await readZipTopLevel(thisFile);
-          const protoFiles = unzippedFiles.map((f: File) => {
-            console.log(f);
-            // We can't set the path of a file, so need to do a path override
-            // @ts-ignore
-            // console.log(JSON.parse(f.toString()));
-            const cPFile: codePostFile = new File([f], f.name);
+// *************************************************************************************
+// ***************************** Main Component  **********************************
+// *************************************************************************************
 
-            cPFile['uid'] = '';
-            // @ts-ignore
-            cPFile['pathOverride'] = `${thisFile.webkitRelativePath}/${f.name}`;
-            return cPFile;
-          });
-          newList.push(...protoFiles);
-        }
-        return Promise.resolve();
-      });
-      await Promise.all(promises);
-      console.log(newList);
-      const filesToSet = [...files, ...newList];
-
-      callback(filesToSet);
-    } else {
-      // Case 2: user drags in a folder. This will cause each file to uploaded such that fileList
-      // contains only one file at a time. So add these files one-by-one to state.rawFiles
-
-      if (file.name.endsWith('.zip')) {
-        const unzippedFiles = await readZipTopLevel(file);
-        console.log(unzippedFiles);
-        const filteredFiles = unzippedFiles.filter((file: File) => {
-          const protoFileUpload: IProtoFileUpload = fileToProtoFileUpload(file);
-          return protoFileUpload.path.split('/').length > 1;
-        });
-        callback([...files, filteredFiles]);
-      }
-    }
-
-    // prevent upload
-    return Promise.reject();
-  };
-
-  return beforeUpload;
-};
-
-interface FolderToStudentMap {
-  [folderName: string]: string | null;
-}
-
-export const UploadFlow = (props: IUploadFormProps) => {
+export const LMSImport = (props: IUploadFormProps) => {
   const [step, setStep] = useState(0);
   const [fileList, setFileList] = useState<codePostFile[]>([]);
   const [map, setMap] = useState<FolderToStudentMap>({});
@@ -107,7 +41,6 @@ export const UploadFlow = (props: IUploadFormProps) => {
   };
 
   const setRawFiles = (files: codePostFile[]) => {
-    console.log(files);
     const map: FolderToStudentMap = {};
     files.forEach((el) => {
       const folderName = el.pathOverride!.split('/')[1];
@@ -119,13 +52,8 @@ export const UploadFlow = (props: IUploadFormProps) => {
   };
 
   const onUpload = () => {
-    console.log(map);
     const getStudentByFile = (el: IProtoFileUpload) => {
-      console.log(el);
-      console.log(el.path);
-      console.log(map);
       const folderName = el.path.split('/')[1];
-      console.log('value', map[folderName]);
       if (map[folderName] !== null) return [map[folderName]!];
       return ['hello'];
     };
@@ -180,6 +108,10 @@ export const UploadFlow = (props: IUploadFormProps) => {
   );
 };
 
+// *************************************************************************************
+// *************************** Step Zero: Upload Zip files  ****************************
+// *************************************************************************************
+
 interface IStepZeroProps {
   nextStep: () => void;
   rawFiles: codePostFile[];
@@ -187,19 +119,23 @@ interface IStepZeroProps {
 }
 
 const StepZeroUploadZips = (props: IStepZeroProps) => {
-  const beforeUpload = beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+  const beforeUpload = beforeLMSImport(props.rawFiles, props.setRawFiles);
   return (
     <div>
       <Upload.Dragger showUploadList={false} directory={true} multiple={false} beforeUpload={beforeUpload}>
         <p className="ant-upload-drag-icon">
           <Icon type="inbox" />
         </p>
-        <p className="ant-upload-text">Click or drag a folder to upload</p>
+        <p className="ant-upload-text">Click to upload a folder</p>
         <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
       </Upload.Dragger>
     </div>
   );
 };
+
+// *************************************************************************************
+// *************************** Step One: Select the LMS identifier  ********************
+// *************************************************************************************
 
 interface IStepOneProps {
   nextStep: () => void;
@@ -332,6 +268,10 @@ interface IStepTwoProps {
   course: CourseType;
 }
 
+// *************************************************************************************
+// *************************** Step Two: Map the LMS id to the student *****************
+// *************************************************************************************
+
 const StepTwoMapStudent = (props: IStepTwoProps) => {
   const [showUpload, setShowUpload] = useState(false);
   const [newMapping, setNewMapping] = useState<{ [id: string]: string }>({});
@@ -440,7 +380,7 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
           Upload a mapping
         </Button>
       </div>
-      <MappingUpload
+      <LMSRosterMapUpload
         isVisible={showUpload}
         onCancel={() => setShowUpload(false)}
         onSave={onRosterSave}
@@ -448,7 +388,7 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
         idIndex={props.idIndex}
         students={props.students}
       />
-      <Table columns={columns} pagination={{ pageSize: 10 }} dataSource={data} />
+      <Table columns={columns} pagination={{ pageSize: 10 }} dataSource={data} loading={loading} />
       <div style={{ float: 'right' }}>
         <Button
           onClick={props.onUpload}
@@ -460,133 +400,4 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
       </div>
     </div>
   );
-};
-
-interface IMappingUploadProps {
-  onSave: (newMapping: { [id: string]: string }) => void;
-  onCancel: () => void;
-  isVisible: boolean;
-  folderMap: FolderToStudentMap;
-  idIndex: number;
-  students: string[];
-}
-
-const MappingUpload = (props: IMappingUploadProps) => {
-  const [stringMap, setStringMap] = useState(folderMapToString(props.folderMap, props.idIndex));
-  const [errors, setErrors] = useState<string[]>([]);
-
-  React.useEffect(() => {
-    setStringMap(folderMapToString(props.folderMap, props.idIndex));
-  }, [props.isVisible]);
-
-  const downloadTemplate = () => {
-    const a = document.createElement('a');
-    a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(folderMapToString(props.folderMap, props.idIndex))}`;
-    a.download = `Roster_Mapping.csv`;
-    document.body.appendChild(a);
-    a.click();
-  };
-
-  const beforeUpload = (file: any, fileList: any) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      console.log(typeof reader.result);
-      if (typeof reader.result === 'string') {
-        console.log(reader.result);
-        setStringMap(reader.result);
-      }
-    };
-    reader.readAsText(file);
-
-    // prevent Ant upload component from trying to post file
-    return false;
-  };
-
-  const validateMapping = () => {
-    const errors: string[] = [];
-    const rows = stringMap.split('\n');
-    const validRows: { [email: string]: string } = {};
-    const identifierList = Object.keys(props.folderMap).map((folderName) =>
-      getIdentifierFromFolder(folderName, props.idIndex),
-    );
-
-    rows.forEach((row) => {
-      if (!row.match(/\w+,\w+/g)) {
-        errors.push(`Row doesn't match <identifier>,<email> syntax: ${row}`);
-        return;
-      }
-      const [identifier, email] = row.split(',');
-
-      if (!identifierList.includes(identifier)) {
-        errors.push(`Identifier ${identifier} not in list of folder names.`);
-        return;
-      }
-      if (!props.students.includes(email)) {
-        errors.push(`Student ${email} not enrolled in this course.`);
-        return;
-      }
-
-      if (identifier in validRows) {
-        errors.push(`Identifier ${identifier} included twice in csv.`);
-        return;
-      }
-
-      if (Object.values(validRows).includes(email)) {
-        errors.push(`Student ${email} included twice in csv.`);
-        return;
-      }
-
-      validRows[identifier] = email;
-    });
-
-    setErrors(errors);
-    if (errors.length === 0) {
-      props.onSave(validRows);
-      props.onCancel();
-    }
-  };
-
-  const saveBtn = <Button onClick={validateMapping}>Save</Button>;
-
-  return (
-    <Modal title="Upload a mapping" visible={props.isVisible} onCancel={props.onCancel} footer={[saveBtn]}>
-      <Alert
-        type="info"
-        message="You only need to create this mapping once. When you save it, this csv will be stored in your course, and will be
-              automatically used for future uploads."
-        style={{ marginBottom: 15 }}
-      />
-      {errors.length > 0 && (
-        <div>
-          Errors:
-          <LogViewer text={errors.join('\n')} />
-        </div>
-      )}
-      <div style={{ marginBottom: 10, float: 'right' }}>
-        <Button type="default" onClick={downloadTemplate} style={{ marginRight: 5 }}>
-          <Icon type="download" /> Download .csv template
-        </Button>
-        <Upload beforeUpload={beforeUpload} showUploadList={false}>
-          <Button type="primary">
-            <Icon type="upload" /> Upload a .csv file
-          </Button>
-        </Upload>
-      </div>
-      <Input.TextArea rows={6} value={stringMap} onChange={(e: any) => setStringMap(e.target.value)} />
-    </Modal>
-  );
-};
-
-// Helpers
-const getIdentifierFromFolder = (folderName: string, idIndex: number) => {
-  const elems = folderName.split('_');
-  return elems.length < idIndex + 1 ? elems[elems.length - 1] : elems[idIndex];
-};
-
-const folderMapToString = (folderMap: FolderToStudentMap, idIndex: number) => {
-  const stringArr = Object.keys(folderMap).map((folderName) => {
-    const identifier = getIdentifierFromFolder(folderName, idIndex);
-    return `${identifier},${folderMap[folderName] || ''}`;
-  });
-  return stringArr.join('\n');
 };

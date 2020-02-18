@@ -5,15 +5,15 @@ import { Collapse, Icon, Radio, Statistic, Switch, Upload } from 'antd';
 
 import ReactMarkdown from 'react-markdown';
 
-import BlockMarkdown from '../../../core/BlockMarkdown';
+import BlockMarkdown from '../../../../core/BlockMarkdown';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { codePostFile, IProtoFileUpload, fileToProtoFileUpload, readZipTopLevel } from './FileReader';
 
-import { UploadFlow } from './UploadExternal';
+import { LMSImport } from './LMSImport';
 
-import { CourseType } from '../../../../infrastructure/types';
+import { CourseType } from '../../../../../infrastructure/types';
 
 const Panel = Collapse.Panel;
 const Dragger = Upload.Dragger;
@@ -35,13 +35,13 @@ const UploadForm = (props: IUploadFormProps) => {
   let content;
   switch (props.mode) {
     case 'canvas':
-      content = <UploadFlow {...props} />;
+      content = <LMSImport {...props} />;
       break;
     case 'blackboard':
-      content = <Blackboard {...props} />;
+      content = <LMSImport {...props} />;
       break;
     case 'brightspace':
-      content = <Brightspace {...props} />;
+      content = <LMSImport {...props} />;
       break;
     case 'github':
       content = <GitHub {...props} />;

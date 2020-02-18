@@ -12,18 +12,18 @@ import { Button, Collapse, Divider, Modal, Progress, Steps, Switch, Table, Tag, 
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
-import CPTooltip from '../../../../components/core/CPTooltip';
-import { tooltips } from '../../../../components/core/tooltips';
+import CPTooltip from '../../../../../components/core/CPTooltip';
+import { tooltips } from '../../../../../components/core/tooltips';
 
-import LogViewer from '../../../../components/core/LogViewer';
+import LogViewer from '../../../../../components/core/LogViewer';
 
 /* codePost imports */
-import { encodeForLink } from '../../../../components/core/URLutils';
-import { AssignmentType, CourseType, SubmissionType } from '../../../../infrastructure/types';
+import { encodeForLink } from '../../../../../components/core/URLutils';
+import { AssignmentType, CourseType, SubmissionType } from '../../../../../infrastructure/types';
 
 import UploadForm from './UploadForm';
 
-import { IntegrationButton, INTEGRATIONS } from '../../../landing/Integrations';
+import { IntegrationButton, INTEGRATIONS } from '../../../../landing/Integrations';
 
 import { codePostFile, IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
 
@@ -226,7 +226,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       const submitters = submission.students.join(',');
       for (const file of submission.files) {
         try {
-          console.log('READING FILE', file);
           let outputFiles;
           // @ts-ignore FIXME
           if (file.file) {
@@ -542,7 +541,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     // Make sure the files have valid students
     const [folderMap, errors] = this.validateStudents(acceptedFiles, getStudentsFromFile);
 
-    console.log('folderMap', folderMap);
     const invalidPaths: string[] = errors;
 
     // Sort files into appropriate protoSubmissions
@@ -564,8 +562,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
       }
     });
 
-    console.log('FOLDERMAP', folderMap);
-
     // Remove protoSubmissions which have no files (because all of the files are invalid)
     Object.keys(folderMap).forEach((key) => {
       if (folderMap[key].files.length === 0) {
@@ -576,8 +572,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     const protoSubmissions: IProtoSubmission[] = Object.keys(folderMap).map((key) => {
       return folderMap[key];
     });
-
-    console.log('SUBMISSIONS', protoSubmissions);
 
     this.setState({
       protoSubmissions,
@@ -1069,7 +1063,11 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     let goBackButton;
     switch (this.state.status) {
       case STATUS.NONE:
-        goBackButton = (
+        goBackButton = this.state.mode ? (
+          <Button key="back" onClick={() => this.setState({ showImportOptions: false, mode: undefined })}>
+            Start over
+          </Button>
+        ) : (
           <Button key="back" onClick={this.cancel}>
             Cancel
           </Button>

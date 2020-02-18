@@ -22,7 +22,7 @@ import { SubmissionType } from '../../../../infrastructure/submission';
 
 import { TableDetail } from '../../other/TableDetail';
 
-import UploadSubmissionDialog from '../../assignments/assignments/UploadSubmissionDialog';
+import UploadSubmissionDialog from '../../assignments/assignments/SubmissionUpload/UploadSubmissionDialog';
 
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';

@@ -2,11 +2,11 @@ import JSZip from 'jszip';
 
 import { message } from 'antd';
 
-import { File as CPFile } from '../../../../infrastructure/file';
+import { File as CPFile } from '../../../../../infrastructure/file';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
-import { resizeImage } from '../../other/AdminUtils';
+import { resizeImage } from '../../../other/AdminUtils';
 
 export interface IProtoFileUpload {
   longname: string;
@@ -19,6 +19,8 @@ export interface IProtoFileUpload {
 }
 
 export interface codePostFile extends UploadFile {
+  // Field to set the path of a file
+  // webkitRelativePath is not settable
   pathOverride?: string;
 }
 
@@ -27,8 +29,6 @@ export const fileToProtoFileUpload = (
   zipSource?: string,
 ): IProtoFileUpload => {
   let longname: string = inputFile.name;
-
-  console.log(inputFile);
 
   // @ts-ignore
   if (inputFile.pathOverride) {
