@@ -91,6 +91,8 @@ import TestsList from './code-panel/TestsList';
 
 import { CourseContext, defaultCourse } from '../core/Contexts';
 
+import CustomCommentExplorer from './CustomCommentExplorer';
+
 /**********************************************************************************************************************/
 
 /* f(logged in user, submission) */
@@ -125,6 +127,7 @@ interface ICodeConsoleState {
   isStudent: boolean;
   showKeyboardShortcuts: boolean;
   showExplanations: boolean;
+  showCustomCommentExplorer: boolean;
 
   /* submissions data for readers and writers */
   readOnlySubmission?: StudentSubmissionType;
@@ -503,6 +506,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       cursorMode: LOCAL_SETTINGS.cursorMode.getter(),
       showCursor: LOCAL_SETTINGS.cursorMode.getter() ? CURSOR_DOMAIN.CODE : CURSOR_DOMAIN.CODE_HIDDEN,
       showExplanations: false,
+      showCustomCommentExplorer: false,
 
       panelType: PANEL_TYPE.FILE,
       hideGrades: false,
@@ -1292,6 +1296,12 @@ Days late (after credit):  ${daysLateAfterCredit}
         });
       }
     }
+  };
+
+  public toggleCustomCommentExplorer = () => {
+    this.setState((oldState) => {
+      return { showCustomCommentExplorer: !oldState.showCustomCommentExplorer };
+    });
   };
 
   public toggleFinalized = async () => {
@@ -2124,15 +2134,26 @@ Days late (after credit):  ${daysLateAfterCredit}
           );
 
           content = (
-            <CodePanelLayout
-              comments={comments}
-              code={code}
-              toolbarWidgets={toolbarWidgets}
-              dimensions={this.state.dimensions}
-              file={this.state.selectedFile}
-              zoom={this.state.codeZoom}
-              updateVerticalOffset={this.setVerticalOffset}
-            />
+            <div>
+              <CodePanelLayout
+                comments={comments}
+                code={code}
+                toolbarWidgets={toolbarWidgets}
+                dimensions={this.state.dimensions}
+                file={this.state.selectedFile}
+                zoom={this.state.codeZoom}
+                updateVerticalOffset={this.setVerticalOffset}
+              />
+              <CustomCommentExplorer
+                graders={this.state.graders}
+                user={this.props.user.email}
+                isAdmin={this.isCourseAdmin(this.state.assignment)}
+                assignment={this.state.assignment}
+                rubricComments={Object.values(this.state.rubricComments).flat()}
+                visible={this.state.showCustomCommentExplorer}
+                onCancel={this.toggleCustomCommentExplorer}
+              />
+            </div>
           );
         } else if (this.state.panelType === PANEL_TYPE.TESTS) {
           content = (
@@ -2262,6 +2283,10 @@ Days late (after credit):  ${daysLateAfterCredit}
       }
     };
 
+    const goToTests = () => {
+      this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
+    };
+
     const findGraderSubmissions = async (grader: string) => {
       const submissions = await Assignment.readSubmissions(this.state.assignment!.id, { grader });
       return submissions.map((sub) => {
@@ -2318,36 +2343,7 @@ Days late (after credit):  ${daysLateAfterCredit}
       }
     };
 
-    let defaultOptions = [
-      {
-        value: 'Find submission of ',
-        label: 'Find submission of {{student}}',
-        kind: 'dynamic',
-        child: {
-          generator: findStudentSubmission,
-          kind: 'generator',
-          emptyMessage: 'Student has no submission for this assignment',
-        },
-      },
-      {
-        value: 'Find submissions graded by ',
-        label: 'Find submissions graded by {{grader}}',
-        kind: 'dynamic',
-        child: {
-          generator: findGraderSubmissions,
-          kind: 'generator',
-          emptyMessage: "Grader hasn't graded any submissions",
-        },
-      },
-      {
-        value: 'Assign to ',
-        label: 'Assign to {{grader}}',
-        kind: 'dynamic',
-        child: {
-          callback: assigner,
-          kind: 'action',
-        },
-      },
+    let defaultOptions: any[] = [
       {
         value: 'Jump to ',
         label: 'Jump to {{file}}',
@@ -2358,16 +2354,63 @@ Days late (after credit):  ${daysLateAfterCredit}
         },
       },
       {
-        value: 'Open rubric editor',
-        label: 'Open rubric editor',
-        link: `/admin/${this.state.course!.name}/${this.state.course!.period}/assignments/rubrics/${
-          this.state.assignment!.name
-        }`,
-        kind: 'link',
+        value: 'Open tests',
+        label: 'Open tests',
+        kind: 'action',
+        callback: goToTests,
       },
-      { value: 'View stats', label: 'View stats', kind: 'dashboard', populator: viewStats },
+      {
+        value: 'Show custom comment explorer',
+        label: 'Show custom comment explorer',
+        kind: 'action',
+        callback: this.toggleCustomCommentExplorer,
+      },
       ...helpQueryMap,
     ];
+
+    if (this.isCourseAdmin(this.state.assignment)) {
+      defaultOptions = [
+        ...defaultOptions,
+        {
+          value: 'Find submission of ',
+          label: 'Find submission of {{student}}',
+          kind: 'dynamic',
+          child: {
+            generator: findStudentSubmission,
+            kind: 'generator',
+            emptyMessage: 'Student has no submission for this assignment',
+          },
+        },
+        {
+          value: 'Find submissions graded by ',
+          label: 'Find submissions graded by {{grader}}',
+          kind: 'dynamic',
+          child: {
+            generator: findGraderSubmissions,
+            kind: 'generator',
+            emptyMessage: "Grader hasn't graded any submissions",
+          },
+        },
+        {
+          value: 'Assign to ',
+          label: 'Assign to {{grader}}',
+          kind: 'dynamic',
+          child: {
+            callback: assigner,
+            kind: 'action',
+          },
+        },
+        {
+          value: 'Open rubric editor',
+          label: 'Open rubric editor',
+          link: `/admin/${this.state.course!.name}/${this.state.course!.period}/assignments/rubrics/${
+            this.state.assignment!.name
+          }`,
+          kind: 'link',
+        },
+        { value: 'View stats', label: 'View stats', kind: 'dashboard', populator: viewStats },
+      ];
+    }
 
     for (const option of defaultOptions) {
       (window as any).addToFoobar(option);

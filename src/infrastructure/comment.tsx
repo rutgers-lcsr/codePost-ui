@@ -4,7 +4,7 @@ import { RubricCommentType } from './rubricComment';
 
 import { createObject, deleteObject, GenericObject, readObject, updateObject, updateObjectDetail } from './generics';
 
-const CommentV = t.intersection(
+export const CommentV = t.intersection(
   [
     GenericObject,
     t.type({

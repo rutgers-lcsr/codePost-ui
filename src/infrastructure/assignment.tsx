@@ -22,6 +22,7 @@ import {
 import { SubmissionHistoryV } from './submissionHistory';
 import { StudentTestCaseV } from './testCase';
 import { TestCategoryV } from './testCategory';
+import { CommentV } from './comment';
 
 const AssignmentV = t.intersection(
   [
@@ -204,6 +205,7 @@ export class Assignment {
     'assignments',
     'submissionHistories',
   );
+  public static readComments = readObjectDetail(t.array(CommentV), 'assignments', 'comments');
 }
 
 // Type for getting and patching student upload
