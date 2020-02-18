@@ -68,6 +68,7 @@ const comment1: CommentType = {
   file: -1,
   rubricComment: null,
   feedback: 0,
+  color: null,
 };
 
 const comment2: CommentType = {
@@ -81,6 +82,7 @@ const comment2: CommentType = {
   file: -1,
   rubricComment: null,
   feedback: 0,
+  color: null,
 };
 
 // const comment3: CommentType = {

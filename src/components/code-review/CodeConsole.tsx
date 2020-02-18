@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Empty, message, notification } from 'antd';
+import { Empty, message, notification, Progress, Typography } from 'antd';
 
 /* other library imports */
 import _ from 'lodash';
@@ -84,10 +84,14 @@ import { loadDemoGrader, loadDemoStudent } from './demo';
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 
+import { helpQueryMap } from './HelpQueries';
+
 import TestsMenu from './menu/TestsMenu';
 import TestsList from './code-panel/TestsList';
 
 import { CourseContext, defaultCourse } from '../core/Contexts';
+
+import CustomCommentExplorer from './CustomCommentExplorer';
 
 /**********************************************************************************************************************/
 
@@ -123,6 +127,7 @@ interface ICodeConsoleState {
   isStudent: boolean;
   showKeyboardShortcuts: boolean;
   showExplanations: boolean;
+  showCustomCommentExplorer: boolean;
 
   /* submissions data for readers and writers */
   readOnlySubmission?: StudentSubmissionType;
@@ -145,6 +150,7 @@ interface ICodeConsoleState {
 
   /* admin data */
   graders: string[];
+  students: string[];
 
   /* demo data */
   demoCommentCounter: number;
@@ -473,6 +479,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
       files: [],
       graders: [],
+      students: [],
       isLoading: true,
       rubricCategories: [],
       rubricComments: {},
@@ -499,6 +506,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       cursorMode: LOCAL_SETTINGS.cursorMode.getter(),
       showCursor: LOCAL_SETTINGS.cursorMode.getter() ? CURSOR_DOMAIN.CODE : CURSOR_DOMAIN.CODE_HIDDEN,
       showExplanations: false,
+      showCustomCommentExplorer: false,
 
       panelType: PANEL_TYPE.FILE,
       hideGrades: false,
@@ -666,9 +674,13 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         }
 
         // load the data only an admin has access to
-        const graders = this.isCourseAdmin(assignment)
-          ? (await Course.readRoster(assignment.course))['graders'].sort()
-          : [];
+        let graders: string[] = [];
+        let students: string[] = [];
+        if (this.isCourseAdmin(assignment)) {
+          const roster = await Course.readRoster(assignment.course);
+          graders = roster['graders'];
+          students = roster['students'];
+        }
 
         // fill in grade using available data if submission doesn't contain an up-to-date grade
         if (assignment && !writableSubmission.isFinalized) {
@@ -718,6 +730,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             rubricCategories,
             rubricComments,
             graders,
+            students,
             isLoading: false,
             selectedFile,
             permissionLevel,
@@ -1045,6 +1058,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       author: this.props.user.email,
       feedback: 0,
       tags: ['late'],
+      color: '',
     };
 
     const submissionPayload = {
@@ -1124,7 +1138,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           return;
         }
       } else {
-        savedComment = await CommentIO.update(comment);
+        savedComment = await CommentIO.update({ ...comment });
       }
     } else {
       if (comment.id < 0) {
@@ -1280,6 +1294,12 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         });
       }
     }
+  };
+
+  public toggleCustomCommentExplorer = () => {
+    this.setState((oldState) => {
+      return { showCustomCommentExplorer: !oldState.showCustomCommentExplorer };
+    });
   };
 
   public toggleFinalized = async () => {
@@ -2112,15 +2132,26 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           );
 
           content = (
-            <CodePanelLayout
-              comments={comments}
-              code={code}
-              toolbarWidgets={toolbarWidgets}
-              dimensions={this.state.dimensions}
-              file={this.state.selectedFile}
-              zoom={this.state.codeZoom}
-              updateVerticalOffset={this.setVerticalOffset}
-            />
+            <div>
+              <CodePanelLayout
+                comments={comments}
+                code={code}
+                toolbarWidgets={toolbarWidgets}
+                dimensions={this.state.dimensions}
+                file={this.state.selectedFile}
+                zoom={this.state.codeZoom}
+                updateVerticalOffset={this.setVerticalOffset}
+              />
+              <CustomCommentExplorer
+                graders={this.state.graders}
+                user={this.props.user.email}
+                isAdmin={this.isCourseAdmin(this.state.assignment)}
+                assignment={this.state.assignment}
+                rubricComments={Object.values(this.state.rubricComments).flat()}
+                visible={this.state.showCustomCommentExplorer}
+                onCancel={this.toggleCustomCommentExplorer}
+              />
+            </div>
           );
         } else if (this.state.panelType === PANEL_TYPE.TESTS) {
           content = (
@@ -2227,6 +2258,169 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     const cancelFunc = () => {
       return;
     };
+
+    /*************************************************************************************/
+    /* Foobar config */
+    /*************************************************************************************/
+
+    /* callbacks */
+    const assigner = (queryValue?: string) => {
+      if (queryValue !== undefined) {
+        this.updateGrader(this.state.submission!, queryValue);
+      }
+    };
+
+    const goToFile = (queryValue?: string) => {
+      if (queryValue !== undefined) {
+        const foundFile = this.state.files.find((file) => {
+          return file.name === queryValue;
+        });
+        if (foundFile) {
+          this.changeSelectedFile(foundFile.id);
+        }
+      }
+    };
+
+    const goToTests = () => {
+      this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
+    };
+
+    const findGraderSubmissions = async (grader: string) => {
+      const submissions = await Assignment.readSubmissions(this.state.assignment!.id, { grader });
+      return submissions.map((sub) => {
+        return {
+          value: `${sub.id}`,
+          label: `Open submission ${sub.id}`,
+          callback: () => openSubmissionInSameTab(sub.id),
+          tags: sub.students,
+          kind: 'action',
+        };
+      });
+    };
+
+    const findStudentSubmission = async (student: string) => {
+      const submissions = await Assignment.readSubmissions(this.state.assignment!.id, { student });
+      if (submissions.length === 1) {
+        const sub = submissions[0];
+        return [
+          {
+            value: `${sub.id}`,
+            label: `Open submission ${sub.id}`,
+            callback: () => openSubmissionInSameTab(sub.id),
+            tags: sub.students,
+            kind: 'action',
+          },
+        ];
+      } else {
+        return [];
+      }
+    };
+
+    const viewStats = async () => {
+      if (this.state.assignment) {
+        const submissions = await Assignment.readSubmissions(this.state.assignment.id);
+
+        const numSubmissions = submissions.length;
+        const numGraded = submissions.filter((el) => el.isFinalized).length;
+        const numInProgress = submissions.filter((el) => el.grader && !el.isFinalized).length;
+        const numUnclaimed = numSubmissions - numGraded - numInProgress;
+
+        return (
+          <div>
+            <Progress
+              percent={Math.floor(((numGraded + numInProgress) / numSubmissions) * 100)}
+              successPercent={Math.floor((numGraded / numSubmissions) * 100)}
+              type="dashboard"
+            />
+            &nbsp;&nbsp;&nbsp;
+            <Typography.Text style={{ paddingBottom: 10 }}>
+              {`${numGraded} done / ${numInProgress} drafts / ${numUnclaimed} unclaimed`}
+            </Typography.Text>
+          </div>
+        );
+      }
+    };
+
+    let defaultOptions: any[] = [
+      {
+        value: 'Jump to ',
+        label: 'Jump to {{file}}',
+        kind: 'dynamic',
+        child: {
+          callback: goToFile,
+          kind: 'action',
+        },
+      },
+      {
+        value: 'Open tests',
+        label: 'Open tests',
+        kind: 'action',
+        callback: goToTests,
+      },
+      {
+        value: 'Show custom comment explorer',
+        label: 'Show custom comment explorer',
+        kind: 'action',
+        callback: this.toggleCustomCommentExplorer,
+      },
+      ...helpQueryMap,
+    ];
+
+    if (this.isCourseAdmin(this.state.assignment)) {
+      defaultOptions = [
+        ...defaultOptions,
+        {
+          value: 'Find submission of ',
+          label: 'Find submission of {{student}}',
+          kind: 'dynamic',
+          child: {
+            generator: findStudentSubmission,
+            kind: 'generator',
+            emptyMessage: 'Student has no submission for this assignment',
+          },
+        },
+        {
+          value: 'Find submissions graded by ',
+          label: 'Find submissions graded by {{grader}}',
+          kind: 'dynamic',
+          child: {
+            generator: findGraderSubmissions,
+            kind: 'generator',
+            emptyMessage: "Grader hasn't graded any submissions",
+          },
+        },
+        {
+          value: 'Assign to ',
+          label: 'Assign to {{grader}}',
+          kind: 'dynamic',
+          child: {
+            callback: assigner,
+            kind: 'action',
+          },
+        },
+        {
+          value: 'Open rubric editor',
+          label: 'Open rubric editor',
+          link: `/admin/${this.state.course!.name}/${this.state.course!.period}/assignments/rubrics/${
+            this.state.assignment!.name
+          }`,
+          kind: 'link',
+        },
+        { value: 'View stats', label: 'View stats', kind: 'dashboard', populator: viewStats },
+      ];
+    }
+
+    for (const option of defaultOptions) {
+      (window as any).addToFoobar(option);
+    }
+    (window as any).setFoobarParams('grader', this.state.graders);
+    (window as any).setFoobarParams('student', this.state.students);
+    (window as any).setFoobarParams('file', this.state.files.map((file) => file.name));
+    (window as any).foobarIsActive = true; // lift off
+    (window as any).foobarUser = this.props.user.email; // for logging
+    (window as any).foobarURL = this.props.match.url; // for logging
+
+    /*************************************************************************************/
 
     return (
       <div id="Grade">

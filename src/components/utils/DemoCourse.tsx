@@ -250,6 +250,7 @@ const createSubmissions = (assignment: AssignmentType, domain: string) => {
                 rubricComment: rubricID,
                 author: commentT.author,
                 feedback: 0,
+                color: null,
               };
 
               return CommentIO.create(commentPayload).then(() => {
