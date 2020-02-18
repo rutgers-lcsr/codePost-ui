@@ -1138,9 +1138,7 @@ Days late (after credit):  ${daysLateAfterCredit}
           return;
         }
       } else {
-        console.log(comment.color);
         savedComment = await CommentIO.update({ ...comment });
-        console.log(comment.color);
       }
     } else {
       if (comment.id < 0) {
