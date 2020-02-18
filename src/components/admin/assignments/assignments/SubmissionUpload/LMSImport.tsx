@@ -273,6 +273,7 @@ interface IStepTwoProps {
 // *************************************************************************************
 
 const StepTwoMapStudent = (props: IStepTwoProps) => {
+  const [editMode, setEditMode] = useState(true);
   const [showUpload, setShowUpload] = useState(false);
   const [newMapping, setNewMapping] = useState<{ [id: string]: string }>({});
   const [loading, setLoading] = useState(false);
@@ -289,15 +290,26 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
   React.useEffect(() => {
     setLoading(true);
     const folderNameByID: { [id: string]: string } = {};
+    // Roster map is indexed by ID, but the folderMap required by UploadBulkSubmissionDialog is indexed by foldername
+    // We first create a mapping of LMS id to folder name
     Object.keys(props.folderMap).forEach((folderName) => {
       const id = getIdentifierFromFolder(folderName, props.idIndex);
       folderNameByID[id] = folderName;
     });
+
+    let studentsMatched = 0;
     Object.keys(newMapping).forEach((identifier) => {
       if (identifier in folderNameByID && identifier in newMapping) {
         props.setStudent(folderNameByID[identifier], newMapping[identifier]);
+        studentsMatched += 1;
       }
     });
+
+    // If all students have been matched, turn off edit mode
+    if (studentsMatched === props.students.length) {
+      setEditMode(false);
+    }
+
     setLoading(false);
   }, [newMapping]);
 
@@ -325,9 +337,12 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
 
   const data = Object.keys(props.folderMap).map((folderName) => {
     const id = getIdentifierFromFolder(folderName, props.idIndex);
-    const studentSelect = (
+    const studentEmail = !editMode ? (
+      <span>{props.folderMap[folderName] || undefined}</span>
+    ) : (
       <Select
         value={props.folderMap[folderName] || undefined}
+        showSearch={true}
         onChange={(e: string) => props.setStudent(folderName, e)}
         style={{ minWidth: 250 }}
       >
@@ -336,13 +351,14 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
             {student}
           </Select.Option>
         ))}
+        <Select.Option value={undefined}> </Select.Option>
       </Select>
     );
 
     return {
       name: folderName,
       identifier: id,
-      email: studentSelect,
+      email: studentEmail,
     };
   });
 
@@ -355,7 +371,7 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 15 }}>
         <div style={{ display: 'flex', textAlign: 'center' }}>
           <Statistic
             title="Total submissions"
@@ -376,9 +392,15 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
         </div>
       </div>
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <Button type="primary" onClick={() => setShowUpload(true)} style={{ marginBottom: 10 }}>
-          Upload a mapping
-        </Button>
+        {editMode ? (
+          <Button type="primary" onClick={() => setShowUpload(true)} style={{ marginBottom: 10 }}>
+            <Icon type="upload" /> Upload a mapping
+          </Button>
+        ) : (
+          <Button type="default" onClick={() => setEditMode(true)}>
+            <Icon type="edit" /> Edit
+          </Button>
+        )}
       </div>
       <LMSRosterMapUpload
         isVisible={showUpload}
