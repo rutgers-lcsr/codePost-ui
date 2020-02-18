@@ -105,7 +105,7 @@ export const TestFileUploader = (props: IUploadProps) => {
       }
     };
     const protoFileUpload = fileToProtoFileUpload(file);
-    if (BinaryExtensions.includes(protoFileUpload.extension)) {
+    if (BinaryExtensions.includes(protoFileUpload.extension.toLowerCase())) {
       reader.readAsDataURL(file);
     } else {
       reader.readAsText(file);
