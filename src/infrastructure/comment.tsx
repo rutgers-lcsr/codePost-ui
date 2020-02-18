@@ -17,7 +17,6 @@ export const CommentV = t.intersection(
       file: t.number,
       rubricComment: t.union([t.number, t.null]),
       feedback: t.number,
-      color: t.union([t.string, t.null]),
     }),
     t.partial({
       author: t.string,
