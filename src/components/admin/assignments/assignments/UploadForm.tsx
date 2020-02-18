@@ -13,6 +13,8 @@ import { codePostFile, IProtoFileUpload, fileToProtoFileUpload, readZipTopLevel 
 
 import { UploadFlow } from './UploadExternal';
 
+import { CourseType } from '../../../../infrastructure/types';
+
 const Panel = Collapse.Panel;
 const Dragger = Upload.Dragger;
 
@@ -26,6 +28,7 @@ interface IUploadFormProps {
   showImportOptions: boolean;
   mode?: string;
   students: string[];
+  course: CourseType;
 }
 
 const UploadForm = (props: IUploadFormProps) => {

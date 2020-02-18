@@ -25,8 +25,6 @@ import UploadForm from './UploadForm';
 
 import { IntegrationButton, INTEGRATIONS } from '../../../landing/Integrations';
 
-import { UploadFile } from 'antd/lib/upload/interface';
-
 import { codePostFile, IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
 
 const Panel = Collapse.Panel;
@@ -778,6 +776,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
                 mode={this.state.mode}
                 showImportOptions={this.state.showImportOptions}
                 students={this.props.students}
+                course={this.props.course}
               />
             </div>
           );

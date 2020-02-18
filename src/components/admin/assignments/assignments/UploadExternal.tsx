@@ -1,12 +1,29 @@
 import React, { useState } from 'react';
 
-import { Alert, Button, Icon, Input, List, Modal, Upload, Slider, Select, Statistic, Table, Typography } from 'antd';
+import {
+  Alert,
+  Button,
+  Icon,
+  Input,
+  List,
+  message,
+  Modal,
+  Upload,
+  Slider,
+  Select,
+  Statistic,
+  Table,
+  Typography,
+} from 'antd';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { codePostFile, IProtoFileUpload, fileToProtoFileUpload, readZipTopLevel } from './FileReader';
 
+import { CourseType } from '../../../../infrastructure/types';
+
 import LogViewer from '../../..//core/LogViewer';
+import { Course } from '../../../../infrastructure/course';
 
 interface IUploadFormProps {
   rawFiles: codePostFile[];
@@ -17,6 +34,7 @@ interface IUploadFormProps {
   ) => void;
   students: string[];
   mode?: string;
+  course: CourseType;
 }
 
 const beforeUploadDirectory = (files: UploadFile[], callback: any) => {
@@ -39,7 +57,6 @@ const beforeUploadDirectory = (files: UploadFile[], callback: any) => {
             cPFile['uid'] = '';
             // @ts-ignore
             cPFile['pathOverride'] = `${thisFile.webkitRelativePath}/${f.name}`;
-            console.log(cPFile);
             return cPFile;
           });
           newList.push(...protoFiles);
@@ -142,6 +159,7 @@ export const UploadFlow = (props: IUploadFormProps) => {
           setFolderMap={setMap}
           students={props.students}
           onUpload={onUpload}
+          course={props.course}
         />
       );
       title = 'Map the LMS unique identifier to codePost emails';
@@ -311,6 +329,7 @@ interface IStepTwoProps {
   setStudent: (folderName: string, email: string) => void;
   setFolderMap: (map: FolderToStudentMap) => void;
   onUpload: () => void;
+  course: CourseType;
 }
 
 const StepTwoMapStudent = (props: IStepTwoProps) => {
@@ -319,7 +338,12 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
   const [loading, setLoading] = useState(false);
 
   React.useEffect(() => {
-    console.log('loading mapping');
+    const fetchMap = async () => {
+      setLoading(true);
+      const oldMap = await Course.readRosterMap(props.course.id);
+      setNewMapping(oldMap);
+    };
+    fetchMap();
   }, []);
 
   React.useEffect(() => {
@@ -382,6 +406,13 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
     };
   });
 
+  const onRosterSave = async (newMap: { [id: string]: string }) => {
+    await Course.updateRosterMap({ id: props.course.id, rosterMap: newMap });
+    setNewMapping(newMap);
+    setShowUpload(false);
+    message.success('Mapping saved!');
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -412,7 +443,7 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
       <MappingUpload
         isVisible={showUpload}
         onCancel={() => setShowUpload(false)}
-        onSave={setNewMapping}
+        onSave={onRosterSave}
         folderMap={props.folderMap}
         idIndex={props.idIndex}
         students={props.students}
@@ -443,6 +474,10 @@ interface IMappingUploadProps {
 const MappingUpload = (props: IMappingUploadProps) => {
   const [stringMap, setStringMap] = useState(folderMapToString(props.folderMap, props.idIndex));
   const [errors, setErrors] = useState<string[]>([]);
+
+  React.useEffect(() => {
+    setStringMap(folderMapToString(props.folderMap, props.idIndex));
+  }, [props.isVisible]);
 
   const downloadTemplate = () => {
     const a = document.createElement('a');
