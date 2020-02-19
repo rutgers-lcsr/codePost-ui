@@ -96,7 +96,6 @@ const TestsList = (props: IProps) => {
       title: 'Explanation',
       dataIndex: 'explanation',
       key: 'explanation',
-      className: 'tests-list--explanations',
       width: `${explanationsWidth}px`,
     },
     {
