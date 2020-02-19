@@ -164,265 +164,265 @@ const Normal = (props: IUploadFormProps) => {
   );
 };
 
-const Canvas = (props: IUploadFormProps) => {
-  const [zipMode, setZipMode] = React.useState(false);
-  const beforeUpload = beforeUploadDirectory(props.rawFiles, props.setRawFiles);
-  // const beforeUpload = zipMode
-  //   ? beforeUploadZip(props.rawFiles, props.setRawFiles)
-  //   : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+// const Canvas = (props: IUploadFormProps) => {
+//   const [zipMode, setZipMode] = React.useState(false);
+//   const beforeUpload = beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+//   // const beforeUpload = zipMode
+//   //   ? beforeUploadZip(props.rawFiles, props.setRawFiles)
+//   //   : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+//
+//   const onChange = (checked: boolean) => {
+//     setZipMode(checked);
+//   };
+//
+//   const [selection, setSelection] = React.useState<boolean | undefined>(undefined);
+//
+//   const yesKey = () => {
+//     setSelection(true);
+//   };
+//
+//   const noKey = () => {
+//     setSelection(false);
+//   };
+//
+//   let instructions;
+//
+//   if (selection) {
+//     const scriptUrl =
+//       // tslint:disable-next-line:max-line-length
+//       'https://raw.githubusercontent.com/codepost-io/integration-canvas/master/A_ImportingWithAPIKey/canvas_to_codepost_api.py';
+//     instructions = `
+// See [GitHub](https://github.com/codepost-io/integration-canvas) for more details.
+//
+// These instructions will help you download submissions from Canvas and upload them to codePost.
+//
+// 0. Save [this script](${scriptUrl}) locally.
+//
+// 1. Open \`canvas_to_codePost_api.py\` and replace \`<API_KEY>\` with your Canvas API Key.
+//
+// 2. From the command line, run \`python3 canvas_to_codepost_api.py <COURSE_ID> <ASSIGNMENT_ID>\`
+//
+// 3. The script will generate a folder called \`codepost_upload\`. Drag this folder into the space below.
+//
+// ----------
+//
+// **Can't find your Canvas API key?** Try asking your organization's Canvas admin.
+//
+// **Need help?** Learn how to troubleshoot [here](https://github.com/codepost-io/integration-canvas)
+// or shoot us an email at team@codepost.io
+//
+// **Want to customize submission upload?** Check out our [Python SDK](https://github.com/codepost-io/codepost-python).
+// You can also fork \`canvas_to_codePost_api.py\` [here](https://github.com/codepost-io/integration-canvas).
+// `;
+//   } else {
+//     const scriptUrl =
+//       // tslint:disable-next-line:max-line-length
+//       'https://raw.githubusercontent.com/codepost-io/integration-canvas/master/B_ImportingWithoutAPIKey/canvas_to_codepost_manual.py';
+//     instructions = `
+// See [GitHub](https://github.com/codepost-io/integration-canvas) for more details.
+//
+// These instructions will turn submissions downloaded from Canvas into a folder that you can drag into codePost.
+//
+// 0. Download submissions from Canvas (Course -> Assignments -> Assignment -> Download Submissions)
+//
+// 1. Create a [roster.csv]
+// (https://raw.githubusercontent.com/codepost-io/integration-canvas/master/B_ImportingWithoutAPIKey/sample_roster.csv)
+//
+// 3. Download this [script](${scriptUrl})
+//
+// 3. From the command line, run \`python3 canvas_to_codepost_manual.py submissions roster.csv\`
+//
+// 4. The script will generate a folder called \`codepost_upload\`. Drag this folder into the space below.
+//
+// ----------
+//
+// **Can't find your Canvas API key?** Try asking your organization's Canvas admin.
+//
+// **Need help?** Learn how to troubleshoot [here](https://github.com/codepost-io/integration-canvas)
+// or shoot us an email at team@codepost.io
+//
+// **Want to customize submission upload?** Check out our [Python SDK](https://github.com/codepost-io/codepost-python).
+// You can also fork \`canvas_to_codePost_manual.py\` [here](https://github.com/codepost-io/integration-canvas).
+// `;
+//   }
+//
+//   return (
+//     <div>
+//       <Radio.Group buttonStyle="solid" style={{ width: '100%', textAlign: 'center' }} value={selection}>
+//         <Radio.Button value={true} style={{ width: '40%', textAlign: 'center' }} onClick={yesKey}>
+//           I have a Canvas API Key
+//         </Radio.Button>
+//         <Radio.Button value={false} style={{ width: '40%', textAlign: 'center' }} onClick={noKey}>
+//           I do not have a Canvas API Key
+//         </Radio.Button>
+//       </Radio.Group>
+//       <br />
+//       <br />
+//       {selection !== undefined ? (
+//         <div>
+//           <Collapse defaultActiveKey={['1']}>
+//             <Panel header="Instructions" key="1">
+//               <BlockMarkdown source={instructions} />
+//             </Panel>
+//           </Collapse>
+//           <br />
+//           <br />
+//           <Switch checked={zipMode} onChange={onChange} /> <span> Upload Zip File</span>
+//           <br />
+//           <br />
+//           <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
+//             <p className="ant-upload-drag-icon">
+//               <Icon type="inbox" />
+//             </p>
+//             <p className="ant-upload-text">Click or drag a folder to upload</p>
+//             <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
+//           </Dragger>
+//           <br />
+//           <br />
+//           <br />
+//           {zipMode ? (
+//             <Statistic title="Unzipped and uploaded files" value={props.rawFiles.length} />
+//           ) : (
+//             <Statistic title="Uploaded files" value={props.rawFiles.length} />
+//           )}
+//         </div>
+//       ) : null}
+//     </div>
+//   );
+// };
 
-  const onChange = (checked: boolean) => {
-    setZipMode(checked);
-  };
-
-  const [selection, setSelection] = React.useState<boolean | undefined>(undefined);
-
-  const yesKey = () => {
-    setSelection(true);
-  };
-
-  const noKey = () => {
-    setSelection(false);
-  };
-
-  let instructions;
-
-  if (selection) {
-    const scriptUrl =
-      // tslint:disable-next-line:max-line-length
-      'https://raw.githubusercontent.com/codepost-io/integration-canvas/master/A_ImportingWithAPIKey/canvas_to_codepost_api.py';
-    instructions = `
-See [GitHub](https://github.com/codepost-io/integration-canvas) for more details.
-
-These instructions will help you download submissions from Canvas and upload them to codePost.
-
-0. Save [this script](${scriptUrl}) locally.
-
-1. Open \`canvas_to_codePost_api.py\` and replace \`<API_KEY>\` with your Canvas API Key.
-
-2. From the command line, run \`python3 canvas_to_codepost_api.py <COURSE_ID> <ASSIGNMENT_ID>\`
-
-3. The script will generate a folder called \`codepost_upload\`. Drag this folder into the space below.
-
-----------
-
-**Can't find your Canvas API key?** Try asking your organization's Canvas admin.
-
-**Need help?** Learn how to troubleshoot [here](https://github.com/codepost-io/integration-canvas)
-or shoot us an email at team@codepost.io
-
-**Want to customize submission upload?** Check out our [Python SDK](https://github.com/codepost-io/codepost-python).
-You can also fork \`canvas_to_codePost_api.py\` [here](https://github.com/codepost-io/integration-canvas).
-`;
-  } else {
-    const scriptUrl =
-      // tslint:disable-next-line:max-line-length
-      'https://raw.githubusercontent.com/codepost-io/integration-canvas/master/B_ImportingWithoutAPIKey/canvas_to_codepost_manual.py';
-    instructions = `
-See [GitHub](https://github.com/codepost-io/integration-canvas) for more details.
-
-These instructions will turn submissions downloaded from Canvas into a folder that you can drag into codePost.
-
-0. Download submissions from Canvas (Course -> Assignments -> Assignment -> Download Submissions)
-
-1. Create a [roster.csv]
-(https://raw.githubusercontent.com/codepost-io/integration-canvas/master/B_ImportingWithoutAPIKey/sample_roster.csv)
-
-3. Download this [script](${scriptUrl})
-
-3. From the command line, run \`python3 canvas_to_codepost_manual.py submissions roster.csv\`
-
-4. The script will generate a folder called \`codepost_upload\`. Drag this folder into the space below.
-
-----------
-
-**Can't find your Canvas API key?** Try asking your organization's Canvas admin.
-
-**Need help?** Learn how to troubleshoot [here](https://github.com/codepost-io/integration-canvas)
-or shoot us an email at team@codepost.io
-
-**Want to customize submission upload?** Check out our [Python SDK](https://github.com/codepost-io/codepost-python).
-You can also fork \`canvas_to_codePost_manual.py\` [here](https://github.com/codepost-io/integration-canvas).
-`;
-  }
-
-  return (
-    <div>
-      <Radio.Group buttonStyle="solid" style={{ width: '100%', textAlign: 'center' }} value={selection}>
-        <Radio.Button value={true} style={{ width: '40%', textAlign: 'center' }} onClick={yesKey}>
-          I have a Canvas API Key
-        </Radio.Button>
-        <Radio.Button value={false} style={{ width: '40%', textAlign: 'center' }} onClick={noKey}>
-          I do not have a Canvas API Key
-        </Radio.Button>
-      </Radio.Group>
-      <br />
-      <br />
-      {selection !== undefined ? (
-        <div>
-          <Collapse defaultActiveKey={['1']}>
-            <Panel header="Instructions" key="1">
-              <BlockMarkdown source={instructions} />
-            </Panel>
-          </Collapse>
-          <br />
-          <br />
-          <Switch checked={zipMode} onChange={onChange} /> <span> Upload Zip File</span>
-          <br />
-          <br />
-          <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
-            <p className="ant-upload-drag-icon">
-              <Icon type="inbox" />
-            </p>
-            <p className="ant-upload-text">Click or drag a folder to upload</p>
-            <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
-          </Dragger>
-          <br />
-          <br />
-          <br />
-          {zipMode ? (
-            <Statistic title="Unzipped and uploaded files" value={props.rawFiles.length} />
-          ) : (
-            <Statistic title="Uploaded files" value={props.rawFiles.length} />
-          )}
-        </div>
-      ) : null}
-    </div>
-  );
-};
-
-const Brightspace = (props: IUploadFormProps) => {
-  const [zipMode, setZipMode] = React.useState(false);
-  const beforeUpload = beforeUploadDirectory(props.rawFiles, props.setRawFiles);
-  // const beforeUpload = zipMode
-  //   ? beforeUploadZip(props.rawFiles, props.setRawFiles)
-  //   : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
-
-  const onChange = (checked: boolean) => {
-    setZipMode(checked);
-  };
-
-  const instructions = `
-See [GitHub](https://github.com/codepost-io/integration-brightspace) for more details.
-
-These instructions will turn submissions downloaded from Brightspace into a folder that you can drag into codePost.
-
-0. Download submissions from Brightspace (Course -> Assignments -> <Assignment> -> <Select All> -> Download)
-
-1. Create a [roster.csv]
-(https://raw.githubusercontent.com/codepost-io/integration-brightspace/master/sample_roster.csv)
-
-3. Download this [script]
-(https://raw.githubusercontent.com/codepost-io/integration-brightspace/master/brightspace_to_codepost_manual.py)
-
-3. From the command line, run \`python3 brightspace_to_codepost_manual.py submissions roster.csv\`
-
-4. The script will generate a folder called \`codepost_upload\`. Drag this folder into the space below.
-
-----------
-
-**Need help?** Learn how to troubleshoot [here](https://github.com/codepost-io/integration-brightspace)
-or shoot us an email at team@codepost.io
-
-**Want to customize submission upload?** Check out our [Python SDK](https://github.com/codepost-io/codepost-python).
-You can also fork \`brightspace_to_codepost_manual.py\` [here](https://github.com/codepost-io/integration-brightspace).
-`;
-
-  return (
-    <div>
-      <Collapse defaultActiveKey={['1']}>
-        <Panel header="Instructions" key="1">
-          <BlockMarkdown source={instructions} />
-        </Panel>
-      </Collapse>
-      <br />
-      <br />
-      <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
-        <p className="ant-upload-drag-icon">
-          <Icon type="inbox" />
-        </p>
-        <p className="ant-upload-text">Click or drag a folder to upload</p>
-        <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
-      </Dragger>
-      <br />
-      <br />
-      <br />
-      {zipMode ? (
-        <Statistic title="Unzipped and uploaded files" value={props.rawFiles.length} />
-      ) : (
-        <Statistic title="Uploaded files" value={props.rawFiles.length} />
-      )}
-    </div>
-  );
-};
-
-const Blackboard = (props: IUploadFormProps) => {
-  const [zipMode, setZipMode] = React.useState(false);
-  const beforeUpload = beforeUploadDirectory(props.rawFiles, props.setRawFiles);
-  // const beforeUpload = zipMode
-  //   ? beforeUploadZip(props.rawFiles, props.setRawFiles)
-  //   : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
-
-  const onChange = (checked: boolean) => {
-    setZipMode(checked);
-  };
-
-  const instructions = `
-See [GitHub](https://github.com/codepost-io/integration-blackboard) for more details.
-
-These instructions will turn submissions downloaded from Blackboard into a folder that you can drag into codePost.
-
-0. Download submissions from Blackboard (Course -> Grade Center -> <Assignment Column> -> Assignment File Download)
-
-1. Create a [roster.csv]
-(https://raw.githubusercontent.com/codepost-io/integration-blackboard/master/sample_roster.csv)
-
-3. Download this [script]
-(https://raw.githubusercontent.com/codepost-io/integration-blackboard/master/blackboard_to_codepost_manual.py)
-
-3. From the command line, run \`python3 blackboard_to_codepost_manual.py submissions roster.csv\`
-
-4. The script will generate a folder called \`codepost_upload\`. Drag this folder into the space below.
-
-----------
-
-**Need help?** Learn how to troubleshoot [here](https://github.com/codepost-io/integration-blackboard)
-or shoot us an email at team@codepost.io
-
-**Want to customize submission upload?** Check out our [Python SDK](https://github.com/codepost-io/codepost-python).
-You can also fork \`blackboard_to_codepost_manual.py\` [here](https://github.com/codepost-io/integration-blackboard).
-`;
-
-  return (
-    <div>
-      <Collapse defaultActiveKey={['1']}>
-        <Panel header="Instructions" key="1">
-          <BlockMarkdown source={instructions} />
-        </Panel>
-      </Collapse>
-      <br />
-      <br />
-      <Switch checked={zipMode} onChange={onChange} /> <span> Upload Zip File</span>
-      <br />
-      <br />
-      <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
-        <p className="ant-upload-drag-icon">
-          <Icon type="inbox" />
-        </p>
-        <p className="ant-upload-text">Click or drag a folder to upload</p>
-        <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
-      </Dragger>
-      <br />
-      <br />
-      <br />
-      {zipMode ? (
-        <Statistic title="Unzipped and uploaded files" value={props.rawFiles.length} />
-      ) : (
-        <Statistic title="Uploaded files" value={props.rawFiles.length} />
-      )}
-    </div>
-  );
-};
+// const Brightspace = (props: IUploadFormProps) => {
+//   const [zipMode, setZipMode] = React.useState(false);
+//   const beforeUpload = beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+//   // const beforeUpload = zipMode
+//   //   ? beforeUploadZip(props.rawFiles, props.setRawFiles)
+//   //   : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+//
+//   const onChange = (checked: boolean) => {
+//     setZipMode(checked);
+//   };
+//
+//   const instructions = `
+// See [GitHub](https://github.com/codepost-io/integration-brightspace) for more details.
+//
+// These instructions will turn submissions downloaded from Brightspace into a folder that you can drag into codePost.
+//
+// 0. Download submissions from Brightspace (Course -> Assignments -> <Assignment> -> <Select All> -> Download)
+//
+// 1. Create a [roster.csv]
+// (https://raw.githubusercontent.com/codepost-io/integration-brightspace/master/sample_roster.csv)
+//
+// 3. Download this [script]
+// (https://raw.githubusercontent.com/codepost-io/integration-brightspace/master/brightspace_to_codepost_manual.py)
+//
+// 3. From the command line, run \`python3 brightspace_to_codepost_manual.py submissions roster.csv\`
+//
+// 4. The script will generate a folder called \`codepost_upload\`. Drag this folder into the space below.
+//
+// ----------
+//
+// **Need help?** Learn how to troubleshoot [here](https://github.com/codepost-io/integration-brightspace)
+// or shoot us an email at team@codepost.io
+//
+// **Want to customize submission upload?** Check out our [Python SDK](https://github.com/codepost-io/codepost-python).
+// You can also fork \`brightspace_to_codepost_manual.py\` [here](https://github.com/codepost-io/integration-brightspace).
+// `;
+//
+//   return (
+//     <div>
+//       <Collapse defaultActiveKey={['1']}>
+//         <Panel header="Instructions" key="1">
+//           <BlockMarkdown source={instructions} />
+//         </Panel>
+//       </Collapse>
+//       <br />
+//       <br />
+//       <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
+//         <p className="ant-upload-drag-icon">
+//           <Icon type="inbox" />
+//         </p>
+//         <p className="ant-upload-text">Click or drag a folder to upload</p>
+//         <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
+//       </Dragger>
+//       <br />
+//       <br />
+//       <br />
+//       {zipMode ? (
+//         <Statistic title="Unzipped and uploaded files" value={props.rawFiles.length} />
+//       ) : (
+//         <Statistic title="Uploaded files" value={props.rawFiles.length} />
+//       )}
+//     </div>
+//   );
+// };
+//
+// const Blackboard = (props: IUploadFormProps) => {
+//   const [zipMode, setZipMode] = React.useState(false);
+//   const beforeUpload = beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+//   // const beforeUpload = zipMode
+//   //   ? beforeUploadZip(props.rawFiles, props.setRawFiles)
+//   //   : beforeUploadDirectory(props.rawFiles, props.setRawFiles);
+//
+//   const onChange = (checked: boolean) => {
+//     setZipMode(checked);
+//   };
+//
+//   const instructions = `
+// See [GitHub](https://github.com/codepost-io/integration-blackboard) for more details.
+//
+// These instructions will turn submissions downloaded from Blackboard into a folder that you can drag into codePost.
+//
+// 0. Download submissions from Blackboard (Course -> Grade Center -> <Assignment Column> -> Assignment File Download)
+//
+// 1. Create a [roster.csv]
+// (https://raw.githubusercontent.com/codepost-io/integration-blackboard/master/sample_roster.csv)
+//
+// 3. Download this [script]
+// (https://raw.githubusercontent.com/codepost-io/integration-blackboard/master/blackboard_to_codepost_manual.py)
+//
+// 3. From the command line, run \`python3 blackboard_to_codepost_manual.py submissions roster.csv\`
+//
+// 4. The script will generate a folder called \`codepost_upload\`. Drag this folder into the space below.
+//
+// ----------
+//
+// **Need help?** Learn how to troubleshoot [here](https://github.com/codepost-io/integration-blackboard)
+// or shoot us an email at team@codepost.io
+//
+// **Want to customize submission upload?** Check out our [Python SDK](https://github.com/codepost-io/codepost-python).
+// You can also fork \`blackboard_to_codepost_manual.py\` [here](https://github.com/codepost-io/integration-blackboard).
+// `;
+//
+//   return (
+//     <div>
+//       <Collapse defaultActiveKey={['1']}>
+//         <Panel header="Instructions" key="1">
+//           <BlockMarkdown source={instructions} />
+//         </Panel>
+//       </Collapse>
+//       <br />
+//       <br />
+//       <Switch checked={zipMode} onChange={onChange} /> <span> Upload Zip File</span>
+//       <br />
+//       <br />
+//       <Dragger showUploadList={false} directory={true} beforeUpload={beforeUpload}>
+//         <p className="ant-upload-drag-icon">
+//           <Icon type="inbox" />
+//         </p>
+//         <p className="ant-upload-text">Click or drag a folder to upload</p>
+//         <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
+//       </Dragger>
+//       <br />
+//       <br />
+//       <br />
+//       {zipMode ? (
+//         <Statistic title="Unzipped and uploaded files" value={props.rawFiles.length} />
+//       ) : (
+//         <Statistic title="Uploaded files" value={props.rawFiles.length} />
+//       )}
+//     </div>
+//   );
+// };
 
 const GitHub = (props: IUploadFormProps) => {
   const [zipMode, setZipMode] = React.useState(false);
