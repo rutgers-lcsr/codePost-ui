@@ -2148,6 +2148,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
                 isAdmin={this.isCourseAdmin(this.state.assignment)}
                 assignment={this.state.assignment}
                 rubricComments={Object.values(this.state.rubricComments).flat()}
+                rubricCategories={this.state.rubricCategories}
                 visible={this.state.showCustomCommentExplorer}
                 onCancel={this.toggleCustomCommentExplorer}
               />

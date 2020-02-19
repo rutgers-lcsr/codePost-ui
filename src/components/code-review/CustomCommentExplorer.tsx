@@ -4,12 +4,19 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Modal, Table, Select, Divider } from 'antd';
+import { Button, Modal, Table, Select, Divider, Input } from 'antd';
 
 /* codepost imports */
-import { AssignmentType, CommentType, RubricCommentType, SubmissionType } from '../../infrastructure/types';
+import {
+  AssignmentType,
+  CommentType,
+  RubricCommentType,
+  SubmissionType,
+  RubricCategoryType,
+} from '../../infrastructure/types';
 import { Assignment } from '../../infrastructure/assignment';
 import { CommentIO } from '../../infrastructure/comment';
+import { File } from '../../infrastructure/file';
 
 /**********************************************************************************************************************/
 
@@ -19,6 +26,7 @@ interface IProps {
   graders: string[];
   assignment: AssignmentType;
   rubricComments: RubricCommentType[];
+  rubricCategories: RubricCategoryType[];
   visible: boolean;
   onCancel: () => void;
 }
@@ -29,6 +37,7 @@ const CustomCommentExplorer = (props: IProps) => {
   const [selected, setSelected] = React.useState<string[]>([]);
   const [activeRubricComment, setActiveRubricComment] = React.useState<string>('');
   const [loading, setLoading] = React.useState(false);
+  const [searchText, setSearchText] = React.useState('');
 
   const updateComments = () => {
     if (props.isAdmin) {
@@ -63,15 +72,33 @@ const CustomCommentExplorer = (props: IProps) => {
       key: 'text',
       sorter: (a: any, b: any) => a.text.localeCompare(b.text),
     },
+    {
+      title: 'Link',
+      dataIndex: 'link',
+      key: 'link',
+      align: 'center' as 'center',
+    },
   ];
 
   const data = comments
     .filter((c) => !c.rubricComment && (grader === '' || grader === c.author))
+    .filter((c) => (searchText === '' ? true : c.text && c.text.toUpperCase().includes(searchText.toUpperCase())))
     .map((c) => {
       return {
         grader: c.author,
         text: c.text,
         key: c.id,
+        link: (
+          <Button
+            onClick={async () => {
+              const file = await File.read(c.file);
+              const link = `/code/${file.submission}/?comment=${c.id}`;
+              window.open(link, '_blank');
+            }}
+          >
+            Goto
+          </Button>
+        ),
       };
     });
 
@@ -124,9 +151,18 @@ const CustomCommentExplorer = (props: IProps) => {
         </div>
       )}
       Rubric comment:{' '}
-      <Select style={{ width: 600 }} onChange={setActiveRubricComment}>
+      <Select
+        style={{ width: 600 }}
+        onChange={setActiveRubricComment}
+        showSearch={true}
+        filterOption={(input, option) =>
+          (option.props.children! as string).toLowerCase().indexOf(input.toLowerCase()) >= 0
+        }
+      >
         {props.rubricComments.map((el) => (
-          <Select.Option value={el.id}>{el.text}</Select.Option>
+          <Select.Option value={el.id}>
+            [{props.rubricCategories.find((cat) => cat.id === el.category)!.name}] {el.text}
+          </Select.Option>
         ))}
       </Select>
       &nbsp;
@@ -139,11 +175,21 @@ const CustomCommentExplorer = (props: IProps) => {
         Apply
       </Button>
       <Divider />
+      <Input.Search onChange={(e: any) => setSearchText(e.target.value)} placeholder="Search for comment text" />
+      <br />
+      <br />
       <Table
         dataSource={data}
         columns={columns}
         rowSelection={rowSelection}
-        pagination={data.length < 10 ? false : undefined}
+        pagination={
+          data.length < 10
+            ? false
+            : {
+                showSizeChanger: true,
+                pageSizeOptions: ['10', '50', '100'],
+              }
+        }
         loading={loading}
       />
     </Modal>
