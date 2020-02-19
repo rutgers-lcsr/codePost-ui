@@ -82,6 +82,10 @@ const cheapEqRubricComments = (rc1: RubricCommentType | undefined, rc2: RubricCo
   return true;
 };
 
+const isEmpty = (text: null | string, pointDelta: number, rubricComment: RubricCommentType | undefined) => {
+  return (!text || text.length === 0) && pointDelta === 0 && rubricComment === undefined;
+};
+
 interface ICommentProps {
   additiveGrading: boolean;
   commentType: UICommentType;
@@ -247,7 +251,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       this.props.commentType === 'inactive' &&
       prevProps.comment.id === this.props.comment.id
     ) {
-      if (this.state.text.length === 0 && this.state.points === 0 && this.props.rubricComment === undefined) {
+      if (isEmpty(this.state.text, this.state.points, this.props.rubricComment)) {
         this.props.onDelete(this.props.comment);
       }
     }
@@ -758,7 +762,9 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       );
 
       commentElements.saveButton = <CPButton cpType="secondary" icon="check" onClick={this.deactivate} />;
-      commentElements.deleteButton = (
+      commentElements.deleteButton = isEmpty(this.state.text, this.state.points, this.props.rubricComment) ? (
+        <CPButton cpType="danger" icon="delete" onClick={this.confirmDelete} />
+      ) : (
         <Popover
           title="Are you sure you want to delete this comment?"
           visible={this.state.showDeletePopover}
