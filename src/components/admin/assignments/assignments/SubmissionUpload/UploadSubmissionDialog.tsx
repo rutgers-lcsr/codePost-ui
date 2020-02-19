@@ -6,26 +6,14 @@
 import * as React from 'react';
 
 /* ant imports */
-import {
-  Alert,
-  Button,
-  Icon,
-  Input,
-  message,
-  Modal,
-  Progress,
-  Switch,
-  Upload,
-  Table,
-  Tag,
-  Typography,
-  Divider,
-} from 'antd';
+import { Alert, Button, Icon, message, Modal, Progress, Switch, Upload, Table, Tag, Divider, Tabs } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
 
 import { Link } from 'react-router-dom';
+
+import ReactMarkdown from 'react-markdown';
 
 /* codePost imports */
 import {
@@ -40,11 +28,11 @@ import {
 import { AssignmentStudent, AssignmentStudentType } from '../../../../../infrastructure/assignment';
 import { Environment } from '../../../../../infrastructure/autograder/environment';
 import { FileTemplate } from '../../../../../infrastructure/fileTemplate';
+import { SubmissionTest } from '../../../../../infrastructure/submissionTest';
+import { Submission } from '../../../../../infrastructure/submission';
 
 import CPTooltip from '../../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../../components/core/tooltips';
-
-import { IStudentSubmissionsDataTable } from '../../../../../types/common';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
@@ -60,6 +48,10 @@ import { SubmissionTestResultType } from '../../../../../infrastructure/autograd
 import { slack } from '../../../../../components/core/slack';
 
 import { encodeForLink } from '../../../../../components/core/URLutils';
+
+import { CodePostDate } from '../../../../components/utils/DateUtils';
+
+import ViewUpload from '../../../../components/student/ViewUpload';
 
 /**********************************************************************************************************************/
 
@@ -90,7 +82,6 @@ interface IProps {
 enum STATUS {
   NONE,
   SAVING /* reading files from user's file system */,
-  TESTING /* testing uploaded submission against codePost tests */,
   COMPLETE /* completed upload */,
 }
 
@@ -120,6 +111,7 @@ interface IState {
   submissionTests: SubmissionTestType[];
   testsLog: string | null; // If the admin turns off exposeDumpLogs then the log will be none
   runMessage: string; // A message to show students from the result of their run
+  activeTab: string;
 }
 
 class UploadSubmissionDialog extends React.Component<IProps, IState> {
@@ -145,6 +137,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     loadingTests: false,
     fileTemplates: [],
     runMessage: '',
+    activeTab: '1',
   };
 
   /********************************************************************************************************/
@@ -167,7 +160,10 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   }
 
   public componentDidUpdate(prevProps: IProps, prevState: IState) {
-    if (prevProps.selectedAssignment !== this.props.selectedAssignment) {
+    if (
+      prevProps.selectedAssignment !== this.props.selectedAssignment ||
+      (!prevProps.isVisible && this.props.isVisible)
+    ) {
       this.setState({
         selectedAssignment: this.props.selectedAssignment,
         testCategories: [],
@@ -180,15 +176,15 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           this.setState({
             submission: this.props.submissions[this.props.selectedStudents[0]][this.props.selectedAssignment.id],
           });
+          this.loadTestResults(
+            this.props.submissions[this.props.selectedStudents[0]][this.props.selectedAssignment.id],
+            this.props.selectedAssignment.exposeDumpLogs === true,
+          );
         }
       }
     }
     if (prevProps.selectedStudents !== this.props.selectedStudents) {
       this.setState({ selectedStudents: this.props.selectedStudents });
-    }
-
-    if (prevState.status !== STATUS.TESTING && this.state.status === STATUS.TESTING) {
-      this.runTests();
     }
 
     if (prevProps.isVisible && !this.props.isVisible) {
@@ -217,7 +213,14 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
       exposedTestCases.forEach((testCase) => {
         caseObj[testCase.testCategory] = [...caseObj[testCase.testCategory], testCase];
       });
-      this.setState({ testCategories, testCases: caseObj });
+      this.setState({ testCategories, testCases: caseObj, loadingTests: false });
+    }
+  };
+
+  public loadTestResults = async (sub: StudentSubmissionType | SubmissionType | undefined, loadLogs: boolean) => {
+    if (sub) {
+      const results = await Submission.readTestResults(sub.id, { isStudentMode: 'True' });
+      this.setState({ submissionTests: SubmissionTest.getLatest(results.submissionTests), testsLog: results.logs });
     }
   };
 
@@ -283,7 +286,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public cancel = () => {
-    this.setState({ status: STATUS.NONE, files: [], fileList: [], rejectedFiles: [] });
+    this.setState({ status: STATUS.NONE, files: [], fileList: [], rejectedFiles: [], activeTab: '1' });
     this.props.onCancel();
   };
 
@@ -319,11 +322,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     this.setState({ files, fileList });
   };
 
-  public onCancel = () => {
-    this.setState({ files: [], fileList: [], rejectedFiles: [], status: STATUS.NONE });
-    this.props.onCancel();
-  };
-
   /********************************************************************************************************/
   /* Submission upload
   /********************************************************************************************************/
@@ -336,14 +334,19 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             // @ts-ignore
             .uploadSubmission(this.state.selectedAssignment!, this.state.selectedStudents, this.state.files)
             .then((newSubmission: StudentSubmissionType | SubmissionType) => {
+              const shouldRun = this.shouldRunTests();
+              if (shouldRun) {
+                this.runTests(newSubmission);
+              }
               this.setState({
                 submission: newSubmission,
-                status: this.shouldRunTests() ? STATUS.TESTING : STATUS.COMPLETE,
+                status: shouldRun ? STATUS.NONE : STATUS.COMPLETE,
                 files: [],
                 fileList: [],
                 rejectedFiles: [],
                 selectedStudents: this.props.selectedStudents,
                 selectedAssignment: this.props.selectedAssignment ? this.props.selectedAssignment : undefined,
+                activeTab: shouldRun ? '3' : '1',
               });
             })
             .catch((error: any) => {
@@ -432,20 +435,27 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public setResults = (result: SubmissionTestResultType) => {
-    this.setState({
-      submissionTests: result.submissionTests,
-      testsLog: result.logs,
-      loadingTests: false,
-      runMessage: result.message,
+    // Note: we need to increment the testRunsCompleted in state, because a student could go back to the upload tab (without refreshing submission) and re-upload
+    this.setState((prevState) => {
+      return {
+        ...prevState,
+        submissionTests: result.submissionTests,
+        testsLog: result.logs,
+        loadingTests: false,
+        runMessage: result.message,
+        submission: prevState.submission
+          ? { ...prevState.submission, testRunsCompleted: prevState.submission.testRunsCompleted + 1 }
+          : undefined,
+      };
     });
   };
 
-  public runTests = async () => {
+  public runTests = async (submission: StudentSubmissionType | SubmissionType) => {
     if (this.shouldRunTests()) {
       // Make sure the loading is set
       this.setState({ loadingTests: true });
       const result = await Environment.run(this.state.selectedAssignment!.environment!, {
-        submission: this.state.submission!.id.toString(),
+        submission: submission.id.toString(),
         simulate: 'False',
         exposedOnly: 'True',
       });
@@ -484,7 +494,14 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         );
 
         goForwardButton = (
-          <Button key="submit" type="primary" onClick={this.onSuccess}>
+          <Button
+            key="submit"
+            type="primary"
+            onClick={() => {
+              this.props.isStudent && this.setState({ activeTab: '4' });
+              this.onSuccess();
+            }}
+          >
             View files
           </Button>
         );
@@ -493,29 +510,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         content = (
           <div>
             Uploading submissions: &nbsp; <Progress percent={0} size="small" />
-          </div>
-        );
-        break;
-      case STATUS.TESTING:
-        goBackButton = (
-          <Button key="back" onClick={this.cancel.bind(this, undefined)} disabled={this.state.loadingTests}>
-            Close
-          </Button>
-        );
-        content = (
-          <div style={{ minHeight: 400, height: 'calc(100vh - 300px)' }}>
-            <TestsList
-              tests={this.state.submissionTests}
-              redactNotShown={true}
-              hideNotRun={false}
-              cases={this.state.testCases}
-              categories={this.state.testCategories}
-              isLoading={this.state.loadingTests}
-              logs={this.state.testsLog === null ? undefined : this.state.testsLog}
-              showLogs={this.state.selectedAssignment!.exposeDumpLogs === true}
-              message={this.state.runMessage ? <Alert type="warning" message={this.state.runMessage} /> : <div />}
-              hideSummary={this.state.testCategories.length === 0}
-            />
           </div>
         );
         break;
@@ -785,15 +779,97 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         break;
     }
 
+    // We show tests tab if:
+    //   Case A: There are test categories, and the student is not seeing the assignment for the first time in nudge mode
+    //   Case B: There is a log to show. For example, assignments that only use file mode
+    //   Case C: Tests are loading. This is for assignments that use file mode, and we want to show the students that tests are running
+    // Also show it if loading, if the tests are running
+
+    const showTestsTab =
+      (this.state.testCategories.length > 0 &&
+        (!this.state.selectedAssignment!.nudgeMode || this.state.submissionTests.length > 0)) ||
+      this.state.testsLog ||
+      this.state.loadingTests;
+
     return (
       <Modal
         visible={true}
         title={this.props.title || 'Upload Submissions'}
-        onCancel={this.onCancel}
-        width={800}
+        onCancel={this.cancel}
+        width={1100}
         footer={[goBackButton, goForwardButton]}
       >
-        {content}
+        {status !== STATUS.NONE || !this.props.isStudent ? (
+          content
+        ) : (
+          <Tabs
+            activeKey={this.state.activeTab || '1'}
+            onChange={(activeKey) => this.setState({ activeTab: activeKey })}
+          >
+            <Tabs.TabPane tab="Submit" key="1">
+              {content}
+            </Tabs.TabPane>
+
+            {this.state.selectedAssignment && this.state.selectedAssignment.explanation.length > 0 ? (
+              <Tabs.TabPane tab="Instructions" key="2">
+                <ReactMarkdown>{this.state.selectedAssignment.explanation}</ReactMarkdown>
+              </Tabs.TabPane>
+            ) : null}
+
+            {showTestsTab && (
+              <Tabs.TabPane tab="Tests" key="3">
+                <div style={{ minHeight: 400, height: 'calc(100vh - 400px)' }}>
+                  <TestsList
+                    tests={this.state.submissionTests}
+                    hideNotRun={false}
+                    redactNotShown={this.state.selectedAssignment!.nudgeMode}
+                    cases={this.state.testCases}
+                    categories={this.state.testCategories}
+                    isLoading={this.state.loadingTests}
+                    logs={
+                      this.state.testsLog === null || this.state.testsLog.length === 0 ? undefined : this.state.testsLog
+                    }
+                    showLogs={this.state.selectedAssignment!.exposeDumpLogs === true}
+                    message={
+                      <div>
+                        {this.state.submissionTests.length > 0 && (
+                          <Alert
+                            type="info"
+                            message={
+                              <div>
+                                Showing results from last submission at:{' '}
+                                <CodePostDate datetime={this.state.submission!.dateUploaded || ''} />
+                              </div>
+                            }
+                          />
+                        )}
+                        <br />
+                        {this.state.runMessage && <Alert type="warning" message={this.state.runMessage} />}
+                      </div>
+                    }
+                    hideSummary={this.state.testCategories.length === 0}
+                  />
+                </div>
+              </Tabs.TabPane>
+            )}
+
+            {this.state.submission ? (
+              <Tabs.TabPane tab="Last submission" key="4">
+                <Alert
+                  type="info"
+                  message={
+                    <div>
+                      Showing results from last submission at:{' '}
+                      <CodePostDate datetime={this.state.submission!.dateUploaded || ''} />
+                    </div>
+                  }
+                />
+                <br />
+                <ViewUpload assignment={this.state.selectedAssignment} />
+              </Tabs.TabPane>
+            ) : null}
+          </Tabs>
+        )}
       </Modal>
     );
   }

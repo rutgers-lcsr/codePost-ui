@@ -20,6 +20,7 @@ const UserV = t.intersection(
       superGraderCourses: t.array(CourseV),
       courseadminCourses: t.array(CourseV),
       leaderSections: t.array(SectionV),
+      student_sections: t.array(t.number),
       showProductTips: t.boolean,
       codePostAdmin: t.boolean,
     }),

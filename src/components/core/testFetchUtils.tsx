@@ -116,8 +116,8 @@ export const fetchTestsBySubmission = async (submissions: AnonymousSubmissionTyp
   const submissionPromises =
     submissions !== undefined
       ? submissions.map(async (submission) => {
-          const tests = await Submission.readTests(submission.id);
-          toRet[submission.id] = tests;
+          const res = await Submission.readTestResults(submission.id, { isStudentMode: 'False' });
+          toRet[submission.id] = res.submissionTests;
         })
       : [];
   await Promise.all(submissionPromises);
