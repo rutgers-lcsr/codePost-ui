@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 
-import { Button, Icon, List, message, Upload, Slider, Select, Statistic, Table, Typography } from 'antd';
+import { Button, Collapse, Icon, List, message, Upload, Slider, Select, Statistic, Table, Typography } from 'antd';
+
+import ReactMarkdown from 'react-markdown';
 
 import { codePostFile, IProtoFileUpload } from './FileReader';
 
@@ -120,8 +122,26 @@ interface IStepZeroProps {
 
 const StepZeroUploadZips = (props: IStepZeroProps) => {
   const beforeUpload = beforeLMSImport(props.rawFiles, props.setRawFiles);
+
+  const exampleText = `\`\`\`
+  folder/
+    someText_someText_someText_someText.zip
+    someText_someText_someText_someText.zip
+    someText_someText_someText.zip
+    someText_someText_someText_someText_someText.zip
+  \`\`\``;
+
   return (
     <div>
+      <Collapse style={{ marginBottom: 20 }}>
+        <Collapse.Panel header="Instructions" key="1">
+          Upload a folder of zip files, where each zip file is a student's submission. The file name must be underscore
+          delimited.
+          <br />
+          <br />
+          <ReactMarkdown source={exampleText} />
+        </Collapse.Panel>
+      </Collapse>
       <Upload.Dragger showUploadList={false} directory={true} multiple={false} beforeUpload={beforeUpload}>
         <p className="ant-upload-drag-icon">
           <Icon type="inbox" />
@@ -318,16 +338,24 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
       title: 'Zip Name',
       dataIndex: 'name',
       key: 'name',
+      sorter: (a: any, b: any) => a.name.localeCompare(b.name),
     },
     {
       title: 'Student identifier',
       dataIndex: 'identifier',
       key: 'identifier',
+      sorter: (a: any, b: any) => a.identifier.localeCompare(b.identifier),
+      defaultSortOrder: 'ascend' as 'ascend',
     },
     {
       title: 'codePost email',
       dataIndex: 'email',
       key: 'email',
+      sorter: (a: any, b: any) => {
+        if (!a.emailValue) return 1;
+        if (!b.emailValue) return -1;
+        return a.emailValue.localeCompare(b.emailValue);
+      },
     },
   ];
 
@@ -359,6 +387,7 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
       name: folderName,
       identifier: id,
       email: studentEmail,
+      emailValue: props.folderMap[folderName] || undefined,
     };
   });
 
@@ -410,15 +439,13 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
         idIndex={props.idIndex}
         students={props.students}
       />
-      <Table columns={columns} pagination={{ pageSize: 10 }} dataSource={data} loading={loading} />
-      <div style={{ float: 'right' }}>
-        <Button
-          onClick={props.onUpload}
-          disabled={mappedStudents.length !== Object.keys(props.folderMap).length}
-          type="primary"
-        >
-          Next
-        </Button>
+      <Table columns={columns} pagination={{ pageSize: 5 }} dataSource={data} loading={loading} />
+      <div style={{ marginBottom: 10 }}>
+        <div style={{ float: 'right' }}>
+          <Button onClick={props.onUpload} disabled={mappedStudents.length === 0} type="primary">
+            Next
+          </Button>
+        </div>
       </div>
     </div>
   );
