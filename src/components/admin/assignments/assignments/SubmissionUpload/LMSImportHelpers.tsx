@@ -11,6 +11,13 @@ export const getIdentifierFromFolder = (folderName: string, idIndex: number) => 
   return elems.length < idIndex + 1 ? elems[elems.length - 1] : elems[idIndex];
 };
 
+// This before upload function is customized for two reasons:
+//     1. The file path is required to know which submission a file is a part of
+//        and there's no way to set it manually, so we set it in a pathOverride field.
+//        This is unique to folders of zip files.
+//     2. Our normal upload is an n^2 operation, all files are added on every upload.
+//        This is too slow for a typical 400-500 person course, so changing it to an O(n) operation.
+//     3. Drag to upload doesn't seem to work for a directory of zips, so mandating users have to click to upload
 export const beforeLMSImport = (files: UploadFile[], callback: any) => {
   const addPathToFiles = (zipFile: File, unzippedFiles: File[]) => {
     return unzippedFiles.map((f: File) => {
@@ -26,9 +33,8 @@ export const beforeLMSImport = (files: UploadFile[], callback: any) => {
 
   const beforeUpload = async (file: File, fileList: File[]) => {
     let newList: codePostFile[] = [];
-    if (fileList.length > 1) {
-      // Case 1: use has selected a folder via menu, which will place all files into
-      // fileList
+    // Only run it for the first file, but run across all files in the fileList
+    if (fileList.length > 1 && file === fileList[0]) {
       const promises = fileList.map(async (thisFile) => {
         if (thisFile.name.endsWith('.zip')) {
           const unzippedFiles = await readZipTopLevel(thisFile);
