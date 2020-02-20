@@ -2,6 +2,8 @@ import * as React from 'react';
 
 import { Icon, Input, message, Tooltip } from 'antd';
 
+import { hostname } from '../../serviceWorker';
+
 import { AssignmentType, AssignmentStudentType } from '../../infrastructure/assignment';
 
 import { PartnerLinkType, Submission, StudentSubmissionType } from '../../infrastructure/submission';
@@ -13,6 +15,7 @@ interface IInvitePartnersLinkProps {
 
 const InvitePartnersLink = (props: IInvitePartnersLinkProps) => {
   const [link, setLink] = React.useState<PartnerLinkType | undefined>(undefined);
+  const host = hostname();
 
   React.useEffect(() => {
     const getPartnerLink = async () => {
@@ -62,7 +65,7 @@ const InvitePartnersLink = (props: IInvitePartnersLinkProps) => {
             <Icon type="copy" style={{ color: '#1890ff', cursor: 'pointer' }} onClick={copyToClipboard} />
           </Tooltip>
         }
-        value={`https://codepost.io/invite/${link['token']}`}
+        value={`${host}/invite/${props.submission.id}/${link['token']}`}
       />
     </div>
   );

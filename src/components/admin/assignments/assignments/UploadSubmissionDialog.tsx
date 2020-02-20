@@ -174,13 +174,28 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         this.loadTemplates(this.props.selectedAssignment);
         this.loadTests();
         if (this.props.selectedStudents.length > 0) {
-          this.setState({
-            submission: this.props.submissions[this.props.selectedStudents[0]][this.props.selectedAssignment.id],
+          let primaryStudent = null;
+
+          this.props.selectedStudents.forEach((email: string) => {
+            if (this.props.submissions.hasOwnProperty(email)) {
+              if (
+                this.props.selectedAssignment !== undefined &&
+                this.props.submissions[email].hasOwnProperty(this.props.selectedAssignment.id)
+              ) {
+                primaryStudent = email;
+              }
+            }
           });
-          this.loadTestResults(
-            this.props.submissions[this.props.selectedStudents[0]][this.props.selectedAssignment.id],
-            this.props.selectedAssignment.exposeDumpLogs === true,
-          );
+
+          if (primaryStudent !== null) {
+            this.setState({
+              submission: this.props.submissions[primaryStudent][this.props.selectedAssignment.id],
+            });
+            this.loadTestResults(
+              this.props.submissions[primaryStudent][this.props.selectedAssignment.id],
+              this.props.selectedAssignment.exposeDumpLogs === true,
+            );
+          }
         }
       }
     }
@@ -469,8 +484,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   public render() {
     const { isVisible } = this.props;
     const { status } = this.state;
-
-    console.log('this', this.state.submission);
 
     if (!isVisible) {
       return <div />;
