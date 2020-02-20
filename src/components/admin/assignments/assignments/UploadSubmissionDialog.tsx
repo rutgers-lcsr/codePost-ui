@@ -837,7 +837,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                             type="info"
                             message={
                               <div>
-                                Showing results from last submission at:{' '}
+                                Showing results from most recent submission at:{' '}
                                 <CodePostDate datetime={this.state.submission!.dateUploaded || ''} />
                               </div>
                             }
@@ -854,12 +854,12 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             )}
 
             {this.state.submission ? (
-              <Tabs.TabPane tab="Last submission" key="4">
+              <Tabs.TabPane tab="Most recent submission" key="4">
                 <Alert
                   type="info"
                   message={
                     <div>
-                      Showing results from last submission at:{' '}
+                      Showing results from most recent submission at:{' '}
                       <CodePostDate datetime={this.state.submission!.dateUploaded || ''} />
                     </div>
                   }
