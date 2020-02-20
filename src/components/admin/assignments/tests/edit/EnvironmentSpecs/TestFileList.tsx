@@ -100,7 +100,6 @@ export const TestFileList = (props: IProps) => {
     );
   } else {
     const code = sortedFiles[parseInt(currentIndex, 10)].code;
-    let decodedCode = code;
 
     let codeWindow = (
       <div style={{ position: 'relative', marginLeft: 5 }}>
