@@ -63,9 +63,9 @@ You have ${studentUploadInformation.lateDayCreditsAvailable} unused late day cre
 
 -------
 
-The due date has passed and your submission is **${studentUploadInformation.daysLate} day${
-          studentUploadInformation.daysLate === 1 ? '' : 's'
-        } late**. ${lateDayCreditsTemplate}
+The due date has passed. **If you submit now or update an existing submission your submission will be ${
+          studentUploadInformation.daysLate
+        } day${studentUploadInformation.daysLate === 1 ? '' : 's'} late**. ${lateDayCreditsTemplate}
 
 ${penaltyTemplate}
 
