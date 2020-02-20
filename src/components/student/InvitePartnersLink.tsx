@@ -4,14 +4,31 @@ import { Icon, Input, message, Tooltip } from 'antd';
 
 import { AssignmentType, AssignmentStudentType } from '../../infrastructure/assignment';
 
+import { PartnerLinkType, Submission, StudentSubmissionType } from '../../infrastructure/submission';
+
 interface IInvitePartnersLinkProps {
-  assignment: AssignmentType | AssignmentStudentType;
+  assignment?: AssignmentType | AssignmentStudentType;
+  submission?: StudentSubmissionType;
 }
 
 const InvitePartnersLink = (props: IInvitePartnersLinkProps) => {
-  if (props.assignment === undefined || !props.assignment.allowStudentUploadWithPartners) {
-    return null;
-  }
+  const [link, setLink] = React.useState<PartnerLinkType | undefined>(undefined);
+
+  React.useEffect(() => {
+    const getPartnerLink = async () => {
+      if (
+        props.assignment !== undefined &&
+        props.assignment.allowStudentUploadWithPartners &&
+        props.submission !== undefined
+      ) {
+        setLink(undefined);
+        const data = await Submission.readPartnerLink(props.submission.id);
+        setLink(data);
+      }
+    };
+
+    getPartnerLink();
+  }, [props.assignment, props.submission]);
 
   const copyToClipboard = () => {
     const copyText = document.getElementById('invite-link') as HTMLInputElement;
@@ -26,18 +43,26 @@ const InvitePartnersLink = (props: IInvitePartnersLinkProps) => {
     }
   };
 
+  if (
+    props.assignment === undefined ||
+    !props.assignment.allowStudentUploadWithPartners ||
+    props.submission === undefined ||
+    link === undefined
+  ) {
+    return null;
+  }
+
   return (
     <div style={{ padding: '24px 0px' }}>
       <Input
         id="invite-link"
         addonBefore="Partner Invite Link"
-        prefix={<Icon type="copy" style={{ color: '#1890ff' }} onClick={copyToClipboard} />}
         addonAfter={
-          <Tooltip title="Reset link">
-            <Icon type="redo" style={{ cursor: 'pointer' }} />
+          <Tooltip title="Copy link">
+            <Icon type="copy" style={{ color: '#1890ff', cursor: 'pointer' }} onClick={copyToClipboard} />
           </Tooltip>
         }
-        defaultValue="https://asldkjalsfd"
+        value={`https://codepost.io/invite/${link['token']}`}
       />
     </div>
   );

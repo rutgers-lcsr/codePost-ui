@@ -470,6 +470,8 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     const { isVisible } = this.props;
     const { status } = this.state;
 
+    console.log('this', this.state.submission);
+
     if (!isVisible) {
       return <div />;
     }
@@ -725,7 +727,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 onChange={this.changeStudents}
                 isDisabled={this.props.disableStudentSelect}
               />
-              <InvitePartnersLink assignment={this.state.selectedAssignment} />
+              <InvitePartnersLink assignment={this.state.selectedAssignment} submission={this.state.submission} />
               <Divider />
               {/*  beforeUpload prop stops Upload component from trying to upload files to external server */}
               {/*  FIXME: we should prevent users from uploading image files here */}
