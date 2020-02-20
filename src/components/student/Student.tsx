@@ -345,8 +345,8 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
                 content: (
                   <div>
                     <p>
-                      Replacing your files will delete existing files and file versions, including any comments on those
-                      files.
+                      If you replace your files, it will delete existing files and file versions, including any comments
+                      on those files.
                     </p>
                     <p>
                       If you want to add a file to your submission or update a file click 'Add/Update files' instead.
