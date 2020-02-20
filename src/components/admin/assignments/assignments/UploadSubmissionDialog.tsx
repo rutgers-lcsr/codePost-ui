@@ -52,6 +52,7 @@ import { encodeForLink } from '../../../../components/core/URLutils';
 import { CodePostDate } from '../../../../components/utils/DateUtils';
 
 import ViewUpload from '../../../../components/student/ViewUpload';
+import InvitePartnersLink from '../../../../components/student/InvitePartnersLink';
 
 /**********************************************************************************************************************/
 
@@ -724,6 +725,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 onChange={this.changeStudents}
                 isDisabled={this.props.disableStudentSelect}
               />
+              <InvitePartnersLink assignment={this.state.selectedAssignment} />
               <Divider />
               {/*  beforeUpload prop stops Upload component from trying to upload files to external server */}
               {/*  FIXME: we should prevent users from uploading image files here */}
