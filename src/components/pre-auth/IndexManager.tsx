@@ -149,7 +149,7 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
 
             <Route
               exact={true}
-              path={'/invite/:token'}
+              path={'/invite/:sid/:token'}
               render={(props: any) => <ValidateInvite {...props} isLoggedIn={this.props.isLoggedIn} />}
             />
 

@@ -240,6 +240,7 @@ export class Submission {
   public static readHistory = readObjectDetail(t.array(SubmissionHistoryV), 'submissions', 'history');
   public static readTestResults = readObjectDetail(TestResultsV, 'submissions', 'testResults');
   public static readPartnerLink = readObjectDetail(PartnerLinkV, 'submissions', 'generatePartnerLink');
+  public static validatePartnerLink = readObjectDetail(t.string, 'submissions', 'validatePartnerLink');
 
   public static updateHistory = updateObjectDetail(
     SubmissionHistoryV,

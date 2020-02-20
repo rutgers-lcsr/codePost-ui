@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { Redirect } from 'react-router-dom';
+
 import { Alert, Icon, Input, message, Spin, Statistic, Tooltip, Typography } from 'antd';
 
 import PreAuthLayout from '../pre-auth/PreAuthLayout';
@@ -10,30 +12,38 @@ import { PartnerLinkType, Submission, StudentSubmissionType } from '../../infras
 
 interface IValidateInviteProps {
   match: any;
+  history: any;
   isLoggedIn: boolean;
 }
 
 const ValidateInvite = (props: IValidateInviteProps) => {
-  const [status, setStatus] = React.useState<boolean | undefined>(false);
+  const [status, setStatus] = React.useState<boolean | undefined>(undefined);
 
   React.useEffect(() => {
-    // const validatePartnerLink = async () => {
-    //   const data = await Submission.validatePartnerLink();
-    //   setStatus(data);
-    // };
+    const validatePartnerLink = async () => {
+      const token = props.match.params.token;
+      const sid = props.match.params.sid;
 
-    // validatePartnerLink();
-    console.log('token', props.match.params.token);
+      try {
+        const data = await Submission.validatePartnerLink(sid, { token });
+        setStatus(true);
+      } catch (err) {
+        setStatus(false);
+      }
+    };
+
+    validatePartnerLink();
   }, []);
 
   const redirect = () => {
-    console.log('redirect!');
+    // FIXME: user is getting logged out for some reason
+    props.history.push('/student');
   };
 
-  let message;
+  let content;
 
-  if (props.isLoggedIn) {
-    message = (
+  if (!props.isLoggedIn) {
+    content = (
       <Alert
         message=""
         description={<div>Please log into your codePost account before accepting a submission invite.</div>}
@@ -41,13 +51,13 @@ const ValidateInvite = (props: IValidateInviteProps) => {
       />
     );
   } else if (status === undefined) {
-    message = (
+    content = (
       <div style={{ textAlign: 'center' }}>
         <Spin />
       </div>
     );
   } else if (status) {
-    message = (
+    content = (
       <Alert
         message="Successfully joined submission!"
         description={
@@ -62,7 +72,7 @@ const ValidateInvite = (props: IValidateInviteProps) => {
       />
     );
   } else {
-    message = (
+    content = (
       <Alert
         message="Invalid link"
         description={<div>The link provided is either expired or invalid.</div>}
@@ -76,7 +86,7 @@ const ValidateInvite = (props: IValidateInviteProps) => {
       <div style={{ maxWidth: 500, margin: '0 auto' }}>
         <br />
         <br />
-        {message}
+        {content}
       </div>
     </PreAuthLayout>
   );
