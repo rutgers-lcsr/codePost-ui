@@ -49,9 +49,9 @@ import { slack } from '../../../../../components/core/slack';
 
 import { encodeForLink } from '../../../../../components/core/URLutils';
 
-import { CodePostDate } from '../../../../components/utils/DateUtils';
+import { CodePostDate } from '../../../../../components/utils/DateUtils';
 
-import ViewUpload from '../../../../components/student/ViewUpload';
+import ViewUpload from '../../../../../components/student/ViewUpload';
 
 /**********************************************************************************************************************/
 
