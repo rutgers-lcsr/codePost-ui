@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { Redirect } from 'react-router-dom';
 
-import { Alert, Icon, Input, message, Spin, Statistic, Tooltip, Typography } from 'antd';
+import { Alert, Button, Icon, Input, message, Spin, Statistic, Tooltip, Typography } from 'antd';
 
 import PreAuthLayout from '../pre-auth/PreAuthLayout';
 
@@ -16,24 +16,46 @@ interface IValidateInviteProps {
   isLoggedIn: boolean;
 }
 
+enum STATUS {
+  IDLE,
+  LOADING,
+  SUCCESS,
+  INVALID,
+}
+
 const ValidateInvite = (props: IValidateInviteProps) => {
-  const [status, setStatus] = React.useState<boolean | undefined>(undefined);
+  const [submission, setSubmission] = React.useState<any>(undefined);
+  const [status, setStatus] = React.useState<STATUS>(STATUS.IDLE);
 
   React.useEffect(() => {
-    const validatePartnerLink = async () => {
+    const validatePartnerLinkAndReturn = async () => {
       const token = props.match.params.token;
       const sid = props.match.params.sid;
 
       try {
-        const data = await Submission.validatePartnerLink(sid, { token });
-        setStatus(true);
+        const data = await Submission.validatePartnerLinkAndReturn(sid, { token });
+        setSubmission(data);
       } catch (err) {
-        setStatus(false);
+        setStatus(STATUS.INVALID);
+        setSubmission(undefined);
       }
     };
 
-    validatePartnerLink();
+    validatePartnerLinkAndReturn();
   }, []);
+
+  const join = async () => {
+    const token = props.match.params.token;
+    const sid = props.match.params.sid;
+
+    setStatus(STATUS.LOADING);
+    try {
+      const data = await Submission.validatePartnerLink(sid, { token });
+      setStatus(STATUS.SUCCESS);
+    } catch (err) {
+      setStatus(STATUS.INVALID);
+    }
+  };
 
   const redirect = () => {
     // FIXME: user is getting logged out for some reason
@@ -50,13 +72,31 @@ const ValidateInvite = (props: IValidateInviteProps) => {
         type="warning"
       />
     );
-  } else if (status === undefined) {
+  } else if (status === STATUS.LOADING || (status === STATUS.IDLE && submission === undefined)) {
     content = (
       <div style={{ textAlign: 'center' }}>
         <Spin />
       </div>
     );
-  } else if (status) {
+  } else if (status === STATUS.IDLE && submission !== undefined) {
+    content = (
+      <Alert
+        message="Joining submission with..."
+        description={
+          <div>
+            <ul>
+              {submission.students.map((email: string) => {
+                return <li>{email}</li>;
+              })}
+            </ul>
+            <br />
+            <Button onClick={join}>Join</Button>
+          </div>
+        }
+        type="info"
+      />
+    );
+  } else if (status === STATUS.SUCCESS) {
     content = (
       <Alert
         message="Successfully joined submission!"
