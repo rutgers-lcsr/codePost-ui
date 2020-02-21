@@ -834,8 +834,8 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
             {this.state.selectedAssignment && this.state.selectedAssignment.allowStudentUploadWithPartners && (
               <Tabs.TabPane tab="Partners" key="partners">
-                <InvitePartnersLink assignment={this.state.selectedAssignment} submission={this.state.submission} />
                 To add a partner to your submission, share this link with them.
+                <InvitePartnersLink assignment={this.state.selectedAssignment} submission={this.state.submission} />
               </Tabs.TabPane>
             )}
 
