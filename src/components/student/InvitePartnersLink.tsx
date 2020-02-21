@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Icon, Input, message, Tooltip } from 'antd';
+import { Button, Icon, Input, message, Popconfirm, Tooltip } from 'antd';
 
 import { hostname } from '../../serviceWorker';
 
@@ -59,18 +59,52 @@ const InvitePartnersLink = (props: IInvitePartnersLinkProps) => {
     return null;
   }
 
+  const cancel = () => {
+    return;
+  };
+
+  const confirm = async () => {
+    if (props.submission === undefined || props.submission.students === undefined) {
+      return;
+    }
+
+    await Submission.removePartner(props.submission.id);
+
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  };
+
+  const hasPartners = props.submission.students !== undefined && props.submission.students.length > 1;
+
   return (
-    <div style={{ padding: '24px 0px' }}>
-      <Input
-        id="invite-link"
-        addonBefore="Partner Invite Link"
-        addonAfter={
-          <Tooltip title="Copy link">
-            <Icon type="copy" style={{ color: '#1890ff', cursor: 'pointer' }} onClick={copyToClipboard} />
-          </Tooltip>
-        }
-        value={`${host}/invite/${props.submission.id}/${link['token']}`}
-      />
+    <div>
+      <div style={{ padding: '24px 0px' }}>
+        <Input
+          id="invite-link"
+          addonBefore="Partner Invite Link"
+          addonAfter={
+            <Tooltip title="Copy link">
+              <Icon type="copy" style={{ color: '#1890ff', cursor: 'pointer' }} onClick={copyToClipboard} />
+            </Tooltip>
+          }
+          value={`${host}/invite/${props.submission.id}/${link['token']}`}
+        />
+      </div>
+      {hasPartners ? (
+        <div style={{ padding: '0px 0px' }}>
+          <Popconfirm
+            title="Are you sure you want to remove yourself from this submission?"
+            onConfirm={confirm}
+            onCancel={cancel}
+            okText="Yes"
+            cancelText="No"
+            okType="danger"
+          >
+            <Button type="danger">Remove myself</Button>
+          </Popconfirm>
+        </div>
+      ) : null}
     </div>
   );
 };
