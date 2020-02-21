@@ -36,8 +36,7 @@ const ValidateInvite = (props: IValidateInviteProps) => {
   }, []);
 
   const redirect = () => {
-    // FIXME: user is getting logged out for some reason
-    props.history.push('/student');
+    window.open('/student', '_blank');
   };
 
   let content;
@@ -62,10 +61,7 @@ const ValidateInvite = (props: IValidateInviteProps) => {
         message="Successfully joined submission!"
         description={
           <div>
-            <span>You will be redirected in...</span>
-            <span>
-              <Statistic.Countdown value={Date.now() + 5000} format="ss" onFinish={redirect} />
-            </span>
+            <a onClick={redirect}>Click here</a> to go to the Student Console.
           </div>
         }
         type="success"
