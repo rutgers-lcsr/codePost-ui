@@ -25,8 +25,12 @@ const InvitePartnersLink = (props: IInvitePartnersLinkProps) => {
         props.submission !== undefined
       ) {
         setLink(undefined);
-        const data = await Submission.readPartnerLink(props.submission.id);
-        setLink(data);
+        try {
+          const data = await Submission.readPartnerLink(props.submission.id);
+          setLink(data);
+        } catch (err) {
+          setLink(undefined);
+        }
       }
     };
 
