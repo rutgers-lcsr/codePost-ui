@@ -1669,7 +1669,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               course={this.state.course}
               assignment={this.state.assignment}
             />,
-            <HeaderSearch />,
             <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
           ];
 
@@ -1874,7 +1873,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               course={this.state.course}
               assignment={this.state.assignment}
             />,
-            <HeaderSearch />,
             <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
           ];
 
