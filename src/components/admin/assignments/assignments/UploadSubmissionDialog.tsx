@@ -740,7 +740,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 onChange={this.changeStudents}
                 isDisabled={this.props.disableStudentSelect}
               />
-              <InvitePartnersLink assignment={this.state.selectedAssignment} submission={this.state.submission} />
               <Divider />
               {/*  beforeUpload prop stops Upload component from trying to upload files to external server */}
               {/*  FIXME: we should prevent users from uploading image files here */}
@@ -832,6 +831,13 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 <ReactMarkdown>{this.state.selectedAssignment.explanation}</ReactMarkdown>
               </Tabs.TabPane>
             ) : null}
+
+            {this.state.selectedAssignment && this.state.selectedAssignment.allowStudentUploadWithPartners && (
+              <Tabs.TabPane tab="Partners" key="partners">
+                <InvitePartnersLink assignment={this.state.selectedAssignment} submission={this.state.submission} />
+                To add a partner to your submission, share this link with them.
+              </Tabs.TabPane>
+            )}
 
             {showTestsTab && (
               <Tabs.TabPane tab="Tests" key="3">
