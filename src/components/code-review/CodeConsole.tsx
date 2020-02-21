@@ -2366,7 +2366,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         kind: 'action',
         callback: this.toggleCustomCommentExplorer,
       },
-      ...helpQueryMap,
     ];
 
     if (this.isCourseAdmin(this.state.assignment)) {
@@ -2412,6 +2411,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         { value: 'View stats', label: 'View stats', kind: 'dashboard', populator: viewStats },
       ];
     }
+
+    defaultOptions = [...defaultOptions, ...helpQueryMap];
 
     for (const option of defaultOptions) {
       (window as any).addToFoobar(option);
