@@ -487,7 +487,12 @@ const CollectionCreateForm: any = Form.create()(
                     valuePropName: 'checked',
                   })(<Switch onClick={this.handleStudentUploadCheck} />)}
                 </Form.Item>
-                <Form.Item label="Allow partners" labelCol={{ span: 6 }} wrapperCol={{ span: 16 }}>
+                <Form.Item
+                  label="Allow partners"
+                  extra={<div>Allow students to submit in groups of their choosing.</div>}
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 16 }}
+                >
                   {getFieldDecorator('allowStudentUploadWithPartners', {
                     initialValue: this.props.assignment.allowStudentUploadWithPartners,
                     valuePropName: 'checked',
