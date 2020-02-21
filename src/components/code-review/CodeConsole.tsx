@@ -74,6 +74,7 @@ import {
   SubheaderTitle,
   ViewAsStudent,
   DownloadCode,
+  HeaderSearch,
 } from '../code-review/Header';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
@@ -2043,6 +2044,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             assignment={this.state.assignment}
           />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
+          <HeaderSearch />,
           <StatusTags
             key="tag"
             assignment={this.state.assignment!}
@@ -2364,7 +2366,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         kind: 'action',
         callback: this.toggleCustomCommentExplorer,
       },
-      ...helpQueryMap,
     ];
 
     if (this.isCourseAdmin(this.state.assignment)) {
@@ -2410,6 +2411,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         { value: 'View stats', label: 'View stats', kind: 'dashboard', populator: viewStats },
       ];
     }
+
+    defaultOptions = [...defaultOptions, ...helpQueryMap];
 
     for (const option of defaultOptions) {
       (window as any).addToFoobar(option);
