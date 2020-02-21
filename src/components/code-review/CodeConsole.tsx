@@ -74,6 +74,7 @@ import {
   SubheaderTitle,
   ViewAsStudent,
   DownloadCode,
+  HeaderSearch,
 } from '../code-review/Header';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
@@ -1668,6 +1669,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               course={this.state.course}
               assignment={this.state.assignment}
             />,
+            <HeaderSearch />,
             <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
           ];
 
@@ -1872,6 +1874,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               course={this.state.course}
               assignment={this.state.assignment}
             />,
+            <HeaderSearch />,
             <SubheaderTitle key="subheader-title" assignment={this.state.assignment} />,
           ];
 
@@ -2043,6 +2046,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             assignment={this.state.assignment}
           />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
+          <HeaderSearch />,
           <StatusTags
             key="tag"
             assignment={this.state.assignment!}
