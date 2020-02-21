@@ -94,6 +94,8 @@ import { CourseContext, defaultCourse } from '../core/Contexts';
 
 import CustomCommentExplorer from './CustomCommentExplorer';
 
+import { getRubricURL, encodeForLink } from '../core/URLutils';
+
 /**********************************************************************************************************************/
 
 /* f(logged in user, submission) */
@@ -2403,9 +2405,23 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         {
           value: 'Open rubric editor',
           label: 'Open rubric editor',
-          link: `/admin/${this.state.course!.name}/${this.state.course!.period}/assignments/rubrics/${
-            this.state.assignment!.name
-          }`,
+          link: getRubricURL(this.state.course!, this.state.assignment!),
+          kind: 'link',
+        },
+        {
+          value: 'Open test editor',
+          label: 'Open test editor',
+          link: `/admin/${encodeForLink(this.state.course!.name)}/${encodeForLink(
+            this.state.course!.period,
+          )}/assignments/tests/${encodeForLink(this.state.assignment!.name)}/edit/tests`,
+          kind: 'link',
+        },
+        {
+          value: 'Open test results',
+          label: 'Open test results',
+          link: `/admin/${encodeForLink(this.state.course!.name)}/${encodeForLink(
+            this.state.course!.period,
+          )}/assignments/tests/${encodeForLink(this.state.assignment!.name)}/results`,
           kind: 'link',
         },
         { value: 'View stats', label: 'View stats', kind: 'dashboard', populator: viewStats },
