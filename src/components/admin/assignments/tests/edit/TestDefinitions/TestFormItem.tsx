@@ -841,8 +841,12 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                             onCancel={() => this.setState({ showExplanation: false })}
                             onSave={(draft?: string) => {
                               draft
-                                ? this.setState({ explanation: draft, showExplanation: false })
-                                : this.setState({ explanation: '', showExplanation: false });
+                                ? this.setState({ explanation: draft, showExplanation: false }, () => {
+                                    this.onSave();
+                                  })
+                                : this.setState({ explanation: '', showExplanation: false }, () => {
+                                    this.onSave();
+                                  });
                             }}
                           />
                         ) : null}

@@ -83,32 +83,31 @@ const TestsList = (props: IProps) => {
     failed = total - passed;
   }
 
+  const explanationsWidth = Math.max(windowSize.width * 0.35, 350);
+
   // Top-level columns used used to display individual test information
   const columns = [
     {
       title: 'Test Case',
       dataIndex: 'case',
       key: 'case',
-      width: '20%',
     },
     {
       title: 'Explanation',
       dataIndex: 'explanation',
       key: 'explanation',
-      width: '40%',
+      width: `${explanationsWidth}px`,
     },
     {
       title: 'Passed',
       dataIndex: 'passed',
       key: 'passed',
-      width: '20%',
       align: 'center' as const,
     },
     {
       title: 'Points',
       dataIndex: 'points',
       key: 'points',
-      width: '20%',
       align: 'center' as const,
     },
   ];
@@ -253,6 +252,7 @@ const TestsList = (props: IProps) => {
                   style={customPanelStyle}
                 >
                   <Table
+                    scroll={{ x: true }}
                     columns={columns}
                     loading={props.isLoading}
                     dataSource={data}

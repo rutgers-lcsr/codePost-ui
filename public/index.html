@@ -37,12 +37,19 @@
       name="description"
       content="codePost is a free autograder and code annotation tool that makes it easy to grade computer science course work."
     />
-    
+
     <!-- foobar -->
     <script>
       (function() {
         var w = window;
         var d = document;
+
+        // dummy definitions
+        w.setFoobarParams = function() {return 1}
+        w.addToFoobar = function() {return 2}
+        w.removeFromFoobar = function() {return 3}
+        w.setFoobar = function() {return 4}
+
         var l = function() {
           g = document.createElement('div');
           g.setAttribute('id', 'foobar');

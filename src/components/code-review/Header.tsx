@@ -10,7 +10,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 /* antd imports */
-import { Button, Descriptions, Divider, Dropdown, Icon, message, Menu, Modal, Popover, Switch, Tag } from 'antd';
+import { Button, Descriptions, Divider, Dropdown, Icon, message, Menu, Modal, Popover, Switch, Tag, Input } from 'antd';
 
 /* codePost imports */
 import CPButton from '../core/CPButton';
@@ -802,5 +802,31 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
     <Dropdown overlay={menu} trigger={['click']}>
       <Icon type="menu" style={{ color: consoleTheme.text }} />
     </Dropdown>
+  );
+};
+
+export const HeaderSearch = () => {
+  const onClick = () => {
+    (window as any).openFoobar();
+  };
+
+  return (
+    <span onClick={onClick} style={{ cursor: 'pointer' }}>
+      {/* <Input.Search id="foobar-search" disabled={true} placeholder="Find anything" /> */}
+      <div
+        className="foobar-search"
+        style={{
+          background: '#f5f5f5',
+          border: '1px solid #d9d9d9',
+          borderRadius: '4px',
+          padding: '4px 11px',
+          lineHeight: '1.5',
+          width: '175px',
+          color: 'rgba(0, 0, 0, 0.3)',
+        }}
+      >
+        Find anything <Icon type="search" style={{ float: 'right', marginTop: '2px' }} />
+      </div>
+    </span>
   );
 };

@@ -52,6 +52,7 @@ import { encodeForLink } from '../../../../components/core/URLutils';
 import { CodePostDate } from '../../../../components/utils/DateUtils';
 
 import ViewUpload from '../../../../components/student/ViewUpload';
+import InvitePartnersLink from '../../../../components/student/InvitePartnersLink';
 
 /**********************************************************************************************************************/
 
@@ -173,13 +174,28 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         this.loadTemplates(this.props.selectedAssignment);
         this.loadTests();
         if (this.props.selectedStudents.length > 0) {
-          this.setState({
-            submission: this.props.submissions[this.props.selectedStudents[0]][this.props.selectedAssignment.id],
+          let primaryStudent = null;
+
+          this.props.selectedStudents.forEach((email: string) => {
+            if (this.props.submissions.hasOwnProperty(email)) {
+              if (
+                this.props.selectedAssignment !== undefined &&
+                this.props.submissions[email].hasOwnProperty(this.props.selectedAssignment.id)
+              ) {
+                primaryStudent = email;
+              }
+            }
           });
-          this.loadTestResults(
-            this.props.submissions[this.props.selectedStudents[0]][this.props.selectedAssignment.id],
-            this.props.selectedAssignment.exposeDumpLogs === true,
-          );
+
+          if (primaryStudent !== null) {
+            this.setState({
+              submission: this.props.submissions[primaryStudent][this.props.selectedAssignment.id],
+            });
+            this.loadTestResults(
+              this.props.submissions[primaryStudent][this.props.selectedAssignment.id],
+              this.props.selectedAssignment.exposeDumpLogs === true,
+            );
+          }
         }
       }
     }
@@ -816,6 +832,13 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
               </Tabs.TabPane>
             ) : null}
 
+            {this.state.selectedAssignment && this.state.selectedAssignment.allowStudentUploadWithPartners && (
+              <Tabs.TabPane tab="Partners" key="partners">
+                To add a partner to your submission, share this link with them.
+                <InvitePartnersLink assignment={this.state.selectedAssignment} submission={this.state.submission} />
+              </Tabs.TabPane>
+            )}
+
             {showTestsTab && (
               <Tabs.TabPane tab="Tests" key="3">
                 <div style={{ minHeight: 400, height: 'calc(100vh - 400px)' }}>
@@ -837,7 +860,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                             type="info"
                             message={
                               <div>
-                                Showing results from last submission at:{' '}
+                                Showing results from most recent submission at:{' '}
                                 <CodePostDate datetime={this.state.submission!.dateUploaded || ''} />
                               </div>
                             }
@@ -854,12 +877,12 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             )}
 
             {this.state.submission ? (
-              <Tabs.TabPane tab="Last submission" key="4">
+              <Tabs.TabPane tab="Most recent submission" key="4">
                 <Alert
                   type="info"
                   message={
                     <div>
-                      Showing results from last submission at:{' '}
+                      Showing results from most recent submission at:{' '}
                       <CodePostDate datetime={this.state.submission!.dateUploaded || ''} />
                     </div>
                   }

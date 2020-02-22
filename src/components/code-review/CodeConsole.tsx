@@ -74,6 +74,7 @@ import {
   SubheaderTitle,
   ViewAsStudent,
   DownloadCode,
+  HeaderSearch,
 } from '../code-review/Header';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
@@ -92,6 +93,8 @@ import TestsList from './code-panel/TestsList';
 import { CourseContext, defaultCourse } from '../core/Contexts';
 
 import CustomCommentExplorer from './CustomCommentExplorer';
+
+import { getRubricURL, encodeForLink } from '../core/URLutils';
 
 /**********************************************************************************************************************/
 
@@ -2043,6 +2046,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             assignment={this.state.assignment}
           />,
           <SubheaderTitle key="subheader-title" assignment={this.state.assignment!} />,
+          <HeaderSearch />,
           <StatusTags
             key="tag"
             assignment={this.state.assignment!}
@@ -2148,6 +2152,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
                 isAdmin={this.isCourseAdmin(this.state.assignment)}
                 assignment={this.state.assignment}
                 rubricComments={Object.values(this.state.rubricComments).flat()}
+                rubricCategories={this.state.rubricCategories}
                 visible={this.state.showCustomCommentExplorer}
                 onCancel={this.toggleCustomCommentExplorer}
               />
@@ -2363,7 +2368,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         kind: 'action',
         callback: this.toggleCustomCommentExplorer,
       },
-      ...helpQueryMap,
     ];
 
     if (this.isCourseAdmin(this.state.assignment)) {
@@ -2401,14 +2405,30 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         {
           value: 'Open rubric editor',
           label: 'Open rubric editor',
-          link: `/admin/${this.state.course!.name}/${this.state.course!.period}/assignments/rubrics/${
-            this.state.assignment!.name
-          }`,
+          link: getRubricURL(this.state.course!, this.state.assignment!),
+          kind: 'link',
+        },
+        {
+          value: 'Open test editor',
+          label: 'Open test editor',
+          link: `/admin/${encodeForLink(this.state.course!.name)}/${encodeForLink(
+            this.state.course!.period,
+          )}/assignments/tests/${encodeForLink(this.state.assignment!.name)}/edit/tests`,
+          kind: 'link',
+        },
+        {
+          value: 'Open test results',
+          label: 'Open test results',
+          link: `/admin/${encodeForLink(this.state.course!.name)}/${encodeForLink(
+            this.state.course!.period,
+          )}/assignments/tests/${encodeForLink(this.state.assignment!.name)}/results`,
           kind: 'link',
         },
         { value: 'View stats', label: 'View stats', kind: 'dashboard', populator: viewStats },
       ];
     }
+
+    defaultOptions = [...defaultOptions, ...helpQueryMap];
 
     for (const option of defaultOptions) {
       (window as any).addToFoobar(option);
