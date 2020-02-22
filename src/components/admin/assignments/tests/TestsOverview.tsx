@@ -53,7 +53,7 @@ const TestsOverview = (props: IProps & RouteComponentProps) => {
           Tests &nbsp;<Tag>BETA</Tag>
         </div>
       }
-      isEmpty={false}
+      isEmpty={data.length === 0}
       emptyNode={
         <Empty
           imageStyle={{
