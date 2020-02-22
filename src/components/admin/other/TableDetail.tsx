@@ -15,6 +15,8 @@ import Highlighter from 'react-highlight-words';
 /* codePost imports */
 import CPAdminDetail from '../other/CPAdminDetail';
 
+import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
+
 /**********************************************************************************************************************/
 
 export interface ITableDetailColumn extends ColumnProps<any> {
@@ -109,6 +111,10 @@ class TableDetail extends React.Component<IProps, IState> {
 
   public setSearchText = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ searchText: event.target.value.toUpperCase() });
+  };
+
+  public onShowSizeChange = (current: number, size: number) => {
+    LOCAL_SETTINGS.defaultPageSize.setter(size);
   };
 
   public render() {
@@ -214,6 +220,8 @@ class TableDetail extends React.Component<IProps, IState> {
                       showSizeChanger: true,
                       pageSizeOptions: ['10', '50', '100'],
                       position: data.length > MANY_ROWS ? 'both' : 'bottom',
+                      defaultPageSize: LOCAL_SETTINGS.defaultPageSize.getter(),
+                      onShowSizeChange: this.onShowSizeChange,
                     }
               }
               {...(this.props.tableProps ? this.props.tableProps : undefined)}
