@@ -164,6 +164,13 @@ class TableDetail extends React.Component<IProps, IState> {
           }
         });
 
+        /***************************************/
+        /* PAGINATION CONFIG
+        /**************************************/
+
+        const MIN_ROWS = 10;
+        const MANY_ROWS = 50;
+
         content = (
           <div>
             {this.props.hideSearch ? null : (
@@ -201,9 +208,12 @@ class TableDetail extends React.Component<IProps, IState> {
               pagination={
                 this.props.pagination !== undefined
                   ? this.props.pagination
+                  : data.length < MIN_ROWS
+                  ? false
                   : {
                       showSizeChanger: true,
                       pageSizeOptions: ['10', '50', '100'],
+                      position: data.length > MANY_ROWS ? 'both' : 'bottom',
                     }
               }
               {...(this.props.tableProps ? this.props.tableProps : undefined)}
