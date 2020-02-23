@@ -136,6 +136,11 @@ const autograderInstructionsVisible = generateSettingFunctions(
   booleanOParser,
 );
 
+// key: defaultPageSize
+// return type: int. Represents the desired page size of paginated tables
+// defalut value: 10
+const defaultPageSize = generateSettingFunctions('defaultPageSize', 10, intIParser, intOParser);
+
 /******************************************************************************************************************/
 const LOCAL_SETTINGS = {
   darkMode,
@@ -151,6 +156,7 @@ const LOCAL_SETTINGS = {
   defaultAssignment,
   mostRecentFile,
   autograderInstructionsVisible,
+  defaultPageSize,
 };
 
 export { LOCAL_SETTINGS, clearLocalSettings };

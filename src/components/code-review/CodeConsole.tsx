@@ -1684,6 +1684,9 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               readOnlySubmission={this.state.readOnlySubmission!}
               submitStudentQuestion={this.submitStudentQuestion}
               deleteStudentQuestion={this.deleteStudentQuestion}
+              isStudentMode={
+                this.state.readOnlySubmission!.students!.find((el) => el === this.props.user.email) === undefined
+              }
             />,
             <FileMenu
               key="file-menu"
@@ -1778,6 +1781,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
               updateGrader={this.updateGrader}
               addLateDayCreditComment={this.addLateDayCreditComment}
+              isStudentMode={false}
             />,
             <TestsMenu
               key="tests-menu"
@@ -1986,6 +1990,9 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             readOnlySubmission={this.state.readOnlySubmission!}
             submitStudentQuestion={this.submitStudentQuestion}
             deleteStudentQuestion={this.deleteStudentQuestion}
+            isStudentMode={
+              this.state.readOnlySubmission!.students!.find((el) => el === this.props.user.email) === undefined
+            }
           />,
           <TestsMenu
             key="tests-menu"
@@ -2179,6 +2186,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             isCourseAdmin={this.isCourseAdmin(this.state.assignment)}
             updateGrader={this.updateGrader}
             addLateDayCreditComment={this.addLateDayCreditComment}
+            isStudentMode={false}
           />,
           <TestsMenu
             key="tests-menu"

@@ -47,7 +47,7 @@ const RubricOverview = (props: IProps & RouteComponentProps) => {
       loadComplete={true}
       pagination={props.assignments.length < 10 ? false : undefined}
       title={'Rubrics'}
-      isEmpty={false}
+      isEmpty={data.length === 0}
       emptyNode={
         <Empty
           imageStyle={{
