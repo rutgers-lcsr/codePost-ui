@@ -30,7 +30,8 @@ const LateSubmissionModal = (props: ILateSubmissionModalProps) => {
     studentUploadInformation !== null &&
     studentUploadInformation.lateDayCreditsAvailable !== undefined &&
     studentUploadInformation.lateDayCreditsToUse !== undefined &&
-    studentUploadInformation.adjustedDaysLate !== undefined
+    studentUploadInformation.adjustedDaysLate !== undefined &&
+    props.assignment.lateDeductions.length > 0
   ) {
     lateDayCreditsTemplate = `
 
@@ -47,13 +48,11 @@ You have ${studentUploadInformation.lateDayCreditsAvailable} unused late day cre
 
   let penaltyTemplate = '';
 
-  if (studentUploadInformation !== null) {
+  if (studentUploadInformation !== null && props.assignment.lateDeductions.length > 0) {
     if (studentUploadInformation.pointsOff === 0) {
       penaltyTemplate = 'No penalty will be applied to the submission.';
     } else {
-      penaltyTemplate = `A **penalty of ${studentUploadInformation.pointsOff} point${
-        studentUploadInformation.pointsOff === 1 ? '' : 's'
-      }** will be applied to the submission.`;
+      penaltyTemplate = `A penalty will be applied to the submission.`;
     }
   }
 
@@ -70,7 +69,7 @@ The due date has passed and your submission is **${studentUploadInformation.days
 
 ${penaltyTemplate}
 
-Please contact your instructor if you have any questions.
+Please see the course policy or contact your instructor if you have any questions.
 `;
 
   const times =

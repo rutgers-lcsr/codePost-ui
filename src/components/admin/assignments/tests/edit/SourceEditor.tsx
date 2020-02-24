@@ -130,15 +130,20 @@ export const SourceEditor = (props: IProps) => {
   };
 
   /************************** Return ****************************/
+  const noPreviewString =
+    props.currentFile && props.currentFile.code.startsWith('data:application/octet-stream;base64')
+      ? 'No Preview Available'
+      : undefined;
+
   const content = props.currentFile && (
     <div>
       <CodeWindow
-        code={props.currentFile.code}
+        code={noPreviewString || props.currentFile.code}
         name={props.currentFile.name}
         onSave={
           props.currentFile.type === FILE_TYPE.SOURCEFILE
             ? onSourceFileSave
-            : props.currentFile.canSave
+            : props.currentFile.canSave && !noPreviewString
             ? props.updateFile.bind({}, props.currentFile.type, props.currentFile.id)
             : undefined
         }

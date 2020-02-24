@@ -23,7 +23,7 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubric
 import { Assignment, AssignmentType, AssignmentStudent } from '../../infrastructure/assignment';
 import { CommentIO, CommentType, UiComment } from '../../infrastructure/comment';
 import { Course, CourseType } from '../../infrastructure/course';
-import { FileType } from '../../infrastructure/file';
+import { FileType, BinaryExtensions } from '../../infrastructure/file';
 import { FileTemplate, FileTemplateType } from '../../infrastructure/fileTemplate';
 import * as Immutable from '../../infrastructure/immutable';
 import { RubricCategory, RubricCategoryType } from '../../infrastructure/rubricCategory';
@@ -454,6 +454,16 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             1000000}MB).\n\nPlease compress the file or contact team@codepost.io.`,
         };
       }
+
+      const binary = BinaryExtensions.includes(file.extension.toLowerCase());
+
+      if (binary) {
+        return {
+          ...file,
+          code: 'Preview Not Available',
+        };
+      }
+
       return file;
     });
   };
