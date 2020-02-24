@@ -6,7 +6,21 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Alert, Button, Icon, message, Modal, Progress, Switch, Upload, Table, Tag, Divider, Tabs } from 'antd';
+import {
+  Alert,
+  Button,
+  Checkbox,
+  Icon,
+  message,
+  Modal,
+  Progress,
+  Switch,
+  Upload,
+  Table,
+  Tag,
+  Divider,
+  Tabs,
+} from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -106,6 +120,7 @@ interface IState {
   loadingTests: boolean;
 
   fileTemplates: FileTemplateType[];
+  sendMeAConfirmationEmail: boolean;
 
   // Test results
   submissionTests: SubmissionTestType[];
@@ -136,6 +151,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     testsLog: null,
     loadingTests: false,
     fileTemplates: [],
+    sendMeAConfirmationEmail: false,
     runMessage: '',
     activeTab: '1',
   };
@@ -463,6 +479,10 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
   };
 
+  public toggleSendMeAConfirmationEmail = (e: any) => {
+    this.setState({ sendMeAConfirmationEmail: !this.state.sendMeAConfirmationEmail });
+  };
+
   /********************************************************************************************************/
 
   public render() {
@@ -474,6 +494,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
 
     let content;
+    let sendMeAConfirmationEmailCheckbox = null;
     let goForwardButton = null;
     let goBackButton = null;
     switch (status) {
@@ -633,6 +654,14 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         const areRequiredFilesPresent = this.state.fileTemplates.every(
           (ft) => !ft.required || this.state.files.some((el) => el.name === ft.name),
         );
+
+        // @@@@@@
+
+        if (this.props.isStudent) {
+          sendMeAConfirmationEmailCheckbox = (
+            <Checkbox onChange={this.toggleSendMeAConfirmationEmail}>Send me an email confirmation.</Checkbox>
+          );
+        }
 
         goForwardButton = (
           <Button
@@ -797,7 +826,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         title={this.props.title || 'Upload Submissions'}
         onCancel={this.cancel}
         width={1100}
-        footer={[goBackButton, goForwardButton]}
+        footer={[sendMeAConfirmationEmailCheckbox, goBackButton, goForwardButton]}
       >
         {status !== STATUS.NONE || !this.props.isStudent ? (
           content
