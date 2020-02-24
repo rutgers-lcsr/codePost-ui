@@ -57,7 +57,39 @@ export const MarkdownExtensions = ['md', '.md'];
 export const JupyterExtensions = ['ipynb', '.ipynb'];
 export const ImageExtensions = ['png', '.png', '.jpeg', 'jpeg', '.jpg', 'jpg'];
 export const PDFExtensions = ['pdf', '.pdf'];
-export const BinaryExtensions = ['class', '.class', 'jar', '.jar', 'gar', '.gar'];
+// https://github.com/bevry/binaryextensions/blob/master/source/index.json
+export const BinaryExtensions = [
+  'class',
+  '.class',
+  'jar',
+  '.jar',
+  'gar',
+  '.gar',
+  'dds',
+  '.dds',
+  'eot',
+  '.eot',
+  'gif',
+  '.gif',
+  'ico',
+  '.ico',
+  'jar',
+  '.jar',
+  'jpeg',
+  '.jpeg',
+  'jpg',
+  '.jpg',
+  'pdf',
+  '.pdf',
+  'png',
+  '.png',
+  'swf',
+  '.swf',
+  'tga',
+  '.tga',
+  'ttf',
+  '.ttf',
+];
 
 type CodeType = 'code' | 'markdown' | 'jupyter' | 'image' | 'pdf';
 
