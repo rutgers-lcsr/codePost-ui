@@ -239,26 +239,6 @@ class BulkUpload extends React.Component<IProps, IState> {
     // tslint:enable
     const promises = toUpload.map((submission) => {
       const files: any[] = [];
-
-      // submission.files.forEach((file: any) => {
-      //   let path: string = file.webkitRelativePath || file.pathOverride;
-      //   let fileName: string = file.name;
-      //   if (path === '') {
-      //     path = file.name;
-      //     fileName = file.name.split('/').slice(-1)[0];
-      //   }
-      //   // const pathDirs = file.webkitRelativePath.split('/');
-      //   const pathDirs = path.split('/');
-      //   // Want to ignore first (root dir, student email) two and last element (file name) of split
-      //   const filePath = pathDirs.length > 3 ? pathDirs.slice(2, pathDirs.length - 1).join('/') : null;
-      //   const payload = {
-      //     name: fileName,
-      //     data: fileMap[path],
-      //     path: filePath,
-      //   };
-      //   files.push(payload);
-      // });
-
       const submitter = submission.students.join(',');
 
       if (fileMap.hasOwnProperty(submitter)) {
@@ -388,22 +368,15 @@ class BulkUpload extends React.Component<IProps, IState> {
     acceptedFiles: codePostFile[],
     getStudentsFromFile: (file: IProtoFileUpload) => string[],
   ) => {
-    await this.processSubmissionsFromFiles(acceptedFiles, getStudentsFromFile);
+    await this.processSubmissionsFromFiles(acceptedFiles, getStudentsFromFile, this.setProtoSubmissions);
     this.setState({ status: STATUS.UPLOADED });
   };
 
   public processSubmissionsFromFiles = async (
     acceptedFiles: codePostFile[],
     getStudentsFromFile: (file: IProtoFileUpload) => string[],
+    setProtoSubmissions: (protoSubmissions: IProtoSubmission[], numFiles: number, errors: string[]) => void,
   ) => {
-    /*************************************************************
-    Types of errors to check for:
-    - path doesn't follow TLD/<students>/file
-    - path contains invalid <students>
-    - path contains a student listed in a different folder
-    - path contains a student multiple times
-    /*************************************************************/
-
     // Make sure the files have valid students
     const [folderMap, errors] = validateStudents(
       this.props.students,
@@ -444,6 +417,10 @@ class BulkUpload extends React.Component<IProps, IState> {
       return folderMap[key];
     });
 
+    setProtoSubmissions(protoSubmissions, numFiles, errors);
+  };
+
+  public setProtoSubmissions = (protoSubmissions: IProtoSubmission[], numFiles: number, errors: string[]) => {
     this.setState({
       protoSubmissions,
       fileMap: {},
@@ -462,15 +439,6 @@ class BulkUpload extends React.Component<IProps, IState> {
     //   this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile);
     // });
     this.setState({ overwriteMode: !this.state.overwriteMode });
-  };
-
-  public changeStatus = (newStatus: STATUS) => {
-    if (newStatus === STATUS.NONE) {
-      this.setState({ status: newStatus, rawFiles: [] });
-    } else if (newStatus === STATUS.UPLOADED) {
-      this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile);
-      this.setState({ status: newStatus });
-    }
   };
 
   public onIntegrationClick = (mode?: string) => {
@@ -667,7 +635,10 @@ class BulkUpload extends React.Component<IProps, IState> {
             backText="Cancel"
             onBack={() => this.setState(this.cancel)}
             forwardText="Continue"
-            onForward={this.changeStatus.bind(this, STATUS.UPLOADED)}
+            onForward={() => {
+              this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile, this.setProtoSubmissions);
+              this.setState({ status: STATUS.UPLOADED });
+            }}
             disableForward={this.state.rawFiles.length === 0}
           />
         );
@@ -676,7 +647,7 @@ class BulkUpload extends React.Component<IProps, IState> {
         footer = (
           <UploadBulkFooter
             backText="Start over"
-            onBack={this.changeStatus.bind(this, STATUS.NONE)}
+            onBack={() => this.setState({ status: STATUS.NONE, rawFiles: [] })}
             forwardText="Upload"
             onForward={this.onUpload}
             disableForward={numToUpload === 0}
