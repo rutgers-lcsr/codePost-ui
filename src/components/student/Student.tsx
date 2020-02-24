@@ -239,7 +239,13 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
   };
 
   // Upload a submission as a student
-  public uploadSubmission = (isNew: boolean, assignment: AssignmentStudentType, partners: string[], files: any[]) => {
+  public uploadSubmission = (
+    isNew: boolean,
+    assignment: AssignmentStudentType,
+    partners: string[],
+    files: any[],
+    sendConfirmationEmail: boolean = false,
+  ) => {
     if (partners.length === 0) {
       return Promise.reject();
     }
@@ -256,6 +262,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     const payload = {
       id: assignment.id,
       files: formattedFiles,
+      sendConfirmationEmail,
     };
 
     const submission1 = isNew

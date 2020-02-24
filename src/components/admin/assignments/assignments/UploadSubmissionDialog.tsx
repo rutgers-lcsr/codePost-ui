@@ -350,7 +350,12 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         if (this.state.selectedAssignment) {
           this.props
             // @ts-ignore
-            .uploadSubmission(this.state.selectedAssignment!, this.state.selectedStudents, this.state.files)
+            .uploadSubmission(
+              this.state.selectedAssignment!,
+              this.state.selectedStudents,
+              this.state.files,
+              this.state.sendMeAConfirmationEmail,
+            )
             .then((newSubmission: StudentSubmissionType | SubmissionType) => {
               const shouldRun = this.shouldRunTests();
               if (shouldRun) {
