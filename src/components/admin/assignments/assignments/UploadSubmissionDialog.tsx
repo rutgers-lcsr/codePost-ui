@@ -677,13 +677,24 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
 
         if (this.props.isStudent) {
           sendMeAConfirmationEmailCheckbox = (
-            <Checkbox
-              key="send-me-a-confirmation-email"
-              checked={this.state.sendMeAConfirmationEmail}
-              onChange={this.toggleSendMeAConfirmationEmail}
-            >
-              Send me an email confirmation.
-            </Checkbox>
+            <span>
+              <Checkbox
+                key="send-me-a-confirmation-email"
+                checked={this.state.sendMeAConfirmationEmail}
+                onChange={this.toggleSendMeAConfirmationEmail}
+              >
+                Send me email confirmation
+              </Checkbox>
+              <CPTooltip
+                title={
+                  this.state.submission && this.state.submission.students && this.state.submission.students.length > 1
+                    ? 'If checked, codePost will send you and your partners an email confirming a successful submission.'
+                    : 'If checked, codePost will send you an email confirming a successful submission.'
+                }
+                infoIcon={true}
+              />
+              &nbsp; &nbsp;
+            </span>
           );
         }
 
