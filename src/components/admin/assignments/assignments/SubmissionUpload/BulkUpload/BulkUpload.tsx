@@ -155,14 +155,70 @@ class BulkUpload extends React.Component<IProps, IState> {
     return newMap;
   };
 
-  public cancel = () => {
+  public onCancel = () => {
     this.props.onCancel();
   };
 
-  public onUpload = () => {
+  public toggleOverwriteMode = () => {
+    // this.setState({ overwriteMode: !this.state.overwriteMode }, () => {
+    //   this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile);
+    // });
+    // CHECK FOR REVIEWER: Why do we need to call process Submissions from files again after overwrite mode is toggled?
+    // Old Code:
+    // this.setState({ overwriteMode: !this.state.overwriteMode }, () => {
+    //   this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile);
+    // });
+    this.setState({ overwriteMode: !this.state.overwriteMode });
+  };
+
+  /***************************************************************************************/
+  /* Set state
+  /***************************************************************************************/
+  public onStepToUpload = () => {
+    this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile, this.setProtoSubmissions);
+    this.setState({ status: STATUS.UPLOADED });
+  };
+
+  public onStepToReading = () => {
     this.setState({ status: STATUS.READING }, () => {
       this.readFiles();
     });
+  };
+
+  public setProtoSubmissions = (protoSubmissions: IProtoSubmission[], numFiles: number, errors: string[]) => {
+    this.setState({
+      protoSubmissions,
+      fileMap: {},
+      numFiles,
+      errorPaths: errors,
+    });
+  };
+
+  public clearFiles = () => {
+    this.setState({
+      protoSubmissions: [],
+      studentMap: this.buildNewStudentMap(this.props.students, this.props.submissions),
+      fileMap: {},
+      status: STATUS.NONE,
+      numFiles: 0,
+      numUploaded: 0,
+    });
+  };
+
+  public setRawFiles = (rawFiles: codePostFile[]) => {
+    this.setState({ rawFiles });
+  };
+
+  public showImportOptions = () => {
+    this.setState({ showImportOptions: true });
+  };
+
+  public onIntegrationClick = (mode?: string) => {
+    if (mode === this.state.mode) {
+      this.setState({ mode: undefined });
+    } else {
+      this.setState({ mode });
+    }
   };
   /***************************************************************************************/
   /* Upload business logic
@@ -278,17 +334,6 @@ class BulkUpload extends React.Component<IProps, IState> {
       this.setState({
         status: STATUS.COMPLETE,
       });
-    });
-  };
-
-  public clearFiles = () => {
-    this.setState({
-      protoSubmissions: [],
-      studentMap: this.buildNewStudentMap(this.props.students, this.props.submissions),
-      fileMap: {},
-      status: STATUS.NONE,
-      numFiles: 0,
-      numUploaded: 0,
     });
   };
 
@@ -418,43 +463,6 @@ class BulkUpload extends React.Component<IProps, IState> {
     });
 
     setProtoSubmissions(protoSubmissions, numFiles, errors);
-  };
-
-  public setProtoSubmissions = (protoSubmissions: IProtoSubmission[], numFiles: number, errors: string[]) => {
-    this.setState({
-      protoSubmissions,
-      fileMap: {},
-      numFiles,
-      errorPaths: errors,
-    });
-  };
-
-  public toggleOverwriteMode = () => {
-    // this.setState({ overwriteMode: !this.state.overwriteMode }, () => {
-    //   this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile);
-    // });
-    // CHECK FOR REVIEWER: Why do we need to call process Submissions from files again after overwrite mode is toggled?
-    // Old Code:
-    // this.setState({ overwriteMode: !this.state.overwriteMode }, () => {
-    //   this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile);
-    // });
-    this.setState({ overwriteMode: !this.state.overwriteMode });
-  };
-
-  public onIntegrationClick = (mode?: string) => {
-    if (mode === this.state.mode) {
-      this.setState({ mode: undefined });
-    } else {
-      this.setState({ mode });
-    }
-  };
-
-  public setRawFiles = (rawFiles: codePostFile[]) => {
-    this.setState({ rawFiles });
-  };
-
-  public showImportOptions = () => {
-    this.setState({ showImportOptions: true });
   };
 
   /***************************************************************************************/
@@ -633,12 +641,9 @@ class BulkUpload extends React.Component<IProps, IState> {
         footer = (
           <UploadBulkFooter
             backText="Cancel"
-            onBack={() => this.setState(this.cancel)}
+            onBack={() => this.setState(this.onCancel)}
             forwardText="Continue"
-            onForward={() => {
-              this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile, this.setProtoSubmissions);
-              this.setState({ status: STATUS.UPLOADED });
-            }}
+            onForward={this.onStepToUpload}
             disableForward={this.state.rawFiles.length === 0}
           />
         );
@@ -649,7 +654,7 @@ class BulkUpload extends React.Component<IProps, IState> {
             backText="Start over"
             onBack={() => this.setState({ status: STATUS.NONE, rawFiles: [] })}
             forwardText="Upload"
-            onForward={this.onUpload}
+            onForward={this.onStepToReading}
             disableForward={numToUpload === 0}
           />
         );
