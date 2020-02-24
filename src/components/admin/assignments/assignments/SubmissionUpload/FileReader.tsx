@@ -18,6 +18,12 @@ export interface IProtoFileUpload {
   file: File | UploadFile;
 }
 
+export interface IProtoSubmission {
+  students: string[];
+  files: File[];
+  isCollision: boolean /* true if any student has an existing submission */;
+}
+
 export interface codePostFile extends UploadFile {
   // Field to set the path of a file
   // webkitRelativePath is not settable

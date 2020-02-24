@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 
 import { Alert, Button, Icon, Input, Modal, Upload } from 'antd';
 
-import { FolderToStudentMap, getIdentifierFromFolder } from './LMSImportHelpers';
+import { FolderToStudentMap, getIdentifierFromFolder } from './../LMSImportHelpers';
 
-import LogViewer from '../../../../core/LogViewer';
+import LogViewer from '../../../../../core/LogViewer';
 interface IMappingUploadProps {
   onSave: (newMapping: { [id: string]: string }) => void;
   onCancel: () => void;

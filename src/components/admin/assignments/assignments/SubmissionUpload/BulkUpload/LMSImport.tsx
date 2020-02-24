@@ -4,15 +4,15 @@ import { Button, Collapse, Icon, List, message, Upload, Slider, Select, Statisti
 
 import ReactMarkdown from 'react-markdown';
 
-import { codePostFile, IProtoFileUpload } from './FileReader';
+import { codePostFile, IProtoFileUpload } from './../FileReader';
 
-import { CourseType } from '../../../../../infrastructure/types';
+import { CourseType } from '../../../../../../infrastructure/types';
 
-import { Course } from '../../../../../infrastructure/course';
+import { Course } from '../../../../../../infrastructure/course';
 
-import LMSRosterMapUpload from './LMSRosterMapUpload';
+import LMSRosterMapUpload from './../LMSRosterMapUpload';
 
-import { FolderToStudentMap, getIdentifierFromFolder, beforeLMSImport } from './LMSImportHelpers';
+import { FolderToStudentMap, getIdentifierFromFolder, beforeLMSImport } from './../LMSImportHelpers';
 
 interface IUploadFormProps {
   rawFiles: codePostFile[];

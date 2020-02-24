@@ -5,17 +5,17 @@ import { Collapse, Icon, Radio, Statistic, Switch, Upload, Typography } from 'an
 
 import ReactMarkdown from 'react-markdown';
 
-import BlockMarkdown from '../../../../core/BlockMarkdown';
+import BlockMarkdown from '../../../../../core/BlockMarkdown';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
-import { codePostFile, IProtoFileUpload, fileToProtoFileUpload, readZipTopLevel } from './FileReader';
+import { codePostFile, IProtoFileUpload, fileToProtoFileUpload, readZipTopLevel } from './../FileReader';
 
 import { LMSImport } from './LMSImport';
 
-import { CourseType } from '../../../../../infrastructure/types';
+import { CourseType } from '../../../../../../infrastructure/types';
 
-import { IntegrationButton, INTEGRATIONS } from '../../../../landing/Integrations';
+import { IntegrationButton, INTEGRATIONS } from '../../../../../landing/Integrations';
 
 const Panel = Collapse.Panel;
 const Dragger = Upload.Dragger;

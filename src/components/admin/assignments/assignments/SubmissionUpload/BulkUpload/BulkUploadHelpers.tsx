@@ -1,0 +1,126 @@
+import { IProtoSubmission, codePostFile, IProtoFileUpload, fileToProtoFileUpload } from './../FileReader';
+
+/* note that the order here defines the order in which students are rendered  (ERROR first, UPLOADED last) */
+export enum STUDENT_STATUS {
+  EXISTING /* student has an existing submission for this assignment */,
+  MISSING /* no submission for this student, saved or unsaved */,
+}
+
+/* note that the order here defines the order in which students are rendered  (ERROR first, UPLOADED last) */
+export enum UPLOAD_STATUS {
+  SUCCESS,
+  ERROR,
+}
+
+//********************************** HELPER FILES ******************************
+export const getSubforStudent = (student: string, protoSubmissions: IProtoSubmission[]) => {
+  for (const sub of protoSubmissions) {
+    if (
+      sub.students.some((el) => {
+        return isEqual(el, student);
+      })
+    ) {
+      return sub;
+    }
+  }
+
+  return undefined;
+};
+
+export const isEqual = (string1: string, string2: string) => {
+  // Case insensitive string compare
+  return string1.toLowerCase() === string2.toLowerCase();
+};
+
+//********************************** Validation ******************************
+
+const isValidStudent = (student: string, students: string[]) => {
+  return students.some((el) => {
+    return isEqual(el, student);
+  });
+};
+
+const allStudentsValid = (candidates: string[], students: string[]) => {
+  for (const candidate of candidates) {
+    if (!isValidStudent(candidate, students)) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+const noDuplicates = (candidates: string[]) => {
+  const seenCandidates: any = {};
+  for (const candidate of candidates) {
+    if (seenCandidates[candidate]) {
+      return false;
+    } else {
+      seenCandidates[candidate] = true;
+    }
+  }
+
+  return true;
+};
+
+// Returns true if any of the provided students already have a submission
+// Else returns false
+const hasExistingSubmission = (emails: string[], studentMap: { [student: string]: STUDENT_STATUS }) => {
+  for (const email of emails) {
+    if (studentMap[email] === STUDENT_STATUS.EXISTING) {
+      return true;
+    }
+  }
+  return false;
+};
+
+export const validateStudents = (
+  students: string[],
+  studentMap: { [student: string]: STUDENT_STATUS },
+  files: codePostFile[],
+  getStudentsFromFile: (file: IProtoFileUpload) => string[],
+) => {
+  const alreadySeen: { [student: string]: boolean } = {};
+  const folderMap: any = {};
+  const errors: string[] = [];
+
+  files.forEach((newFile: codePostFile) => {
+    const protoFileUpload = fileToProtoFileUpload(newFile);
+    const emails = getStudentsFromFile(protoFileUpload);
+    const folderName = emails.toString();
+
+    if (!allStudentsValid(emails, students)) {
+      errors.push(`Folder refers to invalid student: ${folderName}`);
+    } else if (!noDuplicates(emails)) {
+      errors.push(`Folder contains duplicate students: ${folderName}`);
+    } else {
+      // No need to check folders which we've already validated
+      if (!(folderName in folderMap)) {
+        // Only use valid emails
+        const validEmails = emails.filter((el) => {
+          // Email must be valid and so far unsued
+          return !alreadySeen[el];
+        });
+
+        if (validEmails.length !== emails.length) {
+          // Some email in the folder name was invalid
+          errors.push(`Contains a duplicate student: ${protoFileUpload.longname}`);
+        } else {
+          const hasCollision = hasExistingSubmission(emails, studentMap);
+
+          folderMap[folderName] = {
+            files: [],
+            students: validEmails,
+            isCollision: hasCollision,
+          };
+
+          validEmails.forEach((el) => {
+            alreadySeen[el] = true;
+          });
+        }
+      }
+    }
+  });
+
+  return [folderMap, errors];
+};

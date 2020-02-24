@@ -6,28 +6,32 @@
 import React from 'react';
 
 /* ant imports */
-import { Button, Collapse, Divider, Modal, Progress, Steps, Switch, Table, Tag, Typography } from 'antd';
+import { Button, Divider, Modal, Progress, Steps } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
-import CPTooltip from '../../../../../components/core/CPTooltip';
-import { tooltips } from '../../../../../components/core/tooltips';
-
-import LogViewer from '../../../../../components/core/LogViewer';
+import { UPLOAD_STATUS, STUDENT_STATUS, getSubforStudent, isEqual, validateStudents } from './BulkUploadHelpers';
 
 /* codePost imports */
-import { encodeForLink } from '../../../../../components/core/URLutils';
-import { AssignmentType, CourseType, SubmissionType } from '../../../../../infrastructure/types';
+import { encodeForLink } from '../../../../../../components/core/URLutils';
+import { AssignmentType, CourseType, SubmissionType } from '../../../../../../infrastructure/types';
 
 import UploadExternal from './UploadExternal';
+import BulkUploadConfirm from './BulkUploadConfirm';
+import BulkUploadComplete from './BulkUploadComplete';
 
-import { INTEGRATIONS } from '../../../../landing/Integrations';
+import { INTEGRATIONS } from '../../../../../landing/Integrations';
 
-import { codePostFile, IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
+import {
+  codePostFile,
+  IProtoFileUpload,
+  IProtoSubmission,
+  fileToProtoFileUpload,
+  readUploadedFile,
+} from './../FileReader';
 
-const Panel = Collapse.Panel;
 const { Step } = Steps;
 
 /**********************************************************************************************************************/
@@ -56,24 +60,6 @@ interface IProps {
   course: CourseType;
 }
 
-interface IProtoSubmission {
-  students: string[];
-  files: File[];
-  isCollision: boolean /* true if any student has an existing submission */;
-}
-
-/* note that the order here defines the order in which students are rendered  (ERROR first, UPLOADED last) */
-enum STUDENT_STATUS {
-  EXISTING /* student has an existing submission for this assignment */,
-  MISSING /* no submission for this student, saved or unsaved */,
-}
-
-/* note that the order here defines the order in which students are rendered  (ERROR first, UPLOADED last) */
-enum UPLOAD_STATUS {
-  SUCCESS,
-  ERROR,
-}
-
 enum STATUS {
   NONE,
   UPLOADED /* user has uploaded submissions */,
@@ -86,42 +72,31 @@ enum STATUS {
 interface IState {
   /* submissions pending upload */
   protoSubmissions: IProtoSubmission[];
-
   /* cached computation: does props.submission contain a submission for the key? */
   studentMap: { [student: string]: STUDENT_STATUS };
-
   /* cached computation: does props.submission contain a submission for the key? */
   uploadMap: { [student: string]: UPLOAD_STATUS };
-
   /* Used to store the contents of files */
   fileMap: { [submitters: string]: { [fileName: string]: string | ArrayBuffer | null } };
-
   /* stores progress */
   status: STATUS;
-
   /* number of successfully uploaded submissions */
   numUploaded: number;
-
   /* cache for figuring out whether all files have been read */
   numFiles: number;
-
   /* raw file objects (unread) for passing to validation function */
   rawFiles: codePostFile[];
-
   /* overwrite mode toggle */
   overwriteMode: boolean;
-
   /* files with an invalid path */
   errorPaths: string[];
-
   /* track current upload mode (normal or with integration) */
   mode?: string;
-
   /* show import options */
   showImportOptions: boolean;
 }
 
-class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
+class BulkUpload extends React.Component<IProps, IState> {
   public constructor(props: IProps) {
     super(props);
     this.state = {
@@ -178,12 +153,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     }
 
     return newMap;
-  };
-
-  public isValidStudent = (student: string, students: string[]) => {
-    return students.some((el) => {
-      return isEqual(el, student);
-    });
   };
 
   public cancel = () => {
@@ -396,41 +365,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     return Promise.all(promises);
   };
 
-  public allStudentsValid = (candidates: string[], students: string[]) => {
-    for (const candidate of candidates) {
-      if (!this.isValidStudent(candidate, students)) {
-        return false;
-      }
-    }
-
-    return true;
-  };
-
-  public noDuplicates = (candidates: string[]) => {
-    const seenCandidates: any = {};
-    for (const candidate of candidates) {
-      if (seenCandidates[candidate]) {
-        return false;
-      } else {
-        seenCandidates[candidate] = true;
-      }
-    }
-
-    return true;
-  };
-
-  // Returns true if any of the provided students already have a submission
-  // Else returns false
-  public hasExistingSubmission = (emails: string[]) => {
-    const { studentMap } = this.state;
-    for (const email of emails) {
-      if (studentMap[email] === STUDENT_STATUS.EXISTING) {
-        return true;
-      }
-    }
-    return false;
-  };
-
   public validateFile = (file: IProtoFileUpload) => {
     const errors: string[] = [];
     // Check if any of the folders start with .
@@ -443,54 +377,6 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     }
 
     return errors;
-  };
-
-  public validateStudents = (files: codePostFile[], getStudentsFromFile: (file: IProtoFileUpload) => string[]) => {
-    const students = this.props.students;
-
-    const alreadySeen: { [student: string]: boolean } = {};
-    const folderMap: any = {};
-    const errors: string[] = [];
-
-    files.forEach((newFile: codePostFile) => {
-      const protoFileUpload = fileToProtoFileUpload(newFile);
-      const emails = getStudentsFromFile(protoFileUpload);
-      const folderName = emails.toString();
-
-      if (!this.allStudentsValid(emails, students)) {
-        errors.push(`Folder refers to invalid student: ${folderName}`);
-      } else if (!this.noDuplicates(emails)) {
-        errors.push(`Folder contains duplicate students: ${folderName}`);
-      } else {
-        // No need to check folders which we've already validated
-        if (!(folderName in folderMap)) {
-          // Only use valid emails
-          const validEmails = emails.filter((el) => {
-            // Email must be valid and so far unsued
-            return !alreadySeen[el];
-          });
-
-          if (validEmails.length !== emails.length) {
-            // Some email in the folder name was invalid
-            errors.push(`Contains a duplicate student: ${protoFileUpload.longname}`);
-          } else {
-            const hasCollision = this.hasExistingSubmission(emails);
-
-            folderMap[folderName] = {
-              files: [],
-              students: validEmails,
-              isCollision: hasCollision,
-            };
-
-            validEmails.forEach((el) => {
-              alreadySeen[el] = true;
-            });
-          }
-        }
-      }
-    });
-
-    return [folderMap, errors];
   };
 
   public getStudentsFromFile = (file: IProtoFileUpload) => {
@@ -519,7 +405,12 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     /*************************************************************/
 
     // Make sure the files have valid students
-    const [folderMap, errors] = this.validateStudents(acceptedFiles, getStudentsFromFile);
+    const [folderMap, errors] = validateStudents(
+      this.props.students,
+      this.state.studentMap,
+      acceptedFiles,
+      getStudentsFromFile,
+    );
 
     const invalidPaths: string[] = errors;
 
@@ -761,55 +652,8 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         );
         break;
       case STATUS.COMPLETE:
-        const tableColumns = [
-          {
-            title: 'Students',
-            dataIndex: 'students',
-            key: 'students',
-          },
-          {
-            title: 'Status',
-            dataIndex: 'status',
-            key: 'status',
-            align: 'center' as 'center' | 'left' | 'right',
-          },
-        ];
-
-        const tableRows = this.state.protoSubmissions.map((protoSubmission: IProtoSubmission, index: number) => {
-          const students = protoSubmission.students;
-          let status;
-          switch (this.state.uploadMap[students[0]]) {
-            case UPLOAD_STATUS.SUCCESS:
-              status = (
-                <Tag color="green" key={students[0]}>
-                  SUCCESS
-                </Tag>
-              );
-              break;
-            case UPLOAD_STATUS.ERROR:
-              status = (
-                <Tag color="red" key={students[0]}>
-                  ERROR
-                </Tag>
-              );
-              break;
-          }
-          return {
-            key: index,
-            students: protoSubmission.students.join(', '),
-            status,
-          };
-        });
-
         content = (
-          <div>
-            <div>
-              Reading files: &nbsp; <Progress percent={100} size="small" />
-              Uploading submissions: &nbsp; <Progress percent={100} size="small" />
-            </div>
-            <br />
-            <Table pagination={{ pageSize: 5 }} dataSource={tableRows} columns={tableColumns} />
-          </div>
+          <BulkUploadComplete protoSubmissions={this.state.protoSubmissions} uploadMap={this.state.uploadMap} />
         );
         break;
     }
@@ -932,228 +776,4 @@ const UploadBulkFooter = (props: IUploadBulkFooterProps) => {
   );
 };
 
-interface IBulkUploadConfirmProps {
-  students: string[];
-  protoSubmissions: IProtoSubmission[];
-  studentMap: { [student: string]: STUDENT_STATUS };
-  overwriteMode: boolean;
-  toggleOverwriteMode: () => void;
-  errorPaths: string[];
-}
-
-const BulkUploadConfirm = (props: IBulkUploadConfirmProps) => {
-  const studentLists = {
-    impacted: {} as { [student: string]: IProtoSubmission },
-    missing: [] as string[],
-    uploaded: [] as string[],
-  };
-
-  const lowerCaseStudents = props.students.map((student) => {
-    return student.toLowerCase();
-  });
-
-  for (const student of lowerCaseStudents) {
-    const sub = getSubforStudent(student, props.protoSubmissions);
-    if (sub !== undefined) {
-      studentLists.impacted[student] = sub;
-    } else {
-      // does student have an existing submission?
-      if (props.studentMap[student] === STUDENT_STATUS.EXISTING) {
-        studentLists.uploaded.push(student);
-      } else {
-        studentLists.missing.push(student);
-      }
-    }
-  }
-
-  // columns for impacted table
-  const columns = [
-    {
-      title: 'Student',
-      dataIndex: 'student',
-      key: 'student',
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      align: 'center' as 'center' | 'left' | 'right',
-    },
-    {
-      title: 'Partners',
-      dataIndex: 'partners',
-      key: 'partners',
-    },
-    {
-      title: 'Files',
-      dataIndex: 'files',
-      key: 'files',
-    },
-  ];
-
-  // columns for non-impacted tables
-  const studentColumns = [
-    {
-      title: 'Student',
-      dataIndex: 'student',
-      key: 'student',
-    },
-  ];
-
-  // data for impacted table
-  let hasCollisions = false;
-  const dataSource = Object.keys(studentLists.impacted)
-    .sort((a, b) => {
-      const studentMap = props.studentMap;
-      return studentMap[a] - studentMap[b];
-    })
-    .map((el) => {
-      let status;
-      const sub = studentLists.impacted[el];
-
-      if (sub.isCollision) {
-        hasCollisions = true;
-        if (props.overwriteMode) {
-          status = (
-            <Tag color="green" key={el}>
-              Ok
-            </Tag>
-          );
-        } else {
-          let tooltipText;
-          if (props.studentMap[el] === STUDENT_STATUS.EXISTING) {
-            tooltipText = 'This student already has a submission uploaded for this assignment.';
-          } else {
-            tooltipText = `One of this student's partners in the submission you
-               uploaded aleady has a submission uploaded for this assignment.`;
-          }
-          status = (
-            <CPTooltip title={tooltipText}>
-              <Tag color="volcano" key={el}>
-                CONFLICT
-              </Tag>
-            </CPTooltip>
-          );
-        }
-      } else {
-        status = (
-          <Tag color="green" key={el}>
-            Ok
-          </Tag>
-        );
-      }
-
-      // tslint:disable
-      return {
-        key: el,
-        student: el,
-        status,
-        partners: sub ? sub.students.filter((student) => !isEqual(student, el)).join(', ') : '',
-        files: sub
-          ? sub.files
-              .map((file) => {
-                return file.name;
-              })
-              .join(', ')
-          : '',
-      };
-      // tslint:enable
-    });
-
-  // data for non-impacted tables
-  const withSubmissionsData = studentLists.uploaded.map((el) => {
-    return {
-      student: el,
-    };
-  });
-
-  const withoutSubmissionsData = studentLists.missing.map((el) => {
-    return {
-      student: el,
-    };
-  });
-
-  // for customizing instructions
-  const numSubmissions = Object.values(studentLists.impacted).length;
-  const numStudents = Object.keys(studentLists.impacted).length;
-
-  return (
-    <div>
-      {props.errorPaths.length > 0 ? (
-        <div>
-          <Divider orientation="left" style={{ color: 'red' }}>
-            Errors
-          </Divider>
-          <div>
-            <div>
-              The following files were rejected. Hit "start over" if you want to re-upload submissions.{' '}
-              <CPTooltip
-                title={tooltips.admin.assignments.uploadSubmissionFileTypes}
-                infoIcon={true}
-                iconStyle={{ paddingLeft: 5 }}
-              />
-            </div>
-            <LogViewer text={props.errorPaths.join('\n')} />
-
-            <br />
-          </div>
-        </div>
-      ) : null}
-      <Divider orientation="left">Instructions</Divider>
-      You are about to upload <Typography.Text strong>{numSubmissions}</Typography.Text> submission
-      {numSubmissions > 1 ? 's ' : ' '}
-      corresponding to <Typography.Text strong>{numStudents}</Typography.Text> student
-      {numStudents > 1 ? 's' : ''}
-      . You can view information about the submissions you are about to upload below. If you want to make changes, just
-      hit "Start over" to re-upload.
-      <br />
-      <br />
-      {hasCollisions ? (
-        <div>
-          <br />
-          <Tag color="volcano" key="collision-warning">
-            CONFLICT
-          </Tag>{' '}
-          &nbsp; Existing submissions will be overwritten by this upload. Turn on Overwrite mode if you want to upload
-          these submissions. Otherwise, they will be excluded from your upload.
-          <br />
-          <br /> Overwrite mode: &nbsp;{' '}
-          <Switch onChange={props.toggleOverwriteMode} defaultChecked={props.overwriteMode} /> &nbsp;
-          <br />
-          <br />
-        </div>
-      ) : null}
-      <Table pagination={{ pageSize: 5 }} dataSource={dataSource} columns={columns} />
-      <Divider orientation="left">Students not uploaded</Divider>
-      <Collapse>
-        <Panel header="Students without submissions" key="1">
-          <Table pagination={{ pageSize: 5 }} dataSource={withoutSubmissionsData} columns={studentColumns} />
-        </Panel>
-        <Panel header="Students with submissions" key="2">
-          <Table pagination={{ pageSize: 5 }} dataSource={withSubmissionsData} columns={studentColumns} />
-        </Panel>
-      </Collapse>
-    </div>
-  );
-};
-
-// HELPERS
-const getSubforStudent = (student: string, protoSubmissions: IProtoSubmission[]) => {
-  for (const sub of protoSubmissions) {
-    if (
-      sub.students.some((el) => {
-        return isEqual(el, student);
-      })
-    ) {
-      return sub;
-    }
-  }
-
-  return undefined;
-};
-
-const isEqual = (string1: string, string2: string) => {
-  // Case insensitive string compare
-  return string1.toLowerCase() === string2.toLowerCase();
-};
-export default UploadSubmissionBulkDialog;
+export default BulkUpload;

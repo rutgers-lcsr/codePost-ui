@@ -1,6 +1,6 @@
 import { UploadFile } from 'antd/lib/upload/interface';
 
-import { codePostFile, readZipTopLevel } from './FileReader';
+import { codePostFile, readZipTopLevel } from './../FileReader';
 
 export interface FolderToStudentMap {
   [folderName: string]: string | null;
