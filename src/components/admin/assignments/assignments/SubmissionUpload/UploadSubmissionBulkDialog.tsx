@@ -21,7 +21,7 @@ import LogViewer from '../../../../../components/core/LogViewer';
 import { encodeForLink } from '../../../../../components/core/URLutils';
 import { AssignmentType, CourseType, SubmissionType } from '../../../../../infrastructure/types';
 
-import UploadForm from './UploadForm';
+import UploadExternal from './UploadExternal';
 
 import { IntegrationButton, INTEGRATIONS } from '../../../../landing/Integrations';
 
@@ -710,60 +710,11 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
                     </Button>
                   </span>
                 </div>
-              ) : !this.state.mode || this.state.mode === 'more' ? (
-                <div style={{ margin: '15px 0px' }}>
-                  <Typography.Title level={4} style={{ marginBottom: 15 }}>
-                    Choose a tool to import from:
-                  </Typography.Title>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <IntegrationButton
-                      integration={INTEGRATIONS['canvas']}
-                      onClick={this.onIntegrationClick}
-                      active={this.state.mode === 'canvas'}
-                    />
-                    <div style={{ width: '20px' }} />
-                    <IntegrationButton
-                      integration={INTEGRATIONS['blackboard']}
-                      onClick={this.onIntegrationClick}
-                      active={this.state.mode === 'blackboard'}
-                    />
-                    <div style={{ width: '20px' }} />
-                    <IntegrationButton
-                      integration={INTEGRATIONS['brightspace']}
-                      onClick={this.onIntegrationClick}
-                      active={this.state.mode === 'brightspace'}
-                    />
-                    <div style={{ width: '20px' }} />
-                    <IntegrationButton
-                      integration={INTEGRATIONS['github']}
-                      onClick={this.onIntegrationClick}
-                      active={this.state.mode === 'github'}
-                    />
-                    <div style={{ width: '20px' }} />
-                    <IntegrationButton
-                      integration={INTEGRATIONS['jupyter']}
-                      onClick={this.onIntegrationClick}
-                      active={this.state.mode === 'jupyter'}
-                    />
-                    <div style={{ width: '20px' }} />
-                    <IntegrationButton
-                      integration={INTEGRATIONS['more']}
-                      onClick={this.onIntegrationClick}
-                      active={this.state.mode === 'more'}
-                    />
-                  </div>
-                </div>
               ) : (
                 <div />
               )}
               <Divider />
-              <UploadForm
+              <UploadExternal
                 processSubmissionsFromFiles={this.externalProcessSubmissions}
                 rawFiles={this.state.rawFiles}
                 setRawFiles={this.setRawFiles}
@@ -771,6 +722,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
                 showImportOptions={this.state.showImportOptions}
                 students={this.props.students}
                 course={this.props.course}
+                setIntegration={this.onIntegrationClick}
               />
             </div>
           );
@@ -1060,62 +1012,41 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     }
 
     // modal's back button
-    let goBackButton;
+    let footer;
     switch (this.state.status) {
       case STATUS.NONE:
-        goBackButton = this.state.mode ? (
-          <Button key="back" onClick={() => this.setState({ showImportOptions: false, mode: undefined })}>
-            Start over
-          </Button>
-        ) : (
-          <Button key="back" onClick={this.cancel}>
-            Cancel
-          </Button>
+        footer = (
+          <UploadBulkFooter
+            backText="Cancel"
+            onBack={() => this.setState(this.cancel)}
+            forwardText="Continue"
+            onForward={this.changeStatus.bind(this, STATUS.UPLOADED)}
+            disableForward={this.state.rawFiles.length === 0}
+          />
         );
         break;
       case STATUS.UPLOADED:
-        goBackButton = (
-          <Button key="back" onClick={this.changeStatus.bind(this, STATUS.NONE)}>
-            Start over
-          </Button>
-        );
-        break;
-    }
-
-    // modal's forward button
-    let goForwardButton = null;
-    switch (this.state.status) {
-      case STATUS.NONE:
-        goForwardButton = (
-          <Button
-            key="forward"
-            type="primary"
-            disabled={this.state.rawFiles.length === 0}
-            onClick={this.changeStatus.bind(this, STATUS.UPLOADED)}
-          >
-            Continue
-          </Button>
-        );
-        break;
-      case STATUS.UPLOADED:
-        goForwardButton = (
-          <Button key="forward" type="primary" onClick={this.onUpload} disabled={numToUpload === 0}>
-            Upload
-          </Button>
+        footer = (
+          <UploadBulkFooter
+            backText="Start over"
+            onBack={this.changeStatus.bind(this, STATUS.NONE)}
+            forwardText="Upload"
+            onForward={this.onUpload}
+            disableForward={numToUpload === 0}
+          />
         );
         break;
       case STATUS.READING:
       case STATUS.UPLOADING:
       case STATUS.COMPLETE:
-        goForwardButton = (
-          <Button
-            key="forward"
-            type="primary"
-            disabled={this.state.status !== STATUS.COMPLETE}
-            onClick={this.props.onCancel}
-          >
-            Close
-          </Button>
+        footer = (
+          <UploadBulkFooter
+            backText=""
+            onBack={null}
+            forwardText="Close"
+            onForward={this.props.onCancel}
+            disableForward={this.state.status !== STATUS.COMPLETE}
+          />
         );
         break;
     }
@@ -1156,7 +1087,7 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
         title={title}
         width={900}
         onCancel={this.props.onCancel}
-        footer={[goBackButton, goForwardButton]}
+        footer={footer}
         style={{ top: 20 }}
       >
         <Steps size="small" current={panelNumber}>
@@ -1171,4 +1102,30 @@ class UploadSubmissionBulkDialog extends React.Component<IProps, IState> {
     /* tslint:enable:jsx-no-lambda */
   }
 }
+
+interface IUploadBulkFooterProps {
+  onBack: (() => void) | null;
+  backText: string;
+  onForward: () => void;
+  forwardText: string;
+  disableForward: boolean;
+}
+
+const UploadBulkFooter = (props: IUploadBulkFooterProps) => {
+  const backButton = props.onBack !== null && (
+    <Button key="back" onClick={props.onBack}>
+      {props.backText}
+    </Button>
+  );
+  const forwardButton = (
+    <Button key="forward" type="primary" disabled={props.disableForward} onClick={props.onForward}>
+      {props.forwardText}
+    </Button>
+  );
+  return (
+    <div>
+      {backButton} {forwardButton}
+    </div>
+  );
+};
 export default UploadSubmissionBulkDialog;
