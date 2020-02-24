@@ -67,6 +67,8 @@ import { CodePostDate } from '../../../../components/utils/DateUtils';
 
 import ViewUpload from '../../../../components/student/ViewUpload';
 
+import { LOCAL_SETTINGS } from '../../../../components/utils/LocalSettings';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -151,7 +153,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     testsLog: null,
     loadingTests: false,
     fileTemplates: [],
-    sendMeAConfirmationEmail: false,
+    sendMeAConfirmationEmail: LOCAL_SETTINGS.sendMeAConfirmationEmail.getter(),
     runMessage: '',
     activeTab: '1',
   };
@@ -480,7 +482,9 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   };
 
   public toggleSendMeAConfirmationEmail = (e: any) => {
-    this.setState({ sendMeAConfirmationEmail: !this.state.sendMeAConfirmationEmail });
+    const toggled = !this.state.sendMeAConfirmationEmail;
+    LOCAL_SETTINGS.sendMeAConfirmationEmail.setter(toggled);
+    this.setState({ sendMeAConfirmationEmail: toggled });
   };
 
   /********************************************************************************************************/
@@ -655,11 +659,15 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           (ft) => !ft.required || this.state.files.some((el) => el.name === ft.name),
         );
 
-        // @@@@@@
-
         if (this.props.isStudent) {
           sendMeAConfirmationEmailCheckbox = (
-            <Checkbox onChange={this.toggleSendMeAConfirmationEmail}>Send me an email confirmation.</Checkbox>
+            <Checkbox
+              key="send-me-a-confirmation-email"
+              checked={this.state.sendMeAConfirmationEmail}
+              onChange={this.toggleSendMeAConfirmationEmail}
+            >
+              Send me an email confirmation.
+            </Checkbox>
           );
         }
 
