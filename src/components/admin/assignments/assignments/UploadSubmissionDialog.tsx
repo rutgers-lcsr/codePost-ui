@@ -84,8 +84,18 @@ interface IProps {
     };
   };
   uploadSubmission:
-    | ((assignment: AssignmentStudentType, partners: string[], files: any[]) => Promise<StudentSubmissionType>)
-    | ((assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>);
+    | ((
+        assignment: AssignmentStudentType,
+        partners: string[],
+        files: any[],
+        sendConfirmationEmail: boolean,
+      ) => Promise<StudentSubmissionType>)
+    | ((
+        assignment: AssignmentType,
+        partners: string[],
+        files: any[],
+        sendConfirmationEmail: boolean,
+      ) => Promise<SubmissionType>);
 
   disableStudentSelect?: boolean;
   onSuccess?: (newSubmissionID: number) => void;
@@ -351,6 +361,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           this.props
             // @ts-ignore
             .uploadSubmission(
+              // @ts-ignore
               this.state.selectedAssignment!,
               this.state.selectedStudents,
               this.state.files,
