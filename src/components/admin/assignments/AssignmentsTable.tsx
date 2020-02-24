@@ -34,7 +34,7 @@ import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../..
 
 import DeleteAssignmentDialog from './assignments/DeleteAssignmentDialog';
 
-import BulkUpload from './assignments/SubmissionUpload/BulkUpload';
+import BulkUpload from './assignments/SubmissionUpload/BulkUpload/BulkUpload';
 import UploadSubmissionDialog from './assignments/SubmissionUpload/UploadSubmissionDialog';
 
 import NewAssignmentDialog from './assignments/NewAssignmentDialog';

@@ -124,3 +124,62 @@ export const validateStudents = (
 
   return [folderMap, errors];
 };
+
+const validateFile = (file: IProtoFileUpload) => {
+  const errors: string[] = [];
+  // Check if any of the folders start with .
+  const hasSystemFolders = file.longname.split('/').find((pathEl: string) => {
+    return pathEl.startsWith('.');
+  });
+
+  if (hasSystemFolders) {
+    errors.push(`Cannot have a folder that starts with .: ${file.longname}`);
+  }
+
+  return errors;
+};
+
+export const processSubmissionsFromFiles = async (
+  acceptedFiles: codePostFile[],
+  students: string[],
+  uploadStatusByStudent: { [student: string]: STUDENT_STATUS },
+  getStudentsFromFile: (file: IProtoFileUpload) => string[],
+  setProtoSubmissions: (protoSubmissions: IProtoSubmission[], numFiles: number, errors: string[]) => void,
+) => {
+  // Make sure the files have valid students
+  const [folderMap, errors] = validateStudents(students, uploadStatusByStudent, acceptedFiles, getStudentsFromFile);
+
+  const invalidPaths: string[] = errors;
+
+  // Sort files into appropriate protoSubmissions
+  let numFiles = 0;
+  acceptedFiles.forEach((file: codePostFile) => {
+    // const folderName = file.path.split('/')[1];
+    const protoFile = fileToProtoFileUpload(file);
+
+    const fileErrors = validateFile(protoFile);
+    if (fileErrors.length > 0) {
+      invalidPaths.concat(fileErrors);
+    } else {
+      const students = getStudentsFromFile(protoFile);
+      const folderName = students.toString();
+      if (folderName in folderMap) {
+        folderMap[folderName].files.push(file);
+        numFiles = numFiles + 1;
+      }
+    }
+  });
+
+  // Remove protoSubmissions which have no files (because all of the files are invalid)
+  Object.keys(folderMap).forEach((key) => {
+    if (folderMap[key].files.length === 0) {
+      delete folderMap[key];
+    }
+  });
+
+  const protoSubmissions: IProtoSubmission[] = Object.keys(folderMap).map((key) => {
+    return folderMap[key];
+  });
+
+  setProtoSubmissions(protoSubmissions, numFiles, errors);
+};

@@ -10,9 +10,9 @@ import { CourseType } from '../../../../../../infrastructure/types';
 
 import { Course } from '../../../../../../infrastructure/course';
 
-import LMSRosterMapUpload from './../LMSRosterMapUpload';
+import LMSRosterMapUpload from './LMSRosterMapUpload';
 
-import { FolderToStudentMap, getIdentifierFromFolder, beforeLMSImport } from './../LMSImportHelpers';
+import { FolderToStudentMap, getIdentifierFromFolder, beforeLMSImport } from './LMSImportHelpers';
 
 interface IUploadFormProps {
   rawFiles: codePostFile[];

@@ -6,31 +6,27 @@
 import React from 'react';
 
 /* ant imports */
-import { Button, Divider, Modal, Progress, Steps } from 'antd';
-
-/* other library imports */
-import { Link } from 'react-router-dom';
+import { Divider, Modal, Progress, Steps } from 'antd';
 
 /* codePost imports */
-import { UPLOAD_STATUS, STUDENT_STATUS, getSubforStudent, isEqual, validateStudents } from './BulkUploadHelpers';
+import {
+  UPLOAD_STATUS,
+  STUDENT_STATUS,
+  getSubforStudent,
+  isEqual,
+  processSubmissionsFromFiles,
+} from './BulkUploadHelpers';
 
 /* codePost imports */
-import { encodeForLink } from '../../../../../../components/core/URLutils';
 import { AssignmentType, CourseType, SubmissionType } from '../../../../../../infrastructure/types';
 
 import UploadExternal from './UploadExternal';
 import BulkUploadConfirm from './BulkUploadConfirm';
-import BulkUploadComplete from './BulkUploadComplete';
+import { BulkUploadFooter, BulkUploadNoStudents, BulkUploadHeader, BulkUploadComplete } from './BulkUploadComplete';
 
 import { INTEGRATIONS } from '../../../../../landing/Integrations';
 
-import {
-  codePostFile,
-  IProtoFileUpload,
-  IProtoSubmission,
-  fileToProtoFileUpload,
-  readUploadedFile,
-} from './../FileReader';
+import { codePostFile, IProtoFileUpload, IProtoSubmission, readUploadedFile } from './../FileReader';
 
 const { Step } = Steps;
 
@@ -127,14 +123,6 @@ class BulkUpload extends React.Component<IProps, IState> {
     });
   }
 
-  public componentDidUpdate(prevProps: IProps, prevState: IState) {
-    const { status } = this.state;
-
-    if (status === STATUS.READING) {
-      this.tryToUpload();
-    }
-  }
-
   /***************************************************************************************/
   /* Pure functions
   /***************************************************************************************/
@@ -175,13 +163,21 @@ class BulkUpload extends React.Component<IProps, IState> {
   /* Set state
   /***************************************************************************************/
   public onStepToUpload = () => {
-    this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile, this.setProtoSubmissions);
+    processSubmissionsFromFiles(
+      this.state.rawFiles,
+      this.props.students,
+      this.state.studentMap,
+      this.getStudentsFromFile,
+      this.setProtoSubmissions,
+    );
     this.setState({ status: STATUS.UPLOADED });
   };
 
   public onStepToReading = () => {
     this.setState({ status: STATUS.READING }, () => {
-      this.readFiles();
+      this.readFiles().then(() => {
+        this.tryToUpload();
+      });
     });
   };
 
@@ -224,40 +220,43 @@ class BulkUpload extends React.Component<IProps, IState> {
   /* Upload business logic
   /***************************************************************************************/
 
-  public readFiles = () => {
+  public readFiles = async () => {
     const submissions = this.state.protoSubmissions;
 
-    submissions.map(async (submission, index: number) => {
-      const submitters = submission.students.join(',');
-      for (const file of submission.files) {
-        try {
-          let outputFiles;
-          // @ts-ignore FIXME
-          if (file.file) {
-            // @ts-ignore
-            outputFiles = await readUploadedFile(file.file);
-          } else {
-            outputFiles = await readUploadedFile(file);
+    await Promise.all(
+      submissions.map(async (submission, index: number) => {
+        const submitters = submission.students.join(',');
+        for (const file of submission.files) {
+          try {
+            let outputFiles;
+            // @ts-ignore FIXME
+            if (file.file) {
+              // @ts-ignore
+              outputFiles = await readUploadedFile(file.file);
+            } else {
+              outputFiles = await readUploadedFile(file);
+            }
+            if (file.type === 'application/zip' || ['.zip'].includes(file.name)) {
+              outputFiles.map((outputFile: IProtoFileUpload) => {
+                const fullName = `anydirname/${submission.students.join(',')}/${outputFile.longname}`;
+                const subfiles = { ...this.state.fileMap[submitters], [fullName]: outputFile.data };
+                this.setState({ fileMap: { ...this.state.fileMap, [submitters]: subfiles } });
+              });
+            } else {
+              outputFiles.map((outputFile: IProtoFileUpload) => {
+                const subfiles = { ...this.state.fileMap[submitters], [outputFile.longname]: outputFile.data };
+                this.setState({ fileMap: { ...this.state.fileMap, [submitters]: subfiles } });
+              });
+            }
+          } catch (e) {
+            this.setState({ errorPaths: [...this.state.errorPaths, e], status: STATUS.FILE_ERROR });
           }
-          if (file.type === 'application/zip' || ['.zip'].includes(file.name)) {
-            outputFiles.map((outputFile: IProtoFileUpload) => {
-              const fullName = `anydirname/${submission.students.join(',')}/${outputFile.longname}`;
-              const subfiles = { ...this.state.fileMap[submitters], [fullName]: outputFile.data };
-              this.setState({ fileMap: { ...this.state.fileMap, [submitters]: subfiles } });
-            });
-          } else {
-            outputFiles.map((outputFile: IProtoFileUpload) => {
-              const subfiles = { ...this.state.fileMap[submitters], [outputFile.longname]: outputFile.data };
-              this.setState({ fileMap: { ...this.state.fileMap, [submitters]: subfiles } });
-            });
-          }
-        } catch (e) {
-          this.setState({ errorPaths: [...this.state.errorPaths, e], status: STATUS.FILE_ERROR });
         }
-      }
-    });
+      }),
+    );
   };
 
+  // Make sure all the files are read, and if so, upload them
   public tryToUpload = () => {
     const { fileMap, numFiles, overwriteMode } = this.state;
 
@@ -283,6 +282,7 @@ class BulkUpload extends React.Component<IProps, IState> {
     }
   };
 
+  // Make sure all the files are read, and if so, upload them
   public upload = () => {
     const { protoSubmissions, fileMap } = this.state;
 
@@ -390,20 +390,6 @@ class BulkUpload extends React.Component<IProps, IState> {
     return Promise.all(promises);
   };
 
-  public validateFile = (file: IProtoFileUpload) => {
-    const errors: string[] = [];
-    // Check if any of the folders start with .
-    const hasSystemFolders = file.longname.split('/').find((pathEl: string) => {
-      return pathEl.startsWith('.');
-    });
-
-    if (hasSystemFolders) {
-      errors.push(`Cannot have a folder that starts with .: ${file.longname}`);
-    }
-
-    return errors;
-  };
-
   public getStudentsFromFile = (file: IProtoFileUpload) => {
     const folderName = file.path.split('/')[1];
     return folderName.split(',');
@@ -413,56 +399,14 @@ class BulkUpload extends React.Component<IProps, IState> {
     acceptedFiles: codePostFile[],
     getStudentsFromFile: (file: IProtoFileUpload) => string[],
   ) => {
-    await this.processSubmissionsFromFiles(acceptedFiles, getStudentsFromFile, this.setProtoSubmissions);
-    this.setState({ status: STATUS.UPLOADED });
-  };
-
-  public processSubmissionsFromFiles = async (
-    acceptedFiles: codePostFile[],
-    getStudentsFromFile: (file: IProtoFileUpload) => string[],
-    setProtoSubmissions: (protoSubmissions: IProtoSubmission[], numFiles: number, errors: string[]) => void,
-  ) => {
-    // Make sure the files have valid students
-    const [folderMap, errors] = validateStudents(
+    await processSubmissionsFromFiles(
+      acceptedFiles,
       this.props.students,
       this.state.studentMap,
-      acceptedFiles,
       getStudentsFromFile,
+      this.setProtoSubmissions,
     );
-
-    const invalidPaths: string[] = errors;
-
-    // Sort files into appropriate protoSubmissions
-    let numFiles = 0;
-    acceptedFiles.forEach((file: codePostFile) => {
-      // const folderName = file.path.split('/')[1];
-      const protoFile = fileToProtoFileUpload(file);
-
-      const fileErrors = this.validateFile(protoFile);
-      if (fileErrors.length > 0) {
-        invalidPaths.concat(fileErrors);
-      } else {
-        const students = getStudentsFromFile(protoFile);
-        const folderName = students.toString();
-        if (folderName in folderMap) {
-          folderMap[folderName].files.push(file);
-          numFiles = numFiles + 1;
-        }
-      }
-    });
-
-    // Remove protoSubmissions which have no files (because all of the files are invalid)
-    Object.keys(folderMap).forEach((key) => {
-      if (folderMap[key].files.length === 0) {
-        delete folderMap[key];
-      }
-    });
-
-    const protoSubmissions: IProtoSubmission[] = Object.keys(folderMap).map((key) => {
-      return folderMap[key];
-    });
-
-    setProtoSubmissions(protoSubmissions, numFiles, errors);
+    this.setState({ status: STATUS.UPLOADED });
   };
 
   /***************************************************************************************/
@@ -491,75 +435,14 @@ class BulkUpload extends React.Component<IProps, IState> {
     switch (this.state.status) {
       case STATUS.NONE:
         if (this.props.students.length === 0) {
-          content = (
-            <div>
-              After you add students, you can get their submissions into codePost in two ways:
-              <ul>
-                <li>
-                  Allowing students to submit directly (learn more{' '}
-                  <a
-                    href="https://help.codepost.io/en/articles/3381427-how-to-allow-students-to-upload-submissions-to-codepost"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    here
-                  </a>
-                  )
-                </li>
-                <li>
-                  Manually uploading submissions (learn more{' '}
-                  <a
-                    href="https://help.codepost.io/en/articles/3164723-how-to-upload-student-submissions"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    here
-                  </a>
-                  )
-                </li>
-              </ul>
-              <br />{' '}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Link
-                  to={
-                    this.props.course
-                      ? `/admin/${encodeForLink(this.props.course.name)}/${encodeForLink(
-                          this.props.course.period,
-                        )}/roster/students`
-                      : ''
-                  }
-                >
-                  <Button type="primary">Add students</Button>
-                </Link>
-              </div>
-            </div>
-          );
+          content = this.props.course && <BulkUploadNoStudents course={this.props.course} />;
         } else {
           content = (
             <div>
-              <div>
-                <b>Tip:</b> Want to allow students to upload directly? Learn more{' '}
-                <a
-                  href="https://help.codepost.io/en/articles/3381427-how-to-allow-students-to-upload-submissions-to-codepost"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  here
-                </a>
-                .
-              </div>
-              {!this.state.showImportOptions ? (
-                <div style={{ margin: '15px 0px' }}>
-                  <b>Tip:</b> Looking to import submissions from a third-party tool (like your LMS)?{' '}
-                  <span>
-                    <Button size="small" onClick={this.showImportOptions}>
-                      View instructions
-                    </Button>
-                  </span>
-                </div>
-              ) : (
-                <div />
-              )}
+              <BulkUploadHeader
+                showImportOptions={this.state.showImportOptions}
+                toggleImportOptions={this.showImportOptions}
+              />
               <Divider />
               <UploadExternal
                 processSubmissionsFromFiles={this.externalProcessSubmissions}
@@ -639,7 +522,7 @@ class BulkUpload extends React.Component<IProps, IState> {
     switch (this.state.status) {
       case STATUS.NONE:
         footer = (
-          <UploadBulkFooter
+          <BulkUploadFooter
             backText="Cancel"
             onBack={() => this.setState(this.onCancel)}
             forwardText="Continue"
@@ -650,7 +533,7 @@ class BulkUpload extends React.Component<IProps, IState> {
         break;
       case STATUS.UPLOADED:
         footer = (
-          <UploadBulkFooter
+          <BulkUploadFooter
             backText="Start over"
             onBack={() => this.setState({ status: STATUS.NONE, rawFiles: [] })}
             forwardText="Upload"
@@ -663,7 +546,7 @@ class BulkUpload extends React.Component<IProps, IState> {
       case STATUS.UPLOADING:
       case STATUS.COMPLETE:
         footer = (
-          <UploadBulkFooter
+          <BulkUploadFooter
             backText=""
             onBack={null}
             forwardText="Close"
@@ -674,16 +557,16 @@ class BulkUpload extends React.Component<IProps, IState> {
         break;
     }
 
-    let panelNumber = 0;
+    let stepNumber;
     switch (this.state.status) {
-      case STATUS.UPLOADED:
-        panelNumber = 1;
+      case STATUS.NONE:
+        stepNumber = 0;
         break;
-      case STATUS.FILE_ERROR:
-      case STATUS.READING:
-      case STATUS.UPLOADING:
       case STATUS.COMPLETE:
-        panelNumber = 2;
+        stepNumber = 2;
+        break;
+      default:
+        stepNumber = 1;
         break;
     }
 
@@ -713,7 +596,7 @@ class BulkUpload extends React.Component<IProps, IState> {
         footer={footer}
         style={{ top: 20 }}
       >
-        <Steps size="small" current={panelNumber}>
+        <Steps size="small" current={stepNumber}>
           {steps.map((item) => {
             return <Step key={item.title} title={item.title} />;
           })}
@@ -725,31 +608,5 @@ class BulkUpload extends React.Component<IProps, IState> {
     /* tslint:enable:jsx-no-lambda */
   }
 }
-
-interface IUploadBulkFooterProps {
-  onBack: (() => void) | null;
-  backText: string;
-  onForward: () => void;
-  forwardText: string;
-  disableForward: boolean;
-}
-
-const UploadBulkFooter = (props: IUploadBulkFooterProps) => {
-  const backButton = props.onBack !== null && (
-    <Button key="back" onClick={props.onBack}>
-      {props.backText}
-    </Button>
-  );
-  const forwardButton = (
-    <Button key="forward" type="primary" disabled={props.disableForward} onClick={props.onForward}>
-      {props.forwardText}
-    </Button>
-  );
-  return (
-    <div>
-      {backButton} {forwardButton}
-    </div>
-  );
-};
 
 export default BulkUpload;
