@@ -1,5 +1,7 @@
 import { IProtoSubmission, codePostFile, IProtoFileUpload, fileToProtoFileUpload } from './../FileReader';
 
+//**************************************** Public Enums  **********************************
+
 /* note that the order here defines the order in which students are rendered  (ERROR first, UPLOADED last) */
 export enum STUDENT_STATUS {
   EXISTING /* student has an existing submission for this assignment */,
@@ -12,7 +14,7 @@ export enum UPLOAD_STATUS {
   ERROR,
 }
 
-//********************************** HELPER FILES ******************************
+//********************************** Public Helper functions  ******************************
 export const getSubforStudent = (student: string, protoSubmissions: IProtoSubmission[]) => {
   for (const sub of protoSubmissions) {
     if (
@@ -32,8 +34,58 @@ export const isEqual = (string1: string, string2: string) => {
   return string1.toLowerCase() === string2.toLowerCase();
 };
 
-//********************************** Validation ******************************
+//********************************** Validate files and turn to submissions  ******************************
 
+export const processSubmissionsFromFiles = async (
+  acceptedFiles: codePostFile[],
+  students: string[],
+  uploadStatusByStudent: { [student: string]: STUDENT_STATUS },
+  getStudentsFromFile: (file: IProtoFileUpload) => string[],
+  setProtoSubmissions: (protoSubmissions: IProtoSubmission[], numFiles: number, errors: string[]) => void,
+) => {
+  // Make sure the files have valid students
+  const [folderMap, errors] = validateStudents(students, uploadStatusByStudent, acceptedFiles, getStudentsFromFile);
+
+  const invalidPaths: string[] = errors;
+
+  // Sort files into appropriate protoSubmissions
+  let numFiles = 0;
+  acceptedFiles.forEach((file: codePostFile) => {
+    // const folderName = file.path.split('/')[1];
+    const protoFile = fileToProtoFileUpload(file);
+
+    const fileErrors = validateFile(protoFile);
+    if (fileErrors.length > 0) {
+      invalidPaths.concat(fileErrors);
+    } else {
+      const students = getStudentsFromFile(protoFile);
+      const folderName = students.toString();
+      if (folderName in folderMap) {
+        folderMap[folderName].files.push(file);
+        numFiles = numFiles + 1;
+      }
+    }
+  });
+
+  // Remove protoSubmissions which have no files (because all of the files are invalid)
+  Object.keys(folderMap).forEach((key) => {
+    if (folderMap[key].files.length === 0) {
+      delete folderMap[key];
+    }
+  });
+
+  const protoSubmissions: IProtoSubmission[] = Object.keys(folderMap).map((key) => {
+    return folderMap[key];
+  });
+
+  setProtoSubmissions(protoSubmissions, numFiles, errors);
+};
+
+//*********************************************************************************************
+//****************************** Internal validation helper functions *************************
+//*********************************************************************************************
+
+//********************************** Student validation ******************************
 const isValidStudent = (student: string, students: string[]) => {
   return students.some((el) => {
     return isEqual(el, student);
@@ -74,7 +126,7 @@ const hasExistingSubmission = (emails: string[], studentMap: { [student: string]
   return false;
 };
 
-export const validateStudents = (
+const validateStudents = (
   students: string[],
   studentMap: { [student: string]: STUDENT_STATUS },
   files: codePostFile[],
@@ -125,6 +177,7 @@ export const validateStudents = (
   return [folderMap, errors];
 };
 
+//********************************** Files validation ******************************
 const validateFile = (file: IProtoFileUpload) => {
   const errors: string[] = [];
   // Check if any of the folders start with .
@@ -137,49 +190,4 @@ const validateFile = (file: IProtoFileUpload) => {
   }
 
   return errors;
-};
-
-export const processSubmissionsFromFiles = async (
-  acceptedFiles: codePostFile[],
-  students: string[],
-  uploadStatusByStudent: { [student: string]: STUDENT_STATUS },
-  getStudentsFromFile: (file: IProtoFileUpload) => string[],
-  setProtoSubmissions: (protoSubmissions: IProtoSubmission[], numFiles: number, errors: string[]) => void,
-) => {
-  // Make sure the files have valid students
-  const [folderMap, errors] = validateStudents(students, uploadStatusByStudent, acceptedFiles, getStudentsFromFile);
-
-  const invalidPaths: string[] = errors;
-
-  // Sort files into appropriate protoSubmissions
-  let numFiles = 0;
-  acceptedFiles.forEach((file: codePostFile) => {
-    // const folderName = file.path.split('/')[1];
-    const protoFile = fileToProtoFileUpload(file);
-
-    const fileErrors = validateFile(protoFile);
-    if (fileErrors.length > 0) {
-      invalidPaths.concat(fileErrors);
-    } else {
-      const students = getStudentsFromFile(protoFile);
-      const folderName = students.toString();
-      if (folderName in folderMap) {
-        folderMap[folderName].files.push(file);
-        numFiles = numFiles + 1;
-      }
-    }
-  });
-
-  // Remove protoSubmissions which have no files (because all of the files are invalid)
-  Object.keys(folderMap).forEach((key) => {
-    if (folderMap[key].files.length === 0) {
-      delete folderMap[key];
-    }
-  });
-
-  const protoSubmissions: IProtoSubmission[] = Object.keys(folderMap).map((key) => {
-    return folderMap[key];
-  });
-
-  setProtoSubmissions(protoSubmissions, numFiles, errors);
 };

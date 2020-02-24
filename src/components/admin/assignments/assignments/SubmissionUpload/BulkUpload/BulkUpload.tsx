@@ -22,7 +22,7 @@ import { AssignmentType, CourseType, SubmissionType } from '../../../../../../in
 
 import UploadExternal from './UploadExternal';
 import BulkUploadConfirm from './BulkUploadConfirm';
-import { BulkUploadFooter, BulkUploadNoStudents, BulkUploadHeader, BulkUploadComplete } from './BulkUploadComplete';
+import { BulkUploadFooter, BulkUploadNoStudents, BulkUploadHeader, BulkUploadComplete } from './BulkUploadComponents';
 
 import { INTEGRATIONS } from '../../../../../landing/Integrations';
 
@@ -147,18 +147,6 @@ class BulkUpload extends React.Component<IProps, IState> {
     this.props.onCancel();
   };
 
-  public toggleOverwriteMode = () => {
-    // this.setState({ overwriteMode: !this.state.overwriteMode }, () => {
-    //   this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile);
-    // });
-    // CHECK FOR REVIEWER: Why do we need to call process Submissions from files again after overwrite mode is toggled?
-    // Old Code:
-    // this.setState({ overwriteMode: !this.state.overwriteMode }, () => {
-    //   this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile);
-    // });
-    this.setState({ overwriteMode: !this.state.overwriteMode });
-  };
-
   /***************************************************************************************/
   /* Set state
   /***************************************************************************************/
@@ -215,6 +203,18 @@ class BulkUpload extends React.Component<IProps, IState> {
     } else {
       this.setState({ mode });
     }
+  };
+
+  public toggleOverwriteMode = () => {
+    // this.setState({ overwriteMode: !this.state.overwriteMode }, () => {
+    //   this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile);
+    // });
+    // CHECK FOR REVIEWER: Why do we need to call process Submissions from files again after overwrite mode is toggled?
+    // Old Code:
+    // this.setState({ overwriteMode: !this.state.overwriteMode }, () => {
+    //   this.processSubmissionsFromFiles(this.state.rawFiles, this.getStudentsFromFile);
+    // });
+    this.setState({ overwriteMode: !this.state.overwriteMode });
   };
   /***************************************************************************************/
   /* Upload business logic
@@ -395,6 +395,9 @@ class BulkUpload extends React.Component<IProps, IState> {
     return folderName.split(',');
   };
 
+  /***************************************************************************************/
+  /* Child functions to change state
+  /***************************************************************************************/
   public externalProcessSubmissions = async (
     acceptedFiles: codePostFile[],
     getStudentsFromFile: (file: IProtoFileUpload) => string[],
