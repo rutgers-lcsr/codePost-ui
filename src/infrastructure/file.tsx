@@ -55,7 +55,7 @@ export type FileType = t.TypeOf<typeof FileV>;
 
 export const MarkdownExtensions = ['md', '.md'];
 export const JupyterExtensions = ['ipynb', '.ipynb'];
-export const ImageExtensions = ['png', '.png', '.jpeg', 'jpeg', '.jpg', 'jpg'];
+export const ImageExtensions = ['png', '.png', '.jpeg', 'jpeg', '.jpg', 'jpg', 'gif', '.gif'];
 export const PDFExtensions = ['pdf', '.pdf'];
 // https://github.com/bevry/binaryextensions/blob/master/source/index.json
 export const BinaryExtensions = [
@@ -69,20 +69,10 @@ export const BinaryExtensions = [
   '.dds',
   'eot',
   '.eot',
-  'gif',
-  '.gif',
   'ico',
   '.ico',
   'jar',
   '.jar',
-  'jpeg',
-  '.jpeg',
-  'jpg',
-  '.jpg',
-  'pdf',
-  '.pdf',
-  'png',
-  '.png',
   'swf',
   '.swf',
   'tga',
