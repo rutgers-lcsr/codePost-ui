@@ -6,7 +6,7 @@
 import React from 'react';
 
 /* ant imports */
-import { Button, Divider, Progress, Table, Tag } from 'antd';
+import { Button, Divider, Popconfirm, Progress, Table, Tag } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -33,6 +33,7 @@ interface IUploadBulkFooterProps {
   onForward: () => void;
   forwardText: string;
   disableForward: boolean;
+  confirmText?: string;
 }
 
 export const BulkUploadFooter = (props: IUploadBulkFooterProps) => {
@@ -41,11 +42,24 @@ export const BulkUploadFooter = (props: IUploadBulkFooterProps) => {
       {props.backText}
     </Button>
   );
-  const forwardButton = (
+  const forwardButton = props.confirmText ? (
+    <Popconfirm
+      key="forward-confirm"
+      title={props.confirmText}
+      disabled={props.disableForward}
+      onConfirm={props.onForward}
+      overlayStyle={{ maxWidth: 300 }}
+    >
+      <Button key="forward" type="primary" disabled={props.disableForward}>
+        {props.forwardText}
+      </Button>
+    </Popconfirm>
+  ) : (
     <Button key="forward" type="primary" disabled={props.disableForward} onClick={props.onForward}>
       {props.forwardText}
     </Button>
   );
+
   return (
     <div style={{ width: '100%' }}>
       <Divider style={{ margin: '12px 0px' }} />

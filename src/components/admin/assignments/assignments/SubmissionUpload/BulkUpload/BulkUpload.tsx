@@ -176,7 +176,12 @@ class BulkUpload extends React.Component<IProps, IState> {
   };
 
   public setImportOptions = (showOptions: boolean) => {
-    this.setState({ showImportOptions: showOptions });
+    if (!showOptions) {
+      // If we're turning off import options, reset the mode
+      this.setState({ showImportOptions: false, mode: undefined });
+    } else {
+      this.setState({ showImportOptions: showOptions });
+    }
   };
 
   public onIntegrationClick = (mode?: string) => {
@@ -447,11 +452,16 @@ class BulkUpload extends React.Component<IProps, IState> {
         } else {
           content = (
             <div>
-              <BulkUploadHeader
-                showImportOptions={this.state.showImportOptions}
-                toggleImportOptions={this.setImportOptions.bind(this, true)}
-              />
-              <Divider />
+              {/*Only show the header if a mode hasn't been chosen */}
+              {!this.state.mode && (
+                <div>
+                  <BulkUploadHeader
+                    showImportOptions={this.state.showImportOptions}
+                    toggleImportOptions={this.setImportOptions.bind(this, true)}
+                  />
+                  <Divider />
+                </div>
+              )}
               <UploadForm
                 processSubmissionsFromFiles={this.processSubmissions}
                 mode={this.state.mode}

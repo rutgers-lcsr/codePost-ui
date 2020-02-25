@@ -483,6 +483,9 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
         forwardText="Continue"
         onForward={props.onUpload}
         disableForward={mappedStudents.length === 0}
+        confirmText={
+          "Some students haven't been mapped. Are you sure you want to do a partial save? You can come back later and add the missing students."
+        }
       />
     </div>
   );
