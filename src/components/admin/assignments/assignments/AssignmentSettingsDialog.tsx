@@ -104,6 +104,7 @@ class AssignmentSettingsDialog extends React.Component<IProps, IState> {
       allowRegradeRequests: values.allowRegradeRequests,
       regradeDeadline: values.regradeDeadline,
       allowStudentUpload: values.allowStudentUpload,
+      allowStudentUploadWithPartners: values.allowStudentUploadWithPartners,
       uploadDueDate: values.uploadDueDate,
       liveFeedbackMode: values.liveFeedbackMode,
       additiveGrading: values.additiveGrading,
@@ -204,6 +205,7 @@ interface IFormValues {
   allowRegradeRequests: boolean;
   regradeDeadline: string | null;
   allowStudentUpload: boolean;
+  allowStudentUploadWithPartners: boolean;
   uploadDueDate: string;
   liveFeedbackMode: boolean;
   additiveGrading: boolean;
@@ -484,6 +486,17 @@ const CollectionCreateForm: any = Form.create()(
                     initialValue: this.props.assignment.allowStudentUpload,
                     valuePropName: 'checked',
                   })(<Switch onClick={this.handleStudentUploadCheck} />)}
+                </Form.Item>
+                <Form.Item
+                  label="Allow partners"
+                  extra={<div>Allow students to submit in groups of their choosing.</div>}
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 16 }}
+                >
+                  {getFieldDecorator('allowStudentUploadWithPartners', {
+                    initialValue: this.props.assignment.allowStudentUploadWithPartners,
+                    valuePropName: 'checked',
+                  })(<Switch disabled={!form.getFieldValue('allowStudentUpload')} />)}
                 </Form.Item>
                 <Form.Item
                   label="Due Date"

@@ -15,6 +15,8 @@ import Highlighter from 'react-highlight-words';
 /* codePost imports */
 import CPAdminDetail from '../other/CPAdminDetail';
 
+import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
+
 /**********************************************************************************************************************/
 
 export interface ITableDetailColumn extends ColumnProps<any> {
@@ -111,6 +113,10 @@ class TableDetail extends React.Component<IProps, IState> {
     this.setState({ searchText: event.target.value.toUpperCase() });
   };
 
+  public onShowSizeChange = (current: number, size: number) => {
+    LOCAL_SETTINGS.defaultPageSize.setter(size);
+  };
+
   public render() {
     let content = null;
     let actions: React.ReactNode[] = [];
@@ -164,6 +170,13 @@ class TableDetail extends React.Component<IProps, IState> {
           }
         });
 
+        /***************************************/
+        /* PAGINATION CONFIG
+        /**************************************/
+
+        const MIN_ROWS = 10;
+        const MANY_ROWS = 50;
+
         content = (
           <div>
             {this.props.hideSearch ? null : (
@@ -201,9 +214,14 @@ class TableDetail extends React.Component<IProps, IState> {
               pagination={
                 this.props.pagination !== undefined
                   ? this.props.pagination
+                  : data.length < MIN_ROWS
+                  ? false
                   : {
                       showSizeChanger: true,
                       pageSizeOptions: ['10', '50', '100'],
+                      position: data.length > MANY_ROWS ? 'both' : 'bottom',
+                      defaultPageSize: LOCAL_SETTINGS.defaultPageSize.getter(),
+                      onShowSizeChange: this.onShowSizeChange,
                     }
               }
               {...(this.props.tableProps ? this.props.tableProps : undefined)}
