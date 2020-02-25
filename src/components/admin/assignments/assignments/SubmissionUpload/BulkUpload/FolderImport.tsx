@@ -1,3 +1,8 @@
+/***********************************************************************************
+/* Description: This is an upload component for a folder of folders, where each child folder
+/*              contains all the files of a student's code
+/***********************************************************************************/
+
 import * as React from 'react';
 
 /* ant imports */
@@ -16,14 +21,6 @@ import { codePostFile, IProtoFileUpload, fileToProtoFileUpload, readZipTopLevel 
 const Panel = Collapse.Panel;
 const Dragger = Upload.Dragger;
 
-interface IUploadFormProps {
-  processSubmissionsFromFiles: (
-    files: codePostFile[],
-    getStudentsFromFile: (file: IProtoFileUpload) => string[],
-  ) => void;
-  onCancel: () => void;
-}
-
 interface IFolderImportProps {
   processSubmissionsFromFiles: (
     files: codePostFile[],
@@ -32,6 +29,8 @@ interface IFolderImportProps {
   onCancel: () => void;
   instructions: React.ReactNode;
 }
+
+/******************************* Folder import helpers ***********************************/
 
 const beforeUploadDirectory = (files: UploadFile[], callback: any) => {
   const beforeUpload = async (file: UploadFile, fileList: UploadFile[]) => {
@@ -62,22 +61,25 @@ const beforeUploadDirectory = (files: UploadFile[], callback: any) => {
   return beforeUpload;
 };
 
-const beforeUploadZip = (files: UploadFile[], callback: any) => {
-  const beforeUpload = async (file: File, fileList: File[]) => {
-    const unzippedFiles = await readZipTopLevel(file);
+// Currently unused Zip upload logic
+// const beforeUploadZip = (files: UploadFile[], callback: any) => {
+//   const beforeUpload = async (file: File, fileList: File[]) => {
+//     const unzippedFiles = await readZipTopLevel(file);
+//
+//     const filteredFiles = unzippedFiles.filter((file: File) => {
+//       const protoFileUpload: IProtoFileUpload = fileToProtoFileUpload(file);
+//       return protoFileUpload.path.split('/').length > 1;
+//     });
+//
+//     callback(filteredFiles);
+//
+//     // prevent upload
+//     return Promise.reject();
+//   };
+//   return beforeUpload;
+// };
 
-    const filteredFiles = unzippedFiles.filter((file: File) => {
-      const protoFileUpload: IProtoFileUpload = fileToProtoFileUpload(file);
-      return protoFileUpload.path.split('/').length > 1;
-    });
-
-    callback(filteredFiles);
-
-    // prevent upload
-    return Promise.reject();
-  };
-  return beforeUpload;
-};
+/******************************* Folder import core component ***********************************/
 
 export const FolderImport = (props: IFolderImportProps) => {
   const [zipMode, setZipMode] = React.useState(false);
@@ -133,6 +135,16 @@ export const FolderImport = (props: IFolderImportProps) => {
     </div>
   );
 };
+
+/******************** Wrapped integration-speicfic components *******************************/
+
+interface IUploadFormProps {
+  processSubmissionsFromFiles: (
+    files: codePostFile[],
+    getStudentsFromFile: (file: IProtoFileUpload) => string[],
+  ) => void;
+  onCancel: () => void;
+}
 
 export const NormalFolderImport = (props: IUploadFormProps) => {
   const exampleText = `\`\`\`

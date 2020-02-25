@@ -1,3 +1,7 @@
+/****************************************************************************
+/** Description: This file includes components used for Bulk Upload
+/****************************************************************************
+
 /* react imports */
 import React from 'react';
 
@@ -14,6 +18,15 @@ import { IProtoSubmission } from './../FileReader';
 import { encodeForLink } from '../../../../../../components/core/URLutils';
 import { CourseType } from '../../../../../../infrastructure/types';
 
+interface IUploadBulkFooterProps {
+  onBack: (() => void) | null;
+  backText: string;
+  onForward: () => void;
+  forwardText: string;
+  disableForward: boolean;
+}
+
+//*************************** Modal footer *************************************
 interface IUploadBulkFooterProps {
   onBack: (() => void) | null;
   backText: string;
@@ -42,6 +55,8 @@ export const BulkUploadFooter = (props: IUploadBulkFooterProps) => {
     </div>
   );
 };
+
+//******************** Visual when No Students are in the course ***********************
 
 interface IUploadNoStudentsProps {
   course: CourseType;
@@ -85,6 +100,8 @@ export const BulkUploadNoStudents = (props: IUploadNoStudentsProps) => {
   );
 };
 
+//******************** The header of the Upload dialog ***********************
+
 interface IUploadHeaderProps {
   showImportOptions: boolean;
   toggleImportOptions: () => void;
@@ -118,6 +135,7 @@ export const BulkUploadHeader = (props: IUploadHeaderProps) => {
   );
 };
 
+//******************** Visual modal for the completed bulk upload  ***********************
 interface BulkUploadCompleteProps {
   protoSubmissions: IProtoSubmission[];
   uploadMap: { [student: string]: UPLOAD_STATUS };

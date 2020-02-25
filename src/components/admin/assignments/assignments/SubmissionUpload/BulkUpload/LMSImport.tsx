@@ -1,3 +1,8 @@
+/***********************************************************************************
+/* Description: This is an upload component for a folder of zips, where each zip is
+/*              a student's code.
+/***********************************************************************************/
+
 import React, { useState } from 'react';
 
 import { Button, Collapse, Icon, List, message, Upload, Slider, Select, Statistic, Table, Typography } from 'antd';

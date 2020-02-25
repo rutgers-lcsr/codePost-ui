@@ -1,3 +1,11 @@
+/***********************************************************************************
+/* Description: This component routes to a different upload component based on the
+/*              current mode in state. It renders either an integration selector, a
+/*              an LMS import component, or a Folder Import component.
+/***********************************************************************************/
+
+/* ant imports */
+
 import * as React from 'react';
 
 /* ant imports */
