@@ -13,6 +13,7 @@ import {
   Icon,
   List,
   message,
+  Radio,
   Upload,
   Slider,
   Select,
@@ -33,7 +34,13 @@ import LMSRosterMapUpload from './LMSRosterMapUpload';
 
 import { BulkUploadFooter } from './BulkUploadComponents';
 
-import { FolderToStudentMap, getIdentifierFromFolder, beforeLMSImport } from './LMSImportHelpers';
+import {
+  FolderToStudentMap,
+  getIdentifierFromFolder,
+  beforeLMSImport,
+  getZipExample,
+  getFileExample,
+} from './LMSImportHelpers';
 
 interface IUploadFormProps {
   processSubmissionsFromFiles: (
@@ -57,25 +64,32 @@ enum IMPORT_TYPE {
 }
 
 export const LMSImport = (props: IUploadFormProps) => {
-  const [step, setStep] = useState(-1);
+  const [step, setStep] = useState(0);
   const [fileList, setFileList] = useState<codePostFile[]>([]);
   const [map, setMap] = useState<FolderToStudentMap>({});
   const [userIndex, setUserIndex] = useState(0);
   const [uploadType, setUploadType] = useState<IMPORT_TYPE>(IMPORT_TYPE.zipList);
+  const [delimiter, setDelimiter] = useState('_');
 
+  // Increment step
   const nextStep = () => {
-    if (step < 2) {
+    if (step < 3) {
       setStep(step + 1);
     }
   };
 
+  // Reset back to beginning
   const reset = () => {
     setMap({});
-    setStep(0);
     setFileList([]);
     setUserIndex(0);
   };
 
+  const onDelimiterChange = (e: any) => {
+    setDelimiter(e.target.value);
+  };
+
+  // Set the raw files and the folder map
   const setRawFiles = (files: codePostFile[]) => {
     const map: FolderToStudentMap = {};
     files.forEach((el) => {
@@ -87,12 +101,52 @@ export const LMSImport = (props: IUploadFormProps) => {
     nextStep();
   };
 
+  const setUserIndexWrapper = (newIndex: number) => {
+    switch (uploadType) {
+      // If it's a zip list, we don't need to re write the folder map
+      case IMPORT_TYPE.zipList:
+        setUserIndex(newIndex);
+        break;
+      // If it's a file list, we need to rewrite the folder map to consolidate
+      // On iniital upload, we represent studentFile1 and studentFile2 as different entries
+      // in our mapping becasue we don't know the unique identifier to match.
+      // Once we do, we can consolide studentFile1 and studentFile2 into a single mapping entry
+      case IMPORT_TYPE.fileList:
+        const map: FolderToStudentMap = {};
+        fileList.forEach((el) => {
+          const elems = el.pathOverride!.split('/')[1].split(delimiter);
+          if (elems.length >= newIndex) {
+            const folderName = elems[newIndex];
+            map[folderName] = null;
+          }
+        });
+        setMap(map);
+        setUserIndex(newIndex);
+    }
+  };
+
   const onUpload = () => {
-    const getStudentByFile = (el: IProtoFileUpload) => {
-      const folderName = el.path.split('/')[1];
-      if (map[folderName] !== null) return [map[folderName]!];
-      return ['hello'];
-    };
+    let getStudentByFile;
+    switch (uploadType) {
+      case IMPORT_TYPE.zipList:
+        // To upload the list of zips, we get the folder name by
+        getStudentByFile = (el: IProtoFileUpload) => {
+          const folderName = el.path.split('/')[1];
+          if (map[folderName] !== null) return [map[folderName]!];
+          return ['hello'];
+        };
+        break;
+      default:
+        getStudentByFile = (el: IProtoFileUpload) => {
+          const elems = el.path.split('/')[1].split(delimiter);
+          if (elems.length >= userIndex) {
+            const folderName = elems[userIndex];
+            if (map[folderName] !== null) return [map[folderName]!];
+          }
+          return ['hello'];
+        };
+        break;
+    }
     props.processSubmissionsFromFiles(fileList, getStudentByFile);
   };
 
@@ -105,41 +159,53 @@ export const LMSImport = (props: IUploadFormProps) => {
   let title = '';
   let subtitle = '';
   switch (step) {
-    case -1:
+    case 0:
       content = (
-        <StepNegativeOneChooseType
+        <StepZeroChooseType
           nextStep={nextStep}
           goBack={props.setImportOptions.bind({}, true)}
           uploadType={uploadType}
           toggleUploadType={toggleUploadType}
+          delimiter={delimiter}
+          onDelimiterChange={onDelimiterChange}
         />
       );
       title = 'Choose the structure of your files';
       break;
-    case 0:
+    case 1:
       content = (
-        <StepZeroUploadZips
+        <StepOneUploadZips
           nextStep={nextStep}
           rawFiles={fileList}
           setRawFiles={setRawFiles}
-          goBack={() => setStep(-1)}
+          goBack={() => setStep(0)}
           uploadType={uploadType}
+          delimiter={delimiter}
         />
       );
       title = '';
       break;
-    case 1:
+    case 2:
       content = (
-        <StepOneSelectUserName nextStep={nextStep} setUserIndex={setUserIndex} folderMap={map} goBack={reset} />
+        <StepTwoSelectUserName
+          nextStep={nextStep}
+          setUserIndex={setUserIndexWrapper}
+          folderMap={map}
+          goBack={() => {
+            reset();
+            setStep(1);
+          }}
+          delimiter={delimiter}
+        />
       );
       title = "Select the student's unique identifier";
       subtitle = 'This is to identify the LMS ID from the file name.';
       break;
-    case 2:
+    case 3:
       content = (
-        <StepTwoMapStudent
+        <StepThreeMapStudent
           nextStep={nextStep}
-          goBack={() => setStep(1)}
+          goBack={() => setStep(2)}
           folderMap={map}
           idIndex={userIndex}
           setStudent={(name, email) => {
@@ -171,32 +237,16 @@ export const LMSImport = (props: IUploadFormProps) => {
   );
 };
 
-interface IStepNegativeOneProps {
+interface IStepZeroProps {
   goBack: () => void;
   nextStep: () => void;
   uploadType: IMPORT_TYPE;
   toggleUploadType: () => void;
+  delimiter: string;
+  onDelimiterChange: (e: any) => void;
 }
 
-const zipExample = `\`\`\`
-folder/
-  etc_student1_etc.zip
-  etc_student2_etc.zip
-\`\`\``;
-
-const zipTitle = 'Folder of zip files';
-
-const fileExample = `\`\`\`
-folder/
-  etc_student1_file1.ext
-  etc_student1_file2.ext
-  etc_student2_file1.ext
-  etc_student2_file2.ext
-\`\`\``;
-
-const fileTitle = 'Folder of files';
-
-const StepNegativeOneChooseType = (props: IStepNegativeOneProps) => {
+const StepZeroChooseType = (props: IStepZeroProps) => {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -207,9 +257,9 @@ const StepNegativeOneChooseType = (props: IStepNegativeOneProps) => {
               checked={props.uploadType === IMPORT_TYPE.zipList}
               onChange={props.toggleUploadType}
             />
-            <Typography.Title level={4}>{zipTitle}</Typography.Title>
+            <Typography.Title level={4}>Folder of zip files</Typography.Title>
           </div>
-          <ReactMarkdown source={zipExample} />
+          <ReactMarkdown source={getZipExample(props.delimiter)} />
         </Card>
         <Card>
           <div style={{ display: 'flex' }}>
@@ -218,10 +268,17 @@ const StepNegativeOneChooseType = (props: IStepNegativeOneProps) => {
               checked={props.uploadType === IMPORT_TYPE.fileList}
               onChange={props.toggleUploadType}
             />
-            <Typography.Title level={4}>{fileTitle}</Typography.Title>
+            <Typography.Title level={4}>Folder of files</Typography.Title>
           </div>
-          <ReactMarkdown source={fileExample} />
+          <ReactMarkdown source={getFileExample(props.delimiter)} />
         </Card>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: 15 }}>
+        <span style={{ marginRight: 10 }}>Delimiter:</span>
+        <Radio.Group onChange={props.onDelimiterChange} value={props.delimiter}>
+          <Radio value={'_'}>underscore</Radio>
+          <Radio value={'-'}>dash</Radio>
+        </Radio.Group>
       </div>
       <BulkUploadFooter
         backText="Back"
@@ -238,25 +295,26 @@ const StepNegativeOneChooseType = (props: IStepNegativeOneProps) => {
 // *************************** Step Zero: Upload Zip files  ****************************
 // *************************************************************************************
 
-interface IStepZeroProps {
+interface IStepOneProps {
   goBack: () => void;
   nextStep: () => void;
   rawFiles: codePostFile[];
   uploadType: IMPORT_TYPE;
   setRawFiles: (files: codePostFile[]) => void;
+  delimiter: string;
 }
 
-const StepZeroUploadZips = (props: IStepZeroProps) => {
-  const beforeUpload = beforeLMSImport(props.rawFiles, props.setRawFiles);
+const StepOneUploadZips = (props: IStepOneProps) => {
+  const beforeUpload = beforeLMSImport(props.rawFiles, props.uploadType === IMPORT_TYPE.zipList, props.setRawFiles);
 
-  const exampleText = props.uploadType === IMPORT_TYPE.zipList ? zipExample : fileExample;
+  const exampleText =
+    props.uploadType === IMPORT_TYPE.zipList ? getZipExample(props.delimiter) : getFileExample(props.delimiter);
 
   return (
     <div>
-      <Collapse style={{ marginBottom: 20 }}>
+      <Collapse style={{ marginBottom: 20 }} activeKey={['1']}>
         <Collapse.Panel header="Instructions" key="1">
-          Upload a folder of zip files, where each zip file is a student's submission. The file name must be underscore
-          delimited.
+          Upload a folder of files, in the format below:
           <br />
           <br />
           <ReactMarkdown source={exampleText} />
@@ -284,13 +342,14 @@ const StepZeroUploadZips = (props: IStepZeroProps) => {
 // *************************** Step One: Select the LMS identifier  ********************
 // *************************************************************************************
 
-interface IStepOneProps {
+interface IStepTwoProps {
   goBack: () => void;
   nextStep: () => void;
   folderMap: FolderToStudentMap;
   setUserIndex: (index: number) => void;
+  delimiter: string;
 }
-const StepOneSelectUserName = (props: IStepOneProps) => {
+const StepTwoSelectUserName = (props: IStepTwoProps) => {
   const [sliderIndex, setSliderIndex] = useState(0);
   const [toShow, setToShow] = useState(5);
 
@@ -313,13 +372,13 @@ const StepOneSelectUserName = (props: IStepOneProps) => {
 
   const folders = Object.keys(props.folderMap);
   const maxIndex = folders.reduce((acc, folder) => {
-    const numVals = folder.split('_').length;
+    const numVals = folder.split(props.delimiter).length;
     return numVals > acc ? numVals : acc;
   }, 1);
 
   const shortFolders: string[] = [];
   folders.forEach((folder) => {
-    const numVals = folder.split('_').length;
+    const numVals = folder.split(props.delimiter).length;
     if (numVals < sliderIndex + 1) {
       shortFolders.push(folder);
     }
@@ -346,7 +405,7 @@ const StepOneSelectUserName = (props: IStepOneProps) => {
   const highlightedStyle = { fontWeight: 600, color: '#24be85', fontSize: 16 };
   const normalStyle = { fontWeight: 400, color: 'grey', fontSize: 14 };
   const renderFolder = (f: string) => {
-    const elems = f.split('_');
+    const elems = f.split(props.delimiter);
     return (
       <List.Item style={{ paddingLeft: 25 }}>
         <div>
@@ -354,7 +413,7 @@ const StepOneSelectUserName = (props: IStepOneProps) => {
             return (
               <span>
                 <span style={i === sliderIndex ? highlightedStyle : normalStyle}>{el}</span>
-                <span>{i < elems.length - 1 ? '_' : ''}</span>
+                <span>{i < elems.length - 1 ? props.delimiter : ''}</span>
               </span>
             );
           })}
@@ -408,7 +467,7 @@ const StepOneSelectUserName = (props: IStepOneProps) => {
   );
 };
 
-interface IStepTwoProps {
+interface IStepThreeProps {
   nextStep: () => void;
   goBack: () => void;
   folderMap: FolderToStudentMap;
@@ -424,7 +483,7 @@ interface IStepTwoProps {
 // *************************** Step Two: Map the LMS id to the student *****************
 // *************************************************************************************
 
-const StepTwoMapStudent = (props: IStepTwoProps) => {
+const StepThreeMapStudent = (props: IStepThreeProps) => {
   const [editMode, setEditMode] = useState(true);
   const [showUpload, setShowUpload] = useState(false);
   const [newMapping, setNewMapping] = useState<{ [id: string]: string }>({});
