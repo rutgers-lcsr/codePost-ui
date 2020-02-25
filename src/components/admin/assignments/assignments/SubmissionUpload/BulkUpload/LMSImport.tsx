@@ -5,7 +5,21 @@
 
 import React, { useState } from 'react';
 
-import { Button, Collapse, Icon, List, message, Upload, Slider, Select, Statistic, Table, Typography } from 'antd';
+import {
+  Button,
+  Card,
+  Checkbox,
+  Collapse,
+  Icon,
+  List,
+  message,
+  Upload,
+  Slider,
+  Select,
+  Statistic,
+  Table,
+  Typography,
+} from 'antd';
 
 import ReactMarkdown from 'react-markdown';
 
@@ -37,11 +51,17 @@ interface IUploadFormProps {
 // ***************************** Main Component  **********************************
 // *************************************************************************************
 
+enum IMPORT_TYPE {
+  zipList,
+  fileList,
+}
+
 export const LMSImport = (props: IUploadFormProps) => {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(-1);
   const [fileList, setFileList] = useState<codePostFile[]>([]);
   const [map, setMap] = useState<FolderToStudentMap>({});
   const [userIndex, setUserIndex] = useState(0);
+  const [uploadType, setUploadType] = useState<IMPORT_TYPE>(IMPORT_TYPE.zipList);
 
   const nextStep = () => {
     if (step < 2) {
@@ -76,17 +96,34 @@ export const LMSImport = (props: IUploadFormProps) => {
     props.processSubmissionsFromFiles(fileList, getStudentByFile);
   };
 
+  const toggleUploadType = () => {
+    if (uploadType === IMPORT_TYPE.zipList) setUploadType(IMPORT_TYPE.fileList);
+    else setUploadType(IMPORT_TYPE.zipList);
+  };
+
   let content;
   let title = '';
   let subtitle = '';
   switch (step) {
+    case -1:
+      content = (
+        <StepNegativeOneChooseType
+          nextStep={nextStep}
+          goBack={props.setImportOptions.bind({}, true)}
+          uploadType={uploadType}
+          toggleUploadType={toggleUploadType}
+        />
+      );
+      title = 'Choose the structure of your files';
+      break;
     case 0:
       content = (
         <StepZeroUploadZips
           nextStep={nextStep}
           rawFiles={fileList}
           setRawFiles={setRawFiles}
-          goBack={props.setImportOptions.bind({}, true)}
+          goBack={() => setStep(-1)}
+          uploadType={uploadType}
         />
       );
       title = '';
@@ -125,11 +162,74 @@ export const LMSImport = (props: IUploadFormProps) => {
 
   return (
     <div>
-      <div style={{ marginBottom: 15 }}>
+      <div style={{ marginBottom: 15, marginLeft: 20 }}>
         <Typography.Title level={4}>{title}</Typography.Title>
         <div style={{ color: 'grey' }}>{subtitle}</div>
       </div>
       {content}
+    </div>
+  );
+};
+
+interface IStepNegativeOneProps {
+  goBack: () => void;
+  nextStep: () => void;
+  uploadType: IMPORT_TYPE;
+  toggleUploadType: () => void;
+}
+
+const zipExample = `\`\`\`
+folder/
+  etc_student1_etc.zip
+  etc_student2_etc.zip
+\`\`\``;
+
+const zipTitle = 'Folder of zip files';
+
+const fileExample = `\`\`\`
+folder/
+  etc_student1_file1.ext
+  etc_student1_file2.ext
+  etc_student2_file1.ext
+  etc_student2_file2.ext
+\`\`\``;
+
+const fileTitle = 'Folder of files';
+
+const StepNegativeOneChooseType = (props: IStepNegativeOneProps) => {
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <Card style={{ marginRight: 20 }}>
+          <div style={{ display: 'flex' }}>
+            <Checkbox
+              style={{ marginRight: 10 }}
+              checked={props.uploadType === IMPORT_TYPE.zipList}
+              onChange={props.toggleUploadType}
+            />
+            <Typography.Title level={4}>{zipTitle}</Typography.Title>
+          </div>
+          <ReactMarkdown source={zipExample} />
+        </Card>
+        <Card>
+          <div style={{ display: 'flex' }}>
+            <Checkbox
+              style={{ marginRight: 10 }}
+              checked={props.uploadType === IMPORT_TYPE.fileList}
+              onChange={props.toggleUploadType}
+            />
+            <Typography.Title level={4}>{fileTitle}</Typography.Title>
+          </div>
+          <ReactMarkdown source={fileExample} />
+        </Card>
+      </div>
+      <BulkUploadFooter
+        backText="Back"
+        onBack={props.goBack}
+        forwardText="Next"
+        onForward={props.nextStep}
+        disableForward={false}
+      />
     </div>
   );
 };
@@ -142,19 +242,14 @@ interface IStepZeroProps {
   goBack: () => void;
   nextStep: () => void;
   rawFiles: codePostFile[];
+  uploadType: IMPORT_TYPE;
   setRawFiles: (files: codePostFile[]) => void;
 }
 
 const StepZeroUploadZips = (props: IStepZeroProps) => {
   const beforeUpload = beforeLMSImport(props.rawFiles, props.setRawFiles);
 
-  const exampleText = `\`\`\`
-  folder/
-    someText_someText_someText_someText.zip
-    someText_someText_someText_someText.zip
-    someText_someText_someText.zip
-    someText_someText_someText_someText_someText.zip
-  \`\`\``;
+  const exampleText = props.uploadType === IMPORT_TYPE.zipList ? zipExample : fileExample;
 
   return (
     <div>

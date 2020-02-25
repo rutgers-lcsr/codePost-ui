@@ -40,6 +40,13 @@ export const beforeLMSImport = (files: UploadFile[], callback: any) => {
           const unzippedFiles = await readZipTopLevel(thisFile);
           const filesWithPath = addPathToFiles(thisFile, unzippedFiles);
           newList.push(...filesWithPath);
+        } else {
+          // @ts-ignore
+          const cPFile: codePostFile = new File([thisFile], thisFile.name);
+          cPFile['uid'] = '';
+          // @ts-ignore
+          cPFile['pathOverride'] = `${thisFile.webkitRelativePath}`;
+          newList.push(cPFile);
         }
         return Promise.resolve();
       });
