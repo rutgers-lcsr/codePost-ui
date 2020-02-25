@@ -175,8 +175,8 @@ class BulkUpload extends React.Component<IProps, IState> {
     });
   };
 
-  public showImportOptions = () => {
-    this.setState({ showImportOptions: true });
+  public setImportOptions = (showOptions: boolean) => {
+    this.setState({ showImportOptions: showOptions });
   };
 
   public onIntegrationClick = (mode?: string) => {
@@ -449,7 +449,7 @@ class BulkUpload extends React.Component<IProps, IState> {
             <div>
               <BulkUploadHeader
                 showImportOptions={this.state.showImportOptions}
-                toggleImportOptions={this.showImportOptions}
+                toggleImportOptions={this.setImportOptions.bind(this, true)}
               />
               <Divider />
               <UploadForm
@@ -460,7 +460,7 @@ class BulkUpload extends React.Component<IProps, IState> {
                 course={this.props.course}
                 setIntegration={this.onIntegrationClick}
                 onCancel={this.onCancel}
-                showIntegrations={this.showImportOptions}
+                setImportOptions={this.setImportOptions}
               />
             </div>
           );

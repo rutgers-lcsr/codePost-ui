@@ -25,7 +25,7 @@ interface IUploadFormProps {
   mode?: string;
   course: CourseType;
   onCancel: () => void;
-  showIntegrations: () => void;
+  setImportOptions: (value: boolean) => void;
 }
 
 // *************************************************************************************
@@ -81,7 +81,7 @@ export const LMSImport = (props: IUploadFormProps) => {
           nextStep={nextStep}
           rawFiles={fileList}
           setRawFiles={setRawFiles}
-          goBack={props.showIntegrations}
+          goBack={props.setImportOptions.bind({}, true)}
         />
       );
       title = '';
