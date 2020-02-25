@@ -429,10 +429,25 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
   });
 
   const onRosterSave = async (newMap: { [id: string]: string }) => {
+    // Save the map in api, so users don't lose their work
     await Course.updateRosterMap({ id: props.course.id, rosterMap: newMap });
     setNewMapping(newMap);
     setShowUpload(false);
     message.success('Mapping saved!');
+  };
+
+  const onUpload = async () => {
+    // Save the map in the api, in case updates were made via selectors
+    const latestMap: any = {};
+    Object.keys(props.folderMap).forEach((folderName) => {
+      if (props.folderMap[folderName]) {
+        const id = getIdentifierFromFolder(folderName, props.idIndex);
+        latestMap[id] = props.folderMap[folderName];
+      }
+    });
+
+    await Course.updateRosterMap({ id: props.course.id, rosterMap: latestMap });
+    props.onUpload();
   };
 
   return (
@@ -481,7 +496,7 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
         backText="Back"
         onBack={props.goBack}
         forwardText="Continue"
-        onForward={props.onUpload}
+        onForward={onUpload}
         disableForward={mappedStudents.length === 0}
         confirmText={
           "Some students haven't been mapped. Are you sure you want to do a partial save? You can come back later and add the missing students."
