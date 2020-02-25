@@ -126,6 +126,16 @@ const defaultAssignment = generateSettingFunctions('defaultAssignment', 0, intIP
 // defalut value: 0
 const mostRecentFile = generateSettingFunctions('mostRecentFile', 0, intIParser, intOParser);
 
+// key: sendMeAConfirmationEmail
+// return type: boolean. Student upload confirmation checkbox will default to this value.
+// defalut value: true
+const sendMeAConfirmationEmail = generateSettingFunctions(
+  'sendMeAConfirmationEmail',
+  true,
+  booleanIParser,
+  booleanOParser,
+);
+
 // key: rubricMenuHidden
 // return type: boolean. If true, rubric menu section of code console will be collapsed.
 // defalut value: false
@@ -151,6 +161,7 @@ const LOCAL_SETTINGS = {
   defaultAssignment,
   mostRecentFile,
   autograderInstructionsVisible,
+  sendMeAConfirmationEmail,
 };
 
 export { LOCAL_SETTINGS, clearLocalSettings };

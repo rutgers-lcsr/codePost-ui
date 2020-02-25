@@ -239,6 +239,9 @@ const StudentUploadData = t.intersection([
       ]),
     ),
   }),
+  t.partial({
+    sendConfirmationEmail: t.boolean,
+  }),
 ]);
 
 // Type for getting and patching student upload

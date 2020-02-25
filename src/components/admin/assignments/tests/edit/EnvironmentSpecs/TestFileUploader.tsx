@@ -11,6 +11,9 @@ import { Button, Icon, message, Modal, Switch, Table, Upload } from 'antd';
 /* codePost object imports  */
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 import { HelperFileType } from '../../../../../../infrastructure/autograder/helperFile';
+import { BinaryExtensions } from '../../../../../../infrastructure/file';
+
+import { fileToProtoFileUpload } from '../../../assignments/FileReader';
 
 import { IDirectoryStructure, IFolder } from '../../../../../code-review/menu/fileMenuUtils';
 
@@ -84,8 +87,6 @@ export const TestFileUploader = (props: IUploadProps) => {
     const reader = new FileReader();
     reader.onload = async () => {
       if (reader.result) {
-        const cleanedData = typeof reader.result === 'string' ? reader.result.replace(/\0/g, '') : reader.result;
-
         const split = file.webkitRelativePath && file.webkitRelativePath.split('/');
         const path = split
           ? split
@@ -98,12 +99,17 @@ export const TestFileUploader = (props: IUploadProps) => {
           const oldFiles = prevState.filter((f) => {
             return f.name !== file.name || f.path !== file.path;
           });
-          return [...oldFiles, { uid: `${counter}-${file.name}`, code: cleanedData, name: file.name, path: path }];
+          return [...oldFiles, { uid: `${counter}-${file.name}`, code: reader.result, name: file.name, path: path }];
         });
         setCounter(counter + 1);
       }
     };
-    reader.readAsText(file);
+    const protoFileUpload = fileToProtoFileUpload(file);
+    if (BinaryExtensions.includes(protoFileUpload.extension.toLowerCase())) {
+      reader.readAsDataURL(file);
+    } else {
+      reader.readAsText(file);
+    }
 
     return false;
   };

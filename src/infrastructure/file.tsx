@@ -53,10 +53,11 @@ const FileVPatch = t.intersection(
 
 export type FileType = t.TypeOf<typeof FileV>;
 
-const MarkdownExtensions = ['md', '.md'];
-const JupyterExtensions = ['ipynb', '.ipynb'];
-const ImageExtensions = ['png', '.png', '.jpeg', 'jpeg', '.jpg', 'jpg'];
-const PDFExtensions = ['pdf', '.pdf'];
+export const MarkdownExtensions = ['md', '.md'];
+export const JupyterExtensions = ['ipynb', '.ipynb'];
+export const ImageExtensions = ['png', '.png', '.jpeg', 'jpeg', '.jpg', 'jpg'];
+export const PDFExtensions = ['pdf', '.pdf'];
+export const BinaryExtensions = ['class', '.class', 'jar', '.jar', 'gar', '.gar'];
 
 type CodeType = 'code' | 'markdown' | 'jupyter' | 'image' | 'pdf';
 

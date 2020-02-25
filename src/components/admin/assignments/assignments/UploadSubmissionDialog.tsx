@@ -6,7 +6,21 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Alert, Button, Icon, message, Modal, Progress, Switch, Upload, Table, Tag, Divider, Tabs } from 'antd';
+import {
+  Alert,
+  Button,
+  Checkbox,
+  Icon,
+  message,
+  Modal,
+  Progress,
+  Switch,
+  Upload,
+  Table,
+  Tag,
+  Divider,
+  Tabs,
+} from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -53,6 +67,8 @@ import { CodePostDate } from '../../../../components/utils/DateUtils';
 
 import ViewUpload from '../../../../components/student/ViewUpload';
 
+import { LOCAL_SETTINGS } from '../../../../components/utils/LocalSettings';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -68,8 +84,18 @@ interface IProps {
     };
   };
   uploadSubmission:
-    | ((assignment: AssignmentStudentType, partners: string[], files: any[]) => Promise<StudentSubmissionType>)
-    | ((assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>);
+    | ((
+        assignment: AssignmentStudentType,
+        partners: string[],
+        files: any[],
+        sendConfirmationEmail: boolean,
+      ) => Promise<StudentSubmissionType>)
+    | ((
+        assignment: AssignmentType,
+        partners: string[],
+        files: any[],
+        sendConfirmationEmail: boolean,
+      ) => Promise<SubmissionType>);
 
   disableStudentSelect?: boolean;
   onSuccess?: (newSubmissionID: number) => void;
@@ -106,6 +132,7 @@ interface IState {
   loadingTests: boolean;
 
   fileTemplates: FileTemplateType[];
+  sendMeAConfirmationEmail: boolean;
 
   // Test results
   submissionTests: SubmissionTestType[];
@@ -136,6 +163,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     testsLog: null,
     loadingTests: false,
     fileTemplates: [],
+    sendMeAConfirmationEmail: LOCAL_SETTINGS.sendMeAConfirmationEmail.getter(),
     runMessage: '',
     activeTab: '1',
   };
@@ -332,7 +360,13 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         if (this.state.selectedAssignment) {
           this.props
             // @ts-ignore
-            .uploadSubmission(this.state.selectedAssignment!, this.state.selectedStudents, this.state.files)
+            .uploadSubmission(
+              // @ts-ignore
+              this.state.selectedAssignment!,
+              this.state.selectedStudents,
+              this.state.files,
+              this.state.sendMeAConfirmationEmail,
+            )
             .then((newSubmission: StudentSubmissionType | SubmissionType) => {
               const shouldRun = this.shouldRunTests();
               if (shouldRun) {
@@ -463,6 +497,12 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
   };
 
+  public toggleSendMeAConfirmationEmail = (e: any) => {
+    const toggled = !this.state.sendMeAConfirmationEmail;
+    LOCAL_SETTINGS.sendMeAConfirmationEmail.setter(toggled);
+    this.setState({ sendMeAConfirmationEmail: toggled });
+  };
+
   /********************************************************************************************************/
 
   public render() {
@@ -474,6 +514,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
 
     let content;
+    let sendMeAConfirmationEmailCheckbox = null;
     let goForwardButton = null;
     let goBackButton = null;
     switch (status) {
@@ -633,6 +674,29 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         const areRequiredFilesPresent = this.state.fileTemplates.every(
           (ft) => !ft.required || this.state.files.some((el) => el.name === ft.name),
         );
+
+        if (this.props.isStudent) {
+          sendMeAConfirmationEmailCheckbox = (
+            <span>
+              <Checkbox
+                key="send-me-a-confirmation-email"
+                checked={this.state.sendMeAConfirmationEmail}
+                onChange={this.toggleSendMeAConfirmationEmail}
+              >
+                Send me email confirmation
+              </Checkbox>
+              <CPTooltip
+                title={
+                  this.state.submission && this.state.submission.students && this.state.submission.students.length > 1
+                    ? 'If checked, codePost will send you and your partners an email confirming a successful submission.'
+                    : 'If checked, codePost will send you an email confirming a successful submission.'
+                }
+                infoIcon={true}
+              />
+              &nbsp; &nbsp;
+            </span>
+          );
+        }
 
         goForwardButton = (
           <Button
@@ -797,7 +861,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         title={this.props.title || 'Upload Submissions'}
         onCancel={this.cancel}
         width={1100}
-        footer={[goBackButton, goForwardButton]}
+        footer={[sendMeAConfirmationEmailCheckbox, goBackButton, goForwardButton]}
       >
         {status !== STATUS.NONE || !this.props.isStudent ? (
           content
