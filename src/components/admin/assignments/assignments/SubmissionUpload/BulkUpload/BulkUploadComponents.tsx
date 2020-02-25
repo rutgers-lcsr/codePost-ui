@@ -2,7 +2,7 @@
 import React from 'react';
 
 /* ant imports */
-import { Button, Progress, Table, Tag } from 'antd';
+import { Button, Divider, Progress, Table, Tag } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -24,7 +24,7 @@ interface IUploadBulkFooterProps {
 
 export const BulkUploadFooter = (props: IUploadBulkFooterProps) => {
   const backButton = props.onBack !== null && (
-    <Button key="back" onClick={props.onBack}>
+    <Button key="back" onClick={props.onBack} style={{ marginRight: 10 }}>
       {props.backText}
     </Button>
   );
@@ -34,8 +34,11 @@ export const BulkUploadFooter = (props: IUploadBulkFooterProps) => {
     </Button>
   );
   return (
-    <div>
-      {backButton} {forwardButton}
+    <div style={{ width: '100%' }}>
+      <Divider style={{ margin: '12px 0px' }} />
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        {backButton} {forwardButton}
+      </div>
     </div>
   );
 };

@@ -15,8 +15,6 @@ import LMSRosterMapUpload from './LMSRosterMapUpload';
 import { FolderToStudentMap, getIdentifierFromFolder, beforeLMSImport } from './LMSImportHelpers';
 
 interface IUploadFormProps {
-  rawFiles: codePostFile[];
-  setRawFiles: any;
   processSubmissionsFromFiles: (
     files: codePostFile[],
     getStudentsFromFile: (file: IProtoFileUpload) => string[],
@@ -24,6 +22,7 @@ interface IUploadFormProps {
   students: string[];
   mode?: string;
   course: CourseType;
+  onCancel: () => void;
 }
 
 // *************************************************************************************

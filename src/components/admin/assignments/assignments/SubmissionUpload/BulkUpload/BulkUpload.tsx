@@ -20,7 +20,7 @@ import {
 /* codePost imports */
 import { AssignmentType, CourseType, SubmissionType } from '../../../../../../infrastructure/types';
 
-import UploadExternal from './UploadExternal';
+import UploadForm from './UploadForm';
 import BulkUploadConfirm from './BulkUploadConfirm';
 import { BulkUploadFooter, BulkUploadNoStudents, BulkUploadHeader, BulkUploadComplete } from './BulkUploadComponents';
 
@@ -80,8 +80,6 @@ interface IState {
   numUploaded: number;
   /* cache for figuring out whether all files have been read */
   numFiles: number;
-  /* raw file objects (unread) for passing to validation function */
-  rawFiles: codePostFile[];
   /* overwrite mode toggle */
   overwriteMode: boolean;
   /* files with an invalid path */
@@ -104,7 +102,6 @@ class BulkUpload extends React.Component<IProps, IState> {
       overwriteMode: false,
       errorPaths: [],
       numUploaded: 0,
-      rawFiles: [],
       uploadMap: {},
       mode: undefined,
       showImportOptions: props.showImportOptions === undefined ? false : props.showImportOptions,
@@ -150,17 +147,6 @@ class BulkUpload extends React.Component<IProps, IState> {
   /***************************************************************************************/
   /* Set state
   /***************************************************************************************/
-  public onStepToUpload = () => {
-    processSubmissionsFromFiles(
-      this.state.rawFiles,
-      this.props.students,
-      this.state.studentMap,
-      this.getStudentsFromFile,
-      this.setProtoSubmissions,
-    );
-    this.setState({ status: STATUS.UPLOADED });
-  };
-
   public onStepToReading = () => {
     this.setState({ status: STATUS.READING }, () => {
       this.readFiles().then(() => {
@@ -189,19 +175,15 @@ class BulkUpload extends React.Component<IProps, IState> {
     });
   };
 
-  public setRawFiles = (rawFiles: codePostFile[]) => {
-    this.setState({ rawFiles });
-  };
-
   public showImportOptions = () => {
     this.setState({ showImportOptions: true });
   };
 
   public onIntegrationClick = (mode?: string) => {
     if (mode === this.state.mode) {
-      this.setState({ mode: undefined });
+      this.setState({ mode: undefined, showImportOptions: false });
     } else {
-      this.setState({ mode });
+      this.setState({ mode, showImportOptions: false });
     }
   };
 
@@ -390,15 +372,10 @@ class BulkUpload extends React.Component<IProps, IState> {
     return Promise.all(promises);
   };
 
-  public getStudentsFromFile = (file: IProtoFileUpload) => {
-    const folderName = file.path.split('/')[1];
-    return folderName.split(',');
-  };
-
   /***************************************************************************************/
   /* Child functions to change state
   /***************************************************************************************/
-  public externalProcessSubmissions = async (
+  public processSubmissions = async (
     acceptedFiles: codePostFile[],
     getStudentsFromFile: (file: IProtoFileUpload) => string[],
   ) => {
@@ -421,6 +398,24 @@ class BulkUpload extends React.Component<IProps, IState> {
       return <div />;
     }
 
+    /*************************** 1. Determine header content (title + step #)******************************/
+    const title =
+      this.state.mode && this.state.mode !== 'more' ? (
+        <span>
+          <img
+            src={INTEGRATIONS[this.state.mode].logo}
+            style={{ width: '25px', marginRight: 5, marginBottom: 3 }}
+            alt=""
+          />
+          <span style={{ color: '#24be85' }}>
+            {this.state.mode.charAt(0).toUpperCase() + this.state.mode.slice(1)} import:
+          </span>{' '}
+          {this.props.assignment.name}
+        </span>
+      ) : (
+        <span>Upload Submissions: {this.props.assignment.name}</span>
+      );
+
     const steps = [
       {
         title: 'Upload',
@@ -433,6 +428,20 @@ class BulkUpload extends React.Component<IProps, IState> {
       },
     ];
 
+    let stepNumber;
+    switch (this.state.status) {
+      case STATUS.NONE:
+        stepNumber = 0;
+        break;
+      case STATUS.COMPLETE:
+        stepNumber = 2;
+        break;
+      default:
+        stepNumber = 1;
+        break;
+    }
+
+    /*************************** 2. Determine content based on status ******************************/
     let content;
     let numToUpload = 0;
     switch (this.state.status) {
@@ -447,15 +456,14 @@ class BulkUpload extends React.Component<IProps, IState> {
                 toggleImportOptions={this.showImportOptions}
               />
               <Divider />
-              <UploadExternal
-                processSubmissionsFromFiles={this.externalProcessSubmissions}
-                rawFiles={this.state.rawFiles}
-                setRawFiles={this.setRawFiles}
+              <UploadForm
+                processSubmissionsFromFiles={this.processSubmissions}
                 mode={this.state.mode}
                 showImportOptions={this.state.showImportOptions}
                 students={this.props.students}
                 course={this.props.course}
                 setIntegration={this.onIntegrationClick}
+                onCancel={this.onCancel}
               />
             </div>
           );
@@ -520,25 +528,18 @@ class BulkUpload extends React.Component<IProps, IState> {
         break;
     }
 
-    // modal's back button
+    /*************************** 3. Determine footer based on status ******************************/
     let footer;
     switch (this.state.status) {
       case STATUS.NONE:
-        footer = (
-          <BulkUploadFooter
-            backText="Cancel"
-            onBack={() => this.setState(this.onCancel)}
-            forwardText="Continue"
-            onForward={this.onStepToUpload}
-            disableForward={this.state.rawFiles.length === 0}
-          />
-        );
+        // footer will be provided by the child upload components
+        footer = <div />;
         break;
       case STATUS.UPLOADED:
         footer = (
           <BulkUploadFooter
             backText="Start over"
-            onBack={() => this.setState({ status: STATUS.NONE, rawFiles: [] })}
+            onBack={() => this.setState({ status: STATUS.NONE })}
             forwardText="Upload"
             onForward={this.onStepToReading}
             disableForward={numToUpload === 0}
@@ -560,45 +561,9 @@ class BulkUpload extends React.Component<IProps, IState> {
         break;
     }
 
-    let stepNumber;
-    switch (this.state.status) {
-      case STATUS.NONE:
-        stepNumber = 0;
-        break;
-      case STATUS.COMPLETE:
-        stepNumber = 2;
-        break;
-      default:
-        stepNumber = 1;
-        break;
-    }
-
-    const title =
-      this.state.mode && this.state.mode !== 'more' ? (
-        <span>
-          <img
-            src={INTEGRATIONS[this.state.mode].logo}
-            style={{ width: '25px', marginRight: 5, marginBottom: 3 }}
-            alt=""
-          />
-          <span style={{ color: '#24be85' }}>
-            {this.state.mode.charAt(0).toUpperCase() + this.state.mode.slice(1)} import:
-          </span>{' '}
-          {this.props.assignment.name}
-        </span>
-      ) : (
-        <span>Upload Submissions: {this.props.assignment.name}</span>
-      );
-
+    /*************************** 4. Return modal ******************************/
     return (
-      <Modal
-        visible={true}
-        title={title}
-        width={900}
-        onCancel={this.props.onCancel}
-        footer={footer}
-        style={{ top: 20 }}
-      >
+      <Modal visible={true} title={title} width={900} onCancel={this.props.onCancel} footer={null} style={{ top: 20 }}>
         <Steps size="small" current={stepNumber}>
           {steps.map((item) => {
             return <Step key={item.title} title={item.title} />;
@@ -606,6 +571,7 @@ class BulkUpload extends React.Component<IProps, IState> {
         </Steps>
         <br />
         {content}
+        {footer}
       </Modal>
     );
     /* tslint:enable:jsx-no-lambda */
