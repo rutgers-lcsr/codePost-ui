@@ -2,7 +2,12 @@ import JSZip from 'jszip';
 
 import { message } from 'antd';
 
-import { File as CodePostFile } from '../../../../infrastructure/file';
+import {
+  File as CodePostFile,
+  ImageExtensions,
+  BinaryExtensions,
+  PDFExtensions,
+} from '../../../../infrastructure/file';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
@@ -133,12 +138,8 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
       } else {
         let data: any = readerResult;
 
-        if (['png', 'jpeg', 'jpg'].includes(outputFile.extension.toLowerCase()) && typeof data === 'string') {
+        if (ImageExtensions.includes(outputFile.extension.toLowerCase()) && typeof data === 'string') {
           data = await resizeImage(data);
-        }
-
-        if (typeof data === 'string') {
-          data = data.replace(/\0/g, '');
         }
 
         outputFile = { ...outputFile, data };
@@ -146,9 +147,13 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
       }
     };
 
-    if (inputFile.type.includes('image') || ['png', 'jpeg', 'jpg'].includes(outputFile.extension.toLowerCase())) {
+    if (
+      inputFile.type.includes('image') ||
+      ImageExtensions.includes(outputFile.extension.toLowerCase()) ||
+      BinaryExtensions.includes(outputFile.extension.toLowerCase())
+    ) {
       reader.readAsDataURL(inputFile);
-    } else if (inputFile.type.includes('pdf') || ['pdf'].includes(outputFile.extension)) {
+    } else if (inputFile.type.includes('pdf') || PDFExtensions.includes(outputFile.extension)) {
       reader.readAsDataURL(inputFile);
     } else if (inputFile.type === 'application/zip' || ['zip'].includes(outputFile.extension)) {
       reader.readAsArrayBuffer(inputFile);
