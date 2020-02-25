@@ -12,6 +12,8 @@ import { Course } from '../../../../../../infrastructure/course';
 
 import LMSRosterMapUpload from './LMSRosterMapUpload';
 
+import { BulkUploadFooter } from './BulkUploadComponents';
+
 import { FolderToStudentMap, getIdentifierFromFolder, beforeLMSImport } from './LMSImportHelpers';
 
 interface IUploadFormProps {
@@ -23,6 +25,7 @@ interface IUploadFormProps {
   mode?: string;
   course: CourseType;
   onCancel: () => void;
+  showIntegrations: () => void;
 }
 
 // *************************************************************************************
@@ -39,6 +42,13 @@ export const LMSImport = (props: IUploadFormProps) => {
     if (step < 2) {
       setStep(step + 1);
     }
+  };
+
+  const reset = () => {
+    setMap({});
+    setStep(0);
+    setFileList([]);
+    setUserIndex(0);
   };
 
   const setRawFiles = (files: codePostFile[]) => {
@@ -66,11 +76,20 @@ export const LMSImport = (props: IUploadFormProps) => {
   let subtitle = '';
   switch (step) {
     case 0:
-      content = <StepZeroUploadZips nextStep={nextStep} rawFiles={fileList} setRawFiles={setRawFiles} />;
+      content = (
+        <StepZeroUploadZips
+          nextStep={nextStep}
+          rawFiles={fileList}
+          setRawFiles={setRawFiles}
+          goBack={props.showIntegrations}
+        />
+      );
       title = '';
       break;
     case 1:
-      content = <StepOneSelectUserName nextStep={nextStep} setUserIndex={setUserIndex} folderMap={map} />;
+      content = (
+        <StepOneSelectUserName nextStep={nextStep} setUserIndex={setUserIndex} folderMap={map} goBack={reset} />
+      );
       title = "Select the student's unique identifier";
       subtitle = 'This is to identify the LMS ID from the file name.';
       break;
@@ -78,6 +97,7 @@ export const LMSImport = (props: IUploadFormProps) => {
       content = (
         <StepTwoMapStudent
           nextStep={nextStep}
+          goBack={() => setStep(1)}
           folderMap={map}
           idIndex={userIndex}
           setStudent={(name, email) => {
@@ -114,6 +134,7 @@ export const LMSImport = (props: IUploadFormProps) => {
 // *************************************************************************************
 
 interface IStepZeroProps {
+  goBack: () => void;
   nextStep: () => void;
   rawFiles: codePostFile[];
   setRawFiles: (files: codePostFile[]) => void;
@@ -148,6 +169,13 @@ const StepZeroUploadZips = (props: IStepZeroProps) => {
         <p className="ant-upload-text">Click to upload a folder</p>
         <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
       </Upload.Dragger>
+      <BulkUploadFooter
+        backText="Back"
+        onBack={props.goBack}
+        forwardText="Upload"
+        onForward={() => {}}
+        disableForward={true}
+      />
     </div>
   );
 };
@@ -157,13 +185,14 @@ const StepZeroUploadZips = (props: IStepZeroProps) => {
 // *************************************************************************************
 
 interface IStepOneProps {
+  goBack: () => void;
   nextStep: () => void;
   folderMap: FolderToStudentMap;
   setUserIndex: (index: number) => void;
 }
 const StepOneSelectUserName = (props: IStepOneProps) => {
   const [sliderIndex, setSliderIndex] = useState(0);
-  const [toShow, setToShow] = useState(10);
+  const [toShow, setToShow] = useState(5);
 
   //************* Change parent state *********
   const onContinue = () => {
@@ -177,7 +206,7 @@ const StepOneSelectUserName = (props: IStepOneProps) => {
   };
 
   const showMore = () => {
-    setToShow(toShow + 10);
+    setToShow(toShow + 5);
   };
 
   //************* Render utils *********
@@ -237,7 +266,7 @@ const StepOneSelectUserName = (props: IStepOneProps) => {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ width: 'calc(100% - 100px)', padding: '0px 25px' }}>
+        <div style={{ width: 'calc(100%)', padding: '0px 25px' }}>
           <Slider
             tooltipVisible={false}
             min={0}
@@ -247,10 +276,6 @@ const StepOneSelectUserName = (props: IStepOneProps) => {
             value={sliderIndex}
           />
         </div>
-        <Button type="primary" onClick={onContinue} style={{ marginLeft: 20 }}>
-          <Icon type="check" />
-          Select
-        </Button>
       </div>
       <List
         itemLayout="horizontal"
@@ -272,12 +297,20 @@ const StepOneSelectUserName = (props: IStepOneProps) => {
         renderItem={renderFolder}
       />
       {errorMsg}
+      <BulkUploadFooter
+        backText="Back"
+        onBack={props.goBack}
+        forwardText="Select"
+        onForward={onContinue}
+        disableForward={false}
+      />
     </div>
   );
 };
 
 interface IStepTwoProps {
   nextStep: () => void;
+  goBack: () => void;
   folderMap: FolderToStudentMap;
   idIndex: number;
   students: string[];
@@ -439,13 +472,13 @@ const StepTwoMapStudent = (props: IStepTwoProps) => {
         students={props.students}
       />
       <Table columns={columns} pagination={{ pageSize: 5 }} dataSource={data} loading={loading} />
-      <div style={{ marginBottom: 10 }}>
-        <div style={{ float: 'right' }}>
-          <Button onClick={props.onUpload} disabled={mappedStudents.length === 0} type="primary">
-            Next
-          </Button>
-        </div>
-      </div>
+      <BulkUploadFooter
+        backText="Back"
+        onBack={props.goBack}
+        forwardText="Continue"
+        onForward={props.onUpload}
+        disableForward={mappedStudents.length === 0}
+      />
     </div>
   );
 };

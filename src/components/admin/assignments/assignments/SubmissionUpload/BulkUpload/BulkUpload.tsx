@@ -180,11 +180,7 @@ class BulkUpload extends React.Component<IProps, IState> {
   };
 
   public onIntegrationClick = (mode?: string) => {
-    if (mode === this.state.mode) {
-      this.setState({ mode: undefined, showImportOptions: false });
-    } else {
-      this.setState({ mode, showImportOptions: false });
-    }
+    this.setState({ mode: mode, showImportOptions: false });
   };
 
   public toggleOverwriteMode = () => {
@@ -464,6 +460,7 @@ class BulkUpload extends React.Component<IProps, IState> {
                 course={this.props.course}
                 setIntegration={this.onIntegrationClick}
                 onCancel={this.onCancel}
+                showIntegrations={this.showImportOptions}
               />
             </div>
           );

@@ -24,6 +24,7 @@ interface IUploadFormProps {
   course: CourseType;
   setIntegration: (mode?: string) => void;
   onCancel: () => void;
+  showIntegrations: () => void;
 }
 
 const UploadForm = (props: IUploadFormProps) => {
