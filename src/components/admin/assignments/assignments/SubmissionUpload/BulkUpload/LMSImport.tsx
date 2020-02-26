@@ -602,12 +602,20 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
         showSearch={true}
         onChange={(e: string) => props.setStudent(folderName, e)}
         style={{ minWidth: 250 }}
+        allowClear={true}
       >
-        {props.students.map((student) => (
-          <Select.Option value={student} disabled={mappedStudents.includes(student)}>
-            {student}
-          </Select.Option>
-        ))}
+        {props.students
+          .map((student) => {
+            const isDisabled = mappedStudents.includes(student);
+            return (
+              <Select.Option key={isDisabled ? 1 : -1} value={student} disabled={isDisabled}>
+                {student}
+              </Select.Option>
+            );
+          })
+          .sort((a, b) => {
+            return (a.key as number) - (b.key as number);
+          })}
         <Select.Option value={undefined}> </Select.Option>
       </Select>
     );
