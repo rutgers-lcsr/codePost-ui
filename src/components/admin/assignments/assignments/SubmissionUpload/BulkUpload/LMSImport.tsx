@@ -42,6 +42,8 @@ import {
   getFileExample,
 } from './LMSImportHelpers';
 
+import stringDistance from './levenshteinDistance';
+
 interface IUploadFormProps {
   processSubmissionsFromFiles: (
     files: codePostFile[],
@@ -488,6 +490,42 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
   const [showUpload, setShowUpload] = useState(false);
   const [newMapping, setNewMapping] = useState<{ [id: string]: string }>({});
   const [loading, setLoading] = useState(false);
+  const [isGuessing, setIsGuessing] = useState(false);
+
+  const guessMapping = () => {
+    setIsGuessing(true);
+    Object.keys(props.folderMap).forEach((folderName) => {
+      const id = getIdentifierFromFolder(folderName, props.idIndex);
+      let guess = '';
+
+      // First, figure out if we have an exact match
+      // i.e., <id>@school.edu
+      for (let i = 0; i < props.students.length; i++) {
+        const student = props.students[i];
+        if (student.split('@')[0] == id) {
+          guess = student;
+          break;
+        }
+      }
+
+      // if we haven't found an exact match, find the closest match
+      if (guess.length === 0) {
+        let minDist = 1000;
+        const DIST_THRESHOLD = 6;
+        for (let i = 0; i < props.students.length; i++) {
+          const student = props.students[i];
+          const thisDist = stringDistance(student.split('@')[0], id);
+          if (thisDist < minDist && thisDist < DIST_THRESHOLD) {
+            guess = student;
+            minDist = thisDist;
+          }
+        }
+      }
+
+      props.setStudent(folderName, guess);
+    });
+    setIsGuessing(false);
+  };
 
   React.useEffect(() => {
     const fetchMap = async () => {
@@ -628,9 +666,15 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
       </div>
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         {editMode ? (
-          <Button type="primary" onClick={() => setShowUpload(true)} style={{ marginBottom: 10 }}>
-            <Icon type="upload" /> Upload a mapping
-          </Button>
+          <span>
+            <Button onClick={() => setShowUpload(true)} style={{ marginBottom: 10 }}>
+              <Icon type="upload" /> Upload a mapping
+            </Button>{' '}
+            &nbsp;
+            <Button type="primary" onClick={guessMapping} loading={isGuessing}>
+              <Icon type="rocket" /> Guess
+            </Button>
+          </span>
         ) : (
           <Button type="default" onClick={() => setEditMode(true)}>
             <Icon type="edit" /> Edit
