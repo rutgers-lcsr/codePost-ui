@@ -187,12 +187,6 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     const { activeSection, isLoading } = this.state;
     const showingEmails = !this.props.assignment.anonymousGrading || this.state.showStudentEmails;
 
-    console.log({ submissions: this.state.submissionsBySection });
-    if (this.state.submissionsBySection[1188]) {
-      console.warn('here');
-      console.log(Object.keys(this.state.submissionsBySection[1188]).length);
-    }
-
     let columns: any[] = [];
     let data: any[] = [];
     if (!isLoading) {
@@ -272,7 +266,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
 
           return {
             ...formatSub(submission, this.props.assignment),
-            key: submission ? submission.id : student,
+            key: student,
             student: shownStudent,
             partners,
             viewIcon: <div>{getViewIcon(submission, this.state.viewsBySubmission, student)}</div>,
