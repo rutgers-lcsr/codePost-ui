@@ -72,7 +72,7 @@ import { LOCAL_SETTINGS } from '../../../../components/utils/LocalSettings';
 
 /**********************************************************************************************************************/
 
-interface IProps {
+interface IUploadSubmissionDialogProps {
   isVisible: boolean;
   onCancel: () => void;
   assignments: (AssignmentType | AssignmentStudentType)[];
@@ -112,7 +112,7 @@ enum STATUS {
   COMPLETE /* completed upload */,
 }
 
-interface IState {
+interface IUploadSubmissionDialogState {
   selectedStudents: string[];
   selectedAssignment?: AssignmentType | AssignmentStudentType;
   // List of files in codePost format for upload
@@ -142,7 +142,7 @@ interface IState {
   activeTab: string;
 }
 
-class UploadSubmissionDialog extends React.Component<IProps, IState> {
+class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProps, IUploadSubmissionDialogState> {
   public assignmentOptions = this.props.assignments.map((assignment: AssignmentType | AssignmentStudentType, i) => {
     return {
       value: assignment.id,
@@ -150,7 +150,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     };
   });
 
-  public state: Readonly<IState> = {
+  public state: Readonly<IUploadSubmissionDialogState> = {
     selectedStudents: this.props.selectedStudents,
     selectedAssignment: this.props.selectedAssignment,
     files: [],
@@ -173,12 +173,14 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
   /* Lifecycle methods
   /********************************************************************************************************/
 
-  public toggleState = (key: keyof IState) => (prevState: IState): IState => ({
+  public toggleState = (key: keyof IUploadSubmissionDialogState) => (
+    prevState: IUploadSubmissionDialogState,
+  ): IUploadSubmissionDialogState => ({
     ...prevState,
     [key]: !prevState[key],
   });
 
-  public getState = (key: keyof IState): any => {
+  public getState = (key: keyof IUploadSubmissionDialogState): any => {
     return this.state[key];
   };
 
@@ -188,7 +190,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
   }
 
-  public componentDidUpdate(prevProps: IProps, prevState: IState) {
+  public componentDidUpdate(prevProps: IUploadSubmissionDialogProps, prevState: IUploadSubmissionDialogState) {
     if (
       prevProps.selectedAssignment !== this.props.selectedAssignment ||
       (!prevProps.isVisible && this.props.isVisible)
@@ -604,17 +606,17 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           {
             setting: 'Upload a directory',
             tooltip: 'Turn this on to upload nested folders.',
-            variable: 'uploadDirectory' as keyof IState,
+            variable: 'uploadDirectory' as keyof IUploadSubmissionDialogState,
           },
           // {
           //   setting: 'Upload an incomplete submission',
           //   tooltip: 'Turn this on to a submission missing required files.',
-          //   variable: 'allowIncomplete' as keyof IState,
+          //   variable: 'allowIncomplete' as keyof IUploadSubmissionDialogState,
           // },
           // {
           //   setting: 'Upload extra files',
           //   tooltip: 'Turn this on to upload files not specifed by the assignment.',
-          //   variable: 'allowExtra' as keyof IState,
+          //   variable: 'allowExtra' as keyof IUploadSubmissionDialogState,
           // },
         ];
 
