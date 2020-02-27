@@ -39,7 +39,6 @@ import layoutVars from '../../styles/layout/_layoutVars';
 
 import UploadSubmissionDialog from '../admin/assignments/assignments/UploadSubmissionDialog';
 
-import LateSubmissionModal from './LateSubmissionModal';
 import ViewUpload from './ViewUpload';
 
 import { IComponentProps } from '../core/ComponentManager';
@@ -64,8 +63,6 @@ interface IStudentState {
   currentPanel: CURRENT_PANEL;
   detailAssignment?: AssignmentStudentType;
   detailSubmission?: StudentSubmissionType;
-
-  lateSubmissionModalAssignment: AssignmentStudentType | null;
 }
 
 enum SUBMISSION_STATUS {
@@ -94,7 +91,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
       currentPanel: CURRENT_PANEL.TABLE,
       detailAssignment: undefined,
       detailSubmission: undefined,
-      lateSubmissionModalAssignment: null,
     };
   }
 
@@ -201,14 +197,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     return;
   };
 
-  public openLateSubmissionModalAssignment = (assignment: AssignmentStudentType) => {
-    this.setState({ lateSubmissionModalAssignment: assignment });
-  };
-
-  public closeLateSubmissionModalAssignment = () => {
-    this.setState({ lateSubmissionModalAssignment: null });
-  };
-
   public changePanel = async (
     newPanel: CURRENT_PANEL,
     assignment?: AssignmentStudentType,
@@ -229,7 +217,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
       currentPanel: newPanel,
       detailAssignment: assignment,
       detailSubmission: latestSubmission || submission,
-      lateSubmissionModalAssignment: null,
     });
   };
 
@@ -297,16 +284,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
       return <div />;
     }
 
-    const hasSubmission = submission !== undefined;
-
-    // Algorithm for computing
-    const two_hours = 3.6e6 * 2; // ms grace period
-    const dueDatePassed = assignment.uploadDueDate && Date.parse(assignment.uploadDueDate) + two_hours <= Date.now();
-    const isFinalized = submission !== undefined && submission.isFinalized;
-    const canUploadLate = assignment.allowLateUploads;
-
-    const canUpload = (!dueDatePassed || canUploadLate) && (assignment.liveFeedbackMode || !isFinalized);
-
     // Present the assignment's due date to the student
     const dueDateText = assignment.uploadDueDate ? (
       <span>
@@ -328,20 +305,13 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
         </div>
       ) : null;
 
-    // If the student can upload, give them the option to POST or PATCH submission
-    let buttonText;
-    if (hasSubmission) {
-      buttonText = 'View assignment';
-    } else {
-      buttonText = 'View assignment';
-    }
     const uploadButton = (
       <span>
         <Button
           icon="upload"
           type="primary"
           style={{ maxWidth: 180 }}
-          disabled={!canUpload}
+          disabled={false}
           onClick={() => {
             if (submission && assignment.liveFeedbackMode) {
               Modal.confirm({
@@ -369,19 +339,19 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
             }
           }}
         >
-          {buttonText}
+          View assignment
         </Button>
       </span>
     );
 
     // Special case: if assignment.liveFeedbackMode is turned on, give the student the option to add files
     const addFileButton =
-      !assignment.liveFeedbackMode || !hasSubmission ? null : (
+      !assignment.liveFeedbackMode || submission === undefined ? null : (
         <Button
           icon="plus"
           style={{ maxWidth: 160 }}
           onClick={this.changePanel.bind(this, CURRENT_PANEL.ADDFILES, assignment, submission)}
-          disabled={!canUpload}
+          disabled={submission === undefined || submission.isFinalized}
         >
           Add/Update files
         </Button>
