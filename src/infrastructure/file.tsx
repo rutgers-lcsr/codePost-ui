@@ -79,6 +79,8 @@ export const BinaryExtensions = [
   '.tga',
   'ttf',
   '.ttf',
+  'docx',
+  '.docx',
 ];
 
 type CodeType = 'code' | 'markdown' | 'jupyter' | 'image' | 'pdf';
