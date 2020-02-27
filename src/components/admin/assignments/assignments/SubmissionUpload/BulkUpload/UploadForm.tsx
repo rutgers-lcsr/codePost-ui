@@ -83,11 +83,11 @@ const UploadForm = (props: IUploadFormProps) => {
 
   switch (props.mode) {
     case 'canvas':
-      return <LMSImport {...props} />;
+      return <LMSImport system="Canvas" {...props} />;
     case 'blackboard':
-      return <LMSImport {...props} />;
+      return <LMSImport system="Blackboard" {...props} />;
     case 'brightspace':
-      return <LMSImport {...props} />;
+      return <LMSImport system="Brightspace" {...props} />;
     case 'github':
       return <GithubFolderImport {...props} />;
     case 'jupyter':

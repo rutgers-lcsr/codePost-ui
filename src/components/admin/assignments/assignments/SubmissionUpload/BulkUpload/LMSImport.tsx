@@ -20,6 +20,7 @@ import {
   Statistic,
   Table,
   Typography,
+  Tooltip,
 } from 'antd';
 
 import ReactMarkdown from 'react-markdown';
@@ -54,6 +55,7 @@ interface IUploadFormProps {
   course: CourseType;
   onCancel: () => void;
   setImportOptions: (value: boolean) => void;
+  system: string;
 }
 
 // *************************************************************************************
@@ -172,7 +174,7 @@ export const LMSImport = (props: IUploadFormProps) => {
           onDelimiterChange={onDelimiterChange}
         />
       );
-      title = 'Choose the structure of your files';
+      title = `Download submissions from ${props.system}`;
       break;
     case 1:
       content = (
@@ -200,8 +202,8 @@ export const LMSImport = (props: IUploadFormProps) => {
           delimiter={delimiter}
         />
       );
-      title = "Select the student's unique identifier";
-      subtitle = 'This is to identify the LMS ID from the file name.';
+      title = 'Identify student IDs';
+      subtitle = "The delimited file names contain unique student ID, which we'll use to map files to students.";
       break;
     case 3:
       content = (
@@ -221,7 +223,7 @@ export const LMSImport = (props: IUploadFormProps) => {
           course={props.course}
         />
       );
-      title = 'Map the LMS unique identifier to codePost emails';
+      title = 'Map student IDs to codePost emails';
       break;
     default:
       content = <div />;
@@ -251,6 +253,24 @@ interface IStepZeroProps {
 const StepZeroChooseType = (props: IStepZeroProps) => {
   return (
     <div>
+      <span style={{ paddingLeft: '20px' }}>
+        After downloading your submissions, unzip the download (if necessary) and take a look at the files or folder
+        inside. Choose the delimiter character you see.{' '}
+      </span>
+      <br />
+      <br />
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: 15 }}>
+        <span style={{ marginRight: 10 }}>Delimiter:</span>
+        <Radio.Group onChange={props.onDelimiterChange} value={props.delimiter}>
+          <Radio value={'_'}>underscore</Radio>
+          <Radio value={'-'}>dash</Radio>
+        </Radio.Group>
+      </div>
+      <br />
+      <br />
+      <span style={{ paddingLeft: '20px' }}>Next, choose the folder structure that matches your download.</span>
+      <br />
+      <br />
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <Card style={{ marginRight: 20 }}>
           <div style={{ display: 'flex' }}>
@@ -274,13 +294,6 @@ const StepZeroChooseType = (props: IStepZeroProps) => {
           </div>
           <ReactMarkdown source={getFileExample(props.delimiter)} />
         </Card>
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: 15 }}>
-        <span style={{ marginRight: 10 }}>Delimiter:</span>
-        <Radio.Group onChange={props.onDelimiterChange} value={props.delimiter}>
-          <Radio value={'_'}>underscore</Radio>
-          <Radio value={'-'}>dash</Radio>
-        </Radio.Group>
       </div>
       <BulkUploadFooter
         backText="Back"
@@ -564,13 +577,13 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
 
   const columns = [
     {
-      title: 'Zip Name',
+      title: 'File name',
       dataIndex: 'name',
       key: 'name',
       sorter: (a: any, b: any) => a.name.localeCompare(b.name),
     },
     {
-      title: 'Student identifier',
+      title: 'Student ID',
       dataIndex: 'identifier',
       key: 'identifier',
       sorter: (a: any, b: any) => a.identifier.localeCompare(b.identifier),
@@ -679,9 +692,11 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
               <Icon type="upload" /> Upload a mapping
             </Button>{' '}
             &nbsp;
-            <Button type="primary" onClick={guessMapping} loading={isGuessing}>
-              <Icon type="rocket" /> Guess
-            </Button>
+            <Tooltip title="Let codePost try to match IDs with student emails.">
+              <Button type="primary" onClick={guessMapping} loading={isGuessing}>
+                <Icon type="rocket" /> Guess
+              </Button>
+            </Tooltip>
           </span>
         ) : (
           <Button type="default" onClick={() => setEditMode(true)}>
