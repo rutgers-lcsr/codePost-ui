@@ -745,7 +745,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
         }
 
         goForwardButton = (
-          <span>
+          <span style={{ marginLeft: '8px' }}>
             <Button
               key="submit"
               type="primary"
