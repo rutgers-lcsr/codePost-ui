@@ -308,28 +308,25 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     const canUpload = (!dueDatePassed || canUploadLate) && (assignment.liveFeedbackMode || !isFinalized);
 
     // Present the assignment's due date to the student
-    const dueDate = assignment.uploadDueDate ? (
+    const dueDateText = assignment.uploadDueDate ? (
       <span>
-        Due date: &nbsp;
+        Due: &nbsp;
         <CodePostDate datetime={assignment.uploadDueDate} />
       </span>
     ) : (
       ''
     );
-    const dueDateText = (
-      <span>
-        <Text>{dueDate}</Text>
-        {dueDatePassed ? (
-          <span>
-            &nbsp; <Tag color="volcano">Due date passed</Tag>
-          </span>
-        ) : null}
-      </span>
-    );
 
     // If the student has submitted, show the datetime of the student's most recent upload
     const uploadDateText =
-      submission !== undefined ? <div>Uploaded: {moment(submission.dateUploaded).format('llll')}</div> : null;
+      submission !== undefined ? (
+        <div>
+          Uploaded:{' '}
+          {submission !== undefined && submission.dateUploaded !== undefined ? (
+            <CodePostDate datetime={submission.dateUploaded} />
+          ) : null}
+        </div>
+      ) : null;
 
     // If the student can upload, give them the option to POST or PATCH submission
     let buttonText;
@@ -367,17 +364,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
                 cancelText: 'Cancel',
                 onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),
               });
-            } else if (dueDatePassed) {
-              this.openLateSubmissionModalAssignment(assignment);
-              {
-                /*Modal.confirm({
-                title: 'Confirm late submission',
-                content: `The due date for this submission has passed, so your submission will be logged as late.`,
-                okText: 'Continue',
-                cancelText: 'Cancel',
-                onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),
-              });*/
-              }
             } else {
               this.changePanel(CURRENT_PANEL.UPLOADFILES, assignment, submission);
             }
@@ -385,17 +371,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
         >
           {buttonText}
         </Button>
-        {dueDatePassed ? (
-          <LateSubmissionModal
-            visible={
-              this.state.lateSubmissionModalAssignment !== null &&
-              this.state.lateSubmissionModalAssignment.id === assignment.id
-            }
-            assignment={assignment}
-            onCancel={this.closeLateSubmissionModalAssignment}
-            onOk={this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission)}
-          />
-        ) : null}
       </span>
     );
 

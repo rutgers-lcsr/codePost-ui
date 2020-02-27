@@ -63,10 +63,11 @@ import { slack } from '../../../../components/core/slack';
 
 import { encodeForLink } from '../../../../components/core/URLutils';
 
-import { CodePostDate } from '../../../../components/utils/DateUtils';
+import { CodePostDate, dueDatePassed } from '../../../../components/utils/DateUtils';
 
 import ViewUpload from '../../../../components/student/ViewUpload';
 import InvitePartnersLink from '../../../../components/student/InvitePartnersLink';
+import LateSubmissionModal from '../../../../components/student/LateSubmissionModal';
 
 import { LOCAL_SETTINGS } from '../../../../components/utils/LocalSettings';
 
@@ -140,6 +141,8 @@ interface IUploadSubmissionDialogState {
   testsLog: string | null; // If the admin turns off exposeDumpLogs then the log will be none
   runMessage: string; // A message to show students from the result of their run
   activeTab: string;
+
+  lateSubmissionModalVisible: boolean;
 }
 
 class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProps, IUploadSubmissionDialogState> {
@@ -167,6 +170,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     sendMeAConfirmationEmail: LOCAL_SETTINGS.sendMeAConfirmationEmail.getter(),
     runMessage: '',
     activeTab: '1',
+    lateSubmissionModalVisible: false,
   };
 
   /********************************************************************************************************/
@@ -368,11 +372,32 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     this.setState({ files, fileList });
   };
 
+  public openLateSubmissionModal = () => {
+    this.setState({ lateSubmissionModalVisible: true });
+  };
+
+  public closeLateSubmissionModal = () => {
+    this.setState({ lateSubmissionModalVisible: false });
+  };
+
   /********************************************************************************************************/
   /* Submission upload
   /********************************************************************************************************/
 
+  public confirmUpload = () => {
+    if (this.state.selectedAssignment === undefined) {
+      return;
+    }
+
+    if (dueDatePassed(this.state.selectedAssignment)) {
+      this.openLateSubmissionModal();
+    } else {
+      this.upload();
+    }
+  };
+
   public upload = () => {
+    this.closeLateSubmissionModal();
     if (this.state.selectedAssignment) {
       this.setState({ status: STATUS.SAVING }, () => {
         if (this.state.selectedAssignment) {
@@ -696,6 +721,9 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
         if (this.props.isStudent) {
           sendMeAConfirmationEmailCheckbox = (
             <span>
+              {this.state.selectedAssignment !== undefined && dueDatePassed(this.state.selectedAssignment) ? (
+                <Tag color="volcano">Due Date Passed</Tag>
+              ) : null}
               <Checkbox
                 key="send-me-a-confirmation-email"
                 checked={this.state.sendMeAConfirmationEmail}
@@ -717,14 +745,24 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
         }
 
         goForwardButton = (
-          <Button
-            key="submit"
-            type="primary"
-            disabled={disableUpload || !areRequiredFilesPresent}
-            onClick={this.upload}
-          >
-            Upload {this.shouldRunTests() && <Icon type="calculator" />}
-          </Button>
+          <span>
+            <Button
+              key="submit"
+              type="primary"
+              disabled={disableUpload || !areRequiredFilesPresent}
+              onClick={this.confirmUpload}
+            >
+              Upload {this.shouldRunTests() && <Icon type="calculator" />}
+            </Button>
+            {this.state.selectedAssignment === undefined ? null : (
+              <LateSubmissionModal
+                visible={this.state.lateSubmissionModalVisible}
+                assignment={this.state.selectedAssignment}
+                onCancel={this.closeLateSubmissionModal}
+                onOk={this.upload}
+              />
+            )}
+          </span>
         );
 
         /*****************************************************************************************/
