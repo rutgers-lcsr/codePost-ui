@@ -187,6 +187,12 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     const { activeSection, isLoading } = this.state;
     const showingEmails = !this.props.assignment.anonymousGrading || this.state.showStudentEmails;
 
+    console.log({ submissions: this.state.submissionsBySection });
+    if (this.state.submissionsBySection[1188]) {
+      console.warn('here');
+      console.log(Object.keys(this.state.submissionsBySection[1188]).length);
+    }
+
     let columns: any[] = [];
     let data: any[] = [];
     if (!isLoading) {
@@ -271,7 +277,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
             partners,
             viewIcon: <div>{getViewIcon(submission, this.state.viewsBySubmission, student)}</div>,
             open: submission !== null ? <Icon type="code" onClick={openGradePage} /> : null,
-            disableCheck: !submission || submission.grader,
+            disableCheck: !submission || submission.grader !== undefined,
           };
         });
       }
