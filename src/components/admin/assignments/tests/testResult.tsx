@@ -38,9 +38,16 @@ async function checkAndRefreshTimer(
   });
   if (res.status === 200) {
     const result = await res.json();
-    if (result.status === 'SUCCESS' || result.status === 'FAILURE') {
+    if (result.status === 'SUCCESS') {
       callback(result.result);
       clearInterval(interval);
+    } else if (result.status === 'FAILURE') {
+      sendSlack(`FAILURE test result: ${window.location.href}`, `${result.result}`, '#cc0000', '#autograder_bugs');
+      clearInterval(interval);
+      message.error(
+        'An error occured. The codePost team has been notified and will be in touch shortly. In the meantime, please try refreshing and running the test again.',
+        25,
+      );
     } else if (result.result && progressCallback) {
       progressCallback(result.result);
     }
