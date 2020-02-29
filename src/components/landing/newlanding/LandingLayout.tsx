@@ -93,6 +93,25 @@ const LandingLayout = (props: IProps) => {
       }}
       id="LandingLayout"
     >
+      <div
+        style={{
+          background: '#22be84',
+          padding: '10px',
+          fontSize: '18px',
+          fontWeight: 500,
+          color: 'white',
+          textAlign: 'center',
+        }}
+      >
+        Going to SIGCSE 2020 in Portland? Check out our{' '}
+        <a
+          style={{ color: '#def5ec', textDecoration: 'underline' }}
+          href="https://dl.acm.org/doi/abs/10.1145/3328778.3367026"
+        >
+          workshop
+        </a>{' '}
+        on Wednesday!
+      </div>
       <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }} className={sectionClass}>
         <div
           style={{
