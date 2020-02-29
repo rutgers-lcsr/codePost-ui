@@ -488,7 +488,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     // Note: we need to increment the testRunsCompleted in state, because a student could go back to the upload tab (without refreshing submission) and re-upload
     this.setState((prevState) => {
       return {
-        ...prevState,
         submissionTests: result.submissionTests,
         testsLog: result.logs,
         loadingTests: false,
