@@ -150,7 +150,7 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
     if (
       inputFile.type.includes('image') ||
       ImageExtensions.includes(outputFile.extension.toLowerCase()) ||
-      BinaryExtensions.includes(outputFile.extension.toLowerCase())
+      (BinaryExtensions.includes(outputFile.extension.toLowerCase()) && outputFile.name !== 'Makefile')
     ) {
       reader.readAsDataURL(inputFile);
     } else if (inputFile.type.includes('pdf') || PDFExtensions.includes(outputFile.extension)) {
