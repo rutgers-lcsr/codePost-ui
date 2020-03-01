@@ -502,8 +502,10 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
   const [editMode, setEditMode] = useState(true);
   const [showUpload, setShowUpload] = useState(false);
   const [newMapping, setNewMapping] = useState<{ [id: string]: string }>({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isGuessing, setIsGuessing] = useState(false);
+
+  const didMountRef = React.useRef(false);
 
   const guessMapping = () => {
     setIsGuessing(true);
@@ -550,7 +552,6 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
   }, []);
 
   React.useEffect(() => {
-    setLoading(true);
     const folderNameByID: { [id: string]: string } = {};
     // Roster map is indexed by ID, but the folderMap required by UploadBulkSubmissionDialog is indexed by foldername
     // We first create a mapping of LMS id to folder name
@@ -571,8 +572,11 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
     if (studentsMatched === props.students.length) {
       setEditMode(false);
     }
-
-    setLoading(false);
+    if (didMountRef.current) {
+      setLoading(false);
+    } else {
+      didMountRef.current = true;
+    }
   }, [newMapping]);
 
   const columns = [
