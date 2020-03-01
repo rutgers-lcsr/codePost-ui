@@ -42,7 +42,12 @@ async function checkAndRefreshTimer(
       callback(result.result);
       clearInterval(interval);
     } else if (result.status === 'FAILURE') {
-      sendSlack(`FAILURE test result: ${window.location.href}`, `${result.result}`, '#cc0000', '#autograder_bugs');
+      sendSlack(
+        `FAILURE test result: ${window.location.href}`,
+        `${JSON.stringify(result.result)}`,
+        '#cc0000',
+        '#autograder_bugs',
+      );
       clearInterval(interval);
       message.error(
         'An error occured. The codePost team has been notified and will be in touch shortly. In the meantime, please try refreshing and running the test again.',
