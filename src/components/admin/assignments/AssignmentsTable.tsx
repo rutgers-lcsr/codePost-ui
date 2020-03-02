@@ -61,7 +61,7 @@ import { encodeForLink } from '../../core/URLutils';
 import { openSubmission } from '../other/AdminUtils';
 import BulkSubmissionEdit from './assignments/BulkSubmissionEdit';
 
-import AssignmentSetupDialog from './assignments/AssignmentSetupDialog';
+import { AssignmentSetupDialog } from './assignments/AssignmentSetupDialog';
 
 const { Text } = Typography;
 const SubMenu = Menu.SubMenu;
