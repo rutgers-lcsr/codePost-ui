@@ -96,6 +96,7 @@ export { default as ReloadOutline } from '@ant-design/icons/lib/outline/ReloadOu
 export { default as ContainerOutline } from '@ant-design/icons/lib/outline/ContainerOutline';
 export { default as FontColorsOutline } from '@ant-design/icons/lib/outline/FontColorsOutline';
 export { default as LinkOutline } from '@ant-design/icons/lib/outline/LinkOutline';
+export { default as RocketOutline } from '@ant-design/icons/lib/outline/RocketOutline';
 export { default as SearchOutline } from '@ant-design/icons/lib/outline/SearchOutline';
 
 // Fill Icons

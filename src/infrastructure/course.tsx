@@ -84,6 +84,18 @@ const RosterVPatch = t.intersection(
   'RosterPatch',
 );
 
+const RosterMapVPatch = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      rosterMap: t.record(t.string, t.string),
+    }),
+  ],
+  'RosterPatch',
+);
+
+const RosterMapV = t.record(t.string, t.string);
+
 export type RosterType = t.TypeOf<typeof RosterV>;
 
 const CourseSettingsV = t.intersection(
@@ -111,6 +123,9 @@ export class Course {
 
   public static readRoster = readObjectDetail(RosterV, 'courses', 'roster');
   public static updateRoster = updateObjectDetail(RosterV, RosterVPatch, 'courses', 'roster');
+
+  public static readRosterMap = readObjectDetail(RosterMapV, 'courses', 'rosterMap');
+  public static updateRosterMap = updateObjectDetail(RosterMapV, RosterMapVPatch, 'courses', 'rosterMap');
 
   public static readSettings = readObjectDetail(CourseSettingsV, 'courses', 'courseSettings');
 }
