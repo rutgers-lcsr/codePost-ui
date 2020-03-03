@@ -2,8 +2,8 @@ import JSZip from 'jszip';
 
 import { message } from 'antd';
 
-import { File as CPFile, ImageExtensions, BinaryExtensions, PDFExtensions } from '../../../../infrastructure/file';
-import { sendSlack } from '../../../../components/core/slack';
+import { File as CPFile, ImageExtensions, BinaryExtensions, PDFExtensions } from '../../../../../infrastructure/file';
+import { sendSlack } from '../../../../../components/core/slack';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
