@@ -58,6 +58,8 @@ import CPFlex from '../core/CPFlex';
 import CPTooltip from '../core/CPTooltip';
 import { tooltips } from '../core/tooltips';
 
+import { AssignmentSetupBanner } from './assignments/assignments/AssignmentSetupDialog';
+
 /**********************************************************************************************************************/
 
 interface IAdminState {
@@ -1318,9 +1320,28 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       </Switch>
     );
 
+    // Only shoow banner if a coursei s defined, assignemtns
+    const banner =
+      this.props.currentCourse && this.state.assignments && this.state.assignments.length === 1 ? (
+        <AssignmentSetupBanner
+          course={this.props.currentCourse}
+          hasStudents={this.state.students.length > 0}
+          hasSubmissions={
+            this.state.submissions &&
+            this.state.submissions[this.state.assignments[0].id] &&
+            this.state.submissions[this.state.assignments[0].id].length > 0
+          }
+          onClose={() => {}}
+          assignment={this.state.assignments[0]}
+        />
+      ) : (
+        undefined
+      );
+
     return (
       <CPLayoutAdmin
         header={header}
+        banner={banner}
         detail={detail}
         navigation={navigation}
         collapsible={true}
