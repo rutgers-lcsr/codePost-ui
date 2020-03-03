@@ -283,7 +283,7 @@ RUN ${installText} Package2
       <Tabs.TabPane key="1" tab="Install packages">
         {dependenciesInput}
       </Tabs.TabPane>
-      {props.env && props.env.buildType !== 'default' && (
+      {buildType !== 'default' && (
         <Tabs.TabPane
           key="2"
           tab="[Pro mode] Custom dockerfile"
