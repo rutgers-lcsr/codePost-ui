@@ -37,7 +37,7 @@ interface IProps {
 
 const getSteps = (course: CourseType, assignment: AssignmentType, hasStudents: boolean, hasSubmissions?: boolean) => [
   {
-    title: 'Create Assignment',
+    title: 'Create assignment',
     url: null,
     isOptional: false,
     description: '',
