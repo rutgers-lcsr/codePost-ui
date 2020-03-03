@@ -724,7 +724,9 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
         onForward={onUpload}
         disableForward={mappedStudents.length === 0}
         confirmText={
-          "Some students haven't been mapped. Are you sure you want to do a partial save? You can come back later and add the missing students."
+          mappedStudents.length !== Object.keys(props.folderMap).length
+            ? "Some students haven't been mapped. Are you sure you want to do a partial save? You can come back later and add the missing students."
+            : undefined
         }
       />
     </div>
