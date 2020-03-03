@@ -63,16 +63,17 @@ import { slack } from '../../../../components/core/slack';
 
 import { encodeForLink } from '../../../../components/core/URLutils';
 
-import { CodePostDate } from '../../../../components/utils/DateUtils';
+import { CodePostDate, dueDatePassed } from '../../../../components/utils/DateUtils';
 
 import ViewUpload from '../../../../components/student/ViewUpload';
 import InvitePartnersLink from '../../../../components/student/InvitePartnersLink';
+import LateSubmissionModal from '../../../../components/student/LateSubmissionModal';
 
 import { LOCAL_SETTINGS } from '../../../../components/utils/LocalSettings';
 
 /**********************************************************************************************************************/
 
-interface IProps {
+interface IUploadSubmissionDialogProps {
   isVisible: boolean;
   onCancel: () => void;
   assignments: (AssignmentType | AssignmentStudentType)[];
@@ -112,7 +113,7 @@ enum STATUS {
   COMPLETE /* completed upload */,
 }
 
-interface IState {
+interface IUploadSubmissionDialogState {
   selectedStudents: string[];
   selectedAssignment?: AssignmentType | AssignmentStudentType;
   // List of files in codePost format for upload
@@ -140,9 +141,11 @@ interface IState {
   testsLog: string | null; // If the admin turns off exposeDumpLogs then the log will be none
   runMessage: string; // A message to show students from the result of their run
   activeTab: string;
+
+  lateSubmissionModalVisible: boolean;
 }
 
-class UploadSubmissionDialog extends React.Component<IProps, IState> {
+class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProps, IUploadSubmissionDialogState> {
   public assignmentOptions = this.props.assignments.map((assignment: AssignmentType | AssignmentStudentType, i) => {
     return {
       value: assignment.id,
@@ -150,7 +153,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     };
   });
 
-  public state: Readonly<IState> = {
+  public state: Readonly<IUploadSubmissionDialogState> = {
     selectedStudents: this.props.selectedStudents,
     selectedAssignment: this.props.selectedAssignment,
     files: [],
@@ -167,18 +170,21 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     sendMeAConfirmationEmail: LOCAL_SETTINGS.sendMeAConfirmationEmail.getter(),
     runMessage: '',
     activeTab: '1',
+    lateSubmissionModalVisible: false,
   };
 
   /********************************************************************************************************/
   /* Lifecycle methods
   /********************************************************************************************************/
 
-  public toggleState = (key: keyof IState) => (prevState: IState): IState => ({
+  public toggleState = (key: keyof IUploadSubmissionDialogState) => (
+    prevState: IUploadSubmissionDialogState,
+  ): IUploadSubmissionDialogState => ({
     ...prevState,
     [key]: !prevState[key],
   });
 
-  public getState = (key: keyof IState): any => {
+  public getState = (key: keyof IUploadSubmissionDialogState): any => {
     return this.state[key];
   };
 
@@ -188,7 +194,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
   }
 
-  public componentDidUpdate(prevProps: IProps, prevState: IState) {
+  public componentDidUpdate(prevProps: IUploadSubmissionDialogProps, prevState: IUploadSubmissionDialogState) {
     if (
       prevProps.selectedAssignment !== this.props.selectedAssignment ||
       (!prevProps.isVisible && this.props.isVisible)
@@ -366,11 +372,32 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     this.setState({ files, fileList });
   };
 
+  public openLateSubmissionModal = () => {
+    this.setState({ lateSubmissionModalVisible: true });
+  };
+
+  public closeLateSubmissionModal = () => {
+    this.setState({ lateSubmissionModalVisible: false });
+  };
+
   /********************************************************************************************************/
   /* Submission upload
   /********************************************************************************************************/
 
+  public confirmUpload = () => {
+    if (this.state.selectedAssignment === undefined) {
+      return;
+    }
+
+    if (dueDatePassed(this.state.selectedAssignment)) {
+      this.openLateSubmissionModal();
+    } else {
+      this.upload();
+    }
+  };
+
   public upload = () => {
+    this.closeLateSubmissionModal();
     if (this.state.selectedAssignment) {
       this.setState({ status: STATUS.SAVING }, () => {
         if (this.state.selectedAssignment) {
@@ -604,17 +631,17 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           {
             setting: 'Upload a directory',
             tooltip: 'Turn this on to upload nested folders.',
-            variable: 'uploadDirectory' as keyof IState,
+            variable: 'uploadDirectory' as keyof IUploadSubmissionDialogState,
           },
           // {
           //   setting: 'Upload an incomplete submission',
           //   tooltip: 'Turn this on to a submission missing required files.',
-          //   variable: 'allowIncomplete' as keyof IState,
+          //   variable: 'allowIncomplete' as keyof IUploadSubmissionDialogState,
           // },
           // {
           //   setting: 'Upload extra files',
           //   tooltip: 'Turn this on to upload files not specifed by the assignment.',
-          //   variable: 'allowExtra' as keyof IState,
+          //   variable: 'allowExtra' as keyof IUploadSubmissionDialogState,
           // },
         ];
 
@@ -694,6 +721,9 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         if (this.props.isStudent) {
           sendMeAConfirmationEmailCheckbox = (
             <span>
+              {this.state.selectedAssignment !== undefined && dueDatePassed(this.state.selectedAssignment) ? (
+                <Tag color="volcano">Due Date Passed</Tag>
+              ) : null}
               <Checkbox
                 key="send-me-a-confirmation-email"
                 checked={this.state.sendMeAConfirmationEmail}
@@ -715,14 +745,24 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         }
 
         goForwardButton = (
-          <Button
-            key="submit"
-            type="primary"
-            disabled={disableUpload || !areRequiredFilesPresent}
-            onClick={this.upload}
-          >
-            Upload {this.shouldRunTests() && <Icon type="calculator" />}
-          </Button>
+          <span style={{ marginLeft: '8px' }}>
+            <Button
+              key="submit"
+              type="primary"
+              disabled={disableUpload || !areRequiredFilesPresent}
+              onClick={this.confirmUpload}
+            >
+              Upload {this.shouldRunTests() && <Icon type="calculator" />}
+            </Button>
+            {this.state.selectedAssignment === undefined ? null : (
+              <LateSubmissionModal
+                visible={this.state.lateSubmissionModalVisible}
+                assignment={this.state.selectedAssignment}
+                onCancel={this.closeLateSubmissionModal}
+                onOk={this.upload}
+              />
+            )}
+          </span>
         );
 
         /*****************************************************************************************/
