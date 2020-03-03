@@ -266,12 +266,12 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
 
           return {
             ...formatSub(submission, this.props.assignment),
-            key: submission ? submission.id : student,
+            key: student,
             student: shownStudent,
             partners,
             viewIcon: <div>{getViewIcon(submission, this.state.viewsBySubmission, student)}</div>,
             open: submission !== null ? <Icon type="code" onClick={openGradePage} /> : null,
-            disableCheck: !submission || submission.grader,
+            disableCheck: !submission || submission.grader !== undefined,
           };
         });
       }

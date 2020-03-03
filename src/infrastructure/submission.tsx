@@ -236,6 +236,7 @@ export class Submission {
   public static update = updateObject(SubmissionV, SubmissionVPatch, 'submissions');
   public static delete = deleteObject(SubmissionV, 'submissions');
   public static readAnonymous = readObject(AnonymousSubmissionV, 'submissions');
+  public static updateAnonymous = updateObject(AnonymousSubmissionV, SubmissionVPatch, 'submissions');
   public static readReadOnly = readObject(StudentSubmissionV, 'submissions');
   public static readHistory = readObjectDetail(t.array(SubmissionHistoryV), 'submissions', 'history');
   public static readTestResults = readObjectDetail(TestResultsV, 'submissions', 'testResults');
