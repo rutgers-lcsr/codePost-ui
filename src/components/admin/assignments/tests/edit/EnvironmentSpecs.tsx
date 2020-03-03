@@ -16,6 +16,7 @@ import {
   Select,
   Skeleton,
   Spin,
+  Tabs,
   Tooltip,
   Tag,
   Typography,
@@ -52,7 +53,7 @@ const { confirm } = Modal;
 interface IProps {
   currentAssignment: AssignmentType;
   env: EnvironmentType | undefined;
-  buildEnv: (language: string, dependencies: string, buildType: string) => Promise<void>;
+  buildEnv: (language: string, dependencies: string, customDockerfile: string, buildType: string) => Promise<void>;
   updateCompileText: (compileText: string) => Promise<void>;
   helpers: SolutionFileType[] | HelperFileType[];
   solutions: SolutionFileType[] | HelperFileType[];
@@ -67,6 +68,8 @@ export const EnvironmentSpecs = (props: IProps) => {
   const [language, setLanguage] = useState<string | null>(props.env ? props.env.language : null);
   const [buildType, setBuildType] = useState<string>(props.env ? props.env.buildType : 'default');
   const [dependencies, setDependencies] = useState<string>(props.env ? props.env.dockerRunInstructions.join('\n') : '');
+  const [customDockerfile, setCustomDockerfile] = useState<string>(props.env ? props.env.dockerfile : '');
+
   const [buildIsLoading, setBuildIsLoading] = useState(false);
 
   /******************************* API / State Change Functions ****************************/
@@ -76,6 +79,7 @@ export const EnvironmentSpecs = (props: IProps) => {
       setLanguage(props.env.language);
       setDependencies(props.env.dockerRunInstructions.join('\n'));
       setBuildType(props.env.buildType);
+      setCustomDockerfile(props.env.dockerfile);
     }
   }, [props.env]);
 
@@ -116,11 +120,11 @@ export const EnvironmentSpecs = (props: IProps) => {
         content:
           'When you use a custom build, the only default packages are those built into the operating system. Please make sure to install the required language packages for your langauge in the "Install Packages" field.',
         async onOk() {
-          await props.buildEnv(language !== null ? language : '', dependencies, buildType);
+          await props.buildEnv(language !== null ? language : '', dependencies, customDockerfile, buildType);
         },
       });
     } else {
-      await props.buildEnv(language !== null ? language : '', dependencies, buildType);
+      await props.buildEnv(language !== null ? language : '', dependencies, customDockerfile, buildType);
     }
     setBuildIsLoading(false);
   };
@@ -159,6 +163,10 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   const onDependenciesChange = (event: any) => {
     setDependencies(event.target.value);
+  };
+
+  const onCustomDockerfileChange = (event: any) => {
+    setCustomDockerfile(event.target.value);
   };
 
   const onBuildTypeChange = (e: any) => {
@@ -237,17 +245,16 @@ export const EnvironmentSpecs = (props: IProps) => {
     </Select>
   );
 
-  //************ 1C. ENVIRONMENT -  SELECT DEPENDENCIES
+  //************ 1C. Install packages ******************
   const placeholder = `// new line separated
 ${installText} Package1
 ${installText} Package2
 ...`;
 
-  const selectDependencies = (
+  const dependenciesInput = (
     // Disable selector if environment has a custom dockerfile defined
     <Input.TextArea
       autosize={{ minRows: 4, maxRows: 8 }}
-      disabled={language === null || (props.env && props.env.dockerfile.length > 0)}
       value={dependencies}
       onChange={onDependenciesChange}
       placeholder={placeholder}
@@ -255,9 +262,33 @@ ${installText} Package2
     />
   );
 
-  //************ 1D. ENVIRONMENT - SHOW CUSTOM DOCKERFILE IF IT EXISTS
-  const customDockerFile = props.env && props.env.dockerfile && (
-    <span>Custom DockerFile:&nbsp;{props.env.dockerfile}</span>
+  const dockerPlaceholder = `// docker file syntax
+// adding commands here replaces 'Install packages'
+RUN ${installText} Package1
+RUN ${installText} Package2
+...`;
+
+  const customDockerInput = props.env && (
+    <Input.TextArea
+      autosize={{ minRows: 4 }}
+      value={customDockerfile}
+      onChange={onCustomDockerfileChange}
+      placeholder={dockerPlaceholder}
+      style={{ marginLeft: '15px', width: '50%' }}
+    />
+  );
+
+  const install = (
+    <Tabs defaultActiveKey={props.env && props.env.dockerfile.length > 0 ? '2' : '1'} style={{ width: '80%' }}>
+      <Tabs.TabPane key="1" tab="Install packages">
+        {dependenciesInput}
+      </Tabs.TabPane>
+      {buildType !== 'default' && (
+        <Tabs.TabPane key="2" tab="[Pro mode] Custom dockerfile">
+          {customDockerInput}
+        </Tabs.TabPane>
+      )}
+    </Tabs>
   );
 
   if (props.env === undefined && language === null) {
@@ -344,18 +375,9 @@ ${installText} Package2
       <span style={{ lineHeight: '32px' }}>Build Type:</span> {buildOptions} {customBuildSelect}
       <br />
       <br />
-      <div className="display-flex">
-        <div className="display-flex flex-direction-column">
-          <span>
-            Install packages:{' '}
-            <Tooltip title="Add line-delimited install commands">
-              <Icon type="info" />
-            </Tooltip>
-          </span>{' '}
-        </div>{' '}
-        {selectDependencies}
+      <div className="display-flex" style={{ marginLeft: 50 }}>
+        {install}
       </div>
-      {customDockerFile}
       {props.env ? showAfterCreation : null}
     </div>
   );
