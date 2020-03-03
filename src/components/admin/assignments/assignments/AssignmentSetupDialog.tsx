@@ -65,7 +65,13 @@ const getSteps = (course: CourseType, assignment: AssignmentType, hasStudents: b
     isOptional: false,
     description: 'Specify required files, allow late submissions, etc...',
     hide: !assignment.allowStudentUpload,
-    isComplete: hasSubmissions || false,
+    isComplete:
+      assignment.allowStudentUploadWithPartners ||
+      assignment.fileTemplates.length > 0 ||
+      assignment.liveFeedbackMode ||
+      assignment.allowLateUploads ||
+      assignment.explanation.length > 0 ||
+      hasSubmissions,
     icon: 'upload',
   },
   {
