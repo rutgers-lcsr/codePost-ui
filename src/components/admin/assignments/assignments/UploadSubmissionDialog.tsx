@@ -413,6 +413,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
             .then((newSubmission: StudentSubmissionType | SubmissionType) => {
               const shouldRun = this.shouldRunTests();
               if (shouldRun) {
+                message.success('Submission uploaded!');
                 this.runTests(newSubmission);
               }
               this.setState({
