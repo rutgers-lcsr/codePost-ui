@@ -229,8 +229,10 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
 
   // ************************** Environment function **************************
 
-  const buildEnv = async (language: string, dependencies: string, buildType: string) => {
+  const buildEnv = async (language: string, dependencies: string, customDockerfile: string, buildType: string) => {
     let thisEnvironment = env;
+
+    // If environment doesn't exist create it
     if (!thisEnvironment) {
       const payload = {
         id: -1,
@@ -250,9 +252,11 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       // Update the assignment environment field
       props.updateAssignment(props.currentAssignment.id, 'environment', thisEnvironment.id);
     }
+
     const buildResult = await Environment.build({
       id: thisEnvironment.id,
-      dockerRunInstructions: dependencies ? dependencies.split('\n') : [],
+      dockerRunInstructions: dependencies && !customDockerfile ? dependencies.split('\n') : [],
+      dockerfile: customDockerfile,
       language: language,
       buildType: buildType,
     });
