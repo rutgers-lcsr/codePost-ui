@@ -13,7 +13,7 @@ import { SolutionFileType } from '../../../../../../infrastructure/autograder/so
 import { HelperFileType } from '../../../../../../infrastructure/autograder/helperFile';
 import { BinaryExtensions } from '../../../../../../infrastructure/file';
 
-import { fileToProtoFileUpload } from '../../../assignments/FileReader';
+import { fileToProtoFileUpload } from '../../../assignments/SubmissionUpload/FileReader';
 
 import { IDirectoryStructure, IFolder } from '../../../../../code-review/menu/fileMenuUtils';
 
