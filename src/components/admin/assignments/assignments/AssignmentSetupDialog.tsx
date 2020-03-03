@@ -19,6 +19,10 @@ import {
   getSettingsURL,
 } from '../../../core/URLutils';
 
+import layoutVars from '../../../../styles/layout/_layoutVars';
+
+import useWindowSize from '../../../core/useWindowSize';
+
 const { Step } = Steps;
 
 /**********************************************************************************************************************/
@@ -60,7 +64,7 @@ const getSteps = (course: CourseType, assignment: AssignmentType, hasStudents: b
     icon: 'upload',
   },
   {
-    title: 'Configure student upload',
+    title: 'Configure upload',
     url: `/${getSettingsURL(course, assignment)}`,
     isOptional: false,
     description: 'Specify required files, allow late submissions, etc...',
@@ -151,24 +155,27 @@ export const AssignmentSetupBanner = (props: IProps) => {
     }
   };
 
+  const windowSize = useWindowSize();
+
+  const isSmall = windowSize.width < 1250;
   const options = (
-    <Steps type="navigation" onChange={onStepChange} current={7}>
+    <Steps type={'navigation'} onChange={onStepChange} current={7} size={'small'}>
       {steps.map((step) =>
         step.hide ? (
           <span />
         ) : (
           <Step
             title={step.title}
-            subTitle={step.isOptional ? '(optional)' : ''}
+            subTitle={step.isOptional && !isSmall ? '(optional)' : ''}
             status={step.isComplete ? 'finish' : 'wait'}
             description=""
             disabled={step.isComplete}
-            icon={<Icon type={step.icon} />}
+            icon={isSmall ? <div /> : <Icon type={step.icon} />}
           />
         ),
       )}
     </Steps>
   );
 
-  return <div style={{ width: '100%', minHeight: 75 }}>{options}</div>;
+  return <div style={{ width: '100%' }}>{options}</div>;
 };

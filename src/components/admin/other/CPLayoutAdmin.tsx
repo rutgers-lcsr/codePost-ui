@@ -86,7 +86,9 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
       )}
       <Layout style={{ minWidth: layoutVars.minWidths.admin }}>
         <Header className="layout--admin__header">{props.header}</Header>
-        {props.banner && <Header className="layout--admin__banner">{props.banner}</Header>}
+        {props.banner && windowSize.width > layoutVars.breakpoints.smallScreen.admin && (
+          <Header className="layout--admin__banner">{props.banner}</Header>
+        )}
         {props.detail}
       </Layout>
     </Layout>
