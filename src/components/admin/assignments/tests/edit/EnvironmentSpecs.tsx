@@ -255,7 +255,6 @@ ${installText} Package2
     // Disable selector if environment has a custom dockerfile defined
     <Input.TextArea
       autosize={{ minRows: 4, maxRows: 8 }}
-      disabled={language === null || (props.env && props.env.dockerfile.length > 0)}
       value={dependencies}
       onChange={onDependenciesChange}
       placeholder={placeholder}
@@ -264,6 +263,7 @@ ${installText} Package2
   );
 
   const dockerPlaceholder = `// docker file syntax
+// adding commands here replaces 'Install packages'
 RUN ${installText} Package1
 RUN ${installText} Package2
 ...`;
