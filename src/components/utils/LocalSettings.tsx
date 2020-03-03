@@ -126,6 +126,16 @@ const defaultAssignment = generateSettingFunctions('defaultAssignment', 0, intIP
 // defalut value: 0
 const mostRecentFile = generateSettingFunctions('mostRecentFile', 0, intIParser, intOParser);
 
+// key: sendMeAConfirmationEmail
+// return type: boolean. Student upload confirmation checkbox will default to this value.
+// defalut value: true
+const sendMeAConfirmationEmail = generateSettingFunctions(
+  'sendMeAConfirmationEmail',
+  true,
+  booleanIParser,
+  booleanOParser,
+);
+
 // key: rubricMenuHidden
 // return type: boolean. If true, rubric menu section of code console will be collapsed.
 // defalut value: false
@@ -135,6 +145,11 @@ const autograderInstructionsVisible = generateSettingFunctions(
   booleanIParser,
   booleanOParser,
 );
+
+// key: defaultPageSize
+// return type: int. Represents the desired page size of paginated tables
+// defalut value: 10
+const defaultPageSize = generateSettingFunctions('defaultPageSize', 10, intIParser, intOParser);
 
 /******************************************************************************************************************/
 const LOCAL_SETTINGS = {
@@ -151,6 +166,8 @@ const LOCAL_SETTINGS = {
   defaultAssignment,
   mostRecentFile,
   autograderInstructionsVisible,
+  sendMeAConfirmationEmail,
+  defaultPageSize,
 };
 
 export { LOCAL_SETTINGS, clearLocalSettings };

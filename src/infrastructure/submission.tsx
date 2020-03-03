@@ -214,6 +214,18 @@ const TestResultsV = t.intersection(
   'TestResults',
 );
 
+const PartnerLinkV = t.intersection(
+  [
+    t.type({
+      token: t.string,
+    }),
+    t.partial({}),
+  ],
+  'InviteToken',
+);
+
+export type PartnerLinkType = t.TypeOf<typeof PartnerLinkV>;
+
 /*****************************************************************************/
 /* Methods exposed
 /*****************************************************************************/
@@ -224,9 +236,18 @@ export class Submission {
   public static update = updateObject(SubmissionV, SubmissionVPatch, 'submissions');
   public static delete = deleteObject(SubmissionV, 'submissions');
   public static readAnonymous = readObject(AnonymousSubmissionV, 'submissions');
+  public static updateAnonymous = updateObject(AnonymousSubmissionV, SubmissionVPatch, 'submissions');
   public static readReadOnly = readObject(StudentSubmissionV, 'submissions');
   public static readHistory = readObjectDetail(t.array(SubmissionHistoryV), 'submissions', 'history');
   public static readTestResults = readObjectDetail(TestResultsV, 'submissions', 'testResults');
+  public static readPartnerLink = readObjectDetail(PartnerLinkV, 'submissions', 'generatePartnerLink');
+  public static validatePartnerLinkAndReturn = readObjectDetail(
+    StudentSubmissionV,
+    'submissions',
+    'validatePartnerLinkAndReturn',
+  );
+  public static validatePartnerLink = readObjectDetail(t.string, 'submissions', 'validatePartnerLink');
+  public static removePartner = readObjectDetail(t.string, 'submissions', 'removePartner');
 
   public static updateHistory = updateObjectDetail(
     SubmissionHistoryV,

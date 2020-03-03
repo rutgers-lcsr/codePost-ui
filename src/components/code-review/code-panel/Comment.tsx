@@ -39,6 +39,9 @@ import { wait } from '../../../infrastructure/animation';
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
 import { findBlockElement } from './BlockUtils.tsx';
+
+import CommentToRubric from './CommentToRubric';
+
 /**********************************************************************************************************************/
 
 export type UICommentType = 'readonly' | 'active' | 'inactive';
@@ -79,6 +82,10 @@ const cheapEqRubricComments = (rc1: RubricCommentType | undefined, rc2: RubricCo
   return true;
 };
 
+const isEmpty = (text: null | string, pointDelta: number, rubricComment: RubricCommentType | undefined) => {
+  return (!text || text.length === 0) && pointDelta === 0 && rubricComment === undefined;
+};
+
 interface ICommentProps {
   additiveGrading: boolean;
   commentType: UICommentType;
@@ -115,6 +122,7 @@ interface ICommentState {
   points: number;
   showDeletePopover: boolean;
   hasHover: boolean;
+  makeRubric: boolean;
 }
 
 class Comment extends React.Component<ICommentProps, ICommentState> {
@@ -169,6 +177,56 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       this.props.setCommentPlacements();
     }
 
+    /**********************************************************************************/
+    /* BEGIN: FOOBAR CONFIG
+    /**********************************************************************************/
+    if (this.props.commentType !== prevProps.commentType) {
+      const makeColor = (color: string) => {
+        let hexVal = '#fff';
+        switch (color) {
+          case 'red':
+            hexVal = '#D08B79';
+            break;
+          case 'green':
+            hexVal = '#A4D079';
+            break;
+          case 'purple':
+            hexVal = '#ABAEEF';
+            break;
+        }
+        this.save(hexVal);
+      };
+
+      const makeRubricComment = () => {
+        this.setState({ makeRubric: true });
+      };
+
+      if (this.props.commentType === 'active') {
+        (window as any).setFoobarParams('color', ['red', 'green', 'purple']);
+        (window as any).addToFoobar({
+          label: 'Set comment color to {{color}}',
+          value: 'Set comment color to ',
+          kind: 'dynamic',
+          child: {
+            kind: 'action',
+            callback: makeColor,
+          },
+        });
+        (window as any).addToFoobar({
+          label: 'Add comment to rubric',
+          value: 'Add comment to rubric',
+          kind: 'action',
+          callback: makeRubricComment,
+        });
+      } else {
+        (window as any).removeFromFoobar('Set comment color to {{color}}');
+        (window as any).removeFromFoobar('Add comment to rubric');
+      }
+    }
+    /**********************************************************************************/
+    /* END: FOOBAR CONFIG
+    /**********************************************************************************/
+
     // If a comment is finalized, then reset the state
     if (['active', 'inactive'].includes(prevProps.commentType) && this.props.commentType === 'readonly') {
       this.setState(this.init());
@@ -193,7 +251,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       this.props.commentType === 'inactive' &&
       prevProps.comment.id === this.props.comment.id
     ) {
-      if (this.state.text.length === 0 && this.state.points === 0 && this.props.rubricComment === undefined) {
+      if (isEmpty(this.state.text, this.state.points, this.props.rubricComment)) {
         this.props.onDelete(this.props.comment);
       }
     }
@@ -218,7 +276,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
     const points: number = UiComment.points(this.props.comment, this.props.rubricComment);
     const status: CommentStatus =
       text === '' && points === 0 && this.props.rubricComment === undefined ? 'edited' : 'idle';
-    return { text, points, status, showDeletePopover: false, hasHover: false };
+    return { text, points, status, showDeletePopover: false, hasHover: false, makeRubric: false };
   };
 
   /***********************************************************************************************/
@@ -227,23 +285,15 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
 
   public onMouseEnter = () => {
     this.highlightRelatedComment();
-    this.handleHoverEvent();
   };
 
   public onMouseLeave = () => {
     this.unhighlightRelatedComment();
-    this.handleHoverEvent();
-  };
-
-  public handleHoverEvent = () => {
-    this.setState((oldState) => {
-      return { hasHover: !oldState.hasHover };
-    });
   };
 
   /***********************************************************************************************/
 
-  public save = async () => {
+  public save = async (hexVal?: string) => {
     this.unhighlightRelatedComment();
 
     const comment = {
@@ -251,6 +301,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       text: this.state.text,
       pointDelta: this.props.rubricComment ? null : this.state.points,
       rubricComment: this.props.rubricComment ? this.props.rubricComment.id : null,
+      color: hexVal ? hexVal : this.props.comment.color,
     };
 
     try {
@@ -711,7 +762,9 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       );
 
       commentElements.saveButton = <CPButton cpType="secondary" icon="check" onClick={this.deactivate} />;
-      commentElements.deleteButton = (
+      commentElements.deleteButton = isEmpty(this.state.text, this.state.points, this.props.rubricComment) ? (
+        <CPButton cpType="danger" icon="delete" onClick={this.confirmDelete} />
+      ) : (
         <Popover
           title="Are you sure you want to delete this comment?"
           visible={this.state.showDeletePopover}
@@ -968,6 +1021,13 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           </div>
         </div>
         {feedback}
+        <CommentToRubric
+          initialText={this.state.text}
+          initialPointDelta={this.state.points}
+          visible={this.state.makeRubric}
+          rubricCategories={this.props.rubricCategories}
+          onCancel={() => this.setState({ makeRubric: false })}
+        />
       </div>
     );
   }

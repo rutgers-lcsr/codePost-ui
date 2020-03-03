@@ -26,6 +26,7 @@ const SimpleComment = (props: {
     rubricComment: null,
     author: 'grader@myschool.edu',
     feedback: 0,
+    color: null,
   };
 
   const empty = (arg?: any) => {

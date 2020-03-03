@@ -97,6 +97,7 @@ export { default as ContainerOutline } from '@ant-design/icons/lib/outline/Conta
 export { default as FontColorsOutline } from '@ant-design/icons/lib/outline/FontColorsOutline';
 export { default as LinkOutline } from '@ant-design/icons/lib/outline/LinkOutline';
 export { default as RocketOutline } from '@ant-design/icons/lib/outline/RocketOutline';
+export { default as SearchOutline } from '@ant-design/icons/lib/outline/SearchOutline';
 
 // Fill Icons
 export { default as PushpinFill } from '@ant-design/icons/lib/fill/PushpinFill';

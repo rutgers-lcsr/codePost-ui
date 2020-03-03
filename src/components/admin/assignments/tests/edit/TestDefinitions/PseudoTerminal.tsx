@@ -220,7 +220,7 @@ export const PseudoTerminal = (props: IResultProps) => {
       style={{ height: '24px', minWidth: '180px', fontSize: '12px' }}
       size="small"
       showSearch
-      value={props.activeSubmission ? props.activeSubmission.id.toString() : '0'}
+      defaultValue={props.activeSubmission !== undefined ? props.activeSubmission.id.toString() : '0'}
       filterOption={(input, option: any) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
     >
       {props.submissions.map((sub, i) => (

@@ -41,6 +41,7 @@ interface ISubmissionReadProps {
     isRegrade: boolean,
   ) => Promise<StudentSubmissionType>;
   deleteStudentQuestion?: (submission: StudentSubmissionType) => Promise<StudentSubmissionType>;
+  isStudentMode: boolean;
 }
 
 interface ISubmissionInfoWriteProps {
@@ -64,7 +65,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
   let submitted;
   if (props.submission !== undefined) {
     if (props.submission) {
-      if (props.assignment.uploadDueDate) {
+      if (props.assignment.allowStudentUpload && props.assignment.uploadDueDate) {
         const two_hours = 3.6e6 * 2; // ms grace period
         const isLate =
           Date.parse(props.submission.dateUploaded) > Date.parse(props.assignment.uploadDueDate) + two_hours;
@@ -138,7 +139,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
   if (props.submission !== undefined) {
     studentList = <Students submission={props.submission} isAnonymous={props.assignment.anonymousGrading} />;
   } else {
-    studentList = <Students submission={props.readOnlySubmission!} isAnonymous={false} />;
+    studentList = <Students submission={props.readOnlySubmission!} isAnonymous={props.isStudentMode} />;
   }
 
   return (

@@ -10,7 +10,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 /* antd imports */
-import { Button, Descriptions, Divider, Dropdown, Icon, message, Menu, Modal, Popover, Switch, Tag } from 'antd';
+import { Button, Descriptions, Divider, Dropdown, Icon, message, Menu, Modal, Popover, Switch, Tag, Input } from 'antd';
 
 /* codePost imports */
 import CPButton from '../core/CPButton';
@@ -194,10 +194,12 @@ export const DownloadCode = (props: IDownloadCodeProps) => {
     });
   };
 
+  (window as any).addToFoobar({ value: 'Download code', label: 'Download code', callback: onClick, kind: 'action' });
+
   return (
     <CPTooltip title={tooltips.grade.header.downloadCode} hideThisOnHideTips={true}>
       <ButtonGroup>
-        <CPButton id="view-as-student" cpType={cpType} small={true} onClick={onClick}>
+        <CPButton id="download-code" cpType={cpType} small={true} onClick={onClick}>
           <Icon type="download" />
         </CPButton>
       </ButtonGroup>
@@ -311,6 +313,12 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   };
 
   useHotkeys(F_KEY, onClick, true);
+  (window as any).addToFoobar({
+    value: 'Finalize / unfinalize',
+    label: 'Finalize / unfinalize',
+    callback: onClick,
+    kind: 'action',
+  });
 
   React.useEffect(() => {
     // Activate the nudge when these elements are clicked
@@ -366,16 +374,20 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   }
 
   return (
-    <div ref={ref} id="submission-status-toggle" className={nudge ? 'wiggle' : ''}>
+    <div ref={ref} id="submission-status-toggle" className={nudge ? 'wiggle' : ''} style={{ minWidth: '108px' }}>
       <CPTooltip title={toggleNotice} placement="left">
         <span style={{ color: consoleTheme.siderMenuItemColor }}>Finalized:</span>
         &nbsp;
-        <Switch
-          checked={isFinalized}
-          onClick={onClick}
-          disabled={(props.submission.grader === null && !props.isOnlyGrader) || (isFinalized && !props.canUnfinalize)}
-          loading={isLoading}
-        />
+        <span>
+          <Switch
+            checked={isFinalized}
+            onClick={onClick}
+            disabled={
+              (props.submission.grader === null && !props.isOnlyGrader) || (isFinalized && !props.canUnfinalize)
+            }
+            loading={isLoading}
+          />
+        </span>
       </CPTooltip>
     </div>
   );
@@ -794,5 +806,31 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
     <Dropdown overlay={menu} trigger={['click']}>
       <Icon type="menu" style={{ color: consoleTheme.text }} />
     </Dropdown>
+  );
+};
+
+export const HeaderSearch = () => {
+  const onClick = () => {
+    (window as any).openFoobar();
+  };
+
+  return (
+    <span onClick={onClick} style={{ cursor: 'pointer' }}>
+      {/* <Input.Search id="foobar-search" disabled={true} placeholder="Find anything" /> */}
+      <div
+        className="foobar-search"
+        style={{
+          background: '#f5f5f5',
+          border: '1px solid #d9d9d9',
+          borderRadius: '4px',
+          padding: '4px 11px',
+          lineHeight: '1.5',
+          width: '175px',
+          color: 'rgba(0, 0, 0, 0.3)',
+        }}
+      >
+        Find anything <Icon type="search" style={{ float: 'right', marginTop: '2px' }} />
+      </div>
+    </span>
   );
 };

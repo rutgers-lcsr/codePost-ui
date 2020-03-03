@@ -1,3 +1,8 @@
+.foobar-search:hover {
+  border: 1px solid gray !important;
+  color: gray !important;
+}
+
 .source-editor-code {
   height: 100%;
 }
@@ -132,6 +137,15 @@
     box-shadow: 0 5px 10px 0 rgba(0, 21, 41, 0.12);
     position: relative;
     z-index: 2;
+  }
+
+  &__banner {
+    background-color: #fefefe;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 0px;
+    position: relative;
+    height: 75px;
   }
 
   &__subheader {

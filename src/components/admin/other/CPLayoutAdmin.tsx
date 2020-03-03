@@ -28,6 +28,7 @@ const { Header, Sider } = Layout;
 
 interface ICPLayoutAdminProps {
   header: React.ReactNode;
+  banner?: React.ReactNode;
   detail: React.ReactNode;
   navigation: (collapsed: boolean) => React.ReactNode;
   collapsible?: boolean;
@@ -85,6 +86,9 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
       )}
       <Layout style={{ minWidth: layoutVars.minWidths.admin }}>
         <Header className="layout--admin__header">{props.header}</Header>
+        {props.banner && windowSize.width > layoutVars.breakpoints.smallScreen.admin && (
+          <Header className="layout--admin__banner">{props.banner}</Header>
+        )}
         {props.detail}
       </Layout>
     </Layout>

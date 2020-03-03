@@ -142,9 +142,10 @@ export const TemplateSelector = (props: IProps) => {
     setVisible(false);
   };
 
+  // If the container's language isn't specified, default to java templates
   const data = dataSource
     .map((el) => {
-      const code = codeMap[el.key][props.language];
+      const code = codeMap[el.key][props.language === 'other' ? 'java' : props.language];
       return {
         ...el,
         select: <Button onClick={() => selectAndClose(code)}>Select</Button>,

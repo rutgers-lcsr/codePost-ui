@@ -99,6 +99,22 @@ export const TestFileList = (props: IProps) => {
       />
     );
   } else {
+    const code = sortedFiles[parseInt(currentIndex, 10)].code;
+
+    let codeWindow = (
+      <div style={{ position: 'relative', marginLeft: 5 }}>
+        <CodeWindow code={code} name={sortedFiles[parseInt(currentIndex, 10)].name} onSave={onSave} />
+      </div>
+    );
+
+    if (code.startsWith('data:application/octet-stream;base64,')) {
+      codeWindow = (
+        <div style={{ position: 'relative', marginLeft: 5 }}>
+          <CodeWindow code={'No Preview Available'} name={sortedFiles[parseInt(currentIndex, 10)].name} />
+        </div>
+      );
+    }
+
     return (
       <div>
         <Layout style={{ height: props.height ? props.height : 650 }}>
@@ -112,17 +128,7 @@ export const TestFileList = (props: IProps) => {
             />
           </Sider>
           <Content style={{ maxHeight: '70vh', overflow: 'visible', fontSize: 12 }}>
-            {sortedFiles.length === 0 ? (
-              <div />
-            ) : (
-              <div style={{ position: 'relative', marginLeft: 5 }}>
-                <CodeWindow
-                  code={sortedFiles[parseInt(currentIndex, 10)].code}
-                  name={sortedFiles[parseInt(currentIndex, 10)].name}
-                  onSave={onSave}
-                />
-              </div>
-            )}
+            {sortedFiles.length === 0 ? <div /> : codeWindow}
           </Content>
         </Layout>
       </div>

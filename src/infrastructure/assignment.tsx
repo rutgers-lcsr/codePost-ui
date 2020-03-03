@@ -22,6 +22,7 @@ import {
 import { SubmissionHistoryV } from './submissionHistory';
 import { StudentTestCaseV } from './testCase';
 import { TestCategoryV } from './testCategory';
+import { CommentV } from './comment';
 
 const AssignmentV = t.intersection(
   [
@@ -33,6 +34,7 @@ const AssignmentV = t.intersection(
       hideGrades: t.boolean,
       commentFeedback: t.boolean,
       allowStudentUpload: t.boolean,
+      allowStudentUploadWithPartners: t.boolean,
       uploadDueDate: t.union([t.string, t.null]),
       liveFeedbackMode: t.boolean,
       additiveGrading: t.boolean,
@@ -98,6 +100,7 @@ const AssignmentVStudent = t.intersection(
     t.partial({
       hideGrades: t.boolean,
       allowStudentUpload: t.boolean,
+      allowStudentUploadWithPartners: t.boolean,
       additiveGrading: t.boolean,
       uploadDueDate: t.union([t.string, t.null]),
       liveFeedbackMode: t.boolean,
@@ -151,6 +154,7 @@ const AssignmentVPatch = t.intersection(
       regradeInstructions: t.string,
       regradeDeadline: t.union([t.null, t.string]),
       allowStudentUpload: t.boolean,
+      allowStudentUploadWithPartners: t.boolean,
       uploadDueDate: t.union([t.string, t.null]),
       liveFeedbackMode: t.boolean,
       collaborativeRubricMode: t.boolean,
@@ -217,6 +221,7 @@ export class Assignment {
     'assignments',
     'submissionHistories',
   );
+  public static readComments = readObjectDetail(t.array(CommentV), 'assignments', 'comments');
 }
 
 // Type for getting and patching student upload
@@ -236,6 +241,9 @@ const StudentUploadData = t.intersection([
         }),
       ]),
     ),
+  }),
+  t.partial({
+    sendConfirmationEmail: t.boolean,
   }),
 ]);
 

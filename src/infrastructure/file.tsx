@@ -53,10 +53,37 @@ const FileVPatch = t.intersection(
 
 export type FileType = t.TypeOf<typeof FileV>;
 
-const MarkdownExtensions = ['md', '.md'];
-const JupyterExtensions = ['ipynb', '.ipynb'];
-const ImageExtensions = ['png', '.png', '.jpeg', 'jpeg', '.jpg', 'jpg'];
-const PDFExtensions = ['pdf', '.pdf'];
+export const MarkdownExtensions = ['md', '.md'];
+export const JupyterExtensions = ['ipynb', '.ipynb'];
+export const ImageExtensions = ['png', '.png', '.jpeg', 'jpeg', '.jpg', 'jpg', 'gif', '.gif'];
+export const PDFExtensions = ['pdf', '.pdf'];
+// https://github.com/bevry/binaryextensions/blob/master/source/index.json
+export const BinaryExtensions = [
+  'class',
+  '.class',
+  'jar',
+  '.jar',
+  'gar',
+  '.gar',
+  'dds',
+  '.dds',
+  'eot',
+  '.eot',
+  'ico',
+  '.ico',
+  'jar',
+  '.jar',
+  'swf',
+  '.swf',
+  'tga',
+  '.tga',
+  'ttf',
+  '.ttf',
+  'docx',
+  '.docx',
+  'exe',
+  '.exe',
+];
 
 type CodeType = 'code' | 'markdown' | 'jupyter' | 'image' | 'pdf';
 

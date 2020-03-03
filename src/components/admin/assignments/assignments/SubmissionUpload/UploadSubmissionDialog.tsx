@@ -6,7 +6,21 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Alert, Button, Icon, message, Modal, Progress, Switch, Upload, Table, Tag, Divider, Tabs } from 'antd';
+import {
+  Alert,
+  Button,
+  Checkbox,
+  Icon,
+  message,
+  Modal,
+  Progress,
+  Switch,
+  Upload,
+  Table,
+  Tag,
+  Divider,
+  Tabs,
+} from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -49,13 +63,17 @@ import { slack } from '../../../../../components/core/slack';
 
 import { encodeForLink } from '../../../../../components/core/URLutils';
 
-import { CodePostDate } from '../../../../../components/utils/DateUtils';
+import { CodePostDate, dueDatePassed } from '../../../../../components/utils/DateUtils';
 
 import ViewUpload from '../../../../../components/student/ViewUpload';
+import InvitePartnersLink from '../../../../../components/student/InvitePartnersLink';
+import LateSubmissionModal from '../../../../../components/student/LateSubmissionModal';
+
+import { LOCAL_SETTINGS } from '../../../../../components/utils/LocalSettings';
 
 /**********************************************************************************************************************/
 
-interface IProps {
+interface IUploadSubmissionDialogProps {
   isVisible: boolean;
   onCancel: () => void;
   assignments: (AssignmentType | AssignmentStudentType)[];
@@ -68,8 +86,18 @@ interface IProps {
     };
   };
   uploadSubmission:
-    | ((assignment: AssignmentStudentType, partners: string[], files: any[]) => Promise<StudentSubmissionType>)
-    | ((assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>);
+    | ((
+        assignment: AssignmentStudentType,
+        partners: string[],
+        files: any[],
+        sendConfirmationEmail: boolean,
+      ) => Promise<StudentSubmissionType>)
+    | ((
+        assignment: AssignmentType,
+        partners: string[],
+        files: any[],
+        sendConfirmationEmail: boolean,
+      ) => Promise<SubmissionType>);
 
   disableStudentSelect?: boolean;
   onSuccess?: (newSubmissionID: number) => void;
@@ -85,7 +113,7 @@ enum STATUS {
   COMPLETE /* completed upload */,
 }
 
-interface IState {
+interface IUploadSubmissionDialogState {
   selectedStudents: string[];
   selectedAssignment?: AssignmentType | AssignmentStudentType;
   // List of files in codePost format for upload
@@ -106,15 +134,18 @@ interface IState {
   loadingTests: boolean;
 
   fileTemplates: FileTemplateType[];
+  sendMeAConfirmationEmail: boolean;
 
   // Test results
   submissionTests: SubmissionTestType[];
   testsLog: string | null; // If the admin turns off exposeDumpLogs then the log will be none
   runMessage: string; // A message to show students from the result of their run
   activeTab: string;
+
+  lateSubmissionModalVisible: boolean;
 }
 
-class UploadSubmissionDialog extends React.Component<IProps, IState> {
+class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProps, IUploadSubmissionDialogState> {
   public assignmentOptions = this.props.assignments.map((assignment: AssignmentType | AssignmentStudentType, i) => {
     return {
       value: assignment.id,
@@ -122,7 +153,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     };
   });
 
-  public state: Readonly<IState> = {
+  public state: Readonly<IUploadSubmissionDialogState> = {
     selectedStudents: this.props.selectedStudents,
     selectedAssignment: this.props.selectedAssignment,
     files: [],
@@ -136,20 +167,24 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     testsLog: null,
     loadingTests: false,
     fileTemplates: [],
+    sendMeAConfirmationEmail: LOCAL_SETTINGS.sendMeAConfirmationEmail.getter(),
     runMessage: '',
     activeTab: '1',
+    lateSubmissionModalVisible: false,
   };
 
   /********************************************************************************************************/
   /* Lifecycle methods
   /********************************************************************************************************/
 
-  public toggleState = (key: keyof IState) => (prevState: IState): IState => ({
+  public toggleState = (key: keyof IUploadSubmissionDialogState) => (
+    prevState: IUploadSubmissionDialogState,
+  ): IUploadSubmissionDialogState => ({
     ...prevState,
     [key]: !prevState[key],
   });
 
-  public getState = (key: keyof IState): any => {
+  public getState = (key: keyof IUploadSubmissionDialogState): any => {
     return this.state[key];
   };
 
@@ -159,7 +194,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
   }
 
-  public componentDidUpdate(prevProps: IProps, prevState: IState) {
+  public componentDidUpdate(prevProps: IUploadSubmissionDialogProps, prevState: IUploadSubmissionDialogState) {
     if (
       prevProps.selectedAssignment !== this.props.selectedAssignment ||
       (!prevProps.isVisible && this.props.isVisible)
@@ -173,13 +208,28 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         this.loadTemplates(this.props.selectedAssignment);
         this.loadTests();
         if (this.props.selectedStudents.length > 0) {
-          this.setState({
-            submission: this.props.submissions[this.props.selectedStudents[0]][this.props.selectedAssignment.id],
+          let primaryStudent = null;
+
+          this.props.selectedStudents.forEach((email: string) => {
+            if (this.props.submissions.hasOwnProperty(email)) {
+              if (
+                this.props.selectedAssignment !== undefined &&
+                this.props.submissions[email].hasOwnProperty(this.props.selectedAssignment.id)
+              ) {
+                primaryStudent = email;
+              }
+            }
           });
-          this.loadTestResults(
-            this.props.submissions[this.props.selectedStudents[0]][this.props.selectedAssignment.id],
-            this.props.selectedAssignment.exposeDumpLogs === true,
-          );
+
+          if (primaryStudent !== null) {
+            this.setState({
+              submission: this.props.submissions[primaryStudent][this.props.selectedAssignment.id],
+            });
+            this.loadTestResults(
+              this.props.submissions[primaryStudent][this.props.selectedAssignment.id],
+              this.props.selectedAssignment.exposeDumpLogs === true,
+            );
+          }
         }
       }
     }
@@ -322,17 +372,44 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     this.setState({ files, fileList });
   };
 
+  public openLateSubmissionModal = () => {
+    this.setState({ lateSubmissionModalVisible: true });
+  };
+
+  public closeLateSubmissionModal = () => {
+    this.setState({ lateSubmissionModalVisible: false });
+  };
+
   /********************************************************************************************************/
   /* Submission upload
   /********************************************************************************************************/
 
+  public confirmUpload = () => {
+    if (this.state.selectedAssignment === undefined) {
+      return;
+    }
+
+    if (dueDatePassed(this.state.selectedAssignment)) {
+      this.openLateSubmissionModal();
+    } else {
+      this.upload();
+    }
+  };
+
   public upload = () => {
+    this.closeLateSubmissionModal();
     if (this.state.selectedAssignment) {
       this.setState({ status: STATUS.SAVING }, () => {
         if (this.state.selectedAssignment) {
           this.props
             // @ts-ignore
-            .uploadSubmission(this.state.selectedAssignment!, this.state.selectedStudents, this.state.files)
+            .uploadSubmission(
+              // @ts-ignore
+              this.state.selectedAssignment!,
+              this.state.selectedStudents,
+              this.state.files,
+              this.state.sendMeAConfirmationEmail,
+            )
             .then((newSubmission: StudentSubmissionType | SubmissionType) => {
               const shouldRun = this.shouldRunTests();
               if (shouldRun) {
@@ -438,7 +515,6 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     // Note: we need to increment the testRunsCompleted in state, because a student could go back to the upload tab (without refreshing submission) and re-upload
     this.setState((prevState) => {
       return {
-        ...prevState,
         submissionTests: result.submissionTests,
         testsLog: result.logs,
         loadingTests: false,
@@ -463,6 +539,12 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
   };
 
+  public toggleSendMeAConfirmationEmail = (e: any) => {
+    const toggled = !this.state.sendMeAConfirmationEmail;
+    LOCAL_SETTINGS.sendMeAConfirmationEmail.setter(toggled);
+    this.setState({ sendMeAConfirmationEmail: toggled });
+  };
+
   /********************************************************************************************************/
 
   public render() {
@@ -474,6 +556,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
     }
 
     let content;
+    let sendMeAConfirmationEmailCheckbox = null;
     let goForwardButton = null;
     let goBackButton = null;
     switch (status) {
@@ -547,17 +630,17 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           {
             setting: 'Upload a directory',
             tooltip: 'Turn this on to upload nested folders.',
-            variable: 'uploadDirectory' as keyof IState,
+            variable: 'uploadDirectory' as keyof IUploadSubmissionDialogState,
           },
           // {
           //   setting: 'Upload an incomplete submission',
           //   tooltip: 'Turn this on to a submission missing required files.',
-          //   variable: 'allowIncomplete' as keyof IState,
+          //   variable: 'allowIncomplete' as keyof IUploadSubmissionDialogState,
           // },
           // {
           //   setting: 'Upload extra files',
           //   tooltip: 'Turn this on to upload files not specifed by the assignment.',
-          //   variable: 'allowExtra' as keyof IState,
+          //   variable: 'allowExtra' as keyof IUploadSubmissionDialogState,
           // },
         ];
 
@@ -634,15 +717,51 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
           (ft) => !ft.required || this.state.files.some((el) => el.name === ft.name),
         );
 
+        if (this.props.isStudent) {
+          sendMeAConfirmationEmailCheckbox = (
+            <span>
+              {this.state.selectedAssignment !== undefined && dueDatePassed(this.state.selectedAssignment) ? (
+                <Tag color="volcano">Due Date Passed</Tag>
+              ) : null}
+              <Checkbox
+                key="send-me-a-confirmation-email"
+                checked={this.state.sendMeAConfirmationEmail}
+                onChange={this.toggleSendMeAConfirmationEmail}
+              >
+                Send me email confirmation
+              </Checkbox>
+              <CPTooltip
+                title={
+                  this.state.submission && this.state.submission.students && this.state.submission.students.length > 1
+                    ? 'If checked, codePost will send you and your partners an email confirming a successful submission.'
+                    : 'If checked, codePost will send you an email confirming a successful submission.'
+                }
+                infoIcon={true}
+              />
+              &nbsp; &nbsp;
+            </span>
+          );
+        }
+
         goForwardButton = (
-          <Button
-            key="submit"
-            type="primary"
-            disabled={disableUpload || !areRequiredFilesPresent}
-            onClick={this.upload}
-          >
-            Upload {this.shouldRunTests() && <Icon type="calculator" />}
-          </Button>
+          <span style={{ marginLeft: '8px' }}>
+            <Button
+              key="submit"
+              type="primary"
+              disabled={disableUpload || !areRequiredFilesPresent}
+              onClick={this.confirmUpload}
+            >
+              Upload {this.shouldRunTests() && <Icon type="calculator" />}
+            </Button>
+            {this.state.selectedAssignment === undefined ? null : (
+              <LateSubmissionModal
+                visible={this.state.lateSubmissionModalVisible}
+                assignment={this.state.selectedAssignment}
+                onCancel={this.closeLateSubmissionModal}
+                onOk={this.upload}
+              />
+            )}
+          </span>
         );
 
         /*****************************************************************************************/
@@ -797,7 +916,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
         title={this.props.title || 'Upload Submissions'}
         onCancel={this.cancel}
         width={1100}
-        footer={[goBackButton, goForwardButton]}
+        footer={[sendMeAConfirmationEmailCheckbox, goBackButton, goForwardButton]}
       >
         {status !== STATUS.NONE || !this.props.isStudent ? (
           content
@@ -815,6 +934,13 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                 <ReactMarkdown>{this.state.selectedAssignment.explanation}</ReactMarkdown>
               </Tabs.TabPane>
             ) : null}
+
+            {this.state.selectedAssignment && this.state.selectedAssignment.allowStudentUploadWithPartners && (
+              <Tabs.TabPane tab="Partners" key="partners">
+                To add a partner to your submission, share this link with them.
+                <InvitePartnersLink assignment={this.state.selectedAssignment} submission={this.state.submission} />
+              </Tabs.TabPane>
+            )}
 
             {showTestsTab && (
               <Tabs.TabPane tab="Tests" key="3">
@@ -837,7 +963,7 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
                             type="info"
                             message={
                               <div>
-                                Showing results from last submission at:{' '}
+                                Showing results from most recent submission at:{' '}
                                 <CodePostDate datetime={this.state.submission!.dateUploaded || ''} />
                               </div>
                             }
@@ -854,12 +980,12 @@ class UploadSubmissionDialog extends React.Component<IProps, IState> {
             )}
 
             {this.state.submission ? (
-              <Tabs.TabPane tab="Last submission" key="4">
+              <Tabs.TabPane tab="Most recent submission" key="4">
                 <Alert
                   type="info"
                   message={
                     <div>
-                      Showing results from last submission at:{' '}
+                      Showing results from most recent submission at:{' '}
                       <CodePostDate datetime={this.state.submission!.dateUploaded || ''} />
                     </div>
                   }

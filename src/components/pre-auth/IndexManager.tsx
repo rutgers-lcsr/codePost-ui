@@ -28,6 +28,7 @@ import TermsOfService from './TermsOfService';
 import WhyUse from './WhyUse';
 import AboutUs from './AboutUs';
 import { AllTestimonials } from '../landing/Testimonial';
+import ValidateInvite from '../student/ValidateInvite';
 
 import Logout from '../core/Logout';
 
@@ -144,6 +145,12 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
               render={(props: any) => (
                 <PasswordReset {...props} message={'activate'} isLoggedIn={this.props.isLoggedIn} />
               )}
+            />
+
+            <Route
+              exact={true}
+              path={'/invite/:sid/:token'}
+              render={(props: any) => <ValidateInvite {...props} isLoggedIn={this.props.isLoggedIn} />}
             />
 
             {/* prevents NoMatch from showing alongside component */}

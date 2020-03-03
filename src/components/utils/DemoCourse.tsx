@@ -138,6 +138,7 @@ const createAssignment = async (course: CourseType, assignment: any) => {
     const newEnv = await Environment.build({
       id: thisEnvironment.id,
       dockerRunInstructions: [],
+      dockerfile: '',
       language: 'java',
       buildType: 'default',
     });
@@ -250,6 +251,7 @@ const createSubmissions = (assignment: AssignmentType, domain: string) => {
                 rubricComment: rubricID,
                 author: commentT.author,
                 feedback: 0,
+                color: null,
               };
 
               return CommentIO.create(commentPayload).then(() => {

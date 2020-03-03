@@ -4,7 +4,7 @@ import { RubricCommentType } from './rubricComment';
 
 import { createObject, deleteObject, GenericObject, readObject, updateObject, updateObjectDetail } from './generics';
 
-const CommentV = t.intersection(
+export const CommentV = t.intersection(
   [
     GenericObject,
     t.type({
@@ -41,6 +41,7 @@ const CommentVPatch = t.intersection(
       text: t.union([t.string, t.null]),
       file: t.number,
       rubricComment: t.union([t.number, t.null]),
+      color: t.union([t.string, t.null]),
       tags: t.array(t.string),
     }),
   ],
@@ -156,6 +157,7 @@ export const CommentMock: CommentType = {
   rubricComment: 1,
   author: 'grader@myschool.edu',
   feedback: 0,
+  color: null,
 };
 
 // export { CommentType, CommentIO, CommentMock, UiComment };
