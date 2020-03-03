@@ -255,17 +255,17 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     }
 
     // Catch all to prevent errors
-    if (isNaN(startLine) || startLine < 0) {
-      startLine = 0;
-    }
-    if (isNaN(endLine) || endLine < 0) {
-      endLine = 0;
-    }
-    if (isNaN(startChar) || startChar < 0) {
-      startChar = 0;
-    }
-    if (isNaN(endChar) || endChar < 0) {
-      endChar = 1;
+    if (
+      isNaN(startLine) ||
+      startLine < 0 ||
+      isNaN(endLine) ||
+      endLine < 0 ||
+      isNaN(startChar) ||
+      startChar < 0 ||
+      isNaN(endChar) ||
+      endChar < 0
+    ) {
+      return;
     }
 
     await addNewComment(startLine, endLine, startChar, endChar);
