@@ -8,6 +8,7 @@ import {
   BinaryExtensions,
   PDFExtensions,
 } from '../../../../infrastructure/file';
+import { sendSlack } from '../../../../components/core/slack';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
@@ -138,6 +139,28 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
       } else {
         let data: any = readerResult;
 
+        if (outputFile.extension === '') {
+          if (typeof data === 'string') {
+            const match = data.match(/\0/g);
+            // If a no-extension file has null characters then it might be an executable
+            // Avoid corrupting it by saving as base64
+            if (match !== null) {
+              reader.readAsDataURL(inputFile);
+              return;
+            }
+          }
+        } else {
+          if (typeof data === 'string') {
+            const match = data.match(/\0/g);
+            // If a file contains a null character and is not on the Binary Whitelist, notify the team and then strip it
+            if (match !== null) {
+              sendSlack('Replaced Null Character', `${outputFile.name}`, '#fafafa', 'user_notifications_uploads');
+
+              data = data.replace(/\0/g, '');
+            }
+          }
+        }
+
         if (ImageExtensions.includes(outputFile.extension.toLowerCase()) && typeof data === 'string') {
           data = await resizeImage(data);
         }
@@ -150,7 +173,7 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
     if (
       inputFile.type.includes('image') ||
       ImageExtensions.includes(outputFile.extension.toLowerCase()) ||
-      (BinaryExtensions.includes(outputFile.extension.toLowerCase()) && outputFile.name !== 'Makefile')
+      BinaryExtensions.includes(outputFile.extension.toLowerCase())
     ) {
       reader.readAsDataURL(inputFile);
     } else if (inputFile.type.includes('pdf') || PDFExtensions.includes(outputFile.extension)) {
