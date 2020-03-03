@@ -183,6 +183,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
 
   const onMouseUp = async (event: React.MouseEvent) => {
     const selection = window.getSelection();
+    console.log('mouse up', selection);
     // https://developer.mozilla.org/en-US/docs/Web/API/Selection/isCollapsed
     // selection.isCollapsed
     if (
@@ -251,6 +252,20 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
       const temp2 = endChar;
       startChar = temp1 < temp2 ? temp1 : temp2;
       endChar = temp1 < temp2 ? temp2 : temp1;
+    }
+
+    // Catch all to prevent errors
+    if (isNaN(startLine) || startLine < 0) {
+      startLine = 0;
+    }
+    if (isNaN(endLine) || endLine < 0) {
+      endLine = 0;
+    }
+    if (isNaN(startChar) || startChar < 0) {
+      startChar = 0;
+    }
+    if (isNaN(endChar) || endChar < 0) {
+      endChar = 1;
     }
 
     await addNewComment(startLine, endLine, startChar, endChar);
