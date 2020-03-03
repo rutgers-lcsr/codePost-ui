@@ -284,11 +284,7 @@ RUN ${installText} Package2
         {dependenciesInput}
       </Tabs.TabPane>
       {buildType !== 'default' && (
-        <Tabs.TabPane
-          key="2"
-          tab="[Pro mode] Custom dockerfile"
-          disabled={props.env && props.env.buildType === 'default'}
-        >
+        <Tabs.TabPane key="2" tab="[Pro mode] Custom dockerfile">
           {customDockerInput}
         </Tabs.TabPane>
       )}
