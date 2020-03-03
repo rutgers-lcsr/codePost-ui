@@ -247,8 +247,8 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   //************ 1C. Install packages ******************
   const placeholder = `// new line separated
-${installText} Package1
-${installText} Package2
+${installText} package1
+${installText} package2
 ...`;
 
   const dependenciesInput = (
@@ -264,8 +264,8 @@ ${installText} Package2
 
   const dockerPlaceholder = `// docker file syntax
 // adding commands here will replace any text in 'Install packages'
-RUN ${installText} Package1
-RUN ${installText} Package2
+RUN ${installText} package1
+RUN ${installText} package2
 ...`;
 
   const customDockerInput = props.env && (
