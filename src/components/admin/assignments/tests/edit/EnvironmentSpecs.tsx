@@ -225,7 +225,7 @@ export const EnvironmentSpecs = (props: IProps) => {
   const buildOptions = (
     <Radio.Group onChange={onBuildTypeChange} value={buildType === 'default' ? 'default' : 'custom'}>
       <Radio value={'default'} disabled={language === 'other'}>
-        Default (Recommended)
+        Default (recommended)
       </Radio>
       <Radio value={'custom'}>Custom</Radio>
     </Radio.Group>
@@ -263,7 +263,7 @@ ${installText} Package2
   );
 
   const dockerPlaceholder = `// docker file syntax
-// adding commands here replaces 'Install packages'
+// adding commands here will replace any text in 'Install packages'
 RUN ${installText} Package1
 RUN ${installText} Package2
 ...`;
@@ -278,18 +278,32 @@ RUN ${installText} Package2
     />
   );
 
-  const install = (
-    <Tabs defaultActiveKey={props.env && props.env.dockerfile.length > 0 ? '2' : '1'} style={{ width: '80%' }}>
-      <Tabs.TabPane key="1" tab="Install packages">
-        {dependenciesInput}
-      </Tabs.TabPane>
-      {buildType !== 'default' && (
-        <Tabs.TabPane key="2" tab="[Pro mode] Custom dockerfile">
+  const install =
+    buildType === 'default' ? (
+      <span>
+        <div className="display-flex">
+          <div className="display-flex flex-direction-column">
+            <span>
+              Install packages:{' '}
+              <Tooltip title="Add newline-delimited install commands">
+                <Icon type="info" />
+              </Tooltip>
+            </span>{' '}
+          </div>{' '}
+          <br />
+          {dependenciesInput}
+        </div>
+      </span>
+    ) : (
+      <Tabs defaultActiveKey={props.env && props.env.dockerfile.length > 0 ? '2' : '1'} style={{ width: '80%' }}>
+        <Tabs.TabPane key="1" tab="Install packages">
+          {dependenciesInput}
+        </Tabs.TabPane>
+        <Tabs.TabPane key="2" tab="[Advanced] Custom dockerfile">
           {customDockerInput}
         </Tabs.TabPane>
-      )}
-    </Tabs>
-  );
+      </Tabs>
+    );
 
   if (props.env === undefined && language === null) {
     return (
@@ -372,12 +386,10 @@ RUN ${installText} Package2
       Language: {selectLanguage} &nbsp; {languageIcon}
       <br />
       <br />
-      <span style={{ lineHeight: '32px' }}>Build Type:</span> {buildOptions} {customBuildSelect}
+      <span style={{ lineHeight: '32px' }}>Build type:</span> {buildOptions} {customBuildSelect}
       <br />
       <br />
-      <div className="display-flex" style={{ marginLeft: 50 }}>
-        {install}
-      </div>
+      <div>{install}</div>
       {props.env ? showAfterCreation : null}
     </div>
   );
