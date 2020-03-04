@@ -38,12 +38,20 @@
 }
 
 .tests-menu--dark {
+  .ant-table-thead > tr > th {
+    background: #18191c !important;
+  }
+
   .ant-table-header-column {
     color: $neutralDarkMainText;
   }
 
   .ant-table-row {
     color: $neutralDarkMainText;
+  }
+
+  .ant-table-row:hover {
+    color: black !important;
   }
 }
 

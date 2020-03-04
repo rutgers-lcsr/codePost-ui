@@ -108,13 +108,12 @@ const TestsMenu = (props: IProps) => {
         paddingBottom: '10px',
         paddingRight: '15px',
         paddingTop: '10px',
-        backgroundColor: props.isOpen ? '#f0fff7' : undefined,
       }}
       onClick={props.onClick}
     >
       <div
         className={`tests-menu${consoleTheme === consoleThemes.dark ? '--dark' : ''}`}
-        style={{ fontSize: 12, overflowX: 'auto', color: consoleTheme.text }}
+        style={{ fontSize: 12, overflowX: 'auto', color: consoleTheme.text, background: consoleTheme.siderBg }}
       >
         {props.categories.length > 0 ? (
           <Table dataSource={data} columns={columns} size="small" pagination={false} bordered={false} />
