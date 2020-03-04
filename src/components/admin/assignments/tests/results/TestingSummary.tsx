@@ -16,6 +16,7 @@ import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { TestCaseType } from '../../../../../infrastructure/testCase';
 
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
+import { SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
 import { RunAllResultType, SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
 
 import { awaitTestResult } from '../testResult';
@@ -262,11 +263,16 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
 
                 const summaryString = totalTests === 0 ? '-- / --' : `${passed} / ${totalTests}`;
 
-                toRet['summary'] = (
-                  <div className="text-link" onClick={openDetail.bind({}, undefined, undefined, undefined, submission)}>
-                    {summaryString}
-                  </div>
-                );
+                if (Object.keys(testCasesByCategory).length > 0) {
+                  toRet['summary'] = (
+                    <div
+                      className="text-link"
+                      onClick={openDetail.bind({}, undefined, undefined, undefined, submission)}
+                    >
+                      {summaryString}
+                    </div>
+                  );
+                }
 
                 // For sorting (key specified in testSummaryUtils)
                 toRet['passed'] = passed;
@@ -395,6 +401,10 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     return hasExternal;
   };
 
+  const hasSourceFiles = env && env.sourceFiles.length > 0;
+  const hasTestCases = totalTests > 0;
+  const canRun = props.submissions.length > 0 && (hasTestCases || hasSourceFiles);
+
   actions = [
     <Radio.Group value={SUMMARY_TYPE[summaryType]} onChange={onSummaryTypeChange} buttonStyle="solid">
       <Tooltip title="Summary by submission">
@@ -408,17 +418,12 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
         </Radio.Button>
       </Tooltip>
     </Radio.Group>,
-    <Button
-      type="default"
-      disabled={totalTests === 0 || props.submissions.length === 0}
-      onClick={triggerRunAll}
-      loading={env && env.isRunning}
-    >
-      Run all Tests
+    <Button type="default" disabled={!canRun} onClick={triggerRunAll} loading={env && env.isRunning}>
+      Run all tests
     </Button>,
     <Button type="primary">
       <Link to={[...props.match.url.split('/').slice(0, props.match.url.split('/').length - 1), 'edit'].join('/')}>
-        Edit Tests
+        Edit tests
       </Link>
     </Button>,
   ];
@@ -471,6 +476,18 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     </Modal>,
   ];
 
+  /* Show a message appropriate to the way in which the user is using the autograder */
+  let emptyMessage = '';
+  if (props.submissions.length === 0) {
+    if (props.currentAssignment.allowStudentUpload) {
+      emptyMessage = "Once your students have uploaded, you'll be able to view test results here.";
+    } else {
+      emptyMessage = "Once you upload submissions for your students, you'll be able to run tests here.";
+    }
+  } else {
+    emptyMessage = 'Create some tests and you will be able to run them here.';
+  }
+
   return (
     <div>
       <TableDetail
@@ -487,11 +504,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
             <Breadcrumb.Item>Results</Breadcrumb.Item>
           </Breadcrumb>
         }
-        emptyNode={
-          Object.keys(testCasesByCategory).length === 0
-            ? 'Create some tests and you will be able to run them here'
-            : 'Upload a submission for your students to see test results.'
-        }
+        emptyNode={emptyMessage}
         actions={actions}
         columns={columns}
         data={data}

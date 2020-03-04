@@ -18,6 +18,8 @@ import useWindowSize from '../../core/useWindowSize';
 import { TestCasesByCategory, StudentTestCasesByCategory } from '../../core/testFetchUtils';
 import { BasicTestResultType } from '../../../infrastructure/autograder/runTypes';
 
+import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
+
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -34,6 +36,7 @@ interface IProps {
 }
 
 const TestsList = (props: IProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const windowSize = useWindowSize();
 
   if (props.isLoading) {
@@ -114,7 +117,8 @@ const TestsList = (props: IProps) => {
 
   // Styling
   const customPanelStyle = {
-    background: 'white',
+    background: consoleTheme.siderBg,
+    color: consoleTheme.text,
     marginBottom: 24,
     border: '1px solid #ccc',
     overflow: 'hidden',
@@ -127,21 +131,33 @@ const TestsList = (props: IProps) => {
           {<div style={{ marginBottom: 15 }}>{props.message}</div> || <div />}
           {!props.hideSummary && (
             <div className="display-flex justify-content-center">
-              <Card>
+              <Card style={{ background: consoleTheme.siderBg, borderColor: consoleTheme.siderSubmenuBorder }}>
                 <div className="display-flex justify-content-center">
-                  <Statistic style={{ textAlign: 'center', margin: '0px 30px' }} title="Passed" value={`${passed}`} />
-                  <Statistic style={{ textAlign: 'center', margin: '0px 30px' }} title="Failed" value={`${failed}`} />
+                  <Statistic
+                    style={{ textAlign: 'center', margin: '0px 30px' }}
+                    title={<span style={{ color: consoleTheme.text }}>Passed</span>}
+                    value={`${passed}`}
+                    valueStyle={{ color: consoleTheme.text }}
+                  />
+                  <Statistic
+                    style={{ textAlign: 'center', margin: '0px 30px', color: consoleTheme.text }}
+                    title={<span style={{ color: consoleTheme.text }}>Failed</span>}
+                    value={`${failed}`}
+                    valueStyle={{ color: consoleTheme.text }}
+                  />
                   {!props.hideNotRun && !props.redactNotShown && (
                     <Statistic
-                      style={{ textAlign: 'center', margin: '0px 30px' }}
-                      title="Not Run"
+                      style={{ textAlign: 'center', margin: '0px 30px', color: consoleTheme.text }}
+                      title={<span style={{ color: consoleTheme.text }}>Not run</span>}
                       value={`${total - passed - failed}`}
+                      valueStyle={{ color: consoleTheme.text }}
                     />
                   )}
                   <Statistic
-                    style={{ textAlign: 'center', margin: '0px 30px' }}
-                    title="Summary"
+                    style={{ textAlign: 'center', margin: '0px 30px', color: consoleTheme.text }}
+                    title={<span style={{ color: consoleTheme.text }}>Summary</span>}
                     value={`${passed}/${total}`}
+                    valueStyle={{ color: consoleTheme.text }}
                   />
                 </div>
               </Card>
@@ -151,7 +167,7 @@ const TestsList = (props: IProps) => {
           <Collapse
             defaultActiveKey={props.categories.map((x, i) => i)}
             bordered={false}
-            style={{ background: '#f2f2f2' }}
+            style={{ background: consoleTheme.mainBg }}
           >
             {props.categories.map((category, index) => {
               const theseTests = testsByCategory[category.id];
@@ -236,7 +252,7 @@ const TestsList = (props: IProps) => {
               return (
                 <Collapse.Panel
                   header={
-                    <span>
+                    <span style={{ background: consoleTheme.siderBg, color: consoleTheme.text }}>
                       {category.name}
                       &nbsp;
                       <span>
@@ -251,14 +267,16 @@ const TestsList = (props: IProps) => {
                   key={index}
                   style={customPanelStyle}
                 >
-                  <Table
-                    scroll={{ x: true }}
-                    columns={columns}
-                    loading={props.isLoading}
-                    dataSource={data}
-                    pagination={false}
-                    expandedRowRender={expandedRowRender}
-                  />
+                  <div className={`tests-menu${consoleTheme === consoleThemes.dark ? '--dark' : ''}`}>
+                    <Table
+                      scroll={{ x: true }}
+                      columns={columns}
+                      loading={props.isLoading}
+                      dataSource={data}
+                      pagination={false}
+                      expandedRowRender={expandedRowRender}
+                    />
+                  </div>
                 </Collapse.Panel>
               );
             })}
