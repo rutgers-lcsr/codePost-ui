@@ -196,10 +196,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   public static removeCommentFromState = (comments: IFileToCommentsMap, comment: CommentType) => {
     const index = comments[comment.file].findIndex((c: CommentType) => c.id === comment.id);
 
-    if (index < 0) {
-      return comments;
-    }
-
     const fileComments = Immutable.arrayRemove(comments[comment.file], index);
     return { ...comments, [comment.file]: fileComments };
   };
