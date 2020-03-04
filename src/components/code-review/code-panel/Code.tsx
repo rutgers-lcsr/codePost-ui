@@ -183,7 +183,6 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
 
   const onMouseUp = async (event: React.MouseEvent) => {
     const selection = window.getSelection();
-    console.log('mouse up', selection);
     // https://developer.mozilla.org/en-US/docs/Web/API/Selection/isCollapsed
     // selection.isCollapsed
     if (
