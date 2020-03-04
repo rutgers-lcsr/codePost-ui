@@ -72,6 +72,7 @@ const EnvironmentVPatch = t.intersection(
       maxStudentTestRuns: t.union([t.null, t.number]),
       maxExposedFailedTests: t.union([t.null, t.number]),
       dockerRunInstructions: t.array(t.string),
+      dockerfile: t.string,
     }),
   ],
   'EnvironmentPatch',
@@ -81,6 +82,7 @@ const BuildData = t.intersection([
   GenericObject,
   t.type({
     dockerRunInstructions: t.array(t.string),
+    dockerfile: t.string,
     language: t.string,
     buildType: t.string,
   }),

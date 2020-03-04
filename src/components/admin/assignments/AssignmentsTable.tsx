@@ -34,8 +34,8 @@ import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../..
 
 import DeleteAssignmentDialog from './assignments/DeleteAssignmentDialog';
 
-import UploadSubmissionBulkDialog from './assignments/UploadSubmissionBulkDialog';
-import UploadSubmissionDialog from './assignments/UploadSubmissionDialog';
+import BulkUpload from './assignments/SubmissionUpload/BulkUpload/BulkUpload';
+import UploadSubmissionDialog from './assignments/SubmissionUpload/UploadSubmissionDialog';
 
 import NewAssignmentDialog from './assignments/NewAssignmentDialog';
 
@@ -61,7 +61,7 @@ import { encodeForLink } from '../../core/URLutils';
 import { openSubmission } from '../other/AdminUtils';
 import BulkSubmissionEdit from './assignments/BulkSubmissionEdit';
 
-import AssignmentSetupDialog from './assignments/AssignmentSetupDialog';
+import { AssignmentSetupDialog } from './assignments/AssignmentSetupDialog';
 
 const { Text } = Typography;
 const SubMenu = Menu.SubMenu;
@@ -681,7 +681,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           break;
         case DETAIL_TYPE.Upload_Multiple:
           detailComponent = (
-            <UploadSubmissionBulkDialog
+            <BulkUpload
               isVisible={true}
               onCancel={cancel}
               assignment={this.props.activeAssignment}
@@ -697,7 +697,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           break;
         case DETAIL_TYPE.Upload_Import:
           detailComponent = (
-            <UploadSubmissionBulkDialog
+            <BulkUpload
               isVisible={true}
               onCancel={cancel}
               assignment={this.props.activeAssignment}

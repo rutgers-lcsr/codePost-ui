@@ -2,16 +2,12 @@ import JSZip from 'jszip';
 
 import { message } from 'antd';
 
-import {
-  File as CodePostFile,
-  ImageExtensions,
-  BinaryExtensions,
-  PDFExtensions,
-} from '../../../../infrastructure/file';
+import { File as CPFile, ImageExtensions, BinaryExtensions, PDFExtensions } from '../../../../../infrastructure/file';
+import { sendSlack } from '../../../../../components/core/slack';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
-import { resizeImage } from '../../other/AdminUtils';
+import { resizeImage } from '../../../other/AdminUtils';
 
 export interface IProtoFileUpload {
   longname: string;
@@ -20,13 +16,33 @@ export interface IProtoFileUpload {
   extension: string;
   data: string | ArrayBuffer | null;
   zipSource?: string;
+  file: File | UploadFile;
 }
 
-export const fileToProtoFileUpload = (inputFile: File | UploadFile, zipSource?: string): IProtoFileUpload => {
+export interface IProtoSubmission {
+  students: string[];
+  files: File[];
+  isCollision: boolean /* true if any student has an existing submission */;
+}
+
+export interface codePostFile extends UploadFile {
+  // Field to set the path of a file
+  // webkitRelativePath is not settable
+  pathOverride?: string;
+}
+
+export const fileToProtoFileUpload = (
+  inputFile: codePostFile | File | UploadFile,
+  zipSource?: string,
+): IProtoFileUpload => {
   let longname: string = inputFile.name;
 
   // @ts-ignore
-  if (inputFile.webkitRelativePath && inputFile.webkitRelativePath !== '') {
+  if (inputFile.pathOverride) {
+    // @ts-ignore
+    longname = inputFile.pathOverride;
+    // @ts-ignore
+  } else if (inputFile.webkitRelativePath && inputFile.webkitRelativePath !== '') {
     // @ts-ignore
     longname = inputFile.webkitRelativePath;
   }
@@ -38,7 +54,7 @@ export const fileToProtoFileUpload = (inputFile: File | UploadFile, zipSource?: 
     .trim()
     .toLowerCase();
   const name = split[split.length - 1];
-  const extension = CodePostFile.extension(inputFile.name);
+  const extension = CPFile.extension(name);
 
   return {
     longname,
@@ -47,6 +63,7 @@ export const fileToProtoFileUpload = (inputFile: File | UploadFile, zipSource?: 
     extension,
     data: '', // placeholder
     zipSource,
+    file: inputFile,
   };
 };
 
@@ -137,6 +154,28 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
           });
       } else {
         let data: any = readerResult;
+
+        if (outputFile.extension === '') {
+          if (typeof data === 'string') {
+            const match = data.match(/\0/g);
+            // If a no-extension file has null characters then it might be an executable
+            // Avoid corrupting it by saving as base64
+            if (match !== null) {
+              reader.readAsDataURL(inputFile);
+              return;
+            }
+          }
+        } else {
+          if (typeof data === 'string') {
+            const match = data.match(/\0/g);
+            // If a file contains a null character and is not on the Binary Whitelist, notify the team and then strip it
+            if (match !== null) {
+              sendSlack('Replaced Null Character', `${outputFile.name}`, '#fafafa', 'user_notifications_uploads');
+
+              data = data.replace(/\0/g, '');
+            }
+          }
+        }
 
         if (ImageExtensions.includes(outputFile.extension.toLowerCase()) && typeof data === 'string') {
           data = await resizeImage(data);

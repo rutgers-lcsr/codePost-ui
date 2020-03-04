@@ -138,6 +138,7 @@ const createAssignment = async (course: CourseType, assignment: any) => {
     const newEnv = await Environment.build({
       id: thisEnvironment.id,
       dockerRunInstructions: [],
+      dockerfile: '',
       language: 'java',
       buildType: 'default',
     });

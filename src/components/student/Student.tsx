@@ -37,7 +37,7 @@ import CPLogo from '../core/CPLogo';
 
 import layoutVars from '../../styles/layout/_layoutVars';
 
-import UploadSubmissionDialog from '../admin/assignments/assignments/UploadSubmissionDialog';
+import UploadSubmissionDialog from '../admin/assignments/assignments/SubmissionUpload/UploadSubmissionDialog';
 
 import ViewUpload from './ViewUpload';
 

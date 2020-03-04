@@ -1356,7 +1356,12 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     }
 
     try {
-      const submission = await Submission.update(payload);
+      let submission;
+      if (this.state.submission.students === undefined) {
+        submission = await Submission.updateAnonymous(payload);
+      } else {
+        submission = await Submission.update(payload);
+      }
 
       if (!this.state.submission.isFinalized) {
         sendSlack(

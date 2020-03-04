@@ -56,7 +56,7 @@ const LandingHero = () => {
         } align-items-center justify-content-center`}
       >
         <CPButton style={buttonStyle} cpType="secondary" id="calendly-button-hero">
-          Schedule demo
+          Meet us at SIGCSE
         </CPButton>
         &nbsp; &nbsp;
         <Link to="/signup/create">

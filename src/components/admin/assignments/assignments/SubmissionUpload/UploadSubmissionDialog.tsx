@@ -38,38 +38,38 @@ import {
   StudentSubmissionType,
   FileTemplateType,
   CourseType,
-} from '../../../../infrastructure/types';
-import { AssignmentStudent, AssignmentStudentType } from '../../../../infrastructure/assignment';
-import { Environment } from '../../../../infrastructure/autograder/environment';
-import { FileTemplate } from '../../../../infrastructure/fileTemplate';
-import { SubmissionTest } from '../../../../infrastructure/submissionTest';
-import { Submission } from '../../../../infrastructure/submission';
+} from '../../../../../infrastructure/types';
+import { AssignmentStudent, AssignmentStudentType } from '../../../../../infrastructure/assignment';
+import { Environment } from '../../../../../infrastructure/autograder/environment';
+import { FileTemplate } from '../../../../../infrastructure/fileTemplate';
+import { SubmissionTest } from '../../../../../infrastructure/submissionTest';
+import { Submission } from '../../../../../infrastructure/submission';
 
-import CPTooltip from '../../../../components/core/CPTooltip';
-import { tooltips } from '../../../../components/core/tooltips';
+import CPTooltip from '../../../../../components/core/CPTooltip';
+import { tooltips } from '../../../../../components/core/tooltips';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
 import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
 
-import TestsList from '../../../../components/code-review/code-panel/TestsList';
-import { StudentTestCasesByCategory } from '../../../../components/core/testFetchUtils';
+import TestsList from '../../../../../components/code-review/code-panel/TestsList';
+import { StudentTestCasesByCategory } from '../../../../../components/core/testFetchUtils';
 
-import { awaitTestResult } from '../../../../components/admin/assignments/tests/testResult';
+import { awaitTestResult } from '../../../../../components/admin/assignments/tests/testResult';
 
-import { SubmissionTestResultType } from '../../../../infrastructure/autograder/runTypes';
+import { SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
 
-import { slack } from '../../../../components/core/slack';
+import { slack } from '../../../../../components/core/slack';
 
-import { encodeForLink } from '../../../../components/core/URLutils';
+import { encodeForLink } from '../../../../../components/core/URLutils';
 
-import { CodePostDate, dueDatePassed } from '../../../../components/utils/DateUtils';
+import { CodePostDate, dueDatePassed } from '../../../../../components/utils/DateUtils';
 
-import ViewUpload from '../../../../components/student/ViewUpload';
-import InvitePartnersLink from '../../../../components/student/InvitePartnersLink';
-import LateSubmissionModal from '../../../../components/student/LateSubmissionModal';
+import ViewUpload from '../../../../../components/student/ViewUpload';
+import InvitePartnersLink from '../../../../../components/student/InvitePartnersLink';
+import LateSubmissionModal from '../../../../../components/student/LateSubmissionModal';
 
-import { LOCAL_SETTINGS } from '../../../../components/utils/LocalSettings';
+import { LOCAL_SETTINGS } from '../../../../../components/utils/LocalSettings';
 
 /**********************************************************************************************************************/
 
@@ -516,7 +516,6 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     // Note: we need to increment the testRunsCompleted in state, because a student could go back to the upload tab (without refreshing submission) and re-upload
     this.setState((prevState) => {
       return {
-        ...prevState,
         submissionTests: result.submissionTests,
         testsLog: result.logs,
         loadingTests: false,
