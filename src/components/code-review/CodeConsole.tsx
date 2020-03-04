@@ -1147,7 +1147,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             return el.id === comment.id;
           })
         ) {
-          this.deleteComment(savedComment);
+          await this.deleteComment(savedComment);
           return;
         }
       } else {
