@@ -154,8 +154,17 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
         </div>
         <SplitPane split="vertical" defaultSize="50%" pane1Style={{ overflowY: 'auto' }} minSize={100}>
           <div>
-            <div style={{ display: 'flex' }}>
-              <div style={{ backgroundColor: '#fafafa', fontSize: '12px', fontWeight: 500, padding: '8px 20px' }}>
+            <div style={{ display: 'flex', padding: '4px 0px' }}>
+              <div
+                style={{
+                  backgroundColor: '#999',
+                  color: '#fff',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  padding: '8px 20px',
+                  marginTop: '-4px',
+                }}
+              >
                 {currentFile === undefined ? '---' : currentFile.name}
               </div>
               <div style={{ flexGrow: 1 }} />
