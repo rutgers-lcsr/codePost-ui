@@ -8,6 +8,12 @@ import { CodeWindow } from '../admin/assignments/tests/edit/utils/CodeWindow';
 import { PseudoTerminal } from '../admin/assignments/tests/edit/TestDefinitions/PseudoTerminal';
 import useWindowSize from './useWindowSize';
 
+import { FileType } from '../../infrastructure/file';
+
+interface IPseudoIDEProps {
+  files: FileType[];
+}
+
 const ccc = `/******************************************************************************
  *  Name:    Student
  *
@@ -79,8 +85,10 @@ public class Election {
     }
 }`;
 
-const PseudoIDE = (props: any) => {
+const PseudoIDE = (props: IPseudoIDEProps) => {
   const height = useWindowSize().height * 0.85;
+
+  console.log('files', props.files);
 
   const setTestSubject = (tmp: string) => {
     console.log('sset');

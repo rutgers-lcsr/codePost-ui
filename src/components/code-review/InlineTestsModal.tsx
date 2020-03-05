@@ -2,9 +2,14 @@ import * as React from 'react';
 
 import { Button, Modal } from 'antd';
 
+import { FileType } from '../../infrastructure/file';
 import PseudoIDE from '../core/PseudoIDE';
 
-const InlineTestsModal = (props: any) => {
+interface IInlineTestsModalProps {
+  files: any;
+}
+
+const InlineTestsModal = (props: IInlineTestsModalProps) => {
   const handleOk = () => {
     console.log('ok');
   };
@@ -22,7 +27,7 @@ const InlineTestsModal = (props: any) => {
         </Button>,
       ]}
     >
-      <PseudoIDE />
+      <PseudoIDE files={props.files} />
     </Modal>
   );
 };

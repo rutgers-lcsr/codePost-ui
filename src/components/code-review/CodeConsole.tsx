@@ -2498,11 +2498,14 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             editRubricMode={this.state.editRubricMode}
           />
           <KeyboardShortcuts
+            key="keyboard-shortcuts"
             visible={this.state.showKeyboardShortcuts}
             onClose={this.toggleKeyboardShortcuts}
             isStudent={this.state.isStudent}
           />
-          {this.state.permissionLevel === PERMISSION_LEVEL.WRITE ? <InlineTestsModal /> : null}
+          {this.state.permissionLevel === PERMISSION_LEVEL.WRITE ? (
+            <InlineTestsModal key="inline-tests-modal" files={this.state.files} />
+          ) : null}
         </CourseContext.Provider>
       </div>
     );
