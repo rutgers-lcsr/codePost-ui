@@ -5,6 +5,7 @@ import SplitPane from 'react-split-pane';
 import { Icon, Menu } from 'antd';
 
 import { CodeWindow } from '../admin/assignments/tests/edit/utils/CodeWindow';
+import { PseudoTerminal } from '../admin/assignments/tests/edit/TestDefinitions/PseudoTerminal';
 import useWindowSize from './useWindowSize';
 
 const ccc = `/******************************************************************************
@@ -81,9 +82,13 @@ public class Election {
 const PseudoIDE = (props: any) => {
   const height = useWindowSize().height * 0.85;
 
+  const setTestSubject = (tmp: string) => {
+    console.log('sset');
+  };
+
   return (
     <div style={{ border: '2px solid blue', height: `${height}px`, position: 'relative' }} className="pseudo-ide">
-      <SplitPane split="vertical" defaultSize="20%">
+      <SplitPane split="vertical" defaultSize="20%" minSize={100}>
         <div>
           <div style={{ backgroundColor: '#fafafa', padding: '8px 16px', fontSize: '20px', fontWeight: 500 }}>
             Files
@@ -104,7 +109,7 @@ const PseudoIDE = (props: any) => {
             </Menu.SubMenu>
           </Menu>
         </div>
-        <SplitPane split="vertical" defaultSize="50%" pane1Style={{ overflowY: 'auto' }}>
+        <SplitPane split="vertical" defaultSize="50%" pane1Style={{ overflowY: 'auto' }} minSize={100}>
           <div>
             <div style={{ display: 'flex' }}>
               <div style={{ backgroundColor: '#fafafa', fontSize: '12px', fontWeight: 500, padding: '8px 20px' }}>
@@ -114,7 +119,7 @@ const PseudoIDE = (props: any) => {
             </div>
             <CodeWindow code={ccc} name={'hello.java'} onSave={undefined} height={'450px'} />
           </div>
-          <div>pane 3</div>
+          <PseudoTerminal submissions={[]} setTestSubject={setTestSubject} resizable={false} />
         </SplitPane>
       </SplitPane>
     </div>

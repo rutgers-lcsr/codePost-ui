@@ -48,6 +48,7 @@ interface IResultProps {
   overrideText?: string;
   env?: EnvironmentType;
   activeSubmission?: SubmissionType;
+  resizable: boolean;
 }
 
 const getResultSpan = (resultType: RESULT_TYPE) => {
@@ -319,33 +320,45 @@ export const PseudoTerminal = (props: IResultProps) => {
     />
   );
 
-  return (
-    <div className="pseudo-terminal">
-      <Resizable
-        defaultSize={{
-          height: 350,
-          width: '100%',
-        }}
-        minHeight={180}
-        style={{ marginBottom: '10px' }}
-        enable={{
-          top: false,
-          right: false,
-          bottom: true,
-          left: false,
-          topRight: false,
-          bottomRight: false,
-          bottomLeft: false,
-          topLeft: false,
-        }}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'black' }}>
-          <div>{header}</div>
-          <div id="pseudoterminal-body" style={{ flexGrow: 1, overflow: 'auto' }}>
-            {logElem}
-          </div>
-        </div>
-      </Resizable>
+  const content = (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'black' }}>
+      <div>{header}</div>
+      <div id="pseudoterminal-body" style={{ flexGrow: 1, overflow: 'auto' }}>
+        {logElem}
+      </div>
     </div>
   );
+
+  if (props.resizable) {
+    return (
+      <div className="pseudo-terminal">
+        <Resizable
+          defaultSize={{
+            height: 350,
+            width: '100%',
+          }}
+          minHeight={180}
+          style={{ marginBottom: '10px' }}
+          enable={{
+            top: false,
+            right: false,
+            bottom: true,
+            left: false,
+            topRight: false,
+            bottomRight: false,
+            bottomLeft: false,
+            topLeft: false,
+          }}
+        >
+          {content}
+        </Resizable>
+      </div>
+    );
+  } else {
+    return (
+      <div className="pseudo-terminal" style={{ height: '100%' }}>
+        {content}
+      </div>
+    );
+  }
 };

@@ -900,6 +900,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   setTestSubject={this.props.setTestSubject}
                   activeSubmission={this.props.activeSubmission}
                   env={this.props.env}
+                  resizable={true}
                 />
               </div>
             </div>
