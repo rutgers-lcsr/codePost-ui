@@ -52,6 +52,8 @@ import FileMenu, { FileMenuTitle } from './menu/FileMenu';
 
 import RubricMenuUI from './menu/RubricMenuUI';
 
+import InlineTestsModal from './InlineTestsModal';
+
 import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMenu';
 
 import layoutVars from '../../styles/layout/_layoutVars';
@@ -2500,6 +2502,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             onClose={this.toggleKeyboardShortcuts}
             isStudent={this.state.isStudent}
           />
+          {this.state.permissionLevel === PERMISSION_LEVEL.WRITE ? <InlineTestsModal /> : null}
         </CourseContext.Provider>
       </div>
     );
