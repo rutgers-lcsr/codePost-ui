@@ -2,11 +2,13 @@ import * as React from 'react';
 
 import { Button, Modal } from 'antd';
 
+import { AssignmentType } from '../../infrastructure/assignment';
 import { FileType } from '../../infrastructure/file';
 import PseudoIDE from '../core/PseudoIDE';
 
 interface IInlineTestsModalProps {
-  files: any;
+  files: FileType[];
+  assignment: AssignmentType;
 }
 
 const InlineTestsModal = (props: IInlineTestsModalProps) => {
@@ -27,7 +29,7 @@ const InlineTestsModal = (props: IInlineTestsModalProps) => {
         </Button>,
       ]}
     >
-      <PseudoIDE files={props.files} />
+      <PseudoIDE files={props.files} assignment={props.assignment} />
     </Modal>
   );
 };

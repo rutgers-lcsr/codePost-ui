@@ -2503,8 +2503,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             onClose={this.toggleKeyboardShortcuts}
             isStudent={this.state.isStudent}
           />
-          {this.state.permissionLevel === PERMISSION_LEVEL.WRITE ? (
-            <InlineTestsModal key="inline-tests-modal" files={this.state.files} />
+          {this.state.permissionLevel === PERMISSION_LEVEL.WRITE && this.state.assignment !== undefined ? (
+            <InlineTestsModal key="inline-tests-modal" files={this.state.files} assignment={this.state.assignment} />
           ) : null}
         </CourseContext.Provider>
       </div>

@@ -2,91 +2,37 @@ import * as React from 'react';
 
 import SplitPane from 'react-split-pane';
 
-import { Icon, Menu } from 'antd';
+import { Icon, Menu, Skeleton, Spin } from 'antd';
 
 import { CodeWindow } from '../admin/assignments/tests/edit/utils/CodeWindow';
 import { PseudoTerminal } from '../admin/assignments/tests/edit/TestDefinitions/PseudoTerminal';
 import useWindowSize from './useWindowSize';
 
-import { FileType } from '../../infrastructure/file';
+import { SolutionFile, SolutionFileType } from '../../infrastructure/autograder/solutionFile';
+import { SubmissionType } from '../../infrastructure/submission';
+import { Environment, EnvironmentType } from '../../infrastructure/autograder/environment';
+import { HelperFile, HelperFileType } from '../../infrastructure/autograder/helperFile';
+import { SourceFile, SourceFileType } from '../../infrastructure/autograder/sourceFile';
 import { arrayUpdate } from '../../infrastructure/immutable';
+import { AssignmentType, TestCaseType, TestCategoryType, FileType } from '../../infrastructure/types';
+
+import {
+  fetchSourceFiles,
+  fetchSolutionFiles,
+  fetchEnvironment,
+  fetchHelpers,
+  fetchTestData,
+  TestCasesByCategory,
+} from './testFetchUtils';
 
 interface IPseudoIDEProps {
   files: FileType[];
+  assignment: AssignmentType;
 }
 
-const ccc = `/******************************************************************************
- *  Name:    Student
- *
- *  Description: Reads election data, by numbers of votes in electoral
- * districts. Outputs the number of electoral votes each candidate won after
- * their names, and the smallest number of electoral votes that would be
- * necessary to win the election.
- *
- * This is a change
- ******************************************************************************/
-public class Election {
-
-    // gives the least integer which is larger than n/2
-    // Examples: majorityOf(10) = 6, majorityOf(11) = 6
-    public static int majorityOf(int n) {
-        return n/2 + 1;
-    }
-
-    public static void main(String[] args) {
-        String candidate1 = StdIn.readString(); // name of candidate 1
-        String candidate2 = StdIn.readString(); // name of candidate 2
-
-        // number of electoral votes candidate 1 receives
-        int c1ElectoralVoteCount = 0;
-
-        // number of electoral votes candidate 2 receives
-        int c2ElectoralVoteCount = 0;
-
-        // the total number of electoral votes at stake
-        int totalElectoralVotes = 0;
-
-        while (!StdIn.isEmpty()) { // read in data row-by-row until empty
-            String regionName = StdIn.readString();
-
-            // number of electoral votes at stake in the region
-            int regionElectoralVotes = StdIn.readInt();
-
-            // number of votes for candidate 1 in that region
-            int votesC1 = StdIn.readInt();
-
-            // number of votes for candidate 2 in the region
-            int votesC2 = StdIn.readInt();
-
-            // if more people voted for candidate 1, increment their electoral
-            // votes
-            if (votesC1 > votesC2)
-                c1ElectoralVoteCount += regionElectoralVotes;
-
-
-            // if more people voted for candidate 2, increment their electoral
-            // votes
-            else if (votesC2 > votesC1)
-                c2ElectoralVoteCount += regionElectoralVotes;
-
-
-            // if there is a tie, nothing happens to the candidate counts
-            // but we increment the totalVoteCount no matter what
-
-            totalElectoralVotes += regionElectoralVotes;
-
-        }
-
-        // output candidate names, number of electoral votes won, and
-        // the number necessary to win using the majorityOf method
-        StdOut.print(candidate1 + "  " + c1ElectoralVoteCount + ". ");
-        StdOut.print(candidate2 + "  " + c2ElectoralVoteCount + ". ");
-        StdOut.println(majorityOf(totalElectoralVotes) + " needed to win");
-
-    }
-}`;
-
 const PseudoIDE = (props: IPseudoIDEProps) => {
+  const [loading, setLoading] = React.useState<boolean>(true);
+
   const [filesCopy, setFilesCopy] = React.useState<FileType[]>(props.files);
   const [currentFileID, setCurrentFileID] = React.useState<number | undefined>(undefined);
 
@@ -125,6 +71,34 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
     setCurrentFileID(fileID);
   };
 
+  const [env, setEnv] = React.useState<EnvironmentType | undefined>(undefined);
+  const [solutions, setSolutions] = React.useState<SolutionFileType[]>([]);
+  const [helpers, setHelpers] = React.useState<HelperFileType[]>([]);
+  const [sourceFiles, setSourceFiles] = React.useState<SourceFileType[]>([]);
+  const [casesByCategory, setCasesByCategory] = React.useState<TestCasesByCategory>({});
+  const [categories, setCategories] = React.useState<TestCategoryType[]>([]);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      const currEnv = await fetchEnvironment(props.assignment);
+      setEnv(currEnv);
+      if (currEnv) {
+        const solutionFiles = await fetchSolutionFiles(currEnv);
+        setSolutions(solutionFiles);
+        const helpers = await fetchHelpers(currEnv);
+        setHelpers(helpers);
+        const sourceFiles: SourceFileType[] = await fetchSourceFiles(currEnv);
+        setSourceFiles(sourceFiles);
+        const [_categories, _casesByCategory]: any = await fetchTestData(props.assignment);
+        setCategories(_categories);
+        setCasesByCategory(_casesByCategory);
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, [props.assignment]);
+
   const defaultSelectedKeys = props.files.length > 0 ? [`file-${props.files[0]['id']}`] : [];
 
   const currentFile =
@@ -133,6 +107,25 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
       : filesCopy.find((file: FileType) => {
           return file.id === currentFileID;
         });
+
+  if (loading) {
+    return (
+      <div style={{ height: `${height}px`, position: 'relative' }} className="pseudo-ide">
+        <SplitPane split="vertical" defaultSize="20%" minSize={100}>
+          <div style={{ padding: '20px 40px' }}>
+            <Skeleton active />
+          </div>
+          <SplitPane split="vertical" defaultSize="50%" pane1Style={{ overflowY: 'auto' }} minSize={100}>
+            <div style={{ padding: '20px 40px' }}>
+              <Skeleton active />
+            </div>
+
+            <div />
+          </SplitPane>
+        </SplitPane>
+      </div>
+    );
+  }
 
   return (
     <div style={{ height: `${height}px`, position: 'relative' }} className="pseudo-ide">
