@@ -2,6 +2,8 @@ import * as React from 'react';
 
 import { Modal } from 'antd';
 
+import PseudoIDE from '../core/PseudoIDE';
+
 const InlineTestsModal = (props: any) => {
   const handleOk = () => {
     console.log('ok');
@@ -19,15 +21,7 @@ const InlineTestsModal = (props: any) => {
       closable={false}
       width={'90%'}
     >
-      <p>Some contents...</p>
-      <p>Some contents...</p>
-      <p>Some contents...</p>
-      <p>Some contents...</p>
-      <p>Some contents...</p>
-      <p>Some contents...</p>
-      <p>Some contents...</p>
-      <p>Some contents...</p>
-      <p>Some contents...</p>
+      <PseudoIDE />
     </Modal>
   );
 };
