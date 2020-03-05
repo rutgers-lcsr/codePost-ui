@@ -9,6 +9,7 @@ import { PseudoTerminal } from '../admin/assignments/tests/edit/TestDefinitions/
 import useWindowSize from './useWindowSize';
 
 import { FileType } from '../../infrastructure/file';
+import { arrayUpdate } from '../../infrastructure/immutable';
 
 interface IPseudoIDEProps {
   files: FileType[];
@@ -86,7 +87,8 @@ public class Election {
 }`;
 
 const PseudoIDE = (props: IPseudoIDEProps) => {
-  const [currentFile, setCurrentFile] = React.useState<FileType | undefined>(undefined);
+  const [filesCopy, setFilesCopy] = React.useState<FileType[]>(props.files);
+  const [currentFileID, setCurrentFileID] = React.useState<number | undefined>(undefined);
 
   const height = useWindowSize().height * 0.85;
 
@@ -94,23 +96,43 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
     console.log('sset');
   };
 
+  const onSave = (code: string) => {
+    const thisFileIndex = filesCopy.findIndex((file: FileType) => {
+      return file.id === currentFileID;
+    });
+
+    if (thisFileIndex === -1) {
+      return Promise.resolve();
+    }
+
+    let thisFile = filesCopy[thisFileIndex];
+    thisFile.code = code;
+
+    setFilesCopy(arrayUpdate(filesCopy, thisFile, thisFileIndex));
+    return Promise.resolve();
+  };
+
   React.useEffect(() => {
     if (props.files.length > 0) {
-      setCurrentFile(props.files[0]);
+      setFilesCopy(props.files);
+      setCurrentFileID(props.files[0].id);
     }
   }, [props.files]);
 
   const handleClick = (e: any) => {
     const fileID = +e.key.split('-')[1];
 
-    const foundFile = props.files.find((file: FileType) => {
-      return file.id === fileID;
-    });
-
-    setCurrentFile(foundFile);
+    setCurrentFileID(fileID);
   };
 
   const defaultSelectedKeys = props.files.length > 0 ? [`file-${props.files[0]['id']}`] : [];
+
+  const currentFile =
+    currentFileID === undefined
+      ? currentFileID
+      : filesCopy.find((file: FileType) => {
+          return file.id === currentFileID;
+        });
 
   return (
     <div style={{ height: `${height}px`, position: 'relative' }} className="pseudo-ide">
@@ -141,7 +163,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
             <CodeWindow
               code={currentFile === undefined ? ' ' : currentFile.code}
               name={currentFile === undefined ? ' ' : currentFile.name}
-              onSave={undefined}
+              onSave={onSave}
             />
           </div>
           <PseudoTerminal submissions={[]} setTestSubject={setTestSubject} resizable={false} />
