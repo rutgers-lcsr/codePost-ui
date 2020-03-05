@@ -86,46 +86,63 @@ public class Election {
 }`;
 
 const PseudoIDE = (props: IPseudoIDEProps) => {
-  const height = useWindowSize().height * 0.85;
+  const [currentFile, setCurrentFile] = React.useState<FileType | undefined>(undefined);
 
-  console.log('files', props.files);
+  const height = useWindowSize().height * 0.85;
 
   const setTestSubject = (tmp: string) => {
     console.log('sset');
   };
+
+  React.useEffect(() => {
+    if (props.files.length > 0) {
+      setCurrentFile(props.files[0]);
+    }
+  }, [props.files]);
+
+  const handleClick = (e: any) => {
+    const fileID = +e.key.split('-')[1];
+
+    const foundFile = props.files.find((file: FileType) => {
+      return file.id === fileID;
+    });
+
+    setCurrentFile(foundFile);
+  };
+
+  const defaultSelectedKeys = props.files.length > 0 ? [`file-${props.files[0]['id']}`] : [];
 
   return (
     <div style={{ height: `${height}px`, position: 'relative' }} className="pseudo-ide">
       <SplitPane split="vertical" defaultSize="20%" minSize={100}>
         <div>
           <div style={{ backgroundColor: '#fafafa', padding: '8px 16px', fontSize: '20px', fontWeight: 500 }}>
-            Files
+            Files ({props.files.length})
           </div>
-          <Menu defaultSelectedKeys={['2']} defaultOpenKeys={['1']} mode="inline" style={{ height: '100%' }}>
-            <Menu.SubMenu
-              key={'1'}
-              title={
-                <span>
-                  <Icon type="folder" />
-                  folder1{' '}
-                </span>
-              }
-            >
-              <Menu.Item key={'2'}>hello.java &nbsp;</Menu.Item>
-              <Menu.Item key={'3'}>loops.java &nbsp;</Menu.Item>
-              <Menu.Item key={'4'}>recursion.java &nbsp;</Menu.Item>
-            </Menu.SubMenu>
+          <Menu
+            defaultSelectedKeys={defaultSelectedKeys}
+            mode="inline"
+            style={{ height: '100%' }}
+            onClick={handleClick}
+          >
+            {props.files.map((file: FileType) => {
+              return <Menu.Item key={`file-${file.id}`}>{file.name}</Menu.Item>;
+            })}
           </Menu>
         </div>
         <SplitPane split="vertical" defaultSize="50%" pane1Style={{ overflowY: 'auto' }} minSize={100}>
           <div>
             <div style={{ display: 'flex' }}>
               <div style={{ backgroundColor: '#fafafa', fontSize: '12px', fontWeight: 500, padding: '8px 20px' }}>
-                hello.java
+                {currentFile === undefined ? '---' : currentFile.name}
               </div>
               <div style={{ flexGrow: 1 }} />
             </div>
-            <CodeWindow code={ccc} name={'hello.java'} onSave={undefined} height={'450px'} />
+            <CodeWindow
+              code={currentFile === undefined ? ' ' : currentFile.code}
+              name={currentFile === undefined ? ' ' : currentFile.name}
+              onSave={undefined}
+            />
           </div>
           <PseudoTerminal submissions={[]} setTestSubject={setTestSubject} resizable={false} />
         </SplitPane>
