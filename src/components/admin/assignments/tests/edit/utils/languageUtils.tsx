@@ -37,7 +37,18 @@ export const extensionsByLanguage: { [language: string]: string } = {
 /****************************** Languages and Language support *********************************/
 
 // Languages supported
-export const languages = ['python-3.7', 'python-2.7', 'java', 'c/c++', 'other'];
+export const languages = [
+  'python-3.7',
+  'python-2.7',
+  'java',
+  'c/c++',
+  'javascript',
+  'haskell',
+  'ocaml',
+  'ruby',
+  'php',
+  'other',
+];
 
 export const hasNativeTestSupport = (language: string) => {
   return languageWithNativeTestSupport.includes(language);

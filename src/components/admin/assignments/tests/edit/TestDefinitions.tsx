@@ -69,7 +69,7 @@ import FileTag from './TestDefinitions/FileTag';
 
 /* codePost utils imports */
 import { fetchTestData, TestCasesByCategory } from '../../../../core/testFetchUtils';
-import { hasNativeTestSupport, testTemplates } from './utils/languageUtils';
+import { hasNativeTestSupport } from './utils/languageUtils';
 
 import { LOCAL_SETTINGS } from '../../../../utils/LocalSettings';
 
