@@ -87,7 +87,7 @@ const PseudoIDE = (props: any) => {
   };
 
   return (
-    <div style={{ border: '2px solid blue', height: `${height}px`, position: 'relative' }} className="pseudo-ide">
+    <div style={{ height: `${height}px`, position: 'relative' }} className="pseudo-ide">
       <SplitPane split="vertical" defaultSize="20%" minSize={100}>
         <div>
           <div style={{ backgroundColor: '#fafafa', padding: '8px 16px', fontSize: '20px', fontWeight: 500 }}>

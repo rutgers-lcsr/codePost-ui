@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Modal } from 'antd';
+import { Button, Modal } from 'antd';
 
 import PseudoIDE from '../core/PseudoIDE';
 
@@ -9,18 +9,18 @@ const InlineTestsModal = (props: any) => {
     console.log('ok');
   };
 
-  const handleCancel = () => {
-    console.log('cancel');
-  };
   return (
     <Modal
       visible={true}
-      onOk={handleOk}
-      onCancel={handleCancel}
       bodyStyle={{ padding: '0px' }}
       closable={false}
       width={'90%'}
       style={{ top: '20px' }}
+      footer={[
+        <Button key="close" onClick={handleOk}>
+          Close
+        </Button>,
+      ]}
     >
       <PseudoIDE />
     </Modal>
