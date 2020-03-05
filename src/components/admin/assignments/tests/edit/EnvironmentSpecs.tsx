@@ -156,7 +156,7 @@ export const EnvironmentSpecs = (props: IProps) => {
     }
     // if we return to old language, reset dependencies to props
     if (props.env && value === props.env.language) {
-      setDependencies(JSON.parse(props.env.dependencies));
+      setDependencies(props.env.dockerRunInstructions.join('\n'));
       setBuildType(props.env.buildType);
     }
   };
@@ -170,13 +170,13 @@ export const EnvironmentSpecs = (props: IProps) => {
   };
 
   const onBuildTypeChange = (e: any) => {
-    const newBuildType = e.target.value === 'default' ? 'default' : 'alpine';
+    const newBuildType = e.target.value === 'default' ? 'default' : 'ubuntu';
     setBuildType(newBuildType);
     if (!props.env || newBuildType !== props.env.buildType) {
       setDependencies('');
     }
     if (props.env && newBuildType === props.env.buildType) {
-      setDependencies(JSON.parse(props.env.dependencies));
+      setDependencies(props.env.dockerRunInstructions.join('\n'));
     }
   };
 
@@ -197,12 +197,7 @@ export const EnvironmentSpecs = (props: IProps) => {
   //************ 1A. ENVIRONMENT -  SELECT LANGUAGE
   const selectLanguage = (
     // Disable selector if environment has a custom dockerfile defined
-    <Select
-      value={props.env && props.env.dockerfile.length > 0 ? 'Custom' : language || undefined}
-      onChange={onLanguageChange}
-      style={{ minWidth: 300 }}
-      disabled={props.env && props.env.dockerfile.length > 0}
-    >
+    <Select value={language || undefined} onChange={onLanguageChange} style={{ minWidth: 300 }}>
       {languages.map((language) => {
         return (
           <Option key={language} value={language}>
@@ -233,11 +228,11 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   const customBuildSelect = buildType !== 'default' && (
     <Select value={buildType} onChange={onCustomBuildChange} style={{ minWidth: 200 }}>
-      <Option key={'alpine'} value={'alpine'}>
-        Alpine-Linux
-      </Option>
       <Option key={'ubuntu'} value={'ubuntu'}>
         Ubuntu
+      </Option>
+      <Option key={'alpine'} value={'alpine'}>
+        Alpine-Linux
       </Option>
       <Option key={'windows'} disabled={true} value={'windows'}>
         Windows (coming soon)
