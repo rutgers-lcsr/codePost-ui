@@ -20,6 +20,7 @@ const InlineTestsModal = (props: any) => {
       bodyStyle={{ padding: '0px' }}
       closable={false}
       width={'90%'}
+      style={{ top: '20px' }}
     >
       <PseudoIDE />
     </Modal>
