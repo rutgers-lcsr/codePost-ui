@@ -313,6 +313,7 @@ export const PseudoTerminal = (props: IResultProps) => {
         height: '32px',
         color: 'rgb(36, 190, 133)',
         borderBottom: '1px solid rgb(101,101,101)',
+        overflowX: 'auto',
       }}
       left={[clear, copy, colorInfo]}
       right={[selectFile, selectCode, resultTag, runButton]}

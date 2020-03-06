@@ -266,7 +266,13 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
             })}
           </Menu>
         </div>
-        <SplitPane split="vertical" defaultSize="50%" pane1Style={{ overflowY: 'auto' }} minSize={100}>
+        <SplitPane
+          split="vertical"
+          defaultSize="50%"
+          pane1Style={{ overflowY: 'auto' }}
+          pane2Style={{ overflowX: 'auto' }}
+          minSize={100}
+        >
           <div>
             <div style={{ display: 'flex', padding: '4px 0px' }}>
               <div
@@ -289,6 +295,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
               onSave={onSave}
             />
           </div>
+
           <PseudoTerminal
             submissions={[]}
             setTestSubject={setTestSubject}

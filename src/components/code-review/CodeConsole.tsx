@@ -503,7 +503,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       tests: [],
       testCases: {},
       testCategories: [],
-      showInlineTestsModal: false,
+      showInlineTestsModal: true,
 
       selectedFile: undefined,
       oldCommentIDs: {},
