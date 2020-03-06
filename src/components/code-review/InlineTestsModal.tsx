@@ -9,16 +9,19 @@ import PseudoIDE from '../core/PseudoIDE';
 interface IInlineTestsModalProps {
   files: FileType[];
   assignment: AssignmentType;
+  visible: boolean;
+  show: () => void;
+  hide: () => void;
 }
 
 const InlineTestsModal = (props: IInlineTestsModalProps) => {
   const handleOk = () => {
-    console.log('ok');
+    props.hide();
   };
 
   return (
     <Modal
-      visible={true}
+      visible={props.visible}
       bodyStyle={{ padding: '0px' }}
       closable={false}
       width={'90%'}

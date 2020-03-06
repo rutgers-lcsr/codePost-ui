@@ -144,6 +144,7 @@ interface ICodeConsoleState {
   tests: SubmissionTestType[];
   testCategories: TestCategoryType[];
   testCases: TestCasesByCategory | StudentTestCasesByCategory;
+  showInlineTestsModal: boolean;
 
   /* writer data */
   submission?: AnonymousSubmissionType;
@@ -502,6 +503,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       tests: [],
       testCases: {},
       testCategories: [],
+      showInlineTestsModal: true,
 
       selectedFile: undefined,
       oldCommentIDs: {},
@@ -993,6 +995,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         message.info(`Now showing rubric comment ${this.state.showExplanations ? 'explanations' : 'text'}`);
       },
     );
+  };
+
+  public showInlineTestsModal = () => {
+    this.setState({ showInlineTestsModal: true });
+  };
+
+  public hideInlineTestsModal = () => {
+    this.setState({ hideInlineTestsModal: false });
   };
 
   /***********************************************************************************
@@ -2504,7 +2514,14 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             isStudent={this.state.isStudent}
           />
           {this.state.permissionLevel === PERMISSION_LEVEL.WRITE && this.state.assignment !== undefined ? (
-            <InlineTestsModal key="inline-tests-modal" files={this.state.files} assignment={this.state.assignment} />
+            <InlineTestsModal
+              key="inline-tests-modal"
+              visible={this.state.showInlineTestsModal}
+              show={this.showInlineTestsModal}
+              hide={this.hideInlineTestsModal}
+              files={this.state.files}
+              assignment={this.state.assignment}
+            />
           ) : null}
         </CourseContext.Provider>
       </div>
