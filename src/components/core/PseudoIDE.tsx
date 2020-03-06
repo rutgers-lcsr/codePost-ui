@@ -5,7 +5,7 @@ import SplitPane from 'react-split-pane';
 import { Icon, Menu, Skeleton, Spin } from 'antd';
 
 import { CodeWindow } from '../admin/assignments/tests/edit/utils/CodeWindow';
-import { PseudoTerminal } from '../admin/assignments/tests/edit/TestDefinitions/PseudoTerminal';
+import { PseudoTerminal, RESULT_TYPE, ILogType } from '../admin/assignments/tests/edit/TestDefinitions/PseudoTerminal';
 import useWindowSize from './useWindowSize';
 
 import { SolutionFile, SolutionFileType } from '../../infrastructure/autograder/solutionFile';
@@ -15,6 +15,8 @@ import { HelperFile, HelperFileType } from '../../infrastructure/autograder/help
 import { SourceFile, SourceFileType } from '../../infrastructure/autograder/sourceFile';
 import { arrayUpdate } from '../../infrastructure/immutable';
 import { AssignmentType, TestCaseType, TestCategoryType, FileType } from '../../infrastructure/types';
+import { TestEditorResultType } from '../../infrastructure/autograder/runTypes';
+import { TestCase } from '../../infrastructure/testCase';
 
 import {
   fetchSourceFiles,
@@ -24,6 +26,8 @@ import {
   fetchTestData,
   TestCasesByCategory,
 } from './testFetchUtils';
+
+import { awaitTestResult } from '../admin/assignments/tests/testResult';
 
 interface IPseudoIDEProps {
   files: FileType[];
@@ -71,6 +75,10 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
     setCurrentFileID(fileID);
   };
 
+  //////////////////////////////////////////////////////////
+  /***************** Test Loading *************************/
+  //////////////////////////////////////////////////////////
+
   const [env, setEnv] = React.useState<EnvironmentType | undefined>(undefined);
   const [solutions, setSolutions] = React.useState<SolutionFileType[]>([]);
   const [helpers, setHelpers] = React.useState<HelperFileType[]>([]);
@@ -98,6 +106,119 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
     };
     fetchData();
   }, [props.assignment]);
+
+  //////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////
+  /***************** Test Running *************************/
+  //
+  // Mostly copied from
+  // - TestDefinitions.tsx
+  // - TestingSetup.tsx
+  // - SourceEditor.tsx
+  //////////////////////////////////////////////////////////
+
+  const [running, setRunning] = React.useState<boolean>(false);
+  const [logs, setLogs] = React.useState<ILogType[]>([]);
+
+  const replaceTestCase = (newCase: TestCaseType, oldID: number) => {
+    setCasesByCategory((prevState) => {
+      const filteredTests = prevState[newCase.testCategory]
+        ? prevState[newCase.testCategory].filter((tc) => {
+            return tc.id !== oldID;
+          })
+        : [];
+      const newCases = { ...prevState };
+      newCases[newCase.testCategory] = [...filteredTests, newCase];
+      return newCases;
+    });
+  };
+
+  const updateTestStatus = async (testCaseID: number, result: number) => {
+    const newTest = await TestCase.update({ id: testCaseID, lastSolutionRun: result });
+    replaceTestCase(newTest, testCaseID);
+    // updateActiveTest(newTest, true);
+  };
+
+  const parseFileModeResults = async (response: TestEditorResultType) => {
+    // In case new tests were created (if file mode, test parsing turned off),
+    //    fetch the newest tests before setting resylts
+    const [_categories, _casesByCategory]: any = await fetchTestData(props.assignment);
+    setCategories(_categories);
+    setCasesByCategory(_casesByCategory);
+
+    // if (props.env && props.env.dumpMode && activeSubmission) {
+    //   // Refresh submission files after dump, in case a _tests.txt file was created
+    //   setTestSubject(activeSubmission.id.toString());
+    // }
+
+    //
+    const formatted = {
+      log: <span style={{ color: '#678CAB' }}>{response.logs}</span>,
+      target: 'solution code',
+      result: RESULT_TYPE.NONE,
+      testCaseName: '',
+    };
+
+    const logs = response.results.map((el) => {
+      const testCase = _casesByCategory[el.testCategory].find((tc: TestCaseType) => tc.id === el.testCase)!;
+      const status = el.isError ? RESULT_TYPE.ERROR : el.passed ? RESULT_TYPE.PASSED : RESULT_TYPE.FAILED;
+
+      if (testCase) {
+        // if (!activeSubmission) {
+        //   updateTestStatus(testCase.id, status);
+        // }
+        updateTestStatus(testCase.id, status);
+      }
+
+      return {
+        log: el.logs,
+        target: 'solution code',
+        result: status,
+        testCaseName: testCase ? testCase.description : '',
+      };
+    });
+
+    return [formatted, ...logs];
+  };
+
+  const callback = async (response: TestEditorResultType) => {
+    const newLogs = await parseFileModeResults(response);
+    setRunning(false);
+    setLogs(newLogs);
+  };
+
+  const fileToRun = 'main.sh';
+
+  const runTest = async () => {
+    if (env) {
+      setRunning(true);
+      let result: any;
+      if (fileToRun === 'main.sh') {
+        // Run all tests
+        // result = await Environment.run(
+        //   props.env.id,
+        //   props.activeSubmission ? { submission: props.activeSubmission.id.toString(), simulate: 'True' } : {},
+        // );
+        result = await Environment.run(env.id, {});
+      }
+      // else {
+      //   const found = props.sourceFiles.find((el) => el.name === fileToRun);
+      //   if (found !== undefined) {
+      //     result = await SourceFile.run(
+      //       found.id,
+      //       props.activeSubmission
+      //         ? {
+      //             submission: props.activeSubmission.id.toString(),
+      //           }
+      //         : {},
+      //     );
+      //   }
+      // }
+      awaitTestResult(result.task, callback);
+    }
+  };
 
   const defaultSelectedKeys = props.files.length > 0 ? [`file-${props.files[0]['id']}`] : [];
 
@@ -168,7 +289,14 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
               onSave={onSave}
             />
           </div>
-          <PseudoTerminal submissions={[]} setTestSubject={setTestSubject} resizable={false} />
+          <PseudoTerminal
+            submissions={[]}
+            setTestSubject={setTestSubject}
+            resizable={false}
+            log={logs}
+            isRunning={running}
+            runTest={runTest}
+          />
         </SplitPane>
       </SplitPane>
     </div>
