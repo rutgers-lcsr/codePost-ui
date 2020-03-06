@@ -503,7 +503,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       tests: [],
       testCases: {},
       testCategories: [],
-      showInlineTestsModal: true,
+      showInlineTestsModal: false,
 
       selectedFile: undefined,
       oldCommentIDs: {},
@@ -1002,7 +1002,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public hideInlineTestsModal = () => {
-    this.setState({ hideInlineTestsModal: false });
+    this.setState({ showInlineTestsModal: false });
   };
 
   /***********************************************************************************
@@ -2460,6 +2460,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           kind: 'link',
         },
         { value: 'View stats', label: 'View stats', kind: 'dashboard', populator: viewStats },
+        { value: 'Edit code', label: 'Edit code', callback: this.showInlineTestsModal, kind: 'action' },
       ];
     }
 
