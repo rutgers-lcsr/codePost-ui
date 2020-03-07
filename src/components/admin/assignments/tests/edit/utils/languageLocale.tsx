@@ -101,12 +101,12 @@ const locale: { [language: string]: { [attr: string]: any } } = {
     environment: (
       <span>
         Run on a Linux server in a container built from{' '}
-        <a href="https://hub.docker.com/r/ocaml/opam2/">ocaml/opam2:alpine</a> base image.
+        <a href="https://hub.docker.com/r/ocaml/ocaml">ocaml/ocaml:latest</a> base image.
       </span>
     ),
     pseudoterminal: (
       <span>
-        [Running on Linux | <a href="https://hub.docker.com/r/ocaml/opam2/">ocaml/opam2:alpine</a>]
+        [Running on Linux | <a href="https://hub.docker.com/r/ocaml/ocaml">ocaml/ocaml:latest</a>]
       </span>
     ),
   },
