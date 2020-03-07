@@ -49,6 +49,7 @@ interface IResultProps {
   env?: EnvironmentType;
   activeSubmission?: SubmissionType;
   resizable: boolean;
+  testSelectComponent?: React.ReactNode;
 }
 
 const getResultSpan = (resultType: RESULT_TYPE) => {
@@ -215,25 +216,28 @@ export const PseudoTerminal = (props: IResultProps) => {
       </Select>
     ) : null;
 
-  const selectCode = (
-    <Select
-      onChange={props.setTestSubject}
-      style={{ height: '24px', minWidth: '180px', fontSize: '12px' }}
-      size="small"
-      showSearch
-      defaultValue={props.activeSubmission !== undefined ? props.activeSubmission.id.toString() : '0'}
-      filterOption={(input, option: any) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-    >
-      {props.submissions.map((sub, i) => (
-        <Select.Option key={i} value={sub.id.toString()}>
-          {sub.students[0]}
+  const selectTarget =
+    props.testSelectComponent !== undefined ? (
+      props.testSelectComponent
+    ) : (
+      <Select
+        onChange={props.setTestSubject}
+        style={{ height: '24px', minWidth: '180px', fontSize: '12px' }}
+        size="small"
+        showSearch
+        defaultValue={props.activeSubmission !== undefined ? props.activeSubmission.id.toString() : '0'}
+        filterOption={(input, option: any) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+      >
+        {props.submissions.map((sub, i) => (
+          <Select.Option key={i} value={sub.id.toString()}>
+            {sub.students[0]}
+          </Select.Option>
+        ))}
+        <Select.Option key="0" value="0">
+          Solution code
         </Select.Option>
-      ))}
-      <Select.Option key="0" value="0">
-        Solution code
-      </Select.Option>
-    </Select>
-  );
+      </Select>
+    );
 
   const runButton = props.runTest ? (
     <div
@@ -316,7 +320,7 @@ export const PseudoTerminal = (props: IResultProps) => {
         overflowX: 'auto',
       }}
       left={[clear, copy, colorInfo]}
-      right={[selectFile, selectCode, resultTag, runButton]}
+      right={[selectFile, selectTarget, resultTag, runButton]}
       gutterSize={5}
     />
   );

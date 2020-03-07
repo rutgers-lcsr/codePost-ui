@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import SplitPane from 'react-split-pane';
 
-import { Icon, Menu, Skeleton, Spin } from 'antd';
+import { Icon, Menu, Select, Skeleton, Spin } from 'antd';
 
 import { CodeWindow } from '../admin/assignments/tests/edit/utils/CodeWindow';
 import { PseudoTerminal, RESULT_TYPE, ILogType } from '../admin/assignments/tests/edit/TestDefinitions/PseudoTerminal';
@@ -107,6 +107,8 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
     fetchData();
   }, [props.assignment]);
 
+  //////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////
 
@@ -220,6 +222,11 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
     }
   };
 
+  //////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////
+
   const defaultSelectedKeys = props.files.length > 0 ? [`file-${props.files[0]['id']}`] : [];
 
   const currentFile =
@@ -248,8 +255,27 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
     );
   }
 
+  // FIXME: test for categories with no tests
+  const testCaseSelect = (
+    <Select style={{ height: '24px', minWidth: '180px', fontSize: '12px' }} size="small" showSearch placeholder="Tests">
+      {categories.map((category: TestCategoryType) => {
+        let options = null;
+        if (casesByCategory.hasOwnProperty(+category.id)) {
+          options = casesByCategory[+category.id].map((testcase: TestCaseType) => {
+            return (
+              <Select.Option key={`testcase-${testcase.id}`} value={`testcase-${testcase.id}`}>
+                {testcase.description}
+              </Select.Option>
+            );
+          });
+        }
+        return <Select.OptGroup label={category.name}>{options}</Select.OptGroup>;
+      })}
+    </Select>
+  );
+
   return (
-    <div style={{ height: `${height}px`, position: 'relative' }} className="pseudo-ide">
+    <div style={{ height: `${height} px`, position: 'relative' }} className="pseudo-ide">
       <SplitPane split="vertical" defaultSize="20%" minSize={100}>
         <div>
           <div style={{ backgroundColor: '#fafafa', padding: '8px 16px', fontSize: '20px', fontWeight: 500 }}>
@@ -262,7 +288,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
             onClick={handleClick}
           >
             {props.files.map((file: FileType) => {
-              return <Menu.Item key={`file-${file.id}`}>{file.name}</Menu.Item>;
+              return <Menu.Item key={`file - ${file.id} `}>{file.name}</Menu.Item>;
             })}
           </Menu>
         </div>
@@ -303,6 +329,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
             log={logs}
             isRunning={running}
             runTest={runTest}
+            testSelectComponent={testCaseSelect}
           />
         </SplitPane>
       </SplitPane>
