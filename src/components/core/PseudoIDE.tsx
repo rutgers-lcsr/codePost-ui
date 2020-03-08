@@ -2,20 +2,20 @@ import * as React from 'react';
 
 import SplitPane from 'react-split-pane';
 
-import { Icon, Menu, Select, Skeleton, Spin } from 'antd';
+import { Icon, Menu, message, Select, Skeleton, Spin } from 'antd';
 
 import { CodeWindow } from '../admin/assignments/tests/edit/utils/CodeWindow';
 import { PseudoTerminal, RESULT_TYPE, ILogType } from '../admin/assignments/tests/edit/TestDefinitions/PseudoTerminal';
 import useWindowSize from './useWindowSize';
 
-import { SolutionFile, SolutionFileType } from '../../infrastructure/autograder/solutionFile';
-import { SubmissionType } from '../../infrastructure/submission';
+import { SubmissionType, AnonymousSubmissionType } from '../../infrastructure/submission';
 import { Environment, EnvironmentType } from '../../infrastructure/autograder/environment';
-import { HelperFile, HelperFileType } from '../../infrastructure/autograder/helperFile';
-import { SourceFile, SourceFileType } from '../../infrastructure/autograder/sourceFile';
+// import { SolutionFile, SolutionFileType } from '../../infrastructure/autograder/solutionFile';
+// import { HelperFile, HelperFileType } from '../../infrastructure/autograder/helperFile';
+// import { SourceFile, SourceFileType } from '../../infrastructure/autograder/sourceFile';
 import { arrayUpdate } from '../../infrastructure/immutable';
 import { AssignmentType, TestCaseType, TestCategoryType, FileType } from '../../infrastructure/types';
-import { TestEditorResultType } from '../../infrastructure/autograder/runTypes';
+import { TestEditorResultType, BasicTestResultType } from '../../infrastructure/autograder/runTypes';
 import { TestCase } from '../../infrastructure/testCase';
 
 import {
@@ -32,6 +32,7 @@ import { awaitTestResult } from '../admin/assignments/tests/testResult';
 interface IPseudoIDEProps {
   files: FileType[];
   assignment: AssignmentType;
+  submission: SubmissionType | AnonymousSubmissionType;
 }
 
 const PseudoIDE = (props: IPseudoIDEProps) => {
@@ -43,7 +44,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
   const height = useWindowSize().height * 0.85;
 
   const setTestSubject = (tmp: string) => {
-    console.log('sset');
+    // console.log('placeholder');
   };
 
   const onSave = (code: string) => {
@@ -80,11 +81,13 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
   //////////////////////////////////////////////////////////
 
   const [env, setEnv] = React.useState<EnvironmentType | undefined>(undefined);
-  const [solutions, setSolutions] = React.useState<SolutionFileType[]>([]);
-  const [helpers, setHelpers] = React.useState<HelperFileType[]>([]);
-  const [sourceFiles, setSourceFiles] = React.useState<SourceFileType[]>([]);
+  // const [solutions, setSolutions] = React.useState<SolutionFileType[]>([]);
+  // const [helpers, setHelpers] = React.useState<HelperFileType[]>([]);
+  // const [sourceFiles, setSourceFiles] = React.useState<SourceFileType[]>([]);
   const [casesByCategory, setCasesByCategory] = React.useState<TestCasesByCategory>({});
   const [categories, setCategories] = React.useState<TestCategoryType[]>([]);
+
+  const [selectedTestCase, setSelectedTestCase] = React.useState<TestCaseType | undefined>(undefined);
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -92,12 +95,12 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
       const currEnv = await fetchEnvironment(props.assignment);
       setEnv(currEnv);
       if (currEnv) {
-        const solutionFiles = await fetchSolutionFiles(currEnv);
-        setSolutions(solutionFiles);
-        const helpers = await fetchHelpers(currEnv);
-        setHelpers(helpers);
-        const sourceFiles: SourceFileType[] = await fetchSourceFiles(currEnv);
-        setSourceFiles(sourceFiles);
+        // const solutionFiles = await fetchSolutionFiles(currEnv);
+        // setSolutions(solutionFiles);
+        // const helpers = await fetchHelpers(currEnv);
+        // setHelpers(helpers);
+        // const sourceFiles: SourceFileType[] = await fetchSourceFiles(currEnv);
+        // setSourceFiles(sourceFiles);
         const [_categories, _casesByCategory]: any = await fetchTestData(props.assignment);
         setCategories(_categories);
         setCasesByCategory(_casesByCategory);
@@ -117,109 +120,60 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
   //
   // Mostly copied from
   // - TestDefinitions.tsx
+  // - TestFormItem.tsx
   // - TestingSetup.tsx
   // - SourceEditor.tsx
   //////////////////////////////////////////////////////////
 
   const [running, setRunning] = React.useState<boolean>(false);
-  const [logs, setLogs] = React.useState<ILogType[]>([]);
-
-  const replaceTestCase = (newCase: TestCaseType, oldID: number) => {
-    setCasesByCategory((prevState) => {
-      const filteredTests = prevState[newCase.testCategory]
-        ? prevState[newCase.testCategory].filter((tc) => {
-            return tc.id !== oldID;
-          })
-        : [];
-      const newCases = { ...prevState };
-      newCases[newCase.testCategory] = [...filteredTests, newCase];
-      return newCases;
-    });
-  };
-
-  const updateTestStatus = async (testCaseID: number, result: number) => {
-    const newTest = await TestCase.update({ id: testCaseID, lastSolutionRun: result });
-    replaceTestCase(newTest, testCaseID);
-    // updateActiveTest(newTest, true);
-  };
-
-  const parseFileModeResults = async (response: TestEditorResultType) => {
-    // In case new tests were created (if file mode, test parsing turned off),
-    //    fetch the newest tests before setting resylts
-    const [_categories, _casesByCategory]: any = await fetchTestData(props.assignment);
-    setCategories(_categories);
-    setCasesByCategory(_casesByCategory);
-
-    // if (props.env && props.env.dumpMode && activeSubmission) {
-    //   // Refresh submission files after dump, in case a _tests.txt file was created
-    //   setTestSubject(activeSubmission.id.toString());
-    // }
-
-    //
-    const formatted = {
-      log: <span style={{ color: '#678CAB' }}>{response.logs}</span>,
-      target: 'solution code',
-      result: RESULT_TYPE.NONE,
-      testCaseName: '',
-    };
-
-    const logs = response.results.map((el) => {
-      const testCase = _casesByCategory[el.testCategory].find((tc: TestCaseType) => tc.id === el.testCase)!;
-      const status = el.isError ? RESULT_TYPE.ERROR : el.passed ? RESULT_TYPE.PASSED : RESULT_TYPE.FAILED;
-
-      if (testCase) {
-        // if (!activeSubmission) {
-        //   updateTestStatus(testCase.id, status);
-        // }
-        updateTestStatus(testCase.id, status);
-      }
-
-      return {
-        log: el.logs,
-        target: 'solution code',
-        result: status,
-        testCaseName: testCase ? testCase.description : '',
-      };
-    });
-
-    return [formatted, ...logs];
-  };
-
-  const callback = async (response: TestEditorResultType) => {
-    const newLogs = await parseFileModeResults(response);
-    setRunning(false);
-    setLogs(newLogs);
-  };
-
-  const fileToRun = 'main.sh';
+  const [logs, setLogs] = React.useState<ILogType | undefined>(undefined);
 
   const runTest = async () => {
-    if (env) {
+    if (selectedTestCase === undefined) {
+      message.error('Select a test case before running.');
+      return;
+    } else {
       setRunning(true);
-      let result: any;
-      if (fileToRun === 'main.sh') {
-        // Run all tests
-        // result = await Environment.run(
-        //   props.env.id,
-        //   props.activeSubmission ? { submission: props.activeSubmission.id.toString(), simulate: 'True' } : {},
-        // );
-        result = await Environment.run(env.id, {});
-      }
-      // else {
-      //   const found = props.sourceFiles.find((el) => el.name === fileToRun);
-      //   if (found !== undefined) {
-      //     result = await SourceFile.run(
-      //       found.id,
-      //       props.activeSubmission
-      //         ? {
-      //             submission: props.activeSubmission.id.toString(),
-      //           }
-      //         : {},
-      //     );
-      //   }
-      // }
-      awaitTestResult(result.task, callback);
+
+      const filesJson = filesCopy.map((file: FileType) => {
+        return {
+          name: file.name,
+          code: file.code,
+          path: file.path === undefined || file.path === null ? '' : file.path,
+        };
+      });
+
+      const payload = {
+        id: selectedTestCase.id,
+        submission: props.submission.id.toString(),
+        files: JSON.stringify(filesJson),
+      };
+      const result = await TestCase.run(payload);
+      awaitTestResult(result.task, callback.bind({}, selectedTestCase));
     }
+  };
+
+  const callback = (testCase: TestCaseType, response: TestEditorResultType) => {
+    const result: BasicTestResultType = response.results[0];
+
+    const formatted = {
+      log: (
+        <span>
+          <span style={{ color: '#678CAB' }}>{response.logs}</span>
+          {`\n${result.logs}`}
+        </span>
+      ),
+      target: 'solution code',
+      result: result.passed ? RESULT_TYPE.PASSED : result.isError ? RESULT_TYPE.ERROR : RESULT_TYPE.FAILED,
+      testCaseName: testCase.description,
+    };
+
+    // if (!props.activeSubmission) {
+    //   props.updateTestStatus(testCase.id, formatted.result);
+    // }
+
+    setLogs(formatted);
+    setRunning(false);
   };
 
   //////////////////////////////////////////////////////////
@@ -255,9 +209,27 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
     );
   }
 
+  const onTestCaseSelectChange = (value: any) => {
+    const thisID = value.split('-')[1];
+
+    const thisTestCase = Object.values(casesByCategory)
+      .flat()
+      .find((t: TestCaseType) => {
+        return t.id === +thisID;
+      });
+
+    setSelectedTestCase(thisTestCase);
+  };
+
   // FIXME: test for categories with no tests
   const testCaseSelect = (
-    <Select style={{ height: '24px', minWidth: '180px', fontSize: '12px' }} size="small" showSearch placeholder="Tests">
+    <Select
+      style={{ height: '24px', minWidth: '180px', fontSize: '12px' }}
+      size="small"
+      showSearch
+      placeholder="Select a test case"
+      onChange={onTestCaseSelectChange}
+    >
       {categories.map((category: TestCategoryType) => {
         let options = null;
         if (casesByCategory.hasOwnProperty(+category.id)) {
@@ -269,7 +241,11 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
             );
           });
         }
-        return <Select.OptGroup label={category.name}>{options}</Select.OptGroup>;
+        return (
+          <Select.OptGroup key={category.name} label={category.name}>
+            {options}
+          </Select.OptGroup>
+        );
       })}
     </Select>
   );
@@ -323,6 +299,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
           </div>
 
           <PseudoTerminal
+            env={env}
             submissions={[]}
             setTestSubject={setTestSubject}
             resizable={false}

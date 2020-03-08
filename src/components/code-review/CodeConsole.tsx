@@ -2514,7 +2514,9 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             onClose={this.toggleKeyboardShortcuts}
             isStudent={this.state.isStudent}
           />
-          {this.state.permissionLevel === PERMISSION_LEVEL.WRITE && this.state.assignment !== undefined ? (
+          {this.state.permissionLevel === PERMISSION_LEVEL.WRITE &&
+          this.state.assignment !== undefined &&
+          this.state.submission !== undefined ? (
             <InlineTestsModal
               key="inline-tests-modal"
               visible={this.state.showInlineTestsModal}
@@ -2522,6 +2524,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               hide={this.hideInlineTestsModal}
               files={this.state.files}
               assignment={this.state.assignment}
+              submission={this.state.submission}
             />
           ) : null}
         </CourseContext.Provider>

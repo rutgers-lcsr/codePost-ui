@@ -4,11 +4,13 @@ import { Button, Modal } from 'antd';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { FileType } from '../../infrastructure/file';
+import { SubmissionType } from '../../infrastructure/submission';
 import PseudoIDE from '../core/PseudoIDE';
 
 interface IInlineTestsModalProps {
   files: FileType[];
   assignment: AssignmentType;
+  submission: SubmissionType;
   visible: boolean;
   show: () => void;
   hide: () => void;
@@ -32,7 +34,7 @@ const InlineTestsModal = (props: IInlineTestsModalProps) => {
         </Button>,
       ]}
     >
-      <PseudoIDE files={props.files} assignment={props.assignment} />
+      <PseudoIDE files={props.files} assignment={props.assignment} submission={props.submission} />
     </Modal>
   );
 };
