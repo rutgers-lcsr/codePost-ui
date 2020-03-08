@@ -4,13 +4,13 @@ import { Button, Modal } from 'antd';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { FileType } from '../../infrastructure/file';
-import { SubmissionType } from '../../infrastructure/submission';
+import { AnonymousSubmissionType } from '../../infrastructure/submission';
 import PseudoIDE from '../core/PseudoIDE';
 
 interface IInlineTestsModalProps {
   files: FileType[];
   assignment: AssignmentType;
-  submission: SubmissionType;
+  submission: AnonymousSubmissionType;
   visible: boolean;
   show: () => void;
   hide: () => void;

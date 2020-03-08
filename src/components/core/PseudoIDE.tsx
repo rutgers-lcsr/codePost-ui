@@ -32,7 +32,7 @@ import { awaitTestResult } from '../admin/assignments/tests/testResult';
 interface IPseudoIDEProps {
   files: FileType[];
   assignment: AssignmentType;
-  submission: SubmissionType | AnonymousSubmissionType;
+  submission: AnonymousSubmissionType;
 }
 
 const PseudoIDE = (props: IPseudoIDEProps) => {
