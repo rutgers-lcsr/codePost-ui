@@ -557,7 +557,7 @@ const RubricMenuUI = ({
       let emptyContent;
       if (props.canUserEdit) {
         emptyContent = (
-          <div>
+          <div style={{ color: consoleTheme.siderMenuItemColor }}>
             Create your rubric either by clicking the green pen above, or visiting the{' '}
             <a href={`/${getRubricURL(props.course, props.assignment)}`} target="_blank">
               Rubric Editor

@@ -16,7 +16,7 @@ export const bySubmissionColumns = (categories: TestCategoryType[]) => {
         sorter: (a: any, b: any) => a[category.id] - b[category.id],
       };
     }),
-    {
+    categories.length > 0 && {
       title: 'Summary',
       dataIndex: 'summary',
       key: 'summary',
