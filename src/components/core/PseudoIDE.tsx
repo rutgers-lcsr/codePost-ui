@@ -64,7 +64,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
   };
 
   React.useEffect(() => {
-    if (props.files.length > 0) {
+    if (props.files.length > 0 && currentFileID === undefined) {
       setFilesCopy(props.files);
       setCurrentFileID(props.files[0].id);
     }
@@ -264,7 +264,12 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
             onClick={handleClick}
           >
             {props.files.map((file: FileType) => {
-              return <Menu.Item key={`file - ${file.id} `}>{file.name}</Menu.Item>;
+              return (
+                <Menu.Item key={`file - ${file.id} `}>
+                  {file.path !== undefined ? <span style={{ color: '#c0c0c0' }}>{file.path}/</span> : null}
+                  <span style={{ fontWeight: 500 }}>{file.name}</span>
+                </Menu.Item>
+              );
             })}
           </Menu>
         </div>
@@ -287,7 +292,9 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
                   marginTop: '-4px',
                 }}
               >
-                {currentFile === undefined ? '---' : currentFile.name}
+                {currentFile === undefined
+                  ? '---'
+                  : `${currentFile.path !== undefined ? currentFile.path + '/' : ''}${currentFile.name}`}
               </div>
               <div style={{ flexGrow: 1 }} />
             </div>
