@@ -4,7 +4,7 @@ import { Button, Modal } from 'antd';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { FileType } from '../../infrastructure/file';
-import { AnonymousSubmissionType } from '../../infrastructure/submission';
+import { AnonymousSubmissionType, Submission } from '../../infrastructure/submission';
 import PseudoIDE from '../core/PseudoIDE';
 
 interface IInlineTestsModalProps {
@@ -21,6 +21,9 @@ const InlineTestsModal = (props: IInlineTestsModalProps) => {
     props.hide();
   };
 
+  // Only add latest files to the PseudoIDE
+  const files = Submission.filesByVersion(props.files).new;
+
   return (
     <Modal
       visible={props.visible}
@@ -34,7 +37,7 @@ const InlineTestsModal = (props: IInlineTestsModalProps) => {
         </Button>,
       ]}
     >
-      <PseudoIDE files={props.files} assignment={props.assignment} submission={props.submission} />
+      <PseudoIDE files={files} assignment={props.assignment} submission={props.submission} />
     </Modal>
   );
 };
