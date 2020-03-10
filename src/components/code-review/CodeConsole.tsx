@@ -923,8 +923,11 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         let files, comments, commentRubricComments;
         [files, comments, commentRubricComments] = await Submission.loadData(this.state.readOnlySubmission!);
 
+        // preventing a self-DDoS from abandoned tabs by limiting the number of requests any session can make
+        const MAX_REQUESTS = 3600 / LIVE_FEEDBACK_COMMENTS_RELOAD_INTERVAL; // 1 hour
+
         // guard against an old (i.e. not the latest) request from overwriting state
-        if (this.state.commentRefreshCounter === requestID) {
+        if (requestID < MAX_REQUESTS && this.state.commentRefreshCounter === requestID) {
           this.setState({ comments });
         }
       },
