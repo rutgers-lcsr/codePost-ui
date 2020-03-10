@@ -477,6 +477,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   // Interval for live feedback mode to reloda the submission to see if there are new files
   private checkNewFilesInterval: any;
+  private reloadCommentsInterval: any;
   private LIVE_FEEDBACK_FILES_RELOAD_INTERVAL = 60000;
 
   public constructor(props: ICodeConsoleProps) {
@@ -574,7 +575,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     // Everything we need to load
     let submission;
-    let assignment;
+    let assignment: AssignmentType;
     let files;
     let comments;
     let commentRubricComments;
@@ -639,25 +640,34 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         tests = submission.tests ? await Promise.all(submission.tests.map((id) => SubmissionTest.read(id))) : [];
 
         // then store it in state
-        this.setState({
-          noSave,
-          assignment,
-          course,
-          readOnlySubmission: submission,
-          files,
-          comments,
-          commentRubricComments,
-          rubricCategories,
-          isLoading: false,
-          selectedFile,
-          permissionLevel,
-          testCategories,
-          testCases: caseObj,
-          tests: SubmissionTest.getLatest(tests),
-          isStudent:
-            simulatingStudent ||
-            (submission.students !== undefined && submission.students.indexOf(this.props.user.email) > -1),
-        });
+        this.setState(
+          {
+            noSave,
+            assignment,
+            course,
+            readOnlySubmission: submission,
+            files,
+            comments,
+            commentRubricComments,
+            rubricCategories,
+            isLoading: false,
+            selectedFile,
+            permissionLevel,
+            testCategories,
+            testCases: caseObj,
+            tests: SubmissionTest.getLatest(tests),
+            isStudent:
+              simulatingStudent ||
+              (submission.students !== undefined && submission.students.indexOf(this.props.user.email) > -1),
+          },
+          () => {
+            if (assignment && assignment.liveFeedbackMode) {
+              this.reloadCommentsInterval = window.setInterval(() => {
+                this.reloadComments();
+              }, 2000);
+            }
+          },
+        );
         break;
 
       case PERMISSION_LEVEL.WRITE:
@@ -897,6 +907,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       });
       clearInterval(this.checkNewFilesInterval);
     }
+  };
+
+  public reloadComments = async () => {
+    let files, comments, commentRubricComments;
+    [files, comments, commentRubricComments] = await Submission.loadData(this.state.readOnlySubmission!);
+    this.setState({ comments });
   };
 
   public loadRubric = async (assignmentID: number) => {
