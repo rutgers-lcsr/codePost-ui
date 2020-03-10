@@ -160,6 +160,7 @@ interface ICodeConsoleState {
 
   editRubricMode: boolean;
   commentCounter: number;
+  commentRefreshCounter: number;
 
   panelType: PANEL_TYPE;
 
@@ -477,7 +478,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   // Interval for live feedback mode to reloda the submission to see if there are new files
   private checkNewFilesInterval: any;
+  private reloadCommentsInterval: any;
   private LIVE_FEEDBACK_FILES_RELOAD_INTERVAL = 60000;
+  private LIVE_FEEDBACK_COMMENTS_RELOAD_INTERVAL = 2000;
 
   public constructor(props: ICodeConsoleProps) {
     super(props);
@@ -513,6 +516,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       isStudent: false,
       editRubricMode: false,
       commentCounter: -1,
+      commentRefreshCounter: 0,
 
       rubricReload: undefined,
 
@@ -574,7 +578,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     // Everything we need to load
     let submission;
-    let assignment;
+    let assignment: AssignmentType;
     let files;
     let comments;
     let commentRubricComments;
@@ -639,25 +643,34 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         tests = submission.tests ? await Promise.all(submission.tests.map((id) => SubmissionTest.read(id))) : [];
 
         // then store it in state
-        this.setState({
-          noSave,
-          assignment,
-          course,
-          readOnlySubmission: submission,
-          files,
-          comments,
-          commentRubricComments,
-          rubricCategories,
-          isLoading: false,
-          selectedFile,
-          permissionLevel,
-          testCategories,
-          testCases: caseObj,
-          tests: SubmissionTest.getLatest(tests),
-          isStudent:
-            simulatingStudent ||
-            (submission.students !== undefined && submission.students.indexOf(this.props.user.email) > -1),
-        });
+        this.setState(
+          {
+            noSave,
+            assignment,
+            course,
+            readOnlySubmission: submission,
+            files,
+            comments,
+            commentRubricComments,
+            rubricCategories,
+            isLoading: false,
+            selectedFile,
+            permissionLevel,
+            testCategories,
+            testCases: caseObj,
+            tests: SubmissionTest.getLatest(tests),
+            isStudent:
+              simulatingStudent ||
+              (submission.students !== undefined && submission.students.indexOf(this.props.user.email) > -1),
+          },
+          () => {
+            if (assignment && assignment.liveFeedbackMode) {
+              this.reloadCommentsInterval = window.setInterval(() => {
+                this.reloadComments();
+              }, this.LIVE_FEEDBACK_COMMENTS_RELOAD_INTERVAL);
+            }
+          },
+        );
         break;
 
       case PERMISSION_LEVEL.WRITE:
@@ -897,6 +910,32 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       });
       clearInterval(this.checkNewFilesInterval);
     }
+  };
+
+  public reloadComments = async () => {
+    let requestID = 0;
+    this.setState(
+      (oldState) => {
+        requestID = oldState.commentRefreshCounter + 1;
+        return { commentRefreshCounter: requestID };
+      },
+      async () => {
+        // preventing a self-DDoS from abandoned tabs by limiting the number of requests any session can make
+        const MAX_REQUESTS = 3600 / (this.LIVE_FEEDBACK_COMMENTS_RELOAD_INTERVAL / 1000); // 1 hour
+
+        if (requestID < MAX_REQUESTS) {
+          let files, comments, commentRubricComments;
+          [files, comments, commentRubricComments] = await Submission.loadData(this.state.readOnlySubmission!);
+
+          // guard against an old (i.e. not the latest) request from overwriting state
+          if (this.state.commentRefreshCounter === requestID) {
+            this.setState({ comments });
+          }
+        } else {
+          clearInterval(this.reloadCommentsInterval);
+        }
+      },
+    );
   };
 
   public loadRubric = async (assignmentID: number) => {
