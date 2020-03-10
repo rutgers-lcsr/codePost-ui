@@ -1,12 +1,15 @@
 import { sendSlack } from '../../../core/slack';
 import { message } from 'antd';
 
-const MAX_TRIES = 25;
+import { Environment } from '../../../../infrastructure/autograder/environment';
 
+const MAX_TRIES = 30;
+
+// Running a test
 export function awaitTestResult(id: string, callback: (result: any) => any, progressCallback?: (progress: any) => any) {
   let tries = 0;
   const interval = setInterval(() => {
-    checkAndRefreshTimer(id, interval, callback, progressCallback);
+    pollTestResult(id, interval, callback, progressCallback);
     if (++tries === MAX_TRIES && !progressCallback) {
       sendSlack(
         'No test result received after polling - infinite loop',
@@ -23,7 +26,7 @@ export function awaitTestResult(id: string, callback: (result: any) => any, prog
   }, 2000);
 }
 
-async function checkAndRefreshTimer(
+async function pollTestResult(
   id: string,
   interval: any,
   callback: (result: any) => any,
@@ -55,6 +58,41 @@ async function checkAndRefreshTimer(
       );
     } else if (result.result && progressCallback) {
       progressCallback(result.result);
+    }
+  } else {
+    clearInterval(interval);
+  }
+}
+
+// Running a build
+export function awaitBuildResult(id: number, callback: (result: any) => any) {
+  let tries = 120;
+  const interval = setInterval(() => {
+    pollBuildResult(id, interval, callback);
+    if (++tries === MAX_TRIES) {
+      sendSlack('Long build notification - over 2 minutes', window.location.href, '#f7f7f7', '#autograder_bugs');
+      message.error('Your build is taking a long time to complete. Try coming back later to check on the results.', 25);
+      window.clearInterval(interval);
+    }
+  }, 1000);
+}
+
+async function pollBuildResult(id: number, interval: any, callback: (result: any) => any) {
+  // We use fetch instead of io-ts functions because we need to turn off the timer in case
+  //    of a failed response (e.g., 404)
+  const res = await fetch(`${process.env.REACT_APP_API_URL}/autograder/environments/${id}/status`, {
+    headers: {
+      Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+      'Content-Type': 'application/json',
+    },
+    method: 'GET',
+  });
+  if (res.status === 200) {
+    const result = await res.json();
+
+    callback(result);
+    if (!result.inProgress) {
+      clearInterval(interval);
     }
   } else {
     clearInterval(interval);
