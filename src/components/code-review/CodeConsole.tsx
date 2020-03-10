@@ -479,6 +479,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   private checkNewFilesInterval: any;
   private reloadCommentsInterval: any;
   private LIVE_FEEDBACK_FILES_RELOAD_INTERVAL = 60000;
+  private LIVE_FEEDBACK_COMMENTS_RELOAD_INTERVAL = 2000;
 
   public constructor(props: ICodeConsoleProps) {
     super(props);
@@ -664,7 +665,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
             if (assignment && assignment.liveFeedbackMode) {
               this.reloadCommentsInterval = window.setInterval(() => {
                 this.reloadComments();
-              }, 2000);
+              }, this.LIVE_FEEDBACK_COMMENTS_RELOAD_INTERVAL);
             }
           },
         );
