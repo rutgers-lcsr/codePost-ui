@@ -32,7 +32,7 @@ import { IStudentSubmissionsDataTable } from '../../../../types/common';
 import { Environment } from '../../../../infrastructure/autograder/environment';
 import { SubmissionTestResultType } from '../../../../infrastructure/autograder/runTypes';
 
-import { awaitTestResult } from '../../assignments/tests/testResult';
+import { awaitTestResult } from '../../assignments/tests/autograderPollingUtils';
 
 const confirm = Modal.confirm;
 /**********************************************************************************************************************/

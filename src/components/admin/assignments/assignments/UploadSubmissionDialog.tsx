@@ -55,7 +55,7 @@ import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './Fil
 import TestsList from '../../../../components/code-review/code-panel/TestsList';
 import { StudentTestCasesByCategory } from '../../../../components/core/testFetchUtils';
 
-import { awaitTestResult } from '../../../../components/admin/assignments/tests/testResult';
+import { awaitTestResult } from '../../../../components/admin/assignments/tests/autograderPollingUtils';
 
 import { SubmissionTestResultType } from '../../../../infrastructure/autograder/runTypes';
 

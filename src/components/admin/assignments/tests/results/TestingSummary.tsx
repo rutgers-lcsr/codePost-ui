@@ -19,7 +19,7 @@ import { Environment, EnvironmentType } from '../../../../../infrastructure/auto
 import { SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
 import { RunAllResultType, SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
 
-import { awaitTestResult } from '../testResult';
+import { awaitTestResult } from '../autograderPollingUtils';
 
 /* codePost component imports */
 import { TableDetail } from '../../../other/TableDetail';
