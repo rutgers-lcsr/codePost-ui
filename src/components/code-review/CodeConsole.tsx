@@ -160,6 +160,7 @@ interface ICodeConsoleState {
 
   editRubricMode: boolean;
   commentCounter: number;
+  commentRefreshCounter: number;
 
   panelType: PANEL_TYPE;
 
@@ -515,6 +516,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       isStudent: false,
       editRubricMode: false,
       commentCounter: -1,
+      commentRefreshCounter: 0,
 
       rubricReload: undefined,
 
@@ -911,9 +913,22 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   };
 
   public reloadComments = async () => {
-    let files, comments, commentRubricComments;
-    [files, comments, commentRubricComments] = await Submission.loadData(this.state.readOnlySubmission!);
-    this.setState({ comments });
+    let requestID = 0;
+    this.setState(
+      (oldState) => {
+        requestID = oldState.commentRefreshCounter + 1;
+        return { commentRefreshCounter: requestID };
+      },
+      async () => {
+        let files, comments, commentRubricComments;
+        [files, comments, commentRubricComments] = await Submission.loadData(this.state.readOnlySubmission!);
+
+        // guard against an old (i.e. not the latest) request from overwriting state
+        if (this.state.commentRefreshCounter === requestID) {
+          this.setState({ comments });
+        }
+      },
+    );
   };
 
   public loadRubric = async (assignmentID: number) => {
