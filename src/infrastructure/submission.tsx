@@ -312,6 +312,31 @@ export class Submission {
       return [[], {}, {}];
     }
   };
+
+  // Go through the list of files and separate the latest files from the old files
+  public static filesByVersion = (files: FileType[]) => {
+    const olderFiles: { [pathName: string]: FileType[] } = {};
+    const latestFiles: { [pathName: string]: FileType } = {};
+    files.forEach((file) => {
+      const path = `${file.path ? file.path.replace(/^\/+|\/+$/g, '') : ''}/${file.name}`;
+      if (!latestFiles[path]) latestFiles[path] = file;
+      else {
+        if (Date.parse(latestFiles[path].created) <= Date.parse(file.created)) {
+          const oldLatest = latestFiles[path];
+          olderFiles[path] ? olderFiles[path].push(oldLatest) : (olderFiles[path] = [oldLatest]);
+          latestFiles[path] = file;
+        } else olderFiles[path] ? olderFiles[path].push(file) : (olderFiles[path] = [file]);
+      }
+    });
+
+    const latestFilesArr: FileType[] = [];
+    Object.keys(latestFiles).forEach((path) => {
+      const file = latestFiles[path];
+      latestFilesArr.push(file);
+    });
+
+    return { new: latestFilesArr, old: olderFiles };
+  };
 }
 
 /*****************************************************************************/

@@ -52,6 +52,8 @@ import FileMenu, { FileMenuTitle } from './menu/FileMenu';
 
 import RubricMenuUI from './menu/RubricMenuUI';
 
+import InlineTestsModal from './InlineTestsModal';
+
 import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMenu';
 
 import layoutVars from '../../styles/layout/_layoutVars';
@@ -142,6 +144,7 @@ interface ICodeConsoleState {
   tests: SubmissionTestType[];
   testCategories: TestCategoryType[];
   testCases: TestCasesByCategory | StudentTestCasesByCategory;
+  showInlineTestsModal: boolean;
 
   /* writer data */
   submission?: AnonymousSubmissionType;
@@ -503,6 +506,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       tests: [],
       testCases: {},
       testCategories: [],
+      showInlineTestsModal: false,
 
       selectedFile: undefined,
       oldCommentIDs: {},
@@ -1030,6 +1034,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         message.info(`Now showing rubric comment ${this.state.showExplanations ? 'explanations' : 'text'}`);
       },
     );
+  };
+
+  public showInlineTestsModal = () => {
+    this.setState({ showInlineTestsModal: true });
+  };
+
+  public hideInlineTestsModal = () => {
+    this.setState({ showInlineTestsModal: false });
   };
 
   /***********************************************************************************
@@ -2487,6 +2499,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           kind: 'link',
         },
         { value: 'View stats', label: 'View stats', kind: 'dashboard', populator: viewStats },
+        { value: 'Edit code', label: 'Edit code', callback: this.showInlineTestsModal, kind: 'action' },
       ];
     }
 
@@ -2535,10 +2548,24 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             editRubricMode={this.state.editRubricMode}
           />
           <KeyboardShortcuts
+            key="keyboard-shortcuts"
             visible={this.state.showKeyboardShortcuts}
             onClose={this.toggleKeyboardShortcuts}
             isStudent={this.state.isStudent}
           />
+          {this.state.permissionLevel === PERMISSION_LEVEL.WRITE &&
+          this.state.assignment !== undefined &&
+          this.state.submission !== undefined ? (
+            <InlineTestsModal
+              key="inline-tests-modal"
+              visible={this.state.showInlineTestsModal}
+              show={this.showInlineTestsModal}
+              hide={this.hideInlineTestsModal}
+              files={this.state.files}
+              assignment={this.state.assignment}
+              submission={this.state.submission}
+            />
+          ) : null}
         </CourseContext.Provider>
       </div>
     );

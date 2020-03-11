@@ -13,6 +13,7 @@ import moment from 'moment';
 /* codePost imports */
 import { CommentType } from '../../../infrastructure/comment';
 import { FileType } from '../../../infrastructure/file';
+import { Submission } from '../../../infrastructure/submission';
 
 import { SelectParam } from 'antd/lib/menu';
 
@@ -61,7 +62,7 @@ interface IFileMenuState {
 class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
   public constructor(props: IFileMenuProps) {
     super(props);
-    const separatedFiles = this.separateFilesByVersion(props.files);
+    const separatedFiles = Submission.filesByVersion(props.files);
     const directoryStructure = createDirectoryStructure(separatedFiles.new);
     const sortedFiles = sortFiles(directoryStructure);
     const oldVersionsMap = separatedFiles.old;
@@ -86,7 +87,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
   public componentDidUpdate(prevProps: IFileMenuProps) {
     if (prevProps.files !== this.props.files) {
-      const separatedFiles = this.separateFilesByVersion(this.props.files);
+      const separatedFiles = Submission.filesByVersion(this.props.files);
       const directoryStructure = createDirectoryStructure(separatedFiles.new);
       const sortedFiles = sortFiles(directoryStructure);
       this.setState({ directoryStructure, sortedFiles, oldVersionsMap: separatedFiles.old });
@@ -116,32 +117,6 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
   public onSelect = (selectedParam: SelectParam) => {
     const fileID = +selectedParam.key.split('-')[1];
     this.props.changeSelectedFile(fileID);
-  };
-
-  /**************************** FILE VERSIONING AND DIRECTORY HELPERS*************************************/
-  // Go through the list of files and separate the latest files from the old files
-  public separateFilesByVersion = (files: FileType[]) => {
-    const olderFiles: { [pathName: string]: FileType[] } = {};
-    const latestFiles: { [pathName: string]: FileType } = {};
-    files.forEach((file) => {
-      const path = `${file.path ? file.path.replace(/^\/+|\/+$/g, '') : ''}/${file.name}`;
-      if (!latestFiles[path]) latestFiles[path] = file;
-      else {
-        if (Date.parse(latestFiles[path].created) <= Date.parse(file.created)) {
-          const oldLatest = latestFiles[path];
-          olderFiles[path] ? olderFiles[path].push(oldLatest) : (olderFiles[path] = [oldLatest]);
-          latestFiles[path] = file;
-        } else olderFiles[path] ? olderFiles[path].push(file) : (olderFiles[path] = [file]);
-      }
-    });
-
-    const latestFilesArr: FileType[] = [];
-    Object.keys(latestFiles).forEach((path) => {
-      const file = latestFiles[path];
-      latestFilesArr.push(file);
-    });
-
-    return { new: latestFilesArr, old: olderFiles };
   };
 
   /**************************** MENU BUILD HELPER FUNCTIONS *************************************/
