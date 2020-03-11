@@ -103,14 +103,13 @@ const LandingLayout = (props: IProps) => {
           textAlign: 'center',
         }}
       >
-        Going to SIGCSE 2020 in Portland? Check out our{' '}
+        If you're moving your course online, learn{' '}
         <a
           style={{ color: '#def5ec', textDecoration: 'underline' }}
-          href="https://dl.acm.org/doi/abs/10.1145/3328778.3367026"
+          href="https://help.codepost.io/en/articles/3783190-three-ways-codepost-can-help-with-remote-teaching"
         >
-          workshop
-        </a>{' '}
-        on Wednesday!
+          how codePost can help.
+        </a>
       </div>
       <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }} className={sectionClass}>
         <div
