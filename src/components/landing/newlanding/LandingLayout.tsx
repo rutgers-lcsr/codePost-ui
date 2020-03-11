@@ -103,7 +103,7 @@ const LandingLayout = (props: IProps) => {
           textAlign: 'center',
         }}
       >
-        If you're moving your course online, learn{' '}
+        If you're moving your course online due to COVID-19, learn{' '}
         <a
           style={{ color: '#def5ec', textDecoration: 'underline' }}
           href="https://help.codepost.io/en/articles/3783190-three-ways-codepost-can-help-with-remote-teaching"
