@@ -6,7 +6,7 @@
 import React from 'react';
 
 /* antd imports  */
-import { Button, Tag, Select, Icon, Tooltip } from 'antd';
+import { Tag, Select, Icon, Tooltip } from 'antd';
 
 /* other library imports */
 import { animateScroll } from 'react-scroll';

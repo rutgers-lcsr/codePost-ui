@@ -1,13 +1,5 @@
 import * as t from 'io-ts';
-import {
-  createObject,
-  createObjectDetail,
-  deleteObject,
-  GenericObject,
-  readObject,
-  updateObject,
-  readObjectDetail,
-} from './generics';
+import { createObject, createObjectDetail, deleteObject, GenericObject, readObject, updateObject } from './generics';
 import { TaskV } from './autograder/runTypes';
 export const TestCaseV = t.intersection(
   [
