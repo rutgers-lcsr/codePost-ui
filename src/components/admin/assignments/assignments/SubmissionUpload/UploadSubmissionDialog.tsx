@@ -428,19 +428,25 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
               });
             })
             .catch((error: any) => {
-              /* eslint-disable no-multi-str */
-              message.error(
-                'Sorry, something went wrong. Please try uploading again.\
-                If the problem persists, contact the codePost team.',
-              );
-              /* eslint-enable no-multi-str */
-              const payload = {
-                error: error.toString(),
-                errorDetail: JSON.stringify(error, Object.getOwnPropertyNames(error)),
-                url: window.location.href,
-              };
+              let logError;
+              try {
+                logError = !error.includes('Due date has passed');
+              } catch (err) {
+                logError = true;
+              }
 
-              slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, payload);
+              if (logError) {
+                message.error(
+                  'Sorry, something went wrong. Please try uploading again. If the problem persists, contact the codePost team.',
+                );
+                const payload = {
+                  error: error.toString(),
+                  errorDetail: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+                  url: window.location.href,
+                };
+
+                slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, payload);
+              }
 
               this.cancel();
             });
@@ -720,7 +726,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
 
         if (this.props.isStudent) {
           sendMeAConfirmationEmailCheckbox = (
-            <span>
+            <span key="sendMeAConfirmationEmailCheckbox">
               {this.state.selectedAssignment !== undefined && dueDatePassed(this.state.selectedAssignment) ? (
                 <Tag color="volcano">Due Date Passed</Tag>
               ) : null}
@@ -745,7 +751,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
         }
 
         goForwardButton = (
-          <span style={{ marginLeft: '8px' }}>
+          <span key="goForwardButton" style={{ marginLeft: '8px' }}>
             <Button
               key="submit"
               type="primary"
