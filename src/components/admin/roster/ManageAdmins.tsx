@@ -24,8 +24,6 @@ import RosterFileUpload from './other/RosterFileUpload';
 import CPTooltip from '../../../components/core/CPTooltip';
 import { tooltips } from '../../../components/core/tooltips';
 
-import AddAdminDialog from './admins/AddAdminDialog';
-
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
 import { sendEmailToUser } from './other/RosterUtils';

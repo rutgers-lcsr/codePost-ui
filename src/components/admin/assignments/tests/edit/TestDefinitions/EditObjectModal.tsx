@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 /* library imports */
-import { Button, Input, Modal, Icon } from 'antd';
+import { Button, Input, Modal } from 'antd';
 
 interface BasicItem {
   id: number;
@@ -30,14 +30,6 @@ export const EditObjectModal = (props: IUploadProps) => {
       setName('');
       setLoading(false);
     }
-  };
-
-  const onDelete = async () => {
-    setLoading(true);
-    await props.deleteItem(props.item.id);
-    setVisible(!visible);
-    setName('');
-    setLoading(false);
   };
 
   /******************************* State Change Functions ****************************/

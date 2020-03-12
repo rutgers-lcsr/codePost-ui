@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { Icon, Tooltip } from 'antd';
-
 const locale: { [language: string]: { [attr: string]: any } } = {
   java: {
     base: false,

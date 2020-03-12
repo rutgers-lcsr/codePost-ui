@@ -796,9 +796,6 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           );
         } else {
           // Is this student allowed to run tests?
-          const testsToRun =
-            (this.state.selectedAssignment && this.state.selectedAssignment.exposeDumpLogs) ||
-            this.state.testCategories.length > 0;
           const runsSoFar = this.state.submission ? this.state.submission.testRunsCompleted : 0;
           const maxRuns = this.state.selectedAssignment ? this.state.selectedAssignment.maxStudentTestRuns || -1 : -1;
 

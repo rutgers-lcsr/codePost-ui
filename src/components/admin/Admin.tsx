@@ -336,6 +336,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     return Promise.all(getData);
   };
 
+  /* eslint-disable no-useless-computed-key */
   public loadSubmissions = (course: CourseType) => {
     return Promise.all(
       course.assignments.map((assignmentID) => {
@@ -348,6 +349,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       }),
     );
   };
+  /* eslint-enable no-useless-computed-key */
 
   public loadRoster = (course: CourseType) => {
     return Course.readRoster(course.id);

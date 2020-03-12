@@ -22,7 +22,6 @@ import { openSubmission } from '../other/AdminUtils';
 import { CourseType } from '../../../infrastructure/course';
 import { AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
 import { SubmissionType } from '../../../infrastructure/submission';
-import { FileType } from '../../../infrastructure/file';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
