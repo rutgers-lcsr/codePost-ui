@@ -850,7 +850,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           if (e.key === 'e' && triggerKey && !e.shiftKey) {
             e.preventDefault();
             e.stopPropagation();
-            if (this.state.comments[this.state.selectedFile.id].length > 0) {
+            if (
+              this.state.comments[this.state.selectedFile.id] !== undefined &&
+              this.state.comments[this.state.selectedFile.id].length > 0
+            ) {
               this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS });
             }
           } else if (e.key === 'e' && triggerKey && e.shiftKey) {
@@ -1589,7 +1592,9 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     const toolbarWidgets = [];
     if (!this.props.inDemoMode && !this.state.noSave) {
       const hasComments =
-        this.state.selectedFile !== undefined ? this.state.comments[this.state.selectedFile.id].length > 0 : false;
+        this.state.selectedFile !== undefined && this.state.comments[this.state.selectedFile.id] !== undefined
+          ? this.state.comments[this.state.selectedFile.id].length > 0
+          : false;
 
       toolbarWidgets.push(
         <LayoutResizer
