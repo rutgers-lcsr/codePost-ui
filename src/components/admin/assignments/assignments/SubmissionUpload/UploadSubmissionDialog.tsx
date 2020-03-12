@@ -270,7 +270,9 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
   public loadTestResults = async (sub: StudentSubmissionType | SubmissionType | undefined, loadLogs: boolean) => {
     if (sub) {
       const results = await Submission.readTestResults(sub.id, { isStudentMode: 'True' });
-      this.setState({ submissionTests: SubmissionTest.getLatest(results.submissionTests), testsLog: results.logs });
+      if (results !== null && results !== undefined) {
+        this.setState({ submissionTests: SubmissionTest.getLatest(results.submissionTests), testsLog: results.logs });
+      }
     }
   };
 
