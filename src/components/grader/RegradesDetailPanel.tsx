@@ -11,7 +11,7 @@ import { Breadcrumb, Switch } from 'antd';
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
-import { AnonymousSubmissionInfoType, Submission } from '../../infrastructure/submission';
+import { AnonymousSubmissionInfoType, Submission, AnonymousSubmissionType } from '../../infrastructure/submission';
 import { UserType } from '../../infrastructure/user';
 
 import RegradesTable from '../admin/assignments/assignments/AssignmentRegrades/RegradesTable';
@@ -65,7 +65,7 @@ const RegradesDetailPanel = (props: IProps) => {
       return Promise.reject('Submission does not exist');
     }
 
-    return Submission.update(toUpdate).then((updated) => {
+    return Submission.updateAnonymousInfo(toUpdate).then((updated) => {
       /* use return value to replace existing submission */
       const newSubmissions = [
         ...submissions.filter((s) => {

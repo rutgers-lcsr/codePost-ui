@@ -105,6 +105,32 @@ export const AnonymousSubmissionInfoV = t.intersection(
   'Submission',
 );
 
+export const AnonymousSubmissionInfoVPatch = t.intersection(
+  [
+    GenericObject,
+    t.partial({
+      isFinalized: t.boolean,
+      assignment: t.number,
+      dateEdited: t.string,
+      dateUploaded: t.string,
+      grade: t.union([t.number, t.null]),
+      grader: t.union([t.string, t.null]),
+      questionIsOpen: t.boolean,
+      questionIsRegrade: t.boolean,
+      questionText: t.union([t.string, t.null]),
+      questionResponse: t.union([t.string, t.null]),
+      questionResponder: t.union([t.string, t.null]),
+      questionDate: t.union([t.string, t.null]),
+      responseDate: t.union([t.string, t.null]),
+      tests: t.array(t.number),
+      testRunsCompleted: t.number,
+      lateDayCreditsUsed: t.number,
+      students: t.array(t.string),
+    }),
+  ],
+  'Submission',
+);
+
 export const StudentSubmissionV = t.intersection(
   [
     GenericObject,
@@ -237,6 +263,11 @@ export class Submission {
   public static delete = deleteObject(SubmissionV, 'submissions');
   public static readAnonymous = readObject(AnonymousSubmissionV, 'submissions');
   public static updateAnonymous = updateObject(AnonymousSubmissionV, SubmissionVPatch, 'submissions');
+  public static updateAnonymousInfo = updateObject(
+    AnonymousSubmissionInfoV,
+    AnonymousSubmissionInfoVPatch,
+    'submissions',
+  );
   public static readReadOnly = readObject(StudentSubmissionV, 'submissions');
   public static readHistory = readObjectDetail(t.array(SubmissionHistoryV), 'submissions', 'history');
   public static readTestResults = readObjectDetail(TestResultsV, 'submissions', 'testResults');
