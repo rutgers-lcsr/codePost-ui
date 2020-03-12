@@ -842,7 +842,6 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     assignments.forEach((assn) => {
       if (assn.id === assignmentID) {
         const updatedAssignment = { ...assn, [field]: value };
-        console.log(updatedAssignment);
         newAssignments.push(updatedAssignment);
       } else {
         newAssignments.push(assn);
