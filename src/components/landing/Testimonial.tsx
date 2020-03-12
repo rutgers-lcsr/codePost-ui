@@ -273,7 +273,15 @@ const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name:
 
 const Testimonials = () => {
   const landingTestimonials = testmonialInfo.map((t) => {
-    return <Testimonial text={t.text} name={t.name} thumbnail={t.thumbnail} school={t.school} />;
+    return (
+      <Testimonial
+        key={`testimonial-${t.name}`}
+        text={t.text}
+        name={t.name}
+        thumbnail={t.thumbnail}
+        school={t.school}
+      />
+    );
   });
 
   const [permutation] = React.useState(landingTestimonials.slice(0, 2).concat(shuffle(landingTestimonials.slice(2))));
@@ -400,10 +408,11 @@ const AllTestimonials = (props: IProps) => {
         </Typography.Title>
         {toRender.map((row, i) => {
           return (
-            <div style={{ display: 'flex', justifyContent: justifyRow, padding: rowPadding }}>
+            <div key={`row-${i}`} style={{ display: 'flex', justifyContent: justifyRow, padding: rowPadding }}>
               {row.map((rowItem: TestimonialData, j) => {
                 return (
                   <AltTestimonial
+                    key={`row-item-${i}-${j}`}
                     text={rowItem.text}
                     thumbnail={rowItem.thumbnail}
                     name={rowItem.name}

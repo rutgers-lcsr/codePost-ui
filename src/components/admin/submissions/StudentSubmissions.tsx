@@ -122,6 +122,7 @@ class StudentData extends React.Component<IByStudentProps, IState> {
       <Switch>
         {this.props.students.map((student) => (
           <Route
+            key={`route-student-${student}`}
             path={`${this.props.match.url}/${student}`}
             render={(subprops: any) => (
               <StudentDetail
