@@ -93,7 +93,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
               </a>
               .
             </div>
-            <Link to="/autograder" target="_blank">
+            <Link to="/autograder" target="_blank" rel="noopener noreferrer">
               <CPButton
                 key="panelTwoButton"
                 cpType="link"
@@ -136,7 +136,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
                 </div>
               </div>
             </div>
-            <Link to="/why-use-codePost#instructors" target="_blank">
+            <Link to="/why-use-codePost#instructors" target="_blank" rel="noopener noreferrer">
               <CPButton
                 key="panelTwoButton"
                 cpType="link"
@@ -202,7 +202,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
                     </li>
                   </ul>
                   You can write useful, short scripts in 10 minutes. Or take advantage of our{' '}
-                  <a href="https://codepost.io/integrations" target="_blank">
+                  <a href="https://codepost.io/integrations" target="_blank" rel="noopener noreferrer">
                     <span style={{ fontWeight: 500, cursor: 'pointer' }} className="landing__link">
                       native integrations
                     </span>

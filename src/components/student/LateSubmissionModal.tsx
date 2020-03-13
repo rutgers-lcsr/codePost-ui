@@ -104,7 +104,7 @@ Please see the course policy or contact your instructor if you have any question
     if (props.visible) {
       getStudentUploadInformation();
     }
-  }, [props.visible]);
+  }, [props.visible, props.assignment.id]);
 
   let content;
 

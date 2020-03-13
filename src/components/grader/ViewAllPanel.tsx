@@ -9,9 +9,8 @@ import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 
 /* codePost imports */
-import { Assignment, AssignmentType } from '../../infrastructure/assignment';
+import { AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
-import { SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
 
 import ViewAllDetailPanel from './ViewAllDetailPanel';
 import GraderPanelBuilder from './GraderPanel';

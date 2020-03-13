@@ -11,7 +11,7 @@ import { Breadcrumb, Switch } from 'antd';
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
-import { AnonymousSubmissionInfoType, Submission, AnonymousSubmissionType } from '../../infrastructure/submission';
+import { AnonymousSubmissionInfoType, Submission } from '../../infrastructure/submission';
 import { UserType } from '../../infrastructure/user';
 
 import RegradesTable from '../admin/assignments/assignments/AssignmentRegrades/RegradesTable';
@@ -34,6 +34,7 @@ const RegradesDetailPanel = (props: IProps) => {
   const [viewAll, setViewAll] = useState(false);
 
   const loadMySubmissions = async (currentAssignment: AssignmentType, user: string) => {
+    /* eslint-disable no-useless-computed-key */
     const newSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id, {
       grader: user,
       ['compact']: '1',
@@ -49,6 +50,7 @@ const RegradesDetailPanel = (props: IProps) => {
     setLoading(false);
     return;
   };
+  /* eslint-enable no-useless-computed-key */
 
   const refreshSubmissions = () => {
     setLoading(true);

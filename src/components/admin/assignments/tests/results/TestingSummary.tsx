@@ -16,7 +16,6 @@ import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { TestCaseType } from '../../../../../infrastructure/testCase';
 
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
-import { SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
 import { RunAllResultType, SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
 
 import { awaitTestResult } from '../testResult';

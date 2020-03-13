@@ -15,7 +15,7 @@ import { Course, CourseType } from '../../infrastructure/course';
 import CPTooltip from '../core/CPTooltip';
 import { tooltips } from '../core/tooltips';
 
-import { SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
+import { SubmissionInfoType } from '../../infrastructure/submission';
 import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 
 import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
@@ -67,7 +67,9 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
   public async initialLoad() {
     this.setState({ isLoading: true });
     const [submissions, viewsBySubmission, roster] = await Promise.all([
+      /* eslint-disable no-useless-computed-key */
       await Assignment.readSubmissions(this.props.assignment.id, { ['compact']: '1' }),
+      /* eslint-enable no-useless-computed-key */
       await this.loadSubmissionsViews(),
       await Course.readRoster(this.props.course.id),
     ]);

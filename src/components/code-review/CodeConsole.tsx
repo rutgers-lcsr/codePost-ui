@@ -11,7 +11,6 @@ import { Empty, message, notification, Progress, Typography } from 'antd';
 /* other library imports */
 import _ from 'lodash';
 import queryString from 'query-string';
-import moment from 'moment-timezone';
 
 /* codePost imports */
 import Loading from '../core/Loading';
@@ -931,7 +930,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         const MAX_REQUESTS = 3600 / (this.LIVE_FEEDBACK_COMMENTS_RELOAD_INTERVAL / 1000); // 1 hour
 
         if (requestID < MAX_REQUESTS) {
+          // eslint-disable-next-line
           let files, comments, commentRubricComments;
+
           [files, comments, commentRubricComments] = await Submission.loadData(this.state.readOnlySubmission!);
 
           // guard against an old (i.e. not the latest) request from overwriting state

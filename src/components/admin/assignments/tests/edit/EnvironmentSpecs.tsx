@@ -6,25 +6,10 @@
 import React, { useState, useEffect } from 'react';
 
 /* library imports */
-import {
-  Modal,
-  Button,
-  Divider,
-  Icon,
-  Input,
-  Radio,
-  Select,
-  Skeleton,
-  Spin,
-  Tabs,
-  Tooltip,
-  Tag,
-  Typography,
-  Empty,
-} from 'antd';
+import { Modal, Button, Divider, Icon, Input, Radio, Select, Skeleton, Tabs, Tooltip, Typography, Empty } from 'antd';
 
 /* codePost object imports */
-import { Assignment, AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
+import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
 import { EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 
 /* codePost component imports */
