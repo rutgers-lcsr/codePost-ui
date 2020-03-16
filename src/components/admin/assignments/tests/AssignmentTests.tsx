@@ -16,7 +16,7 @@ import { RouteComponentProps } from 'react-router';
 import { Switch, Route } from 'react-router-dom';
 
 /* codePost object imports */
-import { Assignment, AssignmentPatchType, AssignmentType } from '../../../../infrastructure/assignment';
+import { Assignment, AssignmentType } from '../../../../infrastructure/assignment';
 import { SubmissionType } from '../../../../infrastructure/submission';
 import { UserType } from '../../../../infrastructure/user';
 

@@ -124,7 +124,7 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
   //   we re-calculate sort on change of props.file, which doesn't update when comments change
   public getNumCommentsInFile = (file: FileType) => {
     let commentCount;
-    if (this.props.comments === undefined) {
+    if (this.props.comments === undefined || !this.props.comments.hasOwnProperty(file.id)) {
       commentCount = file.comments.length;
     } else {
       commentCount = this.props.comments[file.id].filter((comment: CommentType) => {

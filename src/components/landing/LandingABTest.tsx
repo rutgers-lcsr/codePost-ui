@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 // import LandingOld from './Landing.tsx';
 import LandingNew from './newlanding/Landing.tsx';

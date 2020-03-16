@@ -37,7 +37,7 @@ const InlineTestsModal = (props: IInlineTestsModalProps) => {
         </Button>,
       ]}
     >
-      <PseudoIDE files={props.files} assignment={props.assignment} submission={props.submission} />
+      <PseudoIDE files={files} assignment={props.assignment} submission={props.submission} />
     </Modal>
   );
 };

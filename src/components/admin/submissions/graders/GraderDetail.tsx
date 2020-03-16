@@ -192,6 +192,7 @@ const GraderDetail = (props: IProps) => {
       {props.assignments.map((assn) => {
         return (
           <Route
+            key={`route-assignment-${assn.id}`}
             path={`${props.match.url}/${encodeForRoute(assn.name)}`}
             exact={true}
             render={(subprops: any) => (

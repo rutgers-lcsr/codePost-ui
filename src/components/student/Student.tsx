@@ -6,10 +6,9 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Alert, Button, Icon, Modal, Spin, Tag, Typography } from 'antd';
+import { Button, Icon, Modal, Spin, Tag } from 'antd';
 
 /* other library imports */
-import moment from 'moment';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
@@ -39,15 +38,11 @@ import layoutVars from '../../styles/layout/_layoutVars';
 
 import UploadSubmissionDialog from '../admin/assignments/assignments/SubmissionUpload/UploadSubmissionDialog';
 
-import ViewUpload from './ViewUpload';
-
 import { IComponentProps } from '../core/ComponentManager';
 
 import CourseMenu from '../core/CourseMenu';
 
 import { CodePostDate } from '../utils/DateUtils';
-
-const { Text } = Typography;
 
 /**********************************************************************************************************************/
 
@@ -147,6 +142,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
       if (assignment.isReleased || assignment.allowStudentUpload || assignment.liveFeedbackMode) {
         submissions[assignment.id] = await AssignmentStudent.readSubmissions(assignment.id, {
           student: this.props.user.email,
+          // eslint-disable-next-line
           ['compact']: '1',
         });
       }
@@ -209,6 +205,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     if (submission) {
       const fetchSubmissions = await AssignmentStudent.readSubmissions(submission.assignment, {
         student: this.props.user.email,
+        // eslint-disable-next-line
         ['compact']: '1',
       });
       latestSubmission = fetchSubmissions.length > 0 ? fetchSubmissions[0] : undefined;

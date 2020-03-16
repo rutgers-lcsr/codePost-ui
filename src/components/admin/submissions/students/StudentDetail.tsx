@@ -126,7 +126,6 @@ class StudentDetail extends React.Component<IProps, IState> {
       ),
       onOk: () => {
         this.props.deleteSubmission(toRemove).then(() => {
-          console.log(toRemove.assignment);
           this.toggleUploadSubmissionVisible(toRemove.assignment);
         });
       },

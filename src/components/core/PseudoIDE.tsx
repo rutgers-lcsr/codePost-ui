@@ -2,14 +2,14 @@ import * as React from 'react';
 
 import SplitPane from 'react-split-pane';
 
-import { Icon, Menu, message, Select, Skeleton, Spin } from 'antd';
+import { Menu, message, Select, Skeleton } from 'antd';
 
 import { CodeWindow } from '../admin/assignments/tests/edit/utils/CodeWindow';
 import { PseudoTerminal, RESULT_TYPE, ILogType } from '../admin/assignments/tests/edit/TestDefinitions/PseudoTerminal';
 import useWindowSize from './useWindowSize';
 
-import { SubmissionType, AnonymousSubmissionType } from '../../infrastructure/submission';
-import { Environment, EnvironmentType } from '../../infrastructure/autograder/environment';
+import { AnonymousSubmissionType } from '../../infrastructure/submission';
+import { EnvironmentType } from '../../infrastructure/autograder/environment';
 // import { SolutionFile, SolutionFileType } from '../../infrastructure/autograder/solutionFile';
 // import { HelperFile, HelperFileType } from '../../infrastructure/autograder/helperFile';
 // import { SourceFile, SourceFileType } from '../../infrastructure/autograder/sourceFile';
@@ -18,14 +18,7 @@ import { AssignmentType, TestCaseType, TestCategoryType, FileType } from '../../
 import { TestEditorResultType, BasicTestResultType } from '../../infrastructure/autograder/runTypes';
 import { TestCase } from '../../infrastructure/testCase';
 
-import {
-  fetchSourceFiles,
-  fetchSolutionFiles,
-  fetchEnvironment,
-  fetchHelpers,
-  fetchTestData,
-  TestCasesByCategory,
-} from './testFetchUtils';
+import { fetchEnvironment, fetchTestData, TestCasesByCategory } from './testFetchUtils';
 
 import { awaitTestResult } from '../admin/assignments/tests/testResult';
 

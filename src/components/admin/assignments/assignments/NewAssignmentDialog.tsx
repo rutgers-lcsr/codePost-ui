@@ -85,7 +85,7 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
       }
 
       this.setState({ isLoading: true });
-      const newAssignment = await this.createNewAssignment(
+      await this.createNewAssignment(
         values.name,
         values.points,
         this.state.studentsCanUpload,

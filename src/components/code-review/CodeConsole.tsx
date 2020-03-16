@@ -11,7 +11,6 @@ import { Empty, message, notification, Progress, Typography } from 'antd';
 /* other library imports */
 import _ from 'lodash';
 import queryString from 'query-string';
-import moment from 'moment-timezone';
 
 /* codePost imports */
 import Loading from '../core/Loading';
@@ -850,7 +849,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           if (e.key === 'e' && triggerKey && !e.shiftKey) {
             e.preventDefault();
             e.stopPropagation();
-            if (this.state.comments[this.state.selectedFile.id].length > 0) {
+            if (
+              this.state.comments[this.state.selectedFile.id] !== undefined &&
+              this.state.comments[this.state.selectedFile.id].length > 0
+            ) {
               this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS });
             }
           } else if (e.key === 'e' && triggerKey && e.shiftKey) {
@@ -928,7 +930,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         const MAX_REQUESTS = 3600 / (this.LIVE_FEEDBACK_COMMENTS_RELOAD_INTERVAL / 1000); // 1 hour
 
         if (requestID < MAX_REQUESTS) {
+          // eslint-disable-next-line
           let files, comments, commentRubricComments;
+
           [files, comments, commentRubricComments] = await Submission.loadData(this.state.readOnlySubmission!);
 
           // guard against an old (i.e. not the latest) request from overwriting state
@@ -1589,7 +1593,9 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     const toolbarWidgets = [];
     if (!this.props.inDemoMode && !this.state.noSave) {
       const hasComments =
-        this.state.selectedFile !== undefined ? this.state.comments[this.state.selectedFile.id].length > 0 : false;
+        this.state.selectedFile !== undefined && this.state.comments[this.state.selectedFile.id] !== undefined
+          ? this.state.comments[this.state.selectedFile.id].length > 0
+          : false;
 
       toolbarWidgets.push(
         <LayoutResizer

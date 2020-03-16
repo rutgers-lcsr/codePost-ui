@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 /* library imports */
-import { Button, Input, Modal, Icon, Tooltip } from 'antd';
+import { Button, Input, Modal } from 'antd';
 
 import { TestCategoryType } from '../../../../../../infrastructure/types';
 

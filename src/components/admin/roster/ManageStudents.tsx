@@ -23,8 +23,6 @@ import { SectionType } from '../../../infrastructure/section';
 import CPTooltip from '../../../components/core/CPTooltip';
 import { tooltips } from '../../../components/core/tooltips';
 
-import AddStudentDialog from './students/AddStudentDialog';
-
 import DownloadRoster from './other/DownloadRoster';
 import RosterFileUpload from './other/RosterFileUpload';
 

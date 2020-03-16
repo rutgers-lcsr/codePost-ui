@@ -137,12 +137,14 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
     return loadIDList(course.sections, Section);
   };
 
+  /* eslint-disable no-useless-computed-key */
   public loadSubmissions = (currentAssignment: AssignmentType, user: string) => {
     return Assignment.readSubmissionsAnonymous(currentAssignment.id, {
       grader: user,
       ['compact']: '1',
     });
   };
+  /* eslint-enable no-useless-computed-key */
 
   public fetchSubmission = async (
     assignment: AssignmentType,
