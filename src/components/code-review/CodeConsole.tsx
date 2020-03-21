@@ -539,6 +539,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public async componentDidMount() {
     document.addEventListener('keydown', this.handleCursor);
+    document.addEventListener('keydown', this.handleHotkeys);
     const queryValues = queryString.parse(this.props.location.search);
 
     if (this.props.inDemoMode) {
@@ -775,6 +776,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public componentWillUnmount() {
     document.removeEventListener('keydown', this.handleCursor);
+    document.removeEventListener('keydown', this.handleHotkeys);
   }
 
   /////////////////////////////////////////////////////////////////////////////////
@@ -799,6 +801,19 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   // - Navigate and jump to next comment with cursor: cmd - [up, down]
   // - Activate comment for editing: Enter
   /////////////////////////////////////////////////////////////////////////////////
+
+  public handleHotkeys = (e: any) => {
+    const os = getOperatingSystem();
+
+    const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+
+    // Show Custom Comment Explorer (typically accessible via Foobar)
+    if (e.key === 'e' && triggerKey && e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.toggleCustomCommentExplorer();
+    }
+  };
 
   public toggleCursorMode = (cursorMode: boolean) => {
     if (cursorMode) {
