@@ -46,11 +46,14 @@ async function checkAndRefreshTimer(
       '#autograder_bugs',
     );
     clearInterval(interval);
+    return;
   }
 
   const result = await res.json();
   if (result.status === 'SUCCESS') {
+    // Case 1: Successful result
     if (result.result === null || result.result === undefined) {
+      // Should never be undefined or null
       sendSlack(
         `Null test result received on student upload: ${window.location.href}`,
         `${JSON.stringify(result)}`,
@@ -66,6 +69,7 @@ async function checkAndRefreshTimer(
     }
     clearInterval(interval);
   } else if (result.status === 'FAILURE') {
+    // Case 2: Result failed for some reason (e.g., excessive logging, db timeouts)
     sendSlack(
       `FAILURE test result: ${window.location.href}`,
       `${JSON.stringify(result.result)}`,
@@ -78,9 +82,10 @@ async function checkAndRefreshTimer(
       25,
     );
   } else if (result.result && progressCallback) {
+    // Case 3: Result is a progress result
     progressCallback(result.result);
   } else {
-    // Should never hit a non fail or success state
+    // Case 4: SHOULD NEVER REACH HERE
     sendSlack(
       `NO RESULT test result: ${window.location.href}`,
       `${JSON.stringify(result)}`,
