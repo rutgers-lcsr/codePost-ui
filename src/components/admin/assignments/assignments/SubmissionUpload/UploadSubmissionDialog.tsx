@@ -59,7 +59,7 @@ import { awaitTestResult } from '../../../../../components/admin/assignments/tes
 
 import { SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
 
-import { slack } from '../../../../../components/core/slack';
+import { sendSlack, slack } from '../../../../../components/core/slack';
 
 import { encodeForLink } from '../../../../../components/core/URLutils';
 
@@ -521,16 +521,23 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
   };
 
   public setResults = (result: SubmissionTestResultType) => {
-    // Note: we need to increment the testRunsCompleted in state, because a student could go back to the upload tab (without refreshing submission) and re-upload
+    if (result) {
+      // Note: we need to increment the testRunsCompleted in state, because a student could go back to the upload tab (without refreshing submission) and re-upload
+      this.setState((prevState) => {
+        return {
+          submissionTests: result.submissionTests,
+          testsLog: result.logs,
+          runMessage: result.message,
+          submission: prevState.submission
+            ? { ...prevState.submission, testRunsCompleted: prevState.submission.testRunsCompleted + 1 }
+            : undefined,
+        };
+      });
+    }
+
     this.setState((prevState) => {
       return {
-        submissionTests: result.submissionTests,
-        testsLog: result.logs,
         loadingTests: false,
-        runMessage: result.message,
-        submission: prevState.submission
-          ? { ...prevState.submission, testRunsCompleted: prevState.submission.testRunsCompleted + 1 }
-          : undefined,
       };
     });
   };

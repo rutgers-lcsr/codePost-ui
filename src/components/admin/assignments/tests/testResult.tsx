@@ -36,27 +36,56 @@ async function checkAndRefreshTimer(
     },
     method: 'GET',
   });
-  if (res.status === 200) {
-    const result = await res.json();
-    if (result.status === 'SUCCESS') {
-      callback(result.result);
-      clearInterval(interval);
-    } else if (result.status === 'FAILURE') {
+
+  if (res.status !== 200) {
+    // Should never hit a non 200 autograder result
+    sendSlack(
+      `NO RESULT test result: ${window.location.href}`,
+      `${JSON.stringify(res)}`,
+      '#cc0000',
+      '#autograder_bugs',
+    );
+    clearInterval(interval);
+  }
+
+  const result = await res.json();
+  if (result.status === 'SUCCESS') {
+    if (result.result === null || result.result === undefined) {
       sendSlack(
-        `FAILURE test result: ${window.location.href}`,
-        `${JSON.stringify(result.result)}`,
+        `Null test result received on student upload: ${window.location.href}`,
+        `${JSON.stringify(result)}`,
         '#cc0000',
         '#autograder_bugs',
       );
-      clearInterval(interval);
       message.error(
         'An error occured. The codePost team has been notified and will be in touch shortly. In the meantime, please try refreshing and running the test again.',
         25,
       );
-    } else if (result.result && progressCallback) {
-      progressCallback(result.result);
+    } else {
+      callback(result.result);
     }
-  } else {
     clearInterval(interval);
+  } else if (result.status === 'FAILURE') {
+    sendSlack(
+      `FAILURE test result: ${window.location.href}`,
+      `${JSON.stringify(result.result)}`,
+      '#cc0000',
+      '#autograder_bugs',
+    );
+    clearInterval(interval);
+    message.error(
+      'An error occured. The codePost team has been notified and will be in touch shortly. In the meantime, please try refreshing and running the test again.',
+      25,
+    );
+  } else if (result.result && progressCallback) {
+    progressCallback(result.result);
+  } else {
+    // Should never hit a non fail or success state
+    sendSlack(
+      `NO RESULT test result: ${window.location.href}`,
+      `${JSON.stringify(result)}`,
+      '#cc0000',
+      '#autograder_bugs',
+    );
   }
 }
