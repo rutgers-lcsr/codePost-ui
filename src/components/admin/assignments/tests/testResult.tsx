@@ -84,13 +84,6 @@ async function checkAndRefreshTimer(
   } else if (result.result && progressCallback) {
     // Case 3: Result is a progress result
     progressCallback(result.result);
-  } else {
-    // Case 4: SHOULD NEVER REACH HERE
-    sendSlack(
-      `NO RESULT test result: ${window.location.href}`,
-      `${JSON.stringify(result)}`,
-      '#cc0000',
-      '#autograder_bugs',
-    );
   }
+  // Case 4: Pending result -- do nothing
 }
