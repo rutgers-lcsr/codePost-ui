@@ -47,6 +47,9 @@ interface IDownloadCategory {
 interface IDownloadComment {
   text: string;
   pointDelta: number;
+  sortKey?: number;
+  explanation?: string;
+  instructionText?: string;
 }
 
 enum STATUS {
@@ -130,14 +133,29 @@ class RubricFileUpload extends React.Component<IProps, IState> {
       };
 
       newCategory.rubricComments.forEach((newComment: IDownloadComment, indexComment: number) => {
+        let sortKey = indexComment;
+        if (newComment.sortKey !== undefined) {
+          sortKey = newComment.sortKey;
+        }
+
+        let explanation = '';
+        if (newComment.explanation !== undefined) {
+          explanation = newComment.explanation;
+        }
+
+        let instructionText = '';
+        if (newComment.instructionText !== undefined) {
+          instructionText = newComment.instructionText;
+        }
+
         commentList.push({
           id: commentID,
           text: newComment.text,
-          explanation: '', // FIXME
           pointDelta: newComment.pointDelta,
           category: categoryPayload.id,
-          sortKey: indexComment,
-          instructionText: '',
+          sortKey,
+          explanation,
+          instructionText,
           templateTextOn: false,
         });
         commentID = commentID - 1;
@@ -291,6 +309,9 @@ class RubricFileUpload extends React.Component<IProps, IState> {
           "rubricComments" : [{ \n\
             "text" : "this is a new comment",\n\
             "pointDelta" : 0,\n\
+            "sortKey" : 0,\n\
+            "explanation" : "",\n\
+            "instructionText" : "",\n\
           }],\n\
         }\n\
         ...\n\
