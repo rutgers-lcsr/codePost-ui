@@ -216,10 +216,8 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
       );
 
       const payload = {
-        // course_id: props.course['id'],
-        course_id: 899,
-        // assignment_id: props.assignment['id'],
-        assignment_id: 3903,
+        course_id: props.course['id'],
+        assignment_id: props.assignment['id'],
         api_key: `JWT ${localStorage.getItem('token')} `,
         language,
         moss_id: mossID,
