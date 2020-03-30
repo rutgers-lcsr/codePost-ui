@@ -100,10 +100,6 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
   const [language, setLanguage] = React.useState('');
   const [mossID, setMossID] = React.useState('');
   const [excludedFiles, setExcludedFiles] = React.useState('');
-  const [hanging, setHanging] = React.useState(false);
-
-  const estimate = props.submissions.length * props.submissions.length * 80;
-  const submitTime = Math.ceil(estimate / 30000) * 30000;
 
   let testMode = false;
   const values = queryString.parse(props.location.search);
@@ -220,8 +216,10 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
       );
 
       const payload = {
-        course_id: props.course['id'],
-        assignment_id: props.assignment['id'],
+        // course_id: props.course['id'],
+        course_id: 899,
+        // assignment_id: props.assignment['id'],
+        assignment_id: 3903,
         api_key: `JWT ${localStorage.getItem('token')} `,
         language,
         moss_id: mossID,
@@ -259,36 +257,25 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
     }
   };
 
-  const showHang = () => {
-    setHanging(true);
-  };
-
-  const hideHang = () => {
-    setHanging(false);
-  };
+  const loadingBar = () => {};
 
   const onSubmit = async () => {
     if (mossID === '') {
       message.warning('Moss ID cannot be blank. You can get yours at moss.stanford.edu');
     } else {
+      loadingBar();
+
       setLoading(true);
 
-      const timer = setTimeout(showHang, submitTime);
-
-      try {
-        const data = await checkMoss();
-        setUrl(data);
-        clearTimeout(timer);
-        hideHang();
-        const mossResults = await processMoss(data);
-        setResults(mossResults);
-      } catch (err) {
-        message.info(JSON.stringify(err));
-        clearTimeout(timer);
-        hideHang();
-      }
-
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+        try {
+          checkMoss();
+          message.success('Submitted! Please check your email in a few minutes.');
+        } catch (err) {
+          message.info(JSON.stringify(err));
+        }
+      }, 2800);
     }
   };
 
@@ -410,11 +397,6 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
           value={props.assignment ? props.submissions.length : '--'}
           style={{ display: 'inline-block', marginRight: '60px' }}
         />
-        <Statistic
-          title="Estimated Time"
-          value={props.assignment ? msToString(submitTime) : '--'}
-          style={{ display: 'inline-block' }}
-        />
       </div>
       <div style={{ padding: '10px 0px' }}>
         <Select
@@ -432,21 +414,12 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
           disabled={loading || props.submissions.length === 0 || !props.assignment}
           onClick={onSubmit}
         >
-          Go
+          Submit
         </Button>
       </div>
       {loading ? (
         <div style={{ padding: '40px 0px 0px 0px', textAlign: 'center' }}>
-          <ProgressBar time={Math.min(submitTime, 100000)} />
-          <Paragraph>We'll also send you an email when this is done...</Paragraph>
-          <Paragraph>Come back to this page to parse the link in codePost!</Paragraph>
-        </div>
-      ) : null}
-      {hanging ? (
-        <div style={{ textAlign: 'center', padding: '20px' }}>
-          <Paragraph>
-            Hang tight, this is taking longer than expected... <Spin size="small" />
-          </Paragraph>
+          <ProgressBar time={2400} />
         </div>
       ) : null}
       {url !== null ? (
@@ -460,7 +433,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
       <Search key="parse-input" placeholder="Moss results URL" enterButton="Go" size="large" onSearch={onParse} />
       {loading ? (
         <div style={{ padding: '40px 0px 0px 0px' }}>
-          <ProgressBar time={10000} />
+          <ProgressBar time={1000} />
         </div>
       ) : null}
     </div>
