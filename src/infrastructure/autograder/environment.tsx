@@ -17,7 +17,6 @@ const EnvironmentV = t.intersection(
     t.type({
       language: t.string,
       assignment: t.number,
-      dependencies: t.string,
       helperFiles: t.array(t.number),
       solutionFiles: t.array(t.number),
       compileText: t.string,

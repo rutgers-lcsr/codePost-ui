@@ -141,7 +141,7 @@ export const EnvironmentSpecs = (props: IProps) => {
     }
     // if we return to old language, reset dependencies to props
     if (props.env && value === props.env.language) {
-      setDependencies(JSON.parse(props.env.dependencies));
+      setDependencies(props.env.dockerRunInstructions.join('\n'));
       setBuildType(props.env.buildType);
     }
   };
@@ -161,7 +161,7 @@ export const EnvironmentSpecs = (props: IProps) => {
       setDependencies('');
     }
     if (props.env && newBuildType === props.env.buildType) {
-      setDependencies(JSON.parse(props.env.dependencies));
+      setDependencies(props.env.dockerRunInstructions.join('\n'));
     }
   };
 
@@ -182,12 +182,7 @@ export const EnvironmentSpecs = (props: IProps) => {
   //************ 1A. ENVIRONMENT -  SELECT LANGUAGE
   const selectLanguage = (
     // Disable selector if environment has a custom dockerfile defined
-    <Select
-      value={props.env && props.env.dockerfile.length > 0 ? 'Custom' : language || undefined}
-      onChange={onLanguageChange}
-      style={{ minWidth: 300 }}
-      disabled={props.env && props.env.dockerfile.length > 0}
-    >
+    <Select value={language || undefined} onChange={onLanguageChange} style={{ minWidth: 300 }}>
       {languages.map((language) => {
         return (
           <Option key={language} value={language}>
