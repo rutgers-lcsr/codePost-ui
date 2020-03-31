@@ -24,7 +24,7 @@ class CPLogo extends React.Component<ICPLogoProps, {}> {
     } else {
       return (
         <div className="cp-logo" onClick={this.props.onClick}>
-          <span className="cp-logo__highlight">cP</span>
+          <img src={require('./../../img/codepost_icon.png')} style={{ width: '24px' }} alt="" />
         </div>
       );
     }
