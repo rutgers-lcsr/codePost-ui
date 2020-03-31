@@ -85,18 +85,10 @@ export const MOSS_LANGUAGES = [
   'verilog',
 ];
 
-const msToString = (ms: number) => {
-  const showWith0 = (value: number) => (value < 10 ? `0${value}` : `${value}`);
-  const hours = showWith0(Math.floor((ms / (1000 * 60 * 60)) % 60));
-  const minutes = showWith0(Math.floor((ms / (1000 * 60)) % 60));
-  const seconds = showWith0(Math.floor((ms / 1000) % 60));
-  return `${parseInt(hours) ? `${hours}hr` : ''}${minutes}m ${seconds}s`;
-};
-
 const Moss = (props: IMossProps & RouteComponentProps) => {
   const [submit, setSubmit] = React.useState(true);
   const [loading, setLoading] = React.useState(false);
-  const [url, setUrl] = React.useState(null);
+  const [urlID, setUrlID] = React.useState('');
   const [language, setLanguage] = React.useState('');
   const [mossID, setMossID] = React.useState('');
   const [excludedFiles, setExcludedFiles] = React.useState('');
@@ -106,6 +98,14 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
   if (values.test !== undefined) {
     testMode = true;
   }
+
+  React.useEffect(() => {
+    const values = queryString.parse(props.location.search);
+    if (values.resultsid !== undefined && typeof values.resultsid === 'string') {
+      setUrlID(values.resultsid);
+      setSubmit(false);
+    }
+  }, []);
 
   React.useEffect(() => {
     trackFeature('Moss', {});
@@ -176,8 +176,12 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
     }
   };
 
-  const onMossIDChange = (e: any) => {
+  const onChangeMossID = (e: any) => {
     setMossID(e.currentTarget.value);
+  };
+
+  const onChangeUrlID = (e: any) => {
+    setUrlID(e.currentTarget.value);
   };
 
   const languageSelectData = MOSS_LANGUAGES.map((lang: string) => {
@@ -213,23 +217,30 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
       sendSlack(
         'Moss submission',
         `${testMode ? 'TEST MODE\n' : ''} ${props.course.name} ${props.course.period} | ${props.assignment.name} `,
+        '#f5e51b',
+        '#user_notifications_moss',
       );
 
       const payload = {
-        course_id: props.course['id'],
-        assignment_id: props.assignment['id'],
-        api_key: `JWT ${localStorage.getItem('token')} `,
+        // course_id: props.course['id'],
+        // assignment_id: props.assignment['id'],
+        course_id: 899,
+        assignment_id: 3903,
+        api_key: 'Token 0c758a82da5819addc9427f49a35a68425964979',
+        // api_key: `JWT ${localStorage.getItem('token')} `,
         language,
-        moss_id: mossID,
+        // moss_id: mossID,
+        moss_id: 736797197,
         email: props.user.email,
         test_mode: testMode,
         excluded_files: excludedFiles,
+        from_url: window.location.href.split('?')[0],
       };
 
       const res: any = await invokeAWSLambda({
         accessKey: 'AKIAV22BSJSCXXWUPZUD',
         secretAccessKey: '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',
-        arn: 'arn:aws:lambda:us-east-2:401180085381:function:send-to-moss:Production',
+        arn: 'arn:aws:lambda:us-east-2:401180085381:function:send-to-moss:Development',
         payload,
       });
 
@@ -255,32 +266,31 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
     }
   };
 
-  const loadingBar = () => {};
-
   const onSubmit = async () => {
     if (mossID === '') {
       message.warning('Moss ID cannot be blank. You can get yours at moss.stanford.edu');
     } else {
-      loadingBar();
-
       setLoading(true);
 
-      setTimeout(() => {
-        setLoading(false);
+      setTimeout(async () => {
         try {
-          checkMoss();
-          message.success('Submitted! Please check your email in a few minutes.');
+          const resp = await checkMoss();
+          message.success(resp, 6);
         } catch (err) {
           message.info(JSON.stringify(err));
         }
-      }, 2800);
+
+        setLoading(false);
+      }, 800);
     }
   };
 
-  const onParse = async (value: string) => {
+  const onParse = async () => {
+    const url = `http://moss.stanford.edu/results/${urlID}`;
+
     setLoading(true);
     try {
-      const data = await processMoss(value);
+      const data = await processMoss(url);
       setResults(data);
     } catch (err) {
       message.error(JSON.stringify(err));
@@ -338,6 +348,14 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
 
   const excludedFilesPlaceholder = 'Excluded file names (line separated)';
 
+  const parseButton = loading ? (
+    <Spin size="small" />
+  ) : (
+    <div onClick={onParse} style={{ cursor: 'pointer' }}>
+      Go
+    </div>
+  );
+
   // Should be refactored to use Form once this feature is built out
   const action = submit ? (
     <div style={{ padding: '40px 100px 0px 100px' }}>
@@ -360,7 +378,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
           <Input
             addonBefore="Moss ID Number"
             value={mossID}
-            onChange={onMossIDChange}
+            onChange={onChangeMossID}
             style={{ width: '350px' }}
             addonAfter={
               <CPTooltip
@@ -420,15 +438,18 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
           <ProgressBar time={2400} />
         </div>
       ) : null}
-      {url !== null ? (
-        <div style={{ textAlign: 'center', padding: '20px' }}>
-          <Paragraph copyable>{url}</Paragraph>
-        </div>
-      ) : null}
     </div>
   ) : (
     <div style={{ padding: '80px 100px 40px 100px' }}>
-      <Search key="parse-input" placeholder="Moss results URL" enterButton="Go" size="large" onSearch={onParse} />
+      <Input
+        key="parse-input"
+        addonBefore="http://moss.stanford.edu/results/"
+        addonAfter={parseButton}
+        value={urlID}
+        placeholder="Moss results ID"
+        onChange={onChangeUrlID}
+        size="large"
+      />
       {loading ? (
         <div style={{ padding: '40px 0px 0px 0px' }}>
           <ProgressBar time={1000} />
