@@ -238,7 +238,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
       const res: any = await invokeAWSLambda({
         accessKey: 'AKIAV22BSJSCXXWUPZUD',
         secretAccessKey: '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',
-        arn: 'arn:aws:lambda:us-east-2:401180085381:function:send-to-moss:Development',
+        arn: 'arn:aws:lambda:us-east-2:401180085381:function:send-to-moss:Production',
         payload,
       });
 
