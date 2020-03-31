@@ -104,6 +104,8 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
     if (values.resultsid !== undefined && typeof values.resultsid === 'string') {
       setUrlID(values.resultsid);
       setSubmit(false);
+
+      onParse(null, values.resultsid);
     }
   }, []);
 
@@ -222,15 +224,11 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
       );
 
       const payload = {
-        // course_id: props.course['id'],
-        // assignment_id: props.assignment['id'],
-        course_id: 899,
-        assignment_id: 3903,
-        api_key: 'Token 0c758a82da5819addc9427f49a35a68425964979',
-        // api_key: `JWT ${localStorage.getItem('token')} `,
+        course_id: props.course['id'],
+        assignment_id: props.assignment['id'],
+        api_key: `JWT ${localStorage.getItem('token')} `,
         language,
-        // moss_id: mossID,
-        moss_id: 736797197,
+        moss_id: mossID,
         email: props.user.email,
         test_mode: testMode,
         excluded_files: excludedFiles,
@@ -285,8 +283,8 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
     }
   };
 
-  const onParse = async () => {
-    const url = `http://moss.stanford.edu/results/${urlID}`;
+  const onParse = async (e: any, overrideID?: string) => {
+    const url = `http://moss.stanford.edu/results/${overrideID !== undefined ? overrideID : urlID}`;
 
     setLoading(true);
     try {
@@ -351,8 +349,8 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
   const parseButton = loading ? (
     <Spin size="small" />
   ) : (
-    <div onClick={onParse} style={{ cursor: 'pointer' }}>
-      Go
+    <div onClick={onParse} style={{ cursor: 'pointer', fontWeight: 600 }}>
+      Go ➜
     </div>
   );
 
@@ -473,7 +471,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
       title={<span>Plagiarism Detection &nbsp; {help}</span>}
       actions={[toggle]}
       content={
-        <div>
+        <div id="moss">
           {action}
           {resultsCard}
         </div>
