@@ -5,10 +5,13 @@
 /* react imports */
 import React, { useState, useEffect } from 'react';
 
+/* other library imports */
 import { animateScroll } from 'react-scroll';
 
 /* library imports */
-import { Collapse, Modal, Tag, Tooltip } from 'antd';
+import { Button, Collapse, Modal, Tag, Tooltip, Spin, Result, Typography } from 'antd';
+
+/**********************************************************************************************************************/
 
 interface IProps {
   inProgress: boolean;
@@ -38,7 +41,7 @@ export const BuildDetailModal = (props: IProps) => {
   React.useEffect(scrollToBottom, [props.logs]);
 
   const tagColor = props.inProgress ? 'grey' : props.isSuccess ? 'green' : 'red';
-  const tagText = props.inProgress ? 'Building...' : props.isSuccess ? 'Build successful' : 'Build failed';
+  const tagText = props.inProgress ? 'Building...' : props.isSuccess ? 'Last build successful' : 'Last build failed';
 
   const smallTag = <Tag color={tagColor}>{tagText}</Tag>;
   const bigTag = (
@@ -53,13 +56,35 @@ export const BuildDetailModal = (props: IProps) => {
     <div>
       <Modal
         visible={visible}
-        title={<span style={{ display: 'flex', justifyContent: 'center' }}>{bigTag}</span>}
+        title="Build status"
         width={700}
         onCancel={() => setVisible(false)}
-        onOk={() => setVisible(false)}
+        footer={[
+          <Button onClick={() => setVisible(false)} type={!props.inProgress ? 'primary' : undefined}>
+            Close
+          </Button>,
+        ]}
       >
         <div style={{ maxHeight: 'calc(100vh - 300px)', overflow: 'auto' }}>
-          <Collapse bordered={false} defaultActiveKey="2">
+          {props.inProgress && (
+            <div style={{ textAlign: 'center', margin: '0 auto', padding: '30px 50px' }}>
+              <Spin size="large" />
+              <br />
+              <Typography.Title level={4}>Building your environment</Typography.Title>
+            </div>
+          )}
+
+          {!props.inProgress && props.isSuccess && (
+            <Result
+              status="success"
+              title="Your environment built successfully!"
+              subTitle="Click Close below to continue"
+            />
+          )}
+          {!props.inProgress && !props.isSuccess && (
+            <Result status="error" title="Your build failed" subTitle="Check the logs stream below for more details." />
+          )}
+          <Collapse bordered={false}>
             <Collapse.Panel header="Dockerfile" key="1">
               <span style={{ whiteSpace: 'pre-wrap' }}>{props.dockerfile}</span>
             </Collapse.Panel>
