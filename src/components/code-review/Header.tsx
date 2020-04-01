@@ -165,7 +165,7 @@ export const DownloadCode = (props: IDownloadCodeProps) => {
     // We fetch the latest files because some files over the size limit have had their code
     // replaced for rendering performance
 
-    const latestSubmission = await Submission.read(props.submission.id);
+    const latestSubmission = await Submission.readAnonymous(props.submission.id);
     const files = await Promise.all(
       latestSubmission.files.map((f) => {
         return File.read(f);
