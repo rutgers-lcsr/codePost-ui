@@ -390,7 +390,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
     data = this.state.sortedOrder.map((id, i) => {
       const assignment = this.props.assignments.find((el) => el.id === id);
       if (assignment === undefined) {
-        return;
+        return null;
       }
       const statsForRow = assignmentStats[assignment.id];
       const encodedName = encodeForLink(assignment.name);

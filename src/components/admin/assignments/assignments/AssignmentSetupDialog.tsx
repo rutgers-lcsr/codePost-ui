@@ -19,8 +19,6 @@ import {
   getSettingsURL,
 } from '../../../core/URLutils';
 
-import layoutVars from '../../../../styles/layout/_layoutVars';
-
 import useWindowSize from '../../../core/useWindowSize';
 
 const { Step } = Steps;

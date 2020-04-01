@@ -1,14 +1,10 @@
 import * as React from 'react';
 
-import { Redirect } from 'react-router-dom';
-
-import { Alert, Button, Icon, Input, message, Spin, Statistic, Tooltip, Typography } from 'antd';
+import { Alert, Button, Spin } from 'antd';
 
 import PreAuthLayout from '../pre-auth/PreAuthLayout';
 
-import { AssignmentType, AssignmentStudentType } from '../../infrastructure/assignment';
-
-import { PartnerLinkType, Submission, StudentSubmissionType } from '../../infrastructure/submission';
+import { Submission } from '../../infrastructure/submission';
 
 interface IValidateInviteProps {
   match: any;
@@ -42,7 +38,7 @@ const ValidateInvite = (props: IValidateInviteProps) => {
     };
 
     validatePartnerLinkAndReturn();
-  }, []);
+  }, [props.match.params.sid, props.match.params.token]);
 
   const join = async () => {
     const token = props.match.params.token;
@@ -50,7 +46,7 @@ const ValidateInvite = (props: IValidateInviteProps) => {
 
     setStatus(STATUS.LOADING);
     try {
-      const data = await Submission.validatePartnerLink(sid, { token });
+      await Submission.validatePartnerLink(sid, { token });
       setStatus(STATUS.SUCCESS);
     } catch (err) {
       setStatus(STATUS.INVALID);
@@ -101,7 +97,10 @@ const ValidateInvite = (props: IValidateInviteProps) => {
         message="Successfully joined submission!"
         description={
           <div>
-            <a onClick={redirect}>Click here</a> to go to the Student Console.
+            <span style={{ color: '#24be85' }} onClick={redirect}>
+              Click here
+            </span>{' '}
+            to go to the Student Console.
           </div>
         }
         type="success"

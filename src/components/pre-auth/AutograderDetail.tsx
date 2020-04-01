@@ -116,7 +116,7 @@ const AutograderDetail = (props: IProps) => {
       removeModelSmallScreen={false}
       module={
         <div style={divStyle} className="display-flex justify-content-center align-items-center bevel">
-          <img src={result_plainText} style={imgstyle} />
+          <img src={result_plainText} style={imgstyle} alt="Autograder plaintext test results" />
         </div>
       }
       gutterSize={gutterSize}
@@ -142,7 +142,7 @@ const AutograderDetail = (props: IProps) => {
       removeModelSmallScreen={false}
       module={
         <div style={divStyle} className="display-flex justify-content-center align-items-center bevel">
-          <img src={run_codePost_fileMode} style={imgstyle} />
+          <img src={run_codePost_fileMode} style={imgstyle} alt="Import scripts as is in file mode" />
         </div>
       }
       gutterSize={gutterSize}
@@ -168,7 +168,7 @@ const AutograderDetail = (props: IProps) => {
       removeModelSmallScreen={false}
       module={
         <div style={divStyle} className="display-flex justify-content-center align-items-center bevel">
-          <img src={result_codePost_summary} style={imgstyle} />
+          <img src={result_codePost_summary} style={imgstyle} alt="Structured test results" />
         </div>
       }
       gutterSize={gutterSize}
@@ -197,7 +197,11 @@ const AutograderDetail = (props: IProps) => {
       removeModelSmallScreen={false}
       module={
         <div style={divStyle} className="display-flex justify-content-center align-items-center bevel">
-          <img src={result_codePost_exposedTests} style={imgstyle} />
+          <img
+            src={result_codePost_exposedTests}
+            style={imgstyle}
+            alt="Exposed autograder tests when a student submits"
+          />
         </div>
       }
       gutterSize={gutterSize}
@@ -223,7 +227,7 @@ const AutograderDetail = (props: IProps) => {
       removeModelSmallScreen={false}
       module={
         <div style={divStyle} className="display-flex justify-content-center align-items-center bevel">
-          <img src={run_codePost_editor} style={imgstyle} />
+          <img src={run_codePost_editor} style={imgstyle} alt="User-friendly test editor" />
         </div>
       }
       gutterSize={gutterSize}
@@ -249,7 +253,7 @@ const AutograderDetail = (props: IProps) => {
       removeModelSmallScreen={false}
       module={
         <div style={divStyle} className="display-flex justify-content-center align-items-center bevel">
-          <img src={run_user_upload} style={imgstyle} />
+          <img src={run_user_upload} style={imgstyle} alt="Run your tests and upload them" />
         </div>
       }
       gutterSize={gutterSize}

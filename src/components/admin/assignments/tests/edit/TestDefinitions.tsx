@@ -19,9 +19,7 @@ import {
   Empty,
   Modal,
   Skeleton,
-  Spin,
   Badge,
-  Tag,
   Tooltip,
   Typography,
 } from 'antd';
@@ -69,7 +67,7 @@ import FileTag from './TestDefinitions/FileTag';
 
 /* codePost utils imports */
 import { fetchTestData, TestCasesByCategory } from '../../../../core/testFetchUtils';
-import { hasNativeTestSupport, testTemplates } from './utils/languageUtils';
+import { hasNativeTestSupport } from './utils/languageUtils';
 
 import { LOCAL_SETTINGS } from '../../../../utils/LocalSettings';
 
@@ -458,12 +456,15 @@ export const TestDefinitions = (props: IProps) => {
     zip.file('main.sh', main);
     tests.map((test) => {
       zip.file(`${test.name}`, test.code);
+      return null;
     });
     currentFiles.map((file) => {
       zip.file(file.name, file.code);
+      return null;
     });
     props.helpers.map((file) => {
       zip.file(file.name, file.code);
+      return null;
     });
 
     zip.generateAsync({ type: 'blob' }).then(function(content: any) {

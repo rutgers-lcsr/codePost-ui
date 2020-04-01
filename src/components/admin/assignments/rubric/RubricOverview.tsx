@@ -39,6 +39,7 @@ const RubricOverview = (props: IProps & RouteComponentProps) => {
           </Button>
         </Link>
       ),
+      rowKey: `row-assignment-${assignment.id}`,
     };
   });
 

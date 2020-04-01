@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Divider, Tag, Typography } from 'antd';
+import { Divider, Typography } from 'antd';
 
 import useWindowSize from '../core/useWindowSize';
 

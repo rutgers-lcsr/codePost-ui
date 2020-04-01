@@ -8,7 +8,7 @@ import React, { useEffect, useState } from 'react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
-import { Button, Layout, Menu, Modal, Spin, Tag } from 'antd';
+import { Layout, Menu, Spin } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 import { AssignmentStudent, AssignmentStudentType } from '../../infrastructure/assignment';

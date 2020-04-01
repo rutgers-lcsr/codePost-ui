@@ -126,7 +126,6 @@ class StudentDetail extends React.Component<IProps, IState> {
       ),
       onOk: () => {
         this.props.deleteSubmission(toRemove).then(() => {
-          console.log(toRemove.assignment);
           this.toggleUploadSubmissionVisible(toRemove.assignment);
         });
       },
@@ -374,7 +373,7 @@ class StudentDetail extends React.Component<IProps, IState> {
       } else if (submission) {
         graderElement = (
           <div>
-            {submission.grader ? submission.grader : '--'}&nbsp;
+            <span>{submission.grader ? submission.grader : '--'}</span>&nbsp;
             <CPTooltip title={tooltips.admin.studentSubmissions.assignGrader} hideThisOnHideTips={true}>
               <Icon type="edit" onClick={this.changeActiveSubmission.bind(this, assignment.name)} />
             </CPTooltip>
@@ -412,7 +411,12 @@ class StudentDetail extends React.Component<IProps, IState> {
       <div>
         <TableDetail
           loadComplete={true}
-          title={`Submissions: ${this.props.student}`}
+          title={
+            <span>
+              <span>Submissions: </span>
+              <span>{this.props.student}</span>
+            </span>
+          }
           breadcrumbs={
             <Breadcrumb>
               <Breadcrumb.Item>

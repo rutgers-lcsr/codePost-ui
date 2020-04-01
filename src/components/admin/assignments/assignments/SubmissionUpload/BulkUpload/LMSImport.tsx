@@ -517,7 +517,7 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
       // i.e., <id>@school.edu
       for (let i = 0; i < props.students.length; i++) {
         const student = props.students[i];
-        if (student.split('@')[0] == id) {
+        if (student.split('@')[0] === id) {
           guess = student;
           break;
         }

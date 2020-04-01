@@ -177,6 +177,11 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
       this.props.setCommentPlacements();
     }
 
+    // Propagate loaded changes
+    if (this.props.commentType === 'readonly' && prevProps.comment.text !== this.props.comment.text) {
+      this.setState({ text: this.props.comment.text || '' });
+    }
+
     /**********************************************************************************/
     /* BEGIN: FOOBAR CONFIG
     /**********************************************************************************/

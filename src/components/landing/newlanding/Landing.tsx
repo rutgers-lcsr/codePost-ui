@@ -85,6 +85,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
               <a
                 href="https://help.codepost.io/en/articles/3550689-what-languages-does-the-codepost-autograder-support"
                 target="_blank"
+                rel="noopener noreferrer"
               >
                 <span style={{ fontWeight: 500, cursor: 'pointer' }} className="landing__link">
                   all major languages are supported
@@ -92,7 +93,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
               </a>
               .
             </div>
-            <Link to="/autograder" target="_blank">
+            <Link to="/autograder" target="_blank" rel="noopener noreferrer">
               <CPButton
                 key="panelTwoButton"
                 cpType="link"
@@ -135,7 +136,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
                 </div>
               </div>
             </div>
-            <Link to="/why-use-codePost#instructors" target="_blank">
+            <Link to="/why-use-codePost#instructors" target="_blank" rel="noopener noreferrer">
               <CPButton
                 key="panelTwoButton"
                 cpType="link"
@@ -201,7 +202,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
                     </li>
                   </ul>
                   You can write useful, short scripts in 10 minutes. Or take advantage of our{' '}
-                  <a href="https://codepost.io/integrations" target="_blank">
+                  <a href="https://codepost.io/integrations" target="_blank" rel="noopener noreferrer">
                     <span style={{ fontWeight: 500, cursor: 'pointer' }} className="landing__link">
                       native integrations
                     </span>
@@ -272,22 +273,22 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
                 }}
               >
                 <div style={{ ...schoolStyle, color: 'rgba(188, 38, 26)' }}>
-                  <img src={buImg} width={logoWidth} />
+                  <img src={buImg} width={logoWidth} alt="Boston University" />
                 </div>
                 <div style={{ ...schoolStyle, color: 'rgba(231,115,55)' }}>
-                  <img src={caltechImg} width={logoWidth} />
+                  <img src={caltechImg} width={logoWidth} alt="Caltech" />
                 </div>
                 <div style={{ ...schoolStyle, color: 'rgba(233,137,64)' }}>
-                  <img src={princetonImg} width={logoWidth} />
+                  <img src={princetonImg} width={logoWidth} alt="Princeton University" />
                 </div>
                 <div style={{ ...schoolStyle, color: '#c6a438' }}>
-                  <img src={iowaImg} width={logoWidth} />
+                  <img src={iowaImg} width={logoWidth} alt="Iowa University" />
                 </div>
                 <div style={{ ...schoolStyle, color: 'rgba(21, 39,70)' }}>
-                  <img src={ucsdImg} width={logoWidth} />
+                  <img src={ucsdImg} width={logoWidth} alt="University of California, San Diego" />
                 </div>
                 <div style={{ ...schoolStyle, color: 'rgba(156,35,38)' }}>
-                  <img src={cornellImg} width={logoWidth - 20} />
+                  <img src={cornellImg} width={logoWidth - 20} alt="Cornell University" />
                 </div>
               </div>
             </div>

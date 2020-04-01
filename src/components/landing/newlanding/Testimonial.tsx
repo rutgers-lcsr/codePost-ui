@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import useWindowSize from '../../core/useWindowSize';
 
-import { Button, Divider, Icon, Typography } from 'antd';
+import { Button, Icon, Typography } from 'antd';
 
 import landingVars from '../../../styles/pages/_landingVars';
 
@@ -287,16 +287,20 @@ const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name:
 
 const Testimonials = () => {
   const landingTestimonials = testmonialInfo.map((t) => {
-    return <Testimonial text={t.text} name={t.name} thumbnail={t.thumbnail} school={t.school} />;
+    return (
+      <Testimonial
+        key={`testimonial-${t.name}`}
+        text={t.text}
+        name={t.name}
+        thumbnail={t.thumbnail}
+        school={t.school}
+      />
+    );
   });
 
   const [permutation] = React.useState(landingTestimonials.slice(0, 2).concat(shuffle(landingTestimonials.slice(2))));
 
-  const windowSize = useWindowSize();
-
   const [activeSlide, setActiveSlide] = React.useState(0);
-
-  const slidesPerPage = windowSize.width < landingVars.breakpoints.testimonial ? 1 : 3;
 
   const onChange = (value: number) => setActiveSlide(value);
 

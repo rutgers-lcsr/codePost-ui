@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Alert, Checkbox, Divider, Icon, Input, Progress, Radio, Switch, Typography } from 'antd';
+import { Alert, Checkbox, Divider, Icon, Input, Progress, Switch, Typography } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -22,7 +22,6 @@ import PreAuthSignupLayout from './PreAuthSignupLayout';
 
 import CPButton from '../core/CPButton';
 import CPTooltip from '../core/CPTooltip';
-import { tooltips } from '../core/tooltips';
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
 
 import { Testimonial } from '../landing/Testimonial';

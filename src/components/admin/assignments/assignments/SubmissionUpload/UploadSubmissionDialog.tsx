@@ -59,7 +59,7 @@ import { awaitTestResult } from '../../../../../components/admin/assignments/tes
 
 import { SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
 
-import { slack } from '../../../../../components/core/slack';
+import { sendSlack, slack } from '../../../../../components/core/slack';
 
 import { encodeForLink } from '../../../../../components/core/URLutils';
 
@@ -270,7 +270,9 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
   public loadTestResults = async (sub: StudentSubmissionType | SubmissionType | undefined, loadLogs: boolean) => {
     if (sub) {
       const results = await Submission.readTestResults(sub.id, { isStudentMode: 'True' });
-      this.setState({ submissionTests: SubmissionTest.getLatest(results.submissionTests), testsLog: results.logs });
+      if (results !== null && results !== undefined) {
+        this.setState({ submissionTests: SubmissionTest.getLatest(results.submissionTests), testsLog: results.logs });
+      }
     }
   };
 
@@ -428,19 +430,25 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
               });
             })
             .catch((error: any) => {
-              /* eslint-disable no-multi-str */
-              message.error(
-                'Sorry, something went wrong. Please try uploading again.\
-                If the problem persists, contact the codePost team.',
-              );
-              /* eslint-enable no-multi-str */
-              const payload = {
-                error: error.toString(),
-                errorDetail: JSON.stringify(error, Object.getOwnPropertyNames(error)),
-                url: window.location.href,
-              };
+              let logError;
+              try {
+                logError = !error.includes('Due date has passed');
+              } catch (err) {
+                logError = true;
+              }
 
-              slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, payload);
+              if (logError) {
+                message.error(
+                  'Sorry, something went wrong. Please try uploading again. If the problem persists, contact the codePost team.',
+                );
+                const payload = {
+                  error: error.toString(),
+                  errorDetail: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+                  url: window.location.href,
+                };
+
+                slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, payload);
+              }
 
               this.cancel();
             });
@@ -513,16 +521,23 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
   };
 
   public setResults = (result: SubmissionTestResultType) => {
-    // Note: we need to increment the testRunsCompleted in state, because a student could go back to the upload tab (without refreshing submission) and re-upload
+    if (result) {
+      // Note: we need to increment the testRunsCompleted in state, because a student could go back to the upload tab (without refreshing submission) and re-upload
+      this.setState((prevState) => {
+        return {
+          submissionTests: result.submissionTests,
+          testsLog: result.logs,
+          runMessage: result.message,
+          submission: prevState.submission
+            ? { ...prevState.submission, testRunsCompleted: prevState.submission.testRunsCompleted + 1 }
+            : undefined,
+        };
+      });
+    }
+
     this.setState((prevState) => {
       return {
-        submissionTests: result.submissionTests,
-        testsLog: result.logs,
         loadingTests: false,
-        runMessage: result.message,
-        submission: prevState.submission
-          ? { ...prevState.submission, testRunsCompleted: prevState.submission.testRunsCompleted + 1 }
-          : undefined,
       };
     });
   };
@@ -720,7 +735,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
 
         if (this.props.isStudent) {
           sendMeAConfirmationEmailCheckbox = (
-            <span>
+            <span key="sendMeAConfirmationEmailCheckbox">
               {this.state.selectedAssignment !== undefined && dueDatePassed(this.state.selectedAssignment) ? (
                 <Tag color="volcano">Due Date Passed</Tag>
               ) : null}
@@ -745,7 +760,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
         }
 
         goForwardButton = (
-          <span style={{ marginLeft: '8px' }}>
+          <span key="goForwardButton" style={{ marginLeft: '8px' }}>
             <Button
               key="submit"
               type="primary"
@@ -788,12 +803,8 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           );
         } else {
           // Is this student allowed to run tests?
-          const testsToRun =
-            (this.state.selectedAssignment && this.state.selectedAssignment.exposeDumpLogs) ||
-            this.state.testCategories.length > 0;
           const runsSoFar = this.state.submission ? this.state.submission.testRunsCompleted : 0;
           const maxRuns = this.state.selectedAssignment ? this.state.selectedAssignment.maxStudentTestRuns || -1 : -1;
-          const allowedToRunTests = testsToRun && (maxRuns < 0 || runsSoFar < maxRuns);
 
           let testMessage;
           if (this.state.selectedAssignment && this.state.selectedAssignment.maxStudentTestRuns) {

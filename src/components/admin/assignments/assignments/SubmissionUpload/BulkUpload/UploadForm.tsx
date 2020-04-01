@@ -63,6 +63,8 @@ const UploadForm = (props: IUploadFormProps) => {
               active={false}
             />
             <div style={{ width: '20px' }} />
+            <IntegrationButton integration={INTEGRATIONS['moodle']} onClick={props.setIntegration} active={false} />
+            <div style={{ width: '20px' }} />
             <IntegrationButton integration={INTEGRATIONS['github']} onClick={props.setIntegration} active={false} />
             <div style={{ width: '20px' }} />
             <IntegrationButton integration={INTEGRATIONS['jupyter']} onClick={props.setIntegration} active={false} />
@@ -88,6 +90,8 @@ const UploadForm = (props: IUploadFormProps) => {
       return <LMSImport system="Blackboard" {...props} />;
     case 'brightspace':
       return <LMSImport system="Brightspace" {...props} />;
+    case 'moodle':
+      return <LMSImport system="Moodle" {...props} />;
     case 'github':
       return <GithubFolderImport {...props} />;
     case 'jupyter':

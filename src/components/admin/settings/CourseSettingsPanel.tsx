@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import { Breadcrumb, Form, Input, InputNumber, message, Select, Switch, Table, Typography } from 'antd';
+import { Breadcrumb, Form, Input, message, Select, Switch, Table, Typography } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
 import CPButton from '../../../components/core/CPButton';

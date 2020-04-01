@@ -7,7 +7,7 @@ import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
-import { Button, Breadcrumb, Dropdown, Empty, Menu, Icon, Tag } from 'antd';
+import { Button, Breadcrumb, Empty, Tag } from 'antd';
 
 import { TableDetail } from '../../other/TableDetail';
 

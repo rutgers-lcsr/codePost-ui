@@ -2,12 +2,12 @@
 import React, { useState } from 'react';
 
 /* ant imports */
-import { Alert, Divider, message, Modal, Radio, Typography } from 'antd';
+import { Alert, message, Modal, Radio } from 'antd';
 
 /* codePost imports */
 
 import { AssignmentType } from '../../../../infrastructure/assignment';
-import { Submission, SubmissionType } from '../../../../infrastructure/submission';
+import { SubmissionType } from '../../../../infrastructure/submission';
 
 import { CourseType } from '../../../../infrastructure/course';
 
@@ -120,10 +120,10 @@ const BulkSubmissionEdit = (props: IProps) => {
         <div style={{ fontSize: 16, marginBottom: 10, marginTop: 30 }}>Choose an action to perform: </div>
         <Radio.Group style={{ paddingLeft: 20 }}>
           <Radio.Group onChange={onChange} value={action}>
-            <Radio style={radioStyle} value={BULK_ACTION.Finalize} disabled={numUnfinalized == 0}>
+            <Radio style={radioStyle} value={BULK_ACTION.Finalize} disabled={numUnfinalized === 0}>
               <b>Finalize</b> all submissions (impacts {numUnfinalized} submission{numUnfinalized > 1 ? 's' : ''})
             </Radio>
-            <Radio style={radioStyle} value={BULK_ACTION.Unfinalize} disabled={numFinalized == 0}>
+            <Radio style={radioStyle} value={BULK_ACTION.Unfinalize} disabled={numFinalized === 0}>
               <b>Unfinalize</b> all submission (impacts {numFinalized} submission{numFinalized > 1 ? 's' : ''})
             </Radio>
           </Radio.Group>

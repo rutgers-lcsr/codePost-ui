@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Collapse, Icon, Statistic, Switch, Upload, Typography } from 'antd';
+import { Collapse, Icon, Statistic, Switch, Upload } from 'antd';
 
 import ReactMarkdown from 'react-markdown';
 
@@ -16,7 +16,7 @@ import { BulkUploadFooter } from './BulkUploadComponents';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
-import { codePostFile, IProtoFileUpload, fileToProtoFileUpload, readZipTopLevel } from './../FileReader';
+import { codePostFile, IProtoFileUpload, fileToProtoFileUpload } from './../FileReader';
 
 const Panel = Collapse.Panel;
 const Dragger = Upload.Dragger;
