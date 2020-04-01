@@ -270,6 +270,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
         email: props.user.email,
         test_mode: testMode,
         excluded_files: excludedFiles,
+        include_file_templates: includeFileTemplates,
         from_url: window.location.href.split('?')[0],
       };
 
