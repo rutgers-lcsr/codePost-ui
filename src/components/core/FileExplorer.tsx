@@ -19,6 +19,7 @@ const FileExplorer = (props: IProps) => {
       visible={props.visible}
       closable={true}
       width={'90%'}
+      onCancel={props.toggleVisible}
       footer={[
         <Button key="close" onClick={props.toggleVisible}>
           Close

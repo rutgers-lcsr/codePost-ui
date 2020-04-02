@@ -400,7 +400,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
 
   const fileTemplateTooltip =
     fileTemplates.length === 0
-      ? "You don't have any File Templates defined for this assignment. Add them from the Assignment Settings."
+      ? "You don't have any File Templates defined for this assignment. Add them from your assignment settings."
       : null;
 
   const toggleFileExplorerVisible = () => {
@@ -416,15 +416,22 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
             disabled={fileTemplates.length === 0}
             onChange={onChangeFileTemplateCheckbox}
           >
-            Include File Templates (Base Files)
+            Omit file template code from detection
           </Checkbox>
         </Tooltip>
       </span>
-      <span>
-        <Tag style={{ cursor: 'pointer' }} onClick={toggleFileExplorerVisible}>
-          View Files
-        </Tag>
-      </span>
+      <Tooltip
+        title={'If checked, submission code that also appears in a file template will not be counted in matches.'}
+      >
+        <Icon style={{ cursor: 'pointer' }} type="question-circle" />
+      </Tooltip>
+      {fileTemplates.length > 0 && (
+        <span>
+          <Tag style={{ cursor: 'pointer', marginLeft: '7px' }} onClick={toggleFileExplorerVisible}>
+            View file templates
+          </Tag>
+        </span>
+      )}
     </div>
   );
 
@@ -480,7 +487,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
           value={excludedFiles}
           onChange={onChangeExcludedFiles}
         />
-        {fileTemplatesCheckbox}
+        {props.assignment && fileTemplatesCheckbox}
         <Divider />
         <Statistic
           title="# Submissions"
