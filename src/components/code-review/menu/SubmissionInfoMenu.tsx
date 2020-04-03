@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 
 /* antd imports */
-import { Alert, Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tabs, Tag, Typography } from 'antd';
+import { Alert, Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tabs, Tag } from 'antd';
 
 /* other library imports */
 import moment from 'moment';
@@ -24,8 +24,6 @@ import { tooltips } from '../../core/tooltips';
 
 import { CodePostDate } from '../../utils/DateUtils';
 
-const { TextArea } = Input;
-const { Text } = Typography;
 const { confirm } = Modal;
 
 /**********************************************************************************************************************/

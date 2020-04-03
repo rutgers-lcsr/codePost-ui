@@ -34,6 +34,7 @@ const RegradesDetailPanel = (props: IProps) => {
   const [viewAll, setViewAll] = useState(false);
 
   const loadMySubmissions = async (currentAssignment: AssignmentType, user: string) => {
+    /* eslint-disable no-useless-computed-key */
     const newSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id, {
       grader: user,
       ['compact']: '1',
@@ -49,6 +50,7 @@ const RegradesDetailPanel = (props: IProps) => {
     setLoading(false);
     return;
   };
+  /* eslint-enable no-useless-computed-key */
 
   const refreshSubmissions = () => {
     setLoading(true);
@@ -65,7 +67,7 @@ const RegradesDetailPanel = (props: IProps) => {
       return Promise.reject('Submission does not exist');
     }
 
-    return Submission.update(toUpdate).then((updated) => {
+    return Submission.updateAnonymousInfo(toUpdate).then((updated) => {
       /* use return value to replace existing submission */
       const newSubmissions = [
         ...submissions.filter((s) => {

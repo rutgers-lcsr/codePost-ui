@@ -15,7 +15,7 @@ import { RouteComponentProps } from 'react-router';
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { SectionType } from '../../infrastructure/section';
-import { SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
+import { SubmissionInfoType } from '../../infrastructure/submission';
 
 import SectionDetailPanel from './SectionDetailPanel';
 import GraderPanelBuilder from './GraderPanel';
@@ -66,7 +66,9 @@ class SectionPanel extends React.Component<IProps, IState> {
       for (const assn of assignments) {
         toRet[assn.id] = [];
         for (const stu of section.students) {
+          /* eslint-disable no-useless-computed-key */
           const value = await Assignment.readSubmissions(assn.id, { student: stu, ['compact']: '1' });
+          /* eslint-enable no-useless-computed-key */
           if (value.length > 0) {
             toRet[assn.id].push(value[0]);
           }

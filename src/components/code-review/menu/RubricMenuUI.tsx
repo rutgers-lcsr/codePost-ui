@@ -559,7 +559,7 @@ const RubricMenuUI = ({
         emptyContent = (
           <div style={{ color: consoleTheme.siderMenuItemColor }}>
             Create your rubric either by clicking the green pen above, or visiting the{' '}
-            <a href={`/${getRubricURL(props.course, props.assignment)}`} target="_blank">
+            <a href={`/${getRubricURL(props.course, props.assignment)}`} target="_blank" rel="noopener noreferrer">
               Rubric Editor
             </a>{' '}
             in the Admin Console.

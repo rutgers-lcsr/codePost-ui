@@ -2,17 +2,12 @@ import JSZip from 'jszip';
 
 import { message } from 'antd';
 
-import {
-  File as CodePostFile,
-  ImageExtensions,
-  BinaryExtensions,
-  PDFExtensions,
-} from '../../../../infrastructure/file';
-import { sendSlack } from '../../../../components/core/slack';
+import { File as CPFile, ImageExtensions, BinaryExtensions, PDFExtensions } from '../../../../../infrastructure/file';
+import { sendSlack } from '../../../../../components/core/slack';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
-import { resizeImage } from '../../other/AdminUtils';
+import { resizeImage } from '../../../other/AdminUtils';
 
 export interface IProtoFileUpload {
   longname: string;
@@ -21,13 +16,33 @@ export interface IProtoFileUpload {
   extension: string;
   data: string | ArrayBuffer | null;
   zipSource?: string;
+  file: File | UploadFile;
 }
 
-export const fileToProtoFileUpload = (inputFile: File | UploadFile, zipSource?: string): IProtoFileUpload => {
+export interface IProtoSubmission {
+  students: string[];
+  files: File[];
+  isCollision: boolean /* true if any student has an existing submission */;
+}
+
+export interface codePostFile extends UploadFile {
+  // Field to set the path of a file
+  // webkitRelativePath is not settable
+  pathOverride?: string;
+}
+
+export const fileToProtoFileUpload = (
+  inputFile: codePostFile | File | UploadFile,
+  zipSource?: string,
+): IProtoFileUpload => {
   let longname: string = inputFile.name;
 
   // @ts-ignore
-  if (inputFile.webkitRelativePath && inputFile.webkitRelativePath !== '') {
+  if (inputFile.pathOverride) {
+    // @ts-ignore
+    longname = inputFile.pathOverride;
+    // @ts-ignore
+  } else if (inputFile.webkitRelativePath && inputFile.webkitRelativePath !== '') {
     // @ts-ignore
     longname = inputFile.webkitRelativePath;
   }
@@ -39,7 +54,7 @@ export const fileToProtoFileUpload = (inputFile: File | UploadFile, zipSource?: 
     .trim()
     .toLowerCase();
   const name = split[split.length - 1];
-  const extension = CodePostFile.extension(inputFile.name);
+  const extension = CPFile.extension(name);
 
   return {
     longname,
@@ -48,6 +63,7 @@ export const fileToProtoFileUpload = (inputFile: File | UploadFile, zipSource?: 
     extension,
     data: '', // placeholder
     zipSource,
+    file: inputFile,
   };
 };
 

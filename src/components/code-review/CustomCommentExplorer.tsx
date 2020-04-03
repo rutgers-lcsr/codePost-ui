@@ -7,13 +7,7 @@ import * as React from 'react';
 import { Button, Modal, Table, Select, Divider, Input } from 'antd';
 
 /* codepost imports */
-import {
-  AssignmentType,
-  CommentType,
-  RubricCommentType,
-  SubmissionType,
-  RubricCategoryType,
-} from '../../infrastructure/types';
+import { AssignmentType, CommentType, RubricCommentType, RubricCategoryType } from '../../infrastructure/types';
 import { Assignment } from '../../infrastructure/assignment';
 import { CommentIO } from '../../infrastructure/comment';
 import { File } from '../../infrastructure/file';

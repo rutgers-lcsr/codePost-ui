@@ -76,18 +76,20 @@ Please see the course policy or contact your instructor if you have any question
     props.assignment.uploadDueDate === undefined || props.assignment.uploadDueDate === null ? null : (
       <div style={{ paddingBottom: '14px' }}>
         <table>
-          <tr>
-            <td style={{ fontStyle: 'italic', fontWeight: 500 }}>Time Due:</td>
-            <td>
-              <CodePostDate datetime={props.assignment.uploadDueDate} />
-            </td>
-          </tr>
-          <tr>
-            <td style={{ fontStyle: 'italic', fontWeight: 500 }}>Time Now:</td>
-            <td>
-              <CodePostDate datetime={moment()} />
-            </td>
-          </tr>
+          <tbody>
+            <tr>
+              <td style={{ fontStyle: 'italic', fontWeight: 500 }}>Time Due:</td>
+              <td>
+                <CodePostDate datetime={props.assignment.uploadDueDate} />
+              </td>
+            </tr>
+            <tr>
+              <td style={{ fontStyle: 'italic', fontWeight: 500 }}>Time Now:</td>
+              <td>
+                <CodePostDate datetime={moment()} />
+              </td>
+            </tr>
+          </tbody>
         </table>
       </div>
     );
@@ -102,7 +104,7 @@ Please see the course policy or contact your instructor if you have any question
     if (props.visible) {
       getStudentUploadInformation();
     }
-  }, [props.visible]);
+  }, [props.visible, props.assignment.id]);
 
   let content;
 

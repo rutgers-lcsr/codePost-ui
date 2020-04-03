@@ -5,12 +5,9 @@ import { CourseType } from '../../infrastructure/course';
 import { AnonymousSubmissionType } from '../../infrastructure/submission';
 import { FileType } from '../../infrastructure/file';
 import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
-import { CommentType } from '../../infrastructure/comment';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
-import { RubricCommentType } from '../../infrastructure/rubricComment';
 import { SubmissionTestType } from '../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../infrastructure/testCategory';
-import { TestCaseType } from '../../infrastructure/types';
 import { TestCasesByCategory } from '../core/testFetchUtils';
 import { PERMISSION_LEVEL } from './CodeConsole';
 

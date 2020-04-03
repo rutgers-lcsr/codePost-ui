@@ -45,9 +45,7 @@ export const copyTextToClipboard = (text: string) => {
   textArea.select();
 
   try {
-    const successful = document.execCommand('copy');
-    const msg = successful ? 'successful' : 'unsuccessful';
-    console.log('Copying text command was ' + msg);
+    document.execCommand('copy');
   } catch (err) {
     console.log('Oops, unable to copy');
   }

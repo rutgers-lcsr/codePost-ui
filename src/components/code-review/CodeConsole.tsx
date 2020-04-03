@@ -11,7 +11,6 @@ import { Empty, message, notification, Progress, Typography } from 'antd';
 /* other library imports */
 import _ from 'lodash';
 import queryString from 'query-string';
-import moment from 'moment-timezone';
 
 /* codePost imports */
 import Loading from '../core/Loading';
@@ -51,6 +50,8 @@ import KeyboardShortcuts from './KeyboardShortcuts';
 import FileMenu, { FileMenuTitle } from './menu/FileMenu';
 
 import RubricMenuUI from './menu/RubricMenuUI';
+
+import InlineTestsModal from './InlineTestsModal';
 
 import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMenu';
 
@@ -142,6 +143,7 @@ interface ICodeConsoleState {
   tests: SubmissionTestType[];
   testCategories: TestCategoryType[];
   testCases: TestCasesByCategory | StudentTestCasesByCategory;
+  showInlineTestsModal: boolean;
 
   /* writer data */
   submission?: AnonymousSubmissionType;
@@ -160,6 +162,7 @@ interface ICodeConsoleState {
 
   editRubricMode: boolean;
   commentCounter: number;
+  commentRefreshCounter: number;
 
   panelType: PANEL_TYPE;
 
@@ -477,7 +480,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   // Interval for live feedback mode to reloda the submission to see if there are new files
   private checkNewFilesInterval: any;
+  private reloadCommentsInterval: any;
   private LIVE_FEEDBACK_FILES_RELOAD_INTERVAL = 60000;
+  private LIVE_FEEDBACK_COMMENTS_RELOAD_INTERVAL = 2000;
 
   public constructor(props: ICodeConsoleProps) {
     super(props);
@@ -500,6 +505,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       tests: [],
       testCases: {},
       testCategories: [],
+      showInlineTestsModal: false,
 
       selectedFile: undefined,
       oldCommentIDs: {},
@@ -513,6 +519,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       isStudent: false,
       editRubricMode: false,
       commentCounter: -1,
+      commentRefreshCounter: 0,
 
       rubricReload: undefined,
 
@@ -532,6 +539,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public async componentDidMount() {
     document.addEventListener('keydown', this.handleCursor);
+    document.addEventListener('keydown', this.handleHotkeys);
     const queryValues = queryString.parse(this.props.location.search);
 
     if (this.props.inDemoMode) {
@@ -574,7 +582,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     // Everything we need to load
     let submission;
-    let assignment;
+    let assignment: AssignmentType;
     let files;
     let comments;
     let commentRubricComments;
@@ -639,25 +647,34 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         tests = submission.tests ? await Promise.all(submission.tests.map((id) => SubmissionTest.read(id))) : [];
 
         // then store it in state
-        this.setState({
-          noSave,
-          assignment,
-          course,
-          readOnlySubmission: submission,
-          files,
-          comments,
-          commentRubricComments,
-          rubricCategories,
-          isLoading: false,
-          selectedFile,
-          permissionLevel,
-          testCategories,
-          testCases: caseObj,
-          tests: SubmissionTest.getLatest(tests),
-          isStudent:
-            simulatingStudent ||
-            (submission.students !== undefined && submission.students.indexOf(this.props.user.email) > -1),
-        });
+        this.setState(
+          {
+            noSave,
+            assignment,
+            course,
+            readOnlySubmission: submission,
+            files,
+            comments,
+            commentRubricComments,
+            rubricCategories,
+            isLoading: false,
+            selectedFile,
+            permissionLevel,
+            testCategories,
+            testCases: caseObj,
+            tests: SubmissionTest.getLatest(tests),
+            isStudent:
+              simulatingStudent ||
+              (submission.students !== undefined && submission.students.indexOf(this.props.user.email) > -1),
+          },
+          () => {
+            if (assignment && assignment.liveFeedbackMode) {
+              this.reloadCommentsInterval = window.setInterval(() => {
+                this.reloadComments();
+              }, this.LIVE_FEEDBACK_COMMENTS_RELOAD_INTERVAL);
+            }
+          },
+        );
         break;
 
       case PERMISSION_LEVEL.WRITE:
@@ -759,6 +776,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
   public componentWillUnmount() {
     document.removeEventListener('keydown', this.handleCursor);
+    document.removeEventListener('keydown', this.handleHotkeys);
   }
 
   /////////////////////////////////////////////////////////////////////////////////
@@ -783,6 +801,19 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   // - Navigate and jump to next comment with cursor: cmd - [up, down]
   // - Activate comment for editing: Enter
   /////////////////////////////////////////////////////////////////////////////////
+
+  public handleHotkeys = (e: any) => {
+    const os = getOperatingSystem();
+
+    const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+
+    // Show Custom Comment Explorer (typically accessible via Foobar)
+    if (e.key === 'e' && triggerKey && e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.toggleCustomCommentExplorer();
+    }
+  };
 
   public toggleCursorMode = (cursorMode: boolean) => {
     if (cursorMode) {
@@ -833,7 +864,10 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           if (e.key === 'e' && triggerKey && !e.shiftKey) {
             e.preventDefault();
             e.stopPropagation();
-            if (this.state.comments[this.state.selectedFile.id].length > 0) {
+            if (
+              this.state.comments[this.state.selectedFile.id] !== undefined &&
+              this.state.comments[this.state.selectedFile.id].length > 0
+            ) {
               this.setState({ showCursor: CURSOR_DOMAIN.COMMENTS });
             }
           } else if (e.key === 'e' && triggerKey && e.shiftKey) {
@@ -897,6 +931,34 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       });
       clearInterval(this.checkNewFilesInterval);
     }
+  };
+
+  public reloadComments = async () => {
+    let requestID = 0;
+    this.setState(
+      (oldState) => {
+        requestID = oldState.commentRefreshCounter + 1;
+        return { commentRefreshCounter: requestID };
+      },
+      async () => {
+        // preventing a self-DDoS from abandoned tabs by limiting the number of requests any session can make
+        const MAX_REQUESTS = 3600 / (this.LIVE_FEEDBACK_COMMENTS_RELOAD_INTERVAL / 1000); // 1 hour
+
+        if (requestID < MAX_REQUESTS) {
+          // eslint-disable-next-line
+          let files, comments, commentRubricComments;
+
+          [files, comments, commentRubricComments] = await Submission.loadData(this.state.readOnlySubmission!);
+
+          // guard against an old (i.e. not the latest) request from overwriting state
+          if (this.state.commentRefreshCounter === requestID) {
+            this.setState({ comments });
+          }
+        } else {
+          clearInterval(this.reloadCommentsInterval);
+        }
+      },
+    );
   };
 
   public loadRubric = async (assignmentID: number) => {
@@ -991,6 +1053,14 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         message.info(`Now showing rubric comment ${this.state.showExplanations ? 'explanations' : 'text'}`);
       },
     );
+  };
+
+  public showInlineTestsModal = () => {
+    this.setState({ showInlineTestsModal: true });
+  };
+
+  public hideInlineTestsModal = () => {
+    this.setState({ showInlineTestsModal: false });
   };
 
   /***********************************************************************************
@@ -1147,7 +1217,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             return el.id === comment.id;
           })
         ) {
-          this.deleteComment(savedComment);
+          await this.deleteComment(savedComment);
           return;
         }
       } else {
@@ -1538,7 +1608,9 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     const toolbarWidgets = [];
     if (!this.props.inDemoMode && !this.state.noSave) {
       const hasComments =
-        this.state.selectedFile !== undefined ? this.state.comments[this.state.selectedFile.id].length > 0 : false;
+        this.state.selectedFile !== undefined && this.state.comments[this.state.selectedFile.id] !== undefined
+          ? this.state.comments[this.state.selectedFile.id].length > 0
+          : false;
 
       toolbarWidgets.push(
         <LayoutResizer
@@ -2448,6 +2520,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           kind: 'link',
         },
         { value: 'View stats', label: 'View stats', kind: 'dashboard', populator: viewStats },
+        { value: 'Edit code', label: 'Edit code', callback: this.showInlineTestsModal, kind: 'action' },
       ];
     }
 
@@ -2496,10 +2569,24 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             editRubricMode={this.state.editRubricMode}
           />
           <KeyboardShortcuts
+            key="keyboard-shortcuts"
             visible={this.state.showKeyboardShortcuts}
             onClose={this.toggleKeyboardShortcuts}
             isStudent={this.state.isStudent}
           />
+          {this.state.permissionLevel === PERMISSION_LEVEL.WRITE &&
+          this.state.assignment !== undefined &&
+          this.state.submission !== undefined ? (
+            <InlineTestsModal
+              key="inline-tests-modal"
+              visible={this.state.showInlineTestsModal}
+              show={this.showInlineTestsModal}
+              hide={this.hideInlineTestsModal}
+              files={this.state.files}
+              assignment={this.state.assignment}
+              submission={this.state.submission}
+            />
+          ) : null}
         </CourseContext.Provider>
       </div>
     );

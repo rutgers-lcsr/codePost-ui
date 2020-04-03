@@ -106,6 +106,7 @@ export const fetchTestCasesByCategory = async (categories: TestCategoryType[]) =
   const testCaseObjs = await Promise.all(categoryPromises);
   testCaseObjs.map((obj) => {
     toRet[obj.category] = obj.testCases;
+    return null;
   });
   return toRet;
 };
