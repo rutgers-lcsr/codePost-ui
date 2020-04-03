@@ -77,31 +77,27 @@ const ShareInviteCode = (props: IProps) => {
         onCancel={() => setVisible(false)}
         onOk={saveWhitelist}
         okText="Save"
+        width={600}
       >
-        Share this invite code with your students. Anyone with this code can join this course as a student from{' '}
-        <a>https://codepost.io/signup/join</a>.
+        Share this invite link with your students. Anyone with this link can join this course as a student.
         <br />
         <br />
         <Input
           addonBefore="Invite code"
           className="input--disabled-normal"
           id="api-key"
-          value={inviteCode}
+          value={`https://codepost.io/signup/join?code=${inviteCode}`}
           prefix={
             <Tooltip title="Copy to clipboard">
               <Icon type="copy" style={{ cursor: 'pointer' }} onClick={copyToClipboard} />
             </Tooltip>
           }
-          disabled={true}
           addonAfter={
             <Tooltip title="Reset your invite code.">
               <Icon type="redo" onClick={resetCode} style={{ cursor: 'pointer' }} />
             </Tooltip>
           }
         />
-        <br />
-        <br />
-        You can also share this link: <a>https://codepost.io/signup/join?code={inviteCode}</a>
         <br />
         <br />
         Restrict the emails students can use to sign up (for example, to prevent usage of personal emails):{' '}
