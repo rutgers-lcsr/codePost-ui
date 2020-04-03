@@ -68,7 +68,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
     const calendlyDiv = document.getElementById('calendly-button-hero');
     calendlyDiv!.setAttribute(
       'onclick',
-      "Calendly.showPopupWidget('https://calendly.com/codepost/sigcse');return false;",
+      "Calendly.showPopupWidget('https://calendly.com/codepost/demo');return false;",
     );
   }
 
