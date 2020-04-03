@@ -88,6 +88,8 @@ const demoCourse = (testName: string) => {
     noUnfinalize: false,
     lateDayCreditsAllowable: null,
     archived: false,
+    inviteCode: '',
+    emailWhitelist: '',
   };
 };
 
