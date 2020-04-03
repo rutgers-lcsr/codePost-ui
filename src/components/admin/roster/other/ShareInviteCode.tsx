@@ -68,7 +68,9 @@ const ShareInviteCode = (props: IProps) => {
 
   return (
     <div>
-      <Button onClick={() => setVisible(true)}>Share invite code</Button>
+      <Button icon="qrcode" onClick={() => setVisible(true)}>
+        Share invite code
+      </Button>
       <Modal
         title="Share invite code"
         visible={visible}

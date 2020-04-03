@@ -336,7 +336,7 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
             description={<span>You can add students to your course in two ways</span>}
           >
             <span>
-              1. Add their emails
+              1. Add students to your course by email
               <RosterFileUpload
                 key={1}
                 roleType="student"
@@ -355,7 +355,7 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
             </span>
             <br />
             <br />
-            <span>2. Share an invite code</span>
+            <span>2. Share an invite code so students can join your course</span>
             <ShareInviteCode course={this.props.currentCourse} />
           </Empty>
         }

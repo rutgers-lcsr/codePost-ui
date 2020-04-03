@@ -72,6 +72,7 @@ const JoinSignup = (props: RouteComponentProps) => {
           setHasSubmitted(false);
           setInvalidCode(true);
         } else if (!res.email_valid) {
+          setInvalidCode(false);
           setHasSubmitted(false);
           setInvalidEmail(true);
         }
@@ -117,7 +118,7 @@ const JoinSignup = (props: RouteComponentProps) => {
         )}
         <br />
         <br />
-        <Checkbox onClick={() => setAcceptedTerms(!acceptedTerms)} /> I agree to the codePost{' '}
+        <Checkbox checked={acceptedTerms} onClick={() => setAcceptedTerms(!acceptedTerms)} /> I agree to the codePost{' '}
         <Link to="/terms">Terms of Service</Link> and <Link to="/privacy">Privacy Policy</Link>.
         <br />
         <br />
