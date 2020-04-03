@@ -77,7 +77,7 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
             />
 
             <Route exact={true} path={'/forgot-password'} component={ForgotPasswordForm} />
-            <Route exact={true} path={'/signup/join'} component={JoinSignup} />
+            <Route exact={true} path={'/signup/join'} render={(subprops: any) => <JoinSignup {...subprops} />} />
             <Route exact={true} path={'/signup/create'} component={CreateSignup} />
             <Route exact={true} path={'/signup'} component={SignUpManager} />
             <Route

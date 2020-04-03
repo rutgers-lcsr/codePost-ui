@@ -6,10 +6,14 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Alert, Input, Spin, Typography, Checkbox } from 'antd';
+import { Alert, Input, Spin, Typography, Checkbox, Tooltip, Icon } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
+
+import { RouteComponentProps } from 'react-router';
+
+import queryString from 'query-string';
 
 /* codePost imports */
 import PreAuthSignupLayout from './PreAuthSignupLayout';
@@ -27,112 +31,119 @@ interface IState {
   confirmEmailSent: boolean;
 }
 
-class JoinSignup extends React.Component<{}, IState> {
-  public state: Readonly<IState> = {
-    email: '',
-    hasSubmitted: false,
-    confirmEmailSent: false,
-    acceptedTerms: false,
-  };
+const JoinSignup = (props: RouteComponentProps) => {
+  const [email, setEmail] = React.useState('');
+  const [hasSubmitted, setHasSubmitted] = React.useState(false);
+  const [confirmEmailSent, setConfirmEmailSent] = React.useState(false);
+  const [acceptedTerms, setAcceptedTerms] = React.useState(false);
+  const [inviteCode, setInviteCode] = React.useState(queryString.parse(props.location.search).code || '');
+  const [invalidCode, setInvalidCode] = React.useState(false);
+  const [invalidEmail, setInvalidEmail] = React.useState(false);
 
-  public handleChange = (name: string, event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = event.target.value;
-    this.setState((prevstate) => {
-      const newState: any = { ...prevstate };
-      newState[name] = newValue;
-      return newState;
-    });
-  };
-
-  public toggleTerms = () => {
-    this.setState((oldState: IState) => {
-      return { acceptedTerms: !oldState.acceptedTerms };
-    });
-  };
-
-  public handleSignup = (e: any) => {
+  const handleSignup = (e: any) => {
     e.preventDefault();
-    this.setState({ hasSubmitted: true }, () => {
-      const payload = {
-        username: this.state.email,
-        email: this.state.email,
-      };
+    setHasSubmitted(true);
+    const payload = {
+      username: email,
+      email: email,
+      token: inviteCode,
+    };
 
-      fetch(`${process.env.REACT_APP_API_URL}/registration/emailRegistration/`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-        body: JSON.stringify(payload),
+    fetch(`${process.env.REACT_APP_API_URL}/registration/emailRegistration/`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+      .then((res) => {
+        if (res.status === 200 || res.status === 403) {
+          return res.json();
+        } else {
+          return Promise.reject(res.status);
+        }
       })
-        .then((res) => {
-          if (res.status === 200) {
-            return res.json();
-          } else {
-            return Promise.reject(res.status);
-          }
-        })
-        .then((res) => {
-          this.setState({ confirmEmailSent: res.success });
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    });
+      .then((res) => {
+        const emailValid = res['email_valid'];
+        const codeValid = res['code_valid'];
+        if (res.success) {
+          setConfirmEmailSent(res.success);
+        } else if (!res.code_valid) {
+          setHasSubmitted(false);
+          setInvalidCode(true);
+        } else if (!res.email_valid) {
+          setHasSubmitted(false);
+          setInvalidEmail(true);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
-  public render() {
-    const { hasSubmitted, confirmEmailSent } = this.state;
-
-    let content;
-    if (hasSubmitted) {
-      content = confirmEmailSent ? (
-        <Alert message={'Success!'} description="Check your email to finish signing up." />
-      ) : (
-        <span>
-          Hang tight...sending you an email &nbsp; &nbsp; <Spin />
-        </span>
-      );
-    } else {
-      content = (
-        <div>
-          <Input
-            placeholder="jill@princeton.edu"
-            value={this.state.email}
-            onChange={this.handleChange.bind(this, 'email')}
-          />
-          <div>
-            Don't forget to use your organization's <Typography.Text code>.edu</Typography.Text> address!
-          </div>
-          <br />
-          <Checkbox onChange={this.toggleTerms} /> I agree to the codePost <Link to="/terms">Terms of Service</Link> and{' '}
-          <Link to="/privacy">Privacy Policy</Link>.
-          <br />
-          <br />
-          <div style={{ display: 'flex' }}>
-            <Link to="/signup">
-              <CPButton cpType="secondary">Back</CPButton>
-            </Link>
-            &nbsp; &nbsp; &nbsp; &nbsp;
-            <CPButton cpType="primary" onClick={this.handleSignup} disabled={!this.state.acceptedTerms}>
-              Continue
-            </CPButton>
-          </div>
+  let content;
+  if (hasSubmitted) {
+    content = confirmEmailSent ? (
+      <Alert message={'Success!'} description="Check your email to finish signing up." />
+    ) : (
+      <span>
+        Hang tight...sending you an email &nbsp; &nbsp; <Spin />
+      </span>
+    );
+  } else {
+    content = (
+      <div>
+        Invite code:{' '}
+        <Input
+          placeholder="abc123"
+          value={inviteCode}
+          onChange={(e) => setInviteCode(e.target.value)}
+          addonAfter={
+            <Tooltip title="If you don't have one of these, ask your instructor.">
+              <Icon type="question-circle" style={{ cursor: 'pointer' }} />
+            </Tooltip>
+          }
+        />
+        {invalidCode && <span style={{ color: 'red' }}>Your invite code is invalid.</span>}
+        <br />
+        <br />
+        Email:{' '}
+        <Input placeholder="jill@princeton.edu" defaultValue={email} onChange={(e) => setEmail(e.target.value)} />
+        {invalidEmail && (
+          <span style={{ color: 'red' }}>
+            Your email doesn't match the whitelist for this course. Make sure you're using your organizational (e.g.
+            .edu) email.
+          </span>
+        )}
+        <br />
+        <br />
+        <Checkbox onClick={() => setAcceptedTerms(!acceptedTerms)} /> I agree to the codePost{' '}
+        <Link to="/terms">Terms of Service</Link> and <Link to="/privacy">Privacy Policy</Link>.
+        <br />
+        <br />
+        <div style={{ display: 'flex' }}>
+          <Link to="/signup">
+            <CPButton cpType="secondary">Back</CPButton>
+          </Link>
+          &nbsp; &nbsp; &nbsp; &nbsp;
+          <CPButton cpType="primary" onClick={handleSignup} disabled={!acceptedTerms}>
+            Continue
+          </CPButton>
         </div>
-      );
-    }
-
-    return (
-      <PreAuthSignupLayout step={1}>
-        <div style={{ maxWidth: 500 }}>
-          <br />
-          <br />
-          <Typography.Title level={1}>Join a course on codePost</Typography.Title>
-          {content}
-        </div>
-      </PreAuthSignupLayout>
+      </div>
     );
   }
-}
+
+  return (
+    <PreAuthSignupLayout step={1}>
+      <div style={{ maxWidth: 500 }}>
+        <br />
+        <br />
+        <Typography.Title level={1}>Join a course on codePost</Typography.Title>
+        {content}
+      </div>
+    </PreAuthSignupLayout>
+  );
+};
 
 export default JoinSignup;
