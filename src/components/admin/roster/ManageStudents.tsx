@@ -145,6 +145,7 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
             }
           />
         ) : null,
+        <ShareInviteCode course={this.props.currentCourse} />,
         <DownloadRoster
           key={0}
           downloadType={USER_TYPE.STUDENT}
