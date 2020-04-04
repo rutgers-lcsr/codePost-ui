@@ -83,7 +83,12 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
 
   public render() {
     const main = (
-      <Menu theme="dark" defaultOpenKeys={['assignments']} selectedKeys={[this.getDefaultSelectedKey()]} mode="inline">
+      <Menu
+        theme="dark"
+        defaultOpenKeys={['assignments', 'course-settings']}
+        selectedKeys={[this.getDefaultSelectedKey()]}
+        mode="inline"
+      >
         <SubMenu
           key="assignments"
           title={
@@ -146,14 +151,24 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
             <Link to={`${this.props.baseURL}/roster/sections`}>Sections</Link>
           </Menu.Item>
         </SubMenu>
-        <Menu.Item key="settings">
-          <Link to={`${this.props.baseURL}/settings`}>
+        <SubMenu
+          key="course-settings"
+          title={
             <span>
               <Icon type="setting" />
               <span>Course Settings</span>
             </span>
-          </Link>
-        </Menu.Item>
+          }
+        >
+          <Menu.Item key="course-settings/general">
+            <Link to={`${this.props.baseURL}/settings`}>General</Link>
+          </Menu.Item>
+          <Menu.Item key="course-settings/webhooks">
+            <Link to={`${this.props.baseURL}/settings/webhooks`}>
+              Webhooks &nbsp;<Tag color="#595959">New!</Tag>
+            </Link>
+          </Menu.Item>
+        </SubMenu>
       </Menu>
     );
 
