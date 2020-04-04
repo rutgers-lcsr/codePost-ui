@@ -28,6 +28,7 @@ export const CourseV = t.intersection(
       lateDayCreditsAllowable: t.union([t.number, t.null]),
       archived: t.boolean,
     }),
+    t.partial({ webhooks: t.array(t.number) }),
   ],
   'Course',
 );
