@@ -92,5 +92,10 @@ export const commandLineExamples: { [language: string]: string } = {
   'python-2.7': 'python HelloWorld.py',
   java: 'java HelloWorld',
   'c/c++': './HelloWorld',
+  ruby: 'ruby hello_world.rb',
+  ocaml: 'ocaml hello_world.ml',
+  javascript: 'node hello_world.js',
+  php: 'php hello_world.php',
+  haskell: './HelloWorld',
   other: 'echo Hello, World!',
 };
