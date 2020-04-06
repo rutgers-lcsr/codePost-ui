@@ -12,6 +12,8 @@ import { Modal, Button, Divider, Icon, Input, Radio, Select, Skeleton, Tabs, Too
 import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
 import { EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 
+import { BuildDetailModal } from './EnvironmentSpecs/BuildDetailModal';
+
 /* codePost component imports */
 import { CodeWindow } from './utils/CodeWindow';
 
@@ -30,6 +32,8 @@ import locale from './utils/languageLocale';
 
 import themeVars from '../../../../../styles/abstracts/_theme';
 
+import { awaitBuildResult } from '../autograderPollingUtils';
+
 const { Option } = Select;
 const { confirm } = Modal;
 
@@ -38,7 +42,12 @@ const { confirm } = Modal;
 interface IProps {
   currentAssignment: AssignmentType;
   env: EnvironmentType | undefined;
-  buildEnv: (language: string, dependencies: string, customDockerfile: string, buildType: string) => Promise<void>;
+  updateEnv: (
+    language: string,
+    dependencies: string,
+    customDockerfile: string,
+    buildType: string,
+  ) => Promise<EnvironmentType>;
   updateCompileText: (compileText: string) => Promise<void>;
   helpers: SolutionFileType[] | HelperFileType[];
   solutions: SolutionFileType[] | HelperFileType[];
@@ -50,12 +59,17 @@ interface IProps {
 
 export const EnvironmentSpecs = (props: IProps) => {
   /******************************* State Variables ****************************/
+  // Environment specification variables
   const [language, setLanguage] = useState<string | null>(props.env ? props.env.language : null);
   const [buildType, setBuildType] = useState<string>(props.env ? props.env.buildType : 'default');
   const [dependencies, setDependencies] = useState<string>(props.env ? props.env.dockerRunInstructions.join('\n') : '');
   const [customDockerfile, setCustomDockerfile] = useState<string>(props.env ? props.env.dockerfile : '');
 
-  const [buildIsLoading, setBuildIsLoading] = useState(false);
+  // Build status variables
+  const [buildInProgress, setBuildInProgress] = useState(false);
+  const [buildIsSuccess, setBuildIsSuccess] = useState<boolean | null>(null);
+  const [buildLogs, setBuildLogs] = useState('');
+  const [dockerfile, setDockerfile] = useState('');
 
   /******************************* API / State Change Functions ****************************/
 
@@ -65,6 +79,10 @@ export const EnvironmentSpecs = (props: IProps) => {
       setDependencies(props.env.dockerRunInstructions.join('\n'));
       setBuildType(props.env.buildType);
       setCustomDockerfile(props.env.dockerfile);
+
+      // Get the last result (if completed)
+      // If in progress, this restarts polling to give the user updates
+      awaitBuildResult(props.env.id, buildStatusCallback);
     }
   }, [props.env]);
 
@@ -75,6 +93,53 @@ export const EnvironmentSpecs = (props: IProps) => {
       onSave();
     }
   }, [language]);
+
+  const saveEnv = async () => {
+    setBuildInProgress(true);
+    // Show a warning if a user is switching from default to a custom image
+    if (props.env && props.env.buildType === 'default' && buildType !== props.env.buildType && language !== 'other') {
+      confirm({
+        title: `Are you sure you want to use a custom build?`,
+        content:
+          'When you use a custom build, the only default packages are those built into the operating system. Please make sure to install the required language packages for your langauge in the "Install Packages" field.',
+        async onOk() {
+          await buildEnv(language !== null ? language : '', dependencies, customDockerfile, buildType);
+        },
+      });
+    } else {
+      await buildEnv(language !== null ? language : '', dependencies, customDockerfile, buildType);
+    }
+  };
+
+  const saveCompileText = async (newText: string) => {
+    await props.updateCompileText(newText);
+  };
+
+  const downloadDockerfile = async () => {
+    if (props.env) {
+      const dockerfile = await Environment.dockerfile(props.env.id);
+      const a = document.createElement('a');
+      a.href = `data:text/plain;charset=utf-8,${dockerfile}`;
+      a.download = `${props.currentAssignment.name}-dockerfile`;
+      document.body.appendChild(a);
+      a.click();
+    }
+  };
+
+  const buildEnv = async (language: string, dependencies: string, customDockerfile: string, buildType: string) => {
+    // First post/patch the new fields to the object
+    const newEnvironment = await props.updateEnv(language, dependencies, customDockerfile, buildType);
+
+    // Reset the logs and the in progress
+    setBuildInProgress(true);
+    setBuildLogs('');
+
+    // Wait for the build to be triggered
+    await Environment.build(newEnvironment.id);
+
+    // Set up polling for the result
+    awaitBuildResult(newEnvironment.id, buildStatusCallback);
+  };
 
   const onSave = async () => {
     const latestAssignment = await Assignment.read(props.currentAssignment.id);
@@ -96,40 +161,20 @@ export const EnvironmentSpecs = (props: IProps) => {
     }
   };
 
-  const saveEnv = async () => {
-    setBuildIsLoading(true);
-    // Show a warning if a user is switching from default to a custom image
-    if (props.env && props.env.buildType === 'default' && buildType !== props.env.buildType && language !== 'other') {
-      confirm({
-        title: `Are you sure you want to use a custom build?`,
-        content:
-          'When you use a custom build, the only default packages are those built into the operating system. Please make sure to install the required language packages for your langauge in the "Install Packages" field.',
-        async onOk() {
-          await props.buildEnv(language !== null ? language : '', dependencies, customDockerfile, buildType);
-        },
-      });
-    } else {
-      await props.buildEnv(language !== null ? language : '', dependencies, customDockerfile, buildType);
-    }
-    setBuildIsLoading(false);
-  };
-
-  const saveCompileText = async (newText: string) => {
-    await props.updateCompileText(newText);
-  };
-
-  const downloadDockerfile = async () => {
-    if (props.env) {
-      const dockerfile = await Environment.dockerfile(props.env.id);
-      const a = document.createElement('a');
-      a.href = `data:text/plain;charset=utf-8,${dockerfile}`;
-      a.download = `${props.currentAssignment.name}-dockerfile`;
-      document.body.appendChild(a);
-      a.click();
-    }
-  };
-
   /******************************* State Change Functions ****************************/
+  // Callback function for each poll to build status
+  const buildStatusCallback = (result: {
+    inProgress: boolean;
+    isSuccess: boolean;
+    logs: string;
+    dockerfile: string;
+  }) => {
+    setBuildInProgress(result.inProgress);
+    setBuildIsSuccess(result.isSuccess);
+    setBuildLogs(result.logs);
+    setDockerfile(result.dockerfile);
+  };
+
   const onLanguageChange = (value: string) => {
     setLanguage(value);
     setBuildType(value === 'other' ? 'alpine' : 'default');
@@ -351,13 +396,23 @@ RUN ${installText} package2
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Typography.Title level={3}>1. Define environment</Typography.Title>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
+          <Typography.Title level={3} style={{ marginBottom: 0 }}>
+            1. Define environment
+          </Typography.Title>
+          <BuildDetailModal
+            inProgress={buildInProgress}
+            isSuccess={buildIsSuccess}
+            logs={buildLogs}
+            dockerfile={dockerfile}
+          />
+        </div>
         <div>
-          <Button type="primary" onClick={onSave} loading={buildIsLoading}>
+          <Button type="primary" onClick={onSave} loading={buildInProgress}>
             {props.env ? 'Update' : 'Create'}
           </Button>
           {props.env && (
-            <Button style={{ marginLeft: 10 }} onClick={downloadDockerfile} disabled={buildIsLoading}>
+            <Button style={{ marginLeft: 10 }} onClick={downloadDockerfile} disabled={buildInProgress}>
               Download
             </Button>
           )}

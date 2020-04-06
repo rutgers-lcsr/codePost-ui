@@ -18,7 +18,7 @@ import { TestCaseType } from '../../../../../infrastructure/testCase';
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 import { RunAllResultType, SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
 
-import { awaitTestResult } from '../testResult';
+import { awaitTestResult } from '../autograderPollingUtils';
 
 /* codePost component imports */
 import { TableDetail } from '../../../other/TableDetail';
