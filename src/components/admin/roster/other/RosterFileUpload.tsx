@@ -88,6 +88,8 @@ interface IProps {
 
   /* role type we are editing through this component */
   roleType: 'student' | 'grader' | 'admin';
+
+  buttonText?: string;
 }
 
 interface IState {
@@ -834,7 +836,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     return (
       <div>
         <CPButton icon="user-add" cpType="primary" onClick={this.toggleDialog}>
-          {`Add ${this.props.roleType}s`}
+          {this.props.buttonText || `Add ${this.props.roleType}s`}
         </CPButton>
         <Modal
           visible={this.state.dialogVisible}
