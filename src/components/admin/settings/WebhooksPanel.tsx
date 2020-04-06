@@ -4,7 +4,7 @@
 
 /* external imports */
 import * as React from 'react';
-import { Breadcrumb, Tag } from 'antd';
+import { Breadcrumb, Collapse, Tag } from 'antd';
 
 /* codePost imports */
 import CPAdminDetail from '../other/CPAdminDetail';
@@ -18,8 +18,12 @@ interface IProps {
   currentCourse: CourseType;
 }
 
+interface ICategorizedWebhooks {
+  [category: string]: WebhookType[];
+}
+
 const WebhooksPanel = (props: IProps) => {
-  const [webhooks, setWebhooks] = React.useState<WebhookType[]>([]);
+  const [webhooks, setWebhooks] = React.useState<ICategorizedWebhooks>({});
   const [justSaved, setJustSaved] = React.useState<boolean>(false);
 
   React.useEffect(() => {
@@ -30,7 +34,16 @@ const WebhooksPanel = (props: IProps) => {
             return await Webhook.read(id);
           }),
         );
-        setWebhooks(res);
+
+        const categorizedWebhooks = res.reduce((accumulator: any, current: any) => {
+          const category = current.event.split('.')[0];
+          if (accumulator.hasOwnProperty(category)) {
+            return { ...accumulator, [category]: [...accumulator[category], current] };
+          } else {
+            return { ...accumulator, [category]: [current] };
+          }
+        }, {});
+        setWebhooks(categorizedWebhooks);
       }
     };
     fetchWebhooks();
@@ -47,11 +60,22 @@ const WebhooksPanel = (props: IProps) => {
   }, [justSaved]);
 
   const content = (
-    <div style={{ width: '80%' }}>
-      {webhooks.map((webhook: WebhookType) => {
-        return <WebhookItem key={`webhook-${webhook.id}`} webhook={webhook} setJustSaved={setJustSaved} />;
+    <Collapse defaultActiveKey={['course', 'assignment', 'submission', 'file', 'comment']} expandIconPosition={'right'}>
+      {Object.keys(webhooks).map((category: string) => {
+        const header = (
+          <span style={{ textTransform: 'capitalize', fontSize: '14px', fontWeight: 500 }}>{category}</span>
+        );
+        return (
+          <Collapse.Panel header={header} key={category}>
+            <div>
+              {webhooks[category].map((webhook: WebhookType) => {
+                return <WebhookItem key={`webhook-${webhook.id}`} webhook={webhook} setJustSaved={setJustSaved} />;
+              })}
+            </div>
+          </Collapse.Panel>
+        );
       })}
-    </div>
+    </Collapse>
   );
 
   const savedTag = justSaved ? <Tag color="green">SAVED</Tag> : null;
