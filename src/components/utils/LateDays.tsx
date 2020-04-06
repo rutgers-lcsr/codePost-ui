@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { AssignmentType } from '../../infrastructure/assignment';
 import { SubmissionType, AnonymousSubmissionType } from '../../infrastructure/submission';
 

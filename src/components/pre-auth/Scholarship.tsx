@@ -6,10 +6,9 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Icon, Divider, Typography } from 'antd';
+import { Button, Icon, Typography } from 'antd';
 
 /* other library imports */
-import { Link } from 'react-router-dom';
 
 /* codePost imports */
 import useWindowSize from '../core/useWindowSize';
@@ -25,7 +24,6 @@ interface IProps {
 const Scholarship = (props: IProps) => {
   const breakpoint = 700;
   const windowSize = useWindowSize();
-  const flexDirection = windowSize.width < breakpoint ? 'column' : 'row';
 
   const isMobile = windowSize.width < breakpoint;
 
@@ -34,7 +32,7 @@ const Scholarship = (props: IProps) => {
       <Typography.Title level={2}>About this scholarship</Typography.Title>
       <div style={{ marginBottom: 25 }}>
         Our mission at{' '}
-        <a className="landing__link" href="https://codepost.io" target="_blank">
+        <a className="landing__link" href="https://codepost.io" target="_blank" rel="noopener noreferrer">
           codePost
         </a>{' '}
         is to <b style={{ fontWeight: 600 }}>advance Computer Science education</b> by empowering educators to give
@@ -155,7 +153,7 @@ const Scholarship = (props: IProps) => {
     <PreAuthLayout isLoggedIn={props.isLoggedIn}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ marginBottom: isMobile ? 40 : 100, textAlign: 'center', width: '100%' }}>
-          <img src={scholarshipImage} style={{ maxWidth: '100%' }} />
+          <img src={scholarshipImage} style={{ maxWidth: '100%' }} alt="codePost scholarship background" />
         </div>
         <div style={{ fontWeight: 600, fontSize: isMobile ? 22 : 30, textAlign: 'center' }}>
           Recognizing students who advance Computer Science education
@@ -214,7 +212,11 @@ const Scholarship = (props: IProps) => {
           >
             {ourStory}
           </div>
-          <img src={graderMeeting} style={{ width: '100%', maxWidth: 750, padding: 35 }} />
+          <img
+            src={graderMeeting}
+            style={{ width: '100%', maxWidth: 750, padding: 35 }}
+            alt="One of the first grading sessions in which codePost was used, when we were students in 2015."
+          />
           <div style={{ fontSize: 20, marginTop: 10, color: 'grey', fontStyle: 'italic', textAlign: 'center' }}>
             One of the first grading sessions in which codePost was used, when we were students in 2015.
           </div>

@@ -10,12 +10,12 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 /* antd imports */
-import { Button, Descriptions, Divider, Dropdown, Icon, message, Menu, Modal, Popover, Switch, Tag, Input } from 'antd';
+import { Button, Descriptions, Divider, Dropdown, Icon, message, Menu, Modal, Popover, Switch, Tag } from 'antd';
 
 /* codePost imports */
 import CPButton from '../core/CPButton';
 import CPTooltip from '../core/CPTooltip';
-import { ShowTooltipContext, tooltips } from '../core/tooltips';
+import { tooltips } from '../core/tooltips';
 
 import { osControlKey } from '../core/operatingSystem';
 
@@ -31,7 +31,7 @@ import { FileType } from '../../infrastructure/file';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../infrastructure/submission';
 import { TestCaseType } from '../../infrastructure/types';
-import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
+import { SubmissionTestType } from '../../infrastructure/submissionTest';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
 
@@ -165,7 +165,7 @@ export const DownloadCode = (props: IDownloadCodeProps) => {
     // We fetch the latest files because some files over the size limit have had their code
     // replaced for rendering performance
 
-    const latestSubmission = await Submission.read(props.submission.id);
+    const latestSubmission = await Submission.readAnonymous(props.submission.id);
     const files = await Promise.all(
       latestSubmission.files.map((f) => {
         return File.read(f);
@@ -258,7 +258,6 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const ref = React.useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  const showTooltips = React.useContext(ShowTooltipContext);
 
   const [nudge, setNudge] = React.useState(false);
   const triggerNudge = async (event: any) => {
@@ -354,9 +353,6 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
       }
     };
   }, [props.submission]);
-
-  const finalizeNotice =
-    props.submission.grader === null ? 'Assign a grader to this submission before finalizing it.' : null;
 
   let toggleNotice;
   if (isFinalized) {

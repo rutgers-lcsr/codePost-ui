@@ -125,6 +125,7 @@ class GraderData extends React.Component<IByGraderProps, IState> {
       <Switch>
         {this.props.graders.map((grader) => (
           <Route
+            key={`route-grader-${grader}`}
             path={`${this.props.match.url}/${grader}`}
             render={(props: any) => (
               <GraderDetail

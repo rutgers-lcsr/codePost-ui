@@ -114,6 +114,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     for (const section of this.props.sections) {
       const mapValue: any = {};
       for (const student of section.students) {
+        /* eslint-disable no-useless-computed-key */
         mapValue[student] = await Assignment.readSubmissions(this.props.assignment.id, {
           student,
           ['compact']: '1',
@@ -124,7 +125,9 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
             return submissions[0];
           }
         });
+        /* eslint-enable no-useless-computed-key */
       }
+
       submissionMap[section.id] = mapValue;
     }
 
@@ -153,6 +156,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
             }
           }
         });
+        return null;
       });
       return {
         submissionsBySection: newSubmissions,

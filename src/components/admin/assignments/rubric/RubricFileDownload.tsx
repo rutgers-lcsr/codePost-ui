@@ -41,6 +41,9 @@ class RubricFileDownload extends React.Component<IProps, {}> {
           return {
             text: comment.text,
             pointDelta: comment.pointDelta,
+            sortKey: comment.sortKey,
+            explanation: comment.explanation,
+            instructionText: comment.instructionText,
           };
         }),
       };

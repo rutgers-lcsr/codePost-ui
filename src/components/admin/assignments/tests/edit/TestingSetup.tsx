@@ -13,7 +13,7 @@ import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
 /* codePost object imports */
-import { AssignmentPatchType, AssignmentType } from '../../../../../infrastructure/assignment';
+import { AssignmentType } from '../../../../../infrastructure/assignment';
 import { SolutionFile, SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
 import { SubmissionType } from '../../../../../infrastructure/submission';
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
@@ -86,7 +86,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       setLoading(false);
     };
     fetchData();
-  }, [props.currentAssignment.id]);
+  }, [props.currentAssignment]);
 
   /************************** API / State change functions ******************************/
 

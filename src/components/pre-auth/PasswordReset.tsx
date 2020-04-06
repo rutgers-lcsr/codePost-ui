@@ -120,7 +120,6 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
         if (json.isValid) {
           this.setState({ loadState: 'success' });
         } else {
-          console.log(json);
           this.setState({ formErrors: json.errors });
         }
       });

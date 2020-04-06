@@ -159,6 +159,7 @@ export const SourceEditor = (props: IProps) => {
         defaultFile="main.sh"
         updateFile={setFileToRun}
         env={props.env}
+        resizable={true}
       />
     </div>
   );

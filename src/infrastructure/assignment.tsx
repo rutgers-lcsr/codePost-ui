@@ -12,13 +12,7 @@ import {
 
 import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
-import {
-  AnonymousSubmissionV,
-  StudentSubmissionV,
-  SubmissionV,
-  SubmissionInfoV,
-  AnonymousSubmissionInfoV,
-} from './submission';
+import { StudentSubmissionV, SubmissionInfoV, AnonymousSubmissionInfoV } from './submission';
 import { SubmissionHistoryV } from './submissionHistory';
 import { StudentTestCaseV } from './testCase';
 import { TestCategoryV } from './testCategory';

@@ -150,19 +150,32 @@ export const TestItem = (props: ITestItemProps) => {
           content: "You haven't uploaded any solution code. Do you still want to run this test?",
           async onOk() {
             setIsRunning(true);
-            const result = await TestCase.run(
-              updatedTest.id,
-              props.activeSubmission ? { submission: props.activeSubmission.id.toString() } : {},
-            );
+            let payload: any = {
+              id: updatedTest.id,
+            };
+            if (props.activeSubmission) {
+              payload = {
+                id: updatedTest.id,
+                submission: props.activeSubmission.id.toString(),
+              };
+            }
+            const result = await TestCase.run(payload);
             awaitTestResult(result.task, callback.bind({}, updatedTest));
           },
         });
       } else {
         setIsRunning(true);
-        const result = await TestCase.run(
-          updatedTest.id,
-          props.activeSubmission ? { submission: props.activeSubmission.id.toString() } : {},
-        );
+        let payload: any = {
+          id: updatedTest.id,
+        };
+        if (props.activeSubmission) {
+          payload = {
+            id: updatedTest.id,
+            submission: props.activeSubmission.id.toString(),
+          };
+        }
+        const result = await TestCase.run(payload);
+
         awaitTestResult(result.task, callback.bind({}, updatedTest));
       }
     }

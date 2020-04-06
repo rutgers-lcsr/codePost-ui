@@ -1,7 +1,6 @@
 import * as React from 'react';
-import { Link } from 'react-router-dom';
 
-import { Icon, Modal, Typography } from 'antd';
+import { Icon, Typography } from 'antd';
 
 import useWindowSize from '../../core/useWindowSize';
 

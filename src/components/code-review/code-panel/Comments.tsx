@@ -116,9 +116,15 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
   public handleClickOutside = (event: any) => {
     const safeAreaIDs = ['rubric-menu-container'];
-    const safeAreas = safeAreaIDs.map((id) => document.getElementById(id));
+    const safeAreaClassnames = ['ant-popover-inner'];
+    const safeAreasFromIDs = safeAreaIDs.map((id) => document.getElementById(id));
+    const safeAreasFromClassnames = safeAreaClassnames
+      .map((className: string) => Array.from(document.getElementsByClassName(className)))
+      .flat();
+    // @ts-ignore
+    const safeAreas = safeAreasFromIDs.concat(safeAreasFromClassnames);
     if (!this.props.readOnly && this.wrapperRef && !this.wrapperRef.contains(event.target)) {
-      if (!safeAreas.some((area) => area !== null && area.contains(event.target))) {
+      if (!safeAreas.some((area: any) => area !== null && area.contains(event.target))) {
         this.props.changeActive(undefined);
       }
     }
@@ -141,13 +147,18 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
       });
 
       if (commentPlacement !== undefined) {
-        this.setState({
-          fileScrollPositions: {
-            ...this.state.fileScrollPositions,
-            [this.props.file.id]: commentPlacement.placement,
-          },
-        });
-        codeScrollArea.scrollTop = commentPlacement.placement;
+        if (
+          commentID > 0 ||
+          commentPlacement.placement > codeScrollArea.offsetTop + codeScrollArea.offsetHeight + codeScrollArea.scrollTop
+        ) {
+          this.setState({
+            fileScrollPositions: {
+              ...this.state.fileScrollPositions,
+              [this.props.file.id]: commentPlacement.placement,
+            },
+          });
+          codeScrollArea.scrollTop = commentPlacement.placement;
+        }
       }
     }
   };
@@ -250,6 +261,15 @@ class Comments extends React.Component<ICommentsCoreProps & ICommentsEditProps, 
 
     if (this.props.dimensions.commentsWidth !== prevProps.dimensions.commentsWidth) {
       this.placeCommentsOnNextFrame();
+    }
+
+    if (prevProps.comments.length < this.props.comments.length) {
+      const newComment = this.props.comments.find((comment: CommentType) => {
+        return comment.id < 0;
+      });
+      if (newComment !== undefined) {
+        this.jumpToComment(newComment.id);
+      }
     }
   };
 

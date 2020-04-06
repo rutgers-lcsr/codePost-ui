@@ -179,7 +179,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
     const filledArgStyle = { color: 'grey', fontWeight: 600 };
     const passStyle = { color: '#24be85', opacity: 0.7, fontWeight: 500 };
     const failStyle = { color: 'red', opacity: 0.4, fontWeight: 500 };
-    if (this.state.testType == 'io') {
+    if (this.state.testType === 'io') {
       let file = this.props.form.getFieldValue('fileName') || 'file';
       const input = this.props.form.getFieldValue('input') || 'input';
       const func = this.props.form.getFieldValue('function') || 'function';
@@ -229,9 +229,8 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
         </div>
       );
     }
-    if (this.state.testType == 'io_cli') {
+    if (this.state.testType === 'io_cli') {
       const command = this.state.commandText || 'command';
-      const input = this.props.form.getFieldValue('input') || 'input';
       const output =
         this.state.outputType === 'file'
           ? `cat ${this.props.form.getFieldValue('expectedOutput') || 'outputFile'}`
@@ -902,6 +901,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                   setTestSubject={this.props.setTestSubject}
                   activeSubmission={this.props.activeSubmission}
                   env={this.props.env}
+                  resizable={true}
                 />
               </div>
             </div>

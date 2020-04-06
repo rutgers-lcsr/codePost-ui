@@ -105,6 +105,32 @@ export const AnonymousSubmissionInfoV = t.intersection(
   'Submission',
 );
 
+export const AnonymousSubmissionInfoVPatch = t.intersection(
+  [
+    GenericObject,
+    t.partial({
+      isFinalized: t.boolean,
+      assignment: t.number,
+      dateEdited: t.string,
+      dateUploaded: t.string,
+      grade: t.union([t.number, t.null]),
+      grader: t.union([t.string, t.null]),
+      questionIsOpen: t.boolean,
+      questionIsRegrade: t.boolean,
+      questionText: t.union([t.string, t.null]),
+      questionResponse: t.union([t.string, t.null]),
+      questionResponder: t.union([t.string, t.null]),
+      questionDate: t.union([t.string, t.null]),
+      responseDate: t.union([t.string, t.null]),
+      tests: t.array(t.number),
+      testRunsCompleted: t.number,
+      lateDayCreditsUsed: t.number,
+      students: t.array(t.string),
+    }),
+  ],
+  'Submission',
+);
+
 export const StudentSubmissionV = t.intersection(
   [
     GenericObject,
@@ -237,6 +263,11 @@ export class Submission {
   public static delete = deleteObject(SubmissionV, 'submissions');
   public static readAnonymous = readObject(AnonymousSubmissionV, 'submissions');
   public static updateAnonymous = updateObject(AnonymousSubmissionV, SubmissionVPatch, 'submissions');
+  public static updateAnonymousInfo = updateObject(
+    AnonymousSubmissionInfoV,
+    AnonymousSubmissionInfoVPatch,
+    'submissions',
+  );
   public static readReadOnly = readObject(StudentSubmissionV, 'submissions');
   public static readHistory = readObjectDetail(t.array(SubmissionHistoryV), 'submissions', 'history');
   public static readTestResults = readObjectDetail(TestResultsV, 'submissions', 'testResults');
@@ -311,6 +342,31 @@ export class Submission {
       message.error('Something went wrong loading the submission. Please try again or contact team@codepost.io');
       return [[], {}, {}];
     }
+  };
+
+  // Go through the list of files and separate the latest files from the old files
+  public static filesByVersion = (files: FileType[]) => {
+    const olderFiles: { [pathName: string]: FileType[] } = {};
+    const latestFiles: { [pathName: string]: FileType } = {};
+    files.forEach((file) => {
+      const path = `${file.path ? file.path.replace(/^\/+|\/+$/g, '') : ''}/${file.name}`;
+      if (!latestFiles[path]) latestFiles[path] = file;
+      else {
+        if (Date.parse(latestFiles[path].created) <= Date.parse(file.created)) {
+          const oldLatest = latestFiles[path];
+          olderFiles[path] ? olderFiles[path].push(oldLatest) : (olderFiles[path] = [oldLatest]);
+          latestFiles[path] = file;
+        } else olderFiles[path] ? olderFiles[path].push(file) : (olderFiles[path] = [file]);
+      }
+    });
+
+    const latestFilesArr: FileType[] = [];
+    Object.keys(latestFiles).forEach((path) => {
+      const file = latestFiles[path];
+      latestFilesArr.push(file);
+    });
+
+    return { new: latestFilesArr, old: olderFiles };
   };
 }
 

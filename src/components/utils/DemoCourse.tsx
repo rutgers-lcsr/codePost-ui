@@ -12,7 +12,7 @@ import { Submission } from '../../infrastructure/submission';
 
 import { TestCategory, TestCategoryType } from '../../infrastructure/testCategory';
 import { TestCase } from '../../infrastructure/testCase';
-import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
+import { SubmissionTest } from '../../infrastructure/submissionTest';
 import { Environment } from '../../infrastructure/autograder/environment';
 
 import { fetchTestData } from '../core/testFetchUtils';
@@ -77,7 +77,7 @@ const createDemoCourse = async (email: string, username: string, org: string) =>
                     };
                     return SubmissionTest.create(payload);
                   } else {
-                    return;
+                    return null;
                   }
                 });
               });
@@ -176,7 +176,7 @@ const createAssignment = async (course: CourseType, assignment: any) => {
       };
 
       return TestCategory.create(catPayload).then((catObj) => {
-        const makeCases = category.cases.map((testCase: any) => {
+        category.cases.map((testCase: any) => {
           const casePayload = { id: -1, testCategory: catObj.id, ...testCase };
           return TestCase.create(casePayload);
         });

@@ -6,7 +6,7 @@
 import React from 'react';
 
 /* antd imports  */
-import { Button, Tag, Select, Icon, Tooltip } from 'antd';
+import { Tag, Select, Icon, Tooltip } from 'antd';
 
 /* other library imports */
 import { animateScroll } from 'react-scroll';
@@ -48,6 +48,8 @@ interface IResultProps {
   overrideText?: string;
   env?: EnvironmentType;
   activeSubmission?: SubmissionType;
+  resizable: boolean;
+  testSelectComponent?: React.ReactNode;
 }
 
 const getResultSpan = (resultType: RESULT_TYPE) => {
@@ -214,25 +216,28 @@ export const PseudoTerminal = (props: IResultProps) => {
       </Select>
     ) : null;
 
-  const selectCode = (
-    <Select
-      onChange={props.setTestSubject}
-      style={{ height: '24px', minWidth: '180px', fontSize: '12px' }}
-      size="small"
-      showSearch
-      defaultValue={props.activeSubmission !== undefined ? props.activeSubmission.id.toString() : '0'}
-      filterOption={(input, option: any) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-    >
-      {props.submissions.map((sub, i) => (
-        <Select.Option key={i} value={sub.id.toString()}>
-          {sub.students[0]}
+  const selectTarget =
+    props.testSelectComponent !== undefined ? (
+      props.testSelectComponent
+    ) : (
+      <Select
+        onChange={props.setTestSubject}
+        style={{ height: '24px', minWidth: '180px', fontSize: '12px' }}
+        size="small"
+        showSearch
+        defaultValue={props.activeSubmission !== undefined ? props.activeSubmission.id.toString() : '0'}
+        filterOption={(input, option: any) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+      >
+        {props.submissions.map((sub, i) => (
+          <Select.Option key={i} value={sub.id.toString()}>
+            {sub.students[0]}
+          </Select.Option>
+        ))}
+        <Select.Option key="0" value="0">
+          Solution code
         </Select.Option>
-      ))}
-      <Select.Option key="0" value="0">
-        Solution code
-      </Select.Option>
-    </Select>
-  );
+      </Select>
+    );
 
   const runButton = props.runTest ? (
     <div
@@ -312,40 +317,53 @@ export const PseudoTerminal = (props: IResultProps) => {
         height: '32px',
         color: 'rgb(36, 190, 133)',
         borderBottom: '1px solid rgb(101,101,101)',
+        overflowX: 'auto',
       }}
       left={[clear, copy, colorInfo]}
-      right={[selectFile, selectCode, resultTag, runButton]}
+      right={[selectFile, selectTarget, resultTag, runButton]}
       gutterSize={5}
     />
   );
 
-  return (
-    <div className="pseudo-terminal">
-      <Resizable
-        defaultSize={{
-          height: 350,
-          width: '100%',
-        }}
-        minHeight={180}
-        style={{ marginBottom: '10px' }}
-        enable={{
-          top: false,
-          right: false,
-          bottom: true,
-          left: false,
-          topRight: false,
-          bottomRight: false,
-          bottomLeft: false,
-          topLeft: false,
-        }}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'black' }}>
-          <div>{header}</div>
-          <div id="pseudoterminal-body" style={{ flexGrow: 1, overflow: 'auto' }}>
-            {logElem}
-          </div>
-        </div>
-      </Resizable>
+  const content = (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'black' }}>
+      <div>{header}</div>
+      <div id="pseudoterminal-body" style={{ flexGrow: 1, overflow: 'auto' }}>
+        {logElem}
+      </div>
     </div>
   );
+
+  if (props.resizable) {
+    return (
+      <div className="pseudo-terminal">
+        <Resizable
+          defaultSize={{
+            height: 350,
+            width: '100%',
+          }}
+          minHeight={180}
+          style={{ marginBottom: '10px' }}
+          enable={{
+            top: false,
+            right: false,
+            bottom: true,
+            left: false,
+            topRight: false,
+            bottomRight: false,
+            bottomLeft: false,
+            topLeft: false,
+          }}
+        >
+          {content}
+        </Resizable>
+      </div>
+    );
+  } else {
+    return (
+      <div className="pseudo-terminal" style={{ height: '100%' }}>
+        {content}
+      </div>
+    );
+  }
 };

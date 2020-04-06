@@ -225,7 +225,7 @@ export const TestsChangeModal = (props: IProps) => {
       if (!(categName in parsedTests)) {
         // check to see if the category contains test cases that aren't file defined
         let canDelete = true;
-        const thisCategory = props.categories.find((c) => c.name == categName);
+        const thisCategory = props.categories.find((c) => c.name === categName);
         if (thisCategory && props.casesByCategory[thisCategory.id] !== undefined) {
           const thisCategoryCases = props.casesByCategory[thisCategory.id];
           // If the category has no cases then it can't be file defined

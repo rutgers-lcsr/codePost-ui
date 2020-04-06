@@ -253,6 +253,20 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
       endChar = temp1 < temp2 ? temp2 : temp1;
     }
 
+    // Catch all to prevent errors
+    if (
+      isNaN(startLine) ||
+      startLine < 0 ||
+      isNaN(endLine) ||
+      endLine < 0 ||
+      isNaN(startChar) ||
+      startChar < 0 ||
+      isNaN(endChar) ||
+      endChar < 0
+    ) {
+      return;
+    }
+
     await addNewComment(startLine, endLine, startChar, endChar);
   };
 

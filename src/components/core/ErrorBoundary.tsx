@@ -100,7 +100,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
               <b>try switching to Chrome if you're using a different browser</b>. If that doesn't work, email us at{' '}
               <a href="mailto:team@codepost.io">team@codepost.io</a> if the problem persists.
             </h2>
-            <img src="" />
+            <img src="" alt="Something went wrong" />
           </div>
         );
       }

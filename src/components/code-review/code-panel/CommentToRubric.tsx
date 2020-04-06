@@ -1,5 +1,5 @@
 /* react imports */
-import React, { useState } from 'react';
+import React from 'react';
 
 /* ant imports */
 import { Modal, Input, Select } from 'antd';
