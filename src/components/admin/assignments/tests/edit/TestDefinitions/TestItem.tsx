@@ -15,7 +15,7 @@ import { TestCase } from '../../../../../../infrastructure/testCase';
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
 import { TestEditorResultType, BasicTestResultType } from '../../../../../../infrastructure/autograder/runTypes';
-import { awaitTestResult } from '../../testResult';
+import { awaitTestResult } from '../../autograderPollingUtils';
 
 /* codePost util imports */
 
