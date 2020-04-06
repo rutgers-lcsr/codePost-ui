@@ -48,6 +48,7 @@ interface IProps {
     customDockerfile: string,
     buildType: string,
   ) => Promise<EnvironmentType>;
+  reloadEnv: () => void;
   updateCompileText: (compileText: string) => Promise<void>;
   helpers: SolutionFileType[] | HelperFileType[];
   solutions: SolutionFileType[] | HelperFileType[];
@@ -79,12 +80,16 @@ export const EnvironmentSpecs = (props: IProps) => {
       setDependencies(props.env.dockerRunInstructions.join('\n'));
       setBuildType(props.env.buildType);
       setCustomDockerfile(props.env.dockerfile);
-
-      // Get the last result (if completed)
-      // If in progress, this restarts polling to give the user updates
-      awaitBuildResult(props.env.id, buildStatusCallback);
     }
   }, [props.env]);
+
+  useEffect(() => {
+    // Get the last result (if completed)
+    // If in progress, this restarts polling to give the user updates
+    if (props.env && props.env.id) {
+      awaitBuildResult(props.env.id, buildStatusCallback);
+    }
+  }, [props.env && props.env.id]);
 
   useEffect(() => {
     // If language was just created, launch a save
@@ -135,7 +140,7 @@ export const EnvironmentSpecs = (props: IProps) => {
     setBuildLogs('');
 
     // Wait for the build to be triggered
-    await Environment.build(newEnvironment.id);
+    await Environment.build({ ...newEnvironment, language });
 
     // Set up polling for the result
     awaitBuildResult(newEnvironment.id, buildStatusCallback);
@@ -173,6 +178,10 @@ export const EnvironmentSpecs = (props: IProps) => {
     setBuildIsSuccess(result.isSuccess);
     setBuildLogs(result.logs);
     setDockerfile(result.dockerfile);
+
+    if (result.isSuccess) {
+      props.reloadEnv();
+    }
   };
 
   const onLanguageChange = (value: string) => {

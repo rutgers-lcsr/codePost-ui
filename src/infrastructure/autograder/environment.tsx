@@ -120,7 +120,7 @@ export class Environment {
   public static delete = deleteObject(EnvironmentV, 'autograder/environments');
   public static update = updateObject(EnvironmentV, EnvironmentVPatch, 'autograder/environments');
 
-  public static build = readObjectDetail(t.type({}), 'autograder/environments', 'build');
+  public static build = updateObjectDetail(t.type({}), EnvironmentV, 'autograder/environments', 'build');
   public static status = readObjectDetail(BuildStatus, 'autograder/environments', 'status');
   public static eject = readObjectDetail(TestsSource, 'autograder/environments', 'eject');
   public static runAll = updateObjectDetail(TaskV, RunAllData, 'autograder/environments', 'runAll');

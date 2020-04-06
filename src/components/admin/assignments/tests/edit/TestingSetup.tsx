@@ -230,9 +230,25 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
 
   // ************************** Environment function **************************
 
-  const updateEnv = async (language: string, dependencies: string, customDockerfile: string, buildType: string) => {
+  const reloadEnv = async () => {
+    if (env) {
+      const newEnv = await Environment.read(env.id);
+
+      // HACK: mutate to avoid propagating reference change through children
+      setEnv(newEnv);
+    }
+  };
+
+  const updateEnv = async (
+    language: string,
+    dependencies: string,
+    customDockerfile: string,
+    buildType: string,
+    runscript?: string,
+  ) => {
     let thisEnvironment = env;
     // If environment doesn't exist create it
+
     if (!thisEnvironment) {
       const payload = {
         id: -1,
@@ -255,14 +271,13 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     } else {
       const payload = {
         id: thisEnvironment.id,
-        language,
         dockerRunInstructions: dependencies && !customDockerfile ? dependencies.split('\n') : [],
         dockerfile: customDockerfile,
         buildType: buildType,
       };
       thisEnvironment = await Environment.update(payload);
     }
-    setEnv(thisEnvironment);
+    setEnv({ ...thisEnvironment, language });
     return thisEnvironment;
   };
 
@@ -309,6 +324,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
           currentAssignment={props.currentAssignment}
           env={env}
           updateEnv={updateEnv}
+          reloadEnv={reloadEnv}
           updateCompileText={updateCompileText}
           addFile={addFile}
           deleteFile={deleteFile}
