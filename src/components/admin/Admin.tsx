@@ -509,6 +509,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       archived: false,
       inviteCode: '',
       emailWhitelist: '',
+      inviteCodeEnabled: false,
     };
 
     return Course.create(payload).then((course: CourseType) => {

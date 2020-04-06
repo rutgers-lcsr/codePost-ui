@@ -15,6 +15,7 @@ const ShareInviteCode = (props: IProps) => {
   const [usingWhitelist, setUsingWhitelist] = React.useState(props.course.emailWhitelist.length > 0);
   const [whitelist, setWhitelist] = React.useState(props.course.emailWhitelist);
   const [inviteCode, setInviteCode] = React.useState(props.course.inviteCode);
+  const [enabled, setEnabled] = React.useState(props.course.inviteCodeEnabled);
 
   React.useEffect(() => {
     if (!usingWhitelist) {
@@ -63,8 +64,8 @@ const ShareInviteCode = (props: IProps) => {
     message.info('Invite code copied to clipboard.');
   };
 
-  const saveWhitelist = () => {
-    Course.update({ ...props.course, emailWhitelist: whitelist });
+  const saveSettings = () => {
+    Course.update({ ...props.course, emailWhitelist: whitelist, inviteCodeEnabled: enabled });
     setVisible(false);
   };
 
@@ -77,33 +78,43 @@ const ShareInviteCode = (props: IProps) => {
         title="Share invite code"
         visible={visible}
         onCancel={() => setVisible(false)}
-        onOk={saveWhitelist}
+        onOk={saveSettings}
         okText="Save"
         width={600}
       >
         Share this invite link with your students. Anyone with this link can join this course as a student.
         <br />
         <br />
+        Enable: <Checkbox defaultChecked={enabled} onChange={() => setEnabled(!enabled)} />
+        <br />
+        <br />
         <Input
-          addonBefore="Invite code"
+          disabled={!enabled}
           className="input--disabled-normal"
           id="api-key"
           value={inviteLink}
-          prefix={
-            <Tooltip title="Copy to clipboard">
-              <Icon type="copy" style={{ cursor: 'pointer' }} onClick={copyToClipboard} />
-            </Tooltip>
-          }
-          addonAfter={
-            <Tooltip title="Reset your invite code.">
-              <Icon type="redo" onClick={resetCode} style={{ cursor: 'pointer' }} />
-            </Tooltip>
-          }
+          style={{ width: '65%' }}
         />
+        &nbsp;
+        <Tooltip title="Copy to clipboard">
+          <Button icon="copy" onClick={copyToClipboard} type="primary" disabled={!enabled}>
+            Copy
+          </Button>
+        </Tooltip>
+        &nbsp;
+        <Tooltip title="Reset your invite code.">
+          <Button icon="redo" onClick={resetCode} disabled={!enabled}>
+            Reset
+          </Button>
+        </Tooltip>
         <br />
         <br />
         Restrict the emails students can use to sign up (for example, to prevent usage of personal emails):{' '}
-        <Checkbox defaultChecked={usingWhitelist} onChange={() => setUsingWhitelist(!usingWhitelist)} />
+        <Checkbox
+          defaultChecked={usingWhitelist}
+          onChange={() => setUsingWhitelist(!usingWhitelist)}
+          disabled={!enabled}
+        />
         <br />
         <br />
         {usingWhitelist && (
@@ -111,6 +122,7 @@ const ShareInviteCode = (props: IProps) => {
             defaultValue={whitelist}
             onChange={(e) => setWhitelist(e.target.value)}
             placeholder="List of domains (gmail.com, princeton.edu), one per line"
+            disabled={!enabled}
           />
         )}
       </Modal>
