@@ -20,7 +20,7 @@ import { TestCase } from '../../infrastructure/testCase';
 
 import { fetchEnvironment, fetchTestData, TestCasesByCategory } from './testFetchUtils';
 
-import { awaitTestResult } from '../admin/assignments/tests/testResult';
+import { awaitTestResult } from '../admin/assignments/tests/autograderPollingUtils';
 
 interface IPseudoIDEProps {
   files: FileType[];
