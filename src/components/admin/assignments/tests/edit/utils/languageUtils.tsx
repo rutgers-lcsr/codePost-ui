@@ -37,7 +37,18 @@ export const extensionsByLanguage: { [language: string]: string } = {
 /****************************** Languages and Language support *********************************/
 
 // Languages supported
-export const languages = ['python-3.7', 'python-2.7', 'java', 'c/c++', 'other'];
+export const languages = [
+  'python-3.7',
+  'python-2.7',
+  'java',
+  'c/c++',
+  'javascript',
+  'haskell',
+  'ocaml',
+  'ruby',
+  'php',
+  'other',
+];
 
 export const hasNativeTestSupport = (language: string) => {
   return languageWithNativeTestSupport.includes(language);
@@ -81,5 +92,10 @@ export const commandLineExamples: { [language: string]: string } = {
   'python-2.7': 'python HelloWorld.py',
   java: 'java HelloWorld',
   'c/c++': './HelloWorld',
+  ruby: 'ruby hello_world.rb',
+  ocaml: 'ocaml hello_world.ml',
+  javascript: 'node hello_world.js',
+  php: 'php hello_world.php',
+  haskell: './HelloWorld',
   other: 'echo Hello, World!',
 };

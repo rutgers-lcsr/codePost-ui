@@ -155,7 +155,7 @@ export const EnvironmentSpecs = (props: IProps) => {
   };
 
   const onBuildTypeChange = (e: any) => {
-    const newBuildType = e.target.value === 'default' ? 'default' : 'alpine';
+    const newBuildType = e.target.value === 'default' ? 'default' : 'ubuntu';
     setBuildType(newBuildType);
     if (!props.env || newBuildType !== props.env.buildType) {
       setDependencies('');
@@ -213,11 +213,11 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   const customBuildSelect = buildType !== 'default' && (
     <Select value={buildType} onChange={onCustomBuildChange} style={{ minWidth: 200 }}>
-      <Option key={'alpine'} value={'alpine'}>
-        Alpine-Linux
-      </Option>
       <Option key={'ubuntu'} value={'ubuntu'}>
         Ubuntu
+      </Option>
+      <Option key={'alpine'} value={'alpine'}>
+        Alpine-Linux
       </Option>
       <Option key={'windows'} disabled={true} value={'windows'}>
         Windows (coming soon)
