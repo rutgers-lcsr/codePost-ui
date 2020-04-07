@@ -59,16 +59,37 @@ const WebhooksPanel = (props: IProps) => {
     }
   }, [justSaved]);
 
+  const filterMainHooks = (webhooks: WebhookType[]) => {
+    return webhooks.filter((webhook: WebhookType) => {
+      return webhook.event.includes('added') || webhook.event.includes('changed') || webhook.event.includes('removed');
+    });
+  };
+
+  const filterDetailHooks = (webhooks: WebhookType[]) => {
+    return webhooks.filter((webhook: WebhookType) => {
+      return !(
+        webhook.event.includes('added') ||
+        webhook.event.includes('changed') ||
+        webhook.event.includes('removed')
+      );
+    });
+  };
+
   const content = (
-    <Collapse defaultActiveKey={['course', 'assignment', 'submission', 'file', 'comment']} expandIconPosition={'right'}>
+    <Collapse defaultActiveKey={[]} expandIconPosition={'right'}>
       {Object.keys(webhooks).map((category: string) => {
         const header = (
-          <span style={{ textTransform: 'capitalize', fontSize: '14px', fontWeight: 500 }}>{category}</span>
+          <div>
+            <span style={{ textTransform: 'capitalize', fontSize: '14px', fontWeight: 500 }}>{category}</span>
+            {filterMainHooks(webhooks[category]).map((webhook: WebhookType) => {
+              return <WebhookItem key={`webhook-${webhook.id}`} webhook={webhook} setJustSaved={setJustSaved} />;
+            })}
+          </div>
         );
         return (
           <Collapse.Panel header={header} key={category}>
             <div>
-              {webhooks[category].map((webhook: WebhookType) => {
+              {filterDetailHooks(webhooks[category]).map((webhook: WebhookType) => {
                 return <WebhookItem key={`webhook-${webhook.id}`} webhook={webhook} setJustSaved={setJustSaved} />;
               })}
             </div>

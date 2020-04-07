@@ -21,6 +21,8 @@ const WebhookItem = (props: IProps) => {
   const [target, setTarget] = React.useState<string>(props.webhook.target);
 
   const onChangeCheckbox = async (e: any) => {
+    e.stopPropagation();
+    e.preventDefault();
     setIsActive(e.target.checked);
 
     try {
