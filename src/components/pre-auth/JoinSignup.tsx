@@ -127,7 +127,7 @@ const JoinSignup = (props: RouteComponentProps & { email?: string }) => {
         <Input
           placeholder="jill@princeton.edu"
           defaultValue={email}
-          disabled={typeof props.email !== undefined}
+          disabled={props.email ? true : false}
           onChange={(e) => setEmail(e.target.value)}
         />
         {invalidEmail && (
