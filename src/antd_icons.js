@@ -98,6 +98,7 @@ export { default as FontColorsOutline } from '@ant-design/icons/lib/outline/Font
 export { default as LinkOutline } from '@ant-design/icons/lib/outline/LinkOutline';
 export { default as RocketOutline } from '@ant-design/icons/lib/outline/RocketOutline';
 export { default as SearchOutline } from '@ant-design/icons/lib/outline/SearchOutline';
+export { default as QrcodeOutline } from '@ant-design/icons/lib/outline/QrcodeOutline';
 
 // Fill Icons
 export { default as PushpinFill } from '@ant-design/icons/lib/fill/PushpinFill';

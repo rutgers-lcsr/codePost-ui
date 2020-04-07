@@ -28,6 +28,8 @@ import RosterFileUpload from './other/RosterFileUpload';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
+import ShareInviteCode from './other/ShareInviteCode';
+
 import { sendEmailToUser } from './other/RosterUtils';
 
 import SendEmailModal from '../other/SendEmailModal';
@@ -143,6 +145,7 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
             }
           />
         ) : null,
+        <ShareInviteCode course={this.props.currentCourse} />,
         <DownloadRoster
           key={0}
           downloadType={USER_TYPE.STUDENT}
@@ -331,23 +334,29 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
             imageStyle={{
               height: 60,
             }}
-            description={<span>No students yet</span>}
+            description={<span>You can add students to your course in two ways</span>}
           >
-            <RosterFileUpload
-              key={1}
-              roleType="student"
-              students={this.props.students}
-              graders={this.props.graders}
-              admins={this.props.admins}
-              sections={this.props.sections}
-              sectionsByStudent={this.props.sectionsByStudent}
-              changeRoster={this.props.updateRoster}
-              isDisabled={false}
-              updateSection={this.props.updateSection}
-              emailNewUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
-              createSection={this.props.createSection}
-              course={this.props.currentCourse}
-            />
+            <span>
+              <RosterFileUpload
+                key={1}
+                roleType="student"
+                students={this.props.students}
+                graders={this.props.graders}
+                admins={this.props.admins}
+                sections={this.props.sections}
+                sectionsByStudent={this.props.sectionsByStudent}
+                changeRoster={this.props.updateRoster}
+                isDisabled={false}
+                updateSection={this.props.updateSection}
+                emailNewUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
+                createSection={this.props.createSection}
+                course={this.props.currentCourse}
+                buttonText="Add students by email"
+              />
+              <br />
+              OR <br /> <br />
+              <ShareInviteCode course={this.props.currentCourse} />
+            </span>
           </Empty>
         }
         columns={columns}
