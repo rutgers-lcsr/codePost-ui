@@ -2078,7 +2078,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             submitStudentQuestion={this.submitStudentQuestion}
             deleteStudentQuestion={this.deleteStudentQuestion}
             isStudentMode={
-              this.state.readOnlySubmission!.students!.find((el) => el === this.props.user.email) === undefined
+              this.state.readOnlySubmission!.students === undefined ||
+              this.state.readOnlySubmission!.students.find((el) => el === this.props.user.email) === undefined
             }
           />,
           <TestsMenu
