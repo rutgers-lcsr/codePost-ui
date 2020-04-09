@@ -4,7 +4,7 @@ import { Divider, Dropdown, Icon, Input, Menu, message, Modal, Table, Tag, Typog
 
 /* codePost imports */
 import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
-import { AnonymousSubmissionInfoType, SubmissionType } from '../../../../../infrastructure/submission';
+import { AnonymousSubmissionInfoType, SubmissionInfoType } from '../../../../../infrastructure/submission';
 import RegradeInstructionsModal from './RegradeInstructionsModal';
 
 import { UserType } from '../../../../../infrastructure/user';
@@ -22,13 +22,13 @@ const { confirm } = Modal;
 interface IRegradesTableProps {
   /* assignment data */
   assignment: AssignmentType;
-  submissions: SubmissionType[] | AnonymousSubmissionInfoType[];
+  submissions: SubmissionInfoType[] | AnonymousSubmissionInfoType[];
 
   /* Refresh Course data */
   refreshCourseData: () => void | undefined;
 
   user: UserType;
-  updateSubmission: (submission: SubmissionType) => Promise<void>;
+  updateSubmission: (submission: SubmissionInfoType) => Promise<void>;
 
   isAnonymous?: boolean;
   isLoading?: boolean;
@@ -45,16 +45,16 @@ enum RESPONSE_STATUS {
 const RegradesTable = (props: IRegradesTableProps) => {
   // *********************** STATE VARIABLES *************************
   const [modalVisible, setModalVisibility] = useState(false);
-  const [activeSubmission, setActiveSubmission] = useState<SubmissionType | AnonymousSubmissionInfoType | undefined>(
-    undefined,
-  );
+  const [activeSubmission, setActiveSubmission] = useState<
+    SubmissionInfoType | AnonymousSubmissionInfoType | undefined
+  >(undefined);
   const [responseText, setResponseText] = useState('');
   const [modalReadOnly, setModalReadOnly] = useState(true);
 
   const [instructionsModalVisible, setInstructionsModalVisible] = useState(false);
 
   // *********************** STATE CHANGE FUNCTIONS *************************
-  const toggleModal = (readOnly: boolean, submission?: SubmissionType | AnonymousSubmissionInfoType) => {
+  const toggleModal = (readOnly: boolean, submission?: SubmissionInfoType | AnonymousSubmissionInfoType) => {
     setModalReadOnly(readOnly);
     setActiveSubmission(submission);
     setModalVisibility(!modalVisible);
@@ -66,7 +66,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
   };
 
   const updateSubmissionField = (
-    submission: SubmissionType | AnonymousSubmissionInfoType,
+    submission: SubmissionInfoType | AnonymousSubmissionInfoType,
     field: string,
     newValue: any,
   ) => {
@@ -75,7 +75,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
     props.updateSubmission(newSubmission);
   };
 
-  const clearRegrade = (submission: SubmissionType | AnonymousSubmissionInfoType, newGrader: string | null) => {
+  const clearRegrade = (submission: SubmissionInfoType | AnonymousSubmissionInfoType, newGrader: string | null) => {
     const newSubmission = JSON.parse(JSON.stringify(submission));
     newSubmission['questionResponder'] = newGrader;
     newSubmission['questionResponse'] = '';
@@ -83,7 +83,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
     props.updateSubmission(newSubmission);
   };
 
-  const confirmClear = (submission: SubmissionType | AnonymousSubmissionInfoType, isRelease: boolean) => {
+  const confirmClear = (submission: SubmissionInfoType | AnonymousSubmissionInfoType, isRelease: boolean) => {
     confirm({
       title: `Are you sure you want to ${isRelease ? 'release' : 'claim'} this regrade?`,
       content: 'This will clear the existing draft response text.',
@@ -129,7 +129,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
     }
   };
   // *********************** TABLE HELPER FUNCTIONS *************************
-  const getResponseStatus = (submission: SubmissionType | AnonymousSubmissionInfoType) => {
+  const getResponseStatus = (submission: SubmissionInfoType | AnonymousSubmissionInfoType) => {
     if (submission.questionResponder !== props.user.email || !submission.questionIsOpen) {
       return RESPONSE_STATUS.EDIT_NOT_ALLOWED;
     } else if (submission.questionResponse) {
@@ -137,7 +137,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
     } else return RESPONSE_STATUS.EDIT_ALLOWED_NEW_RESPONSE;
   };
 
-  const getResponseContent = (submission: SubmissionType | AnonymousSubmissionInfoType) => {
+  const getResponseContent = (submission: SubmissionInfoType | AnonymousSubmissionInfoType) => {
     const responseStatus = getResponseStatus(submission);
 
     switch (responseStatus) {

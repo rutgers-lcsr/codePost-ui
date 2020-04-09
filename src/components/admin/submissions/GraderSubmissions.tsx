@@ -19,7 +19,7 @@ import { IAssignmentToSubmissionsMap, IGraderSubmissionsDataTable } from '../../
 import { encodeForLink } from '../../../components/core/URLutils';
 
 import { AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
-import { SubmissionType } from '../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../infrastructure/submission';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
@@ -46,7 +46,7 @@ export interface IByGraderProps {
   inactiveGraders: string[];
 
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
-  deleteSubmission: (submission: SubmissionType) => Promise<void>;
+  deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
 
   match: any;
 }
@@ -67,7 +67,7 @@ class GraderData extends React.Component<IByGraderProps, IState> {
   public componentDidMount() {
     const newMeans: any = {};
     for (const key of Object.keys(this.props.submissionsByAssignment)) {
-      const submissions: SubmissionType[] = this.props.submissionsByAssignment[+key];
+      const submissions: SubmissionInfoType[] = this.props.submissionsByAssignment[+key];
       let scoreSum = 0;
       let numFinalized = 0;
       for (const submission of submissions) {

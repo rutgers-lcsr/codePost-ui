@@ -11,7 +11,7 @@ import { Layout, Typography } from 'antd';
 /* codePost object imports */
 import { TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
-import { SubmissionType } from '../../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 import { SourceFile, SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
 import { TestCaseType } from '../../../../../infrastructure/testCase';
 import { TestCategoryType } from '../../../../../infrastructure/types';
@@ -34,8 +34,8 @@ import { awaitTestResult } from '../autograderPollingUtils';
 /**********************************************************************************************************************/
 interface IProps {
   // submission
-  submissions: SubmissionType[];
-  activeSubmission: SubmissionType | undefined;
+  submissions: SubmissionInfoType[];
+  activeSubmission: SubmissionInfoType | undefined;
   setTestSubject: (id: string) => void;
 
   // files

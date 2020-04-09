@@ -10,7 +10,7 @@ import { message, Modal } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 
 /* codePost object imports */
-import { AssignmentType, TestCaseType, SubmissionType } from '../../../../../../infrastructure/types';
+import { AssignmentType, TestCaseType, SubmissionInfoType } from '../../../../../../infrastructure/types';
 import { TestCase } from '../../../../../../infrastructure/testCase';
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
@@ -34,9 +34,9 @@ interface ITestItemProps {
   handleDelete: (test: TestCaseType) => void;
   files: SolutionFileType[];
   env?: EnvironmentType;
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
   setTestSubject: (id: string) => void;
-  activeSubmission?: SubmissionType;
+  activeSubmission?: SubmissionInfoType;
   updateTestStatus: (testID: number, status: number) => void;
 }
 
