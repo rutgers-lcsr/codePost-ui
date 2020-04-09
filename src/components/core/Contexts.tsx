@@ -19,6 +19,7 @@ export const defaultCourse: CourseType = {
   archived: false,
   inviteCode: '',
   emailWhitelist: '',
+  inviteCodeEnabled: false,
 };
 
 export const CourseContext = React.createContext<CourseType>(defaultCourse);

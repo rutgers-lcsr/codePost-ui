@@ -31,11 +31,11 @@ interface IState {
   confirmEmailSent: boolean;
 }
 
-const JoinSignup = (props: RouteComponentProps) => {
-  const [email, setEmail] = React.useState('');
+const JoinSignup = (props: RouteComponentProps & { email?: string }) => {
+  const [email, setEmail] = React.useState(props.email || '');
   const [hasSubmitted, setHasSubmitted] = React.useState(false);
   const [confirmEmailSent, setConfirmEmailSent] = React.useState(false);
-  const [acceptedTerms, setAcceptedTerms] = React.useState(false);
+  const [acceptedTerms, setAcceptedTerms] = React.useState(props.email ? true : false);
   const [inviteCode, setInviteCode] = React.useState(queryString.parse(props.location.search).code || '');
   const [invalidCode, setInvalidCode] = React.useState(false);
   const [invalidEmail, setInvalidEmail] = React.useState(false);
@@ -85,7 +85,22 @@ const JoinSignup = (props: RouteComponentProps) => {
   let content;
   if (hasSubmitted) {
     content = confirmEmailSent ? (
-      <Alert message={'Success!'} description="Check your email to finish signing up." />
+      <Alert
+        message={'Success!'}
+        description={
+          props.email ? (
+            <span>
+              Head back to your{' '}
+              <a target="_blank" href="/student">
+                Student Console
+              </a>{' '}
+              to check out your new course.
+            </span>
+          ) : (
+            'Check your email to finish signing up.'
+          )
+        }
+      />
     ) : (
       <span>
         Hang tight...sending you an email &nbsp; &nbsp; <Spin />
@@ -109,7 +124,12 @@ const JoinSignup = (props: RouteComponentProps) => {
         <br />
         <br />
         Email:{' '}
-        <Input placeholder="jill@princeton.edu" defaultValue={email} onChange={(e) => setEmail(e.target.value)} />
+        <Input
+          placeholder="jill@princeton.edu"
+          defaultValue={email}
+          disabled={props.email ? true : false}
+          onChange={(e) => setEmail(e.target.value)}
+        />
         {invalidEmail && (
           <span style={{ color: 'red' }}>
             Your email doesn't match the whitelist for this course. Make sure you're using your organizational (e.g.
@@ -118,8 +138,12 @@ const JoinSignup = (props: RouteComponentProps) => {
         )}
         <br />
         <br />
-        <Checkbox checked={acceptedTerms} onClick={() => setAcceptedTerms(!acceptedTerms)} /> I agree to the codePost{' '}
-        <Link to="/terms">Terms of Service</Link> and <Link to="/privacy">Privacy Policy</Link>.
+        {props.email === undefined && (
+          <span>
+            <Checkbox checked={acceptedTerms} onClick={() => setAcceptedTerms(!acceptedTerms)} /> I agree to the
+            codePost <Link to="/terms">Terms of Service</Link> and <Link to="/privacy">Privacy Policy</Link>.
+          </span>
+        )}
         <br />
         <br />
         <div style={{ display: 'flex' }}>
@@ -128,7 +152,7 @@ const JoinSignup = (props: RouteComponentProps) => {
           </Link>
           &nbsp; &nbsp; &nbsp; &nbsp;
           <CPButton cpType="primary" onClick={handleSignup} disabled={!acceptedTerms}>
-            Continue
+            {props.email ? 'Join course' : 'Continue'}
           </CPButton>
         </div>
       </div>

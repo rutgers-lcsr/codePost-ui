@@ -46,6 +46,7 @@ interface IndexManagerProps {
   handleLogin: (email: string, password: string, toRedirect: boolean) => Promise<void>;
   handleLogout: () => void;
   isLoggedIn: boolean;
+  email?: string;
 }
 
 class IndexManager extends React.Component<IndexManagerProps, {}> {
@@ -77,7 +78,11 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
             />
 
             <Route exact={true} path={'/forgot-password'} component={ForgotPasswordForm} />
-            <Route exact={true} path={'/signup/join'} render={(subprops: any) => <JoinSignup {...subprops} />} />
+            <Route
+              exact={true}
+              path={'/signup/join'}
+              render={(subprops: any) => <JoinSignup {...subprops} email={this.props.email} />}
+            />
             <Route exact={true} path={'/signup/create'} component={CreateSignup} />
             <Route exact={true} path={'/signup'} component={SignUpManager} />
             <Route

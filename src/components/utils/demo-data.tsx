@@ -90,6 +90,7 @@ const demoCourse = (testName: string) => {
     archived: false,
     inviteCode: '',
     emailWhitelist: '',
+    inviteCodeEnabled: false,
   };
 };
 
