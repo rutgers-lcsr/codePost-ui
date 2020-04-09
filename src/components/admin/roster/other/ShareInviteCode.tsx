@@ -53,7 +53,7 @@ const ShareInviteCode = (props: IProps) => {
 
   const copyToClipboard = () => {
     const element = document.createElement('textarea');
-    element.value = inviteCode;
+    element.value = inviteCode === null ? '' : inviteCode;
     document.body.appendChild(element);
     element.select();
     document.execCommand('copy');
@@ -65,6 +65,9 @@ const ShareInviteCode = (props: IProps) => {
     Course.update({ ...props.course, emailWhitelist: whitelist });
     setVisible(false);
   };
+
+  const inputValue =
+    inviteCode === null ? 'None set; generate here -->' : `https://codepost.io/signup/join?code=${inviteCode}`;
 
   return (
     <div>
@@ -86,7 +89,7 @@ const ShareInviteCode = (props: IProps) => {
           addonBefore="Invite code"
           className="input--disabled-normal"
           id="api-key"
-          value={`https://codepost.io/signup/join?code=${inviteCode}`}
+          value={inputValue}
           prefix={
             <Tooltip title="Copy to clipboard">
               <Icon type="copy" style={{ cursor: 'pointer' }} onClick={copyToClipboard} />

@@ -27,7 +27,7 @@ export const CourseV = t.intersection(
       noUnfinalize: t.boolean,
       lateDayCreditsAllowable: t.union([t.number, t.null]),
       archived: t.boolean,
-      inviteCode: t.string,
+      inviteCode: t.union([t.string, t.null]),
       emailWhitelist: t.string,
     }),
   ],
