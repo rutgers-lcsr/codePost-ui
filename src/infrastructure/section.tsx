@@ -1,6 +1,8 @@
 import * as t from 'io-ts';
 import { compare } from '../components/utils/SortUtils';
-import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
+import { createObject, deleteObject, GenericObject, readObject, updateObject, readObjectDetail } from './generics';
+
+import { SubmissionV } from './submission';
 
 export const SectionV = t.intersection(
   [
@@ -34,6 +36,8 @@ export class Section {
   public static read = readObject(SectionV, 'sections');
   public static update = updateObject(SectionV, SectionVPatch, 'sections');
   public static delete = deleteObject(SectionV, 'sections');
+
+  public static readSubmissions = readObjectDetail(t.array(SubmissionV), 'sections', 'submissions');
 }
 
 export enum SECTION_SORT_TYPE {
