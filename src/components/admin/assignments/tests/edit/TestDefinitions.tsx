@@ -35,7 +35,7 @@ import {
   AssignmentType,
   TestCaseType,
   TestCategoryType,
-  SubmissionType,
+  SubmissionInfoType,
   FileType,
 } from '../../../../../infrastructure/types';
 import { TestCase } from '../../../../../infrastructure/testCase';
@@ -84,7 +84,7 @@ interface IProps {
   currentAssignment: AssignmentType;
   solutions: SolutionFileType[];
   helpers: HelperFileType[];
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
   sourceFiles: SourceFileType[];
   updateEnv: (env: EnvironmentType) => void;
   env?: EnvironmentType;
@@ -129,7 +129,7 @@ export const TestDefinitions = (props: IProps) => {
   const [loading, setLoading] = useState(true);
 
   // Submission / Solution code toggle variables
-  const [activeSubmission, setActiveSubmission] = useState<SubmissionType | undefined>(undefined);
+  const [activeSubmission, setActiveSubmission] = useState<SubmissionInfoType | undefined>(undefined);
   const [currentFiles, setCurrentFiles] = useState<(SolutionFileType | FileType)[]>(props.solutions);
 
   /******************************* Fetch Data ****************************/

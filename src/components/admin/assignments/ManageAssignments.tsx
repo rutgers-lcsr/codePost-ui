@@ -14,7 +14,7 @@ import { Route, Link, Redirect } from 'react-router-dom';
 
 /* codePost imports */
 import { AssignmentPatchType, AssignmentType } from '../../../infrastructure/assignment';
-import { CourseType, SubmissionType, SectionType } from '../../../infrastructure/types';
+import { CourseType, SubmissionInfoType, SectionType } from '../../../infrastructure/types';
 import { UserType } from '../../../infrastructure/user';
 
 import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../types/common';
@@ -63,11 +63,11 @@ export interface IManageAssignmentsProps {
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
   shallowUpdateAssignment: (assignmentID: number, field: string, value: number) => void;
-  bulkUpdateSubmissions: (assignmentID: number, getPayload: (sub: SubmissionType) => any) => Promise<void>;
+  bulkUpdateSubmissions: (assignmentID: number, getPayload: (sub: SubmissionInfoType) => any) => Promise<void>;
 
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
-  deleteSubmission: (submission: SubmissionType) => Promise<void>;
-  updateSubmission: (submission: SubmissionType) => Promise<void>;
+  deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
+  updateSubmission: (submission: SubmissionInfoType) => Promise<void>;
 
   /* Refresh course */
   refreshCourseData: () => void;

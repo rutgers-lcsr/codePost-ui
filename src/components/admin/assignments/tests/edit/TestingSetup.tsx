@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Breadcrumb, Button, Collapse, InputNumber, Tabs, Checkbox, Modal, message, Typography } from 'antd';
+import { Breadcrumb, Button, InputNumber, Tabs, Checkbox, message, Typography } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -15,7 +15,7 @@ import { Link } from 'react-router-dom';
 /* codePost object imports */
 import { AssignmentType } from '../../../../../infrastructure/assignment';
 import { SolutionFile, SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
-import { SubmissionType } from '../../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 import { HelperFile, HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
 import { SourceFile, SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
@@ -35,7 +35,7 @@ const { TabPane } = Tabs;
 
 interface IProps {
   currentAssignment: AssignmentType;
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
   updateAssignment: (assignmentID: number, field: string, value: number) => void;
   breadcrumbs?: React.ReactElement[];
   match: any;

@@ -9,7 +9,7 @@ import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
 /* codePost object imports */
-import { SubmissionType } from '../../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 import { AssignmentType } from '../../../../../infrastructure/assignment';
 import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../../../../infrastructure/testCategory';
@@ -41,14 +41,14 @@ import {
 import { openSubmission } from '../../../other/AdminUtils';
 
 interface IProps {
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
   assignment: AssignmentType;
   testCasesByCategory: TestCasesByCategory;
   testsBySubmission: TestsBySubmission;
   categories: TestCategoryType[];
   isLoading: boolean;
   subsLoading: number[];
-  runSubmission: (sub: SubmissionType) => Promise<void>;
+  runSubmission: (sub: SubmissionInfoType) => Promise<void>;
   hasSourceFiles: boolean;
 
   breadcrumbs?: React.ReactNode;
@@ -76,22 +76,23 @@ const TestResultsTable = (props: IProps) => {
   const [filterCategory, setFilterCategory] = useState<TestCategoryType | undefined>(undefined);
   const [filterCase, setFilterCase] = useState<TestCaseType | undefined>(undefined);
   const [filterStatus, setFilterStatus] = useState<RESULT_STATUS | undefined>(undefined);
-  const [filterSubmission, setFilterSubmission] = useState<SubmissionType | undefined>(undefined);
+  const [filterSubmission, setFilterSubmission] = useState<SubmissionInfoType | undefined>(undefined);
 
   const [passedByCase, setPassedByCase] = useState<TestsByCase>({});
   const [failedByCase, setFailedByCase] = useState<TestsByCase>({});
   const [errorByCase, setErrorByCase] = useState<TestsByCase>({});
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // ************************** Fetch Data ******************************
   useEffect(() => {
     const fetchData = async () => {
       if (props.submissions.length > 0 && props.assignment) {
+        setIsProcessing(true);
         const [passed, failed, error]: any = getTestsByCase(props.testsBySubmission, props.testCasesByCategory);
-
         setPassedByCase(passed);
         setFailedByCase(failed);
         setErrorByCase(error);
-        console.log('finished');
+        setIsProcessing(false);
       }
     };
     fetchData();
@@ -101,7 +102,7 @@ const TestResultsTable = (props: IProps) => {
     category: TestCategoryType | undefined,
     testCase: TestCaseType | undefined,
     status: RESULT_STATUS | undefined,
-    submission: SubmissionType | undefined,
+    submission: SubmissionInfoType | undefined,
   ) => {
     setFilterCategory(category);
     setFilterCase(testCase);
@@ -159,7 +160,7 @@ const TestResultsTable = (props: IProps) => {
           data = null;
           break;
         }
-        data = props.submissions.map((submission: SubmissionType) => {
+        data = props.submissions.map((submission: SubmissionInfoType) => {
           const actionsMenu = (
             <Menu key={submission.id}>
               <Menu.Item key="run-tests" onClick={props.runSubmission.bind({}, submission)}>
@@ -347,7 +348,7 @@ const TestResultsTable = (props: IProps) => {
   return (
     <div>
       <TableDetail
-        loadComplete={!props.isLoading}
+        loadComplete={!props.isLoading && !isProcessing}
         isEmpty={
           (Object.keys(props.testCasesByCategory).length === 0 && props.hasSourceFiles) ||
           props.submissions.length === 0

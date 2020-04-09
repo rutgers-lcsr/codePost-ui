@@ -7,7 +7,7 @@ import CPAdminDetail from '../../other/CPAdminDetail';
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
 import { CourseType } from '../../../../infrastructure/course';
-import { SubmissionType } from '../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../infrastructure/submission';
 
 import { UserType } from '../../../../infrastructure/user';
 
@@ -19,20 +19,20 @@ interface IAssignmentRegradesProps {
   /* assignment data */
   assignment: AssignmentType;
   currentCourse: CourseType;
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
 
   /* Refresh Course data */
   refreshCourseData: () => void | undefined;
   onCancel: () => void;
   user: UserType;
-  updateSubmission: (submission: SubmissionType) => Promise<void>;
+  updateSubmission: (submission: SubmissionInfoType) => Promise<void>;
   breadcrumbs: React.ReactElement[];
 }
 
 const AssignmentRegrades = (props: IAssignmentRegradesProps) => {
   // *********************** STATE VARIABLES *************************
 
-  const getOpenRegradeGraders = (submissions: SubmissionType[]) => {
+  const getOpenRegradeGraders = (submissions: SubmissionInfoType[]) => {
     return submissions
       .filter((s) => s.questionIsOpen && s.grader && (!s.questionResponder || s.grader === s.questionResponder))
       .map((s) => s.grader!);

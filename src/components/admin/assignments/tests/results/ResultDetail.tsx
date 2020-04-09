@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Badge, Button, Card, Empty, Modal, Menu, Layout, Radio, Select, Typography } from 'antd';
 
 /* codePost object imports */
-import { SubmissionType } from '../../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { TestCaseType } from '../../../../../infrastructure/testCase';
@@ -19,19 +19,19 @@ interface IProps {
   testsBySubmission: TestsBySubmission;
   casesByCategory: TestCasesByCategory;
   categories: TestCategoryType[];
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
 
   filterCategory: TestCategoryType | undefined;
   filterCase: TestCaseType | undefined;
   filterStatus: RESULT_STATUS | undefined;
-  filterSubmission: SubmissionType | undefined;
+  filterSubmission: SubmissionInfoType | undefined;
 }
 
 export const ResultDetail = (props: IProps) => {
   const [filterCategory, setFilterCategory] = useState<TestCategoryType | undefined>(props.filterCategory);
   const [filterCase, setFilterCase] = useState<TestCaseType | undefined>(props.filterCase);
   const [filterStatus, setFilterStatus] = useState<RESULT_STATUS | undefined>(props.filterStatus);
-  const [filterSubmission, setFilterSubmission] = useState<SubmissionType | undefined>(props.filterSubmission);
+  const [filterSubmission, setFilterSubmission] = useState<SubmissionInfoType | undefined>(props.filterSubmission);
 
   /********************** Props on change functions **********************************/
   useEffect(() => {
@@ -68,7 +68,7 @@ export const ResultDetail = (props: IProps) => {
     testCase ? setFilterCase(testCase) : setFilterCase(undefined);
   };
 
-  const handleSubmissionChange = (submission: SubmissionType) => {
+  const handleSubmissionChange = (submission: SubmissionInfoType) => {
     setFilterSubmission(submission);
   };
 
@@ -84,7 +84,7 @@ export const ResultDetail = (props: IProps) => {
 
   /**********************  utils **********************************/
   // figure out if a submission should be marked inactive based on the current filters
-  const isInactive = (submission: SubmissionType) => {
+  const isInactive = (submission: SubmissionInfoType) => {
     // No status filter return all submissios
     if (filterStatus === undefined) return false;
 

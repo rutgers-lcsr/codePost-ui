@@ -21,7 +21,7 @@ import { openSubmission } from '../other/AdminUtils';
 
 import { CourseType } from '../../../infrastructure/course';
 import { AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
-import { SubmissionType } from '../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../infrastructure/submission';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
@@ -48,11 +48,11 @@ export interface IByStudentProps extends RouteComponentProps {
   inactiveStudents: string[];
 
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
-  deleteSubmission: (submission: SubmissionType) => Promise<void>;
+  deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   graders: string[];
-  changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>;
-  addFilesToSubmission: (submission: SubmissionType, files: any[]) => Promise<SubmissionType>;
+  changeSubmissionGrader: (submission: SubmissionInfoType, grader: string | undefined) => Promise<void>;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionInfoType>;
+  addFilesToSubmission: (submission: SubmissionInfoType, files: any[]) => Promise<SubmissionInfoType>;
   baseURL: string;
 }
 

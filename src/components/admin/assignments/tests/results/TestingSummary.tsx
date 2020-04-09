@@ -9,7 +9,7 @@ import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
 /* codePost object imports */
-import { SubmissionType } from '../../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 import { AssignmentType } from '../../../../../infrastructure/assignment';
 import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 
@@ -22,7 +22,6 @@ import { awaitTestResult } from '../autograderPollingUtils';
 
 import TestResultsTable from './TestResultsTable';
 
-import CPAdminDetail from '../../../other/CPAdminDetail';
 import RunAllSubmissions from './RunAllTests';
 
 /* codePost util imports */
@@ -36,11 +35,13 @@ import {
 
 interface IProps {
   breadcrumbs?: React.ReactElement[];
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
   currentAssignment: AssignmentType;
+  isAdmin: boolean;
+  match?: any;
 }
 
-export const TestingSummary = (props: IProps & RouteComponentProps) => {
+export const TestingSummary = (props: IProps) => {
   // ************************** State Variables ******************************
   // objects
   const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
@@ -107,7 +108,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     }
   };
 
-  const runSubmissionCallback = (sub: SubmissionType, result: SubmissionTestResultType) => {
+  const runSubmissionCallback = (sub: SubmissionInfoType, result: SubmissionTestResultType) => {
     const newTestBySub = { ...testsBySubmission };
     newTestBySub[sub.id] = result.submissionTests;
     setTestsBySubmission(newTestBySub);
@@ -117,7 +118,7 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     setSubsLoading(newLoadingSubs);
   };
 
-  const runSubmission = async (sub: SubmissionType) => {
+  const runSubmission = async (sub: SubmissionInfoType) => {
     if (env) {
       setSubsLoading([...subsLoading, sub.id]);
       const result = await Environment.run(env.id, { submission: sub.id.toString(), simulate: 'False' });
@@ -128,19 +129,25 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
   // ******************************* Return  *******************************
   let actions: any = [];
 
-  actions = [
-    <RunAllSubmissions
-      numSubmissions={props.submissions.length}
-      testCasesByCategory={testCasesByCategory}
-      runAllSubmissions={runAllSubmissions}
-      env={env}
-    />,
-    <Button type="primary">
-      <Link to={[...props.match.url.split('/').slice(0, props.match.url.split('/').length - 1), 'edit'].join('/')}>
-        Edit tests
-      </Link>
-    </Button>,
-  ];
+  //  Only allow run all an edit tests if admin
+  actions =
+    !props.isAdmin || !props.match
+      ? []
+      : [
+          <RunAllSubmissions
+            numSubmissions={props.submissions.length}
+            testCasesByCategory={testCasesByCategory}
+            runAllSubmissions={runAllSubmissions}
+            env={env}
+          />,
+          <Button type="primary">
+            <Link
+              to={[...props.match.url.split('/').slice(0, props.match.url.split('/').length - 1), 'edit'].join('/')}
+            >
+              Edit tests
+            </Link>
+          </Button>,
+        ];
 
   return (
     <TestResultsTable

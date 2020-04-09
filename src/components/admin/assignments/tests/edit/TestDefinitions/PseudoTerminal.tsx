@@ -13,7 +13,7 @@ import { animateScroll } from 'react-scroll';
 import { Resizable } from 're-resizable';
 
 /* codePost imports  */
-import { SubmissionType } from '../../../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../../../infrastructure/submission';
 import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
 import CPFlex from '../../../../../core/CPFlex';
 import { copyTextToClipboard } from '../../../../../utils/Browser';
@@ -40,14 +40,14 @@ interface IResultProps {
   log?: ILogType | ILogType[];
   isRunning?: boolean;
   runTest?: () => void;
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
   files?: string[];
   defaultFile?: string;
   setTestSubject: (id: string) => void;
   updateFile?: (file: string) => void;
   overrideText?: string;
   env?: EnvironmentType;
-  activeSubmission?: SubmissionType;
+  activeSubmission?: SubmissionInfoType;
   resizable: boolean;
   testSelectComponent?: React.ReactNode;
 }
