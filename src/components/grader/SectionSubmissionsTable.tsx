@@ -49,6 +49,10 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
     selectedRowKeys: props.selectedSubmissions,
   };
 
+  const openGradePage = (submission: SubmissionType) => {
+    window.open(`/code/${submission.id}`);
+  };
+
   const centerAlign: alignType = 'center';
 
   const columns = [
@@ -117,18 +121,13 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
           .join(', ');
       }
 
-      const openGradePage = () => {
-        // @ts-ignore
-        this.openGradePage(submission);
-      };
-
       return {
         ...formatSub(submission, props.assignment),
         key: student,
         student: shownStudent,
         partners,
         viewIcon: <div>{getViewIcon(submission, props.viewsBySubmission, student)}</div>,
-        open: submission !== null ? <Icon type="code" onClick={openGradePage} /> : null,
+        open: submission !== null ? <Icon type="code" onClick={openGradePage.bind({}, submission)} /> : null,
         disableCheck: !submission || submission.grader,
       };
     });

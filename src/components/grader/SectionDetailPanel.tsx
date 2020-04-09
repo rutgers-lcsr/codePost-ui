@@ -172,10 +172,6 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     }
   };
 
-  public openGradePage = (submission: SubmissionType) => {
-    window.open(`/code/${submission.id}`);
-  };
-
   public onRowSelect = (selectedRowKeys: any[]) => {
     this.setState({ selectedSubmissions: selectedRowKeys });
   };
