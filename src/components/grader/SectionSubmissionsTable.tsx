@@ -108,6 +108,7 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
 
   let data: any[] = [];
   if (props.submissions !== undefined) {
+    console.log(props.submissions);
     data = Object.keys(props.submissions).map((student) => {
       const submission = props.submissions[student];
       const shownStudent = props.showEmails || !submission ? student : submission.id;
@@ -126,8 +127,8 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
         key: student,
         student: shownStudent,
         partners,
-        viewIcon: <div>{getViewIcon(submission, props.viewsBySubmission, student)}</div>,
-        open: submission !== null ? <Icon type="code" onClick={openGradePage.bind({}, submission)} /> : null,
+        viewIcon: submission ? <div>{getViewIcon(submission, props.viewsBySubmission, student)}</div> : null,
+        open: submission ? <Icon type="code" onClick={openGradePage.bind({}, submission)} /> : null,
         disableCheck: !submission || submission.grader,
       };
     });
