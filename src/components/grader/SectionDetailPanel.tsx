@@ -9,14 +9,12 @@ import * as React from 'react';
 import { Button, Breadcrumb, Divider, Icon, Select, Spin, Switch, Tabs } from 'antd';
 
 /* codePost imports */
-import { Assignment, AssignmentType } from '../../infrastructure/assignment';
+import { AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { SectionType, Section } from '../../infrastructure/section';
-import { Submission, SubmissionInfoType } from '../../infrastructure/submission';
+import { Submission, SubmissionType } from '../../infrastructure/submission';
 
 import { tooltips } from '../core/tooltips';
-
-import { compare } from '../utils/SortUtils';
 
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 
