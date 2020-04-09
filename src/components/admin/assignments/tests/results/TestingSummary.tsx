@@ -56,41 +56,34 @@ export const TestingSummary = (props: IProps) => {
   const [subsLoading, setSubsLoading] = useState<number[]>([]);
   const [fetchLoading, setFetchLoading] = useState(false);
   // ************************** Fetch Data ******************************
-  useEffect(() => {
-    const fetchData = async () => {
-      if (props.submissions.length > 0 && props.currentAssignment) {
-        setFetchLoading(true);
-        const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
-        setCategories(categories);
-        setTestCasesByCategory(casesByCategory);
-        const currEnv = await fetchEnvironment(props.currentAssignment);
-        setEnv(currEnv);
+  const fetchData = async () => {
+    if (props.submissions.length > 0 && props.currentAssignment) {
+      setFetchLoading(true);
+      const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
+      setCategories(categories);
+      setTestCasesByCategory(casesByCategory);
+      const currEnv = await fetchEnvironment(props.currentAssignment);
+      setEnv(currEnv);
 
-        const tests = await fetchTestsBySubmission(props.submissions);
-        setTestsBySubmission(tests);
-        setFetchLoading(false);
-      }
-    };
+      const tests = await fetchTestsBySubmission(props.submissions);
+      setTestsBySubmission(tests);
+      setFetchLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [props.currentAssignment, props.submissions]);
 
   // ******************************* API / State change functions  *******************************
 
-  const runAllCallback = (result: RunAllResultType) => {
-    const newTestBySub: TestsBySubmission = {};
-    for (const test of result) {
-      const subID = test.submission;
-      newTestBySub[subID] = (newTestBySub[subID] && [...newTestBySub[subID], test]) || [test];
-    }
-    setTestsBySubmission(newTestBySub);
-    const newEnv = { ...env! };
-    newEnv.isRunning = false;
-    setEnv(newEnv);
+  const runAllCallback = () => {
+    fetchData();
   };
 
   const runAllSubmissions = async (
     progressCallback: (progress: any) => void,
-    onFinishCallback: (result: any) => void,
+    onFinishCallback: () => void,
     sendEmail: boolean,
   ) => {
     if (env) {
@@ -98,8 +91,8 @@ export const TestingSummary = (props: IProps) => {
       awaitTestResult(
         result.task,
         (result: any) => {
-          runAllCallback(result);
-          onFinishCallback(result);
+          runAllCallback();
+          onFinishCallback();
         },
         progressCallback,
       );

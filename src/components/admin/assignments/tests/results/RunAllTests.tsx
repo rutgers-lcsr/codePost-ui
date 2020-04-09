@@ -18,7 +18,7 @@ interface IProps {
   testCasesByCategory: TestCasesByCategory;
   runAllSubmissions: (
     progressCallback: (progress: any) => void,
-    onFinishCallback: (result: any) => void,
+    onFinishCallback: () => void,
     sendEmail: boolean,
   ) => void;
   env: EnvironmentType | undefined;
@@ -53,7 +53,7 @@ const RunAllTests = (props: IProps) => {
   };
 
   //   Callback for run finish
-  const finishCallback = (result: any) => {
+  const finishCallback = () => {
     setModalStatus(MODAL_STATUS.None);
     setProgress('{}');
   };
