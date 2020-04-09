@@ -507,6 +507,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       noUnfinalize: false,
       lateDayCreditsAllowable: null,
       archived: false,
+      activateQueue: true,
     };
 
     return Course.create(payload).then((course: CourseType) => {

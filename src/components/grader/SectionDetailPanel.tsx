@@ -11,8 +11,8 @@ import { Button, Breadcrumb, Divider, Icon, Select, Spin, Switch, Tabs } from 'a
 /* codePost imports */
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
-import { SectionType } from '../../infrastructure/section';
-import { Submission, SubmissionType } from '../../infrastructure/submission';
+import { SectionType, Section } from '../../infrastructure/section';
+import { Submission, SubmissionInfoType } from '../../infrastructure/submission';
 
 import { tooltips } from '../core/tooltips';
 
@@ -105,20 +105,13 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
   public loadSubmissionsForSection = async () => {
     const submissionMap: any = {};
     for (const section of this.props.sections) {
-      const mapValue: any = {};
+      let mapValue: any = {};
+      const submissions = await Section.readSubmissions(section.id, {
+        assignment: this.props.assignment.id.toString(),
+      });
+
       for (const student of section.students) {
-        /* eslint-disable no-useless-computed-key */
-        mapValue[student] = await Assignment.readSubmissions(this.props.assignment.id, {
-          student,
-          ['compact']: '1',
-        }).then((submissions) => {
-          if (submissions.length === 0) {
-            return null;
-          } else {
-            return submissions[0];
-          }
-        });
-        /* eslint-enable no-useless-computed-key */
+        mapValue[student] = submissions.find((el) => el.students.indexOf(student) > -1);
       }
 
       submissionMap[section.id] = mapValue;

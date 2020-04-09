@@ -11,6 +11,7 @@ interface IProps extends RouteComponentProps<{ panel: string }> {
   isSuperGrader: boolean;
   isSectionLeader: boolean;
   regradesAllowed: boolean;
+  activateQueue: boolean;
   baseURL: string;
 }
 
@@ -40,12 +41,15 @@ class GraderNav extends React.Component<IProps, {}> {
       <div>
         <div>
           <Menu theme="dark" mode="inline" selectedKeys={[this.getDefaultSelectedKeys()]}>
-            <Menu.Item key="0">
-              <Link to={`${this.props.baseURL}/my_submissions`}>
-                <Icon type="container" />
-                <span>Claimed by Me</span>
-              </Link>
-            </Menu.Item>
+            {this.props.activateQueue && (
+              <Menu.Item key="0">
+                <Link to={`${this.props.baseURL}/my_submissions`}>
+                  <Icon type="container" />
+                  <span>Claimed by Me</span>
+                </Link>
+              </Menu.Item>
+            )}
+
             {this.props.isSectionLeader ? (
               <Menu.Item key="1">
                 <Link to={`${this.props.baseURL}/my_sections`}>

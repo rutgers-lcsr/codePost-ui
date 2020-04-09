@@ -88,6 +88,7 @@ const demoCourse = (testName: string) => {
     noUnfinalize: false,
     lateDayCreditsAllowable: null,
     archived: false,
+    activateQueue: true,
   };
 };
 
