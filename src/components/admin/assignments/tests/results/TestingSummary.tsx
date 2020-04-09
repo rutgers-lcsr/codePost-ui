@@ -38,6 +38,7 @@ interface IProps {
   submissions: SubmissionInfoType[];
   currentAssignment: AssignmentType;
   isAdmin: boolean;
+  tableOnly: boolean;
   match?: any;
 }
 
@@ -158,6 +159,7 @@ export const TestingSummary = (props: IProps) => {
           <Breadcrumb.Item>Results</Breadcrumb.Item>
         </Breadcrumb>
       }
+      tableOnly={props.tableOnly}
       title={`${props.currentAssignment.name} | Tests Summary`}
       parentActions={actions}
       submissions={props.submissions}

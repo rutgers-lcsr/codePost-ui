@@ -2,11 +2,13 @@
 import React, { useState, useEffect } from 'react';
 
 /* library imports */
-import { Breadcrumb, Button, Checkbox, Dropdown, Icon, Menu, Modal, Radio, Tooltip } from 'antd';
+import { Breadcrumb, Button, Checkbox, Dropdown, Icon, Menu, Modal, Radio, Table, Tooltip } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
+
+import CPFlex from '../../../../core/CPFlex';
 
 /* codePost object imports */
 import { SubmissionInfoType } from '../../../../../infrastructure/submission';
@@ -54,6 +56,7 @@ interface IProps {
   breadcrumbs?: React.ReactNode;
   title?: string;
   parentActions: React.ReactNode[];
+  tableOnly: boolean;
 }
 
 enum MODAL_STATUS {
@@ -345,6 +348,7 @@ const TestResultsTable = (props: IProps) => {
     emptyMessage = 'Create some tests and you will be able to run them here.';
   }
 
+  // Show the full layout
   return (
     <div>
       <TableDetail
@@ -360,6 +364,7 @@ const TestResultsTable = (props: IProps) => {
         columns={columns}
         data={data}
         detail={detail}
+        tableOnly={props.tableOnly}
       />
     </div>
   );

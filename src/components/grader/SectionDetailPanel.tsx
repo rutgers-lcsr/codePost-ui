@@ -277,6 +277,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
               currentAssignment={this.props.assignment}
               submissions={filteredSubmissions}
               isAdmin={false}
+              tableOnly={true}
             />
           </Tabs.TabPane>
         </Tabs>

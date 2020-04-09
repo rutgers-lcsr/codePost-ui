@@ -101,6 +101,7 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
             currentAssignment={assignment}
             submissions={props.submissions}
             isAdmin={true}
+            tableOnly={false}
           />
         )}
       />
