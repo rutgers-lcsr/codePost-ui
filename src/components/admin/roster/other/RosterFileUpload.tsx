@@ -514,12 +514,14 @@ class RosterFileUpload extends React.Component<IProps, {}> {
   public changedStudentsToJSX = (changes: IChangeType) => {
     const diffItems = [
       {
-        title: 'Deleted: ',
+        title: 'Removed from roster and will be unenrolled: ',
         items: Object.keys(changes.deleted),
         key: 'deleted',
       },
       {
-        title: `Added (${this.props.emailNewUsers ? 'will' : "won't"} be emailed):`,
+        title: `Added (${
+          this.props.emailNewUsers ? 'will' : "won't"
+        } be notified via email, per your course settings):`,
         items: Object.keys(changes.added),
         key: 'added',
       },
@@ -732,10 +734,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
 
           content = (
             <div>
-              <Alert message="Your roster was parsed successfully!" type="success" />
-              <br />
-              <Divider orientation="left">Status</Divider>
-              <b>{this.props.roleType}s parsed in uploaded file: </b>
+              <Divider orientation="left">Overview</Divider>
+              <b>Total {this.props.roleType}s parsed: </b>
               <em>{Object.keys(uploadedUsers!).length}</em>
               <Divider orientation="left">Changes</Divider>
               {sectionContent}
