@@ -615,7 +615,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             <div key={i} style={{ margin: '10px 0px' }}>
               <h4>{diffItem.title}</h4>
               <Table
-                pagination={false}
+                pagination={{ position: 'bottom', defaultPageSize: 3 }}
                 size="small"
                 style={{ lineHeight: 1 }}
                 dataSource={dataSource}
