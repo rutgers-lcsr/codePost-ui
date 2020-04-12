@@ -630,7 +630,7 @@ export const TestDefinitions = (props: IProps) => {
                   okText="Yes"
                   cancelText="No"
                 >
-                  Delete File
+                  <span>Delete File</span>
                 </Popconfirm>
               </Menu.Item>
             </Menu>
@@ -828,7 +828,7 @@ export const TestDefinitions = (props: IProps) => {
                       okText="Yes"
                       cancelText="No"
                     >
-                      Delete Category
+                      <span>Delete Category</span>
                     </Popconfirm>
                   </Menu.Item>
                 </Menu>

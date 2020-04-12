@@ -385,18 +385,20 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   return (
     <div ref={ref} id="submission-status-toggle" className={nudge ? 'wiggle' : ''} style={{ minWidth: '108px' }}>
       <CPTooltip title={toggleNotice} placement="left">
-        <span style={{ color: consoleTheme.siderMenuItemColor }}>Finalized:</span>
-        &nbsp;
-        <span>
-          <Switch
-            checked={isFinalized}
-            onClick={onClick}
-            disabled={
-              (props.submission.grader === null && !props.isOnlyGrader) || (isFinalized && !props.canUnfinalize)
-            }
-            loading={isLoading}
-          />
-        </span>
+        <div>
+          <span style={{ color: consoleTheme.siderMenuItemColor }}>Finalized:</span>
+          &nbsp;
+          <span>
+            <Switch
+              checked={isFinalized}
+              onClick={onClick}
+              disabled={
+                (props.submission.grader === null && !props.isOnlyGrader) || (isFinalized && !props.canUnfinalize)
+              }
+              loading={isLoading}
+            />
+          </span>
+        </div>
       </CPTooltip>
     </div>
   );

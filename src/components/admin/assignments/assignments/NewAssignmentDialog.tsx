@@ -6,6 +6,7 @@
 import * as React from 'react';
 
 import { Form } from '@ant-design/compatible';
+import { PlusCircleOutlined } from '@ant-design/icons';
 import '@ant-design/compatible/assets/index.css';
 
 /* ant imports */
@@ -130,7 +131,7 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
   public render() {
     return (
       <div>
-        <CPButton onClick={this.toggleDialog} cpType="primary" icon="plus-circle">
+        <CPButton onClick={this.toggleDialog} cpType="primary" icon={<PlusCircleOutlined />}>
           Add assignment
         </CPButton>
         <CollectionCreateForm

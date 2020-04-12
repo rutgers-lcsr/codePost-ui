@@ -7,6 +7,7 @@ import * as React from 'react';
 
 import { Form } from '@ant-design/compatible';
 import '@ant-design/compatible/assets/index.css';
+import { PlusCircleOutlined } from '@ant-design/icons';
 
 /* ant imports */
 import { Input, message, Modal } from 'antd';
@@ -80,7 +81,7 @@ class AddSectionDialog extends React.Component<IProps, {}> {
   public render() {
     return (
       <div>
-        <CPButton onClick={this.toggleDialog} cpType="primary" icon="plus-circle">
+        <CPButton onClick={this.toggleDialog} cpType="primary" icon={<PlusCircleOutlined />}>
           Add section
         </CPButton>
         <CollectionCreateForm

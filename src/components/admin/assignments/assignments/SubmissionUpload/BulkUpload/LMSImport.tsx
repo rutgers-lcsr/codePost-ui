@@ -612,6 +612,9 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
 
   const data = Object.keys(props.folderMap).map((folderName) => {
     const id = getIdentifierFromFolder(folderName, props.idIndex);
+
+    // @ts-ignore
+    const lastOption = <Select.Option value={undefined}> </Select.Option>;
     const studentEmail = !editMode ? (
       <span>{props.folderMap[folderName] || undefined}</span>
     ) : (
@@ -634,7 +637,7 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
           .sort((a, b) => {
             return (a.key as number) - (b.key as number);
           })}
-        <Select.Option value={undefined}> </Select.Option>
+        {lastOption}
       </Select>
     );
 

@@ -174,7 +174,9 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
               ) : (
                 <span style={{ color: '#80808082' }}>
                   <CPTooltip title="This user has not yet signed up for codePost.">
-                    {highlightedEmail} &nbsp; <DisconnectOutlined />
+                    <div>
+                      {highlightedEmail} &nbsp; <DisconnectOutlined />
+                    </div>
                   </CPTooltip>
                 </span>
               );
@@ -197,7 +199,9 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
             <Menu>
               <Menu.Item key="1" disabled={true}>
                 <CPTooltip title={tooltips.admin.adminRoster.removeSelf}>
-                  <UserDeleteOutlined /> &nbsp; Unenroll
+                  <div>
+                    <UserDeleteOutlined /> &nbsp; Unenroll
+                  </div>
                 </CPTooltip>
               </Menu.Item>
             </Menu>

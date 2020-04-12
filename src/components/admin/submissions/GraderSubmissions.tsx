@@ -5,7 +5,7 @@
 /* react imports */
 import * as React from 'react';
 
-import { FolderOpenOutlined } from '@ant-design/icons';
+import { FolderOpenOutlined, UserAddOutlined, PlusCircleOutlined } from '@ant-design/icons';
 
 /* ant imports */
 import { Breadcrumb, Checkbox, Empty } from 'antd';
@@ -299,7 +299,7 @@ class GraderData extends React.Component<IByGraderProps, IState> {
                   >
                     {numGraders === 0 ? (
                       <Link to={`${this.props.baseURL}/roster/graders`}>
-                        <CPButton cpType="primary" key={1} icon="user-add">
+                        <CPButton cpType="primary" key={1} icon={<UserAddOutlined />}>
                           Add some graders
                         </CPButton>
                       </Link>
@@ -309,7 +309,7 @@ class GraderData extends React.Component<IByGraderProps, IState> {
                       <span>
                         {numGraders === 0 ? <span>&nbsp; &nbsp;</span> : null}
                         <Link to={`${this.props.baseURL}/assignments/overview`}>
-                          <CPButton cpType="primary" key={2} icon="plus-circle">
+                          <CPButton cpType="primary" key={2} icon={<PlusCircleOutlined />}>
                             Add an assignment
                           </CPButton>
                         </Link>

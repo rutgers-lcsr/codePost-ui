@@ -208,7 +208,7 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
         >
           <InputNumber
             value={this.props.value !== undefined ? Math.abs(this.props.value) : undefined}
-            size={this.props.size}
+            size={this.props.size === 'default' ? 'middle' : 'small'}
             onChange={this.setValue}
             disabled={this.props.disabled}
             onKeyDown={this.props.onKeyDown}

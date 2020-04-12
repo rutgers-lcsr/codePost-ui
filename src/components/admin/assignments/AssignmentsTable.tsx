@@ -392,7 +392,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         <CPButton
           cpType="secondary"
           key={2}
-          icon="download"
+          icon={<DownloadOutlined />}
           disabled={Object.keys(this.props.submissions).length === 0}
         >
           Download grades

@@ -413,7 +413,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
           cpType="secondary"
           onClick={this.toggleStatus}
           disabled={this.props.isDisabled}
-          icon="upload"
+          icon={<UploadOutlined />}
           fallback="upload"
           fallbackWidth={1250}
         >

@@ -143,7 +143,11 @@ class ManageSections extends React.Component<IManageSectionsProps, IState> {
                       style={{ width: 400 }}
                     >
                       {this.props.graders.map((grader) => {
-                        return <Select.Option key={grader}>{grader}</Select.Option>;
+                        return (
+                          <Select.Option key={grader} value={grader}>
+                            {grader}
+                          </Select.Option>
+                        );
                       })}
                     </Select>{' '}
                     &nbsp;&nbsp;

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { CodeOutlined } from '@ant-design/icons';
+import { CodeOutlined, UploadOutlined } from '@ant-design/icons';
 
 import { Drawer, Table } from 'antd';
 
@@ -414,7 +414,7 @@ export const StatsDrawer = (props: {
         ),
         upload:
           props.type === DRAWER_TYPE.Missing ? (
-            <CPButton icon="upload" onClick={onClick}>
+            <CPButton icon={<UploadOutlined />} onClick={onClick}>
               Upload
             </CPButton>
           ) : (

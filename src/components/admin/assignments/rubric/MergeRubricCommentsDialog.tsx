@@ -5,7 +5,7 @@
 /* react imports */
 import * as React from 'react';
 
-import { ArrowRightOutlined } from '@ant-design/icons';
+import { ArrowRightOutlined, BranchesOutlined } from '@ant-design/icons';
 
 /* ant imports */
 import { Modal, Spin } from 'antd';
@@ -184,7 +184,7 @@ class MergeRubricCommentsDialog extends React.Component<
           onClick={this.openDialog}
           disabled={this.props.isDisabled}
           cpType="secondary"
-          icon="branches"
+          icon={<BranchesOutlined />}
           fallback="branches"
           fallbackWidth={1250}
         >

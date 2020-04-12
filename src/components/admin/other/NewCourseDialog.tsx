@@ -7,6 +7,7 @@ import * as React from 'react';
 
 import { Form } from '@ant-design/compatible';
 import '@ant-design/compatible/assets/index.css';
+import { PlusCircleOutlined } from '@ant-design/icons';
 
 /* ant imports */
 import { Input, Modal, Radio, Select } from 'antd';
@@ -80,7 +81,7 @@ class NewCourseDialog extends React.Component<IProps, IState> {
   public render() {
     return (
       <div>
-        <CPButton onClick={this.toggleDialog} cpType="secondary" icon="plus-circle">
+        <CPButton onClick={this.toggleDialog} cpType="secondary" icon={<PlusCircleOutlined />}>
           Create a course
         </CPButton>
         <CollectionCreateForm

@@ -440,7 +440,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 placeholder={'Input'}
                 disabled={this.props.isRunning}
                 style={{ minWidth: 240, marginLeft: 5 }}
-                autosize={true}
+                autoSize={true}
               />,
             )}
           </Form.Item>

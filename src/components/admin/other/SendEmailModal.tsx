@@ -7,6 +7,7 @@ import * as React from 'react';
 
 /* style imports */
 import { Button, List, message, Modal } from 'antd';
+import { MailOutlined } from '@ant-design/icons';
 
 /* codePost imports */
 
@@ -115,7 +116,12 @@ class SendEmailModal extends React.Component<IProps, IState> {
         {this.props.button !== undefined ? (
           this.props.button(this.toggleDialog)
         ) : (
-          <CPButton cpType="secondary" icon="mail" loading={this.state.isSending} onClick={this.toggleDialog}>
+          <CPButton
+            cpType="secondary"
+            icon={<MailOutlined />}
+            loading={this.state.isSending}
+            onClick={this.toggleDialog}
+          >
             {this.props.buttonText}
           </CPButton>
         )}

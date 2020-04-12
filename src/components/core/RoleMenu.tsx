@@ -71,18 +71,22 @@ const RoleMenu = (props: IProps) => {
           hideThisOnHideTips={true}
           hideChildrenOnHideTips={true}
         >
-          <Divider style={{ margin: '4px 0px' }} />
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              paddingLeft: 10,
-              paddingRight: 10,
-              paddingBottom: 2,
-            }}
-          >
-            <InfoCircleOutlined style={{ paddingRight: 7, color: 'grey' }} />
-            <div style={{ color: 'grey', fontStyle: 'italic', fontSize: 10, maxWidth: 55 }}>Learn more about roles</div>
+          <div>
+            <Divider style={{ margin: '4px 0px' }} />
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                paddingLeft: 10,
+                paddingRight: 10,
+                paddingBottom: 2,
+              }}
+            >
+              <InfoCircleOutlined style={{ paddingRight: 7, color: 'grey' }} />
+              <div style={{ color: 'grey', fontStyle: 'italic', fontSize: 10, maxWidth: 55 }}>
+                Learn more about roles
+              </div>
+            </div>
           </div>
         </CPTooltip>
       </div>

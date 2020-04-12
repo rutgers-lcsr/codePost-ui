@@ -125,12 +125,12 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
     });
   };
 
-  public handleSelect = (grader: string) => {
+  public handleSelect = (grader: any, o: any) => {
     const newGraders = [...this.state.selectedGraders, grader];
     this.setState({ selectedGraders: newGraders });
   };
 
-  public handleDeselect = (grader: string) => {
+  public handleDeselect = (grader: any, o: any) => {
     const newGraders = this.state.selectedGraders.filter((g) => {
       return g !== grader;
     });
@@ -240,7 +240,11 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
           style={{ width: 500, marginBottom: 20 }}
         >
           {graders.map((grader) => {
-            return <Option key={grader}>{grader}</Option>;
+            return (
+              <Option key={grader} value={grader}>
+                {grader}
+              </Option>
+            );
           })}
         </Select>
         <CPTooltip

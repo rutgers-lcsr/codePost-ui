@@ -5,7 +5,7 @@
 /* react imports */
 import * as React from 'react';
 
-import { FolderOpenOutlined } from '@ant-design/icons';
+import { FolderOpenOutlined, UserAddOutlined, PlusCircleOutlined } from '@ant-design/icons';
 
 /* style imports */
 import { Breadcrumb, Checkbox, Empty } from 'antd';
@@ -312,7 +312,7 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                   >
                     {numStudents === 0 ? (
                       <Link to={`${this.props.baseURL}/roster/students`}>
-                        <CPButton cpType="primary" key={1} icon="user-add">
+                        <CPButton cpType="primary" key={1} icon={<UserAddOutlined />}>
                           Add some students
                         </CPButton>
                       </Link>
@@ -322,7 +322,7 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                       <span>
                         {numStudents === 0 ? <span>&nbsp; &nbsp;</span> : null}
                         <Link to={`${this.props.baseURL}/assignments/overview`}>
-                          <CPButton cpType="primary" key={2} icon="plus-circle">
+                          <CPButton cpType="primary" key={2} icon={<PlusCircleOutlined />}>
                             Add an assignment
                           </CPButton>
                         </Link>

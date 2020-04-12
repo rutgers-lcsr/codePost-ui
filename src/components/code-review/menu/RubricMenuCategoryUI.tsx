@@ -99,7 +99,7 @@ const RubricMenuCategoryUI = ({
           const textInput = (
             <TextArea
               style={{ backgroundColor: consoleTheme.commentTextArea, color: consoleTheme.text }}
-              autosize={{ minRows: 2 }}
+              autoSize={{ minRows: 2 }}
               value={thisComment.text}
               onChange={onChangeText}
               onBlur={saveComment}
@@ -161,7 +161,7 @@ const RubricMenuCategoryUI = ({
           const textInput = (
             <TextArea
               style={{ backgroundColor: consoleTheme.commentTextArea, color: consoleTheme.text }}
-              autosize={{ minRows: 2 }}
+              autoSize={{ minRows: 2 }}
               value={''}
               onChange={updateRubricCommentText}
               onBlur={saveComment}

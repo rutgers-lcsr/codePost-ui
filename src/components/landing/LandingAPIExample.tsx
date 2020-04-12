@@ -1,4 +1,4 @@
-import { ApiOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { ApiOutlined, ArrowRightOutlined, BarChartOutlined, TeamOutlined, ExportOutlined } from '@ant-design/icons';
 import { Collapse, Divider } from 'antd';
 
 import * as React from 'react';
@@ -235,7 +235,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
           style={exampleIndex === 0 ? selectedStyle : unSelectedStyle}
           className={exampleIndex === 0 ? '' : 'apiexample__link'}
           cpType="link"
-          icon="export"
+          icon={<ExportOutlined />}
           ghost={true}
         >
           {apiCodeExamples[0].title}
@@ -245,7 +245,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
           style={exampleIndex === 1 ? selectedStyle : unSelectedStyle}
           className={exampleIndex === 1 ? '' : 'apiexample__link'}
           cpType="link"
-          icon="team"
+          icon={<TeamOutlined />}
           ghost={true}
         >
           {apiCodeExamples[1].title}
@@ -255,7 +255,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
           style={exampleIndex === 2 ? selectedStyle : unSelectedStyle}
           className={exampleIndex === 2 ? '' : 'apiexample__link'}
           cpType="link"
-          icon="bar-chart"
+          icon={<BarChartOutlined />}
           ghost={true}
         >
           {apiCodeExamples[2].title}

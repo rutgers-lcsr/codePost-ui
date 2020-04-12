@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 
-import { CodeOutlined, EditOutlined, EyeOutlined, MenuOutlined } from '@ant-design/icons';
+import {
+  CodeOutlined,
+  EditOutlined,
+  EyeOutlined,
+  MenuOutlined,
+  ReloadOutlined,
+  InfoCircleOutlined,
+} from '@ant-design/icons';
 import { Icon as LegacyIcon } from '@ant-design/compatible';
 
 import { Divider, Dropdown, Input, Menu, message, Modal, Table, Tag, Typography } from 'antd';
@@ -366,7 +373,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
     <div>
       <CPButton
         cpType="secondary"
-        icon="info-circle"
+        icon={<InfoCircleOutlined />}
         style={{ marginBottom: 10, marginRight: 10 }}
         onClick={openInstructionsModal}
       >
@@ -378,7 +385,12 @@ const RegradesTable = (props: IRegradesTableProps) => {
         cancel={closeInstructionsModal}
         save={saveInstructions}
       />
-      <CPButton cpType="secondary" icon="reload" style={{ marginBottom: 10 }} onClick={props.refreshCourseData}>
+      <CPButton
+        cpType="secondary"
+        icon={<ReloadOutlined />}
+        style={{ marginBottom: 10 }}
+        onClick={props.refreshCourseData}
+      >
         Refresh Data
       </CPButton>
       <Table columns={columns} dataSource={rows} loading={props.isLoading} />{' '}
@@ -423,7 +435,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
             <div style={{ fontSize: 15, whiteSpace: 'pre-wrap' }}>{responseText}</div>
           ) : (
             <div>
-              <TextArea autosize={{ minRows: 4, maxRows: 8 }} value={responseText} onChange={changeRegradeText} />
+              <TextArea autoSize={{ minRows: 4, maxRows: 8 }} value={responseText} onChange={changeRegradeText} />
               <div style={{ marginTop: 15 }}>
                 <Text type="warning">
                   Note: The student will be able to view this response once submitted, as well as your email as the

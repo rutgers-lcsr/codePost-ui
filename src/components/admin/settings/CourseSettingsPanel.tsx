@@ -7,6 +7,7 @@ import * as React from 'react';
 
 import { Form } from '@ant-design/compatible';
 import '@ant-design/compatible/assets/index.css';
+import { RedoOutlined } from '@ant-design/icons';
 
 /* style imports */
 import { Breadcrumb, Input, message, Select, Switch, Table, Typography } from 'antd';
@@ -132,7 +133,7 @@ class CourseSettingsPanel extends React.Component<IProps, IState> {
       <CPButton
         key={0}
         disabled={!this.state.isDirty || this.state.isLoading}
-        icon="redo"
+        icon={<RedoOutlined />}
         cpType="secondary"
         onClick={this.resetForm}
       >

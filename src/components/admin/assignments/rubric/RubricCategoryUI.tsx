@@ -1,7 +1,14 @@
 /* react imports */
 import * as React from 'react';
 
-import { CaretDownOutlined, CaretUpOutlined, CloseCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import {
+  CaretDownOutlined,
+  CaretUpOutlined,
+  CloseCircleOutlined,
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+} from '@ant-design/icons';
 
 /* ant imports */
 import { Badge, Button, Input, Popconfirm, Spin, Table, Tag, Switch } from 'antd';
@@ -164,7 +171,7 @@ const RubricCategoryUI = ({
           text: (
             <span style={{ display: 'flex' }}>
               <TextArea
-                autosize
+                autoSize
                 value={thisComment.text}
                 onChange={onChangeText}
                 onBlur={saveComment}
@@ -193,7 +200,7 @@ const RubricCategoryUI = ({
             <span style={{ verticalAlign: 'middle' }}>
               <CPTooltip title="Edit comment's explanation" key={rubricComment.id}>
                 <CPButton
-                  icon="edit"
+                  icon={<EditOutlined />}
                   style={{ background: thisComment.explanation ? '#f0fff7' : undefined }}
                   onClick={() => {
                     setActiveComment(thisComment);
@@ -207,7 +214,7 @@ const RubricCategoryUI = ({
                 disabled={!thisComment.explanation}
               >
                 <CPButton
-                  icon="delete"
+                  icon={<DeleteOutlined />}
                   disabled={!thisComment.explanation}
                   onClick={() => {
                     onDeleteField('explanation');
@@ -222,7 +229,7 @@ const RubricCategoryUI = ({
             <span style={{ verticalAlign: 'middle' }}>
               <CPTooltip title="Edit comment's instructions" key={rubricComment.id}>
                 <CPButton
-                  icon="edit"
+                  icon={<EditOutlined />}
                   style={{ background: thisComment.instructionText ? '#f0fff7' : undefined }}
                   onClick={() => {
                     setActiveComment(thisComment);
@@ -236,7 +243,7 @@ const RubricCategoryUI = ({
                 disabled={!thisComment.instructionText}
               >
                 <CPButton
-                  icon="delete"
+                  icon={<DeleteOutlined />}
                   disabled={!thisComment.instructionText}
                   onClick={() => {
                     onDeleteField('instructionText');
@@ -279,7 +286,7 @@ const RubricCategoryUI = ({
 
         return {
           key: rubricComment.id,
-          text: <TextArea autosize value={''} onChange={updateRubricCommentText} onBlur={saveComment} />,
+          text: <TextArea autoSize value={''} onChange={updateRubricCommentText} onBlur={saveComment} />,
           deduction: (
             <CPPointInput
               value={-rubricComment.pointDelta}
@@ -419,7 +426,7 @@ const RubricCategoryUI = ({
         value={state.helpText}
         onChange={helpers.changeHelpText}
         onBlur={helpers.saveCategory}
-        autosize={true}
+        autoSize={true}
       />
     </div>
   ) : null;
@@ -474,7 +481,7 @@ const RubricCategoryUI = ({
           locale={{ emptyText: 'No comments yet' }}
         />
         <div className="cp-rubric-category__add-new-comment">
-          <CPButton cpType="primary" icon="plus" onClick={helpers.addComment} />
+          <CPButton cpType="primary" icon={<PlusOutlined />} onClick={helpers.addComment} />
           <span style={{ marginLeft: '20px' }} className="cp-label cp-label--success cp-label--bold">
             ADD NEW COMMENT
           </span>

@@ -257,7 +257,7 @@ RUN ${installText} package2
 
   const customDockerInput = props.env && (
     <Input.TextArea
-      autosize={{ minRows: 4 }}
+      autoSize={{ minRows: 4 }}
       value={customDockerfile}
       onChange={onCustomDockerfileChange}
       placeholder={dockerPlaceholder}

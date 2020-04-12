@@ -214,7 +214,9 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
               ) : (
                 <span style={{ color: '#80808082' }}>
                   <CPTooltip title="This user has not yet signed up for codePost.">
-                    {highlightedEmail} &nbsp; <DisconnectOutlined />
+                    <div>
+                      {highlightedEmail} &nbsp; <DisconnectOutlined />
+                    </div>
                   </CPTooltip>
                 </span>
               );
