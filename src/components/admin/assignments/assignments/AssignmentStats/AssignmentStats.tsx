@@ -7,6 +7,7 @@ import * as React from 'react';
 
 /* ant imports */
 import { Breadcrumb, Card, Col, Progress, Row, Statistic, Table, Typography, Spin } from 'antd';
+import { RedoOutlined } from '@ant-design/icons';
 
 import CPButton from '../../../../../components/core/CPButton';
 import CPTooltip from '../../../../../components/core/CPTooltip';
@@ -411,7 +412,12 @@ class AssignmentStats extends React.Component<IProps, IState> {
               <Title level={3} style={{ color: '#24be85' }}>
                 Grading Progress Summary
               </Title>
-              <CPButton onClick={this.refreshData} cpType="primary" icon="redo" loading={this.state.isLoading}>
+              <CPButton
+                onClick={this.refreshData}
+                cpType="primary"
+                icon={<RedoOutlined />}
+                loading={this.state.isLoading}
+              >
                 Refresh data
               </CPButton>
               {reminderEmails.length > 0 ? (

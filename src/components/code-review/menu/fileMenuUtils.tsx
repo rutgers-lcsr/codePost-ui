@@ -1,6 +1,8 @@
 import * as React from 'react';
 
-import { Icon, Menu } from 'antd';
+import { FolderOutlined } from '@ant-design/icons';
+
+import { Menu } from 'antd';
 
 const { SubMenu } = Menu;
 
@@ -77,7 +79,7 @@ export function buildFolderMenu<T extends IBasicFile>(
       key={`${parentPath}/${folder.name}`}
       title={
         <div>
-          <Icon type="folder" />
+          <FolderOutlined />
           {folder.name}
         </div>
       }

@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { CodeOutlined, PushpinFilled, PushpinOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Button, Icon, Modal, Table, Typography } from 'antd';
+import { Button, Modal, Table, Typography } from 'antd';
 
 /* codePost imports */
 import { openSubmission } from '../../other/AdminUtils';
@@ -142,13 +144,13 @@ class RubricCommentExplorer extends React.Component<IProps, IState> {
         author: comment.author,
         text:
           comment.text === null || comment.text.length === 0 ? (
-            <Icon type="pushpin" />
+            <PushpinOutlined />
           ) : (
             <CPTooltip title={comment.text}>
-              <Icon type="pushpin" theme="filled" />
+              <PushpinFilled />
             </CPTooltip>
           ),
-        open: <Icon type="code" onClick={openSubmission.bind(this, commentToSubMap[comment.id].submission)} />,
+        open: <CodeOutlined onClick={openSubmission.bind(this, commentToSubMap[comment.id].submission)} />,
       };
     });
 

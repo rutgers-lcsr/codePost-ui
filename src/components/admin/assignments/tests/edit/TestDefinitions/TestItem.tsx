@@ -7,7 +7,7 @@ import React, { useEffect, useState } from 'react';
 
 /* antd imports */
 import { message, Modal } from 'antd';
-import { FormComponentProps } from 'antd/lib/form';
+import { FormComponentProps } from '@ant-design/compatible/lib/form';
 
 /* codePost object imports */
 import { AssignmentType, TestCaseType, SubmissionType } from '../../../../../../infrastructure/types';

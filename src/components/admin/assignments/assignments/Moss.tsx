@@ -5,13 +5,14 @@
 /* React imports */
 import * as React from 'react';
 
+import { QuestionCircleOutlined } from '@ant-design/icons';
+
 /* ant imports */
 import {
   Breadcrumb,
   Button,
   Checkbox,
   Divider,
-  Icon,
   Input,
   message,
   Progress,
@@ -423,7 +424,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
       <Tooltip
         title={'If checked, submission code that also appears in a file template will not be counted in matches.'}
       >
-        <Icon style={{ cursor: 'pointer' }} type="question-circle" />
+        <QuestionCircleOutlined style={{ cursor: 'pointer' }} />
       </Tooltip>
       {fileTemplates.length > 0 && (
         <span>
@@ -475,7 +476,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
                   </span>
                 }
               >
-                <Icon type="question-circle" />
+                <QuestionCircleOutlined />
               </CPTooltip>
             }
           />

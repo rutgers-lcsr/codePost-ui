@@ -1,6 +1,8 @@
 import React from 'react';
 
-import { Drawer, Icon, Table } from 'antd';
+import { CodeOutlined, UploadOutlined } from '@ant-design/icons';
+
+import { Drawer, Table } from 'antd';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../../infrastructure/assignment';
@@ -405,14 +407,14 @@ export const StatsDrawer = (props: {
         open: el.subID ? (
           // eslint-disable-next-line jsx-a11y/anchor-is-valid
           <a onClick={openSub} className="internal-link">
-            <Icon type="code" />
+            <CodeOutlined />
           </a>
         ) : (
           undefined
         ),
         upload:
           props.type === DRAWER_TYPE.Missing ? (
-            <CPButton icon="upload" onClick={onClick}>
+            <CPButton icon={<UploadOutlined />} onClick={onClick}>
               Upload
             </CPButton>
           ) : (

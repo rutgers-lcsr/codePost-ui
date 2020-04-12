@@ -6,7 +6,8 @@
 import * as React from 'react';
 
 /* style imports */
-import { Alert, Button, Divider, Modal, Spin, Steps, Table, Result } from 'antd';
+import { Alert, Button, Divider, Modal, Spin, Steps, Table } from 'antd';
+import { UserAddOutlined } from '@ant-design/icons';
 
 /* codePost imports */
 
@@ -827,7 +828,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
 
     return (
       <div>
-        <CPButton icon="user-add" cpType="primary" onClick={this.toggleDialog}>
+        <CPButton icon={<UserAddOutlined />} cpType="primary" onClick={this.toggleDialog}>
           {this.props.buttonText || `Add ${this.props.roleType}s`}
         </CPButton>
         <Modal

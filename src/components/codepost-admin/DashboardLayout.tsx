@@ -1,6 +1,8 @@
 import * as React from 'react';
 
-import { Icon, Layout, Menu } from 'antd';
+import { DashboardOutlined, LineChartOutlined } from '@ant-design/icons';
+
+import { Layout, Menu } from 'antd';
 
 import { Link } from 'react-router-dom';
 
@@ -58,11 +60,11 @@ const DashboardLayout = (props: any) => {
         </div>
         <Menu theme="dark" mode="inline" defaultSelectedKeys={[siderKey]} onClick={onClick}>
           <Menu.Item key="1">
-            <Icon type="dashboard" />
+            <DashboardOutlined />
             <span className="nav-text">dashboard</span>
           </Menu.Item>
           <Menu.Item key="2">
-            <Icon type="line-chart" />
+            <LineChartOutlined />
             <span className="nav-text">google analytics</span>
           </Menu.Item>
         </Menu>
