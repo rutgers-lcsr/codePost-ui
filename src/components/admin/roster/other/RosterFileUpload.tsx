@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import { Alert, Button, Divider, Modal, Spin, Steps, Table } from 'antd';
+import { Alert, Button, Divider, Modal, Spin, Steps, Table, Result } from 'antd';
 
 /* codePost imports */
 
@@ -229,7 +229,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
     const diff = this.state.updates;
     const { students, graders, admins } = this.props;
 
-    this.setState({ updatingRoster: true, status: UPLOAD_STATUS.SAVE }, () => {
+    this.setState({ updatingRoster: true }, () => {
       // we don't want to declare success until all the work below completes
       const promises: Array<Promise<any>> = [];
 
@@ -341,7 +341,9 @@ class RosterFileUpload extends React.Component<IProps, {}> {
               }
             }
 
-            return Promise.all(innerPromises);
+            return Promise.all(innerPromises).then(() => {
+              this.setState({ status: UPLOAD_STATUS.SAVE });
+            });
           }),
         );
       }
@@ -514,12 +516,14 @@ class RosterFileUpload extends React.Component<IProps, {}> {
   public changedStudentsToJSX = (changes: IChangeType) => {
     const diffItems = [
       {
-        title: 'Deleted: ',
+        title: 'Removed from roster and will be unenrolled: ',
         items: Object.keys(changes.deleted),
         key: 'deleted',
       },
       {
-        title: `Added (${this.props.emailNewUsers ? 'will' : "won't"} be emailed):`,
+        title: `Added (${
+          this.props.emailNewUsers ? 'will' : "won't"
+        } be notified via email, per your course settings):`,
         items: Object.keys(changes.added),
         key: 'added',
       },
@@ -615,7 +619,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             <div key={i} style={{ margin: '10px 0px' }}>
               <h4>{diffItem.title}</h4>
               <Table
-                pagination={false}
+                pagination={dataSource.length > 3 ? { position: 'bottom', defaultPageSize: 3 } : false}
                 size="small"
                 style={{ lineHeight: 1 }}
                 dataSource={dataSource}
@@ -676,7 +680,12 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             <div key={i}>
               <br />
               <h4>{diffItem.title}</h4>
-              <Table pagination={false} style={{ lineHeight: 1 }} dataSource={dataSource} columns={columns} />
+              <Table
+                pagination={dataSource.length > 3 ? { position: 'bottom', defaultPageSize: 3 } : false}
+                style={{ lineHeight: 1 }}
+                dataSource={dataSource}
+                columns={columns}
+              />
             </div>
           );
         })}
@@ -727,10 +736,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
 
           content = (
             <div>
-              <Alert message="Your roster was parsed successfully!" type="success" />
-              <br />
-              <Divider orientation="left">Status</Divider>
-              <b>{this.props.roleType}s parsed in uploaded file: </b>
+              <Divider orientation="left">Overview</Divider>
+              <b>Total {this.props.roleType}s parsed: </b>
               <em>{Object.keys(uploadedUsers!).length}</em>
               <Divider orientation="left">Changes</Divider>
               {sectionContent}
@@ -773,15 +780,13 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         }
         break;
       case UPLOAD_STATUS.SAVE:
-        if (this.state.updatingRoster) {
-          content = (
-            <div>
-              Updating your roster... <Spin />
-            </div>
-          );
-        } else {
-          content = <div>Your roster was successfully updated!</div>;
-        }
+        content = (
+          <Result
+            status="success"
+            title="Your roster was successfully updated!"
+            subTitle="Click Close below to continue."
+          />
+        );
         break;
     }
 
@@ -824,7 +829,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
         );
       } else {
         goForwardButton = (
-          <Button key="submit" type="primary" onClick={this.updateRoster}>
+          <Button key="submit" type="primary" onClick={this.updateRoster} loading={this.state.updatingRoster}>
             Confirm
           </Button>
         );
