@@ -82,7 +82,7 @@ interface IProps {
   emailNewUsers: boolean;
 
   /* object level REST operations */
-  changeRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
+  changeRoster: (adds: string[], deletes: string[], userType: USER_APP) => Promise<void>;
   updateSection: (section: SectionType) => Promise<void>;
   createSection: (sectionName: string) => Promise<SectionType>;
 
@@ -235,35 +235,32 @@ class RosterFileUpload extends React.Component<IProps, {}> {
 
       if (this.props.roleType === 'student') {
         /* remove and add users */
-        const newStudents = [
-          ...students.filter((student) => {
-            return !Object.keys(diff.deleted).includes(student);
-          }),
-          ...Object.keys(diff.added),
-        ];
+        const toAdd = Object.keys(diff.added);
+        const toRemove = Object.keys(diff.deleted);
+        const toChange = Object.keys(diff.changed);
 
         sendSlack(
           'Updated roster',
-          `${Object.keys(diff.added).length} ${this.props.roleType}s | ${this.props.course.name} ${
-            this.props.course.period
-          }\n
-          _[${Object.keys(diff.added).join(', ')}]_`,
+          `${toAdd.length} ${this.props.roleType}s | ${this.props.course.name} ${this.props.course.period}\n
+          _[${toAdd.join(', ')}]_`,
           '#24be85',
           '#user_notifications',
         );
 
         promises.push(
-          this.props.changeRoster(newStudents, USER_APP.Student).then(() => {
+          this.props.changeRoster(toAdd, toRemove, USER_APP.Student).then(() => {
             // build new sections
             const sectionMap: any = {};
             const innerPromises: Array<Promise<any>> = [];
-            const addedStudents = Object.keys(diff.added);
-            const changedStudents = Object.keys(diff.changed);
 
             // Pre-fill sections to account for students whose sections we aren't
             // updating.
-            for (const student of newStudents) {
-              if (addedStudents.indexOf(student) === -1 && changedStudents.indexOf(student) === -1) {
+            for (const student of students) {
+              if (
+                toAdd.indexOf(student) === -1 &&
+                toChange.indexOf(student) === -1 &&
+                toRemove.indexOf(student) === -1
+              ) {
                 const section = this.props.sectionsByStudent[student];
                 const sectionValue = section ? section.name : undefined;
                 if (sectionValue !== null && sectionValue !== undefined) {
@@ -277,7 +274,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             }
 
             // Pull information from added students
-            for (const student of addedStudents) {
+            for (const student of toAdd) {
               const sectionValue = diff.added[student]['section'];
               if (sectionValue !== null && sectionValue !== undefined) {
                 if (sectionMap[sectionValue] === undefined) {
@@ -289,7 +286,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             }
 
             // Pull information from changed students
-            for (const student of changedStudents) {
+            for (const student of toChange) {
               const sectionValue = diff.changed[student].new['section'];
               if (sectionValue !== null && sectionValue !== undefined) {
                 if (sectionMap[sectionValue] === undefined) {
@@ -349,31 +346,21 @@ class RosterFileUpload extends React.Component<IProps, {}> {
       }
 
       if (this.props.roleType === 'grader') {
-        const newGraders = [
-          ...graders.filter((grader) => {
-            return !Object.keys(diff.deleted).includes(grader);
-          }),
-          ...Object.keys(diff.added),
-        ];
+        const toAdd = Object.keys(diff.added);
+        const toRemove = Object.keys(diff.deleted);
         sendSlack(
           'Updated roster',
-          `${Object.keys(diff.added).length} ${this.props.roleType}s | ${this.props.course.name} ${
-            this.props.course.period
-          }\n
-          _[${Object.keys(diff.added).join(', ')}]_`,
+          `${toAdd.length} ${this.props.roleType}s | ${this.props.course.name} ${this.props.course.period}\n
+          _[${toAdd.join(', ')}]_`,
           '#24be85',
           '#user_notifications',
         );
-        promises.push(this.props.changeRoster(newGraders, USER_APP.Grader));
+        promises.push(this.props.changeRoster(toAdd, toRemove, USER_APP.Grader));
       }
 
       if (this.props.roleType === 'admin') {
-        const newAdmins = [
-          ...admins.filter((admin) => {
-            return !Object.keys(diff.deleted).includes(admin);
-          }),
-          ...Object.keys(diff.added),
-        ];
+        const toAdd = Object.keys(diff.added);
+        const toRemove = Object.keys(diff.deleted);
         sendSlack(
           'Updated roster',
           `${Object.keys(diff.added).length} ${this.props.roleType}s | ${this.props.course.name} ${
@@ -383,7 +370,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           '#24be85',
           '#user_notifications',
         );
-        promises.push(this.props.changeRoster(newAdmins, USER_APP.CourseAdmin));
+        promises.push(this.props.changeRoster(toAdd, toRemove, USER_APP.CourseAdmin));
       }
 
       /* update status */

@@ -42,7 +42,7 @@ export interface IManageSectionsProps {
   loadComplete: boolean;
 
   /* object-level REST operations */
-  updateRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
+  updateRoster: (adds: string[], deletes: string[], userType: USER_APP) => Promise<void>;
   deleteSection: (sectionID: number) => Promise<void>;
   createSection: (sectionName: string) => Promise<SectionType>;
   updateSection: (section: SectionType) => Promise<void>;
