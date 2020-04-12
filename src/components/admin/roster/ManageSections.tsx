@@ -8,7 +8,7 @@ import * as React from 'react';
 import { DeleteOutlined, EditOutlined, MenuOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Button, Drawer, Dropdown, Empty, Icon, Menu, message, Modal, Select, Table, Checkbox } from 'antd';
+import { Breadcrumb, Button, Drawer, Dropdown, Empty, Menu, message, Modal, Select, Table, Checkbox } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';

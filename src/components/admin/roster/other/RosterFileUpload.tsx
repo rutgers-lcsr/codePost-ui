@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* style imports */
-import { Alert, Button, Divider, Modal, Spin, Steps, Table } from 'antd';
+import { Alert, Button, Divider, Modal, Spin, Steps, Table, Result } from 'antd';
 import { UserAddOutlined } from '@ant-design/icons';
 
 /* codePost imports */
