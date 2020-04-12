@@ -57,6 +57,7 @@
     "react-syntax-highlighter": "^11.0.2",
     "react-test-renderer": "^16.9.0",
     "react-toggle-button": "^2.2.0",
+    "react-window": "^1.8.5",
     "remark-disable-tokenizers": "^1.0.23",
     "source-map-explorer": "^2.0.1",
     "turndown": "^5.0.3",
