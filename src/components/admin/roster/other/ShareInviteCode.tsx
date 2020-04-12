@@ -54,7 +54,7 @@ const ShareInviteCode = (props: IProps) => {
     });
   };
 
-  const inviteLink = `https://codepost.io/signup/join?code=${inviteCode}`;
+  const inviteLink = inviteCode === null ? '' : `https://codepost.io/signup/join?code=${inviteCode}`;
 
   const copyToClipboard = () => {
     const element = document.createElement('textarea');
@@ -70,6 +70,9 @@ const ShareInviteCode = (props: IProps) => {
     Course.update({ ...props.course, emailWhitelist: whitelist, inviteCodeEnabled: enabled });
     setVisible(false);
   };
+
+  const inputValue =
+    inviteCode === null ? 'None set; generate here -->' : `https://codepost.io/signup/join?code=${inviteCode}`;
 
   return (
     <div>
@@ -94,7 +97,7 @@ const ShareInviteCode = (props: IProps) => {
           disabled={!enabled}
           className="input--disabled-normal"
           id="api-key"
-          value={inviteLink}
+          value={inputValue}
           style={{ width: '65%' }}
         />
         &nbsp;

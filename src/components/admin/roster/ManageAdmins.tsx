@@ -51,7 +51,7 @@ export interface IManageAdminsProps {
 
   /* object-level REST operations */
   updateSection: (section: SectionType) => Promise<void>;
-  updateRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
+  updateRoster: (adds: string[], deletes: string[], userType: USER_APP) => Promise<void>;
   createSection: (sectionName: string) => Promise<SectionType>;
 
   /* misc */
@@ -69,10 +69,7 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
       content: `Once removed, they won't be able to access the course.
         You can always add them back from this page.`,
       onOk: () => {
-        const newRoster = this.props.admins.filter((admin) => {
-          return admin !== toRemove;
-        });
-        return this.props.updateRoster(newRoster, USER_APP.CourseAdmin);
+        return this.props.updateRoster([], [toRemove], USER_APP.CourseAdmin);
       },
       okText: 'Remove',
     });
@@ -83,8 +80,7 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
   };
 
   public addAdmin = (email: string) => {
-    const newRoster = [...this.props.admins, email];
-    return this.props.updateRoster(newRoster, USER_APP.CourseAdmin);
+    return this.props.updateRoster([email], [], USER_APP.CourseAdmin);
   };
 
   public toInvite = memoizeOne((admins: string[], inactiveUsers: string[]) => {

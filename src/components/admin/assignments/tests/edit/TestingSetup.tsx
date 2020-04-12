@@ -62,6 +62,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
 
   const [currTab, setCurrTab] = useState(defaultTab);
   const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
+
   const [loading, setLoading] = useState(false);
 
   const [solutions, setSolutions] = useState<SolutionFileType[]>([]);
@@ -229,20 +230,36 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
 
   // ************************** Environment function **************************
 
-  const buildEnv = async (language: string, dependencies: string, customDockerfile: string, buildType: string) => {
-    let thisEnvironment = env;
+  const reloadEnv = async () => {
+    if (env) {
+      const newEnv = await Environment.read(env.id);
 
+      // HACK: mutate to avoid propagating reference change through children
+      setEnv(newEnv);
+    }
+  };
+
+  const updateEnv = async (
+    language: string,
+    dependencies: string,
+    customDockerfile: string,
+    buildType: string,
+    runscript?: string,
+  ) => {
+    let thisEnvironment = env;
     // If environment doesn't exist create it
+
     if (!thisEnvironment) {
       const payload = {
         id: -1,
         language,
-        dockerRunInstructions: dependencies ? dependencies.split('\n') : [],
+        dockerRunInstructions: dependencies && !customDockerfile ? dependencies.split('\n') : [],
+        dockerfile: customDockerfile,
         assignment: props.currentAssignment.id,
         dumpMode: false,
         testParsing: true,
         compileText: '',
-        buildType: 'default',
+        buildType: buildType,
         allowNetworkAccess: false,
         maxStudentTestRuns: null,
         exposeDumpLogs: false,
@@ -251,43 +268,17 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
       thisEnvironment = await Environment.create(payload);
       // Update the assignment environment field
       props.updateAssignment(props.currentAssignment.id, 'environment', thisEnvironment.id);
-    }
-
-    const buildResult = await Environment.build({
-      id: thisEnvironment.id,
-      dockerRunInstructions: dependencies && !customDockerfile ? dependencies.split('\n') : [],
-      dockerfile: customDockerfile,
-      language: language,
-      buildType: buildType,
-    });
-    if (buildResult.build.success) {
-      setEnv(buildResult.environment);
-      message.success('Environment updated');
     } else {
-      Modal.error({
-        title: 'Build failed',
-        width: 700,
-        content: (
-          <div style={{ maxHeight: 'calc(100vh - 300px)', overflow: 'auto' }}>
-            The attempt to build an environment with the given specifications was unsuccesful. Please see the logs below
-            for more information:
-            <br />
-            <br />
-            <b>Logs:</b> <br />
-            <Collapse bordered={false}>
-              <Collapse.Panel header="Logs" key="1">
-                {buildResult.build.logs.map((l) => (
-                  <div>{l}</div>
-                ))}
-              </Collapse.Panel>
-              <Collapse.Panel header="Dockerfile" key="2">
-                <div style={{ whiteSpace: 'pre-wrap' }}>{buildResult.dockerfile}</div>
-              </Collapse.Panel>
-            </Collapse>
-          </div>
-        ),
-      });
+      const payload = {
+        id: thisEnvironment.id,
+        dockerRunInstructions: dependencies && !customDockerfile ? dependencies.split('\n') : [],
+        dockerfile: customDockerfile,
+        buildType: buildType,
+      };
+      thisEnvironment = await Environment.update(payload);
     }
+    setEnv({ ...thisEnvironment, language });
+    return thisEnvironment;
   };
 
   const updateCompileText = async (compileText: string) => {
@@ -332,7 +323,8 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         <EnvironmentSpecs
           currentAssignment={props.currentAssignment}
           env={env}
-          buildEnv={buildEnv}
+          updateEnv={updateEnv}
+          reloadEnv={reloadEnv}
           updateCompileText={updateCompileText}
           addFile={addFile}
           deleteFile={deleteFile}
