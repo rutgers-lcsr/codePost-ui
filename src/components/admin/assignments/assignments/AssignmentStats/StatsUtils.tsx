@@ -11,6 +11,9 @@ import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../..
 
 import { openSubmission } from '../../../other/AdminUtils';
 
+import { FixedSizeList as List } from 'react-window';
+import useWindowSize from '../../../../core/useWindowSize';
+
 import CPButton from '../../../../core/CPButton';
 import Loading from '../../../../core/Loading';
 
@@ -358,87 +361,76 @@ export const StatsDrawer = (props: {
   isVisible: boolean;
   uploadSubmission?: (assignmentName: string, students: string) => void;
 }) => {
+  const windowSize = useWindowSize();
+  const actionLabel = props.type === DRAWER_TYPE.Missing ? 'Upload' : 'Open';
+  const primaryWidth = actionLabel === 'Open' ? 455 : 331;
   let body = <Loading />;
   if (props.content.content !== null) {
-    // const alignCenter: alignType = 'center';
-    const alignLeft: alignType = 'left';
-
-    const drawerColumns: any[] = [
-      {
-        title: 'Students',
-        dataIndex: 'students',
-        key: 'students',
-        align: alignLeft,
-        defaultSortOrder: 'ascend',
-        sorter: (a: any, b: any) => {
-          return a.students.localeCompare(b.students);
-        },
-      },
-    ];
-    if (props.type !== undefined && props.type !== DRAWER_TYPE.Missing) {
-      drawerColumns.push({
-        title: 'Open',
-        dataIndex: 'open',
-        key: 'open',
-        align: alignLeft,
-      });
-    }
-
-    if (props.type === DRAWER_TYPE.Missing) {
-      drawerColumns.push({
-        title: 'Upload',
-        dataIndex: 'upload',
-        key: 'upload',
-        align: 'center',
-      });
-    }
-
-    const drawerData = props.content.content.map((el) => {
-      const openSub = () => openSubmission(el.subID!);
-      const onClick = () => {
-        if (props.uploadSubmission) {
-          props.uploadSubmission(props.content.title, el.email);
-        }
-      };
-
-      return {
-        key: el.email,
-        students: el.email,
-        open: el.subID ? (
-          // eslint-disable-next-line jsx-a11y/anchor-is-valid
-          <a onClick={openSub} className="internal-link">
-            <CodeOutlined />
-          </a>
-        ) : (
-          undefined
-        ),
-        upload:
-          props.type === DRAWER_TYPE.Missing ? (
-            <CPButton icon={<UploadOutlined />} onClick={onClick}>
-              Upload
-            </CPButton>
-          ) : (
-            undefined
-          ),
-        submission: el.subID,
-      };
-    });
-
     body = (
-      <Table
-        columns={drawerColumns}
-        dataSource={drawerData}
-        pagination={false}
-        onRow={(record, rowIndex) => {
-          return {
-            onClick: (event) => {
-              if (record.submission) {
-                openSubmission(record.submission);
-              }
-            },
-          };
-        }}
-      />
+      <div>
+        <div id="drawer-table-header" style={{ display: 'flex', alignItems: 'center', height: 54 }}>
+          <div style={{ width: primaryWidth, fontWeight: 500, backgroundColor: 'rgba(0,0,0,0.04)', padding: '16px' }}>
+            Students
+          </div>
+          <div style={{ backgroundColor: '#fafafa', flexGrow: 1, padding: '16px' }}>{actionLabel}</div>
+        </div>
+        <List
+          itemData={props.content.content}
+          height={windowSize.height - 144}
+          itemCount={props.content.content.length}
+          itemSize={54}
+          width="100%"
+        >
+          {({ index, style }: any) => {
+            if (props.content.content === null) {
+              return <div>--</div>;
+            }
+
+            const el = props.content.content[index];
+            const key = `${props.content.title}-${props.content.subtitle}-${index}`;
+            const students = el.email;
+
+            let actionElement;
+            let action;
+
+            if (actionLabel === 'Open') {
+              action = () => openSubmission(el.subID!);
+              actionElement = (
+                <a className="internal-link">
+                  <CodeOutlined />
+                </a>
+              );
+            } else if (actionLabel === 'Upload') {
+              action = () => {
+                if (props.uploadSubmission) {
+                  props.uploadSubmission(props.content.title, el.email);
+                }
+              };
+              actionElement = (
+                <CPButton style={{ margin: '-8px' }} icon="upload">
+                  Upload
+                </CPButton>
+              );
+            }
+
+            const extraStyle = {
+              display: 'flex',
+              height: 54,
+              alignItems: 'stretch',
+              borderBottom: '1px solid rgb(232,232,232)',
+              cursor: 'pointer',
+            };
+            return (
+              <div style={{ ...style, ...extraStyle }} onClick={action}>
+                <div style={{ width: primaryWidth, backgroundColor: 'rgb(0,0,0,0.01)', padding: '16px' }}>
+                  {students}
+                </div>
+                <div style={{ flexGrow: 1, padding: '16px' }}>{actionElement}</div>
+              </div>
+            );
+          }}
+        </List>
+      </div>
     );
   }
 
@@ -450,6 +442,7 @@ export const StatsDrawer = (props: {
       onClose={props.onClose}
       visible={props.isVisible}
       width={600}
+      bodyStyle={{ paddingBottom: 0 }}
     >
       {body}
     </Drawer>
