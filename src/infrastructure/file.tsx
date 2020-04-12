@@ -83,6 +83,8 @@ export const BinaryExtensions = [
   '.docx',
   'exe',
   '.exe',
+  'xlsx',
+  '.xlsx',
 ];
 
 type CodeType = 'code' | 'markdown' | 'jupyter' | 'image' | 'pdf';
