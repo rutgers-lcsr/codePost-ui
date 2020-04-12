@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Alert, Icon, Input, Typography } from 'antd';
+import { Alert, Input, Typography } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -106,7 +108,7 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
           <Typography.Title level={2}>{this.props.title !== undefined ? this.props.title : 'Login'}</Typography.Title>
           <form>
             <Input
-              prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
+              prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
               placeholder="Email address"
               name="email"
               value={this.state.email}
@@ -117,7 +119,7 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
             <br />
             <br />
             <Input.Password
-              prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
+              prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
               placeholder="Password"
               autoComplete="current-password"
               value={this.state.password}

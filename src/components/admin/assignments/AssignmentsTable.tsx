@@ -5,8 +5,29 @@
 /* React imports */
 import * as React from 'react';
 
+import {
+  BarChartOutlined,
+  CompassOutlined,
+  DeleteOutlined,
+  DiffOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  EyeInvisibleOutlined,
+  FileDoneOutlined,
+  FileOutlined,
+  FolderOutlined,
+  ImportOutlined,
+  MailOutlined,
+  MenuOutlined,
+  MessageOutlined,
+  OrderedListOutlined,
+  QuestionCircleOutlined,
+  SettingOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
+
 /* ant imports */
-import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Popconfirm, Switch, Tooltip, Typography, Spin } from 'antd';
+import { Breadcrumb, Dropdown, Empty, Menu, message, Popconfirm, Switch, Tooltip, Typography, Spin } from 'antd';
 
 import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
@@ -398,38 +419,38 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         <Menu>
           <Menu.Item key="1">
             <Link to={`${this.props.baseURL}/rubrics/${encodedName}`}>
-              <Icon type="ordered-list" />
+              <OrderedListOutlined />
               &nbsp; Edit rubric
             </Link>
           </Menu.Item>
           <Menu.Item key="tests">
             <Link to={`${this.props.baseURL}/tests/${encodedName}/edit`}>
-              <Icon type="file-done" />
+              <FileDoneOutlined />
               &nbsp; Edit tests
             </Link>
           </Menu.Item>
           <Menu.Item key="plagiarism">
             <Link to={`${this.props.baseURL}/plagiarism/${encodedName}`}>
-              <Icon type="diff" />
+              <DiffOutlined />
               &nbsp; Check for plagiarism
             </Link>
           </Menu.Item>
           <Menu.Item key="2">
             <Link to={`${this.props.baseURL}/${encodedName}/download/grades`}>
-              {Object.keys(this.props.submissions).length === 0 ? <Spin size="small" /> : <Icon type="download" />}
+              {Object.keys(this.props.submissions).length === 0 ? <Spin size="small" /> : <DownloadOutlined />}
               &nbsp; Download grades
             </Link>
           </Menu.Item>
           <Menu.Item key="3">
             <Link to={`${this.props.baseURL}/${encodedName}/stats`}>
-              <Icon type="bar-chart" />
+              <BarChartOutlined />
               &nbsp; View stats
             </Link>
           </Menu.Item>
           {assignment.allowRegradeRequests ? (
             <Menu.Item key="3.1">
               <Link to={`${this.props.baseURL}/${encodedName}/regrades`}>
-                <Icon type="message" />
+                <MessageOutlined />
                 &nbsp; View Regrades
               </Link>
             </Menu.Item>
@@ -440,52 +461,52 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
             key="4"
             title={
               <span>
-                <Icon type="upload" />
+                <UploadOutlined />
                 &nbsp; Upload submissions
               </span>
             }
           >
             <Menu.Item key="0.1">
               <Link to={`${this.props.baseURL}/${encodedName}/upload/single`}>
-                <Icon type="file" />
+                <FileOutlined />
                 &nbsp; Single submission
               </Link>
             </Menu.Item>
             <Menu.Item key="0.2">
               <Link to={`${this.props.baseURL}/${encodedName}/upload/multiple`}>
-                <Icon type="folder" />
+                <FolderOutlined />
                 &nbsp; Multiple submissions
               </Link>
             </Menu.Item>
             <Menu.Item key="0.3">
               <Link to={`${this.props.baseURL}/${encodedName}/upload/import`}>
-                <Icon type="import" />
+                <ImportOutlined />
                 &nbsp; Import
               </Link>
             </Menu.Item>
           </SubMenu>
           <Menu.Item key="5">
             <Link to={`${this.props.baseURL}/${encodedName}/bulk-edit`}>
-              <Icon type="edit" />
+              <EditOutlined />
               &nbsp; Bulk edit
             </Link>
           </Menu.Item>
           <Menu.Item key="onboarding">
             <Link to={`${this.props.baseURL}/${encodedName}/onboarding`}>
-              <Icon type="compass" />
+              <CompassOutlined />
               &nbsp; Get started
             </Link>
           </Menu.Item>
           <Menu.Item key="6">
             <Link to={`${this.props.baseURL}/${encodedName}/settings`}>
-              <Icon type="setting" />
+              <SettingOutlined />
               &nbsp; Settings
             </Link>
           </Menu.Item>
           <Menu.Divider />
           <Menu.Item key="7" style={{ color: 'red' }}>
             <Link to={`${this.props.baseURL}/${encodedName}/delete`}>
-              <Icon type="delete" />
+              <DeleteOutlined />
               &nbsp; Delete assignment
             </Link>
           </Menu.Item>
@@ -517,7 +538,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
       const notifyButton = (toggleDialog: () => void) => {
         return (
           <CPTooltip title="Notify students via email. ">
-            <Icon onClick={toggleDialog} style={{ cursor: 'pointer' }} type="mail" />
+            <MailOutlined onClick={toggleDialog} style={{ cursor: 'pointer' }} />
           </CPTooltip>
         );
       };
@@ -565,7 +586,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
                   })
                   .join(', ')}`}
               >
-                <Icon type="eye-invisible" style={{ marginLeft: 5 }} />
+                <EyeInvisibleOutlined style={{ marginLeft: 5 }} />
               </Tooltip>
             )}
           </Text>
@@ -578,7 +599,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
                 <Switch disabled={true} checked={assignment.isReleased} />
               </Tooltip>
             ) : (
-              <Popconfirm onConfirm={onConfirm} title={publishToggleText} icon={<Icon type="question-circle" />}>
+              <Popconfirm onConfirm={onConfirm} title={publishToggleText} icon={<QuestionCircleOutlined />}>
                 <Switch checked={assignment.isReleased} />
               </Popconfirm>
             )}
@@ -604,7 +625,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           statsForRow.numSubmissions === 0 ? (
             <CPButton cpType="secondary">
               <Link to={`${this.props.baseURL}/${encodeURIComponent(assignment.name)}/upload/multiple`}>
-                <Icon type="upload" /> &nbsp; Upload
+                <UploadOutlined /> &nbsp; Upload
               </Link>
             </CPButton>
           ) : (
@@ -624,7 +645,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         ),
         actions: (
           <Dropdown overlay={menu} trigger={['click']}>
-            <Icon type="menu" />
+            <MenuOutlined />
           </Dropdown>
         ),
       };

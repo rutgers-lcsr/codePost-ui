@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { DisconnectOutlined, MailOutlined, MenuOutlined, UserDeleteOutlined } from '@ant-design/icons';
+
 /* style imports */
-import { Breadcrumb, Dropdown, Icon, Menu, Modal } from 'antd';
+import { Breadcrumb, Dropdown, Menu, Modal } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -172,7 +174,7 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
               ) : (
                 <span style={{ color: '#80808082' }}>
                   <CPTooltip title="This user has not yet signed up for codePost.">
-                    {highlightedEmail} &nbsp; <Icon type="disconnect" />
+                    {highlightedEmail} &nbsp; <DisconnectOutlined />
                   </CPTooltip>
                 </span>
               );
@@ -195,7 +197,7 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
             <Menu>
               <Menu.Item key="1" disabled={true}>
                 <CPTooltip title={tooltips.admin.adminRoster.removeSelf}>
-                  <Icon type="user-delete" /> &nbsp; Unenroll
+                  <UserDeleteOutlined /> &nbsp; Unenroll
                 </CPTooltip>
               </Menu.Item>
             </Menu>
@@ -203,12 +205,12 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
             <Menu>
               {hasActivated ? null : (
                 <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, adminEmail)}>
-                  <Icon type="mail" />
+                  <MailOutlined />
                   Send activation email
                 </Menu.Item>
               )}
               <Menu.Item key="1" onClick={this.removeAdmin.bind(this, adminEmail)}>
-                <Icon type="user-delete" />
+                <UserDeleteOutlined />
                 Unenroll
               </Menu.Item>
             </Menu>
@@ -219,7 +221,7 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
           admin: adminEmail,
           actions: (
             <Dropdown overlay={menu} trigger={['click']}>
-              <Icon type="menu" />
+              <MenuOutlined />
             </Dropdown>
           ),
         };

@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { FolderOpenOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Breadcrumb, Checkbox, Empty, Icon } from 'antd';
+import { Breadcrumb, Checkbox, Empty } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -250,7 +252,7 @@ class GraderData extends React.Component<IByGraderProps, IState> {
                     <Link to={`${this.props.match.url}/${graderEmail}`}>
                       <div style={{ cursor: 'pointer' }}>
                         <CPTooltip title={tooltips.admin.graderSubmissions.expand} hideThisOnHideTips={true}>
-                          <Icon type="folder-open" />
+                          <FolderOpenOutlined />
                         </CPTooltip>
                       </div>
                     </Link>

@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 
-import { Divider, Dropdown, Icon, Input, Menu, message, Modal, Table, Tag, Typography } from 'antd';
+import { CodeOutlined, EditOutlined, EyeOutlined, MenuOutlined } from '@ant-design/icons';
+import { Icon as LegacyIcon } from '@ant-design/compatible';
+
+import { Divider, Dropdown, Input, Menu, message, Modal, Table, Tag, Typography } from 'antd';
 
 /* codePost imports */
 import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
@@ -261,12 +264,12 @@ const RegradesTable = (props: IRegradesTableProps) => {
     const menu = (
       <Menu>
         <Menu.Item key="1" onClick={toggleModal.bind({}, true, submission)}>
-          <Icon type="eye" />
+          <EyeOutlined />
           View Regrade
         </Menu.Item>
         {responseStatus === RESPONSE_STATUS.EDIT_ALLOWED_EXISTING_RESPONSE ? (
           <Menu.Item key="2" onClick={toggleModal.bind({}, false, submission)}>
-            <Icon type="edit" />
+            <EditOutlined />
             Edit Response
           </Menu.Item>
         ) : (
@@ -283,7 +286,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
           }
           disabled={!isAbleToChange}
         >
-          <Icon type={submission.questionResponder !== props.user.email ? 'plus-circle' : 'minus-circle'} />
+          <LegacyIcon type={submission.questionResponder !== props.user.email ? 'plus-circle' : 'minus-circle'} />
           {submission.questionResponder !== props.user.email ? 'Claim' : 'Release'}
         </Menu.Item>
         <Menu.Item
@@ -291,7 +294,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
           onClick={updateSubmissionField.bind({}, submission, 'questionIsOpen', !submission.questionIsOpen)}
           disabled={!(isAbleToChange && (!submission.questionIsOpen || isAbleToClose))}
         >
-          <Icon type={submission.questionIsOpen ? 'check-circle' : 'exclamation-circle'} />
+          <LegacyIcon type={submission.questionIsOpen ? 'check-circle' : 'exclamation-circle'} />
           {submission.questionIsOpen ? 'Close' : 'Re-open'}
         </Menu.Item>
       </Menu>
@@ -300,7 +303,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
     const responseContent = getResponseContent(submission);
     return {
       key: submission.id,
-      code: <Icon type="code" onClick={openSubmission.bind({}, submission.id)} />,
+      code: <CodeOutlined onClick={openSubmission.bind({}, submission.id)} />,
       students: submission.students && !props.isAnonymous ? submission.students.toString() : submission.id,
       type: submission.questionIsRegrade ? 'Regrade' : 'Question',
       statusTag:
@@ -319,7 +322,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
       response: responseContent,
       actions: (
         <Dropdown overlay={menu} trigger={['click']}>
-          <Icon type="menu" />
+          <MenuOutlined />
         </Dropdown>
       ),
     };

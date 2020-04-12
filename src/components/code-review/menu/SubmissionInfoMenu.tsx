@@ -5,8 +5,10 @@
 /* react imports */
 import React, { useState } from 'react';
 
+import { AuditOutlined, CloseOutlined, UserOutlined } from '@ant-design/icons';
+
 /* antd imports */
-import { Alert, Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tabs, Tag } from 'antd';
+import { Alert, Avatar, Divider, Input, message, Modal, Select, Switch, Tabs, Tag } from 'antd';
 
 /* other library imports */
 import moment from 'moment';
@@ -244,7 +246,7 @@ export const GraderInfo = (props: IGraderInfoProps) => {
   const renderUnassign = (menu: any) => (
     <div>
       <div style={{ padding: '6px', cursor: 'pointer' }} onMouseDown={unassign}>
-        <Icon type="close" /> Unassign
+        <CloseOutlined /> Unassign
       </div>
       <Divider style={{ margin: '4px 0' }} />
       {menu}
@@ -264,7 +266,12 @@ export const GraderInfo = (props: IGraderInfoProps) => {
     } else {
       graderDisplay = (
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Avatar size="small" icon="audit" shape="square" style={{ backgroundColor: consoleTheme.avatarBackground }} />
+          <Avatar
+            size="small"
+            icon={<AuditOutlined />}
+            shape="square"
+            style={{ backgroundColor: consoleTheme.avatarBackground }}
+          />
           <span style={{ width: '8px' }} />
           <span
             onClick={toggleModal}
@@ -317,7 +324,12 @@ export const GraderInfo = (props: IGraderInfoProps) => {
   } else {
     return (
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Avatar size="small" icon="audit" shape="square" style={{ backgroundColor: consoleTheme.avatarBackground }} />
+        <Avatar
+          size="small"
+          icon={<AuditOutlined />}
+          shape="square"
+          style={{ backgroundColor: consoleTheme.avatarBackground }}
+        />
         <span style={{ width: '8px' }} />
         <span
           style={{
@@ -356,7 +368,7 @@ export const Students = (props: {
             <div key={student} style={{ display: 'flex', alignItems: 'center', paddingBottom: '2px' }}>
               <Avatar
                 size="small"
-                icon="user"
+                icon={<UserOutlined />}
                 shape="square"
                 style={{ backgroundColor: consoleTheme.avatarBackground }}
               />

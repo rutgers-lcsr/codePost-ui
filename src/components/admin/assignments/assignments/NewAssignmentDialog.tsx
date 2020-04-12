@@ -5,9 +5,12 @@
 /* react imports */
 import * as React from 'react';
 
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+
 /* ant imports */
-import { Form, Input, InputNumber, Modal, Radio, DatePicker } from 'antd';
-import { FormComponentProps } from 'antd/lib/form';
+import { Input, InputNumber, Modal, Radio, DatePicker } from 'antd';
+import { FormComponentProps } from '@ant-design/compatible/lib/form';
 
 /* other library imports */
 import moment from 'moment-timezone';

@@ -9,8 +9,22 @@ import JSZip from 'jszip';
 
 import { saveAs } from 'file-saver';
 
+import {
+  CaretRightOutlined,
+  ControlOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  IdcardOutlined,
+  MenuOutlined,
+  PlusCircleOutlined,
+  SearchOutlined,
+  TagTwoTone,
+  ZoomInOutlined,
+  ZoomOutOutlined,
+} from '@ant-design/icons';
+
 /* antd imports */
-import { Button, Descriptions, Divider, Dropdown, Icon, message, Menu, Modal, Popover, Switch, Tag } from 'antd';
+import { Button, Descriptions, Divider, Dropdown, message, Menu, Modal, Popover, Switch, Tag } from 'antd';
 
 /* codePost imports */
 import CPButton from '../core/CPButton';
@@ -88,7 +102,7 @@ const Magnifier = (props: IMagnifierProps) => {
     <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', lineHeight: 1.499 }}>
       <CPTooltip title={tooltips.grade.header.zoomOut} hideThisOnHideTips={true}>
         <CPButton id="zoom-out" cpType={cpType} onClick={zoomOut} small={true}>
-          <Icon type="zoom-out" />
+          <ZoomOutOutlined />
         </CPButton>
       </CPTooltip>
       <CPButton cpType={cpType} small>
@@ -96,7 +110,7 @@ const Magnifier = (props: IMagnifierProps) => {
       </CPButton>
       <CPTooltip title={tooltips.grade.header.zoomIn} hideThisOnHideTips={true}>
         <CPButton id="zoom-in" cpType={cpType} onClick={zoomIn} small={true}>
-          <Icon type="zoom-in" />
+          <ZoomInOutlined />
         </CPButton>
       </CPTooltip>
     </ButtonGroup>
@@ -143,7 +157,7 @@ export const ViewAsStudent = (props: IViewAsStudentProps) => {
       <CPTooltip title={tooltips.grade.header.viewAsStudent} hideThisOnHideTips={true}>
         <ButtonGroup>
           <CPButton id="view-as-student" cpType={cpType} small={true}>
-            <Icon type="idcard" />
+            <IdcardOutlined />
           </CPButton>
         </ButtonGroup>
       </CPTooltip>
@@ -200,7 +214,7 @@ export const DownloadCode = (props: IDownloadCodeProps) => {
     <CPTooltip title={tooltips.grade.header.downloadCode} hideThisOnHideTips={true}>
       <ButtonGroup>
         <CPButton id="download-code" cpType={cpType} small={true} onClick={onClick}>
-          <Icon type="download" />
+          <DownloadOutlined />
         </CPButton>
       </ButtonGroup>
     </CPTooltip>
@@ -227,8 +241,7 @@ export const Controls = (props: IControlsProps) => {
   const controlPanel =
     props.fallbackWidth && windowSize.width < props.fallbackWidth ? (
       <Popover content={controls} placement="bottom" trigger="click">
-        <Icon
-          type="control"
+        <ControlOutlined
           style={{
             fontSize: '20px',
             lineHeight: '20px',
@@ -475,7 +488,7 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
     if (exceededBy !== null && uncappedPoints !== null && cappedPoints !== null) {
       points = (
         <span className="cp-label">
-          {styledLabel(uncappedPoints, true)} <Icon type="caret-right" /> {styledLabel(cappedPoints)}
+          {styledLabel(uncappedPoints, true)} <CaretRightOutlined /> {styledLabel(cappedPoints)}
         </span>
       );
     } else if (cappedPoints !== null) {
@@ -692,7 +705,7 @@ export const StatusTags = (props: IStatusTagsProps) => {
       placement="bottom"
     >
       {props.fallbackWidth && windowSize.width < props.fallbackWidth ? (
-        <Icon theme="twoTone" style={{ color: tagColor, ...tagStyle }} type="tag" />
+        <TagTwoTone style={{ color: tagColor, ...tagStyle }} />
       ) : (
         <Tag color={tagColor} style={tagStyle}>
           {tagText}
@@ -761,7 +774,7 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
       {props.isStudent || props.isDemo ? null : (
         <Menu.Item key="claim" style={itemStyle} className="header-menu">
           <span onClick={props.claimSubmission}>
-            <Icon type="plus-circle" /> Claim another submission{' '}
+            <PlusCircleOutlined /> Claim another submission{' '}
             <span style={{ color: '#ccc' }}>[{osControlKey()} shift p]</span>
           </span>
         </Menu.Item>
@@ -773,7 +786,7 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
               props.course.period,
             )}/assignments/rubrics/${encodeForLink(props.assignment.name)}`}
           >
-            <Icon type="edit" /> Open rubric in Admin Console
+            <EditOutlined /> Open rubric in Admin Console
           </Link>
         </Menu.Item>
       ) : null}
@@ -800,7 +813,7 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
 
   return (
     <Dropdown overlay={menu} trigger={['click']}>
-      <Icon type="menu" style={{ color: consoleTheme.text }} />
+      <MenuOutlined style={{ color: consoleTheme.text }} />
     </Dropdown>
   );
 };
@@ -825,7 +838,7 @@ export const HeaderSearch = () => {
           color: 'rgba(0, 0, 0, 0.3)',
         }}
       >
-        Find anything <Icon type="search" style={{ float: 'right', marginTop: '2px' }} />
+        Find anything <SearchOutlined style={{ float: 'right', marginTop: '2px' }} />
       </div>
     </span>
   );

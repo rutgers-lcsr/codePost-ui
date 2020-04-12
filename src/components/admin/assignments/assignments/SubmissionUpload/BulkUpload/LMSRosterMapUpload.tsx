@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 
-import { Alert, Button, Icon, Input, Modal, Upload } from 'antd';
+import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
+
+import { Alert, Button, Input, Modal, Upload } from 'antd';
 
 import { FolderToStudentMap, getIdentifierFromFolder } from './LMSImportHelpers';
 
@@ -105,11 +107,11 @@ const LMSRosterMapUpload = (props: IMappingUploadProps) => {
       )}
       <div style={{ marginBottom: 10, float: 'right' }}>
         <Button type="default" onClick={downloadTemplate} style={{ marginRight: 5 }}>
-          <Icon type="download" /> Download .csv template
+          <DownloadOutlined /> Download .csv template
         </Button>
         <Upload beforeUpload={beforeUpload} showUploadList={false}>
           <Button type="primary">
-            <Icon type="upload" /> Upload a .csv file
+            <UploadOutlined /> Upload a .csv file
           </Button>
         </Upload>
       </div>

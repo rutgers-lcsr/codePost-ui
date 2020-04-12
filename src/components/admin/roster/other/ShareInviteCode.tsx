@@ -1,7 +1,9 @@
 /* react imports */
 import * as React from 'react';
 
-import { Button, Modal, Input, Tooltip, Icon, Checkbox, message } from 'antd';
+import { CopyOutlined, QrcodeOutlined, RedoOutlined } from '@ant-design/icons';
+
+import { Button, Modal, Input, Tooltip, Checkbox, message } from 'antd';
 
 import { CourseType } from '../../../../infrastructure/types';
 import { Course } from '../../../../infrastructure/course';
@@ -71,7 +73,7 @@ const ShareInviteCode = (props: IProps) => {
 
   return (
     <div>
-      <Button icon="qrcode" onClick={() => setVisible(true)}>
+      <Button icon={<QrcodeOutlined />} onClick={() => setVisible(true)}>
         Share invite code
       </Button>
       <Modal
@@ -97,13 +99,13 @@ const ShareInviteCode = (props: IProps) => {
         />
         &nbsp;
         <Tooltip title="Copy to clipboard">
-          <Button icon="copy" onClick={copyToClipboard} type="primary" disabled={!enabled}>
+          <Button icon={<CopyOutlined />} onClick={copyToClipboard} type="primary" disabled={!enabled}>
             Copy
           </Button>
         </Tooltip>
         &nbsp;
         <Tooltip title="Reset your invite code.">
-          <Button icon="redo" onClick={resetCode} disabled={!enabled}>
+          <Button icon={<RedoOutlined />} onClick={resetCode} disabled={!enabled}>
             Reset
           </Button>
         </Tooltip>

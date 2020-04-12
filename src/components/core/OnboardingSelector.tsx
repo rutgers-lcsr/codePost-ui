@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { SmileTwoTone, UploadOutlined } from '@ant-design/icons';
+
 /* antd imports */
-import { Button, Divider, Icon, Modal, Tooltip, Upload } from 'antd';
+import { Button, Divider, Modal, Tooltip, Upload } from 'antd';
 import { UploadChangeParam } from 'antd/lib/upload';
 
 /* codePost imports */
@@ -121,7 +123,7 @@ const AdminOnboardingSelector = (props: IProps) => {
     <OnboardingSelector
       title={
         <span>
-          Welcome to the codePost Admin Console! <Icon type="smile" theme="twoTone" twoToneColor={'#24be85'} />
+          Welcome to the codePost Admin Console! <SmileTwoTone twoToneColor={'#24be85'} />
         </span>
       }
       options={[tour1, tour2, hangTight]}
@@ -240,7 +242,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
     const uploader = (
       <Upload beforeUpload={beforeUpload} listType="text" multiple={true} onChange={onChange}>
         <CPButton cpType="secondary">
-          <Icon type="upload" /> Click to Upload
+          <UploadOutlined /> Click to Upload
         </CPButton>
       </Upload>
     );
@@ -253,7 +255,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
 
     title = (
       <span>
-        Welcome to codePost! <Icon type="smile" theme="twoTone" twoToneColor={'#24be85'} />
+        Welcome to codePost! <SmileTwoTone twoToneColor={'#24be85'} />
       </span>
     );
 
@@ -303,7 +305,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
 
     title = (
       <span>
-        Welcome to codePost! <Icon type="smile" theme="twoTone" twoToneColor={'#24be85'} />
+        Welcome to codePost! <SmileTwoTone twoToneColor={'#24be85'} />
       </span>
     );
     options = [useDefaultFile, uploadFile];

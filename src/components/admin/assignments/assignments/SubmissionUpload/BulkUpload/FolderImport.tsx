@@ -5,8 +5,10 @@
 
 import * as React from 'react';
 
+import { InboxOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Collapse, Icon, Statistic, Switch, Upload } from 'antd';
+import { Collapse, Statistic, Switch, Upload } from 'antd';
 
 import ReactMarkdown from 'react-markdown';
 
@@ -114,7 +116,7 @@ export const FolderImport = (props: IFolderImportProps) => {
       <br />
       <Dragger showUploadList={false} directory={true} multiple={false} beforeUpload={beforeUpload}>
         <p className="ant-upload-drag-icon">
-          <Icon type="inbox" />
+          <InboxOutlined />
         </p>
         <p className="ant-upload-text">Click or drag a folder to upload</p>
         <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>

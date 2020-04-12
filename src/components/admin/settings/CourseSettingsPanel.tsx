@@ -5,9 +5,12 @@
 /* react imports */
 import * as React from 'react';
 
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+
 /* style imports */
-import { Breadcrumb, Form, Input, message, Select, Switch, Table, Typography } from 'antd';
-import { FormComponentProps } from 'antd/lib/form';
+import { Breadcrumb, Input, message, Select, Switch, Table, Typography } from 'antd';
+import { FormComponentProps } from '@ant-design/compatible/lib/form';
 
 import CPButton from '../../../components/core/CPButton';
 import CPAdminDetail from '../other/CPAdminDetail';

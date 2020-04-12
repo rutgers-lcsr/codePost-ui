@@ -1,4 +1,5 @@
-import { Collapse, Divider, Icon } from 'antd';
+import { ApiOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { Collapse, Divider } from 'antd';
 
 import * as React from 'react';
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
@@ -270,7 +271,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
           className="apiexample__docs"
         >
           Full API reference
-          <Icon type="arrow-right" className="apiexample__docs__arrow" />
+          <ArrowRightOutlined className="apiexample__docs__arrow" />
         </CPButton>
       </div>
     );
@@ -282,7 +283,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
             header={
               <div className="apiexample__header display-flex justify-content-space-between">
                 <div>Think we were joking about short scripts? Click here</div>
-                <Icon type="api" className="apiexample__header__icon" />
+                <ApiOutlined className="apiexample__header__icon" />
               </div>
             }
             key="1"

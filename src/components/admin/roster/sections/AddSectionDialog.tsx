@@ -5,8 +5,11 @@
 /* react imports */
 import * as React from 'react';
 
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+
 /* ant imports */
-import { Form, Input, message, Modal } from 'antd';
+import { Input, message, Modal } from 'antd';
 
 /* codePost imports */
 import CPButton from '../../../../components/core/CPButton';

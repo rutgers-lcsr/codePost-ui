@@ -1,6 +1,8 @@
 import React, { useContext } from 'react';
 
-import { Icon, Tooltip } from 'antd';
+import { Icon as LegacyIcon } from '@ant-design/compatible';
+
+import { Tooltip } from 'antd';
 import { AbstractTooltipProps } from 'antd/lib/tooltip';
 
 import { ShowTooltipContext } from './tooltips';
@@ -41,7 +43,7 @@ const CPTooltip = (props: IProps) => {
   let icon;
   if (infoIcon) {
     icon = (
-      <Icon
+      <LegacyIcon
         type="info-circle"
         theme={showTooltips ? 'twoTone' : 'outlined'}
         twoToneColor={themeVars.theme.brandPrimary}

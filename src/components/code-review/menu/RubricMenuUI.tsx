@@ -5,9 +5,11 @@
 /* react imports */
 import * as React from 'react';
 
+import { Icon as LegacyIcon } from '@ant-design/compatible';
+
 /* antd imports */
 // @ts-ignore
-import { Icon, Input, Popconfirm, Tag, Empty } from 'antd';
+import { Input, Popconfirm, Tag, Empty } from 'antd';
 
 /* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
@@ -516,7 +518,7 @@ const RubricMenuUI = ({
         value={searchTerm}
         addonBefore={
           <CPTooltip title={tooltips.grade.rubric.edit} placement="right">
-            <Icon
+            <LegacyIcon
               type={iconType}
               theme="filled"
               onClick={toggleEditRubricMode}

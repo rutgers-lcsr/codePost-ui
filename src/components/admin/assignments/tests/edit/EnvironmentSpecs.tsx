@@ -5,8 +5,10 @@
 /* react imports */
 import React, { useState, useEffect } from 'react';
 
+import { DatabaseTwoTone, InfoOutlined } from '@ant-design/icons';
+
 /* library imports */
-import { Modal, Button, Divider, Icon, Input, Radio, Select, Skeleton, Tabs, Tooltip, Typography, Empty } from 'antd';
+import { Modal, Button, Divider, Input, Radio, Select, Skeleton, Tabs, Tooltip, Typography, Empty } from 'antd';
 
 /* codePost object imports */
 import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
@@ -202,7 +204,7 @@ export const EnvironmentSpecs = (props: IProps) => {
   const envSpecText = lookupValue && locale[lookupValue].environment;
   const languageIcon = (
     <Tooltip title={envSpecText}>
-      <Icon type="database" theme="twoTone" twoToneColor={themeVars.theme.brandPrimary} />
+      <DatabaseTwoTone twoToneColor={themeVars.theme.brandPrimary} />
     </Tooltip>
   );
 
@@ -271,7 +273,7 @@ RUN ${installText} package2
             <span>
               Install packages:{' '}
               <Tooltip title="Add newline-delimited install commands">
-                <Icon type="info" />
+                <InfoOutlined />
               </Tooltip>
             </span>{' '}
           </div>{' '}

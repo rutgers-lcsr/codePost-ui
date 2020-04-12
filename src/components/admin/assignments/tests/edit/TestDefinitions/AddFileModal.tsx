@@ -1,8 +1,10 @@
 /* react imports */
 import React, { useState } from 'react';
 
+import { ExclamationCircleOutlined } from '@ant-design/icons';
+
 /* library imports */
-import { Button, Input, Modal, Icon, Select, Row } from 'antd';
+import { Button, Input, Modal, Select, Row } from 'antd';
 
 /* codePost object imports */
 import { FILE_TYPE } from '../TestingSetup';
@@ -102,7 +104,7 @@ export const AddFileModal = (props: IUploadProps) => {
         {errors.map((e) => {
           return (
             <Row style={{ textAlign: 'center', color: 'red', marginTop: 10 }}>
-              <Icon type="exclamation-circle" />
+              <ExclamationCircleOutlined />
               &nbsp; {e}
             </Row>
           );

@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { CodeOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Breadcrumb, Icon, Select, Switch, Table } from 'antd';
+import { Breadcrumb, Select, Switch, Table } from 'antd';
 
 /* codePost imports */
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
@@ -207,7 +209,7 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
         key: sub.id,
         student: students,
         viewIcon: <div>{getViewIcon(sub, this.state.viewsBySubmission)}</div>,
-        open: <Icon type="code" onClick={this.openGradePage.bind(this, sub)} />,
+        open: <CodeOutlined onClick={this.openGradePage.bind(this, sub)} />,
       };
     });
 

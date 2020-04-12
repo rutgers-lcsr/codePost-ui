@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { Icon as LegacyIcon } from '@ant-design/compatible';
+
 /* antd imports */
-import { Divider, Icon, Typography } from 'antd';
+import { Divider, Typography } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -65,7 +67,10 @@ const RoleItem = (props: IRoleProps) => {
           }}
         >
           <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
-            <Icon type={props.icon} style={{ fontSize: '70px', color: hovered ? '#24be85' : 'rgba(0, 0, 0, 0.7)' }} />
+            <LegacyIcon
+              type={props.icon}
+              style={{ fontSize: '70px', color: hovered ? '#24be85' : 'rgba(0, 0, 0, 0.7)' }}
+            />
           </div>
         </div>
         <div style={{ fontWeight: hovered ? 560 : 380, fontSize: '16px', color: 'rgba(0, 0, 0, 0.7)' }}>

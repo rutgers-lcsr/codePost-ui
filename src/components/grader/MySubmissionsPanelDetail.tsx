@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { CloseCircleOutlined, CodeOutlined, FilterOutlined, MinusCircleTwoTone } from '@ant-design/icons';
+
 /* antd imports */
-import { Breadcrumb, Button, Divider, Dropdown, Empty, Icon, Menu, Popconfirm, Select, Switch, Table } from 'antd';
+import { Breadcrumb, Button, Divider, Dropdown, Empty, Menu, Popconfirm, Select, Switch, Table } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -324,7 +326,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
         filterComponent = (
           <CPTooltip title={tooltips.grader.mySubmissions.filter} hideThisOnHideTips={true}>
             <Dropdown overlay={filterMenu} trigger={['click']}>
-              <Button icon="filter">Filter</Button>
+              <Button icon={<FilterOutlined />}>Filter</Button>
             </Dropdown>
           </CPTooltip>
         );
@@ -340,7 +342,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
               disabled={this.state.isLoadingSubmissions}
             />
             &nbsp;
-            <Icon type="close-circle" onClick={this.setFilterType.bind(this, FILTER_TYPE.NONE)} />
+            <CloseCircleOutlined onClick={this.setFilterType.bind(this, FILTER_TYPE.NONE)} />
           </div>
         );
         break;
@@ -455,7 +457,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
         const students = showingEmails && sub.students ? sub.students.join(', ') : sub.id;
         return {
           ...formatSub(sub, this.props.assignment),
-          open: <Icon type="code" onClick={this.openGradePage.bind(this, sub)} />,
+          open: <CodeOutlined onClick={this.openGradePage.bind(this, sub)} />,
           key: sub.id,
           student: students,
           release: (
@@ -467,7 +469,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
                 cancelText="Cancel"
                 placement="left"
               >
-                <Icon type="minus-circle" theme="twoTone" twoToneColor="#eb2f96" />
+                <MinusCircleTwoTone twoToneColor="#eb2f96" />
               </Popconfirm>
             </div>
           ),

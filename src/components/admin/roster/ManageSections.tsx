@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { DeleteOutlined, EditOutlined, MenuOutlined } from '@ant-design/icons';
+
 /* style imports */
-import { Breadcrumb, Drawer, Dropdown, Empty, Icon, Menu, message, Modal, Select, Table } from 'antd';
+import { Breadcrumb, Drawer, Dropdown, Empty, Menu, message, Modal, Select, Table } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -145,7 +147,7 @@ class ManageSections extends React.Component<IManageSectionsProps, IState> {
                       })}
                     </Select>{' '}
                     &nbsp;&nbsp;
-                    <Icon type="edit" onClick={this.setActiveSection.bind(this, '')} />
+                    <EditOutlined onClick={this.setActiveSection.bind(this, '')} />
                   </div>
                 );
               } else {
@@ -161,7 +163,7 @@ class ManageSections extends React.Component<IManageSectionsProps, IState> {
                       textToHighlight={record.leaderData.length === 0 ? 'No leaders' : record.leaderData.join(', ')}
                     />
                     &nbsp;&nbsp;
-                    <Icon type="edit" onClick={this.setActiveSection.bind(this, record.section)} />
+                    <EditOutlined onClick={this.setActiveSection.bind(this, record.section)} />
                   </div>
                 );
               }
@@ -181,7 +183,7 @@ class ManageSections extends React.Component<IManageSectionsProps, IState> {
         const menu = (
           <Menu>
             <Menu.Item key="1" onClick={this.deleteSection.bind(this, section.id)}>
-              <Icon type="delete" />
+              <DeleteOutlined />
               Delete
             </Menu.Item>
           </Menu>
@@ -199,7 +201,7 @@ class ManageSections extends React.Component<IManageSectionsProps, IState> {
           leadersForSearch: section.leaders.join(', '), // to make leaders searchable
           actions: (
             <Dropdown overlay={menu} trigger={['click']}>
-              <Icon type="menu" />
+              <MenuOutlined />
             </Dropdown>
           ),
         };

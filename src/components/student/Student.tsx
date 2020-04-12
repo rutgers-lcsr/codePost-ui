@@ -5,8 +5,17 @@
 /* react imports */
 import * as React from 'react';
 
+import {
+  CodeOutlined,
+  MinusCircleOutlined,
+  PlusOutlined,
+  SettingOutlined,
+  StopOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
+
 /* antd imports */
-import { Button, Icon, Modal, Spin, Tag } from 'antd';
+import { Button, Modal, Spin, Tag } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -305,7 +314,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     const uploadButton = (
       <span>
         <Button
-          icon="upload"
+          icon={<UploadOutlined />}
           type="primary"
           style={{ maxWidth: 180 }}
           disabled={false}
@@ -345,7 +354,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     const addFileButton =
       !assignment.liveFeedbackMode || submission === undefined ? null : (
         <Button
-          icon="plus"
+          icon={<PlusOutlined />}
           style={{ maxWidth: 160 }}
           onClick={this.changePanel.bind(this, CURRENT_PANEL.ADDFILES, assignment, submission)}
           disabled={submission === undefined || submission.isFinalized}
@@ -480,7 +489,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
           partners: (
             <div>
               {' '}
-              <Icon type="stop" /> &nbsp; Assignment not yet published
+              <StopOutlined /> &nbsp; Assignment not yet published
             </div>
           ),
           disabled: true,
@@ -513,7 +522,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
             ...toRet,
             partners: (
               <div>
-                <Icon type="minus-circle" /> &nbsp; {missingText}
+                <MinusCircleOutlined /> &nbsp; {missingText}
               </div>
             ),
             statusType: SUBMISSION_STATUS.NO_SUBMISSION,
@@ -524,7 +533,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
             ...toRet,
             partners: (
               <div>
-                <Icon type="minus-circle" /> &nbsp; Your submission hasn't been graded yet
+                <MinusCircleOutlined /> &nbsp; Your submission hasn't been graded yet
               </div>
             ),
             statusType: SUBMISSION_STATUS.NO_SUBMISSION,
@@ -559,7 +568,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
             ),
             code: (
               <div onClick={openSubmission.bind(this, submission.id)}>
-                <Icon type="code" style={{ cursor: 'pointer' }} />
+                <CodeOutlined style={{ cursor: 'pointer' }} />
               </div>
             ),
             statusType: showGrade ? SUBMISSION_STATUS.SUBMISSION_VIEWED : SUBMISSION_STATUS.SUBMISSION_UNVIEWED,
@@ -691,7 +700,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
       <Referral key="referral" user={this.props.user} theme="light" />,
       <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.STUDENT} theme="light" />,
       <Link className="internal-link" key="settings" to="/settings">
-        <Icon type="setting" />
+        <SettingOutlined />
       </Link>,
       <Button key="header-logout" onClick={this.props.handleLogout}>
         Logout

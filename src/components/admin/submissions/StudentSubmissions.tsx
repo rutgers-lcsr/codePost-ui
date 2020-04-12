@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { FolderOpenOutlined } from '@ant-design/icons';
+
 /* style imports */
-import { Breadcrumb, Checkbox, Empty, Icon } from 'antd';
+import { Breadcrumb, Checkbox, Empty } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -264,7 +266,7 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                     <Link to={`${this.props.match.url}/${studentEmail}`}>
                       <div style={{ cursor: 'pointer' }}>
                         <CPTooltip title={tooltips.admin.studentSubmissions.expand} hideThisOnHideTips={true}>
-                          <Icon type="folder-open" />
+                          <FolderOpenOutlined />
                         </CPTooltip>
                       </div>
                     </Link>

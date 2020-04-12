@@ -9,8 +9,10 @@ import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
+import { CloseOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Menu, Icon } from 'antd';
+import { Menu } from 'antd';
 
 /* codePost imports */
 import { AssignmentType, sortAssignments } from '../../infrastructure/assignment';
@@ -40,7 +42,7 @@ const AssignmentMenu = (props: IProps) => {
     <Menu>
       <Menu.Item key="clear">
         <span onClick={clear}>
-          <Icon type="close" /> <em>Clear assignment</em>
+          <CloseOutlined /> <em>Clear assignment</em>
         </span>
       </Menu.Item>
       {sortAssignments(props.assignments).map((assignment) => {

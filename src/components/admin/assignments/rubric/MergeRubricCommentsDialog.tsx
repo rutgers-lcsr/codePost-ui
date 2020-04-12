@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { ArrowRightOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Icon, Modal, Spin } from 'antd';
+import { Modal, Spin } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -219,7 +221,7 @@ class MergeRubricCommentsDialog extends React.Component<
                   />
                 </div>
                 <div style={{ flex: ' 0 0 50px', textAlign: 'center' }}>
-                  <Icon type="arrow-right" />
+                  <ArrowRightOutlined />
                 </div>
                 <div style={{ flex: '2 2 auto' }}>
                   <Select
