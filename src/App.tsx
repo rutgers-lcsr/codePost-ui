@@ -186,13 +186,21 @@ class App extends React.Component<{}, IState> {
     }
 
     try {
-      const { data, key } = JSON.parse(event.data);
+      const payload = JSON.parse(event.data);
 
-      if (key !== 'token' || data === '') {
+      if (!payload.hasOwnProperty('token') || payload.token === '') {
         return;
       }
 
-      localStorage.setItem(key, data);
+      const token = payload.token;
+
+      let source = 'remote';
+      if (payload.hasOwnProperty('source')) {
+        source = payload.source;
+      }
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('source', source);
       this.setState({ has_token: true }, () => {
         this.loginCount += 1;
         this.tryToLogin();

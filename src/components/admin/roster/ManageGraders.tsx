@@ -52,7 +52,7 @@ export interface IManageGradersProps {
 
   /* object-level REST operations */
   updateSection: (section: SectionType) => Promise<void>;
-  updateRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
+  updateRoster: (adds: string[], deletes: string[], userType: USER_APP) => Promise<void>;
   createSection: (sectionName: string) => Promise<SectionType>;
 
   /* misc */
@@ -81,18 +81,14 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
       content: `All of their work (graded submissions) won't be impacted, but the
       grader won't be able to access this course any longer. You can always add them back from this page.`,
       onOk: () => {
-        const newRoster = this.props.graders.filter((student) => {
-          return student !== toRemove;
-        });
-        return this.props.updateRoster(newRoster, USER_APP.Grader);
+        return this.props.updateRoster([], [toRemove], USER_APP.Grader);
       },
       okText: 'Remove',
     });
   };
 
   public addGrader = (email: string) => {
-    const newRoster = [...this.props.graders, email];
-    return this.props.updateRoster(newRoster, USER_APP.Grader);
+    return this.props.updateRoster([email], [], USER_APP.Grader);
   };
 
   public setActiveGrader = (grader: string) => {
@@ -101,20 +97,13 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
 
   public toggleSuperGrader = (grader: string, include: boolean) => {
     if (include) {
-      this.props.updateRoster([...this.props.superGraders, grader], USER_APP.SuperGrader).then(() => {
+      this.props.updateRoster([grader], [], USER_APP.SuperGrader).then(() => {
         message.success(`${grader} is now a supergrader`);
       });
     } else {
-      this.props
-        .updateRoster(
-          this.props.superGraders.filter((el) => {
-            return el !== grader;
-          }),
-          USER_APP.SuperGrader,
-        )
-        .then(() => {
-          message.success(`${grader} is no longer a supergrader`);
-        });
+      this.props.updateRoster([], [grader], USER_APP.SuperGrader).then(() => {
+        message.success(`${grader} is no longer a supergrader`);
+      });
     }
   };
 

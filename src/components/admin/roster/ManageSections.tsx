@@ -6,10 +6,12 @@
 import * as React from 'react';
 
 /* style imports */
-import { Breadcrumb, Drawer, Dropdown, Empty, Icon, Menu, message, Modal, Select, Table } from 'antd';
+import { Breadcrumb, Button, Drawer, Dropdown, Empty, Icon, Menu, message, Modal, Select, Table, Checkbox } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
+
+import ReactSelect from 'react-select';
 
 /* codePost imports */
 import { USER_APP } from '../../../types/common';
@@ -40,16 +42,18 @@ export interface IManageSectionsProps {
   loadComplete: boolean;
 
   /* object-level REST operations */
-  updateRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
+  updateRoster: (adds: string[], deletes: string[], userType: USER_APP) => Promise<void>;
   deleteSection: (sectionID: number) => Promise<void>;
   createSection: (sectionName: string) => Promise<SectionType>;
   updateSection: (section: SectionType) => Promise<void>;
+  updateStudentSection: (student: string, section: number) => Promise<void>;
 }
 
 interface IState {
   activeSection: string;
   openSection?: SectionType;
   drawerOpen: boolean;
+  allowSectionReassignment: boolean;
 }
 
 class ManageSections extends React.Component<IManageSectionsProps, IState> {
@@ -58,6 +62,7 @@ class ManageSections extends React.Component<IManageSectionsProps, IState> {
     this.state = {
       activeSection: '',
       drawerOpen: false,
+      allowSectionReassignment: false,
     };
   }
 
@@ -213,6 +218,12 @@ class ManageSections extends React.Component<IManageSectionsProps, IState> {
         key: 'student',
         align: 'left' as 'left' | 'center' | 'right' /* this is so ugly.. */,
       },
+      {
+        title: 'Remove',
+        dataIndex: 'remove',
+        key: 'remove',
+        align: 'center' as 'center',
+      },
     ];
 
     // tslint:disable
@@ -222,9 +233,59 @@ class ManageSections extends React.Component<IManageSectionsProps, IState> {
         : this.state.openSection.students.map((el) => {
             return {
               student: el,
+              remove: (
+                <Button
+                  onClick={() => {
+                    this.state.openSection!.students = this.state.openSection!.students.filter((stu) => stu !== el);
+                    this.props.updateStudentSection(el, -1);
+                  }}
+                >
+                  Remove
+                </Button>
+              ),
             };
           });
     // tslint:enable
+
+    const buildStudentOptionsForDrawer = (students: string[], sections: SectionType[]) => {
+      /* FIXME: should use react-select type definition */
+
+      if (!this.state.openSection) {
+        return [];
+      }
+
+      const toRet: any = [
+        { label: 'Students without a section', options: [] },
+        ...sections
+          .filter((el) => el.id !== this.state.openSection!.id)
+          .map((el) => {
+            return {
+              label: el.name,
+              options: el.students.map((stu) => {
+                return { value: stu, label: stu, isDisabled: !this.state.allowSectionReassignment };
+              }),
+            };
+          }),
+      ];
+
+      const studentsInSections = sections.map((section) => section.students).flat();
+      for (const stu of students) {
+        if (!studentsInSections.some((el) => el === stu)) {
+          toRet[0].options.push({ label: stu, value: stu, isDisabled: false });
+        }
+      }
+
+      return toRet;
+    };
+
+    const studentOptions = buildStudentOptionsForDrawer(this.props.students, this.props.sections);
+
+    const assignToSection = (option: any) => {
+      if (this.state.openSection) {
+        this.state.openSection.students.push(option.value);
+        this.props.updateStudentSection(option.value, this.state.openSection.id);
+      }
+    };
 
     const drawerComponent = (
       <Drawer
@@ -235,7 +296,31 @@ class ManageSections extends React.Component<IManageSectionsProps, IState> {
         visible={this.state.drawerOpen}
         width={600}
       >
-        <Table columns={drawerColumns} dataSource={drawerData} pagination={false} />
+        Allow section reassignment{' '}
+        <Checkbox
+          value={this.state.allowSectionReassignment}
+          onChange={() =>
+            this.setState((oldState) => {
+              return { allowSectionReassignment: !oldState.allowSectionReassignment };
+            })
+          }
+        />
+        <ReactSelect
+          placeholder={'Select students to add to section'}
+          options={studentOptions}
+          onChange={assignToSection}
+        />
+        <br />
+        <br />
+        {drawerData.length === 0 ? (
+          <span>
+            <br />
+            <br />
+            <Empty description={<span>No students in this section yet</span>} />
+          </span>
+        ) : (
+          <Table columns={drawerColumns} dataSource={drawerData} pagination={false} />
+        )}
       </Drawer>
     );
 

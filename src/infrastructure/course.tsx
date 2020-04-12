@@ -128,6 +128,8 @@ export class Course {
 
   public static readRoster = readObjectDetail(RosterV, 'courses', 'roster');
   public static updateRoster = updateObjectDetail(RosterV, RosterVPatch, 'courses', 'roster');
+  public static addToRoster = updateObjectDetail(RosterV, RosterVPatch, 'courses', 'addToRoster');
+  public static removeFromRoster = updateObjectDetail(RosterV, RosterVPatch, 'courses', 'removeFromRoster');
 
   public static readRosterMap = readObjectDetail(RosterMapV, 'courses', 'rosterMap');
   public static updateRosterMap = updateObjectDetail(RosterMapV, RosterMapVPatch, 'courses', 'rosterMap');

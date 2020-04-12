@@ -275,7 +275,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
             partners,
             viewIcon: <div>{getViewIcon(submission, this.state.viewsBySubmission, student)}</div>,
             open: submission !== null ? <Icon type="code" onClick={openGradePage} /> : null,
-            disableCheck: !submission || submission.grader !== undefined,
+            disableCheck: !submission || submission.grader,
           };
         });
       }

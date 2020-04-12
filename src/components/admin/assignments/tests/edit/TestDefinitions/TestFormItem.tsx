@@ -110,9 +110,11 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
 
   public onTypeChange = (type: string) => {
     const newType = this.props.testCase.type === type;
+    const template = testTemplates[this.props.language] ? this.props.language : 'other';
+
     this.setState({
       testType: type,
-      commandText: newType ? this.props.testCase.text : testTemplates[this.props.language][type],
+      commandText: newType ? this.props.testCase.text : testTemplates[template][type],
     });
   };
 

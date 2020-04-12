@@ -55,7 +55,7 @@ export interface IManageStudentsProps {
   updateStudentSection: (student: string, section: number) => Promise<void>;
   updateSection: (section: SectionType) => Promise<void>;
   createSection: (sectionName: string) => Promise<SectionType>;
-  updateRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
+  updateRoster: (adds: string[], deletes: string[], userType: USER_APP) => Promise<void>;
 
   /* misc */
   myEmail: string;
@@ -83,18 +83,14 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
       content: `All the student's work will be saved, but they won't be able to access the course.
         You can always add them back from this page.`,
       onOk: () => {
-        const newRoster = this.props.students.filter((student) => {
-          return student !== toRemove;
-        });
-        return this.props.updateRoster(newRoster, USER_APP.Student);
+        return this.props.updateRoster([], [toRemove], USER_APP.Student);
       },
       okText: 'Remove',
     });
   };
 
   public addStudent = (email: string, section?: SectionType): Promise<void> => {
-    const newRoster = [...this.props.students, email];
-    return this.props.updateRoster(newRoster, USER_APP.Student).then(() => {
+    return this.props.updateRoster([email], [], USER_APP.Student).then(() => {
       if (typeof section !== 'undefined') {
         return this.props.updateStudentSection(email, section.id);
       } else {
