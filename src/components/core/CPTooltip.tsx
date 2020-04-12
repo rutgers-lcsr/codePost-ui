@@ -59,10 +59,10 @@ const CPTooltip = (props: IProps) => {
     case TOOLTIP_STATE.Show && icon:
       return (
         <Tooltip title={props.title} {...antprops}>
-          <div>
+          <span>
             {props.children}
             {icon}
-          </div>
+          </span>
         </Tooltip>
       );
     case TOOLTIP_STATE.Show:
