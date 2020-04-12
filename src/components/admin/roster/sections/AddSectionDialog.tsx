@@ -107,6 +107,23 @@ interface ISubProps {
 
 const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
   class extends React.Component<ISubProps, {}> {
+    public componentDidMount = () => {
+      document.addEventListener('keydown', this.keyboardShortcuts);
+    };
+
+    public componentWillUnmount = () => {
+      document.removeEventListener('keydown', this.keyboardShortcuts);
+    };
+
+    public keyboardShortcuts = (e: any) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+
+        this.props.onCreate();
+      }
+    };
+
     // FIXME: figure out how to type these arguments
     public handleConfirmSection = (rule: any, value: any, callback: any) => {
       // Test 1: does name correspond to an existing section?
