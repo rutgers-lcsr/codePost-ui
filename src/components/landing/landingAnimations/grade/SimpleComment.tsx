@@ -3,6 +3,7 @@ import * as React from 'react';
 // We ignore eslint since Popover never explicitly used. We just use the classNames
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Input, message, Popover, Typography } from 'antd';
+import { SaveOutlined, DeleteOutlined } from '@ant-design/icons';
 
 import CPButton from '../../../core/CPButton';
 import CPFlex from '../../../core/CPFlex';
@@ -318,7 +319,7 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
       );
       commentElements.comment = (
         <TextArea
-          autosize
+          autoSize
           className="comment__text-area"
           value={this.state.text}
           onChange={this.onChangeText}
@@ -331,8 +332,8 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
         />
       );
 
-      commentElements.saveButton = <CPButton cpType="secondary" icon="save" onClick={this.save} />;
-      commentElements.deleteButton = <CPButton cpType="danger" icon="delete" onClick={this.delete} />;
+      commentElements.saveButton = <CPButton cpType="secondary" icon={<SaveOutlined />} onClick={this.save} />;
+      commentElements.deleteButton = <CPButton cpType="danger" icon={<DeleteOutlined />} onClick={this.delete} />;
 
       if (this.props.rubricComment) {
         commentElements.rubricCommentAction = (
@@ -363,7 +364,7 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
       //   </Paragraph>
       // );
       commentElements.comment = <ReactMarkdown renderers={markdownRenderers} source={this.state.text} />;
-      commentElements.deleteButton = <CPButton cpType="danger" icon="delete" onClick={this.delete} />;
+      commentElements.deleteButton = <CPButton cpType="danger" icon={<DeleteOutlined />} onClick={this.delete} />;
 
       onClick = this.onCommentClick;
       cursor = 'pointer';

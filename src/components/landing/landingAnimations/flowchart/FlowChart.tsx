@@ -4,7 +4,9 @@ import useWindowSize from '../../../core/useWindowSize';
 
 import landingVars from '../../../../styles/pages/_landingVars';
 
-import { Icon, Popover } from 'antd';
+import { Icon as LegacyIcon } from '@ant-design/compatible';
+
+import { Popover } from 'antd';
 
 function hexToRGB(hex: string, alpha: string) {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -127,7 +129,7 @@ const FlowNode = (props: FlowNodeProps) => {
       }}
       className={props.isCategory ? 'flowNodeCategory' : 'flowNode'}
     >
-      <Icon
+      <LegacyIcon
         type={props.icon}
         style={{ color: props.tint < 35 ? props.color : 'white', fontSize: 20, marginRight: 5 }}
       />

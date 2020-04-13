@@ -5,9 +5,12 @@
 /* react imports */
 import * as React from 'react';
 
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+
 /* ant imports */
-import { Button, Form, Input } from 'antd';
-import { FormComponentProps } from 'antd/lib/form';
+import { Button, Input } from 'antd';
+import { FormComponentProps } from '@ant-design/compatible/lib/form';
 
 /**********************************************************************************************************************/
 

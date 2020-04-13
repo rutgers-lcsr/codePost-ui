@@ -1,8 +1,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { DeleteOutlined, EditOutlined, PlusOutlined, TagOutlined } from '@ant-design/icons';
+
 /* antd imports */
-import { Button, Divider, Icon, Input, Menu, Popover, Tag, Tooltip } from 'antd';
+import { Button, Divider, Input, Menu, Popover, Tag, Tooltip } from 'antd';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
@@ -97,7 +99,7 @@ const RubricMenuCategoryUI = ({
           const textInput = (
             <TextArea
               style={{ backgroundColor: consoleTheme.commentTextArea, color: consoleTheme.text }}
-              autosize={{ minRows: 2 }}
+              autoSize={{ minRows: 2 }}
               value={thisComment.text}
               onChange={onChangeText}
               onBlur={saveComment}
@@ -159,7 +161,7 @@ const RubricMenuCategoryUI = ({
           const textInput = (
             <TextArea
               style={{ backgroundColor: consoleTheme.commentTextArea, color: consoleTheme.text }}
-              autosize={{ minRows: 2 }}
+              autoSize={{ minRows: 2 }}
               value={''}
               onChange={updateRubricCommentText}
               onBlur={saveComment}
@@ -300,7 +302,7 @@ const RubricMenuCategoryUI = ({
       {props.rubricCategory.name}{' '}
       {props.rubricCategory.atMostOnce ? (
         <Tooltip title="This category can be applied at most once.">
-          <Icon type="tag" />
+          <TagOutlined />
         </Tooltip>
       ) : null}
     </div>
@@ -349,7 +351,7 @@ const RubricMenuCategoryUI = ({
           >
             <Button
               type="default"
-              icon="plus"
+              icon={<PlusOutlined />}
               size="small"
               style={{ width: '180px', backgroundColor: consoleTheme.siderBg, color: consoleTheme.siderMenuItemColor }}
               onClick={addComment}
@@ -447,7 +449,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
             alignItems: 'center',
           }}
         >
-          <Icon type="delete" onClick={props.deleteComment} style={{ fontSize: '11px', margin: '0px' }} />
+          <DeleteOutlined onClick={props.deleteComment} style={{ fontSize: '11px', margin: '0px' }} />
         </div>
       </div>
     );
@@ -467,7 +469,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
         <span style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)' }}>{points}</span>
         {!props.hasActiveComment ? (
           <div className="overlay">
-            <Icon type="edit" />
+            <EditOutlined />
           </div>
         ) : null}
       </div>

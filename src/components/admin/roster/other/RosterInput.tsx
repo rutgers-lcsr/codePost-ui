@@ -1,6 +1,8 @@
 import * as React from 'react';
 
-import { Button, Card, Icon, Input, Tooltip, Upload } from 'antd';
+import { InfoCircleFilled, InfoCircleTwoTone, UploadOutlined } from '@ant-design/icons';
+
+import { Button, Card, Input, Tooltip, Upload } from 'antd';
 
 const { TextArea } = Input;
 
@@ -85,7 +87,7 @@ ${props.roleType}3@myschool.edu,P02
     <div>
       <Upload beforeUpload={beforeUpload} showUploadList={false}>
         <Button>
-          <Icon type="upload" /> Upload a .txt file
+          <UploadOutlined /> Upload a .txt file
         </Button>
       </Upload>
       <Tooltip
@@ -108,7 +110,7 @@ ${props.roleType}3@myschool.edu,P02
           </div>
         }
       >
-        <Icon type="info-circle" theme="twoTone" twoToneColor="#24be85" style={{ marginLeft: 10 }} />
+        <InfoCircleTwoTone twoToneColor="#24be85" style={{ marginLeft: 10 }} />
       </Tooltip>
     </div>
   );
@@ -134,7 +136,7 @@ ${props.roleType}3@myschool.edu,P02
       <Card {...tabProps} size="small" actions={[uploadButton, reviewButton]}>
         {currentTab === 'with' ? (
           <div style={{ marginBottom: '10px' }}>
-            <Icon type="info-circle" theme="filled" style={{ color: '#ffd129' }} />
+            <InfoCircleFilled style={{ color: '#ffd129' }} />
             <span>
               {'  '} To remove a student from any section, set the student's section to "null". To leave a student's
               section unchanged, include only the student's email.

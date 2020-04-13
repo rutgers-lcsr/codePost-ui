@@ -5,22 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { CalculatorOutlined, CheckCircleOutlined, CloseCircleOutlined, UploadOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import {
-  Alert,
-  Button,
-  Checkbox,
-  Icon,
-  message,
-  Modal,
-  Progress,
-  Switch,
-  Upload,
-  Table,
-  Tag,
-  Divider,
-  Tabs,
-} from 'antd';
+import { Alert, Button, Checkbox, message, Modal, Progress, Switch, Upload, Table, Tag, Divider, Tabs } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -700,9 +688,9 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                     </span>
                   ),
                   uploaded: exists ? (
-                    <Icon type="check-circle" style={{ color: 'green' }} />
+                    <CheckCircleOutlined style={{ color: 'green' }} />
                   ) : (
-                    <Icon type="close-circle" style={{ color: 'red' }} />
+                    <CloseCircleOutlined style={{ color: 'red' }} />
                   ),
                 };
               })}
@@ -767,7 +755,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
               disabled={disableUpload || !areRequiredFilesPresent}
               onClick={this.confirmUpload}
             >
-              Upload {this.shouldRunTests() && <Icon type="calculator" />}
+              Upload {this.shouldRunTests() && <CalculatorOutlined />}
             </Button>
             {this.state.selectedAssignment === undefined ? null : (
               <LateSubmissionModal
@@ -873,7 +861,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                   directory={this.state.uploadDirectory}
                 >
                   <Button>
-                    <Icon type="upload" /> Upload files
+                    <UploadOutlined /> Upload files
                   </Button>
                 </Upload>
               </div>

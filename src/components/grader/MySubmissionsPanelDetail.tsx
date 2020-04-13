@@ -5,8 +5,18 @@
 /* react imports */
 import * as React from 'react';
 
+import {
+  CloseCircleOutlined,
+  CodeOutlined,
+  FilterOutlined,
+  MinusCircleTwoTone,
+  PlusCircleOutlined,
+  InboxOutlined,
+  RedoOutlined,
+} from '@ant-design/icons';
+
 /* antd imports */
-import { Breadcrumb, Button, Divider, Dropdown, Empty, Icon, Menu, Popconfirm, Select, Switch, Table } from 'antd';
+import { Breadcrumb, Button, Divider, Dropdown, Empty, Menu, Popconfirm, Select, Switch, Table } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -278,7 +288,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
             <CPButton
               cpType="primary"
               key={2}
-              icon="plus-circle"
+              icon={<PlusCircleOutlined />}
               onClick={handleClick}
               fallback="plus-circle"
               style={{ display: 'inline-block' }}
@@ -290,13 +300,19 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
         break;
       case BUTTON_STATE.Inactive:
         claimButton = (
-          <CPButton cpType="disabled" key={2} icon="inbox" fallback="inbox" style={{ display: 'inline-block' }}>
+          <CPButton
+            cpType="disabled"
+            key={2}
+            icon={<InboxOutlined />}
+            fallback="inbox"
+            style={{ display: 'inline-block' }}
+          >
             Queue empty
           </CPButton>
         );
         const refreshFunction = () => this.setState({ buttonState: BUTTON_STATE.Active });
         refreshButton = (
-          <CPButton cpType="secondary" icon="redo" onClick={refreshFunction} fallback="redo">
+          <CPButton cpType="secondary" icon={<RedoOutlined />} onClick={refreshFunction} fallback="redo">
             Refresh
           </CPButton>
         );
@@ -324,7 +340,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
         filterComponent = (
           <CPTooltip title={tooltips.grader.mySubmissions.filter} hideThisOnHideTips={true}>
             <Dropdown overlay={filterMenu} trigger={['click']}>
-              <Button icon="filter">Filter</Button>
+              <Button icon={<FilterOutlined />}>Filter</Button>
             </Dropdown>
           </CPTooltip>
         );
@@ -340,7 +356,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
               disabled={this.state.isLoadingSubmissions}
             />
             &nbsp;
-            <Icon type="close-circle" onClick={this.setFilterType.bind(this, FILTER_TYPE.NONE)} />
+            <CloseCircleOutlined onClick={this.setFilterType.bind(this, FILTER_TYPE.NONE)} />
           </div>
         );
         break;
@@ -455,7 +471,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
         const students = showingEmails && sub.students ? sub.students.join(', ') : sub.id;
         return {
           ...formatSub(sub, this.props.assignment),
-          open: <Icon type="code" onClick={this.openGradePage.bind(this, sub)} />,
+          open: <CodeOutlined onClick={this.openGradePage.bind(this, sub)} />,
           key: sub.id,
           student: students,
           release: (
@@ -467,7 +483,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
                 cancelText="Cancel"
                 placement="left"
               >
-                <Icon type="minus-circle" theme="twoTone" twoToneColor="#eb2f96" />
+                <MinusCircleTwoTone twoToneColor="#eb2f96" />
               </Popconfirm>
             </div>
           ),
@@ -534,7 +550,11 @@ export const SelectSection = (props: ISelectSectionProps) => {
   const { sections, onSelect, onDeselect } = props;
 
   const selectorItemsFormatter = (items: SectionType[]) => {
-    return items.map((section, i) => <Option key={section.id}>{section.name}</Option>);
+    return items.map((section, i) => (
+      <Option key={section.id} value={section.id}>
+        {section.name}
+      </Option>
+    ));
   };
 
   if (sections.length === 0) {

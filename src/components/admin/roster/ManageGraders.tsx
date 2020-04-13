@@ -5,8 +5,17 @@
 /* react imports */
 import * as React from 'react';
 
+import {
+  DisconnectOutlined,
+  EditOutlined,
+  FolderOpenOutlined,
+  MailOutlined,
+  MenuOutlined,
+  UserDeleteOutlined,
+} from '@ant-design/icons';
+
 /* style imports */
-import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Switch } from 'antd';
+import { Breadcrumb, Dropdown, Empty, Menu, message, Modal, Switch } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -194,7 +203,9 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
               ) : (
                 <span style={{ color: '#80808082' }}>
                   <CPTooltip title="This user has not yet signed up for codePost.">
-                    {highlightedEmail} &nbsp; <Icon type="disconnect" />
+                    <div>
+                      {highlightedEmail} &nbsp; <DisconnectOutlined />
+                    </div>
                   </CPTooltip>
                 </span>
               );
@@ -232,7 +243,7 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
                 onChange={this.toggleSuperGrader.bind(this, graderEmail)}
               />
               &nbsp;&nbsp;
-              <Icon type="edit" onClick={this.setActiveGrader.bind(this, '')} />
+              <EditOutlined onClick={this.setActiveGrader.bind(this, '')} />
             </div>
           );
         } else {
@@ -240,7 +251,7 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
             <div>
               <Switch checked={this.props.superGraders.includes(graderEmail)} disabled={true} />
               &nbsp;&nbsp;
-              <Icon type="edit" onClick={this.setActiveGrader.bind(this, graderEmail)} />
+              <EditOutlined onClick={this.setActiveGrader.bind(this, graderEmail)} />
             </div>
           );
         }
@@ -249,17 +260,17 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
           <Menu>
             {hasActivated ? null : (
               <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, graderEmail)}>
-                <Icon type="mail" />
+                <MailOutlined />
                 Send activation email
               </Menu.Item>
             )}
             <Menu.Item key="profile">
               <Link to={this.props.match.url.replace('roster/graders', `submissions/by_grader/${graderEmail}`)}>
-                <Icon type="folder-open" /> &nbsp; Open profile
+                <FolderOpenOutlined /> &nbsp; Open profile
               </Link>
             </Menu.Item>
             <Menu.Item key="1" onClick={this.removeGrader.bind(this, graderEmail)}>
-              <Icon type="user-delete" />
+              <UserDeleteOutlined />
               Unenroll
             </Menu.Item>
           </Menu>
@@ -272,7 +283,7 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
           superGrader: this.props.superGraders.includes(graderEmail),
           actions: (
             <Dropdown overlay={menu} trigger={['click']}>
-              <Icon type="menu" />
+              <MenuOutlined />
             </Dropdown>
           ),
         };

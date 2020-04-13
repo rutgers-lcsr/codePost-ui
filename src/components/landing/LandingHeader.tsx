@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { Collapse, Icon } from 'antd';
+import { MenuOutlined } from '@ant-design/icons';
+
+import { Collapse } from 'antd';
 
 import landingVars from '../../styles/pages/_landingVars';
 
@@ -25,7 +27,7 @@ const LandingHeader = () => {
   };
 
   const expandIcon = (_: any) => {
-    return <Icon type="menu" style={{ marginRight: 10 }} />;
+    return <MenuOutlined style={{ marginRight: 10 }} />;
   };
 
   const logo = (

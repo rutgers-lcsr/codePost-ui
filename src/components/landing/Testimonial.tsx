@@ -2,7 +2,9 @@ import * as React from 'react';
 
 import useWindowSize from '../core/useWindowSize';
 
-import { Button, Divider, Icon, Typography } from 'antd';
+import { DoubleRightOutlined } from '@ant-design/icons';
+
+import { Button, Divider, Typography } from 'antd';
 
 import landingVars from '../../styles/pages/_landingVars';
 
@@ -328,7 +330,7 @@ const Testimonials = () => {
         className="testimonials-link"
       >
         View all testimonials
-        <Icon type="double-right" className="testimonials-link__arrow" />
+        <DoubleRightOutlined className="testimonials-link__arrow" />
       </Button>
       <Divider />
     </div>

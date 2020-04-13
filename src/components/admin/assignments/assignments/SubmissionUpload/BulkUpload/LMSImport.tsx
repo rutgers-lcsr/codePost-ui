@@ -5,12 +5,13 @@
 
 import React, { useState } from 'react';
 
+import { EditOutlined, InboxOutlined, RocketOutlined, UploadOutlined } from '@ant-design/icons';
+
 import {
   Button,
   Card,
   Checkbox,
   Collapse,
-  Icon,
   List,
   message,
   Radio,
@@ -337,7 +338,7 @@ const StepOneUploadZips = (props: IStepOneProps) => {
       </Collapse>
       <Upload.Dragger showUploadList={false} directory={true} multiple={false} beforeUpload={beforeUpload}>
         <p className="ant-upload-drag-icon">
-          <Icon type="inbox" />
+          <InboxOutlined />
         </p>
         <p className="ant-upload-text">Click to upload a folder</p>
         <p className="ant-upload-hint">Make sure you use the format specified in the Instructions above.</p>
@@ -611,6 +612,9 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
 
   const data = Object.keys(props.folderMap).map((folderName) => {
     const id = getIdentifierFromFolder(folderName, props.idIndex);
+
+    // @ts-ignore
+    const lastOption = <Select.Option value={undefined}> </Select.Option>;
     const studentEmail = !editMode ? (
       <span>{props.folderMap[folderName] || undefined}</span>
     ) : (
@@ -633,7 +637,7 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
           .sort((a, b) => {
             return (a.key as number) - (b.key as number);
           })}
-        <Select.Option value={undefined}> </Select.Option>
+        {lastOption}
       </Select>
     );
 
@@ -693,18 +697,18 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
         {editMode ? (
           <span>
             <Button onClick={() => setShowUpload(true)} style={{ marginBottom: 10 }}>
-              <Icon type="upload" /> Upload a mapping
+              <UploadOutlined /> Upload a mapping
             </Button>{' '}
             &nbsp;
             <Tooltip title="Let codePost try to match IDs with student emails.">
               <Button type="primary" onClick={guessMapping} loading={isGuessing}>
-                <Icon type="rocket" /> Guess
+                <RocketOutlined /> Guess
               </Button>
             </Tooltip>
           </span>
         ) : (
           <Button type="default" onClick={() => setEditMode(true)}>
-            <Icon type="edit" /> Edit
+            <EditOutlined /> Edit
           </Button>
         )}
       </div>

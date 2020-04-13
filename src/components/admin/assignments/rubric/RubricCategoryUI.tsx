@@ -1,8 +1,17 @@
 /* react imports */
 import * as React from 'react';
 
+import {
+  CaretDownOutlined,
+  CaretUpOutlined,
+  CloseCircleOutlined,
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+} from '@ant-design/icons';
+
 /* ant imports */
-import { Badge, Button, Icon, Input, Popconfirm, Spin, Table, Tag, Switch } from 'antd';
+import { Badge, Button, Input, Popconfirm, Spin, Table, Tag, Switch } from 'antd';
 
 /* codePost imports */
 import CPButton from '../../../core/CPButton';
@@ -162,7 +171,7 @@ const RubricCategoryUI = ({
           text: (
             <span style={{ display: 'flex' }}>
               <TextArea
-                autosize
+                autoSize
                 value={thisComment.text}
                 onChange={onChangeText}
                 onBlur={saveComment}
@@ -191,7 +200,7 @@ const RubricCategoryUI = ({
             <span style={{ verticalAlign: 'middle' }}>
               <CPTooltip title="Edit comment's explanation" key={rubricComment.id}>
                 <CPButton
-                  icon="edit"
+                  icon={<EditOutlined />}
                   style={{ background: thisComment.explanation ? '#f0fff7' : undefined }}
                   onClick={() => {
                     setActiveComment(thisComment);
@@ -205,7 +214,7 @@ const RubricCategoryUI = ({
                 disabled={!thisComment.explanation}
               >
                 <CPButton
-                  icon="delete"
+                  icon={<DeleteOutlined />}
                   disabled={!thisComment.explanation}
                   onClick={() => {
                     onDeleteField('explanation');
@@ -220,7 +229,7 @@ const RubricCategoryUI = ({
             <span style={{ verticalAlign: 'middle' }}>
               <CPTooltip title="Edit comment's instructions" key={rubricComment.id}>
                 <CPButton
-                  icon="edit"
+                  icon={<EditOutlined />}
                   style={{ background: thisComment.instructionText ? '#f0fff7' : undefined }}
                   onClick={() => {
                     setActiveComment(thisComment);
@@ -234,7 +243,7 @@ const RubricCategoryUI = ({
                 disabled={!thisComment.instructionText}
               >
                 <CPButton
-                  icon="delete"
+                  icon={<DeleteOutlined />}
                   disabled={!thisComment.instructionText}
                   onClick={() => {
                     onDeleteField('instructionText');
@@ -254,7 +263,7 @@ const RubricCategoryUI = ({
           ),
           delete: (
             <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
-              <Icon type="delete" onClick={deleteComment} />
+              <DeleteOutlined onClick={deleteComment} />
             </CPTooltip>
           ),
         };
@@ -277,7 +286,7 @@ const RubricCategoryUI = ({
 
         return {
           key: rubricComment.id,
-          text: <TextArea autosize value={''} onChange={updateRubricCommentText} onBlur={saveComment} />,
+          text: <TextArea autoSize value={''} onChange={updateRubricCommentText} onBlur={saveComment} />,
           deduction: (
             <CPPointInput
               value={-rubricComment.pointDelta}
@@ -289,7 +298,7 @@ const RubricCategoryUI = ({
           linked: null,
           delete: (
             <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
-              <Icon type="delete" onClick={deleteComment} />
+              <DeleteOutlined onClick={deleteComment} />
             </CPTooltip>
           ),
         };
@@ -329,13 +338,18 @@ const RubricCategoryUI = ({
     </span>,
     <span key="buttons">
       <CPTooltip title={props.index === 0 ? '' : tooltips.admin.rubric.categoryUp} hideThisOnHideTips={true}>
-        <Button icon="caret-up" size="small" onClick={moveUp} disabled={props.index === 0} />
+        <Button icon={<CaretUpOutlined />} size="small" onClick={moveUp} disabled={props.index === 0} />
       </CPTooltip>
       <CPTooltip
         title={props.index === props.numCategories - 1 ? '' : tooltips.admin.rubric.categoryDown}
         hideThisOnHideTips={true}
       >
-        <Button icon="caret-down" size="small" disabled={props.index === props.numCategories - 1} onClick={moveDown} />
+        <Button
+          icon={<CaretDownOutlined />}
+          size="small"
+          disabled={props.index === props.numCategories - 1}
+          onClick={moveDown}
+        />
       </CPTooltip>
     </span>,
     state.hasError ? (
@@ -389,7 +403,7 @@ const RubricCategoryUI = ({
             title={`Clear this category's point limit (so any number of points can
               be added or deducted using its rubric comments)`}
           >
-            <Icon style={{ cursor: 'pointer' }} type="close-circle" onClick={clearPointLimit} />
+            <CloseCircleOutlined style={{ cursor: 'pointer' }} onClick={clearPointLimit} />
           </CPTooltip>
         </span>
       </div>
@@ -412,7 +426,7 @@ const RubricCategoryUI = ({
         value={state.helpText}
         onChange={helpers.changeHelpText}
         onBlur={helpers.saveCategory}
-        autosize={true}
+        autoSize={true}
       />
     </div>
   ) : null;
@@ -467,7 +481,7 @@ const RubricCategoryUI = ({
           locale={{ emptyText: 'No comments yet' }}
         />
         <div className="cp-rubric-category__add-new-comment">
-          <CPButton cpType="primary" icon="plus" onClick={helpers.addComment} />
+          <CPButton cpType="primary" icon={<PlusOutlined />} onClick={helpers.addComment} />
           <span style={{ marginLeft: '20px' }} className="cp-label cp-label--success cp-label--bold">
             ADD NEW COMMENT
           </span>

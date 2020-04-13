@@ -5,6 +5,8 @@
 /* react imports */
 import * as React from 'react';
 
+import { TeamOutlined, UserAddOutlined } from '@ant-design/icons';
+
 /* ant imports */
 import { Button, Divider, Typography } from 'antd';
 
@@ -51,12 +53,12 @@ const SignUpManager = () => {
               </Typography.Title>
               <div style={{ display: 'flex', flexDirection: flexDirectionButtons, alignItems: 'center' }}>
                 <Link to="/signup/create" style={{ marginTop: 25 }}>
-                  <Button icon="user-add" type="primary" style={buttonStyle}>
+                  <Button icon={<UserAddOutlined />} type="primary" style={buttonStyle}>
                     Create Course
                   </Button>
                 </Link>
                 <Link to="/signup/join" style={{ marginTop: 25, marginLeft: windowSize.width < 950 ? 0 : 20 }}>
-                  <Button icon="team" style={buttonStyle}>
+                  <Button icon={<TeamOutlined />} style={buttonStyle}>
                     Join Existing Course
                   </Button>
                 </Link>
@@ -102,7 +104,7 @@ const SignUpManager = () => {
                 Students
               </Typography.Title>
               <Link to="/signup/join" style={{ marginTop: 25 }}>
-                <Button icon="team" style={buttonStyle}>
+                <Button icon={<TeamOutlined />} style={buttonStyle}>
                   Join Existing Course
                 </Button>
               </Link>

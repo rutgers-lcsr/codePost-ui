@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { EyeFilled, EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
+
 /* antd imports */
-import { Icon, Typography } from 'antd';
+import { Typography } from 'antd';
 
 /* other library imports */
 import moment from 'moment';
@@ -44,7 +46,7 @@ const getViewIcon = (
     return (
       <CPTooltip title={moment(viewsBySubmission[submission.id][studentToLookup]).format('llll')}>
         <div>
-          <Icon type="eye" theme="filled" />
+          <EyeFilled />
         </div>
       </CPTooltip>
     );
@@ -52,7 +54,7 @@ const getViewIcon = (
 
   // case: looking up a single student, and student has not viewed the submission
   if (studentToLookup && !(studentToLookup in views)) {
-    return <Icon type="eye-invisible" />;
+    return <EyeInvisibleOutlined />;
   }
 
   // looking up for multiple students
@@ -75,13 +77,13 @@ const getViewIcon = (
   switch (Object.keys(views).length) {
     // case: no student has viewed
     case 0:
-      return <Icon type="eye-invisible" />;
+      return <EyeInvisibleOutlined />;
     // case: all students have viewed
     case submission.students.length:
       return (
         <CPTooltip title={getTooltipLabel()}>
           <div>
-            <Icon type="eye" theme="filled" />
+            <EyeFilled />
           </div>
         </CPTooltip>
       );
@@ -89,7 +91,7 @@ const getViewIcon = (
       return (
         <CPTooltip title={getTooltipLabel()}>
           <div>
-            <Icon type="eye" theme="twoTone" twoToneColor="#646464" />
+            <EyeTwoTone twoToneColor="#646464" />
           </div>
         </CPTooltip>
       );

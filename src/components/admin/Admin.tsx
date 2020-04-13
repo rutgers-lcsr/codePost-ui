@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { SettingOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Button, Empty, Icon } from 'antd';
+import { Button, Empty } from 'antd';
 
 /* other library imports */
 import _ from 'lodash';
@@ -1193,7 +1195,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.ADMIN} theme="light" />,
       <CPTooltip key="settings" title={tooltips.management.header.settings} hideThisOnHideTips={true}>
         <Link className="internal-link" to="/settings">
-          <Icon type="setting" />
+          <SettingOutlined />
         </Link>
       </CPTooltip>,
       <Button key="header-logout" onClick={this.props.handleLogout}>

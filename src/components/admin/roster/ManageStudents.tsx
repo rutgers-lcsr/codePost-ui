@@ -5,8 +5,17 @@
 /* react imports */
 import * as React from 'react';
 
+import {
+  DisconnectOutlined,
+  EditOutlined,
+  FolderOpenOutlined,
+  MailOutlined,
+  MenuOutlined,
+  UserDeleteOutlined,
+} from '@ant-design/icons';
+
 /* style imports */
-import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Select } from 'antd';
+import { Breadcrumb, Dropdown, Empty, Menu, message, Modal, Select } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -198,7 +207,9 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
               ) : (
                 <span style={{ color: '#80808082' }}>
                   <CPTooltip title="This user has not yet signed up for codePost.">
-                    {highlightedEmail} &nbsp; <Icon type="disconnect" />
+                    <div>
+                      {highlightedEmail} &nbsp; <DisconnectOutlined />
+                    </div>
                   </CPTooltip>
                 </span>
               );
@@ -250,7 +261,7 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
                     </Select>
                     &nbsp;
                     <CPTooltip title={tooltips.admin.studentRoster.lockSection} hideThisOnHideTips={true}>
-                      <Icon type="edit" onClick={this.setActiveStudent.bind(this, '')} />
+                      <EditOutlined onClick={this.setActiveStudent.bind(this, '')} />
                     </CPTooltip>
                   </div>
                 );
@@ -268,7 +279,7 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
                     />{' '}
                     &nbsp;
                     <CPTooltip title={tooltips.admin.studentRoster.editSection} hideThisOnHideTips={true}>
-                      <Icon type="edit" onClick={this.setActiveStudent.bind(this, student)} />
+                      <EditOutlined onClick={this.setActiveStudent.bind(this, student)} />
                     </CPTooltip>
                   </div>
                 );
@@ -291,17 +302,17 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
           <Menu>
             {hasActivated ? null : (
               <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, studentEmail)}>
-                <Icon type="mail" />
+                <MailOutlined />
                 Send activation email
               </Menu.Item>
             )}
             <Menu.Item key="profile">
               <Link to={this.props.match.url.replace('roster/students', `submissions/by_student/${studentEmail}`)}>
-                <Icon type="folder-open" /> &nbsp; Open profile
+                <FolderOpenOutlined /> &nbsp; Open profile
               </Link>
             </Menu.Item>
             <Menu.Item key="1" onClick={this.removeStudent.bind(this, studentEmail)}>
-              <Icon type="user-delete" />
+              <UserDeleteOutlined />
               Unenroll
             </Menu.Item>
           </Menu>
@@ -313,7 +324,7 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
           section: sections[studentEmail] ? sections[studentEmail].name : 'No section',
           actions: (
             <Dropdown overlay={menu} trigger={['click']}>
-              <Icon type="menu" />
+              <MenuOutlined />
             </Dropdown>
           ),
         };
