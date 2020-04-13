@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { CalendarOutlined, CrownOutlined, IdcardOutlined, ProfileOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Button, Icon, Typography } from 'antd';
+import { Button, Typography } from 'antd';
 
 /* other library imports */
 
@@ -88,7 +90,7 @@ const Scholarship = (props: IProps) => {
     <div style={{ textAlign: 'left' }}>
       <div style={{ marginBottom: 25 }}>
         <Typography.Title level={3} style={{ fontSize: 20, color: 'grey' }}>
-          <Icon type="calendar" style={{ marginRight: 10 }} />
+          <CalendarOutlined style={{ marginRight: 10 }} />
           Timeline
         </Typography.Title>
         <div style={{ paddingLeft: 20 }}>
@@ -108,7 +110,7 @@ const Scholarship = (props: IProps) => {
       </div>
       <div style={{ marginBottom: 25 }}>
         <Typography.Title level={3} style={{ fontSize: 20, color: 'grey' }}>
-          <Icon type="crown" style={{ marginRight: 10 }} />
+          <CrownOutlined style={{ marginRight: 10 }} />
           Amount
         </Typography.Title>
         <Typography.Title level={4} style={{ paddingLeft: 20, color: 'grey' }}>
@@ -117,7 +119,7 @@ const Scholarship = (props: IProps) => {
       </div>
       <div style={{ marginBottom: 25 }}>
         <Typography.Title level={3} style={{ fontSize: 20, color: 'grey' }}>
-          <Icon type="idcard" style={{ marginRight: 10 }} />
+          <IdcardOutlined style={{ marginRight: 10 }} />
           Eligibility
         </Typography.Title>
         <div style={{ paddingLeft: 20, fontSize: 16 }}>
@@ -126,7 +128,7 @@ const Scholarship = (props: IProps) => {
       </div>
       <div style={{ marginBottom: 25 }}>
         <Typography.Title level={3} style={{ fontSize: 20, color: 'grey' }}>
-          <Icon type="profile" style={{ marginRight: 10 }} />
+          <ProfileOutlined style={{ marginRight: 10 }} />
           Selection Criteria
         </Typography.Title>
         <div style={{ fontSize: 16 }}>

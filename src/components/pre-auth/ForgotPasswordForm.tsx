@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { UserOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Alert, Icon, Input, Typography } from 'antd';
+import { Alert, Input, Typography } from 'antd';
 
 /* codePost imports */
 import PreAuthLayout from './PreAuthLayout';
@@ -98,7 +100,7 @@ class ForgotPasswordForm extends React.Component<IProps, State> {
               value={this.state.email}
               onChange={this.handleChange.bind(this, 'email')}
               placeholder="Email address"
-              prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
+              prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
             />
             <br />
             <br />

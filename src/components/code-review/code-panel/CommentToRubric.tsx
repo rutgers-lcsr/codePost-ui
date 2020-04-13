@@ -33,6 +33,10 @@ const CommentToRubric = (props: IProps) => {
     props.onCancel();
   };
 
+  const onChange = (e: any) => {
+    setCategory(e);
+  };
+
   return (
     <Modal
       visible={props.visible}
@@ -45,7 +49,7 @@ const CommentToRubric = (props: IProps) => {
       <br />
       <br />
       Category:{' '}
-      <Select style={{ width: '300px' }} onChange={setCategory}>
+      <Select style={{ width: '300px' }} onChange={onChange}>
         {props.rubricCategories.map((el) => (
           <Select.Option value={el.id}>{el.name}</Select.Option>
         ))}

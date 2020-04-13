@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { SettingOutlined } from '@ant-design/icons';
+
 /* antd imports */
-import { Button, Icon, Layout } from 'antd';
+import { Button, Layout } from 'antd';
 
 /* other library imports */
 import { Route, Link, Switch } from 'react-router-dom';
@@ -238,7 +240,7 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
       <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.GRADER} theme="light" />,
       <CPTooltip key="settings" title={tooltips.management.header.settings} hideThisOnHideTips={true}>
         <Link className="internal-link" to="/settings">
-          <Icon type="setting" />
+          <SettingOutlined />
         </Link>
       </CPTooltip>,
       <Button key="header-logout" onClick={this.props.handleLogout}>

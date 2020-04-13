@@ -5,8 +5,24 @@
 /* React imports */
 import * as React from 'react';
 
+import { QuestionCircleOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Breadcrumb, Button, Divider, Icon, Input, message, Progress, Select, Spin, Statistic, Typography } from 'antd';
+import {
+  Breadcrumb,
+  Button,
+  Checkbox,
+  Divider,
+  Input,
+  message,
+  Progress,
+  Select,
+  Spin,
+  Statistic,
+  Tag,
+  Typography,
+  Tooltip,
+} from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -16,8 +32,10 @@ import { AssignmentType } from '../../../../infrastructure/assignment';
 import { CourseType } from '../../../../infrastructure/course';
 import { SubmissionInfoType } from '../../../../infrastructure/submission';
 import { UserType } from '../../../../infrastructure/user';
+import { FileTemplate, FileTemplateType } from '../../../../infrastructure/fileTemplate';
 
 import invokeAWSLambda from '../../../../components/core/invokeAWSLambda';
+import FileExploror from '../../../../components/core/FileExplorer';
 
 import CPAdminDetail from '../../other/CPAdminDetail';
 
@@ -93,11 +111,33 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
   const [mossID, setMossID] = React.useState('');
   const [excludedFiles, setExcludedFiles] = React.useState('');
 
+  const [fileTemplates, setFileTemplates] = React.useState<FileTemplateType[]>([]);
+  const [includeFileTemplates, setIncludeFileTemplates] = React.useState(false);
+  const [fileExplorerVisible, setFileExplorerVisible] = React.useState(false);
+
   let testMode = false;
   const values = queryString.parse(props.location.search);
   if (values.test !== undefined) {
     testMode = true;
   }
+
+  React.useEffect(() => {
+    const fetch = async () => {
+      if (props.assignment !== undefined) {
+        const ret = await Promise.all(
+          props.assignment.fileTemplates.map(async (id: number) => {
+            return await FileTemplate.read(id);
+          }),
+        );
+        setFileTemplates(ret);
+        if (ret.length > 0) {
+          setIncludeFileTemplates(true);
+        }
+      }
+    };
+
+    fetch();
+  }, [props.assignment]);
 
   React.useEffect(() => {
     const values = queryString.parse(props.location.search);
@@ -232,6 +272,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
         email: props.user.email,
         test_mode: testMode,
         excluded_files: excludedFiles,
+        include_file_templates: includeFileTemplates,
         from_url: window.location.href.split('?')[0],
       };
 
@@ -354,9 +395,51 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
     </div>
   );
 
+  const onChangeFileTemplateCheckbox = (e: any) => {
+    setIncludeFileTemplates(e.target.checked);
+  };
+
+  const fileTemplateTooltip =
+    fileTemplates.length === 0
+      ? "You don't have any File Templates defined for this assignment. Add them from your assignment settings."
+      : null;
+
+  const toggleFileExplorerVisible = () => {
+    setFileExplorerVisible(!fileExplorerVisible);
+  };
+
+  const fileTemplatesCheckbox = (
+    <div style={{ padding: '10px 0px' }}>
+      <span>
+        <Tooltip title={fileTemplateTooltip}>
+          <Checkbox
+            checked={includeFileTemplates}
+            disabled={fileTemplates.length === 0}
+            onChange={onChangeFileTemplateCheckbox}
+          >
+            Omit file template code from detection
+          </Checkbox>
+        </Tooltip>
+      </span>
+      <Tooltip
+        title={'If checked, submission code that also appears in a file template will not be counted in matches.'}
+      >
+        <QuestionCircleOutlined style={{ cursor: 'pointer' }} />
+      </Tooltip>
+      {fileTemplates.length > 0 && (
+        <span>
+          <Tag style={{ cursor: 'pointer', marginLeft: '7px' }} onClick={toggleFileExplorerVisible}>
+            View file templates
+          </Tag>
+        </span>
+      )}
+    </div>
+  );
+
   // Should be refactored to use Form once this feature is built out
   const action = submit ? (
     <div style={{ padding: '40px 100px 0px 100px' }}>
+      <FileExploror visible={fileExplorerVisible} toggleVisible={toggleFileExplorerVisible} files={fileTemplates} />
       <div>
         <Typography.Title level={3}>Select an assignment</Typography.Title>
         <Select
@@ -393,7 +476,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
                   </span>
                 }
               >
-                <Icon type="question-circle" />
+                <QuestionCircleOutlined />
               </CPTooltip>
             }
           />
@@ -405,6 +488,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
           value={excludedFiles}
           onChange={onChangeExcludedFiles}
         />
+        {props.assignment && fileTemplatesCheckbox}
         <Divider />
         <Statistic
           title="# Submissions"

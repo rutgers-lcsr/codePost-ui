@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { Icon as LegacyIcon } from '@ant-design/compatible';
+
 import { Button } from 'antd';
 
 import { ButtonProps } from 'antd/lib/button';
@@ -80,7 +82,7 @@ class CPButton extends React.Component<ButtonProps & ICPButtonProps, ICPButtonSt
       const { children, ...withoutChildren } = props;
       return (
         <CPTooltip title={children}>
-          <Button shape="circle" icon={fallback} {...customProps} {...withoutChildren} />
+          <Button shape="circle" icon={<LegacyIcon type={fallback} />} {...customProps} {...withoutChildren} />
         </CPTooltip>
       );
     }

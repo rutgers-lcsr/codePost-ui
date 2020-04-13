@@ -5,8 +5,22 @@
 /* react imports */
 import * as React from 'react';
 
+import {
+  CodeOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  EyeFilled,
+  EyeInvisibleOutlined,
+  FileAddOutlined,
+  MenuOutlined,
+  RedoOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
+
+import { Icon as LegacyIcon } from '@ant-design/compatible';
+
 /* style imports */
-import { Badge, Breadcrumb, Dropdown, Icon, Menu, message, Modal, Select } from 'antd';
+import { Badge, Breadcrumb, Dropdown, Menu, message, Modal, Select } from 'antd';
 
 /* other library imports */
 import moment from 'moment';
@@ -181,13 +195,13 @@ class StudentDetail extends React.Component<IProps, IState> {
       return (
         <CPTooltip title={moment(this.props.viewsBySubmission[submission.id][student]).format('llll')}>
           <div>
-            <Icon type="eye" theme="filled" />
+            <EyeFilled />
           </div>
         </CPTooltip>
       );
     } else {
       // case: submission has not been viewed
-      return <Icon type="eye-invisible" />;
+      return <EyeInvisibleOutlined />;
     }
   };
 
@@ -300,17 +314,17 @@ class StudentDetail extends React.Component<IProps, IState> {
         <Menu>
           <Menu.Item key="0" onClick={openSubmission.bind(this, submission.id)}>
             <span>
-              <Icon type="code" /> Open submission
+              <CodeOutlined /> Open submission
             </span>
           </Menu.Item>
           <Menu.Item key="1" onClick={this.reUploadSubmission.bind(this, submission)}>
             <span>
-              <Icon type="redo" /> Replace files
+              <RedoOutlined /> Replace files
             </span>
           </Menu.Item>
           <Menu.Item key="2" onClick={this.toggleUploadSubmissionVisible.bind(this, assignment.id)}>
             <span>
-              <Icon type="file-add" /> Add / Update files
+              <FileAddOutlined /> Add / Update files
             </span>
           </Menu.Item>
           {assignment.environment && (
@@ -320,13 +334,14 @@ class StudentDetail extends React.Component<IProps, IState> {
               onClick={this.runTests.bind(this, assignment, submission)}
             >
               <span>
-                <Icon type={this.state.subsRunning.includes(submission.id) ? 'loading' : 'caret-right'} /> Run Tests
+                <LegacyIcon type={this.state.subsRunning.includes(submission.id) ? 'loading' : 'caret-right'} /> Run
+                Tests
               </span>
             </Menu.Item>
           )}
           <Menu.Divider />
           <Menu.Item key="4" style={{ color: 'red' }} onClick={this.removeSubmission.bind(this, submission)}>
-            <Icon type="delete" />
+            <DeleteOutlined />
             Delete submission
           </Menu.Item>
         </Menu>
@@ -334,7 +349,7 @@ class StudentDetail extends React.Component<IProps, IState> {
         <Menu>
           <Menu.Item key="0">
             <span onClick={this.toggleUploadSubmissionVisible.bind(this, assignment.id)}>
-              <Icon type="upload" /> Upload submission
+              <UploadOutlined /> Upload submission
             </span>
           </Menu.Item>
         </Menu>
@@ -342,6 +357,12 @@ class StudentDetail extends React.Component<IProps, IState> {
 
       let graderElement;
       if (submission && assignment.name === this.state.selectedSubmission) {
+        const undefinedOption = (
+          // @ts-ignore
+          <Select.Option key={0} value={undefined}>
+            No grader
+          </Select.Option>
+        );
         graderElement = (
           <div>
             <Select
@@ -359,14 +380,12 @@ class StudentDetail extends React.Component<IProps, IState> {
                       </Select.Option>
                     );
                   }),
-                <Select.Option key={0} value={undefined}>
-                  No grader
-                </Select.Option>,
+                undefinedOption,
               ]}
             </Select>
             &nbsp;{' '}
             <CPTooltip title={tooltips.admin.studentSubmissions.lockAssignGrader} hideThisOnHideTips={true}>
-              <Icon type="edit" onClick={this.changeActiveSubmission.bind(this, '')} />
+              <EditOutlined onClick={this.changeActiveSubmission.bind(this, '')} />
             </CPTooltip>
           </div>
         );
@@ -375,7 +394,7 @@ class StudentDetail extends React.Component<IProps, IState> {
           <div>
             <span>{submission.grader ? submission.grader : '--'}</span>&nbsp;
             <CPTooltip title={tooltips.admin.studentSubmissions.assignGrader} hideThisOnHideTips={true}>
-              <Icon type="edit" onClick={this.changeActiveSubmission.bind(this, assignment.name)} />
+              <EditOutlined onClick={this.changeActiveSubmission.bind(this, assignment.name)} />
             </CPTooltip>
           </div>
         );
@@ -385,7 +404,7 @@ class StudentDetail extends React.Component<IProps, IState> {
 
       return {
         key: assignment.name,
-        open: submission ? <Icon type="code" onClick={openSubmission.bind(this, submission.id)} /> : '--',
+        open: submission ? <CodeOutlined onClick={openSubmission.bind(this, submission.id)} /> : '--',
         assignment: assignment.name,
         partners: submission
           ? submission.students
@@ -401,7 +420,7 @@ class StudentDetail extends React.Component<IProps, IState> {
         viewed: submission ? this.getViewIcon(submission, this.props.student) : '--',
         actions: (
           <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>
-            <Icon type="menu" />
+            <MenuOutlined />
           </Dropdown>
         ),
       };

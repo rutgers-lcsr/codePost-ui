@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { SettingOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Button, Empty, Icon } from 'antd';
+import { Button, Empty } from 'antd';
 
 /* other library imports */
 import _ from 'lodash';
@@ -508,6 +510,9 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       lateDayCreditsAllowable: null,
       archived: false,
       activateQueue: true,
+      inviteCode: '',
+      emailWhitelist: '',
+      inviteCodeEnabled: false,
     };
 
     return Course.create(payload).then((course: CourseType) => {
@@ -596,69 +601,82 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   /* Roster handling methods
   /**********************************************************************************/
 
-  public updateRoster = (newRoster: string[], userType: USER_APP) => {
+  public updateRoster = async (adds: string[], deletes: string[], userType: USER_APP) => {
     const { currentCourse } = this.props;
+    console.log('updating roster', adds, deletes);
 
     if (!currentCourse) {
       return Promise.reject();
     }
 
-    const payload = { id: currentCourse.id };
-    switch (userType) {
-      case USER_APP.Student:
-        addToPayload(payload, 'students', newRoster);
-        break;
-      case USER_APP.Grader:
-        addToPayload(payload, 'graders', newRoster);
-        break;
-      case USER_APP.CourseAdmin:
-        addToPayload(payload, 'courseAdmins', newRoster);
-        break;
-      case USER_APP.SuperGrader:
-        addToPayload(payload, 'superGraders', newRoster);
-        break;
+    if (adds.length === 0 && deletes.length === 0) {
+      return Promise.reject();
     }
 
-    return (
-      Course.updateRoster(payload)
-        .then((roster: RosterType) => {
-          switch (userType) {
-            case USER_APP.Student:
-              this.setState(
-                {
-                  students: roster.students,
-                  inactiveStudents: roster.inactive_students,
-                },
-                () => {
-                  this.updateSubmissionsByUser(roster);
-                },
-              );
-              break;
-            case USER_APP.Grader:
-              this.setState(
-                {
-                  graders: roster.graders,
-                  inactiveGraders: roster.inactive_graders,
-                },
-                () => {
-                  this.updateSubmissionsByUser(roster);
-                },
-              );
-              break;
-            case USER_APP.CourseAdmin:
-              this.setState({ admins: roster.courseAdmins });
-              break;
-            case USER_APP.SuperGrader:
-              this.setState({ superGraders: roster.superGraders });
-              break;
-          }
-          return;
-        })
-        // Error catching assumes a returned dictionary of type <errorType: string : [errors:string]>
-        .catch((errors) => {
-          return Promise.reject();
-        })
-    );
+    const makePayload = (role: USER_APP, users: string[]) => {
+      const payload = { id: currentCourse.id };
+      switch (role) {
+        case USER_APP.Student:
+          addToPayload(payload, 'students', users);
+          break;
+        case USER_APP.Grader:
+          addToPayload(payload, 'graders', users);
+          break;
+        case USER_APP.CourseAdmin:
+          addToPayload(payload, 'courseAdmins', users);
+          break;
+        case USER_APP.SuperGrader:
+          addToPayload(payload, 'superGraders', users);
+          break;
+      }
+      return payload;
+    };
+
+    let roster: RosterType | undefined = undefined;
+
+    if (adds.length > 0) {
+      const payload = makePayload(userType, adds);
+      console.log(payload);
+      roster = await Course.addToRoster(payload);
+    }
+
+    if (deletes.length > 0) {
+      const payload = makePayload(userType, deletes);
+      roster = await Course.removeFromRoster(payload);
+    }
+
+    if (roster) {
+      switch (userType) {
+        case USER_APP.Student:
+          this.setState(
+            {
+              students: roster.students,
+              inactiveStudents: roster.inactive_students,
+            },
+            () => {
+              this.updateSubmissionsByUser(roster);
+            },
+          );
+          break;
+        case USER_APP.Grader:
+          this.setState(
+            {
+              graders: roster.graders,
+              inactiveGraders: roster.inactive_graders,
+            },
+            () => {
+              this.updateSubmissionsByUser(roster);
+            },
+          );
+          break;
+        case USER_APP.CourseAdmin:
+          this.setState({ admins: roster.courseAdmins });
+          break;
+        case USER_APP.SuperGrader:
+          this.setState({ superGraders: roster.superGraders });
+          break;
+      }
+    }
   };
 
   /************************************************************************
@@ -1176,7 +1194,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.ADMIN} theme="light" />,
       <CPTooltip key="settings" title={tooltips.management.header.settings} hideThisOnHideTips={true}>
         <Link className="internal-link" to="/settings">
-          <Icon type="setting" />
+          <SettingOutlined />
         </Link>
       </CPTooltip>,
       <Button key="header-logout" onClick={this.props.handleLogout}>

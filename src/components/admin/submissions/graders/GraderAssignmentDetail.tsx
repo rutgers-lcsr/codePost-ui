@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { CodeOutlined, DeleteOutlined, EyeFilled, EyeInvisibleOutlined, MenuOutlined } from '@ant-design/icons';
+
 /* style imports */
-import { Badge, Breadcrumb, Dropdown, Icon, Menu, Modal } from 'antd';
+import { Badge, Breadcrumb, Dropdown, Menu, Modal } from 'antd';
 
 /* other library imports */
 import moment from 'moment';
@@ -101,7 +103,7 @@ class GraderAssignmentDetail extends React.Component<IProps, {}> {
         return (
           <CPTooltip title={tooltipText}>
             <div>
-              <Icon type="eye" theme="filled" />
+              <EyeFilled />
             </div>
           </CPTooltip>
         );
@@ -114,7 +116,7 @@ class GraderAssignmentDetail extends React.Component<IProps, {}> {
         return (
           <CPTooltip title={tooltipText}>
             <div>
-              <Icon type="eye-invisible" />
+              <EyeInvisibleOutlined />
             </div>
           </CPTooltip>
         );
@@ -176,12 +178,12 @@ class GraderAssignmentDetail extends React.Component<IProps, {}> {
         const menu = (
           <Menu>
             <Menu.Item onClick={openSubmission.bind(this, submission.id)}>
-              <Icon type="code" />
+              <CodeOutlined />
               Open
             </Menu.Item>
             <Menu.Divider />
             <Menu.Item style={{ color: 'red' }} onClick={this.removeSubmission.bind(this, submission)}>
-              <Icon type="delete" />
+              <DeleteOutlined />
               Delete
             </Menu.Item>
           </Menu>
@@ -195,7 +197,7 @@ class GraderAssignmentDetail extends React.Component<IProps, {}> {
         }
 
         return {
-          open: <Icon type="code" onClick={openSubmission.bind(this, submission.id)} />,
+          open: <CodeOutlined onClick={openSubmission.bind(this, submission.id)} />,
           key: submission.id,
           assignment: selectedAssignment.name,
           status: this.getStatus(submission),
@@ -204,7 +206,7 @@ class GraderAssignmentDetail extends React.Component<IProps, {}> {
           viewed: this.getViewIcon(submission),
           actions: (
             <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>
-              <Icon type="menu" />
+              <MenuOutlined />
             </Dropdown>
           ),
         };

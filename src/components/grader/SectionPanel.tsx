@@ -141,7 +141,11 @@ class SectionPanel extends React.Component<IProps, IState> {
     let selectContent = <div />;
     if (this.props.sections.length > 1) {
       const menuItems = this.props.sections.map((section) => {
-        return <Select.Option key={section.id}>{section.name} </Select.Option>;
+        return (
+          <Select.Option key={section.id} value={section.id}>
+            {section.name}{' '}
+          </Select.Option>
+        );
       });
       selectContent = (
         <div>

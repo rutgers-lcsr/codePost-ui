@@ -4,6 +4,7 @@
 
 /* react imports */
 import * as React from 'react';
+import { DownloadOutlined } from '@ant-design/icons';
 
 /* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../../../types/common';
@@ -71,7 +72,7 @@ class RubricFileDownload extends React.Component<IProps, {}> {
         cpType="secondary"
         onClick={this.downloadRubric}
         disabled={this.props.isDisabled}
-        icon="download"
+        icon={<DownloadOutlined />}
         fallback="download"
         fallbackWidth={1250}
       >

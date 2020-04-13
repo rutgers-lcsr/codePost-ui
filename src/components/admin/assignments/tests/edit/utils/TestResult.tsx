@@ -1,8 +1,10 @@
 /* react imports  */
 import React from 'react';
 
+import { CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+
 /* library imports  */
-import { Icon, Popover } from 'antd';
+import { Popover } from 'antd';
 
 /* codePost other imports  */
 import { CodeWindow } from './CodeWindow';
@@ -21,11 +23,11 @@ export const TestResult = (props: IResultProps) => {
   const color = props.passed ? '#24be85' : props.isError ? 'red' : 'orange';
   const iconStyle = { color: color, fontSize: 16 };
   const icon = props.passed ? (
-    <Icon style={iconStyle} type="check-circle" />
+    <CheckCircleOutlined style={iconStyle} />
   ) : props.isError ? (
-    <Icon style={iconStyle} type="exclamation-circle" />
+    <ExclamationCircleOutlined style={iconStyle} />
   ) : (
-    <Icon style={iconStyle} type="close-circle" />
+    <CloseCircleOutlined style={iconStyle} />
   );
   const text = props.passed ? 'Passed' : props.isError ? 'Error' : 'Failed';
 

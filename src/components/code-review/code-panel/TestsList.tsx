@@ -284,7 +284,7 @@ const TestsList = (props: IProps) => {
           {props.showLogs && props.logs && (
             <div>
               <Typography.Title level={4}>Logs</Typography.Title>
-              <Input.TextArea disabled={true} value={props.logs} style={{ color: 'black' }} autosize={true} />
+              <Input.TextArea disabled={true} value={props.logs} style={{ color: 'black' }} autoSize={true} />
             </div>
           )}
         </div>

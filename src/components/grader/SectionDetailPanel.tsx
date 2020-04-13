@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { CodeOutlined, LoadingOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Button, Breadcrumb, Divider, Icon, Select, Spin, Switch, Tabs } from 'antd';
+import { Button, Breadcrumb, Divider, Select, Spin, Switch, Table } from 'antd';
 
 /* codePost imports */
 import { AssignmentType } from '../../infrastructure/assignment';
@@ -178,13 +180,17 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
 
     if (this.props.sections.length === 0) {
       // Sections haven't been loaded yet
-      return <Spin indicator={<Icon type="loading" style={{ fontSize: 24 }} spin />} />;
+      return <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />;
     }
 
     let selectContent;
     if (this.props.sections.length > 1) {
       const menuItems = this.props.sections.map((section) => {
-        return <Option key={section.id}>{section.name} </Option>;
+        return (
+          <Option key={section.id} value={section.id}>
+            {section.name}{' '}
+          </Option>
+        );
       });
       selectContent = (
         <div>

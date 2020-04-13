@@ -9,7 +9,8 @@ import React from 'react';
 
 // We ignore eslint since Popover never explicitly used. We just use the classNames
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Button, Icon, Input, message, Popconfirm, Popover, Tooltip } from 'antd';
+import { Button, Input, message, Popconfirm, Popover, Tooltip } from 'antd';
+import { DeleteOutlined, LinkOutlined, CheckOutlined } from '@ant-design/icons';
 
 /* codePost imports */
 import { hostname } from '../../../serviceWorker';
@@ -665,7 +666,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         <CPButton
           type="secondary"
           onClick={shareComment}
-          icon="link"
+          icon={<LinkOutlined />}
           style={{ cursor: 'pointer', border: '0px', backgroundColor: 'transparent', marginLeft: '-9px' }}
         />
       </span>
@@ -741,7 +742,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         <CPTooltip title={forcedRubricTooltip} hideThisOnHideTips={true}>
           <TextArea
             id="comment-text-area"
-            autosize
+            autoSize
             className="comment__text-area"
             placeholder={
               this.props.rubricComment && !this.props.rubricComment.templateTextOn
@@ -766,9 +767,9 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
         </CPTooltip>
       );
 
-      commentElements.saveButton = <CPButton cpType="secondary" icon="check" onClick={this.deactivate} />;
+      commentElements.saveButton = <CPButton cpType="secondary" icon={<CheckOutlined />} onClick={this.deactivate} />;
       commentElements.deleteButton = isEmpty(this.state.text, this.state.points, this.props.rubricComment) ? (
-        <CPButton cpType="danger" icon="delete" onClick={this.confirmDelete} />
+        <CPButton cpType="danger" icon={<DeleteOutlined />} onClick={this.confirmDelete} />
       ) : (
         <Popover
           title="Are you sure you want to delete this comment?"
@@ -778,7 +779,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           placement="bottomRight"
           content={popoverContent}
         >
-          <CPButton cpType="danger" icon="delete" />
+          <CPButton cpType="danger" icon={<DeleteOutlined />} />
         </Popover>
       );
 
@@ -823,7 +824,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           placement="bottomRight"
           content={popoverContent}
         >
-          <CPButton cpType="danger" icon="delete" onClick={preventDefault} />
+          <CPButton cpType="danger" icon={<DeleteOutlined />} onClick={preventDefault} />
         </Popover>
       ) : (
         <Popover
@@ -833,9 +834,7 @@ class Comment extends React.Component<ICommentProps, ICommentState> {
           trigger="click"
           placement="bottomRight"
           content={popoverContent}
-        >
-          {null}
-        </Popover>
+        />
       );
 
       onClick = this.onCommentClick;

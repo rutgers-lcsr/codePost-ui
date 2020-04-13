@@ -1,12 +1,16 @@
 /* react imports */
 import React from 'react';
 
+import { EditOutlined } from '@ant-design/icons';
+
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+
 /* antd imports */
 import {
   Button,
   Collapse,
   Divider,
-  Form,
   Input,
   Select,
   Row,
@@ -17,7 +21,7 @@ import {
   Switch,
   InputNumber,
 } from 'antd';
-import { FormComponentProps } from 'antd/lib/form';
+import { FormComponentProps } from '@ant-design/compatible/lib/form';
 
 /* codePost object imports */
 import { TestCaseType, SubmissionInfoType } from '../../../../../../infrastructure/types';
@@ -438,7 +442,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 placeholder={'Input'}
                 disabled={this.props.isRunning}
                 style={{ minWidth: 240, marginLeft: 5 }}
-                autosize={true}
+                autoSize={true}
               />,
             )}
           </Form.Item>
@@ -834,7 +838,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                           </span>
                         }
                       >
-                        <Button icon="edit" onClick={() => this.setState({ showExplanation: true })} />
+                        <Button icon={<EditOutlined />} onClick={() => this.setState({ showExplanation: true })} />
                         {this.state.showExplanation ? (
                           <ExplanationModal
                             title={testCase.description}

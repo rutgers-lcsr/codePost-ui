@@ -18,6 +18,9 @@ export const defaultCourse: CourseType = {
   lateDayCreditsAllowable: null,
   archived: false,
   activateQueue: true,
+  inviteCode: '',
+  emailWhitelist: '',
+  inviteCodeEnabled: false,
 };
 
 export const CourseContext = React.createContext<CourseType>(defaultCourse);

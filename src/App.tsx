@@ -599,6 +599,7 @@ class App extends React.Component<{}, IState> {
             handleLogin={this.handleLogin}
             error={this.state.error}
             isLoggedIn={true}
+            email={this.state.user.email}
             handleLogout={this.handleLogout}
           />
         </Switch>

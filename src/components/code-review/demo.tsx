@@ -69,6 +69,9 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     lateDayCreditsAllowable: null,
     archived: false,
     activateQueue: true,
+    inviteCode: '',
+    emailWhitelist: '',
+    inviteCodeEnabled: false,
   };
 
   const demoSubmission: AnonymousSubmissionType = {
@@ -361,6 +364,9 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     lateDayCreditsAllowable: null,
     archived: false,
     activateQueue: true,
+    inviteCode: '',
+    emailWhitelist: '',
+    inviteCodeEnabled: false,
   };
 
   const demoSubmission: AnonymousSubmissionType = {

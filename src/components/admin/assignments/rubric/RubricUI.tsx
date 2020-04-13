@@ -7,6 +7,7 @@ import * as React from 'react';
 
 /* antd imports */
 import { Checkbox, Breadcrumb, Empty, Modal } from 'antd';
+import { UndoOutlined, SaveOutlined, SettingOutlined } from '@ant-design/icons';
 
 /* codePost imports */
 import RubricCommentExplorer from './RubricCommentExplorer';
@@ -244,7 +245,7 @@ const RubricUI = ({
     /************************************************************************/
 
     const actions = [
-      <CPButton cpType="secondary" icon="setting" onClick={() => setSettingsOpen(!settingsOpen)}>
+      <CPButton cpType="secondary" icon={<SettingOutlined />} onClick={() => setSettingsOpen(!settingsOpen)}>
         Settings
       </CPButton>,
       <RubricFileUpload
@@ -275,7 +276,7 @@ const RubricUI = ({
         onClick={helpers.resetRubric}
         cpType="secondary"
         disabled={!changesMade}
-        icon="undo"
+        icon={<UndoOutlined />}
         fallback="undo"
         fallbackWidth={1250}
       >
@@ -286,7 +287,7 @@ const RubricUI = ({
         onClick={onSave}
         disabled={!changesMade}
         cpType="primary"
-        icon="save"
+        icon={<SaveOutlined />}
         fallback="save"
         fallbackWidth={500}
         loading={state.isSaving}

@@ -5,9 +5,12 @@
 /* react imports */
 import * as React from 'react';
 
+import { Icon as LegacyIcon } from '@ant-design/compatible';
+
 /* antd imports */
 // @ts-ignore
-import { Icon, Input, Popconfirm, Tag, Empty } from 'antd';
+import { Input, Popconfirm, Tag, Empty } from 'antd';
+import { SaveOutlined, UndoOutlined, PlusOutlined } from '@ant-design/icons';
 
 /* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
@@ -429,7 +432,7 @@ const RubricMenuUI = ({
         onConfirm={addRubricCategory}
         onCancel={onCancel}
       >
-        <CPButton cpType="primary" icon="plus" style={{ minWidth: '80px' }}>
+        <CPButton cpType="primary" icon={<PlusOutlined />} style={{ minWidth: '80px' }}>
           Category
         </CPButton>
       </Popconfirm>,
@@ -438,7 +441,7 @@ const RubricMenuUI = ({
         key="undo"
         cpType="secondary"
         disabled={!changesMade && Object.keys(editingStatuses).length === 0}
-        icon="undo"
+        icon={<UndoOutlined />}
         onClick={onUndo}
         style={{ minWidth: '80px' }}
       >
@@ -461,7 +464,7 @@ const RubricMenuUI = ({
             disabled={!changesMade}
             onClick={onSave}
             cpType="primary"
-            icon="save"
+            icon={<SaveOutlined />}
             loading={state.isSaving}
             style={{ minWidth: '80px' }}
           >
@@ -516,7 +519,7 @@ const RubricMenuUI = ({
         value={searchTerm}
         addonBefore={
           <CPTooltip title={tooltips.grade.rubric.edit} placement="right">
-            <Icon
+            <LegacyIcon
               type={iconType}
               theme="filled"
               onClick={toggleEditRubricMode}

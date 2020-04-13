@@ -5,8 +5,17 @@
 /* react imports */
 import React, { useState } from 'react';
 
+import {
+  AuditOutlined,
+  CloseOutlined,
+  UserOutlined,
+  MailOutlined,
+  HistoryOutlined,
+  MessageOutlined,
+} from '@ant-design/icons';
+
 /* antd imports */
-import { Alert, Avatar, Divider, Icon, Input, message, Modal, Select, Switch, Tabs, Tag } from 'antd';
+import { Alert, Avatar, Divider, Input, message, Modal, Select, Switch, Tabs, Tag } from 'antd';
 
 /* other library imports */
 import moment from 'moment';
@@ -238,13 +247,17 @@ export const GraderInfo = (props: IGraderInfoProps) => {
   };
 
   const menuItems = props.graders.map((grader: string, index: number) => {
-    return <Select.Option key={grader}>{grader}</Select.Option>;
+    return (
+      <Select.Option key={grader} value={grader}>
+        {grader}
+      </Select.Option>
+    );
   });
 
   const renderUnassign = (menu: any) => (
     <div>
       <div style={{ padding: '6px', cursor: 'pointer' }} onMouseDown={unassign}>
-        <Icon type="close" /> Unassign
+        <CloseOutlined /> Unassign
       </div>
       <Divider style={{ margin: '4px 0' }} />
       {menu}
@@ -264,7 +277,12 @@ export const GraderInfo = (props: IGraderInfoProps) => {
     } else {
       graderDisplay = (
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Avatar size="small" icon="audit" shape="square" style={{ backgroundColor: consoleTheme.avatarBackground }} />
+          <Avatar
+            size="small"
+            icon={<AuditOutlined />}
+            shape="square"
+            style={{ backgroundColor: consoleTheme.avatarBackground }}
+          />
           <span style={{ width: '8px' }} />
           <span
             onClick={toggleModal}
@@ -281,11 +299,11 @@ export const GraderInfo = (props: IGraderInfoProps) => {
           >
             {props.submission.isFinalized ? (
               <CPTooltip title={tooltips.grade.subInfo.unfinalizeToAssign} placement="right">
-                {props.submission.grader}
+                <div>{props.submission.grader}</div>
               </CPTooltip>
             ) : (
               <CPTooltip title={tooltips.grade.subInfo.assignGrader} placement="right" hideThisOnHideTips={true}>
-                {props.submission.grader}
+                <div>{props.submission.grader}</div>
               </CPTooltip>
             )}
           </span>
@@ -317,7 +335,12 @@ export const GraderInfo = (props: IGraderInfoProps) => {
   } else {
     return (
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Avatar size="small" icon="audit" shape="square" style={{ backgroundColor: consoleTheme.avatarBackground }} />
+        <Avatar
+          size="small"
+          icon={<AuditOutlined />}
+          shape="square"
+          style={{ backgroundColor: consoleTheme.avatarBackground }}
+        />
         <span style={{ width: '8px' }} />
         <span
           style={{
@@ -356,7 +379,7 @@ export const Students = (props: {
             <div key={student} style={{ display: 'flex', alignItems: 'center', paddingBottom: '2px' }}>
               <Avatar
                 size="small"
-                icon="user"
+                icon={<UserOutlined />}
                 shape="square"
                 style={{ backgroundColor: consoleTheme.avatarBackground }}
               />
@@ -504,7 +527,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
         return (
           <div style={buttonStyle}>
             <CPTooltip title={`Deadline for submitting a regrade has passed. ${deadline}`}>
-              <CPButton cpType="secondary" icon="message" disabled={true}>
+              <CPButton cpType="secondary" icon={<MessageOutlined />} disabled={true}>
                 Submit a regrade request
               </CPButton>
             </CPTooltip>
@@ -525,7 +548,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
       return (
         <div>
           <div style={buttonStyle}>
-            <CPButton cpType="secondary" icon="message" onClick={toggleModalVisible}>
+            <CPButton cpType="secondary" icon={<MessageOutlined />} onClick={toggleModalVisible}>
               Submit a regrade request
             </CPButton>
           </div>
@@ -542,7 +565,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
                 <Input.TextArea
                   defaultValue={questionText}
                   onChange={changeQuestionText}
-                  autosize={{ minRows: 10, maxRows: 16 }}
+                  autoSize={{ minRows: 10, maxRows: 16 }}
                 />
               </Tabs.TabPane>
               <Tabs.TabPane key="2" tab="Preview">
@@ -565,7 +588,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
       return (
         <div>
           <div style={buttonStyle}>
-            <CPButton cpType="secondary" icon="history" onClick={toggleModalVisible}>
+            <CPButton cpType="secondary" icon={<HistoryOutlined />} onClick={toggleModalVisible}>
               View submitted request
             </CPButton>
           </div>
@@ -596,7 +619,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
       return (
         <div>
           <div style={buttonStyle}>
-            <CPButton cpType="primary" icon="mail" onClick={toggleModalVisible}>
+            <CPButton cpType="primary" icon={<MailOutlined />} onClick={toggleModalVisible}>
               View Response
             </CPButton>
           </div>

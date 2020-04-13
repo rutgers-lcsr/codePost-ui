@@ -1,6 +1,8 @@
 import * as React from 'react';
 
-import { Button, Icon, message, Upload } from 'antd';
+import { DeleteOutlined, UploadOutlined } from '@ant-design/icons';
+
+import { Button, message, Upload } from 'antd';
 
 interface IProps {
   isReplacement: boolean;
@@ -42,10 +44,10 @@ const UploadFileTemplates = (props: IProps) => {
     <div>
       <Upload showUploadList={false} onChange={onChange} customRequest={customRequest}>
         <Button>
-          <Icon type="upload" /> {props.isReplacement ? 'Replace' : 'Upload'}
+          <UploadOutlined /> {props.isReplacement ? 'Replace' : 'Upload'}
         </Button>
       </Upload>
-      &nbsp; {props.isReplacement ? <Icon type="delete" onClick={() => props.updateTemplate('')} /> : ''}
+      &nbsp; {props.isReplacement ? <DeleteOutlined onClick={() => props.updateTemplate('')} /> : ''}
     </div>
   );
 };

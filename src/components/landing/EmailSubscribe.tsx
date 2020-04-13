@@ -5,8 +5,13 @@
 /* react imports */
 import * as React from 'react';
 
+import { CheckCircleOutlined } from '@ant-design/icons';
+
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+
 /* ant imports */
-import { Form, Input, Button } from 'antd';
+import { Input, Button } from 'antd';
 
 /* codePost imports */
 
@@ -88,7 +93,7 @@ class EmailSubscribeForm extends React.Component<any, IEmailSubscribeFormState> 
 
     const submit = this.state.subscribed ? (
       <div style={{ paddingLeft: '14px' }}>
-        <Button type="primary" icon="check-circle" disabled={true} style={{ width: '100px' }} />
+        <Button type="primary" icon={<CheckCircleOutlined />} disabled={true} style={{ width: '100px' }} />
       </div>
     ) : (
       <div style={{ paddingLeft: '14px' }}>

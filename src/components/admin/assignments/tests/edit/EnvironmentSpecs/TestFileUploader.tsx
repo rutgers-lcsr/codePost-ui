@@ -5,8 +5,10 @@
 /* react imports */
 import React, { useState } from 'react';
 
+import { DeleteOutlined, PlusCircleOutlined, UploadOutlined } from '@ant-design/icons';
+
 /* library imports  */
-import { Button, Icon, message, Modal, Switch, Table, Upload } from 'antd';
+import { Button, message, Modal, Switch, Table, Upload } from 'antd';
 
 /* codePost object imports  */
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
@@ -145,7 +147,7 @@ export const TestFileUploader = (props: IUploadProps) => {
       return {
         key: file.id,
         name: file.name,
-        delete: <Icon onClick={deleteFile.bind({}, file.id)} type="delete" />,
+        delete: <DeleteOutlined onClick={deleteFile.bind({}, file.id)} />,
       };
     });
 
@@ -165,7 +167,7 @@ export const TestFileUploader = (props: IUploadProps) => {
       return {
         key: file.id,
         name: file.name,
-        delete: <Icon onClick={deleteFile.bind({}, file.id)} type="delete" />,
+        delete: <DeleteOutlined onClick={deleteFile.bind({}, file.id)} />,
       };
     });
 
@@ -191,7 +193,7 @@ export const TestFileUploader = (props: IUploadProps) => {
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
       {props.icon ? (
-        <Icon onClick={toggleVisible} type="plus-circle" />
+        <PlusCircleOutlined onClick={toggleVisible} />
       ) : (
         <Button onClick={toggleVisible} style={{ marginTop: 20 }}>
           Add / Remove Files
@@ -210,7 +212,7 @@ export const TestFileUploader = (props: IUploadProps) => {
           directory={uploadDir}
         >
           <Button>
-            <Icon type="upload" /> Add Files
+            <UploadOutlined /> Add Files
           </Button>
         </Upload>
         <div style={{ marginTop: 15 }}>

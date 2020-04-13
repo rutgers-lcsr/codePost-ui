@@ -7,8 +7,10 @@ import * as React from 'react';
 import WistiaPlayer from 'react-player/lib/players/Wistia';
 import queryString from 'query-string';
 
+import { Icon as LegacyIcon } from '@ant-design/compatible';
+
 /* ant imports */
-import { Icon, Select } from 'antd';
+import { Select } from 'antd';
 
 /* codePost imports */
 import withWindowWatcher from '../core/withWindowWatcher';
@@ -297,7 +299,7 @@ const SectionButton: React.FC<ISectionButtonProps> = (props) => {
       style={{ height: `${props.height}px`, minWidth: '260px' }}
       onClick={onClick}
     >
-      <Icon type={props.section.icon} />
+      <LegacyIcon type={props.section.icon} />
       <div style={{ display: 'inline-block', width: '4px' }} />
       {props.section.name}
     </div>

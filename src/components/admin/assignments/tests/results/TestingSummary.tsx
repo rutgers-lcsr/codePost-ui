@@ -122,7 +122,6 @@ export const TestingSummary = (props: IProps) => {
 
   // ******************************* Return  *******************************
   let actions: any = [];
-
   //  Only allow run all an edit tests if admin
   actions =
     !props.isAdmin || !props.match

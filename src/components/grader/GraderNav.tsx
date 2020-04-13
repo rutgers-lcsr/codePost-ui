@@ -1,6 +1,8 @@
 import * as React from 'react';
 
-import { Icon, Menu } from 'antd';
+import { ClusterOutlined, ContainerOutlined, InboxOutlined, MessageOutlined, PushpinOutlined } from '@ant-design/icons';
+
+import { Menu } from 'antd';
 
 import { RouteComponentProps } from 'react-router';
 
@@ -44,16 +46,15 @@ class GraderNav extends React.Component<IProps, {}> {
             {this.props.activateQueue && (
               <Menu.Item key="0">
                 <Link to={`${this.props.baseURL}/my_submissions`}>
-                  <Icon type="container" />
+                  <ContainerOutlined />
                   <span>Claimed by Me</span>
                 </Link>
               </Menu.Item>
             )}
-
             {this.props.isSectionLeader ? (
               <Menu.Item key="1">
                 <Link to={`${this.props.baseURL}/my_sections`}>
-                  <Icon type="cluster" />
+                  <ClusterOutlined />
                   <span>My Sections</span>
                 </Link>
               </Menu.Item>
@@ -61,7 +62,7 @@ class GraderNav extends React.Component<IProps, {}> {
             {this.props.isSuperGrader ? (
               <Menu.Item key="2">
                 <Link to={`${this.props.baseURL}/all_submissions`}>
-                  <Icon type="inbox" />
+                  <InboxOutlined />
                   <span>All Submissions</span>
                 </Link>
               </Menu.Item>
@@ -69,7 +70,7 @@ class GraderNav extends React.Component<IProps, {}> {
             {this.props.regradesAllowed ? (
               <Menu.Item key="3">
                 <Link to={`${this.props.baseURL}/regrades`}>
-                  <Icon type="message" />
+                  <MessageOutlined />
                   <span>Regrade Requests</span>
                 </Link>
               </Menu.Item>
@@ -79,7 +80,7 @@ class GraderNav extends React.Component<IProps, {}> {
         <div style={{ height: '100%' }}>
           <Menu theme="dark" mode="inline" style={{ position: 'absolute', bottom: 75 }} selectedKeys={[]}>
             <Menu.Item key="docs" onClick={this.openLink.bind(this, 'https://help.codepost.io')}>
-              <Icon type="pushpin" />
+              <PushpinOutlined />
               <span>Docs</span>
             </Menu.Item>
           </Menu>

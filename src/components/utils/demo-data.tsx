@@ -89,6 +89,9 @@ const demoCourse = (testName: string) => {
     lateDayCreditsAllowable: null,
     archived: false,
     activateQueue: true,
+    inviteCode: '',
+    emailWhitelist: '',
+    inviteCodeEnabled: false,
   };
 };
 

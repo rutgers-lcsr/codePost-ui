@@ -55,7 +55,7 @@ const getOverlay = (items: IOptionWithDisabled[], onClick: (e: ClickParam) => vo
           return (
             <Menu.Item key={item.value} disabled={item.isDisabled}>
               <CPTooltip title={disabledMessage} placement={'right'}>
-                {item.label}
+                <div>{item.label}</div>
               </CPTooltip>
             </Menu.Item>
           );
