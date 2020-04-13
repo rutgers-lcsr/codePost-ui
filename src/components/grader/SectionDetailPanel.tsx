@@ -8,7 +8,7 @@ import * as React from 'react';
 import { CodeOutlined, LoadingOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Button, Breadcrumb, Divider, Select, Spin, Switch, Table } from 'antd';
+import { Button, Breadcrumb, Divider, Select, Spin, Switch, Tabs } from 'antd';
 
 /* codePost imports */
 import { AssignmentType } from '../../infrastructure/assignment';
