@@ -320,7 +320,6 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
    ******************************************************************************/
 
   public render() {
-    console.log('subs', this.props.submissions);
     let actions: React.ReactNode[] = [];
     let data: any[] = [];
 
