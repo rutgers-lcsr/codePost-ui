@@ -72,6 +72,7 @@ export const SubmissionInfoV = t.intersection(
       responseDate: t.union([t.string, t.null]),
       tests: t.array(t.number),
       testRunsCompleted: t.number,
+      lateDayCreditsUsed: t.number,
     }),
   ],
   'Submission',

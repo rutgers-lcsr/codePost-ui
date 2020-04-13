@@ -22,7 +22,7 @@ import {
   AssignmentType,
   TestCategoryType,
   SubmissionTestType,
-  SubmissionType,
+  SubmissionInfoType,
   StudentSubmissionType,
   FileTemplateType,
   CourseType,
@@ -70,7 +70,7 @@ interface IUploadSubmissionDialogProps {
   selectedStudents: string[];
   submissions: {
     [userEmail: string]: {
-      [assignmentID: number]: SubmissionType | StudentSubmissionType;
+      [assignmentID: number]: SubmissionInfoType | StudentSubmissionType;
     };
   };
   uploadSubmission:
@@ -85,7 +85,7 @@ interface IUploadSubmissionDialogProps {
         partners: string[],
         files: any[],
         sendConfirmationEmail: boolean,
-      ) => Promise<SubmissionType>);
+      ) => Promise<SubmissionInfoType>);
 
   disableStudentSelect?: boolean;
   onSuccess?: (newSubmissionID: number) => void;
@@ -255,7 +255,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     }
   };
 
-  public loadTestResults = async (sub: StudentSubmissionType | SubmissionType | undefined, loadLogs: boolean) => {
+  public loadTestResults = async (sub: StudentSubmissionType | SubmissionInfoType | undefined, loadLogs: boolean) => {
     if (sub) {
       const results = await Submission.readTestResults(sub.id, { isStudentMode: 'True' });
       if (results !== null && results !== undefined) {
@@ -270,7 +270,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     students: string[],
     submissions: {
       [userEmail: string]: {
-        [assignmentID: number]: SubmissionType | StudentSubmissionType;
+        [assignmentID: number]: SubmissionInfoType | StudentSubmissionType;
       };
     },
     assignment?: AssignmentType | AssignmentStudentType,
@@ -400,7 +400,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
               this.state.files,
               this.state.sendMeAConfirmationEmail,
             )
-            .then((newSubmission: StudentSubmissionType | SubmissionType) => {
+            .then((newSubmission: StudentSubmissionType | SubmissionInfoType) => {
               const shouldRun = this.shouldRunTests();
               if (shouldRun) {
                 message.success('Submission uploaded!');
@@ -530,7 +530,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     });
   };
 
-  public runTests = async (submission: StudentSubmissionType | SubmissionType) => {
+  public runTests = async (submission: StudentSubmissionType | SubmissionInfoType) => {
     if (this.shouldRunTests()) {
       // Make sure the loading is set
       this.setState({ loadingTests: true });

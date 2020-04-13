@@ -18,7 +18,7 @@ import {
 } from './BulkUploadHelpers';
 
 /* codePost imports */
-import { AssignmentType, CourseType, SubmissionType } from '../../../../../../infrastructure/types';
+import { AssignmentType, CourseType, SubmissionInfoType } from '../../../../../../infrastructure/types';
 
 import UploadForm from './UploadForm';
 import BulkUploadConfirm from './BulkUploadConfirm';
@@ -47,11 +47,11 @@ interface IProps {
   isVisible: boolean;
   onCancel: () => void;
   assignment: AssignmentType;
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
   students: string[];
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
-  updateSubmission: (submission: SubmissionType) => Promise<void>;
-  deleteSubmission: (submission: SubmissionType) => Promise<void>;
+  updateSubmission: (submission: SubmissionInfoType) => Promise<void>;
+  deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   showImportOptions?: boolean;
   course: CourseType;
 }
@@ -124,7 +124,7 @@ class BulkUpload extends React.Component<IProps, IState> {
   /* Pure functions
   /***************************************************************************************/
 
-  public buildNewStudentMap = (students: string[], submissions: SubmissionType[]) => {
+  public buildNewStudentMap = (students: string[], submissions: SubmissionInfoType[]) => {
     const newMap: any = {};
 
     for (const student of students) {
@@ -327,7 +327,7 @@ class BulkUpload extends React.Component<IProps, IState> {
     // find their submission in submission list
     // add this submission to a changed list (if it isn't there already)
     // remove the student from submission.students
-    const toChange: SubmissionType[] = [];
+    const toChange: SubmissionInfoType[] = [];
     students.forEach((student) => {
       const newSubmission = getSubforStudent(student, this.state.protoSubmissions);
 
