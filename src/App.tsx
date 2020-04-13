@@ -498,7 +498,20 @@ class App extends React.Component<{}, IState> {
           <Route
             path={STUDENT}
             render={(props: any) =>
-              this.wrapTooltipContext(<AsyncStudent {...props} {...consoleProps} initialCourses={studentCourses} />)
+              this.wrapTooltipContext(
+                <AsyncStudent
+                  {...props}
+                  {...consoleProps}
+                  initialCourses={studentCourses}
+                  uploadShortcut={{
+                    assignmentID: 2,
+                    files: [
+                      { name: 'template.py', data: 'helloworld' },
+                      { name: 'second.py', data: 'yoyoyo\nasdfasdf]\nasdf' },
+                    ],
+                  }}
+                />,
+              )
             }
           />
         );

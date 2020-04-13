@@ -46,14 +46,22 @@ import CPLogo from '../core/CPLogo';
 import layoutVars from '../../styles/layout/_layoutVars';
 
 import UploadSubmissionDialog from '../admin/assignments/assignments/SubmissionUpload/UploadSubmissionDialog';
+import { IBaseFileUpload } from '../admin/assignments/assignments/SubmissionUpload/FileReader';
 
 import { IComponentProps } from '../core/ComponentManager';
 
-import CourseMenu from '../core/CourseMenu';
+import CourseMenu, { encodedCourseLink } from '../core/CourseMenu';
 
 import { CodePostDate } from '../utils/DateUtils';
 
 /**********************************************************************************************************************/
+
+interface IStudentProps {
+  uploadShortcut?: {
+    assignmentID: number;
+    files: IBaseFileUpload[];
+  };
+}
 
 interface IStudentState {
   assignments: ICourseToAssignmentStudentMap;
@@ -82,7 +90,7 @@ enum CURRENT_PANEL {
   ADDFILES,
 }
 
-class Student extends React.Component<IComponentProps & IWithWindowWatcherProps, IStudentState> {
+class Student extends React.Component<IComponentProps & IWithWindowWatcherProps & IStudentProps, IStudentState> {
   public constructor(props: IComponentProps & IWithWindowWatcherProps) {
     super(props);
     document.title = 'codePost - Student Console';
@@ -106,14 +114,65 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
     this.loadAssignments(this.props.initialCourses).then((assignments) => {
       this.setState({ assignments, isLoadingAssignments: false }, () => {
         if (this.props.currentCourse) {
+          /////////////////////////////////////////////////////////////////////////////////
+          // Handle shortcutting to a specific assignment
+          /////////////////////////////////////////////////////////////////////////////////
+          if (
+            this.props.uploadShortcut !== undefined &&
+            !this.props.currentCourse.assignments.includes(this.props.uploadShortcut.assignmentID)
+          ) {
+            // Find the course that parents the assignment we want to get to
+            const foundCourse = this.props.initialCourses.find((course: CourseType) => {
+              return course.assignments.includes(this.props.uploadShortcut!.assignmentID);
+            });
+
+            if (foundCourse !== undefined) {
+              const link = encodedCourseLink('student', foundCourse);
+              this.props.history.push(link);
+            }
+          }
+          /////////////////////////////////////////////////////////////////////////////////
+          /////////////////////////////////////////////////////////////////////////////////
+
           this.loadSubmissions(this.state.assignments[this.props.currentCourse.id]).then((submissions) => {
             this.loadHistories(Object.values(submissions), this.props.user.email).then(
               (viewMap: { [submissionID: number]: boolean }) => {
-                this.setState({
-                  submissions,
-                  viewsBySubmission: viewMap,
-                  isLoadingSubmissions: false,
-                });
+                console.log('done loading', submissions);
+
+                /////////////////////////////////////////////////////////////////////////////////
+                // Open the upload panel for the specified assignment
+                /////////////////////////////////////////////////////////////////////////////////
+                const goToUpload = () => {
+                  if (this.props.uploadShortcut !== undefined) {
+                    const assignment = this.state.assignments[this.props.currentCourse!.id].find(
+                      (a: AssignmentStudentType) => {
+                        return a.id === this.props.uploadShortcut!.assignmentID;
+                      },
+                    );
+
+                    console.log('ass', assignment);
+
+                    if (assignment !== undefined) {
+                      let submission;
+                      if (submissions.hasOwnProperty(assignment.id) && submissions[assignment.id].length > 0) {
+                        submission = submissions[assignment.id][0];
+                      }
+
+                      this.changePanel(CURRENT_PANEL.UPLOADFILES, assignment, submission);
+                    }
+                  }
+                };
+                /////////////////////////////////////////////////////////////////////////////////
+                /////////////////////////////////////////////////////////////////////////////////
+
+                this.setState(
+                  {
+                    submissions,
+                    viewsBySubmission: viewMap,
+                    isLoadingSubmissions: false,
+                  },
+                  goToUpload,
+                );
               },
             );
           });
@@ -341,6 +400,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
                 onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),
               });
             } else {
+              console.log('changing', assignment, submission);
               this.changePanel(CURRENT_PANEL.UPLOADFILES, assignment, submission);
             }
           }}
@@ -644,6 +704,15 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
         }
       };
 
+      const defaultFiles =
+        this.props.uploadShortcut !== undefined &&
+        this.state.detailAssignment !== undefined &&
+        this.props.uploadShortcut.assignmentID === this.state.detailAssignment.id
+          ? this.props.uploadShortcut.files
+          : undefined;
+
+      console.log('def', defaultFiles, this.state.detailAssignment);
+
       studentContent = (
         <div>
           <TableDetail
@@ -681,6 +750,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
             disableStudentSelect={true}
             onSuccess={this.onUploadSuccess}
             isStudent={true}
+            defaultFiles={defaultFiles}
           />
         </div>
       );
