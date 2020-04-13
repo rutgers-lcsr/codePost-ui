@@ -234,6 +234,39 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   /* Load data and build data structures to cache relationships between
   /* objects.
   /**********************************************************************************/
+
+  public onSubmissionsLoad = (course: CourseType, assignment: number, submissions: any[]) => {
+    // use currentCourse as a nonce to see if this request is still desired
+    if (this.props.currentCourse !== course) {
+      return;
+    }
+
+    // const submissionMap = { ...this.state.submissions };
+    // submissionList.forEach((submissionObj) => {
+    //   submissionMap[submissionObj.assignment] = submissionObj.submissions;
+    // });
+    if (this.state.assignmentsLoadComplete && this.state.rosterLoadComplete) {
+      const oldSubmissions = this.state.submissions[assignment] || [];
+      const submissionMap = { ...this.state.submissions, [assignment]: [...oldSubmissions, ...submissions] };
+      this.updateSubmissionsByUser(undefined, submissionMap, undefined, () => {
+        this.setState((prevState, props) => {
+          const oldSubmissions = prevState.submissions[assignment] || [];
+          return {
+            submissions: { ...prevState.submissions, [assignment]: [...oldSubmissions, ...submissions] },
+            submissionsLoadComplete: true,
+          };
+        });
+      });
+    } else {
+      this.setState((prevState, props) => {
+        const oldSubmissions = prevState.submissions[assignment] || [];
+        return {
+          submissions: { ...prevState.submissions, [assignment]: [...oldSubmissions, ...submissions] },
+          submissionsLoadComplete: true,
+        };
+      });
+    }
+  };
   public loadAllCourseData = (course: CourseType) => {
     this.loadAssignments(course)
       .then((assignments) => {
@@ -250,29 +283,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
         }
       })
       .then(() => {
-        this.loadSubmissions(course).then((submissionList) => {
-          // use currentCourse as a nonce to see if this request is still desired
-          if (this.props.currentCourse !== course) {
-            return;
-          }
-          const submissionMap: any = {};
-          submissionList.forEach((submissionObj) => {
-            submissionMap[submissionObj.assignment] = submissionObj.submissions;
-          });
-          if (this.state.assignmentsLoadComplete && this.state.rosterLoadComplete) {
-            this.updateSubmissionsByUser(undefined, submissionMap, undefined, () => {
-              this.setState({
-                submissions: submissionMap,
-                submissionsLoadComplete: true,
-              });
-            });
-          } else {
-            this.setState({
-              submissions: submissionMap,
-              submissionsLoadComplete: true,
-            });
-          }
-        });
+        this.loadSubmissions(course);
 
         this.loadViewsBySubmission(course).then((viewHistoryLists) => {
           if (this.props.currentCourse !== course) {
@@ -338,16 +349,9 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
   /* eslint-disable no-useless-computed-key */
   public loadSubmissions = (course: CourseType) => {
-    return Promise.all(
-      course.assignments.map((assignmentID) => {
-        return Assignment.readSubmissions(assignmentID, { ['compact']: '1' }).then((subs: SubmissionInfoType[]) => {
-          return {
-            assignment: assignmentID,
-            submissions: subs,
-          };
-        });
-      }),
-    );
+    course.assignments.map((assignmentID) => {
+      return Assignment.readPaginatedSubmissions(assignmentID, this.onSubmissionsLoad.bind(this, course, assignmentID));
+    });
   };
   /* eslint-enable no-useless-computed-key */
 
@@ -465,19 +469,21 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
     assignments.forEach((assignment) => {
       const assignmentSubs = submissions[assignment.id];
-      assignmentSubs.forEach((submission: SubmissionType) => {
-        // NOTE: students in submission.students might be inactive
-        submission.students.forEach((student: string) => {
-          if (student in subsByStudent) {
-            subsByStudent[student][assignment.id] = submission;
+      if (assignmentSubs) {
+        assignmentSubs.forEach((submission: SubmissionType) => {
+          // NOTE: students in submission.students might be inactive
+          submission.students.forEach((student: string) => {
+            if (student in subsByStudent) {
+              subsByStudent[student][assignment.id] = submission;
+            }
+          });
+
+          // NOTE: graders in submission.students might be inactive
+          if (submission.grader && submission.grader in subsByGrader) {
+            subsByGrader[submission.grader][assignment.id].push(submission);
           }
         });
-
-        // NOTE: graders in submission.students might be inactive
-        if (submission.grader && submission.grader in subsByGrader) {
-          subsByGrader[submission.grader][assignment.id].push(submission);
-        }
-      });
+      }
     });
 
     return {
@@ -1172,6 +1178,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   /* Render
   /************************************************************************************/
   public render() {
+    console.log(this.state.submissions);
     /* build header */
     const dropdown = (
       <CourseMenu
