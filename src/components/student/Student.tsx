@@ -345,7 +345,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps,
             }
           }}
         >
-          View assignment
+          Upload assignment
         </Button>
       </span>
     );
