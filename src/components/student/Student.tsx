@@ -137,8 +137,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
           this.loadSubmissions(this.state.assignments[this.props.currentCourse.id]).then((submissions) => {
             this.loadHistories(Object.values(submissions), this.props.user.email).then(
               (viewMap: { [submissionID: number]: boolean }) => {
-                console.log('done loading', submissions);
-
                 /////////////////////////////////////////////////////////////////////////////////
                 // Open the upload panel for the specified assignment
                 /////////////////////////////////////////////////////////////////////////////////
@@ -149,8 +147,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
                         return a.id === this.props.uploadShortcut!.assignmentID;
                       },
                     );
-
-                    console.log('ass', assignment);
 
                     if (assignment !== undefined) {
                       let submission;
@@ -400,7 +396,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
                 onOk: this.changePanel.bind(this, CURRENT_PANEL.UPLOADFILES, assignment, submission),
               });
             } else {
-              console.log('changing', assignment, submission);
               this.changePanel(CURRENT_PANEL.UPLOADFILES, assignment, submission);
             }
           }}
@@ -710,8 +705,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
         this.props.uploadShortcut.assignmentID === this.state.detailAssignment.id
           ? this.props.uploadShortcut.files
           : undefined;
-
-      console.log('def', defaultFiles, this.state.detailAssignment);
 
       studentContent = (
         <div>

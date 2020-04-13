@@ -516,12 +516,6 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
 
       const newFileListItem = { ...file, name: ProtoFileUpload.longname };
 
-      const fl = fileNames.includes(ProtoFileUpload.longname) ? [...newFileList, newFileListItem] : newFileList;
-      const ff = [...newFiles, ...outputFiles];
-
-      console.log('fl', fl);
-      console.log('ff', ff);
-
       this.setState({
         // Don't show files in the list that won't get uploaded
         fileList: fileNames.includes(ProtoFileUpload.longname) ? [...newFileList, newFileListItem] : newFileList,
