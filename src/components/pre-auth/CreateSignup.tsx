@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { InfoCircleTwoTone, QuestionCircleOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Alert, Checkbox, Divider, Icon, Input, Progress, Switch, Typography } from 'antd';
+import { Alert, Checkbox, Divider, Input, Progress, Switch, Typography } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -260,14 +262,14 @@ class CreateSignup extends React.Component<IProps, IState> {
               placeholder={'Your email'}
               value={this.state.email}
               onChange={this.handleChange.bind(this, 'email')}
-              prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
+              prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
             />
             <br />
             <br />
             <Select
               placeholder={
                 <div>
-                  <Icon type="team" style={{ color: 'rgba(0,0,0,.25)' }} />
+                  <TeamOutlined style={{ color: 'rgba(0,0,0,.25)' }} />
                   &nbsp; Select your organization (type to search)
                 </div>
               }
@@ -374,7 +376,7 @@ class CreateSignup extends React.Component<IProps, IState> {
                         </div>
                       }
                     >
-                      <Icon type="question-circle" style={{ color: 'grey', marginLeft: 3, marginRight: 2 }} />
+                      <QuestionCircleOutlined style={{ color: 'grey', marginLeft: 3, marginRight: 2 }} />
                     </CPTooltip>{' '}
                     it, <a href={mailToString}>let us know</a>!
                   </div>
@@ -447,7 +449,7 @@ class CreateSignup extends React.Component<IProps, IState> {
             <Alert
               message={
                 <div style={{ color: 'rgba(0,0,0,0.6)' }}>
-                  <Icon type="info-circle" theme="twoTone" twoToneColor="#bbbbbb" style={{ marginRight: 5 }} />{' '}
+                  <InfoCircleTwoTone twoToneColor="#bbbbbb" style={{ marginRight: 5 }} />{' '}
                   <b style={{ fontWeight: 500 }}>Not an instructor?</b> If you're a student, sign up by{' '}
                   <Link to="/signup/join">clicking here</Link>.
                 </div>

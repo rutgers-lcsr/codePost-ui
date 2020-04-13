@@ -68,6 +68,9 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     noUnfinalize: false,
     lateDayCreditsAllowable: null,
     archived: false,
+    inviteCode: '',
+    emailWhitelist: '',
+    inviteCodeEnabled: false,
   };
 
   const demoSubmission: AnonymousSubmissionType = {
@@ -359,6 +362,9 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     noUnfinalize: false,
     lateDayCreditsAllowable: null,
     archived: false,
+    inviteCode: '',
+    emailWhitelist: '',
+    inviteCodeEnabled: false,
   };
 
   const demoSubmission: AnonymousSubmissionType = {

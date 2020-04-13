@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { Icon, Modal, Typography } from 'antd';
+import { DoubleRightOutlined } from '@ant-design/icons';
+
+import { Modal, Typography } from 'antd';
 
 import useWindowSize from '../core/useWindowSize';
 
@@ -145,7 +147,7 @@ const LandingHero = () => {
               className="demo-link"
             >
               Try it out
-              <Icon type="double-right" className="demo-link__arrow" />
+              <DoubleRightOutlined className="demo-link__arrow" />
             </CPButton>
           </div>
         )}

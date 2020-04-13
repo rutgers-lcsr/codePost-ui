@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { DisconnectOutlined, MailOutlined, MenuOutlined, UserDeleteOutlined } from '@ant-design/icons';
+
 /* style imports */
-import { Breadcrumb, Dropdown, Icon, Menu, Modal } from 'antd';
+import { Breadcrumb, Dropdown, Menu, Modal } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -49,7 +51,7 @@ export interface IManageAdminsProps {
 
   /* object-level REST operations */
   updateSection: (section: SectionType) => Promise<void>;
-  updateRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
+  updateRoster: (adds: string[], deletes: string[], userType: USER_APP) => Promise<void>;
   createSection: (sectionName: string) => Promise<SectionType>;
 
   /* misc */
@@ -67,10 +69,7 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
       content: `Once removed, they won't be able to access the course.
         You can always add them back from this page.`,
       onOk: () => {
-        const newRoster = this.props.admins.filter((admin) => {
-          return admin !== toRemove;
-        });
-        return this.props.updateRoster(newRoster, USER_APP.CourseAdmin);
+        return this.props.updateRoster([], [toRemove], USER_APP.CourseAdmin);
       },
       okText: 'Remove',
     });
@@ -81,8 +80,7 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
   };
 
   public addAdmin = (email: string) => {
-    const newRoster = [...this.props.admins, email];
-    return this.props.updateRoster(newRoster, USER_APP.CourseAdmin);
+    return this.props.updateRoster([email], [], USER_APP.CourseAdmin);
   };
 
   public toInvite = memoizeOne((admins: string[], inactiveUsers: string[]) => {
@@ -172,7 +170,9 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
               ) : (
                 <span style={{ color: '#80808082' }}>
                   <CPTooltip title="This user has not yet signed up for codePost.">
-                    {highlightedEmail} &nbsp; <Icon type="disconnect" />
+                    <div>
+                      {highlightedEmail} &nbsp; <DisconnectOutlined />
+                    </div>
                   </CPTooltip>
                 </span>
               );
@@ -195,7 +195,9 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
             <Menu>
               <Menu.Item key="1" disabled={true}>
                 <CPTooltip title={tooltips.admin.adminRoster.removeSelf}>
-                  <Icon type="user-delete" /> &nbsp; Unenroll
+                  <div>
+                    <UserDeleteOutlined /> &nbsp; Unenroll
+                  </div>
                 </CPTooltip>
               </Menu.Item>
             </Menu>
@@ -203,12 +205,12 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
             <Menu>
               {hasActivated ? null : (
                 <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, adminEmail)}>
-                  <Icon type="mail" />
+                  <MailOutlined />
                   Send activation email
                 </Menu.Item>
               )}
               <Menu.Item key="1" onClick={this.removeAdmin.bind(this, adminEmail)}>
-                <Icon type="user-delete" />
+                <UserDeleteOutlined />
                 Unenroll
               </Menu.Item>
             </Menu>
@@ -219,7 +221,7 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
           admin: adminEmail,
           actions: (
             <Dropdown overlay={menu} trigger={['click']}>
-              <Icon type="menu" />
+              <MenuOutlined />
             </Dropdown>
           ),
         };

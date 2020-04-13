@@ -1,8 +1,17 @@
 /* react imports */
 import React, { useState, useEffect } from 'react';
 
+import {
+  CaretRightOutlined,
+  ClusterOutlined,
+  CodeOutlined,
+  LoadingOutlined,
+  MenuOutlined,
+  SolutionOutlined,
+} from '@ant-design/icons';
+
 /* library imports */
-import { Breadcrumb, Button, Checkbox, Dropdown, Icon, Menu, Modal, Radio, Tooltip } from 'antd';
+import { Breadcrumb, Button, Checkbox, Dropdown, Menu, Modal, Radio, Tooltip } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -18,7 +27,7 @@ import { TestCaseType } from '../../../../../infrastructure/testCase';
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 import { RunAllResultType, SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
 
-import { awaitTestResult } from '../testResult';
+import { awaitTestResult } from '../autograderPollingUtils';
 
 /* codePost component imports */
 import { TableDetail } from '../../../other/TableDetail';
@@ -207,11 +216,11 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
                 const actionsMenu = (
                   <Menu key={submission.id}>
                     <Menu.Item key="run-tests" onClick={runTests.bind({}, submission)}>
-                      <Icon type="caret-right" />
+                      <CaretRightOutlined />
                       Run tests
                     </Menu.Item>
                     <Menu.Item key="submission" onClick={openSubmission.bind({}, submission.id)}>
-                      <Icon type="code" />
+                      <CodeOutlined />
                       Open submission
                     </Menu.Item>
                   </Menu>
@@ -221,10 +230,10 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
                   students: submission.students.join(','),
                   key: `submission-${submission.id}`,
                   actions: subsLoading.includes(submission.id) ? (
-                    <Icon type="loading" />
+                    <LoadingOutlined />
                   ) : (
                     <Dropdown overlay={actionsMenu} trigger={['click']}>
-                      <Icon type="menu" />
+                      <MenuOutlined />
                     </Dropdown>
                   ),
                 };
@@ -408,12 +417,12 @@ export const TestingSummary = (props: IProps & RouteComponentProps) => {
     <Radio.Group value={SUMMARY_TYPE[summaryType]} onChange={onSummaryTypeChange} buttonStyle="solid">
       <Tooltip title="Summary by submission">
         <Radio.Button key={SUMMARY_TYPE[SUMMARY_TYPE.BySubmission]} value={SUMMARY_TYPE[SUMMARY_TYPE.BySubmission]}>
-          <Icon type="solution" />
+          <SolutionOutlined />
         </Radio.Button>
       </Tooltip>
       <Tooltip title="Summary by test">
         <Radio.Button key={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]} value={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]}>
-          <Icon type="cluster" />
+          <ClusterOutlined />
         </Radio.Button>
       </Tooltip>
     </Radio.Group>,

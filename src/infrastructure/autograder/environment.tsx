@@ -17,7 +17,6 @@ const EnvironmentV = t.intersection(
     t.type({
       language: t.string,
       assignment: t.number,
-      dependencies: t.string,
       helperFiles: t.array(t.number),
       solutionFiles: t.array(t.number),
       compileText: t.string,
@@ -78,23 +77,10 @@ const EnvironmentVPatch = t.intersection(
   'EnvironmentPatch',
 );
 
-const BuildData = t.intersection([
-  GenericObject,
-  t.type({
-    dockerRunInstructions: t.array(t.string),
-    dockerfile: t.string,
-    language: t.string,
-    buildType: t.string,
-  }),
-]);
-
-const BuildResponse = t.type({
-  environment: EnvironmentV,
-  build: t.type({
-    success: t.boolean,
-    logs: t.array(t.string),
-  }),
-  dockerfile: t.string,
+const BuildStatus = t.type({
+  isSuccess: t.boolean,
+  inProgress: t.boolean,
+  logs: t.string,
 });
 
 const RunAllData = t.intersection([
@@ -134,7 +120,8 @@ export class Environment {
   public static delete = deleteObject(EnvironmentV, 'autograder/environments');
   public static update = updateObject(EnvironmentV, EnvironmentVPatch, 'autograder/environments');
 
-  public static build = updateObjectDetail(BuildResponse, BuildData, 'autograder/environments', 'build');
+  public static build = updateObjectDetail(t.type({}), EnvironmentV, 'autograder/environments', 'build');
+  public static status = readObjectDetail(BuildStatus, 'autograder/environments', 'status');
   public static eject = readObjectDetail(TestsSource, 'autograder/environments', 'eject');
   public static runAll = updateObjectDetail(TaskV, RunAllData, 'autograder/environments', 'runAll');
   public static run = readObjectDetail(TaskV, 'autograder/environments', 'run');

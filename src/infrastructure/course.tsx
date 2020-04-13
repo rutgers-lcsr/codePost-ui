@@ -27,6 +27,9 @@ export const CourseV = t.intersection(
       noUnfinalize: t.boolean,
       lateDayCreditsAllowable: t.union([t.number, t.null]),
       archived: t.boolean,
+      inviteCode: t.union([t.string, t.null]),
+      emailWhitelist: t.string,
+      inviteCodeEnabled: t.boolean,
     }),
     t.partial({ webhooks: t.array(t.number) }),
   ],
@@ -46,6 +49,8 @@ const CourseVPatch = t.intersection(
       anonymousGradingDefault: t.boolean,
       lateDayCreditsAllowable: t.union([t.number, t.null]),
       archived: t.boolean,
+      emailWhitelist: t.string,
+      inviteCodeEnabled: t.boolean,
     }),
   ],
   'CoursePatch',
@@ -124,6 +129,8 @@ export class Course {
 
   public static readRoster = readObjectDetail(RosterV, 'courses', 'roster');
   public static updateRoster = updateObjectDetail(RosterV, RosterVPatch, 'courses', 'roster');
+  public static addToRoster = updateObjectDetail(RosterV, RosterVPatch, 'courses', 'addToRoster');
+  public static removeFromRoster = updateObjectDetail(RosterV, RosterVPatch, 'courses', 'removeFromRoster');
 
   public static readRosterMap = readObjectDetail(RosterMapV, 'courses', 'rosterMap');
   public static updateRosterMap = updateObjectDetail(RosterMapV, RosterMapVPatch, 'courses', 'rosterMap');

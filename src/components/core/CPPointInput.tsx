@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { CaretDownOutlined, CaretUpOutlined } from '@ant-design/icons';
+
 import { Button, Input, InputNumber } from 'antd';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
@@ -206,16 +208,16 @@ class CPPointInput extends React.Component<ICPPointInputProps, IState> {
         >
           <InputNumber
             value={this.props.value !== undefined ? Math.abs(this.props.value) : undefined}
-            size={this.props.size}
+            size={this.props.size === 'default' ? 'middle' : 'small'}
             onChange={this.setValue}
             disabled={this.props.disabled}
             onKeyDown={this.props.onKeyDown}
             style={style}
             min={0}
           />
-          <Button icon="caret-up" onClick={this.onPlus} disabled={this.props.disabled} style={style} />
+          <Button icon={<CaretUpOutlined />} onClick={this.onPlus} disabled={this.props.disabled} style={style} />
           <Button
-            icon="caret-down"
+            icon={<CaretDownOutlined />}
             onClick={this.onMinus}
             disabled={this.props.disabled || this.props.value === 0}
             style={style}

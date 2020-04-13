@@ -1,14 +1,15 @@
 import React, { useContext } from 'react';
 
-import { Icon, Tooltip } from 'antd';
+import { Tooltip } from 'antd';
 import { AbstractTooltipProps } from 'antd/lib/tooltip';
+import { InfoCircleOutlined, InfoCircleTwoTone } from '@ant-design/icons';
 
 import { ShowTooltipContext } from './tooltips';
 
 import themeVars from '../../styles/abstracts/_theme';
 
 interface IProps extends AbstractTooltipProps {
-  children?: React.ReactNode;
+  children?: React.ReactElement;
   infoIcon?: boolean;
   iconStyle?: React.CSSProperties;
   title: string | React.ReactNode;
@@ -40,13 +41,10 @@ const CPTooltip = (props: IProps) => {
 
   let icon;
   if (infoIcon) {
-    icon = (
-      <Icon
-        type="info-circle"
-        theme={showTooltips ? 'twoTone' : 'outlined'}
-        twoToneColor={themeVars.theme.brandPrimary}
-        style={iconStyle}
-      />
+    icon = showTooltips ? (
+      <InfoCircleTwoTone style={iconStyle} />
+    ) : (
+      <InfoCircleOutlined style={iconStyle} twoToneColor={themeVars.theme.brandPrimary} />
     );
   }
 
@@ -61,8 +59,10 @@ const CPTooltip = (props: IProps) => {
     case TOOLTIP_STATE.Show && icon:
       return (
         <Tooltip title={props.title} {...antprops}>
-          {props.children}
-          {icon}
+          <span>
+            {props.children}
+            {icon}
+          </span>
         </Tooltip>
       );
     case TOOLTIP_STATE.Show:

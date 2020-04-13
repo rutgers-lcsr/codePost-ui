@@ -5,8 +5,12 @@
 /* react imports */
 import * as React from 'react';
 
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { PlusCircleOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Form, Input, message, Modal } from 'antd';
+import { Input, message, Modal } from 'antd';
 
 /* codePost imports */
 import CPButton from '../../../../components/core/CPButton';
@@ -77,7 +81,7 @@ class AddSectionDialog extends React.Component<IProps, {}> {
   public render() {
     return (
       <div>
-        <CPButton onClick={this.toggleDialog} cpType="primary" icon="plus-circle">
+        <CPButton onClick={this.toggleDialog} cpType="primary" icon={<PlusCircleOutlined />}>
           Add section
         </CPButton>
         <CollectionCreateForm
@@ -103,6 +107,23 @@ interface ISubProps {
 
 const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
   class extends React.Component<ISubProps, {}> {
+    public componentDidMount = () => {
+      document.addEventListener('keydown', this.keyboardShortcuts);
+    };
+
+    public componentWillUnmount = () => {
+      document.removeEventListener('keydown', this.keyboardShortcuts);
+    };
+
+    public keyboardShortcuts = (e: any) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+
+        this.props.onCreate();
+      }
+    };
+
     // FIXME: figure out how to type these arguments
     public handleConfirmSection = (rule: any, value: any, callback: any) => {
       // Test 1: does name correspond to an existing section?

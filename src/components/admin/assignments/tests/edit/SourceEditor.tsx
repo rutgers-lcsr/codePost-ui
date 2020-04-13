@@ -29,7 +29,7 @@ import { TestsChangeModal } from './TestDefinitions/TestsChangeModal';
 import { PseudoTerminal, ILogType } from './TestDefinitions/PseudoTerminal';
 
 /* codePost util imports */
-import { awaitTestResult } from '../testResult';
+import { awaitTestResult } from '../autograderPollingUtils';
 
 /**********************************************************************************************************************/
 interface IProps {

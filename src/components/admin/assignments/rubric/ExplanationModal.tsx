@@ -32,7 +32,7 @@ const ExplanationModal = (props: IProps) => {
             defaultValue={draft}
             onChange={onChange}
             placeholder="Use this space to write an explanation for students (Markdown)"
-            autosize={{ minRows: 10, maxRows: 12 }}
+            autoSize={{ minRows: 10, maxRows: 12 }}
           />
         </Tabs.TabPane>
         <Tabs.TabPane key="2" tab="Preview">

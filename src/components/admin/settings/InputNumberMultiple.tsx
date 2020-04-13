@@ -1,6 +1,8 @@
 import * as React from 'react';
 
-import { Icon, Input, InputNumber, Button } from 'antd';
+import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
+
+import { Input, InputNumber, Button } from 'antd';
 
 interface IInputNumberMultipleProps {
   value: number[];
@@ -53,8 +55,7 @@ class InputNumberMultiple extends React.Component<IInputNumberMultipleProps, {}>
         })}
         {this.props.value.length !== 0 ? (
           <span>
-            <Icon
-              type="minus-circle"
+            <MinusCircleOutlined
               style={{ color: '#eb6f00', paddingLeft: '10px', cursor: 'pointer' }}
               onClick={this.removeRow}
             />
@@ -64,8 +65,7 @@ class InputNumberMultiple extends React.Component<IInputNumberMultipleProps, {}>
           <Button onClick={this.addRow}>{this.props.emptyMessage}</Button>
         ) : (
           <span>
-            <Icon
-              type="plus-circle"
+            <PlusCircleOutlined
               style={{ color: '#24be85', paddingLeft: '10px', cursor: 'pointer' }}
               onClick={this.addRow}
             />

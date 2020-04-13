@@ -44,7 +44,7 @@ const RegradeInstructionsModal = (props: IRegradeInstructionsModalProps) => {
     >
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane key="1" tab="Write">
-          <Input.TextArea value={instructions} onChange={onChange} autosize={{ minRows: 10, maxRows: 16 }} />
+          <Input.TextArea value={instructions} onChange={onChange} autoSize={{ minRows: 10, maxRows: 16 }} />
         </Tabs.TabPane>
         <Tabs.TabPane key="2" tab="Preview">
           <ReactMarkdown>{instructions}</ReactMarkdown>

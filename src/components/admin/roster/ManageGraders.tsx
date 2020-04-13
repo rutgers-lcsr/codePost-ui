@@ -5,8 +5,17 @@
 /* react imports */
 import * as React from 'react';
 
+import {
+  DisconnectOutlined,
+  EditOutlined,
+  FolderOpenOutlined,
+  MailOutlined,
+  MenuOutlined,
+  UserDeleteOutlined,
+} from '@ant-design/icons';
+
 /* style imports */
-import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Switch } from 'antd';
+import { Breadcrumb, Dropdown, Empty, Menu, message, Modal, Switch } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -52,7 +61,7 @@ export interface IManageGradersProps {
 
   /* object-level REST operations */
   updateSection: (section: SectionType) => Promise<void>;
-  updateRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
+  updateRoster: (adds: string[], deletes: string[], userType: USER_APP) => Promise<void>;
   createSection: (sectionName: string) => Promise<SectionType>;
 
   /* misc */
@@ -81,18 +90,14 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
       content: `All of their work (graded submissions) won't be impacted, but the
       grader won't be able to access this course any longer. You can always add them back from this page.`,
       onOk: () => {
-        const newRoster = this.props.graders.filter((student) => {
-          return student !== toRemove;
-        });
-        return this.props.updateRoster(newRoster, USER_APP.Grader);
+        return this.props.updateRoster([], [toRemove], USER_APP.Grader);
       },
       okText: 'Remove',
     });
   };
 
   public addGrader = (email: string) => {
-    const newRoster = [...this.props.graders, email];
-    return this.props.updateRoster(newRoster, USER_APP.Grader);
+    return this.props.updateRoster([email], [], USER_APP.Grader);
   };
 
   public setActiveGrader = (grader: string) => {
@@ -101,20 +106,13 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
 
   public toggleSuperGrader = (grader: string, include: boolean) => {
     if (include) {
-      this.props.updateRoster([...this.props.superGraders, grader], USER_APP.SuperGrader).then(() => {
+      this.props.updateRoster([grader], [], USER_APP.SuperGrader).then(() => {
         message.success(`${grader} is now a supergrader`);
       });
     } else {
-      this.props
-        .updateRoster(
-          this.props.superGraders.filter((el) => {
-            return el !== grader;
-          }),
-          USER_APP.SuperGrader,
-        )
-        .then(() => {
-          message.success(`${grader} is no longer a supergrader`);
-        });
+      this.props.updateRoster([], [grader], USER_APP.SuperGrader).then(() => {
+        message.success(`${grader} is no longer a supergrader`);
+      });
     }
   };
 
@@ -205,7 +203,9 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
               ) : (
                 <span style={{ color: '#80808082' }}>
                   <CPTooltip title="This user has not yet signed up for codePost.">
-                    {highlightedEmail} &nbsp; <Icon type="disconnect" />
+                    <div>
+                      {highlightedEmail} &nbsp; <DisconnectOutlined />
+                    </div>
                   </CPTooltip>
                 </span>
               );
@@ -243,7 +243,7 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
                 onChange={this.toggleSuperGrader.bind(this, graderEmail)}
               />
               &nbsp;&nbsp;
-              <Icon type="edit" onClick={this.setActiveGrader.bind(this, '')} />
+              <EditOutlined onClick={this.setActiveGrader.bind(this, '')} />
             </div>
           );
         } else {
@@ -251,7 +251,7 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
             <div>
               <Switch checked={this.props.superGraders.includes(graderEmail)} disabled={true} />
               &nbsp;&nbsp;
-              <Icon type="edit" onClick={this.setActiveGrader.bind(this, graderEmail)} />
+              <EditOutlined onClick={this.setActiveGrader.bind(this, graderEmail)} />
             </div>
           );
         }
@@ -260,17 +260,17 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
           <Menu>
             {hasActivated ? null : (
               <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, graderEmail)}>
-                <Icon type="mail" />
+                <MailOutlined />
                 Send activation email
               </Menu.Item>
             )}
             <Menu.Item key="profile">
               <Link to={this.props.match.url.replace('roster/graders', `submissions/by_grader/${graderEmail}`)}>
-                <Icon type="folder-open" /> &nbsp; Open profile
+                <FolderOpenOutlined /> &nbsp; Open profile
               </Link>
             </Menu.Item>
             <Menu.Item key="1" onClick={this.removeGrader.bind(this, graderEmail)}>
-              <Icon type="user-delete" />
+              <UserDeleteOutlined />
               Unenroll
             </Menu.Item>
           </Menu>
@@ -283,7 +283,7 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
           superGrader: this.props.superGraders.includes(graderEmail),
           actions: (
             <Dropdown overlay={menu} trigger={['click']}>
-              <Icon type="menu" />
+              <MenuOutlined />
             </Dropdown>
           ),
         };

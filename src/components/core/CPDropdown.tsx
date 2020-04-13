@@ -1,6 +1,8 @@
 import * as React from 'react';
 
-import { Button, Dropdown, Icon } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
+
+import { Button, Dropdown } from 'antd';
 
 import { DropdownButtonProps } from 'antd/lib/dropdown';
 
@@ -47,7 +49,7 @@ class CPDropdown extends React.Component<DropdownButtonProps & ICPDropdownProps,
                 alignItems: 'center',
               }}
             >
-              {value} &nbsp; <Icon type="down" />
+              {value} &nbsp; <DownOutlined />
             </div>
           </Button>
         </ButtonGroup>

@@ -7,6 +7,7 @@ import * as React from 'react';
 
 /* antd imports */
 import { Empty, message, notification, Progress, Typography } from 'antd';
+import { FolderOpenOutlined } from '@ant-design/icons';
 
 /* other library imports */
 import _ from 'lodash';
@@ -1939,7 +1940,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               <CPButton
                 size="small"
                 cpType={theme === 'light' ? 'secondary' : 'dark'}
-                icon="folder-open"
+                icon={<FolderOpenOutlined />}
                 onClick={(e: any) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -2078,7 +2079,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             submitStudentQuestion={this.submitStudentQuestion}
             deleteStudentQuestion={this.deleteStudentQuestion}
             isStudentMode={
-              this.state.readOnlySubmission!.students!.find((el) => el === this.props.user.email) === undefined
+              this.state.readOnlySubmission!.students === undefined ||
+              this.state.readOnlySubmission!.students.find((el) => el === this.props.user.email) === undefined
             }
           />,
           <TestsMenu
@@ -2113,7 +2115,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             <CPButton
               size="small"
               cpType={theme === 'light' ? 'secondary' : 'dark'}
-              icon="folder-open"
+              icon={<FolderOpenOutlined />}
               onClick={(e: any) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -2341,7 +2343,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             <CPButton
               size="small"
               cpType={theme === 'light' ? 'secondary' : 'dark'}
-              icon="folder-open"
+              icon={<FolderOpenOutlined />}
               onClick={(e: any) => {
                 e.preventDefault();
                 e.stopPropagation();

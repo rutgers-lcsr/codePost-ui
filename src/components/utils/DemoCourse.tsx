@@ -135,13 +135,7 @@ const createAssignment = async (course: CourseType, assignment: any) => {
     };
     const thisEnvironment = await Environment.create(payload);
 
-    await Environment.build({
-      id: thisEnvironment.id,
-      dockerRunInstructions: [],
-      dockerfile: '',
-      language: 'java',
-      buildType: 'default',
-    });
+    await Environment.build(thisEnvironment);
 
     // Create rubric
     const makeCategories = assignment.rubric.map((category: any) => {

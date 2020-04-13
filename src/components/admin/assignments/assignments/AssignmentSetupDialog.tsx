@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { Icon as LegacyIcon } from '@ant-design/compatible';
+
 /* antd imports */
-import { Button, Icon, Modal, Steps, Timeline } from 'antd';
+import { Button, Modal, Steps, Timeline } from 'antd';
 
 /* codePost imports */
 import { CourseType, AssignmentType } from '../../../../infrastructure/types';
@@ -168,7 +170,7 @@ export const AssignmentSetupBanner = (props: IProps) => {
             status={step.isComplete ? 'finish' : 'wait'}
             description=""
             disabled={step.isComplete}
-            icon={isSmall ? <div /> : <Icon type={step.icon} />}
+            icon={isSmall ? <div /> : <LegacyIcon type={step.icon} />}
           />
         ),
       )}

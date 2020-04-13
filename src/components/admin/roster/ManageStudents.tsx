@@ -5,8 +5,17 @@
 /* react imports */
 import * as React from 'react';
 
+import {
+  DisconnectOutlined,
+  EditOutlined,
+  FolderOpenOutlined,
+  MailOutlined,
+  MenuOutlined,
+  UserDeleteOutlined,
+} from '@ant-design/icons';
+
 /* style imports */
-import { Breadcrumb, Dropdown, Empty, Icon, Menu, message, Modal, Select } from 'antd';
+import { Breadcrumb, Dropdown, Empty, Menu, message, Modal, Select } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -27,6 +36,8 @@ import DownloadRoster from './other/DownloadRoster';
 import RosterFileUpload from './other/RosterFileUpload';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
+
+import ShareInviteCode from './other/ShareInviteCode';
 
 import { sendEmailToUser } from './other/RosterUtils';
 
@@ -53,7 +64,7 @@ export interface IManageStudentsProps {
   updateStudentSection: (student: string, section: number) => Promise<void>;
   updateSection: (section: SectionType) => Promise<void>;
   createSection: (sectionName: string) => Promise<SectionType>;
-  updateRoster: (newRoster: string[], userType: USER_APP) => Promise<void>;
+  updateRoster: (adds: string[], deletes: string[], userType: USER_APP) => Promise<void>;
 
   /* misc */
   myEmail: string;
@@ -81,18 +92,14 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
       content: `All the student's work will be saved, but they won't be able to access the course.
         You can always add them back from this page.`,
       onOk: () => {
-        const newRoster = this.props.students.filter((student) => {
-          return student !== toRemove;
-        });
-        return this.props.updateRoster(newRoster, USER_APP.Student);
+        return this.props.updateRoster([], [toRemove], USER_APP.Student);
       },
       okText: 'Remove',
     });
   };
 
   public addStudent = (email: string, section?: SectionType): Promise<void> => {
-    const newRoster = [...this.props.students, email];
-    return this.props.updateRoster(newRoster, USER_APP.Student).then(() => {
+    return this.props.updateRoster([email], [], USER_APP.Student).then(() => {
       if (typeof section !== 'undefined') {
         return this.props.updateStudentSection(email, section.id);
       } else {
@@ -143,6 +150,7 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
             }
           />
         ) : null,
+        <ShareInviteCode course={this.props.currentCourse} />,
         <DownloadRoster
           key={0}
           downloadType={USER_TYPE.STUDENT}
@@ -199,7 +207,9 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
               ) : (
                 <span style={{ color: '#80808082' }}>
                   <CPTooltip title="This user has not yet signed up for codePost.">
-                    {highlightedEmail} &nbsp; <Icon type="disconnect" />
+                    <div>
+                      {highlightedEmail} &nbsp; <DisconnectOutlined />
+                    </div>
                   </CPTooltip>
                 </span>
               );
@@ -251,7 +261,7 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
                     </Select>
                     &nbsp;
                     <CPTooltip title={tooltips.admin.studentRoster.lockSection} hideThisOnHideTips={true}>
-                      <Icon type="edit" onClick={this.setActiveStudent.bind(this, '')} />
+                      <EditOutlined onClick={this.setActiveStudent.bind(this, '')} />
                     </CPTooltip>
                   </div>
                 );
@@ -269,7 +279,7 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
                     />{' '}
                     &nbsp;
                     <CPTooltip title={tooltips.admin.studentRoster.editSection} hideThisOnHideTips={true}>
-                      <Icon type="edit" onClick={this.setActiveStudent.bind(this, student)} />
+                      <EditOutlined onClick={this.setActiveStudent.bind(this, student)} />
                     </CPTooltip>
                   </div>
                 );
@@ -292,17 +302,17 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
           <Menu>
             {hasActivated ? null : (
               <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, studentEmail)}>
-                <Icon type="mail" />
+                <MailOutlined />
                 Send activation email
               </Menu.Item>
             )}
             <Menu.Item key="profile">
               <Link to={this.props.match.url.replace('roster/students', `submissions/by_student/${studentEmail}`)}>
-                <Icon type="folder-open" /> &nbsp; Open profile
+                <FolderOpenOutlined /> &nbsp; Open profile
               </Link>
             </Menu.Item>
             <Menu.Item key="1" onClick={this.removeStudent.bind(this, studentEmail)}>
-              <Icon type="user-delete" />
+              <UserDeleteOutlined />
               Unenroll
             </Menu.Item>
           </Menu>
@@ -314,7 +324,7 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
           section: sections[studentEmail] ? sections[studentEmail].name : 'No section',
           actions: (
             <Dropdown overlay={menu} trigger={['click']}>
-              <Icon type="menu" />
+              <MenuOutlined />
             </Dropdown>
           ),
         };
@@ -331,23 +341,29 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
             imageStyle={{
               height: 60,
             }}
-            description={<span>No students yet</span>}
+            description={<span>You can add students to your course in two ways</span>}
           >
-            <RosterFileUpload
-              key={1}
-              roleType="student"
-              students={this.props.students}
-              graders={this.props.graders}
-              admins={this.props.admins}
-              sections={this.props.sections}
-              sectionsByStudent={this.props.sectionsByStudent}
-              changeRoster={this.props.updateRoster}
-              isDisabled={false}
-              updateSection={this.props.updateSection}
-              emailNewUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
-              createSection={this.props.createSection}
-              course={this.props.currentCourse}
-            />
+            <span>
+              <RosterFileUpload
+                key={1}
+                roleType="student"
+                students={this.props.students}
+                graders={this.props.graders}
+                admins={this.props.admins}
+                sections={this.props.sections}
+                sectionsByStudent={this.props.sectionsByStudent}
+                changeRoster={this.props.updateRoster}
+                isDisabled={false}
+                updateSection={this.props.updateSection}
+                emailNewUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
+                createSection={this.props.createSection}
+                course={this.props.currentCourse}
+                buttonText="Add students by email"
+              />
+              <br />
+              OR <br /> <br />
+              <ShareInviteCode course={this.props.currentCourse} />
+            </span>
           </Empty>
         }
         columns={columns}

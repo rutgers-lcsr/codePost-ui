@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { UploadOutlined, WarningOutlined } from '@ant-design/icons';
+
 /* antd imports */
-import { Button, Collapse, Icon, Modal, Spin, Steps, Typography, Upload } from 'antd';
+import { Button, Collapse, Modal, Spin, Steps, Typography, Upload } from 'antd';
 
 /* other library imports */
 import ReactMarkdown from 'react-markdown';
@@ -328,7 +330,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
               <br />
               <Collapse defaultActiveKey={['json']}>
                 <Collapse.Panel header="Required JSON format" key="json">
-                  <Icon type="warning" /> One common mistake: don't use trailing commas (e.g.{' '}
+                  <WarningOutlined /> One common mistake: don't use trailing commas (e.g.{' '}
                   <Typography.Text code>[el1, el2,]</Typography.Text> should be{' '}
                   <Typography.Text code>[el1, el2]</Typography.Text>) <br /> <br />
                   <ReactMarkdown source={exampleText} />
@@ -338,7 +340,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
               <br />
               <Upload beforeUpload={this.beforeUpload} listType="text" multiple={true}>
                 <Button>
-                  <Icon type="upload" /> Upload
+                  <UploadOutlined /> Upload
                 </Button>
               </Upload>
             </div>
@@ -411,7 +413,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
           cpType="secondary"
           onClick={this.toggleStatus}
           disabled={this.props.isDisabled}
-          icon="upload"
+          icon={<UploadOutlined />}
           fallback="upload"
           fallbackWidth={1250}
         >

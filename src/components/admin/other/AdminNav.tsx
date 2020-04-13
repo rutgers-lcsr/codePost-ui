@@ -1,6 +1,15 @@
 import * as React from 'react';
 
-import { Icon, Menu, Tag } from 'antd';
+import {
+  ApiOutlined,
+  FileTextOutlined,
+  InboxOutlined,
+  PushpinOutlined,
+  SettingOutlined,
+  TeamOutlined,
+} from '@ant-design/icons';
+
+import { Menu, Tag } from 'antd';
 
 import { Link } from 'react-router-dom';
 
@@ -93,7 +102,7 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
           key="assignments"
           title={
             <span>
-              <Icon type="file-text" />
+              <FileTextOutlined />
               <span>Assignments</span>
             </span>
           }
@@ -117,7 +126,7 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
           key="submissions"
           title={
             <span>
-              <Icon type="inbox" />
+              <InboxOutlined />
               <span>Submissions</span>
             </span>
           }
@@ -133,7 +142,7 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
           key="roster"
           title={
             <span>
-              <Icon type="team" />
+              <TeamOutlined />
               <span>Roster</span>
             </span>
           }
@@ -155,7 +164,7 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
           key="course-settings"
           title={
             <span>
-              <Icon type="setting" />
+              <SettingOutlined />
               <span>Course Settings</span>
             </span>
           }
@@ -176,11 +185,11 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
       <div>
         <Menu theme="dark" mode="inline" selectedKeys={[]}>
           <Menu.Item key="docs" onClick={this.openLink.bind(this, 'https://help.codepost.io')}>
-            <Icon type="pushpin" />
+            <PushpinOutlined />
             <span>Docs</span>
           </Menu.Item>
           <Menu.Item key="api-reference" onClick={this.openLink.bind(this, 'https://docs.codepost.io/reference')}>
-            <Icon type="api" />
+            <ApiOutlined />
             <span>API Reference</span>
           </Menu.Item>
         </Menu>

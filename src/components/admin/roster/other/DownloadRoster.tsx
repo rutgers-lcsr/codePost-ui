@@ -7,6 +7,7 @@ import * as React from 'react';
 
 /* style imports */
 import { Button, Checkbox, Collapse, Modal, Typography } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
 
 /* other library imports */
 import ReactMarkdown from 'react-markdown';
@@ -211,7 +212,7 @@ class DownloadRoster extends React.Component<IProps, IState> {
 
     return (
       <div>
-        <CPButton icon="download" cpType="secondary" onClick={this.toggleDialog}>
+        <CPButton icon={<DownloadOutlined />} cpType="secondary" onClick={this.toggleDialog}>
           Download roster
         </CPButton>
         <Modal

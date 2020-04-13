@@ -9,7 +9,7 @@ import { HashLink as Link } from 'react-router-hash-link';
 
 import '@brainhubeu/react-carousel/lib/style.css';
 
-import { Icon } from 'antd';
+import { ArrowRightOutlined } from '@ant-design/icons';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 
@@ -68,7 +68,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
     const calendlyDiv = document.getElementById('calendly-button-hero');
     calendlyDiv!.setAttribute(
       'onclick',
-      "Calendly.showPopupWidget('https://calendly.com/codepost/sigcse');return false;",
+      "Calendly.showPopupWidget('https://calendly.com/codepost/demo');return false;",
     );
   }
 
@@ -101,7 +101,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
                 className="landing__link"
               >
                 Learn more
-                <Icon type="arrow-right" className="landing__link__arrow" />
+                <ArrowRightOutlined className="landing__link__arrow" />
               </CPButton>
             </Link>
           </div>
@@ -144,7 +144,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
                 className="landing__link"
               >
                 Learn more
-                <Icon type="arrow-right" className="landing__link__arrow" />
+                <ArrowRightOutlined className="landing__link__arrow" />
               </CPButton>
             </Link>
           </div>
