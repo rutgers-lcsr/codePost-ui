@@ -175,6 +175,45 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
     if (this.props.assignments !== oldProps.assignments) {
       this.setState({ sortedOrder: sortAssignments(this.props.assignments).map((el) => el.id) });
     }
+
+    // This is a hacky way to refresh the drawer state (otherwise we get stuck in a
+    // loading state). This is becuase the loaded submissions don't update the drawerContent state object.
+    //
+    // The best solution here will be to paginate the loading of the submissions, update the
+    // drawer content (submissions) as they load, use an VirtualizedInfiniteLoad component to render
+    // the list.
+    if (this.props.submissions !== oldProps.submissions && this.state.drawerType !== undefined) {
+      const thisAssignment = this.props.assignments.find((assignment: AssignmentType) => {
+        return assignment.name === this.state.drawerContent.title;
+      });
+
+      if (thisAssignment !== undefined) {
+        const newContent: Array<{
+          email: string;
+          subID: number | null;
+        }> = filterDataByStat(
+          thisAssignment,
+          this.props.submissionsByStudent,
+          this.state.drawerType,
+          this.props.submissions[thisAssignment.id],
+          this.props.viewsBySubmission,
+          this.props.students,
+        ).sort((a, b) => {
+          return a.email.localeCompare(b.email);
+        });
+
+        const title = getDrawerTitle(this.state.drawerType, newContent.length);
+
+        this.setState({
+          drawerContent: {
+            title: thisAssignment.name,
+            subtitle: title,
+            content: newContent,
+          },
+          drawerType: this.state.drawerType,
+        });
+      }
+    }
   }
 
   public calculateStats = memoizeOne(calculateMultipleAssignmentProgressStats);
