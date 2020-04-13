@@ -194,6 +194,13 @@ const TestsV = t.intersection(
   'Tests',
 );
 
+const PaginatedSubmissions = t.type({
+  count: t.number,
+  next: t.union([t.string, t.null]),
+  previous: t.union([t.string, t.null]),
+  results: t.array(SubmissionInfoV),
+});
+
 export type RubricType = t.TypeOf<typeof RubricV>;
 
 export class Assignment {
@@ -204,6 +211,24 @@ export class Assignment {
 
   public static readRubric = readObjectDetail(RubricV, 'assignments', 'rubric');
   public static readSubmissions = readObjectDetail(t.array(SubmissionInfoV), 'assignments', 'submissions');
+
+  static readPaginatedSubmissions_helper = readObjectDetail(PaginatedSubmissions, 'assignments', 'submissions');
+
+  public static readPaginatedSubmissions = async (id: number, callback: (newSubmissions: any) => void) => {
+    let next: string | null = '1';
+
+    while (next !== null) {
+      if (next) {
+        const pageNumber: string[] = next.split('page=');
+        if (pageNumber.length > 1) {
+          next = pageNumber[1];
+        }
+        const result: any = await readPaginatedSubmissions_helper(id, { ['compact']: '1', page: next });
+        callback(result.results);
+        next = result.next;
+      }
+    }
+  };
   public static readSubmissionsAnonymous = readObjectDetail(
     t.array(AnonymousSubmissionInfoV),
     'assignments',
@@ -255,10 +280,12 @@ const StudentUploadInformation = t.intersection([
 ]);
 export type StudentUploadInformationType = t.TypeOf<typeof StudentUploadInformation>;
 
+const readPaginatedSubmissions_helper = readObjectDetail(PaginatedSubmissions, 'assignments', 'submissions');
 // tslint:disable
 export class AssignmentStudent {
   public static read = readObject(AssignmentVStudent, 'assignments');
   public static readSubmissions = readObjectDetail(t.array(StudentSubmissionV), 'assignments', 'submissions');
+
   public static createStudentUpload = createObjectDetail(
     StudentSubmissionV,
     StudentUploadData,
