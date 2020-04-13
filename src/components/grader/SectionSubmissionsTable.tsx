@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { CodeOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Icon, Table } from 'antd';
+import { Table } from 'antd';
 
 /* codePost imports */
 import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
@@ -128,7 +130,7 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
         student: shownStudent,
         partners,
         viewIcon: submission ? <div>{getViewIcon(submission, props.viewsBySubmission, student)}</div> : null,
-        open: submission ? <Icon type="code" onClick={openGradePage.bind({}, submission)} /> : null,
+        open: submission ? <CodeOutlined onClick={openGradePage.bind({}, submission)} /> : null,
         disableCheck: !submission || submission.grader,
       };
     });

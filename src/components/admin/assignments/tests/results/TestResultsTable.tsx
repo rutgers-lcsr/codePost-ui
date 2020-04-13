@@ -1,8 +1,17 @@
 /* react imports */
 import React, { useState, useEffect } from 'react';
 
+import {
+  CaretRightOutlined,
+  ClusterOutlined,
+  CodeOutlined,
+  LoadingOutlined,
+  MenuOutlined,
+  SolutionOutlined,
+} from '@ant-design/icons';
+
 /* library imports */
-import { Breadcrumb, Button, Checkbox, Dropdown, Icon, Menu, Modal, Radio, Table, Tooltip } from 'antd';
+import { Breadcrumb, Button, Checkbox, Dropdown, Menu, Modal, Radio, Table, Tooltip } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -124,12 +133,12 @@ const TestResultsTable = (props: IProps) => {
     <Radio.Group value={SUMMARY_TYPE[summaryType]} onChange={onSummaryTypeChange} buttonStyle="solid">
       <Tooltip title="Summary by submission">
         <Radio.Button key={SUMMARY_TYPE[SUMMARY_TYPE.BySubmission]} value={SUMMARY_TYPE[SUMMARY_TYPE.BySubmission]}>
-          <Icon type="solution" />
+          <SolutionOutlined />
         </Radio.Button>
       </Tooltip>
       <Tooltip title="Summary by test">
         <Radio.Button key={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]} value={SUMMARY_TYPE[SUMMARY_TYPE.ByTest]}>
-          <Icon type="cluster" />
+          <ClusterOutlined />
         </Radio.Button>
       </Tooltip>
     </Radio.Group>
@@ -167,11 +176,11 @@ const TestResultsTable = (props: IProps) => {
           const actionsMenu = (
             <Menu key={submission.id}>
               <Menu.Item key="run-tests" onClick={props.runSubmission.bind({}, submission)}>
-                <Icon type="caret-right" />
+                <CaretRightOutlined />
                 Run tests
               </Menu.Item>
               <Menu.Item key="submission" onClick={openSubmission.bind({}, submission.id)}>
-                <Icon type="code" />
+                <CodeOutlined />
                 Open submission
               </Menu.Item>
             </Menu>
@@ -181,10 +190,10 @@ const TestResultsTable = (props: IProps) => {
             students: submission.students.join(','),
             key: `submission-${submission.id}`,
             actions: props.subsLoading.includes(submission.id) ? (
-              <Icon type="loading" />
+              <LoadingOutlined />
             ) : (
               <Dropdown overlay={actionsMenu} trigger={['click']}>
-                <Icon type="menu" />
+                <MenuOutlined />
               </Dropdown>
             ),
           };
