@@ -281,7 +281,6 @@ const StudentUploadInformation = t.intersection([
 ]);
 export type StudentUploadInformationType = t.TypeOf<typeof StudentUploadInformation>;
 
-const readPaginatedSubmissions_helper = readObjectDetail(PaginatedSubmissions, 'assignments', 'submissions');
 // tslint:disable
 export class AssignmentStudent {
   public static read = readObject(AssignmentVStudent, 'assignments');
