@@ -39,6 +39,8 @@ import { consoleArt } from './components/utils/consoleArt';
 
 import { clearLocalSettings } from './components/utils/LocalSettings';
 
+import { IBaseFileUpload } from './components/admin/assignments/assignments/SubmissionUpload/FileReader';
+
 /******************************************************************************
  * Asynchronous components to dynamically load app code via code splitting
  ******************************************************************************/
@@ -101,6 +103,11 @@ interface IState {
   triedLoading: boolean;
   isSuperUser: boolean;
   // theme: {[key: string]: string}
+
+  studentUploadShortcut?: {
+    assignmentID: number;
+    files: IBaseFileUpload[];
+  };
 }
 
 class App extends React.Component<{}, IState> {
@@ -125,6 +132,7 @@ class App extends React.Component<{}, IState> {
       // This token persists the value of this.state.isSuperUser across app instances,
       // while the session orginally triggered via loginas is active.
       isSuperUser: localStorage.getItem('isSuperUser') !== null,
+      studentUploadShortcut: undefined,
     };
   }
 
@@ -199,9 +207,24 @@ class App extends React.Component<{}, IState> {
         source = payload.source;
       }
 
+      let studentUploadShortcut;
+      if (payload.hasOwnProperty('assignment')) {
+        studentUploadShortcut = {
+          assignmentID: payload.assignment,
+          files: [],
+        };
+
+        if (payload.hasOwnProperty('files')) {
+          studentUploadShortcut = {
+            ...studentUploadShortcut,
+            files: payload.files,
+          };
+        }
+      }
+
       localStorage.setItem('token', token);
       localStorage.setItem('source', source);
-      this.setState({ has_token: true }, () => {
+      this.setState({ has_token: true, studentUploadShortcut }, () => {
         this.loginCount += 1;
         this.tryToLogin();
       });
@@ -498,7 +521,21 @@ class App extends React.Component<{}, IState> {
           <Route
             path={STUDENT}
             render={(props: any) =>
-              this.wrapTooltipContext(<AsyncStudent {...props} {...consoleProps} initialCourses={studentCourses} />)
+              this.wrapTooltipContext(
+                <AsyncStudent
+                  {...props}
+                  {...consoleProps}
+                  initialCourses={studentCourses}
+                  uploadShortcut={this.state.studentUploadShortcut}
+                  // uploadShortcut={{
+                  //   assignmentID: 2,
+                  //   files: [
+                  //     { name: 'template.py', data: 'helloworld' },
+                  //     { name: 'second.py', data: 'yoyoyo\nasdfasdf]\nasdf' },
+                  //   ],
+                  // }}
+                />,
+              )
             }
           />
         );

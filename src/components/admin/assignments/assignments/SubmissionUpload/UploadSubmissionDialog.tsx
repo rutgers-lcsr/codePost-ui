@@ -28,6 +28,7 @@ import {
   CourseType,
 } from '../../../../../infrastructure/types';
 import { AssignmentStudent, AssignmentStudentType } from '../../../../../infrastructure/assignment';
+import { File as CodePostFile } from '../../../../../infrastructure/file';
 import { Environment } from '../../../../../infrastructure/autograder/environment';
 import { FileTemplate } from '../../../../../infrastructure/fileTemplate';
 import { SubmissionTest } from '../../../../../infrastructure/submissionTest';
@@ -38,7 +39,7 @@ import { tooltips } from '../../../../../components/core/tooltips';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
-import { IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
+import { IBaseFileUpload, IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
 
 import TestsList from '../../../../../components/code-review/code-panel/TestsList';
 import { StudentTestCasesByCategory } from '../../../../../components/core/testFetchUtils';
@@ -93,6 +94,8 @@ interface IUploadSubmissionDialogProps {
   course?: CourseType;
   title?: string;
   infoMessage?: React.ReactNode;
+
+  defaultFiles?: IBaseFileUpload[];
 }
 
 enum STATUS {
@@ -228,6 +231,46 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     if (prevProps.isVisible && !this.props.isVisible) {
       this.setState({ submissionTests: [], testsLog: null, runMessage: '' });
     }
+
+    /////////////////////////////////////////////////////////////////////////////////
+    // If default files are included, then prepare them for upload
+    /////////////////////////////////////////////////////////////////////////////////
+    if (prevProps.defaultFiles === undefined && this.props.defaultFiles !== undefined) {
+      let files: any = [];
+      let fileList: any = [];
+
+      const now = Date.now();
+
+      this.props.defaultFiles.forEach((baseFile: IBaseFileUpload, index: number) => {
+        // @ts-ignore
+        const file = new File(baseFile.data.split('\n'), baseFile.name);
+
+        // FIXME: dirs
+        const ff = {
+          data: baseFile.data,
+          longname: baseFile.name,
+          name: baseFile.name,
+          extension: CodePostFile.extension(baseFile.name),
+          path: '',
+          zipSource: undefined,
+          file: file,
+        };
+
+        const fl = {
+          name: baseFile.name,
+          uid: `manual-upload-${now}-${index}`,
+          type: file.type,
+          size: file.size,
+        };
+
+        files = [...files, ff];
+        fileList = [...fileList, fl];
+      });
+
+      this.setState({ files, fileList });
+    }
+    /////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
   }
 
   /********************************************************************************************************/
