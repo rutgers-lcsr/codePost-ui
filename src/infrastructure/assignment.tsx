@@ -9,11 +9,12 @@ import {
   updateObject,
   updateObjectDetail,
 } from './generics';
+import { convertToPaginatedFunction, paginatedType } from './pagination';
 
 import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
-import { StudentSubmissionV, SubmissionInfoV, AnonymousSubmissionInfoV } from './submission';
-import { SubmissionHistoryV } from './submissionHistory';
+import { StudentSubmissionV, SubmissionInfoV, AnonymousSubmissionInfoV, SubmissionInfoType } from './submission';
+import { SubmissionHistoryV, SubmissionHistoryType } from './submissionHistory';
 import { StudentTestCaseV } from './testCase';
 import { TestCategoryV } from './testCategory';
 import { CommentV } from './comment';
@@ -194,13 +195,6 @@ const TestsV = t.intersection(
   'Tests',
 );
 
-const PaginatedSubmissions = t.type({
-  count: t.number,
-  next: t.union([t.string, t.null]),
-  previous: t.union([t.string, t.null]),
-  results: t.array(SubmissionInfoV),
-});
-
 export type RubricType = t.TypeOf<typeof RubricV>;
 
 export class Assignment {
@@ -211,25 +205,10 @@ export class Assignment {
 
   public static readRubric = readObjectDetail(RubricV, 'assignments', 'rubric');
   public static readSubmissions = readObjectDetail(t.array(SubmissionInfoV), 'assignments', 'submissions');
+  public static readPaginatedSubmissions = convertToPaginatedFunction<SubmissionInfoType>(
+    readObjectDetail(paginatedType(SubmissionInfoV), 'assignments', 'submissions'),
+  );
 
-  public static readPaginatedSubmissions = async (id: number, callback: (newSubmissions: any) => void) => {
-    const helper = readObjectDetail(PaginatedSubmissions, 'assignments', 'submissions');
-
-    let next: string | null = '1';
-
-    while (next !== null) {
-      if (next) {
-        const pageNumber: string[] = next.split('page=');
-        if (pageNumber.length > 1) {
-          next = pageNumber[1];
-        }
-        const result: any = await helper(id, { ['compact']: '1', page: next });
-        callback(result.results);
-        next = result.next;
-      }
-    }
-    return Promise.resolve();
-  };
   public static readSubmissionsAnonymous = readObjectDetail(
     t.array(AnonymousSubmissionInfoV),
     'assignments',
@@ -241,6 +220,11 @@ export class Assignment {
     'assignments',
     'submissionHistories',
   );
+
+  public static readPaginatedSubmissionHistories = convertToPaginatedFunction<SubmissionHistoryType>(
+    readObjectDetail(paginatedType(SubmissionHistoryV), 'assignments', 'submissionHistories'),
+  );
+
   public static readComments = readObjectDetail(t.array(CommentV), 'assignments', 'comments');
 }
 
