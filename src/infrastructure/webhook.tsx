@@ -30,6 +30,8 @@ const WebhookVPatch = t.intersection(
 export type WebhookType = t.TypeOf<typeof WebhookV>;
 
 export class Webhook {
+  public static create = createObject(WebhookV, WebhookV, 'webhooks');
   public static read = readObject(WebhookV, 'webhooks');
   public static update = updateObject(WebhookV, WebhookVPatch, 'webhooks');
+  public static delete = deleteObject(WebhookV, 'webhooks');
 }
