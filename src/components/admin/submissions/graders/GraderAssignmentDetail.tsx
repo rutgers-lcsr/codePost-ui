@@ -17,7 +17,7 @@ import { Link } from 'react-router-dom';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
-import { SubmissionType } from '../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../infrastructure/submission';
 
 import { TableDetail } from '../../other/TableDetail';
 
@@ -30,7 +30,7 @@ const confirm = Modal.confirm;
 /**********************************************************************************************************************/
 
 interface IProps {
-  deleteSubmission: (submission: SubmissionType) => Promise<void>;
+  deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   graders: string[];
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   means: { [assignmentID: number]: string | null };
@@ -41,11 +41,11 @@ interface IProps {
   baseURL: string;
 
   selectedAssignment: AssignmentType;
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
 }
 
 class GraderAssignmentDetail extends React.Component<IProps, {}> {
-  public removeSubmission = (toRemove: SubmissionType) => {
+  public removeSubmission = (toRemove: SubmissionInfoType) => {
     confirm({
       title: 'Are you sure you want to delete this submission?',
       content: `The following students are associated with this submission: ${toRemove.students.join(',')}.`,
@@ -56,7 +56,7 @@ class GraderAssignmentDetail extends React.Component<IProps, {}> {
     });
   };
 
-  public getStatus = (submission: SubmissionType | undefined) => {
+  public getStatus = (submission: SubmissionInfoType | undefined) => {
     let badgeStatus: 'default' | 'error' | 'success' | 'warning' | 'processing' | undefined;
     let cellText;
     if (submission) {
@@ -82,7 +82,7 @@ class GraderAssignmentDetail extends React.Component<IProps, {}> {
     );
   };
 
-  public getViewIcon = (submission: SubmissionType) => {
+  public getViewIcon = (submission: SubmissionInfoType) => {
     if (!(submission.id in this.props.viewsBySubmission) || !submission.isFinalized) {
       // case: No history object or unfinalized
       return '--';

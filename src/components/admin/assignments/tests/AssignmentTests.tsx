@@ -17,7 +17,7 @@ import { Switch, Route } from 'react-router-dom';
 
 /* codePost object imports */
 import { Assignment, AssignmentType } from '../../../../infrastructure/assignment';
-import { SubmissionType } from '../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../infrastructure/submission';
 import { UserType } from '../../../../infrastructure/user';
 
 /* codePost component imports */
@@ -28,7 +28,7 @@ import { TestingSummary } from './results/TestingSummary';
 
 interface IProps {
   activeAssignment: AssignmentType;
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
   user: UserType;
   updateAssignment: (assignmentID: number, field: string, value: number) => void;
   breadcrumbs?: React.ReactElement[];
@@ -100,6 +100,8 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
             breadcrumbs={breadcrumbs}
             currentAssignment={assignment}
             submissions={props.submissions}
+            isAdmin={true}
+            tableOnly={false}
           />
         )}
       />

@@ -15,7 +15,7 @@ import { Route, Link, Switch } from 'react-router-dom';
 
 /* codePost imports */
 import { AssignmentType, sortAssignments } from '../../../../infrastructure/assignment';
-import { SubmissionType } from '../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../infrastructure/submission';
 
 import { TableDetail } from '../../other/TableDetail';
 
@@ -30,7 +30,7 @@ import GraderAssignmentDetail from './GraderAssignmentDetail';
 /**********************************************************************************************************************/
 
 interface IProps {
-  deleteSubmission: (submission: SubmissionType) => Promise<void>;
+  deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   assignments: AssignmentType[];
   graders: string[];
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };

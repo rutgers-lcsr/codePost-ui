@@ -30,7 +30,7 @@ import { RouteComponentProps } from 'react-router';
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
 import { CourseType } from '../../../../infrastructure/course';
-import { SubmissionType } from '../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../infrastructure/submission';
 import { UserType } from '../../../../infrastructure/user';
 import { FileTemplate, FileTemplateType } from '../../../../infrastructure/fileTemplate';
 
@@ -66,7 +66,7 @@ export interface IMossProps {
   assignments: AssignmentType[];
 
   course: CourseType;
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
 
   user: UserType;
 
