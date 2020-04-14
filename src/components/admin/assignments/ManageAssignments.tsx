@@ -50,6 +50,7 @@ export interface IManageAssignmentsProps {
   /* loading state */
   loadComplete: boolean;
   submissionsLoadComplete: boolean;
+  allSubmissionsLoadComplete: boolean;
   submissionsByUserLoadComplete: boolean;
 
   /* object-level REST operations */

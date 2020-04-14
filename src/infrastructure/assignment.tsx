@@ -212,9 +212,9 @@ export class Assignment {
   public static readRubric = readObjectDetail(RubricV, 'assignments', 'rubric');
   public static readSubmissions = readObjectDetail(t.array(SubmissionInfoV), 'assignments', 'submissions');
 
-  static readPaginatedSubmissions_helper = readObjectDetail(PaginatedSubmissions, 'assignments', 'submissions');
-
   public static readPaginatedSubmissions = async (id: number, callback: (newSubmissions: any) => void) => {
+    const helper = readObjectDetail(PaginatedSubmissions, 'assignments', 'submissions');
+
     let next: string | null = '1';
 
     while (next !== null) {
@@ -223,11 +223,12 @@ export class Assignment {
         if (pageNumber.length > 1) {
           next = pageNumber[1];
         }
-        const result: any = await readPaginatedSubmissions_helper(id, { ['compact']: '1', page: next });
+        const result: any = await helper(id, { ['compact']: '1', page: next });
         callback(result.results);
         next = result.next;
       }
     }
+    return Promise.resolve();
   };
   public static readSubmissionsAnonymous = readObjectDetail(
     t.array(AnonymousSubmissionInfoV),

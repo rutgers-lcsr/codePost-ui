@@ -82,6 +82,7 @@ export interface IManageAssignmentsProps {
 
   /* loading state */
   loadComplete: boolean;
+  allSubmissionsLoadComplete: boolean;
 
   /* object-level REST operations */
   createAssignment: (
@@ -385,6 +386,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
       this.props.submissionsByStudent,
       this.props.viewsBySubmission,
       this.props.students,
+      !this.props.allSubmissionsLoadComplete,
     );
 
     data = this.state.sortedOrder.map((id, i) => {

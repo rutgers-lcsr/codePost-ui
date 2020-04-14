@@ -90,6 +90,7 @@ interface IAdminState {
 
   /*** Submissions data ****/
   submissionsLoadComplete: boolean;
+  allSubmissionsLoadComplete: boolean;
   submissionsbyUserLoadComplete: boolean;
   submissions: IAssignmentToSubmissionsMap;
   submissionsByStudent: IStudentSubmissionsDataTable;
@@ -145,6 +146,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       /**** Submissions data ****/
       submissions: {},
       submissionsLoadComplete: false,
+      allSubmissionsLoadComplete: false,
       submissionsByStudent: {},
       submissionsByGrader: {},
       submissionsbyUserLoadComplete: false,
@@ -349,9 +351,10 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
   /* eslint-disable no-useless-computed-key */
   public loadSubmissions = (course: CourseType) => {
-    course.assignments.map((assignmentID) => {
+    const promises = course.assignments.map((assignmentID) => {
       return Assignment.readPaginatedSubmissions(assignmentID, this.onSubmissionsLoad.bind(this, course, assignmentID));
     });
+    Promise.all(promises).then(() => this.setState({ allSubmissionsLoadComplete: true }));
   };
   /* eslint-enable no-useless-computed-key */
 
@@ -606,7 +609,6 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
   public updateRoster = async (adds: string[], deletes: string[], userType: USER_APP) => {
     const { currentCourse } = this.props;
-    console.log('updating roster', adds, deletes);
 
     if (!currentCourse) {
       return Promise.reject();
@@ -639,7 +641,6 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
     if (adds.length > 0) {
       const payload = makePayload(userType, adds);
-      console.log(payload);
       roster = await Course.addToRoster(payload);
     }
 
@@ -1178,7 +1179,6 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   /* Render
   /************************************************************************************/
   public render() {
-    console.log(this.state.submissions);
     /* build header */
     const dropdown = (
       <CourseMenu
@@ -1274,6 +1274,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 key="assignments"
                 loadComplete={this.state.assignmentsLoadComplete}
                 submissionsLoadComplete={this.state.submissionsLoadComplete}
+                allSubmissionsLoadComplete={this.state.allSubmissionsLoadComplete}
                 submissionsByUserLoadComplete={this.state.submissionsbyUserLoadComplete}
                 submissions={this.state.submissions}
                 currentCourse={this.props.currentCourse}
