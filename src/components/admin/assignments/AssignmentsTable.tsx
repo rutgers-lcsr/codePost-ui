@@ -82,7 +82,7 @@ export interface IManageAssignmentsProps {
 
   /* loading state */
   loadComplete: boolean;
-  allSubmissionsLoadComplete: boolean;
+  fullSubmissionsLoadComplete: boolean;
 
   /* object-level REST operations */
   createAssignment: (
@@ -386,7 +386,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
       this.props.submissionsByStudent,
       this.props.viewsBySubmission,
       this.props.students,
-      !this.props.allSubmissionsLoadComplete,
+      !this.props.fullSubmissionsLoadComplete,
     );
 
     data = this.state.sortedOrder.map((id, i) => {
@@ -418,7 +418,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           </Menu.Item>
           <Menu.Item key="2">
             <Link to={`${this.props.baseURL}/${encodedName}/download/grades`}>
-              {Object.keys(this.props.submissions).length === 0 ? <Spin size="small" /> : <Icon type="download" />}
+              {!this.props.fullSubmissionsLoadComplete ? <Spin size="small" /> : <Icon type="download" />}
               &nbsp; Download grades
             </Link>
           </Menu.Item>

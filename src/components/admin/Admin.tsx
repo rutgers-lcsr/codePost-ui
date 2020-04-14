@@ -89,8 +89,8 @@ interface IAdminState {
   assignments: AssignmentType[];
 
   /*** Submissions data ****/
-  submissionsLoadComplete: boolean;
-  allSubmissionsLoadComplete: boolean;
+  partialSubmissionsLoadComplete: boolean;
+  fullSubmissionsLoadComplete: boolean;
   submissionsbyUserLoadComplete: boolean;
   submissions: IAssignmentToSubmissionsMap;
   submissionsByStudent: IStudentSubmissionsDataTable;
@@ -145,8 +145,8 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
       /**** Submissions data ****/
       submissions: {},
-      submissionsLoadComplete: false,
-      allSubmissionsLoadComplete: false,
+      partialSubmissionsLoadComplete: false,
+      fullSubmissionsLoadComplete: false,
       submissionsByStudent: {},
       submissionsByGrader: {},
       submissionsbyUserLoadComplete: false,
@@ -255,7 +255,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
           const oldSubmissions = prevState.submissions[assignment] || [];
           return {
             submissions: { ...prevState.submissions, [assignment]: [...oldSubmissions, ...submissions] },
-            submissionsLoadComplete: true,
+            partialSubmissionsLoadComplete: true,
           };
         });
       });
@@ -264,7 +264,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
         const oldSubmissions = prevState.submissions[assignment] || [];
         return {
           submissions: { ...prevState.submissions, [assignment]: [...oldSubmissions, ...submissions] },
-          submissionsLoadComplete: true,
+          partialSubmissionsLoadComplete: true,
         };
       });
     }
@@ -276,7 +276,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
         if (this.props.currentCourse !== course) {
           return;
         }
-        if (this.state.submissionsLoadComplete && this.state.rosterLoadComplete) {
+        if (this.state.partialSubmissionsLoadComplete && this.state.rosterLoadComplete) {
           this.updateSubmissionsByUser(undefined, undefined, assignments, () => {
             this.setState({ assignments, assignmentsLoadComplete: true });
           });
@@ -301,7 +301,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       if (this.props.currentCourse !== course) {
         return;
       }
-      if (this.state.assignmentsLoadComplete && this.state.submissionsLoadComplete) {
+      if (this.state.assignmentsLoadComplete && this.state.partialSubmissionsLoadComplete) {
         this.updateSubmissionsByUser(roster, undefined, undefined, () => {
           this.setState({
             rosterLoadComplete: true,
@@ -354,7 +354,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     const promises = course.assignments.map((assignmentID) => {
       return Assignment.readPaginatedSubmissions(assignmentID, this.onSubmissionsLoad.bind(this, course, assignmentID));
     });
-    Promise.all(promises).then(() => this.setState({ allSubmissionsLoadComplete: true }));
+    Promise.all(promises).then(() => this.setState({ fullSubmissionsLoadComplete: true }));
   };
   /* eslint-enable no-useless-computed-key */
 
@@ -1273,8 +1273,8 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 {...props}
                 key="assignments"
                 loadComplete={this.state.assignmentsLoadComplete}
-                submissionsLoadComplete={this.state.submissionsLoadComplete}
-                allSubmissionsLoadComplete={this.state.allSubmissionsLoadComplete}
+                partialSubmissionsLoadComplete={this.state.partialSubmissionsLoadComplete}
+                fullSubmissionsLoadComplete={this.state.fullSubmissionsLoadComplete}
                 submissionsByUserLoadComplete={this.state.submissionsbyUserLoadComplete}
                 submissions={this.state.submissions}
                 currentCourse={this.props.currentCourse}
