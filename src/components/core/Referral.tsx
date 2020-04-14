@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 
-import { Icon, Input, message, Form, Modal, Radio } from 'antd';
-import { FormComponentProps } from 'antd/lib/form';
+import { HeartFilled } from '@ant-design/icons';
+
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+
+import { Input, message, Modal, Radio } from 'antd';
+import { FormComponentProps } from '@ant-design/compatible/lib/form';
 
 import { sendSlack } from './slack';
 
@@ -102,10 +107,8 @@ const Referral = (props: IProps) => {
         text={text}
       />
       <CPTooltip title="Know another course that might find codePost useful? Let us know!">
-        <Icon
-          type="heart"
+        <HeartFilled
           onClick={changeVisible}
-          theme="filled"
           style={{ color: props.theme === 'light' ? 'grey' : 'white', cursor: 'pointer' }}
         />
       </CPTooltip>

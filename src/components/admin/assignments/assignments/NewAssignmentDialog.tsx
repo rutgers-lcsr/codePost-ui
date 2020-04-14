@@ -5,9 +5,13 @@
 /* react imports */
 import * as React from 'react';
 
+import { Form } from '@ant-design/compatible';
+import { PlusCircleOutlined } from '@ant-design/icons';
+import '@ant-design/compatible/assets/index.css';
+
 /* ant imports */
-import { Form, Input, InputNumber, Modal, Radio, DatePicker } from 'antd';
-import { FormComponentProps } from 'antd/lib/form';
+import { Input, InputNumber, Modal, Radio, DatePicker } from 'antd';
+import { FormComponentProps } from '@ant-design/compatible/lib/form';
 
 /* other library imports */
 import moment from 'moment-timezone';
@@ -127,7 +131,7 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
   public render() {
     return (
       <div>
-        <CPButton onClick={this.toggleDialog} cpType="primary" icon="plus-circle">
+        <CPButton onClick={this.toggleDialog} cpType="primary" icon={<PlusCircleOutlined />}>
           Add assignment
         </CPButton>
         <CollectionCreateForm

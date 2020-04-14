@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { QuestionCircleOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Alert, Input, Spin, Typography, Checkbox, Tooltip, Icon } from 'antd';
+import { Alert, Input, Spin, Typography, Checkbox, Tooltip } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -116,7 +118,7 @@ const JoinSignup = (props: RouteComponentProps & { email?: string }) => {
           onChange={(e) => setInviteCode(e.target.value)}
           addonAfter={
             <Tooltip title="If you don't have one of these, ask your instructor.">
-              <Icon type="question-circle" style={{ cursor: 'pointer' }} />
+              <QuestionCircleOutlined style={{ cursor: 'pointer' }} />
             </Tooltip>
           }
         />

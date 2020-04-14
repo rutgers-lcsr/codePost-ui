@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { SettingOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Button, Empty, Icon } from 'antd';
+import { Button, Empty } from 'antd';
 
 /* other library imports */
 import _ from 'lodash';
@@ -44,7 +46,7 @@ import { File } from '../../infrastructure/file';
 import { RubricCategory } from '../../infrastructure/rubricCategory';
 import { RubricComment } from '../../infrastructure/rubricComment';
 import { Section, SectionType } from '../../infrastructure/section';
-import { Submission, SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
+import { Submission, SubmissionInfoType } from '../../infrastructure/submission';
 import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 import { addToPayload } from '../../infrastructure/utils';
 
@@ -473,7 +475,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     assignments.forEach((assignment) => {
       const assignmentSubs = submissions[assignment.id];
       if (assignmentSubs) {
-        assignmentSubs.forEach((submission: SubmissionType) => {
+        assignmentSubs.forEach((submission: SubmissionInfoType) => {
           // NOTE: students in submission.students might be inactive
           submission.students.forEach((student: string) => {
             if (student in subsByStudent) {
@@ -516,6 +518,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       noUnfinalize: false,
       lateDayCreditsAllowable: null,
       archived: false,
+      activateQueue: true,
       inviteCode: '',
       emailWhitelist: '',
       inviteCodeEnabled: false,
@@ -981,7 +984,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   // submissionsByStudent (map: student email => {assignment id => submission})
   // submissionsByGrader (map: grader email => {assignment id => submission list})
 
-  public bulkUpdateSubmissions = (assignmentID: number, getPayload: (sub: SubmissionType) => any) => {
+  public bulkUpdateSubmissions = (assignmentID: number, getPayload: (sub: SubmissionInfoType) => any) => {
     const { submissions } = this.state;
     const submissionsToUpdate = submissions[assignmentID];
 
@@ -990,7 +993,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       return Submission.update(payload);
     });
 
-    return Promise.all(promises).then((updatedSubmissions: SubmissionType[]) => {
+    return Promise.all(promises).then((updatedSubmissions: SubmissionInfoType[]) => {
       const newSubmissions = { ...submissions };
       newSubmissions[assignmentID] = updatedSubmissions;
       this.updateSubmissionsByUser(undefined, newSubmissions, undefined);
@@ -1000,7 +1003,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     });
   };
 
-  public updateSubmission = (toUpdate: SubmissionType) => {
+  public updateSubmission = (toUpdate: SubmissionInfoType) => {
     const { submissions, submissionsByStudent, submissionsByGrader } = this.state;
 
     /* Make sure we are acting on a submission linked to this course */
@@ -1073,13 +1076,13 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     });
   };
 
-  public changeSubmissionGrader = (sub: SubmissionType, grader: string | undefined) => {
+  public changeSubmissionGrader = (sub: SubmissionInfoType, grader: string | undefined) => {
     const newSub = { ...sub };
     newSub.grader = grader === undefined ? null : grader;
     return this.updateSubmission(newSub);
   };
 
-  public deleteSubmission = (toDelete: SubmissionType) => {
+  public deleteSubmission = (toDelete: SubmissionInfoType) => {
     const { submissions, submissionsByStudent, submissionsByGrader } = this.state;
 
     const assignmentID = toDelete.assignment;
@@ -1114,7 +1117,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     return split.length === 1 ? 'txt' : split[split.length - 1];
   };
 
-  public addFilesToSubmission = (submission: SubmissionType, files: any[]) => {
+  public addFilesToSubmission = (submission: SubmissionInfoType, files: any[]) => {
     const filePromises = files.map((file: any) => {
       const ext = this.getFileExtension(file.name);
       const filePayload = {
@@ -1130,9 +1133,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     });
 
     return Promise.all(filePromises).then((files) => {
-      const newSubmission = { ...submission };
-      newSubmission.files = files.map((f) => f.id);
-      return newSubmission;
+      return submission;
     });
   };
 
@@ -1150,7 +1151,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       students: partners,
     };
 
-    const submissionPromise = Submission.create(submissionPayload).then((submission: SubmissionType) => {
+    const submissionPromise = Submission.create(submissionPayload).then((submission: SubmissionInfoType) => {
       // Create each file
       const filesPromise = this.addFilesToSubmission(submission, files);
 
@@ -1200,7 +1201,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.ADMIN} theme="light" />,
       <CPTooltip key="settings" title={tooltips.management.header.settings} hideThisOnHideTips={true}>
         <Link className="internal-link" to="/settings">
-          <Icon type="setting" />
+          <SettingOutlined />
         </Link>
       </CPTooltip>,
       <Button key="header-logout" onClick={this.props.handleLogout}>

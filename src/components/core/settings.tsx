@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { CopyOutlined, RedoOutlined } from '@ant-design/icons';
+
 /* antd imports */
-import { Icon, Input, message, Modal, Switch, Table, Typography } from 'antd';
+import { Input, message, Modal, Switch, Table, Typography } from 'antd';
 
 /* codePost imports */
 import { CourseType } from '../../infrastructure/course';
@@ -189,13 +191,13 @@ class Settings extends React.Component<IProps, IState> {
               value={user.api_token}
               prefix={
                 <CPTooltip title={tooltips.settings.token.copy} hideThisOnHideTips={true}>
-                  <Icon type="copy" style={{ color: '#1890ff' }} onClick={this.copyKeyToClipboard} />
+                  <CopyOutlined style={{ color: '#1890ff' }} onClick={this.copyKeyToClipboard} />
                 </CPTooltip>
               }
               disabled={true}
               addonAfter={
                 <CPTooltip title={tooltips.settings.token.reset}>
-                  <Icon type="redo" onClick={this.toggleResetStatus} />
+                  <RedoOutlined onClick={this.toggleResetStatus} />
                 </CPTooltip>
               }
             />

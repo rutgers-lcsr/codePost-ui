@@ -5,13 +5,14 @@
 /* React imports */
 import * as React from 'react';
 
+import { QuestionCircleOutlined } from '@ant-design/icons';
+
 /* ant imports */
 import {
   Breadcrumb,
   Button,
   Checkbox,
   Divider,
-  Icon,
   Input,
   message,
   Progress,
@@ -29,7 +30,7 @@ import { RouteComponentProps } from 'react-router';
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
 import { CourseType } from '../../../../infrastructure/course';
-import { SubmissionType } from '../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../infrastructure/submission';
 import { UserType } from '../../../../infrastructure/user';
 import { FileTemplate, FileTemplateType } from '../../../../infrastructure/fileTemplate';
 
@@ -65,7 +66,7 @@ export interface IMossProps {
   assignments: AssignmentType[];
 
   course: CourseType;
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
 
   user: UserType;
 
@@ -423,7 +424,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
       <Tooltip
         title={'If checked, submission code that also appears in a file template will not be counted in matches.'}
       >
-        <Icon style={{ cursor: 'pointer' }} type="question-circle" />
+        <QuestionCircleOutlined style={{ cursor: 'pointer' }} />
       </Tooltip>
       {fileTemplates.length > 0 && (
         <span>
@@ -475,7 +476,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
                   </span>
                 }
               >
-                <Icon type="question-circle" />
+                <QuestionCircleOutlined />
               </CPTooltip>
             }
           />

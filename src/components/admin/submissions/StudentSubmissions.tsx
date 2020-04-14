@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { FolderOpenOutlined, UserAddOutlined, PlusCircleOutlined } from '@ant-design/icons';
+
 /* style imports */
-import { Breadcrumb, Checkbox, Empty, Icon } from 'antd';
+import { Breadcrumb, Checkbox, Empty } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -21,7 +23,7 @@ import { openSubmission } from '../other/AdminUtils';
 
 import { CourseType } from '../../../infrastructure/course';
 import { AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
-import { SubmissionType } from '../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../infrastructure/submission';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
@@ -48,11 +50,11 @@ export interface IByStudentProps extends RouteComponentProps {
   inactiveStudents: string[];
 
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
-  deleteSubmission: (submission: SubmissionType) => Promise<void>;
+  deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   graders: string[];
-  changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>;
-  addFilesToSubmission: (submission: SubmissionType, files: any[]) => Promise<SubmissionType>;
+  changeSubmissionGrader: (submission: SubmissionInfoType, grader: string | undefined) => Promise<void>;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionInfoType>;
+  addFilesToSubmission: (submission: SubmissionInfoType, files: any[]) => Promise<SubmissionInfoType>;
   baseURL: string;
 }
 
@@ -264,7 +266,7 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                     <Link to={`${this.props.match.url}/${studentEmail}`}>
                       <div style={{ cursor: 'pointer' }}>
                         <CPTooltip title={tooltips.admin.studentSubmissions.expand} hideThisOnHideTips={true}>
-                          <Icon type="folder-open" />
+                          <FolderOpenOutlined />
                         </CPTooltip>
                       </div>
                     </Link>
@@ -310,7 +312,7 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                   >
                     {numStudents === 0 ? (
                       <Link to={`${this.props.baseURL}/roster/students`}>
-                        <CPButton cpType="primary" key={1} icon="user-add">
+                        <CPButton cpType="primary" key={1} icon={<UserAddOutlined />}>
                           Add some students
                         </CPButton>
                       </Link>
@@ -320,7 +322,7 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                       <span>
                         {numStudents === 0 ? <span>&nbsp; &nbsp;</span> : null}
                         <Link to={`${this.props.baseURL}/assignments/overview`}>
-                          <CPButton cpType="primary" key={2} icon="plus-circle">
+                          <CPButton cpType="primary" key={2} icon={<PlusCircleOutlined />}>
                             Add an assignment
                           </CPButton>
                         </Link>

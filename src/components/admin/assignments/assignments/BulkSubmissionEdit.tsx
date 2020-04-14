@@ -7,17 +7,17 @@ import { Alert, message, Modal, Radio } from 'antd';
 /* codePost imports */
 
 import { AssignmentType } from '../../../../infrastructure/assignment';
-import { SubmissionType } from '../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../infrastructure/submission';
 
 import { CourseType } from '../../../../infrastructure/course';
 
 export interface IProps {
   activeAssignment: AssignmentType;
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
   currentCourse: CourseType;
   onCancel: () => void;
   myEmail: string;
-  bulkUpdateSubmissions: (assignmentID: number, getPayload: (sub: SubmissionType) => any) => Promise<void>;
+  bulkUpdateSubmissions: (assignmentID: number, getPayload: (sub: SubmissionInfoType) => any) => Promise<void>;
 }
 
 enum BULK_ACTION {
@@ -41,7 +41,7 @@ const BulkSubmissionEdit = (props: IProps) => {
   };
 
   const editFinalized = async (isFinalized: boolean) => {
-    const getPayload = (sub: SubmissionType) => {
+    const getPayload = (sub: SubmissionInfoType) => {
       let payload: any = { id: sub.id, isFinalized: isFinalized };
       if (isFinalized && !sub.grader) {
         // If finalizing and no grader is set, set a grader

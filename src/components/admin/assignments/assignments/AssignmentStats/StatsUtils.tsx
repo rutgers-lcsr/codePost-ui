@@ -1,13 +1,18 @@
 import React from 'react';
 
-import { Drawer, Icon, Table } from 'antd';
+import { CodeOutlined, UploadOutlined } from '@ant-design/icons';
+
+import { Drawer, Table } from 'antd';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../../infrastructure/assignment';
-import { SubmissionType } from '../../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../../../types/common';
 
 import { openSubmission } from '../../../other/AdminUtils';
+
+import { FixedSizeList as List } from 'react-window';
+import useWindowSize from '../../../../core/useWindowSize';
 
 import CPButton from '../../../../core/CPButton';
 import Loading from '../../../../core/Loading';
@@ -79,7 +84,7 @@ export const calculateMultipleAssignmentProgressStats = (
 /* Calculate Full stats (progress + grade stats) */
 export const calculateFullStats = (
   assignment: AssignmentType,
-  submissions: SubmissionType[] | null,
+  submissions: SubmissionInfoType[] | null,
   submissionsByStudent: IStudentSubmissionsDataTable,
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
   activeStudents: string[],
@@ -113,7 +118,7 @@ export const calculateFullStats = (
     };
   }
 
-  assignmentSubs.forEach((submission: SubmissionType) => {
+  assignmentSubs.forEach((submission: SubmissionInfoType) => {
     if (submission.isFinalized && submission.grade !== null) {
       totalScore += submission.grade;
       if (max === null || submission.grade > max) max = submission.grade;
@@ -136,7 +141,7 @@ export const calculateFullStats = (
       mean = parseFloat((totalScore / progressStats.numGraded).toPrecision(2));
 
       // calculate median
-      const sortedFinalized = assignmentSubs.reduce((grades: number[], sub: SubmissionType) => {
+      const sortedFinalized = assignmentSubs.reduce((grades: number[], sub: SubmissionInfoType) => {
         if (sub.isFinalized && sub.grade !== null) {
           grades.push(sub.grade);
         }
@@ -167,7 +172,7 @@ export const calculateFullStats = (
 /* Calculate Grading Progress stats only */
 export const calculateGradingProgressStats = (
   assignment: AssignmentType,
-  submissions: SubmissionType[] | null,
+  submissions: SubmissionInfoType[] | null,
   submissionsByStudent: IStudentSubmissionsDataTable,
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
   activeStudents: string[],
@@ -194,7 +199,7 @@ export const calculateGradingProgressStats = (
   let numUnviewed = 0;
   let numViewed = 0;
 
-  assignmentSubs.forEach((submission: SubmissionType) => {
+  assignmentSubs.forEach((submission: SubmissionInfoType) => {
     if (submission.isFinalized) {
       numGraded += 1;
     } else if (submission.grader) {
@@ -254,31 +259,31 @@ export const filterDataByStat = (
   assignment: AssignmentType,
   submissionsByStudent: IStudentSubmissionsDataTable,
   type: DRAWER_TYPE,
-  subs: SubmissionType[],
+  subs: SubmissionInfoType[],
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
   studentList: string[],
 ) => {
   switch (type) {
     case DRAWER_TYPE.Submitted:
-      return subs.map((sub: SubmissionType) => {
+      return subs.map((sub: SubmissionInfoType) => {
         return { email: sub.students.join(', '), subID: sub.id };
       });
     case DRAWER_TYPE.Graded:
-      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
+      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionInfoType) => {
         if (sub && sub.isFinalized) {
           students.push({ email: sub.students.join(', '), subID: sub.id });
         }
         return students;
       }, []);
     case DRAWER_TYPE.InProgress:
-      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
+      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionInfoType) => {
         if (sub && !sub.isFinalized && sub.grader) {
           students.push({ email: sub.students.join(', '), subID: sub.id });
         }
         return students;
       }, []);
     case DRAWER_TYPE.Unclaimed:
-      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
+      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionInfoType) => {
         if (sub && !sub.isFinalized && !sub.grader) {
           students.push({ email: sub.students.join(', '), subID: sub.id });
         }
@@ -295,7 +300,7 @@ export const filterDataByStat = (
         [],
       );
     case DRAWER_TYPE.Unviewed:
-      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
+      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionInfoType) => {
         // Append a student if: (a) his/her submission has a History object
         //                      (b) student's email is not in viewsBySubmission
         //                      (c) student's submission is finalized
@@ -313,7 +318,7 @@ export const filterDataByStat = (
         return students;
       }, []);
     case DRAWER_TYPE.Viewed:
-      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
+      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionInfoType) => {
         // Append a student if: (a) his/her submission has a History object
         //                      (b) student's email is in viewsBySubmission
         if (sub && sub.id in viewsBySubmission) {
@@ -360,87 +365,76 @@ export const StatsDrawer = (props: {
   isVisible: boolean;
   uploadSubmission?: (assignmentName: string, students: string) => void;
 }) => {
+  const windowSize = useWindowSize();
+  const actionLabel = props.type === DRAWER_TYPE.Missing ? 'Upload' : 'Open';
+  const primaryWidth = actionLabel === 'Open' ? 455 : 331;
   let body = <Loading />;
   if (props.content.content !== null) {
-    // const alignCenter: alignType = 'center';
-    const alignLeft: alignType = 'left';
-
-    const drawerColumns: any[] = [
-      {
-        title: 'Students',
-        dataIndex: 'students',
-        key: 'students',
-        align: alignLeft,
-        defaultSortOrder: 'ascend',
-        sorter: (a: any, b: any) => {
-          return a.students.localeCompare(b.students);
-        },
-      },
-    ];
-    if (props.type !== undefined && props.type !== DRAWER_TYPE.Missing) {
-      drawerColumns.push({
-        title: 'Open',
-        dataIndex: 'open',
-        key: 'open',
-        align: alignLeft,
-      });
-    }
-
-    if (props.type === DRAWER_TYPE.Missing) {
-      drawerColumns.push({
-        title: 'Upload',
-        dataIndex: 'upload',
-        key: 'upload',
-        align: 'center',
-      });
-    }
-
-    const drawerData = props.content.content.map((el) => {
-      const openSub = () => openSubmission(el.subID!);
-      const onClick = () => {
-        if (props.uploadSubmission) {
-          props.uploadSubmission(props.content.title, el.email);
-        }
-      };
-
-      return {
-        key: el.email,
-        students: el.email,
-        open: el.subID ? (
-          // eslint-disable-next-line jsx-a11y/anchor-is-valid
-          <a onClick={openSub} className="internal-link">
-            <Icon type="code" />
-          </a>
-        ) : (
-          undefined
-        ),
-        upload:
-          props.type === DRAWER_TYPE.Missing ? (
-            <CPButton icon="upload" onClick={onClick}>
-              Upload
-            </CPButton>
-          ) : (
-            undefined
-          ),
-        submission: el.subID,
-      };
-    });
-
     body = (
-      <Table
-        columns={drawerColumns}
-        dataSource={drawerData}
-        pagination={false}
-        onRow={(record, rowIndex) => {
-          return {
-            onClick: (event) => {
-              if (record.submission) {
-                openSubmission(record.submission);
-              }
-            },
-          };
-        }}
-      />
+      <div>
+        <div id="drawer-table-header" style={{ display: 'flex', alignItems: 'center', height: 54 }}>
+          <div style={{ width: primaryWidth, fontWeight: 500, backgroundColor: 'rgba(0,0,0,0.04)', padding: '16px' }}>
+            Students
+          </div>
+          <div style={{ backgroundColor: '#fafafa', flexGrow: 1, padding: '16px' }}>{actionLabel}</div>
+        </div>
+        <List
+          itemData={props.content.content}
+          height={windowSize.height - 144}
+          itemCount={props.content.content.length}
+          itemSize={54}
+          width="100%"
+        >
+          {({ index, style }: any) => {
+            if (props.content.content === null) {
+              return <div>--</div>;
+            }
+
+            const el = props.content.content[index];
+            const key = `${props.content.title}-${props.content.subtitle}-${index}`;
+            const students = el.email;
+
+            let actionElement;
+            let action;
+
+            if (actionLabel === 'Open') {
+              action = () => openSubmission(el.subID!);
+              actionElement = (
+                <a className="internal-link">
+                  <CodeOutlined />
+                </a>
+              );
+            } else if (actionLabel === 'Upload') {
+              action = () => {
+                if (props.uploadSubmission) {
+                  props.uploadSubmission(props.content.title, el.email);
+                }
+              };
+              actionElement = (
+                <CPButton style={{ margin: '-8px' }} icon="upload">
+                  Upload
+                </CPButton>
+              );
+            }
+
+            const extraStyle = {
+              display: 'flex',
+              height: 54,
+              alignItems: 'stretch',
+              borderBottom: '1px solid rgb(232,232,232)',
+              cursor: 'pointer',
+            };
+            return (
+              <div style={{ ...style, ...extraStyle }} onClick={action}>
+                <div style={{ width: primaryWidth, backgroundColor: 'rgb(0,0,0,0.01)', padding: '16px' }}>
+                  {students}
+                </div>
+                <div style={{ flexGrow: 1, padding: '16px' }}>{actionElement}</div>
+              </div>
+            );
+          }}
+        </List>
+      </div>
     );
   }
 
@@ -452,6 +446,7 @@ export const StatsDrawer = (props: {
       onClose={props.onClose}
       visible={props.isVisible}
       width={600}
+      bodyStyle={{ paddingBottom: 0 }}
     >
       {body}
     </Drawer>

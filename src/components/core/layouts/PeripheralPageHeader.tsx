@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-/* antd imports */
-import { Icon } from 'antd';
+import { SettingOutlined } from '@ant-design/icons';
 
 import { UserType } from '../../../infrastructure/user';
 
@@ -49,7 +48,7 @@ const PeripheralPageHeader = (props: IProps) => {
     <RoleMenu key="header-role-menu" user={props.user} theme="light" />,
     <CPTooltip key="settings" title={tooltips.management.header.settings} hideThisOnHideTips={true}>
       <Link className="internal-link" to="/settings">
-        <Icon type="setting" />
+        <SettingOutlined />
       </Link>
     </CPTooltip>,
     <CPButton key="header-logout" cpType="secondary" onClick={props.handleLogout}>

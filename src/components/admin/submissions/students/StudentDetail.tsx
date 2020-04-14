@@ -5,8 +5,22 @@
 /* react imports */
 import * as React from 'react';
 
+import {
+  CodeOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  EyeFilled,
+  EyeInvisibleOutlined,
+  FileAddOutlined,
+  MenuOutlined,
+  RedoOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
+
+import { Icon as LegacyIcon } from '@ant-design/compatible';
+
 /* style imports */
-import { Badge, Breadcrumb, Dropdown, Icon, Menu, message, Modal, Select } from 'antd';
+import { Badge, Breadcrumb, Dropdown, Menu, message, Modal, Select } from 'antd';
 
 /* other library imports */
 import moment from 'moment';
@@ -18,7 +32,7 @@ import { openSubmission } from '../../other/AdminUtils';
 
 import { CourseType } from '../../../../infrastructure/course';
 import { AssignmentType, sortAssignments } from '../../../../infrastructure/assignment';
-import { SubmissionType } from '../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../infrastructure/submission';
 
 import { TableDetail } from '../../other/TableDetail';
 
@@ -41,15 +55,15 @@ interface IProps {
   course: CourseType;
   onBack: () => void;
   students: string[];
-  deleteSubmission: (submission: SubmissionType) => Promise<void>;
+  deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   assignments: AssignmentType[];
   graders: string[];
   submissions: IStudentSubmissionsDataTable;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>;
-  addFilesToSubmission: (submission: SubmissionType, files: any[]) => Promise<SubmissionType>;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionInfoType>;
+  addFilesToSubmission: (submission: SubmissionInfoType, files: any[]) => Promise<SubmissionInfoType>;
 
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
-  changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
+  changeSubmissionGrader: (submission: SubmissionInfoType, grader: string | undefined) => Promise<void>;
   student: string;
 
   match: any;
@@ -63,7 +77,7 @@ interface IState {
   assignmentToUpload?: AssignmentType;
 
   submissionsMap: {
-    [assignmentID: number]: SubmissionType;
+    [assignmentID: number]: SubmissionInfoType;
   };
 
   subsRunning: number[];
@@ -79,7 +93,7 @@ class StudentDetail extends React.Component<IProps, IState> {
 
   // ******************************************** API changes **************************************************
 
-  public removeSubmission = (toRemove: SubmissionType) => {
+  public removeSubmission = (toRemove: SubmissionInfoType) => {
     confirm({
       title: 'Are you sure you want to remove this submission?',
       content: `The following students are associated with this submission: ${toRemove.students.join(',')}.`,
@@ -90,12 +104,12 @@ class StudentDetail extends React.Component<IProps, IState> {
     });
   };
 
-  public callback = (sub: SubmissionType, result: SubmissionTestResultType) => {
+  public callback = (sub: SubmissionInfoType, result: SubmissionTestResultType) => {
     this.setState((prevState, props) => ({ subsRunning: prevState.subsRunning.filter((id) => id !== sub.id) }));
     message.success('Test run completed!');
   };
 
-  public runTests = async (assignment: AssignmentType, sub: SubmissionType) => {
+  public runTests = async (assignment: AssignmentType, sub: SubmissionInfoType) => {
     if (assignment.environment) {
       this.setState((prevState, props) => ({ subsRunning: [...prevState.subsRunning, sub.id] }));
       const result = await Environment.run(assignment.environment, {
@@ -106,7 +120,7 @@ class StudentDetail extends React.Component<IProps, IState> {
     }
   };
 
-  public reUploadSubmission = (toRemove: SubmissionType) => {
+  public reUploadSubmission = (toRemove: SubmissionInfoType) => {
     confirm({
       title: 'Are you sure you want to re-upload files for this submission?',
       content: (
@@ -142,7 +156,7 @@ class StudentDetail extends React.Component<IProps, IState> {
     }
   };
 
-  public changeGrader = (submission: SubmissionType, newGrader: string | undefined) => {
+  public changeGrader = (submission: SubmissionInfoType, newGrader: string | undefined) => {
     this.props.changeSubmissionGrader(submission, newGrader).then(() => {
       message.success('Updated grader');
     });
@@ -172,7 +186,7 @@ class StudentDetail extends React.Component<IProps, IState> {
 
   // ******************************************** Render helpers **************************************************
 
-  public getViewIcon = (submission: SubmissionType, student: string) => {
+  public getViewIcon = (submission: SubmissionInfoType, student: string) => {
     if (!(submission.id in this.props.viewsBySubmission) || !submission.isFinalized) {
       // case: No history object or unfinalized
       return '--';
@@ -181,17 +195,17 @@ class StudentDetail extends React.Component<IProps, IState> {
       return (
         <CPTooltip title={moment(this.props.viewsBySubmission[submission.id][student]).format('llll')}>
           <div>
-            <Icon type="eye" theme="filled" />
+            <EyeFilled />
           </div>
         </CPTooltip>
       );
     } else {
       // case: submission has not been viewed
-      return <Icon type="eye-invisible" />;
+      return <EyeInvisibleOutlined />;
     }
   };
 
-  public getStatus = (submission: SubmissionType | undefined) => {
+  public getStatus = (submission: SubmissionInfoType | undefined) => {
     let badgeStatus: 'default' | 'error' | 'success' | 'warning' | 'processing' | undefined;
     let cellText;
     if (submission) {
@@ -300,17 +314,17 @@ class StudentDetail extends React.Component<IProps, IState> {
         <Menu>
           <Menu.Item key="0" onClick={openSubmission.bind(this, submission.id)}>
             <span>
-              <Icon type="code" /> Open submission
+              <CodeOutlined /> Open submission
             </span>
           </Menu.Item>
           <Menu.Item key="1" onClick={this.reUploadSubmission.bind(this, submission)}>
             <span>
-              <Icon type="redo" /> Replace files
+              <RedoOutlined /> Replace files
             </span>
           </Menu.Item>
           <Menu.Item key="2" onClick={this.toggleUploadSubmissionVisible.bind(this, assignment.id)}>
             <span>
-              <Icon type="file-add" /> Add / Update files
+              <FileAddOutlined /> Add / Update files
             </span>
           </Menu.Item>
           {assignment.environment && (
@@ -320,13 +334,14 @@ class StudentDetail extends React.Component<IProps, IState> {
               onClick={this.runTests.bind(this, assignment, submission)}
             >
               <span>
-                <Icon type={this.state.subsRunning.includes(submission.id) ? 'loading' : 'caret-right'} /> Run Tests
+                <LegacyIcon type={this.state.subsRunning.includes(submission.id) ? 'loading' : 'caret-right'} /> Run
+                Tests
               </span>
             </Menu.Item>
           )}
           <Menu.Divider />
           <Menu.Item key="4" style={{ color: 'red' }} onClick={this.removeSubmission.bind(this, submission)}>
-            <Icon type="delete" />
+            <DeleteOutlined />
             Delete submission
           </Menu.Item>
         </Menu>
@@ -334,7 +349,7 @@ class StudentDetail extends React.Component<IProps, IState> {
         <Menu>
           <Menu.Item key="0">
             <span onClick={this.toggleUploadSubmissionVisible.bind(this, assignment.id)}>
-              <Icon type="upload" /> Upload submission
+              <UploadOutlined /> Upload submission
             </span>
           </Menu.Item>
         </Menu>
@@ -342,6 +357,12 @@ class StudentDetail extends React.Component<IProps, IState> {
 
       let graderElement;
       if (submission && assignment.name === this.state.selectedSubmission) {
+        const undefinedOption = (
+          // @ts-ignore
+          <Select.Option key={0} value={undefined}>
+            No grader
+          </Select.Option>
+        );
         graderElement = (
           <div>
             <Select
@@ -359,14 +380,12 @@ class StudentDetail extends React.Component<IProps, IState> {
                       </Select.Option>
                     );
                   }),
-                <Select.Option key={0} value={undefined}>
-                  No grader
-                </Select.Option>,
+                undefinedOption,
               ]}
             </Select>
             &nbsp;{' '}
             <CPTooltip title={tooltips.admin.studentSubmissions.lockAssignGrader} hideThisOnHideTips={true}>
-              <Icon type="edit" onClick={this.changeActiveSubmission.bind(this, '')} />
+              <EditOutlined onClick={this.changeActiveSubmission.bind(this, '')} />
             </CPTooltip>
           </div>
         );
@@ -375,7 +394,7 @@ class StudentDetail extends React.Component<IProps, IState> {
           <div>
             <span>{submission.grader ? submission.grader : '--'}</span>&nbsp;
             <CPTooltip title={tooltips.admin.studentSubmissions.assignGrader} hideThisOnHideTips={true}>
-              <Icon type="edit" onClick={this.changeActiveSubmission.bind(this, assignment.name)} />
+              <EditOutlined onClick={this.changeActiveSubmission.bind(this, assignment.name)} />
             </CPTooltip>
           </div>
         );
@@ -385,7 +404,7 @@ class StudentDetail extends React.Component<IProps, IState> {
 
       return {
         key: assignment.name,
-        open: submission ? <Icon type="code" onClick={openSubmission.bind(this, submission.id)} /> : '--',
+        open: submission ? <CodeOutlined onClick={openSubmission.bind(this, submission.id)} /> : '--',
         assignment: assignment.name,
         partners: submission
           ? submission.students
@@ -401,7 +420,7 @@ class StudentDetail extends React.Component<IProps, IState> {
         viewed: submission ? this.getViewIcon(submission, this.props.student) : '--',
         actions: (
           <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>
-            <Icon type="menu" />
+            <MenuOutlined />
           </Dropdown>
         ),
       };

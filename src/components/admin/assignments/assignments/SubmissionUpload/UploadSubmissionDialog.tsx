@@ -5,22 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { CalculatorOutlined, CheckCircleOutlined, CloseCircleOutlined, UploadOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import {
-  Alert,
-  Button,
-  Checkbox,
-  Icon,
-  message,
-  Modal,
-  Progress,
-  Switch,
-  Upload,
-  Table,
-  Tag,
-  Divider,
-  Tabs,
-} from 'antd';
+import { Alert, Button, Checkbox, message, Modal, Progress, Switch, Upload, Table, Tag, Divider, Tabs } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -34,7 +22,7 @@ import {
   AssignmentType,
   TestCategoryType,
   SubmissionTestType,
-  SubmissionType,
+  SubmissionInfoType,
   StudentSubmissionType,
   FileTemplateType,
   CourseType,
@@ -82,7 +70,7 @@ interface IUploadSubmissionDialogProps {
   selectedStudents: string[];
   submissions: {
     [userEmail: string]: {
-      [assignmentID: number]: SubmissionType | StudentSubmissionType;
+      [assignmentID: number]: SubmissionInfoType | StudentSubmissionType;
     };
   };
   uploadSubmission:
@@ -97,7 +85,7 @@ interface IUploadSubmissionDialogProps {
         partners: string[],
         files: any[],
         sendConfirmationEmail: boolean,
-      ) => Promise<SubmissionType>);
+      ) => Promise<SubmissionInfoType>);
 
   disableStudentSelect?: boolean;
   onSuccess?: (newSubmissionID: number) => void;
@@ -267,7 +255,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     }
   };
 
-  public loadTestResults = async (sub: StudentSubmissionType | SubmissionType | undefined, loadLogs: boolean) => {
+  public loadTestResults = async (sub: StudentSubmissionType | SubmissionInfoType | undefined, loadLogs: boolean) => {
     if (sub) {
       const results = await Submission.readTestResults(sub.id, { isStudentMode: 'True' });
       if (results !== null && results !== undefined) {
@@ -282,7 +270,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     students: string[],
     submissions: {
       [userEmail: string]: {
-        [assignmentID: number]: SubmissionType | StudentSubmissionType;
+        [assignmentID: number]: SubmissionInfoType | StudentSubmissionType;
       };
     },
     assignment?: AssignmentType | AssignmentStudentType,
@@ -412,7 +400,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
               this.state.files,
               this.state.sendMeAConfirmationEmail,
             )
-            .then((newSubmission: StudentSubmissionType | SubmissionType) => {
+            .then((newSubmission: StudentSubmissionType | SubmissionInfoType) => {
               const shouldRun = this.shouldRunTests();
               if (shouldRun) {
                 message.success('Submission uploaded!');
@@ -542,7 +530,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     });
   };
 
-  public runTests = async (submission: StudentSubmissionType | SubmissionType) => {
+  public runTests = async (submission: StudentSubmissionType | SubmissionInfoType) => {
     if (this.shouldRunTests()) {
       // Make sure the loading is set
       this.setState({ loadingTests: true });
@@ -700,9 +688,9 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                     </span>
                   ),
                   uploaded: exists ? (
-                    <Icon type="check-circle" style={{ color: 'green' }} />
+                    <CheckCircleOutlined style={{ color: 'green' }} />
                   ) : (
-                    <Icon type="close-circle" style={{ color: 'red' }} />
+                    <CloseCircleOutlined style={{ color: 'red' }} />
                   ),
                 };
               })}
@@ -767,7 +755,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
               disabled={disableUpload || !areRequiredFilesPresent}
               onClick={this.confirmUpload}
             >
-              Upload {this.shouldRunTests() && <Icon type="calculator" />}
+              Upload {this.shouldRunTests() && <CalculatorOutlined />}
             </Button>
             {this.state.selectedAssignment === undefined ? null : (
               <LateSubmissionModal
@@ -873,7 +861,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                   directory={this.state.uploadDirectory}
                 >
                   <Button>
-                    <Icon type="upload" /> Upload files
+                    <UploadOutlined /> Upload files
                   </Button>
                 </Upload>
               </div>

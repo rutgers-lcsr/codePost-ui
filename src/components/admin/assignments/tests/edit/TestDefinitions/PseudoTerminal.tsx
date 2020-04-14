@@ -5,15 +5,17 @@
 /* react imports  */
 import React from 'react';
 
+import { CopyOutlined, DeleteOutlined, FontColorsOutlined, LoadingOutlined } from '@ant-design/icons';
+
 /* antd imports  */
-import { Tag, Select, Icon, Tooltip } from 'antd';
+import { Tag, Select, Tooltip } from 'antd';
 
 /* other library imports */
 import { animateScroll } from 'react-scroll';
 import { Resizable } from 're-resizable';
 
 /* codePost imports  */
-import { SubmissionType } from '../../../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../../../infrastructure/submission';
 import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
 import CPFlex from '../../../../../core/CPFlex';
 import { copyTextToClipboard } from '../../../../../utils/Browser';
@@ -40,14 +42,14 @@ interface IResultProps {
   log?: ILogType | ILogType[];
   isRunning?: boolean;
   runTest?: () => void;
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
   files?: string[];
   defaultFile?: string;
   setTestSubject: (id: string) => void;
   updateFile?: (file: string) => void;
   overrideText?: string;
   env?: EnvironmentType;
-  activeSubmission?: SubmissionType;
+  activeSubmission?: SubmissionInfoType;
   resizable: boolean;
   testSelectComponent?: React.ReactNode;
 }
@@ -247,7 +249,7 @@ export const PseudoTerminal = (props: IResultProps) => {
     >
       {props.isRunning ? (
         <div>
-          <Icon type="loading" />
+          <LoadingOutlined />
         </div>
       ) : null}
       <div style={{ fontSize: '16px', transform: 'translateY(2px)' }}>{props.overrideText || 'Run'}</div>
@@ -264,7 +266,7 @@ export const PseudoTerminal = (props: IResultProps) => {
       className="pseudo-terminal--button"
     >
       <Tooltip title="clear">
-        <Icon type="delete" />
+        <DeleteOutlined />
       </Tooltip>
     </div>
   );
@@ -279,7 +281,7 @@ export const PseudoTerminal = (props: IResultProps) => {
       className="pseudo-terminal--button"
     >
       <Tooltip title="copy">
-        <Icon type="copy" />
+        <CopyOutlined />
       </Tooltip>
     </div>
   );
@@ -298,8 +300,7 @@ export const PseudoTerminal = (props: IResultProps) => {
       }
       overlayStyle={{ minWidth: 300, backgroundColor: 'rgba(25,25,25,1)' }}
     >
-      <Icon
-        type="font-colors"
+      <FontColorsOutlined
         style={{
           padding: '4px 12px',
           color: 'grey',

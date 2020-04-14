@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { Divider, Dropdown, Icon, Menu } from 'antd';
+import { AuditOutlined, IdcardOutlined, InfoCircleOutlined, SlidersOutlined, TeamOutlined } from '@ant-design/icons';
+
+import { Divider, Dropdown, Menu } from 'antd';
 
 import { UserType } from '../../infrastructure/user';
 import { USER_TYPE } from '../../types/common';
@@ -29,7 +31,7 @@ const RoleMenu = (props: IProps) => {
       {showStudent ? (
         <Menu.Item>
           <Link to="/student">
-            <Icon type="idcard" />
+            <IdcardOutlined />
             &nbsp; Student
           </Link>
         </Menu.Item>
@@ -37,7 +39,7 @@ const RoleMenu = (props: IProps) => {
       {showGrader ? (
         <Menu.Item>
           <Link to="/grader">
-            <Icon type="audit" />
+            <AuditOutlined />
             &nbsp; Grader
           </Link>
         </Menu.Item>
@@ -45,7 +47,7 @@ const RoleMenu = (props: IProps) => {
       {showAdmin ? (
         <Menu.Item>
           <Link to="/admin">
-            <Icon type="sliders" />
+            <SlidersOutlined />
             &nbsp; Admin
           </Link>
         </Menu.Item>
@@ -69,18 +71,22 @@ const RoleMenu = (props: IProps) => {
           hideThisOnHideTips={true}
           hideChildrenOnHideTips={true}
         >
-          <Divider style={{ margin: '4px 0px' }} />
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              paddingLeft: 10,
-              paddingRight: 10,
-              paddingBottom: 2,
-            }}
-          >
-            <Icon type="info-circle" style={{ paddingRight: 7, color: 'grey' }} />
-            <div style={{ color: 'grey', fontStyle: 'italic', fontSize: 10, maxWidth: 55 }}>Learn more about roles</div>
+          <div>
+            <Divider style={{ margin: '4px 0px' }} />
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                paddingLeft: 10,
+                paddingRight: 10,
+                paddingBottom: 2,
+              }}
+            >
+              <InfoCircleOutlined style={{ paddingRight: 7, color: 'grey' }} />
+              <div style={{ color: 'grey', fontStyle: 'italic', fontSize: 10, maxWidth: 55 }}>
+                Learn more about roles
+              </div>
+            </div>
           </div>
         </CPTooltip>
       </div>
@@ -89,7 +95,7 @@ const RoleMenu = (props: IProps) => {
   return (
     <Dropdown overlay={roleMenu} trigger={['click']}>
       <CPTooltip title="Switch Roles" placement="left" hideThisOnHideTips={true}>
-        <Icon type="team" style={{ color: props.theme === 'light' ? 'black' : 'white', cursor: 'pointer' }} />
+        <TeamOutlined style={{ color: props.theme === 'light' ? 'black' : 'white', cursor: 'pointer' }} />
       </CPTooltip>
     </Dropdown>
   );

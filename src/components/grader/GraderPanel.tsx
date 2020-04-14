@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { FolderOpenOutlined } from '@ant-design/icons';
+
 /* antd imports */
-import { Breadcrumb, Icon, Table } from 'antd';
+import { Breadcrumb, Table } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -59,7 +61,7 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
         ...row,
         zoom: (
           <Link to={`${props.match.url}/${encodeForLink(row.assignment)}`}>
-            <Icon type="folder-open" />
+            <FolderOpenOutlined />
           </Link>
         ),
       };

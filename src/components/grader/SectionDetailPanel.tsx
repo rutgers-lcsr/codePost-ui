@@ -5,36 +5,29 @@
 /* react imports */
 import * as React from 'react';
 
+import { CodeOutlined, LoadingOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Button, Breadcrumb, Divider, Icon, Select, Spin, Switch, Table } from 'antd';
+import { Button, Breadcrumb, Divider, Select, Spin, Switch, Tabs } from 'antd';
 
 /* codePost imports */
-import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
-
-import { Assignment, AssignmentType } from '../../infrastructure/assignment';
+import { AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
-import { SectionType } from '../../infrastructure/section';
-import { Submission, SubmissionInfoType } from '../../infrastructure/submission';
+import { SectionType, Section } from '../../infrastructure/section';
+import { Submission, SubmissionType } from '../../infrastructure/submission';
 
 import { tooltips } from '../core/tooltips';
 
-import { compare } from '../utils/SortUtils';
-
 import CPAdminDetail from '../admin/other/CPAdminDetail';
+
+import { TestingSummary } from '../admin/assignments/tests/results/TestingSummary';
+import SectionSubmissionsTable from './SectionSubmissionsTable';
 
 const { Option } = Select;
 
 type alignType = 'left' | 'right' | 'center';
 
 /**********************************************************************************************************************/
-
-/* for type checking functions that operate on table rows */
-interface ITableRow extends ISubDataBasic {
-  key: string;
-  student: string;
-  viewIcon: string | React.ReactElement;
-  partners: string;
-}
 
 interface IProps {
   course: CourseType;
@@ -48,7 +41,7 @@ interface IState {
   /* data */
   activeSection: SectionType;
   submissionsBySection: {
-    [sectionID: number]: { [student: string]: SubmissionInfoType | null };
+    [sectionID: number]: { [student: string]: SubmissionType | null };
   };
   // Map: key = id, value = array of student emails who have viewed the submission
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
@@ -81,6 +74,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
   public async initialLoad() {
     this.setState({ isLoading: true });
     const submissionsBySection = await this.loadSubmissionsForSection();
+    console.log(submissionsBySection);
     this.setState({ submissionsBySection, isLoading: false });
     if (this.props.sections.length === 1) {
       this.handleSelect(String(this.props.sections[0].id));
@@ -112,20 +106,13 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
   public loadSubmissionsForSection = async () => {
     const submissionMap: any = {};
     for (const section of this.props.sections) {
-      const mapValue: any = {};
+      let mapValue: any = {};
+      const submissions = await Section.readSubmissions(section.id, {
+        assignment: this.props.assignment.id.toString(),
+      });
+
       for (const student of section.students) {
-        /* eslint-disable no-useless-computed-key */
-        mapValue[student] = await Assignment.readSubmissions(this.props.assignment.id, {
-          student,
-          ['compact']: '1',
-        }).then((submissions) => {
-          if (submissions.length === 0) {
-            return null;
-          } else {
-            return submissions[0];
-          }
-        });
-        /* eslint-enable no-useless-computed-key */
+        mapValue[student] = submissions.find((el) => el.students.indexOf(student) > -1);
       }
 
       submissionMap[section.id] = mapValue;
@@ -179,8 +166,8 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     }
   };
 
-  public openGradePage = (submission: SubmissionInfoType) => {
-    window.open(`/code/${submission.id}`);
+  public onRowSelect = (selectedRowKeys: any[]) => {
+    this.setState({ selectedSubmissions: selectedRowKeys });
   };
 
   /***********************************************************************************
@@ -191,105 +178,19 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     const { activeSection, isLoading } = this.state;
     const showingEmails = !this.props.assignment.anonymousGrading || this.state.showStudentEmails;
 
-    let columns: any[] = [];
-    let data: any[] = [];
-    if (!isLoading) {
-      /* define table columns */
-      const centerAlign: alignType = 'center';
-      columns = [
-        {
-          title: 'Open',
-          dataIndex: 'open',
-          align: centerAlign,
-        },
-        {
-          title: 'Student',
-          dataIndex: 'student',
-          sorter: (a: ITableRow, b: ITableRow) => compare(true, a.student, b.student),
-        },
-        {
-          title: 'Partner(s)',
-          dataIndex: 'partners',
-          sorter: (a: ITableRow, b: ITableRow) => compare(true, a.partners, b.partners),
-          align: centerAlign,
-        },
-        {
-          title: 'Grade',
-          dataIndex: 'gradeText',
-          sorter: (a: ITableRow, b: ITableRow) => {
-            return sortByGrade(
-              { grade: a.grade, isFinalized: a.isFinalized },
-              { grade: b.grade, isFinalized: b.isFinalized },
-            );
-          },
-          align: centerAlign,
-        },
-        {
-          title: 'Grader',
-          dataIndex: 'grader',
-          sorter: (a: any, b: any) => compare(true, a.grader, b.grader),
-          align: centerAlign,
-        },
-        {
-          title: 'Last Edited',
-          dataIndex: 'lastEdited',
-          align: centerAlign,
-          sorter: (a: ITableRow, b: ITableRow) => {
-            const date1 = new Date(a.lastEdited);
-            const date2 = new Date(b.lastEdited);
-            return date2.valueOf() - date1.valueOf();
-          },
-        },
-        {
-          title: 'Viewed by Student(s)',
-          dataIndex: 'viewIcon',
-          align: centerAlign,
-        },
-      ];
-
-      /* define table row */
-      const submissions = this.state.submissionsBySection[this.state.activeSection.id];
-      if (submissions !== undefined) {
-        data = Object.keys(submissions).map((student) => {
-          const submission = submissions[student];
-          const shownStudent = showingEmails || !submission ? student : submission.id;
-
-          let partners = '--';
-          if (showingEmails && submission) {
-            partners = submission.students
-              .filter((obj) => {
-                return obj !== student;
-              })
-              .join(', ');
-          }
-
-          const openGradePage = () => {
-            // @ts-ignore
-            this.openGradePage(submission);
-          };
-
-          return {
-            ...formatSub(submission, this.props.assignment),
-            key: student,
-            student: shownStudent,
-            partners,
-            viewIcon: <div>{getViewIcon(submission, this.state.viewsBySubmission, student)}</div>,
-            open: submission !== null ? <Icon type="code" onClick={openGradePage} /> : null,
-            disableCheck: !submission || submission.grader,
-          };
-        });
-      }
-    }
-
     if (this.props.sections.length === 0) {
       // Sections haven't been loaded yet
-      return <Spin indicator={<Icon type="loading" style={{ fontSize: 24 }} spin />} />;
+      return <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />;
     }
 
     let selectContent;
     if (this.props.sections.length > 1) {
       const menuItems = this.props.sections.map((section) => {
-        return <Option key={section.id}>{section.name} </Option>;
+        return (
+          <Option key={section.id} value={section.id}>
+            {section.name}{' '}
+          </Option>
+        );
       });
       selectContent = (
         <div>
@@ -335,27 +236,49 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
       </Button>
     );
 
-    const rowSelection = {
-      onChange: (selectedRowKeys: any[]) => {
-        this.setState({ selectedSubmissions: selectedRowKeys });
-      },
-      getCheckboxProps: (row: any) => {
-        return {
-          disabled: row.disableCheck,
-        };
-      },
-      selectedRowKeys: this.state.selectedSubmissions,
-    };
-
-    const content = (
-      <Table
-        rowSelection={rowSelection}
-        columns={columns}
-        dataSource={data}
-        pagination={false}
-        loading={this.state.isLoading}
+    const submissionsTable = (
+      <SectionSubmissionsTable
+        isLoading={this.state.isLoading}
+        submissions={this.state.submissionsBySection[this.state.activeSection.id]}
+        selectedSubmissions={this.state.selectedSubmissions}
+        onRowSelect={this.onRowSelect}
+        showEmails={showingEmails}
+        assignment={this.props.assignment}
+        viewsBySubmission={this.state.viewsBySubmission}
       />
     );
+
+    if (this.state.submissionsBySection[this.state.activeSection.id]) {
+      console.log(Object.values(this.state.submissionsBySection[this.state.activeSection.id]));
+    }
+
+    const submissions: (SubmissionType | null)[] = this.state.submissionsBySection[this.state.activeSection.id]
+      ? Object.values(this.state.submissionsBySection[this.state.activeSection.id])
+      : [];
+    const filteredSubmissions: SubmissionType[] = submissions.filter(
+      (s): s is SubmissionType => s !== null && s !== undefined,
+    );
+
+    let content;
+    if (!this.props.assignment.environment) {
+      content = submissionsTable;
+    } else {
+      content = (
+        <Tabs defaultActiveKey="1">
+          <Tabs.TabPane tab="Overview" key="1">
+            {submissionsTable}
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Test results" key="2">
+            <TestingSummary
+              currentAssignment={this.props.assignment}
+              submissions={filteredSubmissions}
+              isAdmin={false}
+              tableOnly={true}
+            />
+          </Tabs.TabPane>
+        </Tabs>
+      );
+    }
 
     return (
       <CPAdminDetail

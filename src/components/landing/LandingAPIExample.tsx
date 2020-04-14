@@ -1,4 +1,5 @@
-import { Collapse, Divider, Icon } from 'antd';
+import { ApiOutlined, ArrowRightOutlined, BarChartOutlined, TeamOutlined, ExportOutlined } from '@ant-design/icons';
+import { Collapse, Divider } from 'antd';
 
 import * as React from 'react';
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
@@ -234,7 +235,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
           style={exampleIndex === 0 ? selectedStyle : unSelectedStyle}
           className={exampleIndex === 0 ? '' : 'apiexample__link'}
           cpType="link"
-          icon="export"
+          icon={<ExportOutlined />}
           ghost={true}
         >
           {apiCodeExamples[0].title}
@@ -244,7 +245,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
           style={exampleIndex === 1 ? selectedStyle : unSelectedStyle}
           className={exampleIndex === 1 ? '' : 'apiexample__link'}
           cpType="link"
-          icon="team"
+          icon={<TeamOutlined />}
           ghost={true}
         >
           {apiCodeExamples[1].title}
@@ -254,7 +255,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
           style={exampleIndex === 2 ? selectedStyle : unSelectedStyle}
           className={exampleIndex === 2 ? '' : 'apiexample__link'}
           cpType="link"
-          icon="bar-chart"
+          icon={<BarChartOutlined />}
           ghost={true}
         >
           {apiCodeExamples[2].title}
@@ -270,7 +271,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
           className="apiexample__docs"
         >
           Full API reference
-          <Icon type="arrow-right" className="apiexample__docs__arrow" />
+          <ArrowRightOutlined className="apiexample__docs__arrow" />
         </CPButton>
       </div>
     );
@@ -282,7 +283,7 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
             header={
               <div className="apiexample__header display-flex justify-content-space-between">
                 <div>Think we were joking about short scripts? Click here</div>
-                <Icon type="api" className="apiexample__header__icon" />
+                <ApiOutlined className="apiexample__header__icon" />
               </div>
             }
             key="1"

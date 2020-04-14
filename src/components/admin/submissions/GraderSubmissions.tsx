@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { FolderOpenOutlined, UserAddOutlined, PlusCircleOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Breadcrumb, Checkbox, Empty, Icon } from 'antd';
+import { Breadcrumb, Checkbox, Empty } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -19,7 +21,7 @@ import { IAssignmentToSubmissionsMap, IGraderSubmissionsDataTable } from '../../
 import { encodeForLink } from '../../../components/core/URLutils';
 
 import { AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
-import { SubmissionType } from '../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../infrastructure/submission';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
@@ -46,7 +48,7 @@ export interface IByGraderProps {
   inactiveGraders: string[];
 
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
-  deleteSubmission: (submission: SubmissionType) => Promise<void>;
+  deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
 
   match: any;
 }
@@ -67,7 +69,7 @@ class GraderData extends React.Component<IByGraderProps, IState> {
   public componentDidMount() {
     const newMeans: any = {};
     for (const key of Object.keys(this.props.submissionsByAssignment)) {
-      const submissions: SubmissionType[] = this.props.submissionsByAssignment[+key];
+      const submissions: SubmissionInfoType[] = this.props.submissionsByAssignment[+key];
       let scoreSum = 0;
       let numFinalized = 0;
       for (const submission of submissions) {
@@ -250,7 +252,7 @@ class GraderData extends React.Component<IByGraderProps, IState> {
                     <Link to={`${this.props.match.url}/${graderEmail}`}>
                       <div style={{ cursor: 'pointer' }}>
                         <CPTooltip title={tooltips.admin.graderSubmissions.expand} hideThisOnHideTips={true}>
-                          <Icon type="folder-open" />
+                          <FolderOpenOutlined />
                         </CPTooltip>
                       </div>
                     </Link>
@@ -297,7 +299,7 @@ class GraderData extends React.Component<IByGraderProps, IState> {
                   >
                     {numGraders === 0 ? (
                       <Link to={`${this.props.baseURL}/roster/graders`}>
-                        <CPButton cpType="primary" key={1} icon="user-add">
+                        <CPButton cpType="primary" key={1} icon={<UserAddOutlined />}>
                           Add some graders
                         </CPButton>
                       </Link>
@@ -307,7 +309,7 @@ class GraderData extends React.Component<IByGraderProps, IState> {
                       <span>
                         {numGraders === 0 ? <span>&nbsp; &nbsp;</span> : null}
                         <Link to={`${this.props.baseURL}/assignments/overview`}>
-                          <CPButton cpType="primary" key={2} icon="plus-circle">
+                          <CPButton cpType="primary" key={2} icon={<PlusCircleOutlined />}>
                             Add an assignment
                           </CPButton>
                         </Link>

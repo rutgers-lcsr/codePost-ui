@@ -7,7 +7,9 @@ import * as React from 'react';
 
 import { Link } from 'react-router-dom';
 
-import { Card, Empty, Icon } from 'antd';
+import { CodeOutlined } from '@ant-design/icons';
+
+import { Card, Empty } from 'antd';
 
 import { TableDetail } from '../../other/TableDetail';
 
@@ -35,7 +37,7 @@ const MossResults = (props: any) => {
       render: (open1: string) => {
         return (
           <Link to={`/code/${open1}`} target="_blank" rel="noopener noreferrer">
-            <Icon type="code" />
+            <CodeOutlined />
           </Link>
         );
       },
@@ -53,7 +55,7 @@ const MossResults = (props: any) => {
       render: (open2: string) => {
         return (
           <Link to={`/code/${open2}`} target="_blank" rel="noopener noreferrer">
-            <Icon type="code" />
+            <CodeOutlined />
           </Link>
         );
       },

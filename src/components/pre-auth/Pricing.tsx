@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { ArrowRightOutlined } from '@ant-design/icons';
+
 /* ant imports */
-import { Button, Icon, Divider } from 'antd';
+import { Button, Divider } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -111,7 +113,7 @@ const Pricing = (props: IProps) => {
             <p style={{ fontSize: '18px', fontWeight: 'bold' }}>Free</p>
             <Link to="/signup/create">
               <Button style={freeButtonStyle}>
-                Sign up <Icon type="arrow-right" />
+                Sign up <ArrowRightOutlined />
               </Button>
             </Link>
             <Divider />
@@ -127,7 +129,7 @@ const Pricing = (props: IProps) => {
             <p style={{ fontSize: '18px', fontWeight: 'bold' }}>$15 / student / course</p>
             <a href="mailto:team@codepost.io">
               <Button style={premiumButtonStyle}>
-                Coming soon <Icon type="arrow-right" />
+                Coming soon <ArrowRightOutlined />
               </Button>
             </a>
             <Divider />

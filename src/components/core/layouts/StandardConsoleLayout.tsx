@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { Icon as LegacyIcon } from '@ant-design/compatible';
+
 /* antd imports */
-import { Collapse, Icon, Layout } from 'antd';
+import { Collapse, Layout } from 'antd';
 
 /* codePost imports */
 import themeVars from '../../../styles/abstracts/_theme.js';
@@ -208,7 +210,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
   // Manually set collapse icon so we can change color for dark mode
   const collapseIcon = ({ isActive }: { isActive: boolean }) => {
     const iconType = isActive ? 'up' : 'down';
-    return <Icon type={iconType} style={{ color: consoleTheme.siderTitle }} />;
+    return <LegacyIcon type={iconType} style={{ color: consoleTheme.siderTitle }} />;
   };
 
   React.useEffect(() => {

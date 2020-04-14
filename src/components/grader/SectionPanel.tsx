@@ -16,6 +16,7 @@ import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { SectionType } from '../../infrastructure/section';
 import { SubmissionInfoType } from '../../infrastructure/submission';
+import { Section } from '../../infrastructure/section';
 
 import SectionDetailPanel from './SectionDetailPanel';
 import GraderPanelBuilder from './GraderPanel';
@@ -64,15 +65,7 @@ class SectionPanel extends React.Component<IProps, IState> {
     this.setState({ isLoading: true }, async () => {
       const toRet: SubmissionInfoType[][] = [];
       for (const assn of assignments) {
-        toRet[assn.id] = [];
-        for (const stu of section.students) {
-          /* eslint-disable no-useless-computed-key */
-          const value = await Assignment.readSubmissions(assn.id, { student: stu, ['compact']: '1' });
-          /* eslint-enable no-useless-computed-key */
-          if (value.length > 0) {
-            toRet[assn.id].push(value[0]);
-          }
-        }
+        toRet[assn.id] = await Section.readSubmissions(section.id, { assignment: assn.id.toString() });
       }
 
       // Don't update state if activeSection has changed since we started
@@ -148,7 +141,11 @@ class SectionPanel extends React.Component<IProps, IState> {
     let selectContent = <div />;
     if (this.props.sections.length > 1) {
       const menuItems = this.props.sections.map((section) => {
-        return <Select.Option key={section.id}>{section.name} </Select.Option>;
+        return (
+          <Select.Option key={section.id} value={section.id}>
+            {section.name}{' '}
+          </Select.Option>
+        );
       });
       selectContent = (
         <div>

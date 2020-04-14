@@ -17,6 +17,7 @@ export const defaultCourse: CourseType = {
   noUnfinalize: false,
   lateDayCreditsAllowable: null,
   archived: false,
+  activateQueue: true,
   inviteCode: '',
   emailWhitelist: '',
   inviteCodeEnabled: false,

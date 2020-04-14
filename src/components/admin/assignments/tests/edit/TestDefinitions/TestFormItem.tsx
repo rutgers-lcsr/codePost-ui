@@ -1,12 +1,16 @@
 /* react imports */
 import React from 'react';
 
+import { EditOutlined } from '@ant-design/icons';
+
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+
 /* antd imports */
 import {
   Button,
   Collapse,
   Divider,
-  Form,
   Input,
   Select,
   Row,
@@ -17,10 +21,10 @@ import {
   Switch,
   InputNumber,
 } from 'antd';
-import { FormComponentProps } from 'antd/lib/form';
+import { FormComponentProps } from '@ant-design/compatible/lib/form';
 
 /* codePost object imports */
-import { TestCaseType, SubmissionType } from '../../../../../../infrastructure/types';
+import { TestCaseType, SubmissionInfoType } from '../../../../../../infrastructure/types';
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
 
@@ -60,9 +64,9 @@ interface ITestFormItemProps extends FormComponentProps {
   ) => void;
   isRunning: boolean;
   language: string;
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
   setTestSubject: (id: string) => void;
-  activeSubmission?: SubmissionType;
+  activeSubmission?: SubmissionInfoType;
   methodsByFile: { [name: string]: string[] };
   env?: EnvironmentType;
   hasInstanceMethods: boolean;
@@ -438,7 +442,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 placeholder={'Input'}
                 disabled={this.props.isRunning}
                 style={{ minWidth: 240, marginLeft: 5 }}
-                autosize={true}
+                autoSize={true}
               />,
             )}
           </Form.Item>
@@ -834,7 +838,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                           </span>
                         }
                       >
-                        <Button icon="edit" onClick={() => this.setState({ showExplanation: true })} />
+                        <Button icon={<EditOutlined />} onClick={() => this.setState({ showExplanation: true })} />
                         {this.state.showExplanation ? (
                           <ExplanationModal
                             title={testCase.description}

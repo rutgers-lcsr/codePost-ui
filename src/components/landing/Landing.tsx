@@ -9,7 +9,7 @@ import { HashLink as Link } from 'react-router-hash-link';
 
 import '@brainhubeu/react-carousel/lib/style.css';
 
-import { Icon } from 'antd';
+import { ArrowRightOutlined } from '@ant-design/icons';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
 
@@ -114,7 +114,7 @@ class Landing extends React.Component<IWithWindowWatcherProps, {}> {
                 className="landing__link"
               >
                 Learn more
-                <Icon type="arrow-right" className="landing__link__arrow" />
+                <ArrowRightOutlined className="landing__link__arrow" />
               </CPButton>
             </Link>
           </div>

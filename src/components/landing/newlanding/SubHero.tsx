@@ -1,6 +1,8 @@
 import * as React from 'react';
 
-import { Icon, Typography } from 'antd';
+import { DoubleRightOutlined } from '@ant-design/icons';
+
+import { Typography } from 'antd';
 
 import useWindowSize from '../../core/useWindowSize';
 
@@ -89,7 +91,7 @@ const SubHero = () => {
                 className="demo-link"
               >
                 Try it out
-                <Icon type="double-right" className="demo-link__arrow" />
+                <DoubleRightOutlined className="demo-link__arrow" />
               </CPButton>
             </div>
           )}

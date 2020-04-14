@@ -5,15 +5,17 @@
 /* react imports */
 import * as React from 'react';
 
+import { FolderOpenOutlined, MenuOutlined } from '@ant-design/icons';
+
 /* style imports */
-import { Breadcrumb, Dropdown, Icon, Menu } from 'antd';
+import { Breadcrumb, Dropdown, Menu } from 'antd';
 
 /* other library imports */
 import { Route, Link, Switch } from 'react-router-dom';
 
 /* codePost imports */
 import { AssignmentType, sortAssignments } from '../../../../infrastructure/assignment';
-import { SubmissionType } from '../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../infrastructure/submission';
 
 import { TableDetail } from '../../other/TableDetail';
 
@@ -28,7 +30,7 @@ import GraderAssignmentDetail from './GraderAssignmentDetail';
 /**********************************************************************************************************************/
 
 interface IProps {
-  deleteSubmission: (submission: SubmissionType) => Promise<void>;
+  deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   assignments: AssignmentType[];
   graders: string[];
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
@@ -106,7 +108,7 @@ const GraderDetail = (props: IProps) => {
               <Menu>
                 <Menu.Item>
                   <Link to={`${props.match.url}/${encodeForLink(assignment.name)}`}>
-                    <Icon type="folder-open" />
+                    <FolderOpenOutlined />
                     Zoom in
                   </Link>
                 </Menu.Item>
@@ -136,7 +138,7 @@ const GraderDetail = (props: IProps) => {
                 <Link to={`${props.match.url}/${encodeForLink(assignment.name)}`}>
                   <div style={{ cursor: 'pointer' }}>
                     <CPTooltip title={tooltips.admin.graderSubmissions.expandAssignment} hideThisOnHideTips={true}>
-                      <Icon type="folder-open" />
+                      <FolderOpenOutlined />
                     </CPTooltip>
                   </div>
                 </Link>
@@ -153,7 +155,7 @@ const GraderDetail = (props: IProps) => {
                 : '--',
               actions: (
                 <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>
-                  <Icon type="menu" />
+                  <MenuOutlined />
                 </Dropdown>
               ),
             };

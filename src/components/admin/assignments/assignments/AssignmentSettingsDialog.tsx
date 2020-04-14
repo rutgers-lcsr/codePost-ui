@@ -5,13 +5,15 @@
 /* react imports */
 import * as React from 'react';
 
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+
 /* ant imports */
 import {
   Checkbox,
   Button,
   DatePicker,
   Empty,
-  Form,
   Input,
   InputNumber,
   message,
@@ -23,7 +25,7 @@ import {
   Table,
   Select,
 } from 'antd';
-import { FormComponentProps } from 'antd/lib/form';
+import { FormComponentProps } from '@ant-design/compatible/lib/form';
 
 /* other library imports */
 import moment from 'moment-timezone';

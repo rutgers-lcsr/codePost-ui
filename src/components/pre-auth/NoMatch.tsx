@@ -5,8 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
+import { Icon as LegacyIcon } from '@ant-design/compatible';
+
 /* antd imports */
-import { Comment, Divider, Icon, Typography } from 'antd';
+import { Comment, Divider, Typography } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -107,13 +109,13 @@ class NoMatch extends React.Component<IProps, IState> {
     const actions = [
       <span key="like">
         <CPTooltip title={tooltips.preauth.noMatch.like}>
-          <Icon type="like" theme={action === 'liked' ? 'filled' : 'outlined'} onClick={this.like} />
+          <LegacyIcon type="like" theme={action === 'liked' ? 'filled' : 'outlined'} onClick={this.like} />
         </CPTooltip>
         <span style={{ paddingLeft: 8, cursor: 'auto' }}>{likes}</span>
       </span>,
       <span key={tooltips.preauth.noMatch.dislike}>
         <CPTooltip title="Dislike">
-          <Icon type="dislike" theme={action === 'disliked' ? 'filled' : 'outlined'} onClick={this.dislike} />
+          <LegacyIcon type="dislike" theme={action === 'disliked' ? 'filled' : 'outlined'} onClick={this.dislike} />
         </CPTooltip>
         <span style={{ paddingLeft: 8, cursor: 'auto' }}>{dislikes}</span>
       </span>,

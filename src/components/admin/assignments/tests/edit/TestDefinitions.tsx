@@ -5,6 +5,16 @@
 /* react imports */
 import React, { useEffect, useState } from 'react';
 
+import {
+  ArrowLeftOutlined,
+  ArrowRightOutlined,
+  DownloadOutlined,
+  FileAddOutlined,
+  FileOutlined,
+  FolderOutlined,
+  MoreOutlined,
+} from '@ant-design/icons';
+
 /* antd imports */
 import {
   Alert,
@@ -15,7 +25,6 @@ import {
   Menu,
   message,
   Popconfirm,
-  Icon,
   Empty,
   Modal,
   Skeleton,
@@ -35,7 +44,7 @@ import {
   AssignmentType,
   TestCaseType,
   TestCategoryType,
-  SubmissionType,
+  SubmissionInfoType,
   FileType,
 } from '../../../../../infrastructure/types';
 import { TestCase } from '../../../../../infrastructure/testCase';
@@ -84,7 +93,7 @@ interface IProps {
   currentAssignment: AssignmentType;
   solutions: SolutionFileType[];
   helpers: HelperFileType[];
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
   sourceFiles: SourceFileType[];
   updateEnv: (env: EnvironmentType) => void;
   env?: EnvironmentType;
@@ -129,7 +138,7 @@ export const TestDefinitions = (props: IProps) => {
   const [loading, setLoading] = useState(true);
 
   // Submission / Solution code toggle variables
-  const [activeSubmission, setActiveSubmission] = useState<SubmissionType | undefined>(undefined);
+  const [activeSubmission, setActiveSubmission] = useState<SubmissionInfoType | undefined>(undefined);
   const [currentFiles, setCurrentFiles] = useState<(SolutionFileType | FileType)[]>(props.solutions);
 
   /******************************* Fetch Data ****************************/
@@ -592,13 +601,13 @@ export const TestDefinitions = (props: IProps) => {
             {externalOnly ? null : (
               <Tooltip title="Exit file mode">
                 <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28, borderBottomLeftRadius: '0px' }}>
-                  <Icon type="arrow-left" style={{ fontSize: 10, marginRight: 3 }} />
-                  <Icon type="file" style={{ fontSize: 12 }} />
+                  <ArrowLeftOutlined style={{ fontSize: 10, marginRight: 3 }} />
+                  <FileOutlined style={{ fontSize: 12 }} />
                 </Button>
               </Tooltip>
             )}
             <Tooltip title="Download files">
-              <Button onClick={download} icon="download" style={{ minWidth: 40, height: 28 }} />
+              <Button onClick={download} icon={<DownloadOutlined />} style={{ minWidth: 40, height: 28 }} />
             </Tooltip>
             <AddFileModal addFile={props.addFile} />
           </Button.Group>
@@ -621,7 +630,7 @@ export const TestDefinitions = (props: IProps) => {
                   okText="Yes"
                   cancelText="No"
                 >
-                  Delete File
+                  <span>Delete File</span>
                 </Popconfirm>
               </Menu.Item>
             </Menu>
@@ -639,8 +648,7 @@ export const TestDefinitions = (props: IProps) => {
               {f.name}
               {f.type === FILE_TYPE.SOURCEFILE && (
                 <Dropdown overlay={actions}>
-                  <Icon
-                    type="more"
+                  <MoreOutlined
                     onClick={stop}
                     style={{ position: 'absolute', right: '0px', top: '8px', fontWeight: 900 }}
                   />
@@ -680,7 +688,7 @@ export const TestDefinitions = (props: IProps) => {
                     key={category.id}
                     title={
                       <span>
-                        <Icon type="folder" />
+                        <FolderOutlined />
                         {category.name}{' '}
                       </span>
                     }
@@ -762,8 +770,8 @@ export const TestDefinitions = (props: IProps) => {
             {externalOnly ? null : (
               <Tooltip title="Enter file mode">
                 <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28, borderBottomLeftRadius: '0px' }}>
-                  <Icon type="arrow-right" style={{ fontSize: 10, marginRight: 3 }} />
-                  <Icon type="file" style={{ fontSize: 12 }} />
+                  <ArrowRightOutlined style={{ fontSize: 10, marginRight: 3 }} />
+                  <FileOutlined style={{ fontSize: 12 }} />
                 </Button>
               </Tooltip>
             )}
@@ -820,7 +828,7 @@ export const TestDefinitions = (props: IProps) => {
                       okText="Yes"
                       cancelText="No"
                     >
-                      Delete Category
+                      <span>Delete Category</span>
                     </Popconfirm>
                   </Menu.Item>
                 </Menu>
@@ -831,11 +839,10 @@ export const TestDefinitions = (props: IProps) => {
                   key={category.id}
                   title={
                     <span>
-                      <Icon type="folder" />
+                      <FolderOutlined />
                       {category.name}{' '}
                       <Dropdown overlay={actions}>
-                        <Icon
-                          type="more"
+                        <MoreOutlined
                           onClick={stop}
                           style={{ position: 'absolute', right: '0px', top: '8px', fontWeight: 900 }}
                         />
@@ -877,8 +884,7 @@ export const TestDefinitions = (props: IProps) => {
                           >
                             {el.description} &nbsp; {buildStatusBadge(el.lastSolutionRun)}{' '}
                             <Dropdown overlay={testActions}>
-                              <Icon
-                                type="more"
+                              <MoreOutlined
                                 onClick={stop}
                                 style={{ position: 'absolute', right: '0px', top: '8px', fontWeight: 900 }}
                               />
@@ -1058,7 +1064,7 @@ export const TestDefinitions = (props: IProps) => {
                   style={{ marginTop: '20px', maxWidth: '400px' }}
                   description={
                     <span>
-                      Now create your first test by clicking the <Icon type="file-add" /> icon on the left.{' '}
+                      Now create your first test by clicking the <FileAddOutlined /> icon on the left.{' '}
                     </span>
                   }
                 ></Empty>

@@ -1,7 +1,7 @@
 /* codepost object imports */
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { TestCase, TestCaseType, StudentTestCaseType } from '../../infrastructure/testCase';
-import { Submission } from '../../infrastructure/submission';
+import { Submission, SubmissionInfoType } from '../../infrastructure/submission';
 
 import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
 import { TestCategory, TestCategoryType } from '../../infrastructure/testCategory';
@@ -112,11 +112,11 @@ export const fetchTestCasesByCategory = async (categories: TestCategoryType[]) =
 };
 
 // For a list of submissions, create a {submissionID: SubmissionTest[]} object
-export const fetchTestsBySubmission = async (submissions: AnonymousSubmissionType[]) => {
+export const fetchTestsBySubmission = async (submissions: (AnonymousSubmissionType | SubmissionInfoType)[]) => {
   const toRet: TestsBySubmission = {};
   const submissionPromises =
     submissions !== undefined
-      ? submissions.map(async (submission) => {
+      ? submissions.map(async (submission: AnonymousSubmissionType | SubmissionInfoType) => {
           const res = await Submission.readTestResults(submission.id, { isStudentMode: 'False' });
           toRet[submission.id] = res.submissionTests;
         })
