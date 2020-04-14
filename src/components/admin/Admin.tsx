@@ -239,38 +239,6 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   /* objects.
   /**********************************************************************************/
 
-  public onSubmissionsLoad = (course: CourseType, assignment: number, submissions: any[]) => {
-    // use currentCourse as a nonce to see if this request is still desired
-    if (this.props.currentCourse !== course) {
-      return;
-    }
-
-    // const submissionMap = { ...this.state.submissions };
-    // submissionList.forEach((submissionObj) => {
-    //   submissionMap[submissionObj.assignment] = submissionObj.submissions;
-    // });
-    if (this.state.assignmentsLoadComplete && this.state.rosterLoadComplete) {
-      const oldSubmissions = this.state.submissions[assignment] || [];
-      const submissionMap = { ...this.state.submissions, [assignment]: [...oldSubmissions, ...submissions] };
-      this.updateSubmissionsByUser(undefined, submissionMap, undefined, () => {
-        this.setState((prevState, props) => {
-          const oldSubmissions = prevState.submissions[assignment] || [];
-          return {
-            submissions: { ...prevState.submissions, [assignment]: [...oldSubmissions, ...submissions] },
-            partialSubmissionsLoadComplete: true,
-          };
-        });
-      });
-    } else {
-      this.setState((prevState, props) => {
-        const oldSubmissions = prevState.submissions[assignment] || [];
-        return {
-          submissions: { ...prevState.submissions, [assignment]: [...oldSubmissions, ...submissions] },
-          partialSubmissionsLoadComplete: true,
-        };
-      });
-    }
-  };
   public loadAllCourseData = (course: CourseType) => {
     this.loadAssignments(course)
       .then((assignments) => {
@@ -288,14 +256,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       })
       .then(() => {
         this.loadSubmissions(course);
-
-        this.loadViewsBySubmission(course).then((viewHistoryLists) => {
-          if (this.props.currentCourse !== course) {
-            return;
-          }
-          const viewsBySubmission = this.generateViewsBySubmissions(viewHistoryLists);
-          this.setState({ viewsBySubmission });
-        });
+        this.loadViewsBySubmission(course);
       });
 
     this.loadRoster(course).then((roster) => {
@@ -354,7 +315,10 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   /* eslint-disable no-useless-computed-key */
   public loadSubmissions = (course: CourseType) => {
     const promises = course.assignments.map((assignmentID) => {
-      return Assignment.readPaginatedSubmissions(assignmentID, this.onSubmissionsLoad.bind(this, course, assignmentID));
+      return Assignment.readPaginatedSubmissions(
+        assignmentID,
+        this.onSubmissionsPagination.bind(this, course, assignmentID),
+      );
     });
     Promise.all(promises).then(() => this.setState({ fullSubmissionsLoadComplete: true }));
   };
@@ -373,27 +337,9 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   };
 
   public loadViewsBySubmission = (course: CourseType) => {
-    return Promise.all(
-      course.assignments.map((assignmentID) => {
-        return Assignment.readSubmissionHistories(assignmentID);
-      }),
-    );
-  };
-
-  public generateViewsBySubmissions = (viewHistoryLists: SubmissionHistoryType[][]) => {
-    const viewsBySubmission: any = {};
-    viewHistoryLists.forEach((viewHistoryList: SubmissionHistoryType[]) => {
-      viewHistoryList.forEach((viewHistory: SubmissionHistoryType) => {
-        const { submission, student, hasViewed, dateViewed } = viewHistory;
-        if (!(submission in viewsBySubmission)) {
-          viewsBySubmission[submission] = {};
-        }
-        if (hasViewed) {
-          viewsBySubmission[submission][student] = dateViewed;
-        }
-      });
+    course.assignments.forEach((assignmentID) => {
+      Assignment.readPaginatedSubmissionHistories(assignmentID, this.onSubmissionHistoryPagination.bind(this, course));
     });
-    return viewsBySubmission;
   };
 
   public generateSectionsByStudent = (sections: SectionType[]) => {
@@ -495,6 +441,58 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       subsByStudent,
       subsByGrader,
     };
+  };
+
+  /************************** Pagination Functions **************************/
+  public onSubmissionsPagination = (course: CourseType, assignment: number, submissions: any[]) => {
+    // use currentCourse as a nonce to see if this request is still desired
+    if (this.props.currentCourse !== course) {
+      return;
+    }
+
+    if (this.state.assignmentsLoadComplete && this.state.rosterLoadComplete) {
+      const oldSubmissions = this.state.submissions[assignment] || [];
+      const submissionMap = { ...this.state.submissions, [assignment]: [...oldSubmissions, ...submissions] };
+      this.updateSubmissionsByUser(undefined, submissionMap, undefined, () => {
+        this.setState((prevState, props) => {
+          const oldSubmissions = prevState.submissions[assignment] || [];
+          return {
+            submissions: { ...prevState.submissions, [assignment]: [...oldSubmissions, ...submissions] },
+            partialSubmissionsLoadComplete: true,
+          };
+        });
+      });
+    } else {
+      this.setState((prevState, props) => {
+        const oldSubmissions = prevState.submissions[assignment] || [];
+        return {
+          submissions: { ...prevState.submissions, [assignment]: [...oldSubmissions, ...submissions] },
+          partialSubmissionsLoadComplete: true,
+        };
+      });
+    }
+  };
+
+  public onSubmissionHistoryPagination = (course: CourseType, viewHistoryList: SubmissionHistoryType[]) => {
+    if (this.props.currentCourse !== course) {
+      return;
+    }
+
+    this.setState((prevState, prevProps) => {
+      const newViewsBySubmission = { ...prevState.viewsBySubmission };
+      viewHistoryList.forEach((viewHistory: SubmissionHistoryType) => {
+        const { submission, student, hasViewed, dateViewed } = viewHistory;
+        if (!(submission in newViewsBySubmission)) {
+          newViewsBySubmission[submission] = {};
+        }
+        if (hasViewed && dateViewed) {
+          newViewsBySubmission[submission][student] = dateViewed;
+        }
+      });
+      return {
+        viewsBySubmission: newViewsBySubmission,
+      };
+    });
   };
 
   /************************************************************************
