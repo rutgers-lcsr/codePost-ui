@@ -20,9 +20,13 @@ interface IStandardConsoleHeaderProps {
 }
 
 const StandardConsoleHeader = (props: IStandardConsoleHeaderProps) => {
+  const openHome = () => {
+    window.open('https://codepost.io', '_blank');
+  };
+
   const headerLeft = [
     <Link key="header-0" to="/">
-      <CPLogo cpType="main" />
+      <CPLogo cpType="main" onClick={openHome} />
     </Link>,
   ];
 

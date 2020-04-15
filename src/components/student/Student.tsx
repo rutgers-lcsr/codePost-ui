@@ -754,7 +754,11 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
       <CourseMenu courses={this.props.initialCourses} currentCourse={this.props.currentCourse} base="student" />
     );
 
-    const headerLeft = [<CPLogo cpType="dark" key="logo" />, <span key="empty" />, courseDropdown];
+    const openHome = () => {
+      window.open('https://codepost.io', '_blank');
+    };
+
+    const headerLeft = [<CPLogo cpType="dark" key="logo" onClick={openHome} />, <span key="empty" />, courseDropdown];
 
     const headerRight = [
       <span key="header-user" className="cp-label cp-label--bold">
