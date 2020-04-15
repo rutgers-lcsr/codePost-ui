@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* other library imports */
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
 
 import Loadable from 'react-loadable';
 
@@ -24,6 +24,7 @@ import { CourseType } from './infrastructure/course';
 import { UserType } from './infrastructure/user';
 
 import IndexManager from './components/pre-auth/IndexManager';
+import RemoteAuthFailed from './components/pre-auth/RemoteAuthFailed';
 
 import Settings from './components/core/settings';
 
@@ -85,7 +86,7 @@ const anonymousUser: UserType = {
   codePostAdmin: false,
 };
 
-const domains = ['https://mooc.codepost.io', 'http://localhost:3001'];
+const domains = ['mooc.codepost.io', 'localhost:300', 'compedu.stanford.edu'];
 
 /*****************************************************************************/
 
@@ -136,6 +137,7 @@ class App extends React.Component<{}, IState> {
       studentUploadShortcut: undefined,
       auth_type: 'JWT',
     };
+    localStorage.setItem('source', 'codePost');
   }
 
   public componentDidUpdate(prevProps: any, prevState: IState) {
@@ -191,7 +193,14 @@ class App extends React.Component<{}, IState> {
   };
 
   public messageHandler = (event: any) => {
-    if (!domains.includes(event.origin)) {
+    let found = false;
+    for (const domain of domains) {
+      if (event.origin.indexOf(domain) !== -1) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
       return;
     }
 
@@ -653,7 +662,17 @@ class App extends React.Component<{}, IState> {
       );
     }
 
-    if (this.state.triedLoading) {
+    if (this.state.triedLoading && localStorage.getItem('source') !== 'codePost') {
+      return (
+        <div>
+          <BrowserRouter>
+            <Switch>
+              <Route component={RemoteAuthFailed} />
+            </Switch>
+          </BrowserRouter>
+        </div>
+      );
+    } else if (this.state.triedLoading) {
       return (
         <div>
           <Switch>{demoRoute}</Switch>
