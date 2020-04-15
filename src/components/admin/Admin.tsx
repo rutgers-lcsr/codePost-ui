@@ -1184,6 +1184,12 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     );
     const createButton = <NewCourseDialog courses={this.state.courses} createCourse={this.createCourse} />;
     const headerLeft = [dropdown, createButton];
+    const logout =
+      localStorage.getItem('source') === 'codePost' ? (
+        <Button key="header-logout" onClick={this.props.handleLogout}>
+          Logout
+        </Button>
+      ) : null;
 
     // add option to switch
     const headerRight = [
@@ -1197,9 +1203,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
           <SettingOutlined />
         </Link>
       </CPTooltip>,
-      <Button key="header-logout" onClick={this.props.handleLogout}>
-        Logout
-      </Button>,
+      logout,
       <AdminOnboardingSelector
         visible={this.state.onboardingModalVisible}
         onCancel={this.closeModal}

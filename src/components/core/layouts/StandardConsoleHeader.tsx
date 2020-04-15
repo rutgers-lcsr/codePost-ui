@@ -30,15 +30,20 @@ const StandardConsoleHeader = (props: IStandardConsoleHeaderProps) => {
     </Link>,
   ];
 
+  const logout =
+    localStorage.getItem('source') === 'codePost' ? (
+      <CPButton key="header-logout" cpType="dark" fallback="logout" onClick={props.handleLogout}>
+        Log Out
+      </CPButton>
+    ) : null;
+
   const headerRight = [
     <ThemeToggle key="theme-toggle" />,
     <span key="header-user" className="cp-label cp-label--white cp-label--bold">
       {props.user.email}
     </span>,
     <RoleMenu key="header-roles" user={props.user} theme="dark" />,
-    <CPButton key="header-logout" cpType="dark" fallback="logout" onClick={props.handleLogout}>
-      Log Out
-    </CPButton>,
+    logout,
   ];
 
   return <CPFlex left={headerLeft} right={headerRight} gutterSize={20} />;

@@ -760,6 +760,13 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
 
     const headerLeft = [<CPLogo cpType="dark" key="logo" onClick={openHome} />, <span key="empty" />, courseDropdown];
 
+    const logout =
+      localStorage.getItem('source') === 'codePost' ? (
+        <Button key="header-logout" onClick={this.props.handleLogout}>
+          Log Out
+        </Button>
+      ) : null;
+
     const headerRight = [
       <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}
@@ -769,9 +776,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
       <Link className="internal-link" key="settings" to="/settings">
         <SettingOutlined />
       </Link>,
-      <Button key="header-logout" onClick={this.props.handleLogout}>
-        Logout
-      </Button>,
+      logout,
     ];
 
     const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
