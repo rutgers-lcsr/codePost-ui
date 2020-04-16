@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Modal } from 'antd';
+import { Modal, Button } from 'antd';
 
 const TestGIF = require('../../img/gifs/AdminTestCreation.gif');
 const SubmitGIF = require('../../img/gifs/StudentSubmit.gif');
@@ -15,35 +15,33 @@ export const AutograderInfoModal = () => {
         title="How are these tests created?"
         onCancel={() => setVisible(false)}
         cancelText={'Close'}
-        footer={[]}
+        footer={<Button onClick={() => setVisible(false)}>Close</Button>}
         style={{ minWidth: 800 }}
       >
-        <div style={{ fontSize: 18, maxHeight: 650, overflow: 'auto' }}>
-          Tests are created in the <b style={{ color: '#24be85' }}>Admin console</b>. From here, course admins:
-          <ul style={{ fontSize: 17, marginTop: 10, marginBottom: 20 }}>
+        <div style={{ fontSize: 15, maxHeight: 650, overflow: 'auto' }}>
+          Tests are created in the <b style={{ color: '#24be85' }}>Admin Console</b> by course admins. From here, course
+          admins can:
+          <ul style={{ fontSize: 15, marginTop: 10, marginBottom: 20 }}>
             <li>
-              Specify the <span style={{ fontWeight: 600 }}>code environment</span> (e.g., language, packages)
+              Specify an environment (language, dependencies) in which student code and tests can run. Every assignment
+              on codePost gets its own Docker container.
             </li>
             <li>
-              Define <span style={{ fontWeight: 600 }}>test code</span>, either through the codePost test writing
-              interface or by uploading existing test scripts
+              Define test code, either through the codePost test editor (shown below) or by uploading existing test
+              scripts.
             </li>
+            <li>Run tests against solution code to verify correctness.</li>
             <li>
-              Run tests on <span style={{ fontWeight: 600 }}>solution code</span>
-            </li>
-            <li>
-              View <span style={{ fontWeight: 600 }}>test results</span> across the course
-            </li>
-            <li>
-              Enable other options, like exposing tests on student submit, limiting the amount of student runs, etc.
+              Run tests against all uploaded submissions. Tests also run automatically when students submit code to
+              codePost.
             </li>
           </ul>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <img src={TestGIF} style={{ maxWidth: '75%' }} alt="" />
             <div style={{ marginTop: 15 }}>
-              To learn more,{' '}
+              To learn more about the codePost autograder,{' '}
               <a href="https://codepost.io/autograder" target="_blank">
-                click here
+                check out this overview
               </a>
             </div>
           </div>
@@ -63,22 +61,19 @@ export const SubmissionInfoModal = () => {
         title="How do students submit code?"
         onCancel={() => setVisible(false)}
         cancelText={'Close'}
-        footer={[]}
+        footer={<Button onClick={() => setVisible(false)}>Close</Button>}
         style={{ minWidth: 800 }}
       >
-        <div style={{ fontSize: 18, maxHeight: 650, overflow: 'auto' }}>
-          In the <b style={{ color: '#24be85' }}>Student console</b>, students see a table of all their assignments and
-          can:
-          <ul style={{ fontSize: 17, marginTop: 10, marginBottom: 20 }}>
+        <div style={{ fontSize: 15, maxHeight: 650, overflow: 'auto' }}>
+          Students use the <b style={{ color: '#24be85' }}>Student Console</b> to interact with codePost. From there,
+          they can can:
+          <ul style={{ fontSize: 15, marginTop: 10, marginBottom: 20 }}>
+            <li>Submit code for assignments (so long as a specified due date hasn't passed).</li>
             <li>
-              <span style={{ fontWeight: 600 }}>Submit code</span> for open assignments
+              View test results in real-time, immediately when they submit. (Instructors can choose which tests students
+              see on submit.)
             </li>
-            <li>
-              <span style={{ fontWeight: 600 }}>See real-time test results</span>
-            </li>
-            <li>
-              <span style={{ fontWeight: 600 }}>View feedback</span> and grades for finalized submissions
-            </li>
+            <li>View personalized feedback (comments) and grades for reviewed submissions.</li>
           </ul>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <img src={SubmitGIF} style={{ maxWidth: '90%' }} alt="" />
