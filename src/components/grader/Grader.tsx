@@ -8,7 +8,7 @@ import * as React from 'react';
 import { SettingOutlined } from '@ant-design/icons';
 
 /* antd imports */
-import { Button, Layout } from 'antd';
+import { Button, Layout, Modal } from 'antd';
 
 /* other library imports */
 import { Route, Link, Switch } from 'react-router-dom';
@@ -52,6 +52,7 @@ interface IGraderState {
   assignments: AssignmentType[];
   isLoading: boolean;
   showBanner: boolean;
+  showConversionModal: boolean;
 }
 
 class Grader extends React.Component<IComponentProps, IGraderState> {
@@ -84,6 +85,7 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
           })
         : [],
       showBanner: false,
+      showConversionModal: false,
     };
   }
 
@@ -230,7 +232,9 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
 
     const headerLeft = [courseDropdown, assignmentDropdown];
 
+    // this.props.user.graderCourses[0].id == 925
     const headerRight = [
+      true && <Button onClick={() => this.setState({ showConversionModal: true })}>Create a new course</Button>,
       <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}
       </span>,
@@ -266,6 +270,8 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
       </Switch>
     );
 
+    const cancelModal = () => this.setState({ showConversionModal: false });
+
     return (
       <CPLayoutAdmin
         header={header}
@@ -284,6 +290,18 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
             ) : null}
 
             {graderPanelContent}
+            <Modal
+              visible={this.state.showConversionModal}
+              title="Create new course"
+              onCancel={cancelModal}
+              footer={[<Button onClick={cancelModal}>Nevermind</Button>]}
+            >
+              codePost is a tool used by Code in Place, that is also freely available to not-for-profit universities and
+              high schools.
+              <br />
+              <br />
+              <Button type="primary">Create a new course for free</Button>
+            </Modal>
           </span>
         }
         navigation={navigation}
