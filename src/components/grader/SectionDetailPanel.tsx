@@ -23,6 +23,8 @@ import CPAdminDetail from '../admin/other/CPAdminDetail';
 import { TestingSummary } from '../admin/assignments/tests/results/TestingSummary';
 import SectionSubmissionsTable from './SectionSubmissionsTable';
 
+import { AutograderInfoModal, SubmissionInfoModal } from './InfoModals';
+
 const { Option } = Select;
 
 type alignType = 'left' | 'right' | 'center';
@@ -266,9 +268,21 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
       content = (
         <Tabs defaultActiveKey="1">
           <Tabs.TabPane tab="Overview" key="1">
+            {this.props.assignment.allowStudentUpload && (
+              <div style={{ width: '100%', height: 35 }}>
+                <div style={{ float: 'right' }}>
+                  <SubmissionInfoModal />
+                </div>
+              </div>
+            )}
             {submissionsTable}
           </Tabs.TabPane>
           <Tabs.TabPane tab="Test results" key="2">
+            <div style={{ width: '100%', height: 35 }}>
+              <div style={{ float: 'right' }}>
+                <AutograderInfoModal />
+              </div>
+            </div>
             <TestingSummary
               currentAssignment={this.props.assignment}
               submissions={filteredSubmissions}

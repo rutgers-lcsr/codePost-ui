@@ -602,7 +602,7 @@ export const TestDefinitions = (props: IProps) => {
               <Tooltip title="Exit file mode">
                 <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28, borderBottomLeftRadius: '0px' }}>
                   <ArrowLeftOutlined style={{ fontSize: 10, marginRight: 3 }} />
-                  <FileOutlined style={{ fontSize: 12 }} />
+                  <FileOutlined style={{ fontSize: 12, marginLeft: 0 }} />
                 </Button>
               </Tooltip>
             )}
@@ -771,7 +771,7 @@ export const TestDefinitions = (props: IProps) => {
               <Tooltip title="Enter file mode">
                 <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28, borderBottomLeftRadius: '0px' }}>
                   <ArrowRightOutlined style={{ fontSize: 10, marginRight: 3 }} />
-                  <FileOutlined style={{ fontSize: 12 }} />
+                  <FileOutlined style={{ fontSize: 12, marginLeft: 0 }} />
                 </Button>
               </Tooltip>
             )}
