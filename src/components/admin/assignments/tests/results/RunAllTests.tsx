@@ -9,6 +9,7 @@ import { Button, Checkbox, Modal } from 'antd';
 /* codePost object imports */
 import RunAllProgressModal from './RunAllProgressModal';
 import { EnvironmentType } from '../../../../../infrastructure/autograder/environment';
+import { AssignmentType } from '../../../../../infrastructure/assignment';
 
 /* codePost util imports */
 import { TestCasesByCategory } from '../../../../core/testFetchUtils';
@@ -22,6 +23,7 @@ interface IProps {
     sendEmail: boolean,
   ) => void;
   env: EnvironmentType | undefined;
+  assignment: AssignmentType;
 }
 
 enum MODAL_STATUS {
@@ -44,7 +46,10 @@ const RunAllTests = (props: IProps) => {
   const hasSubmissions = props.numSubmissions > 0;
   const hasSourceFiles = (props.env && props.env.sourceFiles.length > 0) || false;
   const hasTestCases = testCases.length > 0;
-  const canRun = hasSubmissions && (hasTestCases || hasSourceFiles);
+  const notTooBig = props.numSubmissions < 800; // disable run all for really big courses -- takes forever
+  const notCodeInPlace = props.assignment.course !== 925; // disable for code in place
+  const canRun =
+    hasSubmissions && (hasTestCases || hasSourceFiles) && props.numSubmissions && notTooBig && notCodeInPlace;
   // ******************************************** State functions ************************************
 
   //   Callback for run progress
