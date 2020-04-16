@@ -212,10 +212,15 @@ class Video extends React.Component<any, IVideoState> {
   public render() {
     let videoWidth;
 
-    if (this.props.windowwidth > 1024) {
-      videoWidth = this.props.windowwidth - 460;
+    let windowwidth = this.props.windowwidth;
+    if (this.props.containerWidth) {
+      windowwidth = this.props.containerWidth;
+    }
+
+    if (windowwidth > 1024) {
+      videoWidth = windowwidth - 460;
     } else {
-      videoWidth = this.props.windowwidth - 100;
+      videoWidth = windowwidth - 100;
     }
 
     const videoHeight = (videoWidth * 540) / 960;
@@ -236,7 +241,7 @@ class Video extends React.Component<any, IVideoState> {
 
     return (
       <div>
-        {this.props.windowwidth < 1024 ? videoSelect : null}
+        {windowwidth < 1024 ? videoSelect : null}
         <div className="video">
           <div
             className="video__video"
@@ -260,7 +265,7 @@ class Video extends React.Component<any, IVideoState> {
               style={{ transform: 'translateX(-2px)' }}
             />
           </div>
-          {this.props.windowwidth > 1024 ? (
+          {windowwidth > 1024 ? (
             <div className="video__sections" style={{ display: 'inline-block' }}>
               {videoSelect}
               {this.state.videoSections.map((section: IVideoSection) => {

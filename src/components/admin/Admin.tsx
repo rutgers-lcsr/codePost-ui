@@ -8,7 +8,7 @@ import * as React from 'react';
 import { SettingOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Button, Empty } from 'antd';
+import { Button, Empty, Modal, Input, Checkbox } from 'antd';
 
 /* other library imports */
 import _ from 'lodash';
@@ -62,11 +62,14 @@ import { tooltips } from '../core/tooltips';
 
 import { AssignmentSetupBanner } from './assignments/assignments/AssignmentSetupDialog';
 
+import { CIPAdminModal } from '../cip/components';
+
 /**********************************************************************************************************************/
 
 interface IAdminState {
   /**** UI control data ****/
   onboardingModalVisible: boolean;
+  cipModalVisible: boolean;
 
   /**** Top-level course data ****/
   courses: CourseType[];
@@ -121,6 +124,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       onboardingModalVisible:
         Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding') ||
         this.props.initialCourses.length === 0,
+      cipModalVisible: Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('source'),
 
       /**** Top-level course data ****/
       courses: _.cloneDeep(this.props.initialCourses),
@@ -1361,7 +1365,18 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       <CPLayoutAdmin
         header={header}
         banner={banner}
-        detail={detail}
+        detail={
+          <span>
+            {detail}
+            {
+              <CIPAdminModal
+                visible={this.state.cipModalVisible}
+                onClose={() => this.setState({ cipModalVisible: false })}
+                email={this.props.user.email}
+              />
+            }
+          </span>
+        }
         navigation={navigation}
         collapsible={true}
         role={USER_TYPE.ADMIN}
