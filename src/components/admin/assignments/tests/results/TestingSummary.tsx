@@ -22,7 +22,7 @@ import { awaitTestResult } from '../autograderPollingUtils';
 
 import TestResultsTable from './TestResultsTable';
 
-import RunAllSubmissions from './RunAllTests';
+import RunAllTests from './RunAllTests';
 
 /* codePost util imports */
 import {
@@ -127,10 +127,11 @@ export const TestingSummary = (props: IProps) => {
     !props.isAdmin || !props.match
       ? []
       : [
-          <RunAllSubmissions
+          <RunAllTests
             numSubmissions={props.submissions.length}
             testCasesByCategory={testCasesByCategory}
             runAllSubmissions={runAllSubmissions}
+            assignment={props.currentAssignment}
             env={env}
           />,
           <Button type="primary">
