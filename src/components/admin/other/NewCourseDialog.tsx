@@ -81,7 +81,7 @@ class NewCourseDialog extends React.Component<IProps, IState> {
   public render() {
     return (
       <div>
-        <CPButton onClick={this.toggleDialog} cpType="secondary" icon={<PlusCircleOutlined />}>
+        <CPButton id="new-course-button" onClick={this.toggleDialog} cpType="secondary" icon={<PlusCircleOutlined />}>
           Create a course
         </CPButton>
         <CollectionCreateForm
