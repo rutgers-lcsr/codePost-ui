@@ -227,6 +227,7 @@ const TestsList = (props: IProps) => {
                   }
 
                   return {
+                    key: testCase.id,
                     case: props.redactNotShown && !result ? 'HIDDEN' : testCase.description,
                     passed: (
                       <span>

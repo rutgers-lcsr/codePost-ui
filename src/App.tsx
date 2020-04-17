@@ -39,6 +39,8 @@ import { consoleArt } from './components/utils/consoleArt';
 
 import { clearLocalSettings } from './components/utils/LocalSettings';
 
+import { IBaseFileUpload } from './components/admin/assignments/assignments/SubmissionUpload/FileReader';
+
 /******************************************************************************
  * Asynchronous components to dynamically load app code via code splitting
  ******************************************************************************/
@@ -101,6 +103,12 @@ interface IState {
   triedLoading: boolean;
   isSuperUser: boolean;
   // theme: {[key: string]: string}
+
+  studentUploadShortcut?: {
+    assignmentID: number;
+    files: IBaseFileUpload[];
+  };
+  auth_type: string;
 }
 
 class App extends React.Component<{}, IState> {
@@ -125,6 +133,8 @@ class App extends React.Component<{}, IState> {
       // This token persists the value of this.state.isSuperUser across app instances,
       // while the session orginally triggered via loginas is active.
       isSuperUser: localStorage.getItem('isSuperUser') !== null,
+      studentUploadShortcut: undefined,
+      auth_type: 'JWT',
     };
   }
 
@@ -199,9 +209,29 @@ class App extends React.Component<{}, IState> {
         source = payload.source;
       }
 
+      let studentUploadShortcut;
+      if (payload.hasOwnProperty('assignment') && payload.assignment !== undefined) {
+        studentUploadShortcut = {
+          assignmentID: payload.assignment,
+          files: [],
+        };
+
+        if (payload.hasOwnProperty('files')) {
+          studentUploadShortcut = {
+            ...studentUploadShortcut,
+            files: payload.files,
+          };
+        }
+      }
+
+      let auth_type = 'JWT';
+      if (payload.hasOwnProperty('auth_type') && payload.auth_type !== undefined) {
+        auth_type = payload.auth_type;
+      }
+
       localStorage.setItem('token', token);
       localStorage.setItem('source', source);
-      this.setState({ has_token: true }, () => {
+      this.setState({ has_token: true, studentUploadShortcut, auth_type }, () => {
         this.loginCount += 1;
         this.tryToLogin();
       });
@@ -214,17 +244,20 @@ class App extends React.Component<{}, IState> {
     if (this.state.has_token && !this.state.user && this.loginCount < 4) {
       fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
         headers: {
-          Authorization: `JWT ${localStorage.getItem('token')} `,
+          Authorization: `${this.state.auth_type} ${localStorage.getItem('token')} `,
         },
       })
         .then(async (res) => {
           if (res.ok) {
             const json = await res.json();
+
+            localStorage.setItem('token', json.token);
             this.setState((oldState) => {
               return {
                 user: json,
                 triedLoading: true,
                 isSuperUser: superUsers.indexOf(json.email) > -1 || oldState.isSuperUser,
+                auth_type: 'JWT',
               };
             });
             // this.refreshToken();
@@ -498,7 +531,21 @@ class App extends React.Component<{}, IState> {
           <Route
             path={STUDENT}
             render={(props: any) =>
-              this.wrapTooltipContext(<AsyncStudent {...props} {...consoleProps} initialCourses={studentCourses} />)
+              this.wrapTooltipContext(
+                <AsyncStudent
+                  {...props}
+                  {...consoleProps}
+                  initialCourses={studentCourses}
+                  uploadShortcut={this.state.studentUploadShortcut}
+                  // uploadShortcut={{
+                  //   assignmentID: 2,
+                  //   files: [
+                  //     { name: 'template.py', data: 'helloworld' },
+                  //     { name: 'second.py', data: 'yoyoyo\nasdfasdf]\nasdf' },
+                  //   ],
+                  // }}
+                />,
+              )
             }
           />
         );
