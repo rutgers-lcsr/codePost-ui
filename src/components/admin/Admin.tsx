@@ -119,12 +119,15 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       this.loadAllCourseData(this.props.currentCourse);
     }
 
+    const showCIPModal = Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('source');
+    const showOnboarding =
+      Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding') ||
+      this.props.initialCourses.length === 0;
+
     this.state = {
       /**** UI control data ****/
-      onboardingModalVisible:
-        Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding') ||
-        this.props.initialCourses.length === 0,
-      cipModalVisible: Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('source'),
+      onboardingModalVisible: showOnboarding && !showCIPModal,
+      cipModalVisible: showCIPModal,
 
       /**** Top-level course data ****/
       courses: _.cloneDeep(this.props.initialCourses),
@@ -1373,6 +1376,14 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 visible={this.state.cipModalVisible}
                 onClose={() => this.setState({ cipModalVisible: false })}
                 email={this.props.user.email}
+                onCreateCourse={() => {
+                  this.setState({ cipModalVisible: false });
+                  const newCourseButton = document.getElementById('new-course-button');
+                  if (newCourseButton) {
+                    newCourseButton.click();
+                  }
+                }}
+                onCreateDemoCourse={this.handleDemoCourse}
               />
             }
           </span>
