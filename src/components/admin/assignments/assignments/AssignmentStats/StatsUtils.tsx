@@ -64,6 +64,7 @@ export const calculateMultipleAssignmentProgressStats = (
   submissionsByStudent: IStudentSubmissionsDataTable,
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
   activeStudents: string[],
+  useCache: boolean,
 ) => {
   const toRet: IAssignmentProgressStatsMap = {};
   assignments.forEach((assignment) => {
@@ -73,6 +74,7 @@ export const calculateMultipleAssignmentProgressStats = (
       submissionsByStudent,
       viewsBySubmission,
       activeStudents,
+      useCache,
     );
     toRet[assignment.id] = stats;
   });
@@ -95,6 +97,7 @@ export const calculateFullStats = (
     submissionsByStudent,
     viewsBySubmission,
     activeStudents,
+    false,
   );
 
   let totalScore = 0;
@@ -173,8 +176,9 @@ export const calculateGradingProgressStats = (
   submissionsByStudent: IStudentSubmissionsDataTable,
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
   activeStudents: string[],
+  useCache: boolean,
 ): IGradingProgressStats => {
-  if (submissions === null) {
+  if (useCache || submissions === null) {
     return {
       numSubmissions: assignment.submissions_count ? assignment.submissions_count : 0,
       numGraded: assignment.submissions_finalized_count ? assignment.submissions_finalized_count : 0,
@@ -407,8 +411,8 @@ export const StatsDrawer = (props: {
                 }
               };
               actionElement = (
-                <CPButton style={{ margin: '-8px' }} icon="upload">
-                  Upload
+                <CPButton style={{ margin: '-8px' }}>
+                  <UploadOutlined /> Upload
                 </CPButton>
               );
             }
