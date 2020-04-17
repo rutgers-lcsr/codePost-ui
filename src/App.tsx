@@ -10,8 +10,6 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 
 import Loadable from 'react-loadable';
 
-import queryString from 'query-string';
-
 /* codePost imports */
 import LogInAs from './components/core/LogInAs';
 
