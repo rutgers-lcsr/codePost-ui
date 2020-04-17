@@ -320,7 +320,9 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
         this.onSubmissionsPagination.bind(this, course, assignmentID),
       );
     });
-    Promise.all(promises).then(() => this.setState({ fullSubmissionsLoadComplete: true }));
+    Promise.all(promises).then(() =>
+      this.setState({ partialSubmissionsLoadComplete: true, fullSubmissionsLoadComplete: true }),
+    );
   };
   /* eslint-enable no-useless-computed-key */
 
