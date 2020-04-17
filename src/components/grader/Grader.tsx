@@ -43,6 +43,8 @@ import AssignmentMenu from '../core/AssignmentMenu';
 
 import { IComponentProps } from '../core/ComponentManager';
 
+import { CIPGraderModal } from '../cip/components';
+
 /**********************************************************************************************************************/
 
 interface IGraderState {
@@ -290,18 +292,10 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
             ) : null}
 
             {graderPanelContent}
-            <Modal
+            <CIPGraderModal
               visible={this.state.showConversionModal}
-              title="Create new course"
-              onCancel={cancelModal}
-              footer={[<Button onClick={cancelModal}>Nevermind</Button>]}
-            >
-              codePost is a tool used by Code in Place, that is also freely available to not-for-profit universities and
-              high schools.
-              <br />
-              <br />
-              <Button type="primary">Create a new course for free</Button>
-            </Modal>
+              onClose={() => this.setState({ showConversionModal: false })}
+            />
           </span>
         }
         navigation={navigation}
