@@ -411,8 +411,8 @@ export const StatsDrawer = (props: {
                 }
               };
               actionElement = (
-                <CPButton style={{ margin: '-8px' }} icon="upload">
-                  Upload
+                <CPButton style={{ margin: '-8px' }}>
+                  <UploadOutlined /> Upload
                 </CPButton>
               );
             }
