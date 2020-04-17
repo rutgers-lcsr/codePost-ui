@@ -10,6 +10,8 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 
 import Loadable from 'react-loadable';
 
+import queryString from 'query-string';
+
 /* codePost imports */
 import LogInAs from './components/core/LogInAs';
 
@@ -109,6 +111,16 @@ class App extends React.Component<{}, IState> {
     super(props);
     console.log(...consoleArt);
     this.loginCount = 0;
+
+    // are we getting a token from the URL?
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const urlToken = urlParams.get('token');
+    if (urlToken) {
+      localStorage.setItem('token', urlToken);
+      window.history.replaceState({}, document.title, window.location.href.replace(/\&token=[^&]*/gm, ''));
+    }
+
     this.state = {
       error: '',
       has_token: localStorage.getItem('token') ? true : false,
