@@ -329,12 +329,6 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     },
     assignment?: AssignmentType | AssignmentStudentType,
   ) => {
-    /* FIXME: should use react-select type definition */
-    const toRet: any = [
-      { label: 'Students missing submissions', options: [] },
-      { label: 'Students with submissions (delete before uploading)', options: [] },
-    ];
-
     const notSubmitted = [];
     const hasSubmitted = [];
 
