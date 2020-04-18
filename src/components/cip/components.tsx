@@ -199,10 +199,11 @@ const CIPAdminModal = (props: IAdminModalProps) => {
       width={modalSize}
       title="Create a new course"
       visible={props.visible}
-      onCancel={props.onClose}
+      onCancel={panel === 0 ? undefined : props.onClose}
+      closable={panel !== 0}
       footer={[
         panel > 1 && <Button onClick={onBack}>Back</Button>,
-        <Button disabled={!canContinue} onClick={onContinue}>
+        <Button disabled={!canContinue} onClick={onContinue} type="primary">
           Continue
         </Button>,
       ]}
