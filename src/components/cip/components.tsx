@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Modal, Input, Checkbox, Popover } from 'antd';
+import { Button, Modal, notification, Input, Checkbox, Popover } from 'antd';
 import { TeamOutlined } from '@ant-design/icons';
 
 /* other library imports */
@@ -240,6 +240,12 @@ const CIPGraderModal = (props: IGraderModalProps) => {
         }
       })
       .then((json) => {
+        notification.success({
+          message: 'Course created',
+          description: 'Vist the newly opened codePost tab to check it out.',
+          duration: null,
+        });
+        props.onClose();
         goToAdminConsole();
       });
   };
