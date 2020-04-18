@@ -232,6 +232,13 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
 
     const headerLeft = [courseDropdown, assignmentDropdown];
 
+    const logout =
+      localStorage.getItem('source') === 'codePost' ? (
+        <Button key="header-logout" onClick={this.props.handleLogout}>
+          Log Out
+        </Button>
+      ) : null;
+
     const headerRight = [
       <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}
@@ -243,9 +250,7 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
           <SettingOutlined />
         </Link>
       </CPTooltip>,
-      <Button key="header-logout" onClick={this.props.handleLogout}>
-        Logout
-      </Button>,
+      logout,
     ];
 
     const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;

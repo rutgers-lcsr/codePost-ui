@@ -20,11 +20,22 @@ interface IStandardConsoleHeaderProps {
 }
 
 const StandardConsoleHeader = (props: IStandardConsoleHeaderProps) => {
+  const openHome = () => {
+    window.open('https://codepost.io', '_blank');
+  };
+
   const headerLeft = [
     <Link key="header-0" to="/">
-      <CPLogo cpType="main" />
+      <CPLogo cpType="main" onClick={openHome} />
     </Link>,
   ];
+
+  const logout =
+    localStorage.getItem('source') === 'codePost' ? (
+      <CPButton key="header-logout" cpType="dark" fallback="logout" onClick={props.handleLogout}>
+        Log Out
+      </CPButton>
+    ) : null;
 
   const headerRight = [
     <ThemeToggle key="theme-toggle" />,
@@ -32,9 +43,7 @@ const StandardConsoleHeader = (props: IStandardConsoleHeaderProps) => {
       {props.user.email}
     </span>,
     <RoleMenu key="header-roles" user={props.user} theme="dark" />,
-    <CPButton key="header-logout" cpType="dark" fallback="logout" onClick={props.handleLogout}>
-      Log Out
-    </CPButton>,
+    logout,
   ];
 
   return <CPFlex left={headerLeft} right={headerRight} gutterSize={20} />;

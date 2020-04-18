@@ -9,16 +9,17 @@ interface ICPLogoProps {
 
 class CPLogo extends React.Component<ICPLogoProps, {}> {
   public render() {
+    const addendum = localStorage.getItem('source') !== 'codePost' ? null : <span>.io</span>;
     if (this.props.cpType === 'main') {
       return (
         <div className="cp-logo" onClick={this.props.onClick}>
-          code<span className="cp-logo__highlight">Post</span>
+          code<span className="cp-logo__highlight">Post{addendum}</span>
         </div>
       );
     } else if (this.props.cpType === 'dark') {
       return (
         <div className="cp-logo" onClick={this.props.onClick} style={{ color: 'black' }}>
-          code<span className="cp-logo__highlight">Post</span>
+          code<span className="cp-logo__highlight">Post{addendum}</span>
         </div>
       );
     } else {
