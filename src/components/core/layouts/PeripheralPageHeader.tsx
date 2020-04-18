@@ -43,6 +43,13 @@ const PeripheralPageHeader = (props: IProps) => {
     </span>
   );
 
+  const logout =
+    localStorage.getItem('source') === 'codePost' ? (
+      <CPButton key="header-logout" cpType="secondary" onClick={props.handleLogout}>
+        Log Out
+      </CPButton>
+    ) : null;
+
   const headerRight = [
     email,
     <RoleMenu key="header-role-menu" user={props.user} theme="light" />,
@@ -51,9 +58,7 @@ const PeripheralPageHeader = (props: IProps) => {
         <SettingOutlined />
       </Link>
     </CPTooltip>,
-    <CPButton key="header-logout" cpType="secondary" onClick={props.handleLogout}>
-      Log Out
-    </CPButton>,
+    logout,
   ];
 
   return (

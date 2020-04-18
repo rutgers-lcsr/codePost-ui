@@ -27,6 +27,10 @@ interface IProps {
   panel?: string;
 }
 
+export const encodedCourseLink = (base: string, course: CourseType, panel?: string) => {
+  return `/${base}/${encodeForLink(course.name)}/${encodeForLink(course.period)}/${panel !== undefined ? panel : ''}`;
+};
+
 const CourseMenu = (props: IProps) => {
   const sortArchived = (a: CourseType, b: CourseType) => {
     return a.archived === b.archived ? 0 : a.archived ? 1 : -1;
@@ -35,13 +39,10 @@ const CourseMenu = (props: IProps) => {
   const menu = (
     <Menu>
       {props.courses.sort(sortArchived).map((course, i) => {
+        const link = encodedCourseLink(props.base, course, props.panel);
         return (
           <Menu.Item key={course.id}>
-            <Link
-              to={`/${props.base}/${encodeForLink(course.name)}/${encodeForLink(course.period)}/${
-                props.panel !== undefined ? props.panel : ''
-              }`}
-            >
+            <Link to={link}>
               <span
                 style={{ color: course.archived ? 'rgba(0, 0, 0, 0.3)' : 'default' }}
               >{`${course.name} | ${course.period}`}</span>

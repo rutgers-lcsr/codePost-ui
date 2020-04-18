@@ -9,12 +9,15 @@ import { UploadFile } from 'antd/lib/upload/interface';
 
 import { resizeImage } from '../../../other/AdminUtils';
 
-export interface IProtoFileUpload {
-  longname: string;
+export interface IBaseFileUpload {
   name: string;
+  data: string | ArrayBuffer | null;
+}
+
+export interface IProtoFileUpload extends IBaseFileUpload {
+  longname: string;
   path: string;
   extension: string;
-  data: string | ArrayBuffer | null;
   zipSource?: string;
   file: File | UploadFile;
 }

@@ -1,16 +1,15 @@
 import { sendSlack } from '../../../core/slack';
 import { message } from 'antd';
 
-import { Environment } from '../../../../infrastructure/autograder/environment';
-
-const MAX_TRIES = 30;
+const MAX_TRIES_RUN = 45;
+const MAX_TRIES_BUILD = 120;
 
 // Running a test
 export function awaitTestResult(id: string, callback: (result: any) => any, progressCallback?: (progress: any) => any) {
   let tries = 0;
   const interval = setInterval(() => {
     pollTestResult(id, interval, callback, progressCallback);
-    if (++tries === MAX_TRIES && !progressCallback) {
+    if (++tries === MAX_TRIES_RUN && !progressCallback) {
       sendSlack(
         'No test result received after polling - infinite loop',
         window.location.href,
@@ -93,12 +92,12 @@ async function pollTestResult(
 
 // Running a build
 export function awaitBuildResult(id: number, callback: (result: any) => any) {
-  let tries = 120;
+  let tries = 0;
   const interval = setInterval(() => {
     pollBuildResult(id, interval, callback);
-    if (++tries === MAX_TRIES) {
+    if (++tries === MAX_TRIES_BUILD) {
       sendSlack('Long build notification - over 2 minutes', window.location.href, '#f7f7f7', '#autograder_bugs');
-      message.error('Your build is taking a long time to complete. Try coming back later to check on the results.', 25);
+      message.info('Your build is taking a long time to complete. Try coming back later to check on the results.', 25);
       window.clearInterval(interval);
     }
   }, 1000);

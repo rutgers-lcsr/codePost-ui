@@ -138,21 +138,23 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
     } else {
       graderPanelContent = (
         <Switch>
-          <Route
-            key="my_submissions"
-            path={`${this.props.match.url}/my_submissions`}
-            render={(props: any) => (
-              <MySubmissionsPanel
-                {...props}
-                course={currentCourse}
-                assignments={this.state.assignments}
-                graderEmail={this.props.user.email}
-                isAdmin={this.props.user.courseadminCourses.some((el) => {
-                  return el.id === currentCourse.id;
-                })}
-              />
-            )}
-          />
+          {this.props.currentCourse && this.props.currentCourse.activateQueue && (
+            <Route
+              key="my_submissions"
+              path={`${this.props.match.url}/my_submissions`}
+              render={(props: any) => (
+                <MySubmissionsPanel
+                  {...props}
+                  course={currentCourse}
+                  assignments={this.state.assignments}
+                  graderEmail={this.props.user.email}
+                  isAdmin={this.props.user.courseadminCourses.some((el) => {
+                    return el.id === currentCourse.id;
+                  })}
+                />
+              )}
+            />
+          )}
           {this.state.sectionsLed.length > 0 ? (
             <Route
               key="my_sections"
@@ -236,6 +238,13 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
 
     // const showNewCourseBtn = this.props.user.graderCourses[0].id == 2 && this.props.user.courseadminCourses.length == 0;
     const showNewCourseBtn = true;
+    const logout =
+      localStorage.getItem('source') === 'codePost' ? (
+        <Button key="header-logout" onClick={this.props.handleLogout}>
+          Log Out
+        </Button>
+      ) : null;
+
     const headerRight = [
       showNewCourseBtn && (
         <Button onClick={() => this.setState({ showConversionModal: true })}>Create a new course</Button>
@@ -250,9 +259,7 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
           <SettingOutlined />
         </Link>
       </CPTooltip>,
-      <Button key="header-logout" onClick={this.props.handleLogout}>
-        Logout
-      </Button>,
+      logout,
     ];
 
     const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
@@ -269,6 +276,7 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
               isSuperGrader={this.state.isSuperGrader}
               isSectionLeader={this.state.sectionsLed.length > 0}
               regradesAllowed={someRegrades}
+              activateQueue={this.props.currentCourse && this.props.currentCourse.activateQueue}
             />
           )}
         />

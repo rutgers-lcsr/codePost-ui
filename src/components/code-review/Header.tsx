@@ -768,6 +768,13 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
     (window as any).Intercom('show');
   };
 
+  const logout =
+    localStorage.getItem('source') === 'codePost' ? (
+      <Menu.Item key="setting:6" style={itemStyle} className="header-menu">
+        <a href="/logout">Logout</a>
+      </Menu.Item>
+    ) : null;
+
   const menu = (
     <Menu mode="vertical" style={{ width: 320, padding: 0 }}>
       <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
@@ -807,9 +814,7 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
       <Menu.Item key="setting:5" style={itemStyle} className="header-menu">
         <a href="/">Home</a>
       </Menu.Item>
-      <Menu.Item key="setting:6" style={itemStyle} className="header-menu">
-        <a href="/logout">Logout</a>
-      </Menu.Item>
+      {logout}
     </Menu>
   );
 

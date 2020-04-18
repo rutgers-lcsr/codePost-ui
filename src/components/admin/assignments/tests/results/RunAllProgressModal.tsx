@@ -20,7 +20,7 @@ interface IProps {
   numSubmissions: number;
 }
 
-const RunAllModal = (props: IProps) => {
+const RunAllProgressModal = (props: IProps) => {
   if (props.raw && props.raw !== '{}') {
     const castRaw = (props.raw as any) as IResultsType;
     const firstKey: number = parseInt(Object.keys(castRaw)[0], 10);
@@ -62,4 +62,4 @@ const RunAllModal = (props: IProps) => {
   }
 };
 
-export default RunAllModal;
+export default RunAllProgressModal;

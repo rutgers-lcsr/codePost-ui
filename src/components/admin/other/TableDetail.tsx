@@ -14,6 +14,7 @@ import Highlighter from 'react-highlight-words';
 
 /* codePost imports */
 import CPAdminDetail from '../other/CPAdminDetail';
+import CPFlex from '../../core/CPFlex';
 
 import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
 
@@ -42,6 +43,7 @@ interface IProps {
   components?: any;
   onRow?: any;
   expandAllRows?: boolean;
+  tableOnly?: boolean; // only show the table without the layout
 }
 
 interface IState {
@@ -233,6 +235,15 @@ class TableDetail extends React.Component<IProps, IState> {
 
         actions = this.props.actions;
       }
+    }
+
+    if (this.props.tableOnly) {
+      return (
+        <div>
+          <CPFlex left={[]} right={[actions]} gutterSize={10} />
+          {content}
+        </div>
+      );
     }
 
     return (

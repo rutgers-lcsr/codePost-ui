@@ -6,7 +6,7 @@ import { Drawer, Table } from 'antd';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../../infrastructure/assignment';
-import { SubmissionType } from '../../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../../../types/common';
 
 import { openSubmission } from '../../../other/AdminUtils';
@@ -64,6 +64,7 @@ export const calculateMultipleAssignmentProgressStats = (
   submissionsByStudent: IStudentSubmissionsDataTable,
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
   activeStudents: string[],
+  useCache: boolean,
 ) => {
   const toRet: IAssignmentProgressStatsMap = {};
   assignments.forEach((assignment) => {
@@ -73,6 +74,7 @@ export const calculateMultipleAssignmentProgressStats = (
       submissionsByStudent,
       viewsBySubmission,
       activeStudents,
+      useCache,
     );
     toRet[assignment.id] = stats;
   });
@@ -82,7 +84,7 @@ export const calculateMultipleAssignmentProgressStats = (
 /* Calculate Full stats (progress + grade stats) */
 export const calculateFullStats = (
   assignment: AssignmentType,
-  submissions: SubmissionType[] | null,
+  submissions: SubmissionInfoType[] | null,
   submissionsByStudent: IStudentSubmissionsDataTable,
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
   activeStudents: string[],
@@ -95,6 +97,7 @@ export const calculateFullStats = (
     submissionsByStudent,
     viewsBySubmission,
     activeStudents,
+    false,
   );
 
   let totalScore = 0;
@@ -115,7 +118,7 @@ export const calculateFullStats = (
     };
   }
 
-  assignmentSubs.forEach((submission: SubmissionType) => {
+  assignmentSubs.forEach((submission: SubmissionInfoType) => {
     if (submission.isFinalized && submission.grade !== null) {
       totalScore += submission.grade;
       if (max === null || submission.grade > max) max = submission.grade;
@@ -138,7 +141,7 @@ export const calculateFullStats = (
       mean = parseFloat((totalScore / progressStats.numGraded).toPrecision(2));
 
       // calculate median
-      const sortedFinalized = assignmentSubs.reduce((grades: number[], sub: SubmissionType) => {
+      const sortedFinalized = assignmentSubs.reduce((grades: number[], sub: SubmissionInfoType) => {
         if (sub.isFinalized && sub.grade !== null) {
           grades.push(sub.grade);
         }
@@ -169,12 +172,13 @@ export const calculateFullStats = (
 /* Calculate Grading Progress stats only */
 export const calculateGradingProgressStats = (
   assignment: AssignmentType,
-  submissions: SubmissionType[] | null,
+  submissions: SubmissionInfoType[] | null,
   submissionsByStudent: IStudentSubmissionsDataTable,
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
   activeStudents: string[],
+  useCache: boolean,
 ): IGradingProgressStats => {
-  if (submissions === null) {
+  if (useCache || submissions === null) {
     return {
       numSubmissions: assignment.submissions_count ? assignment.submissions_count : 0,
       numGraded: assignment.submissions_finalized_count ? assignment.submissions_finalized_count : 0,
@@ -195,7 +199,7 @@ export const calculateGradingProgressStats = (
   let numUnviewed = 0;
   let numViewed = 0;
 
-  assignmentSubs.forEach((submission: SubmissionType) => {
+  assignmentSubs.forEach((submission: SubmissionInfoType) => {
     if (submission.isFinalized) {
       numGraded += 1;
     } else if (submission.grader) {
@@ -255,31 +259,31 @@ export const filterDataByStat = (
   assignment: AssignmentType,
   submissionsByStudent: IStudentSubmissionsDataTable,
   type: DRAWER_TYPE,
-  subs: SubmissionType[],
+  subs: SubmissionInfoType[],
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
   studentList: string[],
 ) => {
   switch (type) {
     case DRAWER_TYPE.Submitted:
-      return subs.map((sub: SubmissionType) => {
+      return subs.map((sub: SubmissionInfoType) => {
         return { email: sub.students.join(', '), subID: sub.id };
       });
     case DRAWER_TYPE.Graded:
-      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
+      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionInfoType) => {
         if (sub && sub.isFinalized) {
           students.push({ email: sub.students.join(', '), subID: sub.id });
         }
         return students;
       }, []);
     case DRAWER_TYPE.InProgress:
-      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
+      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionInfoType) => {
         if (sub && !sub.isFinalized && sub.grader) {
           students.push({ email: sub.students.join(', '), subID: sub.id });
         }
         return students;
       }, []);
     case DRAWER_TYPE.Unclaimed:
-      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
+      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionInfoType) => {
         if (sub && !sub.isFinalized && !sub.grader) {
           students.push({ email: sub.students.join(', '), subID: sub.id });
         }
@@ -296,7 +300,7 @@ export const filterDataByStat = (
         [],
       );
     case DRAWER_TYPE.Unviewed:
-      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
+      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionInfoType) => {
         // Append a student if: (a) his/her submission has a History object
         //                      (b) student's email is not in viewsBySubmission
         //                      (c) student's submission is finalized
@@ -314,7 +318,7 @@ export const filterDataByStat = (
         return students;
       }, []);
     case DRAWER_TYPE.Viewed:
-      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionType) => {
+      return subs.reduce((students: Array<{ email: string; subID: number | null }>, sub: SubmissionInfoType) => {
         // Append a student if: (a) his/her submission has a History object
         //                      (b) student's email is in viewsBySubmission
         if (sub && sub.id in viewsBySubmission) {
@@ -407,8 +411,8 @@ export const StatsDrawer = (props: {
                 }
               };
               actionElement = (
-                <CPButton style={{ margin: '-8px' }} icon="upload">
-                  Upload
+                <CPButton style={{ margin: '-8px' }}>
+                  <UploadOutlined /> Upload
                 </CPButton>
               );
             }
