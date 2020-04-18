@@ -8,10 +8,24 @@ import * as React from 'react';
 import { CalculatorOutlined, CheckCircleOutlined, CloseCircleOutlined, UploadOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Alert, Button, Checkbox, message, Modal, Progress, Switch, Upload, Table, Tag, Divider, Tabs } from 'antd';
+import {
+  Alert,
+  Button,
+  Checkbox,
+  message,
+  Modal,
+  Progress,
+  Select,
+  Switch,
+  Upload,
+  Table,
+  Tag,
+  Divider,
+  Tabs,
+} from 'antd';
 
 /* other library imports */
-import Select from 'react-select';
+// import Select from 'react-select';
 
 import { Link } from 'react-router-dom';
 
@@ -48,7 +62,7 @@ import { awaitTestResult } from '../../../../../components/admin/assignments/tes
 
 import { SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
 
-import { sendSlack, slack } from '../../../../../components/core/slack';
+import { slack } from '../../../../../components/core/slack';
 
 import { encodeForLink } from '../../../../../components/core/URLutils';
 
@@ -138,10 +152,7 @@ interface IUploadSubmissionDialogState {
 
 class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProps, IUploadSubmissionDialogState> {
   public assignmentOptions = this.props.assignments.map((assignment: AssignmentType | AssignmentStudentType, i) => {
-    return {
-      value: assignment.id,
-      label: assignment.name,
-    };
+    return <Select.Option value={assignment.id}>{assignment.name}</Select.Option>;
   });
 
   public state: Readonly<IUploadSubmissionDialogState> = {
@@ -324,45 +335,60 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
       { label: 'Students with submissions (delete before uploading)', options: [] },
     ];
 
+    const notSubmitted = [];
+    const hasSubmitted = [];
+
     for (const student of students) {
       if (assignment) {
         if (submissions[student][assignment.id]) {
-          toRet[1].options.push({
-            value: student,
-            label: student,
-            isDisabled: true,
-          });
+          hasSubmitted.push(
+            <Select.Option value={student} disabled={true}>
+              {student}
+            </Select.Option>,
+          );
         } else {
-          toRet[0].options.push({
-            value: student,
-            label: student,
-            isDisabled: false,
-          });
+          notSubmitted.push(
+            <Select.Option value={student} disabled={false}>
+              {student}
+            </Select.Option>,
+          );
         }
       } else {
-        toRet[0].options.push({
-          value: student,
-          label: student,
-          isDisabled: false,
-        });
+        notSubmitted.push(
+          <Select.Option value={student} disabled={false}>
+            {student}
+          </Select.Option>,
+        );
       }
     }
 
-    return toRet;
+    return (
+      <React.Fragment>
+        <Select.Option value={''} disabled={true}>
+          <span style={{ paddingTop: 10, color: 'grey', fontSize: '10px' }}>STUDENTS MISSING SUBMISSIONS</span>
+        </Select.Option>
+        {notSubmitted}
+        <Select.Option value={''} disabled={true}>
+          <span style={{ paddingTop: 10, color: 'grey', fontSize: '10px' }}>
+            STUDENTS WITH SUBMISSIONS (DELETE BEFORE UPLOADING)
+          </span>
+        </Select.Option>
+        {hasSubmitted}
+      </React.Fragment>
+    );
   };
 
   /********************************************************************************************************/
   /* State handlers
   /********************************************************************************************************/
 
-  public changeStudents = (options: any) => {
-    const students = options.map((option: any) => option.value);
-    this.setState({ selectedStudents: students });
+  public changeStudents = (options: string[]) => {
+    this.setState({ selectedStudents: options });
   };
 
-  public changeAssignment = (option: any) => {
+  public changeAssignment = (option: number) => {
     const selectedAssignment = this.props.assignments.find((assn) => {
-      return assn.id === option.value;
+      return assn.id === option;
     });
 
     this.setState({ selectedAssignment, selectedStudents: [] });
@@ -650,13 +676,6 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           this.state.selectedAssignment,
         );
 
-        const selectedStudents = this.state.selectedStudents.map((student) => {
-          return {
-            label: student,
-            value: student,
-          };
-        });
-
         const rejectedFiles =
           this.state.rejectedFiles.length === 0 ? (
             <div />
@@ -860,16 +879,17 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                 <Alert message={this.props.infoMessage} type={'info'} style={{ margin: '10px 0px' }} />
               )}
               Assignment:
-              <Select
-                defaultValue={
-                  this.state.selectedAssignment
-                    ? { value: this.state.selectedAssignment!.id, label: this.state.selectedAssignment!.name }
-                    : {}
-                }
-                isDisabled={typeof this.props.selectedAssignment === 'object'}
-                onChange={this.changeAssignment}
-                options={this.assignmentOptions}
-              />
+              <div>
+                <Select
+                  value={this.state.selectedAssignment ? this.state.selectedAssignment.id : undefined}
+                  disabled={typeof this.props.selectedAssignment === 'object'}
+                  onChange={this.changeAssignment}
+                  style={{ width: '100%' }}
+                  showSearch={true}
+                >
+                  {this.assignmentOptions}
+                </Select>
+              </div>
               <br />
               <br />
               Students:{' '}
@@ -878,14 +898,19 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
               ) : (
                 <span />
               )}
-              <Select
-                placeholder={'Select students'}
-                isMulti={true}
-                value={selectedStudents}
-                options={studentOptions}
-                onChange={this.changeStudents}
-                isDisabled={this.props.disableStudentSelect}
-              />
+              <div>
+                <Select
+                  value={this.state.selectedStudents}
+                  disabled={this.props.disableStudentSelect}
+                  onChange={this.changeStudents}
+                  showSearch={true}
+                  mode="multiple"
+                  placeholder={'Select students'}
+                  style={{ width: '100%' }}
+                >
+                  {studentOptions}
+                </Select>
+              </div>
               <Divider />
               {/*  beforeUpload prop stops Upload component from trying to upload files to external server */}
               {/*  FIXME: we should prevent users from uploading image files here */}
