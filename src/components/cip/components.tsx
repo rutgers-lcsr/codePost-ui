@@ -247,17 +247,33 @@ const CIPGraderModal = (props: IGraderModalProps) => {
   return (
     <Modal
       visible={props.visible}
-      title="Create new course"
+      title="Using codePost for your course"
       onCancel={props.onClose}
-      footer={[<Button onClick={props.onClose}>Nevermind</Button>]}
+      footer={[<Button onClick={props.onClose}>Maybe later</Button>]}
+      width={700}
     >
-      codePost is a tool used by Code in Place, that is also freely available to not-for-profit universities and high
-      schools.
-      <br />
-      <br />
-      <Button onClick={elevateStatusAndGo} type="primary">
-        Create a new course for free
-      </Button>
+      <div style={{ fontSize: 17 }}>
+        If you want to use codePost for a course outside of Code in Place, you can!
+        <span style={{ fontWeight: 500 }}> It's freely available for not-for-profit universities and high schools</span>
+        .
+        <br />
+        <br />
+        When you click the button below, you'll be taken to another screen where you can set up your own course or play
+        around with a demo course.
+        <br />
+        <br />
+        It takes {`<`} 5 minutes to set up, and{' '}
+        <a href="https://www.codepost.io/testimonials" target="_blank">
+          instructors seem to love it!
+        </a>
+        <br />
+        <br />
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <Button onClick={elevateStatusAndGo} type="primary" size="large">
+          Create a course
+        </Button>
+      </div>
     </Modal>
   );
 };
