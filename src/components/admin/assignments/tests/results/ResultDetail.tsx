@@ -246,7 +246,7 @@ export const ResultDetail = (props: IProps) => {
           cursor: 'pointer',
         };
 
-        const inactiveStyle = { color: 'grey', backgroundColor: 'rgb(0,0,0,0.1)' };
+        const inactiveStyle = { color: 'grey', backgroundColor: 'rgb(0,0,0,0.02)', fontStyle: 'italic' };
         const defaultStyle = { backgroundColor: 'rgb(0,0,0,0)' };
         const selectedStyle = { color: 'white', backgroundColor: '#24be85' };
 

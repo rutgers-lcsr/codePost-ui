@@ -201,7 +201,7 @@ const TestResultsTable = (props: IProps) => {
             toRet['summary'] = <Skeleton.Button active={true} size="default" shape="round" />;
             toRet['passed'] = 0;
             for (const category of props.categories) {
-              toRet[category.id] = <Skeleton.Button active={true} size="default" shape="round" />;
+              toRet[category.name] = <Skeleton.Button active={true} size="default" shape="round" />;
             }
             return toRet;
           }
