@@ -234,9 +234,12 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
 
     const headerLeft = [courseDropdown, assignmentDropdown];
 
-    // this.props.user.graderCourses[0].id == 925
+    // const showNewCourseBtn = this.props.user.graderCourses[0].id == 2 && this.props.user.courseadminCourses.length == 0;
+    const showNewCourseBtn = true;
     const headerRight = [
-      true && <Button onClick={() => this.setState({ showConversionModal: true })}>Create a new course</Button>,
+      showNewCourseBtn && (
+        <Button onClick={() => this.setState({ showConversionModal: true })}>Create a new course</Button>
+      ),
       <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}
       </span>,
@@ -271,8 +274,6 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
         />
       </Switch>
     );
-
-    const cancelModal = () => this.setState({ showConversionModal: false });
 
     return (
       <CPLayoutAdmin
