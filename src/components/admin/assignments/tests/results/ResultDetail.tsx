@@ -13,6 +13,10 @@ import TestsList from '../../../../code-review/code-panel/TestsList';
 
 import { TestsBySubmission, TestCasesByCategory, RESULT_STATUS } from '../../../../core/testFetchUtils';
 
+import { FixedSizeList as List } from 'react-window';
+import useWindowSize from '../../../../core/useWindowSize';
+import { filter } from 'fp-ts/lib/Option';
+
 interface IProps {
   visible: boolean;
   onCancel: () => void;
@@ -32,6 +36,8 @@ export const ResultDetail = (props: IProps) => {
   const [filterCase, setFilterCase] = useState<TestCaseType | undefined>(props.filterCase);
   const [filterStatus, setFilterStatus] = useState<RESULT_STATUS | undefined>(props.filterStatus);
   const [filterSubmission, setFilterSubmission] = useState<SubmissionInfoType | undefined>(props.filterSubmission);
+
+  const windowSize = useWindowSize();
 
   /********************** Props on change functions **********************************/
   useEffect(() => {
@@ -223,17 +229,40 @@ export const ResultDetail = (props: IProps) => {
     [];
 
   const submissionMenu = (
-    <Menu selectedKeys={selectedKeys}>
-      {props.submissions !== undefined
-        ? props.submissions.map((s) => {
-            return (
-              <Menu.Item key={s.id.toString()} disabled={isInactive(s)} onClick={handleSubmissionChange.bind({}, s)}>
-                {s.students.toString()}
-              </Menu.Item>
-            );
-          })
-        : null}
-    </Menu>
+    <List
+      itemData={props.submissions}
+      height={windowSize.height - 450}
+      itemCount={props.submissions.length}
+      itemSize={54}
+      width="100%"
+    >
+      {({ index, style }: any) => {
+        const el = props.submissions[index];
+        const extraStyle = {
+          display: 'flex',
+          height: 54,
+          alignItems: 'stretch',
+          borderBottom: '1px solid rgb(232,232,232)',
+          cursor: 'pointer',
+        };
+
+        const inactiveStyle = { color: 'grey', backgroundColor: 'rgb(0,0,0,0.1)' };
+        const defaultStyle = { backgroundColor: 'rgb(0,0,0,0)' };
+        const selectedStyle = { color: 'white', backgroundColor: '#24be85' };
+
+        const thisStyle = isInactive(el)
+          ? inactiveStyle
+          : filterSubmission && filterSubmission.id === el.id
+          ? selectedStyle
+          : defaultStyle;
+
+        return (
+          <div style={{ ...style, ...extraStyle }} onClick={handleSubmissionChange.bind({}, el)}>
+            <div style={{ width: '100%', ...thisStyle, padding: '16px' }}>{el.students.toString()}</div>
+          </div>
+        );
+      }}
+    </List>
   );
 
   const closeButton = (
