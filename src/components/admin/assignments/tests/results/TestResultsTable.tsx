@@ -11,7 +11,7 @@ import {
 } from '@ant-design/icons';
 
 /* library imports */
-import { Breadcrumb, Button, Checkbox, Dropdown, Menu, Modal, Radio, Table, Tooltip } from 'antd';
+import { Breadcrumb, Button, Checkbox, Dropdown, Menu, Modal, Radio, Skeleton, Table, Tooltip } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -40,9 +40,6 @@ import { bySubmissionColumns, byTestColumns } from './testSummaryUtils';
 
 /* codePost util imports */
 import {
-  fetchTestData,
-  fetchEnvironment,
-  fetchTestsBySubmission,
   TestsBySubmission,
   TestCasesByCategory,
   TestsByCase,
@@ -197,6 +194,17 @@ const TestResultsTable = (props: IProps) => {
               </Dropdown>
             ),
           };
+
+          // Is the submission's tests still loading via pagination?
+          const isLoading = props.testsBySubmission[submission.id] === undefined;
+          if (isLoading) {
+            toRet['summary'] = <Skeleton.Button active={true} size="default" shape="round" />;
+            toRet['passed'] = 0;
+            for (const category of props.categories) {
+              toRet[category.id] = <Skeleton.Button active={true} size="default" shape="round" />;
+            }
+            return toRet;
+          }
 
           const tests = SubmissionTest.getLatest(props.testsBySubmission[submission.id] || []);
           let passed = 0;
