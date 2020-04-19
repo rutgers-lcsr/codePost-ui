@@ -5,6 +5,8 @@
 /* react imports */
 import * as React from 'react';
 
+import { sendSlack } from './components/core/slack';
+
 /* other library imports */
 import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
 
@@ -110,6 +112,7 @@ interface IState {
     files: IBaseFileUpload[];
   };
   auth_type: string;
+  propToken: string;
 }
 
 class App extends React.Component<{}, IState> {
@@ -136,6 +139,7 @@ class App extends React.Component<{}, IState> {
       isSuperUser: localStorage.getItem('isSuperUser') !== null,
       studentUploadShortcut: undefined,
       auth_type: 'JWT',
+      propToken: '',
     };
     localStorage.setItem('source', 'codePost');
   }
@@ -238,9 +242,8 @@ class App extends React.Component<{}, IState> {
         auth_type = payload.auth_type;
       }
 
-      localStorage.setItem('token', token);
       localStorage.setItem('source', source);
-      this.setState({ has_token: true, studentUploadShortcut, auth_type }, () => {
+      this.setState({ has_token: true, studentUploadShortcut, auth_type, propToken: token }, () => {
         this.loginCount += 1;
         this.tryToLogin();
       });
@@ -251,9 +254,17 @@ class App extends React.Component<{}, IState> {
 
   public tryToLogin = () => {
     if (this.state.has_token && !this.state.user && this.loginCount < 4) {
+      // Make sure we don't use a prefix that is mismatched with token
+      let authHeader = `JWT ${localStorage.getItem('token')}`;
+      if (this.state.auth_type === 'Firebase') {
+        authHeader = `Firebase ${this.state.propToken}`;
+      }
+
+      sendSlack(`Login attempt:`, `header: ${authHeader}`, '#24be85', '#richard-test');
+
       fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
         headers: {
-          Authorization: `${this.state.auth_type} ${localStorage.getItem('token')} `,
+          Authorization: authHeader,
         },
       })
         .then(async (res) => {
@@ -273,6 +284,9 @@ class App extends React.Component<{}, IState> {
           } else if (res.status === 401) {
             // A status code of 401 indicates that the provided token is invalid => the user needs
             // to login again, so we log them out.
+
+            sendSlack(`Login 401:`, `header: ${authHeader}`, '#24be85', '#richard-test');
+
             this.setState({ triedLoading: true });
             this.handleLogout();
           } else {
@@ -281,6 +295,8 @@ class App extends React.Component<{}, IState> {
             //
             // Issue with this approach: if our API server is unavailable, the site will appear as a blank page
             // (rather than showing users the pre-auth site).
+
+            sendSlack(`Login Error else:`, `header: ${authHeader}`, '#24be85', '#richard-test');
             setTimeout(() => {
               this.loginCount += 1;
               this.tryToLogin();
@@ -288,6 +304,7 @@ class App extends React.Component<{}, IState> {
           }
         })
         .catch((error) => {
+          sendSlack(`Login Error catch:`, `header: ${authHeader}`, '#24be85', '#richard-test');
           setTimeout(() => {
             this.loginCount += 1;
             this.tryToLogin();
