@@ -345,15 +345,19 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
       return <div />;
     }
 
+    // CIP FIXME - HARDCODED FOR CODE IN PLACE
+    const hideDueDate = this.props.currentCourse && this.props.currentCourse.id === 925;
+
     // Present the assignment's due date to the student
-    const dueDateText = assignment.uploadDueDate ? (
-      <span>
-        Due: &nbsp;
-        <CodePostDate datetime={assignment.uploadDueDate} />
-      </span>
-    ) : (
-      ''
-    );
+    const dueDateText =
+      assignment.uploadDueDate && !hideDueDate ? (
+        <span>
+          Due: &nbsp;
+          <CodePostDate datetime={assignment.uploadDueDate} />
+        </span>
+      ) : (
+        ''
+      );
 
     // If the student has submitted, show the datetime of the student's most recent upload
     const uploadDateText =
