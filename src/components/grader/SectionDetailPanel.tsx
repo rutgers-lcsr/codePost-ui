@@ -8,7 +8,7 @@ import * as React from 'react';
 import { CodeOutlined, LoadingOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Button, Breadcrumb, Divider, Select, Spin, Switch, Tabs } from 'antd';
+import { Button, Breadcrumb, Divider, Select, Spin, Switch, Tabs, message } from 'antd';
 
 /* codePost imports */
 import { AssignmentType } from '../../infrastructure/assignment';
@@ -145,6 +145,8 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
             }
           }
         });
+
+        message.success(`Submission${this.state.selectedSubmissions.length > 1 && 's'} claimed!`);
         return null;
       });
       return {

@@ -110,7 +110,6 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
 
   let data: any[] = [];
   if (props.submissions !== undefined) {
-    console.log(props.submissions);
     data = Object.keys(props.submissions).map((student) => {
       const submission = props.submissions[student];
       const shownStudent = props.showEmails || !submission ? student : submission.id;
@@ -126,7 +125,7 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
 
       return {
         ...formatSub(submission, props.assignment),
-        key: student,
+        key: submission ? submission.id : student,
         student: shownStudent,
         partners,
         viewIcon: submission ? <div>{getViewIcon(submission, props.viewsBySubmission, student)}</div> : null,
