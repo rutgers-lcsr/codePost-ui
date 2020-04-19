@@ -110,7 +110,6 @@ interface IState {
     files: IBaseFileUpload[];
   };
   auth_type: string;
-  propToken: string;
 }
 
 class App extends React.Component<{}, IState> {
@@ -137,7 +136,6 @@ class App extends React.Component<{}, IState> {
       isSuperUser: localStorage.getItem('isSuperUser') !== null,
       studentUploadShortcut: undefined,
       auth_type: 'JWT',
-      propToken: '',
     };
     localStorage.setItem('source', 'codePost');
   }
@@ -240,8 +238,9 @@ class App extends React.Component<{}, IState> {
         auth_type = payload.auth_type;
       }
 
+      localStorage.setItem('token', token);
       localStorage.setItem('source', source);
-      this.setState({ has_token: true, studentUploadShortcut, auth_type, propToken: token }, () => {
+      this.setState({ has_token: true, studentUploadShortcut, auth_type }, () => {
         this.loginCount += 1;
         this.tryToLogin();
       });
@@ -252,15 +251,9 @@ class App extends React.Component<{}, IState> {
 
   public tryToLogin = () => {
     if (this.state.has_token && !this.state.user && this.loginCount < 4) {
-      // Make sure we don't use a prefix that is mismatched with token
-      let authHeader = `JWT ${localStorage.getItem('token')}`;
-      if (this.state.auth_type === 'Firebase') {
-        authHeader = `Firebase ${this.state.propToken}`;
-      }
-
       fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
         headers: {
-          Authorization: authHeader,
+          Authorization: `${this.state.auth_type} ${localStorage.getItem('token')} `,
         },
       })
         .then(async (res) => {
