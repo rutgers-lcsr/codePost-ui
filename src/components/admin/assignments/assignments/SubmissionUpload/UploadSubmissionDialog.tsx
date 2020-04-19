@@ -584,10 +584,11 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     if (this.shouldRunTests()) {
       // Make sure the loading is set
       this.setState({ loadingTests: true });
-      const result = await Environment.run(this.state.selectedAssignment!.environment!, {
-        submission: submission.id.toString(),
-        simulate: 'False',
-        exposedOnly: 'True',
+      const result = await Environment.run({
+        id: this.state.selectedAssignment!.environment!,
+        submission: submission.id,
+        simulate: false,
+        exposedOnly: true,
       });
       awaitTestResult(result.task, this.setResults);
     }

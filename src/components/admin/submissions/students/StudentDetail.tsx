@@ -112,10 +112,12 @@ class StudentDetail extends React.Component<IProps, IState> {
   public runTests = async (assignment: AssignmentType, sub: SubmissionInfoType) => {
     if (assignment.environment) {
       this.setState((prevState, props) => ({ subsRunning: [...prevState.subsRunning, sub.id] }));
-      const result = await Environment.run(assignment.environment, {
-        submission: sub.id.toString(),
-        simulate: 'False',
-      });
+      const payload = {
+        id: assignment.environment,
+        submission: sub.id,
+        simulate: false,
+      };
+      const result = await Environment.run(payload);
       awaitTestResult(result.task, this.callback.bind({}, sub));
     }
   };

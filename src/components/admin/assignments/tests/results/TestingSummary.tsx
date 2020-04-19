@@ -115,7 +115,12 @@ export const TestingSummary = (props: IProps) => {
   const runSubmission = async (sub: SubmissionInfoType) => {
     if (env) {
       setSubsLoading([...subsLoading, sub.id]);
-      const result = await Environment.run(env.id, { submission: sub.id.toString(), simulate: 'False' });
+      const payload = {
+        id: env.id,
+        submission: sub.id,
+        simulate: false,
+      };
+      const result = await Environment.run(payload);
       awaitTestResult(result.task, runSubmissionCallback.bind({}, sub));
     }
   };
