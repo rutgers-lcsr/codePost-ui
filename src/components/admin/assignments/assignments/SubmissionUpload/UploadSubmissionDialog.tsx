@@ -602,6 +602,9 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
       return <div />;
     }
 
+    // CIP FIXME - HARDCODED FOR CODE IN PLACE
+    const hideDueDate = this.props.course && this.props.course.id === 925;
+
     let content;
     let sendMeAConfirmationEmailCheckbox = null;
     let goForwardButton = null;
@@ -767,7 +770,9 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
         if (this.props.isStudent) {
           sendMeAConfirmationEmailCheckbox = (
             <span key="sendMeAConfirmationEmailCheckbox">
-              {this.state.selectedAssignment !== undefined && dueDatePassed(this.state.selectedAssignment) ? (
+              {this.state.selectedAssignment !== undefined &&
+              dueDatePassed(this.state.selectedAssignment) &&
+              !hideDueDate ? (
                 <Tag color="volcano">Due Date Passed</Tag>
               ) : null}
               <Checkbox
