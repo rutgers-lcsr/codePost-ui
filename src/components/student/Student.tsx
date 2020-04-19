@@ -465,7 +465,29 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
       };
     };
 
+    // We pre-calculate showGrades and showColumns to figure out the column spans
+    let showGrades = true;
+    let showPartners = true;
+
+    if (assignments) {
+      // If one visible assignment doesn't have hideGrades turned on, show the grades column
+      const visibleAssignments = assignments.filter((assn) => assn.isVisible);
+      showGrades = visibleAssignments.some((assn) => {
+        return !assn.hideGrades;
+      });
+      // If one visible assignment isn't student upload, or is student upload and allows partners, show partners
+      showPartners = visibleAssignments.some((assn) => {
+        const hidePartners = assn.allowStudentUpload && !assn.allowStudentUploadWithPartners;
+        return !hidePartners;
+      });
+    }
+
     const aligner: 'left' | 'center' | 'right' = 'center';
+    // ModifyIF re-sets the column span of certain columns based on things we should show
+    // Code is the first column
+    // If there is no submission, it expands to take up the grades and partners columns (span = 3)
+    // If the assignment is not published, it expands to take up the grades and partners columns (span = 3)
+    // If the submission isn't viewed, it expands to take up the grade column (span = 2)
     let columns: any[] = [
       {
         title: 'Assignment',
@@ -473,35 +495,14 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
         key: 'assignment',
       },
       {
-        title: 'Partners',
-        dataIndex: 'partners',
-        key: 'partners',
-        render: modifyIf({
-          [SUBMISSION_STATUS.NO_SUBMISSION]: 3,
-          [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 3,
-        }),
-        align: aligner,
-      },
-      {
-        title: 'Grade',
-        dataIndex: 'grade',
-        key: 'grade',
-        align: aligner,
-        render: modifyIf({
-          [SUBMISSION_STATUS.NO_SUBMISSION]: 0,
-          [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 0,
-          [SUBMISSION_STATUS.SUBMISSION_UNVIEWED]: 2,
-        }),
-      },
-      {
         title: 'Code',
         dataIndex: 'code',
         key: 'code',
         align: aligner,
         render: modifyIf({
-          [SUBMISSION_STATUS.NO_SUBMISSION]: 0,
-          [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 0,
-          [SUBMISSION_STATUS.SUBMISSION_UNVIEWED]: 0,
+          [SUBMISSION_STATUS.NO_SUBMISSION]: 1 + Number(showGrades) + Number(showPartners),
+          [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 1 + Number(showGrades) + Number(showPartners),
+          [SUBMISSION_STATUS.SUBMISSION_UNVIEWED]: 1 + Number(showGrades),
         }),
       },
     ];
@@ -514,6 +515,29 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
       align: aligner,
     };
 
+    const gradeColumn = {
+      title: 'Grade',
+      dataIndex: 'grade',
+      key: 'grade',
+      align: aligner,
+      render: modifyIf({
+        [SUBMISSION_STATUS.NO_SUBMISSION]: 0,
+        [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 0,
+        [SUBMISSION_STATUS.SUBMISSION_UNVIEWED]: 0,
+      }),
+    };
+
+    const partnerColumn = {
+      title: 'Partners',
+      dataIndex: 'partners',
+      key: 'partners',
+      render: modifyIf({
+        [SUBMISSION_STATUS.NO_SUBMISSION]: 0,
+        [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 0,
+      }),
+      align: aligner,
+    };
+
     const statsColumn = {
       title: 'Stats',
       dataIndex: 'stats',
@@ -522,13 +546,16 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
     };
 
     if (assignments) {
-      // If one assignment has studentUpload, add the uploadColumn to the columns
-      columns = assignments.some((assn) => {
+      // if any of the visible assignments have a property to conditionally show a column, add it to columns
+      const visibleAssignments = assignments.filter((assn) => assn.isVisible);
+      columns = showPartners ? [...columns, partnerColumn] : columns;
+      columns = showGrades ? [...columns, gradeColumn] : columns;
+      columns = visibleAssignments.some((assn) => {
         return assn.allowStudentUpload;
       })
         ? [...columns, uploadColumn]
         : columns;
-      columns = assignments.some((assn) => {
+      columns = visibleAssignments.some((assn) => {
         return assn.mean || assn.median;
       })
         ? [...columns, statsColumn]
@@ -545,7 +572,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
           key: assignment.name,
           assignment: assignment.name,
           statusType: SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED,
-          partners: (
+          code: (
             <div>
               {' '}
               <StopOutlined /> &nbsp; Assignment not yet published
@@ -579,7 +606,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
             : "Your instructor hasn't transferred your submission to codePost yet";
           return {
             ...toRet,
-            partners: (
+            code: (
               <div>
                 <MinusCircleOutlined /> &nbsp; {missingText}
               </div>
@@ -590,9 +617,9 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
           // Case 2: assignment is published, but student has no submission OR submission isn't finalized
           return {
             ...toRet,
-            partners: (
+            code: (
               <div>
-                <MinusCircleOutlined /> &nbsp; Your submission hasn't been graded yet
+                <MinusCircleOutlined /> &nbsp; Your submission hasn't been reviewed yet
               </div>
             ),
             statusType: SUBMISSION_STATUS.NO_SUBMISSION,
