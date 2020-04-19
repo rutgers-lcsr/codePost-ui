@@ -662,7 +662,7 @@ class App extends React.Component<{}, IState> {
       );
     }
 
-    if (this.state.triedLoading && localStorage.getItem('source') !== 'codePost') {
+    if (this.state.triedLoading && localStorage.getItem('source') !== 'codePost' && !this.state.has_token) {
       return (
         <div>
           <BrowserRouter>
