@@ -87,7 +87,7 @@ const TestsList = (props: IProps) => {
     failed = total - passed;
   }
 
-  const explanationsWidth = Math.max(windowSize.width * 0.35, 350);
+  const explanationsWidth = Math.max(windowSize.width * 0.25, 350);
 
   // Top-level columns used used to display individual test information
   const columns = [
