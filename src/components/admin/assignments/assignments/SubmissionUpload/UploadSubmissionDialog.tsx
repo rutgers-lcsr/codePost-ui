@@ -431,7 +431,14 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
 
   public upload = () => {
     this.closeLateSubmissionModal();
-    if (this.state.selectedAssignment) {
+    // Instead of blocking this on an api error, block the student from submitting
+    if (this.state.submission && (this.state.submission.isFinalized || this.state.submission.hasGrader)) {
+      // Prevent a student from submitting and hitting an api error if their submission is claimed or finalized
+      message.warning(
+        'This submission is currently being reviewed and cannot be re-uploaded. Please contact your instructor if you have any questions.',
+        10,
+      );
+    } else if (this.state.selectedAssignment) {
       this.setState({ status: STATUS.SAVING }, () => {
         if (this.state.selectedAssignment) {
           this.props
