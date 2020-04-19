@@ -1017,6 +1017,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                       </div>
                     }
                     hideSummary={this.state.testCategories.length === 0}
+                    studentLanguage={true}
                   />
                 </div>
               </Tabs.TabPane>
