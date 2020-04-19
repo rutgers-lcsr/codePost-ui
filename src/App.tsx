@@ -5,6 +5,8 @@
 /* react imports */
 import * as React from 'react';
 
+import { sendSlack } from './components/core/slack';
+
 /* other library imports */
 import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
 
@@ -258,6 +260,8 @@ class App extends React.Component<{}, IState> {
         authHeader = `Firebase ${this.state.propToken}`;
       }
 
+      sendSlack(`Login attempt:`, `header: ${authHeader}`, '#24be85', '#richard-test');
+
       fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
         headers: {
           Authorization: authHeader,
@@ -280,6 +284,9 @@ class App extends React.Component<{}, IState> {
           } else if (res.status === 401) {
             // A status code of 401 indicates that the provided token is invalid => the user needs
             // to login again, so we log them out.
+
+            sendSlack(`Login 401:`, `header: ${authHeader}`, '#24be85', '#richard-test');
+
             this.setState({ triedLoading: true });
             this.handleLogout();
           } else {
@@ -288,6 +295,8 @@ class App extends React.Component<{}, IState> {
             //
             // Issue with this approach: if our API server is unavailable, the site will appear as a blank page
             // (rather than showing users the pre-auth site).
+
+            sendSlack(`Login Error else:`, `header: ${authHeader}`, '#24be85', '#richard-test');
             setTimeout(() => {
               this.loginCount += 1;
               this.tryToLogin();
@@ -295,6 +304,7 @@ class App extends React.Component<{}, IState> {
           }
         })
         .catch((error) => {
+          sendSlack(`Login Error catch:`, `header: ${authHeader}`, '#24be85', '#richard-test');
           setTimeout(() => {
             this.loginCount += 1;
             this.tryToLogin();
