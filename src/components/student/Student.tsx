@@ -110,7 +110,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
   /* Lifecycle methods
   /**********************************************************************************/
 
-  public componentDidMount() {
+  public load = () => {
     this.loadAssignments(this.props.initialCourses).then((assignments) => {
       this.setState({ assignments, isLoadingAssignments: false }, () => {
         if (this.props.currentCourse) {
@@ -175,6 +175,16 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
         }
       });
     });
+  };
+
+  public componentDidMount() {
+    this.load();
+  }
+
+  public componentDidUpdate(oldProps: IStudentProps) {
+    if (oldProps.uploadShortcut === undefined && this.props.uploadShortcut !== undefined) {
+      this.load();
+    }
   }
 
   /***********************************************************************************
