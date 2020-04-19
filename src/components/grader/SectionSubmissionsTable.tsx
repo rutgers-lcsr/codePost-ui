@@ -110,7 +110,6 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
 
   let data: any[] = [];
   if (props.submissions !== undefined) {
-    console.log(props.submissions);
     data = Object.keys(props.submissions).map((student) => {
       const submission = props.submissions[student];
       const shownStudent = props.showEmails || !submission ? student : submission.id;

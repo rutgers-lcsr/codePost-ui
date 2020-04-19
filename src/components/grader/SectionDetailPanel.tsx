@@ -76,7 +76,6 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
   public async initialLoad() {
     this.setState({ isLoading: true });
     const submissionsBySection = await this.loadSubmissionsForSection();
-    console.log(submissionsBySection);
     this.setState({ submissionsBySection, isLoading: false });
     if (this.props.sections.length === 1) {
       this.handleSelect(String(this.props.sections[0].id));
@@ -249,10 +248,6 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
         viewsBySubmission={this.state.viewsBySubmission}
       />
     );
-
-    if (this.state.submissionsBySection[this.state.activeSection.id]) {
-      console.log(Object.values(this.state.submissionsBySection[this.state.activeSection.id]));
-    }
 
     const submissions: (SubmissionType | null)[] = this.state.submissionsBySection[this.state.activeSection.id]
       ? Object.values(this.state.submissionsBySection[this.state.activeSection.id])

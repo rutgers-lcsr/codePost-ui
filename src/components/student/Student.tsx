@@ -111,7 +111,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
   /**********************************************************************************/
 
   public load = () => {
-    console.log('load', this.props.uploadShortcut);
     this.loadAssignments(this.props.initialCourses).then((assignments) => {
       this.setState({ assignments, isLoadingAssignments: false }, () => {
         if (this.props.currentCourse) {
@@ -179,14 +178,11 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
   };
 
   public componentDidMount() {
-    console.log('mount', this.props.uploadShortcut);
     this.load();
   }
 
   public componentDidUpdate(oldProps: IStudentProps) {
-    console.log('update', this.props.uploadShortcut);
     if (oldProps.uploadShortcut === undefined && this.props.uploadShortcut !== undefined) {
-      console.log('update load', this.props.uploadShortcut);
       this.load();
     }
   }
@@ -750,7 +746,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
         this.props.uploadShortcut.assignmentID === this.state.detailAssignment.id
           ? this.props.uploadShortcut.files
           : undefined;
-      console.log('default files', defaultFiles, this.props.uploadShortcut);
 
       studentContent = (
         <div>
