@@ -39,6 +39,18 @@ class PreAuthLayout extends React.Component<IProps, {}> {
     return (
       <Layout id="PreAuth" style={{ backgroundColor: '#fff', minHeight: '100vh' }}>
         <Content>
+          <div
+            style={{
+              background: 'red',
+              padding: '22px',
+              fontSize: '24px',
+              fontWeight: 500,
+              color: 'white',
+              textAlign: 'center',
+            }}
+          >
+            codePost is making some updates to the site and is temporarily unavailable. Please check back in 20 minutes.
+          </div>
           <LandingHeader />
           <div
             style={{
