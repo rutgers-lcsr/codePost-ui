@@ -1181,11 +1181,10 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   public addComment = (comment: CommentType, file: FileType) => {
     try {
       if (this.state.submission && this.state.submission.grader === null) {
-        console.log('updating sub');
         this.updateGrader(this.state.submission, this.props.user.email);
       }
     } catch (err) {
-      console.log('author isnt enrolled as a grader');
+      console.log('comment author isnt enrolled as a grader');
     }
 
     const comments = CodeConsole.addCommentToState(this.state.comments, comment, file);
