@@ -117,6 +117,7 @@ interface IState {
 class App extends React.Component<{}, IState> {
   private loginCount: number;
   public constructor(props: any) {
+    localStorage.setItem('source', 'codePost');
     super(props);
     console.log(...consoleArt);
     this.loginCount = 0;
@@ -140,7 +141,6 @@ class App extends React.Component<{}, IState> {
       auth_type: 'JWT',
       propToken: '',
     };
-    localStorage.setItem('source', 'codePost');
   }
 
   public componentDidUpdate(prevProps: any, prevState: IState) {
