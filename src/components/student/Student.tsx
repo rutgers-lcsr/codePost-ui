@@ -627,7 +627,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
           // Case 2: assignment is published, but student has no submission OR submission isn't finalized
 
           const msg =
-            localStorage.getItem('source') !== 'codePost' ? (
+            localStorage.getItem('source') === 'codePost' ? (
               <div>
                 <MinusCircleOutlined /> &nbsp; Your submission hasn't been reviewed yet
               </div>
