@@ -34,11 +34,11 @@ const RemoteAuthFailed = () => {
           }}
         >
           <Alert
-            message="Something went wrong connecting to codePost"
+            message="Still trying to connect to codePost..."
             description={
               <div>
-                Please try refreshing or <a onClick={openIntercom}>send us a message</a> with the chat bubble in the
-                bottom-right.
+                If you've been waiting more than 15 secionds, please try refreshing or{' '}
+                <a onClick={openIntercom}>send us a message</a> with the chat bubble in the bottom-right.
               </div>
             }
             type="error"
