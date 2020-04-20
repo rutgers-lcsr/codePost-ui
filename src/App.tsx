@@ -695,6 +695,7 @@ class App extends React.Component<{}, IState> {
       );
     }
 
+    console.log('DBGA', this.state.triedLoading, localStorage.getItem('source'));
     if (this.state.triedLoading && localStorage.getItem('source') !== 'codePost') {
       return (
         <div>
