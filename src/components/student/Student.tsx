@@ -111,7 +111,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
   /**********************************************************************************/
 
   public load = () => {
-    console.log('load', this.props.uploadShortcut);
     this.loadAssignments(this.props.initialCourses).then((assignments) => {
       this.setState({ assignments, isLoadingAssignments: false }, () => {
         if (this.props.currentCourse) {
@@ -179,14 +178,11 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
   };
 
   public componentDidMount() {
-    console.log('mount', this.props.uploadShortcut);
     this.load();
   }
 
   public componentDidUpdate(oldProps: IStudentProps) {
-    console.log('update', this.props.uploadShortcut);
     if (oldProps.uploadShortcut === undefined && this.props.uploadShortcut !== undefined) {
-      console.log('update load', this.props.uploadShortcut);
       this.load();
     }
   }
@@ -750,7 +746,6 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
         this.props.uploadShortcut.assignmentID === this.state.detailAssignment.id
           ? this.props.uploadShortcut.files
           : undefined;
-      console.log('default files', defaultFiles, this.props.uploadShortcut);
 
       studentContent = (
         <div>
@@ -801,10 +796,29 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
     );
 
     const openHome = () => {
-      window.open('https://codepost.io', '_blank');
+      if (localStorage.getItem('source') === 'codePost') {
+        window.open('https://codepost.io', '_blank');
+      }
     };
 
     const headerLeft = [<CPLogo cpType="dark" key="logo" onClick={openHome} />, <span key="empty" />, courseDropdown];
+
+    const referral =
+      localStorage.getItem('source') === 'codePost' ? (
+        <Referral key="referral" user={this.props.user} theme="light" />
+      ) : null;
+
+    const roleMenu =
+      localStorage.getItem('source') === 'codePost' ? (
+        <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.STUDENT} theme="light" />
+      ) : null;
+
+    const settings =
+      localStorage.getItem('source') === 'codePost' ? (
+        <Link className="internal-link" key="settings" to="/settings">
+          <SettingOutlined />
+        </Link>
+      ) : null;
 
     const logout =
       localStorage.getItem('source') === 'codePost' ? (
@@ -817,11 +831,9 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
       <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}
       </span>,
-      <Referral key="referral" user={this.props.user} theme="light" />,
-      <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.STUDENT} theme="light" />,
-      <Link className="internal-link" key="settings" to="/settings">
-        <SettingOutlined />
-      </Link>,
+      referral,
+      roleMenu,
+      settings,
       logout,
     ];
 

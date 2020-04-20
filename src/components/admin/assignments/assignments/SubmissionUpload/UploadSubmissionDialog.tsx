@@ -445,7 +445,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     if (this.state.submission && (this.state.submission.isFinalized || this.state.submission.hasGrader)) {
       // CIP FIXME: Hardcoded logic for CIP course to allow students to submit after finalization
       // Only tests are run on submit, so props.uploadSubmission isn't
-      if (this.state.selectedAssignment && this.state.selectedAssignment.course === 2) {
+      if (this.state.selectedAssignment && this.state.selectedAssignment.course === 925) {
         const execute = () => {
           this.runTestsMock(this.state.submission!);
           this.setState({
