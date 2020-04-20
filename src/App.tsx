@@ -117,8 +117,9 @@ interface IState {
 class App extends React.Component<{}, IState> {
   private loginCount: number;
   public constructor(props: any) {
-    localStorage.setItem('source', 'codePost');
     super(props);
+    localStorage.setItem('source', 'codePost');
+
     console.log(...consoleArt);
     this.loginCount = 0;
     this.state = {
