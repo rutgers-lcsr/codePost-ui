@@ -79,7 +79,7 @@ export const TestingSummary = (props: IProps) => {
       }
     };
     fetchData();
-  }, [props.currentAssignment]);
+  }, [props.currentAssignment && props.currentAssignment.id]);
 
   const submissionTestsCallback = (results: SubmissionWithTestsType[]) => {
     setTestsBySubmission((prevState) => {
