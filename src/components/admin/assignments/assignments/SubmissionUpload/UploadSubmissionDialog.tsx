@@ -46,7 +46,7 @@ import { StudentTestCasesByCategory } from '../../../../../components/core/testF
 
 import { awaitTestResult } from '../../../../../components/admin/assignments/tests/autograderPollingUtils';
 
-import { SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
+import { SubmissionTestResultType, TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
 
 import { sendSlack, slack } from '../../../../../components/core/slack';
 
@@ -433,11 +433,43 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     this.closeLateSubmissionModal();
     // Instead of blocking this on an api error, block the student from submitting
     if (this.state.submission && (this.state.submission.isFinalized || this.state.submission.hasGrader)) {
-      // Prevent a student from submitting and hitting an api error if their submission is claimed or finalized
-      message.warning(
-        'This submission is currently being reviewed and cannot be re-uploaded. Please contact your instructor if you have any questions.',
-        10,
-      );
+      // CIP FIXME: Hardcoded logic for CIP course to allow students to submit after finalization
+      // Only tests are run on submit, so props.uploadSubmission isn't
+      if (this.state.selectedAssignment && this.state.selectedAssignment.course === 925) {
+        const execute = () => {
+          this.runTestsMock(this.state.submission!);
+        };
+        Modal.confirm({
+          title: 'Submission in review',
+          content: (
+            <div>
+              Your submission is being reviewed by your instructor, so the code and test results cannot be overwritten.
+              <br />
+              <br />
+              <div>
+                You can still simulate tests on newly uploaded code, but it won't change the code or test results that
+                your instructor sees. If you want to overwrite them, please contact your instructor and he/she can mark
+                the submission as not being in review.
+              </div>
+              <br />
+              <div>Do you want to continue and simulate the tests?</div>
+            </div>
+          ),
+          okText: 'Continue and simulate tests',
+          onOk() {
+            execute();
+          },
+          onCancel() {
+            return;
+          },
+        });
+      } else {
+        // Prevent a student from submitting and hitting an api error if their submission is claimed or finalized
+        message.warning(
+          'This submission is currently being reviewed and cannot be re-uploaded. Please contact your instructor if you have any questions.',
+          10,
+        );
+      }
     } else if (this.state.selectedAssignment) {
       this.setState({ status: STATUS.SAVING }, () => {
         if (this.state.selectedAssignment) {
@@ -592,6 +624,55 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
       });
       awaitTestResult(result.task, this.setResults);
     }
+  };
+
+  // FIXME CIP: This is a method to run tests without uploading the files to a submission
+  // It's purpose is to allow CIP students to submit and see test results after their
+  //   submission has been claimed or finalized
+  public runTestsMock = async (submission: StudentSubmissionType | SubmissionInfoType) => {
+    if (this.shouldRunTests()) {
+      // Make sure the loading is set
+      this.setState({ loadingTests: true, activeTab: '3' });
+
+      const filesJson = this.state.files.map((file: IProtoFileUpload) => {
+        return {
+          name: file.name,
+          code: file.data,
+          path: file.path === undefined || file.path === null ? '' : file.path,
+        };
+      });
+
+      const payload = {
+        id: this.state.selectedAssignment!.environment!,
+        files: JSON.stringify(filesJson),
+        submission: submission.id,
+        simulate: true,
+        exposedOnly: true,
+      };
+
+      const result = await Environment.run(payload);
+      awaitTestResult(result.task, this.setMockResults);
+    }
+  };
+
+  // FIXME CIP: This is a method to run tests without uploading the files to a submission
+  public setMockResults = (result: TestEditorResultType) => {
+    if (result) {
+      // Note: we need to increment the testRunsCompleted in state, because a student could go back to the upload tab (without refreshing submission) and re-upload
+      // @ts-ignore
+      this.setState({
+        // @ts-ignore
+        submissionTests: result.results,
+        testsLog: result.logs,
+        runMessage: '',
+      });
+    }
+
+    this.setState((prevState) => {
+      return {
+        loadingTests: false,
+      };
+    });
   };
 
   public toggleSendMeAConfirmationEmail = (e: any) => {
@@ -1030,7 +1111,6 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                       </div>
                     }
                     hideSummary={this.state.testCategories.length === 0}
-                    studentLanguage={true}
                   />
                 </div>
               </Tabs.TabPane>
