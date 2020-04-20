@@ -25,6 +25,7 @@ import { UserType } from './infrastructure/user';
 
 import IndexManager from './components/pre-auth/IndexManager';
 import RemoteAuthFailed from './components/pre-auth/RemoteAuthFailed';
+import RemoteAuthRedirect from './components/pre-auth/RemoteAuthRedirect';
 
 import Settings from './components/core/settings';
 
@@ -256,7 +257,7 @@ class App extends React.Component<{}, IState> {
       let authHeader = `JWT ${localStorage.getItem('token')}`;
       if (this.state.auth_type === 'Firebase') {
         if (this.state.propToken === '') {
-          return; 
+          return;
         }
         authHeader = `Firebase ${this.state.propToken}`;
       }
@@ -516,6 +517,30 @@ class App extends React.Component<{}, IState> {
         );
       }
 
+      console.log('user stuff', user);
+
+      const isLostCodeInPlace = user
+        ? user.courseadminCourses.length === 0 &&
+          user.graderCourses.length === 0 &&
+          user.studentCourses.length === 1 &&
+          user.studentCourses[0].id === 925 &&
+          localStorage.getItem('source') === 'codePost'
+        : false;
+      console.log(isLostCodeInPlace);
+
+      if (true) {
+        console.log('yo');
+        return (
+          <div>
+            <BrowserRouter>
+              <Switch>
+                <Route component={RemoteAuthRedirect} />
+              </Switch>
+            </BrowserRouter>
+          </div>
+        );
+      }
+
       if (isAdmin || isGrader) {
         (window as any).Intercom('boot', {
           app_id: 'kg4u5rp1',
@@ -667,7 +692,7 @@ class App extends React.Component<{}, IState> {
             handleLogin={this.handleLogin}
             error={this.state.error}
             isLoggedIn={true}
-            email={this.state.user.email}
+            email={this.state.user!.email}
             handleLogout={this.handleLogout}
           />
         </Switch>
