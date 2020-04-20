@@ -6,72 +6,52 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Alert, Layout } from 'antd';
+import { Layout, Modal } from 'antd';
 
 import LandingNew from '../landing/newlanding/Landing.tsx';
 
 /**********************************************************************************************************************/
 
 const RemoteAuthRedirect = (props: any) => {
-  const [intercomOpen, setIntercomOpen] = React.useState(false);
+  const [showModal, setShowModal] = React.useState(true);
 
-  const [showAlert, setShowAlert] = React.useState(false);
-
-  React.useEffect(() => {
-    setTimeout(() => setShowAlert(true), 500);
-  }, []);
-
-  const openIntercom = () => {
-    if (intercomOpen) {
-      (window as any).Intercom('hide');
-    } else {
-      (window as any).Intercom('show');
-    }
-    setIntercomOpen(!intercomOpen);
+  const close = () => {
+    setShowModal(false);
   };
 
   return (
     <Layout id="PreAuth" style={{ backgroundColor: '#fff', minHeight: '100vh' }}>
       <Layout.Content>
-        <div
-          style={{
-            background: '#fff',
-            padding: '25px 50px',
-            maxWidth: 1200,
-            margin: '0 auto',
-            display: showAlert ? 'block' : 'none',
-          }}
-        >
-          <Alert
-            style={{ backgroundColor: '#e6f7ff', border: '1px solid #91d5ff' }}
-            message="Thanks for finding your way to codePost.io"
-            description={
-              <div>
-                <br />
-                It looks like you're a <b>Code In Place</b> student.
-                <br />
-                <br />
-                You can upload your assignment from here:{' '}
-                <a href="https://compedu.stanford.edu/codeinplace/v1/#/submissions">
-                  https://compedu.stanford.edu/codeinplace/v1/#/submissions
-                </a>
-                <br /> or return to the course homepage here:{' '}
-                <a href="https://compedu.stanford.edu/codeinplace/v1/#/course">
-                  https://compedu.stanford.edu/codeinplace/v1/#/course
-                </a>
-                <br />
-              </div>
-            }
-            showIcon={true}
-            type="info"
-          />
-          <br />
-          <br />
-          <br />
-          <br />
-        </div>
-
         <LandingNew {...props} />
+        <Modal
+          title={<span style={{ fontSize: '24px' }}>Welcome to codePost!</span>}
+          visible={showModal}
+          onCancel={close}
+          width={'40%'}
+          footer={null}
+          bodyStyle={{ fontSize: '16px', padding: '30px 24px' }}
+        >
+          <p>
+            It looks like you're a <b>Code in Place</b> student.
+          </p>
+          <p>
+            If you're trying to <b>submit an assignment</b>, go here:{' '}
+            <a href="https://compedu.stanford.edu/codeinplace/v1/#/submissions">
+              https://compedu.stanford.edu/codeinplace/v1/#/submissions
+            </a>
+          </p>
+
+          <hr />
+          <div style={{ height: '16px' }} />
+          <p style={{ color: 'rgba(0,0,0,0.5)' }}>
+            codePost is an independent service used for teaching computer science that is donating access to our product
+            to Code in Place.{' '}
+          </p>
+
+          <p style={{ color: 'rgba(0,0,0,0.5)' }}>
+            If you're interested in learning more, <a onClick={close}>check out our homepage!</a>
+          </p>
+        </Modal>
       </Layout.Content>
     </Layout>
   );

@@ -526,10 +526,8 @@ class App extends React.Component<{}, IState> {
           user.studentCourses[0].id === 925 &&
           localStorage.getItem('source') === 'codePost'
         : false;
-      console.log(isLostCodeInPlace);
 
-      if (true) {
-        console.log('yo');
+      if (isLostCodeInPlace) {
         return (
           <div>
             <BrowserRouter>
