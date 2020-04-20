@@ -242,7 +242,7 @@ class App extends React.Component<{}, IState> {
 
       localStorage.setItem('source', source);
       this.setState({ has_token: true, studentUploadShortcut, auth_type, propToken: token }, () => {
-        this.loginCount += 1;
+        this.loginCount = 0;
         this.tryToLogin();
       });
     } finally {
@@ -255,6 +255,9 @@ class App extends React.Component<{}, IState> {
       // Make sure we don't use a prefix that is mismatched with token
       let authHeader = `JWT ${localStorage.getItem('token')}`;
       if (this.state.auth_type === 'Firebase') {
+        if (this.state.propToken === '') {
+          return; 
+        }
         authHeader = `Firebase ${this.state.propToken}`;
       }
 
