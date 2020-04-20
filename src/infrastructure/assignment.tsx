@@ -13,7 +13,14 @@ import { convertToPaginatedFunction, paginatedType } from './pagination';
 
 import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
-import { StudentSubmissionV, SubmissionInfoV, AnonymousSubmissionInfoV, SubmissionInfoType } from './submission';
+import {
+  StudentSubmissionV,
+  SubmissionInfoV,
+  AnonymousSubmissionInfoV,
+  SubmissionInfoType,
+  SubmissionWithTestsType,
+  SubmissionWithTestsV,
+} from './submission';
 import { SubmissionHistoryV, SubmissionHistoryType } from './submissionHistory';
 import { StudentTestCaseV } from './testCase';
 import { TestCategoryV } from './testCategory';
@@ -224,8 +231,11 @@ export class Assignment {
   public static readPaginatedSubmissionHistories = convertToPaginatedFunction<SubmissionHistoryType>(
     readObjectDetail(paginatedType(SubmissionHistoryV), 'assignments', 'submissionHistories'),
   );
-
   public static readComments = readObjectDetail(t.array(CommentV), 'assignments', 'comments');
+
+  public static readPaginatedTestResults = convertToPaginatedFunction<SubmissionWithTestsType>(
+    readObjectDetail(paginatedType(SubmissionWithTestsV), 'assignments', 'submissionTests'),
+  );
 }
 
 // Type for getting and patching student upload

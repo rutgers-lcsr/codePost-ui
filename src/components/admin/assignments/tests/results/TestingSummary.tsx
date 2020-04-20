@@ -9,8 +9,8 @@ import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
 /* codePost object imports */
-import { SubmissionInfoType } from '../../../../../infrastructure/submission';
-import { AssignmentType } from '../../../../../infrastructure/assignment';
+import { SubmissionInfoType, SubmissionWithTestsType } from '../../../../../infrastructure/submission';
+import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
 import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
@@ -28,7 +28,6 @@ import RunAllTests from './RunAllTests';
 import {
   fetchTestData,
   fetchEnvironment,
-  fetchTestsBySubmission,
   TestsBySubmission,
   TestCasesByCategory,
 } from '../../../../core/testFetchUtils';
@@ -56,29 +55,46 @@ export const TestingSummary = (props: IProps) => {
   const [subsLoading, setSubsLoading] = useState<number[]>([]);
   const [fetchLoading, setFetchLoading] = useState(false);
   // ************************** Fetch Data ******************************
-  const fetchData = async () => {
-    if (props.submissions.length > 0 && props.currentAssignment) {
-      setFetchLoading(true);
-      const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
-      setCategories(categories);
-      setTestCasesByCategory(casesByCategory);
-      const currEnv = await fetchEnvironment(props.currentAssignment);
-      setEnv(currEnv);
-
-      const tests = await fetchTestsBySubmission(props.submissions);
-      setTestsBySubmission(tests);
-      setFetchLoading(false);
+  const fetchNewResults = async () => {
+    if (props.currentAssignment) {
+      Assignment.readPaginatedTestResults(props.currentAssignment.id, submissionTestsCallback);
     }
   };
+  // //
+  //   useEffect(() => {
+  //     fetchNewResults();
+  //   }, []);
 
   useEffect(() => {
+    const fetchData = async () => {
+      if (props.currentAssignment) {
+        setFetchLoading(true);
+        const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
+        setCategories(categories);
+        setTestCasesByCategory(casesByCategory);
+        const currEnv = await fetchEnvironment(props.currentAssignment);
+        setEnv(currEnv);
+        setFetchLoading(false);
+        fetchNewResults();
+      }
+    };
     fetchData();
-  }, [props.currentAssignment, props.submissions]);
+  }, [props.currentAssignment]);
+
+  const submissionTestsCallback = (results: SubmissionWithTestsType[]) => {
+    setTestsBySubmission((prevState) => {
+      const oldTests = { ...prevState };
+      results.forEach((submission) => {
+        oldTests[submission.id] = submission.tests;
+      });
+      return oldTests;
+    });
+  };
 
   // ******************************* API / State change functions  *******************************
 
   const runAllCallback = () => {
-    fetchData();
+    fetchNewResults();
   };
 
   const runAllSubmissions = async (
