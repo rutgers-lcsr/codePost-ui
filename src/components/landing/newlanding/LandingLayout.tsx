@@ -95,15 +95,21 @@ const LandingLayout = (props: IProps) => {
     >
       <div
         style={{
-          background: 'red',
-          padding: '22px',
-          fontSize: '24px',
+          background: '#22be84',
+          padding: '10px',
+          fontSize: '18px',
           fontWeight: 500,
           color: 'white',
           textAlign: 'center',
         }}
       >
-        codePost is making some updates to the site and is temporarily unavailable. Please check back in 20 minutes.
+        If you're moving your course online due to COVID-19, learn{' '}
+        <a
+          style={{ color: '#def5ec', textDecoration: 'underline' }}
+          href="https://help.codepost.io/en/articles/3783190-three-ways-codepost-can-help-with-remote-teaching"
+        >
+          how codePost can help.
+        </a>
       </div>
       <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }} className={sectionClass}>
         <div
