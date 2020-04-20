@@ -1,7 +1,7 @@
 import { sendSlack } from '../../../core/slack';
 import { message } from 'antd';
 
-const MAX_TRIES_RUN = 35;
+const MAX_TRIES_RUN = 45;
 const MAX_TRIES_BUILD = 120;
 
 // Running a test
@@ -61,9 +61,9 @@ async function pollTestResult(
     if (result.result === null || result.result === undefined) {
       // Should never be undefined or null
       sendSlack(
-        `Null test result received on student upload: ${id} ${window.location.href}. This may be because the results haven't been written to the db yet. Trying again...`,
+        `Not an error: Success result with empty data: ${id} ${window.location.href}. This may be because the results haven't been written to the db yet. Trying again...`,
         `${JSON.stringify(result)}`,
-        '#cc0000',
+        '#f7f7f7',
         '#autograder_bugs',
       );
     } else {
