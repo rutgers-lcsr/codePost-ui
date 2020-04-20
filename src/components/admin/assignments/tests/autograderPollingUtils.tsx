@@ -1,7 +1,7 @@
 import { sendSlack } from '../../../core/slack';
 import { message } from 'antd';
 
-const MAX_TRIES_RUN = 35;
+const MAX_TRIES_RUN = 45;
 const MAX_TRIES_BUILD = 120;
 
 // Running a test
