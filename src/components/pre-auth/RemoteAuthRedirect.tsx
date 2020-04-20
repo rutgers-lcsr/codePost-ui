@@ -24,10 +24,10 @@ const RemoteAuthRedirect = (props: any) => {
       <Layout.Content>
         <LandingNew {...props} />
         <Modal
-          title={<span style={{ fontSize: '24px' }}>Welcome to codePost!</span>}
+          title={<span style={{ fontSize: '22px' }}>Welcome to codePost!</span>}
           visible={showModal}
           onCancel={close}
-          width={'40%'}
+          width={'44%'}
           footer={null}
           bodyStyle={{ fontSize: '16px', padding: '30px 24px' }}
         >

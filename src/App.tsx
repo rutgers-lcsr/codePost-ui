@@ -517,8 +517,6 @@ class App extends React.Component<{}, IState> {
         );
       }
 
-      console.log('user stuff', user);
-
       const isLostCodeInPlace = user
         ? user.courseadminCourses.length === 0 &&
           user.graderCourses.length === 0 &&
