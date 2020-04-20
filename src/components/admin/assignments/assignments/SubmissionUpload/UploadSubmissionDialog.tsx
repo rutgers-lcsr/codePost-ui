@@ -134,6 +134,8 @@ interface IUploadSubmissionDialogState {
   activeTab: string;
 
   lateSubmissionModalVisible: boolean;
+
+  isTestingSimulated: boolean; // CIP FIXME: remove this state variable
 }
 
 class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProps, IUploadSubmissionDialogState> {
@@ -162,6 +164,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     runMessage: '',
     activeTab: '1',
     lateSubmissionModalVisible: false,
+    isTestingSimulated: false,
   };
 
   /********************************************************************************************************/
@@ -369,7 +372,14 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
   };
 
   public cancel = () => {
-    this.setState({ status: STATUS.NONE, files: [], fileList: [], rejectedFiles: [], activeTab: '1' });
+    this.setState({
+      status: STATUS.NONE,
+      files: [],
+      fileList: [],
+      rejectedFiles: [],
+      activeTab: '1',
+      isTestingSimulated: false,
+    });
     this.props.onCancel();
   };
 
@@ -435,9 +445,16 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     if (this.state.submission && (this.state.submission.isFinalized || this.state.submission.hasGrader)) {
       // CIP FIXME: Hardcoded logic for CIP course to allow students to submit after finalization
       // Only tests are run on submit, so props.uploadSubmission isn't
-      if (this.state.selectedAssignment && this.state.selectedAssignment.course === 925) {
+      if (this.state.selectedAssignment && this.state.selectedAssignment.course === 2) {
         const execute = () => {
           this.runTestsMock(this.state.submission!);
+          this.setState({
+            isTestingSimulated: true,
+            files: [],
+            fileList: [],
+            rejectedFiles: [],
+            activeTab: '3',
+          });
         };
         Modal.confirm({
           title: 'Submission in review',
@@ -632,7 +649,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
   public runTestsMock = async (submission: StudentSubmissionType | SubmissionInfoType) => {
     if (this.shouldRunTests()) {
       // Make sure the loading is set
-      this.setState({ loadingTests: true, activeTab: '3' });
+      this.setState({ loadingTests: true });
 
       const filesJson = this.state.files.map((file: IProtoFileUpload) => {
         return {
@@ -1099,10 +1116,17 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                           <Alert
                             type="info"
                             message={
-                              <div>
-                                Showing results from most recent submission at:{' '}
-                                <CodePostDate datetime={this.state.submission!.dateUploaded || ''} />
-                              </div>
+                              this.state.isTestingSimulated ? (
+                                <div>
+                                  Showing <span style={{ fontWeight: 500 }}>simulated results</span> from most recent
+                                  upload.
+                                </div>
+                              ) : (
+                                <div>
+                                  Showing results from most recent submission at:{' '}
+                                  <CodePostDate datetime={this.state.submission!.dateUploaded || ''} />
+                                </div>
+                              )
                             }
                           />
                         )}
