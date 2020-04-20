@@ -197,6 +197,12 @@ class App extends React.Component<{}, IState> {
   };
 
   public messageHandler = (event: any) => {
+    // This will fail for admins who are switching around users
+    // because we won't reauthenticate them with the new message
+    if (this.state.user) {
+      return;
+    }
+
     let found = false;
     for (const domain of domains) {
       if (event.origin.indexOf(domain) !== -1) {
