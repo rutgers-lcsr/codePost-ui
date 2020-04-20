@@ -5,10 +5,9 @@
 /* react imports */
 import * as React from 'react';
 
-import { CodeOutlined } from '@ant-design/icons';
-
 /* ant imports */
-import { Table } from 'antd';
+import { Table, Dropdown, Menu } from 'antd';
+import { CodeOutlined, MinusCircleTwoTone, MenuOutlined } from '@ant-design/icons';
 
 /* codePost imports */
 import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
@@ -30,6 +29,8 @@ interface ISubmissionsTableProps {
   showEmails: boolean;
   assignment: AssignmentType;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
+  claimSubmissions: (ids: number[], unclaim: boolean) => void;
+  me: string;
 }
 
 /* for type checking functions that operate on table rows */
@@ -106,11 +107,11 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
       dataIndex: 'viewIcon',
       align: centerAlign,
     },
+    { title: 'Options', dataIndex: 'options', align: centerAlign },
   ];
 
   let data: any[] = [];
   if (props.submissions !== undefined) {
-    console.log(props.submissions);
     data = Object.keys(props.submissions).map((student) => {
       const submission = props.submissions[student];
       const shownStudent = props.showEmails || !submission ? student : submission.id;
@@ -124,14 +125,30 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
           .join(', ');
       }
 
+      const menu = (
+        <Menu>
+          {submission && submission.grader === props.me && (
+            <Menu.Item key="1">
+              <MinusCircleTwoTone onClick={() => props.claimSubmissions([submission.id], true)} />
+              Unclaim
+            </Menu.Item>
+          )}
+        </Menu>
+      );
+
       return {
         ...formatSub(submission, props.assignment),
-        key: student,
+        key: submission ? submission.id : student,
         student: shownStudent,
         partners,
         viewIcon: submission ? <div>{getViewIcon(submission, props.viewsBySubmission, student)}</div> : null,
         open: submission ? <CodeOutlined onClick={openGradePage.bind({}, submission)} /> : null,
         disableCheck: !submission || submission.grader,
+        options: (
+          <Dropdown overlay={menu} trigger={['click']}>
+            <MenuOutlined />
+          </Dropdown>
+        ),
       };
     });
   }

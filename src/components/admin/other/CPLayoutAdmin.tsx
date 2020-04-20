@@ -51,7 +51,9 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
       : layoutVars.maxWidths.siderNormal;
 
   const openHome = () => {
-    window.open('https://codepost.io', '_blank');
+    if (localStorage.getItem('source') === 'codePost') {
+      window.open('https://codepost.io', '_blank');
+    }
   };
 
   // FIXME: Hardcoded height variables

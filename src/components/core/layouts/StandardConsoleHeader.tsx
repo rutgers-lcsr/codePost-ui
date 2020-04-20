@@ -21,7 +21,9 @@ interface IStandardConsoleHeaderProps {
 
 const StandardConsoleHeader = (props: IStandardConsoleHeaderProps) => {
   const openHome = () => {
-    window.open('https://codepost.io', '_blank');
+    if (localStorage.getItem('source') === 'codePost') {
+      window.open('https://codepost.io', '_blank');
+    }
   };
 
   const headerLeft = [

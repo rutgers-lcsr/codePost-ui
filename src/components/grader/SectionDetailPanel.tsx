@@ -8,7 +8,7 @@ import * as React from 'react';
 import { CodeOutlined, LoadingOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Button, Breadcrumb, Divider, Select, Spin, Switch, Tabs } from 'antd';
+import { Button, Breadcrumb, Divider, Select, Spin, Switch, Tabs, message } from 'antd';
 
 /* codePost imports */
 import { AssignmentType } from '../../infrastructure/assignment';
@@ -76,7 +76,6 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
   public async initialLoad() {
     this.setState({ isLoading: true });
     const submissionsBySection = await this.loadSubmissionsForSection();
-    console.log(submissionsBySection);
     this.setState({ submissionsBySection, isLoading: false });
     if (this.props.sections.length === 1) {
       this.handleSelect(String(this.props.sections[0].id));
@@ -123,9 +122,9 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     return submissionMap;
   };
 
-  public claimSubmissions = async () => {
-    const promises = this.state.selectedSubmissions.map((id) => {
-      return Submission.update({ id: id, isFinalized: false, grader: this.props.email });
+  public claimSubmissions = async (toHandle: number[], unclaim: boolean | undefined) => {
+    const promises = toHandle.map((id) => {
+      return Submission.update({ id: id, isFinalized: false, grader: unclaim ? '' : this.props.email });
     });
 
     const submissions = await Promise.all(promises);
@@ -145,8 +144,10 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
             }
           }
         });
+        message.success(`Submission${submissions.length > 1 ? 's' : ''} ${unclaim ? 'un' : ''}claimed!`);
         return null;
       });
+
       return {
         submissionsBySection: newSubmissions,
         selectedSubmissions: [],
@@ -233,7 +234,13 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     }
 
     const claimButton = (
-      <Button type="primary" disabled={this.state.selectedSubmissions.length === 0} onClick={this.claimSubmissions}>
+      <Button
+        type="primary"
+        disabled={this.state.selectedSubmissions.length === 0}
+        onClick={() => {
+          this.claimSubmissions(this.state.selectedSubmissions, false);
+        }}
+      >
         Claim Selected
       </Button>
     );
@@ -247,12 +254,10 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
         showEmails={showingEmails}
         assignment={this.props.assignment}
         viewsBySubmission={this.state.viewsBySubmission}
+        claimSubmissions={this.claimSubmissions}
+        me={this.props.email}
       />
     );
-
-    if (this.state.submissionsBySection[this.state.activeSection.id]) {
-      console.log(Object.values(this.state.submissionsBySection[this.state.activeSection.id]));
-    }
 
     const submissions: (SubmissionType | null)[] = this.state.submissionsBySection[this.state.activeSection.id]
       ? Object.values(this.state.submissionsBySection[this.state.activeSection.id])
