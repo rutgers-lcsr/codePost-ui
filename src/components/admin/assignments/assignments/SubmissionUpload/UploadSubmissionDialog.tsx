@@ -733,29 +733,45 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           { title: 'Uploaded', dataIndex: 'uploaded', key: 'uploaded', align: 'center' as const },
         ];
 
+        const ignoringOptionalFiles =
+          this.state.files.length > 0 &&
+          this.state.fileTemplates.every((ft) => !ft.required && !this.state.files.some((el) => el.name === ft.name));
+
         const fileList =
           this.state.fileTemplates.length > 0 ? (
-            <Table
-              columns={requiredColumns}
-              dataSource={this.state.fileTemplates.map((el) => {
-                const exists = this.state.files.some((file) => file.name === el.name);
-                return {
-                  ...el,
-                  name: (
-                    <span>
-                      {el.required ? <Tag color={exists ? 'green' : 'volcano'}>REQUIRED</Tag> : <Tag>OPTIONAL</Tag>}
-                      {el.name}
-                    </span>
-                  ),
-                  uploaded: exists ? (
-                    <CheckCircleOutlined style={{ color: 'green' }} />
-                  ) : (
-                    <CloseCircleOutlined style={{ color: 'red' }} />
-                  ),
-                };
-              })}
-              pagination={false}
-            />
+            <span>
+              <Table
+                columns={requiredColumns}
+                dataSource={this.state.fileTemplates.map((el) => {
+                  const exists = this.state.files.some((file) => file.name === el.name);
+                  return {
+                    ...el,
+                    name: (
+                      <span>
+                        {el.required ? <Tag color={exists ? 'green' : 'volcano'}>REQUIRED</Tag> : <Tag>OPTIONAL</Tag>}
+                        {el.name}
+                      </span>
+                    ),
+                    uploaded: exists ? (
+                      <CheckCircleOutlined style={{ color: 'green' }} />
+                    ) : (
+                      <CloseCircleOutlined style={{ color: 'red' }} />
+                    ),
+                  };
+                })}
+                pagination={false}
+              />
+              {ignoringOptionalFiles && (
+                <span>
+                  <br />
+                  <Alert
+                    type="warning"
+                    message={`You haven't uploaded any of the specified files. Make sure this is your intention before submitting. ${this.shouldRunTests() &&
+                      'File names must match the specified files exactly to pass tests.'}`}
+                  />
+                </span>
+              )}
+            </span>
           ) : (
             <span />
           );
