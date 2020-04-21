@@ -22,6 +22,7 @@ import {
   Tag,
   Divider,
   Tabs,
+  Tooltip,
 } from 'antd';
 
 /* other library imports */
@@ -770,14 +771,15 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           </Button>
         );
 
-        const disableUpload = !(
-          this.state.selectedStudents.length > 0 &&
-          this.state.files.length > 0 &&
-          this.state.selectedAssignment
-        );
-
         const areRequiredFilesPresent = this.state.fileTemplates.every(
           (ft) => !ft.required || this.state.files.some((el) => el.name === ft.name),
+        );
+
+        const disableUpload = !(
+          areRequiredFilesPresent &&
+          this.state.files.length > 0 &&
+          this.state.selectedStudents.length > 0 &&
+          this.state.selectedAssignment
         );
 
         if (this.props.isStudent) {
@@ -810,12 +812,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
 
         goForwardButton = (
           <span key="goForwardButton" style={{ marginLeft: '8px' }}>
-            <Button
-              key="submit"
-              type="primary"
-              disabled={disableUpload || !areRequiredFilesPresent}
-              onClick={this.confirmUpload}
-            >
+            <Button key="submit" type="primary" disabled={disableUpload} onClick={this.confirmUpload}>
               Submit {this.shouldRunTests() && 'and run tests'}
             </Button>
             {this.state.selectedAssignment === undefined ? null : (
@@ -828,6 +825,21 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
             )}
           </span>
         );
+
+        if (disableUpload) {
+          let disabledText = '';
+          if (!areRequiredFilesPresent) {
+            disabledText = 'You must upload all required files before submitting.';
+          } else if (this.state.files.length === 0) {
+            disabledText = 'You must upload at least one file before submitting.';
+          } else if (this.state.selectedStudents.length === 0) {
+            disabledText = 'You must select at least one student before uploading.';
+          } else if (!this.state.selectedAssignment) {
+            disabledText = 'You must select an assignment before uploading.';
+          }
+
+          goForwardButton = <Tooltip title={disabledText}>{goForwardButton}</Tooltip>;
+        }
 
         /*****************************************************************************************/
 
