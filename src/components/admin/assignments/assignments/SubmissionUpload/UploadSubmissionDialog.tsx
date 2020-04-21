@@ -766,7 +766,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
         /*****************************************************************************************/
         goBackButton = (
           <Button key="back" onClick={this.cancel.bind(this, undefined)}>
-            Cancel
+            Close
           </Button>
         );
 
@@ -816,7 +816,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
               disabled={disableUpload || !areRequiredFilesPresent}
               onClick={this.confirmUpload}
             >
-              Upload {this.shouldRunTests() && <CalculatorOutlined />}
+              Submit {this.shouldRunTests() && 'and run tests'}
             </Button>
             {this.state.selectedAssignment === undefined ? null : (
               <LateSubmissionModal
