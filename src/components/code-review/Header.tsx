@@ -781,7 +781,12 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
         Code Review Console
       </Menu.Item>
       {props.isStudent || props.isDemo ? null : (
-        <Menu.Item key="claim" style={itemStyle} className="header-menu">
+        <Menu.Item
+          key="claim"
+          disabled={props.course && !props.course.activateQueue}
+          style={itemStyle}
+          className="header-menu"
+        >
           <span onClick={props.claimSubmission}>
             <PlusCircleOutlined /> Claim another submission{' '}
             <span style={{ color: '#ccc' }}>[{osControlKey()} shift p]</span>
