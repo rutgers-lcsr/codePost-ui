@@ -497,6 +497,30 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     });
   };
 
+  public onSectionPagination = (course: CourseType, newSections: SectionType[]) => {
+    // We first set the sections in state, because generateSectionsByStudent might take some time
+    //    and we don't want race conditions of new pages overwriting other sections
+    if (this.props.currentCourse !== course) {
+      return;
+    }
+
+    this.setState(
+      (prevState) => {
+        return {
+          sections: [...prevState.sections, ...newSections],
+        };
+      },
+      () => {
+        // Generate sections by student, and if all the sections have loaded (judged by sections.length)
+        //  then we mark the section load as complete
+        const sectionsByStudent = this.generateSectionsByStudent(this.state.sections);
+        this.setState({
+          sectionsByStudent,
+        });
+      },
+    );
+  };
+
   /************************************************************************
   /* Course handling methods
   /***********************************************************************/
