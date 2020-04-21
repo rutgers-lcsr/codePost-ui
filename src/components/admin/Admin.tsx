@@ -291,18 +291,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       }
     });
 
-    this.loadSections(course).then((sections) => {
-      // use currentCourse as a nonce to see if this request is still desired
-      if (this.props.currentCourse !== course) {
-        return;
-      }
-      const sectionsByStudent = this.generateSectionsByStudent(sections);
-      this.setState({
-        sections,
-        sectionsByStudent,
-        sectionsLoadComplete: true,
-      });
-    });
+    this.loadSections(course);
   };
 
   public loadAssignments = (course: CourseType) => {
