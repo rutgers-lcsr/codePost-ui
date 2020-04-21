@@ -733,6 +733,9 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           { title: 'Uploaded', dataIndex: 'uploaded', key: 'uploaded', align: 'center' as const },
         ];
 
+        // If required files are present, then a student must upload them before submitting.
+        // But if _only_ optional files are specified, then a student can ignore them. This can result in
+        // problems if optional files are being used to specify files that a student _should_ upload but can omit.
         const ignoringOptionalFiles =
           this.state.files.length > 0 &&
           this.state.fileTemplates.every((ft) => !ft.required && !this.state.files.some((el) => el.name === ft.name));
@@ -761,6 +764,16 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                 })}
                 pagination={false}
               />
+              {ignoringOptionalFiles && (
+                <span>
+                  <br />
+                  <Alert
+                    type="warning"
+                    message={`You haven't uploaded any of the specified files. Make sure this is your intention before submitting. ${this.shouldRunTests() &&
+                      'File names must match the specified files exactly to pass tests.'}`}
+                  />
+                </span>
+              )}
               {ignoringOptionalFiles && (
                 <span>
                   <br />
