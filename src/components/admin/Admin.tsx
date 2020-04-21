@@ -320,11 +320,9 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   };
 
   public loadSections = (course: CourseType) => {
-    return Promise.all(
-      course.sections.map((sectionID) => {
-        return Section.read(sectionID);
-      }),
-    );
+    Course.readPaginatedSections(course.id, this.onSectionPagination.bind(this, course)).then(() => {
+      this.setState({ sectionsLoadComplete: true });
+    });
   };
 
   public loadViewsBySubmission = (course: CourseType) => {
