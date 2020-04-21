@@ -1326,7 +1326,8 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 graders={this.state.graders}
                 admins={this.state.admins}
                 superGraders={this.state.superGraders}
-                loadComplete={this.state.sectionsLoadComplete && this.state.rosterLoadComplete}
+                loadComplete={this.state.rosterLoadComplete}
+                sectionsLoadComplete={this.state.sectionsLoadComplete}
                 currentCourse={this.props.currentCourse}
                 updateRoster={this.updateRoster}
                 sectionsByStudent={this.state.sectionsByStudent}
