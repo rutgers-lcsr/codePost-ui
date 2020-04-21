@@ -703,7 +703,7 @@ class App extends React.Component<{}, IState> {
     }
 
     console.log('DBGA', this.state.triedLoading, localStorage.getItem('source'));
-    if (this.state.triedLoading && localStorage.getItem('source') !== 'codePost') {
+    if (this.state.triedLoading && localStorage.getItem('source') === 'Code in Place') {
       return (
         <div>
           <BrowserRouter>
