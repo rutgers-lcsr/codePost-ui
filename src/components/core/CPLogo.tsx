@@ -9,7 +9,7 @@ interface ICPLogoProps {
 
 class CPLogo extends React.Component<ICPLogoProps, {}> {
   public render() {
-    const addendum = localStorage.getItem('source') !== 'codePost' ? null : <span>.io</span>;
+    const addendum = localStorage.getItem('source') === 'codePost' ? null : <span>.io</span>;
     if (this.props.cpType === 'main') {
       return (
         <div className="cp-logo" onClick={this.props.onClick}>
