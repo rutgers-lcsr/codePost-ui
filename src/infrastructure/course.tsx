@@ -9,6 +9,9 @@ import {
   updateObject,
   updateObjectDetail,
 } from './generics';
+import { convertToPaginatedFunction, paginatedType } from './pagination';
+
+import { SectionType, SectionV } from './section';
 
 export const CourseV = t.intersection(
   [
@@ -136,6 +139,11 @@ export class Course {
   public static updateRosterMap = updateObjectDetail(RosterMapV, RosterMapVPatch, 'courses', 'rosterMap');
 
   public static readSettings = readObjectDetail(CourseSettingsV, 'courses', 'courseSettings');
+
+  // Paginated requests - for admin console performance on large courses
+  public static readPaginatedSections = convertToPaginatedFunction<SectionType>(
+    readObjectDetail(paginatedType(SectionV), 'courses', 'sections'),
+  );
 }
 
 // export { CourseType, Course, RosterType, CoursePatchType, CourseV, CourseSettingsType };
