@@ -973,6 +973,10 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                   </Button>
                 </Upload>
               </div>
+              <div style={{ paddingTop: '6px' }}>
+                * Please upload all the files that you want submitted
+                {this.state.testCategories.length > 0 ? ' and tested' : ''}
+              </div>
               <span>
                 {unzippedFiles.length > 0 ? (
                   <span>
