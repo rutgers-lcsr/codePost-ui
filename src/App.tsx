@@ -532,7 +532,7 @@ class App extends React.Component<{}, IState> {
           localStorage.getItem('source') === 'codePost'
         : false;
 
-      if (isLostCodeInPlace) {
+      if (isLostCodeInPlace && !this.state.isSuperUser) {
         return (
           <div>
             <BrowserRouter>
