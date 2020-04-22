@@ -779,16 +779,6 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                   />
                 </span>
               )}
-              {ignoringOptionalFiles && (
-                <span>
-                  <br />
-                  <Alert
-                    type="warning"
-                    message={`You haven't uploaded any of the specified files. Make sure this is your intention before submitting. ${this.shouldRunTests() &&
-                      'File names must match the specified files exactly to pass tests.'}`}
-                  />
-                </span>
-              )}
             </span>
           ) : (
             <span />
@@ -847,7 +837,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
         goForwardButton = (
           <span key="goForwardButton" style={{ marginLeft: '8px' }}>
             <Button key="submit" type="primary" disabled={disableUpload} onClick={this.confirmUpload}>
-              Submit {this.shouldRunTests() && 'and run tests'}
+              {this.state.submission ? 'Re-s' : 'S'}ubmit {this.shouldRunTests() && 'and run tests'}
             </Button>
             {this.state.selectedAssignment === undefined ? null : (
               <LateSubmissionModal
