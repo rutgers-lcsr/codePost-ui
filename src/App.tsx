@@ -203,12 +203,6 @@ class App extends React.Component<{}, IState> {
   };
 
   public messageHandler = (event: any) => {
-    // This will fail for admins who are switching around users
-    // because we won't reauthenticate them with the new message
-    if (this.state.user) {
-      return;
-    }
-
     let found = false;
     for (const domain of domains) {
       if (event.origin.indexOf(domain) !== -1) {
@@ -255,10 +249,19 @@ class App extends React.Component<{}, IState> {
       }
 
       localStorage.setItem('source', source);
-      this.setState({ has_token: true, studentUploadShortcut, auth_type, propToken: token }, () => {
-        this.loginCount = 0;
-        this.tryToLogin();
-      });
+
+      // This will fail for admins who are switching around users
+      // because we won't reauthenticate them with the new message
+      if (!this.state.user) {
+        this.setState({ has_token: true, studentUploadShortcut, auth_type, propToken: token }, () => {
+          this.loginCount = 0;
+          this.tryToLogin();
+        });
+        return;
+      } else if (this.state.studentUploadShortcut === undefined && studentUploadShortcut !== undefined) {
+        this.setState({ studentUploadShortcut });
+        return;
+      }
     } finally {
       return;
     }
