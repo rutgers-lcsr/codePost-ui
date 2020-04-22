@@ -141,7 +141,7 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
           .then(async (res) => {
             if (res.status === 200) {
               const json = await res.json();
-              message.success(json);
+              message.success('Email sent to student notifying them that their submission is ready.');
               return;
             } else {
               const json = await res.json();
@@ -166,7 +166,7 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
           {submission ? (
             <Menu.Item key="2" onClick={() => sendStudentNotification(submission)}>
               <MailOutlined />
-              Send Student Notification
+              Notify student
             </Menu.Item>
           ) : null}
         </Menu>

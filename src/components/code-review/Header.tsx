@@ -335,14 +335,16 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
         // FIXME: This doesn't cover the situation where both settings are enabled
         // course.enableStudentFeedbackNotifications and mincomments
       } else if (props.course.enableStudentFeedbackNotifications) {
+        const studentText = `student${
+          props.submission.students ? (props.submission.students.length > 1 ? 's' : '') : '(s)'
+        }`;
+
         Modal.confirm({
-          title: `Do you want to notify the student${
-            props.submission.students ? (props.submission.students.length > 1 ? 's' : '') : '(s)'
-          } via email?`,
+          title: `Notify ${studentText} via email?`,
+          content: `This submission will be viewable once finalized. Would you like codePost to notify the ${studentText} by sending them an email?`,
           icon: <MailOutlined />,
-          okText: 'Yes',
-          cancelText: 'No',
-          content: '',
+          okText: 'Finalize and send email',
+          cancelText: 'Finalize',
           onOk: async () => {
             await finalize();
             sendStudentNotification();
