@@ -633,7 +633,8 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
               </div>
             ) : (
               <div>
-                🎉 Your assignment has been uploaded! 🎉 <br /> You can run the tests as many times as you want.
+                🎉 Your assignment has been uploaded! 🎉 <br /> You can re-run tests as many times as you want by
+                clicking "Upload assignment" to the right.
               </div>
             );
 
