@@ -122,7 +122,24 @@ class App extends React.Component<{}, IState> {
       localStorage.setItem('source', 'codePost');
     } catch (err) {
       alert(
-        'codePost needs permission from your browser to start.\nPlease follow these steps...\n\n - Open up Chrome cookie settings:\n    chrome://settings/content/cookies\n - Click Allow -> Add -> https://codepost.io\n    See a screenshot here:\n    https://share.getcloudapp.com/eDu69Dnz\n - Try refreshing!',
+        `codePost needs permission from your browser to start.
+Please follow these steps for your current browser...
+
+Google Chrome:
+  - Open up Chrome cookie settings:
+      chrome://settings/content/cookies
+  - Click Allow -> Add -> https://codepost.io
+      See a screenshot here:
+      https://share.getcloudapp.com/eDu69Dnz
+  - Try refreshing!
+
+Firefox:
+  - Open up Firefox cookie settings:
+      about:preferences#privacy
+  - Click Cookies and Site Data -> Manage Permissions
+  - Type in https://codepost.io -> Allow -> Save Changes
+  - Try refreshing!
+      `,
       );
     }
 
