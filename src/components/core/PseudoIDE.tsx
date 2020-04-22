@@ -259,7 +259,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
             {props.files.map((file: FileType) => {
               return (
                 <Menu.Item key={`file - ${file.id} `}>
-                  {file.path !== undefined ? <span style={{ color: '#c0c0c0' }}>{file.path}/</span> : null}
+                  {file.path && <span style={{ color: '#c0c0c0' }}>{file.path}/</span>}
                   <span style={{ fontWeight: 500 }}>{file.name}</span>
                 </Menu.Item>
               );
@@ -287,7 +287,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
               >
                 {currentFile === undefined
                   ? '---'
-                  : `${currentFile.path !== undefined ? currentFile.path + '/' : ''}${currentFile.name}`}
+                  : `${currentFile.path ? currentFile.path + '/' : ''}${currentFile.name}`}
               </div>
               <div style={{ flexGrow: 1 }} />
             </div>
