@@ -336,7 +336,9 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
         // course.enableStudentFeedbackNotifications and mincomments
       } else if (props.course.enableStudentFeedbackNotifications) {
         Modal.confirm({
-          title: `Do you want to notify the student(s) via email?`,
+          title: `Do you want to notify the student${
+            props.submission.students ? (props.submission.students.length > 1 ? 's' : '') : '(s)'
+          } via email?`,
           icon: <MailOutlined />,
           okText: 'Yes',
           cancelText: 'No',
