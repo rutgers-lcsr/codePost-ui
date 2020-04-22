@@ -255,7 +255,12 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
 
       this.props.defaultFiles.forEach((baseFile: IBaseFileUpload, index: number) => {
         // @ts-ignore
-        const file = new File(baseFile.data.split('\n'), baseFile.name);
+        // const file = new File(baseFile.data.split('\n'), baseFile.name);
+        // IE, Edge compatibility
+        // https://stackoverflow.com/questions/49890537/javascript-edge-browser-typeerror-function-expected
+        const file = new Blob(baseFile.data.split('\n'), { type: 'text/plain' });
+        // @ts-ignore
+        file.name = baseFile.name;
 
         // FIXME: dirs
         const ff = {

@@ -37,8 +37,18 @@ const RemoteAuthFailed = () => {
             message="Still trying to connect to codePost..."
             description={
               <div>
-                If you've been waiting more than 15 secionds, please try refreshing or{' '}
+                If you've been waiting more than 15 seconds, please try refreshing or{' '}
                 <a onClick={openIntercom}>send us a message</a> with the chat bubble in the bottom-right.
+                <br />
+                <br />
+                If you haven't been enrolled in a section yet, then you'll need to wait for that before you can submit.
+                <br />
+                Here is the{' '}
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLScCWxU7zOxkqABUi8pcbsB9e-BBldZ24tAzKKI-xl12oH-6eQ/viewform">
+                  Section Assignment Form
+                </a>{' '}
+                to get that started.
+                <br />
               </div>
             }
             type="error"

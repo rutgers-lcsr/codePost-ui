@@ -30,6 +30,7 @@ import {
   fetchEnvironment,
   TestsBySubmission,
   TestCasesByCategory,
+  fetchTestsBySubmission,
 } from '../../../../core/testFetchUtils';
 
 interface IProps {
@@ -54,16 +55,16 @@ export const TestingSummary = (props: IProps) => {
   // Loading
   const [subsLoading, setSubsLoading] = useState<number[]>([]);
   const [fetchLoading, setFetchLoading] = useState(false);
+  const [resultsLoading, setResultsLoading] = useState(false);
   // ************************** Fetch Data ******************************
-  const fetchNewResults = async () => {
+  const fetchPaginatedResults = async () => {
     if (props.currentAssignment) {
-      Assignment.readPaginatedTestResults(props.currentAssignment.id, submissionTestsCallback);
+      setResultsLoading(true);
+      Assignment.readPaginatedTestResults(props.currentAssignment.id, submissionTestsCallback).then(() => {
+        setResultsLoading(false);
+      });
     }
   };
-  // //
-  //   useEffect(() => {
-  //     fetchNewResults();
-  //   }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,8 +75,15 @@ export const TestingSummary = (props: IProps) => {
         setTestCasesByCategory(casesByCategory);
         const currEnv = await fetchEnvironment(props.currentAssignment);
         setEnv(currEnv);
+        if (props.isAdmin) {
+          // Admin console, read paginated test results
+          fetchPaginatedResults();
+        } else {
+          // Section leader console, read tests by submission
+          const tests = await fetchTestsBySubmission(props.submissions);
+          setTestsBySubmission(tests);
+        }
         setFetchLoading(false);
-        fetchNewResults();
       }
     };
     fetchData();
@@ -94,7 +102,7 @@ export const TestingSummary = (props: IProps) => {
   // ******************************* API / State change functions  *******************************
 
   const runAllCallback = () => {
-    fetchNewResults();
+    fetchPaginatedResults();
   };
 
   const runAllSubmissions = async (
@@ -178,6 +186,7 @@ export const TestingSummary = (props: IProps) => {
       categories={categories}
       isLoading={fetchLoading}
       subsLoading={subsLoading}
+      resultsLoading={resultsLoading}
       runSubmission={runSubmission}
       hasSourceFiles={(env && env.sourceFiles.length > 0) || false}
     />

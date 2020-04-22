@@ -11,13 +11,7 @@ import {
 } from '@ant-design/icons';
 
 /* library imports */
-import { Breadcrumb, Button, Checkbox, Dropdown, Menu, Modal, Radio, Skeleton, Table, Tooltip } from 'antd';
-
-/* other library imports */
-import { RouteComponentProps } from 'react-router';
-import { Link } from 'react-router-dom';
-
-import CPFlex from '../../../../core/CPFlex';
+import { Dropdown, Menu, Radio, Skeleton, Tooltip } from 'antd';
 
 /* codePost object imports */
 import { SubmissionInfoType } from '../../../../../infrastructure/submission';
@@ -26,14 +20,8 @@ import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructur
 import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { TestCaseType } from '../../../../../infrastructure/testCase';
 
-import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
-import { RunAllResultType, SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
-
-import { awaitTestResult } from '../autograderPollingUtils';
-
 /* codePost component imports */
 import { TableDetail } from '../../../other/TableDetail';
-import RunAllModal from './RunAllModal';
 import ResultDetail from './ResultDetail';
 
 import { bySubmissionColumns, byTestColumns } from './testSummaryUtils';
@@ -56,6 +44,7 @@ interface IProps {
   categories: TestCategoryType[];
   isLoading: boolean;
   subsLoading: number[];
+  resultsLoading: boolean;
   runSubmission: (sub: SubmissionInfoType) => Promise<void>;
   hasSourceFiles: boolean;
 
@@ -63,13 +52,6 @@ interface IProps {
   title?: string;
   parentActions: React.ReactNode[];
   tableOnly: boolean;
-}
-
-enum MODAL_STATUS {
-  None,
-  PendingRunAll,
-  RunAll,
-  ResultDetail,
 }
 
 enum SUMMARY_TYPE {
@@ -266,6 +248,18 @@ const TestResultsTable = (props: IProps) => {
           const children = !props.testCasesByCategory[category.id]
             ? []
             : props.testCasesByCategory[category.id].map((testCase) => {
+                //  If the pagination hasn't completed, show skeletons
+                if (props.resultsLoading) {
+                  return {
+                    description: <span>{testCase.description}</span>,
+                    passed: <Skeleton.Button active={true} size="default" shape="round" />,
+                    failed: <Skeleton.Button active={true} size="default" shape="round" />,
+                    error: <Skeleton.Button active={true} size="default" shape="round" />,
+                    notRun: <Skeleton.Button active={true} size="default" shape="round" />,
+                    key: `testCase-${testCase.id}`,
+                  };
+                }
+
                 const thisNotRun =
                   props.submissions.length -
                   passedByCase[testCase.id].length -
@@ -309,6 +303,23 @@ const TestResultsTable = (props: IProps) => {
                   key: `testCase-${testCase.id}`,
                 };
               });
+
+          if (props.resultsLoading) {
+            //  If the pagination hasn't completed, show skeletons
+            return {
+              description: <span>{category.name}</span>,
+              children: children,
+              passed: <Skeleton.Button active={true} size="default" shape="round" />,
+              failed: <Skeleton.Button active={true} size="default" shape="round" />,
+              error: <Skeleton.Button active={true} size="default" shape="round" />,
+              notRun: <Skeleton.Button active={true} size="default" shape="round" />,
+              key: `category-${category.id}`,
+              passedValue: 0,
+              failedValue: 0,
+              errorValue: 0,
+              nullValue: 0,
+            };
+          }
 
           return {
             description: (
