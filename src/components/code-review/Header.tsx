@@ -780,7 +780,7 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
       <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
         Code Review Console
       </Menu.Item>
-      {props.isStudent || props.isDemo ? null : (
+      {props.isStudent || props.isDemo || (props.course && !props.course.activateQueue) ? null : (
         <Menu.Item key="claim" style={itemStyle} className="header-menu">
           <span onClick={props.claimSubmission}>
             <PlusCircleOutlined /> Claim another submission{' '}

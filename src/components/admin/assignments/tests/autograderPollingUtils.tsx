@@ -1,7 +1,7 @@
 import { sendSlack } from '../../../core/slack';
 import { message } from 'antd';
 
-const MAX_TRIES_RUN = 35;
+const MAX_TRIES_RUN = 45;
 const MAX_TRIES_BUILD = 120;
 
 // Running a test
@@ -58,18 +58,11 @@ async function pollTestResult(
   const result = await res.json();
   if (result.status === 'SUCCESS') {
     // Case 1: Successful result
-    if (result.result === null || result.result === undefined) {
-      // Should never be undefined or null
-      sendSlack(
-        `Null test result received on student upload: ${id} ${window.location.href}. This may be because the results haven't been written to the db yet. Trying again...`,
-        `${JSON.stringify(result)}`,
-        '#cc0000',
-        '#autograder_bugs',
-      );
-    } else {
+    if (result.result !== null && result.result !== undefined) {
       callback(result.result);
       clearInterval(interval);
     }
+    // If the result is null or undefined, but a success, that means the data hasn't been written yet so we keep polling
   } else if (result.status === 'FAILURE') {
     // Case 2: Result failed for some reason (e.g., excessive logging, db timeouts)
     sendSlack(

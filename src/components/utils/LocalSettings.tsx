@@ -128,10 +128,10 @@ const mostRecentFile = generateSettingFunctions('mostRecentFile', 0, intIParser,
 
 // key: sendMeAConfirmationEmail
 // return type: boolean. Student upload confirmation checkbox will default to this value.
-// defalut value: true
+// defalut value: false
 const sendMeAConfirmationEmail = generateSettingFunctions(
   'sendMeAConfirmationEmail',
-  true,
+  false,
   booleanIParser,
   booleanOParser,
 );

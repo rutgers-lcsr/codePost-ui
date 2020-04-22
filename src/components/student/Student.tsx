@@ -625,13 +625,21 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
           };
         } else if (!submission.isFinalized && !assignment.liveFeedbackMode) {
           // Case 2: assignment is published, but student has no submission OR submission isn't finalized
-          return {
-            ...toRet,
-            code: (
+
+          const msg =
+            localStorage.getItem('source') === 'codePost' ? (
               <div>
                 <MinusCircleOutlined /> &nbsp; Your submission hasn't been reviewed yet
               </div>
-            ),
+            ) : (
+              <div>
+                🎉 Your assignment has been uploaded! 🎉 <br /> You can run the tests as many times as you want.
+              </div>
+            );
+
+          return {
+            ...toRet,
+            code: msg,
             statusType: SUBMISSION_STATUS.NO_SUBMISSION,
           };
         } else {
@@ -767,7 +775,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
               this.state.currentPanel === CURRENT_PANEL.ADDFILES
             }
             onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, this.state.detailAssignment, undefined)}
-            assignments={[]}
+            assignments={assignmentList}
             selectedAssignment={this.state.detailAssignment}
             students={[]}
             selectedStudents={
