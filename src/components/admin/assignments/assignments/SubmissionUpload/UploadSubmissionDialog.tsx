@@ -646,37 +646,39 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
         content = (
           <div>
             <Result status="success" title="Upload complete!" />
-            <div style={{ display: 'flex' }}>
-              <Button
-                key="submit"
-                onClick={() => {
-                  this.props.isStudent && this.setState({ activeTab: '1' });
-                  this.onSuccess();
-                }}
-              >
-                Submit again
-              </Button>
-              {this.state.submissionTests.length > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <div style={{ width: 400, display: 'flex', justifyContent: 'space-between' }}>
                 <Button
-                  key="tests"
-                  type="primary"
+                  key="submit"
                   onClick={() => {
-                    this.props.isStudent && this.setState({ activeTab: '3' });
+                    this.props.isStudent && this.setState({ activeTab: '1' });
                     this.onSuccess();
                   }}
                 >
-                  View test results
+                  Submit again
                 </Button>
-              )}
-              <Button
-                key="files"
-                onClick={() => {
-                  this.props.isStudent && this.setState({ activeTab: '4' });
-                  this.onSuccess();
-                }}
-              >
-                View files
-              </Button>
+                {this.state.submissionTests.length > 0 && (
+                  <Button
+                    key="tests"
+                    type="primary"
+                    onClick={() => {
+                      this.props.isStudent && this.setState({ activeTab: '3' });
+                      this.onSuccess();
+                    }}
+                  >
+                    View test results
+                  </Button>
+                )}
+                <Button
+                  key="files"
+                  onClick={() => {
+                    this.props.isStudent && this.setState({ activeTab: '4' });
+                    this.onSuccess();
+                  }}
+                >
+                  View files
+                </Button>
+              </div>
             </div>
           </div>
         );
@@ -691,6 +693,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           content = (
             <div style={{ textAlign: 'center', margin: '0 auto', padding: '30px 50px' }}>
               <Spin size="large" />
+              <br />
               <br />
               <Typography.Title level={4}>Uploading your files and running tests...</Typography.Title>
             </div>
