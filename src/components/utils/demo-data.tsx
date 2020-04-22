@@ -92,6 +92,7 @@ const demoCourse = (testName: string) => {
     inviteCode: '',
     emailWhitelist: '',
     inviteCodeEnabled: false,
+    enableStudentFeedbackNotifications: false,
   };
 };
 

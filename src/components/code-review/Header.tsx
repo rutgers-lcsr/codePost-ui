@@ -260,6 +260,7 @@ export const Controls = (props: IControlsProps) => {
 /**********************************************************************************************/
 
 interface IFinalizeButtonProps {
+  course: CourseType;
   submission: AnonymousSubmissionType;
   toggleFinalized: () => void;
   numComments: number;
@@ -331,16 +332,19 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
             return finalize();
           },
         });
-      } else if (true) {
+        // FIXME: This doesn't cover the situation where both settings are enabled
+        // course.enableStudentFeedbackNotifications and mincomments
+      } else if (props.course.enableStudentFeedbackNotifications) {
         Modal.confirm({
           title: `Do you want to notify the student(s) via email?`,
           icon: <MailOutlined />,
           okText: 'Yes',
           cancelText: 'No',
           content: '',
-          onOk() {
+          onOk: async () => {
+            await finalize();
             sendStudentNotification();
-            return finalize();
+            return;
           },
           onCancel() {
             return finalize();
@@ -357,12 +361,12 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
     setIsLoading(false);
   };
 
-  const finalize = () => {
+  const finalize = async () => {
     // If the submission doesn't have a grader and there are multiple graders in the course, make the user finalize it
     if (!props.submission.grader && !props.isOnlyGrader) {
       message.warning('You must assign a grader before finalizing this submission.');
     } else {
-      executeToggle();
+      await executeToggle();
     }
   };
 
