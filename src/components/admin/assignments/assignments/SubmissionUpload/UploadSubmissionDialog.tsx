@@ -483,6 +483,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
               }
               this.setState({
                 submission: newSubmission,
+                status: shouldRun ? STATUS.SAVING : STATUS.COMPLETE,
                 files: [],
                 fileList: [],
                 rejectedFiles: [],
@@ -647,7 +648,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           <div>
             <Result status="success" title="Upload complete!" />
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <div style={{ width: 400, display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Button
                   key="submit"
                   onClick={() => {
@@ -665,16 +666,19 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                       this.props.isStudent && this.setState({ activeTab: '3' });
                       this.onSuccess();
                     }}
+                    style={{ marginLeft: 25 }}
                   >
                     View test results
                   </Button>
                 )}
                 <Button
                   key="files"
+                  type="primary"
                   onClick={() => {
                     this.props.isStudent && this.setState({ activeTab: '4' });
                     this.onSuccess();
                   }}
+                  style={{ marginLeft: 25 }}
                 >
                   View files
                 </Button>
@@ -689,22 +693,15 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
         );
         break;
       case STATUS.SAVING:
-        if (this.state.loadingTests) {
-          content = (
-            <div style={{ textAlign: 'center', margin: '0 auto', padding: '30px 50px' }}>
-              <Spin size="large" />
-              <br />
-              <br />
-              <Typography.Title level={4}>Uploading your files and running tests...</Typography.Title>
-            </div>
-          );
-        } else {
-          content = (
-            <div>
-              Uploading submissions: &nbsp; <Progress percent={0} size="small" />
-            </div>
-          );
-        }
+        content = (
+          <div style={{ textAlign: 'center', margin: '0 auto', padding: '30px 50px' }}>
+            <Spin size="large" />
+            <br />
+            <br />
+            <Typography.Title level={4}>{`Uploading your files${this.state.loadingTests &&
+              ' and running tests...'}`}</Typography.Title>
+          </div>
+        );
         break;
       case STATUS.NONE:
         const studentOptions = this.buildStudentOptions(
