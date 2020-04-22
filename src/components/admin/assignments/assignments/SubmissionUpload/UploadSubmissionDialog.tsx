@@ -820,7 +820,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           (ft) => !ft.required || this.state.files.some((el) => el.name === ft.name),
         );
 
-        if (this.props.isStudent) {
+        if (this.props.isStudent && this.state.activeTab === '1') {
           sendMeAConfirmationEmailCheckbox = (
             <span key="sendMeAConfirmationEmailCheckbox">
               {this.state.selectedAssignment !== undefined &&
@@ -848,7 +848,8 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           );
         }
 
-        goForwardButton = (
+        // only show upload if we're on the upload tab
+        goForwardButton = this.state.activeTab === '1' && (
           <span key="goForwardButton" style={{ marginLeft: '8px' }}>
             <Button
               key="submit"
