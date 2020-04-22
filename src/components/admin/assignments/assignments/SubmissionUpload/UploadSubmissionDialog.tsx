@@ -481,7 +481,11 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
   public upload = () => {
     this.closeLateSubmissionModal();
     // Instead of blocking this on an api error, block the student from submitting
-    if (this.state.submission && (this.state.submission.isFinalized || this.state.submission.hasGrader)) {
+    if (
+      this.state.submission &&
+      (this.state.submission.isFinalized || this.state.submission.hasGrader) &&
+      this.props.isStudent
+    ) {
       // CIP FIXME: Hardcoded logic for CIP course to allow students to submit after finalization
       // Only tests are run on submit, so props.uploadSubmission isn't
       if (this.state.selectedAssignment && this.state.selectedAssignment.course === 925) {
@@ -762,15 +766,17 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
             <Result status="success" title="Upload complete!" />
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Button
-                  key="submit"
-                  onClick={() => {
-                    this.props.isStudent && this.setState({ activeTab: '1' });
-                    this.onSuccess();
-                  }}
-                >
-                  <UploadOutlined /> Submit again
-                </Button>
+                {this.props.isStudent && (
+                  <Button
+                    key="submit"
+                    onClick={() => {
+                      this.props.isStudent && this.setState({ activeTab: '1' });
+                      this.onSuccess();
+                    }}
+                  >
+                    <UploadOutlined /> Submit again
+                  </Button>
+                )}
                 {this.state.submissionTests.length > 0 && (
                   <Button
                     key="tests"
