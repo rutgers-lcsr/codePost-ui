@@ -6,8 +6,8 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Table, Dropdown, Menu } from 'antd';
-import { CodeOutlined, MinusCircleTwoTone, MenuOutlined } from '@ant-design/icons';
+import { Table, Dropdown, Menu, message } from 'antd';
+import { CodeOutlined, MinusCircleTwoTone, MenuOutlined, MailOutlined } from '@ant-design/icons';
 
 /* codePost imports */
 import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
@@ -125,14 +125,50 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
           .join(', ');
       }
 
+      const sendStudentNotification = async (submission: SubmissionType | null) => {
+        if (submission === null) {
+          return;
+        }
+
+        fetch(`${process.env.REACT_APP_API_URL}/submissions/${submission.id}/notifyStudents/`, {
+          headers: {
+            Authorization: `JWT ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify({}),
+        })
+          .then(async (res) => {
+            if (res.status === 200) {
+              const json = await res.json();
+              message.success('Email sent to student notifying them that their submission is ready.');
+              return;
+            } else {
+              const json = await res.json();
+              message.error(json);
+              return;
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+        return;
+      };
+
       const menu = (
         <Menu>
           {submission && submission.grader === props.me && (
-            <Menu.Item key="1">
-              <MinusCircleTwoTone onClick={() => props.claimSubmissions([submission.id], true)} />
+            <Menu.Item key="1" onClick={() => props.claimSubmissions([submission.id], true)}>
+              <MinusCircleTwoTone />
               Unclaim
             </Menu.Item>
           )}
+          {submission ? (
+            <Menu.Item key="2" onClick={() => sendStudentNotification(submission)}>
+              <MailOutlined />
+              Notify student
+            </Menu.Item>
+          ) : null}
         </Menu>
       );
 

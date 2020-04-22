@@ -72,6 +72,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     inviteCode: '',
     emailWhitelist: '',
     inviteCodeEnabled: false,
+    enableStudentFeedbackNotifications: false,
   };
 
   const demoSubmission: AnonymousSubmissionType = {
@@ -367,6 +368,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     inviteCode: '',
     emailWhitelist: '',
     inviteCodeEnabled: false,
+    enableStudentFeedbackNotifications: false,
   };
 
   const demoSubmission: AnonymousSubmissionType = {

@@ -1999,6 +1999,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             controls,
             <FinalizeButton
               key="subheader-finalize"
+              course={this.state.course!}
               submission={this.state.submission!}
               toggleFinalized={this.toggleFinalized}
               numComments={Object.values(this.state.comments).flat().length}
@@ -2172,6 +2173,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           <ViewAsStudent key="view-as-student" pathname={this.props.location.pathname} />,
           <FinalizeButton
             key="subheader-finalize"
+            course={this.state.course!}
             submission={this.state.submission!}
             toggleFinalized={this.toggleFinalized}
             numComments={Object.values(this.state.comments).flat().length}

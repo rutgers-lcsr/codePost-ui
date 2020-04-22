@@ -21,10 +21,13 @@ import {
   TagTwoTone,
   ZoomInOutlined,
   ZoomOutOutlined,
+  MailOutlined,
 } from '@ant-design/icons';
 
 /* antd imports */
 import { Button, Descriptions, Divider, Dropdown, message, Menu, Modal, Popover, Switch, Tag } from 'antd';
+
+import { trackFeature } from '../utils/Fullstory';
 
 /* codePost imports */
 import CPButton from '../core/CPButton';
@@ -259,6 +262,7 @@ export const Controls = (props: IControlsProps) => {
 /**********************************************************************************************/
 
 interface IFinalizeButtonProps {
+  course: CourseType;
   submission: AnonymousSubmissionType;
   toggleFinalized: () => void;
   numComments: number;
@@ -288,6 +292,32 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
 
   const isFinalized = props.submission.isFinalized;
 
+  const sendStudentNotification = async () => {
+    fetch(`${process.env.REACT_APP_API_URL}/submissions/${props.submission.id}/notifyStudents/`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify({}),
+    })
+      .then(async (res) => {
+        if (res.status === 200) {
+          const json = await res.json();
+          message.success(json);
+          return;
+        } else {
+          const json = await res.json();
+          message.error(json);
+          return;
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    return;
+  };
+
   const onClick = async () => {
     if (isFinalized) {
       if (props.canUnfinalize) {
@@ -304,6 +334,31 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
             return finalize();
           },
         });
+        // FIXME: This doesn't cover the situation where both settings are enabled
+        // course.enableStudentFeedbackNotifications and mincomments
+      } else if (props.course.enableStudentFeedbackNotifications) {
+        const studentText = `student${
+          props.submission.students ? (props.submission.students.length > 1 ? 's' : '') : '(s)'
+        }`;
+
+        Modal.confirm({
+          title: `Notify ${studentText} via email?`,
+          content: `This submission will be viewable once finalized. Would you like codePost to notify the ${studentText} by sending them an email?`,
+          icon: <MailOutlined />,
+          okText: 'Finalize and send email',
+          cancelText: 'Finalize',
+          onOk: async () => {
+            await finalize();
+            sendStudentNotification();
+            trackFeature('Student Feedback Notification Approved', {});
+            return;
+          },
+          onCancel() {
+            finalize();
+            trackFeature('Student Feedback Notification Rejected', {});
+            return;
+          },
+        });
       } else {
         finalize();
       }
@@ -315,12 +370,12 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
     setIsLoading(false);
   };
 
-  const finalize = () => {
+  const finalize = async () => {
     // If the submission doesn't have a grader and there are multiple graders in the course, make the user finalize it
     if (!props.submission.grader && !props.isOnlyGrader) {
       message.warning('You must assign a grader before finalizing this submission.');
     } else {
-      executeToggle();
+      await executeToggle();
     }
   };
 
