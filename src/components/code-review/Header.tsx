@@ -27,6 +27,8 @@ import {
 /* antd imports */
 import { Button, Descriptions, Divider, Dropdown, message, Menu, Modal, Popover, Switch, Tag } from 'antd';
 
+import { trackFeature } from '../utils/Fullstory';
+
 /* codePost imports */
 import CPButton from '../core/CPButton';
 import CPTooltip from '../core/CPTooltip';
@@ -348,10 +350,13 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
           onOk: async () => {
             await finalize();
             sendStudentNotification();
+            trackFeature('Student Feedback Notification Approved', {});
             return;
           },
           onCancel() {
-            return finalize();
+            finalize();
+            trackFeature('Student Feedback Notification Rejected', {});
+            return;
           },
         });
       } else {
