@@ -5,7 +5,13 @@
 /* react imports */
 import * as React from 'react';
 
-import { CalculatorOutlined, CheckCircleOutlined, CloseCircleOutlined, UploadOutlined } from '@ant-design/icons';
+import {
+  CalculatorOutlined,
+  CheckCircleOutlined,
+  ContainerOutlined,
+  CloseCircleOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
 
 /* ant imports */
 import {
@@ -16,11 +22,14 @@ import {
   Modal,
   Progress,
   Select,
+  Spin,
   Switch,
   Upload,
   Table,
   Tag,
   Divider,
+  Result,
+  Typography,
   Tabs,
 } from 'antd';
 
@@ -152,7 +161,11 @@ interface IUploadSubmissionDialogState {
 
 class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProps, IUploadSubmissionDialogState> {
   public assignmentOptions = this.props.assignments.map((assignment: AssignmentType | AssignmentStudentType, i) => {
-    return <Select.Option value={assignment.id}>{assignment.name}</Select.Option>;
+    return (
+      <Select.Option key={assignment.id} value={assignment.id}>
+        {assignment.name}
+      </Select.Option>
+    );
   });
 
   public state: Readonly<IUploadSubmissionDialogState> = {
@@ -341,7 +354,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
       if (assignment) {
         if (submissions[student][assignment.id]) {
           hasSubmitted.push(
-            <Select.Option value={student} disabled={true}>
+            <Select.Option key={student} value={student} disabled={true}>
               {student}
             </Select.Option>,
           );
@@ -363,11 +376,11 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
 
     return (
       <React.Fragment>
-        <Select.Option value={''} disabled={true}>
+        <Select.Option key="missing" value={''} disabled={true}>
           <span style={{ paddingTop: 10, color: 'grey', fontSize: '10px' }}>STUDENTS MISSING SUBMISSIONS</span>
         </Select.Option>
         {notSubmitted}
-        <Select.Option value={''} disabled={true}>
+        <Select.Option key="submitted" value={''} disabled={true}>
           <span style={{ paddingTop: 10, color: 'grey', fontSize: '10px' }}>
             STUDENTS WITH SUBMISSIONS (DELETE BEFORE UPLOADING)
           </span>
@@ -471,18 +484,18 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
             .then((newSubmission: StudentSubmissionType | SubmissionInfoType) => {
               const shouldRun = this.shouldRunTests();
               if (shouldRun) {
-                message.success('Submission uploaded!');
+                // message.success('Submission uploaded!');
                 this.runTests(newSubmission);
               }
               this.setState({
                 submission: newSubmission,
-                status: shouldRun ? STATUS.NONE : STATUS.COMPLETE,
+                status: shouldRun ? STATUS.SAVING : STATUS.COMPLETE,
                 files: [],
                 fileList: [],
                 rejectedFiles: [],
                 selectedStudents: this.props.selectedStudents,
                 selectedAssignment: this.props.selectedAssignment ? this.props.selectedAssignment : undefined,
-                activeTab: shouldRun ? '3' : '1',
+                activeTab: '1',
               });
             })
             .catch((error: any) => {
@@ -594,6 +607,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     this.setState((prevState) => {
       return {
         loadingTests: false,
+        status: STATUS.COMPLETE,
       };
     });
   };
@@ -601,7 +615,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
   public runTests = async (submission: StudentSubmissionType | SubmissionInfoType) => {
     if (this.shouldRunTests()) {
       // Make sure the loading is set
-      this.setState({ loadingTests: true });
+      this.setState({ loadingTests: true, status: STATUS.SAVING });
       const result = await Environment.run(this.state.selectedAssignment!.environment!, {
         submission: submission.id.toString(),
         simulate: 'False',
@@ -638,36 +652,60 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
       case STATUS.COMPLETE:
         content = (
           <div>
-            Uploading submissions: &nbsp; <Progress percent={100} size="small" />
-            <br />
-            <br />
-            Upload complete!
+            <Result status="success" title="Upload complete!" />
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Button
+                  key="submit"
+                  onClick={() => {
+                    this.props.isStudent && this.setState({ activeTab: '1' });
+                    this.onSuccess();
+                  }}
+                >
+                  <UploadOutlined /> Submit again
+                </Button>
+                {this.state.submissionTests.length > 0 && (
+                  <Button
+                    key="tests"
+                    type="primary"
+                    onClick={() => {
+                      this.props.isStudent && this.setState({ activeTab: '3' });
+                      this.onSuccess();
+                    }}
+                    style={{ marginLeft: 25 }}
+                  >
+                    <CalculatorOutlined /> View test results
+                  </Button>
+                )}
+                <Button
+                  key="files"
+                  type="primary"
+                  onClick={() => {
+                    this.props.isStudent && this.setState({ activeTab: '4' });
+                    this.onSuccess();
+                  }}
+                  style={{ marginLeft: 25 }}
+                >
+                  <ContainerOutlined /> View files
+                </Button>
+              </div>
+            </div>
           </div>
         );
-
         goBackButton = (
           <Button key="back" onClick={this.cancel.bind(this, undefined)}>
             Close
           </Button>
         );
-
-        goForwardButton = (
-          <Button
-            key="submit"
-            type="primary"
-            onClick={() => {
-              this.props.isStudent && this.setState({ activeTab: '4' });
-              this.onSuccess();
-            }}
-          >
-            View files
-          </Button>
-        );
         break;
       case STATUS.SAVING:
         content = (
-          <div>
-            Uploading submissions: &nbsp; <Progress percent={0} size="small" />
+          <div style={{ textAlign: 'center', margin: '0 auto', padding: '30px 50px' }}>
+            <Spin size="large" />
+            <br />
+            <br />
+            <Typography.Title level={4}>{`Uploading your files${this.state.loadingTests &&
+              ' and running tests...'}`}</Typography.Title>
           </div>
         );
         break;
@@ -785,7 +823,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           (ft) => !ft.required || this.state.files.some((el) => el.name === ft.name),
         );
 
-        if (this.props.isStudent) {
+        if (this.props.isStudent && this.state.activeTab === '1') {
           sendMeAConfirmationEmailCheckbox = (
             <span key="sendMeAConfirmationEmailCheckbox">
               {this.state.selectedAssignment !== undefined &&
@@ -813,7 +851,8 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           );
         }
 
-        goForwardButton = (
+        // only show upload if we're on the upload tab
+        goForwardButton = this.state.activeTab === '1' && (
           <span key="goForwardButton" style={{ marginLeft: '8px' }}>
             <Button
               key="submit"
