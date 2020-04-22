@@ -90,6 +90,16 @@ const RunAllData = t.intersection([
   }),
 ]);
 
+const RunData = t.intersection([
+  GenericObject,
+  t.partial({
+    files: t.string,
+    submission: t.number,
+    simulate: t.boolean,
+    exposedOnly: t.boolean,
+  }),
+]);
+
 const TestTemplate = t.intersection([
   GenericObject,
   t.type({
@@ -124,6 +134,6 @@ export class Environment {
   public static status = readObjectDetail(BuildStatus, 'autograder/environments', 'status');
   public static eject = readObjectDetail(TestsSource, 'autograder/environments', 'eject');
   public static runAll = updateObjectDetail(TaskV, RunAllData, 'autograder/environments', 'runAll');
-  public static run = readObjectDetail(TaskV, 'autograder/environments', 'run');
+  public static run = updateObjectDetail(TaskV, RunData, 'autograder/environments', 'run');
   public static dockerfile = readObjectDetail(Dockerfile, 'autograder/environments', 'dockerfile');
 }
