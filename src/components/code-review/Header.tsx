@@ -21,6 +21,7 @@ import {
   TagTwoTone,
   ZoomInOutlined,
   ZoomOutOutlined,
+  MailOutlined,
 } from '@ant-design/icons';
 
 /* antd imports */
@@ -288,6 +289,32 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
 
   const isFinalized = props.submission.isFinalized;
 
+  const sendStudentNotification = async () => {
+    fetch(`${process.env.REACT_APP_API_URL}/submissions/${props.submission.id}/notifyStudents/`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify({}),
+    })
+      .then(async (res) => {
+        if (res.status === 200) {
+          const json = await res.json();
+          message.success(json);
+          return;
+        } else {
+          const json = await res.json();
+          message.error(json);
+          return;
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    return;
+  };
+
   const onClick = async () => {
     if (isFinalized) {
       if (props.canUnfinalize) {
@@ -301,6 +328,21 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
           title: `This submission has fewer than ${props.minComments} comments applied.`,
           content: `Are you sure you want to finalize it? Submissions with fewer than ${props.minComments} comments will be flagged for quality control.`,
           onOk() {
+            return finalize();
+          },
+        });
+      } else if (true) {
+        Modal.confirm({
+          title: `Do you want to notify the student(s) via email?`,
+          icon: <MailOutlined />,
+          okText: 'Yes',
+          cancelText: 'No',
+          content: '',
+          onOk() {
+            sendStudentNotification();
+            return finalize();
+          },
+          onCancel() {
             return finalize();
           },
         });
