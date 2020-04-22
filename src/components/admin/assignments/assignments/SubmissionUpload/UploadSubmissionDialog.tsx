@@ -5,7 +5,13 @@
 /* react imports */
 import * as React from 'react';
 
-import { CalculatorOutlined, CheckCircleOutlined, CloseCircleOutlined, UploadOutlined } from '@ant-design/icons';
+import {
+  CalculatorOutlined,
+  CheckCircleOutlined,
+  ContainerOutlined,
+  CloseCircleOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
 
 /* ant imports */
 import {
@@ -656,7 +662,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                     this.onSuccess();
                   }}
                 >
-                  Submit again
+                  <UploadOutlined /> Submit again
                 </Button>
                 {this.state.submissionTests.length > 0 && (
                   <Button
@@ -668,7 +674,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                     }}
                     style={{ marginLeft: 25 }}
                   >
-                    View test results
+                    <CalculatorOutlined /> View test results
                   </Button>
                 )}
                 <Button
@@ -680,7 +686,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                   }}
                   style={{ marginLeft: 25 }}
                 >
-                  View files
+                  <ContainerOutlined /> View files
                 </Button>
               </div>
             </div>
