@@ -934,6 +934,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     }
   };
 
+  // reloadComments only called for students
   public reloadComments = async () => {
     let requestID = 0;
     this.setState(
@@ -946,14 +947,21 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         const MAX_REQUESTS = 3600 / (this.LIVE_FEEDBACK_COMMENTS_RELOAD_INTERVAL / 1000); // 1 hour
 
         if (requestID < MAX_REQUESTS) {
-          // eslint-disable-next-line
-          let files, comments, commentRubricComments;
+          // Fetch the latest submission in case the files changed elsewhere
+          const newSub = await Submission.readReadOnly(this.state.readOnlySubmission!.id);
+          let files, comments, _;
+          [files, comments, _] = await Submission.loadData(newSub);
+          files = CodeConsole.fileBouncer(files);
 
-          [files, comments, commentRubricComments] = await Submission.loadData(this.state.readOnlySubmission!);
+          // change the selected file
+          const selectedFile =
+            files.find((f: FileType) => {
+              return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
+            }) || files[0];
 
           // guard against an old (i.e. not the latest) request from overwriting state
           if (this.state.commentRefreshCounter === requestID) {
-            this.setState({ comments });
+            this.setState({ readOnlySubmission: newSub, files, comments, selectedFile });
           }
         } else {
           clearInterval(this.reloadCommentsInterval);
@@ -1365,7 +1373,9 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   };
 
   public getPointsInFile = (file: FileType): number[] => {
-    return CodeConsole.pointsInFile(file, this.state.comments[file.id], this.state.commentRubricComments);
+    // If, for some reason, the file is not in comments, don't have a fatal error
+    const fileComments = this.state.comments[file.id] || [];
+    return CodeConsole.pointsInFile(file, fileComments, this.state.commentRubricComments);
   };
 
   public updateSubmissionGrade = () => {
