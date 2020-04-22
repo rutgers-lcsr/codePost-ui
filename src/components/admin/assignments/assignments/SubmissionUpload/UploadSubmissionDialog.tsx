@@ -745,6 +745,9 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           this.state.files.length > 0 &&
           this.state.fileTemplates.every((ft) => !ft.required && !this.state.files.some((el) => el.name === ft.name));
 
+        // Has the student uploaded any .zip file?
+        const hasUploadedZip = this.state.files.some((el) => el.zipSource !== undefined && el.zipSource.length > 0);
+
         const fileList =
           this.state.fileTemplates.length > 0 ? (
             <span>
@@ -774,11 +777,36 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                   <br />
                   <Alert
                     type="warning"
-                    message={`You haven't uploaded any of the specified files. Make sure this is your intention before submitting. ${this.shouldRunTests() &&
-                      'File names must match the specified files exactly to pass tests.'}`}
+                    message={
+                      <span>
+                        You haven't uploaded any of the specified files. Make sure this is your intention before
+                        submitting.
+                        {this.shouldRunTests() && ' File names must match the specified files exactly to pass tests. '}
+                        {hasUploadedZip && (
+                          <span>
+                            If you're uploading a zip, make sure you're the zipping the folder that contains your files,
+                            and not a folder that contains a folder with your files.
+                          </span>
+                        )}
+                      </span>
+                    }
                   />
                 </span>
               )}
+              {/* this.state.files.length > 0 && fewerFilesSubmitted && (
+                <span>
+                  <br />
+                  <Alert
+                    type="warning"
+                    message={
+                      <span>
+                        You're missing some files you uploaded when you last submitted. You must re-submit files if you
+                        want to include them and/or test them.
+                      </span>
+                    }
+                  />
+                </span>
+              ) */}
             </span>
           ) : (
             <span />
@@ -965,12 +993,13 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                 >
                   <Button>
                     <UploadOutlined /> Upload files
-                  </Button>
+                  </Button>{' '}
+                  {this.state.submission && (
+                    <span>
+                      &nbsp; <b>Note</b>: you must re-submit all files each time you submit.
+                    </span>
+                  )}
                 </Upload>
-              </div>
-              <div style={{ paddingTop: '6px' }}>
-                * Please upload all the files that you want submitted
-                {this.state.testCategories.length > 0 ? ' and tested' : ''}
               </div>
               <span>
                 {unzippedFiles.length > 0 ? (
