@@ -776,7 +776,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
               this.state.currentPanel === CURRENT_PANEL.ADDFILES
             }
             onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, this.state.detailAssignment, undefined)}
-            assignments={[]}
+            assignments={assignmentList}
             selectedAssignment={this.state.detailAssignment}
             students={[]}
             selectedStudents={
