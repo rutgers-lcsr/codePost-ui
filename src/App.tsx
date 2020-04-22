@@ -118,7 +118,13 @@ class App extends React.Component<{}, IState> {
   private loginCount: number;
   public constructor(props: any) {
     super(props);
-    localStorage.setItem('source', 'codePost');
+    try {
+      localStorage.setItem('source', 'codePost');
+    } catch (err) {
+      alert(
+        'codePost needs permission from your browser to start.\nPlease follow these steps...\n\n - Open up Chrome cookie settings:\n    chrome://settings/content/cookies\n - Click Allow -> Add -> https://codepost.io\n    See a screenshot here:\n    https://share.getcloudapp.com/eDu69Dnz\n - Try refreshing!',
+      );
+    }
 
     console.log(...consoleArt);
     this.loginCount = 0;
