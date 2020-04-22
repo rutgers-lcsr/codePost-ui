@@ -51,7 +51,10 @@ const formURLforLink = (baseURL: string, course: CourseType, page?: string) => {
   return `${baseURL}/${encodeForLink(course.name)}/${encodeForLink(course.period)}/${page !== undefined ? page : ''}`;
 };
 
-const ComponentManager = (MyComponent: React.ComponentType<IComponentProps>, defaultPage?: string) => {
+const ComponentManager = (
+  MyComponent: React.ComponentType<IComponentProps>,
+  defaultPage?: ((c: CourseType) => string) | string,
+) => {
   return (props: IComponentManagerProps) => {
     return (
       <Switch>
@@ -79,7 +82,11 @@ const ComponentManager = (MyComponent: React.ComponentType<IComponentProps>, def
                 return course.id === storedID;
               });
               if (found !== undefined) {
-                return <Redirect to={formURLforLink(props.match.url, found, defaultPage)} />;
+                const dPage =
+                  typeof defaultPage === 'string' || typeof defaultPage === 'undefined'
+                    ? defaultPage
+                    : defaultPage(found);
+                return <Redirect to={formURLforLink(props.match.url, found, dPage)} />;
               }
             }
 
@@ -87,7 +94,11 @@ const ComponentManager = (MyComponent: React.ComponentType<IComponentProps>, def
               const lastResort = props.initialCourses.sort((a, b) => {
                 return b.id - a.id;
               })[0];
-              return <Redirect to={formURLforLink(props.match.url, lastResort, defaultPage)} />;
+              const dPage =
+                typeof defaultPage === 'string' || typeof defaultPage === 'undefined'
+                  ? defaultPage
+                  : defaultPage(lastResort);
+              return <Redirect to={formURLforLink(props.match.url, lastResort, dPage)} />;
             }
 
             return <MyComponent {...props} {...subprops} currentCourse={undefined} />;
