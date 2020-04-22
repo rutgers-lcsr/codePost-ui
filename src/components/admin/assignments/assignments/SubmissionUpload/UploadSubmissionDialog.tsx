@@ -31,6 +31,7 @@ import {
   Result,
   Typography,
   Tabs,
+  Tooltip,
 } from 'antd';
 
 /* other library imports */
@@ -775,29 +776,76 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           { title: 'Uploaded', dataIndex: 'uploaded', key: 'uploaded', align: 'center' as const },
         ];
 
+        // If required files are present, then a student must upload them before submitting.
+        // But if _only_ optional files are specified, then a student can ignore them. This can result in
+        // problems if optional files are being used to specify files that a student _should_ upload but can omit.
+        const ignoringOptionalFiles =
+          this.state.files.length > 0 &&
+          this.state.fileTemplates.every((ft) => !ft.required && !this.state.files.some((el) => el.name === ft.name));
+
+        // Has the student uploaded any .zip file?
+        const hasUploadedZip = this.state.files.some((el) => el.zipSource !== undefined && el.zipSource.length > 0);
+
         const fileList =
           this.state.fileTemplates.length > 0 ? (
-            <Table
-              columns={requiredColumns}
-              dataSource={this.state.fileTemplates.map((el) => {
-                const exists = this.state.files.some((file) => file.name === el.name);
-                return {
-                  ...el,
-                  name: (
-                    <span>
-                      {el.required ? <Tag color={exists ? 'green' : 'volcano'}>REQUIRED</Tag> : <Tag>OPTIONAL</Tag>}
-                      {el.name}
-                    </span>
-                  ),
-                  uploaded: exists ? (
-                    <CheckCircleOutlined style={{ color: 'green' }} />
-                  ) : (
-                    <CloseCircleOutlined style={{ color: 'red' }} />
-                  ),
-                };
-              })}
-              pagination={false}
-            />
+            <span>
+              <Table
+                columns={requiredColumns}
+                dataSource={this.state.fileTemplates.map((el) => {
+                  const exists = this.state.files.some((file) => file.name === el.name);
+                  return {
+                    ...el,
+                    name: (
+                      <span>
+                        {el.required ? <Tag color={exists ? 'green' : 'volcano'}>REQUIRED</Tag> : <Tag>OPTIONAL</Tag>}
+                        {el.name}
+                      </span>
+                    ),
+                    uploaded: exists ? (
+                      <CheckCircleOutlined style={{ color: 'green' }} />
+                    ) : (
+                      <CloseCircleOutlined style={{ color: 'red' }} />
+                    ),
+                  };
+                })}
+                pagination={false}
+              />
+              {ignoringOptionalFiles && (
+                <span>
+                  <br />
+                  <Alert
+                    type="warning"
+                    message={
+                      <span>
+                        You haven't uploaded any of the specified files. Make sure this is your intention before
+                        submitting.
+                        {this.shouldRunTests() && ' File names must match the specified files exactly to pass tests. '}
+                        {hasUploadedZip && (
+                          <span>
+                            If you're uploading a zip, make sure you're the zipping the folder that contains your files,
+                            and not a folder that contains a folder with your files.
+                          </span>
+                        )}
+                      </span>
+                    }
+                  />
+                </span>
+              )}
+              {/* this.state.files.length > 0 && fewerFilesSubmitted && (
+                <span>
+                  <br />
+                  <Alert
+                    type="warning"
+                    message={
+                      <span>
+                        You're missing some files you uploaded when you last submitted. You must re-submit files if you
+                        want to include them and/or test them.
+                      </span>
+                    }
+                  />
+                </span>
+              ) */}
+            </span>
           ) : (
             <span />
           );
@@ -809,18 +857,19 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
         /*****************************************************************************************/
         goBackButton = (
           <Button key="back" onClick={this.cancel.bind(this, undefined)}>
-            Cancel
+            Close
           </Button>
-        );
-
-        const disableUpload = !(
-          this.state.selectedStudents.length > 0 &&
-          this.state.files.length > 0 &&
-          this.state.selectedAssignment
         );
 
         const areRequiredFilesPresent = this.state.fileTemplates.every(
           (ft) => !ft.required || this.state.files.some((el) => el.name === ft.name),
+        );
+
+        const disableUpload = !(
+          areRequiredFilesPresent &&
+          this.state.files.length > 0 &&
+          this.state.selectedStudents.length > 0 &&
+          this.state.selectedAssignment
         );
 
         if (this.props.isStudent && this.state.activeTab === '1') {
@@ -852,26 +901,39 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
         }
 
         // only show upload if we're on the upload tab
-        goForwardButton = this.state.activeTab === '1' && (
-          <span key="goForwardButton" style={{ marginLeft: '8px' }}>
-            <Button
-              key="submit"
-              type="primary"
-              disabled={disableUpload || !areRequiredFilesPresent}
-              onClick={this.confirmUpload}
-            >
-              Upload {this.shouldRunTests() && <CalculatorOutlined />}
-            </Button>
-            {this.state.selectedAssignment === undefined ? null : (
-              <LateSubmissionModal
-                visible={this.state.lateSubmissionModalVisible}
-                assignment={this.state.selectedAssignment}
-                onCancel={this.closeLateSubmissionModal}
-                onOk={this.upload}
-              />
-            )}
-          </span>
-        );
+        goForwardButton =
+          this.state.activeTab === '1' ? (
+            <span key="goForwardButton" style={{ marginLeft: '8px' }}>
+              <Button key="submit" type="primary" disabled={disableUpload} onClick={this.confirmUpload}>
+                {this.state.submission ? 'Re-s' : 'S'}ubmit {this.shouldRunTests() && 'and run tests'}
+              </Button>
+              {this.state.selectedAssignment === undefined ? null : (
+                <LateSubmissionModal
+                  visible={this.state.lateSubmissionModalVisible}
+                  assignment={this.state.selectedAssignment}
+                  onCancel={this.closeLateSubmissionModal}
+                  onOk={this.upload}
+                />
+              )}
+            </span>
+          ) : (
+            <span />
+          );
+
+        if (disableUpload) {
+          let disabledText = '';
+          if (!areRequiredFilesPresent) {
+            disabledText = 'You must upload all required files before submitting.';
+          } else if (this.state.files.length === 0) {
+            disabledText = 'You must upload at least one file before submitting.';
+          } else if (this.state.selectedStudents.length === 0) {
+            disabledText = 'You must select at least one student before uploading.';
+          } else if (!this.state.selectedAssignment) {
+            disabledText = 'You must select an assignment before uploading.';
+          }
+
+          goForwardButton = <Tooltip title={disabledText}>{goForwardButton}</Tooltip>;
+        }
 
         /*****************************************************************************************/
 
@@ -973,7 +1035,12 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                 >
                   <Button>
                     <UploadOutlined /> Upload files
-                  </Button>
+                  </Button>{' '}
+                  {this.state.submission && (
+                    <span>
+                      &nbsp; <b>Note</b>: you must re-submit all files each time you submit.
+                    </span>
+                  )}
                 </Upload>
               </div>
               <span>
