@@ -38,20 +38,30 @@
 }
 
 .tests-menu--dark {
-  .ant-table-thead > tr > th {
+  .ant-table-cell {
     background: #18191c !important;
   }
 
+  .ant-table-tbody {
+    background: #18191c !important;
+  }
+
+  .ant-table-thead > tr > th {
+    background: #18191c !important;
+    color: $neutralDarkMainText !important;
+  }
+
   .ant-table-header-column {
-    color: $neutralDarkMainText;
+    color: $neutralDarkMainText !important;
   }
 
   .ant-table-row {
-    color: $neutralDarkMainText;
+    color: $neutralDarkMainText !important;
   }
 
   .ant-table-row:hover {
-    color: black !important;
+    background: gray;
+    color: $brandPrimary !important;
   }
 }
 
