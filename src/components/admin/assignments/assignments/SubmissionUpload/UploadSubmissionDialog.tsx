@@ -811,8 +811,9 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
             <Spin size="large" />
             <br />
             <br />
-            <Typography.Title level={4}>{`Uploading your files${this.state.loadingTests &&
-              ' and running tests...'}`}</Typography.Title>
+            <Typography.Title level={4}>{`Uploading your files${
+              this.state.loadingTests ? ' and running tests...' : ''
+            }`}</Typography.Title>
           </div>
         );
         break;
