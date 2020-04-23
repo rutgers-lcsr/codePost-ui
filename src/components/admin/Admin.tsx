@@ -120,7 +120,11 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       this.loadAllCourseData(this.props.currentCourse);
     }
 
-    const showCIPModal = Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('source');
+    // We show the CIP modal if the source is in the url, or if the user doesn't have credentials
+    // The second check (credentials) is to prevent the flow of: CIP user goes to create course, navigates to splash page, and doesn't set password
+    const showCIPModal =
+      Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('source') ||
+      !this.props.user.hasCredentials;
     const showOnboarding =
       Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding') ||
       this.props.initialCourses.length === 0;
