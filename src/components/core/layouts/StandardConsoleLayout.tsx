@@ -6,9 +6,10 @@
 import * as React from 'react';
 
 import { Icon as LegacyIcon } from '@ant-design/compatible';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 
 /* antd imports */
-import { Collapse, Layout } from 'antd';
+import { Button, Collapse, Layout } from 'antd';
 
 /* codePost imports */
 import themeVars from '../../../styles/abstracts/_theme.js';
@@ -219,6 +220,25 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.sider.length]);
 
+  const backToSubmissionsButton =
+    localStorage.getItem('source') === 'codePost' ? null : (
+      <Button
+        type="primary"
+        size="large"
+        icon={<ArrowLeftOutlined />}
+        style={{
+          position: 'absolute',
+          left: 10,
+          bottom: 10,
+          zIndex: 999999,
+          boxShadow: '0 8px 16px 0 rgba(0,0,0,0.2)',
+        }}
+        onClick={() => window.open(`/grader`, '_self')}
+      >
+        Back to Submissions
+      </Button>
+    );
+
   return (
     <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
       <Layout className="layout--standard-console">
@@ -235,6 +255,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
           {props.header}
         </Header>
         <Layout style={{ overflowX: 'auto' }}>
+          {backToSubmissionsButton}
           <div id="Code-Header">
             {siderResizer}
             <Sider
