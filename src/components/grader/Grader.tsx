@@ -304,6 +304,7 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
             <CIPGraderModal
               visible={this.state.showConversionModal}
               onClose={() => this.setState({ showConversionModal: false })}
+              email={this.props.user.email}
             />
           </span>
         }

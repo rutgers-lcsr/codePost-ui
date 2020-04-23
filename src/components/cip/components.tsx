@@ -6,11 +6,13 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Modal, notification, Input, Checkbox, Popover } from 'antd';
+import { Button, Modal, notification, Input, Checkbox, message, Popover } from 'antd';
 import { TeamOutlined } from '@ant-design/icons';
 
 /* other library imports */
 import Select from 'react-select';
+
+import { sendSlack } from '../core/slack';
 
 /* internal imports */
 import Video from '../landing/Video';
@@ -29,6 +31,28 @@ interface IAdminModalProps {
   email: string;
 }
 
+enum CIP_NOTIFICATION {
+  inProgress,
+  error,
+  success,
+}
+
+const slackCIPNotification = (email: string, message: string, type: CIP_NOTIFICATION) => {
+  let color;
+  switch (type) {
+    case CIP_NOTIFICATION.inProgress:
+      color = '#f7f7f7';
+      break;
+    case CIP_NOTIFICATION.error:
+      color = 'red';
+      break;
+    case CIP_NOTIFICATION.success:
+      color = 'green';
+      break;
+  }
+  sendSlack(email, message, color, '#cip-sl-notifications');
+};
+
 const CIPAdminModal = (props: IAdminModalProps) => {
   const [p1, setp1] = React.useState('');
   const [p2, setp2] = React.useState('');
@@ -36,14 +60,17 @@ const CIPAdminModal = (props: IAdminModalProps) => {
   const [panel, setPanel] = React.useState(0);
   const [loadingDemo, setLoadingDemo] = React.useState(false);
   const [org, setOrg] = React.useState<IOption | undefined>(undefined);
+  const [errors, setErrors] = React.useState<{ [key: string]: string }>({});
 
-  const onContinue = () => {
+  const onContinue = async () => {
     if (panel === 0) {
-      setCreds();
-    }
-
-    if (panel < 2) {
-      setPanel(panel + 1);
+      const didSucceed = await setCreds();
+      if (didSucceed) {
+        slackCIPNotification(props.email, 'Successfully set up account!', CIP_NOTIFICATION.success);
+        setPanel(1);
+      }
+    } else if (panel == 1) {
+      setPanel(2);
     } else {
       props.onClose();
     }
@@ -60,7 +87,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
       organization: org!.value,
     };
 
-    fetch(`${process.env.REACT_APP_API_URL}/registration/setCredentials/`, {
+    return fetch(`${process.env.REACT_APP_API_URL}/registration/setCredentials/`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `JWT ${localStorage.getItem('token')} `,
@@ -72,11 +99,21 @@ const CIPAdminModal = (props: IAdminModalProps) => {
         if (res.ok || res.status === 400) {
           return res.json();
         } else {
-          return Promise.reject();
+          return Promise.reject(res);
         }
       })
       .then((json) => {
-        console.log(json);
+        if (json.isValid) {
+          return true;
+        } else {
+          setErrors(json.errors);
+          return false;
+        }
+      })
+      .catch(async (err) => {
+        const errorMessage = await err.json();
+        slackCIPNotification(props.email, JSON.stringify(errorMessage), CIP_NOTIFICATION.error);
+        return false;
       });
   };
 
@@ -128,6 +165,17 @@ const CIPAdminModal = (props: IAdminModalProps) => {
           <br />
           <Input.Password style={{ width: 500 }} addonBefore="Confirm" onChange={(e) => setp2(e.target.value)} /> &nbsp;
           {p2.length > 0 && p1 !== p2 && <span style={{ color: 'red' }}>Passwords don't match</span>}
+          {
+            <ul>
+              {Object.keys(errors).map((el, i) => {
+                return (
+                  <li key={i}>
+                    {el}: {errors[el]}
+                  </li>
+                );
+              })}
+            </ul>
+          }
           <br />
           <br />
           <div style={{ width: 500, display: 'inline-block' }}>
@@ -174,11 +222,24 @@ const CIPAdminModal = (props: IAdminModalProps) => {
         <span>
           Now you're ready to get started with codePost! <br />
           <br />{' '}
-          <Button disabled={loadingDemo} type="primary" onClick={props.onCreateCourse}>
+          <Button
+            disabled={loadingDemo}
+            type="primary"
+            onClick={() => {
+              slackCIPNotification(props.email, 'Course creation started.', CIP_NOTIFICATION.success);
+              props.onCreateCourse();
+            }}
+          >
             Create your first course
           </Button>{' '}
           &nbsp; OR &nbsp;{' '}
-          <Button loading={loadingDemo} onClick={handleDemoCourse}>
+          <Button
+            loading={loadingDemo}
+            onClick={() => {
+              slackCIPNotification(props.email, 'Demo course created.', CIP_NOTIFICATION.success);
+              handleDemoCourse();
+            }}
+          >
             Create a demo course
           </Button>
         </span>
@@ -216,6 +277,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
 interface IGraderModalProps {
   visible: boolean;
   onClose: () => void;
+  email: string;
 }
 
 const CIPGraderModal = (props: IGraderModalProps) => {
@@ -225,6 +287,8 @@ const CIPGraderModal = (props: IGraderModalProps) => {
   };
 
   const elevateStatusAndGo = () => {
+    slackCIPNotification(props.email, 'Clicked on create a course...', CIP_NOTIFICATION.inProgress);
+
     fetch(`${process.env.REACT_APP_API_URL}/registration/graderToAdmin/`, {
       headers: {
         'Content-Type': 'application/json',
