@@ -12,14 +12,17 @@ import { TeamOutlined } from '@ant-design/icons';
 /* other library imports */
 import Select from 'react-select';
 
-import { sendSlack } from '../core/slack';
-
 /* internal imports */
 import Video from '../landing/Video';
 import universities from '../pre-auth/universities';
 import { createDemoCourse } from '../utils/DemoCourse';
 import { CourseType } from '../../infrastructure/types';
 import { IOption } from '../../types/common';
+
+import { sendSlack } from '../core/slack';
+
+import { UserType } from '../../infrastructure/user';
+import useWindowSize from '../core/useWindowSize';
 
 /**********************************************************************************************************************/
 
@@ -28,7 +31,7 @@ interface IAdminModalProps {
   onClose: () => void;
   onCreateCourse: () => void;
   onCreateDemoCourse: (course?: CourseType) => void;
-  email: string;
+  user: UserType;
 }
 
 enum CIP_NOTIFICATION {
@@ -57,16 +60,18 @@ const CIPAdminModal = (props: IAdminModalProps) => {
   const [p1, setp1] = React.useState('');
   const [p2, setp2] = React.useState('');
   const [terms, setTerms] = React.useState(false);
-  const [panel, setPanel] = React.useState(0);
+  const [panel, setPanel] = React.useState(props.user.hasCredentials ? 1 : 0);
   const [loadingDemo, setLoadingDemo] = React.useState(false);
   const [org, setOrg] = React.useState<IOption | undefined>(undefined);
   const [errors, setErrors] = React.useState<{ [key: string]: string }>({});
+
+  const windowSize = useWindowSize();
 
   const onContinue = async () => {
     if (panel === 0) {
       const didSucceed = await setCreds();
       if (didSucceed) {
-        slackCIPNotification(props.email, 'Successfully set up account!', CIP_NOTIFICATION.success);
+        slackCIPNotification(props.user.email, 'Successfully set up account!', CIP_NOTIFICATION.success);
         setPanel(1);
       }
     } else if (panel == 1) {
@@ -112,7 +117,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
       })
       .catch(async (err) => {
         const errorMessage = await err.json();
-        slackCIPNotification(props.email, `ERROR: ${JSON.stringify(errorMessage)}`, CIP_NOTIFICATION.error);
+        slackCIPNotification(props.user.email, `ERROR: ${JSON.stringify(errorMessage)}`, CIP_NOTIFICATION.error);
         message.error(
           `An error occured: ${JSON.stringify(
             errorMessage,
@@ -125,12 +130,14 @@ const CIPAdminModal = (props: IAdminModalProps) => {
 
   const handleDemoCourse = () => {
     setLoadingDemo(true);
-    createDemoCourse(props.email, `${props.email.split('@')[0]}'s course`, props.email.split('@')[1]).then(
-      (course: CourseType) => {
-        setLoadingDemo(false);
-        props.onCreateDemoCourse(course);
-      },
-    );
+    createDemoCourse(
+      props.user.email,
+      `${props.user.email.split('@')[0]}'s course`,
+      props.user.email.split('@')[1],
+    ).then((course: CourseType) => {
+      setLoadingDemo(false);
+      props.onCreateDemoCourse(course);
+    });
 
     // call prop function which triggers tour here
   };
@@ -144,7 +151,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
           First, to use codePost independently of Code in Place, you'll need to set a codePost account.
           <br />
           <br />
-          <Input style={{ width: 500 }} addonBefore="Your email" value={props.email} disabled={true} /> &nbsp;{' '}
+          <Input style={{ width: 500 }} addonBefore="Your email" value={props.user.email} disabled={true} /> &nbsp;{' '}
           <Popover
             title="Use a different email"
             content={
@@ -211,17 +218,17 @@ const CIPAdminModal = (props: IAdminModalProps) => {
           <br />
         </span>
       );
-      modalSize = 1000;
+      modalSize = windowSize.width < 1000 ? windowSize.width : 1000;
       break;
     case 1:
+      modalSize = windowSize.width < 1600 ? windowSize.width : 1600;
       detail = (
         <span>
           Check out the video below to learn the basis of codePost. You can skip around to sections that interest you on
           the right. <br />
-          <br /> <Video containerWidth={1600} location="" />
+          <br /> <Video containerWidth={modalSize} location="" />
         </span>
       );
-      modalSize = 1600;
       break;
     case 2:
       detail = (
@@ -232,7 +239,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
             disabled={loadingDemo}
             type="primary"
             onClick={() => {
-              slackCIPNotification(props.email, 'Course creation started.', CIP_NOTIFICATION.success);
+              slackCIPNotification(props.user.email, 'Course creation started.', CIP_NOTIFICATION.success);
               props.onCreateCourse();
             }}
           >
@@ -242,7 +249,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
           <Button
             loading={loadingDemo}
             onClick={() => {
-              slackCIPNotification(props.email, 'Demo course created.', CIP_NOTIFICATION.success);
+              slackCIPNotification(props.user.email, 'Demo course created.', CIP_NOTIFICATION.success);
               handleDemoCourse();
             }}
           >

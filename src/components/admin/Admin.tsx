@@ -1398,7 +1398,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
               <CIPAdminModal
                 visible={this.state.cipModalVisible}
                 onClose={() => this.setState({ cipModalVisible: false })}
-                email={this.props.user.email}
+                user={this.props.user}
                 onCreateCourse={() => {
                   this.setState({ cipModalVisible: false });
                   const newCourseButton = document.getElementById('new-course-button');

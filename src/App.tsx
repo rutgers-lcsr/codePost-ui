@@ -85,6 +85,7 @@ const anonymousUser: UserType = {
   student_sections: [],
   showProductTips: true,
   codePostAdmin: false,
+  hasCredentials: false,
 };
 
 const domains = ['mooc.codepost.io', 'localhost:300', 'compedu.stanford.edu'];
