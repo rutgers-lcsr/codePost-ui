@@ -33,7 +33,6 @@ interface IProps {
   logs?: string;
   message?: React.ReactNode;
   redactNotShown?: boolean; // Mark the tests that haven't been run as "failed" and hide the info.
-  studentLanguage?: boolean; // Whether the language should be softened for the student
 }
 
 const TestsList = (props: IProps) => {
@@ -54,6 +53,9 @@ const TestsList = (props: IProps) => {
       </div>
     );
   }
+
+  // Can update this logic however
+  const failedLabel = localStorage.getItem('source') === 'codePost' ? 'Failed' : 'Not yet passed';
 
   // Submission-level stats
   let passed = 0;
@@ -142,11 +144,7 @@ const TestsList = (props: IProps) => {
                   />
                   <Statistic
                     style={{ textAlign: 'center', margin: '0px 30px', color: consoleTheme.text }}
-                    title={
-                      <span style={{ color: consoleTheme.text }}>
-                        {props.studentLanguage ? 'Not yet passed' : 'Failed'}
-                      </span>
-                    }
+                    title={<span style={{ color: consoleTheme.text }}>{failedLabel}</span>}
                     value={`${failed}`}
                     valueStyle={{ color: consoleTheme.text }}
                   />
@@ -209,12 +207,12 @@ const TestsList = (props: IProps) => {
                       badgeString = 'Passed';
                       break;
                     case false:
-                      badgeString = props.studentLanguage ? 'Not yet passed' : 'Failed';
+                      badgeString = failedLabel;
                       badgeStatus = 'error';
                       break;
                     default:
                       if (props.redactNotShown) {
-                        badgeString = props.studentLanguage ? 'Not yet passed' : 'Failed';
+                        badgeString = failedLabel;
                         badgeStatus = 'error';
                       } else {
                         badgeString = 'Never run';
