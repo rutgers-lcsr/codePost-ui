@@ -53,7 +53,11 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
   };
 
   const openGradePage = (submission: SubmissionType) => {
-    window.open(`/code/${submission.id}`);
+    if (localStorage.getItem('source') === 'codePost') {
+      window.open(`/code/${submission.id}`);
+    } else {
+      window.open(`/code/${submission.id}`, '_self');
+    }
   };
 
   const centerAlign: alignType = 'center';
