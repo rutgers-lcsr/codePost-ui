@@ -148,7 +148,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
     case 0:
       detail = (
         <span>
-          First, to use codePost independently of Code in Place, you'll need to set a codePost account.
+          First, to use codePost independently of Code in Place, you'll need to set a codePost password.
           <br />
           <br />
           <Input style={{ width: 500 }} addonBefore="Your email" value={props.user.email} disabled={true} /> &nbsp;{' '}
@@ -278,7 +278,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
       footer={[
         panel > 1 && <Button onClick={onBack}>Back</Button>,
         <Button disabled={!canContinue} onClick={onContinue} type="primary">
-          Continue
+          {panel === 0 ? 'Set password' : 'Continue'}
         </Button>,
       ]}
     >
