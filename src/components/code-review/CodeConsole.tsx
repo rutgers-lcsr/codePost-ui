@@ -1650,7 +1650,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       />
     );
 
-    console.log('this.sta', this.state.testCategories);
     const testsTitle = (
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <div>Tests</div>
@@ -2526,6 +2525,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         },
         { value: 'View stats', label: 'View stats', kind: 'dashboard', populator: viewStats },
         { value: 'Edit code', label: 'Edit code', callback: this.showInlineTestsModal, kind: 'action' },
+        { value: 'Debug mode', label: 'Debug mode', callback: this.showInlineTestsModal, kind: 'action' },
       ];
     }
 
@@ -2542,7 +2542,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     (window as any).foobarURL = this.props.match.url; // for logging
 
     /*************************************************************************************/
-    console.log('fff', this.state.files);
     return (
       <div id="Grade">
         <CodeConsoleOnboardingSelector
