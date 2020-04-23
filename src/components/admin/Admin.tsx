@@ -298,18 +298,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       }
     });
 
-    this.loadSections(course).then((sections) => {
-      // use currentCourse as a nonce to see if this request is still desired
-      if (this.props.currentCourse !== course) {
-        return;
-      }
-      const sectionsByStudent = this.generateSectionsByStudent(sections);
-      this.setState({
-        sections,
-        sectionsByStudent,
-        sectionsLoadComplete: true,
-      });
-    });
+    this.loadSections(course);
   };
 
   public loadAssignments = (course: CourseType) => {
@@ -338,11 +327,9 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   };
 
   public loadSections = (course: CourseType) => {
-    return Promise.all(
-      course.sections.map((sectionID) => {
-        return Section.read(sectionID);
-      }),
-    );
+    Course.readPaginatedSections(course.id, this.onSectionPagination.bind(this, course)).then(() => {
+      this.setState({ sectionsLoadComplete: true });
+    });
   };
 
   public loadViewsBySubmission = (course: CourseType) => {
@@ -502,6 +489,30 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
         viewsBySubmission: newViewsBySubmission,
       };
     });
+  };
+
+  public onSectionPagination = (course: CourseType, newSections: SectionType[]) => {
+    // We first set the sections in state, because generateSectionsByStudent might take some time
+    //    and we don't want race conditions of new pages overwriting other sections
+    if (this.props.currentCourse !== course) {
+      return;
+    }
+
+    this.setState(
+      (prevState) => {
+        return {
+          sections: [...prevState.sections, ...newSections],
+        };
+      },
+      () => {
+        // Generate sections by student, and if all the sections have loaded (judged by sections.length)
+        //  then we mark the section load as complete
+        const sectionsByStudent = this.generateSectionsByStudent(this.state.sections);
+        this.setState({
+          sectionsByStudent,
+        });
+      },
+    );
   };
 
   /************************************************************************
@@ -1322,7 +1333,8 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 graders={this.state.graders}
                 admins={this.state.admins}
                 superGraders={this.state.superGraders}
-                loadComplete={this.state.sectionsLoadComplete && this.state.rosterLoadComplete}
+                loadComplete={this.state.rosterLoadComplete}
+                sectionsLoadComplete={this.state.sectionsLoadComplete}
                 currentCourse={this.props.currentCourse}
                 updateRoster={this.updateRoster}
                 sectionsByStudent={this.state.sectionsByStudent}

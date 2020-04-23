@@ -15,7 +15,7 @@ import {
 } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Dropdown, Empty, Menu, message, Modal, Select } from 'antd';
+import { Breadcrumb, Dropdown, Empty, Menu, message, Modal, Select, Spin } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -59,6 +59,7 @@ export interface IManageStudentsProps {
 
   /* loading state */
   loadComplete: boolean;
+  sectionsLoadComplete: boolean;
 
   /* object-level REST operations */
   updateStudentSection: (student: string, section: number) => Promise<void>;
@@ -236,6 +237,9 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
           renderForSearch: (searchText: string) => {
             return (text: string, record: any, index: number) => {
               const student = record.key;
+              if (!this.props.sectionsLoadComplete) {
+                return <Spin />;
+              }
               if (student === this.state.activeStudent) {
                 return (
                   <div>

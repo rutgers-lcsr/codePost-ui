@@ -11,7 +11,7 @@ export function awaitTestResult(id: string, callback: (result: any) => any, prog
     pollTestResult(id, interval, callback, progressCallback);
     if (++tries === MAX_TRIES_RUN && !progressCallback) {
       sendSlack(
-        'No test result received after polling - infinite loop',
+        `No test result received after polling - infinite loop ${id}`,
         window.location.href,
         '#cc0000',
         '#autograder_bugs',
@@ -42,10 +42,14 @@ async function pollTestResult(
   if (res.status !== 200) {
     // Should never hit a non 200 autograder result
     sendSlack(
-      `NO RESULT test result: ${window.location.href}`,
+      `NO RESULT test result: ${id} ${window.location.href}`,
       `${JSON.stringify(res)}`,
       '#cc0000',
       '#autograder_bugs',
+    );
+    message.error(
+      'An error occured. The codePost team has been notified and will be in touch shortly. In the meantime, please try refreshing and running the test again.',
+      25,
     );
     clearInterval(interval);
     return;
@@ -54,26 +58,15 @@ async function pollTestResult(
   const result = await res.json();
   if (result.status === 'SUCCESS') {
     // Case 1: Successful result
-    if (result.result === null || result.result === undefined) {
-      // Should never be undefined or null
-      sendSlack(
-        `Null test result received on student upload: ${window.location.href}`,
-        `${JSON.stringify(result)}`,
-        '#cc0000',
-        '#autograder_bugs',
-      );
-      message.error(
-        'An error occured. The codePost team has been notified and will be in touch shortly. In the meantime, please try refreshing and running the test again.',
-        25,
-      );
-    } else {
+    if (result.result !== null && result.result !== undefined) {
       callback(result.result);
+      clearInterval(interval);
     }
-    clearInterval(interval);
+    // If the result is null or undefined, but a success, that means the data hasn't been written yet so we keep polling
   } else if (result.status === 'FAILURE') {
     // Case 2: Result failed for some reason (e.g., excessive logging, db timeouts)
     sendSlack(
-      `FAILURE test result: ${window.location.href}`,
+      `FAILURE test result: ${id} ${window.location.href}`,
       `${JSON.stringify(result.result)}`,
       '#cc0000',
       '#autograder_bugs',
