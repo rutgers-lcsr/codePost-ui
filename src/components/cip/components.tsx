@@ -6,11 +6,11 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Modal, notification, Input, Checkbox, message, Popover } from 'antd';
+import { Button, Modal, notification, Input, Checkbox, Select, Switch, message, Popover } from 'antd';
 import { TeamOutlined } from '@ant-design/icons';
 
 /* other library imports */
-import Select from 'react-select';
+// import Select from 'react-select';
 
 /* internal imports */
 import Video from '../landing/Video';
@@ -62,7 +62,8 @@ const CIPAdminModal = (props: IAdminModalProps) => {
   const [terms, setTerms] = React.useState(false);
   const [panel, setPanel] = React.useState(props.user.hasCredentials ? 1 : 0);
   const [loadingDemo, setLoadingDemo] = React.useState(false);
-  const [org, setOrg] = React.useState<IOption | undefined>(undefined);
+  const [org, setOrg] = React.useState<string | undefined>(undefined);
+  const [createOrg, setCreateOrg] = React.useState(false);
   const [errors, setErrors] = React.useState<{ [key: string]: string }>({});
 
   const windowSize = useWindowSize();
@@ -89,7 +90,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
     const payload = {
       password1: p1,
       password2: p2,
-      organization: org!.value,
+      organization: org,
     };
 
     return fetch(`${process.env.REACT_APP_API_URL}/registration/setCredentials/`, {
@@ -140,6 +141,11 @@ const CIPAdminModal = (props: IAdminModalProps) => {
     });
 
     // call prop function which triggers tour here
+  };
+
+  const toggleCreateOrg = (e: boolean) => {
+    setCreateOrg(e);
+    setOrg(undefined);
   };
 
   let detail;
@@ -199,9 +205,26 @@ const CIPAdminModal = (props: IAdminModalProps) => {
                   &nbsp; Select your organization (type to search)
                 </div>
               }
-              options={universities}
-              onChange={(newVal: IOption) => setOrg(newVal)}
-            />
+              disabled={createOrg}
+              value={createOrg ? undefined : org}
+              onChange={(newVal: string) => setOrg(newVal)}
+              style={{ width: '100%' }}
+            >
+              {universities.map((university: any) => (
+                <Select.Option value={university.value}>{university.label}</Select.Option>
+              ))}
+            </Select>
+            <br />
+            <br />
+            <Switch onChange={toggleCreateOrg} />
+            <br />
+            <span>&nbsp; &nbsp; Can't find your organization? Create a new one.</span>
+            {createOrg ? (
+              <div>
+                <br />
+                <Input placeholder="Your organization" value={org} onChange={(e) => setOrg(e.target.value)} />
+              </div>
+            ) : null}
           </div>{' '}
           &nbsp; Use your permanent institution, not Stanford or Code in Place.
           <br />
