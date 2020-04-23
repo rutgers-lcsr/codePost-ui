@@ -1,4 +1,7 @@
+import React from 'react';
+
 import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
+import { Spin } from 'antd';
 
 export const bySubmissionColumns = (shouldSort: boolean, categories: TestCategoryType[]) => {
   const columns = [
@@ -9,7 +12,11 @@ export const bySubmissionColumns = (shouldSort: boolean, categories: TestCategor
     },
     ...TestCategory.sort(categories).map((category) => {
       return {
-        title: category.name,
+        title: (
+          <span>
+            {category.name} {!shouldSort && <Spin />}
+          </span>
+        ),
         dataIndex: category.name,
         key: category.id.toString(),
         align: 'center' as 'center',
@@ -17,7 +24,7 @@ export const bySubmissionColumns = (shouldSort: boolean, categories: TestCategor
       };
     }),
     categories.length > 0 && {
-      title: 'Summary',
+      title: <span>Summary {!shouldSort && <Spin />}</span>,
       dataIndex: 'summary',
       key: 'summary',
       align: 'center' as 'center',
