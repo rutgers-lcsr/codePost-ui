@@ -39,7 +39,7 @@ import Referral from '../core/Referral';
 
 import { TableDetail } from '../admin/other/TableDetail';
 
-import { openSubmission } from '../admin/other/AdminUtils';
+import { openSubmission, openSubmissionInSameTab } from '../admin/other/AdminUtils';
 
 import CPLogo from '../core/CPLogo';
 
@@ -250,7 +250,11 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
   /* Handlers
   /**********************************************************************************/
   public openAndMarkViewed = (submission: StudentSubmissionType) => {
-    openSubmission(submission.id);
+    if (localStorage.getItem('source') !== 'codePost') {
+      openSubmissionInSameTab(submission.id);
+    } else {
+      openSubmission(submission.id);
+    }
     this.markViewed(submission);
   };
 
@@ -344,7 +348,11 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
     }
 
     if (assignment.liveFeedbackMode) {
-      openSubmission(newSubmissionID);
+      if (localStorage.getItem('source') !== 'codePost') {
+        openSubmissionInSameTab(newSubmissionID);
+      } else {
+        openSubmission(newSubmissionID);
+      }
       this.changePanel(CURRENT_PANEL.TABLE, undefined, undefined);
     }
   };
@@ -646,6 +654,14 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
         } else {
           // Case 3: assignment is published, and student has a submission
 
+          const open = () => {
+            if (localStorage.getItem('source') !== 'codePost') {
+              openSubmissionInSameTab(submission.id);
+            } else {
+              openSubmission(submission.id);
+            }
+          };
+
           // Show Grade if the submission history doesn't exist (legacy), or if the submission has been viewed
           const showGrade =
             !(submission.id in this.state.viewsBySubmission) || this.state.viewsBySubmission[submission.id];
@@ -672,7 +688,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
               <Tag>Login on desktop to view</Tag>
             ),
             code: (
-              <div onClick={openSubmission.bind(this, submission.id)}>
+              <div onClick={open}>
                 <CodeOutlined style={{ cursor: 'pointer' }} />
               </div>
             ),
