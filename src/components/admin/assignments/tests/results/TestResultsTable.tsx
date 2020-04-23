@@ -146,7 +146,8 @@ const TestResultsTable = (props: IProps) => {
 
     switch (summaryType) {
       case SUMMARY_TYPE.BySubmission:
-        columns = bySubmissionColumns(props.categories);
+        const allowSort = !props.resultsLoading && !props.isLoading;
+        columns = bySubmissionColumns(allowSort, props.categories);
         if (props.submissions === undefined) {
           data = null;
           break;

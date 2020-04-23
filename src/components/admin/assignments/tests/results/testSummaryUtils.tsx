@@ -1,6 +1,6 @@
 import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
 
-export const bySubmissionColumns = (categories: TestCategoryType[]) => {
+export const bySubmissionColumns = (shouldSort: boolean, categories: TestCategoryType[]) => {
   const columns = [
     {
       title: 'Student(s)',
@@ -13,7 +13,7 @@ export const bySubmissionColumns = (categories: TestCategoryType[]) => {
         dataIndex: category.name,
         key: category.id.toString(),
         align: 'center' as 'center',
-        sorter: (a: any, b: any) => a[category.id] - b[category.id],
+        ...(shouldSort && { sorter: (a: any, b: any) => a[category.id] - b[category.id] }),
       };
     }),
     categories.length > 0 && {
@@ -21,7 +21,7 @@ export const bySubmissionColumns = (categories: TestCategoryType[]) => {
       dataIndex: 'summary',
       key: 'summary',
       align: 'center' as 'center',
-      sorter: (a: any, b: any) => a.passed - b.passed,
+      ...(shouldSort && { sorter: (a: any, b: any) => a.passed - b.passed }),
     },
     {
       title: 'Actions',
