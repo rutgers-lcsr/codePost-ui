@@ -44,10 +44,10 @@ const slackCIPNotification = (email: string, message: string, type: CIP_NOTIFICA
       color = '#f7f7f7';
       break;
     case CIP_NOTIFICATION.error:
-      color = 'red';
+      color = '#fc4903';
       break;
     case CIP_NOTIFICATION.success:
-      color = 'green';
+      color = '#24be85';
       break;
   }
   sendSlack(email, message, color, '#cip-sl-notifications');
@@ -112,7 +112,13 @@ const CIPAdminModal = (props: IAdminModalProps) => {
       })
       .catch(async (err) => {
         const errorMessage = await err.json();
-        slackCIPNotification(props.email, JSON.stringify(errorMessage), CIP_NOTIFICATION.error);
+        slackCIPNotification(props.email, `ERROR: ${JSON.stringify(errorMessage)}`, CIP_NOTIFICATION.error);
+        message.error(
+          `An error occured: ${JSON.stringify(
+            errorMessage,
+          )}. The codePost team has been notified and will be in touch shortly. Thank you for your patience!`,
+          25,
+        );
         return false;
       });
   };
