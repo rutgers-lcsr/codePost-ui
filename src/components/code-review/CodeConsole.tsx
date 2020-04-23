@@ -6,8 +6,8 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Empty, message, notification, Progress, Typography } from 'antd';
-import { FolderOpenOutlined } from '@ant-design/icons';
+import { Button, Empty, message, notification, Progress, Typography } from 'antd';
+import { FolderOpenOutlined, BugOutlined } from '@ant-design/icons';
 
 /* other library imports */
 import _ from 'lodash';
@@ -1650,6 +1650,39 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       />
     );
 
+    const testsTitle = (
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div>Tests</div>
+        <div style={{ flexGrow: 1 }} />
+        <Button
+          size="small"
+          type="primary"
+          icon={<FolderOpenOutlined />}
+          onClick={(e: any) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
+          }}
+          disabled={this.state.testCategories.length === 0}
+        >
+          View
+        </Button>
+        <Button
+          size="small"
+          style={{ marginLeft: '6px' }}
+          icon={<BugOutlined />}
+          onClick={(e: any) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.showInlineTestsModal();
+          }}
+          disabled={this.state.testCategories.length === 0}
+        >
+          Debug
+        </Button>
+      </div>
+    );
+
     if (
       this.state.permissionLevel === PERMISSION_LEVEL.NONE ||
       this.state.permissionLevel === PERMISSION_LEVEL.NOT_FOUND
@@ -1951,24 +1984,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             </RubricManager>,
           ];
 
-          siderTitles = [
-            'Submission Info',
-            <div>
-              Tests{' '}
-              <CPButton
-                size="small"
-                cpType={theme === 'light' ? 'secondary' : 'dark'}
-                icon={<FolderOpenOutlined />}
-                onClick={(e: any) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
-                }}
-              />
-            </div>,
-            fileMenuTitle,
-            'Rubric',
-          ];
+          siderTitles = ['Submission Info', testsTitle, fileMenuTitle, 'Rubric'];
 
           leftHeader = [
             <HeaderMenu
@@ -2127,24 +2143,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           />,
         ];
 
-        siderTitles = [
-          'Submission Info',
-          <div>
-            Tests{' '}
-            <CPButton
-              size="small"
-              cpType={theme === 'light' ? 'secondary' : 'dark'}
-              icon={<FolderOpenOutlined />}
-              onClick={(e: any) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
-              }}
-              disabled={this.state.testCategories.length === 0}
-            />
-          </div>,
-          fileMenuTitle,
-        ];
+        siderTitles = ['Submission Info', testsTitle, fileMenuTitle];
       } else {
         leftHeader = [
           <HeaderMenu
@@ -2356,24 +2355,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           </RubricManager>,
         ];
 
-        siderTitles = [
-          'Submission Info',
-          <div>
-            Tests{' '}
-            <CPButton
-              size="small"
-              cpType={theme === 'light' ? 'secondary' : 'dark'}
-              icon={<FolderOpenOutlined />}
-              onClick={(e: any) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
-              }}
-            />
-          </div>,
-          fileMenuTitle,
-          'Rubric',
-        ];
+        siderTitles = ['Submission Info', testsTitle, fileMenuTitle, 'Rubric'];
       }
     }
 
@@ -2543,6 +2525,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         },
         { value: 'View stats', label: 'View stats', kind: 'dashboard', populator: viewStats },
         { value: 'Edit code', label: 'Edit code', callback: this.showInlineTestsModal, kind: 'action' },
+        { value: 'Debug mode', label: 'Debug mode', callback: this.showInlineTestsModal, kind: 'action' },
       ];
     }
 
@@ -2559,7 +2542,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     (window as any).foobarURL = this.props.match.url; // for logging
 
     /*************************************************************************************/
-
     return (
       <div id="Grade">
         <CodeConsoleOnboardingSelector
