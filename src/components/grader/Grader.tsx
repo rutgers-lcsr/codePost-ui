@@ -11,7 +11,7 @@ import { SettingOutlined } from '@ant-design/icons';
 import { Button, Layout, Modal } from 'antd';
 
 /* other library imports */
-import { Route, Link, Switch } from 'react-router-dom';
+import { Route, Link, Switch, useHistory } from 'react-router-dom';
 
 import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
 
@@ -44,6 +44,8 @@ import AssignmentMenu from '../core/AssignmentMenu';
 import { IComponentProps } from '../core/ComponentManager';
 
 import { CIPGraderModal } from '../cip/components';
+
+import VideoModal from '../landing/VideoModal';
 
 /**********************************************************************************************************************/
 
@@ -203,6 +205,11 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
           ) : (
             undefined
           )}{' '}
+          <Route
+            path={`${this.props.match.url}/video`}
+            key="video"
+            render={(props: any) => <VideoModal visible={true} onCancel={() => this.props.history.push('/grader')} />}
+          />
         </Switch>
       );
     }

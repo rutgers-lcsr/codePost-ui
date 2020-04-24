@@ -1,8 +1,16 @@
 import * as React from 'react';
 
-import { ClusterOutlined, ContainerOutlined, InboxOutlined, MessageOutlined, PushpinOutlined } from '@ant-design/icons';
+import {
+  ClusterOutlined,
+  ContainerOutlined,
+  InboxOutlined,
+  MessageOutlined,
+  PushpinOutlined,
+  TrophyOutlined,
+  VideoCameraOutlined,
+} from '@ant-design/icons';
 
-import { Menu } from 'antd';
+import { Menu, Modal } from 'antd';
 
 import { RouteComponentProps } from 'react-router';
 
@@ -79,9 +87,23 @@ class GraderNav extends React.Component<IProps, {}> {
         </div>
         <div style={{ height: '100%' }}>
           <Menu theme="dark" mode="inline" style={{ position: 'absolute', bottom: 75 }} selectedKeys={[]}>
+            <Menu.Item key="video">
+              <Link to={`${this.props.baseURL}/video`}>
+                <VideoCameraOutlined />
+                <span>Video</span>
+              </Link>
+            </Menu.Item>
             <Menu.Item key="docs" onClick={this.openLink.bind(this, 'https://help.codepost.io')}>
               <PushpinOutlined />
               <span>Docs</span>
+            </Menu.Item>
+            <Menu.Item
+              key="scholarship"
+              style={{ whiteSpace: 'normal', height: 'auto', lineHeight: 1.3, display: 'flex', alignItems: 'center' }}
+              onClick={this.openLink.bind(this, 'https://codepost.io/scholarships/computer-science-education')}
+            >
+              <TrophyOutlined />
+              <span>CS Education Scholarship</span>
             </Menu.Item>
           </Menu>
         </div>
