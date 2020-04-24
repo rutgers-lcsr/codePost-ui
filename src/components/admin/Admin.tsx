@@ -303,6 +303,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
   /* eslint-disable no-useless-computed-key */
   public loadSubmissions = (course: CourseType) => {
+    this.setState({ submissions: {}, partialSubmissionsLoadComplete: false, fullSubmissionsLoadComplete: false });
     const promises = course.assignments.map((assignmentID) => {
       return Assignment.readPaginatedSubmissions(
         assignmentID,
