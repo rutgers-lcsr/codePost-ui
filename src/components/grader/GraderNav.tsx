@@ -10,7 +10,7 @@ import {
   VideoCameraOutlined,
 } from '@ant-design/icons';
 
-import { Menu, Modal } from 'antd';
+import { Menu } from 'antd';
 
 import { RouteComponentProps } from 'react-router';
 
@@ -99,7 +99,14 @@ class GraderNav extends React.Component<IProps, {}> {
             </Menu.Item>
             <Menu.Item
               key="scholarship"
-              style={{ whiteSpace: 'normal', height: 'auto', lineHeight: 1.3, display: 'flex', alignItems: 'center' }}
+              style={{
+                whiteSpace: 'normal',
+                height: 'auto',
+                lineHeight: 1.4,
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: 13,
+              }}
               onClick={this.openLink.bind(this, 'https://codepost.io/scholarships/computer-science-education')}
             >
               <TrophyOutlined />

@@ -64,6 +64,8 @@ import { AssignmentSetupBanner } from './assignments/assignments/AssignmentSetup
 
 import { CIPAdminModal } from '../cip/components';
 
+import VideoModal from '../landing/VideoModal';
+
 /**********************************************************************************************************************/
 
 interface IAdminState {
@@ -1359,6 +1361,11 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 updateSettings={this.updateSettings}
               />
             )}
+          />
+          <Route
+            path={`${this.props.match.url}/video`}
+            key="video"
+            render={(props: any) => <VideoModal visible={true} onCancel={() => this.props.history.push('/admin')} />}
           />
         </Switch>
       );
