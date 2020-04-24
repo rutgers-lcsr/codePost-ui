@@ -203,7 +203,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             <Route
               path={`${props.match.url}/${encodedName}/download/grades`}
               render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
-                !props.partialSubmissionsLoadComplete ? (
+                !props.fullSubmissionsLoadComplete ? (
                   <Loading />
                 ) : (
                   <AssignmentsTable
@@ -256,7 +256,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             <Route
               path={`${props.match.url}/${encodedName}/upload/multiple`}
               render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
-                !props.partialSubmissionsLoadComplete ? (
+                !props.fullSubmissionsLoadComplete ? (
                   <Loading />
                 ) : (
                   <AssignmentsTable
@@ -294,7 +294,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             <Route
               path={`${props.match.url}/${encodedName}/bulk-edit`}
               render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
-                !props.partialSubmissionsLoadComplete ? (
+                !props.fullSubmissionsLoadComplete ? (
                   <Loading />
                 ) : (
                   <AssignmentsTable
@@ -345,7 +345,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             <Route
               path={`${props.match.url}/plagiarism/${encodedName}`}
               render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
-                !props.partialSubmissionsLoadComplete ? (
+                !props.fullSubmissionsLoadComplete ? (
                   <Loading />
                 ) : (
                   <Moss
