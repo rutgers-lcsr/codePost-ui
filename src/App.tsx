@@ -550,25 +550,25 @@ Firefox:
         );
       }
 
-      const isLostCodeInPlace = user
-        ? user.courseadminCourses.length === 0 &&
-          user.graderCourses.length === 0 &&
-          user.studentCourses.length === 1 &&
-          user.studentCourses[0].id === 925 &&
-          localStorage.getItem('source') === 'codePost'
-        : false;
+      // const isLostCodeInPlace = user
+      //   ? user.courseadminCourses.length === 0 &&
+      //     user.graderCourses.length === 0 &&
+      //     user.studentCourses.length === 1 &&
+      //     user.studentCourses[0].id === 925 &&
+      //     localStorage.getItem('source') === 'codePost'
+      //   : false;
 
-      if (isLostCodeInPlace && !this.state.isSuperUser) {
-        return (
-          <div>
-            <BrowserRouter>
-              <Switch>
-                <Route component={RemoteAuthRedirect} />
-              </Switch>
-            </BrowserRouter>
-          </div>
-        );
-      }
+      // if (isLostCodeInPlace && !this.state.isSuperUser) {
+      //   return (
+      //     <div>
+      //       <BrowserRouter>
+      //         <Switch>
+      //           <Route component={RemoteAuthRedirect} />
+      //         </Switch>
+      //       </BrowserRouter>
+      //     </div>
+      //   );
+      // }
 
       if (isAdmin || isGrader) {
         (window as any).Intercom('boot', {
