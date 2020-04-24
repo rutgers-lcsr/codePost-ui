@@ -144,22 +144,26 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             />
             <Route
               path={`${props.match.url}/${encodedName}/stats`}
-              render={(subprops: IManageAssignmentsProps & RouteComponentProps) => (
-                <AssignmentStats
-                  {...subprops}
-                  course={props.currentCourse!}
-                  assignment={assignment}
-                  submissions={
-                    props.submissions.hasOwnProperty(assignment.id) ? props.submissions[assignment.id] : null
-                  }
-                  students={props.students}
-                  submissionsByStudent={props.submissionsByStudent}
-                  viewsBySubmission={props.viewsBySubmission}
-                  refreshCourseData={props.refreshCourseData}
-                  myEmail={props.myEmail}
-                  breadcrumbs={breadcrumbs}
-                />
-              )}
+              render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
+                !props.fullSubmissionsLoadComplete ? (
+                  <Loading />
+                ) : (
+                  <AssignmentStats
+                    {...subprops}
+                    course={props.currentCourse!}
+                    assignment={assignment}
+                    submissions={
+                      props.submissions.hasOwnProperty(assignment.id) ? props.submissions[assignment.id] : null
+                    }
+                    students={props.students}
+                    submissionsByStudent={props.submissionsByStudent}
+                    viewsBySubmission={props.viewsBySubmission}
+                    refreshCourseData={props.refreshCourseData}
+                    myEmail={props.myEmail}
+                    breadcrumbs={breadcrumbs}
+                  />
+                )
+              }
             />
             <Route
               path={`${props.match.url}/${encodedName}/regrades`}
