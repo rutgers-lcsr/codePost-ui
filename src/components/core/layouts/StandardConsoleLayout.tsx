@@ -233,7 +233,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
           zIndex: 999999,
           boxShadow: '0 8px 16px 0 rgba(0,0,0,0.2)',
         }}
-        onClick={() => window.open(`/grader`, '_self')}
+        onClick={() => window.open(`/`, '_self')}
       >
         Back to Submissions
       </Button>
