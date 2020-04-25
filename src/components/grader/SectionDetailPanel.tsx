@@ -291,6 +291,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
             <TestingSummary
               currentAssignment={this.props.assignment}
               submissions={filteredSubmissions}
+              fullSubmissionsLoadComplete={!this.state.isLoading}
               isAdmin={false}
               tableOnly={true}
             />

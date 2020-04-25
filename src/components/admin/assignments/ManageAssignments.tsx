@@ -339,6 +339,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   submissions={props.submissions[assignment.id] || []}
                   user={props.user}
                   updateAssignment={props.shallowUpdateAssignment}
+                  fullSubmissionsLoadComplete={props.fullSubmissionsLoadComplete}
                 />
               )}
             />

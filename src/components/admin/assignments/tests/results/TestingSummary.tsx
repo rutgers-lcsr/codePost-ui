@@ -40,6 +40,7 @@ interface IProps {
   isAdmin: boolean;
   tableOnly: boolean;
   match?: any;
+  fullSubmissionsLoadComplete: boolean;
 }
 
 export const TestingSummary = (props: IProps) => {
@@ -172,6 +173,8 @@ export const TestingSummary = (props: IProps) => {
           </Button>,
         ];
 
+  console.log(props.fullSubmissionsLoadComplete);
+
   return (
     <TestResultsTable
       breadcrumbs={
@@ -189,7 +192,7 @@ export const TestingSummary = (props: IProps) => {
       testCasesByCategory={testCasesByCategory}
       testsBySubmission={testsBySubmission}
       categories={categories}
-      isLoading={fetchLoading}
+      isLoading={fetchLoading || !props.fullSubmissionsLoadComplete}
       subsLoading={subsLoading}
       resultsLoading={resultsLoading}
       runSubmission={runSubmission}
