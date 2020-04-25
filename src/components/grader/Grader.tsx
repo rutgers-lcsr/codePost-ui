@@ -254,7 +254,7 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
 
     const headerRight = [
       showNewCourseBtn && (
-        <Button onClick={() => this.setState({ showConversionModal: true })}>Create a new course</Button>
+        <Button onClick={() => this.setState({ showConversionModal: true })}>Create your own course</Button>
       ),
       <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}

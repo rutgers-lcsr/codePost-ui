@@ -64,7 +64,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
   const [loadingDemo, setLoadingDemo] = React.useState(false);
   const [org, setOrg] = React.useState<string | undefined>(undefined);
   const [createOrg, setCreateOrg] = React.useState(false);
-  const [errors, setErrors] = React.useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = React.useState<{ [key: string]: string[] }>({});
 
   const windowSize = useWindowSize();
 
@@ -187,15 +187,10 @@ const CIPAdminModal = (props: IAdminModalProps) => {
           {
             <ul>
               {Object.keys(errors).map((el, i) => {
-                return (
-                  <li key={i}>
-                    {el}: {errors[el]}
-                  </li>
-                );
+                return errors[el].map((el2) => <li key={i}>{el2}</li>);
               })}
             </ul>
           }
-          <br />
           <br />
           <div style={{ width: 500, display: 'inline-block' }}>
             <Select
@@ -214,19 +209,24 @@ const CIPAdminModal = (props: IAdminModalProps) => {
                 <Select.Option value={university.value}>{university.label}</Select.Option>
               ))}
             </Select>
-            <br />
-            <br />
-            <Switch onChange={toggleCreateOrg} />
-            <br />
-            <span>&nbsp; &nbsp; Can't find your organization? Create a new one.</span>
-            {createOrg ? (
-              <div>
-                <br />
-                <Input placeholder="Your organization" value={org} onChange={(e) => setOrg(e.target.value)} />
-              </div>
-            ) : null}
-          </div>{' '}
+          </div>
           &nbsp; Use your permanent institution, not Stanford or Code in Place.
+          <br />
+          <br />
+          <span>
+            Can't find your organization? Create a new one. <Switch onChange={toggleCreateOrg} />
+          </span>
+          {createOrg ? (
+            <div>
+              <br />
+              <Input
+                style={{ width: 500 }}
+                placeholder="Your organization"
+                value={org}
+                onChange={(e) => setOrg(e.target.value)}
+              />
+            </div>
+          ) : null}
           <br />
           <br />
           <Checkbox checked={terms} onChange={() => setTerms(!terms)} /> &nbsp; I agree to the codePost{' '}
@@ -319,7 +319,7 @@ interface IGraderModalProps {
 const CIPGraderModal = (props: IGraderModalProps) => {
   const goToAdminConsole = () => {
     // window.open(`https://codepost.io/admin?source=j348d&token=${localStorage.getItem('token')}`);
-    window.open(`http://localhost:3000/admin?source=j348d&token=${localStorage.getItem('token')}`);
+    window.open(`http://localhost:3000/admin?source=j348d`);
   };
 
   const elevateStatusAndGo = () => {
@@ -354,31 +354,26 @@ const CIPGraderModal = (props: IGraderModalProps) => {
   return (
     <Modal
       visible={props.visible}
-      title="Using codePost for your course"
+      title="Create your own course"
       onCancel={props.onClose}
       footer={[<Button onClick={props.onClose}>Maybe later</Button>]}
       width={700}
     >
-      <div style={{ fontSize: 17 }}>
-        If you want to use codePost for a course outside of Code in Place, you can!
-        <span style={{ fontWeight: 500 }}> It's freely available for not-for-profit universities and high schools</span>
-        .
+      <div>
+        <span style={{ fontWeight: 500 }}>
+          {' '}
+          codePost is freely available for not-for-profit universities and high schools.
+        </span>
         <br />
         <br />
-        When you click the button below, you'll be taken to another screen where you can set up your own course or play
-        around with a demo course.
-        <br />
-        <br />
-        It takes {`<`} 5 minutes to set up, and{' '}
-        <a href="https://www.codepost.io/testimonials" target="_blank">
-          instructors seem to love it!
-        </a>
+        When you click the button below, you'll be taken to another screen where you can set up your own course or
+        explore a demo course to famliliarize yourself with codePost's functionality.
         <br />
         <br />
       </div>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <Button onClick={elevateStatusAndGo} type="primary" size="large">
-          Create a course
+          Create your own course (free)
         </Button>
       </div>
     </Modal>
