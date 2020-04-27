@@ -654,7 +654,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
           // Case 3: assignment is published, and student has a submission
 
           const open = () => {
-            openSubmissionInSameTab(submission.id);
+            this.markViewed(submission).then(() => openSubmissionInSameTab(submission.id));
           };
 
           // Show Grade if the submission history doesn't exist (legacy), or if the submission has been viewed

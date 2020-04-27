@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Table, Dropdown, Menu, message } from 'antd';
+import { Table, Dropdown, Menu, message, Spin } from 'antd';
 import { CodeOutlined, MinusCircleTwoTone, MenuOutlined, MailOutlined } from '@ant-design/icons';
 
 /* codePost imports */
@@ -29,6 +29,7 @@ interface ISubmissionsTableProps {
   showEmails: boolean;
   assignment: AssignmentType;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
+  viewsLoading: boolean;
   claimSubmissions: (ids: number[], unclaim: boolean) => void;
   me: string;
 }
@@ -181,7 +182,11 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
         key: submission ? submission.id : student,
         student: shownStudent,
         partners,
-        viewIcon: submission ? <div>{getViewIcon(submission, props.viewsBySubmission, student)}</div> : null,
+        viewIcon: props.viewsLoading ? (
+          <Spin />
+        ) : submission ? (
+          <div>{getViewIcon(submission, props.viewsBySubmission, student)}</div>
+        ) : null,
         open: submission ? <CodeOutlined onClick={openGradePage.bind({}, submission)} /> : null,
         disableCheck: !submission || submission.grader,
         options: (
