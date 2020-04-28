@@ -318,8 +318,7 @@ interface IGraderModalProps {
 
 const CIPGraderModal = (props: IGraderModalProps) => {
   const goToAdminConsole = () => {
-    // window.open(`https://codepost.io/admin?source=j348d&token=${localStorage.getItem('token')}`);
-    window.open(`http://localhost:3000/admin?source=j348d`);
+    window.open(`https://codepost.io/admin?source=j348d`);
   };
 
   const elevateStatusAndGo = () => {
