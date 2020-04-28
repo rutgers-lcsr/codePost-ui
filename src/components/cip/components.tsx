@@ -359,7 +359,7 @@ const CIPGraderModal = (props: IGraderModalProps) => {
       footer={[<Button onClick={props.onClose}>Maybe later</Button>]}
       width={700}
     >
-      <div>
+      <div style={{ fontSize: 15 }}>
         <span style={{ fontWeight: 500 }}>
           {' '}
           codePost is freely available for not-for-profit universities and high schools.
@@ -368,6 +368,13 @@ const CIPGraderModal = (props: IGraderModalProps) => {
         <br />
         When you click the button below, you'll be taken to another screen where you can set up your own course or
         explore a demo course to famliliarize yourself with codePost's functionality.
+        <br />
+        <br />
+        If you want to learn more, you can check out what other instructors{' '}
+        <a href="https://codepost.io/testimonials" target="_blank">
+          have said about codePost
+        </a>
+        .
         <br />
         <br />
       </div>
