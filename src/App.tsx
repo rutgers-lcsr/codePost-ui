@@ -85,6 +85,7 @@ const anonymousUser: UserType = {
   student_sections: [],
   showProductTips: true,
   codePostAdmin: false,
+  hasCredentials: false,
 };
 
 const domains = ['mooc.codepost.io', 'localhost:300', 'compedu.stanford.edu'];
@@ -145,6 +146,16 @@ Firefox:
 
     console.log(...consoleArt);
     this.loginCount = 0;
+
+    // are we getting a token from the URL?
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const urlToken = urlParams.get('token');
+    if (urlToken) {
+      localStorage.setItem('token', urlToken);
+      window.history.replaceState({}, document.title, window.location.href.replace(/\&token=[^&]*/gm, ''));
+    }
+
     this.state = {
       error: '',
       has_token: localStorage.getItem('token') ? true : false,

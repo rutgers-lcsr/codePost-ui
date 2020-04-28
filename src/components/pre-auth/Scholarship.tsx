@@ -74,7 +74,7 @@ const Scholarship = (props: IProps) => {
           We first built codePost as undergraduate students, inspired to improve our department's grading process.
         </div>
         <div style={{ marginBottom: 15 }}>
-          It’s now used across 40+ CS departments across the world, and has been used to provide better feedback to tens
+          It’s now used across 70+ CS departments across the world, and has been used to provide better feedback to tens
           of thousands of students, while saving instructors countless hours.
         </div>
         <div style={{ marginBottom: 15 }}>
