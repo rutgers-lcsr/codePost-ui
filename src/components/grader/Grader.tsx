@@ -243,8 +243,7 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
 
     const headerLeft = [courseDropdown, assignmentDropdown];
 
-    // const showNewCourseBtn = this.props.user.graderCourses[0].id == 2 && this.props.user.courseadminCourses.length == 0;
-    const showNewCourseBtn = true;
+    const showNewCourseBtn = !this.props.user.hasCredentials;
     const logout =
       localStorage.getItem('source') === 'codePost' ? (
         <Button key="header-logout" onClick={this.props.handleLogout}>
