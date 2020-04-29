@@ -2,7 +2,7 @@ import React from 'react';
 
 import { CodeOutlined, UploadOutlined } from '@ant-design/icons';
 
-import { Drawer, Table } from 'antd';
+import { Drawer, Spin } from 'antd';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../../infrastructure/assignment';
@@ -16,6 +16,8 @@ import useWindowSize from '../../../../core/useWindowSize';
 
 import CPButton from '../../../../core/CPButton';
 import Loading from '../../../../core/Loading';
+
+import { TableDetail } from '../../../other/TableDetail';
 
 type alignType = 'left' | 'right' | 'center';
 
@@ -336,111 +338,103 @@ export const filterDataByStat = (
 };
 
 // Get the subtitle text to pass to the drawer
-export const getDrawerTitle = (type: DRAWER_TYPE, contentLength: number | null) => {
-  const detail = contentLength === null ? '' : `(${contentLength})`;
+export const getDrawerTitle = (type: DRAWER_TYPE, contentLength: number | null, isLoading?: boolean) => {
+  const detail = isLoading ? <Spin /> : contentLength === null ? '' : `(${contentLength})`;
   switch (type) {
     case DRAWER_TYPE.Submitted:
-      return `Total Submissions ${detail}`;
+      return <span>Total Submissions {detail}</span>;
     case DRAWER_TYPE.Graded:
-      return `Finalized Submissions ${detail}`;
+      return <span>Finalized Submissions {detail}</span>;
     case DRAWER_TYPE.InProgress:
-      return `Draft Submissions ${detail}`;
+      return <span>Draft Submissions {detail}</span>;
     case DRAWER_TYPE.Unclaimed:
-      return `Unclaimed Submissions ${detail}`;
+      return <span>Unclaimed Submissions {detail}</span>;
     case DRAWER_TYPE.Missing:
-      return `Students missing a submission ${detail}`;
+      return <span>Students missing a submission {detail}</span>;
     case DRAWER_TYPE.Unviewed:
-      return `Unviewed submissions ${detail}`;
+      return <span>Unviewed submissions {detail}</span>;
     case DRAWER_TYPE.Viewed:
-      return `Unviewed submissions ${detail}`;
+      return <span>Unviewed submissions {detail}</span>;
     default:
-      return '';
+      return <span />;
   }
 };
 
 export const StatsDrawer = (props: {
   type: DRAWER_TYPE;
-  content: { title: string; subtitle: string; content: Array<{ email: string; subID: number | null }> | null };
+  content: {
+    title: string;
+    subtitle: React.ReactNode;
+    content: Array<{ email: string; subID: number | null }> | null;
+  };
   onClose: () => void;
   isVisible: boolean;
   uploadSubmission?: (assignmentName: string, students: string) => void;
+  loadComplete: boolean;
 }) => {
-  const windowSize = useWindowSize();
   const actionLabel = props.type === DRAWER_TYPE.Missing ? 'Upload' : 'Open';
-  const primaryWidth = actionLabel === 'Open' ? 455 : 331;
   let body = <Loading />;
+
   if (props.content.content !== null) {
+    const columns = [
+      {
+        title: 'Students',
+        dataIndex: 'students',
+        key: 'students',
+        ...(props.loadComplete && { sorter: (a: any, b: any) => a.students.localeCompare(b.students) }),
+      },
+      {
+        title: actionLabel,
+        dataIndex: 'action',
+        key: 'action',
+      },
+    ];
+
+    const data = props.content.content.map((row) => {
+      let actionElement;
+      if (actionLabel === 'Open') {
+        const action = () => openSubmission(row.subID!);
+        actionElement = <CodeOutlined onClick={action} />;
+      } else if (actionLabel === 'Upload') {
+        const action = () => {
+          if (props.uploadSubmission) {
+            props.uploadSubmission(props.content.title, row.email);
+          }
+        };
+        actionElement = (
+          <CPButton style={{ margin: '-8px' }} onClick={action}>
+            <UploadOutlined /> Upload
+          </CPButton>
+        );
+      }
+
+      return {
+        students: row.email,
+        action: actionElement,
+      };
+    });
+
     body = (
-      <div>
-        <div id="drawer-table-header" style={{ display: 'flex', alignItems: 'center', height: 54 }}>
-          <div style={{ width: primaryWidth, fontWeight: 500, backgroundColor: 'rgba(0,0,0,0.04)', padding: '16px' }}>
-            Students
-          </div>
-          <div style={{ backgroundColor: '#fafafa', flexGrow: 1, padding: '16px' }}>{actionLabel}</div>
-        </div>
-        <List
-          itemData={props.content.content}
-          height={windowSize.height - 144}
-          itemCount={props.content.content.length}
-          itemSize={54}
-          width="100%"
-        >
-          {({ index, style }: any) => {
-            if (props.content.content === null) {
-              return <div>--</div>;
-            }
-
-            const el = props.content.content[index];
-            const key = `${props.content.title}-${props.content.subtitle}-${index}`;
-            const students = el.email;
-
-            let actionElement;
-            let action;
-
-            if (actionLabel === 'Open') {
-              action = () => openSubmission(el.subID!);
-              actionElement = (
-                <a className="internal-link">
-                  <CodeOutlined />
-                </a>
-              );
-            } else if (actionLabel === 'Upload') {
-              action = () => {
-                if (props.uploadSubmission) {
-                  props.uploadSubmission(props.content.title, el.email);
-                }
-              };
-              actionElement = (
-                <CPButton style={{ margin: '-8px' }}>
-                  <UploadOutlined /> Upload
-                </CPButton>
-              );
-            }
-
-            const extraStyle = {
-              display: 'flex',
-              height: 54,
-              alignItems: 'stretch',
-              borderBottom: '1px solid rgb(232,232,232)',
-              cursor: 'pointer',
-            };
-            return (
-              <div style={{ ...style, ...extraStyle }} onClick={action}>
-                <div style={{ width: primaryWidth, backgroundColor: 'rgb(0,0,0,0.01)', padding: '16px' }}>
-                  {students}
-                </div>
-                <div style={{ flexGrow: 1, padding: '16px' }}>{actionElement}</div>
-              </div>
-            );
-          }}
-        </List>
-      </div>
+      <TableDetail
+        columns={columns}
+        data={data}
+        loadComplete={props.content.content !== null}
+        isEmpty={false}
+        title={<div />}
+        emptyNode={<div />}
+        actions={[]}
+        tableOnly={true}
+      />
     );
   }
 
   return (
     <Drawer
-      title={`${props.content.title} | ${props.content.subtitle}`}
+      title={
+        <span>
+          {props.content.title} | {props.content.subtitle}
+        </span>
+      }
       placement="right"
       closable={true}
       onClose={props.onClose}

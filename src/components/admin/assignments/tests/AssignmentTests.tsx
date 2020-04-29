@@ -32,6 +32,7 @@ interface IProps {
   user: UserType;
   updateAssignment: (assignmentID: number, field: string, value: number) => void;
   breadcrumbs?: React.ReactElement[];
+  fullSubmissionsLoadComplete: boolean;
 }
 
 export const AssignmentTests = (props: IProps & RouteComponentProps) => {
@@ -96,6 +97,7 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
         path={`${props.match.url}/results`}
         render={(subprops: any) => (
           <TestingSummary
+            {...props}
             {...subprops}
             breadcrumbs={breadcrumbs}
             currentAssignment={assignment}

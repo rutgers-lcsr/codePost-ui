@@ -144,22 +144,26 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             />
             <Route
               path={`${props.match.url}/${encodedName}/stats`}
-              render={(subprops: IManageAssignmentsProps & RouteComponentProps) => (
-                <AssignmentStats
-                  {...subprops}
-                  course={props.currentCourse!}
-                  assignment={assignment}
-                  submissions={
-                    props.submissions.hasOwnProperty(assignment.id) ? props.submissions[assignment.id] : null
-                  }
-                  students={props.students}
-                  submissionsByStudent={props.submissionsByStudent}
-                  viewsBySubmission={props.viewsBySubmission}
-                  refreshCourseData={props.refreshCourseData}
-                  myEmail={props.myEmail}
-                  breadcrumbs={breadcrumbs}
-                />
-              )}
+              render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
+                !props.fullSubmissionsLoadComplete ? (
+                  <Loading />
+                ) : (
+                  <AssignmentStats
+                    {...subprops}
+                    course={props.currentCourse!}
+                    assignment={assignment}
+                    submissions={
+                      props.submissions.hasOwnProperty(assignment.id) ? props.submissions[assignment.id] : null
+                    }
+                    students={props.students}
+                    submissionsByStudent={props.submissionsByStudent}
+                    viewsBySubmission={props.viewsBySubmission}
+                    refreshCourseData={props.refreshCourseData}
+                    myEmail={props.myEmail}
+                    breadcrumbs={breadcrumbs}
+                  />
+                )
+              }
             />
             <Route
               path={`${props.match.url}/${encodedName}/regrades`}
@@ -199,7 +203,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             <Route
               path={`${props.match.url}/${encodedName}/download/grades`}
               render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
-                !props.partialSubmissionsLoadComplete ? (
+                !props.fullSubmissionsLoadComplete ? (
                   <Loading />
                 ) : (
                   <AssignmentsTable
@@ -252,7 +256,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             <Route
               path={`${props.match.url}/${encodedName}/upload/multiple`}
               render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
-                !props.partialSubmissionsLoadComplete ? (
+                !props.fullSubmissionsLoadComplete ? (
                   <Loading />
                 ) : (
                   <AssignmentsTable
@@ -290,7 +294,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             <Route
               path={`${props.match.url}/${encodedName}/bulk-edit`}
               render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
-                !props.partialSubmissionsLoadComplete ? (
+                !props.fullSubmissionsLoadComplete ? (
                   <Loading />
                 ) : (
                   <AssignmentsTable
@@ -335,13 +339,14 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   submissions={props.submissions[assignment.id] || []}
                   user={props.user}
                   updateAssignment={props.shallowUpdateAssignment}
+                  fullSubmissionsLoadComplete={props.fullSubmissionsLoadComplete}
                 />
               )}
             />
             <Route
               path={`${props.match.url}/plagiarism/${encodedName}`}
               render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
-                !props.partialSubmissionsLoadComplete ? (
+                !props.fullSubmissionsLoadComplete ? (
                   <Loading />
                 ) : (
                   <Moss

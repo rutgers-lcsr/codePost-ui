@@ -314,6 +314,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
   /* eslint-disable no-useless-computed-key */
   public loadSubmissions = (course: CourseType) => {
+    this.setState({ submissions: {}, partialSubmissionsLoadComplete: false, fullSubmissionsLoadComplete: false });
     const promises = course.assignments.map((assignmentID) => {
       return Assignment.readPaginatedSubmissions(
         assignmentID,
@@ -1271,7 +1272,11 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 {...props}
                 key="submissions"
                 course={this.props.currentCourse}
-                loadComplete={this.state.submissionsbyUserLoadComplete && this.state.assignmentsLoadComplete}
+                loadComplete={
+                  this.state.submissionsbyUserLoadComplete &&
+                  this.state.assignmentsLoadComplete &&
+                  this.state.fullSubmissionsLoadComplete
+                }
                 assignments={this.state.assignments}
                 submissionsByStudent={this.state.submissionsByStudent}
                 deleteSubmission={this.deleteSubmission}
