@@ -103,6 +103,7 @@ export interface IManageAssignmentsProps {
 
   /* loading state */
   loadComplete: boolean;
+  partialSubmissionsLoadComplete: boolean;
   fullSubmissionsLoadComplete: boolean;
 
   /* object-level REST operations */
@@ -155,7 +156,7 @@ interface IManageAssignmentsState {
   drawerType?: DRAWER_TYPE;
   drawerContent: {
     title: string;
-    subtitle: string;
+    subtitle: React.ReactNode;
     content: Array<{ email: string; subID: number | null }> | null;
   };
   isDownloading: boolean;
@@ -183,12 +184,16 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
     // The best solution here will be to paginate the loading of the submissions, update the
     // drawer content (submissions) as they load, use an VirtualizedInfiniteLoad component to render
     // the list.
-    if (this.props.submissions !== oldProps.submissions && this.state.drawerType !== undefined) {
+    if (
+      (this.props.fullSubmissionsLoadComplete !== oldProps.fullSubmissionsLoadComplete ||
+        this.props.submissions !== oldProps.submissions) &&
+      this.state.drawerType !== undefined
+    ) {
       const thisAssignment = this.props.assignments.find((assignment: AssignmentType) => {
         return assignment.name === this.state.drawerContent.title;
       });
 
-      if (thisAssignment !== undefined) {
+      if (thisAssignment !== undefined && this.props.submissions[thisAssignment.id]) {
         const newContent: Array<{
           email: string;
           subID: number | null;
@@ -199,11 +204,10 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           this.props.submissions[thisAssignment.id],
           this.props.viewsBySubmission,
           this.props.students,
-        ).sort((a, b) => {
-          return a.email.localeCompare(b.email);
-        });
+        );
 
-        const title = getDrawerTitle(this.state.drawerType, newContent.length);
+        const title = getDrawerTitle(this.state.drawerType, newContent.length, !this.props.fullSubmissionsLoadComplete);
+        console.log(this.props.fullSubmissionsLoadComplete);
 
         this.setState({
           drawerContent: {
@@ -229,7 +233,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
   // the drawer sliding takes time and looks bad if the data changes while it's sliding
   public openDrawer = (assignment: AssignmentType, type: DRAWER_TYPE) => {
     if (!this.props.submissions.hasOwnProperty(assignment.id)) {
-      const title = getDrawerTitle(type, null);
+      const title = getDrawerTitle(type, null, !this.props.fullSubmissionsLoadComplete);
 
       this.setState({
         drawerContent: {
@@ -250,11 +254,9 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         this.props.submissions[assignment.id],
         this.props.viewsBySubmission,
         this.props.students,
-      ).sort((a, b) => {
-        return a.email.localeCompare(b.email);
-      });
+      );
 
-      const title = getDrawerTitle(type, newContent.length);
+      const title = getDrawerTitle(type, newContent.length, !this.props.fullSubmissionsLoadComplete);
 
       this.setState({
         drawerContent: {
@@ -706,6 +708,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           isVisible={true}
           onClose={this.closeDrawer}
           uploadSubmission={this.uploadForStudent}
+          loadComplete={this.props.fullSubmissionsLoadComplete}
         />
       );
 

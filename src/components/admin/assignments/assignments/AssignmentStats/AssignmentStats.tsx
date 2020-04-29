@@ -64,7 +64,7 @@ interface IState {
   drawerType?: DRAWER_TYPE;
   drawerContent: {
     title: string;
-    subtitle: string;
+    subtitle: React.ReactNode;
     content: Array<{ email: string; subID: number | null }> | null;
   };
   isLoading: boolean;
@@ -390,6 +390,7 @@ class AssignmentStats extends React.Component<IProps, IState> {
           content={this.state.drawerContent}
           onClose={this.closeDrawer}
           isVisible={this.state.drawerOpen}
+          loadComplete={true}
         />
       );
 
