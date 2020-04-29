@@ -250,11 +250,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
   /* Handlers
   /**********************************************************************************/
   public openAndMarkViewed = (submission: StudentSubmissionType) => {
-    if (localStorage.getItem('source') !== 'codePost') {
-      openSubmissionInSameTab(submission.id);
-    } else {
-      openSubmission(submission.id);
-    }
+    openSubmissionInSameTab(submission.id);
     this.markViewed(submission);
   };
 
@@ -573,11 +569,14 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
       })
         ? [...columns, uploadColumn]
         : columns;
-      columns = visibleAssignments.some((assn) => {
-        return assn.mean || assn.median;
-      })
-        ? [...columns, statsColumn]
-        : columns;
+      columns =
+        this.props.currentCourse &&
+        this.props.currentCourse.showStudentsStatistics &&
+        visibleAssignments.some((assn) => {
+          return assn.mean || assn.median;
+        })
+          ? [...columns, statsColumn]
+          : columns;
     }
 
     const data = sortAssignments(assignments).map((assignment) => {
@@ -620,7 +619,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
         if (submission === undefined) {
           // Case 2: assignment is published, but student has no submission OR submission isn't finalized
           const missingText = assignment.allowStudentUpload
-            ? "Your submission hasn't been uploaded"
+            ? "You haven't uploaded any code yet"
             : "Your instructor hasn't transferred your submission to codePost yet";
           return {
             ...toRet,
@@ -655,11 +654,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
           // Case 3: assignment is published, and student has a submission
 
           const open = () => {
-            if (localStorage.getItem('source') !== 'codePost') {
-              openSubmissionInSameTab(submission.id);
-            } else {
-              openSubmission(submission.id);
-            }
+            this.markViewed(submission).then(() => openSubmissionInSameTab(submission.id));
           };
 
           // Show Grade if the submission history doesn't exist (legacy), or if the submission has been viewed
@@ -687,11 +682,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
             ) : (
               <Tag>Login on desktop to view</Tag>
             ),
-            code: (
-              <div onClick={open}>
-                <CodeOutlined style={{ cursor: 'pointer' }} />
-              </div>
-            ),
+            code: <Button onClick={open}>View feedback</Button>,
             statusType: showGrade ? SUBMISSION_STATUS.SUBMISSION_VIEWED : SUBMISSION_STATUS.SUBMISSION_UNVIEWED,
           };
         }

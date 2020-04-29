@@ -23,7 +23,7 @@ import { TableDetail } from '../../other/TableDetail';
 
 import CPTooltip from '../../../../components/core/CPTooltip';
 
-import { openSubmission } from '../../other/AdminUtils';
+import { openSubmission, openSubmissionInSameTab } from '../../other/AdminUtils';
 
 const confirm = Modal.confirm;
 
@@ -175,9 +175,16 @@ class GraderAssignmentDetail extends React.Component<IProps, {}> {
 
     if (selectedAssignment) {
       const data = submissions.map((submission) => {
+        const open = () => {
+          if (localStorage.getItem('source') === 'codePost') {
+            openSubmission(submission.id);
+          } else {
+            openSubmissionInSameTab(submission.id);
+          }
+        };
         const menu = (
           <Menu>
-            <Menu.Item onClick={openSubmission.bind(this, submission.id)}>
+            <Menu.Item onClick={open}>
               <CodeOutlined />
               Open
             </Menu.Item>
@@ -197,7 +204,7 @@ class GraderAssignmentDetail extends React.Component<IProps, {}> {
         }
 
         return {
-          open: <CodeOutlined onClick={openSubmission.bind(this, submission.id)} />,
+          open: <CodeOutlined onClick={open} />,
           key: submission.id,
           assignment: selectedAssignment.name,
           status: this.getStatus(submission),

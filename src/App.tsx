@@ -85,6 +85,7 @@ const anonymousUser: UserType = {
   student_sections: [],
   showProductTips: true,
   codePostAdmin: false,
+  hasCredentials: false,
 };
 
 const domains = ['mooc.codepost.io', 'localhost:300', 'compedu.stanford.edu'];
@@ -145,6 +146,16 @@ Firefox:
 
     console.log(...consoleArt);
     this.loginCount = 0;
+
+    // are we getting a token from the URL?
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const urlToken = urlParams.get('token');
+    if (urlToken) {
+      localStorage.setItem('token', urlToken);
+      window.history.replaceState({}, document.title, window.location.href.replace(/\&token=[^&]*/gm, ''));
+    }
+
     this.state = {
       error: '',
       has_token: localStorage.getItem('token') ? true : false,
@@ -550,25 +561,25 @@ Firefox:
         );
       }
 
-      const isLostCodeInPlace = user
-        ? user.courseadminCourses.length === 0 &&
-          user.graderCourses.length === 0 &&
-          user.studentCourses.length === 1 &&
-          user.studentCourses[0].id === 925 &&
-          localStorage.getItem('source') === 'codePost'
-        : false;
+      // const isLostCodeInPlace = user
+      //   ? user.courseadminCourses.length === 0 &&
+      //     user.graderCourses.length === 0 &&
+      //     user.studentCourses.length === 1 &&
+      //     user.studentCourses[0].id === 925 &&
+      //     localStorage.getItem('source') === 'codePost'
+      //   : false;
 
-      if (isLostCodeInPlace && !this.state.isSuperUser) {
-        return (
-          <div>
-            <BrowserRouter>
-              <Switch>
-                <Route component={RemoteAuthRedirect} />
-              </Switch>
-            </BrowserRouter>
-          </div>
-        );
-      }
+      // if (isLostCodeInPlace && !this.state.isSuperUser) {
+      //   return (
+      //     <div>
+      //       <BrowserRouter>
+      //         <Switch>
+      //           <Route component={RemoteAuthRedirect} />
+      //         </Switch>
+      //       </BrowserRouter>
+      //     </div>
+      //   );
+      // }
 
       if (isAdmin || isGrader) {
         (window as any).Intercom('boot', {

@@ -237,7 +237,11 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
   /**********************************************************************************/
 
   public openGradePage = (submission: AnonymousSubmissionInfoType) => {
-    window.open(`/code/${submission.id}`);
+    if (localStorage.getItem('source') === 'codePost') {
+      window.open(`/code/${submission.id}`);
+    } else {
+      window.open(`/code/${submission.id}`, '_self');
+    }
   };
 
   public getSectionParameters = (sections: SectionType[]) => {

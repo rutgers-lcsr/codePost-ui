@@ -23,6 +23,7 @@ const UserV = t.intersection(
       student_sections: t.array(t.number),
       showProductTips: t.boolean,
       codePostAdmin: t.boolean,
+      hasCredentials: t.boolean,
     }),
     t.partial({}),
   ],

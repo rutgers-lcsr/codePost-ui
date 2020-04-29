@@ -5,7 +5,7 @@
 /* react imports */
 import * as React from 'react';
 
-import { CodeOutlined, LoadingOutlined } from '@ant-design/icons';
+import { LoadingOutlined } from '@ant-design/icons';
 
 /* ant imports */
 import { Button, Breadcrumb, Divider, Select, Spin, Switch, Tabs, message } from 'antd';
@@ -15,6 +15,7 @@ import { AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { SectionType, Section } from '../../infrastructure/section';
 import { Submission, SubmissionType } from '../../infrastructure/submission';
+import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 
 import { tooltips } from '../core/tooltips';
 
@@ -47,6 +48,7 @@ interface IState {
   };
   // Map: key = id, value = array of student emails who have viewed the submission
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
+  viewsLoading: boolean;
 
   /* UI control */
   isLoading: boolean;
@@ -67,6 +69,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
       submissionsBySection: {},
       activeSection: this.props.sections[0],
       viewsBySubmission: {},
+      viewsLoading: false,
       showStudentEmails: false,
       isLoading: false,
       selectedSubmissions: [],
@@ -111,6 +114,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
       const submissions = await Section.readSubmissions(section.id, {
         assignment: this.props.assignment.id.toString(),
       });
+      this.loadHistories(submissions);
 
       for (const student of section.students) {
         mapValue[student] = submissions.find((el) => el.students.indexOf(student) > -1);
@@ -120,6 +124,27 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     }
 
     return submissionMap;
+  };
+
+  public loadHistories = async (submissions: SubmissionType[]) => {
+    this.setState({ viewsLoading: true });
+    const toRet: any = {};
+    const promises = submissions.map((submission) => {
+      toRet[submission.id] = {};
+      return Submission.readHistory(submission.id).then((histories: SubmissionHistoryType[]) => {
+        for (const history of histories) {
+          if (history.hasViewed && history.dateViewed) {
+            toRet[submission.id][history.student] = history.dateViewed;
+          }
+        }
+      });
+    });
+
+    Promise.all(promises).then(() => {
+      this.setState({ viewsBySubmission: toRet, viewsLoading: false });
+    });
+
+    return toRet;
   };
 
   public claimSubmissions = async (toHandle: number[], unclaim: boolean | undefined) => {
@@ -254,6 +279,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
         showEmails={showingEmails}
         assignment={this.props.assignment}
         viewsBySubmission={this.state.viewsBySubmission}
+        viewsLoading={this.state.viewsLoading}
         claimSubmissions={this.claimSubmissions}
         me={this.props.email}
       />

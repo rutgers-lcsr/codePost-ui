@@ -1237,7 +1237,12 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
               <Tabs.TabPane tab="Tests" key="3">
                 <div style={{ minHeight: 400, height: 'calc(100vh - 400px)' }}>
                   <TestsList
-                    tests={this.state.submissionTests}
+                    tests={this.state.submissionTests.filter((el) => {
+                      const correspondingTest = Object.values(this.state.testCases)
+                        .flat()
+                        .find((el2) => el2.id === el.testCase);
+                      return correspondingTest && correspondingTest.exposed;
+                    })}
                     hideNotRun={false}
                     redactNotShown={this.state.selectedAssignment!.nudgeMode}
                     cases={this.state.testCases}

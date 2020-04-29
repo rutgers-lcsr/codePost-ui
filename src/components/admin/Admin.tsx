@@ -8,7 +8,7 @@ import * as React from 'react';
 import { SettingOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Button, Empty } from 'antd';
+import { Button, Empty, Modal, Input, Checkbox } from 'antd';
 
 /* other library imports */
 import _ from 'lodash';
@@ -62,11 +62,16 @@ import { tooltips } from '../core/tooltips';
 
 import { AssignmentSetupBanner } from './assignments/assignments/AssignmentSetupDialog';
 
+import { CIPAdminModal } from '../cip/components';
+
+import VideoModal from '../landing/VideoModal';
+
 /**********************************************************************************************************************/
 
 interface IAdminState {
   /**** UI control data ****/
   onboardingModalVisible: boolean;
+  cipModalVisible: boolean;
 
   /**** Top-level course data ****/
   courses: CourseType[];
@@ -117,11 +122,17 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       this.loadAllCourseData(this.props.currentCourse);
     }
 
+    // We show the CIP modal if the source is in the url, or if the user doesn't have credentials
+    // The second check (credentials) is to prevent the flow of: CIP user goes to create course, navigates to splash page, and doesn't set password
+    const showCIPModal = !this.props.user.hasCredentials;
+    const showOnboarding =
+      Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding') ||
+      this.props.initialCourses.length === 0;
+
     this.state = {
       /**** UI control data ****/
-      onboardingModalVisible:
-        Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding') ||
-        this.props.initialCourses.length === 0,
+      onboardingModalVisible: showOnboarding && !showCIPModal,
+      cipModalVisible: showCIPModal,
 
       /**** Top-level course data ****/
       courses: _.cloneDeep(this.props.initialCourses),
@@ -1355,6 +1366,11 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
               />
             )}
           />
+          <Route
+            path={`${this.props.match.url}/video`}
+            key="video"
+            render={(props: any) => <VideoModal visible={true} onCancel={() => this.props.history.push('/admin')} />}
+          />
         </Switch>
       );
     }
@@ -1390,7 +1406,26 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       <CPLayoutAdmin
         header={header}
         banner={banner}
-        detail={detail}
+        detail={
+          <span>
+            {detail}
+            {
+              <CIPAdminModal
+                visible={this.state.cipModalVisible}
+                onClose={() => this.setState({ cipModalVisible: false })}
+                user={this.props.user}
+                onCreateCourse={() => {
+                  this.setState({ cipModalVisible: false });
+                  const newCourseButton = document.getElementById('new-course-button');
+                  if (newCourseButton) {
+                    newCourseButton.click();
+                  }
+                }}
+                onCreateDemoCourse={this.handleDemoCourse}
+              />
+            }
+          </span>
+        }
         navigation={navigation}
         collapsible={true}
         role={USER_TYPE.ADMIN}
