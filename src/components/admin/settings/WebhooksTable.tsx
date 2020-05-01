@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { Checkbox, Dropdown, Table, Input, Menu, Button, Popconfirm, Form, message } from 'antd';
-import { Webhook, WebhookType } from '../../../infrastructure/webhook';
+import { Webhook, WebhookType, VALID_WEBHOOKS } from '../../../infrastructure/webhook';
 import { CourseType } from '../../../infrastructure/course';
 import { DownOutlined } from '@ant-design/icons';
 
@@ -89,6 +89,14 @@ class WebhooksTable extends React.Component<IWebhooksTableProps, any> {
 
   constructor(props: IWebhooksTableProps) {
     super(props);
+
+    const objects = Object.keys(VALID_WEBHOOKS).map((obj: string) => {
+      return {
+        text: obj,
+        value: obj,
+      };
+    });
+
     this.columns = [
       {
         title: 'Enabled',
@@ -117,17 +125,9 @@ class WebhooksTable extends React.Component<IWebhooksTableProps, any> {
       {
         title: 'Object',
         dataIndex: 'object',
-        filters: [
-          {
-            text: 'course',
-            value: 'course',
-          },
-          {
-            text: 'assignment',
-            value: 'assignment',
-          },
-        ],
+        filters: objects,
         onFilter: (value: any, record: any) => record.object.indexOf(value) === 0,
+        sorter: (a: any, b: any) => a.object.localeCompare(b.object),
       },
       {
         title: 'Action',
@@ -182,7 +182,7 @@ class WebhooksTable extends React.Component<IWebhooksTableProps, any> {
   handleAdd = async (e: any) => {
     const { count, dataSource } = this.state;
 
-    const event = e.key;
+    const event = `${e.keyPath[1]}.${e.keyPath[0]}`;
 
     const payload = {
       id: 0,
@@ -272,92 +272,16 @@ class WebhooksTable extends React.Component<IWebhooksTableProps, any> {
       };
     });
 
-    const valid_hooks = [
-      'course.changed',
-      'course.name',
-      'course.period',
-      'course.archived',
-      'course.students',
-      'course.graders',
-      'course.courseAdmins',
-      'section.added',
-      'section.changed',
-      'section.removed',
-      'section.name',
-      'assignment.added',
-      'assignment.changed',
-      'assignment.removed',
-      'assignment.name',
-      'assignment.isVisible',
-      'assignment.isReleased',
-      'assignment.explanation',
-      'assignment.points',
-      'rubricCategory.added',
-      'rubricCategory.changed',
-      'rubricCategory.removed',
-      'rubricCategory.name',
-      'rubricCategory.pointLimit',
-      'rubricCategory.helpText',
-      'rubricComment.added',
-      'rubricComment.changed',
-      'rubricComment.removed',
-      'rubricComment.text',
-      'rubricComment.explanation',
-      'rubricComment.instructionText',
-      'rubricComment.pointDelta',
-      'submission.added',
-      'submission.changed',
-      'submission.removed',
-      'submission.grader',
-      'submission.isFinalized',
-      'submission.questionIsOpen',
-      'file.added',
-      'file.changed',
-      'file.removed',
-      'file.code',
-      'file.name',
-      'file.extension',
-      'fileTemplate.added',
-      'fileTemplate.changed',
-      'fileTemplate.removed',
-      'comment.added',
-      'comment.changed',
-      'comment.removed',
-      'comment.text',
-      'comment.pointDelta',
-      'comment.rubricComment',
-      'TestCategory.added',
-      'TestCategory.changed',
-      'TestCategory.removed',
-      'testCase.added',
-      'testCase.changed',
-      'testCase.removed',
-      'testCase.description',
-      'testCase.type',
-      'testCase.pointsFail',
-      'testCase.pointsPass',
-      'testCase.text',
-      'testCase.explanation',
-      'testCase.exposed',
-      'testCase.lastSolutionRun',
-      'submissionTest.added',
-      'submissionHistory.changed',
-      'environment.added',
-      'environment.changed',
-      'environment.removed',
-      'environment.isRunning',
-      'solutionFile.added',
-      'solutionFile.changed',
-      'solutionFile.removed',
-      'helperFile.added',
-      'helperFile.changed',
-      'helperFile.removed',
-    ];
-
     const menu = (
       <Menu onClick={this.handleAdd}>
-        {valid_hooks.map((event_name: string) => {
-          return <Menu.Item key={event_name}>{event_name}</Menu.Item>;
+        {Object.keys(VALID_WEBHOOKS).map((obj: string) => {
+          return (
+            <Menu.SubMenu title={obj} key={obj}>
+              {VALID_WEBHOOKS[obj].map((hook: string) => {
+                return <Menu.Item key={hook}>{hook}</Menu.Item>;
+              })}
+            </Menu.SubMenu>
+          );
         })}
       </Menu>
     );
