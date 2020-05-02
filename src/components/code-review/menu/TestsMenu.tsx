@@ -92,8 +92,8 @@ const TestsMenu = (props: IProps) => {
     return {
       category: (
         <span>
-          {category.name} <Badge hideZero={true} count={positivePoints} size="small" />
-          <Badge count={negativePoints} hideZero={true} size="small" />
+          {category.name} <Badge hideZero={true} count={positivePoints.toPrecision(1)} size="small" />
+          <Badge count={negativePoints.toPrecision(1)} hideZero={true} size="small" />
         </span>
       ),
       passed: `${numPassed}/${numTotal}`,
