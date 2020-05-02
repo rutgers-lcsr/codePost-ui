@@ -589,6 +589,9 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
             `${assignment.name} | ${this.props.currentCourse ? this.props.currentCourse.name : ''} ${
               this.props.currentCourse ? this.props.currentCourse.period : ''
             }`,
+            '#24be85',
+            '#user_notifications_everything',
+            this.props.currentCourse ? this.props.currentCourse.id : 0,
           );
         }
 
