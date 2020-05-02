@@ -10,7 +10,10 @@ const WebhookV = t.intersection(
       event: t.string,
       target: t.string,
     }),
-    t.partial({}),
+    t.partial({
+      last_triggered_at: t.union([t.string, t.null]),
+      last_triggered_status: t.union([t.string, t.null]),
+    }),
   ],
   'Webhook',
 );

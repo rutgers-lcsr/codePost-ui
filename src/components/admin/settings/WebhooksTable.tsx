@@ -1,8 +1,9 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
-import { Checkbox, Dropdown, Table, Input, Menu, Button, Popconfirm, Form, message } from 'antd';
+import { Checkbox, Dropdown, Table, Input, Menu, Button, Popconfirm, Form, message, Tag } from 'antd';
 import { Webhook, WebhookType, VALID_WEBHOOKS } from '../../../infrastructure/webhook';
 import { CourseType } from '../../../infrastructure/course';
 import { DownOutlined } from '@ant-design/icons';
+import moment from 'moment';
 
 const EditableContext = React.createContext<any>(null);
 
@@ -140,6 +141,14 @@ class WebhooksTable extends React.Component<IWebhooksTableProps, any> {
         editable: true,
       },
       {
+        title: 'Last Triggered',
+        dataIndex: 'lastTriggered',
+      },
+      {
+        title: 'Latest Status',
+        dataIndex: 'status',
+      },
+      {
         title: '',
         dataIndex: 'delete',
         render: (text: string, record: any) =>
@@ -152,6 +161,19 @@ class WebhooksTable extends React.Component<IWebhooksTableProps, any> {
     ];
     this.state = {
       dataSource: props.webhooks.map((webhook: WebhookType, index: number) => {
+        const lastTriggered = webhook.last_triggered_at ? (
+          moment(webhook.last_triggered_at).format('lll')
+        ) : (
+          <Tag>Never Triggered</Tag>
+        );
+        const status =
+          webhook.last_triggered_status && webhook.last_triggered_status.includes('20') ? (
+            <Tag color="green">{webhook.last_triggered_status}</Tag>
+          ) : webhook.last_triggered_status ? (
+            <Tag color="red">{webhook.last_triggered_status}</Tag>
+          ) : (
+            ''
+          );
         return {
           key: index.toString(),
           webhook: webhook,
@@ -159,6 +181,8 @@ class WebhooksTable extends React.Component<IWebhooksTableProps, any> {
           object: webhook.event.split('.')[0],
           action: webhook.event.split('.')[1],
           target: webhook.target,
+          lastTriggered,
+          status,
         };
       }),
       count: props.webhooks.length,

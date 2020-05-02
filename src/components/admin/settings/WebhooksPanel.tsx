@@ -4,7 +4,7 @@
 
 /* external imports */
 import * as React from 'react';
-import { Breadcrumb, Collapse, Tag, Table } from 'antd';
+import { Breadcrumb, Collapse, Skeleton, Tag, Table } from 'antd';
 
 /* codePost imports */
 import CPAdminDetail from '../other/CPAdminDetail';
@@ -24,6 +24,7 @@ type AlignType = 'center' | 'right' | 'left' | undefined;
 
 const WebhooksPanel = (props: IProps) => {
   const [webhooks, setWebhooks] = React.useState<WebhookType[]>([]);
+  const [loading, setLoading] = React.useState(true);
   const [justSaved, setJustSaved] = React.useState<boolean>(false);
 
   const columns = [
@@ -77,15 +78,8 @@ const WebhooksPanel = (props: IProps) => {
           }),
         );
 
-        // const categorizedWebhooks = res.reduce((accumulator: any, current: any) => {
-        //   const category = current.event.split('.')[0];
-        //   if (accumulator.hasOwnProperty(category)) {
-        //     return { ...accumulator, [category]: [...accumulator[category], current] };
-        //   } else {
-        //     return { ...accumulator, [category]: [current] };
-        //   }
-        // }, {});
         setWebhooks(res);
+        setLoading(false);
       }
     };
     fetchWebhooks();
@@ -101,25 +95,8 @@ const WebhooksPanel = (props: IProps) => {
     }
   }, [justSaved]);
 
-  const filterMainHooks = (webhooks: WebhookType[]) => {
-    return webhooks.filter((webhook: WebhookType) => {
-      return webhook.event.includes('added') || webhook.event.includes('changed') || webhook.event.includes('removed');
-    });
-  };
-
-  const filterDetailHooks = (webhooks: WebhookType[]) => {
-    return webhooks.filter((webhook: WebhookType) => {
-      return !(
-        webhook.event.includes('added') ||
-        webhook.event.includes('changed') ||
-        webhook.event.includes('removed')
-      );
-    });
-  };
-
   // const content = <Table dataSource={data} columns={columns} />;
-  const content =
-    webhooks.length === 0 ? <div>Loading</div> : <WebhooksTable webhooks={webhooks} course={props.currentCourse} />;
+  const content = loading ? <Skeleton /> : <WebhooksTable webhooks={webhooks} course={props.currentCourse} />;
   // const content = (
   //   <Collapse defaultActiveKey={[]} expandIconPosition={'right'}>
   //     {Object.keys(webhooks).map((category: string) => {
