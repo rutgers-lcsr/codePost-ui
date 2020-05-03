@@ -10,7 +10,7 @@ import { PlusCircleOutlined } from '@ant-design/icons';
 import '@ant-design/compatible/assets/index.css';
 
 /* ant imports */
-import { Input, InputNumber, Modal, Radio, DatePicker } from 'antd';
+import { Input, InputNumber, Modal, Radio, DatePicker, Select } from 'antd';
 import { FormComponentProps } from '@ant-design/compatible/lib/form';
 
 /* other library imports */
@@ -20,6 +20,7 @@ import { RouteComponentProps } from 'react-router';
 
 /* codePost imports */
 import CPButton from '../../../../components/core/CPButton';
+import CPTooltip from '../../../../components/core/CPTooltip';
 
 import { AssignmentType } from '../../../../infrastructure/types';
 
@@ -207,6 +208,33 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
           confirmLoading={this.props.loading}
         >
           <Form layout="vertical">
+            {1 > 0 ? (
+              <div>
+                <Form.Item className="collection-create-form_last-form-item">
+                  {getFieldDecorator('modifier', {
+                    initialValue: 'public',
+                  })(
+                    <Radio.Group>
+                      <Radio value="public">Start from scratch</Radio>
+                      <Radio value="private">Clone existing assignment</Radio>
+                    </Radio.Group>,
+                  )}
+                  <CPTooltip title={'blah'} infoIcon={true} />
+                </Form.Item>
+                {this.props.form.getFieldValue('modifier') === 'private' ? (
+                  <Form.Item label="Assignment to clone">
+                    {getFieldDecorator('cloneID')(
+                      <Select disabled={this.props.form.getFieldValue('modifier') === 'public'}>
+                        <Select.Option key={'one'} value={'one'}>
+                          one
+                        </Select.Option>
+                      </Select>,
+                    )}
+                  </Form.Item>
+                ) : null}
+              </div>
+            ) : null}
+
             <Form.Item label="Name">
               {getFieldDecorator('name', {
                 validateFirst: true,
@@ -222,7 +250,9 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
                   },
                   { validator: this.validateName },
                 ],
-              })(<Input placeholder="Hello World" />)}
+              })(
+                <Input placeholder="Hello World" disabled={this.props.form.getFieldValue('modifier') === 'private'} />,
+              )}
             </Form.Item>
             <Form.Item label="Points">
               {getFieldDecorator('points', {
@@ -231,14 +261,22 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
                   { required: true, message: 'Please specify a point value' },
                   { validator: this.validatePoints },
                 ],
-              })(<InputNumber min={0} />)}
+              })(<InputNumber min={0} disabled={this.props.form.getFieldValue('modifier') === 'private'} />)}
             </Form.Item>
             <span>Do you want students to be able to submit directly to codePost?</span>
             <br />
-            <Radio checked={this.props.studentsCanUpload} onChange={this.props.toggleStudentUpload}>
+            <Radio
+              checked={this.props.studentsCanUpload}
+              onChange={this.props.toggleStudentUpload}
+              disabled={this.props.form.getFieldValue('modifier') === 'private'}
+            >
               Yes
             </Radio>
-            <Radio checked={!this.props.studentsCanUpload} onChange={this.props.toggleStudentUpload}>
+            <Radio
+              checked={!this.props.studentsCanUpload}
+              onChange={this.props.toggleStudentUpload}
+              disabled={this.props.form.getFieldValue('modifier') === 'private'}
+            >
               No
             </Radio>
             <br />
@@ -251,17 +289,31 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
                     initialValue: moment()
                       .tz(this.props.timezone)
                       .endOf('day'),
-                  })(<DatePicker showTime placeholder="Click to select" />)}
+                  })(
+                    <DatePicker
+                      showTime
+                      placeholder="Click to select"
+                      disabled={this.props.form.getFieldValue('modifier') === 'private'}
+                    />,
+                  )}
                 </Form.Item>
                 <span>
                   Do you want students to be able to submit right away? If not, you can choose when to make your
                   assignment visible.
                 </span>
                 <br />
-                <Radio checked={this.props.isAssignmentVisible} onChange={this.props.toggleIsAssignmentVisible}>
+                <Radio
+                  checked={this.props.isAssignmentVisible}
+                  onChange={this.props.toggleIsAssignmentVisible}
+                  disabled={this.props.form.getFieldValue('modifier') === 'private'}
+                >
                   Yes
                 </Radio>
-                <Radio checked={!this.props.isAssignmentVisible} onChange={this.props.toggleIsAssignmentVisible}>
+                <Radio
+                  checked={!this.props.isAssignmentVisible}
+                  onChange={this.props.toggleIsAssignmentVisible}
+                  disabled={this.props.form.getFieldValue('modifier') === 'private'}
+                >
                   No
                 </Radio>
               </span>
