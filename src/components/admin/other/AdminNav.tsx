@@ -175,9 +175,7 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
             <Link to={`${this.props.baseURL}/settings`}>General</Link>
           </Menu.Item>
           <Menu.Item key="course-settings/webhooks">
-            <Link to={`${this.props.baseURL}/settings/webhooks`}>
-              Webhooks &nbsp;<Tag color="#595959">New!</Tag>
-            </Link>
+            <Link to={`${this.props.baseURL}/settings/webhooks`}>Webhooks</Link>
           </Menu.Item>
         </SubMenu>
       </Menu>

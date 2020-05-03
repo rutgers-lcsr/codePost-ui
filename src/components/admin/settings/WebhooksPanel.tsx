@@ -56,10 +56,6 @@ const WebhooksPanel = (props: IProps) => {
 
   const data = webhooks.map((webhook: WebhookType) => {
     const [object, action] = webhook.event.split('.');
-    // <WebhookItem key={`webhook-${webhook.id}`} webhook={webhook} setJustSaved={setJustSaved} />;
-
-    // const [checkbox, input] = useWebhookItem({ webhook: webhook, setJustSaved: setJustSaved });
-
     return {
       key: `webhook-${webhook.id}`,
       enabled: webhook.is_active,
@@ -95,31 +91,7 @@ const WebhooksPanel = (props: IProps) => {
     }
   }, [justSaved]);
 
-  // const content = <Table dataSource={data} columns={columns} />;
   const content = loading ? <Skeleton /> : <WebhooksTable webhooks={webhooks} course={props.currentCourse} />;
-  // const content = (
-  //   <Collapse defaultActiveKey={[]} expandIconPosition={'right'}>
-  //     {Object.keys(webhooks).map((category: string) => {
-  //       const header = (
-  //         <div>
-  //           <span style={{ textTransform: 'capitalize', fontSize: '14px', fontWeight: 500 }}>{category}</span>
-  //           {filterMainHooks(webhooks[category]).map((webhook: WebhookType) => {
-  //             return <WebhookItem key={`webhook-${webhook.id}`} webhook={webhook} setJustSaved={setJustSaved} />;
-  //           })}
-  //         </div>
-  //       );
-  //       return (
-  //         <Collapse.Panel header={header} key={category}>
-  //           <div>
-  //             {filterDetailHooks(webhooks[category]).map((webhook: WebhookType) => {
-  //               return <WebhookItem key={`webhook-${webhook.id}`} webhook={webhook} setJustSaved={setJustSaved} />;
-  //             })}
-  //           </div>
-  //         </Collapse.Panel>
-  //       );
-  //     })}
-  //   </Collapse>
-  // );
 
   const savedTag = justSaved ? <Tag color="green">SAVED</Tag> : null;
 
