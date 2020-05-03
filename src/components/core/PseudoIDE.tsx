@@ -7,6 +7,7 @@ import { Menu, message, Select, Skeleton } from 'antd';
 import { CodeWindow } from '../admin/assignments/tests/edit/utils/CodeWindow';
 import { PseudoTerminal, RESULT_TYPE, ILogType } from '../admin/assignments/tests/edit/TestDefinitions/PseudoTerminal';
 import useWindowSize from './useWindowSize';
+import _ from 'lodash';
 
 import { AnonymousSubmissionType } from '../../infrastructure/submission';
 import { EnvironmentType } from '../../infrastructure/autograder/environment';
@@ -31,7 +32,7 @@ interface IPseudoIDEProps {
 const PseudoIDE = (props: IPseudoIDEProps) => {
   const [loading, setLoading] = React.useState<boolean>(true);
 
-  const [filesCopy, setFilesCopy] = React.useState<FileType[]>(props.files);
+  const [filesCopy, setFilesCopy] = React.useState<FileType[]>(_.cloneDeep(props.files));
   const [currentFileID, setCurrentFileID] = React.useState<number | undefined>(undefined);
 
   const height = useWindowSize().height * 0.85;
@@ -58,7 +59,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
 
   React.useEffect(() => {
     if (props.files.length > 0 && currentFileID === undefined) {
-      setFilesCopy(props.files);
+      setFilesCopy(_.cloneDeep(props.files));
       setCurrentFileID(props.files[0].id);
     }
   }, [props.files]);
@@ -259,7 +260,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
             {props.files.map((file: FileType) => {
               return (
                 <Menu.Item key={`file - ${file.id} `}>
-                  {file.path !== undefined ? <span style={{ color: '#c0c0c0' }}>{file.path}/</span> : null}
+                  {file.path && <span style={{ color: '#c0c0c0' }}>{file.path}/</span>}
                   <span style={{ fontWeight: 500 }}>{file.name}</span>
                 </Menu.Item>
               );
@@ -287,7 +288,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
               >
                 {currentFile === undefined
                   ? '---'
-                  : `${currentFile.path !== undefined ? currentFile.path + '/' : ''}${currentFile.name}`}
+                  : `${currentFile.path ? currentFile.path + '/' : ''}${currentFile.name}`}
               </div>
               <div style={{ flexGrow: 1 }} />
             </div>

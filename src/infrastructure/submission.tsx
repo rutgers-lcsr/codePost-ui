@@ -224,11 +224,25 @@ export const AnonymousSubmissionV = t.intersection(
   'Submission',
 );
 
+// This is a simplified submission data object to make loading of test results faster
+export const SubmissionWithTestsV = t.intersection(
+  [
+    GenericObject,
+    t.type({
+      tests: t.array(SubmissionTestV),
+    }),
+  ],
+  'SubmissionTests',
+);
+
 export type SubmissionType = t.TypeOf<typeof SubmissionV>;
 export type SubmissionInfoType = t.TypeOf<typeof SubmissionInfoV>;
 export type AnonymousSubmissionInfoType = t.TypeOf<typeof AnonymousSubmissionInfoV>;
 export type StudentSubmissionType = t.TypeOf<typeof StudentSubmissionV>;
 export type AnonymousSubmissionType = t.TypeOf<typeof AnonymousSubmissionV>;
+
+// This is a simplified submission data object to make loading of test results faster
+export type SubmissionWithTestsType = t.TypeOf<typeof SubmissionWithTestsV>;
 
 const TestResultsV = t.intersection(
   [

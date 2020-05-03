@@ -111,20 +111,6 @@ export const fetchTestCasesByCategory = async (categories: TestCategoryType[]) =
   return toRet;
 };
 
-// For a list of submissions, create a {submissionID: SubmissionTest[]} object
-export const fetchTestsBySubmission = async (submissions: (AnonymousSubmissionType | SubmissionInfoType)[]) => {
-  const toRet: TestsBySubmission = {};
-  const submissionPromises =
-    submissions !== undefined
-      ? submissions.map(async (submission: AnonymousSubmissionType | SubmissionInfoType) => {
-          const res = await Submission.readTestResults(submission.id, { isStudentMode: 'False' });
-          toRet[submission.id] = res.submissionTests;
-        })
-      : [];
-  await Promise.all(submissionPromises);
-  return toRet;
-};
-
 export const getTestsByCase = (testsBySubmission: TestsBySubmission, casesByCategory: TestCasesByCategory) => {
   const passedToRet: TestsByCase = {};
   const failedToRet: TestsByCase = {};
@@ -163,4 +149,18 @@ export const getTestsByCase = (testsBySubmission: TestsBySubmission, casesByCate
     });
   });
   return [passedToRet, failedToRet, errorToRet];
+};
+
+// For a list of submissions, create a {submissionID: SubmissionTest[]} object
+export const fetchTestsBySubmission = async (submissions: (AnonymousSubmissionType | SubmissionInfoType)[]) => {
+  const toRet: TestsBySubmission = {};
+  const submissionPromises =
+    submissions !== undefined
+      ? submissions.map(async (submission: AnonymousSubmissionType | SubmissionInfoType) => {
+          const res = await Submission.readTestResults(submission.id, { isStudentMode: 'False' });
+          toRet[submission.id] = res.submissionTests;
+        })
+      : [];
+  await Promise.all(submissionPromises);
+  return toRet;
 };

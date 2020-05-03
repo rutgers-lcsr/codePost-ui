@@ -6,8 +6,8 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Empty, message, notification, Progress, Typography } from 'antd';
-import { FolderOpenOutlined } from '@ant-design/icons';
+import { Button, Empty, message, notification, Progress, Typography } from 'antd';
+import { FolderOpenOutlined, BugOutlined } from '@ant-design/icons';
 
 /* other library imports */
 import _ from 'lodash';
@@ -934,6 +934,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     }
   };
 
+  // reloadComments only called for students
   public reloadComments = async () => {
     let requestID = 0;
     this.setState(
@@ -946,14 +947,21 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         const MAX_REQUESTS = 3600 / (this.LIVE_FEEDBACK_COMMENTS_RELOAD_INTERVAL / 1000); // 1 hour
 
         if (requestID < MAX_REQUESTS) {
-          // eslint-disable-next-line
-          let files, comments, commentRubricComments;
+          // Fetch the latest submission in case the files changed elsewhere
+          const newSub = await Submission.readReadOnly(this.state.readOnlySubmission!.id);
+          let files, comments, _;
+          [files, comments, _] = await Submission.loadData(newSub);
+          files = CodeConsole.fileBouncer(files);
 
-          [files, comments, commentRubricComments] = await Submission.loadData(this.state.readOnlySubmission!);
+          // change the selected file
+          const selectedFile =
+            files.find((f: FileType) => {
+              return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
+            }) || files[0];
 
           // guard against an old (i.e. not the latest) request from overwriting state
           if (this.state.commentRefreshCounter === requestID) {
-            this.setState({ comments });
+            this.setState({ readOnlySubmission: newSub, files, comments, selectedFile });
           }
         } else {
           clearInterval(this.reloadCommentsInterval);
@@ -1179,6 +1187,14 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
   // Usually adds a blank comment to the submission state
   public addComment = (comment: CommentType, file: FileType) => {
+    try {
+      if (this.state.submission && this.state.submission.grader === null) {
+        this.updateGrader(this.state.submission, this.props.user.email);
+      }
+    } catch (err) {
+      console.log('comment author isnt enrolled as a grader');
+    }
+
     const comments = CodeConsole.addCommentToState(this.state.comments, comment, file);
     this.setState({ comments, activeCommentID: comment.id, commentCounter: this.state.commentCounter - 1 });
   };
@@ -1365,7 +1381,9 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   };
 
   public getPointsInFile = (file: FileType): number[] => {
-    return CodeConsole.pointsInFile(file, this.state.comments[file.id], this.state.commentRubricComments);
+    // If, for some reason, the file is not in comments, don't have a fatal error
+    const fileComments = this.state.comments[file.id] || [];
+    return CodeConsole.pointsInFile(file, fileComments, this.state.commentRubricComments);
   };
 
   public updateSubmissionGrade = () => {
@@ -1633,6 +1651,39 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         updateZoom={this.setZoom}
         fallbackWidth={layoutVars.breakpoints.smallScreen.grade}
       />
+    );
+
+    const testsTitle = (
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div>Tests</div>
+        <div style={{ flexGrow: 1 }} />
+        <Button
+          size="small"
+          type="primary"
+          icon={<FolderOpenOutlined />}
+          onClick={(e: any) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
+          }}
+          disabled={this.state.testCategories.length === 0}
+        >
+          View
+        </Button>
+        <Button
+          size="small"
+          style={{ marginLeft: '6px' }}
+          icon={<BugOutlined />}
+          onClick={(e: any) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.showInlineTestsModal();
+          }}
+          disabled={this.state.testCategories.length === 0}
+        >
+          Debug
+        </Button>
+      </div>
     );
 
     if (
@@ -1936,24 +1987,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             </RubricManager>,
           ];
 
-          siderTitles = [
-            'Submission Info',
-            <div>
-              Tests{' '}
-              <CPButton
-                size="small"
-                cpType={theme === 'light' ? 'secondary' : 'dark'}
-                icon={<FolderOpenOutlined />}
-                onClick={(e: any) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
-                }}
-              />
-            </div>,
-            fileMenuTitle,
-            'Rubric',
-          ];
+          siderTitles = ['Submission Info', testsTitle, fileMenuTitle, 'Rubric'];
 
           leftHeader = [
             <HeaderMenu
@@ -1994,6 +2028,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             controls,
             <FinalizeButton
               key="subheader-finalize"
+              course={this.state.course!}
               submission={this.state.submission!}
               toggleFinalized={this.toggleFinalized}
               numComments={Object.values(this.state.comments).flat().length}
@@ -2111,24 +2146,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           />,
         ];
 
-        siderTitles = [
-          'Submission Info',
-          <div>
-            Tests{' '}
-            <CPButton
-              size="small"
-              cpType={theme === 'light' ? 'secondary' : 'dark'}
-              icon={<FolderOpenOutlined />}
-              onClick={(e: any) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
-              }}
-              disabled={this.state.testCategories.length === 0}
-            />
-          </div>,
-          fileMenuTitle,
-        ];
+        siderTitles = ['Submission Info', testsTitle, fileMenuTitle];
       } else {
         leftHeader = [
           <HeaderMenu
@@ -2167,6 +2185,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           <ViewAsStudent key="view-as-student" pathname={this.props.location.pathname} />,
           <FinalizeButton
             key="subheader-finalize"
+            course={this.state.course!}
             submission={this.state.submission!}
             toggleFinalized={this.toggleFinalized}
             numComments={Object.values(this.state.comments).flat().length}
@@ -2339,24 +2358,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           </RubricManager>,
         ];
 
-        siderTitles = [
-          'Submission Info',
-          <div>
-            Tests{' '}
-            <CPButton
-              size="small"
-              cpType={theme === 'light' ? 'secondary' : 'dark'}
-              icon={<FolderOpenOutlined />}
-              onClick={(e: any) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
-              }}
-            />
-          </div>,
-          fileMenuTitle,
-          'Rubric',
-        ];
+        siderTitles = ['Submission Info', testsTitle, fileMenuTitle, 'Rubric'];
       }
     }
 
@@ -2526,6 +2528,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         },
         { value: 'View stats', label: 'View stats', kind: 'dashboard', populator: viewStats },
         { value: 'Edit code', label: 'Edit code', callback: this.showInlineTestsModal, kind: 'action' },
+        { value: 'Debug mode', label: 'Debug mode', callback: this.showInlineTestsModal, kind: 'action' },
       ];
     }
 
@@ -2542,7 +2545,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     (window as any).foobarURL = this.props.match.url; // for logging
 
     /*************************************************************************************/
-
     return (
       <div id="Grade">
         <CodeConsoleOnboardingSelector

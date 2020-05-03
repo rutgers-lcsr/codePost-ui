@@ -142,10 +142,11 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
   React.useEffect(() => {
     const values = queryString.parse(props.location.search);
     if (values.resultsid !== undefined && typeof values.resultsid === 'string') {
-      setUrlID(values.resultsid);
+      const formattedUrlID = values.resultsid.replace('%2F', '/');
+      setUrlID(formattedUrlID);
       setSubmit(false);
 
-      onParse(null, values.resultsid);
+      onParse(null, formattedUrlID);
     }
   }, []);
 

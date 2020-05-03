@@ -77,10 +77,12 @@ export const SourceEditor = (props: IProps) => {
       let result: any;
       if (fileToRun === 'main.sh') {
         // Run all tests
-        result = await Environment.run(
-          props.env.id,
-          props.activeSubmission ? { submission: props.activeSubmission.id.toString(), simulate: 'True' } : {},
-        );
+        let payload: any = { id: props.env.id };
+        if (props.activeSubmission) {
+          payload = { ...payload, submission: props.activeSubmission.id, simulate: true };
+        }
+
+        result = await Environment.run(payload);
       } else {
         const found = props.sourceFiles.find((el) => el.name === fileToRun);
         if (found !== undefined) {

@@ -1,6 +1,9 @@
-import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
+import React from 'react';
 
-export const bySubmissionColumns = (categories: TestCategoryType[]) => {
+import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
+import { Spin } from 'antd';
+
+export const bySubmissionColumns = (shouldSort: boolean, categories: TestCategoryType[]) => {
   const columns = [
     {
       title: 'Student(s)',
@@ -9,19 +12,23 @@ export const bySubmissionColumns = (categories: TestCategoryType[]) => {
     },
     ...TestCategory.sort(categories).map((category) => {
       return {
-        title: category.name,
+        title: (
+          <span>
+            {category.name} {!shouldSort && <Spin />}
+          </span>
+        ),
         dataIndex: category.name,
         key: category.id.toString(),
         align: 'center' as 'center',
-        sorter: (a: any, b: any) => a[category.id] - b[category.id],
+        ...(shouldSort && { sorter: (a: any, b: any) => a[category.id] - b[category.id] }),
       };
     }),
     categories.length > 0 && {
-      title: 'Summary',
+      title: <span>Summary {!shouldSort && <Spin />}</span>,
       dataIndex: 'summary',
       key: 'summary',
       align: 'center' as 'center',
-      sorter: (a: any, b: any) => a.passed - b.passed,
+      ...(shouldSort && { sorter: (a: any, b: any) => a.passed - b.passed }),
     },
     {
       title: 'Actions',

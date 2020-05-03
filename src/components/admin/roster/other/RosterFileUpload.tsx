@@ -381,7 +381,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
 
       /* update status */
       Promise.all(promises).then(() => {
-        this.setState({ updatingRoster: false });
+        this.setState({ updatingRoster: false, status: UPLOAD_STATUS.SAVE });
       });
     });
   };

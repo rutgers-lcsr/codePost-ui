@@ -5,16 +5,17 @@
 /* react imports */
 import * as React from 'react';
 
-import { CodeOutlined, LoadingOutlined } from '@ant-design/icons';
+import { LoadingOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Button, Breadcrumb, Divider, Select, Spin, Switch, Tabs } from 'antd';
+import { Button, Breadcrumb, Divider, Select, Spin, Switch, Tabs, message } from 'antd';
 
 /* codePost imports */
 import { AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { SectionType, Section } from '../../infrastructure/section';
 import { Submission, SubmissionType } from '../../infrastructure/submission';
+import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 
 import { tooltips } from '../core/tooltips';
 
@@ -22,6 +23,8 @@ import CPAdminDetail from '../admin/other/CPAdminDetail';
 
 import { TestingSummary } from '../admin/assignments/tests/results/TestingSummary';
 import SectionSubmissionsTable from './SectionSubmissionsTable';
+
+import { AutograderInfoModal, SubmissionInfoModal } from './InfoModals';
 
 const { Option } = Select;
 
@@ -45,6 +48,7 @@ interface IState {
   };
   // Map: key = id, value = array of student emails who have viewed the submission
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
+  viewsLoading: boolean;
 
   /* UI control */
   isLoading: boolean;
@@ -65,6 +69,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
       submissionsBySection: {},
       activeSection: this.props.sections[0],
       viewsBySubmission: {},
+      viewsLoading: false,
       showStudentEmails: false,
       isLoading: false,
       selectedSubmissions: [],
@@ -74,7 +79,6 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
   public async initialLoad() {
     this.setState({ isLoading: true });
     const submissionsBySection = await this.loadSubmissionsForSection();
-    console.log(submissionsBySection);
     this.setState({ submissionsBySection, isLoading: false });
     if (this.props.sections.length === 1) {
       this.handleSelect(String(this.props.sections[0].id));
@@ -110,6 +114,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
       const submissions = await Section.readSubmissions(section.id, {
         assignment: this.props.assignment.id.toString(),
       });
+      this.loadHistories(submissions);
 
       for (const student of section.students) {
         mapValue[student] = submissions.find((el) => el.students.indexOf(student) > -1);
@@ -121,9 +126,30 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     return submissionMap;
   };
 
-  public claimSubmissions = async () => {
-    const promises = this.state.selectedSubmissions.map((id) => {
-      return Submission.update({ id: id, isFinalized: false, grader: this.props.email });
+  public loadHistories = async (submissions: SubmissionType[]) => {
+    this.setState({ viewsLoading: true });
+    const toRet: any = {};
+    const promises = submissions.map((submission) => {
+      toRet[submission.id] = {};
+      return Submission.readHistory(submission.id).then((histories: SubmissionHistoryType[]) => {
+        for (const history of histories) {
+          if (history.hasViewed && history.dateViewed) {
+            toRet[submission.id][history.student] = history.dateViewed;
+          }
+        }
+      });
+    });
+
+    Promise.all(promises).then(() => {
+      this.setState({ viewsBySubmission: toRet, viewsLoading: false });
+    });
+
+    return toRet;
+  };
+
+  public claimSubmissions = async (toHandle: number[], unclaim: boolean | undefined) => {
+    const promises = toHandle.map((id) => {
+      return Submission.update({ id: id, isFinalized: false, grader: unclaim ? '' : this.props.email });
     });
 
     const submissions = await Promise.all(promises);
@@ -143,8 +169,10 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
             }
           }
         });
+        message.success(`Submission${submissions.length > 1 ? 's' : ''} ${unclaim ? 'un' : ''}claimed!`);
         return null;
       });
+
       return {
         submissionsBySection: newSubmissions,
         selectedSubmissions: [],
@@ -231,7 +259,13 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     }
 
     const claimButton = (
-      <Button type="primary" disabled={this.state.selectedSubmissions.length === 0} onClick={this.claimSubmissions}>
+      <Button
+        type="primary"
+        disabled={this.state.selectedSubmissions.length === 0}
+        onClick={() => {
+          this.claimSubmissions(this.state.selectedSubmissions, false);
+        }}
+      >
         Claim Selected
       </Button>
     );
@@ -245,12 +279,11 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
         showEmails={showingEmails}
         assignment={this.props.assignment}
         viewsBySubmission={this.state.viewsBySubmission}
+        viewsLoading={this.state.viewsLoading}
+        claimSubmissions={this.claimSubmissions}
+        me={this.props.email}
       />
     );
-
-    if (this.state.submissionsBySection[this.state.activeSection.id]) {
-      console.log(Object.values(this.state.submissionsBySection[this.state.activeSection.id]));
-    }
 
     const submissions: (SubmissionType | null)[] = this.state.submissionsBySection[this.state.activeSection.id]
       ? Object.values(this.state.submissionsBySection[this.state.activeSection.id])
@@ -266,12 +299,25 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
       content = (
         <Tabs defaultActiveKey="1">
           <Tabs.TabPane tab="Overview" key="1">
+            {this.props.assignment.allowStudentUpload && (
+              <div style={{ width: '100%', height: 35 }}>
+                <div style={{ float: 'right' }}>
+                  <SubmissionInfoModal />
+                </div>
+              </div>
+            )}
             {submissionsTable}
           </Tabs.TabPane>
           <Tabs.TabPane tab="Test results" key="2">
+            <div style={{ width: '100%', height: 35 }}>
+              <div style={{ float: 'right' }}>
+                <AutograderInfoModal />
+              </div>
+            </div>
             <TestingSummary
               currentAssignment={this.props.assignment}
               submissions={filteredSubmissions}
+              fullSubmissionsLoadComplete={!this.state.isLoading}
               isAdmin={false}
               tableOnly={true}
             />

@@ -10,7 +10,7 @@ const CodePostDateChild = (props: { datetime: string; timezone: string }) => {
   const momentObj = moment(dateObj).tz(props.timezone);
   return (
     <span>
-      {momentObj.format('h:mm a')} on {momentObj.format('MMM DD')}
+      {momentObj.format('h:mm a')} on {momentObj.format('MMM DD')} {moment.tz(props.timezone).zoneAbbr()}
     </span>
   );
 };

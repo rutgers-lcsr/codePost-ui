@@ -5,10 +5,9 @@
 /* react imports */
 import * as React from 'react';
 
-import { CodeOutlined } from '@ant-design/icons';
-
 /* ant imports */
-import { Table } from 'antd';
+import { Table, Dropdown, Menu, message, Spin } from 'antd';
+import { CodeOutlined, MinusCircleTwoTone, MenuOutlined, MailOutlined } from '@ant-design/icons';
 
 /* codePost imports */
 import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
@@ -30,6 +29,9 @@ interface ISubmissionsTableProps {
   showEmails: boolean;
   assignment: AssignmentType;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
+  viewsLoading: boolean;
+  claimSubmissions: (ids: number[], unclaim: boolean) => void;
+  me: string;
 }
 
 /* for type checking functions that operate on table rows */
@@ -52,7 +54,11 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
   };
 
   const openGradePage = (submission: SubmissionType) => {
-    window.open(`/code/${submission.id}`);
+    if (localStorage.getItem('source') === 'codePost') {
+      window.open(`/code/${submission.id}`);
+    } else {
+      window.open(`/code/${submission.id}`, '_self');
+    }
   };
 
   const centerAlign: alignType = 'center';
@@ -106,11 +112,11 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
       dataIndex: 'viewIcon',
       align: centerAlign,
     },
+    { title: 'Options', dataIndex: 'options', align: centerAlign },
   ];
 
   let data: any[] = [];
   if (props.submissions !== undefined) {
-    console.log(props.submissions);
     data = Object.keys(props.submissions).map((student) => {
       const submission = props.submissions[student];
       const shownStudent = props.showEmails || !submission ? student : submission.id;
@@ -124,14 +130,70 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
           .join(', ');
       }
 
+      const sendStudentNotification = async (submission: SubmissionType | null) => {
+        if (submission === null) {
+          return;
+        }
+
+        fetch(`${process.env.REACT_APP_API_URL}/submissions/${submission.id}/notifyStudents/`, {
+          headers: {
+            Authorization: `JWT ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify({}),
+        })
+          .then(async (res) => {
+            if (res.status === 200) {
+              const json = await res.json();
+              message.success('Email sent to student notifying them that their submission is ready.');
+              return;
+            } else {
+              const json = await res.json();
+              message.error(json);
+              return;
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+        return;
+      };
+
+      const menu = (
+        <Menu>
+          {submission && submission.grader === props.me && (
+            <Menu.Item key="1" onClick={() => props.claimSubmissions([submission.id], true)}>
+              <MinusCircleTwoTone />
+              Unclaim
+            </Menu.Item>
+          )}
+          {submission ? (
+            <Menu.Item key="2" onClick={() => sendStudentNotification(submission)}>
+              <MailOutlined />
+              Notify student
+            </Menu.Item>
+          ) : null}
+        </Menu>
+      );
+
       return {
         ...formatSub(submission, props.assignment),
-        key: student,
+        key: submission ? submission.id : student,
         student: shownStudent,
         partners,
-        viewIcon: submission ? <div>{getViewIcon(submission, props.viewsBySubmission, student)}</div> : null,
+        viewIcon: props.viewsLoading ? (
+          <Spin />
+        ) : submission ? (
+          <div>{getViewIcon(submission, props.viewsBySubmission, student)}</div>
+        ) : null,
         open: submission ? <CodeOutlined onClick={openGradePage.bind({}, submission)} /> : null,
         disableCheck: !submission || submission.grader,
+        options: (
+          <Dropdown overlay={menu} trigger={['click']}>
+            <MenuOutlined />
+          </Dropdown>
+        ),
       };
     });
   }

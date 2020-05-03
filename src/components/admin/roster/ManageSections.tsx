@@ -42,6 +42,7 @@ export interface IManageSectionsProps {
 
   /* loading state */
   loadComplete: boolean;
+  sectionsLoadComplete: boolean;
 
   /* object-level REST operations */
   updateRoster: (adds: string[], deletes: string[], userType: USER_APP) => Promise<void>;
@@ -334,7 +335,7 @@ class ManageSections extends React.Component<IManageSectionsProps, IState> {
       <TableDetail
         title={'Sections'}
         drawer={drawerComponent}
-        loadComplete={this.props.loadComplete}
+        loadComplete={this.props.loadComplete && this.props.sectionsLoadComplete}
         isEmpty={this.props.sections.length === 0}
         emptyNode={
           <Empty

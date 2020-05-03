@@ -39,7 +39,7 @@ import Referral from '../core/Referral';
 
 import { TableDetail } from '../admin/other/TableDetail';
 
-import { openSubmission } from '../admin/other/AdminUtils';
+import { openSubmission, openSubmissionInSameTab } from '../admin/other/AdminUtils';
 
 import CPLogo from '../core/CPLogo';
 
@@ -110,7 +110,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
   /* Lifecycle methods
   /**********************************************************************************/
 
-  public componentDidMount() {
+  public load = () => {
     this.loadAssignments(this.props.initialCourses).then((assignments) => {
       this.setState({ assignments, isLoadingAssignments: false }, () => {
         if (this.props.currentCourse) {
@@ -175,6 +175,16 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
         }
       });
     });
+  };
+
+  public componentDidMount() {
+    this.load();
+  }
+
+  public componentDidUpdate(oldProps: IStudentProps) {
+    if (oldProps.uploadShortcut === undefined && this.props.uploadShortcut !== undefined) {
+      this.load();
+    }
   }
 
   /***********************************************************************************
@@ -240,7 +250,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
   /* Handlers
   /**********************************************************************************/
   public openAndMarkViewed = (submission: StudentSubmissionType) => {
-    openSubmission(submission.id);
+    openSubmissionInSameTab(submission.id);
     this.markViewed(submission);
   };
 
@@ -334,7 +344,11 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
     }
 
     if (assignment.liveFeedbackMode) {
-      openSubmission(newSubmissionID);
+      if (localStorage.getItem('source') !== 'codePost') {
+        openSubmissionInSameTab(newSubmissionID);
+      } else {
+        openSubmission(newSubmissionID);
+      }
       this.changePanel(CURRENT_PANEL.TABLE, undefined, undefined);
     }
   };
@@ -345,15 +359,19 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
       return <div />;
     }
 
+    // CIP FIXME - HARDCODED FOR CODE IN PLACE
+    const hideDueDate = this.props.currentCourse && this.props.currentCourse.id === 925;
+
     // Present the assignment's due date to the student
-    const dueDateText = assignment.uploadDueDate ? (
-      <span>
-        Due: &nbsp;
-        <CodePostDate datetime={assignment.uploadDueDate} />
-      </span>
-    ) : (
-      ''
-    );
+    const dueDateText =
+      assignment.uploadDueDate && !hideDueDate ? (
+        <span>
+          Due: &nbsp;
+          <CodePostDate datetime={assignment.uploadDueDate} />
+        </span>
+      ) : (
+        ''
+      );
 
     // If the student has submitted, show the datetime of the student's most recent upload
     const uploadDateText =
@@ -461,7 +479,29 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
       };
     };
 
+    // We pre-calculate showGrades and showColumns to figure out the column spans
+    let showGrades = true;
+    let showPartners = true;
+
+    if (assignments) {
+      // If one visible assignment doesn't have hideGrades turned on, show the grades column
+      const visibleAssignments = assignments.filter((assn) => assn.isVisible);
+      showGrades = visibleAssignments.some((assn) => {
+        return !assn.hideGrades;
+      });
+      // If one visible assignment isn't student upload, or is student upload and allows partners, show partners
+      showPartners = visibleAssignments.some((assn) => {
+        const hidePartners = assn.allowStudentUpload && !assn.allowStudentUploadWithPartners;
+        return !hidePartners;
+      });
+    }
+
     const aligner: 'left' | 'center' | 'right' = 'center';
+    // ModifyIF re-sets the column span of certain columns based on things we should show
+    // Code is the first column
+    // If there is no submission, it expands to take up the grades and partners columns (span = 3)
+    // If the assignment is not published, it expands to take up the grades and partners columns (span = 3)
+    // If the submission isn't viewed, it expands to take up the grade column (span = 2)
     let columns: any[] = [
       {
         title: 'Assignment',
@@ -469,35 +509,14 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
         key: 'assignment',
       },
       {
-        title: 'Partners',
-        dataIndex: 'partners',
-        key: 'partners',
-        render: modifyIf({
-          [SUBMISSION_STATUS.NO_SUBMISSION]: 3,
-          [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 3,
-        }),
-        align: aligner,
-      },
-      {
-        title: 'Grade',
-        dataIndex: 'grade',
-        key: 'grade',
-        align: aligner,
-        render: modifyIf({
-          [SUBMISSION_STATUS.NO_SUBMISSION]: 0,
-          [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 0,
-          [SUBMISSION_STATUS.SUBMISSION_UNVIEWED]: 2,
-        }),
-      },
-      {
         title: 'Code',
         dataIndex: 'code',
         key: 'code',
         align: aligner,
         render: modifyIf({
-          [SUBMISSION_STATUS.NO_SUBMISSION]: 0,
-          [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 0,
-          [SUBMISSION_STATUS.SUBMISSION_UNVIEWED]: 0,
+          [SUBMISSION_STATUS.NO_SUBMISSION]: 1 + Number(showGrades) + Number(showPartners),
+          [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 1 + Number(showGrades) + Number(showPartners),
+          [SUBMISSION_STATUS.SUBMISSION_UNVIEWED]: 1 + Number(showGrades),
         }),
       },
     ];
@@ -510,6 +529,29 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
       align: aligner,
     };
 
+    const gradeColumn = {
+      title: 'Grade',
+      dataIndex: 'grade',
+      key: 'grade',
+      align: aligner,
+      render: modifyIf({
+        [SUBMISSION_STATUS.NO_SUBMISSION]: 0,
+        [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 0,
+        [SUBMISSION_STATUS.SUBMISSION_UNVIEWED]: 0,
+      }),
+    };
+
+    const partnerColumn = {
+      title: 'Partners',
+      dataIndex: 'partners',
+      key: 'partners',
+      render: modifyIf({
+        [SUBMISSION_STATUS.NO_SUBMISSION]: 0,
+        [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 0,
+      }),
+      align: aligner,
+    };
+
     const statsColumn = {
       title: 'Stats',
       dataIndex: 'stats',
@@ -518,17 +560,23 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
     };
 
     if (assignments) {
-      // If one assignment has studentUpload, add the uploadColumn to the columns
-      columns = assignments.some((assn) => {
+      // if any of the visible assignments have a property to conditionally show a column, add it to columns
+      const visibleAssignments = assignments.filter((assn) => assn.isVisible);
+      columns = showPartners ? [...columns, partnerColumn] : columns;
+      columns = showGrades ? [...columns, gradeColumn] : columns;
+      columns = visibleAssignments.some((assn) => {
         return assn.allowStudentUpload;
       })
         ? [...columns, uploadColumn]
         : columns;
-      columns = assignments.some((assn) => {
-        return assn.mean || assn.median;
-      })
-        ? [...columns, statsColumn]
-        : columns;
+      columns =
+        this.props.currentCourse &&
+        this.props.currentCourse.showStudentsStatistics &&
+        visibleAssignments.some((assn) => {
+          return assn.mean || assn.median;
+        })
+          ? [...columns, statsColumn]
+          : columns;
     }
 
     const data = sortAssignments(assignments).map((assignment) => {
@@ -541,7 +589,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
           key: assignment.name,
           assignment: assignment.name,
           statusType: SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED,
-          partners: (
+          code: (
             <div>
               {' '}
               <StopOutlined /> &nbsp; Assignment not yet published
@@ -571,11 +619,11 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
         if (submission === undefined) {
           // Case 2: assignment is published, but student has no submission OR submission isn't finalized
           const missingText = assignment.allowStudentUpload
-            ? "Your submission hasn't been uploaded"
+            ? "You haven't uploaded any code yet"
             : "Your instructor hasn't transferred your submission to codePost yet";
           return {
             ...toRet,
-            partners: (
+            code: (
               <div>
                 <MinusCircleOutlined /> &nbsp; {missingText}
               </div>
@@ -584,17 +632,30 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
           };
         } else if (!submission.isFinalized && !assignment.liveFeedbackMode) {
           // Case 2: assignment is published, but student has no submission OR submission isn't finalized
+
+          const msg =
+            localStorage.getItem('source') === 'codePost' ? (
+              <div>
+                <MinusCircleOutlined /> &nbsp; Your submission hasn't been reviewed yet
+              </div>
+            ) : (
+              <div>
+                🎉 Your assignment has been uploaded! 🎉 <br /> You can re-run tests as many times as you want by
+                clicking "Upload assignment" to the right.
+              </div>
+            );
+
           return {
             ...toRet,
-            partners: (
-              <div>
-                <MinusCircleOutlined /> &nbsp; Your submission hasn't been graded yet
-              </div>
-            ),
+            code: msg,
             statusType: SUBMISSION_STATUS.NO_SUBMISSION,
           };
         } else {
           // Case 3: assignment is published, and student has a submission
+
+          const open = () => {
+            this.markViewed(submission).then(() => openSubmissionInSameTab(submission.id));
+          };
 
           // Show Grade if the submission history doesn't exist (legacy), or if the submission has been viewed
           const showGrade =
@@ -621,11 +682,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
             ) : (
               <Tag>Login on desktop to view</Tag>
             ),
-            code: (
-              <div onClick={openSubmission.bind(this, submission.id)}>
-                <CodeOutlined style={{ cursor: 'pointer' }} />
-              </div>
-            ),
+            code: <Button onClick={open}>View feedback</Button>,
             statusType: showGrade ? SUBMISSION_STATUS.SUBMISSION_VIEWED : SUBMISSION_STATUS.SUBMISSION_UNVIEWED,
           };
         }
@@ -726,7 +783,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
               this.state.currentPanel === CURRENT_PANEL.ADDFILES
             }
             onCancel={this.changePanel.bind(this, CURRENT_PANEL.TABLE, this.state.detailAssignment, undefined)}
-            assignments={[]}
+            assignments={assignmentList}
             selectedAssignment={this.state.detailAssignment}
             students={[]}
             selectedStudents={
@@ -754,20 +811,46 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
       <CourseMenu courses={this.props.initialCourses} currentCourse={this.props.currentCourse} base="student" />
     );
 
-    const headerLeft = [<CPLogo cpType="dark" key="logo" />, <span key="empty" />, courseDropdown];
+    const openHome = () => {
+      if (localStorage.getItem('source') === 'codePost') {
+        window.open('https://codepost.io', '_blank');
+      }
+    };
+
+    const headerLeft = [<CPLogo cpType="dark" key="logo" onClick={openHome} />, <span key="empty" />, courseDropdown];
+
+    const referral =
+      localStorage.getItem('source') === 'codePost' ? (
+        <Referral key="referral" user={this.props.user} theme="light" />
+      ) : null;
+
+    const roleMenu =
+      localStorage.getItem('source') === 'codePost' ? (
+        <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.STUDENT} theme="light" />
+      ) : null;
+
+    const settings =
+      localStorage.getItem('source') === 'codePost' ? (
+        <Link className="internal-link" key="settings" to="/settings">
+          <SettingOutlined />
+        </Link>
+      ) : null;
+
+    const logout =
+      localStorage.getItem('source') === 'codePost' ? (
+        <Button key="header-logout" onClick={this.props.handleLogout}>
+          Log Out
+        </Button>
+      ) : null;
 
     const headerRight = [
       <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}
       </span>,
-      <Referral key="referral" user={this.props.user} theme="light" />,
-      <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.STUDENT} theme="light" />,
-      <Link className="internal-link" key="settings" to="/settings">
-        <SettingOutlined />
-      </Link>,
-      <Button key="header-logout" onClick={this.props.handleLogout}>
-        Logout
-      </Button>,
+      referral,
+      roleMenu,
+      settings,
+      logout,
     ];
 
     const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;

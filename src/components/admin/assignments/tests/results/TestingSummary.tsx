@@ -9,8 +9,8 @@ import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
 /* codePost object imports */
-import { SubmissionInfoType } from '../../../../../infrastructure/submission';
-import { AssignmentType } from '../../../../../infrastructure/assignment';
+import { SubmissionInfoType, SubmissionWithTestsType } from '../../../../../infrastructure/submission';
+import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
 import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
@@ -22,15 +22,15 @@ import { awaitTestResult } from '../autograderPollingUtils';
 
 import TestResultsTable from './TestResultsTable';
 
-import RunAllSubmissions from './RunAllTests';
+import RunAllTests from './RunAllTests';
 
 /* codePost util imports */
 import {
   fetchTestData,
   fetchEnvironment,
-  fetchTestsBySubmission,
   TestsBySubmission,
   TestCasesByCategory,
+  fetchTestsBySubmission,
 } from '../../../../core/testFetchUtils';
 
 interface IProps {
@@ -40,6 +40,7 @@ interface IProps {
   isAdmin: boolean;
   tableOnly: boolean;
   match?: any;
+  fullSubmissionsLoadComplete: boolean;
 }
 
 export const TestingSummary = (props: IProps) => {
@@ -55,30 +56,54 @@ export const TestingSummary = (props: IProps) => {
   // Loading
   const [subsLoading, setSubsLoading] = useState<number[]>([]);
   const [fetchLoading, setFetchLoading] = useState(false);
+  const [resultsLoading, setResultsLoading] = useState(false);
   // ************************** Fetch Data ******************************
-  const fetchData = async () => {
-    if (props.submissions.length > 0 && props.currentAssignment) {
-      setFetchLoading(true);
-      const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
-      setCategories(categories);
-      setTestCasesByCategory(casesByCategory);
-      const currEnv = await fetchEnvironment(props.currentAssignment);
-      setEnv(currEnv);
-
-      const tests = await fetchTestsBySubmission(props.submissions);
-      setTestsBySubmission(tests);
-      setFetchLoading(false);
+  const fetchPaginatedResults = async () => {
+    if (props.currentAssignment) {
+      setResultsLoading(true);
+      Assignment.readPaginatedTestResults(props.currentAssignment.id, submissionTestsCallback).then(() => {
+        setResultsLoading(false);
+      });
     }
   };
 
   useEffect(() => {
+    const fetchData = async () => {
+      if (props.currentAssignment) {
+        setFetchLoading(true);
+        const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
+        setCategories(categories);
+        setTestCasesByCategory(casesByCategory);
+        const currEnv = await fetchEnvironment(props.currentAssignment);
+        setEnv(currEnv);
+        if (props.isAdmin) {
+          // Admin console, read paginated test results
+          fetchPaginatedResults();
+        } else {
+          // Section leader console, read tests by submission
+          const tests = await fetchTestsBySubmission(props.submissions);
+          setTestsBySubmission(tests);
+        }
+        setFetchLoading(false);
+      }
+    };
     fetchData();
-  }, [props.currentAssignment, props.submissions]);
+  }, [props.currentAssignment && props.currentAssignment.id]);
+
+  const submissionTestsCallback = (results: SubmissionWithTestsType[]) => {
+    setTestsBySubmission((prevState) => {
+      const oldTests = { ...prevState };
+      results.forEach((submission) => {
+        oldTests[submission.id] = submission.tests;
+      });
+      return oldTests;
+    });
+  };
 
   // ******************************* API / State change functions  *******************************
 
   const runAllCallback = () => {
-    fetchData();
+    fetchPaginatedResults();
   };
 
   const runAllSubmissions = async (
@@ -115,7 +140,12 @@ export const TestingSummary = (props: IProps) => {
   const runSubmission = async (sub: SubmissionInfoType) => {
     if (env) {
       setSubsLoading([...subsLoading, sub.id]);
-      const result = await Environment.run(env.id, { submission: sub.id.toString(), simulate: 'False' });
+      const payload = {
+        id: env.id,
+        submission: sub.id,
+        simulate: false,
+      };
+      const result = await Environment.run(payload);
       awaitTestResult(result.task, runSubmissionCallback.bind({}, sub));
     }
   };
@@ -127,10 +157,11 @@ export const TestingSummary = (props: IProps) => {
     !props.isAdmin || !props.match
       ? []
       : [
-          <RunAllSubmissions
+          <RunAllTests
             numSubmissions={props.submissions.length}
             testCasesByCategory={testCasesByCategory}
             runAllSubmissions={runAllSubmissions}
+            assignment={props.currentAssignment}
             env={env}
           />,
           <Button type="primary">
@@ -141,6 +172,8 @@ export const TestingSummary = (props: IProps) => {
             </Link>
           </Button>,
         ];
+
+  console.log(props.fullSubmissionsLoadComplete);
 
   return (
     <TestResultsTable
@@ -159,8 +192,9 @@ export const TestingSummary = (props: IProps) => {
       testCasesByCategory={testCasesByCategory}
       testsBySubmission={testsBySubmission}
       categories={categories}
-      isLoading={fetchLoading}
+      isLoading={fetchLoading || !props.fullSubmissionsLoadComplete}
       subsLoading={subsLoading}
+      resultsLoading={resultsLoading}
       runSubmission={runSubmission}
       hasSourceFiles={(env && env.sourceFiles.length > 0) || false}
     />

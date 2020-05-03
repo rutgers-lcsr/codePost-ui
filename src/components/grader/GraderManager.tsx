@@ -9,6 +9,8 @@ import Grader from './Grader';
 
 /**********************************************************************************************************************/
 
-const GraderManager = ComponentManager(Grader, 'my_submissions');
+const GraderManager = ComponentManager(Grader, (c) => {
+  return c.activateQueue ? 'my_submissions' : 'my_sections';
+});
 
 export default GraderManager;

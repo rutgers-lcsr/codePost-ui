@@ -50,6 +50,12 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
       ? layoutVars.maxWidths.siderSmallScreen
       : layoutVars.maxWidths.siderNormal;
 
+  const openHome = () => {
+    if (localStorage.getItem('source') === 'codePost') {
+      window.open('https://codepost.io', '_blank');
+    }
+  };
+
   // FIXME: Hardcoded height variables
   return (
     <Layout id="Admin" className="layout--admin" style={{ overflowX: 'auto' }}>
@@ -63,12 +69,12 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
           <Header className="layout--admin__sider__header" style={{ height: 'fit-content' }}>
             {collapsed ? (
               <Link to="/">
-                <CPLogo cpType="icon" />
+                <CPLogo cpType="icon" onClick={openHome} />
               </Link>
             ) : (
               <div>
                 <Link to="/">
-                  <CPLogo cpType="main" />
+                  <CPLogo cpType="main" onClick={openHome} />
                 </Link>
                 <div
                   style={{

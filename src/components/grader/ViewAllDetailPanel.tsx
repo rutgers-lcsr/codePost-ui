@@ -68,18 +68,12 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
 
   public async initialLoad() {
     this.setState({ isLoading: true });
-    const [submissions, viewsBySubmission, roster] = await Promise.all([
-      /* eslint-disable no-useless-computed-key */
-      await Assignment.readSubmissions(this.props.assignment.id, { ['compact']: '1' }),
-      /* eslint-enable no-useless-computed-key */
-      await this.loadSubmissionsViews(),
-      await Course.readRoster(this.props.course.id),
-    ]);
+    Assignment.readPaginatedSubmissions(this.props.assignment.id, this.onLoadNewSubmissions);
+    Assignment.readPaginatedSubmissionHistories(this.props.assignment.id, this.onLoadNewHistories);
 
+    const roster = await Course.readRoster(this.props.course.id);
     this.setState({
       graders: roster.graders,
-      viewsBySubmission,
-      submissions,
       isLoading: false,
     });
   }
@@ -94,30 +88,51 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
     if (oldProps.assignment !== this.props.assignment) {
       this.initialLoad();
     }
-
-    // if (prevState.isLoading && !this.state.isLoading) {
-    //   const current = Date.now() - this.timer;
-
-    //   this.times = [...this.times, current];
-    //   console.log('SUBMISSIONS COMPLETE: ', current);
-    //   console.log(this.times.join('|'));
-    // }
   }
 
-  public loadSubmissionsViews = async () => {
-    const histories = await Assignment.readSubmissionHistories(this.props.assignment.id);
-    const viewsBySubmission: any = {};
-    histories.forEach((history: SubmissionHistoryType) => {
-      const submissionID = history.submission;
-      if (!(submissionID in viewsBySubmission)) {
-        viewsBySubmission[submissionID] = {};
-      }
-      if (history.hasViewed) {
-        viewsBySubmission[submissionID][history.student] = history.dateViewed;
-      }
+  //************************** Pagination callbacks *****************************
+
+  public onLoadNewSubmissions = (newSubs: SubmissionInfoType[]) => {
+    this.setState((prevState, prevProps) => {
+      return {
+        submissions: [...prevState.submissions, ...newSubs],
+      };
     });
-    return viewsBySubmission;
   };
+
+  public onLoadNewHistories = (newHistories: SubmissionHistoryType[]) => {
+    this.setState((prevState, prevProps) => {
+      const newViewsBySubmission = { ...prevState.viewsBySubmission };
+      newHistories.forEach((history: SubmissionHistoryType) => {
+        const submissionID = history.submission;
+        if (!(submissionID in newViewsBySubmission)) {
+          newViewsBySubmission[submissionID] = {};
+        }
+        if (history.hasViewed && history.dateViewed) {
+          newViewsBySubmission[submissionID][history.student] = history.dateViewed;
+        }
+      });
+
+      return {
+        viewsBySubmission: newViewsBySubmission,
+      };
+    });
+  };
+
+  // public loadSubmissionsViews = async () => {
+  //   const histories = await Assignment.readSubmissionHistories(this.props.assignment.id);
+  //   const viewsBySubmission: any = {};
+  //   histories.forEach((history: SubmissionHistoryType) => {
+  //     const submissionID = history.submission;
+  //     if (!(submissionID in viewsBySubmission)) {
+  //       viewsBySubmission[submissionID] = {};
+  //     }
+  //     if (history.hasViewed) {
+  //       viewsBySubmission[submissionID][history.student] = history.dateViewed;
+  //     }
+  //   });
+  //   return viewsBySubmission;
+  // };
 
   public toggleShowStudentEmails = () => {
     this.setState({
@@ -138,7 +153,11 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
   };
 
   public openGradePage = (submission: SubmissionInfoType) => {
-    window.open(`/code/${submission.id}`);
+    if (localStorage.getItem('source') === 'codePost') {
+      window.open(`/code/${submission.id}`);
+    } else {
+      window.open(`/code/${submission.id}`, '_self');
+    }
   };
 
   public render() {
@@ -260,7 +279,7 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
     const content = (
       <div>
         {graderSelect}
-        <Table columns={columns} dataSource={data} pagination={false} loading={this.state.isLoading} />
+        <Table columns={columns} dataSource={data} loading={this.state.isLoading} />
       </div>
     );
 

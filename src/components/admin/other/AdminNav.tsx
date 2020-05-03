@@ -7,6 +7,8 @@ import {
   PushpinOutlined,
   SettingOutlined,
   TeamOutlined,
+  TrophyOutlined,
+  VideoCameraOutlined,
 } from '@ant-design/icons';
 
 import { Menu, Tag } from 'antd';
@@ -184,6 +186,12 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
     const footer = (
       <div>
         <Menu theme="dark" mode="inline" selectedKeys={[]}>
+          <Menu.Item key="video">
+            <Link to={`${this.props.baseURL}/video`}>
+              <VideoCameraOutlined />
+              <span>Video</span>
+            </Link>
+          </Menu.Item>
           <Menu.Item key="docs" onClick={this.openLink.bind(this, 'https://help.codepost.io')}>
             <PushpinOutlined />
             <span>Docs</span>
@@ -191,6 +199,21 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
           <Menu.Item key="api-reference" onClick={this.openLink.bind(this, 'https://docs.codepost.io/reference')}>
             <ApiOutlined />
             <span>API Reference</span>
+          </Menu.Item>
+          <Menu.Item
+            key="scholarship"
+            style={{
+              whiteSpace: 'normal',
+              height: 'auto',
+              lineHeight: 1.4,
+              display: 'flex',
+              alignItems: 'center',
+              fontSize: 13,
+            }}
+            onClick={this.openLink.bind(this, 'https://codepost.io/scholarships/computer-science-education')}
+          >
+            <TrophyOutlined />
+            <span>CS Education Scholarship</span>
           </Menu.Item>
         </Menu>
         <div className="version" style={{ color: '#848484', paddingLeft: 24, paddingBottom: 14 }}>
