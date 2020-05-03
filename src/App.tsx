@@ -739,7 +739,6 @@ Firefox:
       );
     }
 
-    console.log('DBGA', this.state.triedLoading, localStorage.getItem('source'));
     if (this.state.triedLoading && localStorage.getItem('source') === 'Code in Place') {
       return (
         <div>

@@ -125,7 +125,15 @@ class Settings extends React.Component<IProps, IState> {
         }
       })
       .then((json) => {
-        message.success('Check your email for a link to reset your password.');
+        message.success(
+          <span>
+            Check your email for a link to reset your password. If you don't see an email within a couple of minutes,{' '}
+            <a href="http://help.codepost.io/en/articles/3324251-faq-where-is-my-email" target="_blank">
+              please read this
+            </a>
+            .
+          </span>,
+        );
       });
   };
 
