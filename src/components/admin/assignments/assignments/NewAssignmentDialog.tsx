@@ -10,7 +10,7 @@ import { PlusCircleOutlined } from '@ant-design/icons';
 import '@ant-design/compatible/assets/index.css';
 
 /* ant imports */
-import { Input, InputNumber, Modal, Radio, DatePicker, Select } from 'antd';
+import { Input, InputNumber, Modal, Radio, DatePicker, Select, message } from 'antd';
 import { FormComponentProps } from '@ant-design/compatible/lib/form';
 
 /* other library imports */
@@ -90,23 +90,36 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
       }
 
       this.setState({ isLoading: true });
-      await this.createNewAssignment(
-        values.name,
-        values.points,
-        this.state.studentsCanUpload,
-        this.state.isAssignmentVisible,
-        values.uploadDueDate,
-      );
 
-      this.setState({ dialogVisible: false, isLoading: false });
+      if (values.modifier === 'private') {
+        if (values.cloneID === undefined) {
+          this.setState({ dialogVisible: false, isLoading: false });
+        } else {
+          await this.cloneAssignment(values.cloneID);
+          message.success('Success!');
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        }
+      } else {
+        await this.createNewAssignment(
+          values.name,
+          values.points,
+          this.state.studentsCanUpload,
+          this.state.isAssignmentVisible,
+          values.uploadDueDate,
+        );
 
-      // NOTE: in the future, we could decide to only show this onboarding modal if we think
-      // the admin is "new". Some heuristics:
-      //    * first assignment created
-      //    * no students
-      //    * no submissions in course
-      if (this.props.assignments.length < 2) {
-        this.props.history.push(`${this.props.baseURL}/${encodeForLink(values.name)}/onboarding`);
+        this.setState({ dialogVisible: false, isLoading: false });
+
+        // NOTE: in the future, we could decide to only show this onboarding modal if we think
+        // the admin is "new". Some heuristics:
+        //    * first assignment created
+        //    * no students
+        //    * no submissions in course
+        if (this.props.assignments.length < 2) {
+          this.props.history.push(`${this.props.baseURL}/${encodeForLink(values.name)}/onboarding`);
+        }
       }
     });
   };
@@ -119,6 +132,29 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
     uploadDueDate: string,
   ) => {
     return this.props.createAssignment(name, points, upload, isVisible, uploadDueDate);
+  };
+
+  public cloneAssignment = async (cloneID: number) => {
+    const object = {
+      courseID: 1,
+    };
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/assignments/${cloneID}/clone/`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify(object),
+    });
+
+    if ((await res.status) === 200) {
+      const data = await res.json();
+      return Promise.resolve(data);
+    } else {
+      const data = await res.json();
+      message.error(JSON.stringify(data));
+      return Promise.reject(data);
+    }
   };
 
   public saveFormRef = (formRef: any) => {
