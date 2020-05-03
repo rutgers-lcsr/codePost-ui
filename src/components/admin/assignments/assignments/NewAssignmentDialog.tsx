@@ -208,116 +208,106 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
           confirmLoading={this.props.loading}
         >
           <Form layout="vertical">
-            {1 > 0 ? (
-              <div>
-                <Form.Item className="collection-create-form_last-form-item">
-                  {getFieldDecorator('modifier', {
-                    initialValue: 'public',
-                  })(
-                    <Radio.Group>
-                      <Radio value="public">Start from scratch</Radio>
-                      <Radio value="private">Clone existing assignment</Radio>
-                    </Radio.Group>,
-                  )}
-                  <CPTooltip title={'blah'} infoIcon={true} />
-                </Form.Item>
-                {this.props.form.getFieldValue('modifier') === 'private' ? (
-                  <Form.Item label="Assignment to clone">
-                    {getFieldDecorator('cloneID')(
-                      <Select disabled={this.props.form.getFieldValue('modifier') === 'public'}>
-                        <Select.Option key={'one'} value={'one'}>
-                          one
+            <div>
+              <Form.Item className="collection-create-form_last-form-item">
+                {getFieldDecorator('modifier', {
+                  initialValue: 'public',
+                })(
+                  <Radio.Group>
+                    <Radio value="public">Start from scratch</Radio>
+                    <Radio value="private" disabled={this.props.assignments.length == 0}>
+                      Clone existing assignment
+                    </Radio>
+                  </Radio.Group>,
+                )}
+                <CPTooltip title={'blah'} infoIcon={true} />
+              </Form.Item>
+            </div>
+            {this.props.form.getFieldValue('modifier') === 'private' ? (
+              <Form.Item label="Assignment to clone">
+                {getFieldDecorator('cloneID')(
+                  <Select>
+                    {this.props.assignments.map((assignment: AssignmentType) => {
+                      return (
+                        <Select.Option key={`assignment-${assignment.id}`} value={assignment.id}>
+                          {assignment.name}
                         </Select.Option>
-                      </Select>,
-                    )}
-                  </Form.Item>
-                ) : null}
-              </div>
-            ) : null}
-
-            <Form.Item label="Name">
-              {getFieldDecorator('name', {
-                validateFirst: true,
-                rules: [
-                  {
-                    required: true,
-                    message: 'Please input an assignment name with at least 4 characters',
-                    min: 4,
-                  },
-                  {
-                    message: 'Assignment name cannot exceed 32 characters',
-                    max: 32,
-                  },
-                  { validator: this.validateName },
-                ],
-              })(
-                <Input placeholder="Hello World" disabled={this.props.form.getFieldValue('modifier') === 'private'} />,
-              )}
-            </Form.Item>
-            <Form.Item label="Points">
-              {getFieldDecorator('points', {
-                validateFirst: true,
-                rules: [
-                  { required: true, message: 'Please specify a point value' },
-                  { validator: this.validatePoints },
-                ],
-              })(<InputNumber min={0} disabled={this.props.form.getFieldValue('modifier') === 'private'} />)}
-            </Form.Item>
-            <span>Do you want students to be able to submit directly to codePost?</span>
-            <br />
-            <Radio
-              checked={this.props.studentsCanUpload}
-              onChange={this.props.toggleStudentUpload}
-              disabled={this.props.form.getFieldValue('modifier') === 'private'}
-            >
-              Yes
-            </Radio>
-            <Radio
-              checked={!this.props.studentsCanUpload}
-              onChange={this.props.toggleStudentUpload}
-              disabled={this.props.form.getFieldValue('modifier') === 'private'}
-            >
-              No
-            </Radio>
-            <br />
-            <br />
-            {this.props.studentsCanUpload ? (
-              <span>
-                <Form.Item label="Set a due date. You'll be able to edit this later in the assignment settings.">
-                  {getFieldDecorator('uploadDueDate', {
-                    valuePropName: 'value',
-                    initialValue: moment()
-                      .tz(this.props.timezone)
-                      .endOf('day'),
-                  })(
-                    <DatePicker
-                      showTime
-                      placeholder="Click to select"
-                      disabled={this.props.form.getFieldValue('modifier') === 'private'}
-                    />,
-                  )}
+                      );
+                    })}
+                  </Select>,
+                )}
+              </Form.Item>
+            ) : (
+              <div>
+                <Form.Item label="Name">
+                  {getFieldDecorator('name', {
+                    validateFirst: true,
+                    rules: [
+                      {
+                        required: true,
+                        message: 'Please input an assignment name with at least 4 characters',
+                        min: 4,
+                      },
+                      {
+                        message: 'Assignment name cannot exceed 32 characters',
+                        max: 32,
+                      },
+                      { validator: this.validateName },
+                    ],
+                  })(<Input placeholder="Hello World" />)}
                 </Form.Item>
-                <span>
-                  Do you want students to be able to submit right away? If not, you can choose when to make your
-                  assignment visible.
-                </span>
+                <Form.Item label="Points">
+                  {getFieldDecorator('points', {
+                    validateFirst: true,
+                    rules: [
+                      { required: true, message: 'Please specify a point value' },
+                      { validator: this.validatePoints },
+                    ],
+                  })(<InputNumber min={0} />)}
+                </Form.Item>
+                <span>Do you want students to be able to submit directly to codePost?</span>
                 <br />
                 <Radio
-                  checked={this.props.isAssignmentVisible}
-                  onChange={this.props.toggleIsAssignmentVisible}
+                  checked={this.props.studentsCanUpload}
+                  onChange={this.props.toggleStudentUpload}
                   disabled={this.props.form.getFieldValue('modifier') === 'private'}
                 >
                   Yes
                 </Radio>
                 <Radio
-                  checked={!this.props.isAssignmentVisible}
-                  onChange={this.props.toggleIsAssignmentVisible}
+                  checked={!this.props.studentsCanUpload}
+                  onChange={this.props.toggleStudentUpload}
                   disabled={this.props.form.getFieldValue('modifier') === 'private'}
                 >
                   No
                 </Radio>
-              </span>
-            ) : null}
+                <br />
+                <br />
+                {this.props.studentsCanUpload ? (
+                  <span>
+                    <Form.Item label="Set a due date. You'll be able to edit this later in the assignment settings.">
+                      {getFieldDecorator('uploadDueDate', {
+                        valuePropName: 'value',
+                        initialValue: moment()
+                          .tz(this.props.timezone)
+                          .endOf('day'),
+                      })(<DatePicker showTime placeholder="Click to select" />)}
+                    </Form.Item>
+                    <span>
+                      Do you want students to be able to submit right away? If not, you can choose when to make your
+                      assignment visible.
+                    </span>
+                    <br />
+                    <Radio checked={this.props.isAssignmentVisible} onChange={this.props.toggleIsAssignmentVisible}>
+                      Yes
+                    </Radio>
+                    <Radio checked={!this.props.isAssignmentVisible} onChange={this.props.toggleIsAssignmentVisible}>
+                      No
+                    </Radio>
+                  </span>
+                ) : null}
+              </div>
+            )}
           </Form>
         </Modal>
       );
