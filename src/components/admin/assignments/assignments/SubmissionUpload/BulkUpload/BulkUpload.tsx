@@ -260,7 +260,7 @@ class BulkUpload extends React.Component<IProps, IState> {
 
     // FIXME: we need to account for unzipped archives that contain more than one file
     // in state.numFiles
-    if (readFiles > numFiles) {
+    if (readFiles >= numFiles) {
       this.setState({ status: STATUS.UPLOADING }, () => {
         if (overwriteMode) {
           this.handleOverwrite().then(() => {
