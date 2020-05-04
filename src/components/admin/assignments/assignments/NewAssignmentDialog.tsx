@@ -6,11 +6,11 @@
 import * as React from 'react';
 
 import { Form } from '@ant-design/compatible';
-import { PlusCircleOutlined } from '@ant-design/icons';
+import { PlusCircleOutlined, DownOutlined } from '@ant-design/icons';
 import '@ant-design/compatible/assets/index.css';
 
 /* ant imports */
-import { Input, InputNumber, Modal, Radio, DatePicker, Select, message } from 'antd';
+import { Input, InputNumber, Modal, Radio, DatePicker, Select, message, Menu, Dropdown, Button } from 'antd';
 import { FormComponentProps } from '@ant-design/compatible/lib/form';
 
 /* other library imports */
@@ -22,7 +22,9 @@ import { RouteComponentProps } from 'react-router';
 import CPButton from '../../../../components/core/CPButton';
 import CPTooltip from '../../../../components/core/CPTooltip';
 
-import { AssignmentType } from '../../../../infrastructure/types';
+import { Assignment } from '../../../../infrastructure/assignment';
+import { loadIDList } from '../../../../infrastructure/generics';
+import { AssignmentType, CourseType } from '../../../../infrastructure/types';
 
 import { encodeForLink } from '../../../core/URLutils';
 
@@ -39,6 +41,8 @@ interface IProps {
   ) => Promise<AssignmentType>;
   baseURL: string;
   timezone: string;
+  courses: CourseType[];
+  currentCourse: CourseType;
 }
 
 interface IState {
@@ -46,6 +50,8 @@ interface IState {
   studentsCanUpload: boolean;
   isAssignmentVisible: boolean;
   isLoading: boolean;
+  isLoadingAssignments: boolean;
+  allAssignments: { [courseTitle: string]: AssignmentType[] };
 }
 
 class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, {}> {
@@ -54,11 +60,20 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
     studentsCanUpload: false,
     isAssignmentVisible: false,
     isLoading: false,
+    isLoadingAssignments: false,
+    allAssignments: {},
   };
 
   private formRef: React.RefObject<FormComponentProps> = React.createRef();
 
-  public toggleDialog = () => {
+  public toggleDialog = async () => {
+    this.setState({
+      isLoadingAssignments: true,
+    });
+    await this.loadAllAssignments();
+    this.setState({
+      isLoadingAssignments: false,
+    });
     const { dialogVisible } = this.state;
     this.setState({
       dialogVisible: !dialogVisible,
@@ -79,6 +94,21 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
     this.setState((oldState: IState) => {
       return { isAssignmentVisible: !oldState.isAssignmentVisible };
     });
+  };
+
+  public loadAllAssignments = async () => {
+    let allAssignments: any = {};
+
+    await Promise.all(
+      this.props.courses.map(async (course: CourseType) => {
+        const courseTitle = `${course.name} | ${course.period}`;
+
+        allAssignments[courseTitle] = await loadIDList(course.assignments, Assignment);
+        return;
+      }),
+    );
+
+    this.setState({ allAssignments });
   };
 
   public handleCreate = () => {
@@ -136,7 +166,7 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
 
   public cloneAssignment = async (cloneID: number) => {
     const object = {
-      courseID: 1,
+      course: this.props.currentCourse.id,
     };
     const res = await fetch(`${process.env.REACT_APP_API_URL}/assignments/${cloneID}/clone/`, {
       headers: {
@@ -168,7 +198,12 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
   public render() {
     return (
       <div>
-        <CPButton onClick={this.toggleDialog} cpType="primary" icon={<PlusCircleOutlined />}>
+        <CPButton
+          onClick={this.toggleDialog}
+          cpType="primary"
+          icon={<PlusCircleOutlined />}
+          loading={this.state.isLoadingAssignments}
+        >
           Add assignment
         </CPButton>
         <CollectionCreateForm
@@ -183,6 +218,7 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
           studentsCanUpload={this.state.studentsCanUpload}
           timezone={this.props.timezone}
           loading={this.state.isLoading}
+          allAssignments={this.state.allAssignments}
         />
       </div>
     );
@@ -194,6 +230,7 @@ interface IFormProps extends FormComponentProps {
   onCreate: () => Promise<void>;
   onCancel: () => void;
   assignments: AssignmentType[];
+  allAssignments: { [courseTitle: string]: AssignmentType[] };
   toggleStudentUpload: () => void;
   toggleIsAssignmentVisible: () => void;
   studentsCanUpload: boolean;
@@ -234,6 +271,7 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
     public render() {
       const { visible, onCancel, onCreate, form } = this.props;
       const { getFieldDecorator } = form;
+
       return (
         <Modal
           visible={visible}
@@ -251,9 +289,7 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
                 })(
                   <Radio.Group>
                     <Radio value="public">Start from scratch</Radio>
-                    <Radio value="private" disabled={this.props.assignments.length == 0}>
-                      Clone existing assignment
-                    </Radio>
+                    <Radio value="private">Clone existing assignment</Radio>
                   </Radio.Group>,
                 )}
                 <CPTooltip title={'blah'} infoIcon={true} />
@@ -263,11 +299,17 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
               <Form.Item label="Assignment to clone">
                 {getFieldDecorator('cloneID')(
                   <Select>
-                    {this.props.assignments.map((assignment: AssignmentType) => {
+                    {Object.keys(this.props.allAssignments).map((courseTitle: string) => {
                       return (
-                        <Select.Option key={`assignment-${assignment.id}`} value={assignment.id}>
-                          {assignment.name}
-                        </Select.Option>
+                        <Select.OptGroup key={`select-course-${courseTitle}`} label={courseTitle}>
+                          {this.props.allAssignments[courseTitle].map((assignment: AssignmentType) => {
+                            return (
+                              <Select.Option key={`assignment-${assignment.id}`} value={assignment.id}>
+                                {assignment.name}
+                              </Select.Option>
+                            );
+                          })}
+                        </Select.OptGroup>
                       );
                     })}
                   </Select>,
