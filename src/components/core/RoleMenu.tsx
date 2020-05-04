@@ -1,7 +1,13 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { AuditOutlined, IdcardOutlined, InfoCircleOutlined, SlidersOutlined, TeamOutlined } from '@ant-design/icons';
+import {
+  AuditOutlined,
+  IdcardOutlined,
+  InfoCircleOutlined,
+  SlidersOutlined,
+  UserSwitchOutlined,
+} from '@ant-design/icons';
 
 import { Divider, Dropdown, Menu } from 'antd';
 
@@ -95,7 +101,7 @@ const RoleMenu = (props: IProps) => {
   return (
     <Dropdown overlay={roleMenu} trigger={['click']}>
       <CPTooltip title="Switch Roles" placement="left" hideThisOnHideTips={true}>
-        <TeamOutlined style={{ color: props.theme === 'light' ? 'black' : 'white', cursor: 'pointer' }} />
+        <UserSwitchOutlined style={{ color: props.theme === 'light' ? 'black' : 'white', cursor: 'pointer' }} />
       </CPTooltip>
     </Dropdown>
   );

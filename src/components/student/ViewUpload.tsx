@@ -12,6 +12,7 @@ import { Layout, Menu, Spin } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 import { AssignmentStudent, AssignmentStudentType } from '../../infrastructure/assignment';
+import { FileType } from '../../infrastructure/types';
 import { File } from '../../infrastructure/file';
 
 import ReactMarkdown from 'react-markdown';
@@ -29,7 +30,7 @@ interface IProps {
 
 function ViewUpload(props: IProps) {
   const [currentIndex, setIndex] = useState('0');
-  const [files, setFiles] = useState<any[]>([]);
+  const [files, setFiles] = useState<FileType[]>([]);
   const [loadComplete, setLoadComplete] = useState(false);
 
   const [numPages, setNumPages] = useState<number | null>(null);
@@ -41,7 +42,19 @@ function ViewUpload(props: IProps) {
   const fetchUpload = async () => {
     if (props.assignment) {
       const data = await AssignmentStudent.readStudentUpload(props.assignment.id);
-      setFiles(data.files);
+      let mostRecentFiles: FileType[] = [];
+      let readFiles = data.files as FileType[];
+      for (const f of readFiles) {
+        const match = mostRecentFiles.find((el) => el.name === f.name);
+        if (!match) {
+          mostRecentFiles.push(f);
+        } else {
+          if (match.id < f.id) {
+            mostRecentFiles = [...mostRecentFiles.filter((el) => el.name !== f.name), f];
+          }
+        }
+      }
+      setFiles(mostRecentFiles);
       setLoadComplete(true);
     } else {
       // Reset state variables if passed an undefined submission
