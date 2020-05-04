@@ -44,7 +44,7 @@ import {
   AssignmentType,
   TestCaseType,
   TestCategoryType,
-  SubmissionType,
+  SubmissionInfoType,
   FileType,
 } from '../../../../../infrastructure/types';
 import { TestCase } from '../../../../../infrastructure/testCase';
@@ -93,7 +93,7 @@ interface IProps {
   currentAssignment: AssignmentType;
   solutions: SolutionFileType[];
   helpers: HelperFileType[];
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
   sourceFiles: SourceFileType[];
   updateEnv: (env: EnvironmentType) => void;
   env?: EnvironmentType;
@@ -138,7 +138,7 @@ export const TestDefinitions = (props: IProps) => {
   const [loading, setLoading] = useState(true);
 
   // Submission / Solution code toggle variables
-  const [activeSubmission, setActiveSubmission] = useState<SubmissionType | undefined>(undefined);
+  const [activeSubmission, setActiveSubmission] = useState<SubmissionInfoType | undefined>(undefined);
   const [currentFiles, setCurrentFiles] = useState<(SolutionFileType | FileType)[]>(props.solutions);
 
   /******************************* Fetch Data ****************************/
@@ -602,7 +602,7 @@ export const TestDefinitions = (props: IProps) => {
               <Tooltip title="Exit file mode">
                 <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28, borderBottomLeftRadius: '0px' }}>
                   <ArrowLeftOutlined style={{ fontSize: 10, marginRight: 3 }} />
-                  <FileOutlined style={{ fontSize: 12 }} />
+                  <FileOutlined style={{ fontSize: 12, marginLeft: 0 }} />
                 </Button>
               </Tooltip>
             )}
@@ -771,7 +771,7 @@ export const TestDefinitions = (props: IProps) => {
               <Tooltip title="Enter file mode">
                 <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28, borderBottomLeftRadius: '0px' }}>
                   <ArrowRightOutlined style={{ fontSize: 10, marginRight: 3 }} />
-                  <FileOutlined style={{ fontSize: 12 }} />
+                  <FileOutlined style={{ fontSize: 12, marginLeft: 0 }} />
                 </Button>
               </Tooltip>
             )}

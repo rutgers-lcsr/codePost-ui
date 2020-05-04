@@ -8,10 +8,10 @@ import * as React from 'react';
 import { SettingOutlined } from '@ant-design/icons';
 
 /* antd imports */
-import { Button, Layout } from 'antd';
+import { Button, Layout, Modal } from 'antd';
 
 /* other library imports */
-import { Route, Link, Switch } from 'react-router-dom';
+import { Route, Link, Switch, useHistory } from 'react-router-dom';
 
 import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
 
@@ -43,6 +43,10 @@ import AssignmentMenu from '../core/AssignmentMenu';
 
 import { IComponentProps } from '../core/ComponentManager';
 
+import { CIPGraderModal } from '../cip/components';
+
+import VideoModal from '../landing/VideoModal';
+
 /**********************************************************************************************************************/
 
 interface IGraderState {
@@ -52,6 +56,7 @@ interface IGraderState {
   assignments: AssignmentType[];
   isLoading: boolean;
   showBanner: boolean;
+  showConversionModal: boolean;
 }
 
 class Grader extends React.Component<IComponentProps, IGraderState> {
@@ -84,6 +89,7 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
           })
         : [],
       showBanner: false,
+      showConversionModal: false,
     };
   }
 
@@ -134,21 +140,23 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
     } else {
       graderPanelContent = (
         <Switch>
-          <Route
-            key="my_submissions"
-            path={`${this.props.match.url}/my_submissions`}
-            render={(props: any) => (
-              <MySubmissionsPanel
-                {...props}
-                course={currentCourse}
-                assignments={this.state.assignments}
-                graderEmail={this.props.user.email}
-                isAdmin={this.props.user.courseadminCourses.some((el) => {
-                  return el.id === currentCourse.id;
-                })}
-              />
-            )}
-          />
+          {this.props.currentCourse && this.props.currentCourse.activateQueue && (
+            <Route
+              key="my_submissions"
+              path={`${this.props.match.url}/my_submissions`}
+              render={(props: any) => (
+                <MySubmissionsPanel
+                  {...props}
+                  course={currentCourse}
+                  assignments={this.state.assignments}
+                  graderEmail={this.props.user.email}
+                  isAdmin={this.props.user.courseadminCourses.some((el) => {
+                    return el.id === currentCourse.id;
+                  })}
+                />
+              )}
+            />
+          )}
           {this.state.sectionsLed.length > 0 ? (
             <Route
               key="my_sections"
@@ -197,6 +205,11 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
           ) : (
             undefined
           )}{' '}
+          <Route
+            path={`${this.props.match.url}/video`}
+            key="video"
+            render={(props: any) => <VideoModal visible={true} onCancel={() => this.props.history.push('/grader')} />}
+          />
         </Switch>
       );
     }
@@ -230,7 +243,18 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
 
     const headerLeft = [courseDropdown, assignmentDropdown];
 
+    const showNewCourseBtn = !this.props.user.hasCredentials;
+    const logout =
+      localStorage.getItem('source') === 'codePost' ? (
+        <Button key="header-logout" onClick={this.props.handleLogout}>
+          Log Out
+        </Button>
+      ) : null;
+
     const headerRight = [
+      showNewCourseBtn && (
+        <Button onClick={() => this.setState({ showConversionModal: true })}>Create your own course</Button>
+      ),
       <span key="header-user" className="cp-label cp-label--bold">
         {this.props.user.email}
       </span>,
@@ -241,9 +265,7 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
           <SettingOutlined />
         </Link>
       </CPTooltip>,
-      <Button key="header-logout" onClick={this.props.handleLogout}>
-        Logout
-      </Button>,
+      logout,
     ];
 
     const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
@@ -260,6 +282,7 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
               isSuperGrader={this.state.isSuperGrader}
               isSectionLeader={this.state.sectionsLed.length > 0}
               regradesAllowed={someRegrades}
+              activateQueue={this.props.currentCourse && this.props.currentCourse.activateQueue}
             />
           )}
         />
@@ -284,6 +307,11 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
             ) : null}
 
             {graderPanelContent}
+            <CIPGraderModal
+              visible={this.state.showConversionModal}
+              onClose={() => this.setState({ showConversionModal: false })}
+              email={this.props.user.email}
+            />
           </span>
         }
         navigation={navigation}

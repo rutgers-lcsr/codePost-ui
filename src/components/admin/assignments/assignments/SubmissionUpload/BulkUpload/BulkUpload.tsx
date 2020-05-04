@@ -18,7 +18,7 @@ import {
 } from './BulkUploadHelpers';
 
 /* codePost imports */
-import { AssignmentType, CourseType, SubmissionType } from '../../../../../../infrastructure/types';
+import { AssignmentType, CourseType, SubmissionInfoType } from '../../../../../../infrastructure/types';
 
 import UploadForm from './UploadForm';
 import BulkUploadConfirm from './BulkUploadConfirm';
@@ -47,11 +47,11 @@ interface IProps {
   isVisible: boolean;
   onCancel: () => void;
   assignment: AssignmentType;
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
   students: string[];
   uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
-  updateSubmission: (submission: SubmissionType) => Promise<void>;
-  deleteSubmission: (submission: SubmissionType) => Promise<void>;
+  updateSubmission: (submission: SubmissionInfoType) => Promise<void>;
+  deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   showImportOptions?: boolean;
   course: CourseType;
 }
@@ -124,7 +124,7 @@ class BulkUpload extends React.Component<IProps, IState> {
   /* Pure functions
   /***************************************************************************************/
 
-  public buildNewStudentMap = (students: string[], submissions: SubmissionType[]) => {
+  public buildNewStudentMap = (students: string[], submissions: SubmissionInfoType[]) => {
     const newMap: any = {};
 
     for (const student of students) {
@@ -265,6 +265,45 @@ class BulkUpload extends React.Component<IProps, IState> {
     }
   };
 
+  public uploadSubmission = (submission: IProtoSubmission) => {
+    const { fileMap } = this.state;
+
+    const files: any[] = [];
+    const submitter = submission.students.join(',');
+
+    if (fileMap.hasOwnProperty(submitter)) {
+      Object.keys(fileMap[submitter]).forEach((fullname: string) => {
+        const path = fullname;
+        const fileName = fullname.split('/').slice(-1)[0];
+        const pathDirs = path.split('/');
+        // Want to ignore first (root dir, student email) two and last element (file name) of split
+        const filePath = pathDirs.length > 3 ? pathDirs.slice(2, pathDirs.length - 1).join('/') : null;
+        const payload = {
+          name: fileName,
+          data: fileMap[submitter][path],
+          path: filePath,
+        };
+        files.push(payload);
+      });
+    }
+    return this.props
+      .uploadSubmission(this.props.assignment, submission.students, files)
+      .then((newSub) => {
+        const uploadMap = this.state.uploadMap;
+        submission.students.forEach((student) => {
+          uploadMap[student] = UPLOAD_STATUS.SUCCESS;
+        });
+        this.setState({ uploadMap, numUploaded: this.state.numUploaded + 1 });
+      })
+      .catch((errors) => {
+        const uploadMap = this.state.uploadMap;
+        submission.students.forEach((student) => {
+          uploadMap[student] = UPLOAD_STATUS.SUCCESS;
+        });
+        this.setState({ uploadMap });
+      });
+  };
+
   // Make sure all the files are read, and if so, upload them
   public upload = () => {
     const { protoSubmissions, fileMap } = this.state;
@@ -276,42 +315,33 @@ class BulkUpload extends React.Component<IProps, IState> {
           return !el.isCollision;
         });
     // tslint:enable
-    const promises = toUpload.map((submission) => {
-      const files: any[] = [];
-      const submitter = submission.students.join(',');
 
-      if (fileMap.hasOwnProperty(submitter)) {
-        Object.keys(fileMap[submitter]).forEach((fullname: string) => {
-          const path = fullname;
-          const fileName = fullname.split('/').slice(-1)[0];
-          const pathDirs = path.split('/');
-          // Want to ignore first (root dir, student email) two and last element (file name) of split
-          const filePath = pathDirs.length > 3 ? pathDirs.slice(2, pathDirs.length - 1).join('/') : null;
-          const payload = {
-            name: fileName,
-            data: fileMap[submitter][path],
-            path: filePath,
-          };
-          files.push(payload);
-        });
+    const promises: Promise<void>[] = [];
+
+    // Recursive function to upload, and then upload the next submission in the queue
+    // Returns a promise that only finishes when all of it's recursive children finish
+    const uploadAndPop: any = (submission: IProtoSubmission) => {
+      return this.uploadSubmission(submission).then(() => {
+        if (toUpload.length) {
+          const newSub = toUpload.pop();
+          if (newSub) {
+            return uploadAndPop(newSub);
+          }
+          return Promise.resolve();
+        }
+      });
+    };
+
+    // The number of concurrent submissions that can be uploaded at once.
+    // The number of network requests = this number * number of files
+    const MAX_NUM_CONNECTIONS = 5;
+    const connectionsLimit = Math.min(toUpload.length, MAX_NUM_CONNECTIONS);
+    for (let i = 0; i < connectionsLimit; i++) {
+      const parentNode = toUpload.pop();
+      if (parentNode) {
+        promises.push(uploadAndPop(parentNode));
       }
-      return this.props
-        .uploadSubmission(this.props.assignment, submission.students, files)
-        .then((newSub) => {
-          const uploadMap = this.state.uploadMap;
-          submission.students.forEach((student) => {
-            uploadMap[student] = UPLOAD_STATUS.SUCCESS;
-          });
-          this.setState({ uploadMap, numUploaded: this.state.numUploaded + 1 });
-        })
-        .catch((errors) => {
-          const uploadMap = this.state.uploadMap;
-          submission.students.forEach((student) => {
-            uploadMap[student] = UPLOAD_STATUS.SUCCESS;
-          });
-          this.setState({ uploadMap });
-        });
-    });
+    }
 
     Promise.all(promises).then(() => {
       this.setState({
@@ -327,7 +357,7 @@ class BulkUpload extends React.Component<IProps, IState> {
     // find their submission in submission list
     // add this submission to a changed list (if it isn't there already)
     // remove the student from submission.students
-    const toChange: SubmissionType[] = [];
+    const toChange: SubmissionInfoType[] = [];
     students.forEach((student) => {
       const newSubmission = getSubforStudent(student, this.state.protoSubmissions);
 

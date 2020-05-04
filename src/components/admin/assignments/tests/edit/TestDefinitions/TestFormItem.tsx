@@ -24,7 +24,7 @@ import {
 import { FormComponentProps } from '@ant-design/compatible/lib/form';
 
 /* codePost object imports */
-import { TestCaseType, SubmissionType } from '../../../../../../infrastructure/types';
+import { TestCaseType, SubmissionInfoType } from '../../../../../../infrastructure/types';
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
 
@@ -64,9 +64,9 @@ interface ITestFormItemProps extends FormComponentProps {
   ) => void;
   isRunning: boolean;
   language: string;
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
   setTestSubject: (id: string) => void;
-  activeSubmission?: SubmissionType;
+  activeSubmission?: SubmissionInfoType;
   methodsByFile: { [name: string]: string[] };
   env?: EnvironmentType;
   hasInstanceMethods: boolean;
@@ -780,7 +780,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 </Form.Item>
               </Row>
               <Row>
-                <Collapse bordered={false}>
+                <Collapse bordered={false} style={{ width: '100%' }}>
                   <Collapse.Panel key="1" header="More options" style={{ border: 0, backgroundColor: '#f5f5f7' }}>
                     <div>
                       <Form.Item

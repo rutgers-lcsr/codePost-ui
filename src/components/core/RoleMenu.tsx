@@ -21,7 +21,7 @@ interface IProps {
 const RoleMenu = (props: IProps) => {
   const showStudent = props.thisApp !== USER_TYPE.STUDENT && props.user.studentCourses.length > 0;
   const showGrader = props.thisApp !== USER_TYPE.GRADER && props.user.graderCourses.length > 0;
-  const showAdmin = props.thisApp !== USER_TYPE.ADMIN && props.user.courseadminCourses.length > 0;
+  const showAdmin = props.thisApp !== USER_TYPE.ADMIN && props.user.canCreateCourses;
 
   if (!(showStudent || showGrader || showAdmin)) {
     return <div />;

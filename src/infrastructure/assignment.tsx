@@ -9,11 +9,19 @@ import {
   updateObject,
   updateObjectDetail,
 } from './generics';
+import { convertToPaginatedFunction, paginatedType } from './pagination';
 
 import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
-import { StudentSubmissionV, SubmissionInfoV, AnonymousSubmissionInfoV } from './submission';
-import { SubmissionHistoryV } from './submissionHistory';
+import {
+  StudentSubmissionV,
+  SubmissionInfoV,
+  AnonymousSubmissionInfoV,
+  SubmissionInfoType,
+  SubmissionWithTestsType,
+  SubmissionWithTestsV,
+} from './submission';
+import { SubmissionHistoryV, SubmissionHistoryType } from './submissionHistory';
 import { StudentTestCaseV } from './testCase';
 import { TestCategoryV } from './testCategory';
 import { CommentV } from './comment';
@@ -215,7 +223,19 @@ export class Assignment {
     'assignments',
     'submissionHistories',
   );
+
   public static readComments = readObjectDetail(t.array(CommentV), 'assignments', 'comments');
+
+  // Paginated requests - for admin console performance on large courses
+  public static readPaginatedSubmissions = convertToPaginatedFunction<SubmissionInfoType>(
+    readObjectDetail(paginatedType(SubmissionInfoV), 'assignments', 'submissions'),
+  );
+  public static readPaginatedSubmissionHistories = convertToPaginatedFunction<SubmissionHistoryType>(
+    readObjectDetail(paginatedType(SubmissionHistoryV), 'assignments', 'submissionHistories'),
+  );
+  public static readPaginatedTestResults = convertToPaginatedFunction<SubmissionWithTestsType>(
+    readObjectDetail(paginatedType(SubmissionWithTestsV), 'assignments', 'submissionTests'),
+  );
 }
 
 // Type for getting and patching student upload
@@ -259,6 +279,7 @@ export type StudentUploadInformationType = t.TypeOf<typeof StudentUploadInformat
 export class AssignmentStudent {
   public static read = readObject(AssignmentVStudent, 'assignments');
   public static readSubmissions = readObjectDetail(t.array(StudentSubmissionV), 'assignments', 'submissions');
+
   public static createStudentUpload = createObjectDetail(
     StudentSubmissionV,
     StudentUploadData,

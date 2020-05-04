@@ -88,9 +88,11 @@ const demoCourse = (testName: string) => {
     noUnfinalize: false,
     lateDayCreditsAllowable: null,
     archived: false,
+    activateQueue: true,
     inviteCode: '',
     emailWhitelist: '',
     inviteCodeEnabled: false,
+    enableStudentFeedbackNotifications: false,
   };
 };
 

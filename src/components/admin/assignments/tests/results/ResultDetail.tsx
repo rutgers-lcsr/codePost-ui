@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Badge, Button, Card, Empty, Modal, Menu, Layout, Radio, Select, Typography } from 'antd';
 
 /* codePost object imports */
-import { SubmissionType } from '../../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { TestCaseType } from '../../../../../infrastructure/testCase';
@@ -13,25 +13,31 @@ import TestsList from '../../../../code-review/code-panel/TestsList';
 
 import { TestsBySubmission, TestCasesByCategory, RESULT_STATUS } from '../../../../core/testFetchUtils';
 
+import { FixedSizeList as List } from 'react-window';
+import useWindowSize from '../../../../core/useWindowSize';
+import { filter } from 'fp-ts/lib/Option';
+
 interface IProps {
   visible: boolean;
   onCancel: () => void;
   testsBySubmission: TestsBySubmission;
   casesByCategory: TestCasesByCategory;
   categories: TestCategoryType[];
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
 
   filterCategory: TestCategoryType | undefined;
   filterCase: TestCaseType | undefined;
   filterStatus: RESULT_STATUS | undefined;
-  filterSubmission: SubmissionType | undefined;
+  filterSubmission: SubmissionInfoType | undefined;
 }
 
 export const ResultDetail = (props: IProps) => {
   const [filterCategory, setFilterCategory] = useState<TestCategoryType | undefined>(props.filterCategory);
   const [filterCase, setFilterCase] = useState<TestCaseType | undefined>(props.filterCase);
   const [filterStatus, setFilterStatus] = useState<RESULT_STATUS | undefined>(props.filterStatus);
-  const [filterSubmission, setFilterSubmission] = useState<SubmissionType | undefined>(props.filterSubmission);
+  const [filterSubmission, setFilterSubmission] = useState<SubmissionInfoType | undefined>(props.filterSubmission);
+
+  const windowSize = useWindowSize();
 
   /********************** Props on change functions **********************************/
   useEffect(() => {
@@ -68,7 +74,7 @@ export const ResultDetail = (props: IProps) => {
     testCase ? setFilterCase(testCase) : setFilterCase(undefined);
   };
 
-  const handleSubmissionChange = (submission: SubmissionType) => {
+  const handleSubmissionChange = (submission: SubmissionInfoType) => {
     setFilterSubmission(submission);
   };
 
@@ -84,7 +90,7 @@ export const ResultDetail = (props: IProps) => {
 
   /**********************  utils **********************************/
   // figure out if a submission should be marked inactive based on the current filters
-  const isInactive = (submission: SubmissionType) => {
+  const isInactive = (submission: SubmissionInfoType) => {
     // No status filter return all submissios
     if (filterStatus === undefined) return false;
 
@@ -223,17 +229,40 @@ export const ResultDetail = (props: IProps) => {
     [];
 
   const submissionMenu = (
-    <Menu selectedKeys={selectedKeys}>
-      {props.submissions !== undefined
-        ? props.submissions.map((s) => {
-            return (
-              <Menu.Item key={s.id.toString()} disabled={isInactive(s)} onClick={handleSubmissionChange.bind({}, s)}>
-                {s.students.toString()}
-              </Menu.Item>
-            );
-          })
-        : null}
-    </Menu>
+    <List
+      itemData={props.submissions}
+      height={windowSize.height - 450}
+      itemCount={props.submissions.length}
+      itemSize={54}
+      width="100%"
+    >
+      {({ index, style }: any) => {
+        const el = props.submissions[index];
+        const extraStyle = {
+          display: 'flex',
+          height: 54,
+          alignItems: 'stretch',
+          borderBottom: '1px solid rgb(232,232,232)',
+          cursor: 'pointer',
+        };
+
+        const inactiveStyle = { color: 'grey', backgroundColor: 'rgb(0,0,0,0.02)', fontStyle: 'italic' };
+        const defaultStyle = { backgroundColor: 'rgb(0,0,0,0)' };
+        const selectedStyle = { color: 'white', backgroundColor: '#24be85' };
+
+        const thisStyle = isInactive(el)
+          ? inactiveStyle
+          : filterSubmission && filterSubmission.id === el.id
+          ? selectedStyle
+          : defaultStyle;
+
+        return (
+          <div style={{ ...style, ...extraStyle }} onClick={handleSubmissionChange.bind({}, el)}>
+            <div style={{ width: '100%', ...thisStyle, padding: '16px' }}>{el.students.toString()}</div>
+          </div>
+        );
+      }}
+    </List>
   );
 
   const closeButton = (

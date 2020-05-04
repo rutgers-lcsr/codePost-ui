@@ -9,6 +9,9 @@ import {
   updateObject,
   updateObjectDetail,
 } from './generics';
+import { convertToPaginatedFunction, paginatedType } from './pagination';
+
+import { SectionType, SectionV } from './section';
 
 export const CourseV = t.intersection(
   [
@@ -27,10 +30,13 @@ export const CourseV = t.intersection(
       noUnfinalize: t.boolean,
       lateDayCreditsAllowable: t.union([t.number, t.null]),
       archived: t.boolean,
+      activateQueue: t.boolean,
       inviteCode: t.union([t.string, t.null]),
       emailWhitelist: t.string,
       inviteCodeEnabled: t.boolean,
+      enableStudentFeedbackNotifications: t.boolean,
     }),
+    t.partial({ webhooks: t.array(t.number) }),
   ],
   'Course',
 );
@@ -50,6 +56,7 @@ const CourseVPatch = t.intersection(
       archived: t.boolean,
       emailWhitelist: t.string,
       inviteCodeEnabled: t.boolean,
+      enableStudentFeedbackNotifications: t.boolean,
     }),
   ],
   'CoursePatch',
@@ -135,6 +142,11 @@ export class Course {
   public static updateRosterMap = updateObjectDetail(RosterMapV, RosterMapVPatch, 'courses', 'rosterMap');
 
   public static readSettings = readObjectDetail(CourseSettingsV, 'courses', 'courseSettings');
+
+  // Paginated requests - for admin console performance on large courses
+  public static readPaginatedSections = convertToPaginatedFunction<SectionType>(
+    readObjectDetail(paginatedType(SectionV), 'courses', 'sections'),
+  );
 }
 
 // export { CourseType, Course, RosterType, CoursePatchType, CourseV, CourseSettingsType };

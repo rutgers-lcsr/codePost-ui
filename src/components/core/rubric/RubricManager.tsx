@@ -16,7 +16,7 @@ import { Assignment, AssignmentType, RubricType } from '../../../infrastructure/
 import { CommentIO } from '../../../infrastructure/comment';
 import { RubricCategory, RubricCategoryType } from '../../../infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from '../../../infrastructure/rubricComment';
-import { SubmissionType } from '../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../infrastructure/submission';
 
 import { DIRECTION, IRubricCategoryToRubricCommentsMap } from '../../../types/common';
 
@@ -73,7 +73,7 @@ export interface IRubricManagerHelpers {
 export interface IRubricManagerProps {
   /* assignment data */
   assignment: AssignmentType;
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
 
   shouldLoadFeedback: boolean;
   shouldLoadInstanceLists: boolean;

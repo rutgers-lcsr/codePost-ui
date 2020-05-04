@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* other library imports */
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
 
 import Loadable from 'react-loadable';
 
@@ -24,6 +24,8 @@ import { CourseType } from './infrastructure/course';
 import { UserType } from './infrastructure/user';
 
 import IndexManager from './components/pre-auth/IndexManager';
+import RemoteAuthFailed from './components/pre-auth/RemoteAuthFailed';
+import RemoteAuthRedirect from './components/pre-auth/RemoteAuthRedirect';
 
 import Settings from './components/core/settings';
 
@@ -38,6 +40,8 @@ import { ShowTooltipContext } from './components/core/tooltips';
 import { consoleArt } from './components/utils/consoleArt';
 
 import { clearLocalSettings } from './components/utils/LocalSettings';
+
+import { IBaseFileUpload } from './components/admin/assignments/assignments/SubmissionUpload/FileReader';
 
 /******************************************************************************
  * Asynchronous components to dynamically load app code via code splitting
@@ -81,9 +85,10 @@ const anonymousUser: UserType = {
   student_sections: [],
   showProductTips: true,
   codePostAdmin: false,
+  hasCredentials: false,
 };
 
-const domains = ['https://mooc.codepost.io', 'http://localhost:3001'];
+const domains = ['mooc.codepost.io', 'localhost:300', 'compedu.stanford.edu'];
 
 /*****************************************************************************/
 
@@ -101,14 +106,56 @@ interface IState {
   triedLoading: boolean;
   isSuperUser: boolean;
   // theme: {[key: string]: string}
+
+  studentUploadShortcut?: {
+    assignmentID: number;
+    files: IBaseFileUpload[];
+  };
+  auth_type: string;
+  propToken: string;
 }
 
 class App extends React.Component<{}, IState> {
   private loginCount: number;
   public constructor(props: any) {
     super(props);
+    try {
+      localStorage.setItem('source', 'codePost');
+    } catch (err) {
+      alert(
+        `codePost needs permission from your browser to start.
+Please follow these steps for your current browser...
+
+Google Chrome:
+  - Open up Chrome cookie settings:
+      chrome://settings/content/cookies
+  - Click Allow -> Add -> https://codepost.io
+      See a screenshot here:
+      https://share.getcloudapp.com/eDu69Dnz
+  - Try refreshing!
+
+Firefox:
+  - Open up Firefox cookie settings:
+      about:preferences#privacy
+  - Click Cookies and Site Data -> Manage Permissions
+  - Type in https://codepost.io -> Allow -> Save Changes
+  - Try refreshing!
+      `,
+      );
+    }
+
     console.log(...consoleArt);
     this.loginCount = 0;
+
+    // are we getting a token from the URL?
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const urlToken = urlParams.get('token');
+    if (urlToken) {
+      localStorage.setItem('token', urlToken);
+      window.history.replaceState({}, document.title, window.location.href.replace(/\&token=[^&]*/gm, ''));
+    }
+
     this.state = {
       error: '',
       has_token: localStorage.getItem('token') ? true : false,
@@ -125,6 +172,9 @@ class App extends React.Component<{}, IState> {
       // This token persists the value of this.state.isSuperUser across app instances,
       // while the session orginally triggered via loginas is active.
       isSuperUser: localStorage.getItem('isSuperUser') !== null,
+      studentUploadShortcut: undefined,
+      auth_type: 'JWT',
+      propToken: '',
     };
   }
 
@@ -181,7 +231,14 @@ class App extends React.Component<{}, IState> {
   };
 
   public messageHandler = (event: any) => {
-    if (!domains.includes(event.origin)) {
+    let found = false;
+    for (const domain of domains) {
+      if (event.origin.indexOf(domain) !== -1) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
       return;
     }
 
@@ -199,12 +256,40 @@ class App extends React.Component<{}, IState> {
         source = payload.source;
       }
 
-      localStorage.setItem('token', token);
+      let studentUploadShortcut;
+      if (payload.hasOwnProperty('assignment') && payload.assignment !== undefined) {
+        studentUploadShortcut = {
+          assignmentID: payload.assignment,
+          files: [],
+        };
+
+        if (payload.hasOwnProperty('files')) {
+          studentUploadShortcut = {
+            ...studentUploadShortcut,
+            files: payload.files,
+          };
+        }
+      }
+
+      let auth_type = 'JWT';
+      if (payload.hasOwnProperty('auth_type') && payload.auth_type !== undefined) {
+        auth_type = payload.auth_type;
+      }
+
       localStorage.setItem('source', source);
-      this.setState({ has_token: true }, () => {
-        this.loginCount += 1;
-        this.tryToLogin();
-      });
+
+      // This will fail for admins who are switching around users
+      // because we won't reauthenticate them with the new message
+      if (!this.state.user) {
+        this.setState({ has_token: true, studentUploadShortcut, auth_type, propToken: token }, () => {
+          this.loginCount = 0;
+          this.tryToLogin();
+        });
+        return;
+      } else if (this.state.studentUploadShortcut === undefined && studentUploadShortcut !== undefined) {
+        this.setState({ studentUploadShortcut });
+        return;
+      }
     } finally {
       return;
     }
@@ -212,25 +297,38 @@ class App extends React.Component<{}, IState> {
 
   public tryToLogin = () => {
     if (this.state.has_token && !this.state.user && this.loginCount < 4) {
+      // Make sure we don't use a prefix that is mismatched with token
+      let authHeader = `JWT ${localStorage.getItem('token')}`;
+      if (this.state.auth_type === 'Firebase') {
+        if (this.state.propToken === '') {
+          return;
+        }
+        authHeader = `Firebase ${this.state.propToken}`;
+      }
+
       fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
         headers: {
-          Authorization: `JWT ${localStorage.getItem('token')} `,
+          Authorization: authHeader,
         },
       })
         .then(async (res) => {
           if (res.ok) {
             const json = await res.json();
+
+            localStorage.setItem('token', json.token);
             this.setState((oldState) => {
               return {
                 user: json,
                 triedLoading: true,
                 isSuperUser: superUsers.indexOf(json.email) > -1 || oldState.isSuperUser,
+                auth_type: 'JWT',
               };
             });
             // this.refreshToken();
           } else if (res.status === 401) {
             // A status code of 401 indicates that the provided token is invalid => the user needs
             // to login again, so we log them out.
+
             this.setState({ triedLoading: true });
             this.handleLogout();
           } else {
@@ -239,6 +337,7 @@ class App extends React.Component<{}, IState> {
             //
             // Issue with this approach: if our API server is unavailable, the site will appear as a blank page
             // (rather than showing users the pre-auth site).
+
             setTimeout(() => {
               this.loginCount += 1;
               this.tryToLogin();
@@ -462,6 +561,26 @@ class App extends React.Component<{}, IState> {
         );
       }
 
+      // const isLostCodeInPlace = user
+      //   ? user.courseadminCourses.length === 0 &&
+      //     user.graderCourses.length === 0 &&
+      //     user.studentCourses.length === 1 &&
+      //     user.studentCourses[0].id === 925 &&
+      //     localStorage.getItem('source') === 'codePost'
+      //   : false;
+
+      // if (isLostCodeInPlace && !this.state.isSuperUser) {
+      //   return (
+      //     <div>
+      //       <BrowserRouter>
+      //         <Switch>
+      //           <Route component={RemoteAuthRedirect} />
+      //         </Switch>
+      //       </BrowserRouter>
+      //     </div>
+      //   );
+      // }
+
       if (isAdmin || isGrader) {
         (window as any).Intercom('boot', {
           app_id: 'kg4u5rp1',
@@ -498,7 +617,21 @@ class App extends React.Component<{}, IState> {
           <Route
             path={STUDENT}
             render={(props: any) =>
-              this.wrapTooltipContext(<AsyncStudent {...props} {...consoleProps} initialCourses={studentCourses} />)
+              this.wrapTooltipContext(
+                <AsyncStudent
+                  {...props}
+                  {...consoleProps}
+                  initialCourses={studentCourses}
+                  uploadShortcut={this.state.studentUploadShortcut}
+                  // uploadShortcut={{
+                  //   assignmentID: 2,
+                  //   files: [
+                  //     { name: 'template.py', data: 'helloworld' },
+                  //     { name: 'second.py', data: 'yoyoyo\nasdfasdf]\nasdf' },
+                  //   ],
+                  // }}
+                />,
+              )
             }
           />
         );
@@ -599,14 +732,25 @@ class App extends React.Component<{}, IState> {
             handleLogin={this.handleLogin}
             error={this.state.error}
             isLoggedIn={true}
-            email={this.state.user.email}
+            email={this.state.user!.email}
             handleLogout={this.handleLogout}
           />
         </Switch>
       );
     }
 
-    if (this.state.triedLoading) {
+    console.log('DBGA', this.state.triedLoading, localStorage.getItem('source'));
+    if (this.state.triedLoading && localStorage.getItem('source') === 'Code in Place') {
+      return (
+        <div>
+          <BrowserRouter>
+            <Switch>
+              <Route component={RemoteAuthFailed} />
+            </Switch>
+          </BrowserRouter>
+        </div>
+      );
+    } else if (this.state.triedLoading) {
       return (
         <div>
           <Switch>{demoRoute}</Switch>

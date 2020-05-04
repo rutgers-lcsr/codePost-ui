@@ -1,6 +1,14 @@
 import * as React from 'react';
 
-import { ClusterOutlined, ContainerOutlined, InboxOutlined, MessageOutlined, PushpinOutlined } from '@ant-design/icons';
+import {
+  ClusterOutlined,
+  ContainerOutlined,
+  InboxOutlined,
+  MessageOutlined,
+  PushpinOutlined,
+  TrophyOutlined,
+  VideoCameraOutlined,
+} from '@ant-design/icons';
 
 import { Menu } from 'antd';
 
@@ -13,6 +21,7 @@ interface IProps extends RouteComponentProps<{ panel: string }> {
   isSuperGrader: boolean;
   isSectionLeader: boolean;
   regradesAllowed: boolean;
+  activateQueue: boolean;
   baseURL: string;
 }
 
@@ -42,12 +51,14 @@ class GraderNav extends React.Component<IProps, {}> {
       <div>
         <div>
           <Menu theme="dark" mode="inline" selectedKeys={[this.getDefaultSelectedKeys()]}>
-            <Menu.Item key="0">
-              <Link to={`${this.props.baseURL}/my_submissions`}>
-                <ContainerOutlined />
-                <span>Claimed by Me</span>
-              </Link>
-            </Menu.Item>
+            {this.props.activateQueue && (
+              <Menu.Item key="0">
+                <Link to={`${this.props.baseURL}/my_submissions`}>
+                  <ContainerOutlined />
+                  <span>Claimed by Me</span>
+                </Link>
+              </Menu.Item>
+            )}
             {this.props.isSectionLeader ? (
               <Menu.Item key="1">
                 <Link to={`${this.props.baseURL}/my_sections`}>
@@ -76,9 +87,30 @@ class GraderNav extends React.Component<IProps, {}> {
         </div>
         <div style={{ height: '100%' }}>
           <Menu theme="dark" mode="inline" style={{ position: 'absolute', bottom: 75 }} selectedKeys={[]}>
+            <Menu.Item key="video">
+              <Link to={`${this.props.baseURL}/video`}>
+                <VideoCameraOutlined />
+                <span>Video</span>
+              </Link>
+            </Menu.Item>
             <Menu.Item key="docs" onClick={this.openLink.bind(this, 'https://help.codepost.io')}>
               <PushpinOutlined />
               <span>Docs</span>
+            </Menu.Item>
+            <Menu.Item
+              key="scholarship"
+              style={{
+                whiteSpace: 'normal',
+                height: 'auto',
+                lineHeight: 1.4,
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: 13,
+              }}
+              onClick={this.openLink.bind(this, 'https://codepost.io/scholarships/computer-science-education')}
+            >
+              <TrophyOutlined />
+              <span>CS Education Scholarship</span>
             </Menu.Item>
           </Menu>
         </div>

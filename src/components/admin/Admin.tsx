@@ -8,7 +8,7 @@ import * as React from 'react';
 import { SettingOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Button, Empty } from 'antd';
+import { Button, Empty, Modal, Input, Checkbox } from 'antd';
 
 /* other library imports */
 import _ from 'lodash';
@@ -24,6 +24,7 @@ import SubmissionsManager from './submissions/SubmissionsManager';
 import ManageAssignments from './assignments/ManageAssignments';
 import RosterManager from './roster/RosterManager';
 import CourseSettingsPanel from './settings/CourseSettingsPanel';
+import WebhooksPanel from './settings/WebhooksPanel';
 
 import CourseMenu from '../core/CourseMenu';
 import NewCourseDialog from './other/NewCourseDialog';
@@ -46,7 +47,7 @@ import { File } from '../../infrastructure/file';
 import { RubricCategory } from '../../infrastructure/rubricCategory';
 import { RubricComment } from '../../infrastructure/rubricComment';
 import { Section, SectionType } from '../../infrastructure/section';
-import { Submission, SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
+import { Submission, SubmissionInfoType } from '../../infrastructure/submission';
 import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 import { addToPayload } from '../../infrastructure/utils';
 
@@ -62,11 +63,16 @@ import { tooltips } from '../core/tooltips';
 
 import { AssignmentSetupBanner } from './assignments/assignments/AssignmentSetupDialog';
 
+import { CIPAdminModal } from '../cip/components';
+
+import VideoModal from '../landing/VideoModal';
+
 /**********************************************************************************************************************/
 
 interface IAdminState {
   /**** UI control data ****/
   onboardingModalVisible: boolean;
+  cipModalVisible: boolean;
 
   /**** Top-level course data ****/
   courses: CourseType[];
@@ -91,7 +97,8 @@ interface IAdminState {
   assignments: AssignmentType[];
 
   /*** Submissions data ****/
-  submissionsLoadComplete: boolean;
+  partialSubmissionsLoadComplete: boolean;
+  fullSubmissionsLoadComplete: boolean;
   submissionsbyUserLoadComplete: boolean;
   submissions: IAssignmentToSubmissionsMap;
   submissionsByStudent: IStudentSubmissionsDataTable;
@@ -116,11 +123,17 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       this.loadAllCourseData(this.props.currentCourse);
     }
 
+    // We show the CIP modal if the source is in the url, or if the user doesn't have credentials
+    // The second check (credentials) is to prevent the flow of: CIP user goes to create course, navigates to splash page, and doesn't set password
+    const showCIPModal = !this.props.user.hasCredentials;
+    const showOnboarding =
+      Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding') ||
+      this.props.initialCourses.length === 0;
+
     this.state = {
       /**** UI control data ****/
-      onboardingModalVisible:
-        Object.hasOwnProperty.bind(queryString.parse(this.props.location.search))('onboarding') ||
-        this.props.initialCourses.length === 0,
+      onboardingModalVisible: showOnboarding && !showCIPModal,
+      cipModalVisible: showCIPModal,
 
       /**** Top-level course data ****/
       courses: _.cloneDeep(this.props.initialCourses),
@@ -146,7 +159,8 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
       /**** Submissions data ****/
       submissions: {},
-      submissionsLoadComplete: false,
+      partialSubmissionsLoadComplete: false,
+      fullSubmissionsLoadComplete: false,
       submissionsByStudent: {},
       submissionsByGrader: {},
       submissionsbyUserLoadComplete: false,
@@ -236,6 +250,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   /* Load data and build data structures to cache relationships between
   /* objects.
   /**********************************************************************************/
+
   public loadAllCourseData = (course: CourseType) => {
     this.loadAssignments(course)
       .then((assignments) => {
@@ -243,7 +258,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
         if (this.props.currentCourse !== course) {
           return;
         }
-        if (this.state.submissionsLoadComplete && this.state.rosterLoadComplete) {
+        if (this.state.partialSubmissionsLoadComplete && this.state.rosterLoadComplete) {
           this.updateSubmissionsByUser(undefined, undefined, assignments, () => {
             this.setState({ assignments, assignmentsLoadComplete: true });
           });
@@ -252,37 +267,8 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
         }
       })
       .then(() => {
-        this.loadSubmissions(course).then((submissionList) => {
-          // use currentCourse as a nonce to see if this request is still desired
-          if (this.props.currentCourse !== course) {
-            return;
-          }
-          const submissionMap: any = {};
-          submissionList.forEach((submissionObj) => {
-            submissionMap[submissionObj.assignment] = submissionObj.submissions;
-          });
-          if (this.state.assignmentsLoadComplete && this.state.rosterLoadComplete) {
-            this.updateSubmissionsByUser(undefined, submissionMap, undefined, () => {
-              this.setState({
-                submissions: submissionMap,
-                submissionsLoadComplete: true,
-              });
-            });
-          } else {
-            this.setState({
-              submissions: submissionMap,
-              submissionsLoadComplete: true,
-            });
-          }
-        });
-
-        this.loadViewsBySubmission(course).then((viewHistoryLists) => {
-          if (this.props.currentCourse !== course) {
-            return;
-          }
-          const viewsBySubmission = this.generateViewsBySubmissions(viewHistoryLists);
-          this.setState({ viewsBySubmission });
-        });
+        this.loadSubmissions(course);
+        this.loadViewsBySubmission(course);
       });
 
     this.loadRoster(course).then((roster) => {
@@ -290,7 +276,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       if (this.props.currentCourse !== course) {
         return;
       }
-      if (this.state.assignmentsLoadComplete && this.state.submissionsLoadComplete) {
+      if (this.state.assignmentsLoadComplete && this.state.partialSubmissionsLoadComplete) {
         this.updateSubmissionsByUser(roster, undefined, undefined, () => {
           this.setState({
             rosterLoadComplete: true,
@@ -317,18 +303,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       }
     });
 
-    this.loadSections(course).then((sections) => {
-      // use currentCourse as a nonce to see if this request is still desired
-      if (this.props.currentCourse !== course) {
-        return;
-      }
-      const sectionsByStudent = this.generateSectionsByStudent(sections);
-      this.setState({
-        sections,
-        sectionsByStudent,
-        sectionsLoadComplete: true,
-      });
-    });
+    this.loadSections(course);
   };
 
   public loadAssignments = (course: CourseType) => {
@@ -340,15 +315,15 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
   /* eslint-disable no-useless-computed-key */
   public loadSubmissions = (course: CourseType) => {
-    return Promise.all(
-      course.assignments.map((assignmentID) => {
-        return Assignment.readSubmissions(assignmentID, { ['compact']: '1' }).then((subs: SubmissionInfoType[]) => {
-          return {
-            assignment: assignmentID,
-            submissions: subs,
-          };
-        });
-      }),
+    this.setState({ submissions: {}, partialSubmissionsLoadComplete: false, fullSubmissionsLoadComplete: false });
+    const promises = course.assignments.map((assignmentID) => {
+      return Assignment.readPaginatedSubmissions(
+        assignmentID,
+        this.onSubmissionsPagination.bind(this, course, assignmentID),
+      );
+    });
+    Promise.all(promises).then(() =>
+      this.setState({ partialSubmissionsLoadComplete: true, fullSubmissionsLoadComplete: true }),
     );
   };
   /* eslint-enable no-useless-computed-key */
@@ -358,35 +333,15 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   };
 
   public loadSections = (course: CourseType) => {
-    return Promise.all(
-      course.sections.map((sectionID) => {
-        return Section.read(sectionID);
-      }),
-    );
+    Course.readPaginatedSections(course.id, this.onSectionPagination.bind(this, course)).then(() => {
+      this.setState({ sectionsLoadComplete: true });
+    });
   };
 
   public loadViewsBySubmission = (course: CourseType) => {
-    return Promise.all(
-      course.assignments.map((assignmentID) => {
-        return Assignment.readSubmissionHistories(assignmentID);
-      }),
-    );
-  };
-
-  public generateViewsBySubmissions = (viewHistoryLists: SubmissionHistoryType[][]) => {
-    const viewsBySubmission: any = {};
-    viewHistoryLists.forEach((viewHistoryList: SubmissionHistoryType[]) => {
-      viewHistoryList.forEach((viewHistory: SubmissionHistoryType) => {
-        const { submission, student, hasViewed, dateViewed } = viewHistory;
-        if (!(submission in viewsBySubmission)) {
-          viewsBySubmission[submission] = {};
-        }
-        if (hasViewed) {
-          viewsBySubmission[submission][student] = dateViewed;
-        }
-      });
+    course.assignments.forEach((assignmentID) => {
+      Assignment.readPaginatedSubmissionHistories(assignmentID, this.onSubmissionHistoryPagination.bind(this, course));
     });
-    return viewsBySubmission;
   };
 
   public generateSectionsByStudent = (sections: SectionType[]) => {
@@ -467,25 +422,103 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
     assignments.forEach((assignment) => {
       const assignmentSubs = submissions[assignment.id];
-      assignmentSubs.forEach((submission: SubmissionType) => {
-        // NOTE: students in submission.students might be inactive
-        submission.students.forEach((student: string) => {
-          if (student in subsByStudent) {
-            subsByStudent[student][assignment.id] = submission;
+      if (assignmentSubs) {
+        assignmentSubs.forEach((submission: SubmissionInfoType) => {
+          // NOTE: students in submission.students might be inactive
+          submission.students.forEach((student: string) => {
+            if (student in subsByStudent) {
+              subsByStudent[student][assignment.id] = submission;
+            }
+          });
+
+          // NOTE: graders in submission.students might be inactive
+          if (submission.grader && submission.grader in subsByGrader) {
+            subsByGrader[submission.grader][assignment.id].push(submission);
           }
         });
-
-        // NOTE: graders in submission.students might be inactive
-        if (submission.grader && submission.grader in subsByGrader) {
-          subsByGrader[submission.grader][assignment.id].push(submission);
-        }
-      });
+      }
     });
 
     return {
       subsByStudent,
       subsByGrader,
     };
+  };
+
+  /************************** Pagination Functions **************************/
+  public onSubmissionsPagination = (course: CourseType, assignment: number, submissions: any[]) => {
+    // use currentCourse as a nonce to see if this request is still desired
+    if (this.props.currentCourse !== course) {
+      return;
+    }
+
+    if (this.state.assignmentsLoadComplete && this.state.rosterLoadComplete) {
+      const oldSubmissions = this.state.submissions[assignment] || [];
+      const submissionMap = { ...this.state.submissions, [assignment]: [...oldSubmissions, ...submissions] };
+      this.updateSubmissionsByUser(undefined, submissionMap, undefined, () => {
+        this.setState((prevState, props) => {
+          const oldSubmissions = prevState.submissions[assignment] || [];
+          return {
+            submissions: { ...prevState.submissions, [assignment]: [...oldSubmissions, ...submissions] },
+            partialSubmissionsLoadComplete: true,
+          };
+        });
+      });
+    } else {
+      this.setState((prevState, props) => {
+        const oldSubmissions = prevState.submissions[assignment] || [];
+        return {
+          submissions: { ...prevState.submissions, [assignment]: [...oldSubmissions, ...submissions] },
+          partialSubmissionsLoadComplete: true,
+        };
+      });
+    }
+  };
+
+  public onSubmissionHistoryPagination = (course: CourseType, viewHistoryList: SubmissionHistoryType[]) => {
+    if (this.props.currentCourse !== course) {
+      return;
+    }
+
+    this.setState((prevState, prevProps) => {
+      const newViewsBySubmission = { ...prevState.viewsBySubmission };
+      viewHistoryList.forEach((viewHistory: SubmissionHistoryType) => {
+        const { submission, student, hasViewed, dateViewed } = viewHistory;
+        if (!(submission in newViewsBySubmission)) {
+          newViewsBySubmission[submission] = {};
+        }
+        if (hasViewed && dateViewed) {
+          newViewsBySubmission[submission][student] = dateViewed;
+        }
+      });
+      return {
+        viewsBySubmission: newViewsBySubmission,
+      };
+    });
+  };
+
+  public onSectionPagination = (course: CourseType, newSections: SectionType[]) => {
+    // We first set the sections in state, because generateSectionsByStudent might take some time
+    //    and we don't want race conditions of new pages overwriting other sections
+    if (this.props.currentCourse !== course) {
+      return;
+    }
+
+    this.setState(
+      (prevState) => {
+        return {
+          sections: [...prevState.sections, ...newSections],
+        };
+      },
+      () => {
+        // Generate sections by student, and if all the sections have loaded (judged by sections.length)
+        //  then we mark the section load as complete
+        const sectionsByStudent = this.generateSectionsByStudent(this.state.sections);
+        this.setState({
+          sectionsByStudent,
+        });
+      },
+    );
   };
 
   /************************************************************************
@@ -509,9 +542,11 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       noUnfinalize: false,
       lateDayCreditsAllowable: null,
       archived: false,
+      activateQueue: true,
       inviteCode: '',
       emailWhitelist: '',
       inviteCodeEnabled: false,
+      enableStudentFeedbackNotifications: false,
     };
 
     return Course.create(payload).then((course: CourseType) => {
@@ -602,7 +637,6 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
   public updateRoster = async (adds: string[], deletes: string[], userType: USER_APP) => {
     const { currentCourse } = this.props;
-    console.log('updating roster', adds, deletes);
 
     if (!currentCourse) {
       return Promise.reject();
@@ -635,7 +669,6 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
     if (adds.length > 0) {
       const payload = makePayload(userType, adds);
-      console.log(payload);
       roster = await Course.addToRoster(payload);
     }
 
@@ -976,7 +1009,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   // submissionsByStudent (map: student email => {assignment id => submission})
   // submissionsByGrader (map: grader email => {assignment id => submission list})
 
-  public bulkUpdateSubmissions = (assignmentID: number, getPayload: (sub: SubmissionType) => any) => {
+  public bulkUpdateSubmissions = (assignmentID: number, getPayload: (sub: SubmissionInfoType) => any) => {
     const { submissions } = this.state;
     const submissionsToUpdate = submissions[assignmentID];
 
@@ -985,7 +1018,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       return Submission.update(payload);
     });
 
-    return Promise.all(promises).then((updatedSubmissions: SubmissionType[]) => {
+    return Promise.all(promises).then((updatedSubmissions: SubmissionInfoType[]) => {
       const newSubmissions = { ...submissions };
       newSubmissions[assignmentID] = updatedSubmissions;
       this.updateSubmissionsByUser(undefined, newSubmissions, undefined);
@@ -995,7 +1028,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     });
   };
 
-  public updateSubmission = (toUpdate: SubmissionType) => {
+  public updateSubmission = (toUpdate: SubmissionInfoType) => {
     const { submissions, submissionsByStudent, submissionsByGrader } = this.state;
 
     /* Make sure we are acting on a submission linked to this course */
@@ -1068,13 +1101,13 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     });
   };
 
-  public changeSubmissionGrader = (sub: SubmissionType, grader: string | undefined) => {
+  public changeSubmissionGrader = (sub: SubmissionInfoType, grader: string | undefined) => {
     const newSub = { ...sub };
     newSub.grader = grader === undefined ? null : grader;
     return this.updateSubmission(newSub);
   };
 
-  public deleteSubmission = (toDelete: SubmissionType) => {
+  public deleteSubmission = (toDelete: SubmissionInfoType) => {
     const { submissions, submissionsByStudent, submissionsByGrader } = this.state;
 
     const assignmentID = toDelete.assignment;
@@ -1109,7 +1142,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     return split.length === 1 ? 'txt' : split[split.length - 1];
   };
 
-  public addFilesToSubmission = (submission: SubmissionType, files: any[]) => {
+  public addFilesToSubmission = (submission: SubmissionInfoType, files: any[]) => {
     const filePromises = files.map((file: any) => {
       const ext = this.getFileExtension(file.name);
       const filePayload = {
@@ -1125,9 +1158,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     });
 
     return Promise.all(filePromises).then((files) => {
-      const newSubmission = { ...submission };
-      newSubmission.files = files.map((f) => f.id);
-      return newSubmission;
+      return submission;
     });
   };
 
@@ -1145,7 +1176,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       students: partners,
     };
 
-    const submissionPromise = Submission.create(submissionPayload).then((submission: SubmissionType) => {
+    const submissionPromise = Submission.create(submissionPayload).then((submission: SubmissionInfoType) => {
       // Create each file
       const filesPromise = this.addFilesToSubmission(submission, files);
 
@@ -1185,6 +1216,12 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     );
     const createButton = <NewCourseDialog courses={this.state.courses} createCourse={this.createCourse} />;
     const headerLeft = [dropdown, createButton];
+    const logout =
+      localStorage.getItem('source') === 'codePost' ? (
+        <Button key="header-logout" onClick={this.props.handleLogout}>
+          Logout
+        </Button>
+      ) : null;
 
     // add option to switch
     const headerRight = [
@@ -1198,9 +1235,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
           <SettingOutlined />
         </Link>
       </CPTooltip>,
-      <Button key="header-logout" onClick={this.props.handleLogout}>
-        Logout
-      </Button>,
+      logout,
       <AdminOnboardingSelector
         visible={this.state.onboardingModalVisible}
         onCancel={this.closeModal}
@@ -1238,7 +1273,11 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 {...props}
                 key="submissions"
                 course={this.props.currentCourse}
-                loadComplete={this.state.submissionsbyUserLoadComplete && this.state.assignmentsLoadComplete}
+                loadComplete={
+                  this.state.submissionsbyUserLoadComplete &&
+                  this.state.assignmentsLoadComplete &&
+                  this.state.fullSubmissionsLoadComplete
+                }
                 assignments={this.state.assignments}
                 submissionsByStudent={this.state.submissionsByStudent}
                 deleteSubmission={this.deleteSubmission}
@@ -1268,7 +1307,8 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 {...props}
                 key="assignments"
                 loadComplete={this.state.assignmentsLoadComplete}
-                submissionsLoadComplete={this.state.submissionsLoadComplete}
+                partialSubmissionsLoadComplete={this.state.partialSubmissionsLoadComplete}
+                fullSubmissionsLoadComplete={this.state.fullSubmissionsLoadComplete}
                 submissionsByUserLoadComplete={this.state.submissionsbyUserLoadComplete}
                 submissions={this.state.submissions}
                 currentCourse={this.props.currentCourse}
@@ -1304,7 +1344,8 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 graders={this.state.graders}
                 admins={this.state.admins}
                 superGraders={this.state.superGraders}
-                loadComplete={this.state.sectionsLoadComplete && this.state.rosterLoadComplete}
+                loadComplete={this.state.rosterLoadComplete}
+                sectionsLoadComplete={this.state.sectionsLoadComplete}
                 currentCourse={this.props.currentCourse}
                 updateRoster={this.updateRoster}
                 sectionsByStudent={this.state.sectionsByStudent}
@@ -1317,6 +1358,10 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
             )}
           />
           <Route
+            path={`${this.props.match.url}/settings/webhooks`}
+            render={(props: any) => <WebhooksPanel {...props} currentCourse={this.props.currentCourse!} />}
+          />
+          <Route
             path={`${this.props.match.url}/settings`}
             render={(props: any) => (
               <CourseSettingsPanel
@@ -1325,6 +1370,11 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 updateSettings={this.updateSettings}
               />
             )}
+          />
+          <Route
+            path={`${this.props.match.url}/video`}
+            key="video"
+            render={(props: any) => <VideoModal visible={true} onCancel={() => this.props.history.push('/admin')} />}
           />
         </Switch>
       );
@@ -1361,7 +1411,26 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       <CPLayoutAdmin
         header={header}
         banner={banner}
-        detail={detail}
+        detail={
+          <span>
+            {detail}
+            {
+              <CIPAdminModal
+                visible={this.state.cipModalVisible}
+                onClose={() => this.setState({ cipModalVisible: false })}
+                user={this.props.user}
+                onCreateCourse={() => {
+                  this.setState({ cipModalVisible: false });
+                  const newCourseButton = document.getElementById('new-course-button');
+                  if (newCourseButton) {
+                    newCourseButton.click();
+                  }
+                }}
+                onCreateDemoCourse={this.handleDemoCourse}
+              />
+            }
+          </span>
+        }
         navigation={navigation}
         collapsible={true}
         role={USER_TYPE.ADMIN}

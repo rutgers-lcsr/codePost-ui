@@ -45,9 +45,7 @@ const getViewIcon = (
   if (studentToLookup && studentToLookup in views) {
     return (
       <CPTooltip title={moment(viewsBySubmission[submission.id][studentToLookup]).format('llll')}>
-        <div>
-          <EyeFilled />
-        </div>
+        <EyeFilled />
       </CPTooltip>
     );
   }
@@ -82,17 +80,13 @@ const getViewIcon = (
     case submission.students.length:
       return (
         <CPTooltip title={getTooltipLabel()}>
-          <div>
-            <EyeFilled />
-          </div>
+          <EyeFilled />
         </CPTooltip>
       );
     default:
       return (
         <CPTooltip title={getTooltipLabel()}>
-          <div>
-            <EyeTwoTone twoToneColor="#646464" />
-          </div>
+          <EyeTwoTone twoToneColor="#646464" />
         </CPTooltip>
       );
   }

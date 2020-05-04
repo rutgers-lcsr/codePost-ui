@@ -32,7 +32,7 @@ import { openSubmission } from '../../other/AdminUtils';
 
 import { CourseType } from '../../../../infrastructure/course';
 import { AssignmentType, sortAssignments } from '../../../../infrastructure/assignment';
-import { SubmissionType } from '../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../infrastructure/submission';
 
 import { TableDetail } from '../../other/TableDetail';
 
@@ -55,15 +55,15 @@ interface IProps {
   course: CourseType;
   onBack: () => void;
   students: string[];
-  deleteSubmission: (submission: SubmissionType) => Promise<void>;
+  deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   assignments: AssignmentType[];
   graders: string[];
   submissions: IStudentSubmissionsDataTable;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionType>;
-  addFilesToSubmission: (submission: SubmissionType, files: any[]) => Promise<SubmissionType>;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionInfoType>;
+  addFilesToSubmission: (submission: SubmissionInfoType, files: any[]) => Promise<SubmissionInfoType>;
 
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
-  changeSubmissionGrader: (submission: SubmissionType, grader: string | undefined) => Promise<void>;
+  changeSubmissionGrader: (submission: SubmissionInfoType, grader: string | undefined) => Promise<void>;
   student: string;
 
   match: any;
@@ -77,7 +77,7 @@ interface IState {
   assignmentToUpload?: AssignmentType;
 
   submissionsMap: {
-    [assignmentID: number]: SubmissionType;
+    [assignmentID: number]: SubmissionInfoType;
   };
 
   subsRunning: number[];
@@ -93,7 +93,7 @@ class StudentDetail extends React.Component<IProps, IState> {
 
   // ******************************************** API changes **************************************************
 
-  public removeSubmission = (toRemove: SubmissionType) => {
+  public removeSubmission = (toRemove: SubmissionInfoType) => {
     confirm({
       title: 'Are you sure you want to remove this submission?',
       content: `The following students are associated with this submission: ${toRemove.students.join(',')}.`,
@@ -104,23 +104,25 @@ class StudentDetail extends React.Component<IProps, IState> {
     });
   };
 
-  public callback = (sub: SubmissionType, result: SubmissionTestResultType) => {
+  public callback = (sub: SubmissionInfoType, result: SubmissionTestResultType) => {
     this.setState((prevState, props) => ({ subsRunning: prevState.subsRunning.filter((id) => id !== sub.id) }));
     message.success('Test run completed!');
   };
 
-  public runTests = async (assignment: AssignmentType, sub: SubmissionType) => {
+  public runTests = async (assignment: AssignmentType, sub: SubmissionInfoType) => {
     if (assignment.environment) {
       this.setState((prevState, props) => ({ subsRunning: [...prevState.subsRunning, sub.id] }));
-      const result = await Environment.run(assignment.environment, {
-        submission: sub.id.toString(),
-        simulate: 'False',
-      });
+      const payload = {
+        id: assignment.environment,
+        submission: sub.id,
+        simulate: false,
+      };
+      const result = await Environment.run(payload);
       awaitTestResult(result.task, this.callback.bind({}, sub));
     }
   };
 
-  public reUploadSubmission = (toRemove: SubmissionType) => {
+  public reUploadSubmission = (toRemove: SubmissionInfoType) => {
     confirm({
       title: 'Are you sure you want to re-upload files for this submission?',
       content: (
@@ -156,7 +158,7 @@ class StudentDetail extends React.Component<IProps, IState> {
     }
   };
 
-  public changeGrader = (submission: SubmissionType, newGrader: string | undefined) => {
+  public changeGrader = (submission: SubmissionInfoType, newGrader: string | undefined) => {
     this.props.changeSubmissionGrader(submission, newGrader).then(() => {
       message.success('Updated grader');
     });
@@ -186,7 +188,7 @@ class StudentDetail extends React.Component<IProps, IState> {
 
   // ******************************************** Render helpers **************************************************
 
-  public getViewIcon = (submission: SubmissionType, student: string) => {
+  public getViewIcon = (submission: SubmissionInfoType, student: string) => {
     if (!(submission.id in this.props.viewsBySubmission) || !submission.isFinalized) {
       // case: No history object or unfinalized
       return '--';
@@ -205,7 +207,7 @@ class StudentDetail extends React.Component<IProps, IState> {
     }
   };
 
-  public getStatus = (submission: SubmissionType | undefined) => {
+  public getStatus = (submission: SubmissionInfoType | undefined) => {
     let badgeStatus: 'default' | 'error' | 'success' | 'warning' | 'processing' | undefined;
     let cellText;
     if (submission) {

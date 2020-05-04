@@ -9,12 +9,15 @@ import { UploadFile } from 'antd/lib/upload/interface';
 
 import { resizeImage } from '../../../other/AdminUtils';
 
-export interface IProtoFileUpload {
-  longname: string;
+export interface IBaseFileUpload {
   name: string;
+  data: string | ArrayBuffer | null;
+}
+
+export interface IProtoFileUpload extends IBaseFileUpload {
+  longname: string;
   path: string;
   extension: string;
-  data: string | ArrayBuffer | null;
   zipSource?: string;
   file: File | UploadFile;
 }
@@ -170,7 +173,7 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
             const match = data.match(/\0/g);
             // If a file contains a null character and is not on the Binary Whitelist, notify the team and then strip it
             if (match !== null) {
-              sendSlack('Replaced Null Character', `${outputFile.name}`, '#fafafa', 'user_notifications_uploads');
+              // sendSlack('Replaced Null Character', `${outputFile.name}`, '#fafafa', 'user_notifications_uploads');
 
               data = data.replace(/\0/g, '');
             }

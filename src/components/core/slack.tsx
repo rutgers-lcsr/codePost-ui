@@ -24,6 +24,7 @@ export const sendSlack = (
   text = '',
   color = '#24be85',
   channel = '#user_notifications_everything',
+  courseID = 0,
 ) => {
   const targetURL = `${process.env.REACT_APP_API_URL}/logs/log/`;
 
@@ -39,6 +40,7 @@ export const sendSlack = (
   const payload = {
     attachments: attachments,
     channel: channel,
+    courseID,
   };
 
   slack(targetURL, payload);

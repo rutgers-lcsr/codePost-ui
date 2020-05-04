@@ -11,7 +11,7 @@ import { Layout, Typography } from 'antd';
 /* codePost object imports */
 import { TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
-import { SubmissionType } from '../../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 import { SourceFile, SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
 import { TestCaseType } from '../../../../../infrastructure/testCase';
 import { TestCategoryType } from '../../../../../infrastructure/types';
@@ -34,8 +34,8 @@ import { awaitTestResult } from '../autograderPollingUtils';
 /**********************************************************************************************************************/
 interface IProps {
   // submission
-  submissions: SubmissionType[];
-  activeSubmission: SubmissionType | undefined;
+  submissions: SubmissionInfoType[];
+  activeSubmission: SubmissionInfoType | undefined;
   setTestSubject: (id: string) => void;
 
   // files
@@ -77,10 +77,12 @@ export const SourceEditor = (props: IProps) => {
       let result: any;
       if (fileToRun === 'main.sh') {
         // Run all tests
-        result = await Environment.run(
-          props.env.id,
-          props.activeSubmission ? { submission: props.activeSubmission.id.toString(), simulate: 'True' } : {},
-        );
+        let payload: any = { id: props.env.id };
+        if (props.activeSubmission) {
+          payload = { ...payload, submission: props.activeSubmission.id, simulate: true };
+        }
+
+        result = await Environment.run(payload);
       } else {
         const found = props.sourceFiles.find((el) => el.name === fileToRun);
         if (found !== undefined) {

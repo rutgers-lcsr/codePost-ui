@@ -54,6 +54,9 @@ const TestsList = (props: IProps) => {
     );
   }
 
+  // Can update this logic however
+  const failedLabel = localStorage.getItem('source') === 'codePost' ? 'Failed' : 'Not yet passed';
+
   // Submission-level stats
   let passed = 0;
   let failed = 0;
@@ -86,7 +89,7 @@ const TestsList = (props: IProps) => {
     failed = total - passed;
   }
 
-  const explanationsWidth = Math.max(windowSize.width * 0.35, 350);
+  const explanationsWidth = Math.max(windowSize.width * 0.25, 350);
 
   // Top-level columns used used to display individual test information
   const columns = [
@@ -141,7 +144,7 @@ const TestsList = (props: IProps) => {
                   />
                   <Statistic
                     style={{ textAlign: 'center', margin: '0px 30px', color: consoleTheme.text }}
-                    title={<span style={{ color: consoleTheme.text }}>Failed</span>}
+                    title={<span style={{ color: consoleTheme.text }}>{failedLabel}</span>}
                     value={`${failed}`}
                     valueStyle={{ color: consoleTheme.text }}
                   />
@@ -204,12 +207,12 @@ const TestsList = (props: IProps) => {
                       badgeString = 'Passed';
                       break;
                     case false:
-                      badgeString = 'Failed';
+                      badgeString = failedLabel;
                       badgeStatus = 'error';
                       break;
                     default:
                       if (props.redactNotShown) {
-                        badgeString = 'Failed';
+                        badgeString = failedLabel;
                         badgeStatus = 'error';
                       } else {
                         badgeString = 'Never run';
@@ -227,6 +230,7 @@ const TestsList = (props: IProps) => {
                   }
 
                   return {
+                    key: testCase.id,
                     case: props.redactNotShown && !result ? 'HIDDEN' : testCase.description,
                     passed: (
                       <span>

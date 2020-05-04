@@ -21,7 +21,7 @@ import memoizeOne from 'memoize-one';
 /* codePost imports */
 import { AssignmentType } from '../../../../../infrastructure/assignment';
 import { CourseType } from '../../../../../infrastructure/course';
-import { SubmissionType } from '../../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 
 import { IStudentSubmissionsDataTable } from '../../../../../types/common';
 
@@ -44,7 +44,7 @@ export interface IProps {
   /* assignment data */
   course: CourseType;
   assignment: AssignmentType;
-  submissions: SubmissionType[] | null;
+  submissions: SubmissionInfoType[] | null;
   students: string[]; // emails
   submissionsByStudent: IStudentSubmissionsDataTable;
 
@@ -64,7 +64,7 @@ interface IState {
   drawerType?: DRAWER_TYPE;
   drawerContent: {
     title: string;
-    subtitle: string;
+    subtitle: React.ReactNode;
     content: Array<{ email: string; subID: number | null }> | null;
   };
   isLoading: boolean;
@@ -147,7 +147,7 @@ class AssignmentStats extends React.Component<IProps, IState> {
     });
   };
 
-  public sendReminders = memoizeOne((submissions: SubmissionType[]) => {
+  public sendReminders = memoizeOne((submissions: SubmissionInfoType[]) => {
     const toEmail = new Set();
     for (const submission of submissions) {
       if (submission.grader !== null && !submission.isFinalized) {
@@ -390,6 +390,7 @@ class AssignmentStats extends React.Component<IProps, IState> {
           content={this.state.drawerContent}
           onClose={this.closeDrawer}
           isVisible={this.state.drawerOpen}
+          loadComplete={true}
         />
       );
 

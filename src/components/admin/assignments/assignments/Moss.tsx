@@ -30,7 +30,7 @@ import { RouteComponentProps } from 'react-router';
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
 import { CourseType } from '../../../../infrastructure/course';
-import { SubmissionType } from '../../../../infrastructure/submission';
+import { SubmissionInfoType } from '../../../../infrastructure/submission';
 import { UserType } from '../../../../infrastructure/user';
 import { FileTemplate, FileTemplateType } from '../../../../infrastructure/fileTemplate';
 
@@ -66,7 +66,7 @@ export interface IMossProps {
   assignments: AssignmentType[];
 
   course: CourseType;
-  submissions: SubmissionType[];
+  submissions: SubmissionInfoType[];
 
   user: UserType;
 
@@ -142,10 +142,11 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
   React.useEffect(() => {
     const values = queryString.parse(props.location.search);
     if (values.resultsid !== undefined && typeof values.resultsid === 'string') {
-      setUrlID(values.resultsid);
+      const formattedUrlID = values.resultsid.replace('%2F', '/');
+      setUrlID(formattedUrlID);
       setSubmit(false);
 
-      onParse(null, values.resultsid);
+      onParse(null, formattedUrlID);
     }
   }, []);
 
@@ -261,6 +262,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
         `${testMode ? 'TEST MODE\n' : ''} ${props.course.name} ${props.course.period} | ${props.assignment.name} `,
         '#f5e51b',
         '#user_notifications_moss',
+        props.course.id,
       );
 
       const payload = {

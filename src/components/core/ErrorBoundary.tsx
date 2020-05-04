@@ -44,6 +44,50 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
 
   public render() {
     if (this.state.error) {
+      const siteDataSettingsBlurb = (
+        <div
+          style={{
+            backgroundColor: 'lightblue',
+            borderRadius: '4px',
+            padding: '16px',
+            boxShadow: '0 4px 8px 0 rgba(0,0,0,0.2)',
+          }}
+        >
+          <h2>⭐ Troubleshooting</h2>
+          <br />
+          <div style={{ fontSize: '18px' }}>
+            <div>
+              codePost needs permission from your browser to run. Please follow these steps for your current browser...
+            </div>
+            <br />
+            <b>Google Chrome:</b>
+            <ul>
+              <li>
+                Open up Chrome cookie settings:{' '}
+                <a href="chrome://settings/content/cookies">chrome://settings/content/cookies</a>
+              </li>
+              <li>
+                Click Allow -> Add -> https://codepost.io
+                <br />
+                See a screenshot here:{' '}
+                <a href="https://share.getcloudapp.com/eDu69Dnz">https://share.getcloudapp.com/eDu69Dnz</a>
+              </li>
+              <li>Try refreshing!</li>
+            </ul>
+            <br />
+            <b>Firefox:</b>
+            <ul>
+              <li>
+                Open up Firefox cookie settings: <a href="about:preferences#privacy">about:preferences#privacy</a>
+              </li>
+              <li>Click Cookies and Site Data -> Manage Permissions</li>
+              <li>Type in https://codepost.io -> Allow -> Save Changes</li>
+              <li>Try refreshing!</li>
+            </ul>
+          </div>
+        </div>
+      );
+
       if (this.props.type === 'codepanel') {
         return (
           <div style={{ padding: '40px' }}>
@@ -60,6 +104,8 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
               </span>{' '}
               Feel free to try again, or email us at team@codepost.io.
             </h2>
+            <br />
+            {localStorage.getItem('source') !== 'codePost' ? siteDataSettingsBlurb : null}
             <br />
             <div style={{ padding: '50px' }}>
               <h3>Details:</h3>
@@ -92,15 +138,18 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
               </span>{' '}
               Our team has been notified, and we will investigate the issue as soon as possible.
             </h2>
-            <h2>
-              <span role="img" aria-label="downvote">
-                🙏
-              </span>{' '}
-              Try refreshing the page to get back to codePost! Or,{' '}
-              <b>try switching to Chrome if you're using a different browser</b>. If that doesn't work, email us at{' '}
-              <a href="mailto:team@codepost.io">team@codepost.io</a> if the problem persists.
-            </h2>
-            <img src="" alt="Something went wrong" />
+            {localStorage.getItem('source') !== 'codePost' ? (
+              siteDataSettingsBlurb
+            ) : (
+              <h2>
+                <span role="img" aria-label="downvote">
+                  🙏
+                </span>{' '}
+                Try refreshing the page to get back to codePost! Or,{' '}
+                <b>try switching to Chrome if you're using a different browser</b>. If that doesn't work, email us at{' '}
+                <a href="mailto:team@codepost.io">team@codepost.io</a> if the problem persists.
+              </h2>
+            )}
           </div>
         );
       }
