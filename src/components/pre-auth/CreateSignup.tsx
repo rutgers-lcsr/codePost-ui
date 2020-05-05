@@ -5,10 +5,16 @@
 /* react imports */
 import * as React from 'react';
 
-import { InfoCircleTwoTone, QuestionCircleOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
+import {
+  InfoCircleTwoTone,
+  QuestionCircleOutlined,
+  TeamOutlined,
+  UserOutlined,
+  ExclamationCircleOutlined,
+} from '@ant-design/icons';
 
 /* ant imports */
-import { Alert, Checkbox, Divider, Input, Progress, Switch, Typography } from 'antd';
+import { Alert, Checkbox, Divider, Input, Progress, Switch, Typography, Modal } from 'antd';
 
 /* other library imports */
 import Select from 'react-select';
@@ -136,6 +142,22 @@ class CreateSignup extends React.Component<IProps, IState> {
       newState[label] = !this.state[label];
       return newState;
     });
+  };
+
+  public validationHandler = () => {
+    if (this.state.email.indexOf('edu') === -1) {
+      Modal.confirm({
+        title: 'Are you using the right email address?',
+        icon: <ExclamationCircleOutlined />,
+        content:
+          "Make sure to use your organization's email. codePost uses your email to determine whether you can access codePost for free (available for not-for-profit institutions like universities).",
+        okText: 'Use this email address',
+        cancelText: 'Use a different email',
+        onOk: this.validateNewUser,
+      });
+    } else {
+      this.validateNewUser();
+    }
   };
 
   public validateNewUser = () => {
@@ -309,7 +331,7 @@ class CreateSignup extends React.Component<IProps, IState> {
               &nbsp; &nbsp; &nbsp; &nbsp;
               <CPButton
                 cpType="primary"
-                onClick={this.validateNewUser}
+                onClick={this.validationHandler}
                 disabled={
                   !(
                     (this.state.createNewOrg && this.state.newOrg && organizationRegex.test(this.state.newOrg)) ||
