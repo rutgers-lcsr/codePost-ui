@@ -545,8 +545,8 @@ Firefox:
       const inCodeInPlace = user
         ? user.studentCourses.length + user.graderCourses.length + user.courseadminCourses.length === 1 &&
           ((isStudent && user.studentCourses[0].id === 925) ||
-            (isGrader && user.graderCourses[0].id === 925) ||
-            (isAdmin && user.courseadminCourses[0].id === 925))
+            (isGrader && user.graderCourses.length > 0 && user.graderCourses[0].id === 925) ||
+            (isAdmin && user.courseadminCourses.length > 0 && user.courseadminCourses[0].id === 925))
         : false;
 
       let loginasRoute;
