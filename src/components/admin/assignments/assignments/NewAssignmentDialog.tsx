@@ -125,7 +125,8 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
         if (values.cloneID === undefined) {
           this.setState({ dialogVisible: false, isLoading: false });
         } else {
-          await this.cloneAssignment(values.cloneID);
+          const assignmentID = values.cloneID.split('-')[-1];
+          await this.cloneAssignment(assignmentID);
           message.success('Success!');
           setTimeout(() => {
             window.location.reload();
@@ -298,13 +299,16 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
             {this.props.form.getFieldValue('modifier') === 'private' ? (
               <Form.Item label="Assignment to clone">
                 {getFieldDecorator('cloneID')(
-                  <Select>
+                  <Select showSearch={true}>
                     {Object.keys(this.props.allAssignments).map((courseTitle: string) => {
                       return (
                         <Select.OptGroup key={`select-course-${courseTitle}`} label={courseTitle}>
                           {this.props.allAssignments[courseTitle].map((assignment: AssignmentType) => {
                             return (
-                              <Select.Option key={`assignment-${assignment.id}`} value={assignment.id}>
+                              <Select.Option
+                                key={`assignment-${assignment.id}`}
+                                value={`${assignment.name}-${assignment.id}`}
+                              >
                                 {assignment.name}
                               </Select.Option>
                             );
