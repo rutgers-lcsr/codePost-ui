@@ -125,7 +125,8 @@ class NewAssignmentDialog extends React.Component<IProps & RouteComponentProps, 
         if (values.cloneID === undefined) {
           this.setState({ dialogVisible: false, isLoading: false });
         } else {
-          const assignmentID = values.cloneID.split('-')[-1];
+          const split = values.cloneID.split('-');
+          const assignmentID = split[split.length - 1];
           await this.cloneAssignment(assignmentID);
           message.success('Success!');
           setTimeout(() => {
