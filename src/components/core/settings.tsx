@@ -234,10 +234,6 @@ class Settings extends React.Component<IProps, IState> {
         </CPButton>
         <br />
         <br />
-        <Typography.Title level={4}>Organization info</Typography.Title>
-        Member of: <Typography.Text strong>{user.organization}</Typography.Text>
-        <br />
-        <br />
         <br />
         <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
           <div style={{ flexGrow: 1 }}>

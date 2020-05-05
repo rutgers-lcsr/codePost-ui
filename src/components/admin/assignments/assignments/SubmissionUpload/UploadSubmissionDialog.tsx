@@ -1022,7 +1022,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
               </Button>
               {this.state.selectedAssignment === undefined ? null : (
                 <LateSubmissionModal
-                  visible={this.state.lateSubmissionModalVisible}
+                  visible={this.state.lateSubmissionModalVisible && !this.props.isStudent}
                   assignment={this.state.selectedAssignment}
                   onCancel={this.closeLateSubmissionModal}
                   onOk={this.upload}

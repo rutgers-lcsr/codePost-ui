@@ -163,6 +163,10 @@ export const TestDefinitions = (props: IProps) => {
   useEffect(() => {
     if (props.env !== undefined) {
       updateSourceFiles();
+
+      if (categories.length === 0 && props.sourceFiles.length > 0) {
+        setPanel(DETAIL_TYPE.ViewSource);
+      }
     }
   }, [props.env, props.sourceFiles.length]);
 
