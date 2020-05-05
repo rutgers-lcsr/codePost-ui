@@ -63,7 +63,6 @@ export const VALID_WEBHOOKS: { [obj: string]: string[] } = {
     'exposed',
     'lastSolutionRun',
   ],
-  submissionTest: ['added'],
   submissionHistory: ['changed'],
   environment: ['added', 'changed', 'removed', 'isRunning'],
   solutionFile: ['added', 'changed', 'removed'],
