@@ -540,6 +540,15 @@ Firefox:
       const isAdmin = user ? user.courseadminCourses.length > 0 || user.canCreateCourses : false;
       const isCodePostAdmin = user ? user.codePostAdmin : false;
 
+      // FIXME: CIP
+      //  User has a single course and the course is code in place
+      const inCodeInPlace = user
+        ? user.studentCourses.length + user.graderCourses.length + user.courseadminCourses.length === 1 &&
+          ((isStudent && user.studentCourses[0].id === 925) ||
+            (isGrader && user.graderCourses[0].id === 925) ||
+            (isAdmin && user.courseadminCourses[0].id === 925))
+        : false;
+
       let loginasRoute;
       let dashboardRoute;
       if (isCodePostAdmin) {
@@ -580,8 +589,9 @@ Firefox:
       //     </div>
       //   );
       // }
-
-      if (isAdmin || isGrader) {
+      if (inCodeInPlace) {
+        (window as any).Intercom('shutdown');
+      } else if (isAdmin || isGrader) {
         (window as any).Intercom('boot', {
           app_id: 'kg4u5rp1',
           email: user.email,
