@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Modal } from 'antd';
+import { Modal, Button } from 'antd';
 
 import Video from './Video';
 
@@ -15,7 +15,13 @@ const VideoModal = (props: IProps) => {
   const windowSize = useWindowSize();
   const modalWidth = Math.min(1600, windowSize.width);
   return (
-    <Modal visible={props.visible} onCancel={props.onCancel} okText={null} width={modalWidth}>
+    <Modal
+      visible={props.visible}
+      onCancel={props.onCancel}
+      footer={[<Button onClick={props.onCancel}>Cancel</Button>]}
+      okText={null}
+      width={modalWidth}
+    >
       <span>
         Check out the video below to learn the basis of codePost. You can skip around to sections that interest you on
         the right. <br />

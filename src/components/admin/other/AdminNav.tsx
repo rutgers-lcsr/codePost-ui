@@ -204,12 +204,11 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
               lineHeight: 1.4,
               display: 'flex',
               alignItems: 'center',
-              fontSize: 13,
             }}
             onClick={this.openLink.bind(this, 'https://codepost.io/scholarships/computer-science-education')}
           >
             <TrophyOutlined />
-            <span>CS Education Scholarship</span>
+            <span>Scholarship</span>
           </Menu.Item>
         </Menu>
         <div className="version" style={{ color: '#848484', paddingLeft: 24, paddingBottom: 14 }}>
