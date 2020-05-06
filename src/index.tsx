@@ -23,10 +23,29 @@ import App from './App';
 
 import ErrorBoundary from './components/core/ErrorBoundary';
 
+// If True, show maintenance banner
+const maintenanceMode = false;
+
+const maintenanceBanner = (
+  <div
+    style={{
+      background: '#22be84',
+      padding: '10px',
+      fontSize: '18px',
+      fontWeight: 500,
+      color: 'white',
+      textAlign: 'center',
+    }}
+  >
+    codePost is currently down for maintenance. Please check back later.
+  </div>
+);
+
 ReactDOM.render(
   <ErrorBoundary type="app">
     <DndProvider backend={HTML5Backend}>
       <BrowserRouter>
+        {maintenanceMode && maintenanceBanner}
         <App />
       </BrowserRouter>
     </DndProvider>
