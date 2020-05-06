@@ -294,7 +294,7 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
                     <Radio value="private">Clone existing assignment</Radio>
                   </Radio.Group>,
                 )}
-                <CPTooltip title={'blah'} infoIcon={true} />
+                <CPTooltip title={"Copy an old assignment's settings, rubric, and tests."} infoIcon={true} />
               </Form.Item>
             </div>
             {this.props.form.getFieldValue('modifier') === 'private' ? (
