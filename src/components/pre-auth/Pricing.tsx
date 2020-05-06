@@ -93,6 +93,7 @@ const Pricing = (props: IProps) => {
     </span>,
     'Tools for managing large, high-velocity courses + training sessions',
     'Custom system integration',
+    'Live chat support',
   ];
 
   return (

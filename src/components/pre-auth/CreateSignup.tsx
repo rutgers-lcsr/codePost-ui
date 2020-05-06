@@ -365,21 +365,11 @@ class CreateSignup extends React.Component<IProps, IState> {
               description={
                 <div>
                   Check your email to finish setting up your account. If you don't see an email within a couple of
-                  minutes, please check your spam inbox.
-                  <div style={{ marginTop: 20 }}>
-                    If you still can't find
-                    <CPTooltip
-                      title={
-                        <div>
-                          Sometimes emails can get blocked by your institution's mail server. If you let us know, we can
-                          resolve this with the mail server admins.
-                        </div>
-                      }
-                    >
-                      <QuestionCircleOutlined style={{ color: 'grey', marginLeft: 3, marginRight: 2 }} />
-                    </CPTooltip>{' '}
-                    it, <a href={mailToString}>let us know</a>!
-                  </div>
+                  minutes,{' '}
+                  <a href="http://help.codepost.io/en/articles/3324251-faq-where-is-my-email" target="_blank">
+                    please read this
+                  </a>
+                  .
                 </div>
               }
               type="success"

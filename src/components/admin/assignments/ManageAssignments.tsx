@@ -46,6 +46,7 @@ export interface IManageAssignmentsProps {
   currentCourse: CourseType | undefined;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   sections: SectionType[];
+  courses: CourseType[];
 
   /* loading state */
   loadComplete: boolean;
@@ -197,6 +198,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   baseURL={props.match.url}
                   breadcrumbs={breadcrumbs}
                   sections={props.sections}
+                  courses={props.courses}
                 />
               )}
             />
@@ -215,6 +217,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                     baseURL={props.match.url}
                     breadcrumbs={breadcrumbs}
                     sections={props.sections}
+                    courses={props.courses}
                   />
                 )
               }
@@ -231,6 +234,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   baseURL={props.match.url}
                   breadcrumbs={breadcrumbs}
                   sections={props.sections}
+                  courses={props.courses}
                 />
               )}
             />
@@ -249,6 +253,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                     baseURL={props.match.url}
                     breadcrumbs={breadcrumbs}
                     sections={props.sections}
+                    courses={props.courses}
                   />
                 )
               }
@@ -268,6 +273,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                     baseURL={props.match.url}
                     breadcrumbs={breadcrumbs}
                     sections={props.sections}
+                    courses={props.courses}
                   />
                 )
               }
@@ -287,6 +293,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                     baseURL={props.match.url}
                     breadcrumbs={breadcrumbs}
                     sections={props.sections}
+                    courses={props.courses}
                   />
                 )
               }
@@ -306,6 +313,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                     baseURL={props.match.url}
                     breadcrumbs={breadcrumbs}
                     sections={props.sections}
+                    courses={props.courses}
                   />
                 )
               }
@@ -325,6 +333,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                     baseURL={props.match.url}
                     breadcrumbs={breadcrumbs}
                     sections={props.sections}
+                    courses={props.courses}
                   />
                 )
               }
@@ -404,6 +413,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
               detailType={DETAIL_TYPE.DownloadGrades}
               baseURL={props.match.url}
               sections={props.sections}
+              courses={props.courses}
             />
           )
         }
@@ -412,7 +422,15 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
         path={`${props.match.url}/overview`}
         exact={true}
         render={(subprops: any) => {
-          return <AssignmentsTable {...props} {...subprops} breadcrumbs={breadcrumbs} baseURL={props.match.url} />;
+          return (
+            <AssignmentsTable
+              {...props}
+              {...subprops}
+              breadcrumbs={breadcrumbs}
+              baseURL={props.match.url}
+              courses={props.courses}
+            />
+          );
         }}
       />
       <Route path={props.match.url} exact={true} render={() => <Redirect to={`${props.match.url}/overview`} />} />

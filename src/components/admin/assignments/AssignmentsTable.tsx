@@ -100,6 +100,7 @@ export interface IManageAssignmentsProps {
   currentCourse: CourseType;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   sections: SectionType[];
+  courses: CourseType[];
 
   /* loading state */
   loadComplete: boolean;
@@ -207,7 +208,6 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         );
 
         const title = getDrawerTitle(this.state.drawerType, newContent.length, !this.props.fullSubmissionsLoadComplete);
-        console.log(this.props.fullSubmissionsLoadComplete);
 
         this.setState({
           drawerContent: {

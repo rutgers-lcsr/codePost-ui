@@ -99,7 +99,13 @@ const JoinSignup = (props: RouteComponentProps & { email?: string }) => {
               to check out your new course.
             </span>
           ) : (
-            'Check your email to finish signing up.'
+            <span>
+              Check your email to finish signing up. If you don't see an email within a couple of minutes,{' '}
+              <a href="http://help.codepost.io/en/articles/3324251-faq-where-is-my-email" target="_blank">
+                please read this
+              </a>
+              .
+            </span>
           )
         }
       />

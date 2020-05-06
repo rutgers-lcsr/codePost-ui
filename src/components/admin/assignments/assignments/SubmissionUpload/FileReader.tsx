@@ -19,7 +19,7 @@ export interface IProtoFileUpload extends IBaseFileUpload {
   path: string;
   extension: string;
   zipSource?: string;
-  file: File | UploadFile;
+  file: File | UploadFile | Blob;
 }
 
 export interface IProtoSubmission {
@@ -35,9 +35,10 @@ export interface codePostFile extends UploadFile {
 }
 
 export const fileToProtoFileUpload = (
-  inputFile: codePostFile | File | UploadFile,
+  inputFile: codePostFile | File | UploadFile | Blob,
   zipSource?: string,
 ): IProtoFileUpload => {
+  // @ts-ignore
   let longname: string = inputFile.name;
 
   // @ts-ignore
@@ -72,12 +73,13 @@ export const fileToProtoFileUpload = (
 
 const FILE_SIZE_LIMIT_IN_BYTES = 3e6; // 3 megabytes
 
-export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<IProtoFileUpload[]> => {
+export const readUploadedFile = (inputFile: File | Blob, zipSource?: string): Promise<IProtoFileUpload[]> => {
   const reader = new FileReader();
 
   const size_bytes = inputFile.size;
   if (size_bytes > FILE_SIZE_LIMIT_IN_BYTES) {
     message.warning(
+      // @ts-ignore
       `${inputFile.name} exceeds file size limit of ${FILE_SIZE_LIMIT_IN_BYTES /
         1e6} MB and cannot be uploaded (its size is ${(size_bytes / 1e6).toFixed(
         1,
@@ -130,7 +132,9 @@ export const readUploadedFile = (inputFile: File, zipSource?: string): Promise<I
                   // Recursively read the new files, but we need to cast the
                   // Blob object into a File
                   if (blob.size < FILE_SIZE_LIMIT_IN_BYTES) {
-                    const unzippedFile = await readUploadedFile(new File([blob], zippedFile.name), outputFile.longname);
+                    // @ts-ignore
+                    blob.name = zippedFile.name;
+                    const unzippedFile = await readUploadedFile(blob, outputFile.longname);
                     return unzippedFile;
                   } else {
                     message.warning(
@@ -246,7 +250,9 @@ export const readZipTopLevel = (inputFile: File): Promise<File[]> => {
 
               if (!zippedFile.dir) {
                 return zippedFile.async('blob').then((blob: Blob) => {
-                  return new File([blob], zippedFile.name);
+                  // @ts-ignore
+                  blob.name = zippedFile.name;
+                  return blob;
                 });
               }
             });

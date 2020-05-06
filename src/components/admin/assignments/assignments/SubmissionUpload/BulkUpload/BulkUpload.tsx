@@ -131,9 +131,11 @@ class BulkUpload extends React.Component<IProps, IState> {
       newMap[student.toLowerCase()] = STUDENT_STATUS.MISSING;
     }
 
-    for (const submission of submissions) {
-      for (const student of submission.students) {
-        newMap[student.toLowerCase()] = STUDENT_STATUS.EXISTING;
+    if (submissions) {
+      for (const submission of submissions) {
+        for (const student of submission.students) {
+          newMap[student.toLowerCase()] = STUDENT_STATUS.EXISTING;
+        }
       }
     }
 
@@ -223,12 +225,16 @@ class BulkUpload extends React.Component<IProps, IState> {
               outputFiles.map((outputFile: IProtoFileUpload) => {
                 const fullName = `anydirname/${submission.students.join(',')}/${outputFile.longname}`;
                 const subfiles = { ...this.state.fileMap[submitters], [fullName]: outputFile.data };
-                this.setState({ fileMap: { ...this.state.fileMap, [submitters]: subfiles } });
+                this.setState((oldState) => {
+                  return { fileMap: { ...oldState.fileMap, [submitters]: subfiles } };
+                });
               });
             } else {
               outputFiles.map((outputFile: IProtoFileUpload) => {
                 const subfiles = { ...this.state.fileMap[submitters], [outputFile.longname]: outputFile.data };
-                this.setState({ fileMap: { ...this.state.fileMap, [submitters]: subfiles } });
+                this.setState((oldState) => {
+                  return { fileMap: { ...oldState.fileMap, [submitters]: subfiles } };
+                });
               });
             }
           } catch (e) {
@@ -252,7 +258,9 @@ class BulkUpload extends React.Component<IProps, IState> {
       return acc + subTotal;
     }, 0);
 
-    if (readFiles === numFiles) {
+    // FIXME: we need to account for unzipped archives that contain more than one file
+    // in state.numFiles
+    if (readFiles >= numFiles) {
       this.setState({ status: STATUS.UPLOADING }, () => {
         if (overwriteMode) {
           this.handleOverwrite().then(() => {

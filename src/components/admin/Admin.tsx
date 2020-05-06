@@ -1329,6 +1329,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 shallowUpdateAssignment={this.shallowUpdateAssignment}
                 bulkUpdateSubmissions={this.bulkUpdateSubmissions}
                 sections={this.state.sections}
+                courses={this.state.courses}
               />
             )}
           />
