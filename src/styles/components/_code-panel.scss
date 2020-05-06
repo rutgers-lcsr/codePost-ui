@@ -35,6 +35,18 @@
   }
 }
 
+.sidebar-resizer {
+  .rc-slider-handle {
+    background-color: transparent;
+    border: 0px solid transparent;
+    border-radius: 0;
+    cursor: col-resize;
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.25);
+    }
+  }
+}
+
 // clone of antd-tooltip
 .rc-slider-tooltip {
   z-index: 1000 !important;
