@@ -70,21 +70,18 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
         position: 'absolute',
         width: '100%',
         left: minSiderWidth,
-        zIndex: 1,
+        zIndex: 200,
       }}
     >
       <Slider
+        className="sidebar-resizer"
         min={0}
         max={windowSize.width}
         defaultValue={rubricWidth - minSiderWidth}
         onAfterChange={onAfterChange}
         handleStyle={[
           {
-            backgroundColor: 'transparent',
-            border: '0px solid transparent',
-            borderRadius: 0,
-            cursor: 'col-resize',
-            height: `${windowSize.height - 80}px`,
+            height: `${windowSize.height - 51}px`,
           },
         ]}
         trackStyle={[{ backgroundColor: 'transparent', height: '1px' }]}
