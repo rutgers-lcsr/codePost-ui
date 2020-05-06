@@ -24,6 +24,7 @@ import SubmissionsManager from './submissions/SubmissionsManager';
 import ManageAssignments from './assignments/ManageAssignments';
 import RosterManager from './roster/RosterManager';
 import CourseSettingsPanel from './settings/CourseSettingsPanel';
+import WebhooksPanel from './settings/WebhooksPanel';
 
 import CourseMenu from '../core/CourseMenu';
 import NewCourseDialog from './other/NewCourseDialog';
@@ -1328,6 +1329,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 shallowUpdateAssignment={this.shallowUpdateAssignment}
                 bulkUpdateSubmissions={this.bulkUpdateSubmissions}
                 sections={this.state.sections}
+                courses={this.state.courses}
               />
             )}
           />
@@ -1355,6 +1357,10 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 deleteSection={this.deleteSection}
               />
             )}
+          />
+          <Route
+            path={`${this.props.match.url}/settings/webhooks`}
+            render={(props: any) => <WebhooksPanel {...props} currentCourse={this.props.currentCourse!} />}
           />
           <Route
             path={`${this.props.match.url}/settings`}

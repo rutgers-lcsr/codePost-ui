@@ -94,7 +94,12 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
 
   public render() {
     const main = (
-      <Menu theme="dark" defaultOpenKeys={['assignments']} selectedKeys={[this.getDefaultSelectedKey()]} mode="inline">
+      <Menu
+        theme="dark"
+        defaultOpenKeys={['assignments', 'course-settings']}
+        selectedKeys={[this.getDefaultSelectedKey()]}
+        mode="inline"
+      >
         <SubMenu
           key="assignments"
           title={
@@ -111,9 +116,7 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
             <Link to={`${this.props.baseURL}/assignments/rubrics`}>Rubrics</Link>
           </Menu.Item>
           <Menu.Item key="assignments/tests">
-            <Link to={`${this.props.baseURL}/assignments/tests`}>
-              Tests &nbsp;<Tag color="#595959">BETA</Tag>
-            </Link>
+            <Link to={`${this.props.baseURL}/assignments/tests`}>Tests</Link>
           </Menu.Item>
           <Menu.Item key="assignments/plagiarism">
             <Link to={`${this.props.baseURL}/assignments/plagiarism`}>Plagiarism</Link>
@@ -157,14 +160,22 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
             <Link to={`${this.props.baseURL}/roster/sections`}>Sections</Link>
           </Menu.Item>
         </SubMenu>
-        <Menu.Item key="settings">
-          <Link to={`${this.props.baseURL}/settings`}>
+        <SubMenu
+          key="course-settings"
+          title={
             <span>
               <SettingOutlined />
               <span>Course Settings</span>
             </span>
-          </Link>
-        </Menu.Item>
+          }
+        >
+          <Menu.Item key="course-settings/general">
+            <Link to={`${this.props.baseURL}/settings`}>General</Link>
+          </Menu.Item>
+          <Menu.Item key="course-settings/webhooks">
+            <Link to={`${this.props.baseURL}/settings/webhooks`}>Webhooks</Link>
+          </Menu.Item>
+        </SubMenu>
       </Menu>
     );
 

@@ -33,3 +33,6 @@ export { SubmissionTestType } from './submissionTest';
 
 // @ts-ignore
 export { FileTemplateType } from './fileTemplate';
+
+// @ts-ignore
+export { WebhookType } from './webhook';

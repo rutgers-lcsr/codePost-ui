@@ -36,6 +36,7 @@ export const CourseV = t.intersection(
       inviteCodeEnabled: t.boolean,
       enableStudentFeedbackNotifications: t.boolean,
     }),
+    t.partial({ webhooks: t.array(t.number) }),
   ],
   'Course',
 );

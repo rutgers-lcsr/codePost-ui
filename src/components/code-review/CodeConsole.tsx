@@ -1458,6 +1458,9 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           `${this.state.submission.id} ${this.state.assignment ? this.state.assignment.name : ''} | ${
             this.state.course ? this.state.course.name : ''
           } ${this.state.course ? this.state.course.period : ''}`,
+          '#24be85',
+          '#user_notifications_everything',
+          this.state.course ? this.state.course.id : 0,
         );
         message.success('Successfully finalized submission');
       } else {

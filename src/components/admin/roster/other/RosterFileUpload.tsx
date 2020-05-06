@@ -249,6 +249,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           _[${toAdd.join(', ')}]_`,
           '#24be85',
           '#user_notifications',
+          this.props.course.id,
         );
 
         promises.push(
@@ -358,6 +359,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           _[${toAdd.join(', ')}]_`,
           '#24be85',
           '#user_notifications',
+          this.props.course.id,
         );
         promises.push(this.props.changeRoster(toAdd, toRemove, USER_APP.Grader));
       }
@@ -373,6 +375,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           _[${Object.keys(diff.added).join(', ')}]_`,
           '#24be85',
           '#user_notifications',
+          this.props.course.id,
         );
         promises.push(this.props.changeRoster(toAdd, toRemove, USER_APP.CourseAdmin));
       }

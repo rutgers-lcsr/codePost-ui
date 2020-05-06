@@ -262,6 +262,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
         `${testMode ? 'TEST MODE\n' : ''} ${props.course.name} ${props.course.period} | ${props.assignment.name} `,
         '#f5e51b',
         '#user_notifications_moss',
+        props.course.id,
       );
 
       const payload = {

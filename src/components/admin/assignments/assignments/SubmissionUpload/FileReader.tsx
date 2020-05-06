@@ -177,7 +177,7 @@ export const readUploadedFile = (inputFile: File | Blob, zipSource?: string): Pr
             const match = data.match(/\0/g);
             // If a file contains a null character and is not on the Binary Whitelist, notify the team and then strip it
             if (match !== null) {
-              sendSlack('Replaced Null Character', `${outputFile.name}`, '#fafafa', 'user_notifications_uploads');
+              // sendSlack('Replaced Null Character', `${outputFile.name}`, '#fafafa', 'user_notifications_uploads');
 
               data = data.replace(/\0/g, '');
             }
