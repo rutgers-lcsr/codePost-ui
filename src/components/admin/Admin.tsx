@@ -1216,12 +1216,11 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     );
     const createButton = <NewCourseDialog courses={this.state.courses} createCourse={this.createCourse} />;
     const headerLeft = [dropdown, createButton];
-    const logout =
-      localStorage.getItem('source') === 'codePost' ? (
-        <Button key="header-logout" onClick={this.props.handleLogout}>
-          Logout
-        </Button>
-      ) : null;
+    const logout = (
+      <Button key="header-logout" onClick={this.props.handleLogout}>
+        Logout
+      </Button>
+    );
 
     // add option to switch
     const headerRight = [

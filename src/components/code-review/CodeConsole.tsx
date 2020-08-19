@@ -2553,28 +2553,32 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           onCancel={cancelFunc}
         />
         <CourseContext.Provider value={this.state.course || defaultCourse}>
-          <StandardConsoleLayout
-            consoleTypes={['grade']}
-            header={
-              <CPFlex
-                style={{
-                  padding: '0 15',
-                  height: 49,
-                  fontSize: 12,
-                  overflow: 'initial',
-                }}
-                left={leftHeader}
-                right={rightHeader}
-                middle={middleHeader}
-                gutterSize={20}
-                className={theme}
-              />
-            }
-            sider={sider}
-            siderTitles={siderTitles}
-            content={content}
-            editRubricMode={this.state.editRubricMode}
-          />
+          {localStorage.getItem('source') !== 'codePost' ? (
+            content
+          ) : (
+            <StandardConsoleLayout
+              consoleTypes={['grade']}
+              header={
+                <CPFlex
+                  style={{
+                    padding: '0 15',
+                    height: 49,
+                    fontSize: 12,
+                    overflow: 'initial',
+                  }}
+                  left={leftHeader}
+                  right={rightHeader}
+                  middle={middleHeader}
+                  gutterSize={20}
+                  className={theme}
+                />
+              }
+              sider={sider}
+              siderTitles={siderTitles}
+              content={content}
+              editRubricMode={this.state.editRubricMode}
+            />
+          )}
           <KeyboardShortcuts
             key="keyboard-shortcuts"
             visible={this.state.showKeyboardShortcuts}

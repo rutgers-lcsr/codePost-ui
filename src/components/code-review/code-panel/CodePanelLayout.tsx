@@ -110,6 +110,9 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
       height: `${100 / this.props.zoom}%`,
     };
 
+    const codePanelStyle =
+      localStorage.getItem('source') === 'codePost' ? {} : { backgroundColor: 'rgb(242, 242, 242)' };
+
     return (
       <ErrorBoundary type="codepanel" submissionID={this.props.file.submission} file={this.props.file}>
         <div style={{ position: 'relative', height: '100%', width: '100%' }}>
@@ -121,7 +124,7 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
               ...zoomStyles,
             }}
           >
-            <div className="code-panel" id="code-panel">
+            <div className="code-panel" id="code-panel" style={codePanelStyle}>
               <div
                 style={{
                   margin: `4px 0px 4px ${themeVars.grade.codeContainer.marginLeft}px`,

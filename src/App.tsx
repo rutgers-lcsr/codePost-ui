@@ -88,7 +88,7 @@ const anonymousUser: UserType = {
   hasCredentials: false,
 };
 
-const domains = ['mooc.codepost.io', 'localhost:300', 'compedu.stanford.edu'];
+const domains = ['mooc.codepost.io', 'localhost:3000', 'compedu.stanford.edu', 'princeton.edu'];
 
 /*****************************************************************************/
 
@@ -589,7 +589,7 @@ Firefox:
       //     </div>
       //   );
       // }
-      if (inCodeInPlace) {
+      if (inCodeInPlace || localStorage.getItem('source') !== 'codePost') {
         (window as any).Intercom('shutdown');
       } else if (isAdmin || isGrader) {
         (window as any).Intercom('boot', {
@@ -773,10 +773,12 @@ Firefox:
         </div>
       );
     } else {
-      (window as any).Intercom('boot', {
-        app_id: 'kg4u5rp1',
-        custom_launcher_selector: '#IntercomDefaultWidget',
-      });
+      if (localStorage.getItem('source') === 'codePost') {
+        (window as any).Intercom('boot', {
+          app_id: 'kg4u5rp1',
+          custom_launcher_selector: '#IntercomDefaultWidget',
+        });
+      }
       return <div />;
     }
   }

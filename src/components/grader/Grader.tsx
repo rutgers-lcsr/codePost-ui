@@ -244,12 +244,11 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
     const headerLeft = [courseDropdown, assignmentDropdown];
 
     const showNewCourseBtn = !this.props.user.hasCredentials;
-    const logout =
-      localStorage.getItem('source') === 'codePost' ? (
-        <Button key="header-logout" onClick={this.props.handleLogout}>
-          Log Out
-        </Button>
-      ) : null;
+    const logout = (
+      <Button key="header-logout" onClick={this.props.handleLogout}>
+        Log Out
+      </Button>
+    );
 
     const headerRight = [
       showNewCourseBtn && (
