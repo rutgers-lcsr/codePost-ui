@@ -185,8 +185,8 @@ const TestsList = (props: IProps) => {
               const testCases = !props.hideNotRun
                 ? props.cases[category.id]
                 : props.cases[category.id].filter((tc) => {
-                  return theseTests.find((el) => el.testCase === tc.id);
-                });
+                    return theseTests.find((el) => el.testCase === tc.id);
+                  });
 
               const data = testCases
                 .sort((a, b) => a.id - b.id)

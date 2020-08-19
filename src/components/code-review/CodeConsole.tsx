@@ -1456,7 +1456,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         sendSlack(
           'Submission finalized',
           `${this.state.submission.id} ${this.state.assignment ? this.state.assignment.name : ''} | ${
-          this.state.course ? this.state.course.name : ''
+            this.state.course ? this.state.course.name : ''
           } ${this.state.course ? this.state.course.period : ''}`,
           '#24be85',
           '#user_notifications_everything',
@@ -1733,19 +1733,19 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       middleHeader = this.state.hideGrades
         ? []
         : [
-          <GradeButton
-            key="subheader-grade"
-            assignment={this.state.assignment!}
-            submission={this.state.submission === undefined ? this.state.readOnlySubmission! : this.state.submission}
-            calculateGrade={this.calculateGradeFromState}
-            rubricCategories={this.state.rubricCategories}
-            comments={this.state.comments}
-            commentRubricComments={this.state.commentRubricComments}
-            files={this.state.files}
-            submissionTests={this.state.tests}
-            testCases={Object.values(this.state.testCases).flat()}
-          />,
-        ];
+            <GradeButton
+              key="subheader-grade"
+              assignment={this.state.assignment!}
+              submission={this.state.submission === undefined ? this.state.readOnlySubmission! : this.state.submission}
+              calculateGrade={this.calculateGradeFromState}
+              rubricCategories={this.state.rubricCategories}
+              comments={this.state.comments}
+              commentRubricComments={this.state.commentRubricComments}
+              files={this.state.files}
+              submissionTests={this.state.tests}
+              testCases={Object.values(this.state.testCases).flat()}
+            />,
+          ];
 
       const fileMenuTitle = <FileMenuTitle key="files" files={this.state.files} />;
       if (this.props.inDemoMode) {
@@ -2556,29 +2556,29 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           {localStorage.getItem('source') !== 'codePost' ? (
             content
           ) : (
-              <StandardConsoleLayout
-                consoleTypes={['grade']}
-                header={
-                  <CPFlex
-                    style={{
-                      padding: '0 15',
-                      height: 49,
-                      fontSize: 12,
-                      overflow: 'initial',
-                    }}
-                    left={leftHeader}
-                    right={rightHeader}
-                    middle={middleHeader}
-                    gutterSize={20}
-                    className={theme}
-                  />
-                }
-                sider={sider}
-                siderTitles={siderTitles}
-                content={content}
-                editRubricMode={this.state.editRubricMode}
-              />
-            )}
+            <StandardConsoleLayout
+              consoleTypes={['grade']}
+              header={
+                <CPFlex
+                  style={{
+                    padding: '0 15',
+                    height: 49,
+                    fontSize: 12,
+                    overflow: 'initial',
+                  }}
+                  left={leftHeader}
+                  right={rightHeader}
+                  middle={middleHeader}
+                  gutterSize={20}
+                  className={theme}
+                />
+              }
+              sider={sider}
+              siderTitles={siderTitles}
+              content={content}
+              editRubricMode={this.state.editRubricMode}
+            />
+          )}
           <KeyboardShortcuts
             key="keyboard-shortcuts"
             visible={this.state.showKeyboardShortcuts}
@@ -2586,18 +2586,18 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             isStudent={this.state.isStudent}
           />
           {this.state.permissionLevel === PERMISSION_LEVEL.WRITE &&
-            this.state.assignment !== undefined &&
-            this.state.submission !== undefined ? (
-              <InlineTestsModal
-                key="inline-tests-modal"
-                visible={this.state.showInlineTestsModal}
-                show={this.showInlineTestsModal}
-                hide={this.hideInlineTestsModal}
-                files={this.state.files}
-                assignment={this.state.assignment}
-                submission={this.state.submission}
-              />
-            ) : null}
+          this.state.assignment !== undefined &&
+          this.state.submission !== undefined ? (
+            <InlineTestsModal
+              key="inline-tests-modal"
+              visible={this.state.showInlineTestsModal}
+              show={this.showInlineTestsModal}
+              hide={this.hideInlineTestsModal}
+              files={this.state.files}
+              assignment={this.state.assignment}
+              submission={this.state.submission}
+            />
+          ) : null}
         </CourseContext.Provider>
       </div>
     );

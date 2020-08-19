@@ -1400,12 +1400,12 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
             this.state.submissions[this.state.assignments[0].id] &&
             this.state.submissions[this.state.assignments[0].id].length > 0
           }
-          onClose={() => { }}
+          onClose={() => {}}
           assignment={this.state.assignments[0]}
         />
       ) : (
-          undefined
-        );
+        undefined
+      );
 
     return (
       <CPLayoutAdmin
