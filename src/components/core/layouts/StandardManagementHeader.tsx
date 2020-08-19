@@ -11,12 +11,11 @@ interface IStandardManagementHeaderProps {
 }
 
 const StandardManagementHeader = (props: IStandardManagementHeaderProps) => {
-  const logout =
-    localStorage.getItem('source') === 'codePost' ? (
-      <CPButton key="header-logout" cpType="secondary" onClick={props.handleLogout}>
-        Log Out
-      </CPButton>
-    ) : null;
+  const logout = (
+    <CPButton key="header-logout" cpType="secondary" onClick={props.handleLogout}>
+      Log Out
+    </CPButton>
+  );
   const headerRight = [
     <span key="header-user" className="cp-label cp-label--bold">
       {props.email}

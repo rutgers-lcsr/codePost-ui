@@ -254,8 +254,8 @@ export const Controls = (props: IControlsProps) => {
         />
       </Popover>
     ) : (
-      controls
-    );
+        controls
+      );
   return controlPanel;
 };
 
@@ -339,7 +339,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
       } else if (props.course.enableStudentFeedbackNotifications) {
         const studentText = `student${
           props.submission.students ? (props.submission.students.length > 1 ? 's' : '') : '(s)'
-        }`;
+          }`;
 
         Modal.confirm({
           title: `Notify ${studentText} via email?`,
@@ -493,8 +493,8 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
       Note: Grade calculations do not include old versions of files.
     </div>
   ) : (
-    ''
-  );
+      ''
+    );
 
   const styledLabel = (n: number, excluded?: boolean) => {
     let points = n;
@@ -591,15 +591,15 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
     props.assignment.additiveGrading
       ? null
       : {
-          description: <span className="cp-label">Assignment Total</span>,
-          value: <span>{props.assignment.points}</span>,
-        },
+        description: <span className="cp-label">Assignment Total</span>,
+        value: <span>{props.assignment.points}</span>,
+      },
     props.assignment.additiveGrading
       ? null
       : {
-          description: <span className="cp-label">Net Point Delta</span>,
-          value: <span>{styledLabel(categoryPoints + genericPoints + testPoints)}</span>,
-        },
+        description: <span className="cp-label">Net Point Delta</span>,
+        value: <span>{styledLabel(categoryPoints + genericPoints + testPoints)}</span>,
+      },
     {
       description: <span className="cp-label cp-label--very-bold">Final Grade</span>,
       value: (
@@ -764,10 +764,10 @@ export const StatusTags = (props: IStatusTagsProps) => {
       {props.fallbackWidth && windowSize.width < props.fallbackWidth ? (
         <TagTwoTone style={{ color: tagColor, ...tagStyle }} />
       ) : (
-        <Tag color={tagColor} style={tagStyle}>
-          {tagText}
-        </Tag>
-      )}
+          <Tag color={tagColor} style={tagStyle}>
+            {tagText}
+          </Tag>
+        )}
     </CPTooltip>
   );
 };
@@ -823,12 +823,11 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
     (window as any).Intercom('show');
   };
 
-  const logout =
-    localStorage.getItem('source') === 'codePost' ? (
-      <Menu.Item key="setting:6" style={itemStyle} className="header-menu">
-        <a href="/logout">Logout</a>
-      </Menu.Item>
-    ) : null;
+  const logout = (
+    <Menu.Item key="setting:6" style={itemStyle} className="header-menu">
+      <a href="/logout">Logout</a>
+    </Menu.Item>
+  );
 
   const menu = (
     <Menu mode="vertical" style={{ width: 320, padding: 0 }}>

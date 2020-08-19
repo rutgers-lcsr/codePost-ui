@@ -72,20 +72,20 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
                 <CPLogo cpType="icon" onClick={openHome} />
               </Link>
             ) : (
-              <div>
-                <Link to="/">
-                  <CPLogo cpType="main" onClick={openHome} />
-                </Link>
-                <div
-                  style={{
-                    textAlign: 'center',
-                    color: themeVars.theme.green4,
-                    lineHeight: 1,
-                    paddingTop: 10,
-                  }}
-                >{`${props.role} Console`}</div>
-              </div>
-            )}
+                <div>
+                  <Link to="/">
+                    <CPLogo cpType="main" onClick={openHome} />
+                  </Link>
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      color: themeVars.theme.green4,
+                      lineHeight: 1,
+                      paddingTop: 10,
+                    }}
+                  >{`${props.role} Console`}</div>
+                </div>
+              )}
           </Header>
           {props.navigation(collapsed)}
         </Sider>

@@ -88,7 +88,7 @@ const anonymousUser: UserType = {
   hasCredentials: false,
 };
 
-const domains = ['mooc.codepost.io', 'localhost:300', 'compedu.stanford.edu'];
+const domains = ['mooc.codepost.io', 'localhost:3000', 'compedu.stanford.edu', 'princeton.edu'];
 
 /*****************************************************************************/
 
@@ -544,9 +544,9 @@ Firefox:
       //  User has a single course and the course is code in place
       const inCodeInPlace = user
         ? user.studentCourses.length + user.graderCourses.length + user.courseadminCourses.length === 1 &&
-          ((isStudent && user.studentCourses[0].id === 925) ||
-            (isGrader && user.graderCourses.length > 0 && user.graderCourses[0].id === 925) ||
-            (isAdmin && user.courseadminCourses.length > 0 && user.courseadminCourses[0].id === 925))
+        ((isStudent && user.studentCourses[0].id === 925) ||
+          (isGrader && user.graderCourses.length > 0 && user.graderCourses[0].id === 925) ||
+          (isAdmin && user.courseadminCourses.length > 0 && user.courseadminCourses[0].id === 925))
         : false;
 
       let loginasRoute;
@@ -589,7 +589,7 @@ Firefox:
       //     </div>
       //   );
       // }
-      if (inCodeInPlace) {
+      if (inCodeInPlace || localStorage.getItem('source') !== 'codePost') {
         (window as any).Intercom('shutdown');
       } else if (isAdmin || isGrader) {
         (window as any).Intercom('boot', {
@@ -633,13 +633,13 @@ Firefox:
                   {...consoleProps}
                   initialCourses={studentCourses}
                   uploadShortcut={this.state.studentUploadShortcut}
-                  // uploadShortcut={{
-                  //   assignmentID: 2,
-                  //   files: [
-                  //     { name: 'template.py', data: 'helloworld' },
-                  //     { name: 'second.py', data: 'yoyoyo\nasdfasdf]\nasdf' },
-                  //   ],
-                  // }}
+                // uploadShortcut={{
+                //   assignmentID: 2,
+                //   files: [
+                //     { name: 'template.py', data: 'helloworld' },
+                //     { name: 'second.py', data: 'yoyoyo\nasdfasdf]\nasdf' },
+                //   ],
+                // }}
                 />,
               )
             }
@@ -773,10 +773,12 @@ Firefox:
         </div>
       );
     } else {
-      (window as any).Intercom('boot', {
-        app_id: 'kg4u5rp1',
-        custom_launcher_selector: '#IntercomDefaultWidget',
-      });
+      if (localStorage.getItem('source') === 'codePost') {
+        (window as any).Intercom('boot', {
+          app_id: 'kg4u5rp1',
+          custom_launcher_selector: '#IntercomDefaultWidget',
+        });
+      }
       return <div />;
     }
   }

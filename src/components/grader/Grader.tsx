@@ -80,13 +80,13 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
       assignments: [],
       isSuperGrader: currentCourse
         ? superGraderCourses.some((course) => {
-            return course.id === currentCourse.id;
-          })
+          return course.id === currentCourse.id;
+        })
         : false,
       sectionsLed: currentCourse
         ? sectionsLed.slice().filter((section) => {
-            return currentCourse.sections.indexOf(section.id) !== -1;
-          })
+          return currentCourse.sections.indexOf(section.id) !== -1;
+        })
         : [],
       showBanner: false,
       showConversionModal: false,
@@ -172,8 +172,8 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
               )}
             />
           ) : (
-            undefined
-          )}
+              undefined
+            )}
           {this.state.isSuperGrader ? (
             <Route
               key="all_submissions"
@@ -183,8 +183,8 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
               )}
             />
           ) : (
-            undefined
-          )}
+              undefined
+            )}
           {someRegrades ? (
             <Route
               path={`${this.props.match.url}/regrades`}
@@ -203,8 +203,8 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
               )}
             />
           ) : (
-            undefined
-          )}{' '}
+              undefined
+            )}{' '}
           <Route
             path={`${this.props.match.url}/video`}
             key="video"
@@ -244,12 +244,11 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
     const headerLeft = [courseDropdown, assignmentDropdown];
 
     const showNewCourseBtn = !this.props.user.hasCredentials;
-    const logout =
-      localStorage.getItem('source') === 'codePost' ? (
-        <Button key="header-logout" onClick={this.props.handleLogout}>
-          Log Out
-        </Button>
-      ) : null;
+    const logout = (
+      <Button key="header-logout" onClick={this.props.handleLogout}>
+        Log Out
+      </Button>
+    );
 
     const headerRight = [
       showNewCourseBtn && (

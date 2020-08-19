@@ -55,7 +55,7 @@ const TestsList = (props: IProps) => {
   }
 
   // Can update this logic however
-  const failedLabel = localStorage.getItem('source') === 'codePost' ? 'Failed' : 'Not yet passed';
+  const failedLabel = 'Failed';
 
   // Submission-level stats
   let passed = 0;
@@ -185,8 +185,8 @@ const TestsList = (props: IProps) => {
               const testCases = !props.hideNotRun
                 ? props.cases[category.id]
                 : props.cases[category.id].filter((tc) => {
-                    return theseTests.find((el) => el.testCase === tc.id);
-                  });
+                  return theseTests.find((el) => el.testCase === tc.id);
+                });
 
               const data = testCases
                 .sort((a, b) => a.id - b.id)
