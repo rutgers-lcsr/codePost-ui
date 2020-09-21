@@ -670,9 +670,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           },
           () => {
             if (assignment && assignment.liveFeedbackMode) {
-              this.reloadCommentsInterval = window.setInterval(() => {
-                this.reloadComments();
-              }, this.LIVE_FEEDBACK_COMMENTS_RELOAD_INTERVAL);
+              // this.reloadCommentsInterval = window.setInterval(() => {
+              //   this.reloadComments();
+              // }, this.LIVE_FEEDBACK_COMMENTS_RELOAD_INTERVAL);
             }
           },
         );
@@ -2539,7 +2539,10 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     }
     (window as any).setFoobarParams('grader', this.state.graders);
     (window as any).setFoobarParams('student', this.state.students);
-    (window as any).setFoobarParams('file', this.state.files.map((file) => file.name));
+    (window as any).setFoobarParams(
+      'file',
+      this.state.files.map((file) => file.name),
+    );
     (window as any).foobarIsActive = true; // lift off
     (window as any).foobarUser = this.props.user.email; // for logging
     (window as any).foobarURL = this.props.match.url; // for logging
