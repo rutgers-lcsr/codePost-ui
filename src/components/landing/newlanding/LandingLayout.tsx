@@ -104,7 +104,6 @@ const LandingLayout = (props: IProps) => {
         }}
       >
         codePost is experiencing an availability issue. We're investigating the cause of the problem.
-        </a>
       </div>
       <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }} className={sectionClass}>
         <div
