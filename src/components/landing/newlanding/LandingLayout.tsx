@@ -104,6 +104,8 @@ const LandingLayout = (props: IProps) => {
         }}
       >
         codePost is experiencing an availability issue. We're investigating the cause of the problem.
+        <br />
+        Update: Functionality has been partially restored. Autograding performance remains degraded.
       </div>
       <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }} className={sectionClass}>
         <div
