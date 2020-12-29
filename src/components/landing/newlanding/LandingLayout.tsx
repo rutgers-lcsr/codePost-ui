@@ -93,18 +93,6 @@ const LandingLayout = (props: IProps) => {
       }}
       id="LandingLayout"
     >
-<!--       <div
-        style={{
-          background: '#ffe06a',
-          padding: '10px',
-          fontSize: '18px',
-          fontWeight: 500,
-          color: 'black',
-          textAlign: 'center',
-        }}
-      >
-        Update: full functionality has been restored!
-      </div> -->
       <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }} className={sectionClass}>
         <div
           style={{
