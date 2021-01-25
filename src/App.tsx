@@ -213,6 +213,13 @@ Firefox:
         }
       }
     }
+
+    // Load CommandBar with user identity (only run on initial login)
+    if (!prevState.user && this.state.user) {
+      window.CommandBar.boot({
+        id: this.state.user.email, // [required] A unique string to identify the current user
+      });
+    }
   }
 
   public replaceUser = (newUser: UserType, redirect: boolean, isSuperUser: boolean) => {
