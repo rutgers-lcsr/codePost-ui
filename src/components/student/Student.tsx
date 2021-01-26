@@ -633,17 +633,11 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
         } else if (!submission.isFinalized && !assignment.liveFeedbackMode) {
           // Case 2: assignment is published, but student has no submission OR submission isn't finalized
 
-          const msg =
-            localStorage.getItem('source') === 'codePost' ? (
-              <div>
-                <MinusCircleOutlined /> &nbsp; Your submission hasn't been reviewed yet
-              </div>
-            ) : (
-              <div>
-                🎉 Your assignment has been uploaded! 🎉 <br /> You can re-run tests as many times as you want by
-                clicking "Upload assignment" to the right.
-              </div>
-            );
+          const msg = (
+            <div>
+              <MinusCircleOutlined /> &nbsp; Your submission hasn't been reviewed yet
+            </div>
+          );
 
           return {
             ...toRet,
@@ -819,29 +813,21 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
 
     const headerLeft = [<CPLogo cpType="dark" key="logo" onClick={openHome} />, <span key="empty" />, courseDropdown];
 
-    const referral =
-      localStorage.getItem('source') === 'codePost' ? (
-        <Referral key="referral" user={this.props.user} theme="light" />
-      ) : null;
+    const referral = <Referral key="referral" user={this.props.user} theme="light" />;
 
-    const roleMenu =
-      localStorage.getItem('source') === 'codePost' ? (
-        <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.STUDENT} theme="light" />
-      ) : null;
+    const roleMenu = <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.STUDENT} theme="light" />;
 
-    const settings =
-      localStorage.getItem('source') === 'codePost' ? (
-        <Link className="internal-link" key="settings" to="/settings">
-          <SettingOutlined />
-        </Link>
-      ) : null;
+    const settings = (
+      <Link className="internal-link" key="settings" to="/settings">
+        <SettingOutlined />
+      </Link>
+    );
 
-    const logout =
-      localStorage.getItem('source') === 'codePost' ? (
-        <Button key="header-logout" onClick={this.props.handleLogout}>
-          Log Out
-        </Button>
-      ) : null;
+    const logout = (
+      <Button key="header-logout" onClick={this.props.handleLogout}>
+        Log Out
+      </Button>
+    );
 
     const headerRight = [
       <span key="header-user" className="cp-label cp-label--bold">

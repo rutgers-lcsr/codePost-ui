@@ -823,12 +823,11 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
     (window as any).Intercom('show');
   };
 
-  const logout =
-    localStorage.getItem('source') === 'codePost' ? (
-      <Menu.Item key="setting:6" style={itemStyle} className="header-menu">
-        <a href="/logout">Logout</a>
-      </Menu.Item>
-    ) : null;
+  const logout = (
+    <Menu.Item key="setting:6" style={itemStyle} className="header-menu">
+      <a href="/logout">Logout</a>
+    </Menu.Item>
+  );
 
   const menu = (
     <Menu mode="vertical" style={{ width: 320, padding: 0 }}>

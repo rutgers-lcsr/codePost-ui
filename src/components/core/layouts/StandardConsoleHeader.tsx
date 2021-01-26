@@ -32,12 +32,11 @@ const StandardConsoleHeader = (props: IStandardConsoleHeaderProps) => {
     </Link>,
   ];
 
-  const logout =
-    localStorage.getItem('source') === 'codePost' ? (
-      <CPButton key="header-logout" cpType="dark" fallback="logout" onClick={props.handleLogout}>
-        Log Out
-      </CPButton>
-    ) : null;
+  const logout = (
+    <CPButton key="header-logout" cpType="dark" fallback="logout" onClick={props.handleLogout}>
+      Log Out
+    </CPButton>
+  );
 
   const headerRight = [
     <ThemeToggle key="theme-toggle" />,

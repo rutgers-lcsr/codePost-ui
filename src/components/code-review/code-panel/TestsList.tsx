@@ -55,7 +55,7 @@ const TestsList = (props: IProps) => {
   }
 
   // Can update this logic however
-  const failedLabel = localStorage.getItem('source') === 'codePost' ? 'Failed' : 'Not yet passed';
+  const failedLabel = 'Failed';
 
   // Submission-level stats
   let passed = 0;

@@ -88,7 +88,7 @@ const anonymousUser: UserType = {
   hasCredentials: false,
 };
 
-const domains = ['mooc.codepost.io', 'localhost:300', 'compedu.stanford.edu'];
+const domains = ['mooc.codepost.io', 'localhost:3000', 'compedu.stanford.edu', 'princeton.edu'];
 
 /*****************************************************************************/
 
@@ -212,6 +212,13 @@ Firefox:
           }
         }
       }
+    }
+
+    // Load CommandBar with user identity (only run on initial login)
+    if (!prevState.user && this.state.user) {
+      window.CommandBar.boot({
+        id: this.state.user.email, // [required] A unique string to identify the current user
+      });
     }
   }
 
@@ -589,7 +596,7 @@ Firefox:
       //     </div>
       //   );
       // }
-      if (inCodeInPlace) {
+      if (inCodeInPlace || localStorage.getItem('source') !== 'codePost') {
         (window as any).Intercom('shutdown');
       } else if (isAdmin || isGrader) {
         (window as any).Intercom('boot', {
@@ -773,10 +780,12 @@ Firefox:
         </div>
       );
     } else {
-      (window as any).Intercom('boot', {
-        app_id: 'kg4u5rp1',
-        custom_launcher_selector: '#IntercomDefaultWidget',
-      });
+      if (localStorage.getItem('source') === 'codePost') {
+        (window as any).Intercom('boot', {
+          app_id: 'kg4u5rp1',
+          custom_launcher_selector: '#IntercomDefaultWidget',
+        });
+      }
       return <div />;
     }
   }

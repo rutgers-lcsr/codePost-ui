@@ -172,6 +172,15 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     document.title = 'codePost - Admin Console';
   }
 
+  public componentDidUpdate(prevProps: any, prevState: any) {
+    if (this.state.students && (!prevState.students || prevState.students != this.state.students)) {
+      window.CommandBar.addContext({
+        course: this.props.currentCourse,
+        students: this.state.students,
+      });
+    }
+  }
+
   // public componentDidUpdate = (prevProps: any, prevState: any) => {
   // if (!prevState.submissionsLoadComplete && this.state.submissionsLoadComplete) {
   //   const current = Date.now() - this.timer;
@@ -1216,12 +1225,11 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     );
     const createButton = <NewCourseDialog courses={this.state.courses} createCourse={this.createCourse} />;
     const headerLeft = [dropdown, createButton];
-    const logout =
-      localStorage.getItem('source') === 'codePost' ? (
-        <Button key="header-logout" onClick={this.props.handleLogout}>
-          Logout
-        </Button>
-      ) : null;
+    const logout = (
+      <Button key="header-logout" onClick={this.props.handleLogout}>
+        Logout
+      </Button>
+    );
 
     // add option to switch
     const headerRight = [
