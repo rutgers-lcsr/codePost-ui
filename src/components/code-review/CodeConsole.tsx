@@ -539,6 +539,49 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /**********************************************************************************/
 
   public async componentDidMount() {
+    // CommandBar loading callbacks
+
+    window.CommandBar.addCallback(
+      'assignGrader',
+      // Assumes the existence of an argument called name
+      (args, context) => {
+        if (this.state.submission) this.updateGrader(this.state.submission!, args.grader);
+      },
+    );
+
+    window.CommandBar.addCallback(
+      'gotoFile',
+      // Assumes the existence of an argument called name
+      (args, context) => {
+        if (this.state.submission) {
+          const foundFile = this.state.files.find((file) => {
+            return file.name === args.filename;
+          });
+          if (foundFile) {
+            this.changeSelectedFile(foundFile.id);
+          }
+        }
+      },
+    );
+
+    window.CommandBar.addCallback(
+      'gotoTestResults',
+      // Assumes the existence of an argument called name
+      (args, context) => {
+        this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
+      },
+    );
+
+    window.CommandBar.addCallback(
+      'gotoCustomCommentExplorer',
+      // Assumes the existence of an argument called name
+      (args, context) => {
+        this.toggleCustomCommentExplorer();
+      },
+    );
+
+    // Other stuff
+
     document.addEventListener('keydown', this.handleCursor);
     document.addEventListener('keydown', this.handleHotkeys);
     const queryValues = queryString.parse(this.props.location.search);
@@ -772,6 +815,36 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           },
           () => this.setNewFilesWarning(),
         );
+    }
+  }
+
+  public componentDidUpdate(prevProps: ICodeConsoleProps, prevState: ICodeConsoleState) {
+    // CommandBar populate the context
+    if (this.state.assignment && (!prevState.assignment || prevState.assignment != this.state.assignment)) {
+      window.CommandBar.addContext({
+        assignment: this.state.assignment,
+      });
+    }
+    if (this.state.course && (!prevState.course || prevState.course != this.state.course)) {
+      window.CommandBar.addContext({
+        course: this.state.course,
+      });
+    }
+    if (this.state.files && (!prevState.files || prevState.files != this.state.files)) {
+      window.CommandBar.addContext({
+        files: this.state.files,
+        filenames: this.state.files.map((record) => record['name']),
+      });
+    }
+    if (this.state.graders && (!prevState.graders || prevState.graders != this.state.graders)) {
+      window.CommandBar.addContext({
+        graders: this.state.graders,
+      });
+    }
+    if (this.state.submission && (!prevState.submission || prevState.submission != this.state.submission)) {
+      window.CommandBar.addContext({
+        submission: this.state.submission,
+      });
     }
   }
 
@@ -2539,11 +2612,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     }
     (window as any).setFoobarParams('grader', this.state.graders);
     (window as any).setFoobarParams('student', this.state.students);
-    (window as any).setFoobarParams(
-      'file',
-      this.state.files.map((file) => file.name),
-    );
-    (window as any).foobarIsActive = true; // lift off
+    (window as any).setFoobarParams('file', this.state.files.map((file) => file.name));
+    (window as any).foobarIsActive = false; // lift off // MODIFIED ON 2020-01-20 for CommandBar replacement
     (window as any).foobarUser = this.props.user.email; // for logging
     (window as any).foobarURL = this.props.match.url; // for logging
 

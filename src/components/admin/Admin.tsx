@@ -172,6 +172,15 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     document.title = 'codePost - Admin Console';
   }
 
+  public componentDidUpdate(prevProps: any, prevState: any) {
+    if (this.state.students && (!prevState.students || prevState.students != this.state.students)) {
+      window.CommandBar.addContext({
+        course: this.props.currentCourse,
+        students: this.state.students,
+      });
+    }
+  }
+
   // public componentDidUpdate = (prevProps: any, prevState: any) => {
   // if (!prevState.submissionsLoadComplete && this.state.submissionsLoadComplete) {
   //   const current = Date.now() - this.timer;
