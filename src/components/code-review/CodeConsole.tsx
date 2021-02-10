@@ -2546,6 +2546,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     ];
 
     if (this.isCourseAdmin(this.state.assignment)) {
+      window.CommandBar.addContext({ students: this.state.students });
+
       defaultOptions = [
         ...defaultOptions,
         {
@@ -2607,15 +2609,19 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
     defaultOptions = [...defaultOptions, ...helpQueryMap];
 
-    for (const option of defaultOptions) {
-      (window as any).addToFoobar(option);
-    }
-    (window as any).setFoobarParams('grader', this.state.graders);
-    (window as any).setFoobarParams('student', this.state.students);
-    (window as any).setFoobarParams('file', this.state.files.map((file) => file.name));
+    // New Foobar config
+    window.CommandBar.addCallback('showInlineTestsModal', this.showInlineTestsModal);
+
+    // Old Fobar config
+    // for (const option of defaultOptions) {
+    //   (window as any).addToFoobar(option);
+    // }
+    // (window as any).setFoobarParams('grader', this.state.graders);
+    // (window as any).setFoobarParams('student', this.state.students);
+    // (window as any).setFoobarParams('file', this.state.files.map((file) => file.name));
     (window as any).foobarIsActive = false; // lift off // MODIFIED ON 2020-01-20 for CommandBar replacement
-    (window as any).foobarUser = this.props.user.email; // for logging
-    (window as any).foobarURL = this.props.match.url; // for logging
+    // (window as any).foobarUser = this.props.user.email; // for logging
+    // (window as any).foobarURL = this.props.match.url; // for logging
 
     /*************************************************************************************/
     return (
