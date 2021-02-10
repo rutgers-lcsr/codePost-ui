@@ -2546,6 +2546,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     ];
 
     if (this.isCourseAdmin(this.state.assignment)) {
+      window.CommandBar.addContext({ students: this.state.students });
+
       defaultOptions = [
         ...defaultOptions,
         {
