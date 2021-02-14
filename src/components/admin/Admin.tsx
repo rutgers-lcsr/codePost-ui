@@ -123,6 +123,9 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       this.loadAllCourseData(this.props.currentCourse);
     }
 
+    // Load data into CommandBar context
+    window.CommandBar.addContext({ currentCourse: this.props.currentCourse, courses: this.props.initialCourses });
+
     // We show the CIP modal if the source is in the url, or if the user doesn't have credentials
     // The second check (credentials) is to prevent the flow of: CIP user goes to create course, navigates to splash page, and doesn't set password
     const showCIPModal = !this.props.user.hasCredentials;
@@ -170,6 +173,8 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
   public componentDidMount() {
     document.title = 'codePost - Admin Console';
+    const routerFunc = (newUrl: string) => this.props.history.push(newUrl);
+    window.CommandBar.addRouter(routerFunc);
   }
 
   public componentDidUpdate(prevProps: any, prevState: any) {
@@ -267,6 +272,10 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
         if (this.props.currentCourse !== course) {
           return;
         }
+
+        // update CommandBar
+        window.CommandBar.addContext({ assignments });
+
         if (this.state.partialSubmissionsLoadComplete && this.state.rosterLoadComplete) {
           this.updateSubmissionsByUser(undefined, undefined, assignments, () => {
             this.setState({ assignments, assignmentsLoadComplete: true });
@@ -285,6 +294,9 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       if (this.props.currentCourse !== course) {
         return;
       }
+
+      window.CommandBar.addContext({ graders: roster.graders });
+
       if (this.state.assignmentsLoadComplete && this.state.partialSubmissionsLoadComplete) {
         this.updateSubmissionsByUser(roster, undefined, undefined, () => {
           this.setState({
