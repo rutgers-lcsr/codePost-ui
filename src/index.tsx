@@ -24,7 +24,7 @@ import App from './App';
 import ErrorBoundary from './components/core/ErrorBoundary';
 
 // If True, show maintenance banner
-const maintenanceMode = true;
+const maintenanceMode = false;
 
 const maintenanceBanner = (
   <div
