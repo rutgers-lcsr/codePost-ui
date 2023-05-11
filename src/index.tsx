@@ -37,7 +37,7 @@ const maintenanceBanner = (
       textAlign: 'center',
     }}
   >
-    Update: Full functionality has been restored.
+    codePost is currently experiencing technical difficulties and is unavailable. We're working hard to get it back online.
   </div>
 );
 
