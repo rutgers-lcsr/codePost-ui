@@ -2,7 +2,7 @@ services:
   - type: web
     name: frontend
     runtime: static
-    buildCommand: export REACT_APP_API_URL=https://api.codepost.io npm run build
+    buildCommand: REACT_APP_API_URL=https://api.codepost.io npm run build
     staticPublishPath: ./build
     pullRequestPreviewsEnabled: false # optional
     headers:
