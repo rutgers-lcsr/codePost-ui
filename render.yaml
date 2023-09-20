@@ -2,7 +2,7 @@ services:
   - type: web
     name: frontend
     runtime: static
-    buildCommand: NODE_OPTIONS--max-old-space-size=1024 REACT_APP_API_URL=https://codepost.onrender.com npm run build
+    buildCommand: NODE_OPTIONS=--max-old-space-size=1024 REACT_APP_API_URL=https://codepost.onrender.com npm run build
     staticPublishPath: ./build
     pullRequestPreviewsEnabled: false # optional
     headers:
