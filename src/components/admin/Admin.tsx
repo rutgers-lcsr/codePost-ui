@@ -24,6 +24,7 @@ import SubmissionsManager from './submissions/SubmissionsManager';
 import ManageAssignments from './assignments/ManageAssignments';
 import RosterManager from './roster/RosterManager';
 import CourseSettingsPanel from './settings/CourseSettingsPanel';
+import BillingPanel from './settings/BillingPanel';
 import WebhooksPanel from './settings/WebhooksPanel';
 
 import CourseMenu from '../core/CourseMenu';
@@ -1391,6 +1392,10 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 updateSettings={this.updateSettings}
               />
             )}
+          />
+          <Route
+            path={`${this.props.match.url}/billing`}
+            render={(props: any) => <BillingPanel {...props} currentCourse={this.props.currentCourse!} />}
           />
           <Route
             path={`${this.props.match.url}/video`}
