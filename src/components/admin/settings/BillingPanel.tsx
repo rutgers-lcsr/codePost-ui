@@ -10,7 +10,20 @@ import '@ant-design/compatible/assets/index.css';
 import { RedoOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Input, message, Select, Statistic, Switch, Table, Tag, Typography } from 'antd';
+import {
+  Alert,
+  Breadcrumb,
+  Input,
+  message,
+  Modal,
+  Select,
+  Statistic,
+  Switch,
+  Table,
+  Tag,
+  Tooltip,
+  Typography,
+} from 'antd';
 import { FormComponentProps } from '@ant-design/compatible/lib/form';
 
 import CPButton from '../../../components/core/CPButton';
@@ -60,7 +73,6 @@ const BillingPanel = (props: IProps) => {
       method: 'GET',
     })
       .then((res) => {
-        console.log(res);
         if (res.ok) {
           return res.json();
         }
@@ -68,11 +80,10 @@ const BillingPanel = (props: IProps) => {
       })
       .then((data) => {
         setDetails(data);
-        console.log(data);
       });
   }, []);
 
-  const createCheckoutSession = async () => {
+  const createCheckoutSession = async (plan_type: string) => {
     const res = await fetch(
       `${process.env.REACT_APP_API_URL}/billing/${props.currentCourse.id}/create_checkout_session/`,
       {
@@ -80,7 +91,8 @@ const BillingPanel = (props: IProps) => {
           Authorization: `JWT ${localStorage.getItem('token') || ''}`,
           'Content-Type': 'application/json',
         },
-        method: 'GET',
+        method: 'POST',
+        body: JSON.stringify({ plan_type: plan_type }),
       },
     );
 
@@ -101,37 +113,91 @@ const BillingPanel = (props: IProps) => {
     }
   };
 
+  const createCheckoutSessionCore = async () => {
+    await createCheckoutSession('core');
+  };
+
+  const createCheckoutSessionPro = async () => {
+    await createCheckoutSession('pro');
+  };
+
   let action = null;
 
-  if (details && details.total_paid_students) {
-    if (details.total_paid_students >= details.total_active_students && details.total_paid_students > 0) {
+  if (details) {
+    if (details.show_payment_buttons === false) {
       action = (
         <CPButton loading={false} cpType="primary" onClick={() => {}} disabled={true}>
           Thank you for supporting codePost!
         </CPButton>
       );
-    } else if (details.total_paid_students < details.total_active_students && details.total_paid_students > 0) {
-      action = (
-        <CPButton loading={false} cpType="primary" onClick={createCheckoutSession} disabled={false}>
-          Click here to pay
-        </CPButton>
-      );
     } else {
-      action = null;
+      action = (
+        <div>
+          <div>
+            {details.total_paid_cents > 0 ? (
+              <Text>Please choose your plan. You will only be billed for students added since the last payment.</Text>
+            ) : (
+              <Text strong>Please choose your plan.</Text>
+            )}
+          </div>
+          <div style={{ display: 'flex' }}>
+            <Tooltip title={'Includes all features except for the autograder.'}>
+              <CPButton loading={false} cpType="primary" onClick={createCheckoutSessionCore} disabled={false}>
+                $1 per student for codePost core
+              </CPButton>
+            </Tooltip>
+            <div style={{ width: '20px' }}></div>
+            <Tooltip title={'Includes all features including the autograder.'}>
+              <CPButton loading={false} cpType="primary" onClick={createCheckoutSessionPro} disabled={false}>
+                $4 per student for codePost autograder
+              </CPButton>
+            </Tooltip>
+          </div>
+        </div>
+      );
     }
   }
-  action = (
-    <CPButton loading={false} cpType="primary" onClick={createCheckoutSession} disabled={false}>
-      Click here to pay
-    </CPButton>
-  );
+
+  const info = () => {
+    Modal.info({
+      title: "codePost's new pricing",
+      content: (
+        <div>
+          <p>
+            Over the last five years, codePost has supported thousands of courses and instructors teach programming
+            better. As codePost has grown, so have the costs associated with running it.
+          </p>
+          <p>
+            To that end, we are introducing what we believe is the simplest and fairest pricing model going forward for
+            codePost: <b>$1 per student per course</b> for courses that don't use the autograder, and{' '}
+            <b>$4 per student per course</b> for those that do.
+          </p>
+          <p>
+            As the best teaching tool on the market, codePost's goal is to remain accessible to as many students and
+            instructors as possible. If your class or institution is unable to pay, please email us at team@codepost.io,
+            and we will be happy to reduce or waive the fee.
+          </p>
+          <p>Thank you for being a codePost user and supporter!</p>
+          <p>Sincerely,</p>
+          <p>The codePost Team</p>
+        </div>
+      ),
+      onOk() {},
+    });
+  };
 
   const content = (
     <div>
+      <Alert
+        style={{ width: 'fit-content', cursor: 'pointer' }}
+        onClick={info}
+        message="Read more about codePost's new pricing"
+        type="info"
+        showIcon
+      />
+      <br />
       <div style={{ display: 'flex' }}>
         <Statistic title="Total Active Students" value={details && details.total_active_students} />
-        <div style={{ width: 20 }} />
-        <Statistic title="Total Paid Students" value={details && details.total_paid_students} />
       </div>
       <br />
       {action}
@@ -149,15 +215,6 @@ const BillingPanel = (props: IProps) => {
               align: 'center' as alignType,
               render: (amount: number) => {
                 return <Text>${amount / 100}</Text>;
-              },
-            },
-            {
-              title: 'Students',
-              dataIndex: 'students',
-              key: 'students',
-              align: 'center' as alignType,
-              render: (students: number) => {
-                return <Text>{students}</Text>;
               },
             },
             {
