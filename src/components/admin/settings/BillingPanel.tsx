@@ -47,6 +47,7 @@ interface IProps {
 
 const BillingPanel = (props: IProps) => {
   const [details, setDetails] = React.useState<any>({});
+  // const [showWaiver, setShowWaiver] = React.useState(false);
 
   React.useEffect(() => {
     const queryString = window.location.search;
@@ -82,6 +83,22 @@ const BillingPanel = (props: IProps) => {
         setDetails(data);
       });
   }, []);
+
+  const requestWaiver = async () => {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/billing/${props.currentCourse.id}/request_waiver/`, {
+      headers: {
+        Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'GET',
+    });
+
+    if ((await res.status) === 200) {
+      message.success('Waiver requested successfully.');
+    } else {
+      message.error('Something went wrong.');
+    }
+  };
 
   const createCheckoutSession = async (plan_type: string) => {
     const res = await fetch(
@@ -134,7 +151,9 @@ const BillingPanel = (props: IProps) => {
       action = (
         <div>
           <div>
-            {details.total_paid_cents > 0 ? (
+            {details.waiver_requested ? (
+              <Text strong>Payment waiver approved.</Text>
+            ) : details.total_paid_cents > 0 ? (
               <Text>Please choose your plan. You will only be billed for students added since the last payment.</Text>
             ) : (
               <Text strong>Please choose your plan.</Text>
@@ -169,20 +188,65 @@ const BillingPanel = (props: IProps) => {
           </p>
           <p>
             To that end, we are introducing what we believe is the simplest and fairest pricing model going forward for
-            codePost: <b>$1 per student per course</b> for courses that don't use the autograder, and{' '}
-            <b>$4 per student per course</b> for those that do.
+            codePost:{' '}
+            <ul>
+              <li>
+                <b>$1 per student per course</b> for courses that don't use the autograder, and
+              </li>
+              <li>
+                <b>$4 per student per course</b> for those that do
+              </li>
+            </ul>
           </p>
           <p>
             As the best teaching tool on the market, codePost's goal is to remain accessible to as many students and
-            instructors as possible. If your class or institution is unable to pay, please email us at team@codepost.io,
-            and we will be happy to reduce or waive the fee.
+            instructors as possible. If your class or institution is unable to pay, please request a waiver:
           </p>
+          <p>
+            <span style={{ color: 'blue', cursor: 'pointer' }} onClick={waiver}>
+              One-click waiver request
+            </span>
+          </p>
+          <p>We will be happy to automatically waive the fee.</p>
           <p>Thank you for being a codePost user and supporter!</p>
           <p>Sincerely,</p>
           <p>The codePost Team</p>
         </div>
       ),
       onOk() {},
+    });
+  };
+
+  const waiver = () => {
+    Modal.info({
+      title: 'Request waiver',
+      okText: 'Request waiver',
+      cancelText: 'Cancel',
+      okCancel: true,
+      content: (
+        <div>
+          <p>
+            At codePost, our mission is to make our platform accessible to all educators and students, regardless of
+            financial constraints. We are committed to supporting diversity, equity, and inclusion in education.
+          </p>
+          <p>
+            For your convenience, we offer a streamlined waiver process. By clicking the "Request Waiver" button below,
+            your waiver will be automatically approved, ensuring that you can set up your course without any delays.
+          </p>
+          <p>
+            Please note that we may track and share the names of institutions benefiting from our waiver program to
+            showcase our commitment to accessibility and to inspire others to support equitable access to educational
+            resources. In rare cases where we identify a pattern of waiver misuse, we may need to limit future waivers
+            to ensure the program's sustainability and fairness for all users.
+          </p>
+          <p>By proceeding with the waiver request, you agree to these terms.</p>
+          <p>Thank you for using codePost!</p>
+        </div>
+      ),
+      onOk() {
+        requestWaiver();
+      },
+      onCancel() {},
     });
   };
 
