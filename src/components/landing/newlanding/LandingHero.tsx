@@ -44,8 +44,7 @@ const LandingHero = () => {
           paddingBottom: windowSize.width < landingVars.breakpoints.hero ? 30 : 45,
         }}
       >
-        Autograder, code commenting, and other tools to help you give amazing feedback, quickly. &nbsp;
-        <span style={{ fontWeight: 600, color: '#476b63' }}>Free for higher ed.</span>
+        Autograder, code commenting, and other tools to help you give amazing feedback, quickly.
       </h1>
       <div
         style={{
@@ -55,13 +54,9 @@ const LandingHero = () => {
           windowSize.width < landingVars.breakpoints.removeModule ? 'flex-direction-column' : ''
         } align-items-center justify-content-center`}
       >
-        <CPButton style={buttonStyle} cpType="secondary" id="calendly-button-hero">
-          Schedule demo
-        </CPButton>
-        &nbsp; &nbsp;
         <Link to="/signup/create">
           <CPButton style={buttonStyle} cpType="primary">
-            Sign up free
+            Sign up
           </CPButton>
         </Link>
       </div>

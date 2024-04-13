@@ -47,30 +47,7 @@ const ucsdImg = require('../../../img/landing/compressed/logos/ucsd.png');
 const cornellImg = require('../../../img/landing/compressed/logos/cornell.png');
 
 class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
-  public componentDidMount() {
-    // Calendly widget setup
-    const head = document.querySelector('head');
-    const script = document.createElement('script');
-    script.setAttribute('src', 'https://assets.calendly.com/assets/external/widget.js');
-    const link = document.createElement('link');
-    link.setAttribute('href', 'https://assets.calendly.com/assets/external/widget.css');
-    link.setAttribute('rel', 'stylesheet');
-    head!.appendChild(script);
-    head!.appendChild(link);
-
-    // const calendlyDivTop = document.getElementById('calendly-button-top');
-    const calendlyDivBottom = document.getElementById('calendly-button-bottom');
-    calendlyDivBottom!.setAttribute(
-      'onclick',
-      "Calendly.showPopupWidget('https://calendly.com/codepost/');return false;",
-    );
-
-    const calendlyDiv = document.getElementById('calendly-button-hero');
-    calendlyDiv!.setAttribute(
-      'onclick',
-      "Calendly.showPopupWidget('https://calendly.com/codepost/demo');return false;",
-    );
-  }
+  public componentDidMount() {}
 
   public render() {
     const panelOne = <LandingAnnotationPanel />;
@@ -132,7 +109,8 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
                 <div style={{ fontWeight: 600, paddingBottom: 5 }}>Managing a team of graders?</div>
                 <div style={{ fontSize: '85%' }}>
                   codePost includes tools to help you run a large course team: distribute work, set up a rubric to
-                  ensure consistent, fair feedback, and use <a href="https://commandbar.com">intuitive keyboard shortcuts</a> to review on grader work.
+                  ensure consistent, fair feedback, and use{' '}
+                  <a href="https://commandbar.com">intuitive keyboard shortcuts</a> to review on grader work.
                 </div>
               </div>
             </div>
@@ -170,7 +148,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
         <div style={{ display: 'inline-block', width: '500px' }}>
           <Suspense fallback={<div style={{ width: 500, height: 400 }} />}>
             <Integrations
-              integrations={['canvas', 'blackboard', 'jupyter', 'moss', 'github', 'jsfiddle', 'homegrown', 'more']}
+              integrations={['canvas', 'blackboard', 'jupyter', 'github', 'jsfiddle', 'homegrown', 'more']}
             />
           </Suspense>
         </div>
