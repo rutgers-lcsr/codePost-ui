@@ -82,10 +82,14 @@ const ComponentManager = (
                 return course.id === storedID;
               });
               if (found !== undefined) {
-                const dPage =
+                let dPage =
                   typeof defaultPage === 'string' || typeof defaultPage === 'undefined'
                     ? defaultPage
                     : defaultPage(found);
+
+                if (subprops.location.pathname === '/admin/billing') {
+                  dPage = 'billing';
+                }
                 return <Redirect to={formURLforLink(props.match.url, found, dPage)} />;
               }
             }
@@ -94,10 +98,14 @@ const ComponentManager = (
               const lastResort = props.initialCourses.sort((a, b) => {
                 return b.id - a.id;
               })[0];
-              const dPage =
+              let dPage =
                 typeof defaultPage === 'string' || typeof defaultPage === 'undefined'
                   ? defaultPage
                   : defaultPage(lastResort);
+
+              if (subprops.location.pathname === '/admin/billing') {
+                dPage = 'billing';
+              }
               return <Redirect to={formURLforLink(props.match.url, lastResort, dPage)} />;
             }
 
