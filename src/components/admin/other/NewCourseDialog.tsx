@@ -165,7 +165,7 @@ const CollectionCreateForm: any = Form.create({ name: 'form_in_modal' })(
                     ],
                   },
                 ],
-              })(<Input placeholder="Fall 2019" />)}
+              })(<Input placeholder="Fall 2024" />)}
             </Form.Item>
             {this.props.courses.length > 0 ? (
               <div>

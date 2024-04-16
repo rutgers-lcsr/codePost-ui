@@ -120,7 +120,6 @@ const sections = [
     name: 'instructors',
     features: [
       'Make sure everything gets graded',
-      <span key="moss">Do plagiarism detection with Moss</span>,
       'Grade student work anonymously',
       'Make changes to rubrics after grading',
       'Distribute work to a team of graders',
@@ -135,7 +134,6 @@ const sections = [
         key="0"
         alt="grader management"
       />,
-      <img src="https://cl.ly/b1fe90be31f9/Moss.png" width="550" height="344" key="moss" alt="moss" />,
       <Video key="1" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/anonymous-grading.mp4" />,
       <Video key="2" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/change-rubric.mp4" />,
       <Video key="3" url="https://codepost-videos.s3.us-east-2.amazonaws.com/why-use-codepost/distribute-work.mp4" />,

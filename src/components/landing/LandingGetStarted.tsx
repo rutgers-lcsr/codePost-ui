@@ -35,25 +35,6 @@ const LandingGetStarted = () => {
         <CPButton href="/signup" cpType="primary" style={{ width: 160, height: 40, fontSize: 17, lineHeight: 2.2 }}>
           Sign up
         </CPButton>
-        <div
-          style={{
-            paddingLeft: windowSize.width < landingVars.breakpoints.getStarted ? 5 : 30,
-            paddingRight: windowSize.width < landingVars.breakpoints.getStarted ? 5 : 30,
-            fontWeight: 600,
-            textAlign: 'center',
-            fontSize: 18,
-            color: 'rgba(0,0,0,0.5)',
-          }}
-        >
-          {windowSize.width < landingVars.breakpoints.getStarted ? '' : 'or'}
-        </div>
-        <CPButton
-          style={{ width: 160, height: 40, fontSize: 17, lineHeight: 2.2, display: 'inline' }}
-          id="calendly-button-bottom"
-          cpType="secondary"
-        >
-          Schedule demo
-        </CPButton>
       </div>
     </div>
   );

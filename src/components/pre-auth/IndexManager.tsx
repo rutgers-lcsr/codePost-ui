@@ -19,7 +19,6 @@ import CreateSignup from './CreateSignup';
 import FAQs from './FAQs';
 import IntegrationsPage from './IntegrationsPage';
 import JoinSignup from './JoinSignup';
-import Pricing from './Pricing';
 import Scholarship from './Scholarship';
 import AutograderDetail from './AutograderDetail';
 import PrivacyPolicy from './PrivacyPolicy';
@@ -94,11 +93,6 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
               exact={true}
               path={'/integrations'}
               render={(props: any) => <IntegrationsPage {...props} isLoggedIn={this.props.isLoggedIn} />}
-            />
-            <Route
-              exact={true}
-              path={'/pricing'}
-              render={(props: any) => <Pricing {...props} isLoggedIn={this.props.isLoggedIn} />}
             />
             <Route
               exact={true}

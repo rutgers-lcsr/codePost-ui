@@ -36,8 +36,8 @@ const AboutUs = (props: IProps) => {
           </div>
           <br />
           <div>
-            Since, we’ve expanded to many more universities (and countries!), and we’re just getting started! If you
-            have any ideas to help make codePost a better teaching tool, please let us know!
+            Since, we’ve expanded to many more universities (and countries!)! If you have any ideas to help make
+            codePost a better teaching tool, please let us know!
           </div>
         </div>
       </div>

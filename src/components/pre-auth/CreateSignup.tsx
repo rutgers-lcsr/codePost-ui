@@ -149,8 +149,7 @@ class CreateSignup extends React.Component<IProps, IState> {
       Modal.confirm({
         title: 'Are you using the right email address?',
         icon: <ExclamationCircleOutlined />,
-        content:
-          "Make sure to use your organization's email. codePost uses your email to determine whether you can access codePost for free (available for not-for-profit institutions like universities).",
+        content: "Make sure to use your organization's email.",
         okText: 'Use this email address',
         cancelText: 'Use a different email',
         onOk: this.validateNewUser,
