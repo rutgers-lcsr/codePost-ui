@@ -10,12 +10,12 @@ export function awaitTestResult(id: string, callback: (result: any) => any, prog
   const interval = setInterval(() => {
     pollTestResult(id, interval, callback, progressCallback);
     if (++tries === MAX_TRIES_RUN && !progressCallback) {
-      sendSlack(
-        `No test result received after polling - infinite loop ${id}`,
-        window.location.href,
-        '#cc0000',
-        '#autograder_bugs',
-      );
+      // sendSlack(
+      //   `No test result received after polling - infinite loop ${id}`,
+      //   window.location.href,
+      //   '#cc0000',
+      //   '#autograder_bugs',
+      // );
       message.error(
         'Your test is taking longer than usual to complete. Please try again in a few minutes, or contact the codePost team using the chatbox on the bottom right of this page if the problem persists.',
         25,
