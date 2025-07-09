@@ -1,0 +1,11 @@
+services:
+  codepost-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - REACT_APP_API_URL=https://api.codepost.io
+
+    ports:
+      - '80:80'
+      - '443:443'
