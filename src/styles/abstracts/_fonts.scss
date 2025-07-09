@@ -1,0 +1,12 @@
+// Fonts
+
+$fontMain: Avenir Next, Lato, sans-serif;
+$fontCode: AndaleMono, PT Mono, monospace;
+$fontLogo: Muli, Lato, sans-serif;
+
+// Export for tsx
+:export {
+  fontMain: $fontMain;
+  fontCode: $fontCode;
+  fontLogo: $fontLogo;
+}

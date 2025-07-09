@@ -1,0 +1,260 @@
+.foobar-search:hover {
+  border: 1px solid gray !important;
+  color: gray !important;
+}
+
+.source-editor-code {
+  height: 100%;
+}
+
+.CodeMirror {
+  &--source-editor {
+    height: 450px;
+  }
+}
+
+#file-explorer {
+  .CodeMirror {
+    height: 500px;
+  }
+}
+
+#Student {
+  height: 100%;
+
+  .disabled-row > td {
+    background: #fff !important;
+    cursor: not-allowed !important;
+  }
+}
+
+#Grade {
+  header button {
+    font-size: 12px !important;
+    padding: 0 10px !important;
+  }
+
+  .layout--standard-console {
+    &__sider {
+      background-color: #fff;
+      box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.11);
+      height: calc(100vh - 50px);
+      overflow: hidden;
+    }
+
+    &__header {
+      padding: 0px 20px 0px 16px;
+      border-bottom: 1px solid gray;
+      height: 50px;
+    }
+
+    &__subheader {
+      line-height: 40px;
+
+      padding: 24px 20px 20px 36px;
+    }
+
+    &__content {
+      margin: 0px;
+    }
+  }
+
+  .header-menu:hover {
+    background-color: #f0fff7 !important;
+  }
+
+  .dropdown {
+    font-size: 12;
+    width: 200px;
+  }
+
+  #Code-Header {
+    .ant-collapse-header {
+      padding-bottom: 0;
+    }
+
+    .ant-collapse-content-box {
+      padding: 0;
+    }
+  }
+}
+
+#HW_badge_cont {
+  display: inline-block !important;
+}
+
+#HW_badge {
+  top: 18px !important;
+}
+
+#PreAuth {
+  .header a {
+    color: grey;
+  }
+
+  .footer a {
+    color: grey;
+  }
+
+  a:hover {
+    color: #062a22;
+  }
+}
+
+.internal-link {
+  color: inherit;
+
+  &:hover {
+    color: #25be85;
+  }
+}
+
+// this is a link within an ant menu, so we want to turn off additional link styling and let the
+// menu styling show
+.internal-link--menu {
+  color: inherit;
+  transition: 0s;
+  padding: 0;
+
+  &:hover {
+    color: inherit;
+  }
+}
+
+#Admin {
+  height: 100%;
+}
+
+#Admin .layout--admin {
+  min-height: 100vh;
+
+  table {
+    padding-bottom: 15px;
+  }
+
+  &__sider {
+    &__header {
+      padding: 16px 20px;
+    }
+  }
+
+  &__header {
+    background: #fff;
+    box-shadow: 0 5px 10px 0 rgba(0, 21, 41, 0.12);
+    position: relative;
+    z-index: 2;
+  }
+
+  &__banner {
+    background-color: #fefefe;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 0px;
+    position: relative;
+    height: 75px;
+  }
+
+  &__subheader {
+    background-color: #fff;
+    padding: 0px;
+    margin-bottom: 36px;
+
+    position: relative;
+
+    &__go-back {
+      position: absolute;
+      top: 5px;
+      line-height: 14px;
+    }
+  }
+
+  &__detail {
+    background-color: #fff;
+    border-radius: 5px;
+    overflow: inherit;
+
+    // On smaller screens, decrease the left-right margin
+    @media only screen and (max-width: 800px) {
+      margin: 20px;
+    }
+
+    .ant-layout {
+      background-color: #fff;
+    }
+
+    &--rubric {
+      margin: 0px;
+    }
+  }
+
+  &__rubric {
+    &__subheader {
+      background-color: #fff;
+      border-bottom: 1px solid $neutralBorder;
+      padding: 16px 61px 0px 61px;
+      height: auto;
+
+      position: relative;
+      &__go-back {
+        position: absolute;
+        top: 24px;
+        line-height: 1px;
+      }
+    }
+
+    &__content {
+      overflow: auto;
+
+      margin: 40px 61px;
+    }
+  }
+
+  &__content {
+    overflow: auto;
+  }
+}
+
+.layout--standard-console {
+  min-height: 100vh;
+
+  &__sider {
+    background-color: #fff;
+    box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.11);
+  }
+
+  &__header {
+    padding: 0px 20px 0px 16px;
+  }
+
+  &__subheader {
+    line-height: 40px;
+
+    padding: 24px 20px 20px 36px;
+  }
+
+  &__content {
+    margin: 0px;
+  }
+}
+
+#Code-Header {
+  .ant-collapse tr {
+    line-height: 5px;
+  }
+}
+
+#Admin .ant-table-tbody td {
+  padding: 10px 8px;
+}
+
+tr.drop-over-downward td {
+  border-bottom: 2px dashed #47cc97 !important;
+}
+
+tr.drop-over-upward td {
+  border-top: 2px dashed #47cc97;
+}
+
+td.draggable {
+  cursor: move;
+}

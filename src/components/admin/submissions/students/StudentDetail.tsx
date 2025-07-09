@@ -1,0 +1,502 @@
+/**********************************************************************************************************************/
+/* Imports
+/**********************************************************************************************************************/
+
+/* react imports */
+import * as React from 'react';
+
+import {
+  CodeOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  EyeFilled,
+  EyeInvisibleOutlined,
+  FileAddOutlined,
+  MenuOutlined,
+  RedoOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
+
+import { Icon as LegacyIcon } from '@ant-design/compatible';
+
+/* style imports */
+import { Badge, Breadcrumb, Dropdown, Menu, message, Modal, Select } from 'antd';
+
+/* other library imports */
+import moment from 'moment';
+
+import { Link } from 'react-router-dom';
+
+/* codePost imports */
+import { openSubmission } from '../../other/AdminUtils';
+
+import { CourseType } from '../../../../infrastructure/course';
+import { AssignmentType, sortAssignments } from '../../../../infrastructure/assignment';
+import { SubmissionInfoType } from '../../../../infrastructure/submission';
+
+import { TableDetail } from '../../other/TableDetail';
+
+import UploadSubmissionDialog from '../../assignments/assignments/SubmissionUpload/UploadSubmissionDialog';
+
+import CPTooltip from '../../../../components/core/CPTooltip';
+import { tooltips } from '../../../../components/core/tooltips';
+
+import { IStudentSubmissionsDataTable } from '../../../../types/common';
+
+import { Environment } from '../../../../infrastructure/autograder/environment';
+import { SubmissionTestResultType } from '../../../../infrastructure/autograder/runTypes';
+
+import { awaitTestResult } from '../../assignments/tests/autograderPollingUtils';
+
+const confirm = Modal.confirm;
+/**********************************************************************************************************************/
+
+interface IProps {
+  course: CourseType;
+  onBack: () => void;
+  students: string[];
+  deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
+  assignments: AssignmentType[];
+  graders: string[];
+  submissions: IStudentSubmissionsDataTable;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionInfoType>;
+  addFilesToSubmission: (submission: SubmissionInfoType, files: any[]) => Promise<SubmissionInfoType>;
+
+  viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
+  changeSubmissionGrader: (submission: SubmissionInfoType, grader: string | undefined) => Promise<void>;
+  student: string;
+
+  match: any;
+  baseURL: string;
+}
+
+interface IState {
+  uploadSubmissionVisible: boolean;
+  selectedSubmission: string /* stores the name of the assignment associated with the submission */;
+
+  assignmentToUpload?: AssignmentType;
+
+  submissionsMap: {
+    [assignmentID: number]: SubmissionInfoType;
+  };
+
+  subsRunning: number[];
+}
+
+class StudentDetail extends React.Component<IProps, IState> {
+  public state: Readonly<IState> = {
+    uploadSubmissionVisible: false,
+    selectedSubmission: '',
+    submissionsMap: this.props.submissions[this.props.student],
+    subsRunning: [],
+  };
+
+  // ******************************************** API changes **************************************************
+
+  public removeSubmission = (toRemove: SubmissionInfoType) => {
+    confirm({
+      title: 'Are you sure you want to remove this submission?',
+      content: `The following students are associated with this submission: ${toRemove.students.join(',')}.`,
+      onOk: () => {
+        return this.props.deleteSubmission(toRemove);
+      },
+      okText: 'Remove',
+    });
+  };
+
+  public callback = (sub: SubmissionInfoType, result: SubmissionTestResultType) => {
+    this.setState((prevState, props) => ({ subsRunning: prevState.subsRunning.filter((id) => id !== sub.id) }));
+    message.success('Test run completed!');
+  };
+
+  public runTests = async (assignment: AssignmentType, sub: SubmissionInfoType) => {
+    if (assignment.environment) {
+      this.setState((prevState, props) => ({ subsRunning: [...prevState.subsRunning, sub.id] }));
+      const payload = {
+        id: assignment.environment,
+        submission: sub.id,
+        simulate: false,
+      };
+      const result = await Environment.run(payload);
+      awaitTestResult(result.task, this.callback.bind({}, sub));
+    }
+  };
+
+  public reUploadSubmission = (toRemove: SubmissionInfoType) => {
+    confirm({
+      title: 'Are you sure you want to re-upload files for this submission?',
+      content: (
+        <div>
+          <br />
+          <div>
+            This action <b>cannot</b> be undone and will delete all existing files and comments for this submission.{' '}
+          </div>
+          <br />
+          <div>The following students are associated with this submission:</div>
+          <ul>
+            {toRemove.students.map((student: string) => {
+              return <li>{student}</li>;
+            })}
+          </ul>
+        </div>
+      ),
+      onOk: () => {
+        this.props.deleteSubmission(toRemove).then(() => {
+          this.toggleUploadSubmissionVisible(toRemove.assignment);
+        });
+      },
+      okText: 'Remove',
+    });
+  };
+
+  public uploadSubmission = (assignment: AssignmentType, partners: string[], files: any[]) => {
+    const submission = this.state.submissionsMap[assignment.id];
+    if (submission) {
+      return this.props.addFilesToSubmission(submission, files);
+    } else {
+      return this.props.uploadSubmission(assignment, partners, files);
+    }
+  };
+
+  public changeGrader = (submission: SubmissionInfoType, newGrader: string | undefined) => {
+    this.props.changeSubmissionGrader(submission, newGrader).then(() => {
+      message.success('Updated grader');
+    });
+  };
+
+  // ******************************************** State changes **************************************************
+
+  public toggleUploadSubmissionVisible = (assignmentToUpload?: number) => {
+    if (assignmentToUpload === undefined) {
+      this.setState({ uploadSubmissionVisible: false });
+    } else {
+      const toUpload = this.props.assignments.find((el) => {
+        return el.id === assignmentToUpload;
+      });
+      if (toUpload !== undefined) {
+        this.setState({
+          uploadSubmissionVisible: true,
+          assignmentToUpload: toUpload,
+        });
+      }
+    }
+  };
+
+  public changeActiveSubmission = (assignment: string) => {
+    this.setState({ selectedSubmission: assignment });
+  };
+
+  // ******************************************** Render helpers **************************************************
+
+  public getViewIcon = (submission: SubmissionInfoType, student: string) => {
+    if (!(submission.id in this.props.viewsBySubmission) || !submission.isFinalized) {
+      // case: No history object or unfinalized
+      return '--';
+    } else if (student in this.props.viewsBySubmission[submission.id]) {
+      // case: submission has been viewed
+      return (
+        <CPTooltip title={moment(this.props.viewsBySubmission[submission.id][student]).format('llll')}>
+          <div>
+            <EyeFilled />
+          </div>
+        </CPTooltip>
+      );
+    } else {
+      // case: submission has not been viewed
+      return <EyeInvisibleOutlined />;
+    }
+  };
+
+  public getStatus = (submission: SubmissionInfoType | undefined) => {
+    let badgeStatus: 'default' | 'error' | 'success' | 'warning' | 'processing' | undefined;
+    let cellText;
+    if (submission) {
+      if (submission.isFinalized) {
+        badgeStatus = 'success';
+        cellText = 'Finalized';
+      } else if (submission.grader) {
+        badgeStatus = 'processing';
+        cellText = 'Unfinalized';
+      } else {
+        badgeStatus = 'warning';
+        cellText = 'Unclaimed';
+      }
+    } else {
+      badgeStatus = 'default';
+      cellText = 'Missing';
+    }
+    return (
+      <span>
+        <Badge status={badgeStatus} />
+        {cellText}
+      </span>
+    );
+  };
+
+  public render() {
+    // const graderOptions = this.props.graders.map((el: string) => {
+    //   return { label: el, value: el };
+    // });
+
+    const aligner: 'left' | 'center' | 'right' = 'center';
+    let columns = [
+      {
+        title: 'Open',
+        dataIndex: 'open',
+        key: 'open',
+        align: aligner,
+      },
+      {
+        title: 'Assignment',
+        dataIndex: 'assignment',
+        key: 'assignment',
+      },
+      {
+        title: 'Status',
+        dataIndex: 'status',
+        key: 'status',
+      },
+      {
+        title: 'Partners',
+        dataIndex: 'partners',
+        key: 'partners',
+        align: aligner,
+      },
+      {
+        title: 'Grade',
+        dataIndex: 'grade',
+        key: 'grade',
+        align: aligner,
+      },
+      {
+        title: 'Grader',
+        dataIndex: 'grader',
+        key: 'grader',
+        align: aligner,
+      },
+      {
+        title: (
+          <div>
+            Viewed &nbsp;
+            <CPTooltip title={tooltips.admin.studentSubmissions.viewed} infoIcon={true} hideThisOnHideTips={true} />
+          </div>
+        ),
+        dataIndex: 'viewed',
+        key: 'viewed',
+        align: aligner,
+      },
+      {
+        title: 'Actions',
+        dataIndex: 'actions',
+        key: 'actions',
+        align: aligner,
+      },
+    ];
+
+    if (this.props.course !== undefined && this.props.course.lateDayCreditsAllowable !== null) {
+      columns.splice(columns.length - 1, 0, {
+        title: 'Late Day Credits Used',
+        dataIndex: 'lateDayCreditsUsed',
+        key: 'lateDayCreditsUsed',
+        align: aligner,
+      });
+    }
+
+    const data = sortAssignments(this.props.assignments).map((assignment) => {
+      const submission = this.state.submissionsMap[assignment.id];
+      let gradeString = 'Not submitted';
+      // colorClass is to color the text based on status of submission
+      if (submission && submission.isFinalized) {
+        gradeString = `${String(submission.grade)}/${assignment.points}`;
+      } else if (submission) {
+        gradeString = 'Unfinalized';
+      }
+
+      const menu = submission ? (
+        <Menu>
+          <Menu.Item key="0" onClick={openSubmission.bind(this, submission.id)}>
+            <span>
+              <CodeOutlined /> Open submission
+            </span>
+          </Menu.Item>
+          <Menu.Item key="1" onClick={this.reUploadSubmission.bind(this, submission)}>
+            <span>
+              <RedoOutlined /> Replace files
+            </span>
+          </Menu.Item>
+          <Menu.Item key="2" onClick={this.toggleUploadSubmissionVisible.bind(this, assignment.id)}>
+            <span>
+              <FileAddOutlined /> Add / Update files
+            </span>
+          </Menu.Item>
+          {assignment.environment && (
+            <Menu.Item
+              key="3"
+              disabled={this.state.subsRunning.includes(submission.id)}
+              onClick={this.runTests.bind(this, assignment, submission)}
+            >
+              <span>
+                <LegacyIcon type={this.state.subsRunning.includes(submission.id) ? 'loading' : 'caret-right'} /> Run
+                Tests
+              </span>
+            </Menu.Item>
+          )}
+          <Menu.Divider />
+          <Menu.Item key="4" style={{ color: 'red' }} onClick={this.removeSubmission.bind(this, submission)}>
+            <DeleteOutlined />
+            Delete submission
+          </Menu.Item>
+        </Menu>
+      ) : (
+        <Menu>
+          <Menu.Item key="0">
+            <span onClick={this.toggleUploadSubmissionVisible.bind(this, assignment.id)}>
+              <UploadOutlined /> Upload submission
+            </span>
+          </Menu.Item>
+        </Menu>
+      );
+
+      let graderElement;
+      if (submission && assignment.name === this.state.selectedSubmission) {
+        const undefinedOption = (
+          // @ts-ignore
+          <Select.Option key={0} value={undefined}>
+            No grader
+          </Select.Option>
+        );
+        graderElement = (
+          <div>
+            <Select
+              style={{ width: 200 }}
+              defaultValue={submission.grader ? submission.grader : undefined}
+              onChange={this.changeGrader.bind(this, submission)}
+            >
+              {[
+                ...this.props.graders
+                  .sort((a, b) => a.localeCompare(b))
+                  .map((grader) => {
+                    return (
+                      <Select.Option key={grader} value={grader}>
+                        {grader}
+                      </Select.Option>
+                    );
+                  }),
+                undefinedOption,
+              ]}
+            </Select>
+            &nbsp;{' '}
+            <CPTooltip title={tooltips.admin.studentSubmissions.lockAssignGrader} hideThisOnHideTips={true}>
+              <EditOutlined onClick={this.changeActiveSubmission.bind(this, '')} />
+            </CPTooltip>
+          </div>
+        );
+      } else if (submission) {
+        graderElement = (
+          <div>
+            <span>{submission.grader ? submission.grader : '--'}</span>&nbsp;
+            <CPTooltip title={tooltips.admin.studentSubmissions.assignGrader} hideThisOnHideTips={true}>
+              <EditOutlined onClick={this.changeActiveSubmission.bind(this, assignment.name)} />
+            </CPTooltip>
+          </div>
+        );
+      } else {
+        graderElement = '--';
+      }
+
+      return {
+        key: assignment.name,
+        open: submission ? <CodeOutlined onClick={openSubmission.bind(this, submission.id)} /> : '--',
+        assignment: assignment.name,
+        partners: submission
+          ? submission.students
+              .filter((student) => {
+                return student !== this.props.student;
+              })
+              .join(',')
+          : '--',
+        grade: gradeString,
+        grader: graderElement,
+        status: this.getStatus(submission),
+        lateDayCreditsUsed: submission !== undefined ? submission.lateDayCreditsUsed : '',
+        viewed: submission ? this.getViewIcon(submission, this.props.student) : '--',
+        actions: (
+          <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>
+            <MenuOutlined />
+          </Dropdown>
+        ),
+      };
+    });
+
+    return (
+      <div>
+        <TableDetail
+          loadComplete={true}
+          title={
+            <span>
+              <span>Submissions: </span>
+              <span>{this.props.student}</span>
+            </span>
+          }
+          breadcrumbs={
+            <Breadcrumb>
+              <Breadcrumb.Item>
+                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+                <a>Submissions</a>
+              </Breadcrumb.Item>
+              <Breadcrumb.Item onClick={this.props.onBack}>
+                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+                <Link to={this.props.baseURL}>Students</Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Item>{this.props.student}</Breadcrumb.Item>
+            </Breadcrumb>
+          }
+          isEmpty={false}
+          emptyNode={null}
+          columns={columns}
+          data={data}
+          actions={[]}
+          tableProps={{ pagination: false }}
+        />
+        <UploadSubmissionDialog
+          key={'0'}
+          isVisible={this.state.uploadSubmissionVisible}
+          onCancel={this.toggleUploadSubmissionVisible.bind(this, undefined)}
+          assignments={this.props.assignments}
+          selectedStudents={[this.props.student]}
+          students={this.props.students}
+          submissions={this.props.submissions}
+          uploadSubmission={this.uploadSubmission}
+          selectedAssignment={this.state.assignmentToUpload}
+          onSuccess={openSubmission}
+          disableStudentSelect={
+            this.state.assignmentToUpload && this.state.submissionsMap[this.state.assignmentToUpload.id] ? true : false
+          }
+          title={
+            this.state.assignmentToUpload &&
+            this.state.submissionsMap[this.state.assignmentToUpload.id] &&
+            'Add / update files'
+          }
+          infoMessage={
+            this.state.assignmentToUpload &&
+            this.state.submissionsMap[this.state.assignmentToUpload.id] && (
+              <div>
+                <div>
+                  If you upload a file that already exists in the submission, the older versions (including comments)
+                  wil be visible in the submission history.
+                </div>
+                <br />
+                <div>
+                  If you want all existing files to be deleted before upload, click <b>Replace Files</b> in the
+                  submission menu instead.
+                </div>
+              </div>
+            )
+          }
+        />
+      </div>
+    );
+  }
+}
+
+export default StudentDetail;

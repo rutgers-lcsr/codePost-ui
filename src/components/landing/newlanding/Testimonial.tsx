@@ -1,0 +1,427 @@
+import * as React from 'react';
+
+import useWindowSize from '../../core/useWindowSize';
+
+import { DoubleRightOutlined } from '@ant-design/icons';
+
+import { Button, Typography } from 'antd';
+
+import landingVars from '../../../styles/pages/_landingVars';
+
+import Carousel, { Dots } from '@brainhubeu/react-carousel';
+import '@brainhubeu/react-carousel/lib/style.css';
+
+import PreAuthLayout from '../../pre-auth/PreAuthLayout';
+
+/*************************************************************************************/
+/* IMAGES
+/*************************************************************************************/
+
+const adamImg = require('../../../img/landing/compressed/adam_blank.jpeg');
+const eitanImg = require('../../../img/landing/compressed/eitan_mendelowitz.jpg');
+const bobImg = require('../../../img/landing/compressed/bob_sedgewick.jpg');
+const robertImg = require('../../../img/landing/compressed/robert_adams.jpg');
+const niemaImg = require('../../../img/landing/compressed/niema_moshiri.jpg');
+const kateImg = require('../../../img/landing/compressed/kate_holdener.jpg');
+const nohaImg = require('../../../img/landing/compressed/noha_hazzazi.jpg');
+const abbasImg = require('../../../img/landing/compressed/abbas_attarwala.jpg');
+const kateKImg = require('../../../img/landing/compressed/kate_kharitonova.jpg');
+const chrisImg = require('../../../img/landing/compressed/chris_bourke.jpg');
+const alekseyImg = require('../../../img/landing/compressed/aleksey_gurtovoy.jpg');
+const michaelImg = require('../../../img/landing/compressed/michael_clarkson.jpg');
+
+/*************************************************************************************/
+/* TEXT
+/*************************************************************************************/
+
+const defaultTextStyle: React.CSSProperties = {
+  fontStyle: 'italic',
+  fontSize: 16,
+  lineHeight: 1.57,
+  color: 'grey',
+};
+
+const adamText = (
+  <span style={{ ...defaultTextStyle, fontSize: '94%' }}>
+    codePost has allowed me to{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      efficiently grade student code
+    </Typography.Text>{' '}
+    on its quality without sacrificing my high standard of feedback. Its{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      first-class API
+    </Typography.Text>{' '}
+    makes it uniquely malleable to my different courses with very different requirements.
+  </span>
+);
+
+const eitanText = (
+  <span style={{ ...defaultTextStyle, fontSize: '100%' }}>
+    codePost is the best way I have found to comment on and annotate students’ programming assignments. I find it{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      much easier to give programming feedback than any other system I have tried.
+    </Typography.Text>
+  </span>
+);
+
+const bobText = (
+  <span style={{ ...defaultTextStyle, fontSize: '107%' }}>
+    codePost has been a{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      paradigm shifting improvement
+    </Typography.Text>{' '}
+    to how we grade computer science at Princeton.
+  </span>
+);
+
+const robertText = (
+  <span style={{ ...defaultTextStyle, fontSize: '97%' }}>
+    codePost is a{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      game changer.
+    </Typography.Text>{' '}
+    It has completely eliminated the need for students to print code for grading. It is honestly{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      easier to grade on codePost than any other method I've tried in the past.
+    </Typography.Text>
+  </span>
+);
+
+const niemaText = (
+  <span style={{ ...defaultTextStyle, fontSize: '94%' }}>
+    With the rapid growth of C.S. education, I was{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      worried about how I would scale my courses
+    </Typography.Text>{' '}
+    to meet the needs of my students. With codePost's{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      intuitive UI and top-notch Python API
+    </Typography.Text>
+    , I have been able to build workflows that have made all aspects of executing my course extremely streamlined,{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      even with >500 students.
+    </Typography.Text>
+  </span>
+);
+
+const kateText = (
+  <span style={{ ...defaultTextStyle, fontSize: '87%' }}>
+    codePost improved my grading efficiency:{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      what used to take 4 hours to grade now takes 1 hour.
+    </Typography.Text>{' '}
+    This tool allowed me to automate the repetitive manual tasks and{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      focus my entire attention on the quality of students’ solutions.
+    </Typography.Text>
+  </span>
+);
+
+const nohaText = (
+  <span style={{ ...defaultTextStyle, fontSize: '107%' }}>
+    codePost has been a great help as it{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      saved me tons of time{' '}
+    </Typography.Text>
+    and allowed me to{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      focus on my students more.
+    </Typography.Text>
+  </span>
+);
+
+const abbasText = (
+  <span style={{ ...defaultTextStyle, fontSize: '94%' }}>
+    <Typography.Text mark className="codePost-highlight-new">
+      My graders, myself and my students love codePost.
+    </Typography.Text>{' '}
+    The quality of feedback that I can provide to my students is far richer; my graders annotate problematic code and
+    provide high-quality feedback to my students that previously was difficult.
+    <div>
+      <Typography.Text mark className="codePost-highlight-new">
+        I recommend codePost very highly!
+      </Typography.Text>
+    </div>
+  </span>
+);
+
+const kateKText = (
+  <span style={{ ...defaultTextStyle, fontSize: '92%' }}>
+    The ability to see a properly-rendered Jupyter notebook in codePost has been{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      invaluable in our Data Science courses
+    </Typography.Text>
+    . codePost's team has also been{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      very responsive to our feedback
+    </Typography.Text>{' '}
+    and feature requests.
+  </span>
+);
+
+const chrisText = (
+  <span style={{ ...defaultTextStyle, fontSize: '83%' }}>
+    codePost has really improved the way that we grade and evaluate code. The rubric feature has ensured a{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      higher level of consistency
+    </Typography.Text>{' '}
+    across many graders. My favorite part has been its outstanding API and wrapper library which allows me to{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      fully automate
+    </Typography.Text>{' '}
+    the grading assignment process. I definitely saw a{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      greater improvement in students
+    </Typography.Text>{' '}
+    as a result of codePost.
+  </span>
+);
+
+const alekseyText = (
+  <span style={{ ...defaultTextStyle, fontSize: '88%' }}>
+    codePost{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      changed not only the way I grade assignments, but also the way I teach.
+    </Typography.Text>{' '}
+    The ability to provide students with personalized, targeted feedback on their submissions at scale allowed me to
+    experiment with things like graded in-class assignments and feel{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      more connected with each student and their learning journey.
+    </Typography.Text>
+  </span>
+);
+
+const michaelText = (
+  <span style={{ ...defaultTextStyle, fontSize: '94%' }}>
+    codePost's annotation UI has made it{' '}
+    <Typography.Text mark className="codePost-highlight-new">
+      much easier to give comprehensive and consistent feedback
+    </Typography.Text>{' '}
+    to students about their code quality. The codePost team has been a pleasure to work with, even adding a major
+    feature (regrading) quite quickly.
+  </span>
+);
+
+interface TestimonialData {
+  text: React.ReactElement;
+  name: string;
+  thumbnail: any;
+  school: string;
+}
+
+const testmonialInfo: TestimonialData[] = [
+  { text: bobText, name: 'Robert Sedgewick', thumbnail: bobImg, school: 'Princeton University' },
+  { text: adamText, name: 'Adam Blank', thumbnail: adamImg, school: 'California Institute of Technology' },
+  { text: kateText, name: 'Kate Holdener', thumbnail: kateImg, school: 'Saint Louis University' },
+  { text: michaelText, name: 'Michael Clarkson', thumbnail: michaelImg, school: 'Cornell University' },
+  { text: niemaText, name: 'Niema Moshiri', thumbnail: niemaImg, school: 'UC San Diego' },
+  { text: kateKText, name: 'Kate Kharitonova', thumbnail: kateKImg, school: 'UC Santa Barbara' },
+  { text: nohaText, name: 'Noha Hazzazi', thumbnail: nohaImg, school: 'Howard University' },
+  { text: alekseyText, name: 'Aleksey Gurtovoy', thumbnail: alekseyImg, school: 'University of Iowa' },
+  { text: chrisText, name: 'Chris Bourke', thumbnail: chrisImg, school: 'University of Nebraska' },
+  { text: robertText, name: 'Robert Adams', thumbnail: robertImg, school: 'Grand Valley State University' },
+  { text: eitanText, name: 'Eitan Mendelowitz', thumbnail: eitanImg, school: 'Mount Holyoke College' },
+  { text: abbasText, name: 'Abbas Attarwala', thumbnail: abbasImg, school: 'Boston University' },
+];
+
+/*************************************************************************************/
+
+// Source: https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
+/**
+ * Shuffles array in place.
+ * @param {Array} a items An array containing the items.
+ */
+function shuffle(a: any[]) {
+  var j, x, i;
+  for (i = a.length - 1; i > 0; i--) {
+    j = Math.floor(Math.random() * (i + 1));
+    x = a[i];
+    a[i] = a[j];
+    a[j] = x;
+  }
+  return a;
+}
+
+/*************************************************************************************/
+/******************************* Landing Testimonials ********************************/
+/*************************************************************************************/
+
+const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name: string; school: string }) => {
+  const windowSize = useWindowSize();
+
+  return (
+    <div
+      style={{
+        maxWidth: windowSize.width < landingVars.breakpoints.testimonial ? 600 : 800,
+        marginLeft: 15,
+        marginBottom: windowSize.width < landingVars.breakpoints.testimonial ? 30 : 0,
+        marginTop: windowSize.width < landingVars.breakpoints.testimonial ? 20 : 0,
+        padding: '0px 6px',
+      }}
+      className="display-flex flex-direction-column justify-content-flex-start"
+    >
+      <div className="display-flex flex-direction-row justify-content-flex-start align-items-center">
+        <img alt="" src={props.thumbnail} style={{ width: 40, borderRadius: 20, marginRight: 15 }} />
+        <div
+          className="display-flex flex-direction-column"
+          style={{ fontSize: 17, lineHeight: 1.18, textAlign: 'left' }}
+        >
+          <div style={{ fontWeight: 600 }}>{props.name}</div>
+          <div>{props.school}</div>
+        </div>
+      </div>
+      <div style={{ height: windowSize.width < landingVars.breakpoints.testimonial ? 10 : 22 }} />
+      <div
+        style={{
+          fontSize:
+            windowSize.width < landingVars.breakpoints.mobile
+              ? 16
+              : windowSize.width < landingVars.breakpoints.verticalPanels
+              ? 18
+              : 22,
+        }}
+      >
+        {props.text}
+      </div>
+    </div>
+  );
+};
+
+const Testimonials = () => {
+  const landingTestimonials = testmonialInfo.map((t) => {
+    return (
+      <Testimonial
+        key={`testimonial-${t.name}`}
+        text={t.text}
+        name={t.name}
+        thumbnail={t.thumbnail}
+        school={t.school}
+      />
+    );
+  });
+
+  const [permutation] = React.useState(landingTestimonials.slice(0, 2).concat(shuffle(landingTestimonials.slice(2))));
+
+  const [activeSlide, setActiveSlide] = React.useState(0);
+
+  const onChange = (value: number) => setActiveSlide(value);
+
+  return (
+    <div id="Testimonials">
+      <br />
+      <div>
+        <Carousel value={activeSlide} onChange={onChange} slidesPerPage={1} arrows infinite>
+          {permutation}
+        </Carousel>
+        <Dots value={activeSlide} onChange={onChange} number={12} />
+        <Button
+          href="https://codepost.io/testimonials"
+          target="_blank"
+          type="link"
+          ghost={true}
+          style={{ fontWeight: 600, fontSize: 20, float: 'right', marginTop: 10, marginBottom: 25 }}
+          className="testimonials-link"
+        >
+          View all testimonials
+          <DoubleRightOutlined className="testimonials-link__arrow" />
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+/*************************************************************************************/
+/*************************** View all Testimonials Page ******************************/
+/*************************************************************************************/
+
+type position = 'right' | 'left';
+
+const AltTestimonial = (props: {
+  text: React.ReactElement;
+  thumbnail: string;
+  name: string;
+  school: string;
+  position: position;
+  primary: boolean;
+}) => {
+  const windowSize = useWindowSize();
+
+  const largeScreenWidth = props.primary ? 640 : 460;
+  const color = props.primary ? 'rgba(36, 190, 133, 0.3)' : 'rgba(0, 0, 0, 0.15)';
+  const marginLeft = props.position === 'right' ? 45 : 0;
+  const fontSize = windowSize.width < landingVars.breakpoints.testimonial ? 18 : 20;
+
+  return (
+    <div
+      style={{
+        maxWidth: windowSize.width < landingVars.breakpoints.testimonial ? 600 : largeScreenWidth,
+        marginLeft: marginLeft,
+        padding: '30px',
+        borderRadius: 8,
+        boxShadow: `0 2px 10px ${color}`,
+      }}
+      className="display-flex flex-direction-column justify-content-space-between"
+    >
+      <div style={{ fontSize: fontSize }}>{props.text}</div>
+      <div style={{ height: windowSize.width < landingVars.breakpoints.testimonial ? 10 : 30 }} />
+      <div className={`display-flex flex-direction-row justify-content-flex-end align-items-center`}>
+        <img alt="" src={props.thumbnail} style={{ width: 60, borderRadius: 30, marginRight: 15 }} />
+        <div className="display-flex flex-direction-column" style={{ fontSize: 17, lineHeight: 1.18 }}>
+          <div style={{ fontWeight: 600 }}>{props.name}</div>
+          <div>{props.school}</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface IProps {
+  isLoggedIn: boolean;
+}
+
+const AllTestimonials = (props: IProps) => {
+  const windowSize = useWindowSize();
+  const shuffledTestimonials = testmonialInfo;
+
+  const toRender: TestimonialData[][] = [];
+  const itemsPerRow = windowSize.width < landingVars.breakpoints.testimonial ? 1 : 2;
+  const rowPadding = windowSize.width < landingVars.breakpoints.testimonial ? '10px 0px' : '30px 0px';
+  const justifyRow = windowSize.width < landingVars.breakpoints.testimonial ? 'center' : 'space-between';
+
+  for (let i = 0; i < shuffledTestimonials.length; i += itemsPerRow) {
+    var row = [];
+    for (let z = 0; z < itemsPerRow; z++) {
+      row.push(shuffledTestimonials[i + z]);
+    }
+    toRender.push(row);
+  }
+  return (
+    <PreAuthLayout isLoggedIn={props.isLoggedIn}>
+      <div>
+        <Typography.Title level={2} style={{ color: '#758275', textAlign: 'center' }}>
+          Instructor Testimonials
+        </Typography.Title>
+        {toRender.map((row, i) => {
+          return (
+            <div style={{ display: 'flex', justifyContent: justifyRow, padding: rowPadding }}>
+              {row.map((rowItem: TestimonialData, j) => {
+                return (
+                  <AltTestimonial
+                    text={rowItem.text}
+                    thumbnail={rowItem.thumbnail}
+                    name={rowItem.name}
+                    school={rowItem.school}
+                    position={j % 2 ? 'right' : 'left'}
+                    primary={(j % 2 && i % 2) || (!(j % 2) && !(i % 2)) ? true : false}
+                  />
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </PreAuthLayout>
+  );
+};
+
+export { AllTestimonials, Testimonials, Testimonial };

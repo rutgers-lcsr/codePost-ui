@@ -1,0 +1,96 @@
+// Colors
+
+// Brand Colors
+$brandPrimary: #24be85;
+$brandLight: #f0fff6;
+$brandVibrant: #48cc98;
+$brandDark: #17996e;
+$brandAccent: #4e78ff;
+$brandBlack: #1b1b1b;
+$brandBlackHighlight: #0f0f0f;
+
+// Action Colors
+$actionBlue: #1890ff;
+$actionBlueFade: #40a9ff;
+$actionGreen: #24be85;
+$actionGreenFade: #48cc98;
+$actionYellow: #ffbf00;
+$actionYellowFade: #ffd129;
+$actionRed: #f64852;
+$actionRedFade: #ff7375;
+
+// Green Palette
+$green1: #f0fff6;
+$green2: #caf2df;
+$green3: #9ce6c3;
+$green4: #71d9ac;
+$green5: #48cc98;
+$green6: #24be85;
+$green7: #17996e;
+$green8: #0d7354;
+$green9: #034d39;
+$green10: #02261e;
+
+// Neutral Colors - Light Background
+$neutralTitle: rgba(0, 0, 0, 0.8);
+$neutralMainText: rgba(0, 0, 0, 0.7);
+$neutralSecondaryText: rgba(0, 0, 0, 0.5);
+$neutralDisable: rgba(0, 0, 0, 0.3);
+$neutralBorder: rgba(0, 0, 0, 0.2);
+$neutralDivider: rgba(0, 0, 0, 0.1);
+$neutralBackground: rgba(0, 0, 0, 0.05);
+
+// Neutral Colors - Dark Background
+$neutralDarkTitle: rgba(255, 255, 255, 1);
+$neutralDarkMainText: rgba(255, 255, 255, 0.9);
+$neutralDarkSecondaryText: rgba(255, 255, 255, 0.7);
+$neutralDarkDisable: rgba(255, 255, 255, 0.5);
+$neutralDarkBorder: rgba(255, 255, 255, 0.3);
+$neutralDarkDivider: rgba(255, 255, 255, 0.2);
+$neutralDarkBackground: rgba(255, 255, 255, 0.1);
+
+// Export for tsx
+:export {
+  brandPrimary: $brandPrimary;
+  brandLight: $brandLight;
+  brandVibrant: $brandVibrant;
+  brandDark: $brandDark;
+  brandAccent: $brandAccent;
+  brandBlack: $brandBlack;
+  brandBlackHighlight: $brandBlackHighlight;
+
+  actionBlue: $actionBlue;
+  actionBlueFade: $actionBlueFade;
+  actionGreen: $actionGreen;
+  actionGreenFade: $actionGreenFade;
+  actionYellow: $actionYellow;
+  actionYellowFade: $actionYellowFade;
+  actionRed: $actionRed;
+  actionRedFade: $actionRedFade;
+
+  green1: $green1;
+  green2: $green2;
+  green3: $green3;
+  green4: $green4;
+  green5: $green5;
+  green6: $green6;
+  green7: $green7;
+  green8: $green8;
+  green9: $green9;
+  green10: $green10;
+
+  neutralTitle: $neutralTitle;
+  neutralMainText: $neutralMainText;
+  neutralSecondaryText: $neutralSecondaryText;
+  neutralDisable: $neutralDisable;
+  neutralBorder: $neutralBorder;
+  neutralDivider: $neutralDivider;
+  neutralBackground: $neutralBackground;
+
+  neutralDarkMainText: $neutralDarkMainText;
+  neutralDarkSecondaryText: $neutralDarkSecondaryText;
+  neutralDarkDisable: $neutralDarkDisable;
+  neutralDarkBorder: $neutralDarkBorder;
+  neutralDarkDivider: $neutralDarkDivider;
+  neutralDarkBackground: $neutralDarkBackground;
+}

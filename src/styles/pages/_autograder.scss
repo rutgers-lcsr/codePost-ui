@@ -1,0 +1,36 @@
+#Autograder {
+  .natural-language-form {
+    .ant-form-item {
+      margin-right: 0;
+    }
+  }
+
+  .ProMode-codeMirror {
+    .CodeMirror {
+      height: fit-content;
+    }
+  }
+
+  .cm-s-neo {
+    background-color: #fafafa;
+  }
+
+  .cm-s-neo .CodeMirror-linenumber {
+    color: #bdbdbd;
+    padding-right: 1px;
+    border-right: 2px solid #bdbdbd;
+  }
+}
+
+.ProMode-codeMirror {
+  .CodeMirror {
+    height: fit-content;
+    font-family: Monaco;
+    line-height: 1.7;
+    font-weight: 400;
+  }
+}
+
+.testitem__radio-inactive {
+  opacity: 0.35;
+}

@@ -1,0 +1,68 @@
+.code-panel {
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 14px 0px;
+
+  // flex: 1;
+  overflow: auto;
+  white-space: nowrap;
+
+  &--code {
+    display: inline-block;
+    vertical-align: top;
+  }
+
+  &--comments {
+    vertical-align: top;
+    display: inline-block;
+
+    position: relative;
+
+    padding-right: 10px;
+
+    overflow-x: visible;
+  }
+}
+
+.layout-resizer {
+  .rc-slider-handle {
+    &:active {
+      box-shadow: 0 0 5px $brandPrimary;
+    }
+
+    &:focus {
+      box-shadow: 0 0 5px $brandPrimary;
+    }
+  }
+}
+
+.sidebar-resizer {
+  .rc-slider-handle {
+    background-color: transparent;
+    border: 0px solid transparent;
+    border-radius: 0;
+    cursor: col-resize;
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.25);
+    }
+  }
+}
+
+// clone of antd-tooltip
+.rc-slider-tooltip {
+  z-index: 1000 !important;
+
+  .rc-slider-tooltip-inner {
+    padding: 6px 8px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    background-color: rgba(0, 0, 0, 0.75) !important;
+    border-radius: 4px !important;
+    font-size: 14px !important;
+    line-height: 21px !important;
+    min-height: 32px !important;
+    height: auto !important;
+  }
+
+  // &--hidden {
+  //   visibility: hidden;
+  // }
+}

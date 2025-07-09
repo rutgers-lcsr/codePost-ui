@@ -1,0 +1,77 @@
+.markdown-block {
+  $root-padding: 6;
+  $gutter-width: 12px;
+  $gutter-radius: 4px;
+
+  padding-left: $root-padding + 0px;
+  border-radius: $gutter-radius;
+
+  @at-root ul#{&} {
+    padding-left: $root-padding + 40 + 0px;
+  }
+
+  @at-root ol#{&} {
+    padding-left: $root-padding + 40 + 0px;
+  }
+
+  &--empty {
+    border-left: $gutter-width solid white;
+
+    &.active {
+      cursor: pointer;
+
+      &:hover {
+        border-left: $gutter-width solid #f2f2f2;
+      }
+    }
+
+    &.readonly {
+      cursor: default;
+    }
+  }
+
+  &--commented {
+    border-left: $gutter-width solid $actionGreenFade;
+
+    &.active {
+      cursor: pointer;
+    }
+
+    &.readonly {
+      cursor: default;
+    }
+  }
+
+  &--focused {
+    border-left: $gutter-width solid $actionYellowFade;
+
+    &.active {
+      cursor: pointer;
+    }
+
+    &.readonly {
+      cursor: default;
+    }
+  }
+}
+
+.markdown-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.markdown-table td,
+th {
+  padding: 0px 4px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.markdown-code {
+  pre {
+    margin: 0px;
+    background-color: transparent !important;
+  }
+}
