@@ -17,14 +17,11 @@ jobs:
           HOSTNAME=$(hostname)
           ln -s /etc/letsencrypt/live/$HOSTNAME certs
 
-      - name: Build Docker image
-        run: docker build -t codepost-ui:latest .
-
-      - name: Stop and remove old container
+      - name: Compose and push Docker image
         run: |
-          docker stop codepost-ui || true
-          docker rm codepost-ui || true
+          docker compose build
+          docker compose push
 
-      - name: Run container
+      - name: Compose and run container
         run: |
-          docker run -d --name codepost-ui codepost-ui:latest
+          docker compose up -d
