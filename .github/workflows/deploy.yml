@@ -12,6 +12,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Set up Certs
+        run: |
+          HOSTNAME=$(hostname)
+          ln -s /etc/letsencrypt/live/$HOSTNAME certs
+
       - name: Build Docker image
         run: docker build -t codepost-ui:latest .
 
