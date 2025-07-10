@@ -1,5 +1,6 @@
 services:
   codepost-frontend:
+    container_name: codepost-ui
     build:
       context: .
       dockerfile: Dockerfile
