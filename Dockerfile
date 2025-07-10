@@ -19,8 +19,6 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 COPY --from=build /app/build /usr/share/nginx/html
 
-COPY certs/ /etc/ssl/certs/
-
 EXPOSE 80
 EXPOSE 443
 
