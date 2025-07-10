@@ -5,7 +5,8 @@ services:
       dockerfile: Dockerfile
       args:
         - REACT_APP_API_URL=https://api.codepost.io
-
+    volumes:
+      - /etc/ssl/certs:/etc/ssl/certs/:ro
     ports:
       - '80:80'
       - '443:443'
