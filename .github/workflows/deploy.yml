@@ -6,6 +6,7 @@ on:
 
 jobs:
   deploy:
+    environment: development
     runs-on: development-ui
     env:
       REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
@@ -20,8 +21,7 @@ jobs:
       - name: Create .env file
         run: |
           echo "REACT_APP_API_URL=$REACT_APP_API_URL" >> .env
-        env:
-          REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
+
       - name: Compose and push Docker image
         run: |
           docker compose build
