@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: development-ui
 
     steps:
       - name: Checkout
@@ -21,7 +21,8 @@ jobs:
         run: |
           docker compose build
           docker compose push
-
+        env:
+          REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
       - name: Compose and run container
         run: |
           docker compose up -d

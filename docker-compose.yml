@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        - REACT_APP_API_URL=https://api.codepost.io
+        - REACT_APP_API_URL=$REACT_APP_API_URL
     volumes:
       - ./certs:/etc/ssl/certs/:ro
     ports:
