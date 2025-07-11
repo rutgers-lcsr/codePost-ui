@@ -26,3 +26,5 @@ jobs:
       - name: Compose and run container
         run: |
           docker compose up -d
+        env:
+          REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
