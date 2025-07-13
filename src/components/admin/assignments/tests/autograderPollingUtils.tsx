@@ -33,7 +33,7 @@ async function pollTestResult(
 ) {
   const res = await fetch(`${process.env.REACT_APP_API_URL}/autograder/tasks/${id}/`, {
     headers: {
-      Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+      Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
       'Content-Type': 'application/json',
     },
     method: 'GET',
@@ -101,7 +101,7 @@ async function pollBuildResult(id: number, interval: any, callback: (result: any
   //    of a failed response (e.g., 404)
   const res = await fetch(`${process.env.REACT_APP_API_URL}/autograder/environments/${id}/status`, {
     headers: {
-      Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+      Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
       'Content-Type': 'application/json',
     },
     method: 'GET',

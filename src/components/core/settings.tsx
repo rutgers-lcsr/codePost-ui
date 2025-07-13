@@ -50,7 +50,7 @@ class Settings extends React.Component<IProps, IState> {
     this.setState({ loading: true }, () => {
       fetch(`${process.env.REACT_APP_API_URL}/users/requestAPIToken/`, {
         headers: {
-          Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+          Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
           'Content-Type': 'application/json',
         },
         method: 'POST',
@@ -73,7 +73,7 @@ class Settings extends React.Component<IProps, IState> {
     this.setState({ loading: true }, () => {
       fetch(`${process.env.REACT_APP_API_URL}/users/me/`, {
         headers: {
-          Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+          Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
           'Content-Type': 'application/json',
         },
         method: 'PATCH',

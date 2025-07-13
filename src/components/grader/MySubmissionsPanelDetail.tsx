@@ -163,7 +163,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
     const params = section ? `?section=${section.name}` : '';
     return await fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned/${params}`, {
       headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     })
       .then((res) => {

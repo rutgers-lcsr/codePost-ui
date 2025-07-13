@@ -333,7 +333,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     if (this.props.currentCourse && this.props.currentCourse.id) {
       fetch(`${process.env.REACT_APP_API_URL}/billing/${this.props.currentCourse.id}/details/`, {
         headers: {
-          Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+          Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
           'Content-Type': 'application/json',
         },
         method: 'GET',

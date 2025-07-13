@@ -137,7 +137,7 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
 
         fetch(`${process.env.REACT_APP_API_URL}/submissions/${submission.id}/notifyStudents/`, {
           headers: {
-            Authorization: `JWT ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json',
           },
           method: 'POST',

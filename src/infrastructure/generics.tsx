@@ -49,7 +49,7 @@ function createObject<T, Q, O, I>(
   const foo = async (object: Q) => {
     const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/`, {
       headers: {
-        Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
       },
       method: 'POST',
@@ -73,7 +73,7 @@ function readObject<T, O, I>(arg: t.Type<T, O, I>, url: string): (arg0: number) 
   const foo = async (id: number) => {
     const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/`, {
       headers: {
-        Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
       },
       method: 'GET',
@@ -99,7 +99,7 @@ function listObject<T, O, I>(arg: t.Type<T, O, I>, obj: string): () => Promise<T
     while (url !== null) {
       const res: any = await fetch(url, {
         headers: {
-          Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+          Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
           'Content-Type': 'application/json',
         },
         method: 'GET',
@@ -141,7 +141,7 @@ function updateObject<T, O, I, Q extends GenericObjectType>(
   const foo = async (object: Q) => {
     const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/`, {
       headers: {
-        Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
       },
       method: 'PATCH',
@@ -166,7 +166,7 @@ function deleteObject<T, O, I>(arg: t.Type<T, O, I>, url: string): (id: number) 
   const foo = async (id: number) => {
     const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/`, {
       headers: {
-        Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
       },
       method: 'DELETE',
@@ -209,7 +209,7 @@ function readObjectDetail<T, O, I>(
 
     const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/${detail}/${urlString}`, {
       headers: {
-        Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
       },
       method: 'GET',
@@ -239,7 +239,7 @@ function updateObjectDetail<T, O, I, J, K, Q extends GenericObjectType>(
 
     const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}`, {
       headers: {
-        Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
       },
       method: 'PATCH',
@@ -270,7 +270,7 @@ function createObjectDetail<T, O, I, J, K, Q extends GenericObjectType>(
 
     const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}`, {
       headers: {
-        Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
       },
       method: 'POST',
