@@ -96,7 +96,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
     return fetch(`${process.env.REACT_APP_API_URL}/registration/setCredentials/`, {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `JWT ${localStorage.getItem('token')} `,
+        Authorization: `Bearer ${localStorage.getItem('token')} `,
       },
       body: JSON.stringify(payload),
       method: 'POST',
@@ -327,7 +327,7 @@ const CIPGraderModal = (props: IGraderModalProps) => {
     fetch(`${process.env.REACT_APP_API_URL}/registration/graderToAdmin/`, {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `JWT ${localStorage.getItem('token')} `,
+        Authorization: `Bearer ${localStorage.getItem('token')} `,
       },
       body: JSON.stringify({}),
       method: 'POST',

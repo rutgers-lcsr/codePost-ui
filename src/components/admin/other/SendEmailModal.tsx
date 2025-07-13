@@ -92,7 +92,7 @@ class SendEmailModal extends React.Component<IProps, IState> {
             livemode,
           }),
           headers: {
-            Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+            Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
             'Content-Type': 'application/json',
           },
           method: 'POST',

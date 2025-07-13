@@ -33,7 +33,7 @@ const ShareInviteCode = (props: IProps) => {
         return fetch(`${process.env.REACT_APP_API_URL}/courses/${props.course.id}/changeInviteCode/`, {
           method: 'PATCH',
           headers: {
-            Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+            Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
           },
         })
           .then((res) => {

@@ -68,7 +68,7 @@ const BillingPanel = (props: IProps) => {
   React.useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URL}/billing/${props.currentCourse.id}/details/`, {
       headers: {
-        Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
       },
       method: 'GET',
@@ -87,7 +87,7 @@ const BillingPanel = (props: IProps) => {
   const requestWaiver = async () => {
     const res = await fetch(`${process.env.REACT_APP_API_URL}/billing/${props.currentCourse.id}/request_waiver/`, {
       headers: {
-        Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
       },
       method: 'GET',
@@ -105,7 +105,7 @@ const BillingPanel = (props: IProps) => {
       `${process.env.REACT_APP_API_URL}/billing/${props.currentCourse.id}/create_checkout_session/`,
       {
         headers: {
-          Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+          Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
           'Content-Type': 'application/json',
         },
         method: 'POST',

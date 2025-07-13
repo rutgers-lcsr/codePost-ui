@@ -19,7 +19,7 @@ const sendEmailToUser = (
       livemode,
     }),
     headers: {
-      Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+      Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
       'Content-Type': 'application/json',
     },
     method: 'POST',

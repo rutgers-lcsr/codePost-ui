@@ -305,7 +305,7 @@ Firefox:
   public tryToLogin = () => {
     if (this.state.has_token && !this.state.user && this.loginCount < 4) {
       // Make sure we don't use a prefix that is mismatched with token
-      let authHeader = `JWT ${localStorage.getItem('token')}`;
+      let authHeader = `Bearer ${localStorage.getItem('token')}`;
       if (this.state.auth_type === 'Firebase') {
         if (this.state.propToken === '') {
           return;
