@@ -268,7 +268,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
       const payload = {
         course_id: props.course['id'],
         assignment_id: props.assignment['id'],
-        api_key: `JWT ${localStorage.getItem('token')} `,
+        api_key: `Bearer ${localStorage.getItem('token')} `,
         language,
         moss_id: mossID,
         email: props.user.email,
