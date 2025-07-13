@@ -22,10 +22,9 @@ jobs:
         run: |
           echo "REACT_APP_API_URL=$REACT_APP_API_URL" >> .env
 
-      - name: Compose and push Docker image
+      - name: Compose and build container
         run: |
           docker compose build
-          docker compose push
       - name: Compose and run container
         run: |
           docker compose up -d
