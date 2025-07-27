@@ -55,7 +55,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
   const [defaultOpenMenus, setDefaultOpenMenus] = React.useState([0, 1, 2]);
 
   const [rubricWidth, setRubricWidth] = React.useState(LOCAL_SETTINGS.siderWidth.getter());
-  const minSiderWidth = 200;
+  const minSiderWidth = 3;
 
   const onAfterChange = (result: number) => {
     const newWidth = result + minSiderWidth;
