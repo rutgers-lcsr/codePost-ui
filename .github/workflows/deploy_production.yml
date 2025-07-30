@@ -1,13 +1,13 @@
-name: Deploy Development with Docker
+name: Deploy Production with Docker
 
 on:
   push:
-    branches: [render]
+    branches: [master]
 
 jobs:
   deploy:
-    environment: development
-    runs-on: development-ui
+    environment: production
+    runs-on: production-ui
     env:
       REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
     steps:
