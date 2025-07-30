@@ -17,7 +17,7 @@ jobs:
       - name: Set up Certs
         run: |
           HOSTNAME=$(hostname)
-          ln -s /etc/letsencrypt/live/$HOSTNAME certs
+          cp -rflT /etc/letsencrypt/live/$HOSTNAME/ certs/
       - name: Create .env file
         run: |
           echo "REACT_APP_API_URL=$REACT_APP_API_URL" >> .env
