@@ -4,7 +4,7 @@
 
 /* react imports */
 import * as React from 'react';
-
+import qs from 'query-string';
 /* other library imports */
 
 import LandingHeader from '../landing/LandingHeader';
@@ -33,6 +33,11 @@ class PreAuthLayout extends React.Component<IProps, {}> {
     link.setAttribute('rel', 'stylesheet');
     head!.appendChild(script);
     head!.appendChild(link);
+    const { token, redirect } = qs.parse(window.location.search);
+    if (token && redirect) {
+      window.localStorage.setItem('token', token as string);
+      window.location = redirect as string & Location;
+    }
   }
 
   public render() {

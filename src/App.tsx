@@ -305,7 +305,7 @@ Firefox:
   public tryToLogin = () => {
     if (this.state.has_token && !this.state.user && this.loginCount < 4) {
       // Make sure we don't use a prefix that is mismatched with token
-      let authHeader = `JWT ${localStorage.getItem('token')}`;
+      let authHeader = `Bearer ${localStorage.getItem('token')}`;
       if (this.state.auth_type === 'Firebase') {
         if (this.state.propToken === '') {
           return;
@@ -320,18 +320,18 @@ Firefox:
       })
         .then(async (res) => {
           if (res.ok) {
-            const json = await res.json();
+            const currentUser = await res.json();
 
-            localStorage.setItem('token', json.token);
+            localStorage.setItem('token', currentUser.token);
             this.setState((oldState) => {
               return {
-                user: json,
+                user: currentUser,
                 triedLoading: true,
-                isSuperUser: superUsers.indexOf(json.email) > -1 || oldState.isSuperUser,
+                isSuperUser: superUsers.indexOf(currentUser.email) > -1 || oldState.isSuperUser,
                 auth_type: 'JWT',
               };
             });
-            // this.refreshToken();
+            this.refreshToken(currentUser);
           } else if (res.status === 401) {
             // A status code of 401 indicates that the provided token is invalid => the user needs
             // to login again, so we log them out.
@@ -440,13 +440,13 @@ Firefox:
   //
   // Note: we could also check to see if the token is close to expiring
   // and only attempt to refresh if true.
-  public refreshToken = () => {
+  public refreshToken = (currentUser: UserType) => {
     if (!this.state.has_token) {
       return;
     }
 
-    const REFRESH_MIN = 30; // should define this in a settings file somewhere
-    const REFRESH_INT = 1000 * 60 * REFRESH_MIN; // convert to milliseconds
+    // const REFRESH_MIN = 2; // should define this in a settings file somewhere
+    // const REFRESH_INT = 1000 * 60 * REFRESH_MIN; // convert to milliseconds
 
     fetch(`${process.env.REACT_APP_API_URL}/token-refresh/`, {
       body: JSON.stringify({ token: localStorage.getItem('token') }),
@@ -463,10 +463,21 @@ Firefox:
       })
       .then((json) => {
         localStorage.setItem('token', json.token);
-        setInterval(this.refreshToken, REFRESH_INT);
-        (window as any).gtag('set', { user_id: json.user.id });
-        (window as any).gtag('set', 'organization', json.user.organization);
+        const exp = this.getTokenExpiration(json.token);
+        const now = new Date().getTime();
+        setTimeout(() => {
+          this.refreshToken(currentUser);
+        }, Math.max(0, exp - now - 1000));
+
+        (window as any).gtag('set', { user_id: currentUser.id });
+        (window as any).gtag('set', 'organization', currentUser.organization);
       });
+  };
+  public getTokenExpiration = (token: string) => {
+    const jwtBody = token.split('.')[1];
+    const decoded = JSON.parse(atob(jwtBody));
+    decoded.exp = decoded.exp * 1000; // convert to milliseconds
+    return decoded.exp;
   };
 
   public wrapTooltipContext = (node: React.ReactNode) => {
@@ -493,6 +504,7 @@ Firefox:
         return Promise.reject();
       })
       .then((json) => {
+        const jwtToken = json.token;
         localStorage.setItem('token', json.token);
         this.setState({
           error: '',
@@ -503,6 +515,13 @@ Firefox:
         });
         (window as any).gtag('set', { user_id: json.user.id });
         (window as any).gtag('set', 'organization', json.user.organization);
+
+        const exp = this.getTokenExpiration(jwtToken);
+        const now = new Date().getTime();
+
+        setTimeout(() => {
+          this.refreshToken(json.user);
+        }, Math.max(0, exp - now - 1000));
       })
       .catch((error) => {
         localStorage.removeItem('token');

@@ -295,7 +295,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const sendStudentNotification = async () => {
     fetch(`${process.env.REACT_APP_API_URL}/submissions/${props.submission.id}/notifyStudents/`, {
       headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json',
       },
       method: 'POST',

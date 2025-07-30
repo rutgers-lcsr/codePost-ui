@@ -10,12 +10,12 @@ export function awaitTestResult(id: string, callback: (result: any) => any, prog
   const interval = setInterval(() => {
     pollTestResult(id, interval, callback, progressCallback);
     if (++tries === MAX_TRIES_RUN && !progressCallback) {
-      sendSlack(
-        `No test result received after polling - infinite loop ${id}`,
-        window.location.href,
-        '#cc0000',
-        '#autograder_bugs',
-      );
+      // sendSlack(
+      //   `No test result received after polling - infinite loop ${id}`,
+      //   window.location.href,
+      //   '#cc0000',
+      //   '#autograder_bugs',
+      // );
       message.error(
         'Your test is taking longer than usual to complete. Please try again in a few minutes, or contact the codePost team using the chatbox on the bottom right of this page if the problem persists.',
         25,
@@ -33,7 +33,7 @@ async function pollTestResult(
 ) {
   const res = await fetch(`${process.env.REACT_APP_API_URL}/autograder/tasks/${id}/`, {
     headers: {
-      Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+      Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
       'Content-Type': 'application/json',
     },
     method: 'GET',
@@ -101,7 +101,7 @@ async function pollBuildResult(id: number, interval: any, callback: (result: any
   //    of a failed response (e.g., 404)
   const res = await fetch(`${process.env.REACT_APP_API_URL}/autograder/environments/${id}/status`, {
     headers: {
-      Authorization: `JWT ${localStorage.getItem('token') || ''}`,
+      Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
       'Content-Type': 'application/json',
     },
     method: 'GET',

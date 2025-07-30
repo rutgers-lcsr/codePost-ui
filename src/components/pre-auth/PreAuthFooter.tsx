@@ -70,9 +70,6 @@ const PreAuthFooter = () => {
           <a style={linkStyle} href="https://help.codepost.io">
             Docs
           </a>{' '}
-          <a style={linkStyle} href="https://updates.codepost.io">
-            Updates
-          </a>{' '}
           <Link style={linkStyle} to="/about">
             About us
           </Link>{' '}

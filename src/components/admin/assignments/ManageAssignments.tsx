@@ -23,7 +23,6 @@ import RubricUI from './rubric/RubricUI';
 import RubricManager, { IRubricManagerParams } from '../../../components/core/rubric/RubricManager';
 import AssignmentStats from './assignments/AssignmentStats/AssignmentStats';
 import AssignmentRegrades from './assignments/AssignmentRegrades';
-import Moss from './assignments/Moss';
 import AssignmentsTable, { DETAIL_TYPE } from './AssignmentsTable';
 
 import { encodeForRoute } from '../../core/URLutils';
@@ -352,23 +351,6 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                 />
               )}
             />
-            <Route
-              path={`${props.match.url}/plagiarism/${encodedName}`}
-              render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
-                !props.fullSubmissionsLoadComplete ? (
-                  <Loading />
-                ) : (
-                  <Moss
-                    {...subprops}
-                    course={props.currentCourse!}
-                    assignment={assignment}
-                    assignments={props.assignments}
-                    submissions={props.submissions[assignment.id]}
-                    user={props.user}
-                  />
-                )
-              }
-            />
           </div>
         );
       })}
@@ -383,20 +365,6 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
         exact={true}
         render={(subprops: any) => (
           <RubricOverview {...subprops} assignments={props.assignments} course={props.currentCourse} />
-        )}
-      />
-      <Route
-        path={`${props.match.url}/plagiarism`}
-        exact={true}
-        render={(subprops: any) => (
-          <Moss
-            {...subprops}
-            breadcrumbs={breadcrumbs}
-            course={props.currentCourse!}
-            assignments={props.assignments}
-            submissions={[]}
-            user={props.user}
-          />
         )}
       />
       <Route

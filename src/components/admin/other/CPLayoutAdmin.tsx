@@ -30,6 +30,7 @@ interface ICPLayoutAdminProps {
   header: React.ReactNode;
   banner?: React.ReactNode;
   detail: React.ReactNode;
+  showBillingBanner?: string | null;
   navigation: (collapsed: boolean) => React.ReactNode;
   collapsible?: boolean;
   hasSider?: boolean;
@@ -92,6 +93,23 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
       )}
       <Layout style={{ minWidth: layoutVars.minWidths.admin }}>
         <Header className="layout--admin__header">{props.header}</Header>
+        {props.showBillingBanner && (
+          <Link to={props.showBillingBanner}>
+            <div
+              style={{
+                width: '100%',
+                background: '#24be85',
+                padding: '8px 20px',
+                color: 'white',
+                textAlign: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              Please support codePost by paying for your course.{' '}
+              <span style={{ fontWeight: 600 }}>Click here to learn more.</span>
+            </div>
+          </Link>
+        )}
         {props.banner && windowSize.width > layoutVars.breakpoints.smallScreen.admin && (
           <Header className="layout--admin__banner">{props.banner}</Header>
         )}

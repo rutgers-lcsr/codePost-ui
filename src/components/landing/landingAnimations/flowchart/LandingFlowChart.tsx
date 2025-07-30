@@ -51,15 +51,6 @@ const nodes: any[] = [
     popoverContent: `Effortlessly annotate your students' code with comments, points, and rubric items.`,
   },
   {
-    id: 5,
-    title: 'Plagiarism Detection',
-    position: { x: 33, y: 40 },
-    icon: 'exception',
-    color: '#24be85',
-    tint: 25,
-    popoverContent: `With two clicks, check submissions in codePost for evidence of plagiarism via Moss.`,
-  },
-  {
     id: 6,
     title: 'Standard Rubrics',
     position: { x: 33, y: 85 },

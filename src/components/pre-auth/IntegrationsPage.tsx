@@ -37,7 +37,6 @@ const IntegrationsPage = (props: IProps) => {
         'canvas',
         'blackboard',
         'jupyter',
-        'moss',
         'github',
         'jsfiddle',
         'brightspace',

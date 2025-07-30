@@ -54,11 +54,6 @@ const LandingHeader = () => {
       Docs
     </a>
   );
-  const pricing = (
-    <Link style={{ ...linkStyle }} className="link--header" to="/pricing">
-      Pricing
-    </Link>
-  );
   const faqs = (
     <Link style={{ ...linkStyle }} className="link--header" to="/faqs">
       FAQs
@@ -91,7 +86,6 @@ const LandingHeader = () => {
         <Panel header={logo} style={{ paddingBottom: 5, paddingTop: 5 }} key="1">
           <div className="display-flex flex-direction-column align-items-left justify-content-space-between">
             {docs}
-            {pricing}
             {faqs}
             {features}
             {login}
@@ -121,7 +115,6 @@ const LandingHeader = () => {
           <div className="display-flex align-items-flex-end">
             {logo}
             {docs}
-            {pricing}
             {faqs}
             {features}
           </div>

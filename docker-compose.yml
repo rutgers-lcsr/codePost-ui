@@ -1,0 +1,12 @@
+services:
+  codepost-frontend:
+    container_name: codepost-ui
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - REACT_APP_API_URL=${REACT_APP_API_URL}
+    volumes:
+      - ./certs:/etc/ssl/certs/:ro
+    ports:
+      - '443:443'

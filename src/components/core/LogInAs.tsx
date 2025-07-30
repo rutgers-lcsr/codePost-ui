@@ -22,7 +22,7 @@ class LogInAs extends React.Component<IProps, IState> {
   public issueRequest = () => {
     fetch(`${process.env.REACT_APP_API_URL}/users/${this.props.match.params.email}/`, {
       headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     })
       .then((res) => {

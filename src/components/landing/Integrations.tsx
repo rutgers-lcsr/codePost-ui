@@ -135,24 +135,6 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
       </span>
     ),
   },
-  moss: {
-    key: 'moss',
-    name: 'Moss',
-    logo: require('./../../img/integrations/moss.png'),
-    description: (
-      <span>
-        <a href="https://theory.stanford.edu/~aiken/moss/">Moss</a> (for a Measure Of Software Similarity) is a system
-        for determining the similarity of programs and detecting plagiarism in programming courses. It was developed at
-        Stanford in 1994.
-        <br />
-        <br /> Out of the box, codePost can send submissions to Moss for similarity assessment. Once you have a Moss ID,
-        go to your codePost Assignments and click Actions -> Check Moss.
-        <br />
-        <br /> To see the scripts in more detail,{' '}
-        <a href="https://github.com/codepost-io/integration-moss/">check them out on GitHub</a>.
-      </span>
-    ),
-  },
   homegrown: {
     key: 'homegrown',
     name: 'Homegrown',

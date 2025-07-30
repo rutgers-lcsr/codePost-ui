@@ -104,6 +104,8 @@ interface IAdminState {
   submissionsByStudent: IStudentSubmissionsDataTable;
   submissionsByGrader: IGraderSubmissionsDataTable;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
+
+  showBillingBanner: any;
 }
 
 const formatCourseURL = (course: CourseType) => {
@@ -168,6 +170,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       submissionsByGrader: {},
       submissionsbyUserLoadComplete: false,
       viewsBySubmission: {},
+      showBillingBanner: false,
     };
   }
 
@@ -325,6 +328,27 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     });
 
     this.loadSections(course);
+
+    if (this.props.currentCourse && this.props.currentCourse.id) {
+      fetch(`${process.env.REACT_APP_API_URL}/billing/${this.props.currentCourse.id}/details/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+          'Content-Type': 'application/json',
+        },
+        method: 'GET',
+      })
+        .then((res) => {
+          if (res.ok) {
+            return res.json();
+          }
+          return {};
+        })
+        .then((data: any) => {
+          if (data.hasOwnProperty('show_banner')) {
+            this.setState({ showBillingBanner: data['show_banner'] });
+          }
+        });
+    }
   };
 
   public loadAssignments = (course: CourseType) => {
@@ -1430,6 +1454,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
 
     return (
       <CPLayoutAdmin
+        showBillingBanner={this.state.showBillingBanner ? this.props.match.url + '/billing' : undefined}
         header={header}
         banner={banner}
         detail={

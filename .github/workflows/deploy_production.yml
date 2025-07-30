@@ -1,0 +1,30 @@
+name: Deploy Production with Docker
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  deploy:
+    environment: production
+    runs-on: production-ui
+    env:
+      REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Certs
+        run: |
+          HOSTNAME=$(hostname)
+          ln -s /etc/letsencrypt/live/$HOSTNAME certs
+      - name: Create .env file
+        run: |
+          echo "REACT_APP_API_URL=$REACT_APP_API_URL" >> .env
+
+      - name: Compose and build container
+        run: |
+          docker compose build
+      - name: Compose and run container
+        run: |
+          docker compose up -d

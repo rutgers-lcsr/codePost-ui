@@ -1064,7 +1064,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     // Read submission and figure out whether the client is a reader or writer
     return fetch(`${process.env.REACT_APP_API_URL}/submissions/${submissionID}/checkPermission/`, {
       headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     })
       .then(async (res) => {
@@ -1648,7 +1648,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   public fetchSubmission = async (assignment: AssignmentType): Promise<AnonymousSubmissionType | undefined> => {
     return await fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned/`, {
       headers: {
-        Authorization: `JWT ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     })
       .then((res) => {
