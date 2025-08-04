@@ -38,7 +38,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
         <br />
         <br />
         See how easy it is to comment on a Jupyter notebook in codePost{' '}
-        <a href="https://codepost.io/why-use-codePost">here</a>.
+        <a href="https://codepost.cs.rutgers.edu/why-use-codePost">here</a>.
       </span>
     ),
   },

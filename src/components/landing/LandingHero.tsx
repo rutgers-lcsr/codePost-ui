@@ -131,7 +131,7 @@ const LandingHero = () => {
             </div>
             <CPButton
               key="Demo"
-              href="https://codepost.io/demo"
+              href="https://codepost.cs.rutgers.edu/demo"
               target="_blank"
               cpType="link"
               ghost={true}

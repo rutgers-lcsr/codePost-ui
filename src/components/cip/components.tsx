@@ -318,7 +318,7 @@ interface IGraderModalProps {
 
 const CIPGraderModal = (props: IGraderModalProps) => {
   const goToAdminConsole = () => {
-    window.open(`https://codepost.io/admin?source=j348d`);
+    window.open(`https://codepost.cs.rutgers.edu/admin?source=j348d`);
   };
 
   const elevateStatusAndGo = () => {
@@ -370,7 +370,7 @@ const CIPGraderModal = (props: IGraderModalProps) => {
         <br />
         <br />
         If you want to learn more, you can check out what other instructors{' '}
-        <a href="https://codepost.io/testimonials" target="_blank">
+        <a href="https://codepost.cs.rutgers.edu/testimonials" target="_blank">
           have said about codePost
         </a>
         .

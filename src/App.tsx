@@ -129,7 +129,7 @@ Please follow these steps for your current browser...
 Google Chrome:
   - Open up Chrome cookie settings:
       chrome://settings/content/cookies
-  - Click Allow -> Add -> https://codepost.io
+  - Click Allow -> Add -> https://codepost.cs.rutgers.edu
       See a screenshot here:
       https://share.getcloudapp.com/eDu69Dnz
   - Try refreshing!
@@ -138,7 +138,7 @@ Firefox:
   - Open up Firefox cookie settings:
       about:preferences#privacy
   - Click Cookies and Site Data -> Manage Permissions
-  - Type in https://codepost.io -> Allow -> Save Changes
+  - Type in https://codepost.cs.rutgers.edu -> Allow -> Save Changes
   - Try refreshing!
       `,
       );

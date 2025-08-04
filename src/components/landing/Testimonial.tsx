@@ -322,7 +322,7 @@ const Testimonials = () => {
         {permutation}
       </Carousel>
       <Button
-        href="https://codepost.io/testimonials"
+        href="https://codepost.cs.rutgers.edu/testimonials"
         target="_blank"
         type="link"
         ghost={true}

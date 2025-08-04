@@ -180,7 +180,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
                     </li>
                   </ul>
                   You can write useful, short scripts in 10 minutes. Or take advantage of our{' '}
-                  <a href="https://codepost.io/integrations" target="_blank" rel="noopener noreferrer">
+                  <a href="https://codepost.cs.rutgers.edu/integrations" target="_blank" rel="noopener noreferrer">
                     <span style={{ fontWeight: 500, cursor: 'pointer' }} className="landing__link">
                       native integrations
                     </span>

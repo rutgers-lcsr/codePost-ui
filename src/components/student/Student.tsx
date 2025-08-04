@@ -807,7 +807,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
 
     const openHome = () => {
       if (localStorage.getItem('source') === 'codePost') {
-        window.open('https://codepost.io', '_blank');
+        window.open('https://codepost.cs.rutgers.edu', '_blank');
       }
     };
 
