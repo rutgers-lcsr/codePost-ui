@@ -40,7 +40,7 @@ export const AutograderInfoModal = () => {
             <img src={TestGIF} style={{ maxWidth: '75%' }} alt="" />
             <div style={{ marginTop: 15 }}>
               To learn more about the codePost autograder,{' '}
-              <a href="https://codepost.io/autograder" target="_blank">
+              <a href="https://codepost.cs.rutgers.edu/autograder" target="_blank">
                 check out this overview
               </a>
             </div>
