@@ -17,7 +17,7 @@ import DashboardLayout from './components/codepost-admin/DashboardLayout';
 
 import Home from './components/core/Home';
 
-import { ADMIN, CODE, CODE_DEMO, GRADER, HOME, STUDENT } from './routes';
+import { ADMIN, CODE, CODE_DEMO, GRADER, HOME, STUDENT, HEALTH_CHECK } from './routes';
 
 import { AssignmentType } from './infrastructure/assignment';
 import { CourseType } from './infrastructure/course';
@@ -645,7 +645,7 @@ Firefox:
         superGraderCourses,
         sectionsLed,
       };
-
+      let healthcheck = <Route exact={true} path={HEALTH_CHECK} render={() => <div>OK</div>} />;
       /* tslint:disable:jsx-no-lambda */
       let studentRoute;
       if (isStudent) {
@@ -764,6 +764,7 @@ Firefox:
           {adminRoute}
           {gradeRoute}
           {demoRoute}
+          {healthcheck}
           <IndexManager
             handleLogin={this.handleLogin}
             error={this.state.error}
