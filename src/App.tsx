@@ -17,7 +17,7 @@ import DashboardLayout from './components/codepost-admin/DashboardLayout';
 
 import Home from './components/core/Home';
 
-import { ADMIN, CODE, CODE_DEMO, GRADER, HOME, STUDENT } from './routes';
+import { ADMIN, CODE, CODE_DEMO, GRADER, HOME, STUDENT, HEALTH_CHECK } from './routes';
 
 import { AssignmentType } from './infrastructure/assignment';
 import { CourseType } from './infrastructure/course';
@@ -129,7 +129,7 @@ Please follow these steps for your current browser...
 Google Chrome:
   - Open up Chrome cookie settings:
       chrome://settings/content/cookies
-  - Click Allow -> Add -> https://codepost.io
+  - Click Allow -> Add -> https://codepost.cs.rutgers.edu
       See a screenshot here:
       https://share.getcloudapp.com/eDu69Dnz
   - Try refreshing!
@@ -138,7 +138,7 @@ Firefox:
   - Open up Firefox cookie settings:
       about:preferences#privacy
   - Click Cookies and Site Data -> Manage Permissions
-  - Type in https://codepost.io -> Allow -> Save Changes
+  - Type in https://codepost.cs.rutgers.edu -> Allow -> Save Changes
   - Try refreshing!
       `,
       );
@@ -645,7 +645,7 @@ Firefox:
         superGraderCourses,
         sectionsLed,
       };
-
+      let healthcheck = <Route exact={true} path={HEALTH_CHECK} render={() => <div>OK</div>} />;
       /* tslint:disable:jsx-no-lambda */
       let studentRoute;
       if (isStudent) {
@@ -764,6 +764,7 @@ Firefox:
           {adminRoute}
           {gradeRoute}
           {demoRoute}
+          {healthcheck}
           <IndexManager
             handleLogin={this.handleLogin}
             error={this.state.error}

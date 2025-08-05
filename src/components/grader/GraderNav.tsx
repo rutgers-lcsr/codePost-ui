@@ -107,7 +107,10 @@ class GraderNav extends React.Component<IProps, {}> {
                 alignItems: 'center',
                 fontSize: 13,
               }}
-              onClick={this.openLink.bind(this, 'https://codepost.io/scholarships/computer-science-education')}
+              onClick={this.openLink.bind(
+                this,
+                'https://codepost.cs.rutgers.edu/scholarships/computer-science-education',
+              )}
             >
               <TrophyOutlined />
               <span>CS Education Scholarship</span>

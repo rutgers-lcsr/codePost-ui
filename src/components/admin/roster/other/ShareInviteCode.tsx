@@ -54,7 +54,7 @@ const ShareInviteCode = (props: IProps) => {
     });
   };
 
-  const inviteLink = inviteCode === null ? '' : `https://codepost.io/signup/join?code=${inviteCode}`;
+  const inviteLink = inviteCode === null ? '' : `https://codepost.cs.rutgers.edu/signup/join?code=${inviteCode}`;
 
   const copyToClipboard = () => {
     const element = document.createElement('textarea');
@@ -72,7 +72,9 @@ const ShareInviteCode = (props: IProps) => {
   };
 
   const inputValue =
-    inviteCode === null ? 'None set; generate here -->' : `https://codepost.io/signup/join?code=${inviteCode}`;
+    inviteCode === null
+      ? 'None set; generate here -->'
+      : `https://codepost.cs.rutgers.edu/signup/join?code=${inviteCode}`;
 
   return (
     <div>

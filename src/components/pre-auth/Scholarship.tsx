@@ -34,7 +34,7 @@ const Scholarship = (props: IProps) => {
       <Typography.Title level={2}>About this scholarship</Typography.Title>
       <div style={{ marginBottom: 25 }}>
         Our mission at{' '}
-        <a className="landing__link" href="https://codepost.io" target="_blank" rel="noopener noreferrer">
+        <a className="landing__link" href="https://codepost.cs.rutgers.edu" target="_blank" rel="noopener noreferrer">
           codePost
         </a>{' '}
         is to <b style={{ fontWeight: 600 }}>advance Computer Science education</b> by empowering educators to give

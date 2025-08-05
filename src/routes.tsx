@@ -8,7 +8,7 @@ export const RESET = '/password-reset';
 export const RESET_TOKEN = '/password-reset/:uid/:token';
 export const LANDING = '/landing';
 export const CODE_DEMO = '/demo';
-
+export const HEALTH_CHECK = '/health-check';
 export const COURSE_SELECTOR = ':courseName/:period';
 
 export const CODE_TOUR_ID = '49817';
@@ -25,4 +25,5 @@ export type ROUTES =
   | typeof RESET
   | typeof RESET_TOKEN
   | typeof LANDING
-  | typeof CODE_DEMO;
+  | typeof CODE_DEMO
+  | typeof HEALTH_CHECK;

@@ -205,7 +205,10 @@ class AdminNav extends React.Component<IAdminNavProps, {}> {
               display: 'flex',
               alignItems: 'center',
             }}
-            onClick={this.openLink.bind(this, 'https://codepost.io/scholarships/computer-science-education')}
+            onClick={this.openLink.bind(
+              this,
+              'https://codepost.cs.rutgers.edu/scholarships/computer-science-education',
+            )}
           >
             <TrophyOutlined />
             <span>Scholarship</span>
