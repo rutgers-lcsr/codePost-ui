@@ -10,3 +10,4 @@ services:
       - ./certs:/etc/ssl/certs/:ro
     ports:
       - '443:443'
+    restart: always
