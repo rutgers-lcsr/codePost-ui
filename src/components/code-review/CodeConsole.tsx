@@ -1772,10 +1772,10 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             height: 60,
           }}
           description={
-            <span style={{ color: theme === 'light' ? 'black' : 'white' }}>
+            <span style={{ color: theme === 'light' ? 'black' : 'white', fontSize: 'larger' }}>
               {this.state.permissionLevel === PERMISSION_LEVEL.NOT_FOUND
                 ? "Whoops! This submission doesn't exist...😔"
-                : "Whoops! Looks like you don't have access to this submission...😔"}
+                : "Whoops! Looks like you don't have access to this submission...😔, If you submitted this assignment, your submission might still be under review. please check back later after its finalized!"}
             </span>
           }
         />
