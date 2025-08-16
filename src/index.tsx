@@ -24,7 +24,7 @@ import App from './App';
 import ErrorBoundary from './components/core/ErrorBoundary';
 
 // If True, show maintenance banner
-const maintenanceMode = true;
+const maintenanceMode = false;
 
 const maintenanceBanner = (
   <div
@@ -37,7 +37,8 @@ const maintenanceBanner = (
       textAlign: 'center',
     }}
   >
-    The codePost autograder test runner is currently experiencing technical difficulties. Some test runs may not complete. We're working hard to get it back working.
+    The codePost autograder test runner is currently experiencing technical difficulties. Some test runs may not
+    complete. We're working hard to get it back working.
   </div>
 );
 
