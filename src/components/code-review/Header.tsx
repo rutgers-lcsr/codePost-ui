@@ -15,17 +15,17 @@ import {
   DownloadOutlined,
   EditOutlined,
   IdcardOutlined,
+  MailOutlined,
   MenuOutlined,
   PlusCircleOutlined,
   SearchOutlined,
   TagTwoTone,
   ZoomInOutlined,
   ZoomOutOutlined,
-  MailOutlined,
 } from '@ant-design/icons';
 
 /* antd imports */
-import { Button, Descriptions, Divider, Dropdown, message, Menu, Modal, Popover, Switch, Tag } from 'antd';
+import { Descriptions, Divider, Dropdown, Modal, Popover, Space, Switch, Tag, message } from 'antd';
 
 import { trackFeature } from '../utils/Fullstory';
 
@@ -40,15 +40,15 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 
 import { wait } from '../../infrastructure/animation';
 import { AssignmentType } from '../../infrastructure/assignment';
-import { Submission } from '../../infrastructure/submission';
 import { File } from '../../infrastructure/file';
+import { Submission } from '../../infrastructure/submission';
 
 import { CourseType } from '../../infrastructure/course';
 import { FileType } from '../../infrastructure/file';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../infrastructure/submission';
-import { TestCaseType } from '../../infrastructure/types';
 import { SubmissionTestType } from '../../infrastructure/submissionTest';
+import { TestCaseType } from '../../infrastructure/types';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
 
@@ -61,8 +61,6 @@ import useWindowSize from '../core/useWindowSize';
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
 import { encodeForLink } from '../core/URLutils';
-
-const ButtonGroup = Button.Group;
 
 /**********************************************************************************************************************/
 
@@ -102,7 +100,7 @@ const Magnifier = (props: IMagnifierProps) => {
   // or maybe open a modal when the middle button is pressed
 
   return (
-    <ButtonGroup style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', lineHeight: 1.499 }}>
+    <Space.Compact style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', lineHeight: 1.499 }}>
       <CPTooltip title={tooltips.grade.header.zoomOut} hideThisOnHideTips={true}>
         <CPButton id="zoom-out" cpType={cpType} onClick={zoomOut} small={true}>
           <ZoomOutOutlined />
@@ -116,7 +114,7 @@ const Magnifier = (props: IMagnifierProps) => {
           <ZoomInOutlined />
         </CPButton>
       </CPTooltip>
-    </ButtonGroup>
+    </Space.Compact>
   );
 };
 
@@ -158,11 +156,11 @@ export const ViewAsStudent = (props: IViewAsStudentProps) => {
   return (
     <Link to={{ pathname: `${props.pathname}?student=1` }} target="_blank">
       <CPTooltip title={tooltips.grade.header.viewAsStudent} hideThisOnHideTips={true}>
-        <ButtonGroup>
+        <Space.Compact>
           <CPButton id="view-as-student" cpType={cpType} small={true}>
             <IdcardOutlined />
           </CPButton>
-        </ButtonGroup>
+        </Space.Compact>
       </CPTooltip>
     </Link>
   );
@@ -206,7 +204,7 @@ export const DownloadCode = (props: IDownloadCodeProps) => {
       return true;
     });
 
-    zip.generateAsync({ type: 'blob' }).then(function(content: any) {
+    zip.generateAsync({ type: 'blob' }).then(function (content: any) {
       saveAs(content, `submission-${files[0].submission}.zip`);
     });
   };
@@ -215,11 +213,11 @@ export const DownloadCode = (props: IDownloadCodeProps) => {
 
   return (
     <CPTooltip title={tooltips.grade.header.downloadCode} hideThisOnHideTips={true}>
-      <ButtonGroup>
+      <Space.Compact>
         <CPButton id="download-code" cpType={cpType} small={true} onClick={onClick}>
           <DownloadOutlined />
         </CPButton>
-      </ButtonGroup>
+      </Space.Compact>
     </CPTooltip>
   );
 };
@@ -312,7 +310,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
           return;
         }
       })
-      .catch((err) => {
+      .catch((_err) => {
         console.log(err);
       });
     return;
@@ -575,15 +573,16 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
   ];
 
   const categoriesTable = (
-    <Descriptions title="Category Breakdown" column={1} bordered>
-      {categories.map((item: any, index: number) => {
-        return (
-          <Descriptions.Item key={index} label={item.description}>
-            {item.value}
-          </Descriptions.Item>
-        );
-      })}
-    </Descriptions>
+    <Descriptions
+      title="Category Breakdown"
+      column={1}
+      bordered
+      items={categories.map((item: any, index: number) => ({
+        key: index,
+        label: item.description,
+        children: item.value,
+      }))}
+    />
   );
 
   // tslint:disable
@@ -616,19 +615,20 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
   // tslint:enable
 
   const summaryTable = (
-    <Descriptions title="Summary" column={1} bordered>
-      {summary
+    <Descriptions
+      title="Summary"
+      column={1}
+      bordered
+      items={summary
         .filter((el) => {
           return el !== null;
         })
-        .map((item: any, index: number) => {
-          return (
-            <Descriptions.Item key={index} label={item.description}>
-              {item.value}
-            </Descriptions.Item>
-          );
-        })}
-    </Descriptions>
+        .map((item: any, index: number) => ({
+          key: index,
+          label: item.description,
+          children: item.value,
+        }))}
+    />
   );
 
   return (
@@ -672,7 +672,7 @@ export const GradeButton = (props: IGradeButtonProps) => {
       <CPButton cpType={theme === 'light' ? 'secondary' : 'dark'} onClick={handleClick}>
         Grade: {gradeNum} / {props.assignment.points}
       </CPButton>
-      <Modal title={'Grade breakdown'} visible={breakdownVisible} onCancel={handleClick} footer={null}>
+      <Modal title={'Grade breakdown'} open={breakdownVisible} onCancel={handleClick} footer={null}>
         <GradeBreakdown
           submission={props.submission}
           assignment={props.assignment}
@@ -823,57 +823,86 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
     (window as any).Intercom('show');
   };
 
-  const logout = (
-    <Menu.Item key="setting:6" style={itemStyle} className="header-menu">
-      <a href="/logout">Logout</a>
-    </Menu.Item>
-  );
-
-  const menu = (
-    <Menu mode="vertical" style={{ width: 320, padding: 0 }}>
-      <Menu.Item key="setting:1" style={groupStyle} className="header-menu">
-        Code Review Console
-      </Menu.Item>
-      {props.isStudent || props.isDemo || (props.course && !props.course.activateQueue) ? null : (
-        <Menu.Item key="claim" style={itemStyle} className="header-menu">
-          <span onClick={props.claimSubmission}>
-            <PlusCircleOutlined /> Claim another submission{' '}
-            <span style={{ color: '#ccc' }}>[{osControlKey()} shift p]</span>
-          </span>
-        </Menu.Item>
-      )}
-      {props.isAdmin && props.course ? (
-        <Menu.Item key="rubric" style={itemStyle} className="header-menu">
-          <Link
-            to={`/admin/${encodeForLink(props.course.name)}/${encodeForLink(
-              props.course.period,
-            )}/assignments/rubrics/${encodeForLink(props.assignment.name)}`}
-          >
-            <EditOutlined /> Open rubric in Admin Console
-          </Link>
-        </Menu.Item>
-      ) : null}
-      {props.isStudent || !props.hasExplanations ? null : (
-        <Menu.Item key="explanations" style={itemStyle} className="header-menu" onClick={props.toggleShowExplanations}>
-          Show rubric comment {props.showExplanations ? 'text' : ' explanations'}{' '}
-          <span style={{ color: '#ccc' }}>[{osControlKey()} shift v]</span>
-        </Menu.Item>
-      )}
-      <Menu.Item key="setting:3" style={itemStyle} className="header-menu" onClick={openIntercom}>
-        Help! (talk to a human from codePost)
-      </Menu.Item>
-      <Menu.Item key="setting:4" style={groupStyle} className="header-menu">
-        Other
-      </Menu.Item>
-      <Menu.Item key="setting:5" style={itemStyle} className="header-menu">
-        <a href="/">Home</a>
-      </Menu.Item>
-      {logout}
-    </Menu>
-  );
+  const menuItems = [
+    {
+      key: 'setting:1',
+      label: 'Code Review Console',
+      style: groupStyle,
+      className: 'header-menu',
+    },
+    ...(props.isStudent || props.isDemo || (props.course && !props.course.activateQueue)
+      ? []
+      : [
+          {
+            key: 'claim',
+            label: (
+              <span onClick={props.claimSubmission}>
+                <PlusCircleOutlined /> Claim another submission{' '}
+                <span style={{ color: '#ccc' }}>[{osControlKey()} shift p]</span>
+              </span>
+            ),
+            style: itemStyle,
+            className: 'header-menu',
+          },
+        ]),
+    ...(props.isAdmin && props.course
+      ? [
+          {
+            key: 'rubric',
+            label: (
+              <Link
+                to={`/admin/${encodeForLink(props.course.name)}/${encodeForLink(
+                  props.course.period,
+                )}/assignments/rubrics/${encodeForLink(props.assignment.name)}`}
+              >
+                <EditOutlined /> Open rubric in Admin Console
+              </Link>
+            ),
+            style: itemStyle,
+            className: 'header-menu',
+          },
+        ]
+      : []),
+    ...(props.isStudent || !props.hasExplanations
+      ? []
+      : [
+          {
+            key: 'explanations',
+            label: `Show rubric comment ${props.showExplanations ? 'text' : ' explanations'} [${osControlKey()} shift v]`,
+            style: itemStyle,
+            className: 'header-menu',
+            onClick: props.toggleShowExplanations,
+          },
+        ]),
+    {
+      key: 'setting:3',
+      label: 'Help! (talk to a human from codePost)',
+      style: itemStyle,
+      className: 'header-menu',
+      onClick: openIntercom,
+    },
+    {
+      key: 'setting:4',
+      label: 'Other',
+      style: groupStyle,
+      className: 'header-menu',
+    },
+    {
+      key: 'setting:5',
+      label: <a href="/">Home</a>,
+      style: itemStyle,
+      className: 'header-menu',
+    },
+    {
+      key: 'setting:6',
+      label: <a href="/logout">Logout</a>,
+      style: itemStyle,
+      className: 'header-menu',
+    },
+  ];
 
   return (
-    <Dropdown overlay={menu} trigger={['click']}>
+    <Dropdown menu={{ items: menuItems }} trigger={['click']}>
       <MenuOutlined style={{ color: consoleTheme.text }} />
     </Dropdown>
   );

@@ -1,40 +1,98 @@
-.rubric-menu {
-  // max-height set using javascript
+// Rubric Menu Container - Main wrapper with flex layout
+.rubric-menu-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 400px;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+// Rubric Menu Header - Fixed header with search and category tag
+.rubric-menu-header {
+  flex-shrink: 0;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.rubric-menu-category-search {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.rubric-menu-category-tag {
+  border-style: dashed !important;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.rubric-menu-search {
+  width: 100%;
+}
+
+// Rubric Menu Content - Scrollable area
+.rubric-menu-content {
+  flex: 1 1 auto;
   overflow-y: auto;
   overflow-x: hidden;
+  min-height: 0;
+  max-height: 100%;
+  padding: 8px 0;
 
-  border-right: 0px !important;
+  // Smooth scrolling
+  scroll-behavior: smooth;
+
+  // Custom scrollbar styling
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+  }
+}
+
+// Rubric Menu - Legacy styles for menu items
+.rubric-menu {
+  border-right: 0 !important;
 
   .ant-menu-sub {
     background-color: transparent !important;
   }
 
   .ant-menu-submenu-title {
-    width: 100%; // undoes an Ant hack
-
+    width: 100%;
     height: 33px !important;
     line-height: 32px !important;
-
     font-weight: 500;
     font-size: 12px;
-
-    padding-left: 0px !important;
-
-    margin: 0px !important;
-
+    padding-left: 0 !important;
+    margin: 0 !important;
     position: relative;
+    display: block !important;
   }
 
   .ant-menu-item {
-    width: 100%; // undoes an Ant hack
-
+    width: 100%;
     margin-bottom: 4px !important;
     height: auto !important;
     line-height: 15.75px !important;
     letter-spacing: -0.05px !important;
-
     padding: 4px 10px 4px 26px !important;
-
     overflow: visible;
     white-space: pre-wrap;
 
@@ -120,43 +178,47 @@
   }
 }
 
+// Rubric Menu Controls - Fixed footer with edit controls
+.rubric-menu-controls {
+  display: flex;
+  flex-shrink: 0;
+  width: 100%;
+  min-height: 50px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  // padding: 8px;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex-wrap: wrap;
+
+  &.slide-in {
+    animation: slide-in 0.3s ease-out forwards;
+  }
+
+  &.slide-out {
+    animation: slide-out 0.3s ease-in forwards;
+  }
+}
+
+// Animations
 @keyframes slide-in {
   from {
-    bottom: -50px;
+    opacity: 0;
+    transform: translateY(10px);
   }
   to {
-    bottom: 0px;
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 @keyframes slide-out {
   from {
-    bottom: 0px;
+    opacity: 1;
+    transform: translateY(0);
   }
   to {
-    bottom: -50px;
+    opacity: 0;
+    transform: translateY(10px);
   }
-}
-
-#rubric-menu-controls {
-  display: none;
-  width: 100%;
-  height: 50px;
-  border-top: 1px solid #ececec;
-  padding: 5px;
-  position: absolute;
-}
-
-#rubric-menu-controls.slide-in {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  animation: slide-in 0.5s forwards;
-}
-
-#rubric-menu-controls.slide-out {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  animation: slide-out 1s forwards;
 }

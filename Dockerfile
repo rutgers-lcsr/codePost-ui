@@ -1,28 +1,49 @@
-# Build set
-FROM node:10 AS build
+# Build stage
+FROM node:20-alpine AS build
 
-COPY package.json /app/package.json
-COPY package-lock.json /app/package-lock.json
-
+# Set working directory
 WORKDIR /app
 
-RUN npm install
+# Copy package files
+COPY package.json package-lock.json ./
 
+# Install dependencies with clean install for reproducibility
+RUN npm ci
+
+# Copy source code
 COPY . .
 
+# Build arguments for environment variables
 ARG REACT_APP_API_URL
+ARG REACT_APP_VERSION
+ARG REACT_APP_GA_ID
+ARG REACT_APP_OPTIMIZE_ID
+
+# Set environment variables for build
 ENV REACT_APP_API_URL=$REACT_APP_API_URL
+ENV REACT_APP_VERSION=$REACT_APP_VERSION
+ENV REACT_APP_GA_ID=$REACT_APP_GA_ID
+ENV REACT_APP_OPTIMIZE_ID=$REACT_APP_OPTIMIZE_ID
+
+# Build the application with Vite
 RUN npm run build
 
+# Production stage
+FROM nginx:alpine AS production
 
-# Production set
-FROM nginx:latest AS production
-
+# Copy custom nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
 
+# Copy built assets from build stage
 COPY --from=build /app/build /usr/share/nginx/html
 
+# Expose ports
 EXPOSE 80
 EXPOSE 443
 
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
+
+# Start nginx
 CMD ["nginx", "-g", "daemon off;"]

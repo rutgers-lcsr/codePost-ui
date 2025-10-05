@@ -8,8 +8,11 @@ import { Button, Typography } from 'antd';
 
 import landingVars from '../../../styles/pages/_landingVars';
 
-import Carousel, { Dots } from '@brainhubeu/react-carousel';
-import '@brainhubeu/react-carousel/lib/style.css';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import { A11y, Navigation, Pagination } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react';
 
 import PreAuthLayout from '../../pre-auth/PreAuthLayout';
 
@@ -17,18 +20,18 @@ import PreAuthLayout from '../../pre-auth/PreAuthLayout';
 /* IMAGES
 /*************************************************************************************/
 
-const adamImg = require('../../../img/landing/compressed/adam_blank.jpeg');
-const eitanImg = require('../../../img/landing/compressed/eitan_mendelowitz.jpg');
-const bobImg = require('../../../img/landing/compressed/bob_sedgewick.jpg');
-const robertImg = require('../../../img/landing/compressed/robert_adams.jpg');
-const niemaImg = require('../../../img/landing/compressed/niema_moshiri.jpg');
-const kateImg = require('../../../img/landing/compressed/kate_holdener.jpg');
-const nohaImg = require('../../../img/landing/compressed/noha_hazzazi.jpg');
-const abbasImg = require('../../../img/landing/compressed/abbas_attarwala.jpg');
-const kateKImg = require('../../../img/landing/compressed/kate_kharitonova.jpg');
-const chrisImg = require('../../../img/landing/compressed/chris_bourke.jpg');
-const alekseyImg = require('../../../img/landing/compressed/aleksey_gurtovoy.jpg');
-const michaelImg = require('../../../img/landing/compressed/michael_clarkson.jpg');
+import abbasImg from '../../../img/landing/compressed/abbas_attarwala.jpg';
+import adamImg from '../../../img/landing/compressed/adam_blank.jpeg';
+import alekseyImg from '../../../img/landing/compressed/aleksey_gurtovoy.jpg';
+import bobImg from '../../../img/landing/compressed/bob_sedgewick.jpg';
+import chrisImg from '../../../img/landing/compressed/chris_bourke.jpg';
+import eitanImg from '../../../img/landing/compressed/eitan_mendelowitz.jpg';
+import kateImg from '../../../img/landing/compressed/kate_holdener.jpg';
+import kateKImg from '../../../img/landing/compressed/kate_kharitonova.jpg';
+import michaelImg from '../../../img/landing/compressed/michael_clarkson.jpg';
+import niemaImg from '../../../img/landing/compressed/niema_moshiri.jpg';
+import nohaImg from '../../../img/landing/compressed/noha_hazzazi.jpg';
+import robertImg from '../../../img/landing/compressed/robert_adams.jpg';
 
 /*************************************************************************************/
 /* TEXT
@@ -99,7 +102,7 @@ const niemaText = (
     </Typography.Text>
     , I have been able to build workflows that have made all aspects of executing my course extremely streamlined,{' '}
     <Typography.Text mark className="codePost-highlight-new">
-      even with >500 students.
+      even with {'>'} 500 students.
     </Typography.Text>
   </span>
 );
@@ -205,7 +208,7 @@ const michaelText = (
 interface TestimonialData {
   text: React.ReactElement;
   name: string;
-  thumbnail: any;
+  thumbnail: string;
   school: string;
 }
 
@@ -231,8 +234,8 @@ const testmonialInfo: TestimonialData[] = [
  * Shuffles array in place.
  * @param {Array} a items An array containing the items.
  */
-function shuffle(a: any[]) {
-  var j, x, i;
+function shuffle<T>(a: Array<T>) {
+  let j, x, i;
   for (i = a.length - 1; i > 0; i--) {
     j = Math.floor(Math.random() * (i + 1));
     x = a[i];
@@ -277,8 +280,8 @@ const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name:
             windowSize.width < landingVars.breakpoints.mobile
               ? 16
               : windowSize.width < landingVars.breakpoints.verticalPanels
-              ? 18
-              : 22,
+                ? 18
+                : 22,
         }}
       >
         {props.text}
@@ -288,37 +291,34 @@ const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name:
 };
 
 const Testimonials = () => {
-  const landingTestimonials = testmonialInfo.map((t) => {
-    return (
-      <Testimonial
-        key={`testimonial-${t.name}`}
-        text={t.text}
-        name={t.name}
-        thumbnail={t.thumbnail}
-        school={t.school}
-      />
-    );
+  const [permutation] = React.useState(() => {
+    const testimonials = [...testmonialInfo];
+    return testimonials.slice(0, 2).concat(shuffle(testimonials.slice(2)));
   });
-
-  const [permutation] = React.useState(landingTestimonials.slice(0, 2).concat(shuffle(landingTestimonials.slice(2))));
-
-  const [activeSlide, setActiveSlide] = React.useState(0);
-
-  const onChange = (value: number) => setActiveSlide(value);
 
   return (
     <div id="Testimonials">
       <br />
       <div>
-        <Carousel value={activeSlide} onChange={onChange} slidesPerPage={1} arrows infinite>
-          {permutation}
-        </Carousel>
-        <Dots value={activeSlide} onChange={onChange} number={12} />
+        <Swiper
+          modules={[Navigation, Pagination, A11y]}
+          spaceBetween={50}
+          slidesPerView={1}
+          navigation
+          pagination={{ clickable: true }}
+          loop
+          style={{ paddingBottom: '40px' }}
+        >
+          {permutation.map((t) => (
+            <SwiperSlide key={`testimonial-${t.name}`}>
+              <Testimonial text={t.text} name={t.name} thumbnail={t.thumbnail} school={t.school} />
+            </SwiperSlide>
+          ))}
+        </Swiper>
         <Button
           href="https://codepost.cs.rutgers.edu/testimonials"
           target="_blank"
           type="link"
-          ghost={true}
           style={{ fontWeight: 600, fontSize: 20, float: 'right', marginTop: 10, marginBottom: 25 }}
           className="testimonials-link"
         >
@@ -389,7 +389,7 @@ const AllTestimonials = (props: IProps) => {
   const justifyRow = windowSize.width < landingVars.breakpoints.testimonial ? 'center' : 'space-between';
 
   for (let i = 0; i < shuffledTestimonials.length; i += itemsPerRow) {
-    var row = [];
+    const row = [];
     for (let z = 0; z < itemsPerRow; z++) {
       row.push(shuffledTestimonials[i + z]);
     }
@@ -424,4 +424,4 @@ const AllTestimonials = (props: IProps) => {
   );
 };
 
-export { AllTestimonials, Testimonials, Testimonial };
+export { AllTestimonials, Testimonial, Testimonials };

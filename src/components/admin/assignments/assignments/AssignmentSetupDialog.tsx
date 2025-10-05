@@ -3,7 +3,6 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
 
 import { Icon as LegacyIcon } from '@ant-design/compatible';
 
@@ -11,14 +10,14 @@ import { Icon as LegacyIcon } from '@ant-design/compatible';
 import { Button, Modal, Steps, Timeline } from 'antd';
 
 /* codePost imports */
-import { CourseType, AssignmentType } from '../../../../infrastructure/types';
+import { AssignmentType, CourseType } from '../../../../infrastructure/types';
 
 import {
   getRosterURL,
-  getUploadSubmissionsURL,
-  getTestsURL,
   getRubricURL,
   getSettingsURL,
+  getTestsURL,
+  getUploadSubmissionsURL,
 } from '../../../core/URLutils';
 
 import useWindowSize from '../../../core/useWindowSize';
@@ -150,7 +149,7 @@ export const AssignmentSetupBanner = (props: IProps) => {
   const onStepChange = (current: number) => {
     const url = steps[current].url;
     if (url) {
-      var win = window.open(url, '_self');
+      const win = window.open(url, '_self');
       win!.focus();
     }
   };
@@ -160,11 +159,12 @@ export const AssignmentSetupBanner = (props: IProps) => {
   const isSmall = windowSize.width < 1250;
   const options = (
     <Steps type={'navigation'} onChange={onStepChange} current={7} size={'small'}>
-      {steps.map((step) =>
+      {steps.map((step, index) =>
         step.hide ? (
-          <span />
+          <span key={index} />
         ) : (
           <Step
+            key={index}
             title={step.title}
             subTitle={step.isOptional && !isSmall ? '(optional)' : ''}
             status={step.isComplete ? 'finish' : 'wait'}

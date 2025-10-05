@@ -1,6 +1,4 @@
-import React from 'react';
-
-import { Modal, Button } from 'antd';
+import { Button, Modal } from 'antd';
 
 import Video from './Video';
 
@@ -8,7 +6,7 @@ import useWindowSize from '../core/useWindowSize';
 
 interface IProps {
   onCancel: () => void;
-  visible: boolean;
+  open: boolean;
 }
 
 const VideoModal = (props: IProps) => {
@@ -16,7 +14,7 @@ const VideoModal = (props: IProps) => {
   const modalWidth = Math.min(1600, windowSize.width);
   return (
     <Modal
-      visible={props.visible}
+      open={props.open}
       onCancel={props.onCancel}
       footer={[<Button onClick={props.onCancel}>Cancel</Button>]}
       okText={null}

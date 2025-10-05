@@ -67,7 +67,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
                 <a href="chrome://settings/content/cookies">chrome://settings/content/cookies</a>
               </li>
               <li>
-                Click Allow -> Add -> https://codepost.cs.rutgers.edu
+                Click Allow {'>'} Add {'>'} https://codepost.cs.rutgers.edu
                 <br />
                 See a screenshot here:{' '}
                 <a href="https://share.getcloudapp.com/eDu69Dnz">https://share.getcloudapp.com/eDu69Dnz</a>
@@ -80,8 +80,10 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
               <li>
                 Open up Firefox cookie settings: <a href="about:preferences#privacy">about:preferences#privacy</a>
               </li>
-              <li>Click Cookies and Site Data -> Manage Permissions</li>
-              <li>Type in https://codepost.cs.rutgers.edu -> Allow -> Save Changes</li>
+              <li>Click Cookies and Site Data {'>'} Manage Permissions</li>
+              <li>
+                Type in https://codepost.cs.rutgers.edu {'>'} Allow {'>'} Save Changes
+              </li>
               <li>Try refreshing!</li>
             </ul>
           </div>

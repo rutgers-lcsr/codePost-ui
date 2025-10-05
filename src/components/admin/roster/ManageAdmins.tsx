@@ -8,11 +8,11 @@ import * as React from 'react';
 import { DisconnectOutlined, MailOutlined, MenuOutlined, UserDeleteOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Dropdown, Menu, Modal } from 'antd';
+import { Breadcrumb, Dropdown, Modal } from 'antd';
 
 /* other library imports */
-import Highlighter from 'react-highlight-words';
 import memoizeOne from 'memoize-one';
+import Highlighter from 'react-highlight-words';
 
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
@@ -190,37 +190,51 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
 
       data = this.props.admins.map((adminEmail) => {
         const hasActivated = this.props.notActivated.indexOf(adminEmail) === -1;
-        const menu =
-          adminEmail === this.props.myEmail ? (
-            <Menu>
-              <Menu.Item key="1" disabled={true}>
-                <CPTooltip title={tooltips.admin.adminRoster.removeSelf}>
-                  <div>
-                    <UserDeleteOutlined /> &nbsp; Unenroll
-                  </div>
-                </CPTooltip>
-              </Menu.Item>
-            </Menu>
-          ) : (
-            <Menu>
-              {hasActivated ? null : (
-                <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, adminEmail)}>
-                  <MailOutlined />
-                  Send activation email
-                </Menu.Item>
-              )}
-              <Menu.Item key="1" onClick={this.removeAdmin.bind(this, adminEmail)}>
-                <UserDeleteOutlined />
-                Unenroll
-              </Menu.Item>
-            </Menu>
-          );
+        const menuItems =
+          adminEmail === this.props.myEmail
+            ? [
+                {
+                  key: '1',
+                  disabled: true,
+                  label: (
+                    <CPTooltip title={tooltips.admin.adminRoster.removeSelf}>
+                      <div>
+                        <UserDeleteOutlined /> &nbsp; Unenroll
+                      </div>
+                    </CPTooltip>
+                  ),
+                },
+              ]
+            : [
+                ...(hasActivated
+                  ? []
+                  : [
+                      {
+                        key: 'activation',
+                        label: (
+                          <>
+                            <MailOutlined /> Send activation email
+                          </>
+                        ),
+                        onClick: this.sendActivationEmail.bind(this, adminEmail),
+                      },
+                    ]),
+                {
+                  key: '1',
+                  label: (
+                    <>
+                      <UserDeleteOutlined /> Unenroll
+                    </>
+                  ),
+                  onClick: this.removeAdmin.bind(this, adminEmail),
+                },
+              ];
 
         return {
           key: adminEmail,
           admin: adminEmail,
           actions: (
-            <Dropdown overlay={menu} trigger={['click']}>
+            <Dropdown menu={{ items: menuItems }} trigger={['click']}>
               <MenuOutlined />
             </Dropdown>
           ),
@@ -238,13 +252,17 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
         data={data}
         actions={actions}
         breadcrumbs={
-          <Breadcrumb>
-            <Breadcrumb.Item>Roster</Breadcrumb.Item>
-            <Breadcrumb.Item>
-              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-              <a>Admins</a>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              { title: 'Roster' },
+              {
+                title: (
+                  // eslint-disable-next-line jsx-a11y/anchor-is-valid
+                  <a>Admins</a>
+                ),
+              },
+            ]}
+          />
         }
         titleInfo={tooltips.admin.adminRoster.title}
       />

@@ -1,5 +1,5 @@
-import React from 'react';
 import useWindowSize from '../../../core/useWindowSize';
+import gradeAnimationVideo from './gradeAnimation.mp4';
 
 const GradeAnimationVideo = (props: { width: number; height: number; controls: number }) => {
   const windowSize = useWindowSize();
@@ -14,7 +14,7 @@ const GradeAnimationVideo = (props: { width: number; height: number; controls: n
         loop
         controls={windowSize.width < props.controls ? true : false}
       >
-        <source src={require('./gradeAnimation.mp4')} type="video/mp4" />
+        <source src={gradeAnimationVideo} type="video/mp4" />
       </video>
     </div>
   );

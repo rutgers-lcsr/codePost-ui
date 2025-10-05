@@ -61,7 +61,7 @@ const panelOneImgOffsetMobile = 545;
 const panelTwoImgOffsetMobile = 450;
 const panelThreeImgOffsetMobile = 250;
 
-module.exports = {
+export default {
   breakpoints: {
     mobile: mobileBreakpont,
     header: headerBreakPoint,

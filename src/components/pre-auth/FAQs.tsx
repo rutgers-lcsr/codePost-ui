@@ -137,7 +137,7 @@ const FAQs = (props: IProps) => {
   } else {
     content = (
       <div className="display-flex flex-direction-column">
-        {questions.map((q, i) => {
+        {questions.map((q, _i) => {
           if (i % 2 === 1) {
             return null;
           }

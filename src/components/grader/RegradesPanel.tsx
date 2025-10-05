@@ -56,7 +56,7 @@ class RegradesPanel extends React.Component<IProps, IState> {
     this.loadSubmissions(this.props.assignments, this.props.user.email);
   }
 
-  public componentDidUpdate(oldProps: IProps) {
+  public componentDidUpdate(_oldProps: IProps) {
     if (oldProps.assignments !== this.props.assignments) {
       this.loadSubmissions(this.props.assignments, this.props.user.email);
     }

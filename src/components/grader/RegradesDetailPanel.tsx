@@ -24,7 +24,7 @@ interface IProps {
   isAnonymous: boolean;
   isAdmin: boolean;
   isSuperGrader: boolean;
-  breadcrumbs: React.ReactElement[];
+  breadcrumbs: Array<{ title: React.ReactNode }>;
 }
 
 const RegradesDetailPanel = (props: IProps) => {
@@ -152,12 +152,7 @@ const RegradesDetailPanel = (props: IProps) => {
 
   return (
     <CPAdminDetail
-      breadcrumbs={
-        <Breadcrumb>
-          {props.breadcrumbs}
-          <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item>
-        </Breadcrumb>
-      }
+      breadcrumbs={<Breadcrumb items={[...props.breadcrumbs, { title: props.assignment.name }]} />}
       goBack={null}
       title={<div>{`Regrade Requests: ${props.assignment.name}`}</div>}
       titleInfo={'Quesitons or regrade requests from submissions that you have graded.'}

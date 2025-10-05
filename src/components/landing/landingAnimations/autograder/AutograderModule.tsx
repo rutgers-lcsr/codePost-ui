@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { Slider, Typography } from 'antd';
 
-const noCode = require('./IO.jpg');
-const unit = require('./Unit.jpg');
-const fileMode = require('./FileMode.jpg');
+import fileMode from './FileMode.jpg';
+import noCode from './IO.jpg';
+import unit from './Unit.jpg';
 
 const AutograderModule = () => {
   const [index, setIndex] = useState(0);
@@ -40,7 +40,7 @@ const AutograderModule = () => {
         </Typography.Text>
         <Slider
           style={{ width: 'calc(100% - 80px)' }}
-          tooltipVisible={false}
+          tooltip={{ open: false }}
           min={0}
           max={2}
           dots={true}

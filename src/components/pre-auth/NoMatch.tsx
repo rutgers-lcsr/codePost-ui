@@ -5,10 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
-import { Icon as LegacyIcon } from '@ant-design/compatible';
+import { Comment, Icon as LegacyIcon } from '@ant-design/compatible';
 
 /* antd imports */
-import { Comment, Divider, Typography } from 'antd';
+import { Divider, Typography } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';

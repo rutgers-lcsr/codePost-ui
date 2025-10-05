@@ -15,11 +15,11 @@ import {
 } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Dropdown, Empty, Menu, message, Modal, Select, Spin } from 'antd';
+import { Breadcrumb, Dropdown, Empty, message, Modal, Select, Spin } from 'antd';
 
 /* other library imports */
-import Highlighter from 'react-highlight-words';
 import memoizeOne from 'memoize-one';
+import Highlighter from 'react-highlight-words';
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
@@ -302,32 +302,45 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
       data = this.props.students.map((studentEmail, i) => {
         const hasActivated = this.props.notActivated.indexOf(studentEmail) === -1;
 
-        const menu = (
-          <Menu>
-            {hasActivated ? null : (
-              <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, studentEmail)}>
-                <MailOutlined />
-                Send activation email
-              </Menu.Item>
-            )}
-            <Menu.Item key="profile">
+        const menuItems = [
+          ...(hasActivated
+            ? []
+            : [
+                {
+                  key: 'activation',
+                  label: (
+                    <>
+                      <MailOutlined /> Send activation email
+                    </>
+                  ),
+                  onClick: this.sendActivationEmail.bind(this, studentEmail),
+                },
+              ]),
+          {
+            key: 'profile',
+            label: (
               <Link to={this.props.match.url.replace('roster/students', `submissions/by_student/${studentEmail}`)}>
                 <FolderOpenOutlined /> &nbsp; Open profile
               </Link>
-            </Menu.Item>
-            <Menu.Item key="1" onClick={this.removeStudent.bind(this, studentEmail)}>
-              <UserDeleteOutlined />
-              Unenroll
-            </Menu.Item>
-          </Menu>
-        );
+            ),
+          },
+          {
+            key: '1',
+            label: (
+              <>
+                <UserDeleteOutlined /> Unenroll
+              </>
+            ),
+            onClick: this.removeStudent.bind(this, studentEmail),
+          },
+        ];
 
         return {
           key: studentEmail,
           student: studentEmail,
           section: sections[studentEmail] ? sections[studentEmail].name : 'No section',
           actions: (
-            <Dropdown overlay={menu} trigger={['click']}>
+            <Dropdown menu={{ items: menuItems }} trigger={['click']}>
               <MenuOutlined />
             </Dropdown>
           ),
@@ -342,8 +355,10 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
         isEmpty={this.props.students.length === 0}
         emptyNode={
           <Empty
-            imageStyle={{
-              height: 60,
+            styles={{
+              image: {
+                height: 60,
+              },
             }}
             description={<span>You can add students to your course in two ways</span>}
           >
@@ -374,13 +389,17 @@ class ManageStudents extends React.Component<IManageStudentsProps & RouteCompone
         data={data}
         actions={actions}
         breadcrumbs={
-          <Breadcrumb>
-            <Breadcrumb.Item>Roster</Breadcrumb.Item>
-            <Breadcrumb.Item>
-              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-              <a>Students</a>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              { title: 'Roster' },
+              {
+                title: (
+                  // eslint-disable-next-line jsx-a11y/anchor-is-valid
+                  <a>Students</a>
+                ),
+              },
+            ]}
+          />
         }
         titleInfo={tooltips.admin.studentRoster.title}
       />

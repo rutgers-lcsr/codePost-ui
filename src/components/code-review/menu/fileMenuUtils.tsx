@@ -1,10 +1,6 @@
-import * as React from 'react';
-
 import { FolderOutlined } from '@ant-design/icons';
 
-import { Menu } from 'antd';
-
-const { SubMenu } = Menu;
+import type { MenuProps } from 'antd';
 
 export interface IFolder<T> {
   files: T[];
@@ -70,27 +66,25 @@ export function createDirectoryStructure<T extends IBasicFile>(files: T[]) {
 export function buildFolderMenu<T extends IBasicFile>(
   parentPath: string,
   folder: { name: string; files: T[]; folders: IFolder<T>[] },
-  buildFileMenu: (files: T[]) => React.ReactElement[],
+  buildFileMenu: (files: T[]) => MenuProps['items'],
   className?: string,
-) {
-  const fileItems = buildFileMenu(folder.files);
-  return (
-    <SubMenu
-      key={`${parentPath}/${folder.name}`}
-      title={
-        <div>
-          <FolderOutlined />
-          {folder.name}
-        </div>
-      }
-      className={className}
-    >
-      {fileItems}
-      {folder.folders.map((f: IFolder<T>) => {
-        return buildFolderMenu(`${parentPath}/${folder.name}`, f, buildFileMenu, className);
-      })}
-    </SubMenu>
-  );
+): NonNullable<MenuProps['items']>[number] {
+  const fileItems = buildFileMenu(folder.files) || [];
+  const subFolders = folder.folders.map((f: IFolder<T>) => {
+    return buildFolderMenu(`${parentPath}/${folder.name}`, f, buildFileMenu, className);
+  });
+
+  return {
+    type: 'submenu' as const,
+    key: `${parentPath}/${folder.name}`,
+    label: (
+      <>
+        <FolderOutlined /> {folder.name}
+      </>
+    ),
+    className,
+    children: [...fileItems, ...subFolders],
+  };
 }
 
 // Figure out the file order to be shown in the UI based on the nested file directory

@@ -22,20 +22,20 @@ $fontSizeAccent: 16;
 $fontSizeUppercase: 11;
 
 // Line Height
-$lineHeightSuper: (96 / $fontSizeSuper);
-$lineHeightHeading1: (72 / $fontSizeHeading1);
-$lineHeightHeading2: (56 / $fontSizeHeading2);
-$lineHeightHeading3: (48 / $fontSizeHeading3);
-$lineHeightHeading4: (40 / $fontSizeHeading4);
-$lineHeightHeading5: (32 / $fontSizeHeading5);
-$lineHeightHeading6: (28 / $fontSizeHeading6);
-$lineHeightHeading7: (24 / $fontSizeHeading7);
-$lineHeightHeading8: (16 / $fontSizeHeading8);
-$lineHeightBodyArticle: (36 / $fontSizeBodyArticle);
-$lineHeightBodyArticleSmall: (32 / $fontSizeBodyArticleSmall);
-$lineHeightBodySmall: (20 / $fontSizeBodySmall);
-$lineHeightAccent: (24 / $fontSizeAccent);
-$lineHeightUppercase: (11 / $fontSizeUppercase);
+$lineHeightSuper: calc(96 / $fontSizeSuper);
+$lineHeightHeading1: calc(72 / $fontSizeHeading1);
+$lineHeightHeading2: calc(56 / $fontSizeHeading2);
+$lineHeightHeading3: calc(48 / $fontSizeHeading3);
+$lineHeightHeading4: calc(40 / $fontSizeHeading4);
+$lineHeightHeading5: calc(32 / $fontSizeHeading5);
+$lineHeightHeading6: calc(28 / $fontSizeHeading6);
+$lineHeightHeading7: calc(24 / $fontSizeHeading7);
+$lineHeightHeading8: calc(16 / $fontSizeHeading8);
+$lineHeightBodyArticle: calc(36 / $fontSizeBodyArticle);
+$lineHeightBodyArticleSmall: calc(32 / $fontSizeBodyArticleSmall);
+$lineHeightBodySmall: calc(20 / $fontSizeBodySmall);
+$lineHeightAccent: calc(24 / $fontSizeAccent);
+$lineHeightUppercase: calc(11 / $fontSizeUppercase);
 $lineHeightReset: 1;
 
 $highlightHeight: 16;

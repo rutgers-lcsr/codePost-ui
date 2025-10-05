@@ -10,7 +10,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Divider, Menu, Spin } from 'antd';
+import { Divider, Spin } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 /* codePost imports */
@@ -47,34 +47,31 @@ interface IProps {
   children?: React.ReactNode;
 }
 
-const getOverlay = (items: IOptionWithDisabled[], onClick: (e: ClickParam) => void, disabledMessage: string) => {
-  return (
-    <Menu onClick={onClick}>
-      {items.map((item: IOptionWithDisabled, index: number) => {
-        if (item.isDisabled) {
-          return (
-            <Menu.Item key={item.value} disabled={item.isDisabled}>
-              <CPTooltip title={disabledMessage} placement={'right'}>
-                <div>{item.label}</div>
-              </CPTooltip>
-            </Menu.Item>
-          );
-        } else {
-          return <Menu.Item key={item.value}>{item.label}</Menu.Item>;
-        }
-      })}
-    </Menu>
-  );
+const getMenuItems = (items: IOptionWithDisabled[], disabledMessage: string) => {
+  return items.map((item: IOptionWithDisabled, index: number) => {
+    if (item.isDisabled) {
+      return {
+        key: item.value,
+        disabled: item.isDisabled,
+        label: (
+          <CPTooltip title={disabledMessage} placement={'right'}>
+            <div>{item.label}</div>
+          </CPTooltip>
+        ),
+      };
+    } else {
+      return {
+        key: item.value,
+        label: item.label,
+      };
+    }
+  });
 };
 
 const MultiSelectorSider = (props: IProps) => {
   const theme = props.theme ? props.theme : 'light';
-  const firstSelectorOverlay = getOverlay(props.firstSelectorItems, props.onFirstSelectorClick, '');
-  const secondSelectorOverlay = getOverlay(
-    props.secondSelectorItems,
-    props.onSecondSelectorClick,
-    props.disabledMessage,
-  );
+  const firstSelectorItems = getMenuItems(props.firstSelectorItems, '');
+  const secondSelectorItems = getMenuItems(props.secondSelectorItems, props.disabledMessage);
 
   return (
     <div style={{ padding: '18px 20px 0 16px' }}>
@@ -84,8 +81,8 @@ const MultiSelectorSider = (props: IProps) => {
       <CPDropdown
         key="selector1"
         value={props.activeFirstSelector ? props.activeFirstSelector.label : 'Select...'}
-        overlay={firstSelectorOverlay}
-        overlayStyle={{ maxHeight: '300px', overflowY: 'auto' }}
+        menu={{ items: firstSelectorItems, onClick: props.onFirstSelectorClick }}
+        dropdownRender={(menu) => <div style={{ maxHeight: '300px', overflowY: 'auto' }}>{menu}</div>}
         placement="bottomLeft"
         theme={theme}
         justifyContent="space-between"
@@ -102,8 +99,8 @@ const MultiSelectorSider = (props: IProps) => {
         <CPDropdown
           key="selector2"
           value={props.activeSecondSelector ? props.activeSecondSelector.label : 'Select...'}
-          overlay={secondSelectorOverlay}
-          overlayStyle={{ maxHeight: '300px', overflowY: 'auto' }}
+          menu={{ items: secondSelectorItems, onClick: props.onSecondSelectorClick }}
+          dropdownRender={(menu) => <div style={{ maxHeight: '300px', overflowY: 'auto' }}>{menu}</div>}
           placement="bottomLeft"
           theme={theme}
           justifyContent="space-between"

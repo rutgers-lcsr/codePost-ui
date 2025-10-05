@@ -17,11 +17,12 @@ import {
   message,
   Progress,
   Select,
+  Space,
   Spin,
   Statistic,
   Tag,
-  Typography,
   Tooltip,
+  Typography,
 } from 'antd';
 
 /* other library imports */
@@ -30,12 +31,12 @@ import { RouteComponentProps } from 'react-router';
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
 import { CourseType } from '../../../../infrastructure/course';
+import { FileTemplate, FileTemplateType } from '../../../../infrastructure/fileTemplate';
 import { SubmissionInfoType } from '../../../../infrastructure/submission';
 import { UserType } from '../../../../infrastructure/user';
-import { FileTemplate, FileTemplateType } from '../../../../infrastructure/fileTemplate';
 
-import invokeAWSLambda from '../../../../components/core/invokeAWSLambda';
 import FileExploror from '../../../../components/core/FileExplorer';
+import invokeAWSLambda from '../../../../components/core/invokeAWSLambda';
 
 import CPAdminDetail from '../../other/CPAdminDetail';
 
@@ -55,7 +56,6 @@ const { Option } = Select;
 
 const { Paragraph } = Typography;
 
-const ButtonGroup = Button.Group;
 const { Search, TextArea } = Input;
 
 /**********************************************************************************************************************/
@@ -70,7 +70,7 @@ export interface IMossProps {
 
   user: UserType;
 
-  breadcrumbs?: React.ReactElement[];
+  breadcrumbs?: Array<{ title: React.ReactNode }>;
 }
 /**********************************************************************************************************************/
 
@@ -364,14 +364,14 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
   );
 
   const toggle = (
-    <ButtonGroup>
+    <Space.Compact>
       <Button type={toggleType(submit)} onClick={toggleSubmit}>
         Submit this assignment
       </Button>
       <Button type={toggleType(!submit)} onClick={toggleParse}>
         Parse link
       </Button>
-    </ButtonGroup>
+    </Space.Compact>
   );
 
   // Source for email format: http://theory.stanford.edu/~aiken/moss/
@@ -547,11 +547,13 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
   return (
     <CPAdminDetail
       breadcrumbs={
-        <Breadcrumb>
-          {props.breadcrumbs}
-          <Breadcrumb.Item>Plagiarism Detection</Breadcrumb.Item>
-          {props.assignment ? <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item> : null}
-        </Breadcrumb>
+        <Breadcrumb
+          items={[
+            ...(props.breadcrumbs || []),
+            { title: 'Plagiarism Detection' },
+            ...(props.assignment ? [{ title: props.assignment.name }] : []),
+          ]}
+        />
       }
       goBack={null}
       title={<span>Plagiarism Detection &nbsp; {help}</span>}

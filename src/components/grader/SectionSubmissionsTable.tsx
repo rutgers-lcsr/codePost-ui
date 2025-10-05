@@ -6,8 +6,8 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Table, Dropdown, Menu, message, Spin } from 'antd';
-import { CodeOutlined, MinusCircleTwoTone, MenuOutlined, MailOutlined } from '@ant-design/icons';
+import { CodeOutlined, MailOutlined, MenuOutlined, MinusCircleTwoTone } from '@ant-design/icons';
+import { Dropdown, message, Spin, Table } from 'antd';
 
 /* codePost imports */
 import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
@@ -154,28 +154,40 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
               return;
             }
           })
-          .catch((err) => {
+          .catch((_err) => {
             console.log(err);
           });
         return;
       };
 
-      const menu = (
-        <Menu>
-          {submission && submission.grader === props.me && (
-            <Menu.Item key="1" onClick={() => props.claimSubmissions([submission.id], true)}>
-              <MinusCircleTwoTone />
-              Unclaim
-            </Menu.Item>
-          )}
-          {submission ? (
-            <Menu.Item key="2" onClick={() => sendStudentNotification(submission)}>
-              <MailOutlined />
-              Notify student
-            </Menu.Item>
-          ) : null}
-        </Menu>
-      );
+      const menuItems = [
+        ...(submission && submission.grader === props.me
+          ? [
+              {
+                key: '1',
+                label: (
+                  <>
+                    <MinusCircleTwoTone /> Unclaim
+                  </>
+                ),
+                onClick: () => props.claimSubmissions([submission.id], true),
+              },
+            ]
+          : []),
+        ...(submission
+          ? [
+              {
+                key: '2',
+                label: (
+                  <>
+                    <MailOutlined /> Notify student
+                  </>
+                ),
+                onClick: () => sendStudentNotification(submission),
+              },
+            ]
+          : []),
+      ];
 
       return {
         ...formatSub(submission, props.assignment),
@@ -190,7 +202,7 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
         open: submission ? <CodeOutlined onClick={openGradePage.bind({}, submission)} /> : null,
         disableCheck: !submission || submission.grader,
         options: (
-          <Dropdown overlay={menu} trigger={['click']}>
+          <Dropdown menu={{ items: menuItems }} trigger={['click']}>
             <MenuOutlined />
           </Dropdown>
         ),

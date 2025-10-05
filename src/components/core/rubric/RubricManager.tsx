@@ -9,7 +9,7 @@ import * as React from 'react';
 import { message, notification } from 'antd';
 
 /* other library imports */
-import arrayMove from 'array-move';
+import { arrayMoveImmutable as arrayMove } from 'array-move';
 import _ from 'lodash';
 
 import { Assignment, AssignmentType, RubricType } from '../../../infrastructure/assignment';

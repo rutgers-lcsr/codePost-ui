@@ -3,7 +3,6 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
 
 import { TeamOutlined, UserAddOutlined } from '@ant-design/icons';
 
@@ -22,8 +21,8 @@ import useWindowSize from '../core/useWindowSize';
 
 const buttonStyle = { fontSize: 18 };
 
-const studentImg = require('../../img/landing/compressed/student_cartoon.jpg');
-const teacherImg = require('../../img/landing/compressed/teacher_cartoon.jpg');
+import studentImg from '../../img/landing/compressed/student_cartoon.jpg';
+import teacherImg from '../../img/landing/compressed/teacher_cartoon.jpg';
 
 const SignUpManager = () => {
   const windowSize = useWindowSize();

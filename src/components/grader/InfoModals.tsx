@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
-import { Modal, Button } from 'antd';
+import { Button, Modal } from 'antd';
 
-const TestGIF = require('../../img/gifs/AdminTestCreation.gif');
-const SubmitGIF = require('../../img/gifs/StudentSubmit.gif');
+import TestGIF from '../../img/gifs/AdminTestCreation.gif';
+import SubmitGIF from '../../img/gifs/StudentSubmit.gif';
 
 export const AutograderInfoModal = () => {
   const [visible, setVisible] = useState(false);

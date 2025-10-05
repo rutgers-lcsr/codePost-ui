@@ -3,27 +3,26 @@
 /**********************************************************************************************************************/
 
 /* React imports */
-import * as React from 'react';
 
 /* antd imports */
-import { Breadcrumb, Tag } from 'antd';
+import { Tag } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
-import { Route, Link, Redirect } from 'react-router-dom';
+import { Link, Redirect, Route } from 'react-router-dom';
 
 /* codePost imports */
 import { AssignmentPatchType, AssignmentType } from '../../../infrastructure/assignment';
-import { CourseType, SubmissionInfoType, SectionType } from '../../../infrastructure/types';
+import { CourseType, SectionType, SubmissionInfoType } from '../../../infrastructure/types';
 import { UserType } from '../../../infrastructure/user';
 
 import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../types/common';
 
-import RubricUI from './rubric/RubricUI';
 import RubricManager, { IRubricManagerParams } from '../../../components/core/rubric/RubricManager';
-import AssignmentStats from './assignments/AssignmentStats/AssignmentStats';
 import AssignmentRegrades from './assignments/AssignmentRegrades';
+import AssignmentStats from './assignments/AssignmentStats/AssignmentStats';
 import AssignmentsTable, { DETAIL_TYPE } from './AssignmentsTable';
+import RubricUI from './rubric/RubricUI';
 
 import { encodeForRoute } from '../../core/URLutils';
 
@@ -92,9 +91,11 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
   };
 
   const breadcrumbs = [
-    <Breadcrumb.Item key="0">
-      {props.currentCourse !== undefined && props.currentCourse.archived ? <Tag>Archived</Tag> : null}Assignments
-    </Breadcrumb.Item>,
+    {
+      title: (
+        <>{props.currentCourse !== undefined && props.currentCourse.archived ? <Tag>Archived</Tag> : null}Assignments</>
+      ),
+    },
   ];
 
   return (
@@ -123,9 +124,9 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                       ...params.props,
                       breadcrumbs: [
                         ...breadcrumbs,
-                        <Breadcrumb.Item key={`breadcrumb-rubrics`}>
-                          <Link to={`${props.match.url}/rubrics`}>Rubrics</Link>
-                        </Breadcrumb.Item>,
+                        {
+                          title: <Link to={`${props.match.url}/rubrics`}>Rubrics</Link>,
+                        },
                       ],
                       baseURL: `${props.match.url}/${encodedName}/rubric`,
                       history: props.history,

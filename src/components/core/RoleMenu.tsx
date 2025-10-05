@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { Link } from 'react-router-dom';
 
 import {
@@ -9,7 +8,7 @@ import {
   UserSwitchOutlined,
 } from '@ant-design/icons';
 
-import { Divider, Dropdown, Menu } from 'antd';
+import { Dropdown } from 'antd';
 
 import { UserType } from '../../infrastructure/user';
 import { USER_TYPE } from '../../types/common';
@@ -32,74 +31,89 @@ const RoleMenu = (props: IProps) => {
   if (!(showStudent || showGrader || showAdmin)) {
     return <div />;
   }
-  const roleMenu = (
-    <Menu>
-      {showStudent ? (
-        <Menu.Item>
-          <Link to="/student">
-            <IdcardOutlined />
-            &nbsp; Student
-          </Link>
-        </Menu.Item>
-      ) : null}
-      {showGrader ? (
-        <Menu.Item>
-          <Link to="/grader">
-            <AuditOutlined />
-            &nbsp; Grader
-          </Link>
-        </Menu.Item>
-      ) : null}
-      {showAdmin ? (
-        <Menu.Item>
-          <Link to="/admin">
-            <SlidersOutlined />
-            &nbsp; Admin
-          </Link>
-        </Menu.Item>
-      ) : null}
-      <div>
-        <CPTooltip
-          title={
-            <div>
-              Each role in codePost has its own console. To learn more about roles, click{' '}
-              <a
-                href="https://help.codepost.io/en/articles/3182075-roles-in-codepost"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                here
-              </a>
-              .
-            </div>
-          }
-          placement="bottom"
-          hideThisOnHideTips={true}
-          hideChildrenOnHideTips={true}
-        >
+
+  const menuItems: any[] = [];
+
+  if (showStudent) {
+    menuItems.push({
+      key: 'student',
+      label: (
+        <Link to="/student">
+          <IdcardOutlined />
+          &nbsp; Student
+        </Link>
+      ),
+    });
+  }
+
+  if (showGrader) {
+    menuItems.push({
+      key: 'grader',
+      label: (
+        <Link to="/grader">
+          <AuditOutlined />
+          &nbsp; Grader
+        </Link>
+      ),
+    });
+  }
+
+  if (showAdmin) {
+    menuItems.push({
+      key: 'admin',
+      label: (
+        <Link to="/admin">
+          <SlidersOutlined />
+          &nbsp; Admin
+        </Link>
+      ),
+    });
+  }
+
+  menuItems.push({
+    key: 'divider',
+    type: 'divider',
+  });
+
+  menuItems.push({
+    key: 'info',
+    label: (
+      <CPTooltip
+        title={
           <div>
-            <Divider style={{ margin: '4px 0px' }} />
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                paddingLeft: 10,
-                paddingRight: 10,
-                paddingBottom: 2,
-              }}
+            Each role in codePost has its own console. To learn more about roles, click{' '}
+            <a
+              href="https://help.codepost.io/en/articles/3182075-roles-in-codepost"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              <InfoCircleOutlined style={{ paddingRight: 7, color: 'grey' }} />
-              <div style={{ color: 'grey', fontStyle: 'italic', fontSize: 10, maxWidth: 55 }}>
-                Learn more about roles
-              </div>
-            </div>
+              here
+            </a>
+            .
           </div>
-        </CPTooltip>
-      </div>
-    </Menu>
-  );
+        }
+        placement="bottom"
+        hideThisOnHideTips={true}
+        hideChildrenOnHideTips={true}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            paddingLeft: 10,
+            paddingRight: 10,
+            paddingBottom: 2,
+          }}
+        >
+          <InfoCircleOutlined style={{ paddingRight: 7, color: 'grey' }} />
+          <div style={{ color: 'grey', fontStyle: 'italic', fontSize: 10, maxWidth: 55 }}>Learn more about roles</div>
+        </div>
+      </CPTooltip>
+    ),
+  });
+
   return (
-    <Dropdown overlay={roleMenu} trigger={['click']}>
+    <Dropdown menu={{ items: menuItems }} trigger={['click']}>
       <CPTooltip title="Switch Roles" placement="left" hideThisOnHideTips={true}>
         <UserSwitchOutlined style={{ color: props.theme === 'light' ? 'black' : 'white', cursor: 'pointer' }} />
       </CPTooltip>

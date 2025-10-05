@@ -1,4 +1,4 @@
-import { ApiOutlined, ArrowRightOutlined, BarChartOutlined, TeamOutlined, ExportOutlined } from '@ant-design/icons';
+import { ApiOutlined, ArrowRightOutlined, BarChartOutlined, ExportOutlined, TeamOutlined } from '@ant-design/icons';
 import { Collapse, Divider } from 'antd';
 
 import * as React from 'react';
@@ -13,14 +13,11 @@ import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/mode/python/python';
 import CPButton from '../core/CPButton';
 
-const Panel = Collapse.Panel;
-
 /* eslint-disable no-multi-str */
 const apiCodeExamples = [
   {
     title: 'Export grades',
-    code:
-      'import csv\n\
+    code: 'import csv\n\
 import codepost\n\
 \n\
 codepost.configure_api_key("<your API key>")\n\
@@ -44,8 +41,7 @@ with open("grades.csv", "w") as writeFile:\n\
   },
   {
     title: 'Assign submissions for review',
-    code:
-      'import codepost\n\
+    code: 'import codepost\n\
 \n\
 codepost.configure_api_key("<your API key>")\n\
 \n\
@@ -76,8 +72,7 @@ codepost.submission.update(\n\
   },
   {
     title: 'Identify common student errors',
-    code:
-      'import codepost\n\
+    code: 'import codepost\n\
 \n\
 codepost.configure_api_key("<your API key>")\n\
 \n\
@@ -116,9 +111,9 @@ const dummyFunction = () => {
   return;
 };
 
-// @ts-ignore
+// @ts-expect-error CodeMirror types may not be fully compatible
 let instance: CodeMirror.Editor | null = null;
-// @ts-ignore
+// @ts-expect-error CodeMirror types may not be fully compatible
 const setEditor = (editor: CodeMirror.Editor) => {
   instance = editor;
 };
@@ -236,7 +231,6 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
           className={exampleIndex === 0 ? '' : 'apiexample__link'}
           cpType="link"
           icon={<ExportOutlined />}
-          ghost={true}
         >
           {apiCodeExamples[0].title}
         </CPButton>
@@ -246,7 +240,6 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
           className={exampleIndex === 1 ? '' : 'apiexample__link'}
           cpType="link"
           icon={<TeamOutlined />}
-          ghost={true}
         >
           {apiCodeExamples[1].title}
         </CPButton>
@@ -256,7 +249,6 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
           className={exampleIndex === 2 ? '' : 'apiexample__link'}
           cpType="link"
           icon={<BarChartOutlined />}
-          ghost={true}
         >
           {apiCodeExamples[2].title}
         </CPButton>
@@ -266,7 +258,6 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
           href="http://docs.codepost.io/reference"
           target="_blank"
           cpType="link"
-          ghost={true}
           style={{ fontWeight: 600, fontSize: 18 }}
           className="apiexample__docs"
         >
@@ -278,30 +269,34 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
 
     return (
       <div id="APIExample" style={{ width: '100%' }}>
-        <Collapse bordered={false}>
-          <Panel
-            header={
-              <div className="apiexample__header display-flex justify-content-space-between">
-                <div>Think we were joking about short scripts? Click here</div>
-                <ApiOutlined className="apiexample__header__icon" />
-              </div>
-            }
-            key="1"
-            style={customPanelStyle}
-          >
-            <div
-              style={{
-                fontSize: 12,
-              }}
-              className={`display-flex flex-direction-${
-                this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'column' : 'row'
-              } align-items-${this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'center' : 'start'}`}
-            >
-              {this.props.windowwidth < landingVars.breakpoints.verticalPanels ? buttons : codebox}
-              {this.props.windowwidth < landingVars.breakpoints.verticalPanels ? codebox : buttons}
-            </div>
-          </Panel>
-        </Collapse>
+        <Collapse
+          bordered={false}
+          items={[
+            {
+              key: '1',
+              label: (
+                <div className="apiexample__header display-flex justify-content-space-between">
+                  <div>Think we were joking about short scripts? Click here</div>
+                  <ApiOutlined className="apiexample__header__icon" />
+                </div>
+              ),
+              children: (
+                <div
+                  style={{
+                    fontSize: 12,
+                  }}
+                  className={`display-flex flex-direction-${
+                    this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'column' : 'row'
+                  } align-items-${this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'center' : 'start'}`}
+                >
+                  {this.props.windowwidth < landingVars.breakpoints.verticalPanels ? buttons : codebox}
+                  {this.props.windowwidth < landingVars.breakpoints.verticalPanels ? codebox : buttons}
+                </div>
+              ),
+              style: customPanelStyle,
+            },
+          ]}
+        />
       </div>
     );
   }

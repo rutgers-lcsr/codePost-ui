@@ -6,8 +6,8 @@
 import * as React from 'react';
 
 /* style imports */
-import { Button, List, message, Modal } from 'antd';
 import { MailOutlined } from '@ant-design/icons';
+import { Button, List, message, Modal } from 'antd';
 
 /* codePost imports */
 
@@ -126,7 +126,7 @@ class SendEmailModal extends React.Component<IProps, IState> {
           </CPButton>
         )}
         <Modal
-          visible={this.state.modalVisible}
+          open={this.state.modalVisible}
           onCancel={this.toggleDialog}
           title={this.props.title}
           width={600}

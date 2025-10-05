@@ -131,7 +131,7 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
     let content;
     switch (loadState) {
       case 'valid':
-        const errorList = Object.keys(formErrors).map((el, i) => {
+        const errorList = Object.keys(formErrors).map((el, _i) => {
           return (
             <li key={i}>
               {el}: {formErrors[el]}

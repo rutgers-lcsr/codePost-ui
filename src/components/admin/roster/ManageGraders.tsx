@@ -15,13 +15,13 @@ import {
 } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Dropdown, Empty, Menu, message, Modal, Switch } from 'antd';
+import { Breadcrumb, Dropdown, Empty, message, Modal, Switch } from 'antd';
 
 /* other library imports */
-import Highlighter from 'react-highlight-words';
 import memoizeOne from 'memoize-one';
-import { Link } from 'react-router-dom';
+import Highlighter from 'react-highlight-words';
 import { RouteComponentProps } from 'react-router';
+import { Link } from 'react-router-dom';
 
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
@@ -256,25 +256,38 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
           );
         }
 
-        const menu = (
-          <Menu>
-            {hasActivated ? null : (
-              <Menu.Item key="activation" onClick={this.sendActivationEmail.bind(this, graderEmail)}>
-                <MailOutlined />
-                Send activation email
-              </Menu.Item>
-            )}
-            <Menu.Item key="profile">
+        const menuItems = [
+          ...(hasActivated
+            ? []
+            : [
+                {
+                  key: 'activation',
+                  label: (
+                    <>
+                      <MailOutlined /> Send activation email
+                    </>
+                  ),
+                  onClick: this.sendActivationEmail.bind(this, graderEmail),
+                },
+              ]),
+          {
+            key: 'profile',
+            label: (
               <Link to={this.props.match.url.replace('roster/graders', `submissions/by_grader/${graderEmail}`)}>
                 <FolderOpenOutlined /> &nbsp; Open profile
               </Link>
-            </Menu.Item>
-            <Menu.Item key="1" onClick={this.removeGrader.bind(this, graderEmail)}>
-              <UserDeleteOutlined />
-              Unenroll
-            </Menu.Item>
-          </Menu>
-        );
+            ),
+          },
+          {
+            key: '1',
+            label: (
+              <>
+                <UserDeleteOutlined /> Unenroll
+              </>
+            ),
+            onClick: this.removeGrader.bind(this, graderEmail),
+          },
+        ];
 
         return {
           key: graderEmail,
@@ -282,7 +295,7 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
           status: statusElement,
           superGrader: this.props.superGraders.includes(graderEmail),
           actions: (
-            <Dropdown overlay={menu} trigger={['click']}>
+            <Dropdown menu={{ items: menuItems }} trigger={['click']}>
               <MenuOutlined />
             </Dropdown>
           ),
@@ -297,8 +310,10 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
         isEmpty={this.props.graders.length === 0}
         emptyNode={
           <Empty
-            imageStyle={{
-              height: 60,
+            styles={{
+              image: {
+                height: 60,
+              },
             }}
             description={<span>No graders yet</span>}
           >
@@ -324,13 +339,17 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
         data={data}
         actions={actions}
         breadcrumbs={
-          <Breadcrumb>
-            <Breadcrumb.Item>Roster</Breadcrumb.Item>
-            <Breadcrumb.Item>
-              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-              <a>Graders</a>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              { title: 'Roster' },
+              {
+                title: (
+                  // eslint-disable-next-line jsx-a11y/anchor-is-valid
+                  <a>Graders</a>
+                ),
+              },
+            ]}
+          />
         }
         titleInfo={tooltips.admin.graderRoster.title}
       />

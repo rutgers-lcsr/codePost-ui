@@ -8,7 +8,7 @@ import * as React from 'react';
 import { CodeOutlined, DeleteOutlined, EyeFilled, EyeInvisibleOutlined, MenuOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Badge, Breadcrumb, Dropdown, Menu, Modal } from 'antd';
+import { Badge, Breadcrumb, Dropdown, Modal } from 'antd';
 
 /* other library imports */
 import moment from 'moment';
@@ -182,19 +182,30 @@ class GraderAssignmentDetail extends React.Component<IProps, {}> {
             openSubmissionInSameTab(submission.id);
           }
         };
-        const menu = (
-          <Menu>
-            <Menu.Item onClick={open}>
-              <CodeOutlined />
-              Open
-            </Menu.Item>
-            <Menu.Divider />
-            <Menu.Item style={{ color: 'red' }} onClick={this.removeSubmission.bind(this, submission)}>
-              <DeleteOutlined />
-              Delete
-            </Menu.Item>
-          </Menu>
-        );
+        const menuItems = [
+          {
+            key: 'open',
+            label: (
+              <>
+                <CodeOutlined /> Open
+              </>
+            ),
+            onClick: open,
+          },
+          {
+            type: 'divider' as const,
+          },
+          {
+            key: 'delete',
+            label: (
+              <>
+                <DeleteOutlined /> Delete
+              </>
+            ),
+            danger: true,
+            onClick: this.removeSubmission.bind(this, submission),
+          },
+        ];
 
         let gradeString: string;
         if (submission.isFinalized) {
@@ -212,7 +223,7 @@ class GraderAssignmentDetail extends React.Component<IProps, {}> {
           grade: gradeString,
           viewed: this.getViewIcon(submission),
           actions: (
-            <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>
+            <Dropdown menu={{ items: menuItems }} trigger={['click']} placement={'bottomRight'}>
               <MenuOutlined />
             </Dropdown>
           ),
@@ -225,21 +236,29 @@ class GraderAssignmentDetail extends React.Component<IProps, {}> {
             loadComplete={true}
             title={`Submissions graded by: ${this.props.grader} for ${selectedAssignment.name}`}
             breadcrumbs={
-              <Breadcrumb>
-                <Breadcrumb.Item>Submissions</Breadcrumb.Item>
-                <Breadcrumb.Item>
-                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                  <Link to={this.props.baseURL}>By Grader</Link>
-                </Breadcrumb.Item>
-                <Breadcrumb.Item>
-                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                  <Link to={this.props.baseURL}>{this.props.grader}</Link>
-                </Breadcrumb.Item>
-                <Breadcrumb.Item>
-                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                  <a>{selectedAssignment.name}</a>
-                </Breadcrumb.Item>
-              </Breadcrumb>
+              <Breadcrumb
+                items={[
+                  { title: 'Submissions' },
+                  {
+                    title: (
+                      // eslint-disable-next-line jsx-a11y/anchor-is-valid
+                      <Link to={this.props.baseURL}>By Grader</Link>
+                    ),
+                  },
+                  {
+                    title: (
+                      // eslint-disable-next-line jsx-a11y/anchor-is-valid
+                      <Link to={this.props.baseURL}>{this.props.grader}</Link>
+                    ),
+                  },
+                  {
+                    title: (
+                      // eslint-disable-next-line jsx-a11y/anchor-is-valid
+                      <a>{selectedAssignment.name}</a>
+                    ),
+                  },
+                ]}
+              />
             }
             isEmpty={false}
             emptyNode={null}

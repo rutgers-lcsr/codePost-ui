@@ -4,11 +4,10 @@ import { CommentType } from '../../../infrastructure/comment';
 import { File, FileType } from '../../../infrastructure/file';
 import { FileTemplateType } from '../../../infrastructure/fileTemplate';
 
-// @ts-ignore
+// @ts-expect-error - No type definitions available
 import SyntaxHighlighter from 'react-syntax-highlighter';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
-import { CodeConsoleDimensionsType } from './LayoutResizer';
 
 import themeVars from '../../../styles/abstracts/_theme.js';
 
@@ -27,7 +26,6 @@ export interface ICodeContentCoreProps {
   readOnly: boolean;
   user: string;
   onHighlightClick: (e: React.MouseEvent) => void;
-  dimensions: CodeConsoleDimensionsType;
 }
 
 export interface ICodeContentEditProps {
@@ -39,168 +37,90 @@ export interface ICodeContentEditProps {
   updateCursorDomain: (domain: CURSOR_DOMAIN) => void;
 }
 
-const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
+type CodeContentProps = ICodeContentCoreProps & ICodeContentEditProps;
+
+const CodeContent: React.FC<CodeContentProps> = (props) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
+  // Sync horizontal scroll between code layers
   React.useEffect(() => {
     const codeMain = document.getElementById('code-main');
     const codeSyntax = document.getElementById('code-syntax');
     const codeTemplate = document.getElementById('code-template');
 
     const horizontalCodeScroll = () => {
-      // Scroll horizontally
-      if (codeMain !== null && codeSyntax !== null) {
+      if (codeMain && codeSyntax) {
         codeSyntax.scrollLeft = codeMain.scrollLeft;
       }
-
-      if (codeMain !== null && codeTemplate !== null) {
+      if (codeMain && codeTemplate) {
         codeTemplate.scrollLeft = codeMain.scrollLeft;
       }
     };
 
-    if (codeMain !== null && codeSyntax !== null) {
+    if (codeMain && codeSyntax) {
       codeMain.addEventListener('scroll', horizontalCodeScroll);
-    }
-
-    return () => {
-      if (codeMain !== null && codeSyntax !== null) {
+      return () => {
         codeMain.removeEventListener('scroll', horizontalCodeScroll);
-      }
-    };
+      };
+    }
   }, []);
 
-  const addCommentAndIncrement = (comment: CommentType, file: FileType) => {
-    props.addComment(comment, file);
-  };
+  const addCommentAndIncrement = React.useCallback(
+    (comment: CommentType, file: FileType) => {
+      props.addComment(comment, file);
+    },
+    [props],
+  );
 
-  if (['markdown', 'jupyter', 'image'].includes(File.codeType(props.file))) {
-    const { addComment, ...codeProps } = { ...props };
+  const codeType = File.codeType(props.file);
+  const lineNumberPadding = CodePanelSizing.lineNumberPadding(props.file.code) + 20;
+
+  // Common container style
+  const containerStyle = React.useMemo(
+    () => ({
+      width: '100%',
+      overflowX: 'auto' as const,
+      backgroundColor: consoleTheme.codeBg,
+      border: `1px solid ${consoleTheme.codeBorder}`,
+    }),
+    [consoleTheme.codeBg, consoleTheme.codeBorder],
+  );
+
+  const commonCodeStyle = React.useMemo(
+    () => ({
+      lineHeight: `${themeVars.grade.codeLineHeight}px`,
+      fontSize: `${themeVars.grade.codeFontSize}px`,
+      overflow: 'none',
+    }),
+    [],
+  );
+
+  // Render markdown/jupyter/image files
+  if (['markdown', 'jupyter', 'image'].includes(codeType)) {
     return (
-      <div
-        id="code-container"
-        className="code-container"
-        style={{
-          width: `${props.dimensions.codeWidth}px`,
-          overflowX: 'hidden',
-          backgroundColor: consoleTheme.codeBg,
-          border: `1px solid ${consoleTheme.codeBorder}`,
-        }}
-      >
+      <div id="code-container" className="code-container" style={containerStyle}>
         <div
           id="code-main"
           className="code code--markdown"
           style={{
-            lineHeight: `${themeVars.grade.codeLineHeight}px`,
-            fontSize: `${themeVars.grade.codeFontSize}px`,
+            ...commonCodeStyle,
             paddingLeft: '20px',
             backgroundColor: 'white',
-            paddingTop: '3px',
+            paddingTop: '0px',
             paddingRight: '20px',
+            paddingBottom: '0px',
           }}
         >
           <Markdown
             key={props.file.id}
-            {...codeProps}
-            commentCounter={props.commentCounter}
-            addComment={addCommentAndIncrement}
-          />
-        </div>
-      </div>
-    );
-  } else if (File.codeType(props.file) === 'pdf') {
-    const { addComment, ...codeProps } = { ...props };
-    return (
-      <div
-        id="code-container"
-        className="code-container"
-        style={{
-          width: `${props.dimensions.codeWidth}px`,
-          overflowX: 'hidden',
-          backgroundColor: consoleTheme.codeBg,
-          border: `1px solid ${consoleTheme.codeBorder}`,
-        }}
-      >
-        <div
-          id="code-main"
-          className="code code--markdown"
-          style={{
-            lineHeight: `${themeVars.grade.codeLineHeight}px`,
-            fontSize: `${themeVars.grade.codeFontSize}px`,
-            paddingLeft: '20px',
-            backgroundColor: 'white',
-            paddingTop: '3px',
-            paddingRight: '20px',
-          }}
-        >
-          <Pdf
-            key={props.file.id}
-            {...codeProps}
-            commentCounter={props.commentCounter}
-            addComment={addCommentAndIncrement}
-          />
-        </div>
-      </div>
-    );
-  } else {
-    const { addComment, ...codeProps } = { ...props };
-
-    return (
-      <div
-        id="code-container"
-        className="code-container"
-        style={{
-          width: `${props.dimensions.codeWidth}px`,
-          overflowX: 'hidden',
-          backgroundColor: consoleTheme.codeBg,
-          border: `1px solid ${consoleTheme.codeBorder}`,
-          cursor: props.readOnly ? 'default' : 'text',
-        }}
-      >
-        <SyntaxHighlighter
-          id="code-syntax"
-          className="code--syntax"
-          language={File.language(props.file)}
-          style={consoleTheme.codeTheme}
-          showLineNumbers={true}
-          wrapLines={false}
-          customStyle={{
-            lineHeight: `${themeVars.grade.codeLineHeight}px`,
-            fontSize: `${themeVars.grade.codeFontSize}px`,
-            padding: '0px 0px 10px 20px',
-            backgroundColor: consoleTheme.codeBg,
-          }}
-        >
-          {props.file.code}
-        </SyntaxHighlighter>
-        {props.fileTemplate !== undefined ? (
-          <div
-            id="code-template"
-            className="code code--template"
-            style={{
-              lineHeight: `${themeVars.grade.codeLineHeight}px`,
-              fontSize: `${themeVars.grade.codeFontSize}px`,
-              marginLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
-              paddingBottom: '10px',
-            }}
-          >
-            <TemplateCode file={props.file} fileTemplate={props.fileTemplate} />
-          </div>
-        ) : null}
-        <div
-          id="code-main"
-          className="code code--underlay"
-          style={{
-            lineHeight: `${themeVars.grade.codeLineHeight}px`,
-            fontSize: `${themeVars.grade.codeFontSize}px`,
-            marginLeft: `${CodePanelSizing.lineNumberPadding(props.file.code) + 20}px`,
-            paddingBottom: '10px',
-          }}
-        >
-          <Code
-            {...codeProps}
-            commentCounter={props.commentCounter}
-            addComment={addCommentAndIncrement}
+            file={props.file}
+            comments={props.comments}
+            readOnly={props.readOnly}
+            user={props.user}
             onHighlightClick={props.onHighlightClick}
+            commentCounter={props.commentCounter}
+            addComment={addCommentAndIncrement}
+            fileTemplate={props.fileTemplate}
             cursorMode={props.cursorMode}
             showCursor={props.showCursor}
             updateCursorDomain={props.updateCursorDomain}
@@ -209,33 +129,124 @@ const CodeContent = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       </div>
     );
   }
+
+  // Render PDF files
+  if (codeType === 'pdf') {
+    return (
+      <div id="code-container" className="code-container" style={containerStyle}>
+        <div
+          id="code-main"
+          className="code code--markdown"
+          style={{
+            ...commonCodeStyle,
+            paddingLeft: '20px',
+            backgroundColor: 'white',
+            paddingTop: '0px',
+            paddingRight: '20px',
+            paddingBottom: '0px',
+          }}
+        >
+          <Pdf
+            key={props.file.id}
+            file={props.file}
+            comments={props.comments}
+            readOnly={props.readOnly}
+            user={props.user}
+            onHighlightClick={props.onHighlightClick}
+            commentCounter={props.commentCounter}
+            addComment={addCommentAndIncrement}
+            fileTemplate={props.fileTemplate}
+            cursorMode={props.cursorMode}
+            showCursor={props.showCursor}
+            updateCursorDomain={props.updateCursorDomain}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Render code files with syntax highlighting
+  return (
+    <div
+      id="code-container"
+      className="code-container"
+      style={{
+        ...containerStyle,
+        cursor: props.readOnly ? 'default' : 'text',
+      }}
+    >
+      <SyntaxHighlighter
+        id="code-syntax"
+        className="code--syntax"
+        language={File.language(props.file)}
+        style={consoleTheme.codeTheme}
+        showLineNumbers={true}
+        wrapLines={false}
+        customStyle={{
+          ...commonCodeStyle,
+          padding: '0px 0px 10px 20px',
+          backgroundColor: consoleTheme.codeBg,
+        }}
+      >
+        {props.file.code}
+      </SyntaxHighlighter>
+      {props.fileTemplate && (
+        <div
+          id="code-template"
+          className="code code--template"
+          style={{
+            ...commonCodeStyle,
+            paddingLeft: `${lineNumberPadding}px`,
+            paddingBottom: '10px',
+          }}
+        >
+          <TemplateCode file={props.file} fileTemplate={props.fileTemplate} />
+        </div>
+      )}
+      <div
+        id="code-main"
+        className="code code--underlay"
+        style={{
+          ...commonCodeStyle,
+          paddingLeft: `${lineNumberPadding}px`,
+        }}
+      >
+        <Code
+          file={props.file}
+          comments={props.comments}
+          readOnly={props.readOnly}
+          user={props.user}
+          onHighlightClick={props.onHighlightClick}
+          commentCounter={props.commentCounter}
+          addComment={addCommentAndIncrement}
+          fileTemplate={props.fileTemplate}
+          cursorMode={props.cursorMode}
+          showCursor={props.showCursor}
+          updateCursorDomain={props.updateCursorDomain}
+        />
+      </div>
+    </div>
+  );
 };
 
-const makeReadOnly = (Component: React.ComponentType<ICodeContentCoreProps & ICodeContentEditProps>) => {
-  return class WrappedComponent extends React.Component<ICodeContentCoreProps, {}> {
-    public addComment = (comment: CommentType, file: FileType) => {
-      return;
-    };
+// Read-only wrapper component for student view
+const StudentCodeWrapper: React.FC<ICodeContentCoreProps> = (props) => {
+  const noop = React.useCallback(() => {
+    // No-op function for read-only mode
+  }, []);
 
-    public updateCursorDomain = (domain: CURSOR_DOMAIN) => {
-      return;
-    };
-
-    public render() {
-      return (
-        <Component
-          {...(this.props as ICodeContentCoreProps)}
-          addComment={this.addComment}
-          commentCounter={-1}
-          fileTemplate={undefined}
-          cursorMode={false}
-          showCursor={CURSOR_DOMAIN.CODE_HIDDEN}
-          updateCursorDomain={this.updateCursorDomain}
-        />
-      );
-    }
-  };
+  return (
+    <CodeContent
+      {...props}
+      addComment={noop}
+      commentCounter={-1}
+      fileTemplate={undefined}
+      cursorMode={false}
+      showCursor={CURSOR_DOMAIN.CODE_HIDDEN}
+      updateCursorDomain={noop}
+    />
+  );
 };
 
 export const GradeCode = CodeContent;
-export const StudentCode = makeReadOnly(CodeContent);
+export const StudentCode = StudentCodeWrapper;

@@ -30,7 +30,7 @@ class ForbiddenManager extends React.Component<IndexManagerProps, {}> {
             <Route
               exact={true}
               path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
-              render={(props: any) => (
+              render={(_props: any) => (
                 <LoginForm
                   handleLogin={this.props.handleLogin}
                   error={this.props.error}
@@ -43,7 +43,7 @@ class ForbiddenManager extends React.Component<IndexManagerProps, {}> {
             <Route
               exact={true}
               path={`${GRADER}/:courseName?/:period?/:assignmentName?/:panelName1?`}
-              render={(props: any) => (
+              render={(_props: any) => (
                 <LoginForm
                   handleLogin={this.props.handleLogin}
                   error={this.props.error}
@@ -56,7 +56,7 @@ class ForbiddenManager extends React.Component<IndexManagerProps, {}> {
             <Route
               exact={true}
               path={`${ADMIN}/:courseName?/:period?/:panelName1?/:panelName2?`}
-              render={(props: any) => (
+              render={(_props: any) => (
                 <LoginForm
                   handleLogin={this.props.handleLogin}
                   error={this.props.error}
@@ -69,7 +69,7 @@ class ForbiddenManager extends React.Component<IndexManagerProps, {}> {
             <Route
               exact={true}
               path={`${CODE}/:submissionId`}
-              render={(props: any) => (
+              render={(_props: any) => (
                 <LoginForm
                   handleLogin={this.props.handleLogin}
                   error={this.props.error}
@@ -82,7 +82,7 @@ class ForbiddenManager extends React.Component<IndexManagerProps, {}> {
             <Route
               exact={true}
               path={'/settings'}
-              render={(props: any) => (
+              render={(_props: any) => (
                 <LoginForm
                   handleLogin={this.props.handleLogin}
                   error={this.props.error}

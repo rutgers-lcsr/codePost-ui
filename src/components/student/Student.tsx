@@ -5,14 +5,7 @@
 /* react imports */
 import * as React from 'react';
 
-import {
-  CodeOutlined,
-  MinusCircleOutlined,
-  PlusOutlined,
-  SettingOutlined,
-  StopOutlined,
-  UploadOutlined,
-} from '@ant-design/icons';
+import { MinusCircleOutlined, PlusOutlined, SettingOutlined, StopOutlined, UploadOutlined } from '@ant-design/icons';
 
 /* antd imports */
 import { Button, Modal, Spin, Tag } from 'antd';
@@ -34,8 +27,8 @@ import { StudentSubmissionType, Submission } from '../../infrastructure/submissi
 
 import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
 
-import RoleMenu from '../core/RoleMenu';
 import Referral from '../core/Referral';
+import RoleMenu from '../core/RoleMenu';
 
 import { TableDetail } from '../admin/other/TableDetail';
 
@@ -45,8 +38,8 @@ import CPLogo from '../core/CPLogo';
 
 import layoutVars from '../../styles/layout/_layoutVars';
 
-import UploadSubmissionDialog from '../admin/assignments/assignments/SubmissionUpload/UploadSubmissionDialog';
 import { IBaseFileUpload } from '../admin/assignments/assignments/SubmissionUpload/FileReader';
+import UploadSubmissionDialog from '../admin/assignments/assignments/SubmissionUpload/UploadSubmissionDialog';
 
 import { IComponentProps } from '../core/ComponentManager';
 
@@ -308,7 +301,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
       return Promise.reject();
     }
 
-    let formattedFiles = files.map((file) => {
+    const formattedFiles = files.map((file) => {
       return {
         name: file.name,
         code: file.data,

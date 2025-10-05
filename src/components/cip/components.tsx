@@ -6,18 +6,17 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Modal, notification, Input, Checkbox, Select, Switch, message, Popover } from 'antd';
 import { TeamOutlined } from '@ant-design/icons';
+import { Button, Checkbox, Input, message, Modal, notification, Popover, Select, Switch } from 'antd';
 
 /* other library imports */
 // import Select from 'react-select';
 
 /* internal imports */
+import { CourseType } from '../../infrastructure/types';
 import Video from '../landing/Video';
 import universities from '../pre-auth/universities';
 import { createDemoCourse } from '../utils/DemoCourse';
-import { CourseType } from '../../infrastructure/types';
-import { IOption } from '../../types/common';
 
 import { sendSlack } from '../core/slack';
 
@@ -27,7 +26,7 @@ import useWindowSize from '../core/useWindowSize';
 /**********************************************************************************************************************/
 
 interface IAdminModalProps {
-  visible: boolean;
+  open: boolean;
   onClose: () => void;
   onCreateCourse: () => void;
   onCreateDemoCourse: (course?: CourseType) => void;
@@ -186,7 +185,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
           {p2.length > 0 && p1 !== p2 && <span style={{ color: 'red' }}>Passwords don't match</span>}
           {
             <ul>
-              {Object.keys(errors).map((el, i) => {
+              {Object.keys(errors).map((el, _i) => {
                 return errors[el].map((el2) => <li key={i}>{el2}</li>);
               })}
             </ul>
@@ -295,7 +294,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
     <Modal
       width={modalSize}
       title="Create a new course"
-      visible={props.visible}
+      open={props.open}
       onCancel={panel === 0 ? undefined : props.onClose}
       closable={panel !== 0}
       footer={[
@@ -311,7 +310,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
 };
 
 interface IGraderModalProps {
-  visible: boolean;
+  open: boolean;
   onClose: () => void;
   email: string;
 }
@@ -352,7 +351,7 @@ const CIPGraderModal = (props: IGraderModalProps) => {
 
   return (
     <Modal
-      visible={props.visible}
+      open={props.open}
       title="Create your own course"
       onCancel={props.onClose}
       footer={[<Button onClick={props.onClose}>Maybe later</Button>]}

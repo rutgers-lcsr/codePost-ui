@@ -1,23 +1,14 @@
-import 'react-app-polyfill/ie9';
-import 'react-app-polyfill/stable';
-
-import * as React from 'react';
-
 import './styles/main.scss';
 
-import * as ReactDOM from 'react-dom';
-import { BrowserRouter } from 'react-router-dom';
-// This shows up here because of https://github.com/react-dnd/react-dnd/issues/186#issuecomment-462128478
+import { ConfigProvider } from 'antd';
 import { DndProvider } from 'react-dnd';
-import HTML5Backend from 'react-dnd-html5-backend';
-
-import * as serviceWorker from './serviceWorker';
-
-// eslint-disable-next-line
-import CPLayoutGrade from './components/core/CPLayoutGrade';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 
 // eslint-disable-next-line
-import CPLayoutAdmin from './components/core/CPLayoutAdmin';
+
+// eslint-disable-next-line
 
 import App from './App';
 
@@ -37,23 +28,63 @@ const maintenanceBanner = (
       textAlign: 'center',
     }}
   >
-    codePost is currently experiencing technical difficulties and is unavailable. We're working hard to get it back online.
+    codePost is currently experiencing technical difficulties and is unavailable. We're working hard to get it back
+    online.
   </div>
 );
 
-ReactDOM.render(
-  <ErrorBoundary type="app">
-    <DndProvider backend={HTML5Backend}>
-      <BrowserRouter>
-        {maintenanceMode && maintenanceBanner}
-        <App />
-      </BrowserRouter>
-    </DndProvider>
-  </ErrorBoundary>,
-  document.getElementById('root') as HTMLElement,
-);
+const container = document.getElementById('root');
+if (!container) throw new Error('Failed to find the root element');
+const root = createRoot(container);
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+root.render(
+  <ErrorBoundary type="app">
+    <ConfigProvider
+      theme={{
+        token: {
+          fontFamily: 'Avenir Next, Lato, sans-serif',
+          colorPrimary: '#24be85',
+          colorLink: '#1890ff',
+          colorSuccess: '#24be85',
+          colorWarning: '#ffbf00',
+          colorError: '#f64852',
+          fontSize: 14,
+          borderRadius: 4,
+          colorTextHeading: 'rgba(0, 0, 0, 0.8)',
+          colorText: 'rgba(0, 0, 0, 0.7)',
+          colorTextSecondary: 'rgba(0, 0, 0, 0.5)',
+        },
+        components: {
+          Layout: {
+            siderBg: '#1b1b1b',
+            triggerBg: '#0f0f0f',
+            bodyBg: '#f2f2f2',
+            headerBg: '#1b1b1b',
+            headerHeight: 64,
+            headerPadding: '0 61px',
+          },
+          Menu: {
+            darkItemBg: '#1b1b1b',
+            darkSubMenuItemBg: '#0f0f0f',
+            darkItemSelectedBg: '#24be85',
+            darkItemSelectedColor: '#fff',
+            darkItemHoverBg: 'rgba(36, 190, 133, 0.2)',
+            darkItemColor: 'rgba(255, 255, 255, 0.85)',
+            itemHoverColor: '#24be85',
+          },
+          Typography: {
+            linkDecoration: 'none',
+            linkHoverDecoration: 'none',
+          },
+        },
+      }}
+    >
+      <DndProvider backend={HTML5Backend}>
+        <BrowserRouter>
+          {maintenanceMode && maintenanceBanner}
+          <App />
+        </BrowserRouter>
+      </DndProvider>
+    </ConfigProvider>
+  </ErrorBoundary>,
+);

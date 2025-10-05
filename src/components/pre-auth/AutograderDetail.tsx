@@ -14,12 +14,12 @@ import PreAuthLayout from './PreAuthLayout';
 
 import LandingPanel from '../landing/newlanding/LandingPanel';
 
-const result_plainText = require('../landing/landingAnimations/autograder/result_plaintext.jpg');
-const result_codePost_summary = require('../landing/landingAnimations/autograder/result_codePost.jpg');
-const result_codePost_exposedTests = require('../landing/landingAnimations/autograder/result_codePost_exposedTests.jpg');
-const run_codePost_fileMode = require('../landing/landingAnimations/autograder/FileMode.jpg');
-const run_user_upload = require('../landing/landingAnimations/autograder/run_user.jpg');
-const run_codePost_editor = require('../landing/landingAnimations/autograder/IO.jpg');
+import run_codePost_fileMode from '../landing/landingAnimations/autograder/FileMode.jpg';
+import run_codePost_editor from '../landing/landingAnimations/autograder/IO.jpg';
+import result_codePost_summary from '../landing/landingAnimations/autograder/result_codePost.jpg';
+import result_codePost_exposedTests from '../landing/landingAnimations/autograder/result_codePost_exposedTests.jpg';
+import result_plainText from '../landing/landingAnimations/autograder/result_plaintext.jpg';
+import run_user_upload from '../landing/landingAnimations/autograder/run_user.jpg';
 
 interface IProps {
   isLoggedIn: boolean;

@@ -1,7 +1,5 @@
 import * as React from 'react';
 
-import { Subtract } from 'utility-types';
-
 export interface IWithWindowWatcherProps {
   windowwidth: number;
   windowheight: number;
@@ -9,7 +7,8 @@ export interface IWithWindowWatcherProps {
 
 const withWindowWatcher = <P extends IWithWindowWatcherProps>(Component: React.ComponentType<P>) => {
   return class WrappedComponent extends React.Component<
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     Subtract<P, IWithWindowWatcherProps>,
     any
   > {

@@ -12,7 +12,7 @@ import { Breadcrumb, Table } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
-import { Switch, Route, Link, Redirect } from 'react-router-dom';
+import { Link, Redirect, Route, Switch } from 'react-router-dom';
 
 /* codePost imports */
 import CPAdminDetail from '../admin/other/CPAdminDetail';
@@ -20,8 +20,8 @@ import CPAdminDetail from '../admin/other/CPAdminDetail';
 import { AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 
-import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 import { encodeForLink, encodeForRoute } from '../core/URLutils';
+import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
 type alignType = 'left' | 'right' | 'center';
 
@@ -39,7 +39,7 @@ interface IParentProps extends RouteComponentProps {
 
 interface IDetailProps {
   assignment: AssignmentType;
-  breadcrumbs: React.ReactElement[];
+  breadcrumbs: Array<{ title: React.ReactNode }>;
 }
 
 function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.ComponentType<T>) {
@@ -49,11 +49,13 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
       props.history.push(props.match.url);
     };
     const breadcrumbs = [
-      <Breadcrumb.Item key={props.title}>
-        <span style={{ cursor: 'pointer' }} onClick={back}>
-          {props.title}
-        </span>
-      </Breadcrumb.Item>,
+      {
+        title: (
+          <span style={{ cursor: 'pointer' }} onClick={back}>
+            {props.title}
+          </span>
+        ),
+      },
     ];
 
     const data = props.data.map((row) => {
@@ -89,7 +91,7 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
             } else {
               return (
                 <CPAdminDetail
-                  breadcrumbs={<Breadcrumb>{breadcrumbs}</Breadcrumb>}
+                  breadcrumbs={<Breadcrumb items={breadcrumbs} />}
                   goBack={null}
                   title={<div>{props.title}</div>}
                   actions={props.actions}

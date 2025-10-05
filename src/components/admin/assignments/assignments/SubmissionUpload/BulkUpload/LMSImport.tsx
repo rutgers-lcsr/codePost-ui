@@ -15,13 +15,13 @@ import {
   List,
   message,
   Radio,
-  Upload,
-  Slider,
   Select,
+  Slider,
   Statistic,
   Table,
-  Typography,
   Tooltip,
+  Typography,
+  Upload,
 } from 'antd';
 
 import ReactMarkdown from 'react-markdown';
@@ -37,11 +37,11 @@ import LMSRosterMapUpload from './LMSRosterMapUpload';
 import { BulkUploadFooter } from './BulkUploadComponents';
 
 import {
-  FolderToStudentMap,
-  getIdentifierFromFolder,
   beforeLMSImport,
-  getZipExample,
+  FolderToStudentMap,
   getFileExample,
+  getIdentifierFromFolder,
+  getZipExample,
 } from './LMSImportHelpers';
 
 import stringDistance from './levenshteinDistance';
@@ -443,7 +443,7 @@ const StepTwoSelectUserName = (props: IStepTwoProps) => {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ width: 'calc(100%)', padding: '0px 25px' }}>
           <Slider
-            tooltipVisible={false}
+            tooltip={{ open: false }}
             min={0}
             max={maxIndex - 1}
             dots={true}
@@ -592,7 +592,7 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
       dataIndex: 'identifier',
       key: 'identifier',
       sorter: (a: any, b: any) => a.identifier.localeCompare(b.identifier),
-      defaultSortOrder: 'ascend' as 'ascend',
+      defaultSortOrder: 'ascend' as const,
     },
     {
       title: 'codePost email',

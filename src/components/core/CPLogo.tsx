@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import codepostIcon from './../../img/codepost_icon.png';
+
 export type CPLogoType = 'main' | 'icon' | 'dark';
 
 interface ICPLogoProps {
@@ -25,7 +27,7 @@ class CPLogo extends React.Component<ICPLogoProps, {}> {
     } else {
       return (
         <div className="cp-logo" onClick={this.props.onClick}>
-          <img src={require('./../../img/codepost_icon.png')} style={{ width: '24px' }} alt="" />
+          <img src={codepostIcon} style={{ width: '24px' }} alt="" />
         </div>
       );
     }

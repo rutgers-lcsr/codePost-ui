@@ -26,7 +26,7 @@ interface IAssignmentRegradesProps {
   onCancel: () => void;
   user: UserType;
   updateSubmission: (submission: SubmissionInfoType) => Promise<void>;
-  breadcrumbs: React.ReactElement[];
+  breadcrumbs: Array<{ title: React.ReactNode }>;
 }
 
 const AssignmentRegrades = (props: IAssignmentRegradesProps) => {
@@ -56,11 +56,9 @@ const AssignmentRegrades = (props: IAssignmentRegradesProps) => {
   return (
     <CPAdminDetail
       breadcrumbs={
-        <Breadcrumb>
-          {props.breadcrumbs}
-          <Breadcrumb.Item>{props.assignment.name}</Breadcrumb.Item>
-          <Breadcrumb.Item>Student Regrade Requests</Breadcrumb.Item>
-        </Breadcrumb>
+        <Breadcrumb
+          items={[...props.breadcrumbs, { title: props.assignment.name }, { title: 'Student Regrade Requests' }]}
+        />
       }
       goBack={null}
       title={`${props.assignment.name} | Student Regrade Requests`}

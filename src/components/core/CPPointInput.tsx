@@ -1,232 +1,202 @@
-import * as React from 'react';
-
-import { CaretDownOutlined, CaretUpOutlined } from '@ant-design/icons';
-
+import { CaretDownOutlined, CaretUpOutlined, MinusCircleFilled, PlusCircleFilled } from '@ant-design/icons';
 import { Button, Input, InputNumber } from 'antd';
+import { useContext, useEffect, useState } from 'react';
+import ToggleButton from 'react-toggle-button';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 
-import ToggleButton from 'react-toggle-button';
-
-import { ReactComponent as MinusSvg } from '../../img/icons/minus.svg';
-import { ReactComponent as PlusSvg } from '../../img/icons/plus.svg';
-
 export type PointType = 'positive' | 'negative';
-
-export type CPPointInputThemeType = 'light' | 'dark';
-
 export type CPPointInputType = 'small' | 'default';
 
 const InputGroup = Input.Group;
 
-// FIXME: these are only optional to prevent breaking the rest of the site.
-//         We can generalize this much more elegantly.
 interface ICPPointInputProps {
   value: number | undefined;
   size: CPPointInputType;
-  onChange?: any; // FIXME - seems like Ant Type bug: https://cl.ly/c5094e2c4526
+  onChange?: (value: number) => void;
   disabled?: boolean;
   defaultToPositive?: boolean;
-  onKeyDown?: any;
+  onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
   onBlur?: () => void;
   onMouseLeave?: () => void;
-  theme?: CPPointInputThemeType;
   step?: number;
 }
 
-interface IState {
-  pointType: PointType;
-}
+/**
+ * CPPointInput Component
+ *
+ * A specialized input for managing point values with positive/negative toggle.
+ *
+ * Sign convention:
+ * - The component receives and displays signed values
+ * - Internally displays absolute value with a toggle switch
+ * - Toggle state (positive/negative) determines the sign when calling onChange
+ * - Positive (green): Bonus points → sends negative values (e.g., -2)
+ * - Negative (red): Penalty points → sends positive values (e.g., 2)
+ *
+ * This allows the parent component to work with signed values while providing
+ * an intuitive UI where users toggle between bonus/penalty and enter magnitudes.
+ */
+const CPPointInput: React.FC<ICPPointInputProps> = (props) => {
+  const consoleTheme = useContext(ConsoleThemeContext);
 
-class CPPointInput extends React.Component<ICPPointInputProps, IState> {
-  public constructor(props: ICPPointInputProps) {
-    super(props);
-    const defaultValue = props.defaultToPositive ? 'positive' : 'negative';
-    let pointType: PointType = defaultValue;
-    if (props.value !== undefined && props.value !== 0) {
-      pointType = props.value > 0 ? 'positive' : 'negative';
+  const getInitialPointType = (value: number | undefined, defaultToPositive?: boolean): PointType => {
+    const defaultValue = defaultToPositive ? 'positive' : 'negative';
+    if (value !== undefined && value !== 0) {
+      return value > 0 ? 'positive' : 'negative';
+    }
+    return defaultValue;
+  };
+
+  const [pointType, setPointType] = useState<PointType>(() =>
+    getInitialPointType(props.value, props.defaultToPositive),
+  );
+
+  useEffect(() => {
+    const newPointType = getInitialPointType(props.value, props.defaultToPositive);
+    setPointType(newPointType);
+  }, [props.value, props.defaultToPositive]);
+
+  /**
+   * Updates the point value with proper sign based on the current pointType toggle.
+   * - Positive (green/bonus): Sends negative value (e.g., -2 means +2 bonus)
+   * - Negative (red/penalty): Sends positive value (e.g., 2 means -2 penalty)
+   */
+  const setValue = (value: number | undefined | null) => {
+    if (value === undefined || value === null || !props.onChange) {
+      return;
     }
 
-    this.state = {
-      pointType,
-    };
-  }
+    const adjustedValue = pointType === 'positive' ? -value : value;
+    props.onChange(adjustedValue);
+  };
 
-  public componentDidUpdate(prevProps: ICPPointInputProps) {
-    if (prevProps.value !== this.props.value) {
-      const defaultValue = this.props.defaultToPositive ? 'positive' : 'negative';
-      let pointType: PointType = defaultValue;
-      if (this.props.value !== undefined && this.props.value !== 0) {
-        pointType = this.props.value > 0 ? 'positive' : 'negative';
+  /**
+   * Handles toggling between positive (bonus) and negative (penalty) modes.
+   * Important: We calculate the adjusted value using the NEW pointType immediately,
+   * rather than calling setValue(), to avoid using stale state from the closure.
+   */
+  const toggleType = () => {
+    if (props.disabled || props.value === undefined || !props.onChange) {
+      return;
+    }
+
+    const newPointType = pointType === 'positive' ? 'negative' : 'positive';
+    setPointType(newPointType);
+
+    const absValue = Math.abs(props.value);
+    const adjustedValue = newPointType === 'positive' ? -absValue : absValue;
+    props.onChange(adjustedValue);
+  };
+
+  const step = props.step ?? 0.5;
+  const absValue = Math.abs(props.value ?? 0);
+
+  const onPlus = () => {
+    setValue(parseFloat((absValue + step).toFixed(2)));
+  };
+
+  const onMinus = () => {
+    setValue(parseFloat((absValue - step).toFixed(2)));
+  };
+
+  const className = `cp-point-input cp-point-input--${props.size}`;
+
+  const style = props.disabled
+    ? {
+        backgroundColor: consoleTheme.consoleTheme.buttonDisabledBg,
+        color: consoleTheme.consoleTheme.buttonDisabledColor,
+        border: `1px solid ${consoleTheme.consoleTheme.buttonSecondaryBorder}`,
       }
+    : {
+        backgroundColor: consoleTheme.consoleTheme.commentBody,
+        color: consoleTheme.consoleTheme.text,
+        border: `1px solid ${consoleTheme.consoleTheme.buttonSecondaryBorder}`,
+      };
 
-      this.setState({
-        pointType,
-      });
-    }
-  }
+  const groupClass =
+    consoleTheme.consoleTheme === consoleThemes.light
+      ? 'point-input-group'
+      : 'point-input-group point-input-group--dark';
 
-  public toggleType = () => {
-    if (this.props.disabled || this.props.value === undefined) {
-      return;
-    }
-
-    this.setState(
-      (oldState) => {
-        return {
-          pointType: oldState.pointType === 'positive' ? 'negative' : 'positive',
-        };
-      },
-      () => {
-        this.setValue(Math.abs(this.props.value!));
-      },
-    );
+  const iconStyle: React.CSSProperties = {
+    height: '10px',
+    width: '10px',
+    fill: 'rgba(0, 0, 0, 0.8)',
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
   };
 
-  public setValue = (value: number | undefined) => {
-    if (value === undefined) {
-      return;
-    }
+  const isPositive = pointType === 'positive';
+  const thumbIcon = isPositive ? (
+    <PlusCircleFilled key="plus" style={iconStyle} />
+  ) : (
+    <MinusCircleFilled key="minus" style={iconStyle} />
+  );
 
-    if (this.state.pointType === 'positive') {
-      this.props.onChange(-value);
-    } else {
-      this.props.onChange(value);
-    }
-  };
-
-  public onPlus = () => {
-    const step = this.props.step !== undefined ? this.props.step : 0.5;
-    this.setValue(parseFloat((Math.abs(this.props.value !== undefined ? this.props.value : 0) + step).toFixed(2)));
-  };
-
-  public onMinus = () => {
-    const step = this.props.step !== undefined ? this.props.step : 0.5;
-    this.setValue(parseFloat((Math.abs(this.props.value !== undefined ? this.props.value : 0) - step).toFixed(2)));
-  };
-
-  public render() {
-    let className = 'cp-point-input';
-    if (this.props.size === 'default') {
-      className = className.concat(' ', 'cp-point-input--default');
-    } else if (this.props.size === 'small') {
-      className = className.concat(' ', 'cp-point-input--small');
-    }
-
-    // tslint:disable
-    const style = this.props.disabled
-      ? {
-          backgroundColor: this.context.consoleTheme.buttonDisabledBg,
-          color: this.context.consoleTheme.buttonDisabledColor,
-          border: `1px solid ${this.context.consoleTheme.buttonSecondaryBorder}`,
-        }
-      : {
-          backgroundColor: this.context.consoleTheme.commentBody,
-          color: this.context.consoleTheme.text,
-          border: `1px solid ${this.context.consoleTheme.buttonSecondaryBorder}`,
-        };
-    // tslint:enable
-
-    const groupClass =
-      consoleThemes.light === this.context.consoleTheme
-        ? 'point-input-group'
-        : 'point-input-group point-input-group--dark';
-
-    const plus = (
-      <PlusSvg
-        key="plus"
-        style={{
-          height: '8px',
-          width: '8px',
-          fill: 'rgba(0, 0, 0, 0.8)',
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
+  return (
+    <div className={groupClass}>
+      <ToggleButton
+        value={isPositive}
+        inactiveLabel=""
+        activeLabel=""
+        onToggle={toggleType}
+        thumbStyle={{
+          borderRadius: 4,
+          boxShadow: 'none',
+        }}
+        trackStyle={{ borderRadius: 5, width: '32px' }}
+        containerStyle={{
+          display: 'inline-block',
+          verticalAlign: 'middle',
+          width: '40px',
+          cursor: props.disabled ? 'not-allowed' : 'pointer',
+        }}
+        thumbIcon={thumbIcon}
+        thumbAnimateRange={[1, 13]}
+        colors={{
+          activeThumb: {
+            base: consoleTheme.consoleTheme.commentBody,
+          },
+          inactiveThumbe: {
+            base: consoleTheme.consoleTheme.commentBody,
+          },
+          active: {
+            base: '#24be85',
+          },
+          inactive: {
+            base: '#d4382a',
+          },
         }}
       />
-    );
-
-    const minus = (
-      <MinusSvg
-        key="minus"
-        style={{
-          height: '8px',
-          width: '8px',
-          fill: 'rgba(0, 0, 0, 0.8)',
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-        }}
-      />
-    );
-
-    const checked = this.state.pointType === 'positive';
-
-    return (
-      <div className={groupClass}>
-        <ToggleButton
-          value={checked}
-          inactiveLabel={''}
-          activeLabel={''}
-          onToggle={this.toggleType}
-          thumbStyle={{
-            borderRadius: 4,
-            boxShadow: 'none',
-          }}
-          trackStyle={{ borderRadius: 5, width: '32px' }}
-          containerStyle={{
-            display: 'inline-block',
-            verticalAlign: 'middle',
-            width: '40px',
-            cursor: this.props.disabled ? 'not-allowed' : 'pointer',
-          }}
-          thumbIcon={checked ? plus : minus}
-          thumbAnimateRange={[1, 13]}
-          colors={{
-            activeThumb: {
-              base: this.context.consoleTheme.commentBody,
-            },
-            inactiveThumbe: {
-              base: this.context.consoleTheme.commentBody,
-            },
-            active: {
-              base: '#24be85',
-            },
-            inactive: {
-              base: '#d4382a',
-            },
-          }}
+      <InputGroup
+        compact
+        className={className}
+        style={{ display: 'flex', justifyContent: 'flex-end' }}
+        onBlur={props.onBlur}
+        onMouseLeave={props.onMouseLeave}
+      >
+        <InputNumber
+          value={props.value !== undefined ? Math.abs(props.value) : undefined}
+          size={props.size === 'default' ? 'middle' : 'small'}
+          onChange={setValue}
+          disabled={props.disabled}
+          onKeyDown={props.onKeyDown}
+          style={style}
+          min={0}
         />
-        <InputGroup
-          compact
-          className={className}
-          style={{ display: 'flex', justifyContent: 'flex-end' }}
-          onBlur={this.props.onBlur ? this.props.onBlur : undefined}
-          onMouseLeave={this.props.onMouseLeave ? this.props.onMouseLeave : undefined}
-        >
-          <InputNumber
-            value={this.props.value !== undefined ? Math.abs(this.props.value) : undefined}
-            size={this.props.size === 'default' ? 'middle' : 'small'}
-            onChange={this.setValue}
-            disabled={this.props.disabled}
-            onKeyDown={this.props.onKeyDown}
-            style={style}
-            min={0}
-          />
-          <Button icon={<CaretUpOutlined />} onClick={this.onPlus} disabled={this.props.disabled} style={style} />
-          <Button
-            icon={<CaretDownOutlined />}
-            onClick={this.onMinus}
-            disabled={this.props.disabled || this.props.value === 0}
-            style={style}
-          />
-        </InputGroup>
-      </div>
-    );
-  }
-}
-CPPointInput.contextType = ConsoleThemeContext;
+        <Button icon={<CaretUpOutlined />} onClick={onPlus} disabled={props.disabled} style={style} />
+        <Button
+          icon={<CaretDownOutlined />}
+          onClick={onMinus}
+          disabled={props.disabled || props.value === 0}
+          style={style}
+        />
+      </InputGroup>
+    </div>
+  );
+};
 
 export default CPPointInput;

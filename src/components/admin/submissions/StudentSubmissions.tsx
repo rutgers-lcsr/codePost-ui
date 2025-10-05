@@ -5,7 +5,7 @@
 /* react imports */
 import * as React from 'react';
 
-import { FolderOpenOutlined, UserAddOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { FolderOpenOutlined, PlusCircleOutlined, UserAddOutlined } from '@ant-design/icons';
 
 /* style imports */
 import { Breadcrumb, Checkbox, Empty } from 'antd';
@@ -13,16 +13,16 @@ import { Breadcrumb, Checkbox, Empty } from 'antd';
 /* other library imports */
 import Highlighter from 'react-highlight-words';
 
-import { RouteComponentProps } from 'react-router';
-import { Route, Link, Switch } from 'react-router-dom';
+import { withRouter } from 'react-router';
+import { Link, Route, RouteComponentProps, Switch } from 'react-router-dom';
 
 /* codePost imports  */
 import { IStudentSubmissionsDataTable } from '../../../types/common';
 
 import { openSubmission } from '../other/AdminUtils';
 
-import { CourseType } from '../../../infrastructure/course';
 import { AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
+import { CourseType } from '../../../infrastructure/course';
 import { SubmissionInfoType } from '../../../infrastructure/submission';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
@@ -73,7 +73,7 @@ class StudentData extends React.Component<IByStudentProps, IState> {
     };
   }
 
-  public componentDidUpdate(oldProps: IByStudentProps, oldState: IState) {
+  public componentDidUpdate(oldProps: IByStudentProps, _oldState: IState) {
     if (oldProps.loadComplete && !this.props.loadComplete) {
       this.setState({ activeStudent: undefined });
     }
@@ -147,7 +147,7 @@ class StudentData extends React.Component<IByStudentProps, IState> {
         <Route
           exact={true}
           path={this.props.match.url}
-          render={(props: any) => {
+          render={(_props: any) => {
             let toggleInactiveStudents;
             let columns: ITableDetailColumn[] = [];
             let data: any[] = [];
@@ -189,7 +189,7 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                   key: 'primary',
                   sorter: (a: any, b: any) => a.key.localeCompare(b.key),
                   renderForSearch: (searchText: string) => {
-                    return (text: string, record: any, index: number) => {
+                    return (_text: string, record: any, _index: number) => {
                       const student = record.student;
                       if (this.props.students.indexOf(student) > -1) {
                         return (
@@ -231,8 +231,8 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                     },
                     align: aligner,
                     className: 'student-table',
-                    renderForSearch: (searchText: string) => {
-                      return (text: string, record: any, index: number) => {
+                    renderForSearch: () => {
+                      return (_text: string, record: any, _index: number) => {
                         const score: string | number = record[assignment.name];
                         if (score === '--') {
                           return '--';
@@ -297,8 +297,10 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                 isEmpty={this.props.assignments.length === 0 || numStudents === 0}
                 emptyNode={
                   <Empty
-                    imageStyle={{
-                      height: 60,
+                    styles={{
+                      image: {
+                        height: 60,
+                      },
                     }}
                     description={
                       this.props.assignments.length === 0 && numStudents === 0 ? (
@@ -333,21 +335,15 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                 columns={columns}
                 data={data}
                 actions={[toggleInactiveStudents]}
-                breadcrumbs={
-                  <Breadcrumb>
-                    <Breadcrumb.Item>Submissions</Breadcrumb.Item>
-                    <Breadcrumb.Item>By Student</Breadcrumb.Item>
-                  </Breadcrumb>
-                }
+                breadcrumbs={<Breadcrumb items={[{ title: 'Submissions' }, { title: 'By Student' }]} />}
                 titleInfo={tooltips.admin.studentSubmissions.title}
               />
             );
           }}
         />
-        }
       </Switch>
     );
   }
 }
 
-export default StudentData;
+export default withRouter(StudentData);

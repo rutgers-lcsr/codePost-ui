@@ -34,7 +34,7 @@ class LogInAs extends React.Component<IProps, IState> {
       .then((user) => {
         this.props.replaceUser(user, true, true);
       })
-      .catch((err) => {
+      .catch((_err) => {
         this.setState({
           errorMessage: 'An error occurred. You probably do not have permission to perform this action!',
         });

@@ -2,11 +2,7 @@ import React, { useState } from 'react';
 
 import { HeartFilled } from '@ant-design/icons';
 
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-
-import { Input, message, Modal, Radio } from 'antd';
-import { FormComponentProps } from '@ant-design/compatible/lib/form';
+import { Form, Input, message, Modal, Radio } from 'antd';
 
 import { sendSlack } from './slack';
 
@@ -33,14 +29,13 @@ interface IFormValues {
 
 const Referral = (props: IProps) => {
   const [visible, setVisible] = useState(false);
+  const [form] = Form.useForm();
 
   React.useEffect(() => {
     if (visible) {
       trackFeature('Referral', {});
     }
   }, [visible]);
-
-  let formRef: any = React.createRef();
 
   const isGrader = props.user.graderCourses.length > 0;
   const isAdmin = props.user.courseadminCourses.length > 0;
@@ -74,38 +69,29 @@ const Referral = (props: IProps) => {
   };
 
   const submitReferral = () => {
-    const form = formRef.props.form;
-    form.validateFields((err: any, values: IFormValues) => {
-      if (err) {
-        return;
-      }
-
-      sendSlack(
-        `Course referral from ${props.user.email}`,
-        `Course: ${values.course}\nInstructor: ${values.instructor}\nEmail: ${values.email ||
-          ''}\nDescription: ${values.description || ''}\nCan use name in referral: ${values.canUseReferralName}`,
-        '#24be85',
-        '#user_referrals',
-      );
-      setVisible(false);
-      form.resetFields();
-      message.success('Thank you for your support! The codePost team will reach out to the course you suggested.');
-    });
-  };
-
-  const saveFormRef = (fRef: React.RefObject<FormComponentProps>) => {
-    formRef = fRef;
+    form
+      .validateFields()
+      .then((values: IFormValues) => {
+        sendSlack(
+          `Course referral from ${props.user.email}`,
+          `Course: ${values.course}\nInstructor: ${values.instructor}\nEmail: ${
+            values.email || ''
+          }\nDescription: ${values.description || ''}\nCan use name in referral: ${values.canUseReferralName}`,
+          '#24be85',
+          '#user_referrals',
+        );
+        setVisible(false);
+        form.resetFields();
+        message.success('Thank you for your support! The codePost team will reach out to the course you suggested.');
+      })
+      .catch((info) => {
+        console.log('Validate Failed:', info);
+      });
   };
 
   return (
     <div>
-      <WrappedReferralForm
-        visible={visible}
-        submit={submitReferral}
-        wrappedComponentRef={saveFormRef}
-        onCancel={changeVisible}
-        text={text}
-      />
+      <ReferralForm form={form} open={visible} submit={submitReferral} onCancel={changeVisible} text={text} />
       <CPTooltip title="Know another course that might find codePost useful? Let us know!">
         <HeartFilled
           onClick={changeVisible}
@@ -116,70 +102,58 @@ const Referral = (props: IProps) => {
   );
 };
 
-interface IFormProps extends FormComponentProps {
-  visible: boolean;
+interface IFormProps {
+  form: any;
+  open: boolean;
   submit: () => void;
   onCancel: () => void;
   text: React.ReactNode;
 }
 
-class ReferralForm extends React.Component<IFormProps, {}> {
-  public constructor(props: IFormProps) {
-    super(props);
-  }
-
-  render() {
-    const { visible, onCancel, form, submit, text } = this.props;
-    const { getFieldDecorator } = form;
-    return (
-      <Modal
-        width={525}
-        visible={visible}
-        title="Refer a course to codePost"
-        okText="Submit"
-        onCancel={onCancel}
-        onOk={submit}
-      >
-        <div style={{ fontSize: 14, color: 'grey' }}>{text}</div>
-        <br />
-        <Form layout="vertical">
-          <Form.Item label="Course name">
-            {getFieldDecorator('course', {
-              rules: [
-                { required: true, message: 'Please let us know which course you think would find codePost useful.' },
-              ],
-            })(<Input />)}
-          </Form.Item>
-          <Form.Item label="Who should we reach out to?">
-            <div className="display-flex align-items-center">
-              {getFieldDecorator('instructor', {
-                rules: [{ required: true, message: 'Please let us know the person we should reach out to!' }],
-              })(<Input placeholder="Name" />)}
-              {getFieldDecorator('email')(<Input style={{ marginLeft: 10 }} placeholder="Email (optional)" />)}
-            </div>
-          </Form.Item>
-          <Form.Item label="Why do you think codePost might be helpful for this course? (optional)">
-            {getFieldDecorator('description')(<Input type="textarea" />)}
-          </Form.Item>
-          <Form.Item
-            label="Can we let this person know that you referred him/her to codePost?"
-            style={{ textAlign: 'center' }}
-          >
-            {getFieldDecorator('canUseReferralName', {
-              rules: [{ required: true, message: "Please let us know if you'd like us to keep this anonymous." }],
-            })(
-              <Radio.Group className="display-flex justify-content-center">
-                <Radio value="Yes">Yes!</Radio>
-                <Radio value="No">No. Please keep me anonymous.</Radio>
-              </Radio.Group>,
-            )}
-          </Form.Item>
-        </Form>
-      </Modal>
-    );
-  }
-}
-
-const WrappedReferralForm: any = Form.create()(ReferralForm);
+const ReferralForm: React.FC<IFormProps> = ({ form, open, onCancel, submit, text }) => {
+  return (
+    <Modal width={525} open={open} title="Refer a course to codePost" okText="Submit" onCancel={onCancel} onOk={submit}>
+      <div style={{ fontSize: 14, color: 'grey' }}>{text}</div>
+      <br />
+      <Form form={form} layout="vertical">
+        <Form.Item
+          label="Course name"
+          name="course"
+          rules={[{ required: true, message: 'Please let us know which course you think would find codePost useful.' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item label="Who should we reach out to?">
+          <div className="display-flex align-items-center">
+            <Form.Item
+              name="instructor"
+              noStyle
+              rules={[{ required: true, message: 'Please let us know the person we should reach out to!' }]}
+            >
+              <Input placeholder="Name" />
+            </Form.Item>
+            <Form.Item name="email" noStyle>
+              <Input style={{ marginLeft: 10 }} placeholder="Email (optional)" />
+            </Form.Item>
+          </div>
+        </Form.Item>
+        <Form.Item label="Why do you think codePost might be helpful for this course? (optional)" name="description">
+          <Input.TextArea />
+        </Form.Item>
+        <Form.Item
+          label="Can we let this person know that you referred him/her to codePost?"
+          name="canUseReferralName"
+          style={{ textAlign: 'center' }}
+          rules={[{ required: true, message: "Please let us know if you'd like us to keep this anonymous." }]}
+        >
+          <Radio.Group className="display-flex justify-content-center">
+            <Radio value="Yes">Yes!</Radio>
+            <Radio value="No">No. Please keep me anonymous.</Radio>
+          </Radio.Group>
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+};
 
 export default Referral;

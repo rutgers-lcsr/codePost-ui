@@ -3,12 +3,12 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { DatabaseTwoTone, InfoOutlined } from '@ant-design/icons';
 
 /* library imports */
-import { Modal, Button, Divider, Input, Radio, Select, Skeleton, Tabs, Tooltip, Typography, Empty } from 'antd';
+import { Button, Divider, Empty, Input, Modal, Radio, Select, Skeleton, Tabs, Tooltip, Typography } from 'antd';
 
 /* codePost object imports */
 import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
@@ -22,17 +22,17 @@ import { CodeWindow } from './utils/CodeWindow';
 /* codePost util imports */
 import { languages } from './utils/languageUtils';
 
-import { TestFileList } from './EnvironmentSpecs/TestFileList';
 import { Environment } from '../../../../../infrastructure/autograder/environment';
+import { TestFileList } from './EnvironmentSpecs/TestFileList';
 
-import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
 import { HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
+import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
 
 import { FILE_TYPE } from './TestingSetup';
 
 import locale from './utils/languageLocale';
 
-import themeVars from '../../../../../styles/abstracts/_theme';
+import themeVars from '../../../../../styles/abstracts/_theme.js';
 
 import { awaitBuildResult } from '../autograderPollingUtils';
 

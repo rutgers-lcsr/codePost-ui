@@ -73,7 +73,7 @@
 //   return (
 //     <div style={{ display: 'flex', justifyContent: 'center' }}>
 //       <Icon onClick={toggleVisible} type="edit" />
-//       <Modal visible={visible} onCancel={toggleVisible} footer={null} width={750}>
+//       <Modal open={visible} onCancel={toggleVisible} footer={null} width={750}>
 //         <Radio.Group onChange={onChange} value={optionIndex}>
 //           <Radio value={0}>Solution code</Radio>
 //           <Radio value={1}>Student submission</Radio>

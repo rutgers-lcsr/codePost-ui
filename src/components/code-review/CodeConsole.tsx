@@ -6,8 +6,8 @@
 import * as React from 'react';
 
 /* antd imports */
+import { BugOutlined, FolderOpenOutlined } from '@ant-design/icons';
 import { Button, Empty, message, notification, Progress, Typography } from 'antd';
-import { FolderOpenOutlined, BugOutlined } from '@ant-design/icons';
 
 /* other library imports */
 import _ from 'lodash';
@@ -20,19 +20,17 @@ import { getOperatingSystem, OS } from '../core/operatingSystem';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from '../../types/common';
 
-import { Assignment, AssignmentType, AssignmentStudent } from '../../infrastructure/assignment';
-import { CommentIO, CommentType, UiComment } from '../../infrastructure/comment';
+import { Assignment, AssignmentStudent, AssignmentType } from '../../infrastructure/assignment';
+import { CommentIO, CommentType } from '../../infrastructure/comment';
 import { Course, CourseType } from '../../infrastructure/course';
-import { FileType, BinaryExtensions } from '../../infrastructure/file';
+import { FileType } from '../../infrastructure/file';
 import { FileTemplate, FileTemplateType } from '../../infrastructure/fileTemplate';
-import * as Immutable from '../../infrastructure/immutable';
 import { RubricCategory, RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { RubricComment, RubricCommentType } from '../../infrastructure/rubricComment';
 import { AnonymousSubmissionType, StudentSubmissionType, Submission } from '../../infrastructure/submission';
 import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
-import { UserType } from '../../infrastructure/user';
 import { TestCategoryType } from '../../infrastructure/testCategory';
-import { TestCaseType } from '../../infrastructure/types';
+import { UserType } from '../../infrastructure/user';
 
 import CPButton from '../core/CPButton';
 import CPFlex from '../core/CPFlex';
@@ -41,10 +39,9 @@ import StandardConsoleLayout from '../core/layouts/StandardConsoleLayout';
 import { GradeCode, StudentCode } from './code-panel/CodeContent';
 import CodePanelLayout from './code-panel/CodePanelLayout';
 import { GradeComments, StudentComments } from './code-panel/Comments';
-import LayoutResizer, { CodeConsoleDimensionsType, getInitialDimensions } from './code-panel/LayoutResizer';
 
-import ThemeToggle from '../core/ThemeToggle';
 import CursorToggle from '../core/CursorToggle';
+import ThemeToggle from '../core/ThemeToggle';
 
 import KeyboardShortcuts from './KeyboardShortcuts';
 
@@ -62,21 +59,21 @@ import { openSubmissionInSameTab } from '../admin/other/AdminUtils';
 
 import { sendSlack } from '../core/slack';
 
-import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 import { getDaysLate } from '../utils/LateDays';
+import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
-import { fetchTestData, TestCasesByCategory, StudentTestCasesByCategory } from '../core/testFetchUtils';
+import { fetchTestData, StudentTestCasesByCategory, TestCasesByCategory } from '../core/testFetchUtils';
 
 import {
   Controls,
+  DownloadCode,
   FinalizeButton,
   GradeButton,
   HeaderMenu,
+  HeaderSearch,
   StatusTags,
   SubheaderTitle,
   ViewAsStudent,
-  DownloadCode,
-  HeaderSearch,
 } from '../code-review/Header';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
@@ -89,14 +86,14 @@ import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManage
 
 import { helpQueryMap } from './HelpQueries';
 
-import TestsMenu from './menu/TestsMenu';
 import TestsList from './code-panel/TestsList';
+import TestsMenu from './menu/TestsMenu';
 
 import { CourseContext, defaultCourse } from '../core/Contexts';
 
 import CustomCommentExplorer from './CustomCommentExplorer';
 
-import { getRubricURL, encodeForLink } from '../core/URLutils';
+import { encodeForLink, getRubricURL } from '../core/URLutils';
 
 /**********************************************************************************************************************/
 
@@ -128,7 +125,6 @@ interface ICodeConsoleState {
   selectedFile: FileType | undefined;
   codeZoom: number;
   codeVerticalOffset: number;
-  dimensions: CodeConsoleDimensionsType;
   isStudent: boolean;
   showKeyboardShortcuts: boolean;
   showExplanations: boolean;
@@ -186,300 +182,31 @@ export interface ICodeConsoleProps {
   inDemoMode: boolean;
 }
 
+import {
+  addCommentToState,
+  addToCommentRubricCommentsState,
+  calculateGrade,
+  fileBouncer,
+  linkRubricComment,
+  pointsInFile,
+  removeCommentFromState,
+  removeFromCommentRubricCommentsState,
+  unlinkRubricComment,
+  updateCommentsState,
+} from './codeConsoleUtils';
+
 class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> {
   /***********************************************************************************************/
-  /* Static Methods
+  /* Static Methods - Now imported from codeConsoleUtils (can be used as utility functions)
   /***********************************************************************************************/
 
-  // --- Comments
-  public static addCommentToState = (comments: IFileToCommentsMap, comment: CommentType, file: FileType) => {
-    const fileComments = Immutable.arrayAdd(comments[file.id], comment);
-    return { ...comments, [file.id]: fileComments.sort(CommentIO.compare) };
-  };
-
-  public static removeCommentFromState = (comments: IFileToCommentsMap, comment: CommentType) => {
-    const index = comments[comment.file].findIndex((c: CommentType) => c.id === comment.id);
-
-    const fileComments = Immutable.arrayRemove(comments[comment.file], index);
-    return { ...comments, [comment.file]: fileComments };
-  };
-
-  public static updateCommentsState = (comments: IFileToCommentsMap, commentID: number, newComment: CommentType) => {
-    const index = comments[newComment.file].findIndex((comment: CommentType) => comment.id === commentID);
-    const fileComments = Immutable.arrayUpdate(comments[newComment.file], newComment, index);
-
-    return { ...comments, [newComment.file]: fileComments };
-  };
-
-  // --- Linked Rubric Comments
-  public static addToCommentRubricCommentsState = (
-    commentRubricComments: ICommentToRubricCommentMap,
-    commentID: number,
-    rubricComment?: RubricCommentType,
-  ) => {
-    if (rubricComment) {
-      return { ...commentRubricComments, [commentID]: rubricComment };
-    }
-    return commentRubricComments;
-  };
-
-  public static removeFromCommentRubricCommentsState = (
-    commentRubricComments: ICommentToRubricCommentMap,
-    commentID: number,
-  ): [RubricCommentType, ICommentToRubricCommentMap] => {
-    const { [commentID]: rubricComment, ...restOfCommentRubricComments } = commentRubricComments;
-    return [rubricComment, restOfCommentRubricComments];
-  };
-
-  public static linkRubricComment = (
-    comments: IFileToCommentsMap,
-    rubricComment: RubricCommentType,
-    activeCommentID: number,
-  ) => {
-    for (const fileID of Object.keys(comments)) {
-      const index = comments[+fileID].findIndex((comment: CommentType) => comment.id === activeCommentID);
-      if (index !== -1) {
-        const comment = {
-          ...comments[+fileID][index],
-          rubricComment: rubricComment.id,
-          pointDelta: null,
-        };
-        const fileComments = Immutable.arrayUpdate(comments[+fileID], comment, index);
-
-        return { ...comments, [+fileID]: fileComments };
-      }
-    }
-
-    return undefined;
-  };
-
-  public static unlinkRubricComment = (
-    comments: IFileToCommentsMap,
-    comment: CommentType,
-    rubricComment: RubricCommentType,
-  ) => {
-    const index = comments[comment.file].findIndex((c: CommentType) => c.id === comment.id);
-    const editedComment = {
-      ...comments[comment.file][index],
-      rubricComment: null,
-      pointDelta: rubricComment.pointDelta,
-    };
-    const fileComments = Immutable.arrayUpdate(comments[comment.file], editedComment, index);
-    return { ...comments, [comment.file]: fileComments };
-  };
-
-  // --- Grading
-
-  // return [deductions, bonuses]
-  public static pointsInFile = (
-    file: FileType,
-    comments: CommentType[],
-    rubricComments: ICommentToRubricCommentMap,
-  ): number[] => {
-    return comments.reduce(
-      (accumulator: number[], comment: CommentType) => {
-        if (!UiComment.isNew(comment)) {
-          const points = UiComment.points(comment, rubricComments[comment.id]);
-          if (points > 0) {
-            // Deductions
-            return [accumulator[0] + points, accumulator[1]];
-          } else {
-            // Bonuses
-            return [accumulator[0], accumulator[1] - points];
-          }
-        } else {
-          return accumulator;
-        }
-      },
-      [0, 0],
-    );
-  };
-
-  // Points from generic comments
-  public static genericCommentPoints = (comments: IFileToCommentsMap, filterFileSet?: Set<Number>): number => {
-    return Object.keys(comments)
-      .map((fileID) => {
-        // If there's a filter set, and this file isn't in the set, then ignore it
-        if (filterFileSet && !filterFileSet.has(parseInt(fileID))) return 0;
-
-        return comments[+fileID].reduce((accumulator: number, comment: CommentType) => {
-          if (!UiComment.isNew(comment) && comment.pointDelta) {
-            return accumulator + comment.pointDelta;
-          } else {
-            return accumulator;
-          }
-        }, 0);
-      })
-      .reduce((accumulator: number, fileGrade: number) => {
-        return accumulator + fileGrade;
-      }, 0);
-  };
-
-  // Points from RubricComments, ignoring category caps
-  public static pointsPerCategory = (
-    commentRubricComments: ICommentToRubricCommentMap,
-    filterCommentSet?: Set<Number>,
-  ): { [categoryID: number]: number } => {
-    const pointsPerCategory: any = {};
-    for (const commentID in commentRubricComments) {
-      // If there's a filter set, and this comment isn't in the set, then ignore it
-      if (filterCommentSet && !filterCommentSet.has(parseInt(commentID))) continue;
-
-      // Don't count unsaved comments
-      if (+commentID > 0 && commentRubricComments.hasOwnProperty(commentID)) {
-        if (!pointsPerCategory[commentRubricComments[commentID].category]) {
-          pointsPerCategory[commentRubricComments[commentID].category] = commentRubricComments[commentID].pointDelta;
-        } else {
-          pointsPerCategory[commentRubricComments[commentID].category] =
-            pointsPerCategory[commentRubricComments[commentID].category] + commentRubricComments[commentID].pointDelta;
-        }
-      }
-    }
-
-    return pointsPerCategory;
-  };
-
-  public static pointsPerCategoryWithCaps = (
-    pointsPerCategory: { [categoryID: number]: number },
-    rubricCategories: RubricCategoryType[],
-  ): { [categoryID: number]: number } => {
-    const pointsPerCategoryWithCaps: any = {};
-    for (const category in pointsPerCategory) {
-      if (pointsPerCategory.hasOwnProperty(category)) {
-        const thisCategory = rubricCategories.find((rubricCategory: RubricCategoryType) => {
-          return rubricCategory.id === +category;
-        });
-        const pointLimit = thisCategory ? (thisCategory.pointLimit !== null ? thisCategory.pointLimit : 99999) : 99999;
-        if (pointLimit < 0) {
-          pointsPerCategoryWithCaps[+category] = Math.max(pointsPerCategory[category], pointLimit);
-        } else {
-          pointsPerCategoryWithCaps[+category] = Math.min(pointsPerCategory[category], pointLimit);
-        }
-      }
-    }
-    return pointsPerCategoryWithCaps;
-  };
-
-  public static pointsFromTests = (submissionTests: SubmissionTestType[], testCases: TestCaseType[]): number => {
-    return (
-      -1 *
-      SubmissionTest.getLatest(submissionTests)
-        .map((test) => {
-          const match = testCases.find((el) => el.id === test.testCase);
-
-          if (match === undefined) {
-            return 0;
-          }
-
-          return test.passed ? match!.pointsPass : match!.pointsFail;
-        })
-        .reduce((el, acc) => el + acc, 0)
-    );
-  };
-
-  public static calculateGrade = (
-    assignment: AssignmentType,
-    comments: IFileToCommentsMap,
-    commentRubricComments: ICommentToRubricCommentMap,
-    rubricCategories: RubricCategoryType[],
-    files: FileType[],
-    submissionTests: SubmissionTestType[],
-    testCases: TestCaseType[],
-  ): number => {
-    // Get the set of fileIDs and commentIDs for the current files
-    // This filters out any old file versions
-    const [currentFileSet, currentCommentSet] = CodeConsole.filterCurrentFileVersions(files, comments);
-    const commentPoints = CodeConsole.genericCommentPoints(comments, currentFileSet);
-    const pointsPerCategory = CodeConsole.pointsPerCategory(commentRubricComments, currentCommentSet);
-    const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(pointsPerCategory, rubricCategories);
-
-    const categoryPoints = Object.values(pointsPerCategoryWithCaps).reduce((accumulator: number, current: number) => {
-      return accumulator + current;
-    }, 0);
-
-    /* grab latest submission tests */
-    const testPoints = CodeConsole.pointsFromTests(submissionTests, testCases);
-
-    let grade = 0;
-    if (assignment.additiveGrading) {
-      grade = 0 - commentPoints - categoryPoints - testPoints;
-    } else {
-      grade = assignment.points - commentPoints - categoryPoints - testPoints;
-    }
-
-    // Prevent floating point arithmetic causing weird rounding errors
-    return parseFloat(grade.toFixed(2));
-  };
-
-  // This function filters out old file versions, and keeps only the current file versions
-  // It outputs a set of the current file IDs and the current comment IDs
-  public static filterCurrentFileVersions = (files: FileType[], currentComments?: IFileToCommentsMap) => {
-    const currentFiles: { [pathName: string]: FileType } = {};
-    files.forEach((file) => {
-      const path = `${file.path ? file.path.replace(/^\/+|\/+$/g, '') : ''}/${file.name}`;
-      if (!currentFiles[path]) currentFiles[path] = file;
-      else {
-        if (Date.parse(currentFiles[path].created) <= Date.parse(file.created)) {
-          currentFiles[path] = file;
-        }
-      }
-    });
-
-    const currentFileSet: Set<Number> = new Set();
-    const currentCommentSet: Set<Number> = new Set();
-    Object.keys(currentFiles).forEach((path) => {
-      const file = currentFiles[path];
-      currentFileSet.add(file.id);
-      if (currentComments) {
-        // If current comment Map is specified, use that instead of file.comments
-        const comments = currentComments[file.id];
-        if (comments) {
-          comments.forEach((comment) => currentCommentSet.add(comment.id));
-        }
-      } else {
-        file.comments.forEach((commentID) => currentCommentSet.add(commentID));
-      }
-    });
-
-    return [currentFileSet, currentCommentSet];
-  };
-
-  public static fileBouncer = (files: FileType[]) => {
-    const max_size_bytes = 500000;
-
-    return files.map((file: FileType) => {
-      const size_bytes = new Blob([file.code]).size;
-
-      const bounce =
-        !['.pdf', 'pdf', 'jpg', '.jpg', 'jpeg', '.jpeg', 'png', '.png', 'ipynb', '.ipynb'].includes(
-          file.extension.toLowerCase(),
-        ) && size_bytes > max_size_bytes;
-      if (bounce) {
-        return {
-          ...file,
-          code: `This file is over the codePost allowable size (${max_size_bytes /
-            1000000}MB).\n\nPlease compress the file or contact team@codepost.io.`,
-        };
-      }
-
-      const binary = BinaryExtensions.includes(file.extension.toLowerCase());
-
-      if (binary) {
-        return {
-          ...file,
-          code: 'Preview Not Available',
-        };
-      }
-
-      return file;
-    });
-  };
+  // Note: Static methods have been extracted to codeConsoleUtils.ts
+  // They can be imported and used directly: addCommentToState, removeCommentFromState, etc.
 
   /***********************************************************************************************/
   /* Component instance
   /***********************************************************************************************/
 
-  // Interval for live feedback mode to reloda the submission to see if there are new files
   private checkNewFilesInterval: any;
   private reloadCommentsInterval: any;
   private LIVE_FEEDBACK_FILES_RELOAD_INTERVAL = 60000;
@@ -513,7 +240,6 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
       codeZoom: LOCAL_SETTINGS.codeZoom.getter(),
       codeVerticalOffset: 0,
-      dimensions: getInitialDimensions(),
 
       demoCommentCounter: 0,
 
@@ -645,15 +371,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
       case PERMISSION_LEVEL.READ:
         // load the data a reader has access to
         submission = await Submission.readReadOnly(submissionID);
-        [
-          assignment,
-          [files, comments, commentRubricComments],
-          { rubricCategories, rubricComments },
-        ] = await Promise.all([
-          Assignment.read(submission.assignment),
-          Submission.loadData(submission),
-          this.loadRubric(submission.assignment),
-        ]);
+        [assignment, [files, comments, commentRubricComments], { rubricCategories, rubricComments }] =
+          await Promise.all([
+            Assignment.read(submission.assignment),
+            Submission.loadData(submission),
+            this.loadRubric(submission.assignment),
+          ]);
 
         document.title = `${submissionID}-Submission [${assignment.name}]`;
 
@@ -663,7 +386,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           return a.name.localeCompare(b.name);
         });
 
-        files = CodeConsole.fileBouncer(files);
+        files = fileBouncer(files);
 
         if (selectedFile === undefined && files.length > 0) {
           if (typeof queryValues.comment === 'string') {
@@ -725,15 +448,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         // load the data a writer has access to
 
         const writableSubmission = await Submission.readAnonymous(submissionID);
-        [
-          assignment,
-          [files, comments, commentRubricComments],
-          { rubricCategories, rubricComments },
-        ] = await Promise.all([
-          Assignment.read(writableSubmission.assignment),
-          Submission.loadData(writableSubmission),
-          this.loadRubric(writableSubmission.assignment),
-        ]);
+        [assignment, [files, comments, commentRubricComments], { rubricCategories, rubricComments }] =
+          await Promise.all([
+            Assignment.read(writableSubmission.assignment),
+            Submission.loadData(writableSubmission),
+            this.loadRubric(writableSubmission.assignment),
+          ]);
 
         document.title = `${submissionID}-Submission [${assignment.name}]`;
 
@@ -758,7 +478,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
         // fill in grade using available data if submission doesn't contain an up-to-date grade
         if (assignment && !writableSubmission.isFinalized) {
-          writableSubmission.grade = CodeConsole.calculateGrade(
+          writableSubmission.grade = calculateGrade(
             assignment,
             comments,
             commentRubricComments,
@@ -773,7 +493,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           return a.name.localeCompare(b.name);
         });
 
-        files = CodeConsole.fileBouncer(files);
+        files = fileBouncer(files);
 
         if (selectedFile === undefined && files.length > 0) {
           if (typeof queryValues.comment === 'string') {
@@ -1024,7 +744,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           const newSub = await Submission.readReadOnly(this.state.readOnlySubmission!.id);
           let files, comments, _;
           [files, comments, _] = await Submission.loadData(newSub);
-          files = CodeConsole.fileBouncer(files);
+          files = fileBouncer(files);
 
           // change the selected file
           const selectedFile =
@@ -1268,19 +988,19 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       console.log('comment author isnt enrolled as a grader');
     }
 
-    const comments = CodeConsole.addCommentToState(this.state.comments, comment, file);
+    const comments = addCommentToState(this.state.comments, comment, file);
     this.setState({ comments, activeCommentID: comment.id, commentCounter: this.state.commentCounter - 1 });
   };
 
   public updateComment = (commentID: number, newComment: CommentType, newRubricComment?: RubricCommentType) => {
-    const comments = CodeConsole.updateCommentsState(this.state.comments, commentID, newComment);
+    const comments = updateCommentsState(this.state.comments, commentID, newComment);
 
-    const [rubricComment, restOfCommentRubricComments] = CodeConsole.removeFromCommentRubricCommentsState(
+    const [rubricComment, restOfCommentRubricComments] = removeFromCommentRubricCommentsState(
       this.state.commentRubricComments,
       commentID,
     );
 
-    const commentRubricComments = CodeConsole.addToCommentRubricCommentsState(
+    const commentRubricComments = addToCommentRubricCommentsState(
       restOfCommentRubricComments,
       newComment.id,
       newRubricComment ? newRubricComment : rubricComment,
@@ -1290,12 +1010,15 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   };
 
   public saveComment = async (comment: CommentType) => {
+    console.log('[saveComment] Saving comment:', comment);
     let savedComment: CommentType = comment;
     let oldCommentIDs = this.state.oldCommentIDs;
 
     if (!this.props.inDemoMode && !this.state.noSave) {
       if (comment.id < 0) {
+        console.log('[saveComment] Creating new comment via API...');
         savedComment = await CommentIO.create(comment);
+        console.log('[saveComment] Comment created with ID:', savedComment.id);
         oldCommentIDs = { ...oldCommentIDs, [savedComment.id]: comment.id };
 
         // We need to prevent the following race condition error:
@@ -1349,8 +1072,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       await CommentIO.delete(comment.id).then(() => this.updateSubmissionGrade());
     }
 
-    const comments = CodeConsole.removeCommentFromState(this.state.comments, comment);
-    const [, commentRubricComments] = CodeConsole.removeFromCommentRubricCommentsState(
+    const comments = removeCommentFromState(this.state.comments, comment);
+    const [, commentRubricComments] = removeFromCommentRubricCommentsState(
       this.state.commentRubricComments,
       comment.id,
     );
@@ -1380,8 +1103,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   };
 
   public removeRubricComment = (comment: CommentType, rubricComment: RubricCommentType) => {
-    const comments = CodeConsole.unlinkRubricComment(this.state.comments, comment, rubricComment);
-    const [, commentRubricComments] = CodeConsole.removeFromCommentRubricCommentsState(
+    const comments = unlinkRubricComment(this.state.comments, comment, rubricComment);
+    const [, commentRubricComments] = removeFromCommentRubricCommentsState(
       this.state.commentRubricComments,
       comment.id,
     );
@@ -1413,7 +1136,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       }
     }
 
-    const comments = CodeConsole.linkRubricComment(this.state.comments, rubricComment, this.state.activeCommentID);
+    const comments = linkRubricComment(this.state.comments, rubricComment, this.state.activeCommentID);
 
     if (comments === undefined) {
       return;
@@ -1424,7 +1147,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       this.setState({ showCursor: CURSOR_DOMAIN.CODE_HIDDEN });
     }
 
-    const commentRubricComments = CodeConsole.addToCommentRubricCommentsState(
+    const commentRubricComments = addToCommentRubricCommentsState(
       this.state.commentRubricComments,
       this.state.activeCommentID,
       rubricComment,
@@ -1442,7 +1165,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       return undefined;
     }
 
-    return CodeConsole.calculateGrade(
+    return calculateGrade(
       this.state.assignment,
       this.state.comments,
       this.state.commentRubricComments,
@@ -1456,7 +1179,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   public getPointsInFile = (file: FileType): number[] => {
     // If, for some reason, the file is not in comments, don't have a fatal error
     const fileComments = this.state.comments[file.id] || [];
-    return CodeConsole.pointsInFile(file, fileComments, this.state.commentRubricComments);
+    return pointsInFile(file, fileComments, this.state.commentRubricComments);
   };
 
   public updateSubmissionGrade = () => {
@@ -1603,11 +1326,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     this.setState(demoState);
   };
 
-  public setDimensions = (dimensions: CodeConsoleDimensionsType) => {
-    this.setState({ dimensions });
-    LOCAL_SETTINGS.codeWidth.setter(dimensions.codeWidth);
-  };
-
   public toggleEditRubricMode = () => {
     this.setState({ editRubricMode: !this.state.editRubricMode });
   };
@@ -1700,23 +1418,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     let siderTitles: Array<React.ReactNode | string> = [];
     let sider: React.ReactElement[] = [];
 
-    const toolbarWidgets = [];
-    if (!this.props.inDemoMode && !this.state.noSave) {
-      const hasComments =
-        this.state.selectedFile !== undefined && this.state.comments[this.state.selectedFile.id] !== undefined
-          ? this.state.comments[this.state.selectedFile.id].length > 0
-          : false;
-
-      toolbarWidgets.push(
-        <LayoutResizer
-          key="layout-resizer"
-          initialDimensions={this.state.dimensions}
-          setDimensions={this.setDimensions}
-          hasComments={hasComments}
-          isEditingComment={this.state.activeCommentID !== undefined || this.state.editRubricMode}
-        />,
-      );
-    }
+    const toolbarWidgets: React.ReactElement[] = [];
 
     const controls = (
       <Controls
@@ -1832,7 +1534,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
                 readOnly={true}
                 user={this.props.user.email}
                 onHighlightClick={onHighlightClick}
-                dimensions={this.state.dimensions}
               />
             );
 
@@ -1846,7 +1547,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
                   return file.id;
                 })}
                 verticalOffset={this.state.codeVerticalOffset}
-                dimensions={this.state.dimensions}
                 updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
                 studentFeedbackOn={this.state.assignment.commentFeedback}
                 hideAuthor={this.state.assignment.hideGradersFromStudents}
@@ -1860,7 +1560,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
                 comments={comments}
                 code={code}
                 toolbarWidgets={toolbarWidgets}
-                dimensions={this.state.dimensions}
                 file={this.state.selectedFile}
                 zoom={this.state.codeZoom}
                 updateVerticalOffset={this.setVerticalOffset}
@@ -1926,7 +1625,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
                 addComment={this.addComment}
                 user={this.props.user.email}
                 onHighlightClick={onHighlightClick}
-                dimensions={this.state.dimensions}
                 commentCounter={this.state.commentCounter}
                 fileTemplate={undefined}
                 cursorMode={this.state.cursorMode}
@@ -1953,7 +1651,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
                 removeRubricComment={this.removeRubricComment}
                 oldCommentIDs={this.state.oldCommentIDs}
                 verticalOffset={this.state.codeVerticalOffset}
-                dimensions={this.state.dimensions}
                 updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
                 studentFeedbackOn={this.state.assignment.commentFeedback}
                 hideAuthor={this.state.assignment.hideGradersFromStudents}
@@ -1969,7 +1666,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
                 comments={demoComments}
                 code={demoCode}
                 toolbarWidgets={toolbarWidgets}
-                dimensions={this.state.dimensions}
                 file={this.state.selectedFile}
                 zoom={this.state.codeZoom}
                 updateVerticalOffset={this.setVerticalOffset}
@@ -2121,7 +1817,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               readOnly={true}
               user={this.props.user.email}
               onHighlightClick={onHighlightClick}
-              dimensions={this.state.dimensions}
             />
           );
 
@@ -2135,7 +1830,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
                 return file.id;
               })}
               verticalOffset={this.state.codeVerticalOffset}
-              dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
@@ -2150,7 +1844,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               comments={comments}
               code={code}
               toolbarWidgets={toolbarWidgets}
-              dimensions={this.state.dimensions}
               file={this.state.selectedFile}
               zoom={this.state.codeZoom}
               updateVerticalOffset={this.setVerticalOffset}
@@ -2287,7 +1980,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               addComment={this.addComment}
               user={this.props.user.email}
               onHighlightClick={onHighlightClick}
-              dimensions={this.state.dimensions}
               commentCounter={this.state.commentCounter}
               fileTemplate={fileTemplate}
               cursorMode={this.state.cursorMode}
@@ -2314,7 +2006,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               removeRubricComment={this.removeRubricComment}
               oldCommentIDs={this.state.oldCommentIDs}
               verticalOffset={this.state.codeVerticalOffset}
-              dimensions={this.state.dimensions}
               updateFeedback={this.updateFeedback.bind(this, this.state.selectedFile!.id)}
               studentFeedbackOn={this.state.assignment.commentFeedback}
               hideAuthor={this.state.assignment.hideGradersFromStudents}
@@ -2332,7 +2023,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
                 comments={comments}
                 code={code}
                 toolbarWidgets={toolbarWidgets}
-                dimensions={this.state.dimensions}
                 file={this.state.selectedFile}
                 zoom={this.state.codeZoom}
                 updateVerticalOffset={this.setVerticalOffset}

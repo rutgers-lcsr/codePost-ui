@@ -1,13 +1,15 @@
 import { Layout } from 'antd';
 
-import React, { useRef, useState } from 'react';
-import { animated, config, useChain, useSpring } from 'react-spring';
+import { useState } from 'react';
+import { animated, config, useChain, useSpring, useSpringRef } from 'react-spring';
 
 import { exampleCode1, SimpleCodeBox, SimpleCodeHighlight } from './SimpleCodeBox';
 import { SimpleComment } from './SimpleComments';
 
 import { SimpleGradeHeader } from './SimpleGradeHeader';
 import { SimpleGradeMenu } from './SimpleGradeMenu';
+
+import cursorImg from './cursor.png';
 
 const { Sider, Content, Header } = Layout;
 
@@ -18,11 +20,11 @@ function textAnimation(text: string, indexFloat: number) {
 }
 
 function GradeAnimation() {
-  const commentRef = useRef(null);
-  const commentBoxRef = useRef(null);
-  const textRef = useRef(null);
-  const savedCommentRef = useRef(null);
-  const deleteCommentRef = useRef(null);
+  const commentRef = useSpringRef();
+  const commentBoxRef = useSpringRef();
+  const textRef = useSpringRef();
+  const savedCommentRef = useSpringRef();
+  const deleteCommentRef = useSpringRef();
   // const delayRef = useRef(null);
 
   const [refs] = useState([commentRef, commentBoxRef, textRef, savedCommentRef, deleteCommentRef]);
@@ -193,7 +195,7 @@ function GradeAnimation() {
                   position: 'absolute',
                 }}
               >
-                <img src={require('./cursor.png')} style={{ width: 24 }} />
+                <img src={cursorImg} style={{ width: 24 }} />
               </animated.div>
               <SimpleCodeBox code={exampleCode1} />
             </Content>

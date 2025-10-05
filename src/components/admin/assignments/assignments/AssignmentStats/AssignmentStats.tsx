@@ -6,8 +6,8 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Breadcrumb, Card, Col, Progress, Row, Statistic, Table, Typography, Spin } from 'antd';
 import { RedoOutlined } from '@ant-design/icons';
+import { Breadcrumb, Card, Col, Progress, Row, Spin, Statistic, Table, Typography } from 'antd';
 
 import CPButton from '../../../../../components/core/CPButton';
 import CPTooltip from '../../../../../components/core/CPTooltip';
@@ -57,7 +57,7 @@ export interface IProps {
   /* misc */
   myEmail: string;
 
-  breadcrumbs: React.ReactElement[];
+  breadcrumbs: Array<{ title: React.ReactNode }>;
 }
 
 interface IState {
@@ -472,11 +472,7 @@ class AssignmentStats extends React.Component<IProps, IState> {
     return (
       <CPAdminDetail
         breadcrumbs={
-          <Breadcrumb>
-            {this.props.breadcrumbs}
-            <Breadcrumb.Item>{this.props.assignment.name}</Breadcrumb.Item>
-            <Breadcrumb.Item>Stats</Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb items={[...this.props.breadcrumbs, { title: this.props.assignment.name }, { title: 'Stats' }]} />
         }
         goBack={null}
         title={`${this.props.assignment.name} | Stats`}

@@ -2,12 +2,10 @@
 /* Imports
 /**********************************************************************************************************************/
 
-import * as React from 'react';
-
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
-import { Button, Breadcrumb, Empty, Tag } from 'antd';
+import { Breadcrumb, Button, Empty, Tag } from 'antd';
 
 import { TableDetail } from '../../other/TableDetail';
 
@@ -51,8 +49,10 @@ const RubricOverview = (props: IProps & RouteComponentProps) => {
       isEmpty={data.length === 0}
       emptyNode={
         <Empty
-          imageStyle={{
-            height: 60,
+          styles={{
+            image: {
+              height: 60,
+            },
           }}
           description={<span>No assignments yet</span>}
         ></Empty>
@@ -61,12 +61,14 @@ const RubricOverview = (props: IProps & RouteComponentProps) => {
       data={data}
       actions={[]}
       breadcrumbs={
-        <Breadcrumb>
-          <Breadcrumb.Item>
-            {props.course !== undefined && props.course.archived ? <Tag>Archived</Tag> : null}Assignments
-          </Breadcrumb.Item>
-          <Breadcrumb.Item>Rubrics</Breadcrumb.Item>
-        </Breadcrumb>
+        <Breadcrumb
+          items={[
+            {
+              title: <>{props.course !== undefined && props.course.archived ? <Tag>Archived</Tag> : null}Assignments</>,
+            },
+            { title: 'Rubrics' },
+          ]}
+        />
       }
     />
   );

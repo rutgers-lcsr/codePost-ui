@@ -7,8 +7,6 @@ import React, { Suspense } from 'react';
 
 import { HashLink as Link } from 'react-router-hash-link';
 
-import '@brainhubeu/react-carousel/lib/style.css';
-
 import { ArrowRightOutlined } from '@ant-design/icons';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
@@ -18,12 +16,12 @@ import landingVars from '../../styles/pages/_landingVars';
 import CPButton from '../core/CPButton';
 
 // Section components
+import LandingAnnotationPanel from './LandingAnnotationPanel';
 import LandingGetStarted from './LandingGetStarted';
 import LandingHeader from './LandingHeader';
 import LandingHero from './LandingHero';
 import LandingLayout from './LandingLayout';
 import LandingPanel from './LandingPanel';
-import LandingAnnotationPanel from './LandingAnnotationPanel';
 
 // Other design elements
 import PreAuthFooter from '../pre-auth/PreAuthFooter';
@@ -102,7 +100,8 @@ class Landing extends React.Component<IWithWindowWatcherProps, {}> {
                 <div style={{ fontWeight: 600, paddingBottom: 5 }}>Managing a team of graders?</div>
                 <div>
                   codePost includes tools to help you run a large course team: distribute work to graders, set up a
-                  rubric to ensure consistent, fair feedback, and use <a href="https://commandbar.com">intuitive keyboard shortcuts</a> to review on grader work.
+                  rubric to ensure consistent, fair feedback, and use{' '}
+                  <a href="https://commandbar.com">intuitive keyboard shortcuts</a> to review on grader work.
                 </div>
               </div>
             </div>

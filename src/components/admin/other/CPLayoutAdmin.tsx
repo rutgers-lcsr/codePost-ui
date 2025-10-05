@@ -57,15 +57,28 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
     }
   };
 
+  // Calculate margin for main content based on sider state
+  const hasSider = props.hasSider === undefined || props.hasSider;
+  const contentMarginLeft = hasSider ? (collapsed ? 80 : siderWidth) : 0;
+
   // FIXME: Hardcoded height variables
   return (
     <Layout id="Admin" className="layout--admin" style={{ overflowX: 'auto' }}>
-      {props.hasSider !== undefined && !props.hasSider ? null : (
+      {hasSider && (
         <Sider
           collapsible={props.collapsible ? props.collapsible : false}
           width={siderWidth}
           collapsed={collapsed}
           onCollapse={onCollapse}
+          style={{
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            height: '100vh',
+            overflow: 'hidden',
+            zIndex: 10,
+          }}
         >
           <Header className="layout--admin__sider__header" style={{ height: 'fit-content' }}>
             {collapsed ? (
@@ -91,7 +104,7 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
           {props.navigation(collapsed)}
         </Sider>
       )}
-      <Layout style={{ minWidth: layoutVars.minWidths.admin }}>
+      <Layout style={{ minWidth: layoutVars.minWidths.admin, marginLeft: contentMarginLeft }}>
         <Header className="layout--admin__header">{props.header}</Header>
         {props.showBillingBanner && (
           <Link to={props.showBillingBanner}>

@@ -6,21 +6,21 @@
 import * as React from 'react';
 
 import {
+  CaretRightOutlined,
   CodeOutlined,
   DeleteOutlined,
   EditOutlined,
   EyeFilled,
   EyeInvisibleOutlined,
   FileAddOutlined,
+  LoadingOutlined,
   MenuOutlined,
   RedoOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
 
-import { Icon as LegacyIcon } from '@ant-design/compatible';
-
 /* style imports */
-import { Badge, Breadcrumb, Dropdown, Menu, message, Modal, Select } from 'antd';
+import { Badge, Breadcrumb, Dropdown, message, Modal, Select } from 'antd';
 
 /* other library imports */
 import moment from 'moment';
@@ -30,8 +30,8 @@ import { Link } from 'react-router-dom';
 /* codePost imports */
 import { openSubmission } from '../../other/AdminUtils';
 
-import { CourseType } from '../../../../infrastructure/course';
 import { AssignmentType, sortAssignments } from '../../../../infrastructure/assignment';
+import { CourseType } from '../../../../infrastructure/course';
 import { SubmissionInfoType } from '../../../../infrastructure/submission';
 
 import { TableDetail } from '../../other/TableDetail';
@@ -129,7 +129,8 @@ class StudentDetail extends React.Component<IProps, IState> {
         <div>
           <br />
           <div>
-            This action <b>cannot</b> be undone and will delete all existing files and comments for this submission.{' '}
+            This action <b>cannot</b> be undone and will delete all existing files and comments for this
+            submission.{' '}
           </div>
           <br />
           <div>The following students are associated with this submission:</div>
@@ -239,7 +240,7 @@ class StudentDetail extends React.Component<IProps, IState> {
     // });
 
     const aligner: 'left' | 'center' | 'right' = 'center';
-    let columns = [
+    const columns = [
       {
         title: 'Open',
         dataIndex: 'open',
@@ -312,50 +313,75 @@ class StudentDetail extends React.Component<IProps, IState> {
         gradeString = 'Unfinalized';
       }
 
-      const menu = submission ? (
-        <Menu>
-          <Menu.Item key="0" onClick={openSubmission.bind(this, submission.id)}>
-            <span>
-              <CodeOutlined /> Open submission
-            </span>
-          </Menu.Item>
-          <Menu.Item key="1" onClick={this.reUploadSubmission.bind(this, submission)}>
-            <span>
-              <RedoOutlined /> Replace files
-            </span>
-          </Menu.Item>
-          <Menu.Item key="2" onClick={this.toggleUploadSubmissionVisible.bind(this, assignment.id)}>
-            <span>
-              <FileAddOutlined /> Add / Update files
-            </span>
-          </Menu.Item>
-          {assignment.environment && (
-            <Menu.Item
-              key="3"
-              disabled={this.state.subsRunning.includes(submission.id)}
-              onClick={this.runTests.bind(this, assignment, submission)}
-            >
-              <span>
-                <LegacyIcon type={this.state.subsRunning.includes(submission.id) ? 'loading' : 'caret-right'} /> Run
-                Tests
-              </span>
-            </Menu.Item>
-          )}
-          <Menu.Divider />
-          <Menu.Item key="4" style={{ color: 'red' }} onClick={this.removeSubmission.bind(this, submission)}>
-            <DeleteOutlined />
-            Delete submission
-          </Menu.Item>
-        </Menu>
-      ) : (
-        <Menu>
-          <Menu.Item key="0">
-            <span onClick={this.toggleUploadSubmissionVisible.bind(this, assignment.id)}>
-              <UploadOutlined /> Upload submission
-            </span>
-          </Menu.Item>
-        </Menu>
-      );
+      const menuItems = submission
+        ? [
+            {
+              key: '0',
+              label: (
+                <>
+                  <CodeOutlined /> Open submission
+                </>
+              ),
+              onClick: openSubmission.bind(this, submission.id),
+            },
+            {
+              key: '1',
+              label: (
+                <>
+                  <RedoOutlined /> Replace files
+                </>
+              ),
+              onClick: this.reUploadSubmission.bind(this, submission),
+            },
+            {
+              key: '2',
+              label: (
+                <>
+                  <FileAddOutlined /> Add / Update files
+                </>
+              ),
+              onClick: this.toggleUploadSubmissionVisible.bind(this, assignment.id),
+            },
+            ...(assignment.environment
+              ? [
+                  {
+                    key: '3',
+                    label: (
+                      <>
+                        {this.state.subsRunning.includes(submission.id) ? <LoadingOutlined /> : <CaretRightOutlined />}{' '}
+                        Run Tests
+                      </>
+                    ),
+                    disabled: this.state.subsRunning.includes(submission.id),
+                    onClick: this.runTests.bind(this, assignment, submission),
+                  },
+                ]
+              : []),
+            {
+              type: 'divider' as const,
+            },
+            {
+              key: '4',
+              label: (
+                <>
+                  <DeleteOutlined /> Delete submission
+                </>
+              ),
+              danger: true,
+              onClick: this.removeSubmission.bind(this, submission),
+            },
+          ]
+        : [
+            {
+              key: '0',
+              label: (
+                <>
+                  <UploadOutlined /> Upload submission
+                </>
+              ),
+              onClick: this.toggleUploadSubmissionVisible.bind(this, assignment.id),
+            },
+          ];
 
       let graderElement;
       if (submission && assignment.name === this.state.selectedSubmission) {
@@ -421,7 +447,7 @@ class StudentDetail extends React.Component<IProps, IState> {
         lateDayCreditsUsed: submission !== undefined ? submission.lateDayCreditsUsed : '',
         viewed: submission ? this.getViewIcon(submission, this.props.student) : '--',
         actions: (
-          <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>
+          <Dropdown menu={{ items: menuItems }} trigger={['click']} placement={'bottomRight'}>
             <MenuOutlined />
           </Dropdown>
         ),
@@ -439,17 +465,24 @@ class StudentDetail extends React.Component<IProps, IState> {
             </span>
           }
           breadcrumbs={
-            <Breadcrumb>
-              <Breadcrumb.Item>
-                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                <a>Submissions</a>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item onClick={this.props.onBack}>
-                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                <Link to={this.props.baseURL}>Students</Link>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>{this.props.student}</Breadcrumb.Item>
-            </Breadcrumb>
+            <Breadcrumb
+              items={[
+                {
+                  title: (
+                    // eslint-disable-next-line jsx-a11y/anchor-is-valid
+                    <a>Submissions</a>
+                  ),
+                },
+                {
+                  title: (
+                    // eslint-disable-next-line jsx-a11y/anchor-is-valid
+                    <Link to={this.props.baseURL}>Students</Link>
+                  ),
+                  onClick: this.props.onBack,
+                },
+                { title: this.props.student },
+              ]}
+            />
           }
           isEmpty={false}
           emptyNode={null}

@@ -27,7 +27,7 @@ import {
 } from '@ant-design/icons';
 
 /* ant imports */
-import { Breadcrumb, Dropdown, Empty, Menu, message, Popconfirm, Switch, Tooltip, Typography, Spin } from 'antd';
+import { Breadcrumb, Dropdown, Empty, Menu, message, Popconfirm, Spin, Switch, Tooltip, Typography } from 'antd';
 
 import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
@@ -48,7 +48,7 @@ import { Link } from 'react-router-dom';
 
 /* codePost imports */
 import { AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
-import { CourseType, SubmissionInfoType, SectionType } from '../../../infrastructure/types';
+import { CourseType, SectionType, SubmissionInfoType } from '../../../infrastructure/types';
 import { UserType } from '../../../infrastructure/user';
 
 import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../types/common';
@@ -138,7 +138,7 @@ export interface IManageAssignmentsProps {
   detailType?: DETAIL_TYPE; // what detail view are we showing
   baseURL: string;
 
-  breadcrumbs?: React.ReactElement[];
+  breadcrumbs?: Array<{ title: React.ReactNode }>;
 }
 
 export enum DETAIL_TYPE {
@@ -458,103 +458,131 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
       }
       const statsForRow = assignmentStats[assignment.id];
       const encodedName = encodeForLink(assignment.name);
-      const menu = (
-        <Menu>
-          <Menu.Item key="1">
+      const menuItems = [
+        {
+          key: '1',
+          label: (
             <Link to={`${this.props.baseURL}/rubrics/${encodedName}`}>
-              <OrderedListOutlined />
-              &nbsp; Edit rubric
+              <OrderedListOutlined /> &nbsp; Edit rubric
             </Link>
-          </Menu.Item>
-          <Menu.Item key="tests">
+          ),
+        },
+        {
+          key: 'tests',
+          label: (
             <Link to={`${this.props.baseURL}/tests/${encodedName}/edit`}>
-              <FileDoneOutlined />
-              &nbsp; Edit tests
+              <FileDoneOutlined /> &nbsp; Edit tests
             </Link>
-          </Menu.Item>
-          <Menu.Item key="plagiarism">
+          ),
+        },
+        {
+          key: 'plagiarism',
+          label: (
             <Link to={`${this.props.baseURL}/plagiarism/${encodedName}`}>
-              <DiffOutlined />
-              &nbsp; Check for plagiarism
+              <DiffOutlined /> &nbsp; Check for plagiarism
             </Link>
-          </Menu.Item>
-          <Menu.Item key="2">
+          ),
+        },
+        {
+          key: '2',
+          label: (
             <Link to={`${this.props.baseURL}/${encodedName}/download/grades`}>
-              {!this.props.fullSubmissionsLoadComplete ? <Spin size="small" /> : <DownloadOutlined />}
-              &nbsp; Download grades
+              {!this.props.fullSubmissionsLoadComplete ? <Spin size="small" /> : <DownloadOutlined />} &nbsp; Download
+              grades
             </Link>
-          </Menu.Item>
-          <Menu.Item key="3">
+          ),
+        },
+        {
+          key: '3',
+          label: (
             <Link to={`${this.props.baseURL}/${encodedName}/stats`}>
-              <BarChartOutlined />
-              &nbsp; View stats
+              <BarChartOutlined /> &nbsp; View stats
             </Link>
-          </Menu.Item>
-          {assignment.allowRegradeRequests ? (
-            <Menu.Item key="3.1">
-              <Link to={`${this.props.baseURL}/${encodedName}/regrades`}>
-                <MessageOutlined />
-                &nbsp; View Regrades
-              </Link>
-            </Menu.Item>
-          ) : (
-            <div />
-          )}
-          <SubMenu
-            key="4"
-            title={
-              <span>
-                <UploadOutlined />
-                &nbsp; Upload submissions
-              </span>
-            }
-          >
-            <Menu.Item key="0.1">
-              <Link to={`${this.props.baseURL}/${encodedName}/upload/single`}>
-                <FileOutlined />
-                &nbsp; Single submission
-              </Link>
-            </Menu.Item>
-            <Menu.Item key="0.2">
-              <Link to={`${this.props.baseURL}/${encodedName}/upload/multiple`}>
-                <FolderOutlined />
-                &nbsp; Multiple submissions
-              </Link>
-            </Menu.Item>
-            <Menu.Item key="0.3">
-              <Link to={`${this.props.baseURL}/${encodedName}/upload/import`}>
-                <ImportOutlined />
-                &nbsp; Import
-              </Link>
-            </Menu.Item>
-          </SubMenu>
-          <Menu.Item key="5">
+          ),
+        },
+        ...(assignment.allowRegradeRequests
+          ? [
+              {
+                key: '3.1',
+                label: (
+                  <Link to={`${this.props.baseURL}/${encodedName}/regrades`}>
+                    <MessageOutlined /> &nbsp; View Regrades
+                  </Link>
+                ),
+              },
+            ]
+          : []),
+        {
+          key: '4',
+          label: (
+            <span>
+              <UploadOutlined /> &nbsp; Upload submissions
+            </span>
+          ),
+          children: [
+            {
+              key: '0.1',
+              label: (
+                <Link to={`${this.props.baseURL}/${encodedName}/upload/single`}>
+                  <FileOutlined /> &nbsp; Single submission
+                </Link>
+              ),
+            },
+            {
+              key: '0.2',
+              label: (
+                <Link to={`${this.props.baseURL}/${encodedName}/upload/multiple`}>
+                  <FolderOutlined /> &nbsp; Multiple submissions
+                </Link>
+              ),
+            },
+            {
+              key: '0.3',
+              label: (
+                <Link to={`${this.props.baseURL}/${encodedName}/upload/import`}>
+                  <ImportOutlined /> &nbsp; Import
+                </Link>
+              ),
+            },
+          ],
+        },
+        {
+          key: '5',
+          label: (
             <Link to={`${this.props.baseURL}/${encodedName}/bulk-edit`}>
-              <EditOutlined />
-              &nbsp; Bulk edit
+              <EditOutlined /> &nbsp; Bulk edit
             </Link>
-          </Menu.Item>
-          <Menu.Item key="onboarding">
+          ),
+        },
+        {
+          key: 'onboarding',
+          label: (
             <Link to={`${this.props.baseURL}/${encodedName}/onboarding`}>
-              <CompassOutlined />
-              &nbsp; Get started
+              <CompassOutlined /> &nbsp; Get started
             </Link>
-          </Menu.Item>
-          <Menu.Item key="6">
+          ),
+        },
+        {
+          key: '6',
+          label: (
             <Link to={`${this.props.baseURL}/${encodedName}/settings`}>
-              <SettingOutlined />
-              &nbsp; Settings
+              <SettingOutlined /> &nbsp; Settings
             </Link>
-          </Menu.Item>
-          <Menu.Divider />
-          <Menu.Item key="7" style={{ color: 'red' }}>
+          ),
+        },
+        {
+          type: 'divider' as const,
+        },
+        {
+          key: '7',
+          label: (
             <Link to={`${this.props.baseURL}/${encodedName}/delete`}>
-              <DeleteOutlined />
-              &nbsp; Delete assignment
+              <DeleteOutlined /> &nbsp; Delete assignment
             </Link>
-          </Menu.Item>
-        </Menu>
-      );
+          ),
+          danger: true,
+        },
+      ];
 
       let publishToggleText: React.ReactElement | string = '';
       if (assignment.isReleased) {
@@ -690,7 +718,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           </span>
         ),
         actions: (
-          <Dropdown overlay={menu} trigger={['click']}>
+          <Dropdown menu={{ items: menuItems }} trigger={['click']}>
             <MenuOutlined />
           </Dropdown>
         ),
@@ -854,7 +882,10 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
       this.setState(
         update(this.state, {
           sortedOrder: {
-            $splice: [[dragIndex, 1], [hoverIndex, 0, dragRow]],
+            $splice: [
+              [dragIndex, 1],
+              [hoverIndex, 0, dragRow],
+            ],
           },
         }),
         () => {
@@ -876,8 +907,10 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         loadComplete={this.props.loadComplete}
         emptyNode={
           <Empty
-            imageStyle={{
-              height: 60,
+            styles={{
+              image: {
+                height: 60,
+              },
             }}
             description={<span>No assignments yet</span>}
           >
@@ -894,12 +927,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         columns={columns}
         data={data}
         actions={actions}
-        breadcrumbs={
-          <Breadcrumb>
-            {this.props.breadcrumbs}
-            <Breadcrumb.Item>Overview</Breadcrumb.Item>
-          </Breadcrumb>
-        }
+        breadcrumbs={<Breadcrumb items={[...(this.props.breadcrumbs || []), { title: 'Overview' }]} />}
         titleInfo={'Use this space to add assignments to your course, and edit existing ones.'}
         drawer={drawerComponent}
         hideSearch={true}

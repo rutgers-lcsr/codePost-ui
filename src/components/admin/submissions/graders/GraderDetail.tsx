@@ -3,15 +3,14 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
 
 import { FolderOpenOutlined, MenuOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Dropdown, Menu } from 'antd';
+import { Breadcrumb, Dropdown } from 'antd';
 
 /* other library imports */
-import { Route, Link, Switch } from 'react-router-dom';
+import { Link, Route, Switch } from 'react-router-dom';
 
 /* codePost imports */
 import { AssignmentType, sortAssignments } from '../../../../infrastructure/assignment';
@@ -104,16 +103,16 @@ const GraderDetail = (props: IProps) => {
           const data = sortAssignments(props.assignments).map((assignment) => {
             const graded = props.submissionsByAssignment[assignment.id];
 
-            const menu = (
-              <Menu>
-                <Menu.Item>
+            const menuItems = [
+              {
+                key: 'zoom',
+                label: (
                   <Link to={`${props.match.url}/${encodeForLink(assignment.name)}`}>
-                    <FolderOpenOutlined />
-                    Zoom in
+                    <FolderOpenOutlined /> Zoom in
                   </Link>
-                </Menu.Item>
-              </Menu>
-            );
+                ),
+              },
+            ];
 
             const numFinalized = graded
               ? graded.filter((sub) => {
@@ -151,10 +150,10 @@ const GraderDetail = (props: IProps) => {
               assignmentAverage: assignment.mean
                 ? `${assignment.mean.toFixed(1)}/${assignment.points}`
                 : props.means[assignment.id]
-                ? `${props.means[assignment.id]}/${assignment.points}`
-                : '--',
+                  ? `${props.means[assignment.id]}/${assignment.points}`
+                  : '--',
               actions: (
-                <Dropdown overlay={menu} trigger={['click']} placement={'bottomRight'}>
+                <Dropdown menu={{ items: menuItems }} trigger={['click']} placement={'bottomRight'}>
                   <MenuOutlined />
                 </Dropdown>
               ),
@@ -167,19 +166,23 @@ const GraderDetail = (props: IProps) => {
                 loadComplete={true}
                 title={`Submissions graded by: ${props.grader}`}
                 breadcrumbs={
-                  <Breadcrumb>
-                    <Breadcrumb.Item>
-                      <Link to={props.baseURL}>Submissions</Link>
-                    </Breadcrumb.Item>
-                    <Breadcrumb.Item>
-                      {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                      <Link to={props.baseURL}>By Grader</Link>
-                    </Breadcrumb.Item>
-                    <Breadcrumb.Item>
-                      {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                      <a>{props.grader}</a>
-                    </Breadcrumb.Item>
-                  </Breadcrumb>
+                  <Breadcrumb
+                    items={[
+                      { title: <Link to={props.baseURL}>Submissions</Link> },
+                      {
+                        title: (
+                          // eslint-disable-next-line jsx-a11y/anchor-is-valid
+                          <Link to={props.baseURL}>By Grader</Link>
+                        ),
+                      },
+                      {
+                        title: (
+                          // eslint-disable-next-line jsx-a11y/anchor-is-valid
+                          <a>{props.grader}</a>
+                        ),
+                      },
+                    ]}
+                  />
                 }
                 isEmpty={false}
                 emptyNode={null}

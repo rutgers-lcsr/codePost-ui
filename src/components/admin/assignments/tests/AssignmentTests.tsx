@@ -6,14 +6,13 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Breadcrumb } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
-import { Switch, Route } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 
 /* codePost object imports */
 import { Assignment, AssignmentType } from '../../../../infrastructure/assignment';
@@ -53,16 +52,18 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
 
   const breadcrumbs = [
     ...(props.breadcrumbs ? props.breadcrumbs : []),
-    <Breadcrumb.Item key="tests">
-      <Link
-        to={props.match.url
-          .split('/')
-          .slice(0, props.match.url.split('/').length - 1)
-          .join('/')}
-      >
-        Tests
-      </Link>
-    </Breadcrumb.Item>,
+    {
+      title: (
+        <Link
+          to={props.match.url
+            .split('/')
+            .slice(0, props.match.url.split('/').length - 1)
+            .join('/')}
+        >
+          Tests
+        </Link>
+      ),
+    },
   ];
 
   // ************************ Return ************************************

@@ -55,7 +55,7 @@ class SectionPanel extends React.Component<IProps, IState> {
     this.loadSubmissions(this.props.assignments, this.state.activeSection);
   }
 
-  public componentDidUpdate(oldProps: IProps, prevState: IState) {
+  public componentDidUpdate(_oldProps: IProps, prevState: IState) {
     if (oldProps.assignments !== this.props.assignments) {
       this.loadSubmissions(this.props.assignments, this.state.activeSection);
     }

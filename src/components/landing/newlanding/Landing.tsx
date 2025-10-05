@@ -7,8 +7,6 @@ import React, { Suspense } from 'react';
 
 import { HashLink as Link } from 'react-router-hash-link';
 
-import '@brainhubeu/react-carousel/lib/style.css';
-
 import { ArrowRightOutlined } from '@ant-design/icons';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
@@ -20,10 +18,10 @@ import CPButton from '../../core/CPButton';
 // Section components
 import LandingGetStarted from './../LandingGetStarted';
 import LandingHeader from './../LandingHeader';
+import LandingAnnotationPanel from './LandingAnnotationPanel';
 import LandingHero from './LandingHero';
 import LandingLayout from './LandingLayout';
 import LandingPanel from './LandingPanel';
-import LandingAnnotationPanel from './LandingAnnotationPanel';
 
 import SubHero from './SubHero';
 
@@ -39,12 +37,12 @@ const AutograderModule = React.lazy(() => import('./../landingAnimations/autogra
 const LandingFlowChart = React.lazy(() => import('./../landingAnimations/flowchart/LandingFlowChart'));
 /**********************************************************************************************************************/
 
-const buImg = require('../../../img/landing/compressed/logos/bu.png');
-const caltechImg = require('../../../img/landing/compressed/logos/caltech.png');
-const princetonImg = require('../../../img/landing/compressed/logos/princeton.png');
-const iowaImg = require('../../../img/landing/compressed/logos/iowa.png');
-const ucsdImg = require('../../../img/landing/compressed/logos/ucsd.png');
-const cornellImg = require('../../../img/landing/compressed/logos/cornell.png');
+import buImg from '../../../img/landing/compressed/logos/bu.png';
+import caltechImg from '../../../img/landing/compressed/logos/caltech.png';
+import cornellImg from '../../../img/landing/compressed/logos/cornell.png';
+import iowaImg from '../../../img/landing/compressed/logos/iowa.png';
+import princetonImg from '../../../img/landing/compressed/logos/princeton.png';
+import ucsdImg from '../../../img/landing/compressed/logos/ucsd.png';
 
 class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
   public componentDidMount() {}

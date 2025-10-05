@@ -1,12 +1,12 @@
 import React, { useContext } from 'react';
 
+import { InfoCircleOutlined, InfoCircleTwoTone } from '@ant-design/icons';
 import { Tooltip } from 'antd';
 import { AbstractTooltipProps } from 'antd/lib/tooltip';
-import { InfoCircleOutlined, InfoCircleTwoTone } from '@ant-design/icons';
 
 import { ShowTooltipContext } from './tooltips';
 
-import themeVars from '../../styles/abstracts/_theme';
+import themeVars from '../../styles/abstracts/_theme.js';
 
 interface IProps extends AbstractTooltipProps {
   children?: React.ReactElement;
@@ -56,18 +56,19 @@ const CPTooltip = (props: IProps) => {
   }
 
   switch (tooltipState) {
-    case TOOLTIP_STATE.Show && icon:
-      return (
-        <Tooltip title={props.title} {...antprops}>
-          <span>
-            {props.children}
-            {icon}
-          </span>
-        </Tooltip>
-      );
     case TOOLTIP_STATE.Show:
       // Don't want to include an undefined icon variable, as it might affect styling
       // One example of styling affected is if the child element is a span element and there is a line-height defined
+      if (icon) {
+        return (
+          <Tooltip title={props.title} {...antprops}>
+            <span>
+              {props.children}
+              {icon}
+            </span>
+          </Tooltip>
+        );
+      }
       return (
         <Tooltip title={props.title} {...antprops}>
           {props.children}

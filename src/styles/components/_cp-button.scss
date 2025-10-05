@@ -1,37 +1,30 @@
-.cp-button {
-  &--with-text {
-    min-width: 127px;
-  }
-  &--primary {
-  }
-  &--secondary {
-    &:hover {
-      color: $brandPrimary !important;
-    }
-  }
-  &--dark {
-    border: solid 1px #5e5e5e !important;
-    background-color: rgba(255, 255, 255, 0.05) !important;
-    color: rgba(255, 255, 255, 0.5) !important;
-    &:hover {
-      color: rgba(255, 255, 255, 0.8) !important;
-    }
-  }
-  &--danger {
-    &:hover {
-      background-color: #ff7375 !important;
-    }
-  }
-  &--highlight {
-    border: solid 1px $brandAccent !important;
-    color: $brandAccent !important;
-  }
-  &--disabled {
-  }
+@use 'sass:color';
 
-  .ant-btn-circle.ant-btn-sm {
-    width: 20px !important;
-    height: 20px !important;
-    font-size: 11px !important;
+// Minimal modern styles for CPButton component
+.cp-button-with-text {
+  min-width: 127px;
+}
+
+// Dark theme button hover effect
+.ant-btn:not(.ant-btn-primary):not(.ant-btn-dangerous).cp-button-dark {
+  &:hover {
+    color: rgba(255, 255, 255, 0.8) !important;
   }
+}
+
+// Highlight button hover effect
+.ant-btn.cp-button-highlight {
+  &:hover {
+    // border-color: lighten(#24be85, 10%) !important;
+    background-color: color.adjust(#24be85, $lightness: 10%) !important;
+    // color: lighten(#24be85, 10%) !important;
+    color: color.adjust(#24be85, $lightness: 10%) !important;
+  }
+}
+
+// Small circle buttons
+.ant-btn-circle.ant-btn-sm {
+  width: 20px !important;
+  height: 20px !important;
+  font-size: 11px !important;
 }

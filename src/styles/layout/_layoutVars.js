@@ -21,7 +21,7 @@ const siderMaxWidthSmallScreen = 165; // Normal sider for course management scre
 const gradeMinWidth = 600; // minimum width of the grade content
 const adminMinWidth = 700; // minimum with of the admin content
 
-module.exports = {
+export default {
   breakpoints: {
     mobile: {
       student: studentMobileBreakpoint,

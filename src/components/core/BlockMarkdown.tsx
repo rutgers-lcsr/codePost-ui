@@ -13,9 +13,9 @@ interface IBlockMarkdownProps {
 }
 
 const BlockMarkdown = (props: IBlockMarkdownProps) => {
-  const renderers = useBlockMarkdownRenderers(props.extraRenderers);
+  const components = useBlockMarkdownRenderers(props.extraRenderers);
 
-  const markdown = <ReactMarkdown renderers={renderers} source={props.source} />;
+  const markdown = <ReactMarkdown components={components}>{props.source}</ReactMarkdown>;
 
   if (props.em) {
     return <em>{markdown}</em>;
@@ -45,27 +45,31 @@ const useBlockMarkdownRenderers = (extraRenderers: any) => {
   };
 
   const codeRenderer = (props: any) => {
-    if (props.value === undefined) {
-      return <div></div>;
-    } else {
-      return (
-        <div>
-          <div
-            style={{
-              border: `1px solid ${consoleTheme.commentTitleBorder}`,
-              borderRadius: '4px',
-              backgroundColor: consoleTheme.commentCode,
-            }}
-            className="markdown-code"
-          >
-            <SyntaxHighlighter language={props.language} style={consoleTheme.codeTheme}>
-              {props.value}
-            </SyntaxHighlighter>
-          </div>
-          <div style={{ height: '14px' }} />
-        </div>
-      );
+    const { children, className, inline } = props;
+    const language = className ? className.replace('language-', '') : '';
+    const codeContent = String(children || '').replace(/\n$/, '');
+    
+    if (!codeContent || inline) {
+      return inlineCodeRenderer(props);
     }
+    
+    return (
+      <div>
+        <div
+          style={{
+            border: `1px solid ${consoleTheme.commentTitleBorder}`,
+            borderRadius: '4px',
+            backgroundColor: consoleTheme.commentCode,
+          }}
+          className="markdown-code"
+        >
+          <SyntaxHighlighter language={language} style={consoleTheme.codeTheme}>
+            {codeContent}
+          </SyntaxHighlighter>
+        </div>
+        <div style={{ height: '14px' }} />
+      </div>
+    );
   };
 
   const inlineCodeRenderer = (props: any) => {
@@ -80,15 +84,19 @@ const useBlockMarkdownRenderers = (extraRenderers: any) => {
   };
 
   const thematicBreakRenderer = (props: any) => {
-    return <hr {...blockProps()}>{props.children}</hr>;
+    return <hr {...blockProps()} />;
   };
 
   const ret = {
-    heading: headingRenderer,
-    inlineCode: inlineCodeRenderer,
+    h1: (props: any) => headingRenderer({ ...props, level: 1 }),
+    h2: (props: any) => headingRenderer({ ...props, level: 2 }),
+    h3: (props: any) => headingRenderer({ ...props, level: 3 }),
+    h4: (props: any) => headingRenderer({ ...props, level: 4 }),
+    h5: (props: any) => headingRenderer({ ...props, level: 5 }),
+    h6: (props: any) => headingRenderer({ ...props, level: 6 }),
     code: codeRenderer,
-    thematicBreak: thematicBreakRenderer,
-    link: linkRenderer,
+    hr: thematicBreakRenderer,
+    a: linkRenderer,
   };
 
   if (extraRenderers === undefined) {

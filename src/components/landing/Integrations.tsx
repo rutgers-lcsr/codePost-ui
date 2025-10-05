@@ -4,11 +4,27 @@ import { Card, Tooltip } from 'antd';
 
 import { Link } from 'react-router-dom';
 
+// Integration logos
+import blackboardLogo from './../../img/integrations/blackboard.jpeg';
+import brightspaceLogo from './../../img/integrations/brightspace.png';
+import canvasLogo from './../../img/integrations/canvas.png';
+import codepenLogo from './../../img/integrations/codepen.png';
+import codioLogo from './../../img/integrations/codio.png';
+import githubLogo from './../../img/integrations/github.png';
+import homegrownLogo from './../../img/integrations/homegrown.png';
+import jsfiddleLogo from './../../img/integrations/jsfiddle.png';
+import jupyterLogo from './../../img/integrations/jupyter.png';
+import moodleLogo from './../../img/integrations/moodle.png';
+import moreLogo from './../../img/integrations/more.png';
+import replitLogo from './../../img/integrations/replit.png';
+import revelLogo from './../../img/integrations/revel.png';
+import submittyLogo from './../../img/integrations/submitty.png';
+
 export const INTEGRATIONS: { [id: string]: IntegrationType } = {
   github: {
     key: 'github',
     name: 'GitHub',
-    logo: require('./../../img/integrations/github.png'),
+    logo: githubLogo,
     description: (
       <span>
         <a href="https://github.com">GitHub</a> is a development platform that provides version-controlled software
@@ -24,8 +40,8 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
   },
   jupyter: {
     key: 'jupyter',
-    name: 'Jupyter',
-    logo: require('./../../img/integrations/jupyter.png'),
+    name: 'Jupyter Notebooks',
+    logo: jupyterLogo,
     description: (
       <span>
         <a href="https://jupyter.org/">Project Jupyter</a> is a non-profit, open-source project born out of the{' '}
@@ -45,7 +61,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
   canvas: {
     key: 'canvas',
     name: 'Canvas',
-    logo: require('./../../img/integrations/canvas.png'),
+    logo: canvasLogo,
     description: (
       <span>
         <a href="https://www.instructure.com/canvas/">Canvas</a> is a learning management system (LMS) used widely in
@@ -77,7 +93,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
   blackboard: {
     key: 'blackboard',
     name: 'Blackboard',
-    logo: require('./../../img/integrations/blackboard.jpeg'),
+    logo: blackboardLogo,
     description: (
       <span>
         <a href="https://www.blackboard.com/blackboard-learn/index.html">Blackboard</a> is a learning management system
@@ -106,7 +122,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
   brightspace: {
     key: 'brightspace',
     name: 'Brightspace',
-    logo: require('./../../img/integrations/brightspace.png'),
+    logo: brightspaceLogo,
     description: (
       <span>
         <a href="https://www.d2l.com/products/learning-environment/">Brightspace by D2L</a> is a learning management
@@ -138,7 +154,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
   homegrown: {
     key: 'homegrown',
     name: 'Homegrown',
-    logo: require('./../../img/integrations/homegrown.png'),
+    logo: homegrownLogo,
     description: (
       <span>
         Many courses have built their own tools that are part of the grading and review process. Whatever the tools do
@@ -163,13 +179,13 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
   more: {
     key: 'more',
     name: '+ more',
-    logo: require('./../../img/integrations/more.png'),
+    logo: moreLogo,
     description: <span>See more integrations...</span>,
   },
   submitty: {
     key: 'submitty',
     name: 'Submitty',
-    logo: require('./../../img/integrations/submitty.png'),
+    logo: submittyLogo,
     description: (
       <span>
         Submitty is an open-source student submission system developed by the Rensselaer Center for Open Source
@@ -180,7 +196,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
   revel: {
     key: 'revel',
     name: 'Pearson|Revel',
-    logo: require('./../../img/integrations/revel.png'),
+    logo: revelLogo,
     description: (
       <span>
         <a href="https://www.pearsonhighered.com/revel/">Revel</a> provides interactive programming exercises.
@@ -193,7 +209,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
   replit: {
     key: 'replit',
     name: 'Repl.it',
-    logo: require('./../../img/integrations/replit.png'),
+    logo: replitLogo,
     description: (
       <span>
         <a href="https://repl.it">Repl.it</a> is an online compiler and IDE.
@@ -206,13 +222,13 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
   moodle: {
     key: 'moodle',
     name: 'Moodle',
-    logo: require('./../../img/integrations/moodle.png'),
+    logo: moodleLogo,
     description: <span>Moodle is an open source LMS.</span>,
   },
   jsfiddle: {
     key: 'jsfiddle',
     name: 'JS Fiddle',
-    logo: require('./../../img/integrations/jsfiddle.png'),
+    logo: jsfiddleLogo,
     description: (
       <span>
         <a href="https://jsfiddle.net/">JS Fiddle</a> is a lightweight code playground for running and sharing code.
@@ -228,7 +244,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
   codepen: {
     key: 'codepen',
     name: 'CodePen',
-    logo: require('./../../img/integrations/codepen.png'),
+    logo: codepenLogo,
     description: (
       <span>
         <a href="https://codepen.io">CodePen</a> is a lightweight code playground for running and sharing code. <br />
@@ -243,7 +259,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
   codio: {
     key: 'codio',
     name: 'Codio',
-    logo: require('./../../img/integrations/codio.png'),
+    logo: codioLogo,
     description: <span>Moodle is an open source LMS.</span>,
   },
 };

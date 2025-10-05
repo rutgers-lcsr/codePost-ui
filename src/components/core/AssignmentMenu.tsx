@@ -3,16 +3,12 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
 import { CloseOutlined } from '@ant-design/icons';
-
-/* ant imports */
-import { Menu } from 'antd';
 
 /* codePost imports */
 import { AssignmentType, sortAssignments } from '../../infrastructure/assignment';
@@ -38,25 +34,27 @@ const AssignmentMenu = (props: IProps) => {
     props.history.push(`${props.baseURL}/${props.match.params.panel}/`);
   };
 
-  const menu = (
-    <Menu>
-      <Menu.Item key="clear">
+  const menuItems = [
+    {
+      key: 'clear',
+      label: (
         <span onClick={clear}>
           <CloseOutlined /> <em>Clear assignment</em>
         </span>
-      </Menu.Item>
-      {sortAssignments(props.assignments).map((assignment) => {
-        const path = `${props.baseURL}/${props.match.params.panel}/${encodeForLink(assignment.name)}`;
-        return (
-          <Menu.Item key={assignment.id}>
-            <Link to={path}>
-              <span>{assignment.name}</span>
-            </Link>
-          </Menu.Item>
-        );
-      })}
-    </Menu>
-  );
+      ),
+    },
+    ...sortAssignments(props.assignments).map((assignment) => {
+      const path = `${props.baseURL}/${props.match.params.panel}/${encodeForLink(assignment.name)}`;
+      return {
+        key: assignment.id,
+        label: (
+          <Link to={path}>
+            <span>{assignment.name}</span>
+          </Link>
+        ),
+      };
+    }),
+  ];
 
   let selectorText = 'No assignments yet...';
   if (props.assignments.length > 0) {
@@ -67,12 +65,12 @@ const AssignmentMenu = (props: IProps) => {
   if (currentAssignment) {
     selectorText = currentAssignment.name;
   }
-  // Dropdown overlay maxHeight is to create scroll for long menus that scales with window height
+  // Dropdown menu maxHeight is to create scroll for long menus that scales with window height
   return (
     <CPDropdown
       value={selectorText}
-      overlay={menu}
-      overlayStyle={{ maxHeight: 'calc(100vh - 60px)', overflowY: 'auto' }}
+      menu={{ items: menuItems }}
+      dropdownRender={(menu) => <div style={{ maxHeight: 'calc(100vh - 60px)', overflowY: 'auto' }}>{menu}</div>}
     />
   );
 };

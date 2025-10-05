@@ -327,7 +327,7 @@ export const GraderInfo = (props: IGraderInfoProps) => {
     return (
       <div>
         {graderDisplay}
-        <Modal onCancel={toggleModal} visible={modalVisible} footer={null} title="Select a grader">
+        <Modal onCancel={toggleModal} open={modalVisible} footer={null} title="Select a grader">
           {dropdown}
         </Modal>
       </div>

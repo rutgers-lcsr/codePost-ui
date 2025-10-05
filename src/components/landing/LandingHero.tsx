@@ -9,8 +9,8 @@ import useWindowSize from '../core/useWindowSize';
 
 import CPButton from '../core/CPButton';
 
-import landingVars from '../../styles/pages/_landingVars';
 import { Suspense } from 'react';
+import landingVars from '../../styles/pages/_landingVars';
 
 const GradeAnimationVideo = React.lazy(() => import('./landingAnimations/grade/GradeAnimationVideo'));
 
@@ -67,12 +67,7 @@ const LandingHero = () => {
           </CPButton>
         </Link>
       </div>
-      <Modal
-        visible={modalShowing}
-        onCancel={setModalShowing.bind(false, false)}
-        footer={null}
-        title="Try out codePost!"
-      >
+      <Modal open={modalShowing} onCancel={setModalShowing.bind(false, false)} footer={null} title="Try out codePost!">
         <CPButton cpType="primary" block>
           <a href={`/demo`} target="_blank" rel="noopener noreferrer">
             Interactive code annotation demo

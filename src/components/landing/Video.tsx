@@ -3,9 +3,9 @@
 /**********************************************************************************************************************/
 
 /* react imports */
+import queryString from 'query-string';
 import * as React from 'react';
 import WistiaPlayer from 'react-player/lib/players/Wistia';
-import queryString from 'query-string';
 
 import { Icon as LegacyIcon } from '@ant-design/compatible';
 
@@ -263,6 +263,12 @@ class Video extends React.Component<any, IVideoState> {
               width={`${videoWidth}px`}
               playing={this.state.playing}
               style={{ transform: 'translateX(-2px)' }}
+              config={{
+                wistia: {
+                  playerId: 'video',
+                  options: {},
+                },
+              }}
             />
           </div>
           {windowwidth > 1024 ? (
@@ -295,7 +301,7 @@ interface ISectionButtonProps {
 }
 
 const SectionButton: React.FC<ISectionButtonProps> = (props) => {
-  const onClick = (e: any) => {
+  const onClick = (_e: any) => {
     props.setSection(props.section);
   };
   return (

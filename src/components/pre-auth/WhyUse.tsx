@@ -200,7 +200,7 @@ const SectionRow = (props: IProps) => {
         {props.title}
       </div>
       <div>
-        {props.features.map((feature, i) => {
+        {props.features.map((feature, _i) => {
           return (
             <div
               key={i.toString()}
@@ -288,7 +288,7 @@ const WhyUse = (props: IPageProps) => {
 
   content = (
     <div>
-      {sections.map((section, i) => {
+      {sections.map((section, _i) => {
         return (
           <div key={i.toString()}>
             <SectionRow

@@ -8,8 +8,6 @@ import * as React from 'react';
 /* other library imports */
 import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
 
-import Loadable from 'react-loadable';
-
 /* codePost imports */
 import LogInAs from './components/core/LogInAs';
 
@@ -17,7 +15,7 @@ import DashboardLayout from './components/codepost-admin/DashboardLayout';
 
 import Home from './components/core/Home';
 
-import { ADMIN, CODE, CODE_DEMO, GRADER, HOME, STUDENT, HEALTH_CHECK } from './routes';
+import { ADMIN, CODE, CODE_DEMO, GRADER, HEALTH_CHECK, HOME, STUDENT } from './routes';
 
 import { AssignmentType } from './infrastructure/assignment';
 import { CourseType } from './infrastructure/course';
@@ -25,7 +23,6 @@ import { UserType } from './infrastructure/user';
 
 import IndexManager from './components/pre-auth/IndexManager';
 import RemoteAuthFailed from './components/pre-auth/RemoteAuthFailed';
-import RemoteAuthRedirect from './components/pre-auth/RemoteAuthRedirect';
 
 import Settings from './components/core/settings';
 
@@ -33,7 +30,7 @@ import RouterLoading from './components/core/RouterLoading';
 
 import ForbiddenManager from './components/pre-auth/ForbiddenManager';
 
-import { runFSSetup, identifyUserForFS, shutdownFS } from './components/utils/Fullstory';
+import { identifyUserForFS, runFSSetup, shutdownFS } from './components/utils/Fullstory';
 
 import { ShowTooltipContext } from './components/core/tooltips';
 
@@ -47,25 +44,10 @@ import { IBaseFileUpload } from './components/admin/assignments/assignments/Subm
  * Asynchronous components to dynamically load app code via code splitting
  ******************************************************************************/
 
-const AsyncStudent = Loadable({
-  loader: () => import('./components/student/StudentManager'),
-  loading: RouterLoading,
-});
-
-const AsyncGrader = Loadable({
-  loader: () => import('./components/grader/GraderManager'),
-  loading: RouterLoading,
-});
-
-const AsyncAdmin = Loadable({
-  loader: () => import('./components/admin/AdminManager'),
-  loading: RouterLoading,
-});
-
-const AsyncGrade = Loadable({
-  loader: () => import('./components/code-review/CodeConsole'),
-  loading: RouterLoading,
-});
+const AsyncStudent = React.lazy(() => import('./components/student/StudentManager'));
+const AsyncGrader = React.lazy(() => import('./components/grader/GraderManager'));
+const AsyncAdmin = React.lazy(() => import('./components/admin/AdminManager'));
+const AsyncGrade = React.lazy(() => import('./components/code-review/CodeConsole'));
 
 /*****************************************************************************/
 
@@ -115,7 +97,7 @@ interface IState {
   propToken: string;
 }
 
-class App extends React.Component<{}, IState> {
+class App extends React.Component<object, IState> {
   private loginCount: number;
   public constructor(props: any) {
     super(props);
@@ -153,7 +135,7 @@ Firefox:
     const urlToken = urlParams.get('token');
     if (urlToken) {
       localStorage.setItem('token', urlToken);
-      window.history.replaceState({}, document.title, window.location.href.replace(/\&token=[^&]*/gm, ''));
+      window.history.replaceState({}, document.title, window.location.href.replace(/&token=[^&]*/gm, ''));
     }
 
     this.state = {
@@ -249,28 +231,33 @@ Firefox:
       return;
     }
 
+    // Validate that event.data is a string before attempting to parse
+    if (typeof event.data !== 'string') {
+      return;
+    }
+
     try {
       const payload = JSON.parse(event.data);
 
-      if (!payload.hasOwnProperty('token') || payload.token === '') {
+      if (!Object.prototype.hasOwnProperty.call(payload, 'token') || payload.token === '') {
         return;
       }
 
       const token = payload.token;
 
       let source = 'remote';
-      if (payload.hasOwnProperty('source')) {
+      if (Object.prototype.hasOwnProperty.call(payload, 'source')) {
         source = payload.source;
       }
 
       let studentUploadShortcut;
-      if (payload.hasOwnProperty('assignment') && payload.assignment !== undefined) {
+      if (Object.prototype.hasOwnProperty.call(payload, 'assignment') && payload.assignment !== undefined) {
         studentUploadShortcut = {
           assignmentID: payload.assignment,
           files: [],
         };
 
-        if (payload.hasOwnProperty('files')) {
+        if (Object.prototype.hasOwnProperty.call(payload, 'files')) {
           studentUploadShortcut = {
             ...studentUploadShortcut,
             files: payload.files,
@@ -279,7 +266,7 @@ Firefox:
       }
 
       let auth_type = 'JWT';
-      if (payload.hasOwnProperty('auth_type') && payload.auth_type !== undefined) {
+      if (Object.prototype.hasOwnProperty.call(payload, 'auth_type') && payload.auth_type !== undefined) {
         auth_type = payload.auth_type;
       }
 
@@ -297,7 +284,8 @@ Firefox:
         this.setState({ studentUploadShortcut });
         return;
       }
-    } finally {
+    } catch (err) {
+      console.log(err);
       return;
     }
   };
@@ -465,9 +453,12 @@ Firefox:
         localStorage.setItem('token', json.token);
         const exp = this.getTokenExpiration(json.token);
         const now = new Date().getTime();
-        setTimeout(() => {
-          this.refreshToken(currentUser);
-        }, Math.max(0, exp - now - 1000));
+        setTimeout(
+          () => {
+            this.refreshToken(currentUser);
+          },
+          Math.max(0, exp - now - 1000),
+        );
 
         (window as any).gtag('set', { user_id: currentUser.id });
         (window as any).gtag('set', 'organization', currentUser.organization);
@@ -481,10 +472,14 @@ Firefox:
   };
 
   public wrapTooltipContext = (node: React.ReactNode) => {
+    const wrappedNode = <React.Suspense fallback={<RouterLoading />}>{node}</React.Suspense>;
+
     if (typeof this.state.user !== 'undefined') {
-      return <ShowTooltipContext.Provider value={this.state.user.showProductTips}>{node}</ShowTooltipContext.Provider>;
+      return (
+        <ShowTooltipContext.Provider value={this.state.user.showProductTips}>{wrappedNode}</ShowTooltipContext.Provider>
+      );
     } else {
-      return node;
+      return wrappedNode;
     }
   };
 
@@ -519,9 +514,12 @@ Firefox:
         const exp = this.getTokenExpiration(jwtToken);
         const now = new Date().getTime();
 
-        setTimeout(() => {
-          this.refreshToken(json.user);
-        }, Math.max(0, exp - now - 1000));
+        setTimeout(
+          () => {
+            this.refreshToken(json.user);
+          },
+          Math.max(0, exp - now - 1000),
+        );
       })
       .catch((error) => {
         localStorage.removeItem('token');
@@ -645,7 +643,7 @@ Firefox:
         superGraderCourses,
         sectionsLed,
       };
-      let healthcheck = <Route exact={true} path={HEALTH_CHECK} render={() => <div>OK</div>} />;
+      const healthcheck = <Route exact={true} path={HEALTH_CHECK} render={() => <div>OK</div>} />;
       /* tslint:disable:jsx-no-lambda */
       let studentRoute;
       if (isStudent) {
