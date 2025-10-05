@@ -8,6 +8,8 @@ import { Controlled as CodeMirror } from 'react-codemirror2';
 
 import 'codemirror/mode/javascript/javascript';
 
+import confusedStudentImg from './../../img/landing/compressed/confused_student.png';
+
 import Comment from './landingAnimations/grade/SimpleComment';
 
 import { CommentType } from '../../infrastructure/comment';
@@ -185,7 +187,7 @@ class CodeReview extends React.Component<{}, IState> {
                 position: 'absolute',
               }}
             >
-              <img src={require('./../../img/landing/compressed/confused_student.png')} width="225" alt="" />
+              <img src={confusedStudentImg} width="225" alt="" />
             </div>
             <div style={{ position: 'absolute', top: 40 }}>
               <div

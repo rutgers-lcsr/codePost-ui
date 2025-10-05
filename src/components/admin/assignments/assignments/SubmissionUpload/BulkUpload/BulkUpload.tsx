@@ -608,7 +608,7 @@ class BulkUpload extends React.Component<IProps, IState> {
 
     /*************************** 4. Return modal ******************************/
     return (
-      <Modal visible={true} title={title} width={900} onCancel={this.props.onCancel} footer={null} style={{ top: 20 }}>
+      <Modal open={true} title={title} width={900} onCancel={this.props.onCancel} footer={null} style={{ top: 20 }}>
         <Steps size="small" current={stepNumber}>
           {steps.map((item) => {
             return <Step key={item.title} title={item.title} />;

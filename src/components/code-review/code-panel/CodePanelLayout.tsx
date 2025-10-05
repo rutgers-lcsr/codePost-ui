@@ -10,53 +10,20 @@ import themeVars from '../../../styles/abstracts/_theme.js';
 
 import ErrorBoundary from '../../core/ErrorBoundary';
 
-import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
-
-import { CodeConsoleDimensionsType } from './LayoutResizer';
-
 interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
   file: FileType;
   toolbarWidgets: React.ReactNode[];
   code: (onHighlightClick: (e: React.MouseEvent) => void) => React.ReactNode;
   comments: React.ReactNode;
   zoom: number;
-  dimensions: CodeConsoleDimensionsType;
   updateVerticalOffset: (updater: (oldValue: number) => number) => void;
 }
 
-class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
-  // @ts-ignore
-  public nextFrameActionId: number;
+export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
+  const nextFrameActionIdRef = React.useRef<number>();
 
-  public componentDidUpdate = async (prevProps: ICodePanelLayoutProps) => {
-    if (this.props.windowheight !== prevProps.windowheight || this.props.windowwidth !== prevProps.windowwidth) {
-      this.resizeOnNextFrame();
-    }
-
-    if (this.props.file !== prevProps.file) {
-      // await Animation.wait(1000);
-      this.resizeOnNextFrame();
-    }
-
-    if (this.props.dimensions !== prevProps.dimensions) {
-      this.resizeComponents();
-    }
-  };
-
-  public componentDidMount() {
-    this.resizeOnNextFrame();
-  }
-
-  // Browser optimization to facilitate smoother animations
-  public resizeOnNextFrame = () => {
-    if (this.nextFrameActionId) {
-      Animation.clearNextFrameAction(this.nextFrameActionId);
-    }
-    this.nextFrameActionId = Animation.onNextFrame(this.resizeComponents);
-  };
-
-  public resizeComponents = async () => {
-    if (this.props.windowheight !== 0) {
+  const resizeComponents = React.useCallback(async () => {
+    if (props.windowheight !== 0) {
       const codeContainer = document.getElementById('code-container');
       const codeMain = document.getElementById('code-main');
       const codeSyntax = document.getElementById('code-syntax');
@@ -76,67 +43,102 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
         }
 
         const commentsContainerHeight =
-          this.props.windowheight - commentsContainer.getBoundingClientRect().top - themeVars.grade.marginBottom;
+          props.windowheight - commentsContainer.getBoundingClientRect().top - themeVars.grade.marginBottom;
         commentsContainer.style.setProperty('min-height', `${commentsContainerHeight}px`);
       }
     }
-  };
-  public onHighlightClick = (e: React.MouseEvent) => {
-    let commentID;
-    if (e.currentTarget !== null && e.currentTarget.id.split('-').length === 3) {
-      commentID = e.currentTarget.id.split('-')[2];
-    }
+  }, [props.windowheight]);
 
-    const codeMain = document.getElementById('code-main');
-    if (codeMain !== null && commentID !== undefined) {
-      if (e.currentTarget instanceof HTMLElement) {
-        const comment = document.getElementById(`comment-${commentID}`);
-        if (comment !== null && comment.style.top !== null) {
-          const commentTop = parseInt(comment.style.top, 10);
-          const offSetValue = e.currentTarget.offsetTop;
-          this.props.updateVerticalOffset((oldValue: number) => {
-            return commentTop - offSetValue + oldValue + -18;
-          });
+  // Browser optimization to facilitate smoother animations
+  const resizeOnNextFrame = React.useCallback(() => {
+    if (nextFrameActionIdRef.current) {
+      Animation.clearNextFrameAction(nextFrameActionIdRef.current);
+    }
+    nextFrameActionIdRef.current = Animation.onNextFrame(resizeComponents);
+  }, [resizeComponents]);
+
+  const onHighlightClick = React.useCallback(
+    (e: React.MouseEvent) => {
+      let commentID;
+      if (e.currentTarget !== null && e.currentTarget.id.split('-').length === 3) {
+        commentID = e.currentTarget.id.split('-')[2];
+      }
+
+      const codeMain = document.getElementById('code-main');
+      if (codeMain !== null && commentID !== undefined) {
+        if (e.currentTarget instanceof HTMLElement) {
+          const comment = document.getElementById(`comment-${commentID}`);
+          if (comment !== null && comment.style.top !== null) {
+            const commentTop = parseInt(comment.style.top, 10);
+            const offSetValue = e.currentTarget.offsetTop;
+            props.updateVerticalOffset((oldValue: number) => {
+              return commentTop - offSetValue + oldValue + -18;
+            });
+          }
         }
       }
-    }
+    },
+    [props],
+  );
+
+  // ComponentDidMount - resize on initial mount
+  React.useEffect(() => {
+    resizeOnNextFrame();
+  }, [resizeOnNextFrame]);
+
+  // ComponentDidUpdate - handle window size changes
+  React.useEffect(() => {
+    resizeOnNextFrame();
+  }, [props.windowheight, props.windowwidth, resizeOnNextFrame]);
+
+  // ComponentDidUpdate - handle file changes
+  React.useEffect(() => {
+    resizeOnNextFrame();
+  }, [props.file, resizeOnNextFrame]);
+
+  const zoomStyles = {
+    transform: `scale(${props.zoom})`,
+    transformOrigin: '0 0',
+    width: `${100 / props.zoom}%`,
+    height: `${100 / props.zoom}%`,
   };
 
-  public render() {
-    const zoomStyles = {
-      transform: `scale(${this.props.zoom})`,
-      transformOrigin: '0 0',
-      width: `${100 / this.props.zoom}%`,
-      height: `${100 / this.props.zoom}%`,
-    };
+  const codePanelStyle = localStorage.getItem('source') === 'codePost' ? {} : { backgroundColor: 'rgb(242, 242, 242)' };
 
-    const codePanelStyle =
-      localStorage.getItem('source') === 'codePost' ? {} : { backgroundColor: 'rgb(242, 242, 242)' };
-
-    return (
-      <ErrorBoundary type="codepanel" submissionID={this.props.file.submission} file={this.props.file}>
-        <div style={{ position: 'relative', height: '100%', width: '100%' }}>
+  return (
+    <ErrorBoundary type="codepanel" submissionID={props.file.submission} file={props.file}>
+      <div style={{ position: 'relative', height: '100%', width: '100%' }}>
+        <div
+          style={{
+            ...{
+              position: 'absolute',
+            },
+            ...zoomStyles,
+          }}
+        >
           <div
-            style={{
-              ...{
-                position: 'absolute',
-              },
-              ...zoomStyles,
-            }}
+            className="code-panel"
+            id="code-panel"
+            style={{ ...codePanelStyle, height: props.windowheight - 78, padding: '20px 20px' }}
           >
-            <div className="code-panel" id="code-panel" style={codePanelStyle}>
-              <div
-                style={{
-                  margin: `4px 0px 4px ${themeVars.grade.codeContainer.marginLeft}px`,
-                }}
-              >
-                {this.props.toolbarWidgets}
-              </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row' as const,
+                gap: '10px',
+                height: '100%',
+                overflow: 'hidden',
+              }}
+            >
               <div
                 className="code-panel--code"
                 style={{
-                  margin: `${themeVars.grade.codeContainer.marginTop}px 10px 0px ${themeVars.grade.codeContainer.marginLeft}px`,
                   position: 'relative',
+                  flex: '1 1 60%',
+                  minWidth: '400px',
+                  height: '100%',
+                  overflowY: 'auto',
+                  overflowX: 'auto',
                 }}
               >
                 <div
@@ -144,28 +146,31 @@ class LayoutCodePanel extends React.Component<ICodePanelLayoutProps, {}> {
                   style={{
                     position: 'absolute',
                     width: '100%',
-                    height: `${this.props.windowheight - 78}px`,
+                    height: `${props.windowheight - 78}px`,
                   }}
                 />
-                {this.props.code(this.onHighlightClick)}
+                {props.code(onHighlightClick)}
               </div>
               <div
                 id="code-panel--comments"
                 className="code-panel--comments"
                 style={{
-                  minWidth: `${this.props.dimensions.commentsWidth}px`,
-                  height: 'fit-content',
+                  flex: '1 1 40%',
+                  minWidth: '300px',
+                  height: '100%',
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
                 }}
               >
-                {this.props.comments}
+                {props.comments}
               </div>
             </div>
           </div>
         </div>
-      </ErrorBoundary>
-    );
-  }
-}
-LayoutCodePanel.contextType = ConsoleThemeContext;
+      </div>
+    </ErrorBoundary>
+  );
+};
 
-export default withWindowWatcher(LayoutCodePanel);
+const CodePanelLayout = withWindowWatcher(LayoutCodePanel);
+export default CodePanelLayout;

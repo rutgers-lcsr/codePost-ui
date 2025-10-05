@@ -9,14 +9,14 @@ import {
   CloseCircleOutlined,
   CodeOutlined,
   FilterOutlined,
+  InboxOutlined,
   MinusCircleTwoTone,
   PlusCircleOutlined,
-  InboxOutlined,
   RedoOutlined,
 } from '@ant-design/icons';
 
 /* antd imports */
-import { Breadcrumb, Button, Divider, Dropdown, Empty, Menu, Popconfirm, Select, Switch, Table } from 'antd';
+import { Breadcrumb, Button, Divider, Dropdown, Empty, Popconfirm, Select, Switch, Table } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -67,7 +67,7 @@ interface IProps {
   course: CourseType;
   graderEmail: string;
   isAdmin: boolean;
-  breadcrumbs: React.ReactElement[];
+  breadcrumbs: Array<{ title: React.ReactNode }>;
 }
 
 interface IState {
@@ -117,7 +117,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
     }, LOADING_INTERVAL);
   }
 
-  public componentDidUpdate(oldProps: IProps, prevState: IState) {
+  public componentDidUpdate(oldProps: IProps, _prevState: IState) {
     if (oldProps.assignment !== this.props.assignment) {
       this.changeAssignment(this.props.assignment);
     }
@@ -334,16 +334,16 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
     let filterComponent;
     switch (this.state.filterType) {
       case FILTER_TYPE.NONE:
-        const filterMenu = (
-          <Menu>
-            <Menu.Item onClick={this.setFilterType.bind(this, FILTER_TYPE.BY_SECTION)} key="by-section">
-              By section
-            </Menu.Item>
-          </Menu>
-        );
+        const filterMenuItems = [
+          {
+            key: 'by-section',
+            label: 'By section',
+            onClick: this.setFilterType.bind(this, FILTER_TYPE.BY_SECTION),
+          },
+        ];
         filterComponent = (
           <CPTooltip title={tooltips.grader.mySubmissions.filter} hideThisOnHideTips={true}>
-            <Dropdown overlay={filterMenu} trigger={['click']}>
+            <Dropdown menu={{ items: filterMenuItems }} trigger={['click']}>
               <Button icon={<FilterOutlined />}>Filter</Button>
             </Dropdown>
           </CPTooltip>
@@ -513,8 +513,10 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
 
       content = (
         <Empty
-          imageStyle={{
-            height: 60,
+          styles={{
+            image: {
+              height: 60,
+            },
           }}
           description={emptyMessage}
         >
@@ -526,12 +528,7 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
     return (
       <CPAdminDetail
         goBack={null}
-        breadcrumbs={
-          <Breadcrumb>
-            {this.props.breadcrumbs}
-            <Breadcrumb.Item>{this.props.assignment.name}</Breadcrumb.Item>
-          </Breadcrumb>
-        }
+        breadcrumbs={<Breadcrumb items={[...this.props.breadcrumbs, { title: this.props.assignment.name }]} />}
         title={<div>{`Claimed by Me: ${this.props.assignment.name}`}</div>}
         titleInfo={tooltips.grader.mySubmissions.title}
         actions={actions}
@@ -554,7 +551,7 @@ export const SelectSection = (props: ISelectSectionProps) => {
   const { sections, onSelect, onDeselect } = props;
 
   const selectorItemsFormatter = (items: SectionType[]) => {
-    return items.map((section, i) => (
+    return items.map((section, _i) => (
       <Option key={section.id} value={section.id}>
         {section.name}
       </Option>

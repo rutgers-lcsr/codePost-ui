@@ -1,7 +1,5 @@
-import * as React from 'react';
-
-import shortcuts from './keyboard_shortcuts.tsx';
 import { OS, getOperatingSystem, osControlKey } from '../core/operatingSystem';
+import shortcuts from './keyboard_shortcuts.tsx';
 
 import { Drawer, Tabs, Tooltip } from 'antd';
 const { TabPane } = Tabs;
@@ -81,13 +79,13 @@ const KeyboardShortcuts = (props: IKeyboardShortCutsProps) => {
       <TabPane tab={category.category} key={category.category}>
         <div style={{ width: '80%', margin: '0px auto', fontSize: '12px' }}>
           <div className="keyboard-shortcuts__grid">
-            {category.shortcuts.map((shortcut: IShortcut) => {
+            {category.shortcuts.map((shortcut: IShortcut, idx: number) => {
               return (
-                <div className="keyboard-shortcuts__shortcut">
+                <div key={`${category.category}-${idx}`} className="keyboard-shortcuts__shortcut">
                   <div>{shortcut.name}</div>
                   <div className="keyboard-shortcuts__keys">
-                    {shortcut.keys.map((keyString: string) => {
-                      return <KeyIcon keyString={keyString} />;
+                    {shortcut.keys.map((keyString: string, keyIdx: number) => {
+                      return <KeyIcon key={`${keyString}-${keyIdx}`} keyString={keyString} />;
                     })}
                   </div>
                 </div>
@@ -106,12 +104,14 @@ const KeyboardShortcuts = (props: IKeyboardShortCutsProps) => {
       placement="bottom"
       closable={true}
       onClose={props.onClose}
-      visible={props.visible}
+      open={props.visible}
       mask={false}
       style={{ color: 'rgba(255, 255, 255, 0.65)' }}
-      drawerStyle={{ backgroundColor: 'rgb(33, 35, 37)', color: 'rgba(255, 255, 255, 0.65)' }}
-      headerStyle={{ backgroundColor: 'rgb(33, 35, 37)', color: 'rgba(255, 255, 255, 0.65)' }}
-      bodyStyle={{ padding: '0px 24px' }}
+      styles={{
+        header: { backgroundColor: 'rgb(33, 35, 37)', color: 'rgba(255, 255, 255, 0.65)' },
+        body: { padding: '0px 24px' },
+        content: { backgroundColor: 'rgb(33, 35, 37)', color: 'rgba(255, 255, 255, 0.65)' },
+      }}
     >
       <div style={{ textAlign: 'center' }} className="keyboard-shortcuts">
         <Tabs type="card">{tabs}</Tabs>

@@ -1,9 +1,9 @@
-import React, { useContext, useState, useEffect, useRef } from 'react';
-import { Checkbox, Dropdown, Table, Input, Menu, Button, Popconfirm, Form, message, Tag } from 'antd';
-import { Webhook, WebhookType, VALID_WEBHOOKS } from '../../../infrastructure/webhook';
-import { CourseType } from '../../../infrastructure/course';
 import { DownOutlined } from '@ant-design/icons';
+import { Button, Checkbox, Dropdown, Form, Input, message, Popconfirm, Table, Tag } from 'antd';
 import moment from 'moment';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { CourseType } from '../../../infrastructure/course';
+import { VALID_WEBHOOKS, Webhook, WebhookType } from '../../../infrastructure/webhook';
 
 const EditableContext = React.createContext<any>(null);
 
@@ -296,22 +296,22 @@ class WebhooksTable extends React.Component<IWebhooksTableProps, any> {
       };
     });
 
-    const menu = (
-      <Menu onClick={this.handleAdd}>
-        {Object.keys(VALID_WEBHOOKS).map((obj: string) => {
-          return (
-            <Menu.SubMenu title={obj} key={obj}>
-              {VALID_WEBHOOKS[obj].map((hook: string) => {
-                return <Menu.Item key={hook}>{hook}</Menu.Item>;
-              })}
-            </Menu.SubMenu>
-          );
-        })}
-      </Menu>
-    );
+    const menuItems = Object.keys(VALID_WEBHOOKS).map((obj: string) => {
+      return {
+        key: obj,
+        label: obj,
+        children: VALID_WEBHOOKS[obj].map((hook: string) => {
+          return {
+            key: hook,
+            label: hook,
+          };
+        }),
+      };
+    });
+
     return (
       <div>
-        <Dropdown overlay={menu}>
+        <Dropdown menu={{ items: menuItems, onClick: this.handleAdd }}>
           <Button
             type="primary"
             style={{

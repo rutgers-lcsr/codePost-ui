@@ -1,20 +1,13 @@
-import * as React from 'react';
-
 import { Icon as LegacyIcon } from '@ant-design/compatible';
-
-import { Button } from 'antd';
-
-import { ButtonProps } from 'antd/lib/button';
-
-import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
-
+import { Button, ButtonProps } from 'antd';
+import React, { CSSProperties, useContext, useMemo } from 'react';
 import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
-
 import CPTooltip from './CPTooltip';
+import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
 
 export type CPButtonType = 'primary' | 'secondary' | 'dark' | 'danger' | 'highlight' | 'disabled' | 'link';
 
-interface ICPButtonProps extends IWithWindowWatcherProps {
+export interface ICPButtonProps extends IWithWindowWatcherProps {
   cpType: CPButtonType;
   fallback?: string;
   small?: boolean;
@@ -22,94 +15,116 @@ interface ICPButtonProps extends IWithWindowWatcherProps {
   fallbackWidth?: number; // Optional: window width when the button falls back to icon
 }
 
-interface ICPButtonState {
-  backgroundColor: string;
-  border: string;
-}
+type CPButtonFullProps = ButtonProps & ICPButtonProps;
 
-class CPButton extends React.Component<ButtonProps & ICPButtonProps, ICPButtonState> {
-  public constructor(props: ButtonProps & ICPButtonProps, context: any) {
-    super(props, context);
-  }
+const CPButton: React.FC<CPButtonFullProps> = ({
+  cpType,
+  fallback,
+  fallbackWidth = 900,
+  isLoading,
+  small,
+  windowwidth = 1920,
+  windowheight: _windowheight,
+  children,
+  className,
+  style,
+  ...restProps
+}) => {
+  const { consoleTheme } = useContext(ConsoleThemeContext);
 
-  public background = () => {
-    if (this.props.cpType === 'danger') {
-      return this.context.consoleTheme.buttonDangerBg;
-    }
-
-    return '';
-  };
-
-  public border = () => {
-    if (this.props.cpType === 'danger') {
-      return this.context.consoleTheme.buttonDangerBorder;
-    }
-
-    return '';
-  };
-
-  public render() {
-    const { cpType, fallback, fallbackWidth, isLoading, small, windowwidth, windowheight, ...props } = this.props;
-    const customProps: any = {};
-
-    customProps['className'] = `cp-button cp-button--${cpType}`;
-
-    if (['primary', 'danger', 'disabled', 'secondary', 'link'].includes(cpType)) {
-      customProps['type'] = cpType;
-    }
+  // Compute custom styles based on cpType and theme
+  const customStyle = useMemo((): CSSProperties => {
+    const baseStyle: CSSProperties = { ...style };
 
     if (cpType === 'danger') {
-      customProps['style'] = {
-        backgroundColor: this.context.consoleTheme.buttonDangerBg,
-        color: this.context.consoleTheme.buttonSecondaryColor,
-        border: this.context.consoleTheme.buttonDangerBorder,
-      };
+      baseStyle.backgroundColor = consoleTheme.buttonDangerBg;
+      baseStyle.color = consoleTheme.buttonSecondaryColor;
+      baseStyle.border = consoleTheme.buttonDangerBorder;
     }
+
     if (cpType === 'secondary') {
-      customProps['style'] = {
-        backgroundColor: this.context.consoleTheme.buttonSecondaryBg,
-        border: this.context.consoleTheme.buttonSecondaryBorder,
-        color: this.context.consoleTheme.buttonSecondaryColor,
-      };
+      baseStyle.backgroundColor = consoleTheme.buttonSecondaryBg;
+      baseStyle.border = consoleTheme.buttonSecondaryBorder;
+      baseStyle.color = consoleTheme.buttonSecondaryColor;
     }
 
-    // Optionally resize a button to an icon button if it has fallback defined
-    // const fallbackWidthCalculated = this.props.fallbackWidth ? this.props.fallbackWidth : 900;
-    if (
-      this.props.windowwidth < (this.props.fallbackWidth !== undefined ? this.props.fallbackWidth : 900) &&
-      fallback
-    ) {
-      const { children, ...withoutChildren } = props;
-      return (
-        <CPTooltip title={children}>
-          <Button shape="circle" icon={<LegacyIcon type={fallback} />} {...customProps} {...withoutChildren} />
-        </CPTooltip>
-      );
+    if (cpType === 'dark') {
+      baseStyle.border = 'solid 1px #5e5e5e';
+      baseStyle.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+      baseStyle.color = 'rgba(255, 255, 255, 0.5)';
     }
 
-    if (props.children === undefined) {
-      customProps['shape'] = 'circle';
-    } else if (!(this.props.small !== undefined && this.props.small)) {
-      customProps['className'] = customProps['className'].concat(' ', 'cp-button--with-text');
+    if (cpType === 'highlight') {
+      baseStyle.border = 'solid 1px #24be85';
+      baseStyle.color = '#24be85';
     }
 
-    if (this.props.isLoading !== undefined && this.props.isLoading) {
-      if (customProps.hasOwnProperty('style')) {
-        customProps['style'] = { ...customProps['style'], cursor: 'wait' };
-      } else {
-        customProps['style'] = {
-          cursor: 'wait',
-        };
-      }
+    if (isLoading) {
+      baseStyle.cursor = 'wait';
     }
 
+    return baseStyle;
+  }, [cpType, consoleTheme, style, isLoading]);
+
+  // Compute button type for Ant Design
+  const buttonType = useMemo(() => {
+    if (['primary', 'danger', 'link'].includes(cpType)) {
+      return cpType as ButtonProps['type'];
+    }
+    return 'default';
+  }, [cpType]);
+
+  // Compute class names
+  const classNames = useMemo(() => {
+    const classes: string[] = [];
+
+    if (className) {
+      classes.push(className);
+    }
+
+    // Add minimum width for buttons with text
+    if (children && !small) {
+      classes.push('cp-button-with-text');
+    }
+
+    return classes.join(' ') || undefined;
+  }, [className, children, small]);
+
+  // Determine if button should fallback to icon-only based on window width
+  const shouldFallbackToIcon = windowwidth < fallbackWidth && !!fallback;
+
+  // Render icon-only button for small screens
+  if (shouldFallbackToIcon) {
     return (
-      <Button {...customProps} {...props}>
-        {props.children}
-      </Button>
+      <CPTooltip title={children}>
+        <Button
+          {...restProps}
+          type={buttonType}
+          shape="circle"
+          icon={<LegacyIcon type={fallback!} />}
+          style={customStyle}
+          className={classNames}
+        />
+      </CPTooltip>
     );
   }
-}
-CPButton.contextType = ConsoleThemeContext;
 
-export default withWindowWatcher(CPButton);
+  // Render normal button
+  return (
+    <Button
+      {...restProps}
+      type={buttonType}
+      shape={children ? undefined : 'circle'}
+      style={customStyle}
+      className={classNames}
+    >
+      {children}
+    </Button>
+  );
+};
+
+CPButton.displayName = 'CPButton';
+
+const CPButtonWithWindowWatcher = withWindowWatcher(CPButton);
+
+export default CPButtonWithWindowWatcher;

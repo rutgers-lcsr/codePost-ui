@@ -3,13 +3,9 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
-
-/* ant imports */
-import { Menu } from 'antd';
 
 /* codePost imports */
 import { CourseType } from '../../infrastructure/course';
@@ -36,23 +32,6 @@ const CourseMenu = (props: IProps) => {
     return a.archived === b.archived ? 0 : a.archived ? 1 : -1;
   };
 
-  const menu = (
-    <Menu>
-      {props.courses.sort(sortArchived).map((course, i) => {
-        const link = encodedCourseLink(props.base, course, props.panel);
-        return (
-          <Menu.Item key={course.id}>
-            <Link to={link}>
-              <span
-                style={{ color: course.archived ? 'rgba(0, 0, 0, 0.3)' : 'default' }}
-              >{`${course.name} | ${course.period}`}</span>
-            </Link>
-          </Menu.Item>
-        );
-      })}
-    </Menu>
-  );
-
   let selectorText = 'No courses yet...';
   if (props.courses.length > 0) {
     selectorText = 'Select a course';
@@ -61,12 +40,22 @@ const CourseMenu = (props: IProps) => {
   if (props.currentCourse) {
     selectorText = `${props.currentCourse.name} | ${props.currentCourse.period}`;
   }
-  // Dropdown overlay maxHeight is to create scroll for long menus that scales with window height
+  // Dropdown menu maxHeight is to create scroll for long menus that scales with window height
   return (
     <CPDropdown
       value={selectorText}
-      overlay={menu}
-      overlayStyle={{ maxHeight: 'calc(100vh - 60px)', overflowY: 'auto' }}
+      menu={{
+        items: props.courses.sort(sortArchived).map((course) => ({
+          key: course.id,
+          label: (
+            <Link to={encodedCourseLink(props.base, course, props.panel)}>
+              <span style={{ color: course.archived ? 'rgba(0, 0, 0, 0.3)' : 'default' }}>
+                {`${course.name} | ${course.period}`}
+              </span>
+            </Link>
+          ),
+        })),
+      }}
     />
   );
 };

@@ -2,7 +2,7 @@
   $root-padding: 6;
   $gutter-width: 12px;
   $gutter-radius: 4px;
-
+  isolation: isolate;
   padding-left: $root-padding + 0px;
   border-radius: $gutter-radius;
 
@@ -70,8 +70,113 @@ th {
 }
 
 .markdown-code {
+  white-space: pre !important;
+  overflow-x: auto !important;
+  max-width: 100%;
+
   pre {
     margin: 0px;
     background-color: transparent !important;
+    white-space: pre !important;
+    overflow-x: auto !important;
+    max-width: 100%;
+  }
+
+  code {
+    white-space: pre !important;
+  }
+}
+
+#code-markdown.markdown {
+  all: unset;
+  // Reset default styles that react-markdown v9 adds
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  font-family: $fontMain !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #333;
+
+  p {
+    margin: 0 !important;
+    white-space: normal !important;
+    font-family: inherit;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    font-weight: normal;
+    white-space: normal !important;
+    font-family: inherit;
+  }
+
+  ul,
+  ol {
+    margin: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    white-space: normal !important;
+    font-family: inherit;
+  }
+
+  hr {
+    margin: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  blockquote {
+    margin: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    white-space: normal !important;
+    font-family: inherit;
+  }
+
+  // GFM strikethrough support
+  del {
+    text-decoration: line-through;
+  }
+
+  // GFM task list support
+  input[type='checkbox'] {
+    margin-right: 0.5em;
+  }
+
+  // Softer table styling to match old format
+  table {
+    border-collapse: collapse;
+    width: 100%;
+
+    th,
+    td {
+      border: none;
+      border-bottom: 1px solid #f2f2f2;
+      padding: 6px 8px;
+      text-align: left;
+      font-weight: normal;
+    }
+
+    th {
+      font-weight: bold;
+      font-size: 16px;
+    }
+  }
+
+  // Autolinks and URLs
+  a {
+    color: #0366d6;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }

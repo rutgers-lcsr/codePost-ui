@@ -79,7 +79,7 @@ const JoinSignup = (props: RouteComponentProps & { email?: string }) => {
           setInvalidEmail(true);
         }
       })
-      .catch((err) => {
+      .catch((_err) => {
         console.log(err);
       });
   };

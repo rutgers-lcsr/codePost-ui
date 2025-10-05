@@ -5,80 +5,62 @@
 /* react imports */
 import * as React from 'react';
 
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-
 /* ant imports */
-import { Button, Input } from 'antd';
-import { FormComponentProps } from '@ant-design/compatible/lib/form';
+import { Button, Form, Input } from 'antd';
 
 /**********************************************************************************************************************/
 
-interface IProps extends FormComponentProps {
+interface IProps {
   handleSubmit: (password: string) => void;
 }
 
-const ForgotPasswordForm: any = Form.create({ name: 'form' })(
-  class extends React.Component<IProps, {}> {
-    public handleSubmit = (e: any) => {
-      e.preventDefault();
-      this.props.form.validateFields((err, values) => {
-        if (!err) {
-          this.props.handleSubmit(values.password1);
-        }
-      });
-    };
+const ForgotPasswordForm: React.FC<IProps> = ({ handleSubmit }) => {
+  const [form] = Form.useForm();
 
-    public doPasswordsMatch = (rule: any, value: any, callback: any) => {
-      // Test 1: Do the passwords match?
-      if (this.props.form.getFieldValue('password1') !== value) {
-        callback("Passwords don't match!");
-      }
+  const onFinish = (values: any) => {
+    handleSubmit(values.password1);
+  };
 
-      // Call callback with no arguments to signal that value passed validation
-      callback();
-    };
-
-    public render() {
-      const { form } = this.props;
-      const { getFieldDecorator } = form;
-      return (
-        <Form layout="horizontal" hideRequiredMark={true} onSubmit={this.handleSubmit}>
-          <Form.Item label="Password">
-            {getFieldDecorator('password1', {
-              validateTrigger: 'onBlur',
-              validateFirst: true,
-              rules: [
-                { required: true, message: 'Please enter a password' },
-                { min: 8, message: 'Password must be at least 8 characters' },
-              ],
-            })(<Input.Password />)}
-          </Form.Item>
-          <Form.Item label="Confirm password">
-            {getFieldDecorator('password2', {
-              validateFirst: true,
-              rules: [
-                { required: true, message: 'Please confirm your password' },
-                { validator: this.doPasswordsMatch },
-              ],
-            })(<Input.Password />)}
-          </Form.Item>
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              disabled={
-                this.props.form.getFieldValue('password1') !== this.props.form.getFieldValue('password2') ||
-                this.props.form.getFieldValue('password1') === undefined
-              }
-            >
-              Submit
-            </Button>
-          </Form.Item>
-        </Form>
-      );
+  const doPasswordsMatch = (_: any, value: string) => {
+    // Test 1: Do the passwords match?
+    if (form.getFieldValue('password1') !== value) {
+      return Promise.reject(new Error("Passwords don't match!"));
     }
-  },
-);
+    return Promise.resolve();
+  };
+
+  const password1 = Form.useWatch('password1', form);
+  const password2 = Form.useWatch('password2', form);
+
+  return (
+    <Form form={form} layout="horizontal" hideRequiredMark={true} onFinish={onFinish}>
+      <Form.Item
+        label="Password"
+        name="password1"
+        validateTrigger="onBlur"
+        validateFirst
+        rules={[
+          { required: true, message: 'Please enter a password' },
+          { min: 8, message: 'Password must be at least 8 characters' },
+        ]}
+      >
+        <Input.Password />
+      </Form.Item>
+      <Form.Item
+        label="Confirm password"
+        name="password2"
+        validateFirst
+        rules={[{ required: true, message: 'Please confirm your password' }, { validator: doPasswordsMatch }]}
+      >
+        <Input.Password />
+      </Form.Item>
+      <Form.Item>
+        <Button type="primary" htmlType="submit" disabled={password1 !== password2 || password1 === undefined}>
+          Submit
+        </Button>
+      </Form.Item>
+    </Form>
+  );
+};
 
 export default ForgotPasswordForm;

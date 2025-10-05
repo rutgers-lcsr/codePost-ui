@@ -79,8 +79,12 @@ const LandingLayout = (props: IProps) => {
         : landingVars.maxWidths.backgroundImageNormal,
   };
 
-  const testimonialBackground = require('../../../img/landing/compressed/backgrounds/testimonial.png');
-  const testimonialBackgroundMobile = require('../../../img/landing/compressed/backgrounds/testimonial-MOBILE.jpg');
+  const testimonialBackground = new URL('../../../img/landing/compressed/backgrounds/testimonial.png', import.meta.url)
+    .href;
+  const testimonialBackgroundMobile = new URL(
+    '../../../img/landing/compressed/backgrounds/testimonial-MOBILE.jpg',
+    import.meta.url,
+  ).href;
 
   return (
     <div

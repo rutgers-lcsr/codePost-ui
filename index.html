@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="theme-color" content="#000000" />
+
+    <!-- Preventing caching of index.html
+      https://stackoverflow.com/questions/49547/how-to-control-web-page-caching-across-all-browsers -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="msvalidate.01" content="F2C975872A525A89C09930B1404D1231" />
+    <!--
+      manifest.json provides metadata used when your web app is added to the
+      homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
+    -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" media="none" />
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Mono" media="none" />
+
+    <meta name="title" content="codePost: Autograder and code review for computer science courses" />
+    <title>codePost: Autograder and code review for computer science courses</title>
+    <meta name="description"
+        content="codePost is a free autograder and code annotation tool that makes it easy to grade computer science course work." />
+
+    <!-- foobar -->
+    <script>
+        (function () {
+            var w = window;
+            var d = document;
+
+            // dummy definitions
+            w.setFoobarParams = function () { return 1 }
+            w.addToFoobar = function () { return 2 }
+            w.removeFromFoobar = function () { return 3 }
+            w.setFoobar = function () { return 4 }
+
+            var l = function () {
+                g = document.createElement('div');
+                g.setAttribute('id', 'foobar');
+                d.body.appendChild(g);
+                var s = d.createElement('script');
+                s.type = 'text/javascript';
+                s.async = true;
+                s.src = '/foobar.js';
+                var x = d.getElementsByTagName('script')[0];
+                x.parentNode.insertBefore(s, x);
+            };
+            if (w.attachEvent) {
+                w.attachEvent('onload', l);
+            } else {
+                w.addEventListener('load', l, false);
+            }
+        })();
+    </script>
+
+    <!-- JQuery -->
+    <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script defer src="https://www.googletagmanager.com/gtag/js?id=UA-135074498-1"></script>
+
+    <!-- Google Tag Manager -->
+    <script defer>
+        (function (w, d, s, l, i) {
+            w[l] = w[l] || [];
+            w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+            var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s),
+                dl = l != 'dataLayer' ? '&l=' + l : '';
+            j.async = true;
+            j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+            f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-WG9K2MR');
+    </script>
+    <!-- End Google Tag Manager -->
+
+    <script defer>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-135074498-1', { optimize_id: 'GTM-WJFDCP7' });
+    </script>
+    <script defer>
+        console.log("LOADING INTERCOM");
+        var w = window;
+        var ic = w.Intercom;
+
+        var d = document;
+        var i = function () {
+            i.c(arguments);
+        };
+        i.q = [];
+        i.c = function (args) {
+            i.q.push(args);
+        };
+        w.Intercom = i;
+        var l = function () {
+            var s = d.createElement('script');
+            s.type = 'text/javascript';
+            s.async = true;
+            s.src = 'https://widget.intercom.io/widget/' + 'kg4u5rp1';
+            var x = d.getElementsByTagName('script')[0];
+            x.parentNode.insertBefore(s, x);
+        };
+        if (w.attachEvent) {
+            w.attachEvent('onload', l);
+        } else {
+            w.addEventListener('load', l, false);
+        }
+
+    </script>
+
+    <!-- Headway -->
+    <script defer src="https://cdn.headwayapp.co/widget.js"></script>
+
+    <script type="text/javascript">
+        window.heap = window.heap || [], heap.load = function (e, t) { window.heap.appid = e, window.heap.config = t = t || {}; var r = document.createElement("script"); r.type = "text/javascript", r.async = !0, r.src = "https://cdn.heapanalytics.com/js/heap-" + e + ".js"; var a = document.getElementsByTagName("script")[0]; a.parentNode.insertBefore(r, a); for (var n = function (e) { return function () { heap.push([e].concat(Array.prototype.slice.call(arguments, 0))) } }, p = ["addEventProperties", "addUserProperties", "clearEventProperties", "identify", "resetIdentity", "removeEventProperty", "setEventProperties", "track", "unsetEventProperty"], o = 0; o < p.length; o++)heap[p[o]] = n(p[o]) };
+        heap.load("3398238657");
+    </script>
+
+    <!-- CommandBar integration -->
+    <script defer>
+        var org = '53ffd0f3';
+        var w = window; var d = document; var cb = window.CommandBar = window.CommandBar || [];
+        cb.methods = ["config", "boot", "shutdown", "setContext", "addContext", "addCallback", "addCallbacks", "addRouter", "report", "log", "error", "setTestMode", "loadEditor", "isOpen", "addSearch", "addCommand", "removeCommand", "showGuide", "execute"]; cb.q = []; cb.f = function (t) { return function () { var a = Array.prototype.slice.call(arguments); a.unshift(t); cb.q.push(a) } }; for (var t = 0; t < cb.methods.length; t++) { var e = cb.methods[t]; cb[e] = cb.f(e) } var load = function () { var a = "h"; var t = "s"; var r = localStorage.getItem("commandbar.lc"); var e = "https://api.commandbar.com"; var o = "o"; var c = "l"; var n = "t"; var l = "c"; if (r && r.includes("local")) { var v = "a"; var s = ":8"; var i = "p:/"; e = "htt" + i + "/" + c + o + l + v + c + a + o + t + n + s + "000" } var m = d.createElement("script"); var h = e + "/latest/53ffd0f3"; h = r ? h + "?lc=" + r : h; m.type = "text/javascript"; m.async = true; m.src = h; d.head.appendChild(m) }; if (w.attachEvent) { w.attachEvent("onload", load) } else { w.addEventListener("load", load, false) }
+    </script>
+</head>
+
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WG9K2MR" height="0" width="0"
+            style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <noscript> You need to enable JavaScript to run this app. </noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/index.tsx"></script>
+</body>
+
+</html>

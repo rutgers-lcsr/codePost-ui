@@ -8,7 +8,7 @@ import * as React from 'react';
 import { DeleteOutlined, EditOutlined, MenuOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Button, Drawer, Dropdown, Empty, Menu, message, Modal, Select, Table, Checkbox } from 'antd';
+import { Breadcrumb, Button, Checkbox, Drawer, Dropdown, Empty, message, Modal, Select, Table } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -190,14 +190,17 @@ class ManageSections extends React.Component<IManageSectionsProps, IState> {
 
       const hoverStyle = { cursor: 'pointer' };
       data = this.props.sections.map((section, i) => {
-        const menu = (
-          <Menu>
-            <Menu.Item key="1" onClick={this.deleteSection.bind(this, section.id)}>
-              <DeleteOutlined />
-              Delete
-            </Menu.Item>
-          </Menu>
-        );
+        const menuItems = [
+          {
+            key: '1',
+            label: (
+              <>
+                <DeleteOutlined /> Delete
+              </>
+            ),
+            onClick: this.deleteSection.bind(this, section.id),
+          },
+        ];
 
         return {
           key: section.id,
@@ -210,7 +213,7 @@ class ManageSections extends React.Component<IManageSectionsProps, IState> {
           leaderData: section.leaders, // for passing data to render function
           leadersForSearch: section.leaders.join(', '), // to make leaders searchable
           actions: (
-            <Dropdown overlay={menu} trigger={['click']}>
+            <Dropdown menu={{ items: menuItems }} trigger={['click']}>
               <MenuOutlined />
             </Dropdown>
           ),
@@ -229,7 +232,7 @@ class ManageSections extends React.Component<IManageSectionsProps, IState> {
         title: 'Remove',
         dataIndex: 'remove',
         key: 'remove',
-        align: 'center' as 'center',
+        align: 'center' as const,
       },
     ];
 
@@ -339,8 +342,10 @@ class ManageSections extends React.Component<IManageSectionsProps, IState> {
         isEmpty={this.props.sections.length === 0}
         emptyNode={
           <Empty
-            imageStyle={{
-              height: 60,
+            styles={{
+              image: {
+                height: 60,
+              },
             }}
             description={<span>No sections yet</span>}
           >
@@ -350,15 +355,7 @@ class ManageSections extends React.Component<IManageSectionsProps, IState> {
         columns={columns}
         data={data}
         actions={actions}
-        breadcrumbs={
-          <Breadcrumb>
-            <Breadcrumb.Item>Roster</Breadcrumb.Item>
-            <Breadcrumb.Item>
-              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-              <a>Sections</a>
-            </Breadcrumb.Item>
-          </Breadcrumb>
-        }
+        breadcrumbs={<Breadcrumb items={[{ title: 'Roster' }, { title: 'Sections' }]} />}
         titleInfo={tooltips.admin.sectionRoster.title}
       />
     );

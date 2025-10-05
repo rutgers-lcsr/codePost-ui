@@ -14,7 +14,7 @@ export const slack = (url: string, payload: any) => {
         return Promise.reject(res.status);
       }
     })
-    .catch((err) => {
+    .catch((_err) => {
       // console.log(err);
     });
 };

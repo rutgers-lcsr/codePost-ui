@@ -52,9 +52,9 @@ const TestsOverview = (props: IProps & RouteComponentProps) => {
       isEmpty={data.length === 0}
       emptyNode={
         <Empty
-          imageStyle={{
+          styles={{ image: {
             height: 60,
-          }}
+          } }}
           description={<span>No assignments yet</span>}
         ></Empty>
       }
@@ -62,10 +62,7 @@ const TestsOverview = (props: IProps & RouteComponentProps) => {
       data={data}
       actions={[]}
       breadcrumbs={
-        <Breadcrumb>
-          <Breadcrumb.Item>Assignments</Breadcrumb.Item>
-          <Breadcrumb.Item>Tests</Breadcrumb.Item>
-        </Breadcrumb>
+        <Breadcrumb items={[{ title: 'Assignments' }, { title: 'Tests' }]} />
       }
     />
   );

@@ -35,7 +35,7 @@ const { Option } = Select;
 interface IViewAllProps {
   course: CourseType;
   assignment: AssignmentType;
-  breadcrumbs: React.ReactElement[];
+  breadcrumbs: Array<{ title: React.ReactNode }>;
 }
 
 interface IViewAllState {
@@ -285,12 +285,7 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
 
     return (
       <CPAdminDetail
-        breadcrumbs={
-          <Breadcrumb>
-            {this.props.breadcrumbs}
-            <Breadcrumb.Item>{this.props.assignment.name}</Breadcrumb.Item>
-          </Breadcrumb>
-        }
+        breadcrumbs={<Breadcrumb items={[...this.props.breadcrumbs, { title: this.props.assignment.name }]} />}
         goBack={null}
         title={`All submissions: ${this.props.assignment.name}`}
         actions={[anonymousToggle]}

@@ -8,10 +8,10 @@ import * as React from 'react';
 import { SettingOutlined } from '@ant-design/icons';
 
 /* antd imports */
-import { Button, Layout, Modal } from 'antd';
+import { Button, Layout } from 'antd';
 
 /* other library imports */
-import { Route, Link, Switch, useHistory } from 'react-router-dom';
+import { Link, Route, Switch } from 'react-router-dom';
 
 import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
 
@@ -28,18 +28,18 @@ import { USER_TYPE } from '../../types/common';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
-import { SectionType } from '../../infrastructure/section';
 import { loadIDList } from '../../infrastructure/generics';
+import { SectionType } from '../../infrastructure/section';
 
 import GraderNav from './GraderNav';
 
 import RegradesPanel from './RegradesPanel';
 
-import RoleMenu from '../core/RoleMenu';
 import Referral from '../core/Referral';
+import RoleMenu from '../core/RoleMenu';
 
-import CourseMenu from '../core/CourseMenu';
 import AssignmentMenu from '../core/AssignmentMenu';
+import CourseMenu from '../core/CourseMenu';
 
 import { IComponentProps } from '../core/ComponentManager';
 
@@ -144,9 +144,9 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
             <Route
               key="my_submissions"
               path={`${this.props.match.url}/my_submissions`}
-              render={(props: any) => (
+              render={(_props: any) => (
                 <MySubmissionsPanel
-                  {...props}
+                  {..._props}
                   course={currentCourse}
                   assignments={this.state.assignments}
                   graderEmail={this.props.user.email}
@@ -161,9 +161,9 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
             <Route
               key="my_sections"
               path={`${this.props.match.url}/my_sections`}
-              render={(props: any) => (
+              render={(_props: any) => (
                 <SectionPanel
-                  {...props}
+                  {..._props}
                   course={currentCourse}
                   assignments={this.state.assignments}
                   graderEmail={this.props.user.email}
@@ -171,27 +171,23 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
                 />
               )}
             />
-          ) : (
-            undefined
-          )}
+          ) : undefined}
           {this.state.isSuperGrader ? (
             <Route
               key="all_submissions"
               path={`${this.props.match.url}/all_submissions`}
-              render={(props: any) => (
-                <ViewAllPanel {...props} course={currentCourse} assignments={this.state.assignments} />
+              render={(_props: any) => (
+                <ViewAllPanel {..._props} course={currentCourse} assignments={this.state.assignments} />
               )}
             />
-          ) : (
-            undefined
-          )}
+          ) : undefined}
           {someRegrades ? (
             <Route
               path={`${this.props.match.url}/regrades`}
               key="regrades"
-              render={(props: any) => (
+              render={(_props: any) => (
                 <RegradesPanel
-                  {...props}
+                  {..._props}
                   course={this.props.currentCourse}
                   assignments={this.state.assignments}
                   user={this.props.user}
@@ -202,13 +198,11 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
                 />
               )}
             />
-          ) : (
-            undefined
-          )}{' '}
+          ) : undefined}{' '}
           <Route
             path={`${this.props.match.url}/video`}
             key="video"
-            render={(props: any) => <VideoModal visible={true} onCancel={() => this.props.history.push('/grader')} />}
+            render={(_props: any) => <VideoModal open={true} onCancel={() => this.props.history.push('/grader')} />}
           />
         </Switch>
       );
@@ -229,9 +223,9 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
       assignmentDropdown = (
         <Route
           path={`${this.props.match.url}/:panel?/:assignment?`}
-          render={(props: any) => (
+          render={(_props: any) => (
             <AssignmentMenu
-              {...props}
+              {..._props}
               currentCourse={currentCourse}
               assignments={this.state.assignments}
               baseURL={this.props.match.url}
@@ -273,9 +267,9 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
       <Switch>
         <Route
           path={`${this.props.match.url}/:panel?`}
-          render={(props: any) => (
+          render={(_props: any) => (
             <GraderNav
-              {...props}
+              {..._props}
               baseURL={this.props.match.url}
               collapsed={collapsed}
               isSuperGrader={this.state.isSuperGrader}
@@ -307,7 +301,7 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
 
             {graderPanelContent}
             <CIPGraderModal
-              visible={this.state.showConversionModal}
+              open={this.state.showConversionModal}
               onClose={() => this.setState({ showConversionModal: false })}
               email={this.props.user.email}
             />

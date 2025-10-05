@@ -8,12 +8,12 @@ import * as React from 'react';
 import { LoadingOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Button, Breadcrumb, Divider, Select, Spin, Switch, Tabs, message } from 'antd';
+import { Breadcrumb, Button, Divider, Select, Spin, Switch, Tabs, message } from 'antd';
 
 /* codePost imports */
 import { AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
-import { SectionType, Section } from '../../infrastructure/section';
+import { Section, SectionType } from '../../infrastructure/section';
 import { Submission, SubmissionType } from '../../infrastructure/submission';
 import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 
@@ -36,7 +36,7 @@ interface IProps {
   course: CourseType;
   assignment: AssignmentType;
   sections: SectionType[];
-  breadcrumbs: React.ReactElement[];
+  breadcrumbs: Array<{ title: React.ReactNode }>;
   email: string;
 }
 
@@ -89,7 +89,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     this.initialLoad();
   }
 
-  public componentDidUpdate(oldProps: IProps) {
+  public componentDidUpdate(_oldProps: IProps) {
     if (oldProps.assignment !== this.props.assignment) {
       this.initialLoad();
     }
@@ -329,12 +329,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     return (
       <CPAdminDetail
         goBack={null}
-        breadcrumbs={
-          <Breadcrumb>
-            {this.props.breadcrumbs}
-            <Breadcrumb.Item>{this.props.assignment.name}</Breadcrumb.Item>
-          </Breadcrumb>
-        }
+        breadcrumbs={<Breadcrumb items={[...this.props.breadcrumbs, { title: this.props.assignment.name }]} />}
         title={`Section: ${this.state.activeSection.name}`}
         actions={[anonymousToggle, selectContent, claimButton]}
         content={content}

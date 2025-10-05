@@ -1,7 +1,7 @@
 /* react imports */
 import * as React from 'react';
 
-import { DeleteOutlined, EditOutlined, PlusOutlined, TagOutlined } from '@ant-design/icons';
+import { DeleteOutlined, DownOutlined, EditOutlined, PlusOutlined, TagOutlined } from '@ant-design/icons';
 
 /* antd imports */
 import { Button, Divider, Input, Menu, Popover, Tag, Tooltip } from 'antd';
@@ -20,12 +20,11 @@ import CPPointInput from '../../core/CPPointInput';
 import { CURSOR_DOMAIN } from '../CodeConsole';
 
 import {
+  IRubricCategoryManagerHelpers,
   IRubricCategoryManagerProps,
   IRubricCategoryManagerState,
-  IRubricCategoryManagerHelpers,
 } from '../../core/rubric/RubricCategoryManager';
 
-const SubMenu = Menu.SubMenu;
 const { TextArea } = Input;
 
 interface IRubricMenuCategoryUIProps extends IRubricCategoryManagerProps {
@@ -313,6 +312,67 @@ const RubricMenuCategoryUI = ({
     helpers.addComment();
   };
 
+  const menuIcon = props.editRubricMode ? (
+    <EditOutlined style={{ color: consoleTheme.siderMenuItemColor }} />
+  ) : rows.length > 0 ? (
+    <DownOutlined style={{ color: consoleTheme.siderMenuItemColor }} />
+  ) : null;
+
+  // Build menu items array for Ant Design v5
+  const menuItems = [
+    {
+      key: `category-${props.rubricCategory.id}`,
+      label: (
+        <div
+          style={{
+            position: 'absolute',
+            width: '100%',
+            paddingLeft: '20px',
+            backgroundColor: consoleTheme.siderSubmenuTitleBg,
+            color: consoleTheme.siderSubmenuTitleColor,
+            borderBottom: consoleTheme.siderSubmenuBorder,
+          }}
+        >
+          <div style={{ paddingRight: '30px' }}>
+            <CPFlex left={[title, errorTag]} right={[capTag]} gutterSize={14} />
+          </div>
+        </div>
+      ),
+      children: [
+        ...rows.map((row: any) => ({
+          key: row.key,
+          label: row.props.children,
+          style: row.props.style,
+        })),
+        ...(props.editRubricMode && props.searchTerm.length === 0
+          ? [
+              {
+                key: `comment-${props.rubricCategory.id}-add`,
+                label: (
+                  <Button
+                    type="default"
+                    icon={<PlusOutlined />}
+                    size="small"
+                    style={{
+                      width: '180px',
+                      backgroundColor: consoleTheme.siderBg,
+                      color: consoleTheme.siderMenuItemColor,
+                    }}
+                    onClick={addComment}
+                  >
+                    Add Comment
+                  </Button>
+                ),
+                style: {
+                  textAlign: 'center' as const,
+                },
+              },
+            ]
+          : []),
+      ],
+    },
+  ];
+
   return (
     <Menu
       defaultOpenKeys={[`category-${props.rubricCategory.id}`]}
@@ -321,47 +381,9 @@ const RubricMenuCategoryUI = ({
       id="rubric-menu-menu"
       className="rubric-menu"
       style={{ backgroundColor: consoleTheme.siderBg }}
-    >
-      <SubMenu
-        key={`category-${props.rubricCategory.id}`}
-        title={
-          <div
-            style={{
-              position: 'absolute',
-              width: '100%',
-              paddingLeft: '20px',
-              backgroundColor: consoleTheme.siderSubmenuTitleBg,
-              color: consoleTheme.siderSubmenuTitleColor,
-              borderBottom: consoleTheme.siderSubmenuBorder,
-            }}
-          >
-            <div style={{ paddingRight: '30px' }}>
-              <CPFlex left={[title, errorTag]} right={[capTag]} gutterSize={14} />
-            </div>
-          </div>
-        }
-      >
-        {rows}
-        {props.editRubricMode && props.searchTerm.length === 0 ? (
-          <Menu.Item
-            key={`comment-${props.rubricCategory.id}-add`}
-            style={{
-              textAlign: 'center',
-            }}
-          >
-            <Button
-              type="default"
-              icon={<PlusOutlined />}
-              size="small"
-              style={{ width: '180px', backgroundColor: consoleTheme.siderBg, color: consoleTheme.siderMenuItemColor }}
-              onClick={addComment}
-            >
-              Add Comment
-            </Button>
-          </Menu.Item>
-        ) : null}
-      </SubMenu>
-    </Menu>
+      expandIcon={menuIcon}
+      items={menuItems}
+    />
   );
 };
 

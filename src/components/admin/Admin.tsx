@@ -8,28 +8,28 @@ import * as React from 'react';
 import { SettingOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Button, Empty, Modal, Input, Checkbox } from 'antd';
+import { Button, Empty } from 'antd';
 
 /* other library imports */
 import _ from 'lodash';
 import queryString from 'query-string';
 
-import { Route, Link, Switch } from 'react-router-dom';
+import { Link, Route, Switch } from 'react-router-dom';
 
 /* codePost imports */
 import AdminNav from './other/AdminNav';
 import CPLayoutAdmin from './other/CPLayoutAdmin';
 
-import SubmissionsManager from './submissions/SubmissionsManager';
 import ManageAssignments from './assignments/ManageAssignments';
 import RosterManager from './roster/RosterManager';
 import CourseSettingsPanel from './settings/CourseSettingsPanel';
 import WebhooksPanel from './settings/WebhooksPanel';
+import SubmissionsManager from './submissions/SubmissionsManager';
 
 import CourseMenu from '../core/CourseMenu';
-import NewCourseDialog from './other/NewCourseDialog';
-import RoleMenu from '../core/RoleMenu';
 import Referral from '../core/Referral';
+import RoleMenu from '../core/RoleMenu';
+import NewCourseDialog from './other/NewCourseDialog';
 
 /* types */
 import {
@@ -344,7 +344,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
           return {};
         })
         .then((data: any) => {
-          if (data.hasOwnProperty('show_banner')) {
+          if (Object.prototype.hasOwnProperty.call(data, 'show_banner')) {
             this.setState({ showBillingBanner: data['show_banner'] });
           }
         });
@@ -1281,7 +1281,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       </CPTooltip>,
       logout,
       <AdminOnboardingSelector
-        visible={this.state.onboardingModalVisible}
+        open={this.state.onboardingModalVisible}
         onCancel={this.closeModal}
         email={this.props.user.email}
         onDemoCreate={this.handleDemoCourse}
@@ -1299,8 +1299,10 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       detail = (
         <Empty
           style={{ marginTop: 60 }}
-          imageStyle={{
-            height: 60,
+          styles={{
+            image: {
+              height: 60,
+            },
           }}
           description={<span>Get started by creating a course!</span>}
         >
@@ -1312,9 +1314,9 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
         <Switch>
           <Route
             path={`${this.props.match.url}/submissions`}
-            render={(props: any) => (
+            render={(_props: any) => (
               <SubmissionsManager
-                {...props}
+                {..._props}
                 key="submissions"
                 course={this.props.currentCourse}
                 loadComplete={
@@ -1346,9 +1348,9 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
                 }*/}
           <Route
             path={`${this.props.match.url}/assignments`}
-            render={(props: any) => (
+            render={(_props: any) => (
               <ManageAssignments
-                {...props}
+                {..._props}
                 key="assignments"
                 loadComplete={this.state.assignmentsLoadComplete}
                 partialSubmissionsLoadComplete={this.state.partialSubmissionsLoadComplete}
@@ -1379,9 +1381,9 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
           />
           <Route
             path={`${this.props.match.url}/roster`}
-            render={(props: any) => (
+            render={(_props: any) => (
               <RosterManager
-                {...props}
+                {..._props}
                 key="roster"
                 notActivated={this.state.notActivated}
                 sections={this.state.sections}
@@ -1404,13 +1406,13 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
           />
           <Route
             path={`${this.props.match.url}/settings/webhooks`}
-            render={(props: any) => <WebhooksPanel {...props} currentCourse={this.props.currentCourse!} />}
+            render={(_props: any) => <WebhooksPanel {..._props} currentCourse={this.props.currentCourse!} />}
           />
           <Route
             path={`${this.props.match.url}/settings`}
-            render={(props: any) => (
+            render={(_props: any) => (
               <CourseSettingsPanel
-                {...props}
+                {..._props}
                 currentCourse={this.props.currentCourse!}
                 updateSettings={this.updateSettings}
               />
@@ -1419,7 +1421,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
           <Route
             path={`${this.props.match.url}/video`}
             key="video"
-            render={(props: any) => <VideoModal visible={true} onCancel={() => this.props.history.push('/admin')} />}
+            render={(_props: any) => <VideoModal open={true} onCancel={() => this.props.history.push('/admin')} />}
           />
         </Switch>
       );
@@ -1429,7 +1431,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       <Switch>
         <Route
           path={`${this.props.match.url}/:panel1?/:panel2?`}
-          render={(props: any) => <AdminNav {...props} baseURL={this.props.match.url} collapsed={collapsed} />}
+          render={(_props: any) => <AdminNav {..._props} baseURL={this.props.match.url} collapsed={collapsed} />}
         />
       </Switch>
     );
@@ -1448,9 +1450,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
           onClose={() => {}}
           assignment={this.state.assignments[0]}
         />
-      ) : (
-        undefined
-      );
+      ) : undefined;
 
     return (
       <CPLayoutAdmin
@@ -1462,7 +1462,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
             {detail}
             {
               <CIPAdminModal
-                visible={this.state.cipModalVisible}
+                open={this.state.cipModalVisible}
                 onClose={() => this.setState({ cipModalVisible: false })}
                 user={this.props.user}
                 onCreateCourse={() => {

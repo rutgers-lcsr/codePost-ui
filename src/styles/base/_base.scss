@@ -14,12 +14,22 @@ body {
   height: 100vh;
   width: 100vw;
   // overflow: hidden;
+  font-family: $fontMain;
 }
 
 #root {
   margin: 0;
   height: 100%;
   width: 100%;
+}
+
+// Remove default link underlines
+a {
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: none;
+  }
 }
 
 /**

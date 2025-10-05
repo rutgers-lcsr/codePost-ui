@@ -5,35 +5,14 @@
 /* react imports */
 import * as React from 'react';
 
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { RedoOutlined } from '@ant-design/icons';
-
 /* style imports */
-import {
-  Alert,
-  Breadcrumb,
-  Input,
-  message,
-  Modal,
-  Select,
-  Statistic,
-  Switch,
-  Table,
-  Tag,
-  Tooltip,
-  Typography,
-} from 'antd';
-import { FormComponentProps } from '@ant-design/compatible/lib/form';
+import { Alert, message, Modal, Statistic, Table, Tag, Tooltip, Typography } from 'antd';
 
 import CPButton from '../../../components/core/CPButton';
 import CPAdminDetail from '../other/CPAdminDetail';
 
 /* codePost imports */
-import { CoursePatchType, CourseType } from '../../../infrastructure/course';
-import InputNumberOrNull from './InputNumberOrNull';
-
-import { timezones } from '../other/timezones';
+import { CourseType } from '../../../infrastructure/course';
 
 type alignType = 'left' | 'right' | 'center';
 

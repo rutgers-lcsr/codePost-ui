@@ -8,26 +8,24 @@ import * as React from 'react';
 /* other library imports */
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
-import Loadable from 'react-loadable';
-
 import ForgotPasswordForm from './ForgotPasswordForm';
 import LoginForm from './LoginForm';
 import NoMatch from './NoMatch';
 import PasswordReset from './PasswordReset';
 
+import { AllTestimonials } from '../landing/Testimonial';
+import ValidateInvite from '../student/ValidateInvite';
+import AboutUs from './AboutUs';
+import AutograderDetail from './AutograderDetail';
 import CreateSignup from './CreateSignup';
 import FAQs from './FAQs';
 import IntegrationsPage from './IntegrationsPage';
 import JoinSignup from './JoinSignup';
-import Scholarship from './Scholarship';
-import AutograderDetail from './AutograderDetail';
 import PrivacyPolicy from './PrivacyPolicy';
+import Scholarship from './Scholarship';
 import { SignUpManager } from './SignUpManager';
 import TermsOfService from './TermsOfService';
 import WhyUse from './WhyUse';
-import AboutUs from './AboutUs';
-import { AllTestimonials } from '../landing/Testimonial';
-import ValidateInvite from '../student/ValidateInvite';
 
 import Logout from '../core/Logout';
 
@@ -35,10 +33,7 @@ import { CODE_DEMO } from '../../routes';
 
 /**********************************************************************************************************************/
 
-const AsyncLanding = Loadable({
-  loader: () => import('../landing/LandingABTest'),
-  loading: () => <div />,
-});
+const AsyncLanding = React.lazy(() => import('../landing/LandingABTest'));
 
 interface IndexManagerProps {
   error: string;
@@ -55,18 +50,26 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
       <div>
         <BrowserRouter>
           <Switch>
-            <Route exact={true} path={'/'} render={(props: any) => <AsyncLanding {...props} />} />
+            <Route
+              exact={true}
+              path={'/'}
+              render={(_props: any) => (
+                <React.Suspense fallback={<div />}>
+                  <AsyncLanding {..._props} />
+                </React.Suspense>
+              )}
+            />
 
             <Route
               exact={true}
               path={'/logout'}
-              render={(props: any) => <Logout {...props} handleLogout={this.props.handleLogout} />}
+              render={(_props: any) => <Logout {..._props} handleLogout={this.props.handleLogout} />}
             />
 
             <Route
               exact={true}
               path={'/login'}
-              render={(props: any) => (
+              render={(_props: any) => (
                 <LoginForm
                   handleLogin={this.props.handleLogin}
                   error={this.props.error}
@@ -87,77 +90,77 @@ class IndexManager extends React.Component<IndexManagerProps, {}> {
             <Route
               exact={true}
               path={'/terms'}
-              render={(props: any) => <TermsOfService {...props} isLoggedIn={this.props.isLoggedIn} />}
+              render={(_props: any) => <TermsOfService {..._props} isLoggedIn={this.props.isLoggedIn} />}
             />
             <Route
               exact={true}
               path={'/integrations'}
-              render={(props: any) => <IntegrationsPage {...props} isLoggedIn={this.props.isLoggedIn} />}
+              render={(_props: any) => <IntegrationsPage {..._props} isLoggedIn={this.props.isLoggedIn} />}
             />
             <Route
               exact={true}
               path={'/scholarships/computer-science-education'}
-              render={(props: any) => <Scholarship {...props} isLoggedIn={this.props.isLoggedIn} />}
+              render={(_props: any) => <Scholarship {..._props} isLoggedIn={this.props.isLoggedIn} />}
             />
             <Route
               exact={true}
               path={'/autograder'}
-              render={(props: any) => <AutograderDetail {...props} isLoggedIn={this.props.isLoggedIn} />}
+              render={(_props: any) => <AutograderDetail {..._props} isLoggedIn={this.props.isLoggedIn} />}
             />
             <Route
               exact={true}
               path={'/faqs'}
-              render={(props: any) => <FAQs {...props} isLoggedIn={this.props.isLoggedIn} />}
+              render={(_props: any) => <FAQs {..._props} isLoggedIn={this.props.isLoggedIn} />}
             />
             <Route
               exact={true}
               path={'/privacy'}
-              render={(props: any) => <PrivacyPolicy {...props} isLoggedIn={this.props.isLoggedIn} />}
+              render={(_props: any) => <PrivacyPolicy {..._props} isLoggedIn={this.props.isLoggedIn} />}
             />
             <Route
               exact={true}
               path={'/why-use-codepost'}
-              render={(props: any) => <WhyUse {...props} isLoggedIn={this.props.isLoggedIn} />}
+              render={(_props: any) => <WhyUse {..._props} isLoggedIn={this.props.isLoggedIn} />}
             />
             <Route
               exact={true}
               path={'/about'}
-              render={(props: any) => <AboutUs {...props} isLoggedIn={this.props.isLoggedIn} />}
+              render={(_props: any) => <AboutUs {..._props} isLoggedIn={this.props.isLoggedIn} />}
             />
             <Route
               exact={true}
               path={'/testimonials'}
-              render={(props: any) => <AllTestimonials {...props} isLoggedIn={this.props.isLoggedIn} />}
+              render={(_props: any) => <AllTestimonials {..._props} isLoggedIn={this.props.isLoggedIn} />}
             />
 
             <Route
               exact={true}
               path={'/password-reset/:uid/:token'}
-              render={(props: any) => (
-                <PasswordReset {...props} message={'forgot'} isLoggedIn={this.props.isLoggedIn} />
+              render={(_props: any) => (
+                <PasswordReset {..._props} message={'forgot'} isLoggedIn={this.props.isLoggedIn} />
               )}
             />
 
             <Route
               exact={true}
               path={'/activate/:uid/:token'}
-              render={(props: any) => (
-                <PasswordReset {...props} message={'activate'} isLoggedIn={this.props.isLoggedIn} />
+              render={(_props: any) => (
+                <PasswordReset {..._props} message={'activate'} isLoggedIn={this.props.isLoggedIn} />
               )}
             />
 
             <Route
               exact={true}
               path={'/invite/:sid/:token'}
-              render={(props: any) => <ValidateInvite {...props} isLoggedIn={this.props.isLoggedIn} />}
+              render={(_props: any) => <ValidateInvite {..._props} isLoggedIn={this.props.isLoggedIn} />}
             />
 
             {/* prevents NoMatch from showing alongside component */}
-            <Route exact={true} path={`${CODE_DEMO}/`} component={null} />
+            <Route exact={true} path={`${CODE_DEMO}/`} render={() => null} />
 
             {/* Reminder: we used to offer an "upgrade" path */}
 
-            <Route component={NoMatch} isLoggedIn={this.props.isLoggedIn} />
+            <Route render={(props) => <NoMatch {...props} isLoggedIn={this.props.isLoggedIn} />} />
           </Switch>
         </BrowserRouter>
       </div>

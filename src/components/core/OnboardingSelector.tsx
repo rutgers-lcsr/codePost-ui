@@ -27,7 +27,7 @@ interface IOnboardingSelectorProps {
   options: React.ReactNode[];
   message: string | React.ReactNode;
   footer: string;
-  visible: boolean;
+  open: boolean;
   onCancel: () => void;
   footerButtons: React.ReactNode | null;
   closable?: boolean;
@@ -37,7 +37,7 @@ const OnboardingSelector = (props: IOnboardingSelectorProps) => {
   return (
     <Modal
       title={props.title}
-      visible={props.visible}
+      open={props.open}
       onCancel={props.onCancel}
       footer={props.footerButtons}
       width={600}
@@ -69,7 +69,7 @@ const OnboardingSelector = (props: IOnboardingSelectorProps) => {
 /**********************************************************************************************************************/
 
 interface IProps {
-  visible: boolean;
+  open: boolean;
   onCancel: () => void;
   email: string;
   onDemoCreate: (course?: CourseType) => void;
@@ -127,7 +127,7 @@ const AdminOnboardingSelector = (props: IProps) => {
         </span>
       }
       options={[tour1, tour2, hangTight]}
-      visible={props.visible}
+      open={props.open}
       onCancel={props.onCancel}
       message={message}
       footer={footer}
@@ -139,7 +139,7 @@ const AdminOnboardingSelector = (props: IProps) => {
 /**********************************************************************************************************************/
 
 interface ICodeConsoleOnboardingProps {
-  visible: boolean;
+  open: boolean;
   onCancel: () => void;
   onUploadConfirm: (files: Array<{ name: string; data: string }>) => void;
 }
@@ -321,7 +321,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
     <OnboardingSelector
       title={title}
       options={options}
-      visible={props.visible}
+      open={props.open}
       onCancel={props.onCancel}
       message={message}
       footer={errorText}

@@ -6,35 +6,94 @@
 import * as React from 'react';
 
 /* other library imports */
-import { jupyterToMarkdown } from './Jupyter';
-
+import type { Components } from 'react-markdown';
 import ReactMarkdown from 'react-markdown';
-
-import TurndownService from 'turndown';
-import * as turndownPluginGfm from 'turndown-plugin-gfm';
-
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import remarkGfm from 'remark-gfm';
 
 /* codePost imports */
-import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
-
 import { CommentType } from '../../../infrastructure/comment';
 import { File } from '../../../infrastructure/file';
-
 import { getBlockClassName } from './BlockUtils.tsx';
+import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
+import { jupyterToMarkdown } from './Jupyter';
 
 /**********************************************************************************************************************/
+/* TypeScript Interfaces for react-markdown v9
+/**********************************************************************************************************************/
 
-const turndown = new TurndownService();
-turndown.use(turndownPluginGfm.tables);
+interface MarkdownNode {
+  type: string;
+  position?: {
+    start: { line: number; column: number; offset: number };
+    end: { line: number; column: number; offset: number };
+  };
+  data?: {
+    isTopLevel?: boolean;
+    hProperties?: Record<string, unknown>;
+  };
+  properties?: Record<string, unknown>;
+  children?: MarkdownNode[];
+}
+
+interface MarkdownNodeProps {
+  node?: MarkdownNode;
+  children?: React.ReactNode;
+  properties?: Record<string, unknown>;
+}
+
+interface HeadingProps extends MarkdownNodeProps {
+  level: number;
+}
+
+interface CodeProps extends MarkdownNodeProps {
+  inline?: boolean;
+  className?: string;
+}
+
+interface ListProps extends MarkdownNodeProps {
+  ordered?: boolean;
+}
+
+/**********************************************************************************************************************/
+/* Remark Plugin: Mark Top-Level Elements
+/**********************************************************************************************************************/
+
+/**
+ * Remark plugin to mark direct children of markdown root as top-level elements.
+ * This enables accurate detection of which elements should be clickable for commenting,
+ * avoiding nested blocks like list items or nested blockquotes.
+ *
+ * Data flow: markdown → remark (marks isTopLevel) → HTML → component props
+ */
+function remarkMarkTopLevel() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (tree: any) => {
+    if (tree.type !== 'root' || !tree.children) {
+      return;
+    }
+
+    // Mark direct children of root as top-level
+    tree.children.forEach((child: MarkdownNode) => {
+      child.data = child.data || {};
+      child.data.hProperties = child.data.hProperties || {};
+      child.data.hProperties['data-is-top-level'] = 'true';
+    });
+  };
+}
+
+/**********************************************************************************************************************/
+/* Main Component
+/**********************************************************************************************************************/
 
 interface IMarkdownProps {
   commentCounter: number;
 }
 
 const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdownProps) => {
-  let markdown;
+  // Convert file content to markdown format
+  let markdown: string;
   if (File.codeType(props.file) === 'jupyter') {
     markdown = jupyterToMarkdown(props.file.code);
   } else if (File.codeType(props.file) === 'image') {
@@ -43,17 +102,19 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
     markdown = props.file.code;
   }
 
+  // Handle click on markdown block elements to add comments
   const onBlockElementClick = (e: React.MouseEvent) => {
-    const index = e.currentTarget.getAttribute('index-number');
-    if (index) {
+    const lineNumberStr = e.currentTarget.getAttribute('index-number');
+    if (lineNumberStr) {
+      const lineNumber = parseInt(lineNumberStr, 10);
       const newComment: CommentType = {
         id: props.commentCounter,
         endChar: 0,
-        endLine: +index,
+        endLine: lineNumber,
         file: props.file.id,
         pointDelta: 0.0,
         startChar: 0,
-        startLine: +index,
+        startLine: lineNumber,
         text: '',
         rubricComment: null,
         author: props.user,
@@ -65,98 +126,109 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
     }
   };
 
-  const renderers = useMarkdownRenderers(
+  const components = useMarkdownRenderers(
     getBlockClassName.bind({}, props.comments, props.readOnly),
     props.readOnly ? undefined : onBlockElementClick,
   );
 
+  const remarkPlugins = [remarkGfm, remarkMarkTopLevel];
+
   return (
-    <ReactMarkdown includeNodeIndex={true} sourcePos={true} rawSourcePos={true} escapeHtml={true} renderers={renderers}>
-      {markdown}
-    </ReactMarkdown>
+    <div id="code-markdown" className="markdown" style={{ padding: '5px 0px' }}>
+      <ReactMarkdown skipHtml remarkPlugins={remarkPlugins} components={components as Components}>
+        {markdown}
+      </ReactMarkdown>
+    </div>
   );
 };
 
+/**********************************************************************************************************************/
+/* Component Renderers
+/**********************************************************************************************************************/
+
 const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp?: (e: React.MouseEvent) => void) => {
-  // Hack to determine which block elements are nested
-  // topLevelChildren is initialized when the rootRenderer is called
-  let topLevelChildren: number | undefined;
+  /**
+   * Generate props for block-level elements.
+   * Only applies click handlers and styling to top-level elements (marked by remark plugin).
+   */
+  const blockProps = (props: MarkdownNodeProps) => {
+    const lineNumber = props.node?.position?.start?.line;
+    const isTopLevel = props.node?.properties?.['data-is-top-level'] === 'true';
 
-  const blockProps = (props: any) => {
-    let isNestedBlock = false;
-    if (
-      topLevelChildren !== undefined &&
-      props.parentChildCount &&
-      topLevelChildren !== 1 &&
-      topLevelChildren !== props.parentChildCount
-    ) {
-      isNestedBlock = true;
-    }
-
-    if (!isNestedBlock) {
+    if (lineNumber !== undefined && isTopLevel) {
       return {
-        className: getClassName(props.index),
-        'index-number': props.index,
+        className: getClassName(lineNumber),
+        'index-number': lineNumber,
         onMouseUp,
       };
     }
+
     return {};
   };
 
-  const rootRenderer = (props: any) => {
-    topLevelChildren = props.children.length;
-    return (
-      <div id="code-markdown" className="markdown" style={{ padding: '5px 0px' }}>
-        {props.children}
-      </div>
-    );
-  };
+  // Paragraph renderer - handle code blocks that might be wrapped in <p>
+  const paragraphRenderer = (props: MarkdownNodeProps) => {
+    // If paragraph only contains a code block, unwrap it to avoid DOM nesting warnings
+    const hasOnlyCodeChild =
+      React.Children.count(props.children) === 1 &&
+      React.Children.toArray(props.children).every((child) => React.isValidElement(child) && child.type === 'code');
 
-  const headingRenderer = (props: any) => {
-    const fontSize = 24 * Math.pow(0.9, props.level);
-    return React.createElement(`h${props.level}`, { ...blockProps(props), style: { fontSize } }, props.children);
-  };
+    if (hasOnlyCodeChild) {
+      return <>{props.children}</>;
+    }
 
-  const paragraphRenderer = (props: any) => {
     return (
-      <p {...blockProps(props)} style={{ paddingTop: '6px', paddingBottom: '6px', overflowX: 'auto' }}>
+      <p
+        {...blockProps(props)}
+        style={{
+          paddingTop: '4px',
+          paddingBottom: '4px',
+          overflowX: 'auto',
+          whiteSpace: 'normal',
+        }}
+      >
         {props.children}
       </p>
     );
   };
 
-  const listRenderer = (props: any) => {
-    return React.createElement(
-      props.ordered ? 'ol' : 'ul',
-      // @ts-ignore
-      blockProps(props),
-      props.children,
-    );
+  // List renderer (ordered or unordered)
+  const listRenderer = (props: ListProps) => {
+    return React.createElement(props.ordered ? 'ol' : 'ul', blockProps(props), props.children);
   };
 
-  const codeRenderer = (props: any) => {
-    if (props.language !== 'output') {
+  // Code renderer - handles both inline code and code blocks
+  const codeRenderer = (props: CodeProps) => {
+    const { inline, className, children, ...rest } = props;
+
+    // Extract language from className (format: "language-python")
+    const match = /language-(\w+)/.exec(className || '');
+    const language = match ? match[1] : '';
+
+    // Extract text content from children
+    const codeString = String(children).replace(/\n$/, '');
+
+    // Inline code (like `code`)
+    if (inline) {
       return (
-        <SyntaxHighlighter
-          language={props.language}
-          style={googlecode}
-          customStyle={{
-            backgroundColor: '#f2f2f2',
-            borderTop: '0px',
-            borderRight: '0px',
-            borderBottom: '0px',
-            margin: '0px 0px 12px 0px',
+        <code
+          style={{
+            fontFamily: 'monospace',
+            backgroundColor: '#f5f5f5',
+            padding: '2px 4px',
+            borderRadius: '3px',
+            whiteSpace: 'pre',
           }}
-          showLineNumbers={false}
-          wrapLines={false}
-          {...blockProps(props)}
         >
-          {props.value ? props.value : ' '}
-        </SyntaxHighlighter>
+          {children}
+        </code>
       );
-    } else {
+    }
+
+    // Block code with special "output" language
+    if (language === 'output') {
       return (
-        <div {...blockProps(props)} style={{ marginBottom: '12px' }}>
+        <div {...blockProps(rest)} style={{ margin: '8px 0px 10px 0px' }}>
           <div
             style={{
               backgroundColor: 'white',
@@ -165,81 +237,99 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
               fontFamily: 'monospace',
               padding: '4px',
               wordBreak: 'break-word',
+              whiteSpace: 'pre',
+              overflowX: 'auto',
             }}
           >
-            {props.value ? props.value : ' '}
+            {codeString || ' '}
           </div>
         </div>
       );
     }
-  };
 
-  const thematicBreakRenderer = (props: any) => {
-    return <hr {...blockProps(props)}>{props.children}</hr>;
-  };
-
-  // @ts-ignore
-  const blockQuoteRenderer = (props: any) => {
+    // Block code with syntax highlighting
     return (
-      <div {...blockProps(props)} style={{ marginBottom: '12px' }}>
-        <blockquote style={{ marginBottom: '0px' }}>{props.children}</blockquote>
+      <SyntaxHighlighter
+        language={language || 'text'}
+        style={googlecode}
+        customStyle={{
+          backgroundColor: '#f2f2f2',
+          borderTop: '0px',
+          borderRight: '0px',
+          borderBottom: '0px',
+          margin: '8px 0px 10px 0px',
+          fontFamily: 'monospace',
+          whiteSpace: 'pre',
+          overflowX: 'auto',
+        }}
+        showLineNumbers={false}
+        wrapLines={false}
+        {...blockProps(rest)}
+      >
+        {codeString || ' '}
+      </SyntaxHighlighter>
+    );
+  };
+
+  // Horizontal rule renderer
+  const thematicBreakRenderer = (props: MarkdownNodeProps) => {
+    return <hr {...blockProps(props)} />;
+  };
+
+  // Blockquote renderer
+  const blockQuoteRenderer = (props: MarkdownNodeProps) => {
+    return (
+      <div {...blockProps(props)} style={{ margin: '8px 0px 10px 0px' }}>
+        <blockquote style={{ marginBottom: '0px', paddingLeft: '12px', borderLeft: '3px solid #ddd' }}>
+          {props.children}
+        </blockquote>
       </div>
     );
   };
 
-  const tableRenderer = (props: any) => {
+  // Table renderer with wrapper for styling
+  const tableRenderer = (props: MarkdownNodeProps) => {
     return (
-      <div {...blockProps(props)} style={{ padding: '10px 10px 10px 30px', marginBottom: '12px' }}>
+      <div
+        {...blockProps(props)}
+        style={{ padding: '8px 10px 10px 30px', margin: '8px 0px 10px 0px', overflowX: 'auto' }}
+      >
         <table className="markdown-table">{props.children}</table>
       </div>
     );
   };
-
-  // Parse html encountered to markdown
-  // We convert all html in an input/html cell to markdown in CodePanel,
-  // but some html might be put in a 'markdown' cell type. This function converts that to markdown
-  const parsedHtmlRenderer = (props: any) => {
-    const rootRend = (propz: any) => {
-      let isNestedBlock = false;
-      if (
-        topLevelChildren !== undefined &&
-        props.parentChildCount &&
-        topLevelChildren !== 1 &&
-        topLevelChildren !== props.parentChildCount
-      ) {
-        isNestedBlock = true;
-      }
-
-      if (!isNestedBlock) {
-        return <div {...blockProps(props)}>{propz.children}</div>;
-      }
-      return propz.children;
-    };
-
-    const paragraphRend = (propz: any) => {
-      return <span>{propz.children}</span>;
-    };
-
-    // These renderers prevent console warnings about
-    // nesting block level elements (like <p> and <div>)
-    const renderers = {
-      root: rootRend,
-      paragraph: paragraphRend,
-    };
-
-    return <ReactMarkdown renderers={renderers}>{turndown.turndown(props.value)}</ReactMarkdown>;
+  const headingRenderer = (props: HeadingProps) => {
+    const Tag = `h${props.level}` as keyof JSX.IntrinsicElements;
+    return (
+      <Tag
+        {...blockProps(props)}
+        style={{
+          marginTop: props.level <= 2 ? '16px' : '12px',
+          marginBottom: '8px',
+          fontWeight: 'normal',
+          lineHeight: 1.4,
+          scrollMarginTop: '100px',
+        }}
+      >
+        {props.children}
+      </Tag>
+    );
   };
-
   return {
-    root: rootRenderer,
-    paragraph: paragraphRenderer,
-    heading: headingRenderer,
-    list: listRenderer,
+    // Map markdown element types to custom renderers (react-markdown v9 format)
+    p: paragraphRenderer,
+    h1: (props: MarkdownNodeProps) => headingRenderer({ ...props, level: 1 }),
+    h2: (props: MarkdownNodeProps) => headingRenderer({ ...props, level: 2 }),
+    h3: (props: MarkdownNodeProps) => headingRenderer({ ...props, level: 3 }),
+    h4: (props: MarkdownNodeProps) => headingRenderer({ ...props, level: 4 }),
+    h5: (props: MarkdownNodeProps) => headingRenderer({ ...props, level: 5 }),
+    h6: (props: MarkdownNodeProps) => headingRenderer({ ...props, level: 6 }),
+    ul: (props: MarkdownNodeProps) => listRenderer({ ...props, ordered: false }),
+    ol: (props: MarkdownNodeProps) => listRenderer({ ...props, ordered: true }),
     code: codeRenderer,
-    thematicBreak: thematicBreakRenderer,
+    hr: thematicBreakRenderer,
     blockquote: blockQuoteRenderer,
     table: tableRenderer,
-    html: parsedHtmlRenderer,
   };
 };
 

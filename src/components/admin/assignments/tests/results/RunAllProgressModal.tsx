@@ -25,7 +25,7 @@ const RunAllProgressModal = (props: IProps) => {
     const castRaw = (props.raw as any) as IResultsType;
     const firstKey: number = parseInt(Object.keys(castRaw)[0], 10);
     return (
-      <Modal visible={props.visible} title="Results" onCancel={props.onCancel}>
+      <Modal open={props.visible} title="Results" onCancel={props.onCancel}>
         <Typography.Title level={4} style={{ display: 'inline' }}>
           Submissions completed
         </Typography.Title>

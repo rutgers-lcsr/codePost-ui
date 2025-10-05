@@ -1,16 +1,14 @@
-import * as React from 'react';
 import { Link } from 'react-router-dom';
 
 import { MenuOutlined } from '@ant-design/icons';
 
+import type { CollapseProps } from 'antd';
 import { Collapse } from 'antd';
 
 import landingVars from '../../styles/pages/_landingVars';
 
 import CPButton from '../core/CPButton';
 import useWindowSize from '../core/useWindowSize';
-
-const Panel = Collapse.Panel;
 
 const LandingHeader = () => {
   const windowSize = useWindowSize();
@@ -76,14 +74,12 @@ const LandingHeader = () => {
 
   if (windowSize.width < landingVars.breakpoints.header) {
     // Small Screen View
-    return (
-      <Collapse
-        bordered={false}
-        expandIconPosition="right"
-        expandIcon={expandIcon}
-        style={{ backgroundColor: 'white' }}
-      >
-        <Panel header={logo} style={{ paddingBottom: 5, paddingTop: 5 }} key="1">
+    const collapseItems: CollapseProps['items'] = [
+      {
+        key: '1',
+        label: logo,
+        style: { paddingBottom: 5, paddingTop: 5 },
+        children: (
           <div className="display-flex flex-direction-column align-items-left justify-content-space-between">
             {docs}
             {faqs}
@@ -93,8 +89,18 @@ const LandingHeader = () => {
               Sign Up
             </Link>
           </div>
-        </Panel>
-      </Collapse>
+        ),
+      },
+    ];
+
+    return (
+      <Collapse
+        bordered={false}
+        expandIconPosition="end"
+        expandIcon={expandIcon}
+        style={{ backgroundColor: 'white' }}
+        items={collapseItems}
+      />
     );
   } else {
     // Normal View

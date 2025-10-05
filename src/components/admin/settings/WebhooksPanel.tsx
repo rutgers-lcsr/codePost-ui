@@ -3,14 +3,13 @@
 /**********************************************************************************************************************/
 
 /* external imports */
+import { Breadcrumb, Skeleton, Tag } from 'antd';
 import * as React from 'react';
-import { Breadcrumb, Collapse, Skeleton, Tag, Table } from 'antd';
 
 /* codePost imports */
-import CPAdminDetail from '../other/CPAdminDetail';
 import { CourseType } from '../../../infrastructure/course';
 import { Webhook, WebhookType } from '../../../infrastructure/webhook';
-import useWebhookItem from './WebhookItem';
+import CPAdminDetail from '../other/CPAdminDetail';
 
 import WebhooksTable from './WebhooksTable';
 
@@ -103,12 +102,7 @@ const WebhooksPanel = (props: IProps) => {
       title={`Webhooks: ${props.currentCourse.name} | ${props.currentCourse.period}`}
       actions={actions}
       content={content}
-      breadcrumbs={
-        <Breadcrumb>
-          <Breadcrumb.Item>Course Settings</Breadcrumb.Item>
-          <Breadcrumb.Item>Webhooks</Breadcrumb.Item>
-        </Breadcrumb>
-      }
+      breadcrumbs={<Breadcrumb items={[{ title: 'Course Settings' }, { title: 'Webhooks' }]} />}
     />
   );
 };

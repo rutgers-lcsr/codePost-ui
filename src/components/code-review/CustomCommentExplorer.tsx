@@ -4,13 +4,13 @@
 import * as React from 'react';
 
 /* ant imports */
-import { Button, Modal, Table, Select, Divider, Input } from 'antd';
+import { Button, Divider, Input, Modal, Select, Table } from 'antd';
 
 /* codepost imports */
-import { AssignmentType, CommentType, RubricCommentType, RubricCategoryType } from '../../infrastructure/types';
 import { Assignment } from '../../infrastructure/assignment';
 import { CommentIO } from '../../infrastructure/comment';
 import { File } from '../../infrastructure/file';
+import { AssignmentType, CommentType, RubricCategoryType, RubricCommentType } from '../../infrastructure/types';
 
 /**********************************************************************************************************************/
 
@@ -70,7 +70,7 @@ const CustomCommentExplorer = (props: IProps) => {
       title: 'Link',
       dataIndex: 'link',
       key: 'link',
-      align: 'center' as 'center',
+      align: 'center' as const,
     },
   ];
 
@@ -127,17 +127,23 @@ const CustomCommentExplorer = (props: IProps) => {
   return (
     <Modal
       onCancel={onCancel}
-      visible={props.visible}
+      open={props.visible}
       width={900}
       title="Custom comment explorer"
-      footer={[<Button onClick={onCancel}>Close</Button>]}
+      footer={[
+        <Button key="close" onClick={onCancel}>
+          Close
+        </Button>,
+      ]}
     >
       {props.isAdmin && (
         <div>
           Grader:{' '}
           <Select style={{ width: 200 }} onChange={setGrader} defaultValue={grader} disabled={loading}>
             {props.graders.map((el) => (
-              <Select.Option value={el}>{el}</Select.Option>
+              <Select.Option key={el} value={el}>
+                {el}
+              </Select.Option>
             ))}
           </Select>
           <br />

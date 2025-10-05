@@ -122,7 +122,7 @@ const LinkedCommentsConfirm = (props: IPropsConfirm) => {
   }
 
   return (
-    <Modal visible={true} title="Warning" onCancel={props.onCancel} onOk={props.onAccept} okText="Continue">
+    <Modal open={true} title="Warning" onCancel={props.onCancel} onOk={props.onAccept} okText="Continue">
       You're about to save edits to rubric comments that have already been applied to submissions. Continuing will
       propagate these changes to the submissions to which they are applied (including any finalized submissions). Are
       you sure you want to continue?

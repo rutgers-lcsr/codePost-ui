@@ -5,7 +5,7 @@
 /* react imports */
 import * as React from 'react';
 
-import { Icon as LegacyIcon } from '@ant-design/compatible';
+import { AuditOutlined, IdcardOutlined, SlidersOutlined } from '@ant-design/icons';
 
 /* antd imports */
 import { Divider, Typography } from 'antd';
@@ -34,18 +34,18 @@ interface IProps {
 
 interface IRoleProps {
   title: string;
-  icon: string;
+  icon: React.ReactNode;
   linkTo: string;
 }
 
 const RoleItem = (props: IRoleProps) => {
   const [hovered, setHovered] = React.useState(false);
 
-  const onMouseEnter = (e: React.MouseEvent) => {
+  const onMouseEnter = (_e: React.MouseEvent) => {
     setHovered(true);
   };
 
-  const onMouseLeave = (e: React.MouseEvent) => {
+  const onMouseLeave = (_e: React.MouseEvent) => {
     setHovered(false);
   };
 
@@ -67,10 +67,9 @@ const RoleItem = (props: IRoleProps) => {
           }}
         >
           <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
-            <LegacyIcon
-              type={props.icon}
-              style={{ fontSize: '70px', color: hovered ? '#24be85' : 'rgba(0, 0, 0, 0.7)' }}
-            />
+            {React.cloneElement(props.icon as React.ReactElement, {
+              style: { fontSize: '70px', color: hovered ? '#24be85' : 'rgba(0, 0, 0, 0.7)' },
+            })}
           </div>
         </div>
         <div style={{ fontWeight: hovered ? 560 : 380, fontSize: '16px', color: 'rgba(0, 0, 0, 0.7)' }}>
@@ -87,9 +86,11 @@ const Home = (props: IProps) => {
   const flexDirection = windowSize.width < 600 ? 'column' : 'row';
 
   const items = [
-    props.isStudent ? <RoleItem key="student" title="Student Console" icon="idcard" linkTo="/student" /> : null,
-    props.isGrader ? <RoleItem key="grader" title="Grader Console" icon="audit" linkTo="/grader" /> : null,
-    props.isAdmin ? <RoleItem key="admin" title="Admin Console" icon="sliders" linkTo="/admin" /> : null,
+    props.isStudent ? (
+      <RoleItem key="student" title="Student Console" icon={<IdcardOutlined />} linkTo="/student" />
+    ) : null,
+    props.isGrader ? <RoleItem key="grader" title="Grader Console" icon={<AuditOutlined />} linkTo="/grader" /> : null,
+    props.isAdmin ? <RoleItem key="admin" title="Admin Console" icon={<SlidersOutlined />} linkTo="/admin" /> : null,
   ];
 
   return (

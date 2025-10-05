@@ -203,7 +203,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
     );
   }
 
-  const onTestCaseSelectChange = (value: any) => {
+  const onTestCaseSelectChange = (_value: any) => {
     const thisID = value.split('-')[1];
 
     const thisTestCase = Object.values(casesByCategory)

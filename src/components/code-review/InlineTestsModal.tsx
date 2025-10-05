@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import { Button, Modal } from 'antd';
 
 import { AssignmentType } from '../../infrastructure/assignment';
@@ -26,8 +24,8 @@ const InlineTestsModal = (props: IInlineTestsModalProps) => {
 
   return (
     <Modal
-      visible={props.visible}
-      bodyStyle={{ padding: '0px' }}
+      open={props.visible}
+      styles={{ body: { padding: '0px' } }}
       closable={false}
       width={'90%'}
       style={{ top: '20px' }}

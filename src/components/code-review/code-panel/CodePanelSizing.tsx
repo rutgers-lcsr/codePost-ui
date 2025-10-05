@@ -35,9 +35,9 @@ class CodePanelLayout {
   public static lineNumberPadding = (code: string): number => {
     const codeSyntax = document.getElementById('code-syntax');
     if (codeSyntax !== null) {
-      const lineNumbers = codeSyntax.firstChild;
+      const lineNumbers = codeSyntax.firstChild?.firstChild as HTMLElement | null;
+      console.log(lineNumbers);
       if (lineNumbers !== null) {
-        // @ts-ignore
         return lineNumbers.offsetWidth;
       }
     }

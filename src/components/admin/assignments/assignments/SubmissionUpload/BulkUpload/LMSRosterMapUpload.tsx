@@ -92,7 +92,7 @@ const LMSRosterMapUpload = (props: IMappingUploadProps) => {
   const saveBtn = <Button onClick={validateMapping}>Save</Button>;
 
   return (
-    <Modal title="Upload a mapping" visible={props.isVisible} onCancel={props.onCancel} footer={[saveBtn]}>
+    <Modal title="Upload a mapping" open={props.isVisible} onCancel={props.onCancel} footer={[saveBtn]}>
       <Alert
         type="info"
         message="You only need to create this mapping once. When you save it, this csv will be stored in your course, and will be

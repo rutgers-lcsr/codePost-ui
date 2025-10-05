@@ -8,8 +8,11 @@ import { Button, Divider, Typography } from 'antd';
 
 import landingVars from '../../styles/pages/_landingVars';
 
-import Carousel from '@brainhubeu/react-carousel';
-import '@brainhubeu/react-carousel/lib/style.css';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import { A11y, Navigation, Pagination } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react';
 
 import PreAuthLayout from '../pre-auth/PreAuthLayout';
 
@@ -17,18 +20,18 @@ import PreAuthLayout from '../pre-auth/PreAuthLayout';
 /* IMAGES
 /*************************************************************************************/
 
-const adamImg = require('./../../img/landing/compressed/adam_blank.jpeg');
-const eitanImg = require('./../../img/landing/compressed/eitan_mendelowitz.jpg');
-const bobImg = require('./../../img/landing/compressed/bob_sedgewick.jpg');
-const robertImg = require('./../../img/landing/compressed/robert_adams.jpg');
-const niemaImg = require('./../../img/landing/compressed/niema_moshiri.jpg');
-const kateImg = require('./../../img/landing/compressed/kate_holdener.jpg');
-const nohaImg = require('./../../img/landing/compressed/noha_hazzazi.jpg');
-const abbasImg = require('./../../img/landing/compressed/abbas_attarwala.jpg');
-const kateKImg = require('./../../img/landing/compressed/kate_kharitonova.jpg');
-const chrisImg = require('./../../img/landing/compressed/chris_bourke.jpg');
-const alekseyImg = require('./../../img/landing/compressed/aleksey_gurtovoy.jpg');
-const michaelImg = require('./../../img/landing/compressed/michael_clarkson.jpg');
+import abbasImg from './../../img/landing/compressed/abbas_attarwala.jpg';
+import adamImg from './../../img/landing/compressed/adam_blank.jpeg';
+import alekseyImg from './../../img/landing/compressed/aleksey_gurtovoy.jpg';
+import bobImg from './../../img/landing/compressed/bob_sedgewick.jpg';
+import chrisImg from './../../img/landing/compressed/chris_bourke.jpg';
+import eitanImg from './../../img/landing/compressed/eitan_mendelowitz.jpg';
+import kateImg from './../../img/landing/compressed/kate_holdener.jpg';
+import kateKImg from './../../img/landing/compressed/kate_kharitonova.jpg';
+import michaelImg from './../../img/landing/compressed/michael_clarkson.jpg';
+import niemaImg from './../../img/landing/compressed/niema_moshiri.jpg';
+import nohaImg from './../../img/landing/compressed/noha_hazzazi.jpg';
+import robertImg from './../../img/landing/compressed/robert_adams.jpg';
 
 /*************************************************************************************/
 /* TEXT
@@ -99,7 +102,7 @@ const niemaText = (
     </Typography.Text>
     , I have been able to build workflows that have made all aspects of executing my course extremely streamlined,{' '}
     <Typography.Text mark className="codePost-highlight">
-      even with >500 students.
+      even with {'>'} 500 students.
     </Typography.Text>
   </span>
 );
@@ -274,23 +277,14 @@ const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name:
 };
 
 const Testimonials = () => {
-  const landingTestimonials = testmonialInfo.map((t) => {
-    return (
-      <Testimonial
-        key={`testimonial-${t.name}`}
-        text={t.text}
-        name={t.name}
-        thumbnail={t.thumbnail}
-        school={t.school}
-      />
-    );
+  const [permutation] = React.useState(() => {
+    const testimonials = [...testmonialInfo];
+    return testimonials.slice(0, 2).concat(shuffle(testimonials.slice(2)));
   });
-
-  const [permutation] = React.useState(landingTestimonials.slice(0, 2).concat(shuffle(landingTestimonials.slice(2))));
 
   const windowSize = useWindowSize();
 
-  const slidesPerPage = windowSize.width < landingVars.breakpoints.testimonial ? 1 : 3;
+  const slidesPerView = windowSize.width < landingVars.breakpoints.testimonial ? 1 : 3;
 
   return (
     <div id="Testimonials">
@@ -318,9 +312,21 @@ const Testimonials = () => {
       </div>
       <br />
       <br />
-      <Carousel slidesPerPage={slidesPerPage} arrows infinite>
-        {permutation}
-      </Carousel>
+      <Swiper
+        modules={[Navigation, Pagination, A11y]}
+        spaceBetween={30}
+        slidesPerView={slidesPerView}
+        navigation
+        pagination={{ clickable: true }}
+        loop
+        style={{ paddingBottom: '40px' }}
+      >
+        {permutation.map((t) => (
+          <SwiperSlide key={`testimonial-${t.name}`}>
+            <Testimonial text={t.text} name={t.name} thumbnail={t.thumbnail} school={t.school} />
+          </SwiperSlide>
+        ))}
+      </Swiper>
       <Button
         href="https://codepost.cs.rutgers.edu/testimonials"
         target="_blank"
@@ -432,4 +438,4 @@ const AllTestimonials = (props: IProps) => {
   );
 };
 
-export { AllTestimonials, Testimonials, Testimonial };
+export { AllTestimonials, Testimonial, Testimonials };

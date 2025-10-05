@@ -271,7 +271,7 @@ export const ResultDetail = (props: IProps) => {
     </Button>
   );
   return (
-    <Modal width={'85%'} visible={props.visible} footer={[closeButton]} onCancel={props.onCancel}>
+    <Modal width={'85%'} open={props.visible} footer={[closeButton]} onCancel={props.onCancel}>
       <div className="display-flex align-items-center" style={{ marginBottom: 20 }}>
         <div className="display-flex  align-items-center">Category:&nbsp; {categorySelect}</div>
         <div className="display-flex  align-items-center" style={{ marginLeft: 15, marginRight: 15 }}>

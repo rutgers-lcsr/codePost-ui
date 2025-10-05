@@ -1,5 +1,6 @@
 .code-container {
   position: relative;
+  isolation: isolate;
 
   border-radius: 3px;
 
@@ -10,10 +11,11 @@
   .code {
     z-index: 0;
     position: relative;
+    isolation: isolate; // Isolate stacking context from external elements like resizers
 
     // FIXME: get rid of all these !importants
     border: 0px !important;
-    overflow-x: auto;
+    // overflow-x: auto;
     // overflow-y: auto;
 
     margin-top: 0px !important;
@@ -44,6 +46,7 @@
 
       position: absolute;
       top: 30px;
+      margin-top: 0px;
 
       background-color: transparent !important;
 
@@ -77,23 +80,90 @@
       word-break: normal;
     }
 
+    // Custom text selection color for code
+    ::selection {
+      background-color: rgba(100, 200, 100, 0.3); // Soft green selection
+      color: inherit; // Keep text color visible
+    }
+
+    ::-moz-selection {
+      background-color: rgba(100, 200, 100, 0.3); // Soft green selection for Firefox
+      color: inherit;
+    }
+
     .highlight {
       display: inline-block;
       height: $highlightHeight + 0px;
-
       vertical-align: middle;
 
-      background-color: #ffbf00;
+      // Smooth transitions for all color changes
+      transition:
+        background-color 0.2s ease-in-out,
+        box-shadow 0.15s ease-in-out,
+        transform 0.1s ease-in-out;
 
-      // Override selection styling
+      // Rounded corners for modern appearance
+      border-radius: 3px;
+
+      // Subtle border and shadow for depth
+      box-shadow:
+        0 0 0 0.5px rgba(0, 0, 0, 0.1),
+        0 1px 2px rgba(0, 0, 0, 0.05);
+
+      // Selection styling within highlights
       &::selection {
-        color: transparent; /* WebKit/Blink Browsers */
-        background: transparent;
+        background-color: rgba(100, 200, 100, 0.4);
+        color: inherit;
       }
 
       &::-moz-selection {
-        color: transparent; /* Gecko Browsers */
-        background: transparent;
+        background-color: rgba(100, 200, 100, 0.4);
+        color: inherit;
+      }
+
+      // Enhanced hover effect for better interactivity
+      &:hover {
+        box-shadow:
+          0 0 0 1px rgba(0, 0, 0, 0.2),
+          0 2px 4px rgba(0, 0, 0, 0.1);
+        transform: translateY(-0.5px);
+        cursor: pointer;
+      }
+      &--hovered {
+        box-shadow:
+          0 0 0 1px rgba(0, 0, 0, 0.2),
+          0 2px 4px rgba(0, 0, 0, 0.1);
+        transform: translateY(-0.5px);
+        cursor: pointer;
+        // Slightly brighter background on hover,
+        background-color: rgba(15, 23, 42) !important;
+        opacity: 0.3 !important;
+      }
+    }
+
+    // Default background for all highlight classes
+    // This will be overridden by specific highlight-{id} rules created dynamically
+    [class*='highlight-'] {
+      background-color: rgba(15, 23, 42, 0.55); // Dark blue with good contrast
+      // Keep syntax highlighting colors intact
+
+      // Add subtle inner glow for depth
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+
+      // Position relative for proper rendering but no z-index to avoid conflicts
+      position: relative;
+
+      // Nested highlights get slightly different styling for visual depth
+      .highlight {
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+
+        .highlight {
+          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+
+          .highlight {
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+          }
+        }
       }
     }
 

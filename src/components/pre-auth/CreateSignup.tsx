@@ -5,19 +5,13 @@
 /* react imports */
 import * as React from 'react';
 
-import {
-  InfoCircleTwoTone,
-  QuestionCircleOutlined,
-  TeamOutlined,
-  UserOutlined,
-  ExclamationCircleOutlined,
-} from '@ant-design/icons';
+import { ExclamationCircleOutlined, InfoCircleTwoTone, TeamOutlined, UserOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Alert, Checkbox, Divider, Input, Progress, Switch, Typography, Modal } from 'antd';
+import { Alert, Checkbox, Divider, Input, Modal, Progress, Switch, Typography } from 'antd';
 
 /* other library imports */
-import Select from 'react-select';
+import Select, { SingleValue } from 'react-select';
 
 import { Link } from 'react-router-dom';
 
@@ -29,7 +23,6 @@ import universities from './universities';
 import PreAuthSignupLayout from './PreAuthSignupLayout';
 
 import CPButton from '../core/CPButton';
-import CPTooltip from '../core/CPTooltip';
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
 
 import { Testimonial } from '../landing/Testimonial';
@@ -115,8 +108,8 @@ class CreateSignup extends React.Component<IProps, IState> {
   private interval: any;
   private progressInterval: any;
 
-  public componentDidUpdate(oldProps: IProps, oldState: IState) {
-    if (!oldState.createNewOrg && this.state.createNewOrg) {
+  public componentDidUpdate(_oldProps: IProps, _oldState: IState) {
+    if (!_oldState.createNewOrg && this.state.createNewOrg) {
       this.setState({ selectedOrg: { label: '', value: '' } });
     }
   }
@@ -131,8 +124,10 @@ class CreateSignup extends React.Component<IProps, IState> {
     });
   };
 
-  public handleOrgChange = (newVal: IOption) => {
-    this.setState({ selectedOrg: newVal });
+  public handleOrgChange = (newVal: SingleValue<IOption>) => {
+    if (newVal) {
+      this.setState({ selectedOrg: newVal });
+    }
   };
 
   public toggleCheck = (label: string) => {
@@ -216,7 +211,7 @@ class CreateSignup extends React.Component<IProps, IState> {
             });
           }
         })
-        .catch((err) => {
+        .catch((_err) => {
           this.setState({ status: STATUS.VALIDATION_SUCCESS, progress: 100 });
         });
     });
@@ -374,8 +369,6 @@ class CreateSignup extends React.Component<IProps, IState> {
         );
         break;
       case STATUS.VALIDATION_SUCCESS:
-        const mailToString = `mailto:team@codepost.io?subject=Never%20Received%20Signup%20Email&body=Hi,%20I%20never
-        %20received%20my%20codePost%20signup%20email.%20Could%20you%20please%20look%20into%20it%3f`;
         content = (
           <div>
             <Progress percent={this.state.progress} />
@@ -441,7 +434,7 @@ class CreateSignup extends React.Component<IProps, IState> {
         to how we grade computer science at Princeton.
       </span>
     );
-    const bobImg = require('./../../img/landing/compressed/bob_sedgewick.jpg');
+    const bobImg = new URL('./../../img/landing/compressed/bob_sedgewick.jpg', import.meta.url).href;
     const flexDirection = this.props.windowwidth < 750 ? 'column' : 'row';
 
     return (

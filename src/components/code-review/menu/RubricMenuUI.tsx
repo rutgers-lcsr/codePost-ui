@@ -5,12 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
-import { Icon as LegacyIcon } from '@ant-design/compatible';
-
 /* antd imports */
 // @ts-ignore
-import { Input, Popconfirm, Tag, Empty } from 'antd';
-import { SaveOutlined, UndoOutlined, PlusOutlined } from '@ant-design/icons';
+import { BackwardFilled, EditFilled, PlusOutlined, SaveOutlined, UndoOutlined } from '@ant-design/icons';
+import { Empty, Input, Popconfirm, Tag } from 'antd';
 
 /* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
@@ -32,7 +30,7 @@ import Loading from '../../core/Loading';
 
 import { RESOLUTION } from '../../core/rubric/RubricManager';
 
-import { IRubricManagerProps, IRubricManagerState, IRubricManagerHelpers } from '../../core/rubric/RubricManager';
+import { IRubricManagerHelpers, IRubricManagerProps, IRubricManagerState } from '../../core/rubric/RubricManager';
 
 import RubricCategoryManager, { IRubricCategoryManagerParams } from '../../core/rubric/RubricCategoryManager';
 
@@ -128,7 +126,7 @@ const RubricMenuUI = ({
       const rubricMenu = document.getElementById('rubric-menu');
 
       if (rubricMenu !== null) {
-        let cursoredRows = document.getElementsByClassName('rubric-row-cursored');
+        const cursoredRows = document.getElementsByClassName('rubric-row-cursored');
         if (cursoredRows.length > 0) {
           const cursoredRow = cursoredRows[0];
 
@@ -197,7 +195,7 @@ const RubricMenuUI = ({
 
     // If user has specified a category with category:[some text], respect it
     const categoryMatches = searchTerm.match(/(category:[a-z0-9]+)|(category:"[a-z0-9\s]+")/i);
-    let adjustedRubricComments = { ...rubricComments };
+    const adjustedRubricComments = { ...rubricComments };
 
     // Create a category of frequently used comments
     let freq: RubricCategoryType;
@@ -385,7 +383,7 @@ const RubricMenuUI = ({
   useHotkeys(S_KEY, blurAndSave);
 
   let controls = null;
-  if (state.loadComplete && props.canUserEdit) {
+  if (state.loadComplete && props.canUserEdit && props.editRubricMode) {
     const x = helpers.changesMade();
     if (x !== changesMade) {
       setChangesMade(x);
@@ -436,7 +434,6 @@ const RubricMenuUI = ({
           Category
         </CPButton>
       </Popconfirm>,
-      <div key="gap1" style={{ width: '10px' }} />,
       <CPButton
         key="undo"
         cpType="secondary"
@@ -447,10 +444,9 @@ const RubricMenuUI = ({
       >
         Undo
       </CPButton>,
-      <div key="gap2" style={{ width: '10px' }} />,
       <Popconfirm
         title="You have unsaved changes. Would you like to save?"
-        visible={confirmChanges}
+        open={confirmChanges}
         onConfirm={confirm}
         onCancel={cancel}
         okText="Yes"
@@ -497,11 +493,6 @@ const RubricMenuUI = ({
   const insertCategorySearch = () => {
     if (!searchTerm.includes('category:')) {
       setSearchTerm(searchTerm === '' ? 'category:' : `${searchTerm} category:`);
-      // this.setState((oldState) => {
-      //   return {
-      //     searchTerm: oldState.searchTerm === '' ? 'category:' : `${oldState.searchTerm} category:`,
-      //   };
-      // });
       focusSearch();
     }
   };
@@ -509,7 +500,7 @@ const RubricMenuUI = ({
   let searchBar;
 
   if (props.canUserEdit) {
-    const iconType = props.editRubricMode ? 'backward' : 'edit';
+    const Icon = props.editRubricMode ? BackwardFilled : EditFilled;
     searchBar = (
       <Input
         allowClear
@@ -519,12 +510,7 @@ const RubricMenuUI = ({
         value={searchTerm}
         addonBefore={
           <CPTooltip title={tooltips.grade.rubric.edit} placement="right">
-            <LegacyIcon
-              type={iconType}
-              theme="filled"
-              onClick={toggleEditRubricMode}
-              style={{ color: '#24be85', cursor: 'pointer' }}
-            />
+            <Icon onClick={toggleEditRubricMode} style={{ color: '#24be85', cursor: 'pointer' }} />
           </CPTooltip>
         }
         className={consoleThemes.light === consoleTheme ? 'search--light' : 'search--dark'}
@@ -575,8 +561,10 @@ const RubricMenuUI = ({
       content = (
         <div style={emptySyle}>
           <Empty
-            imageStyle={{
-              height: 60,
+            styles={{
+              image: {
+                height: 60,
+              },
             }}
             description={emptyContent}
           />
@@ -584,26 +572,24 @@ const RubricMenuUI = ({
       );
     } else {
       const rubricMenu = buildRubricMenu(state.rubricCategories, state.rubricComments);
-      content = <div id="rubric-menu-wrapper">{rubricMenu}</div>;
+      content = (
+        <div id="rubric-menu-wrapper" className="rubric-menu-wrapper">
+          {rubricMenu}
+        </div>
+      );
     }
   }
 
   return (
-    <div style={{ marginTop: '8px' }} id="rubric-menu-container">
-      <div
-        id="rubric-menu-title"
-        style={{ marginBottom: '5px', width: '100%', textAlign: 'center', padding: '0px 10px' }}
-      >
-        <div style={{ textAlign: 'right' }}>
+    <div className="rubric-menu-container" id="rubric-menu-container">
+      <div className="rubric-menu-header" id="rubric-menu-title">
+        <div className="rubric-menu-category-search">
           <CPTooltip title={tooltips.grade.rubric.categorySearch} hideThisOnHideTips={true}>
             <Tag
+              className="rubric-menu-category-tag"
               style={{
                 background: consoleTheme.siderBg,
                 color: consoleTheme.siderTitle,
-                borderStyle: 'dashed',
-                marginBottom: '4px',
-                marginRight: '0px',
-                cursor: 'pointer',
               }}
               onClick={insertCategorySearch}
             >
@@ -611,14 +597,20 @@ const RubricMenuUI = ({
             </Tag>
           </CPTooltip>
         </div>
-        {searchBar}
+        <div className="rubric-menu-search">{searchBar}</div>
       </div>
-      <div id="rubric-menu" style={{ height: '100%', overflow: 'auto' }}>
+      <div className="rubric-menu-content" id="rubric-menu">
         {content}
       </div>
-      <div id="rubric-menu-controls" className={editRubricClass} style={{ backgroundColor: consoleTheme.siderBg }}>
-        {controls}
-      </div>
+      {controls && (
+        <div
+          className={`rubric-menu-controls ${editRubricClass}`}
+          id="rubric-menu-controls"
+          style={{ backgroundColor: consoleTheme.siderBg }}
+        >
+          {controls}
+        </div>
+      )}
     </div>
   );
 };

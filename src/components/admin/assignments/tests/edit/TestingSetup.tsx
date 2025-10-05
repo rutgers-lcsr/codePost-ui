@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 
 /* antd imports */
-import { Breadcrumb, Button, InputNumber, Tabs, Checkbox, message, Typography } from 'antd';
+import { Breadcrumb, Button, Checkbox, InputNumber, message, Tabs, Typography } from 'antd';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
@@ -14,20 +14,20 @@ import { Link } from 'react-router-dom';
 
 /* codePost object imports */
 import { AssignmentType } from '../../../../../infrastructure/assignment';
-import { SolutionFile, SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
-import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 import { HelperFile, HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
+import { SolutionFile, SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
 import { SourceFile, SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
+import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 
 /* codePost component imports */
+import CPTooltip from '../../../../core/CPTooltip';
 import CPAdminDetail from '../../../other/CPAdminDetail';
 import { EnvironmentSpecs } from './EnvironmentSpecs';
 import { TestDefinitions } from './TestDefinitions';
-import CPTooltip from '../../../../core/CPTooltip';
 
 /* codePost util imports */
-import { fetchSourceFiles, fetchSolutionFiles, fetchEnvironment, fetchHelpers } from '../../../../core/testFetchUtils';
+import { fetchEnvironment, fetchHelpers, fetchSolutionFiles, fetchSourceFiles } from '../../../../core/testFetchUtils';
 
 const { TabPane } = Tabs;
 
@@ -37,7 +37,7 @@ interface IProps {
   currentAssignment: AssignmentType;
   submissions: SubmissionInfoType[];
   updateAssignment: (assignmentID: number, field: string, value: number) => void;
-  breadcrumbs?: React.ReactElement[];
+  breadcrumbs?: Array<{ title: React.ReactNode }>;
   match: any;
 }
 
@@ -294,10 +294,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
   const onChange = (val: string) => {
     setCurrTab(val);
 
-    const newUrl = `${props.match.url
-      .split('/')
-      .slice(0, -1)
-      .join('/')}/${val}`;
+    const newUrl = `${props.match.url.split('/').slice(0, -1).join('/')}/${val}`;
     props.history.push(newUrl);
   };
 
@@ -492,11 +489,9 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     <div id="Autograder">
       <CPAdminDetail
         breadcrumbs={
-          <Breadcrumb>
-            {props.breadcrumbs}
-            <Breadcrumb.Item key="assignment">{props.currentAssignment.name}</Breadcrumb.Item>
-            <Breadcrumb.Item key="edit">Edit</Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[...(props.breadcrumbs || []), { title: props.currentAssignment.name }, { title: 'Edit' }]}
+          />
         }
         goBack={null}
         title={`${props.currentAssignment.name} | Tests Setup`}

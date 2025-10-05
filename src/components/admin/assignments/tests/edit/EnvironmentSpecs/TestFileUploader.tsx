@@ -199,7 +199,7 @@ export const TestFileUploader = (props: IUploadProps) => {
           Add / Remove Files
         </Button>
       )}
-      <Modal visible={visible} onCancel={toggleVisible} width={750} footer={footer} title={props.title}>
+      <Modal open={visible} onCancel={toggleVisible} width={750} footer={footer} title={props.title}>
         <Table columns={columns} dataSource={[...files, ...folders]} />
         <br />
         <Upload

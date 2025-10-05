@@ -1,17 +1,18 @@
-.comment {
+.cp-comment {
   width: 100%;
+  position: relative;
 
   &--active {
-    left: -13px;
+    // background-color: #bebebe;
   }
 
   .ant-popover-arrow {
     top: 34px !important;
   }
 
-  .ant-popover-title {
-    // background-color: #fafafa !important;
-    // padding: 5px 16px 2px 16px;
+  .ant-card-head {
+    background-color: #f0fff6 !important;
+    padding: 5px 16px 2px 16px;
   }
 
   .ant-popover-inner-content {

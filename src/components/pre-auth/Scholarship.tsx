@@ -3,7 +3,6 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
 
 import { CalendarOutlined, CrownOutlined, IdcardOutlined, ProfileOutlined } from '@ant-design/icons';
 
@@ -16,8 +15,8 @@ import { Button, Typography } from 'antd';
 import useWindowSize from '../core/useWindowSize';
 import PreAuthLayout from './PreAuthLayout';
 
-const graderMeeting = require('../../img/landing/compressed/codePost_grader_meeting.jpg');
-const scholarshipImage = require('../../img/landing/compressed/codePost_scholarship_image.jpg');
+import graderMeeting from '../../img/landing/compressed/codePost_grader_meeting.jpg';
+import scholarshipImage from '../../img/landing/compressed/codePost_scholarship_image.jpg';
 
 interface IProps {
   isLoggedIn: boolean;

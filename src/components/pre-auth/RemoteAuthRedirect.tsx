@@ -25,7 +25,7 @@ const RemoteAuthRedirect = (props: any) => {
         <LandingNew {...props} />
         <Modal
           title={<span style={{ fontSize: '22px' }}>Welcome to codePost!</span>}
-          visible={showModal}
+          open={showModal}
           onCancel={close}
           width={'44%'}
           footer={null}

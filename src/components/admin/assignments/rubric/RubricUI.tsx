@@ -6,8 +6,8 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Checkbox, Breadcrumb, Empty, Modal } from 'antd';
-import { UndoOutlined, SaveOutlined, SettingOutlined } from '@ant-design/icons';
+import { SaveOutlined, SettingOutlined, UndoOutlined } from '@ant-design/icons';
+import { Breadcrumb, Checkbox, Empty, Modal } from 'antd';
 
 /* codePost imports */
 import RubricCommentExplorer from './RubricCommentExplorer';
@@ -34,13 +34,13 @@ import RubricCategoryManager, {
   IRubricCategoryManagerParams,
 } from '../../../../components/core/rubric/RubricCategoryManager';
 
-import { IRubricManagerProps, IRubricManagerState, IRubricManagerHelpers } from '../../../core/rubric/RubricManager';
+import { IRubricManagerHelpers, IRubricManagerProps, IRubricManagerState } from '../../../core/rubric/RubricManager';
 
 import CPTooltip from '../../../core/CPTooltip';
 import { tooltips } from '../../../core/tooltips';
 
 interface IRubricUIProps extends IRubricManagerProps {
-  breadcrumbs: React.ReactElement[];
+  breadcrumbs: Array<{ title: React.ReactNode }>;
   baseURL: string;
   history: any;
 }
@@ -80,7 +80,7 @@ const RubricUI = ({
         setShowPointLimitCheckbox(false);
       }
 
-      if (!showHelpText && (typeof cat.helpText === 'string' && cat.helpText.length > 0)) {
+      if (!showHelpText && typeof cat.helpText === 'string' && cat.helpText.length > 0) {
         setShowHelpText(true);
         setShowHelpTextCheckbox(false);
       }
@@ -181,7 +181,7 @@ const RubricUI = ({
     };
 
     const settingsModal = (
-      <Modal title="Rubric settings" visible={settingsOpen} footer={null} onCancel={() => setSettingsOpen(false)}>
+      <Modal title="Rubric settings" open={settingsOpen} footer={null} onCancel={() => setSettingsOpen(false)}>
         <div>
           {showPointLimitCheckbox ? (
             <div>
@@ -351,8 +351,10 @@ const RubricUI = ({
           isEmpty={state.rubricCategories.length === 0}
           emptyNode={
             <Empty
-              imageStyle={{
-                height: 60,
+              styles={{
+                image: {
+                  height: 60,
+                },
               }}
               description={<span>No rubric yet</span>}
             >
@@ -361,12 +363,7 @@ const RubricUI = ({
               </CPButton>
             </Empty>
           }
-          breadcrumbs={
-            <Breadcrumb>
-              {props.breadcrumbs}
-              <Breadcrumb.Item key={props.assignment.name}>{props.assignment.name}</Breadcrumb.Item>
-            </Breadcrumb>
-          }
+          breadcrumbs={<Breadcrumb items={[...props.breadcrumbs, { title: props.assignment.name }]} />}
           titleInfo={tooltips.admin.rubric.title}
         />
       </span>

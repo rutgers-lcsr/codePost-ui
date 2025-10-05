@@ -102,9 +102,9 @@ const MossResults = (props: any) => {
       isEmpty={false}
       emptyNode={
         <Empty
-          imageStyle={{
+          styles={{ image: {
             height: 60,
-          }}
+          } }}
           description={'nothing returned'}
         >
           try again

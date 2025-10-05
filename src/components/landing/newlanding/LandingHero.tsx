@@ -60,12 +60,7 @@ const LandingHero = () => {
           </CPButton>
         </Link>
       </div>
-      <Modal
-        visible={modalShowing}
-        onCancel={setModalShowing.bind(false, false)}
-        footer={null}
-        title="Try out codePost!"
-      >
+      <Modal open={modalShowing} onCancel={setModalShowing.bind(false, false)} footer={null} title="Try out codePost!">
         <CPButton cpType="primary" block>
           <a href={`/demo`} target="_blank" rel="noopener noreferrer">
             Interactive code annotation demo

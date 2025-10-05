@@ -4,18 +4,21 @@
 
 /* react imports */
 import * as React from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 
 /* antd imports */
+import type { MenuProps } from 'antd';
 import { Badge as AntBadge, Dropdown, Menu } from 'antd';
 
 import moment from 'moment';
+
+// Type for Menu onSelect callback
+type SelectInfo = Parameters<NonNullable<MenuProps['onSelect']>>[0];
 
 /* codePost imports */
 import { CommentType } from '../../../infrastructure/comment';
 import { FileType } from '../../../infrastructure/file';
 import { Submission } from '../../../infrastructure/submission';
-
-import { SelectParam } from 'antd/lib/menu';
 
 import { IFileToCommentsMap } from '../../../types/common';
 
@@ -24,19 +27,19 @@ import { tooltips } from '../../core/tooltips';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
-import CodeConsole from '../CodeConsole';
+import * as CodeConsoleUtils from '../codeConsoleUtils';
 
 import Badge from '../../core/Badge';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 
-import { getOperatingSystem, osControlKey, OS } from '../../core/operatingSystem';
+import { OS, getOperatingSystem, osControlKey } from '../../core/operatingSystem';
 
 import { sendSlack } from '../../core/slack';
 
 import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
 
-import { IFolder, IDirectoryStructure, buildFolderMenu, createDirectoryStructure, sortFiles } from './fileMenuUtils';
+import { IDirectoryStructure, IFolder, buildFolderMenu, createDirectoryStructure, sortFiles } from './fileMenuUtils';
 
 /*************************************** Helper Interfaces for Directory rendering ******************************/
 
@@ -52,16 +55,11 @@ interface IFileMenuProps extends IWithWindowWatcherProps {
   hidePoints?: boolean;
 }
 
-interface IFileMenuState {
-  // Storing both of these in state for speed (avoid recreating directory on each render)
-  directoryStructure: IDirectoryStructure<FileType>; // The nested directory of the files, after path is parsed
-  sortedFiles: FileType[]; // The ordered array of files that will be visually rendered (for shortcut mapping)
-  oldVersionsMap: { [path: string]: FileType[] };
-}
+const FileMenu: React.FC<IFileMenuProps> = (props) => {
+  const consoleTheme = useContext(ConsoleThemeContext);
 
-class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
-  public constructor(props: IFileMenuProps) {
-    super(props);
+  // Initialize state with useMemo for computed initial values
+  const initialState = React.useMemo(() => {
     const separatedFiles = Submission.filesByVersion(props.files);
     const directoryStructure = createDirectoryStructure(separatedFiles.new);
     const sortedFiles = sortFiles(directoryStructure);
@@ -69,106 +67,132 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     if (oldVersionsMap && Object.keys(oldVersionsMap).length > 0) {
       sendSlack('File Versioning', window.location.href, '#f9f9f9', '#user_notifications_beta_use');
     }
-    this.state = {
+    return {
       directoryStructure,
       sortedFiles,
       oldVersionsMap,
     };
+  }, [props.files]);
 
+  const [directoryStructure, setDirectoryStructure] = useState<IDirectoryStructure<FileType>>(
+    initialState.directoryStructure,
+  );
+  const [sortedFiles, setSortedFiles] = useState<FileType[]>(initialState.sortedFiles);
+  const [oldVersionsMap, setOldVersionsMap] = useState<{ [path: string]: FileType[] }>(initialState.oldVersionsMap);
+
+  // Handle keyboard shortcuts
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      const os = getOperatingSystem();
+      const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+
+      if (e.which >= 49 && e.which <= 57 && triggerKey) {
+        e.preventDefault();
+        if (e.which - 49 < props.files.length) {
+          props.changeSelectedFile(sortedFiles[e.which - 49].id);
+        }
+      }
+    },
+    [props, sortedFiles],
+  );
+
+  // Auto-select first file on mount
+  useEffect(() => {
     const autosettedFile = sortedFiles.find((f: FileType) => {
       return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
     });
     if (autosettedFile === undefined && sortedFiles.length > 0) {
       // If the file has a directory, then the order of the files in the UI might be different than the order passed in
       // After getting the order, we want to change the selected file to be the first in the list
-      this.props.changeSelectedFile(sortedFiles[0].id);
+      props.changeSelectedFile(sortedFiles[0].id);
     }
-  }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  public componentDidUpdate(prevProps: IFileMenuProps) {
-    if (prevProps.files !== this.props.files) {
-      const separatedFiles = Submission.filesByVersion(this.props.files);
-      const directoryStructure = createDirectoryStructure(separatedFiles.new);
-      const sortedFiles = sortFiles(directoryStructure);
-      this.setState({ directoryStructure, sortedFiles, oldVersionsMap: separatedFiles.old });
-    }
-  }
+  /**
+   * Update directory structure and file list when files or comments change.
+   * Watching props.comments ensures the file menu re-renders when comment points are updated,
+   * so the displayed point totals stay in sync with comment changes.
+   */
+  useEffect(() => {
+    const separatedFiles = Submission.filesByVersion(props.files);
+    const newDirectoryStructure = createDirectoryStructure(separatedFiles.new);
+    const newSortedFiles = sortFiles(newDirectoryStructure);
+    setDirectoryStructure(newDirectoryStructure);
+    setSortedFiles(newSortedFiles);
+    setOldVersionsMap(separatedFiles.old);
+  }, [props.files, props.comments]);
 
-  public componentDidMount() {
-    document.addEventListener('keydown', this.handleKeyDown);
-  }
-
-  public componentWillUnmount() {
-    document.removeEventListener('keydown', this.handleKeyDown);
-  }
-
-  public handleKeyDown = (e: any) => {
-    const os = getOperatingSystem();
-    const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
-
-    if (e.which >= 49 && e.which <= 57 && triggerKey) {
-      e.preventDefault();
-      if (e.which - 49 < this.props.files.length) {
-        this.props.changeSelectedFile(this.state.sortedFiles[e.which - 49].id);
-      }
-    }
-  };
-
-  public onSelect = (selectedParam: SelectParam) => {
-    const fileID = +selectedParam.key.split('-')[1];
-    this.props.changeSelectedFile(fileID);
-  };
+  // Keyboard event listeners
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   /**************************** MENU BUILD HELPER FUNCTIONS *************************************/
+  // File select handler
+  const onFileSelect = useCallback(
+    (isOldFile: boolean, e: SelectInfo) => {
+      if (e) {
+        const fileID = +e.key.split('-')[1];
+        props.changeSelectedFile(fileID);
+        if (isOldFile) {
+          e.domEvent.preventDefault();
+          e.domEvent.stopPropagation();
+        }
+      }
+    },
+    [props],
+  );
+
   // Get the latest number of comments in a file (file.comments might be out of date because
   //   we re-calculate sort on change of props.file, which doesn't update when comments change
-  public getNumCommentsInFile = (file: FileType) => {
-    let commentCount;
-    if (this.props.comments === undefined || !this.props.comments.hasOwnProperty(file.id)) {
-      commentCount = file.comments.length;
-    } else {
-      commentCount = this.props.comments[file.id].filter((comment: CommentType) => {
-        return comment.id > 0;
-      }).length;
-    }
-    return commentCount;
-  };
+  const getNumCommentsInFile = useCallback(
+    (file: FileType) => {
+      let commentCount;
+      if (props.comments === undefined || !Object.prototype.hasOwnProperty.call(props.comments, file.id)) {
+        commentCount = file.comments.length;
+      } else {
+        commentCount = props.comments[file.id].filter((comment: CommentType) => {
+          return comment.id > 0;
+        }).length;
+      }
+      return commentCount;
+    },
+    [props.comments],
+  );
 
   // OLD VERSIONS MENU BUILD
-  public buildOldVersionsMenu = (currentFile: FileType, oldVersions: FileType[], path: string) => {
-    const { oldVersionsMap } = this.state;
+  const buildOldVersionsMenu = useCallback(
+    (currentFile: FileType, oldVersions: FileType[], path: string) => {
+      const sortedOldVersions = oldVersions.sort((f1: FileType, f2: FileType) => {
+        return f2.id - f1.id;
+      });
 
-    const sortedOldVersions = oldVersions.sort((f1: FileType, f2: FileType) => {
-      return f2.id - f1.id;
-    });
-
-    const items = sortedOldVersions.map((f2: FileType) => {
-      const numComments = this.getNumCommentsInFile(f2);
-      return (
-        <Menu.Item key={`file-${f2.id}`} style={{ minWidth: 200 }}>
-          {
+      const oldVersionItems = sortedOldVersions.map((f2: FileType) => {
+        const numComments = getNumCommentsInFile(f2);
+        return {
+          key: `file-${f2.id}`,
+          label: (
             <div className="display-flex align-items-center justify-content-space-between">
               {moment(f2.created).format('lll')}
               {numComments > 0 ? <Badge count={numComments} forcedStyle="neutral" size="small" /> : <div />}
             </div>
-          }
-        </Menu.Item>
-      );
-    });
-    const currentFileNumComments = this.getNumCommentsInFile(currentFile);
-    const menu = (
-      <div>
-        <Menu
-          mode="inline"
-          inlineCollapsed={false}
-          selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
-          defaultOpenKeys={[`${path}-old-versions`]}
-          style={{ minWidth: 280 }}
-          onSelect={this.onFileSelect.bind(this, true)}
-        >
-          <Menu.SubMenu key={`${path}-old-versions`} title={`${currentFile.name} history`}>
-            <Menu.Item key={`file-${currentFile.id}`} style={{ minWidth: 200 }}>
-              {
+          ),
+          style: { minWidth: 200 },
+        };
+      });
+
+      const currentFileNumComments = getNumCommentsInFile(currentFile);
+      const menuItems = [
+        {
+          key: `${path}-old-versions`,
+          label: `${currentFile.name} history`,
+          children: [
+            {
+              key: `file-${currentFile.id}`,
+              label: (
                 <div className="display-flex align-items-center justify-content-space-between">
                   <div style={{ lineHeight: 1.5, marginTop: 4 }}>
                     <div style={{ fontSize: 10, fontStyle: 'italic' }}>Current Version</div>
@@ -180,237 +204,243 @@ class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                     <div />
                   )}
                 </div>
-              }
-            </Menu.Item>
-            {items}
-          </Menu.SubMenu>
-        </Menu>
-      </div>
-    );
-
-    return (
-      <Dropdown overlay={menu} placement="bottomCenter" trigger={['hover']}>
-        <AntBadge
-          count={oldVersionsMap[path].length + 1}
-          style={{
-            backgroundColor: '#fff',
-            color: '#999',
-            boxShadow: '0 0 0 1px #d9d9d9 inset',
-            marginLeft: 6,
-            borderRadius: 0,
-          }}
-        />
-      </Dropdown>
-    );
-  };
-
-  // FILE MENU HELPER - BADGE STYLING
-  public buildFileBadges = (file: FileType, commentCount: number, deductions: number, bonuses: number) => {
-    let faded = true;
-    if (this.props.selectedFile && this.props.selectedFile.id === file.id) {
-      faded = false;
-    }
-
-    let commentCountBadge = null;
-    if (commentCount > 0) {
-      commentCountBadge = <Badge count={commentCount} forcedStyle="neutral" faded={faded} size="small" />;
-    } else {
-      commentCountBadge = null;
-    }
-
-    let deductionBadge = null;
-    let bonusBadge = null;
-
-    if (deductions > 0) {
-      deductionBadge = <Badge count={parseFloat((deductions * -1).toFixed(2))} faded={faded} size="small" />;
-    } else {
-      deductionBadge = null;
-    }
-
-    if (bonuses > 0) {
-      bonusBadge = <Badge count={parseFloat(bonuses.toFixed(2))} faded={faded} size="small" />;
-    } else {
-      bonusBadge = null;
-    }
-
-    const badgesStyle: React.CSSProperties = { position: 'absolute', right: '12px', top: '0px', width: '96px' };
-
-    return (
-      <div style={badgesStyle}>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          {!this.props.hidePoints ? (
-            <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
-              <div style={{ minWidth: 25 }}>{bonusBadge}</div>
-            </CPTooltip>
-          ) : null}
-          {!this.props.hidePoints ? (
-            <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
-              <div style={{ minWidth: 25 }}>{deductionBadge}</div>
-            </CPTooltip>
-          ) : null}
-          <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
-            <div style={{ minWidth: 25 }}>{commentCountBadge}</div>
-          </CPTooltip>
-        </div>
-      </div>
-    );
-  };
-
-  // FILE MEN BUILD
-  public buildFileMenu = (sortedFiles: FileType[], files: FileType[]) => {
-    const shrunkSider = LOCAL_SETTINGS.siderWidth.getter() < 202;
-    const { oldVersionsMap } = this.state;
-
-    const codeFiles = files.map((file: FileType) => {
-      let oldVersionsMenu: any = null;
-      const path = `${file.path ? file.path.replace(/^\/+|\/+$/g, '') : ''}/${file.name}`;
-
-      if (oldVersionsMap[path]) {
-        oldVersionsMenu = this.buildOldVersionsMenu(file, oldVersionsMap[path], path);
-      }
-
-      /* tslint:disable */
-      const shortcutStyle: React.CSSProperties = !shrunkSider
-        ? { fontSize: '9px', color: '#ccc', verticalAlign: 'middle' }
-        : {
-            fontSize: '9px',
-            color: '#ccc',
-            position: 'absolute',
-            right: '-27px',
-            top: '10px',
-          };
-      /* tslint:enable */
-
-      // Find the file order in the list to sync the keyboard shortcuts with the UI order
-      const sortedIndex = sortedFiles.findIndex((f) => {
-        return f.id === file.id;
-      });
-
-      const [deductions, bonuses] = this.props.getPointsInFile(file);
-      const commentCount = this.getNumCommentsInFile(file);
-
-      const menuItem = (
-        <div>
-          <div
-            style={{
-              display: 'inline-block',
-              lineHeight: '12px',
-            }}
-          >
-            {sortedIndex < 9 ? (
-              <span style={shortcutStyle}>
-                [{osControlKey()}
-                {sortedIndex + 1}]
-              </span>
-            ) : null}
-            <div style={{ display: 'inline-block', width: '8px' }} />
-            <div
-              style={{
-                minWidth: !shrunkSider ? 0 : '124px',
-                verticalAlign: 'middle',
-                fontSize: 12,
-                display: 'inline-block',
-              }}
-              title={file.name}
-            >
-              <span
-                style={{
-                  maxWidth: !shrunkSider ? '134px' : '124px',
-                  overflow: 'hidden',
-                  whiteSpace: 'nowrap',
-                  textOverflow: 'ellipsis',
-                  display: 'inline-block',
-                  verticalAlign: 'middle',
-                }}
-              >
-                {file.name}
-              </span>
-              {oldVersionsMenu}
-            </div>
-          </div>
-          {!shrunkSider ? this.buildFileBadges(file, commentCount, deductions, bonuses) : <div />}
-        </div>
-      );
-
-      const badgeStyle = {
-        fontSize: 10,
-        padding: '0 2px',
-        opacity: this.props.selectedFile && this.props.selectedFile.id === file.id ? 1 : 0.7,
-      };
-
-      const menuItemShrunkSider = (
-        <AntBadge count={bonuses} dot={false} offset={[-6, -5]} style={{ backgroundColor: '#24be85', ...badgeStyle }}>
-          <AntBadge count={deductions} dot={false} offset={[12, -5]} style={{ backgroundColor: 'red', ...badgeStyle }}>
-            <AntBadge
-              count={commentCount}
-              dot={false}
-              offset={[30, -5]}
-              style={{ backgroundColor: 'grey', ...badgeStyle }}
-            >
-              {menuItem}
-            </AntBadge>
-          </AntBadge>
-        </AntBadge>
-      );
+              ),
+              style: { minWidth: 200 },
+            },
+            ...oldVersionItems,
+          ],
+        },
+      ];
 
       return (
-        <Menu.Item key={`file-${file.id}`} style={{ height: !shrunkSider ? undefined : '54px', paddingLeft: '10px' }}>
-          {shrunkSider ? menuItemShrunkSider : menuItem}
-        </Menu.Item>
+        <Dropdown
+          menu={{
+            items: menuItems,
+            mode: 'inline',
+            selectedKeys: props.selectedFile ? [`file-${props.selectedFile.id}`] : [],
+            defaultOpenKeys: [`${path}-old-versions`],
+            style: { minWidth: 280 },
+            onSelect: (e) => onFileSelect(true, e),
+          }}
+          placement="bottomCenter"
+          trigger={['hover']}
+        >
+          <AntBadge
+            count={oldVersionsMap[path].length + 1}
+            style={{
+              backgroundColor: '#fff',
+              color: '#999',
+              boxShadow: '0 0 0 1px #d9d9d9 inset',
+              marginLeft: 6,
+              borderRadius: 0,
+            }}
+          />
+        </Dropdown>
       );
-    });
+    },
+    [getNumCommentsInFile, props.selectedFile, oldVersionsMap, onFileSelect],
+  );
 
-    return codeFiles;
-  };
-
-  // FOLDER MENU BUILD
-  public onFileSelect = (isOldFile: boolean, e: SelectParam) => {
-    if (e) {
-      const fileID = +e.key.split('-')[1];
-      this.props.changeSelectedFile(fileID);
-      if (isOldFile) {
-        e.domEvent.preventDefault();
-        e.domEvent.stopPropagation();
+  // FILE MENU HELPER - BADGE STYLING
+  const buildFileBadges = useCallback(
+    (file: FileType, commentCount: number, deductions: number, bonuses: number) => {
+      let faded = true;
+      if (props.selectedFile && props.selectedFile.id === file.id) {
+        faded = false;
       }
-    }
-  };
+
+      let commentCountBadge = null;
+      if (commentCount > 0) {
+        commentCountBadge = <Badge count={commentCount} forcedStyle="neutral" faded={faded} size="small" />;
+      } else {
+        commentCountBadge = null;
+      }
+
+      let deductionBadge = null;
+      let bonusBadge = null;
+
+      if (deductions > 0) {
+        deductionBadge = <Badge count={parseFloat((deductions * -1).toFixed(2))} faded={faded} size="small" />;
+      } else {
+        deductionBadge = null;
+      }
+
+      if (bonuses > 0) {
+        bonusBadge = <Badge count={parseFloat(bonuses.toFixed(2))} faded={faded} size="small" />;
+      } else {
+        bonusBadge = null;
+      }
+
+      const badgesStyle: React.CSSProperties = { position: 'absolute', right: '12px', top: '0px', width: '96px' };
+
+      return (
+        <div style={badgesStyle}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            {!props.hidePoints ? (
+              <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
+                <div style={{ minWidth: 25 }}>{bonusBadge}</div>
+              </CPTooltip>
+            ) : null}
+            {!props.hidePoints ? (
+              <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
+                <div style={{ minWidth: 25 }}>{deductionBadge}</div>
+              </CPTooltip>
+            ) : null}
+            <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
+              <div style={{ minWidth: 25 }}>{commentCountBadge}</div>
+            </CPTooltip>
+          </div>
+        </div>
+      );
+    },
+    [props.selectedFile, props.hidePoints],
+  );
+
+  // FILE MENU BUILD
+  const buildFileMenu = useCallback(
+    (sortedFilesParam: FileType[], files: FileType[]): MenuProps['items'] => {
+      const shrunkSider = LOCAL_SETTINGS.siderWidth.getter() < 202;
+
+      const codeFiles = files.map((file: FileType) => {
+        let oldVersionsMenu: React.ReactNode = null;
+        const path = `${file.path ? file.path.replace(/^\/+|\/+$/g, '') : ''}/${file.name}`;
+
+        if (oldVersionsMap[path]) {
+          oldVersionsMenu = buildOldVersionsMenu(file, oldVersionsMap[path], path);
+        }
+
+        /* tslint:disable */
+        const shortcutStyle: React.CSSProperties = !shrunkSider
+          ? { fontSize: '9px', color: '#ccc', verticalAlign: 'middle' }
+          : {
+              fontSize: '9px',
+              color: '#ccc',
+              position: 'absolute',
+              right: '-27px',
+              top: '10px',
+            };
+        /* tslint:enable */
+
+        // Find the file order in the list to sync the keyboard shortcuts with the UI order
+        const sortedIndex = sortedFilesParam.findIndex((f) => {
+          return f.id === file.id;
+        });
+
+        const [deductions, bonuses] = props.getPointsInFile(file);
+        const commentCount = getNumCommentsInFile(file);
+
+        const menuItem = (
+          <div>
+            <div
+              style={{
+                display: 'inline-block',
+                lineHeight: '12px',
+              }}
+            >
+              {sortedIndex < 9 ? (
+                <span style={shortcutStyle}>
+                  [{osControlKey()}
+                  {sortedIndex + 1}]
+                </span>
+              ) : null}
+              <div style={{ display: 'inline-block', width: '8px' }} />
+              <div
+                style={{
+                  minWidth: !shrunkSider ? 0 : '124px',
+                  verticalAlign: 'middle',
+                  fontSize: 12,
+                  display: 'inline-block',
+                }}
+                title={file.name}
+              >
+                <span
+                  style={{
+                    maxWidth: !shrunkSider ? '134px' : '124px',
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                    display: 'inline-block',
+                    verticalAlign: 'middle',
+                  }}
+                >
+                  {file.name}
+                </span>
+                {oldVersionsMenu}
+              </div>
+            </div>
+            {!shrunkSider ? buildFileBadges(file, commentCount, deductions, bonuses) : <div />}
+          </div>
+        );
+
+        const badgeStyle = {
+          fontSize: 10,
+          padding: '0 2px',
+          opacity: props.selectedFile && props.selectedFile.id === file.id ? 1 : 0.7,
+        };
+
+        const menuItemShrunkSider = (
+          <AntBadge count={bonuses} dot={false} offset={[-6, -5]} style={{ backgroundColor: '#24be85', ...badgeStyle }}>
+            <AntBadge
+              count={deductions}
+              dot={false}
+              offset={[12, -5]}
+              style={{ backgroundColor: 'red', ...badgeStyle }}
+            >
+              <AntBadge
+                count={commentCount}
+                dot={false}
+                offset={[30, -5]}
+                style={{ backgroundColor: 'grey', ...badgeStyle }}
+              >
+                {menuItem}
+              </AntBadge>
+            </AntBadge>
+          </AntBadge>
+        );
+
+        return {
+          key: `file-${file.id}`,
+          label: shrunkSider ? menuItemShrunkSider : menuItem,
+          style: { height: !shrunkSider ? undefined : '54px', paddingLeft: '10px' },
+        };
+      });
+
+      return codeFiles;
+    },
+    [oldVersionsMap, buildOldVersionsMenu, props, getNumCommentsInFile, buildFileBadges],
+  );
 
   /**************************** RENDER *************************************/
-  public render() {
-    const { directoryStructure } = this.state;
-    const rootFiles = this.buildFileMenu(this.state.sortedFiles, directoryStructure.files);
+  const rootFiles = buildFileMenu(sortedFiles, directoryStructure.files) || [];
 
-    const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
+  const theme = consoleThemes.light === consoleTheme.consoleTheme ? 'light' : 'dark';
 
-    const className = theme === 'light' ? 'sider-menu sider-menu--light' : 'sider-menu sider-menu--dark';
-    const subMenuClassName =
-      theme === 'light' ? 'sider-submenu sider-submenu--light' : 'sider-submenu sider-submenu--dark';
+  const className = theme === 'light' ? 'sider-menu sider-menu--light' : 'sider-menu sider-menu--dark';
+  const subMenuClassName =
+    theme === 'light' ? 'sider-submenu sider-submenu--light' : 'sider-submenu sider-submenu--dark';
 
-    const folders = directoryStructure.folders.map((f: IFolder<FileType>) => {
-      return buildFolderMenu('', f, this.buildFileMenu.bind(this, this.state.sortedFiles), subMenuClassName);
-    });
+  const folders = directoryStructure.folders.map((f: IFolder<FileType>) => {
+    return buildFolderMenu('', f, (files: FileType[]) => buildFileMenu(sortedFiles, files), subMenuClassName);
+  });
 
-    return (
-      <div id="file-menu" style={{ overflowY: 'auto' }}>
-        <Menu
-          selectedKeys={this.props.selectedFile ? [`file-${this.props.selectedFile.id}`] : []}
-          mode="inline"
-          className={className}
-          style={{
-            backgroundColor: this.context.consoleTheme.siderBg,
-            color: this.context.consoleTheme.siderMenuItemColor,
-          }}
-          onSelect={this.onFileSelect.bind(this, false)}
-        >
-          {rootFiles}
-          {folders}
-        </Menu>
-      </div>
-    );
-  }
-}
+  const menuItems: MenuProps['items'] = [...rootFiles, ...folders];
 
-FileMenu.contextType = ConsoleThemeContext;
+  return (
+    <div id="file-menu" style={{ overflowY: 'auto' }}>
+      <Menu
+        selectedKeys={props.selectedFile ? [`file-${props.selectedFile.id}`] : []}
+        mode="inline"
+        className={className}
+        style={{
+          backgroundColor: consoleTheme.consoleTheme.siderBg,
+          color: consoleTheme.consoleTheme.siderMenuItemColor,
+        }}
+        onSelect={(e) => onFileSelect(false, e)}
+        items={menuItems}
+      />
+    </div>
+  );
+};
 
 interface IFileMenuTitleProps {
   files: FileType[];
@@ -419,7 +449,7 @@ interface IFileMenuTitleProps {
 export const FileMenuTitle = (props: IFileMenuTitleProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
-  const numUniqueFiles = CodeConsole.filterCurrentFileVersions(props.files)[0].size;
+  const numUniqueFiles = CodeConsoleUtils.filterCurrentFileVersions(props.files)[0].size;
   const badge = (
     <AntBadge
       style={{
@@ -454,4 +484,6 @@ export const FileMenuTitle = (props: IFileMenuTitleProps) => {
   );
 };
 
-export default withWindowWatcher(FileMenu);
+const FileMenuWithWindowWatcher = withWindowWatcher(FileMenu);
+
+export default FileMenuWithWindowWatcher;

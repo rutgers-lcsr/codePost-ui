@@ -1,20 +1,19 @@
 /* react imports */
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 /* library imports */
 import { Breadcrumb, Button } from 'antd';
 
 /* other library imports */
-import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
 /* codePost object imports */
-import { SubmissionInfoType, SubmissionWithTestsType } from '../../../../../infrastructure/submission';
 import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
+import { SubmissionInfoType, SubmissionWithTestsType } from '../../../../../infrastructure/submission';
 import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
-import { RunAllResultType, SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
+import { SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
 
 import { awaitTestResult } from '../autograderPollingUtils';
 
@@ -26,15 +25,15 @@ import RunAllTests from './RunAllTests';
 
 /* codePost util imports */
 import {
-  fetchTestData,
   fetchEnvironment,
-  TestsBySubmission,
-  TestCasesByCategory,
+  fetchTestData,
   fetchTestsBySubmission,
+  TestCasesByCategory,
+  TestsBySubmission,
 } from '../../../../core/testFetchUtils';
 
 interface IProps {
-  breadcrumbs?: React.ReactElement[];
+  breadcrumbs?: Array<{ title: React.ReactNode }>;
   submissions: SubmissionInfoType[];
   currentAssignment: AssignmentType;
   isAdmin: boolean;
@@ -178,11 +177,9 @@ export const TestingSummary = (props: IProps) => {
   return (
     <TestResultsTable
       breadcrumbs={
-        <Breadcrumb>
-          {props.breadcrumbs}
-          <Breadcrumb.Item key="assignment">{props.currentAssignment.name}</Breadcrumb.Item>
-          <Breadcrumb.Item>Results</Breadcrumb.Item>
-        </Breadcrumb>
+        <Breadcrumb
+          items={[...(props.breadcrumbs || []), { title: props.currentAssignment.name }, { title: 'Results' }]}
+        />
       }
       tableOnly={props.tableOnly}
       title={`${props.currentAssignment.name} | Tests Summary`}

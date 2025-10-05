@@ -1,5 +1,5 @@
 /* react imports */
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
   CaretRightOutlined,
@@ -11,14 +11,14 @@ import {
 } from '@ant-design/icons';
 
 /* library imports */
-import { Dropdown, Menu, Radio, Skeleton, Tooltip } from 'antd';
+import { Dropdown, Radio, Skeleton, Tooltip } from 'antd';
 
 /* codePost object imports */
-import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 import { AssignmentType } from '../../../../../infrastructure/assignment';
+import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructure/submissionTest';
-import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { TestCaseType } from '../../../../../infrastructure/testCase';
+import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 
 /* codePost component imports */
 import { TableDetail } from '../../../other/TableDetail';
@@ -28,11 +28,11 @@ import { bySubmissionColumns, byTestColumns } from './testSummaryUtils';
 
 /* codePost util imports */
 import {
-  TestsBySubmission,
-  TestCasesByCategory,
-  TestsByCase,
   getTestsByCase,
   RESULT_STATUS,
+  TestCasesByCategory,
+  TestsByCase,
+  TestsBySubmission,
 } from '../../../../core/testFetchUtils';
 import { openSubmission } from '../../../other/AdminUtils';
 
@@ -153,18 +153,26 @@ const TestResultsTable = (props: IProps) => {
           break;
         }
         data = props.submissions.map((submission: SubmissionInfoType) => {
-          const actionsMenu = (
-            <Menu key={submission.id}>
-              <Menu.Item key="run-tests" onClick={props.runSubmission.bind({}, submission)}>
-                <CaretRightOutlined />
-                Run tests
-              </Menu.Item>
-              <Menu.Item key="submission" onClick={openSubmission.bind({}, submission.id)}>
-                <CodeOutlined />
-                Open submission
-              </Menu.Item>
-            </Menu>
-          );
+          const actionsMenuItems = [
+            {
+              key: 'run-tests',
+              label: (
+                <>
+                  <CaretRightOutlined /> Run tests
+                </>
+              ),
+              onClick: props.runSubmission.bind({}, submission),
+            },
+            {
+              key: 'submission',
+              label: (
+                <>
+                  <CodeOutlined /> Open submission
+                </>
+              ),
+              onClick: openSubmission.bind({}, submission.id),
+            },
+          ];
 
           const toRet: any = {
             students: submission.students.join(','),
@@ -172,7 +180,7 @@ const TestResultsTable = (props: IProps) => {
             actions: props.subsLoading.includes(submission.id) ? (
               <LoadingOutlined />
             ) : (
-              <Dropdown overlay={actionsMenu} trigger={['click']}>
+              <Dropdown menu={{ items: actionsMenuItems }} trigger={['click']}>
                 <MenuOutlined />
               </Dropdown>
             ),
@@ -205,7 +213,7 @@ const TestResultsTable = (props: IProps) => {
           for (const category of props.categories) {
             const tests = testByCategory[category.id] || [];
             let categoryPassed = 0;
-            let categoryTotal = category.testCases.length;
+            const categoryTotal = category.testCases.length;
             for (const t of tests) {
               categoryPassed += t.passed ? 1 : 0;
             }

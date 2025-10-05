@@ -75,7 +75,7 @@ const fontLogo = 'Muli, Lato, sans-serif';
 
 const subheaderHeight = 116; // px
 const codeLineHeight = 20; // px
-const codeFontSize = 12; // px
+const codeFontSize = 14; // px
 const pageHeight = 830; // px
 
 // FIXME: Thes should be a function of codeFontSize and codeLineHeight
@@ -106,7 +106,7 @@ const commentsTargetWidth = 360; // px
 
 // --------------- EXPORTS --------------- //
 
-module.exports = {
+export default {
   ant: {
     'primary-color': brandPrimary, // primary color for all components
     'link-color': actionBlue, // link color

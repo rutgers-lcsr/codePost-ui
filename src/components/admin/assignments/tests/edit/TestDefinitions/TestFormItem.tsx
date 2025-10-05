@@ -4,38 +4,37 @@ import React from 'react';
 import { EditOutlined } from '@ant-design/icons';
 
 import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
 
 /* antd imports */
+import { FormComponentProps } from '@ant-design/compatible/lib/form';
 import {
   Button,
   Collapse,
   Divider,
   Input,
-  Select,
-  Row,
+  InputNumber,
   Radio,
+  Row,
+  Select,
+  Switch,
   Tag,
   Tooltip,
   Typography,
-  Switch,
-  InputNumber,
 } from 'antd';
-import { FormComponentProps } from '@ant-design/compatible/lib/form';
 
 /* codePost object imports */
-import { TestCaseType, SubmissionInfoType } from '../../../../../../infrastructure/types';
-import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
+import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
+import { SubmissionInfoType, TestCaseType } from '../../../../../../infrastructure/types';
 
 /* codePost component imports */
+import ExplanationModal from '../../../../assignments/rubric/ExplanationModal';
 import { CodeWindow } from '../utils/CodeWindow';
 import { PseudoTerminal } from './PseudoTerminal';
 import { TemplateSelector } from './TemplateSelector';
-import ExplanationModal from '../../../../assignments/rubric/ExplanationModal';
 
 /* codePost util imports */
-import { testTemplates, hasNativeTestSupport, extensionsByLanguage, commandLineExamples } from '../utils/languageUtils';
+import { commandLineExamples, extensionsByLanguage, hasNativeTestSupport, testTemplates } from '../utils/languageUtils';
 
 import CPTooltip from '../../../../../core/CPTooltip';
 
@@ -663,7 +662,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
             <Button style={{ marginRight: 10 }} type="primary" onClick={this.onSave}>
               Save
             </Button>
-            <Button type="danger" onClick={this.props.deleteTest}>
+            <Button danger onClick={this.props.deleteTest}>
               Delete
             </Button>
           </div>
@@ -692,8 +691,8 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                       this.state.testType === 'io_cli' && hasNativeSupport
                         ? 'io'
                         : this.state.testType === 'file'
-                        ? 'File defined'
-                        : this.state.testType
+                          ? 'File defined'
+                          : this.state.testType
                     }
                   >
                     {/* If the language doesn't have native support, remove io_file and unit test options*/}

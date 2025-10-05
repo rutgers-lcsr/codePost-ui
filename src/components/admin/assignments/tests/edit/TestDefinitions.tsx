@@ -3,7 +3,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   ArrowLeftOutlined,
@@ -18,17 +18,18 @@ import {
 /* antd imports */
 import {
   Alert,
+  Badge,
   Button,
   Collapse,
+  CollapseProps,
   Dropdown,
+  Empty,
   Layout,
   Menu,
   message,
-  Popconfirm,
-  Empty,
   Modal,
+  Popconfirm,
   Skeleton,
-  Badge,
   Tooltip,
   Typography,
 } from 'antd';
@@ -36,41 +37,41 @@ import { ClickParam } from 'antd/lib/menu';
 import _ from 'lodash';
 
 /* other library imports */
-import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import JSZip from 'jszip';
 
 /* codePost object imports */
 import {
-  AssignmentType,
-  TestCaseType,
-  TestCategoryType,
-  SubmissionInfoType,
-  FileType,
-} from '../../../../../infrastructure/types';
-import { TestCase } from '../../../../../infrastructure/testCase';
-import { TestCategory } from '../../../../../infrastructure/testCategory';
-import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
-import { HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
-import {
   Environment,
   EnvironmentType,
-  TestTemplateType,
   TestsSourceType,
+  TestTemplateType,
 } from '../../../../../infrastructure/autograder/environment';
+import { HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
+import { TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
+import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
 import { SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
 import { File } from '../../../../../infrastructure/file';
 import { Submission } from '../../../../../infrastructure/submission';
-import { TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
+import { TestCase } from '../../../../../infrastructure/testCase';
+import { TestCategory } from '../../../../../infrastructure/testCategory';
+import {
+  AssignmentType,
+  FileType,
+  SubmissionInfoType,
+  TestCaseType,
+  TestCategoryType,
+} from '../../../../../infrastructure/types';
 import { FILE_TYPE } from './TestingSetup';
 
 /* codePost component imports */
-import { TestItem } from './TestDefinitions/TestItem';
-import { AddCategoryModal } from './TestDefinitions/AddCategoryModal';
-import { AddFileModal } from './TestDefinitions/AddFileModal';
-import { EditObjectModal } from './TestDefinitions/EditObjectModal';
-import { CategorySelectModal } from './TestDefinitions/CategorySelectModal';
 import CPTooltip from '../../../../core/CPTooltip';
 import { SourceEditor } from './SourceEditor';
+import { AddCategoryModal } from './TestDefinitions/AddCategoryModal';
+import { AddFileModal } from './TestDefinitions/AddFileModal';
+import { CategorySelectModal } from './TestDefinitions/CategorySelectModal';
+import { EditObjectModal } from './TestDefinitions/EditObjectModal';
+import { TestItem } from './TestDefinitions/TestItem';
 
 import FileTag from './TestDefinitions/FileTag';
 
@@ -80,7 +81,7 @@ import { hasNativeTestSupport } from './utils/languageUtils';
 
 import { LOCAL_SETTINGS } from '../../../../utils/LocalSettings';
 
-import { IFolder, buildFolderMenu, createDirectoryStructure } from '../../../../code-review/menu/fileMenuUtils';
+import { buildFolderMenu, createDirectoryStructure, IFolder } from '../../../../code-review/menu/fileMenuUtils';
 
 import { RESULT_TYPE } from './TestDefinitions/PseudoTerminal';
 
@@ -480,7 +481,7 @@ export const TestDefinitions = (props: IProps) => {
       return null;
     });
 
-    zip.generateAsync({ type: 'blob' }).then(function(content: any) {
+    zip.generateAsync({ type: 'blob' }).then(function (content: any) {
       saveAs(content, `test-directory.zip`);
     });
   };
@@ -544,7 +545,7 @@ export const TestDefinitions = (props: IProps) => {
   };
 
   switch (panel) {
-    case DETAIL_TYPE.ViewSource:
+    case DETAIL_TYPE.ViewSource: {
       const bashFile: IBasicFile[] = [
         { name: 'main.sh', code: main, canSave: false, id: 0, type: FILE_TYPE.MAIN, path: null },
       ];
@@ -640,7 +641,7 @@ export const TestDefinitions = (props: IProps) => {
             </Menu>
           );
 
-          const stop = (e: any) => {
+          const stop = (e: React.MouseEvent<HTMLElement>) => {
             e.preventDefault();
             e.stopPropagation();
           };
@@ -750,7 +751,8 @@ export const TestDefinitions = (props: IProps) => {
       );
 
       break;
-    case DETAIL_TYPE.EditTests:
+    }
+    case DETAIL_TYPE.EditTests: {
       const addTestButton = (
         <Button
           style={{
@@ -926,6 +928,8 @@ export const TestDefinitions = (props: IProps) => {
           </div>
         </Content>
       );
+      break;
+    }
   }
 
   const hasTests = Object.values(casesByCategory).some((el) => el.length > 0);
@@ -1044,14 +1048,24 @@ export const TestDefinitions = (props: IProps) => {
 
     const defaultActiveKey = LOCAL_SETTINGS.autograderInstructionsVisible.getter() ? ['1'] : [];
 
+    const collapseItems: CollapseProps['items'] = [
+      {
+        key: '1',
+        label: 'Instructions',
+        style: { backgroundColor: 'white' },
+        children: <Alert message={instructions} type="info" />,
+      },
+    ];
+
     return (
       <div>
         <div style={{ marginBottom: 15, marginLeft: 30, marginRight: 30 }}>
-          <Collapse bordered={false} defaultActiveKey={defaultActiveKey} onChange={onInstructionsChange}>
-            <Collapse.Panel header="Instructions" key="1" style={{ backgroundColor: 'white' }}>
-              <Alert message={instructions} type="info" />
-            </Collapse.Panel>
-          </Collapse>
+          <Collapse
+            bordered={false}
+            defaultActiveKey={defaultActiveKey}
+            onChange={onInstructionsChange}
+            items={collapseItems}
+          />
         </div>
         <div style={{ fontSize: 11 }}>
           <Layout style={{ border: '1px solid #ececec', borderRadius: '4px', marginBottom: '120px' }}>

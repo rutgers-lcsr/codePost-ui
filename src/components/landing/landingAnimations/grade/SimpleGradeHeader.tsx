@@ -1,12 +1,11 @@
 import { Divider } from 'antd';
-import React from 'react';
-import { animated } from 'react-spring';
+import { animated, Interpolation } from 'react-spring';
 //
 // const SimpleGradeMenu = (props: { screenIndex: number }) => {
 //   <div />;
 // };
 
-const SimpleGradeHeader = (props: { grade: string }) => {
+const SimpleGradeHeader = (props: { grade: string | Interpolation<number, string> }) => {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>

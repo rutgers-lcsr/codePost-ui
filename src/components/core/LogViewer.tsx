@@ -48,7 +48,7 @@ const LogViewer = (props: ILogViewerProps) => {
           View More +
         </div>
       ) : null}
-      <Modal visible={modalVisible} onCancel={closeModal} footer={null} bodyStyle={{ padding: '0px' }} width="80%">
+      <Modal open={modalVisible} onCancel={closeModal} footer={null} bodyStyle={{ padding: '0px' }} width="80%">
         <div className="log-viewer--inspect">
           <CodeMirror
             className="log-viewer--code-mirror"

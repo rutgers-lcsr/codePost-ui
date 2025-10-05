@@ -1,12 +1,26 @@
-import * as React from 'react';
-
 import useWindowSize from '../../../core/useWindowSize';
 
 import landingVars from '../../../../styles/pages/_landingVars';
 
-import { Icon as LegacyIcon } from '@ant-design/compatible';
+import * as Icons from '@ant-design/icons';
 
 import { Popover } from 'antd';
+
+// Map legacy icon names to new antd icon components
+const iconMap: { [key: string]: any } = {
+  import: Icons.ImportOutlined,
+  'cloud-upload': Icons.CloudUploadOutlined,
+  message: Icons.MessageOutlined,
+  code: Icons.CodeOutlined,
+  highlight: Icons.HighlightOutlined,
+  profile: Icons.ProfileOutlined,
+  dashboard: Icons.DashboardOutlined,
+  'bar-chart': Icons.BarChartOutlined,
+  inbox: Icons.InboxOutlined,
+  export: Icons.ExportOutlined,
+  like: Icons.LikeOutlined,
+  redo: Icons.RedoOutlined,
+};
 
 function hexToRGB(hex: string, alpha: string) {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -129,10 +143,13 @@ const FlowNode = (props: FlowNodeProps) => {
       }}
       className={props.isCategory ? 'flowNodeCategory' : 'flowNode'}
     >
-      <LegacyIcon
-        type={props.icon}
-        style={{ color: props.tint < 35 ? props.color : 'white', fontSize: 20, marginRight: 5 }}
-      />
+      {!props.isCategory &&
+        (() => {
+          const IconComponent = iconMap[props.icon];
+          return IconComponent ? (
+            <IconComponent style={{ color: props.tint < 35 ? props.color : 'white', fontSize: 20, marginRight: 5 }} />
+          ) : null;
+        })()}
       <div style={{ maxWidth: 60, minWidth: 60 }}>{props.title}</div>
     </div>
   );
@@ -146,8 +163,8 @@ const FlowNode = (props: FlowNodeProps) => {
         windowSize.width < landingVars.breakpoints.mobile && props.position.x > 30 && props.position.x < 67
           ? 'bottom'
           : props.position.x <= 50
-          ? 'right'
-          : 'left'
+            ? 'right'
+            : 'left'
       }
       trigger="hover"
       mouseEnterDelay={0.3}

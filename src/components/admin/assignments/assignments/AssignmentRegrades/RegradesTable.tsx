@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 
 import {
+  CheckCircleOutlined,
   CodeOutlined,
   EditOutlined,
+  ExclamationCircleOutlined,
   EyeOutlined,
-  MenuOutlined,
-  ReloadOutlined,
   InfoCircleOutlined,
+  MenuOutlined,
+  MinusCircleOutlined,
+  PlusCircleOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
-import { Icon as LegacyIcon } from '@ant-design/compatible';
 
-import { Divider, Dropdown, Input, Menu, message, Modal, Table, Tag, Typography } from 'antd';
+import { Divider, Dropdown, Input, message, Modal, Table, Tag, Typography } from 'antd';
 
 /* codePost imports */
 import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
@@ -268,44 +271,57 @@ const RegradesTable = (props: IRegradesTableProps) => {
       confirmClear(submission, false);
     };
 
-    const menu = (
-      <Menu>
-        <Menu.Item key="1" onClick={toggleModal.bind({}, true, submission)}>
-          <EyeOutlined />
-          View Regrade
-        </Menu.Item>
-        {responseStatus === RESPONSE_STATUS.EDIT_ALLOWED_EXISTING_RESPONSE ? (
-          <Menu.Item key="2" onClick={toggleModal.bind({}, false, submission)}>
-            <EditOutlined />
-            Edit Response
-          </Menu.Item>
-        ) : (
-          <div />
-        )}
-        <Menu.Item
-          key="3"
-          onClick={
-            submission.questionResponder === null
-              ? updateSubmissionFieldClick
-              : submission.questionResponder === props.user.email
+    const menuItems = [
+      {
+        key: '1',
+        label: (
+          <>
+            <EyeOutlined /> View Regrade
+          </>
+        ),
+        onClick: toggleModal.bind({}, true, submission),
+      },
+      ...(responseStatus === RESPONSE_STATUS.EDIT_ALLOWED_EXISTING_RESPONSE
+        ? [
+            {
+              key: '2',
+              label: (
+                <>
+                  <EditOutlined /> Edit Response
+                </>
+              ),
+              onClick: toggleModal.bind({}, false, submission),
+            },
+          ]
+        : []),
+      {
+        key: '3',
+        label: (
+          <>
+            {submission.questionResponder !== props.user.email ? <PlusCircleOutlined /> : <MinusCircleOutlined />}
+            {submission.questionResponder !== props.user.email ? ' Claim' : ' Release'}
+          </>
+        ),
+        onClick:
+          submission.questionResponder === null
+            ? updateSubmissionFieldClick
+            : submission.questionResponder === props.user.email
               ? confirmClearReleaseClick
-              : confirmClearNonReleaseClick
-          }
-          disabled={!isAbleToChange}
-        >
-          <LegacyIcon type={submission.questionResponder !== props.user.email ? 'plus-circle' : 'minus-circle'} />
-          {submission.questionResponder !== props.user.email ? 'Claim' : 'Release'}
-        </Menu.Item>
-        <Menu.Item
-          key="4"
-          onClick={updateSubmissionField.bind({}, submission, 'questionIsOpen', !submission.questionIsOpen)}
-          disabled={!(isAbleToChange && (!submission.questionIsOpen || isAbleToClose))}
-        >
-          <LegacyIcon type={submission.questionIsOpen ? 'check-circle' : 'exclamation-circle'} />
-          {submission.questionIsOpen ? 'Close' : 'Re-open'}
-        </Menu.Item>
-      </Menu>
-    );
+              : confirmClearNonReleaseClick,
+        disabled: !isAbleToChange,
+      },
+      {
+        key: '4',
+        label: (
+          <>
+            {submission.questionIsOpen ? <CheckCircleOutlined /> : <ExclamationCircleOutlined />}
+            {submission.questionIsOpen ? ' Close' : ' Re-open'}
+          </>
+        ),
+        onClick: updateSubmissionField.bind({}, submission, 'questionIsOpen', !submission.questionIsOpen),
+        disabled: !(isAbleToChange && (!submission.questionIsOpen || isAbleToClose)),
+      },
+    ];
 
     const responseContent = getResponseContent(submission);
     return {
@@ -328,7 +344,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
       ),
       response: responseContent,
       actions: (
-        <Dropdown overlay={menu} trigger={['click']}>
+        <Dropdown menu={{ items: menuItems }} trigger={['click']}>
           <MenuOutlined />
         </Dropdown>
       ),
@@ -394,7 +410,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
         Refresh Data
       </CPButton>
       <Table columns={columns} dataSource={rows} loading={props.isLoading} />{' '}
-      <Modal onCancel={onCancel} visible={modalVisible} title="Respond to Regrade request" footer={footer}>
+      <Modal onCancel={onCancel} open={modalVisible} title="Respond to Regrade request" footer={footer}>
         <div className="display-flex flex-direction-column">
           <div style={{ fontSize: 13, color: 'grey', marginBottom: 5 }}>
             {activeSubmission ? activeSubmission.students : ''}
@@ -420,8 +436,8 @@ const RegradesTable = (props: IRegradesTableProps) => {
             {activeSubmission && activeSubmission.questionResponder
               ? activeSubmission.questionResponder
               : activeSubmission && activeSubmission.grader
-              ? `Graded by: ${activeSubmission.grader}`
-              : ''}
+                ? `Graded by: ${activeSubmission.grader}`
+                : ''}
             &nbsp; &nbsp;
             <span style={{ fontSize: 12, color: '#ccc' }}>
               {activeSubmission && activeSubmission.responseDate ? (

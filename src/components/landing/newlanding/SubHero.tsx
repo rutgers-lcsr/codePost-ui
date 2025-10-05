@@ -10,8 +10,8 @@ import CPButton from '../../core/CPButton';
 
 import { Testimonials } from './Testimonial';
 
-import landingVars from '../../../styles/pages/_landingVars';
 import { Suspense } from 'react';
+import landingVars from '../../../styles/pages/_landingVars';
 
 const GradeAnimationVideo = React.lazy(() => import('./../landingAnimations/grade/GradeAnimationVideo'));
 
@@ -86,7 +86,6 @@ const SubHero = () => {
                 href="https://codepost.cs.rutgers.edu/demo"
                 target="_blank"
                 cpType="link"
-                ghost={true}
                 style={{ fontWeight: 600, fontSize: 20, float: 'right' }}
                 className="demo-link"
               >

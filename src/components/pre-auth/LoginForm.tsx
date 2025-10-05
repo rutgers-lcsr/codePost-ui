@@ -144,13 +144,14 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
           <br />
           <Link to="/forgot-password">Forgot password?</Link>
           <br />
-          <Link
+          <a
             onClick={() => {
               window.open('https://help.codepost.io/en/articles/3324251-faq-where-is-my-email', '_blank');
             }}
+            style={{ cursor: 'pointer' }}
           >
             Where's my sign up email?
-          </Link>
+          </a>
         </div>
       </PreAuthLayout>
     );

@@ -5,7 +5,7 @@
 /* react imports */
 import * as React from 'react';
 
-import { FolderOpenOutlined, UserAddOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { FolderOpenOutlined, PlusCircleOutlined, UserAddOutlined } from '@ant-design/icons';
 
 /* ant imports */
 import { Breadcrumb, Checkbox, Empty } from 'antd';
@@ -13,7 +13,7 @@ import { Breadcrumb, Checkbox, Empty } from 'antd';
 /* other library imports */
 import Highlighter from 'react-highlight-words';
 
-import { Route, Link, Switch } from 'react-router-dom';
+import { Link, Route, Switch } from 'react-router-dom';
 
 /* codePost imports  */
 import { IAssignmentToSubmissionsMap, IGraderSubmissionsDataTable } from '../../../types/common';
@@ -284,8 +284,10 @@ class GraderData extends React.Component<IByGraderProps, IState> {
                 isEmpty={numGraders === 0 || this.props.assignments.length === 0}
                 emptyNode={
                   <Empty
-                    imageStyle={{
-                      height: 60,
+                    styles={{
+                      image: {
+                        height: 60,
+                      },
                     }}
                     description={
                       this.props.assignments.length === 0 && numGraders === 0 ? (
@@ -321,14 +323,16 @@ class GraderData extends React.Component<IByGraderProps, IState> {
                 data={data}
                 actions={[toggleInactiveGraders]}
                 breadcrumbs={
-                  <Breadcrumb>
-                    <Breadcrumb.Item>
-                      <Link to={this.props.match.url}>Submissions</Link>
-                    </Breadcrumb.Item>
-                    <Breadcrumb.Item>
-                      <Link to={this.props.match.url}>By Grader</Link>
-                    </Breadcrumb.Item>
-                  </Breadcrumb>
+                  <Breadcrumb
+                    items={[
+                      {
+                        title: <Link to={this.props.match.url}>Submissions</Link>,
+                      },
+                      {
+                        title: <Link to={this.props.match.url}>By Grader</Link>,
+                      },
+                    ]}
+                  />
                 }
                 titleInfo={tooltips.admin.graderSubmissions.title}
               />
