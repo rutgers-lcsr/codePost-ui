@@ -8,7 +8,9 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install dependencies with clean install for reproducibility
-RUN npm ci
+
+# Using --legacy-peer-deps to for react-codemirror2 compatibility
+RUN npm ci --legacy-peer-deps
 
 # Copy source code
 COPY . .
