@@ -3,13 +3,13 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 /* other library imports */
 import { animateScroll } from 'react-scroll';
 
 /* library imports */
-import { Button, Collapse, Modal, Tag, Tooltip, Spin, Result, Typography } from 'antd';
+import { Button, Collapse, Modal, Result, Spin, Tag, Tooltip, Typography } from 'antd';
 
 /**********************************************************************************************************************/
 
@@ -44,11 +44,6 @@ export const BuildDetailModal = (props: IProps) => {
   const tagText = props.inProgress ? 'Building...' : props.isSuccess ? 'Last build successful' : 'Last build failed';
 
   const smallTag = <Tag color={tagColor}>{tagText}</Tag>;
-  const bigTag = (
-    <Tag color={tagColor} style={{ fontSize: 18, padding: '10px 16px' }}>
-      {tagText}
-    </Tag>
-  );
 
   const tooltipText = `Last build ${props.isSuccess ? 'was successful' : 'failed'}. Click to see details.`;
 

@@ -3,7 +3,6 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';

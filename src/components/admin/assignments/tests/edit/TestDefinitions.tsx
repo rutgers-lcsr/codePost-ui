@@ -26,6 +26,7 @@ import {
   Empty,
   Layout,
   Menu,
+  MenuProps,
   message,
   Modal,
   Popconfirm,
@@ -33,7 +34,6 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import { ClickParam } from 'antd/lib/menu';
 import _ from 'lodash';
 
 /* other library imports */
@@ -217,7 +217,7 @@ export const TestDefinitions = (props: IProps) => {
   };
 
   const deleteCategory = async (id: number) => {
-    await TestCategory.delete(id);
+    await TestCategory.delete({ id });
     setCategories((prevState) => {
       return prevState.filter((el) => el.id !== id);
     });
@@ -321,7 +321,7 @@ export const TestDefinitions = (props: IProps) => {
 
   const deleteTest = async (testCase: TestCaseType) => {
     if (testCase.id > 0) {
-      await TestCase.delete(testCase.id);
+      await TestCase.delete(testCase);
     }
 
     // Load new test
@@ -351,7 +351,7 @@ export const TestDefinitions = (props: IProps) => {
       ),
       content: 'This decision cannot be reversed.',
       onOk() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
           return resolve(deleteTest(testCase));
         }).catch(() => console.log('Oops errors!'));
       },
@@ -398,7 +398,7 @@ export const TestDefinitions = (props: IProps) => {
     }
   };
 
-  const changeIndex = (e: ClickParam) => {
+  const changeIndex: MenuProps['onClick'] = (e) => {
     if (panel !== DETAIL_TYPE.ViewSource) {
       setPanel(DETAIL_TYPE.ViewSource);
     }
@@ -620,7 +620,7 @@ export const TestDefinitions = (props: IProps) => {
         </div>
       );
 
-      const buildFileMenu = (groupIndex: number, files: IBasicFile[]) => {
+      const buildFileMenu = (groupIndex: number, files: IBasicFile[]): MenuProps['items'] => {
         return files.map((f) => {
           const deleteThisFile = () => {
             props.deleteFile(FILE_TYPE.SOURCEFILE, f.id);
@@ -646,21 +646,24 @@ export const TestDefinitions = (props: IProps) => {
             e.stopPropagation();
           };
 
-          return (
-            <Menu.Item key={`${groupIndex}-${f.id}`}>
-              <FileTag type={f.type} small={true} />
-              &nbsp;
-              {f.name}
-              {f.type === FILE_TYPE.SOURCEFILE && (
-                <Dropdown overlay={actions}>
-                  <MoreOutlined
-                    onClick={stop}
-                    style={{ position: 'absolute', right: '0px', top: '8px', fontWeight: 900 }}
-                  />
-                </Dropdown>
-              )}
-            </Menu.Item>
-          );
+          return {
+            key: `${groupIndex}-${f.id}`,
+            label: (
+              <>
+                <FileTag type={f.type} small={true} />
+                &nbsp;
+                {f.name}
+                {f.type === FILE_TYPE.SOURCEFILE && (
+                  <Dropdown overlay={actions}>
+                    <MoreOutlined
+                      onClick={stop}
+                      style={{ position: 'absolute', right: '0px', top: '8px', fontWeight: 900 }}
+                    />
+                  </Dropdown>
+                )}
+              </>
+            ),
+          };
         });
       };
 
@@ -670,7 +673,7 @@ export const TestDefinitions = (props: IProps) => {
             <Menu onClick={changeIndex} mode="inline" selectedKeys={[index]}>
               {groups.map((group: IBasicFile[], groupIndex) => {
                 const directoryStructure = createDirectoryStructure<IBasicFile>(group);
-                const buildFile = buildFileMenu.bind({}, groupIndex);
+                const buildFile: (files: IBasicFile[]) => MenuProps['items'] = buildFileMenu.bind({}, groupIndex);
                 const folders = directoryStructure.folders.map((f: IFolder<IBasicFile>) => {
                   return buildFolderMenu('', f, buildFile);
                 });
@@ -803,7 +806,7 @@ export const TestDefinitions = (props: IProps) => {
             style={{ height: '100%' }}
           >
             {TestCategory.sort(categories).map((category) => {
-              const deleteThisCategory = (e: any) => {
+              const deleteThisCategory = (_e: any) => {
                 deleteCategory(category.id);
               };
 

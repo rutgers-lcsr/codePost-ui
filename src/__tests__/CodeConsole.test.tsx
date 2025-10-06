@@ -4,6 +4,7 @@ import * as CodeConsoleUtils from '../components/code-review/codeConsoleUtils';
 // ######################### Standard Object Mocks ##############################
 // ##############################################################################
 const standardAssignment = {
+  id: 1,
   name: 'testAssignment',
   points: 20,
   isReleased: true,
@@ -134,58 +135,106 @@ const getRubric = (cat1Limit: number, cat1Pts: number, cat2Limit: number, cat2Pt
 // ##############################################################################
 describe('CalculateGrade_NoFileVersions', () => {
   // Test Syntax: <CommentPoints>_A_IO_FD
-  (it('NoCaps_Deductive', () => {
+  it('NoCaps_Deductive', () => {
     const [files, comments] = getFilesNoRubric(0, 0, 0, '', '', '');
     const assignment = deductiveAssignment;
     const commentRubricComments = {};
     const rubricCategories: any = [];
     expect(
-      CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, rubricCategories, files),
+      CodeConsoleUtils.calculateGrade(
+        assignment as any,
+        comments as any,
+        commentRubricComments as any,
+        rubricCategories as any,
+        files as any,
+        [],
+        [],
+      ),
     ).toEqual(20);
+  });
+  it('NoCaps_Additive', () => {
+    const [files, comments] = getFilesNoRubric(0, 0, 0, '', '', '');
+    const assignment = additiveAssignment;
+    const commentRubricComments = {};
+    const rubricCategories: any = [];
+    expect(
+      CodeConsoleUtils.calculateGrade(
+        assignment as any,
+        comments as any,
+        commentRubricComments as any,
+        rubricCategories as any,
+        files as any,
+        [],
+        [],
+      ),
+    ).toEqual(0);
+  });
+  (it('NoCaps_Deductive_2', () => {
+    const [files, comments] = getFilesNoRubric(1, 2, 0, '', '', '');
+    const assignment = deductiveAssignment;
+    const commentRubricComments = {};
+    const rubricCategories: any = [];
+    expect(
+      CodeConsoleUtils.calculateGrade(
+        assignment as any,
+        comments as any,
+        commentRubricComments as any,
+        rubricCategories as any,
+        files as any,
+        [],
+        [],
+      ),
+    ).toEqual(17);
   }),
-    it('NoCaps_Additive', () => {
-      const [files, comments] = getFilesNoRubric(0, 0, 0, '', '', '');
-      const assignment = additiveAssignment;
-      const commentRubricComments = {};
-      const rubricCategories: any = [];
-      expect(
-        CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, rubricCategories, files),
-      ).toEqual(0);
-    }),
-    it('NoCaps_Deductive_2', () => {
-      const [files, comments] = getFilesNoRubric(1, 2, 0, '', '', '');
-      const assignment = deductiveAssignment;
-      const commentRubricComments = {};
-      const rubricCategories: any = [];
-      expect(
-        CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, rubricCategories, files),
-      ).toEqual(17);
-    }),
     it('NoCaps_Deductive_3', () => {
       const [files, comments] = getFilesNoRubric(-1, -2, 0, '', '', '');
       const assignment = deductiveAssignment;
       const commentRubricComments = {};
       const rubricCategories: any = [];
       expect(
-        CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, rubricCategories, files),
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          rubricCategories as any,
+          files as any,
+          [],
+          [],
+        ),
       ).toEqual(23);
-    }),
-    it('NoCaps_Additive_2', () => {
-      const [files, comments] = getFilesNoRubric(1, 2, 0, '', '', '');
-      const assignment = additiveAssignment;
-      const commentRubricComments = {};
-      const rubricCategories: any = [];
-      expect(
-        CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, rubricCategories, files),
-      ).toEqual(-3);
-    }),
+    }));
+  (it('NoCaps_Additive_2', () => {
+    const [files, comments] = getFilesNoRubric(1, 2, 0, '', '', '');
+    const assignment = additiveAssignment;
+    const commentRubricComments = {};
+    const rubricCategories: any = [];
+    expect(
+      CodeConsoleUtils.calculateGrade(
+        assignment as any,
+        comments as any,
+        commentRubricComments as any,
+        rubricCategories as any,
+        files as any,
+        [],
+        [],
+      ),
+    ).toEqual(-3);
+  }),
     it('NoCaps_Additive_3', () => {
       const [files, comments] = getFilesNoRubric(-1, -2, 0, '', '', '');
       const assignment = additiveAssignment;
       const commentRubricComments = {};
       const rubricCategories: any = [];
       expect(
-        CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, rubricCategories, files),
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          rubricCategories as any,
+          files as any,
+          [],
+          [],
+        ),
       ).toEqual(3);
     }),
     it('NoCaps_Deductive_4', () => {
@@ -193,98 +242,238 @@ describe('CalculateGrade_NoFileVersions', () => {
       const assignment = deductiveAssignment;
 
       const [cats, commentRubricComments] = getRubric(2, 2, 0, 0);
-      expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(17);
+      expect(
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          cats as any,
+          files as any,
+          [],
+          [],
+        ),
+      ).toEqual(17);
     }),
     it('NoCaps_Deductive_5', () => {
       const [files, comments] = getFilesNoRubric(0, 0, 1, '', '', '');
       const assignment = deductiveAssignment;
 
       const [cats, commentRubricComments] = getRubric(-2, -2, 0, 0);
-      expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(21);
+      expect(
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          cats as any,
+          files as any,
+          [],
+          [],
+        ),
+      ).toEqual(21);
     }),
     it('Caps_Deductive', () => {
       const [files, comments] = getFilesNoRubric(0, 0, 0, '', '', '');
       const assignment = deductiveAssignment;
 
       const [cats, commentRubricComments] = getRubric(2, 3, 0, 0);
-      expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(18);
+      expect(
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          cats as any,
+          files as any,
+          [],
+          [],
+        ),
+      ).toEqual(18);
     }),
     it('Caps_Deductive_2', () => {
       const [files, comments] = getFilesNoRubric(0, 0, 0, '', '', '');
       const assignment = deductiveAssignment;
 
       const [cats, commentRubricComments] = getRubric(-2, -3, 0, 0);
-      expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(22);
+      expect(
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          cats as any,
+          files as any,
+          [],
+          [],
+        ),
+      ).toEqual(22);
     }),
     it('Caps_Deductive_3', () => {
       const [files, comments] = getFilesNoRubric(0, 0, 0, '', '', '');
       const assignment = deductiveAssignment;
 
       const [cats, commentRubricComments] = getRubric(-2, -2, 0, 0);
-      expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(22);
+      expect(
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          cats as any,
+          files as any,
+          [],
+          [],
+        ),
+      ).toEqual(22);
     }),
     it('Caps_Deductive_5', () => {
       const [files, comments] = getFilesNoRubric(0, 0, 0, '', '', '');
       const assignment = deductiveAssignment;
 
       const [cats, commentRubricComments] = getRubric(-1, 2, 0, 0);
-      expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(18);
+      expect(
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          cats as any,
+          files as any,
+          [],
+          [],
+        ),
+      ).toEqual(18);
     }),
     it('Caps_Additive', () => {
       const [files, comments] = getFilesNoRubric(0, 0, 0, '', '', '');
       const assignment = additiveAssignment;
 
       const [cats, commentRubricComments] = getRubric(2, 2, 0, 0);
-      expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(-2);
+      expect(
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          cats as any,
+          files as any,
+          [],
+          [],
+        ),
+      ).toEqual(-2);
     }),
     it('Caps_Additive_1', () => {
       const [files, comments] = getFilesNoRubric(0, 0, 0, '', '', '');
       const assignment = additiveAssignment;
 
       const [cats, commentRubricComments] = getRubric(2, 3, 0, 0);
-      expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(-2);
+      expect(
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          cats as any,
+          files as any,
+          [],
+          [],
+        ),
+      ).toEqual(-2);
     }),
     it('Caps_Additive_2', () => {
       const [files, comments] = getFilesNoRubric(0, 0, 0, '', '', '');
       const assignment = additiveAssignment;
 
       const [cats, commentRubricComments] = getRubric(-2, -2, 0, 0);
-      expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(2);
+      expect(
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          cats as any,
+          files as any,
+          [],
+          [],
+        ),
+      ).toEqual(2);
     }),
     it('Caps_Additive_3', () => {
       const [files, comments] = getFilesNoRubric(0, 0, 0, '', '', '');
       const assignment = additiveAssignment;
 
       const [cats, commentRubricComments] = getRubric(-2, -3, 0, 0);
-      expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(2);
+      expect(
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          cats as any,
+          files as any,
+          [],
+          [],
+        ),
+      ).toEqual(2);
     }),
     it('Caps_Deductive_Paths', () => {
       const [files, comments] = getFilesNoRubric(0, 0, 0, 'src', 'src', 'src/tst');
       const assignment = deductiveAssignment;
 
       const [cats, commentRubricComments] = getRubric(5, 3, 4, 2);
-      expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(15);
+      expect(
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          cats as any,
+          files as any,
+          [],
+          [],
+        ),
+      ).toEqual(15);
     }),
     it('Caps_Additive_Paths', () => {
       const [files, comments] = getFilesNoRubric(0, 0, 0, 'src', 'src', 'src/tst');
       const assignment = additiveAssignment;
 
       const [cats, commentRubricComments] = getRubric(-4, -2, -3, -1);
-      expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(3);
+      expect(
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          cats as any,
+          files as any,
+          [],
+          [],
+        ),
+      ).toEqual(3);
     }),
     it('Caps_Deductive_Paths_2', () => {
       const [files, comments] = getFilesNoRubric(0, 0, 0, 'src', 'src', 'src/tst');
       const assignment = deductiveAssignment;
 
       const [cats, commentRubricComments] = getRubric(5, 3, 4, 2);
-      expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(15);
+      expect(
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          cats as any,
+          files as any,
+          [],
+          [],
+        ),
+      ).toEqual(15);
     }),
     it('Caps_Additive_Paths_2', () => {
       const [files, comments] = getFilesNoRubric(0, 0, 0, 'src', 'src', 'src/tst');
       const assignment = additiveAssignment;
 
       const [cats, commentRubricComments] = getRubric(-4, -2, -3, -1);
-      expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(3);
+      expect(
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          cats as any,
+          files as any,
+          [],
+          [],
+        ),
+      ).toEqual(3);
     }));
 });
 
@@ -295,27 +484,67 @@ describe('CalculateGrade_FileVersions', () => {
     const assignment = deductiveAssignment;
 
     const [cats, commentRubricComments] = getRubric(5, 3, 4, 2);
-    expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(17);
+    expect(
+      CodeConsoleUtils.calculateGrade(
+        assignment as any,
+        comments as any,
+        commentRubricComments as any,
+        cats as any,
+        files as any,
+        [],
+        [],
+      ),
+    ).toEqual(17);
   }),
     it('Caps_Additive_Paths_OldFiles', () => {
       const [files, comments] = getFilesNoRubric(0, 0, 0, 'src', 'src/test', '', 'file1', 'file1', 'file1');
       const assignment = additiveAssignment;
 
       const [cats, commentRubricComments] = getRubric(-4, -2, -3, -1);
-      expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(3);
+      expect(
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          cats as any,
+          files as any,
+          [],
+          [],
+        ),
+      ).toEqual(3);
     }),
     it('Caps_Deductive_OldFiles', () => {
       const [files, comments] = getFilesNoRubric(0, 0, 0, '', '', '', 'file1', 'file1', 'file1');
       const assignment = deductiveAssignment;
 
       const [cats, commentRubricComments] = getRubric(5, 3, 4, 2);
-      expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(17);
+      expect(
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          cats as any,
+          files as any,
+          [],
+          [],
+        ),
+      ).toEqual(17);
     }),
     it('Caps_Additive_OldFiles', () => {
       const [files, comments] = getFilesNoRubric(0, 0, 0, '', '', '', 'file1', 'file2', 'file3');
       const assignment = additiveAssignment;
 
       const [cats, commentRubricComments] = getRubric(-4, -2, -3, -1);
-      expect(CodeConsoleUtils.calculateGrade(assignment, comments, commentRubricComments, cats, files)).toEqual(3);
+      expect(
+        CodeConsoleUtils.calculateGrade(
+          assignment as any,
+          comments as any,
+          commentRubricComments as any,
+          cats as any,
+          files as any,
+          [],
+          [],
+        ),
+      ).toEqual(3);
     }));
 });

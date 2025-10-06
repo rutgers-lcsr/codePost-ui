@@ -3,7 +3,6 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React from 'react';
 
 /* ant imports */
 import { Collapse, Divider, Switch, Table, Tag, Typography } from 'antd';

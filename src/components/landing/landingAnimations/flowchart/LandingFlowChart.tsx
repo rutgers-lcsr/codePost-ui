@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import { FlowChart } from './FlowChart.tsx';
 
 const nodes: any[] = [

@@ -3,7 +3,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
+import { Component, lazy, ReactNode, Suspense } from 'react';
 
 /* other library imports */
 import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
@@ -44,10 +44,10 @@ import { IBaseFileUpload } from './components/admin/assignments/assignments/Subm
  * Asynchronous components to dynamically load app code via code splitting
  ******************************************************************************/
 
-const AsyncStudent = React.lazy(() => import('./components/student/StudentManager'));
-const AsyncGrader = React.lazy(() => import('./components/grader/GraderManager'));
-const AsyncAdmin = React.lazy(() => import('./components/admin/AdminManager'));
-const AsyncGrade = React.lazy(() => import('./components/code-review/CodeConsole'));
+const AsyncStudent = lazy(() => import('./components/student/StudentManager'));
+const AsyncGrader = lazy(() => import('./components/grader/GraderManager'));
+const AsyncAdmin = lazy(() => import('./components/admin/AdminManager'));
+const AsyncGrade = lazy(() => import('./components/code-review/CodeConsole'));
 
 /*****************************************************************************/
 
@@ -97,9 +97,9 @@ interface IState {
   propToken: string;
 }
 
-class App extends React.Component<object, IState> {
+class App extends Component<object, IState> {
   private loginCount: number;
-  public constructor(props: any) {
+  public constructor(props: object) {
     super(props);
     try {
       localStorage.setItem('source', 'codePost');
@@ -160,7 +160,7 @@ Firefox:
     };
   }
 
-  public componentDidUpdate(prevProps: any, prevState: IState) {
+  public componentDidUpdate(_prevProps: object, prevState: IState) {
     if (this.state.toRedirect) {
       this.setState({ toRedirect: false });
     }
@@ -219,7 +219,7 @@ Firefox:
     );
   };
 
-  public messageHandler = (event: any) => {
+  public messageHandler = (event: MessageEvent) => {
     let found = false;
     for (const domain of domains) {
       if (event.origin.indexOf(domain) !== -1) {
@@ -339,7 +339,7 @@ Firefox:
             }, 1000);
           }
         })
-        .catch((error) => {
+        .catch((_error) => {
           setTimeout(() => {
             this.loginCount += 1;
             this.tryToLogin();
@@ -460,8 +460,14 @@ Firefox:
           Math.max(0, exp - now - 1000),
         );
 
-        (window as any).gtag('set', { user_id: currentUser.id });
-        (window as any).gtag('set', 'organization', currentUser.organization);
+        (window as Window & typeof globalThis & { gtag?: (...args: unknown[]) => void }).gtag?.('set', {
+          user_id: currentUser.id,
+        });
+        (window as Window & typeof globalThis & { gtag?: (...args: unknown[]) => void }).gtag?.(
+          'set',
+          'organization',
+          currentUser.organization,
+        );
       });
   };
   public getTokenExpiration = (token: string) => {
@@ -471,8 +477,8 @@ Firefox:
     return decoded.exp;
   };
 
-  public wrapTooltipContext = (node: React.ReactNode) => {
-    const wrappedNode = <React.Suspense fallback={<RouterLoading />}>{node}</React.Suspense>;
+  public wrapTooltipContext = (node: ReactNode) => {
+    const wrappedNode = <Suspense fallback={<RouterLoading />}>{node}</Suspense>;
 
     if (typeof this.state.user !== 'undefined') {
       return (
@@ -508,8 +514,14 @@ Firefox:
           toRedirect,
           isSuperUser: superUsers.indexOf(json.user.email) > -1,
         });
-        (window as any).gtag('set', { user_id: json.user.id });
-        (window as any).gtag('set', 'organization', json.user.organization);
+        (window as Window & typeof globalThis & { gtag?: (...args: unknown[]) => void }).gtag?.('set', {
+          user_id: json.user.id,
+        });
+        (window as Window & typeof globalThis & { gtag?: (...args: unknown[]) => void }).gtag?.(
+          'set',
+          'organization',
+          json.user.organization,
+        );
 
         const exp = this.getTokenExpiration(jwtToken);
         const now = new Date().getTime();
@@ -521,7 +533,8 @@ Firefox:
           Math.max(0, exp - now - 1000),
         );
       })
-      .catch((error) => {
+      .catch((_error) => {
+        // error intentionally unused
         localStorage.removeItem('token');
         this.setState({ has_token: false, user: undefined, error: 'invalid' });
         return Promise.reject();
@@ -538,7 +551,7 @@ Firefox:
       <Route
         exact={true}
         path={`${CODE_DEMO}/`}
-        render={(props: any) =>
+        render={(props: import('react-router').RouteComponentProps) =>
           this.wrapTooltipContext(
             <AsyncGrade
               {...props}
@@ -580,18 +593,12 @@ Firefox:
           <Route
             exact={true}
             path={'/loginAs/:email'}
-            render={(props: any) => <LogInAs {...props} replaceUser={this.replaceUser} />}
-          />
-        );
-        dashboardRoute = (
-          <Route
-            exact={true}
-            path={'/dashboard'}
-            render={(props: any) => (
-              <DashboardLayout {...props} isLoggedIn={true} handleLogout={this.handleLogout} user={this.state.user} />
+            render={(props: import('react-router').RouteComponentProps) => (
+              <LogInAs {...props} replaceUser={this.replaceUser} />
             )}
           />
         );
+        dashboardRoute = <Route exact={true} path={'/dashboard'} render={() => <DashboardLayout />} />;
       }
 
       // const isLostCodeInPlace = user
@@ -614,9 +621,9 @@ Firefox:
       //   );
       // }
       if (inCodeInPlace || localStorage.getItem('source') !== 'codePost') {
-        (window as any).Intercom('shutdown');
+        (window as Window & typeof globalThis & { Intercom?: (...args: unknown[]) => void }).Intercom?.('shutdown');
       } else if (isAdmin || isGrader) {
-        (window as any).Intercom('boot', {
+        (window as Window & typeof globalThis & { Intercom?: (...args: unknown[]) => void }).Intercom?.('boot', {
           app_id: 'kg4u5rp1',
           email: user.email,
           user_id: user.email,
@@ -625,13 +632,13 @@ Firefox:
           isGrader: String(isGrader),
         });
       } else if (isStudent) {
-        (window as any).Intercom('boot', {
+        (window as Window & typeof globalThis & { Intercom?: (...args: unknown[]) => void }).Intercom?.('boot', {
           app_id: 'kg4u5rp1',
           custom_launcher_selector: '#IntercomDefaultWidget',
           isStudent: String(isStudent),
         });
       } else {
-        (window as any).Intercom('shutdown');
+        (window as Window & typeof globalThis & { Intercom?: (...args: unknown[]) => void }).Intercom?.('shutdown');
       }
 
       const consoleProps = {
@@ -650,22 +657,8 @@ Firefox:
         studentRoute = (
           <Route
             path={STUDENT}
-            render={(props: any) =>
-              this.wrapTooltipContext(
-                <AsyncStudent
-                  {...props}
-                  {...consoleProps}
-                  initialCourses={studentCourses}
-                  uploadShortcut={this.state.studentUploadShortcut}
-                  // uploadShortcut={{
-                  //   assignmentID: 2,
-                  //   files: [
-                  //     { name: 'template.py', data: 'helloworld' },
-                  //     { name: 'second.py', data: 'yoyoyo\nasdfasdf]\nasdf' },
-                  //   ],
-                  // }}
-                />,
-              )
+            render={(props: import('react-router').RouteComponentProps) =>
+              this.wrapTooltipContext(<AsyncStudent {...props} {...consoleProps} initialCourses={studentCourses} />)
             }
           />
         );
@@ -676,7 +669,7 @@ Firefox:
         graderRoute = (
           <Route
             path={GRADER}
-            render={(props: any) =>
+            render={(props: import('react-router').RouteComponentProps) =>
               this.wrapTooltipContext(<AsyncGrader {...props} {...consoleProps} initialCourses={graderCourses} />)
             }
           />
@@ -688,7 +681,7 @@ Firefox:
         adminRoute = (
           <Route
             path={ADMIN}
-            render={(props: any) =>
+            render={(props: import('react-router').RouteComponentProps) =>
               this.wrapTooltipContext(<AsyncAdmin {...props} {...consoleProps} initialCourses={courseAdminCourses} />)
             }
           />
@@ -699,9 +692,14 @@ Firefox:
         <Route
           exact={true}
           path={`${CODE}/:submissionId`}
-          render={(props: any) => {
+          render={(props: import('react-router').RouteComponentProps) => {
             return this.wrapTooltipContext(
-              <AsyncGrade {...props} user={this.state.user} handleLogout={this.handleLogout} inDemoMode={false} />,
+              <AsyncGrade
+                {...props}
+                user={this.state.user === undefined ? anonymousUser : this.state.user}
+                handleLogout={this.handleLogout}
+                inDemoMode={false}
+              />,
             );
           }}
         />
@@ -721,15 +719,14 @@ Firefox:
           <Route
             exact={true}
             path={HOME}
-            render={(props: any) => (
+            render={(props: import('react-router').RouteComponentProps) => (
               <Home
                 {...props}
-                isLoggedIn={true}
                 isStudent={isStudent}
                 isGrader={isGrader}
                 isAdmin={isAdmin}
                 handleLogout={this.handleLogout}
-                user={this.state.user}
+                user={this.state.user === undefined ? anonymousUser : this.state.user}
               />
             )}
           />
@@ -740,22 +737,20 @@ Firefox:
         <Switch>
           {loginasRoute}
           {dashboardRoute}
-
           <Route
             exact={true}
             path={'/settings'}
-            render={(props: any) =>
+            render={(props: import('react-router').RouteComponentProps) =>
               this.wrapTooltipContext(
                 <Settings
                   {...props}
-                  user={this.state.user}
+                  user={this.state.user === undefined ? anonymousUser : this.state.user}
                   handleLogout={this.handleLogout}
                   replaceUser={this.replaceUser}
                 />,
               )
             }
           />
-
           {pageSelector}
           {studentRoute}
           {graderRoute}
@@ -799,7 +794,7 @@ Firefox:
       );
     } else {
       if (localStorage.getItem('source') === 'codePost') {
-        (window as any).Intercom('boot', {
+        (window as Window & typeof globalThis & { Intercom?: (...args: unknown[]) => void }).Intercom?.('boot', {
           app_id: 'kg4u5rp1',
           custom_launcher_selector: '#IntercomDefaultWidget',
         });
@@ -810,7 +805,7 @@ Firefox:
 }
 
 const RedirectPath = (route: string) => {
-  return (props: any) => {
+  return (_props: unknown) => {
     return <Redirect to={`/${route}`} />;
   };
 };

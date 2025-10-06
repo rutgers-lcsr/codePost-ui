@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { DashboardOutlined, LineChartOutlined } from '@ant-design/icons';
 
+import type { MenuProps } from 'antd';
 import { Layout, Menu } from 'antd';
 
 import { Link } from 'react-router-dom';
@@ -13,24 +14,27 @@ import Dashboard from './Dashboard';
 
 const { Content, Sider } = Layout;
 
-const DashboardLayout = (props: any) => {
+const DashboardLayout: React.FC = () => {
   useFixedWindow();
 
   const [siderKey, setSiderKey] = React.useState('1');
 
-  const onClick = (param: any) => {
-    setSiderKey(param['key']);
+  const onClick: MenuProps['onClick'] = (info) => {
+    setSiderKey(info.key);
   };
 
-  let content = null;
+  let content: React.ReactNode = null;
 
   if (siderKey === '1') {
     content = <Dashboard />;
   }
 
   if (siderKey === '2') {
-    // prettier-ignore
-    content = <a href="https://analytics.google.com/analytics/web/">analytics.google.com</a>;
+    content = (
+      <a href="https://analytics.google.com/analytics/web/" target="_blank" rel="noopener noreferrer">
+        analytics.google.com
+      </a>
+    );
   }
 
   return (

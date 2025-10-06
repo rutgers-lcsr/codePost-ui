@@ -111,14 +111,17 @@ export const useCodeConsoleData = (params: UseCodeConsoleDataParams): CodeConsol
     const rubricComments: IRubricCategoryToRubricCommentsMap = {};
 
     rubricCategories.forEach((rubricCategory: RubricCategoryType) => {
-      rubricComments[rubricCategory.id] = rubricCategory.rubricComments.sort(
-        (a: RubricCommentType, b: RubricCommentType) => {
+      rubricComments[rubricCategory.id] = rubric.rubricComments
+        .filter((rubricComment: RubricCommentType) => rubricComment.category === rubricCategory.id)
+        .sort((a: RubricCommentType, b: RubricCommentType) => {
           if (a.sortKey !== null && b.sortKey !== null) {
             return a.sortKey - b.sortKey;
           }
-          return 0;
-        },
-      );
+          if (a.sortKey === null && b.sortKey === null) {
+            return 0;
+          }
+          return a.sortKey === null ? 1 : -1;
+        });
     });
 
     return { rubricCategories, rubricComments };

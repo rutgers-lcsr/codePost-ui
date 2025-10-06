@@ -33,7 +33,11 @@ import { sendEmailToUser } from './other/RosterUtils';
 import SendEmailModal from '../other/SendEmailModal';
 
 const confirm = Modal.confirm;
-
+interface IAdminTableData {
+  key: string;
+  admin: string;
+  actions: React.ReactNode;
+}
 /**********************************************************************************************************************/
 
 export interface IManageAdminsProps {
@@ -92,7 +96,8 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
   public render() {
     let actions: React.ReactNode[] = [];
     let columns: ITableDetailColumn[] = [];
-    let data: any[] = [];
+
+    let data: IAdminTableData[] = [];
 
     const inactiveEmails = this.toInvite(this.props.admins, this.props.notActivated);
 
@@ -149,9 +154,9 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
           title: 'Admin',
           dataIndex: 'admin',
           key: 'primary',
-          sorter: (a: any, b: any) => a.key.localeCompare(b.key),
+          sorter: (a: { key: string }, b: { key: string }) => a.key.localeCompare(b.key),
           renderForSearch: (searchText: string) => {
-            return (text: string, record: any, index: number) => {
+            return (_text: string, record: { admin: string; key: string }, _index: number) => {
               const adminEmail = record.admin;
               const highlightedEmail = (
                 <Highlighter
@@ -256,10 +261,7 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
             items={[
               { title: 'Roster' },
               {
-                title: (
-                  // eslint-disable-next-line jsx-a11y/anchor-is-valid
-                  <a>Admins</a>
-                ),
+                title: <a>Admins</a>,
               },
             ]}
           />

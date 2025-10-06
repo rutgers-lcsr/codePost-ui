@@ -1,5 +1,5 @@
 /* react imports */
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 /* ant imports */
 import { Alert, message, Modal, Radio } from 'antd';

@@ -3,7 +3,6 @@
 /**********************************************************************************************************************/
 
 /* React imports */
-import * as React from 'react';
 
 import { QuestionCircleOutlined } from '@ant-design/icons';
 
@@ -50,13 +49,12 @@ import queryString from 'query-string';
 
 import { encodeForLink } from '../../../core/URLutils';
 
+import { ChangeEvent, ReactNode, useEffect, useState } from 'react';
 import { trackFeature } from '../../../../components/utils/Fullstory';
 
 const { Option } = Select;
 
-const { Paragraph } = Typography;
-
-const { Search, TextArea } = Input;
+const { TextArea } = Input;
 
 /**********************************************************************************************************************/
 
@@ -70,7 +68,7 @@ export interface IMossProps {
 
   user: UserType;
 
-  breadcrumbs?: Array<{ title: React.ReactNode }>;
+  breadcrumbs?: Array<{ title: ReactNode }>;
 }
 /**********************************************************************************************************************/
 
@@ -104,16 +102,16 @@ export const MOSS_LANGUAGES = [
 ];
 
 const Moss = (props: IMossProps & RouteComponentProps) => {
-  const [submit, setSubmit] = React.useState(true);
-  const [loading, setLoading] = React.useState(false);
-  const [urlID, setUrlID] = React.useState('');
-  const [language, setLanguage] = React.useState('');
-  const [mossID, setMossID] = React.useState('');
-  const [excludedFiles, setExcludedFiles] = React.useState('');
+  const [submit, setSubmit] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [urlID, setUrlID] = useState('');
+  const [language, setLanguage] = useState('');
+  const [mossID, setMossID] = useState('');
+  const [excludedFiles, setExcludedFiles] = useState('');
 
-  const [fileTemplates, setFileTemplates] = React.useState<FileTemplateType[]>([]);
-  const [includeFileTemplates, setIncludeFileTemplates] = React.useState(false);
-  const [fileExplorerVisible, setFileExplorerVisible] = React.useState(false);
+  const [fileTemplates, setFileTemplates] = useState<FileTemplateType[]>([]);
+  const [includeFileTemplates, setIncludeFileTemplates] = useState(false);
+  const [fileExplorerVisible, setFileExplorerVisible] = useState(false);
 
   let testMode = false;
   const values = queryString.parse(props.location.search);
@@ -121,7 +119,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
     testMode = true;
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetch = async () => {
       if (props.assignment !== undefined) {
         const ret = await Promise.all(
@@ -139,18 +137,18 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
     fetch();
   }, [props.assignment]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const values = queryString.parse(props.location.search);
     if (values.resultsid !== undefined && typeof values.resultsid === 'string') {
       const formattedUrlID = values.resultsid.replace('%2F', '/');
       setUrlID(formattedUrlID);
       setSubmit(false);
 
-      onParse(null, formattedUrlID);
+      onParse(formattedUrlID);
     }
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     trackFeature('Moss', {});
   }, []);
 
@@ -197,7 +195,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
   //   },
   // ];
 
-  const [results, setResults] = React.useState(undefined);
+  const [results, setResults] = useState(undefined);
 
   const toggleSubmit = async () => {
     setSubmit(true);
@@ -326,7 +324,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
     }
   };
 
-  const onParse = async (e: any, overrideID?: string) => {
+  const onParse = async (overrideID?: string) => {
     const url = `http://moss.stanford.edu/results/${overrideID !== undefined ? overrideID : urlID}`;
 
     setLoading(true);
@@ -339,7 +337,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
     setLoading(false);
   };
 
-  const onChangeExcludedFiles = (e: any) => {
+  const onChangeExcludedFiles = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setExcludedFiles(e.target.value);
   };
 
@@ -392,7 +390,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
   const parseButton = loading ? (
     <Spin size="small" />
   ) : (
-    <div onClick={onParse} style={{ cursor: 'pointer', fontWeight: 600 }}>
+    <div onClick={() => onParse()} style={{ cursor: 'pointer', fontWeight: 600 }}>
       Go ➜
     </div>
   );
@@ -571,9 +569,9 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
 const ProgressBar = (props: any) => {
   const timerTime = props.time; // milliseconds, AWS timeout
 
-  const [counter, setCounter] = React.useState(0);
+  const [counter, setCounter] = useState(0);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const interval = setInterval(() => {
       setCounter((ctr) => {
         return ctr + 1;

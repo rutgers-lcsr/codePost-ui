@@ -30,6 +30,7 @@ import Loading from '../../core/Loading';
 
 import { AssignmentTests } from './tests/AssignmentTests';
 
+import { FileType } from '../../../infrastructure/types';
 import RubricOverview from './rubric/RubricOverview';
 import TestsOverview from './tests/TestsOverview';
 
@@ -64,9 +65,12 @@ export interface IManageAssignmentsProps {
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
   shallowUpdateAssignment: (assignmentID: number, field: string, value: number) => void;
-  bulkUpdateSubmissions: (assignmentID: number, getPayload: (sub: SubmissionInfoType) => any) => Promise<void>;
+  bulkUpdateSubmissions: (
+    assignmentID: number,
+    getPayload: (sub: SubmissionInfoType) => Partial<SubmissionInfoType>,
+  ) => Promise<void>;
 
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: FileType[]) => Promise<void>;
   deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   updateSubmission: (submission: SubmissionInfoType) => Promise<void>;
 
@@ -90,7 +94,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
     return;
   };
 
-  const breadcrumbs = [
+  const breadcrumbs: Array<{ title: React.ReactNode }> = [
     {
       title: (
         <>{props.currentCourse !== undefined && props.currentCourse.archived ? <Tag>Archived</Tag> : null}Assignments</>
@@ -110,7 +114,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
           <div key={encodedName}>
             <Route
               path={`${props.match.url}/rubrics/${encodedName}`}
-              render={(subprops: IManageAssignmentsProps & RouteComponentProps) => (
+              render={(subprops: RouteComponentProps) => (
                 <RubricManager
                   {...subprops}
                   assignment={assignment}
@@ -145,7 +149,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             />
             <Route
               path={`${props.match.url}/${encodedName}/stats`}
-              render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
+              render={(subprops: RouteComponentProps) =>
                 !props.fullSubmissionsLoadComplete ? (
                   <Loading />
                 ) : (
@@ -154,7 +158,9 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                     course={props.currentCourse!}
                     assignment={assignment}
                     submissions={
-                      props.submissions.hasOwnProperty(assignment.id) ? props.submissions[assignment.id] : null
+                      Object.prototype.hasOwnProperty.call(props.submissions, assignment.id)
+                        ? props.submissions[assignment.id]
+                        : null
                     }
                     students={props.students}
                     submissionsByStudent={props.submissionsByStudent}
@@ -168,7 +174,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             />
             <Route
               path={`${props.match.url}/${encodedName}/regrades`}
-              render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
+              render={(subprops: RouteComponentProps) =>
                 !props.partialSubmissionsLoadComplete ? (
                   <Loading />
                 ) : (
@@ -188,7 +194,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             />
             <Route
               path={`${props.match.url}/${encodedName}/settings`}
-              render={(subprops: IManageAssignmentsProps & RouteComponentProps) => (
+              render={(subprops: RouteComponentProps) => (
                 <AssignmentsTable
                   {...props}
                   {...subprops}
@@ -204,7 +210,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             />
             <Route
               path={`${props.match.url}/${encodedName}/download/grades`}
-              render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
+              render={(subprops: RouteComponentProps) =>
                 !props.fullSubmissionsLoadComplete ? (
                   <Loading />
                 ) : (
@@ -224,7 +230,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             />
             <Route
               path={`${props.match.url}/${encodedName}/delete`}
-              render={(subprops: IManageAssignmentsProps & RouteComponentProps) => (
+              render={(subprops: RouteComponentProps) => (
                 <AssignmentsTable
                   {...props}
                   {...subprops}
@@ -240,7 +246,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             />
             <Route
               path={`${props.match.url}/${encodedName}/upload/single`}
-              render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
+              render={(subprops: RouteComponentProps) =>
                 !props.partialSubmissionsLoadComplete ? (
                   <Loading />
                 ) : (
@@ -260,7 +266,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             />
             <Route
               path={`${props.match.url}/${encodedName}/upload/multiple`}
-              render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
+              render={(subprops: RouteComponentProps) =>
                 !props.fullSubmissionsLoadComplete ? (
                   <Loading />
                 ) : (
@@ -280,7 +286,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             />
             <Route
               path={`${props.match.url}/${encodedName}/upload/import`}
-              render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
+              render={(subprops: RouteComponentProps) =>
                 !props.partialSubmissionsLoadComplete ? (
                   <Loading />
                 ) : (
@@ -300,7 +306,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             />
             <Route
               path={`${props.match.url}/${encodedName}/bulk-edit`}
-              render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
+              render={(subprops: RouteComponentProps) =>
                 !props.fullSubmissionsLoadComplete ? (
                   <Loading />
                 ) : (
@@ -320,7 +326,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             />
             <Route
               path={`${props.match.url}/${encodedName}/onboarding`}
-              render={(subprops: IManageAssignmentsProps & RouteComponentProps) =>
+              render={(subprops: RouteComponentProps) =>
                 !props.partialSubmissionsLoadComplete ? (
                   <Loading />
                 ) : (
@@ -340,7 +346,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             />
             <Route
               path={`${props.match.url}/tests/${encodedName}`}
-              render={(subprops: IManageAssignmentsProps & RouteComponentProps) => (
+              render={(subprops: RouteComponentProps) => (
                 <AssignmentTests
                   {...subprops}
                   breadcrumbs={breadcrumbs}
@@ -359,25 +365,26 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
       <Route
         path={`${props.match.url}/tests`}
         exact={true}
-        render={(subprops: any) => <TestsOverview {...subprops} assignments={props.assignments} />}
+        render={(subprops: RouteComponentProps) => <TestsOverview {...subprops} assignments={props.assignments} />}
       />
       <Route
         path={`${props.match.url}/rubrics`}
         exact={true}
-        render={(subprops: any) => (
+        render={(subprops: RouteComponentProps) => (
           <RubricOverview {...subprops} assignments={props.assignments} course={props.currentCourse} />
         )}
       />
       <Route
         path={`${props.match.url}/download/grades`}
         exact={true}
-        render={(subprops: any) =>
+        render={(subprops: RouteComponentProps) =>
           !props.submissionsByUserLoadComplete ? (
             <Loading />
           ) : (
             <AssignmentsTable
               {...props}
               {...subprops}
+              currentCourse={props.currentCourse!}
               breadcrumbs={breadcrumbs}
               detailType={DETAIL_TYPE.DownloadGrades}
               baseURL={props.match.url}
@@ -390,11 +397,12 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
       <Route
         path={`${props.match.url}/overview`}
         exact={true}
-        render={(subprops: any) => {
+        render={(subprops: RouteComponentProps) => {
           return (
             <AssignmentsTable
               {...props}
               {...subprops}
+              currentCourse={props.currentCourse!}
               breadcrumbs={breadcrumbs}
               baseURL={props.match.url}
               courses={props.courses}

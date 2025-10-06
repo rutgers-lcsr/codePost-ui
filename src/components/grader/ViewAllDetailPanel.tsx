@@ -3,11 +3,11 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
 
 import { CodeOutlined } from '@ant-design/icons';
 
 /* ant imports */
+import type { SelectProps } from 'antd';
 import { Breadcrumb, Select, Switch, Table } from 'antd';
 
 /* codePost imports */
@@ -24,6 +24,7 @@ import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtil
 
 import { compare } from '../utils/SortUtils';
 
+import { Component } from 'react';
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 
 type alignType = 'left' | 'right' | 'center';
@@ -53,10 +54,7 @@ interface ITableRow extends ISubDataBasic {
   viewIcon?: string | React.ReactElement;
 }
 
-class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
-  private timer: any;
-  private times: any = [];
-
+class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
   public state: Readonly<IViewAllState> = {
     graders: [],
     submissions: [],
@@ -79,12 +77,10 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
   }
 
   public componentDidMount() {
-    this.timer = Date.now();
-
     this.initialLoad();
   }
 
-  public componentDidUpdate(oldProps: IViewAllProps, prevState: IViewAllState) {
+  public componentDidUpdate(oldProps: IViewAllProps, _prevProps: IViewAllState) {
     if (oldProps.assignment !== this.props.assignment) {
       this.initialLoad();
     }
@@ -93,7 +89,7 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
   //************************** Pagination callbacks *****************************
 
   public onLoadNewSubmissions = (newSubs: SubmissionInfoType[]) => {
-    this.setState((prevState, prevProps) => {
+    this.setState((prevState, _prevProps) => {
       return {
         submissions: [...prevState.submissions, ...newSubs],
       };
@@ -101,7 +97,7 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
   };
 
   public onLoadNewHistories = (newHistories: SubmissionHistoryType[]) => {
-    this.setState((prevState, prevProps) => {
+    this.setState((prevState, _prevProps) => {
       const newViewsBySubmission = { ...prevState.viewsBySubmission };
       newHistories.forEach((history: SubmissionHistoryType) => {
         const submissionID = history.submission;
@@ -140,12 +136,11 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
     });
   };
 
-  public handleSelect = (grader: any, o: any) => {
+  public handleSelect: SelectProps['onSelect'] = (grader) => {
     const newGraders = [...this.state.selectedGraders, grader];
     this.setState({ selectedGraders: newGraders });
   };
-
-  public handleDeselect = (grader: any, o: any) => {
+  public handleDeselect: SelectProps['onDeselect'] = (grader) => {
     const newGraders = this.state.selectedGraders.filter((g) => {
       return g !== grader;
     });
@@ -252,9 +247,7 @@ class ViewAllDetailPanel extends React.Component<IViewAllProps, IViewAllState> {
         <Select
           placeholder="Select Graders..."
           mode="multiple"
-          // @ts-ignore
           onSelect={this.handleSelect}
-          // @ts-ignore
           onDeselect={this.handleDeselect}
           style={{ width: 500, marginBottom: 20 }}
         >

@@ -124,7 +124,7 @@ class Settings extends React.Component<IProps, IState> {
           return Promise.reject();
         }
       })
-      .then((json) => {
+      .then(() => {
         message.success(
           <span>
             Check your email for a link to reset your password. If you don't see an email within a couple of minutes,{' '}

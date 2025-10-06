@@ -4,6 +4,7 @@
 
 /* react imports */
 import * as React from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import {
   DisconnectOutlined,
@@ -15,13 +16,12 @@ import {
 } from '@ant-design/icons';
 
 /* style imports */
+import type { MenuProps } from 'antd';
 import { Breadcrumb, Dropdown, Empty, message, Modal, Select, Spin } from 'antd';
 
 /* other library imports */
-import memoizeOne from 'memoize-one';
 import Highlighter from 'react-highlight-words';
-import { RouteComponentProps } from 'react-router';
-import { Link } from 'react-router-dom';
+import { Link, useRouteMatch } from 'react-router-dom';
 
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
@@ -43,7 +43,7 @@ import { sendEmailToUser } from './other/RosterUtils';
 
 import SendEmailModal from '../other/SendEmailModal';
 
-const confirm = Modal.confirm;
+const { confirm } = Modal;
 
 /**********************************************************************************************************************/
 
@@ -71,340 +71,315 @@ export interface IManageStudentsProps {
   myEmail: string;
 }
 
-interface IState {
-  activeStudent: string;
-}
+const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
+  const match = useRouteMatch();
+  const [activeStudent, setActiveStudent] = useState<string>('');
 
-class ManageStudents extends React.Component<IManageStudentsProps & RouteComponentProps, IState> {
-  public constructor(props: IManageStudentsProps & RouteComponentProps) {
-    super(props);
-    this.state = {
-      activeStudent: '',
-    };
-  }
+  const sendActivationEmail = useCallback(
+    (student: string) => {
+      sendEmailToUser(student, 'add_student', props.currentCourse, true, undefined);
+    },
+    [props.currentCourse],
+  );
 
-  public sendActivationEmail = (student: string) => {
-    sendEmailToUser(student, 'add_student', this.props.currentCourse, true, undefined);
-  };
-
-  public removeStudent = (toRemove: string) => {
-    confirm({
-      title: `Are you sure you want to remove this student (${toRemove}) from your course?`,
-      content: `All the student's work will be saved, but they won't be able to access the course.
-        You can always add them back from this page.`,
-      onOk: () => {
-        return this.props.updateRoster([], [toRemove], USER_APP.Student);
-      },
-      okText: 'Remove',
-    });
-  };
-
-  public addStudent = (email: string, section?: SectionType): Promise<void> => {
-    return this.props.updateRoster([email], [], USER_APP.Student).then(() => {
-      if (typeof section !== 'undefined') {
-        return this.props.updateStudentSection(email, section.id);
-      } else {
-        return;
-      }
-    });
-  };
-
-  public setActiveStudent = (student: string) => {
-    this.setState({ activeStudent: student });
-  };
-
-  public updateStudentSection = (student: string, section: number) => {
-    this.props.updateStudentSection(student, section).then(() => {
-      message.success(`Updated ${student}'s section.`);
-    });
-  };
-
-  public toInvite = memoizeOne((students: string[], inactiveUsers: string[]) => {
-    return students.filter((student) => {
-      return inactiveUsers.indexOf(student) > -1;
-    });
-  });
-
-  public render() {
-    let actions: React.ReactNode[] = [];
-    let columns: ITableDetailColumn[] = [];
-    let data: any[] = [];
-
-    const inactiveEmails = this.toInvite(this.props.students, this.props.notActivated);
-
-    if (this.props.students.length > 0) {
-      actions = [
-        inactiveEmails.length > 0 ? (
-          <SendEmailModal
-            key="activation"
-            buttonText="Send invites"
-            title="Send activation emails to students"
-            template="add_student"
-            course={this.props.currentCourse}
-            me={this.props.myEmail}
-            emails={inactiveEmails}
-            body={
-              <div>
-                Send activation emails to all students who have not yet joined codePost. Users who have signed up won't
-                be emailed.
-              </div>
-            }
-          />
-        ) : null,
-        <ShareInviteCode course={this.props.currentCourse} />,
-        <DownloadRoster
-          key={0}
-          downloadType={USER_TYPE.STUDENT}
-          sectionsByStudent={this.props.sectionsByStudent}
-          startingPage={USER_TYPE.STUDENT}
-          students={this.props.students}
-          graders={this.props.graders}
-          admins={this.props.admins}
-          course={this.props.currentCourse}
-          isDisabled={false}
-        />,
-        <RosterFileUpload
-          key={1}
-          roleType="student"
-          students={this.props.students}
-          graders={this.props.graders}
-          admins={this.props.admins}
-          sections={this.props.sections}
-          sectionsByStudent={this.props.sectionsByStudent}
-          changeRoster={this.props.updateRoster}
-          isDisabled={false}
-          updateSection={this.props.updateSection}
-          emailNewUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
-          createSection={this.props.createSection}
-          course={this.props.currentCourse}
-        />,
-      ];
-
-      const aligner: 'left' | 'center' | 'right' = 'center';
-      const sections = this.props.sectionsByStudent;
-      columns = [
-        {
-          title: 'Student',
-          dataIndex: 'student',
-          key: 'primary',
-          sorter: (a: any, b: any) => a.key.localeCompare(b.key),
-          renderForSearch: (searchText: string) => {
-            return (text: string, record: any, index: number) => {
-              const studentEmail = record.student;
-              const highlightedEmail = (
-                <Highlighter
-                  highlightStyle={{
-                    backgroundColor: '#5CBB8B',
-                    padding: 0,
-                  }}
-                  searchWords={[searchText]}
-                  autoEscape
-                  textToHighlight={studentEmail}
-                />
-              );
-              const hasActivated = this.props.notActivated.indexOf(studentEmail) === -1;
-              return hasActivated ? (
-                highlightedEmail
-              ) : (
-                <span style={{ color: '#80808082' }}>
-                  <CPTooltip title="This user has not yet signed up for codePost.">
-                    <div>
-                      {highlightedEmail} &nbsp; <DisconnectOutlined />
-                    </div>
-                  </CPTooltip>
-                </span>
-              );
-            };
-          },
+  const removeStudent = useCallback(
+    (toRemove: string) => {
+      confirm({
+        title: `Are you sure you want to remove this student (${toRemove}) from your course?`,
+        content: `All the student's work will be saved, but they won't be able to access the course. You can always add them back from this page.`,
+        onOk: async () => {
+          await props.updateRoster([], [toRemove], USER_APP.Student);
         },
-        {
-          title: 'Section',
-          dataIndex: 'section',
-          key: 'section',
-          align: aligner,
-          sorter: (a: any, b: any) => {
-            if (a === b) {
-              return 0;
-            } else if (a.section === 'No section') {
-              return 1;
-            } else if (b.section === 'No section') {
-              return -1;
-            } else {
-              // save most expensive operation for last
-              return a.section.localeCompare(b.section);
-            }
-          },
-          renderForSearch: (searchText: string) => {
-            return (text: string, record: any, index: number) => {
-              const student = record.key;
-              if (!this.props.sectionsLoadComplete) {
-                return <Spin />;
-              }
-              if (student === this.state.activeStudent) {
-                return (
-                  <div>
-                    <Select
-                      style={{ width: 150 }}
-                      onChange={this.updateStudentSection.bind(this, student)}
-                      defaultValue={sections[student] ? sections[student].id : 0}
-                    >
-                      {[
-                        ...this.props.sections
-                          .sort((a, b) => a.name.localeCompare(b.name))
-                          .map((section) => {
-                            return (
-                              <Select.Option key={section.name} value={section.id}>
-                                {section.name}
-                              </Select.Option>
-                            );
-                          }),
-                        <Select.Option key={0} value={0}>
-                          No section
-                        </Select.Option>,
-                      ]}
-                    </Select>
-                    &nbsp;
-                    <CPTooltip title={tooltips.admin.studentRoster.lockSection} hideThisOnHideTips={true}>
-                      <EditOutlined onClick={this.setActiveStudent.bind(this, '')} />
-                    </CPTooltip>
-                  </div>
-                );
-              } else {
-                return (
-                  <div>
-                    <Highlighter
-                      highlightStyle={{
-                        backgroundColor: '#5CBB8B',
-                        padding: 0,
-                      }}
-                      searchWords={[searchText]}
-                      autoEscape
-                      textToHighlight={sections[student] ? sections[student].name : 'No section'}
-                    />{' '}
-                    &nbsp;
-                    <CPTooltip title={tooltips.admin.studentRoster.editSection} hideThisOnHideTips={true}>
-                      <EditOutlined onClick={this.setActiveStudent.bind(this, student)} />
-                    </CPTooltip>
-                  </div>
-                );
-              }
-            };
-          },
-        },
-        {
-          title: 'Actions',
-          dataIndex: 'actions',
-          key: 'actions',
-          align: aligner,
-        },
-      ];
-
-      data = this.props.students.map((studentEmail, i) => {
-        const hasActivated = this.props.notActivated.indexOf(studentEmail) === -1;
-
-        const menuItems = [
-          ...(hasActivated
-            ? []
-            : [
-                {
-                  key: 'activation',
-                  label: (
-                    <>
-                      <MailOutlined /> Send activation email
-                    </>
-                  ),
-                  onClick: this.sendActivationEmail.bind(this, studentEmail),
-                },
-              ]),
-          {
-            key: 'profile',
-            label: (
-              <Link to={this.props.match.url.replace('roster/students', `submissions/by_student/${studentEmail}`)}>
-                <FolderOpenOutlined /> &nbsp; Open profile
-              </Link>
-            ),
-          },
-          {
-            key: '1',
-            label: (
-              <>
-                <UserDeleteOutlined /> Unenroll
-              </>
-            ),
-            onClick: this.removeStudent.bind(this, studentEmail),
-          },
-        ];
-
-        return {
-          key: studentEmail,
-          student: studentEmail,
-          section: sections[studentEmail] ? sections[studentEmail].name : 'No section',
-          actions: (
-            <Dropdown menu={{ items: menuItems }} trigger={['click']}>
-              <MenuOutlined />
-            </Dropdown>
-          ),
-        };
+        okText: 'Remove',
       });
-    }
+    },
+    [props],
+  );
 
-    return (
-      <TableDetail
-        loadComplete={this.props.loadComplete}
-        title={'Students'}
-        isEmpty={this.props.students.length === 0}
-        emptyNode={
-          <Empty
-            styles={{
-              image: {
-                height: 60,
-              },
+  const updateStudentSection = useCallback(
+    async (student: string, section: number) => {
+      await props.updateStudentSection(student, section);
+      message.success(`Updated ${student}'s section.`);
+    },
+    [props],
+  );
+
+  const inactiveEmails = useMemo(() => {
+    return props.students.filter((student) => props.notActivated.includes(student));
+  }, [props.students, props.notActivated]);
+
+  const renderStudentCell = useCallback(
+    (searchText: string) => {
+      return (_: string, record: { student: string }) => {
+        const studentEmail = record.student;
+        const highlightedEmail = (
+          <Highlighter
+            highlightStyle={{
+              backgroundColor: '#5CBB8B',
+              padding: 0,
             }}
-            description={<span>You can add students to your course in two ways</span>}
-          >
-            <span>
-              <RosterFileUpload
-                key={1}
-                roleType="student"
-                students={this.props.students}
-                graders={this.props.graders}
-                admins={this.props.admins}
-                sections={this.props.sections}
-                sectionsByStudent={this.props.sectionsByStudent}
-                changeRoster={this.props.updateRoster}
-                isDisabled={false}
-                updateSection={this.props.updateSection}
-                emailNewUsers={this.props.currentCourse ? this.props.currentCourse.emailNewUsers : false}
-                createSection={this.props.createSection}
-                course={this.props.currentCourse}
-                buttonText="Add students by email"
-              />
-              <br />
-              OR <br /> <br />
-              <ShareInviteCode course={this.props.currentCourse} />
-            </span>
-          </Empty>
-        }
-        columns={columns}
-        data={data}
-        actions={actions}
-        breadcrumbs={
-          <Breadcrumb
-            items={[
-              { title: 'Roster' },
-              {
-                title: (
-                  // eslint-disable-next-line jsx-a11y/anchor-is-valid
-                  <a>Students</a>
-                ),
-              },
-            ]}
+            searchWords={[searchText]}
+            autoEscape
+            textToHighlight={studentEmail}
           />
+        );
+        const hasActivated = !props.notActivated.includes(studentEmail);
+        return hasActivated ? (
+          highlightedEmail
+        ) : (
+          <span style={{ color: '#80808082' }}>
+            <CPTooltip title="This user has not yet signed up for codePost.">
+              <div>
+                {highlightedEmail} &nbsp; <DisconnectOutlined />
+              </div>
+            </CPTooltip>
+          </span>
+        );
+      };
+    },
+    [props.notActivated],
+  );
+
+  const renderSectionCell = useCallback(
+    (searchText: string) => {
+      return (_: string, record: { key: string }) => {
+        const student = record.key;
+        if (!props.sectionsLoadComplete) {
+          return <Spin />;
         }
-        titleInfo={tooltips.admin.studentRoster.title}
-      />
-    );
-  }
-}
+        if (student === activeStudent) {
+          return (
+            <div>
+              <Select
+                style={{ width: 150 }}
+                onChange={(value) => updateStudentSection(student, value)}
+                defaultValue={props.sectionsByStudent[student]?.id ?? 0}
+              >
+                {props.sections
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((section) => (
+                    <Select.Option key={section.id} value={section.id}>
+                      {section.name}
+                    </Select.Option>
+                  ))}
+                <Select.Option key={0} value={0}>
+                  No section
+                </Select.Option>
+              </Select>
+              &nbsp;
+              <CPTooltip title={tooltips.admin.studentRoster.lockSection} hideThisOnHideTips={true}>
+                <EditOutlined onClick={() => setActiveStudent('')} />
+              </CPTooltip>
+            </div>
+          );
+        }
+        return (
+          <div>
+            <Highlighter
+              highlightStyle={{
+                backgroundColor: '#5CBB8B',
+                padding: 0,
+              }}
+              searchWords={[searchText]}
+              autoEscape
+              textToHighlight={props.sectionsByStudent[student]?.name ?? 'No section'}
+            />{' '}
+            &nbsp;
+            <CPTooltip title={tooltips.admin.studentRoster.editSection} hideThisOnHideTips={true}>
+              <EditOutlined onClick={() => setActiveStudent(student)} />
+            </CPTooltip>
+          </div>
+        );
+      };
+    },
+    [activeStudent, props.sectionsLoadComplete, props.sections, props.sectionsByStudent, updateStudentSection],
+  );
+
+  const columns: ITableDetailColumn[] = useMemo(
+    () => [
+      {
+        title: 'Student',
+        dataIndex: 'student',
+        key: 'primary',
+        sorter: (a: { key: string }, b: { key: string }) => a.key.localeCompare(b.key),
+        renderForSearch: renderStudentCell,
+      },
+      {
+        title: 'Section',
+        dataIndex: 'section',
+        key: 'section',
+        align: 'center' as const,
+        sorter: (a: { section: string }, b: { section: string }) => {
+          if (a.section === b.section) return 0;
+          if (a.section === 'No section') return 1;
+          if (b.section === 'No section') return -1;
+          return a.section.localeCompare(b.section);
+        },
+        renderForSearch: renderSectionCell,
+      },
+      {
+        title: 'Actions',
+        dataIndex: 'actions',
+        key: 'actions',
+        align: 'center' as const,
+      },
+    ],
+    [renderStudentCell, renderSectionCell],
+  );
+
+  const data = useMemo(() => {
+    return props.students.map((studentEmail) => {
+      const hasActivated = !props.notActivated.includes(studentEmail);
+
+      const menuItems: MenuProps['items'] = [
+        ...(!hasActivated
+          ? [
+              {
+                key: 'activation',
+                label: (
+                  <>
+                    <MailOutlined /> Send activation email
+                  </>
+                ),
+                onClick: () => sendActivationEmail(studentEmail),
+              },
+            ]
+          : []),
+        {
+          key: 'profile',
+          label: (
+            <Link to={match.url.replace('roster/students', `submissions/by_student/${studentEmail}`)}>
+              <FolderOpenOutlined /> &nbsp; Open profile
+            </Link>
+          ),
+        },
+        {
+          key: 'unenroll',
+          label: (
+            <>
+              <UserDeleteOutlined /> Unenroll
+            </>
+          ),
+          onClick: () => removeStudent(studentEmail),
+        },
+      ];
+
+      return {
+        key: studentEmail,
+        student: studentEmail,
+        section: props.sectionsByStudent[studentEmail]?.name ?? 'No section',
+        actions: (
+          <Dropdown menu={{ items: menuItems }} trigger={['click']}>
+            <MenuOutlined style={{ cursor: 'pointer' }} />
+          </Dropdown>
+        ),
+      };
+    });
+  }, [props.students, props.notActivated, props.sectionsByStudent, match.url, sendActivationEmail, removeStudent]);
+
+  const actions = useMemo(() => {
+    if (props.students.length === 0) return [];
+
+    return [
+      inactiveEmails.length > 0 && (
+        <SendEmailModal
+          key="activation"
+          buttonText="Send invites"
+          title="Send activation emails to students"
+          template="add_student"
+          course={props.currentCourse}
+          me={props.myEmail}
+          emails={inactiveEmails}
+          body={
+            <div>
+              Send activation emails to all students who have not yet joined codePost. Users who have signed up won't be
+              emailed.
+            </div>
+          }
+        />
+      ),
+      <ShareInviteCode key="invite" course={props.currentCourse} />,
+      <DownloadRoster
+        key="download"
+        downloadType={USER_TYPE.STUDENT}
+        sectionsByStudent={props.sectionsByStudent}
+        startingPage={USER_TYPE.STUDENT}
+        students={props.students}
+        graders={props.graders}
+        admins={props.admins}
+        course={props.currentCourse}
+        isDisabled={false}
+      />,
+      <RosterFileUpload
+        key="upload"
+        roleType="student"
+        students={props.students}
+        graders={props.graders}
+        admins={props.admins}
+        sections={props.sections}
+        sectionsByStudent={props.sectionsByStudent}
+        changeRoster={props.updateRoster}
+        isDisabled={false}
+        updateSection={props.updateSection}
+        emailNewUsers={props.currentCourse?.emailNewUsers ?? false}
+        createSection={props.createSection}
+        course={props.currentCourse}
+      />,
+    ].filter(Boolean);
+  }, [props, inactiveEmails]);
+
+  return (
+    <TableDetail
+      loadComplete={props.loadComplete}
+      title="Students"
+      isEmpty={props.students.length === 0}
+      emptyNode={
+        <Empty
+          styles={{
+            image: {
+              height: 60,
+            },
+          }}
+          description={<span>You can add students to your course in two ways</span>}
+        >
+          <span>
+            <RosterFileUpload
+              roleType="student"
+              students={props.students}
+              graders={props.graders}
+              admins={props.admins}
+              sections={props.sections}
+              sectionsByStudent={props.sectionsByStudent}
+              changeRoster={props.updateRoster}
+              isDisabled={false}
+              updateSection={props.updateSection}
+              emailNewUsers={props.currentCourse?.emailNewUsers ?? false}
+              createSection={props.createSection}
+              course={props.currentCourse}
+              buttonText="Add students by email"
+            />
+            <br />
+            OR <br /> <br />
+            <ShareInviteCode course={props.currentCourse} />
+          </span>
+        </Empty>
+      }
+      columns={columns}
+      data={data}
+      actions={actions}
+      breadcrumbs={
+        <Breadcrumb
+          items={[
+            { title: 'Roster' },
+            {
+              title: <a>Students</a>,
+            },
+          ]}
+        />
+      }
+      titleInfo={tooltips.admin.studentRoster.title}
+    />
+  );
+};
 
 export default ManageStudents;

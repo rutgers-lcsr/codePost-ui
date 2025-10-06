@@ -3,10 +3,8 @@
 /*******************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
 
 /* ant imports */
-import { Input } from 'antd';
 
 /* other library imports */
 import _ from 'lodash';
@@ -19,10 +17,11 @@ import withWindowWatcher, { IWithWindowWatcherProps } from '../withWindowWatcher
 import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
+import { DIRECTION } from '../../../types/common';
 import { STATUS, statusChange } from '../../admin/assignments/rubric/RubricUtils';
 
-import { DIRECTION } from '../../../types/common';
-
+import { InputRef } from 'antd/lib/input';
+import { Component, createRef } from 'react';
 import { IFeedbackScore } from './RubricManager';
 
 /************************************************************************/
@@ -110,12 +109,11 @@ export interface IRubricCategoryManagerHelpers {
   updateRubricComment: any;
   nameInput: any;
 }
-
-class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps, IRubricCategoryManagerState> {
+class RubricCategoryManager extends Component<IRubricCategoryManagerProps, IRubricCategoryManagerState> {
   /****************************************************************************
    Lifecycle methods
   *****************************************************************************/
-  private nameInput = React.createRef<Input>();
+  private nameInput = createRef<InputRef>();
 
   public constructor(props: IRubricCategoryManagerProps) {
     super(props);
@@ -358,15 +356,15 @@ class RubricCategoryManager extends React.Component<IRubricCategoryManagerProps,
    Comment-level functions
   *****************************************************************************/
 
-  public addComment = (event: any) => {
+  public addComment = () => {
     this.props.addComment(this.props.rubricCategory);
   };
 
-  public deleteComment = (rubricComment: RubricCommentType, event: any) => {
+  public deleteComment = (rubricComment: RubricCommentType) => {
     this.props.deleteComment(rubricComment);
   };
 
-  public validateComments = (newComment: RubricCommentType) => {
+  public validateComments = (_newComment: RubricCommentType) => {
     // no tests yet!
 
     return {

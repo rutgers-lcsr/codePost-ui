@@ -3,7 +3,6 @@
 /****************************************************************************
 
 /* react imports */
-import React from 'react';
 
 /* ant imports */
 import { Button, Divider, Popconfirm, Progress, Table, Tag } from 'antd';

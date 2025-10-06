@@ -1,3 +1,9 @@
+import { RouteComponentProps } from 'react-router';
+import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
+import { CURSOR_DOMAIN, PERMISSION_LEVEL } from './CodeConsoleEnums';
+type CodeConsoleRouteParams = {
+  submissionId?: string;
+};
 /**********************************************************************************************************************/
 /* Imports
 /**********************************************************************************************************************/
@@ -76,8 +82,6 @@ import {
   ViewAsStudent,
 } from '../code-review/Header';
 
-import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
-
 import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
 
 import { loadDemoGrader, loadDemoStudent } from './demo';
@@ -98,20 +102,6 @@ import { encodeForLink, getRubricURL } from '../core/URLutils';
 /**********************************************************************************************************************/
 
 /* f(logged in user, submission) */
-export enum PERMISSION_LEVEL {
-  NOT_FOUND,
-  NONE,
-  READ,
-  WRITE,
-}
-
-export enum CURSOR_DOMAIN {
-  CODE,
-  CODE_HIDDEN,
-  COMMENTS,
-  COMMENTS_HIDDEN,
-  RUBRIC,
-}
 
 enum PANEL_TYPE {
   TESTS,
@@ -173,10 +163,7 @@ interface ICodeConsoleState {
   hideGrades: boolean;
 }
 
-export interface ICodeConsoleProps {
-  match: any;
-  history: any;
-  location: any;
+export interface ICodeConsoleProps extends RouteComponentProps<CodeConsoleRouteParams> {
   user: UserType;
   handleLogout: () => void;
   inDemoMode: boolean;
@@ -196,6 +183,7 @@ import {
 } from './codeConsoleUtils';
 
 class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> {
+  static contextType = ConsoleThemeContext;
   /***********************************************************************************************/
   /* Static Methods - Now imported from codeConsoleUtils (can be used as utility functions)
   /***********************************************************************************************/
@@ -207,8 +195,8 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
   /* Component instance
   /***********************************************************************************************/
 
-  private checkNewFilesInterval: any;
-  private reloadCommentsInterval: any;
+  private checkNewFilesInterval: number | undefined;
+  private reloadCommentsInterval: number | undefined;
   private LIVE_FEEDBACK_FILES_RELOAD_INTERVAL = 60000;
   private LIVE_FEEDBACK_COMMENTS_RELOAD_INTERVAL = 2000;
 
@@ -270,7 +258,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     window.CommandBar.addCallback(
       'assignGrader',
       // Assumes the existence of an argument called name
-      (args, context) => {
+      (args, _context) => {
         if (this.state.submission) this.updateGrader(this.state.submission!, args.grader);
       },
     );
@@ -278,7 +266,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     window.CommandBar.addCallback(
       'gotoFile',
       // Assumes the existence of an argument called name
-      (args, context) => {
+      (args, _context) => {
         if (this.state.submission) {
           const foundFile = this.state.files.find((file) => {
             return file.name === args.filename;
@@ -293,7 +281,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     window.CommandBar.addCallback(
       'gotoTestResults',
       // Assumes the existence of an argument called name
-      (args, context) => {
+      (_args, _context) => {
         this.setState({ panelType: PANEL_TYPE.TESTS, selectedFile: undefined });
       },
     );
@@ -301,7 +289,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     window.CommandBar.addCallback(
       'gotoCustomCommentExplorer',
       // Assumes the existence of an argument called name
-      (args, context) => {
+      (_args, _context) => {
         this.toggleCustomCommentExplorer();
       },
     );
@@ -334,7 +322,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     }
 
     // Set window title
-    const submissionID: number = +this.props.match.params.submissionId.valueOf();
+    const submissionIdParam = this.props.match.params.submissionId;
+    if (!submissionIdParam) {
+      this.setState({ isLoading: false });
+      return;
+    }
+    const submissionID: number = +submissionIdParam.valueOf();
 
     let permissionLevel = await this.detectPermissionType(submissionID);
 
@@ -364,11 +357,12 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
 
     switch (permissionLevel) {
       case PERMISSION_LEVEL.NOT_FOUND:
-      case PERMISSION_LEVEL.NONE:
+      case PERMISSION_LEVEL.NONE: {
         // Will trigger 403 or 404 message in render
         this.setState({ permissionLevel, isLoading: false });
         break;
-      case PERMISSION_LEVEL.READ:
+      }
+      case PERMISSION_LEVEL.READ: {
         // load the data a reader has access to
         submission = await Submission.readReadOnly(submissionID);
         [assignment, [files, comments, commentRubricComments], { rubricCategories, rubricComments }] =
@@ -443,8 +437,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           },
         );
         break;
+      }
 
-      case PERMISSION_LEVEL.WRITE:
+      case PERMISSION_LEVEL.WRITE: {
         // load the data a writer has access to
 
         const writableSubmission = await Submission.readAnonymous(submissionID);
@@ -476,129 +471,50 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
           students = roster['students'];
         }
 
+        tests = await Promise.all(writableSubmission.tests.map((id) => SubmissionTest.read(id)));
+        const [categories, cases] = await fetchTestData(assignment);
+
         // fill in grade using available data if submission doesn't contain an up-to-date grade
         if (assignment && !writableSubmission.isFinalized) {
+          const testCasesArray = Array.isArray(cases) ? cases : Object.values(cases).flat();
           writableSubmission.grade = calculateGrade(
             assignment,
             comments,
             commentRubricComments,
             rubricCategories,
             files,
-            this.state.tests,
-            Object.values(this.state.testCases).flat(),
+            SubmissionTest.getLatest(tests),
+            testCasesArray,
           );
         }
 
-        files = files.sort((a, b) => {
-          return a.name.localeCompare(b.name);
+        this.setState({
+          noSave,
+          assignment,
+          course,
+          submission: writableSubmission,
+          files,
+          comments,
+          commentRubricComments,
+          rubricCategories,
+          rubricComments,
+          graders,
+          students,
+          isLoading: false,
+          selectedFile,
+          permissionLevel,
+          fileTemplates,
+          tests: SubmissionTest.getLatest(tests),
+          testCategories: Array.isArray(categories) ? categories : [],
+          testCases: cases as TestCasesByCategory,
         });
-
-        files = fileBouncer(files);
-
-        if (selectedFile === undefined && files.length > 0) {
-          if (typeof queryValues.comment === 'string') {
-            const matchingFile = files.find((el) =>
-              el.comments.some((c) => c === parseInt(queryValues.comment as string)),
-            );
-            selectedFile = matchingFile || files[0];
-          } else {
-            selectedFile =
-              files.find((f: FileType) => {
-                return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
-              }) || files[0];
-          }
-        }
-
-        tests = await Promise.all(writableSubmission.tests.map((id) => SubmissionTest.read(id)));
-        const [categories, cases] = await fetchTestData(assignment);
-
-        this.setState(
-          {
-            noSave,
-            assignment,
-            course,
-            submission: writableSubmission,
-            files,
-            comments,
-            commentRubricComments,
-            rubricCategories,
-            rubricComments,
-            graders,
-            students,
-            isLoading: false,
-            selectedFile,
-            permissionLevel,
-            fileTemplates,
-            tests: SubmissionTest.getLatest(tests),
-            testCases: cases as TestCasesByCategory,
-            testCategories: categories as TestCategoryType[],
-          },
-          () => this.setNewFilesWarning(),
-        );
+        break;
+      }
     }
   }
 
-  public componentDidUpdate(prevProps: ICodeConsoleProps, prevState: ICodeConsoleState) {
-    // CommandBar populate the context
-    if (this.state.assignment && (!prevState.assignment || prevState.assignment != this.state.assignment)) {
-      window.CommandBar.addContext({
-        assignment: this.state.assignment,
-      });
-    }
-    if (this.state.course && (!prevState.course || prevState.course != this.state.course)) {
-      window.CommandBar.addContext({
-        course: this.state.course,
-      });
-    }
-    if (this.state.files && (!prevState.files || prevState.files != this.state.files)) {
-      window.CommandBar.addContext({
-        files: this.state.files,
-        filenames: this.state.files.map((record) => record['name']),
-      });
-    }
-    if (this.state.graders && (!prevState.graders || prevState.graders != this.state.graders)) {
-      window.CommandBar.addContext({
-        graders: this.state.graders,
-      });
-    }
-    if (this.state.submission && (!prevState.submission || prevState.submission != this.state.submission)) {
-      window.CommandBar.addContext({
-        submission: this.state.submission,
-      });
-    }
-  }
-
-  public componentWillUnmount() {
-    document.removeEventListener('keydown', this.handleCursor);
-    document.removeEventListener('keydown', this.handleHotkeys);
-  }
-
-  /////////////////////////////////////////////////////////////////////////////////
-  // Cursor Navigation (in order of code implementation below)
-  //
-  // >>>>>>>>>>> If Active Comment
-  // - Move up and down rubric: cmd - [j,k]
-  //
-  // >>>>>>>>>>> No Active Comment
-  // >>> General
-  // - Leave 'cursor mode': escape
-  // - Enter 'cursor mode': cmd - [up, down]
-  //
-  // >>> Code Domain
-  // - Change from code to comments domain: cmd - [left, right]
-  // - Extend code cursor: cmd - shift - [up, down]
-  // - Navigate and scroll code with cursor: cmd - [up, down]
-  // - Highlight selection: Enter
-  //
-  // >>> Comments Domain
-  // - Change from comments to code domain: cmd - [left, right]
-  // - Navigate and jump to next comment with cursor: cmd - [up, down]
-  // - Activate comment for editing: Enter
-  /////////////////////////////////////////////////////////////////////////////////
-
-  public handleHotkeys = (e: any) => {
+  public handleHotkeys = (e: KeyboardEvent) => {
     const os = getOperatingSystem();
-
     const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
 
     // Show Custom Comment Explorer (typically accessible via Foobar)
@@ -617,7 +533,7 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
     }
   };
 
-  public handleCursor = async (e: any) => {
+  public handleCursor = async (e: KeyboardEvent) => {
     const os = getOperatingSystem();
     const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
 
@@ -742,8 +658,9 @@ class CodeConsole extends React.Component<ICodeConsoleProps, ICodeConsoleState> 
         if (requestID < MAX_REQUESTS) {
           // Fetch the latest submission in case the files changed elsewhere
           const newSub = await Submission.readReadOnly(this.state.readOnlySubmission!.id);
-          let files, comments, _;
-          [files, comments, _] = await Submission.loadData(newSub);
+          let files;
+          const [filesResult, comments] = await Submission.loadData(newSub);
+          files = filesResult;
           files = fileBouncer(files);
 
           // change the selected file
@@ -1069,7 +986,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
   public deleteComment = async (comment: CommentType) => {
     if (comment.id > 0 && !this.props.inDemoMode && !this.state.noSave) {
-      await CommentIO.delete(comment.id).then(() => this.updateSubmissionGrade());
+      await CommentIO.delete(comment).then(() => this.updateSubmissionGrade());
     }
 
     const comments = removeCommentFromState(this.state.comments, comment);
@@ -1088,18 +1005,21 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   };
 
   public updateFeedback = (fileID: number, commentID: number, feedbackNum: number) => {
-    CommentIO.updateFeedback({ id: commentID, feedback: feedbackNum }).then((newComment) => {
-      this.setState((oldState) => {
-        const newMap = { ...oldState.comments };
-        newMap[fileID] = [
-          ...newMap[fileID].filter((el) => {
-            return el.id !== commentID;
-          }),
-          newComment,
-        ];
-        return { comments: newMap };
+    CommentIO.updateFeedback({ id: commentID, feedback: feedbackNum })
+      .then((newComment) => {
+        this.setState((oldState) => {
+          const newMap = { ...oldState.comments };
+          // Update the comment in place to maintain order
+          newMap[fileID] = newMap[fileID].map((el) => {
+            return el.id === commentID ? newComment : el;
+          });
+          return { comments: newMap };
+        });
+      })
+      .catch((error) => {
+        console.error('Failed to update comment feedback:', error);
+        message.error('Failed to update feedback. Please try again.');
       });
-    });
   };
 
   public removeRubricComment = (comment: CommentType, rubricComment: RubricCommentType) => {
@@ -1409,7 +1329,10 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       return <Loading />;
     }
 
-    const theme = consoleThemes.light === this.context.consoleTheme ? 'light' : 'dark';
+    const theme =
+      consoleThemes.light === (this.context as React.ContextType<typeof ConsoleThemeContext>).consoleTheme
+        ? 'light'
+        : 'dark';
 
     let leftHeader: React.ReactNode[] = [];
     let middleHeader: React.ReactNode[] = [];
@@ -2199,7 +2122,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           <div>
             <Progress
               percent={Math.floor(((numGraded + numInProgress) / numSubmissions) * 100)}
-              successPercent={Math.floor((numGraded / numSubmissions) * 100)}
+              success={{ percent: Math.floor((numGraded / numSubmissions) * 100) }}
               type="dashboard"
             />
             &nbsp;&nbsp;&nbsp;
@@ -2317,7 +2240,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     return (
       <div id="Grade">
         <CodeConsoleOnboardingSelector
-          visible={this.props.inDemoMode && !this.state.assignment}
+          open={this.props.inDemoMode && !this.state.assignment}
           onUploadConfirm={this.loadDemoData}
           onCancel={cancelFunc}
         />

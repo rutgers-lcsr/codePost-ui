@@ -3,7 +3,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { DeleteOutlined, PlusCircleOutlined, UploadOutlined } from '@ant-design/icons';
 
@@ -11,8 +11,8 @@ import { DeleteOutlined, PlusCircleOutlined, UploadOutlined } from '@ant-design/
 import { Button, message, Modal, Switch, Table, Upload } from 'antd';
 
 /* codePost object imports  */
-import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 import { HelperFileType } from '../../../../../../infrastructure/autograder/helperFile';
+import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 import { BinaryExtensions } from '../../../../../../infrastructure/file';
 
 import { fileToProtoFileUpload } from '../../../assignments/SubmissionUpload/FileReader';
@@ -85,7 +85,7 @@ export const TestFileUploader = (props: IUploadProps) => {
     setVisible(!visible);
   };
 
-  const beforeUpload = (file: any, fileList: any) => {
+  const beforeUpload = (file: any, _fileList: any) => {
     const reader = new FileReader();
     reader.onload = async () => {
       if (reader.result) {

@@ -3,17 +3,16 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
-import { Layout, Menu, Spin } from 'antd';
-import { ClickParam } from 'antd/lib/menu';
+import { Layout, Menu, MenuProps, Spin } from 'antd';
 
 import { AssignmentStudent, AssignmentStudentType } from '../../infrastructure/assignment';
-import { FileType } from '../../infrastructure/types';
 import { File } from '../../infrastructure/file';
+import { FileType } from '../../infrastructure/types';
 
 import ReactMarkdown from 'react-markdown';
 
@@ -43,7 +42,7 @@ function ViewUpload(props: IProps) {
     if (props.assignment) {
       const data = await AssignmentStudent.readStudentUpload(props.assignment.id);
       let mostRecentFiles: FileType[] = [];
-      let readFiles = data.files as FileType[];
+      const readFiles = data.files as FileType[];
       for (const f of readFiles) {
         const match = mostRecentFiles.find((el) => el.name === f.name);
         if (!match) {
@@ -70,7 +69,7 @@ function ViewUpload(props: IProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.assignment]);
 
-  const changeIndex = (e: ClickParam) => {
+  const changeIndex: MenuProps['onClick'] = (e) => {
     setIndex(e.key);
   };
 
@@ -88,7 +87,7 @@ function ViewUpload(props: IProps) {
       fileContent = (
         <div style={{ padding: '30px', textAlign: 'center' }}>
           <Document file={file.code} onLoadSuccess={onDocumentLoadSuccess}>
-            {Array.from(new Array(numPages), (el, index) => (
+            {Array.from(new Array(numPages), (_, index) => (
               <Page key={`page_${index + 1}`} pageNumber={index + 1} renderTextLayer={false} />
             ))}
           </Document>

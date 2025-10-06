@@ -3,6 +3,7 @@ import * as React from 'react';
 import { InfoCircleFilled, InfoCircleTwoTone, UploadOutlined } from '@ant-design/icons';
 
 import { Button, Card, Input, Tooltip, Upload } from 'antd';
+import type { RcFile } from 'antd/es/upload';
 
 const { TextArea } = Input;
 
@@ -48,8 +49,7 @@ ${props.roleType}3@myschool.edu,P02
 
   const onTabChange = (key: string) => {
     setCurrentTab(key);
-    // @ts-ignore
-    setFormatSample(formatSamples[key]);
+    setFormatSample(formatSamples[key as keyof typeof formatSamples]);
     setRosterString(key === 'without' ? rosterStringWithoutSections(rosterString) : props.rosterInput);
   };
 
@@ -67,8 +67,7 @@ ${props.roleType}3@myschool.edu,P02
       tab: 'With Sections',
     },
   ];
-
-  const beforeUpload = (file: any, fileList: any) => {
+  const beforeUpload = (file: RcFile) => {
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === 'string') {

@@ -2,8 +2,7 @@ import JSZip from 'jszip';
 
 import { message } from 'antd';
 
-import { File as CPFile, ImageExtensions, BinaryExtensions, PDFExtensions } from '../../../../../infrastructure/file';
-import { sendSlack } from '../../../../../components/core/slack';
+import { BinaryExtensions, File as CPFile, ImageExtensions, PDFExtensions } from '../../../../../infrastructure/file';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
@@ -80,8 +79,9 @@ export const readUploadedFile = (inputFile: File | Blob, zipSource?: string): Pr
   if (size_bytes > FILE_SIZE_LIMIT_IN_BYTES) {
     message.warning(
       // @ts-ignore
-      `${inputFile.name} exceeds file size limit of ${FILE_SIZE_LIMIT_IN_BYTES /
-        1e6} MB and cannot be uploaded (its size is ${(size_bytes / 1e6).toFixed(
+      `${inputFile.name} exceeds file size limit of ${
+        FILE_SIZE_LIMIT_IN_BYTES / 1e6
+      } MB and cannot be uploaded (its size is ${(size_bytes / 1e6).toFixed(
         1,
       )} MB). Please try using a compression tool for your file and re-uploading.\nIf you need help, please contact us at team@codepost.io.`,
       15,
@@ -138,8 +138,9 @@ export const readUploadedFile = (inputFile: File | Blob, zipSource?: string): Pr
                     return unzippedFile;
                   } else {
                     message.warning(
-                      `${zippedFile.name} exceeds file size limit of ${FILE_SIZE_LIMIT_IN_BYTES /
-                        1e6} MB and cannot be uploaded (its size is ${(blob.size / 1e6).toFixed(1)} MB).
+                      `${zippedFile.name} exceeds file size limit of ${
+                        FILE_SIZE_LIMIT_IN_BYTES / 1e6
+                      } MB and cannot be uploaded (its size is ${(blob.size / 1e6).toFixed(1)} MB).
                         The rest of the zip contents will attempt to be uploaded (see details below).`,
                       10,
                     );
@@ -214,7 +215,7 @@ export const readUploadedFile = (inputFile: File | Blob, zipSource?: string): Pr
 // The only functional difference here is that it doesn't recursively call itself
 export const readZipTopLevel = (inputFile: File): Promise<File[]> => {
   const reader = new FileReader();
-  let protoFileUpload = fileToProtoFileUpload(inputFile);
+  const protoFileUpload = fileToProtoFileUpload(inputFile);
 
   return new Promise((resolve, reject) => {
     reader.onerror = () => {

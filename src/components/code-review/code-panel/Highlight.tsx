@@ -42,10 +42,8 @@ const Highlight = (props: IHighlightProps) => {
       style = { ...style, backgroundColor: consoleTheme.highlight };
     }
 
-    onMouseEnter = (e: React.MouseEvent) =>
-      CodePanelHighlighting.brightenHighlight(props.commentID, consoleTheme.highlightActive);
-    onMouseLeave = (e: React.MouseEvent) =>
-      CodePanelHighlighting.darkenHighlight(props.commentID, consoleTheme.highlight);
+    onMouseEnter = (_: React.MouseEvent) => CodePanelHighlighting.brightenHighlight(props.commentID);
+    onMouseLeave = (_: React.MouseEvent) => CodePanelHighlighting.darkenHighlight(props.commentID);
     onClick = props.onHighlightClick;
   } else {
     style = {
@@ -55,7 +53,7 @@ const Highlight = (props: IHighlightProps) => {
 
     // Don't darken the cursor highlights
     if (isNotCursor) {
-      CodePanelHighlighting.darkenHighlight(props.commentID, consoleTheme.highlight);
+      CodePanelHighlighting.darkenHighlight(props.commentID);
     }
   }
 

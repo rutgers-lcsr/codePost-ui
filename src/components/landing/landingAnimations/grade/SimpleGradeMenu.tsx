@@ -1,5 +1,4 @@
 import { Badge, Menu } from 'antd';
-import React from 'react';
 import { animated } from 'react-spring';
 const SubMenu = Menu.SubMenu;
 

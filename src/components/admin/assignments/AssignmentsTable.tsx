@@ -27,7 +27,7 @@ import {
 } from '@ant-design/icons';
 
 /* ant imports */
-import { Breadcrumb, Dropdown, Empty, Menu, message, Popconfirm, Spin, Switch, Tooltip, Typography } from 'antd';
+import { Breadcrumb, Dropdown, Empty, message, Popconfirm, Spin, Switch, Tooltip, Typography } from 'antd';
 
 import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
@@ -48,7 +48,7 @@ import { Link } from 'react-router-dom';
 
 /* codePost imports */
 import { AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
-import { CourseType, SectionType, SubmissionInfoType } from '../../../infrastructure/types';
+import { CourseType, FileType, SectionType, SubmissionInfoType } from '../../../infrastructure/types';
 import { UserType } from '../../../infrastructure/user';
 
 import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../types/common';
@@ -85,7 +85,6 @@ import BulkSubmissionEdit from './assignments/BulkSubmissionEdit';
 import { AssignmentSetupDialog } from './assignments/AssignmentSetupDialog';
 
 const { Text } = Typography;
-const SubMenu = Menu.SubMenu;
 
 type alignType = 'left' | 'right' | 'center';
 
@@ -119,7 +118,7 @@ export interface IManageAssignmentsProps {
   updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
   deleteAssignment: (assignment: AssignmentType) => Promise<void>;
 
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<any>;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: FileType[]) => Promise<any>;
   deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   updateSubmission: (submission: SubmissionInfoType) => Promise<void>;
 
@@ -232,7 +231,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
   // be stored in state. We need to store the data in state of on render because
   // the drawer sliding takes time and looks bad if the data changes while it's sliding
   public openDrawer = (assignment: AssignmentType, type: DRAWER_TYPE) => {
-    if (!this.props.submissions.hasOwnProperty(assignment.id)) {
+    if (!Object.prototype.hasOwnProperty.call(this.props.submissions, assignment.id)) {
       const title = getDrawerTitle(type, null, !this.props.fullSubmissionsLoadComplete);
 
       this.setState({
@@ -425,10 +424,10 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
     actions = [
       <NewAssignmentDialog
         key={1}
+        {...this.props}
         assignments={this.props.assignments}
         createAssignment={this.createAssignment}
         timezone={this.props.currentCourse.timezone}
-        {...this.props}
       />,
       <Link to={`${this.props.baseURL}/download/grades`}>
         <CPButton
@@ -451,7 +450,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
       !this.props.fullSubmissionsLoadComplete,
     );
 
-    data = this.state.sortedOrder.map((id, i) => {
+    data = this.state.sortedOrder.map((id) => {
       const assignment = this.props.assignments.find((el) => el.id === id);
       if (assignment === undefined) {
         return null;
@@ -769,7 +768,9 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
               students={this.props.students}
               selectedStudents={this.state.activeStudent !== undefined ? [this.state.activeStudent] : []}
               submissions={this.props.submissionsByStudent}
-              uploadSubmission={this.props.uploadSubmission}
+              uploadSubmission={(assignment: AssignmentType, partners: string[], files: FileType[]) =>
+                this.props.uploadSubmission(assignment, partners, files)
+              }
               course={this.props.currentCourse}
               onSuccess={openSubmission}
             />
@@ -783,7 +784,9 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
               assignment={this.props.activeAssignment}
               submissions={this.props.submissions[this.props.activeAssignment.id]}
               students={this.props.students}
-              uploadSubmission={this.props.uploadSubmission}
+              uploadSubmission={(assignment: AssignmentType, partners: string[], files: FileType[]) =>
+                this.props.uploadSubmission(assignment, partners, files)
+              }
               updateSubmission={this.props.updateSubmission}
               deleteSubmission={this.props.deleteSubmission}
               showImportOptions={false}
@@ -799,7 +802,9 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
               assignment={this.props.activeAssignment}
               submissions={this.props.submissions[this.props.activeAssignment.id]}
               students={this.props.students}
-              uploadSubmission={this.props.uploadSubmission}
+              uploadSubmission={(assignment, partners, files) =>
+                this.props.uploadSubmission(assignment, partners, files)
+              }
               updateSubmission={this.props.updateSubmission}
               deleteSubmission={this.props.deleteSubmission}
               showImportOptions={true}
@@ -916,11 +921,11 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
           >
             <NewAssignmentDialog
               key={1}
+              {...this.props}
+              timezone={this.props.currentCourse.timezone}
               assignments={this.props.assignments}
               createAssignment={this.props.createAssignment}
               baseURL={this.props.baseURL}
-              timezone={this.props.currentCourse.timezone}
-              {...this.props}
             />
           </Empty>
         }
@@ -933,7 +938,7 @@ class AssignmentsTable extends React.Component<IManageAssignmentsProps & RouteCo
         hideSearch={true}
         detail={detailComponent}
         components={components}
-        onRow={(record: any, index: number) => ({
+        onRow={(_record: { key: number }, index: number) => ({
           index,
           moveRow: moveRow,
         })}

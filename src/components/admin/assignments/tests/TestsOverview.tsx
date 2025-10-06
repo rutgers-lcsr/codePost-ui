@@ -2,12 +2,10 @@
 /* Imports
 /**********************************************************************************************************************/
 
-import * as React from 'react';
-
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 
-import { Button, Breadcrumb, Empty, Tag } from 'antd';
+import { Breadcrumb, Button, Empty } from 'antd';
 
 import { TableDetail } from '../../other/TableDetail';
 
@@ -52,18 +50,18 @@ const TestsOverview = (props: IProps & RouteComponentProps) => {
       isEmpty={data.length === 0}
       emptyNode={
         <Empty
-          styles={{ image: {
-            height: 60,
-          } }}
+          styles={{
+            image: {
+              height: 60,
+            },
+          }}
           description={<span>No assignments yet</span>}
         ></Empty>
       }
       columns={columns}
       data={data}
       actions={[]}
-      breadcrumbs={
-        <Breadcrumb items={[{ title: 'Assignments' }, { title: 'Tests' }]} />
-      }
+      breadcrumbs={<Breadcrumb items={[{ title: 'Assignments' }, { title: 'Tests' }]} />}
     />
   );
 };

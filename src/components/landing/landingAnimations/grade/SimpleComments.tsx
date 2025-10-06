@@ -1,4 +1,3 @@
-import React from 'react';
 import { animated } from 'react-spring';
 
 import { FileMock } from '../../../../infrastructure/file';
@@ -29,7 +28,7 @@ const SimpleComment = (props: {
     color: null,
   };
 
-  const empty = (arg?: any) => {
+  const empty = () => {
     return;
   };
 

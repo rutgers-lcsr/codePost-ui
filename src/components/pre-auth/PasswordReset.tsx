@@ -69,7 +69,9 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
   // the token in HTTP referer field if the user navigates away from the page.
   // For an explanation of this vulnerability:
   // https://robots.thoughtbot.com/is-your-site-leaking-password-reset-links
-  public validateToken = (token: any) => {
+  public validateToken = (_token: string) => {
+    // figure out what this function does
+
     const payload = {
       uid: this.props.match.params.uid,
       token: this.props.match.params.token,
@@ -131,7 +133,7 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
     let content;
     switch (loadState) {
       case 'valid':
-        const errorList = Object.keys(formErrors).map((el, _i) => {
+        const errorList = Object.keys(formErrors).map((el, i) => {
           return (
             <li key={i}>
               {el}: {formErrors[el]}

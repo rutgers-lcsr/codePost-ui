@@ -45,7 +45,7 @@ import { IComponentProps } from '../core/ComponentManager';
 
 import CourseMenu, { encodedCourseLink } from '../core/CourseMenu';
 
-import { CodePostDate } from '../utils/DateUtils';
+import { CodePostDate } from '../utils/CodepostDate';
 
 /**********************************************************************************************************************/
 
@@ -143,7 +143,10 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
 
                     if (assignment !== undefined) {
                       let submission;
-                      if (submissions.hasOwnProperty(assignment.id) && submissions[assignment.id].length > 0) {
+                      if (
+                        Object.prototype.hasOwnProperty.call(submissions, assignment.id) &&
+                        submissions[assignment.id].length > 0
+                      ) {
                         submission = submissions[assignment.id][0];
                       }
 
@@ -458,15 +461,15 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
     submissions: IAssignmentToSubmissionStudentMap,
   ) => {
     const modifyIf = (modMap: { [statusTarget: number]: number }) => {
-      return (value: any, row: any, index: number) => {
+      return (value: React.ReactNode, row: { statusType: SUBMISSION_STATUS }, _index: number) => {
         const obj = {
           children: value,
-          props: { colSpan: 1, align: 'left' },
+          props: { colSpan: 1, align: '' },
         };
 
         if (row.statusType in modMap) {
           obj.props.colSpan = modMap[row.statusType];
-          obj.props.align = 'center';
+          obj.props.align = 'center' as const;
         }
         return obj;
       };
@@ -735,7 +738,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
 
       const assignmentList = assignments[currentCourse.id];
       const { columns, data } = this.buildAssignmentsTable(assignmentList, submissions);
-      const rowClassName = (record: any, index: number) => {
+      const rowClassName = (record: { disabled?: boolean }, _index: number) => {
         if (record.disabled) {
           return 'disabled-row';
         } else {
@@ -834,7 +837,7 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
 
     const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
 
-    const navigation = (collapsed: boolean) => null;
+    const navigation = (_collapsed: boolean) => null;
     return (
       <div id="Student">
         <CPLayoutAdmin
@@ -850,4 +853,5 @@ class Student extends React.Component<IComponentProps & IWithWindowWatcherProps 
   }
 }
 
-export default withWindowWatcher(Student);
+const StudentWithWindowWatcher = withWindowWatcher(Student);
+export default StudentWithWindowWatcher;

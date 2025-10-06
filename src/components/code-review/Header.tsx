@@ -52,7 +52,13 @@ import { TestCaseType } from '../../infrastructure/types';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
 
-import CodeConsole from './CodeConsole';
+import {
+  filterCurrentFileVersions,
+  genericCommentPoints,
+  pointsFromTests,
+  pointsPerCategory,
+  pointsPerCategoryWithCaps,
+} from './codeConsoleUtils';
 
 import useHotkeys, { F_KEY, MINUS_KEY, PLUS_KEY, P_KEY, V_KEY } from './useHotkeys';
 
@@ -193,11 +199,12 @@ export const DownloadCode = (props: IDownloadCodeProps) => {
 
     const zip = new JSZip();
     files.map((file: FileType) => {
-      let dir = zip;
+      let dir: JSZip = zip;
       if (file.path !== null && file.path.length > 0) {
         const folders = file.path.split('/');
         folders.forEach((f: string) => {
-          dir = dir.folder(f);
+          const nextDir = dir.folder(f);
+          dir = nextDir ? nextDir : dir;
         });
       }
       dir.file(file.name, file.code);
@@ -311,7 +318,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
         }
       })
       .catch((_err) => {
-        console.log(err);
+        console.log(_err);
       });
     return;
   };
@@ -476,14 +483,15 @@ interface IGradeBreakdownProps {
 //         Wrong values here will damage the accountability chain.
 export const GradeBreakdown = (props: IGradeBreakdownProps) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [currentFileSet, currentCommentSet] = CodeConsole.filterCurrentFileVersions(props.files, props.comments);
-  const pointsPerCategory = CodeConsole.pointsPerCategory(props.commentRubricComments, currentCommentSet);
-  const pointsPerCategoryWithCaps = CodeConsole.pointsPerCategoryWithCaps(pointsPerCategory, props.rubricCategories);
-  const genericPoints = CodeConsole.genericCommentPoints(props.comments);
-  const testPoints = CodeConsole.pointsFromTests(props.submissionTests, props.testCases);
+  // Import these from codeConsoleUtils instead of using CodeConsole static
+  const [, currentCommentSet] = filterCurrentFileVersions(props.files, props.comments);
+  const pointsPerCategoryVal = pointsPerCategory(props.commentRubricComments, currentCommentSet);
+  const pointsPerCategoryWithCapsVal = pointsPerCategoryWithCaps(pointsPerCategoryVal, props.rubricCategories);
+  const genericPoints = genericCommentPoints(props.comments);
+  const testPoints = pointsFromTests(props.submissionTests, props.testCases);
 
-  const categoryPoints = Object.values(pointsPerCategoryWithCaps).reduce((accumulator: number, current: number) => {
-    return accumulator + current;
+  const categoryPoints = Object.values(pointsPerCategoryWithCapsVal).reduce((accumulator, current) => {
+    return (typeof accumulator === 'number' ? accumulator : 0) + (typeof current === 'number' ? current : 0);
   }, 0);
 
   const liveFeedbackWarning = props.assignment.liveFeedbackMode ? (
@@ -525,12 +533,12 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
   };
 
   let categories = props.rubricCategories.map((rubricCategory: RubricCategoryType) => {
-    const uncappedPoints = pointsPerCategory.hasOwnProperty(rubricCategory.id)
-      ? pointsPerCategory[rubricCategory.id]
+    const uncappedPoints = Object.prototype.hasOwnProperty.call(pointsPerCategoryVal, rubricCategory.id)
+      ? pointsPerCategoryVal[rubricCategory.id]
       : null;
 
-    const cappedPoints = pointsPerCategoryWithCaps.hasOwnProperty(rubricCategory.id)
-      ? pointsPerCategoryWithCaps[rubricCategory.id]
+    const cappedPoints = Object.prototype.hasOwnProperty.call(pointsPerCategoryWithCapsVal, rubricCategory.id)
+      ? pointsPerCategoryWithCapsVal[rubricCategory.id]
       : null;
 
     let exceededBy = null;

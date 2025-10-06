@@ -4,7 +4,6 @@ import { CommentType } from '../../../infrastructure/comment';
 import { File, FileType } from '../../../infrastructure/file';
 import { FileTemplateType } from '../../../infrastructure/fileTemplate';
 
-// @ts-expect-error - No type definitions available
 import SyntaxHighlighter from 'react-syntax-highlighter';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
@@ -18,7 +17,7 @@ import TemplateCode from './TemplateCode';
 
 import CodePanelSizing from './CodePanelSizing';
 
-import { CURSOR_DOMAIN } from '../CodeConsole';
+import { CURSOR_DOMAIN } from '../CodeConsoleEnums';
 
 export interface ICodeContentCoreProps {
   file: FileType;

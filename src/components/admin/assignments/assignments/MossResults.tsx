@@ -3,7 +3,6 @@
 /**********************************************************************************************************************/
 
 /* React imports */
-import * as React from 'react';
 
 import { Link } from 'react-router-dom';
 
@@ -13,7 +12,24 @@ import { Card, Empty } from 'antd';
 
 import { TableDetail } from '../../other/TableDetail';
 
-const MossResults = (props: any) => {
+interface IMossResultFile {
+  sub_id: string;
+  email: string;
+  similarity: string;
+}
+
+interface IMossResult {
+  matchURL: string;
+  file1: IMossResultFile;
+  file2: IMossResultFile;
+  linesMatched: string;
+}
+
+interface IProps {
+  results: IMossResult[];
+}
+
+const MossResults = (props: IProps) => {
   const aligner: 'left' | 'center' | 'right' = 'center';
   const columns = [
     {
@@ -102,9 +118,11 @@ const MossResults = (props: any) => {
       isEmpty={false}
       emptyNode={
         <Empty
-          styles={{ image: {
-            height: 60,
-          } }}
+          styles={{
+            image: {
+              height: 60,
+            },
+          }}
           description={'nothing returned'}
         >
           try again

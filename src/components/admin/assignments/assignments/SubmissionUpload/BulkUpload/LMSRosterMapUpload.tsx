@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
 
 import { Alert, Button, Input, Modal, Upload } from 'antd';
+import { RcFile } from 'antd/lib/upload/interface';
 
 import { FolderToStudentMap, getIdentifierFromFolder } from './LMSImportHelpers';
 
@@ -31,8 +32,7 @@ const LMSRosterMapUpload = (props: IMappingUploadProps) => {
     document.body.appendChild(a);
     a.click();
   };
-
-  const beforeUpload = (file: any, fileList: any) => {
+  const beforeUpload = (file: RcFile) => {
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === 'string') {

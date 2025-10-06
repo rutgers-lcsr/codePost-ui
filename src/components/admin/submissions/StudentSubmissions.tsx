@@ -34,6 +34,7 @@ import CPTooltip from '../../../components/core/CPTooltip';
 import { tooltips } from '../../../components/core/tooltips';
 
 import Loading from '../../../components/core/Loading';
+import { FileType } from '../../../infrastructure/file';
 
 /**********************************************************************************************************************/
 
@@ -53,8 +54,8 @@ export interface IByStudentProps extends RouteComponentProps {
   deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   graders: string[];
   changeSubmissionGrader: (submission: SubmissionInfoType, grader: string | undefined) => Promise<void>;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionInfoType>;
-  addFilesToSubmission: (submission: SubmissionInfoType, files: any[]) => Promise<SubmissionInfoType>;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: FileType[]) => Promise<SubmissionInfoType>;
+  addFilesToSubmission: (submission: SubmissionInfoType, files: FileType[]) => Promise<SubmissionInfoType>;
   baseURL: string;
 }
 

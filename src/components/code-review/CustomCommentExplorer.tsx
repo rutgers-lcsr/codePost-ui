@@ -151,7 +151,7 @@ const CustomCommentExplorer = (props: IProps) => {
         </div>
       )}
       Rubric comment:{' '}
-      <Select style={{ width: 600 }} onSelect={(a, b) => setActiveRubricComment(b.key as string)} showSearch={true}>
+      <Select style={{ width: 600 }} onSelect={(_, b) => setActiveRubricComment(b.key as string)} showSearch={true}>
         {props.rubricComments.map((el) => (
           <Select.Option value={el.text} key={el.id}>
             [{props.rubricCategories.find((cat) => cat.id === el.category)!.name}] {el.text}

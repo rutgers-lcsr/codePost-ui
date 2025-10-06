@@ -25,3 +25,4 @@ subl
 coverage/
 .vscode/*
 certs/
+docs/

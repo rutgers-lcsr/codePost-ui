@@ -8,10 +8,10 @@ import React, { useState } from 'react';
 import {
   AuditOutlined,
   CloseOutlined,
-  UserOutlined,
-  MailOutlined,
   HistoryOutlined,
+  MailOutlined,
   MessageOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 
 /* antd imports */
@@ -31,7 +31,7 @@ import CPButton from '../../core/CPButton';
 import CPTooltip from '../../core/CPTooltip';
 import { tooltips } from '../../core/tooltips';
 
-import { CodePostDate } from '../../utils/DateUtils';
+import { CodePostDate } from '../../utils/CodepostDate';
 
 const { confirm } = Modal;
 
@@ -184,12 +184,12 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
 };
 
 const makeReadOnly = (Component: React.ComponentType<ISubmissionReadProps & ISubmissionInfoWriteProps>) => {
-  return class WrappedComponent extends React.Component<ISubmissionReadProps, {}> {
-    public updateGrader = (submission: AnonymousSubmissionType, graderUsername: string | undefined) => {
+  return class WrappedComponent extends React.Component<ISubmissionReadProps> {
+    public updateGrader = (submission: AnonymousSubmissionType) => {
       return Promise.resolve(submission);
     };
 
-    public addLateDayCreditComment = (lateDayCreditsUsed: number) => {
+    public addLateDayCreditComment = () => {
       return;
     };
 
@@ -234,7 +234,7 @@ export const GraderInfo = (props: IGraderInfoProps) => {
     });
   };
 
-  const unassign = (e: any) => {
+  const unassign = () => {
     props.updateGrader(props.submission, '').then(() => {
       message.success('Successfully unassigned submission');
     });
@@ -246,7 +246,7 @@ export const GraderInfo = (props: IGraderInfoProps) => {
     }
   };
 
-  const menuItems = props.graders.map((grader: string, index: number) => {
+  const menuItems = props.graders.map((grader: string) => {
     return (
       <Select.Option key={grader} value={grader}>
         {grader}
@@ -254,7 +254,7 @@ export const GraderInfo = (props: IGraderInfoProps) => {
     );
   });
 
-  const renderUnassign = (menu: any) => (
+  const renderUnassign = (menu: React.ReactNode) => (
     <div>
       <div style={{ padding: '6px', cursor: 'pointer' }} onMouseDown={unassign}>
         <CloseOutlined /> Unassign
@@ -316,7 +316,7 @@ export const GraderInfo = (props: IGraderInfoProps) => {
         value={props.submission.grader === null ? '' : props.submission.grader}
         style={{ width: '100%' }}
         disabled={props.submission.isFinalized}
-        dropdownRender={renderUnassign}
+        popupRender={renderUnassign}
         onChange={handleChange}
         showSearch
       >
@@ -491,12 +491,12 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
   const regradeStatus = !props.submission.questionText
     ? QUESTION_STATUS.NOT_SUBMITTED
     : props.submission.questionResponse
-    ? QUESTION_STATUS.RESPONDED
-    : props.submission.questionResponder
-    ? QUESTION_STATUS.CLAIMED
-    : QUESTION_STATUS.UNCLAIMED;
+      ? QUESTION_STATUS.RESPONDED
+      : props.submission.questionResponder
+        ? QUESTION_STATUS.CLAIMED
+        : QUESTION_STATUS.UNCLAIMED;
 
-  const buttonStyle = { textAlign: 'center' as 'center', paddingTop: 15 };
+  const buttonStyle = { textAlign: 'center' as const, paddingTop: 15 };
   const regradeTextStyle = { padidngTop: 10, fontWeight: 500 };
 
   const deadline = props.assignment.regradeDeadline
@@ -520,7 +520,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
   );
 
   switch (regradeStatus) {
-    case QUESTION_STATUS.NOT_SUBMITTED:
+    case QUESTION_STATUS.NOT_SUBMITTED: {
       // Case 0: Student has not submitted a question or regrade request
       if (props.assignment.regradeDeadline && Date.parse(props.assignment.regradeDeadline) <= Date.now()) {
         // Case 1: No regraded summited and deadline has passed
@@ -554,7 +554,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
           </div>
           <Modal
             onCancel={toggleModalVisible}
-            visible={isModalVisible}
+            open={isModalVisible}
             title="Submit a question or regrade request"
             footer={[cancelButton, submitButton]}
           >
@@ -582,6 +582,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
           </Modal>
         </div>
       );
+    }
     case QUESTION_STATUS.CLAIMED:
     case QUESTION_STATUS.UNCLAIMED:
       // Case 2: Student has submitted. No response yet.
@@ -594,9 +595,9 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
           </div>
           <Modal
             onCancel={toggleModalVisible}
-            visible={isModalVisible}
+            open={isModalVisible}
             title="The review of your request is in progress..."
-            footer={QUESTION_STATUS.UNCLAIMED ? [deleteButton, cancelButton] : [cancelButton]}
+            footer={regradeStatus ? [deleteButton, cancelButton] : [cancelButton]}
           >
             <div className="display-flex flex-direction-column">
               <div style={{ fontSize: 13, color: 'grey', marginBottom: 5 }}>
@@ -659,4 +660,4 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
   }
 };
 
-export { SubmissionInfo, ReadOnlySubmissionInfo };
+export { ReadOnlySubmissionInfo, SubmissionInfo };

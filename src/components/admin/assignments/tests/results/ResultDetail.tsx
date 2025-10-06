@@ -1,21 +1,20 @@
 /* react imports */
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-import { Badge, Button, Card, Empty, Modal, Menu, Layout, Radio, Select, Typography } from 'antd';
+import { Badge, Button, Card, Empty, Layout, Modal, Radio, Select, Typography } from 'antd';
 
 /* codePost object imports */
 import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructure/submissionTest';
-import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { TestCaseType } from '../../../../../infrastructure/testCase';
+import { TestCategoryType } from '../../../../../infrastructure/testCategory';
 
 import TestsList from '../../../../code-review/code-panel/TestsList';
 
-import { TestsBySubmission, TestCasesByCategory, RESULT_STATUS } from '../../../../core/testFetchUtils';
+import { RESULT_STATUS, TestCasesByCategory, TestsBySubmission } from '../../../../core/testFetchUtils';
 
 import { FixedSizeList as List } from 'react-window';
 import useWindowSize from '../../../../core/useWindowSize';
-import { filter } from 'fp-ts/lib/Option';
 
 interface IProps {
   visible: boolean;
@@ -53,8 +52,8 @@ export const ResultDetail = (props: IProps) => {
     const newSub = props.filterSubmission
       ? props.filterSubmission
       : props.submissions !== undefined && props.submissions.length > 0
-      ? props.submissions[0]
-      : undefined;
+        ? props.submissions[0]
+        : undefined;
     props.visible && setFilterSubmission(newSub);
   }, [props.filterSubmission, props.visible]);
 
@@ -221,13 +220,6 @@ export const ResultDetail = (props: IProps) => {
     </Radio.Group>
   );
 
-  const selectedKeys =
-    (filterSubmission &&
-      props.submissions.find((s) => s.id === filterSubmission.id) && [
-        props.submissions.find((s) => s.id === filterSubmission.id)!.id.toString(),
-      ]) ||
-    [];
-
   const submissionMenu = (
     <List
       itemData={props.submissions}
@@ -253,8 +245,8 @@ export const ResultDetail = (props: IProps) => {
         const thisStyle = isInactive(el)
           ? inactiveStyle
           : filterSubmission && filterSubmission.id === el.id
-          ? selectedStyle
-          : defaultStyle;
+            ? selectedStyle
+            : defaultStyle;
 
         return (
           <div style={{ ...style, ...extraStyle }} onClick={handleSubmissionChange.bind({}, el)}>

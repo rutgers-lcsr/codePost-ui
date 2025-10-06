@@ -114,7 +114,7 @@ export const TestingSummary = (props: IProps) => {
       const result = await Environment.runAll({ id: env.id, sendEmail: sendEmail });
       awaitTestResult(
         result.task,
-        (result: any) => {
+        () => {
           runAllCallback();
           onFinishCallback();
         },

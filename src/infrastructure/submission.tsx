@@ -11,13 +11,13 @@ import {
   updateObjectDetail,
 } from './generics';
 
+import { slack } from '../components/core/slack';
 import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../types/common';
 import { CommentIO, CommentType } from './comment';
 import { File, FileType } from './file';
 import { RubricComment } from './rubricComment';
 import { SubmissionHistoryV, SubmissionHistoryVPatch } from './submissionHistory';
 import { SubmissionTestV } from './submissionTest';
-import { slack } from '../components/core/slack';
 
 import { message } from 'antd';
 
@@ -216,6 +216,7 @@ export const AnonymousSubmissionV = t.intersection(
       responseDate: t.union([t.string, t.null]),
       tests: t.array(t.number),
       lateDayCreditsUsed: t.number,
+      testRunsCompleted: t.number,
     }),
     t.partial({
       students: t.array(t.string),

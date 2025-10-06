@@ -156,7 +156,7 @@ export const TemplateSelector = (props: IProps) => {
     })
     .filter((el) => el.code);
 
-  const expandedRowRender = (record: any, index: number, indent: any, expanded: boolean) => {
+  const expandedRowRender = (record: any, _index: number, _indent: any, _expanded: boolean) => {
     const columns = [{ title: `Code`, dataIndex: 'code', key: 'code' }];
     const data = [
       {

@@ -10,10 +10,10 @@ import { CommentIO } from '../../infrastructure/comment';
 import { File } from '../../infrastructure/file';
 import { Submission } from '../../infrastructure/submission';
 
-import { TestCategory, TestCategoryType } from '../../infrastructure/testCategory';
-import { TestCase } from '../../infrastructure/testCase';
-import { SubmissionTest } from '../../infrastructure/submissionTest';
 import { Environment } from '../../infrastructure/autograder/environment';
+import { SubmissionTest } from '../../infrastructure/submissionTest';
+import { TestCase } from '../../infrastructure/testCase';
+import { TestCategory, TestCategoryType } from '../../infrastructure/testCategory';
 
 import { fetchTestData } from '../core/testFetchUtils';
 
@@ -35,7 +35,7 @@ const createDemoCourse = async (email: string, username: string, org: string) =>
       const roster = demoRoster(org, course.id);
       // Add self to graders
       roster.graders = [...roster.graders, email];
-      return Course.updateRoster(roster, {}).then((rosterObj) => {
+      return Course.updateRoster(roster, {}).then((_rosterObj) => {
         // Make sections
         const sections = demoSections(org, roster.id);
         const makeSections = sections.map((section) => {

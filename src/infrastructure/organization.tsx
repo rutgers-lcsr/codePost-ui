@@ -1,7 +1,7 @@
 import * as t from 'io-ts';
 import { GenericObject, listObject } from './generics';
 
-const OrganizationV = t.intersection(
+export const OrganizationV = t.intersection(
   [
     GenericObject,
     t.type({

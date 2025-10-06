@@ -11,15 +11,10 @@ import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../..
 
 import { openSubmission } from '../../../other/AdminUtils';
 
-import { FixedSizeList as List } from 'react-window';
-import useWindowSize from '../../../../core/useWindowSize';
-
 import CPButton from '../../../../core/CPButton';
 import Loading from '../../../../core/Loading';
 
 import { TableDetail } from '../../../other/TableDetail';
-
-type alignType = 'left' | 'right' | 'center';
 
 export interface IFullStats extends IGradingProgressStats {
   median: number | null; // Median of all finalized submissions

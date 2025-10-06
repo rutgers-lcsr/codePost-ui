@@ -23,9 +23,9 @@ function openSubmissionInSameTab(submissionID: number | string) {
 // It keeps the aspect ratio, and sets the max(width, height) = MAX_IMAGE_SIZE
 const MAX_IMAGE_SIZE = 1500; // Max pixels for width or height
 const resizeImage = (imageStringInBase64: string) => {
-  return new Promise(function(resolved, rejected) {
-    var i = new Image();
-    i.onload = function() {
+  return new Promise(function (resolved, _rejected) {
+    const i = new Image();
+    i.onload = function () {
       if (i.width < MAX_IMAGE_SIZE && i.height < MAX_IMAGE_SIZE) {
         resolved(imageStringInBase64);
       } else {

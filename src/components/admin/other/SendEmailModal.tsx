@@ -53,7 +53,7 @@ class SendEmailModal extends React.Component<IProps, IState> {
     };
   }
 
-  public componentDidUpdate(oldProps: IProps, oldState: IState) {
+  public componentDidUpdate(_oldProps: IProps, oldState: IState) {
     if (oldState.modalVisible && !this.state.modalVisible) {
       this.setState({
         usersToShow: MAX_USERS_IN_INITIAL_LIST,

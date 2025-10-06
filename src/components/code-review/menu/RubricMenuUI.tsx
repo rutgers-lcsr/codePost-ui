@@ -41,7 +41,7 @@ import { LinkedCommentsAlert, LinkedCommentsConfirm } from '../../admin/assignme
 import CPTooltip from '../../core/CPTooltip';
 import { tooltips } from '../../core/tooltips';
 
-import { CURSOR_DOMAIN } from '../CodeConsole';
+import { CURSOR_DOMAIN } from '../CodeConsoleEnums';
 
 import { getRubricURL } from '../../core/URLutils';
 

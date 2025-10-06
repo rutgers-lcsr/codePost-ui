@@ -130,7 +130,7 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
 
         for (const ft of fileTemplates) {
           if (!templates.some((el) => el.id === ft.id)) {
-            fileTemplatePromises.push(FileTemplate.delete(ft.id));
+            fileTemplatePromises.push(FileTemplate.delete(ft));
           }
         }
 

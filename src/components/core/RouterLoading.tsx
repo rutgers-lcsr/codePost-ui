@@ -1,5 +1,4 @@
 // From: https://serverless-stack.com/chapters/code-splitting-in-create-react-app.html
-import * as React from 'react';
 
 import Loading from '../core/Loading';
 

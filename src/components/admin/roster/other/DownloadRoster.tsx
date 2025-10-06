@@ -6,8 +6,8 @@
 import * as React from 'react';
 
 /* style imports */
-import { Button, Checkbox, Collapse, Modal, Typography } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
+import { Button, Checkbox, Collapse, Modal, Typography } from 'antd';
 
 /* other library imports */
 import ReactMarkdown from 'react-markdown';
@@ -132,7 +132,7 @@ class DownloadRoster extends React.Component<IProps, IState> {
     a.click();
   };
 
-  public changeFileType = (newType: any) => {
+  public changeFileType = (newType: FILE_UPLOAD_TYPE) => {
     this.setState({ fileType: newType });
   };
 
@@ -144,7 +144,6 @@ class DownloadRoster extends React.Component<IProps, IState> {
     sectionsByStudent: { [studentEmail: string]: SectionType },
     graders: string[],
     admins: string[],
-    fileType: FILE_UPLOAD_TYPE,
   ) => {
     let student0 = 'student0@myschool.edu';
     let student1 = 'student1@myschool.edu';
@@ -207,7 +206,6 @@ class DownloadRoster extends React.Component<IProps, IState> {
       this.props.sectionsByStudent,
       this.props.graders,
       this.props.admins,
-      this.state.fileType,
     );
 
     return (
@@ -247,7 +245,7 @@ class DownloadRoster extends React.Component<IProps, IState> {
             ) : null}
             <Collapse bordered={true} accordion={true} defaultActiveKey={['1']}>
               <Collapse.Panel header="Preview" key="1">
-                <ReactMarkdown source={previewText} />
+                <ReactMarkdown>{previewText}</ReactMarkdown>
               </Collapse.Panel>
             </Collapse>
           </div>

@@ -9,6 +9,7 @@ import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindo
 import themeVars from '../../../styles/abstracts/_theme.js';
 
 import ErrorBoundary from '../../core/ErrorBoundary';
+import SplitScreen from '../../utils/SplitScreen.js';
 
 interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
   file: FileType;
@@ -121,20 +122,12 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
             id="code-panel"
             style={{ ...codePanelStyle, height: props.windowheight - 78, padding: '20px 20px' }}
           >
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'row' as const,
-                gap: '10px',
-                height: '100%',
-                overflow: 'hidden',
-              }}
-            >
+            <SplitScreen>
               <div
                 className="code-panel--code"
                 style={{
                   position: 'relative',
-                  flex: '1 1 60%',
+                  // flex: '1 1 60%',
                   minWidth: '400px',
                   height: '100%',
                   overflowY: 'auto',
@@ -156,7 +149,7 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
                 className="code-panel--comments"
                 style={{
                   flex: '1 1 40%',
-                  minWidth: '300px',
+                  // minWidth: '300px',
                   height: '100%',
                   overflowY: 'auto',
                   overflowX: 'hidden',
@@ -164,7 +157,7 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
               >
                 {props.comments}
               </div>
-            </div>
+            </SplitScreen>
           </div>
         </div>
       </div>

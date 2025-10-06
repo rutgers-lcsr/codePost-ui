@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Tag } from 'antd';
 
 import CPTooltip from '../../../../../core/CPTooltip';

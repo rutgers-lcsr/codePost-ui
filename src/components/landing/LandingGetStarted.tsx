@@ -1,5 +1,4 @@
 /* react imports */
-import * as React from 'react';
 
 import CPButton from '../core/CPButton';
 import useWindowSize from '../core/useWindowSize';

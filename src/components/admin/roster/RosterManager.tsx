@@ -3,17 +3,16 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
 
 /* other library imports */
 import { RouteComponentProps } from 'react-router';
 import { Route, Switch } from 'react-router-dom';
 
 /* codePost imports */
-import ManageStudents, { IManageStudentsProps } from './ManageStudents';
-import ManageGraders, { IManageGradersProps } from './ManageGraders';
 import ManageAdmins, { IManageAdminsProps } from './ManageAdmins';
+import ManageGraders, { IManageGradersProps } from './ManageGraders';
 import ManageSections, { IManageSectionsProps } from './ManageSections';
+import ManageStudents, { IManageStudentsProps } from './ManageStudents';
 
 /**********************************************************************************************************************/
 

@@ -1,9 +1,9 @@
 // react imports
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // library imports
-import { Controlled as CodeMirror } from 'react-codemirror2';
 import { Button } from 'antd';
+import { Controlled as CodeMirror } from 'react-codemirror2';
 
 // codePost util imports
 import { codeMirorLanguageMap } from './languageUtils';
@@ -43,7 +43,7 @@ export const CodeWindow = (props: IProps) => {
     }
   };
 
-  const onBeforeChange = (editor: any, data: any, value: string) => {
+  const onBeforeChange = (_editor: any, _data: any, value: string) => {
     if (props.onChange) {
       props.onChange(value);
     }

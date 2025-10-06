@@ -2,9 +2,6 @@
 /* Imports
 /**********************************************************************************************************************/
 
-/* react imports */
-import * as React from 'react';
-
 /* ant imports */
 import { Button, Modal } from 'antd';
 

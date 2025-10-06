@@ -494,17 +494,17 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
             switch (howToResolve) {
               case RESOLUTION.DELETE:
                 return this.deleteLinkedComments(rubricComment).then(() => {
-                  return RubricComment.delete(rubricComment.id);
+                  return RubricComment.delete(rubricComment);
                 });
               case RESOLUTION.UNLINK:
                 return this.unlinkLinkedComments(rubricComment).then(() => {
-                  return RubricComment.delete(rubricComment.id);
+                  return RubricComment.delete(rubricComment);
                 });
               default:
                 return Promise.resolve();
             }
           } else {
-            return RubricComment.delete(rubricComment.id);
+            return RubricComment.delete(rubricComment);
           }
         });
 
@@ -513,7 +513,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     const deleteCategories = demoMode
       ? []
       : deletedCategories.map((rubricCategory) => {
-          return RubricCategory.delete(rubricCategory.id);
+          return RubricCategory.delete(rubricCategory);
         });
 
     const allPromises: Array<Promise<any>> = [...promises, ...deleteCategories];
@@ -565,7 +565,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     }
 
     const promises = comments.map((commentID) => {
-      return CommentIO.delete(commentID);
+      return CommentIO.delete({ id: commentID });
     });
 
     return Promise.all(promises);

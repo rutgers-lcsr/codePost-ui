@@ -282,7 +282,7 @@ const StepZeroChooseType = (props: IStepZeroProps) => {
             />
             <Typography.Title level={4}>Folder of zip files</Typography.Title>
           </div>
-          <ReactMarkdown source={getZipExample(props.delimiter)} />
+          <ReactMarkdown>{getZipExample(props.delimiter)}</ReactMarkdown>
         </Card>
         <Card>
           <div style={{ display: 'flex' }}>
@@ -293,7 +293,7 @@ const StepZeroChooseType = (props: IStepZeroProps) => {
             />
             <Typography.Title level={4}>Folder of files</Typography.Title>
           </div>
-          <ReactMarkdown source={getFileExample(props.delimiter)} />
+          <ReactMarkdown>{getFileExample(props.delimiter)}</ReactMarkdown>
         </Card>
       </div>
       <BulkUploadFooter
@@ -333,7 +333,7 @@ const StepOneUploadZips = (props: IStepOneProps) => {
           Upload a folder of files, in the format below:
           <br />
           <br />
-          <ReactMarkdown source={exampleText} />
+          <ReactMarkdown>{exampleText}</ReactMarkdown>
         </Collapse.Panel>
       </Collapse>
       <Upload.Dragger showUploadList={false} directory={true} multiple={false} beforeUpload={beforeUpload}>
@@ -635,7 +635,9 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
             );
           })
           .sort((a, b) => {
-            return (a.key as number) - (b.key as number);
+            const aKey = a.key ?? 0;
+            const bKey = b.key ?? 0;
+            return Number(aKey) - Number(bKey);
           })}
         {lastOption}
       </Select>

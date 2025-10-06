@@ -219,7 +219,7 @@ export const highlight = (
     for (let i = 0; i < document.styleSheets.length; i++) {
       if (document.styleSheets[i].href === null) {
         stylesheet = document.styleSheets[i] as CSSStyleSheet;
-        rules = stylesheet.rules || stylesheet.cssRules;
+        rules = stylesheet.cssRules;
         break;
       }
     }
@@ -240,9 +240,7 @@ export const highlight = (
 
         let ruleExists = false;
         for (const x in rules) {
-          // @ts-expect-error - accessing cssRules properties
           if (rules[x].selectorText === className) {
-            // @ts-expect-error - accessing style properties
             rules[x].style.backgroundColor = rgbaColor;
             ruleExists = true;
             break;
@@ -325,7 +323,7 @@ export const getSelectionOffsetRelativeToParent = (parentElement: any, currentNo
  * Brighten a highlight by changing its background color
  * Enhanced with better visual feedback
  */
-export const brightenHighlight = (commentID: number, color: string) => {
+export const brightenHighlight = (commentID: number) => {
   if (commentID === 0 || commentID === Number.MAX_SAFE_INTEGER) {
     return;
   }
@@ -337,7 +335,7 @@ export const brightenHighlight = (commentID: number, color: string) => {
   const className = `highlight-${commentID}`;
   const elems = document.getElementsByClassName(className);
   let hasScrolled = false;
-  [].forEach.call(elems, (elem: any) => {
+  [].forEach.call(elems, (elem: HTMLElement) => {
     // Convert hex color to rgba with transparency - brighter and more prominent
     elem.classList.add(`highlight--hovered`);
     if (!hasScrolled) {
@@ -351,7 +349,7 @@ export const brightenHighlight = (commentID: number, color: string) => {
  * Darken a highlight by changing its background color
  * Enhanced to restore original appearance
  */
-export const darkenHighlight = (commentID: number, color: string) => {
+export const darkenHighlight = (commentID: number) => {
   if (commentID === 0 || commentID === Number.MAX_SAFE_INTEGER) {
     return;
   }

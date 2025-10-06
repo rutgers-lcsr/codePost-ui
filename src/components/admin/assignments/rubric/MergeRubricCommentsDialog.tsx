@@ -104,7 +104,7 @@ class MergeRubricCommentsDialog extends React.Component<
     // If all goes well, delete the fromComment
     Promise.all(relinkCommentPromises)
       .then(() => {
-        RubricComment.delete(this.state.fromComment!.id).then(() => {
+        RubricComment.delete({ id: this.state.fromComment!.id }).then(() => {
           this.props.reloadRubric(this.props.assignment).then(() => {
             this.closeDialog();
             this.setState({ isLoading: false });

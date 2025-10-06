@@ -1,13 +1,12 @@
-import * as React from 'react';
-
 import { Card, Statistic } from 'antd';
 
 import { CourseType, RosterType } from '../../infrastructure/course';
 import { OrganizationType } from '../../infrastructure/organization';
+import { AdminData } from './Dashboard';
 
 interface ISummaryCardProps {
   title: string;
-  objects: OrganizationType[] | CourseType[] | RosterType[];
+  objects: OrganizationType[] | CourseType[] | RosterType[] | AdminData[];
   onClick: any;
 }
 
@@ -18,7 +17,7 @@ const SummaryCard = (props: ISummaryCardProps) => {
   return (
     <Card
       title={props.title}
-      bordered={false}
+      variant="outlined"
       style={{ width: 300, marginBottom: '20px', cursor: 'pointer' }}
       onClick={onClick}
       hoverable={true}
