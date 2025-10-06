@@ -4,7 +4,8 @@ export enum OS {
 }
 
 export const getOperatingSystem = () => {
-  return navigator.platform.indexOf('Win') > -1 ? OS.WINDOWS : OS.MAC;
+  const userAgent = navigator.userAgent.toLowerCase();
+  return userAgent.indexOf('win') > -1 ? OS.WINDOWS : OS.MAC;
 };
 
 export const osControlKey = () => {
