@@ -163,7 +163,11 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
       };
     }
 
-    return {};
+    return {
+      className: undefined,
+      'index-number': undefined,
+      onMouseUp: undefined,
+    };
   };
 
   // Paragraph renderer - handle code blocks that might be wrapped in <p>
@@ -194,7 +198,9 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
 
   // List renderer (ordered or unordered)
   const listRenderer = (props: ListProps) => {
-    return React.createElement(props.ordered ? 'ol' : 'ul', blockProps(props), props.children);
+    const attrs = blockProps(props);
+    const filteredAttrs = Object.fromEntries(Object.entries(attrs).filter(([_, value]) => value !== undefined));
+    return React.createElement(props.ordered ? 'ol' : 'ul', filteredAttrs, props.children);
   };
 
   // Code renderer - handles both inline code and code blocks

@@ -3,23 +3,22 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 /* library imports  */
-import { Layout, Menu } from 'antd';
-import { ClickParam } from 'antd/lib/menu';
+import { Layout, Menu, MenuProps } from 'antd';
 
 /* codePost object imports  */
-import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 import { HelperFileType } from '../../../../../../infrastructure/autograder/helperFile';
+import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 
 /* codePost component imports  */
 import { CodeWindow } from '../utils/CodeWindow';
 import { TestFileUploader } from './TestFileUploader';
 
 import {
-  IFolder,
   IDirectoryStructure,
+  IFolder,
   buildFolderMenu,
   createDirectoryStructure,
   sortFiles,
@@ -58,35 +57,33 @@ export const TestFileList = (props: IProps) => {
   };
 
   /************************** State Change Functions ****************************/
-  const changeIndex = (e: ClickParam) => {
+  const changeIndex: MenuProps['onClick'] = (e) => {
     setIndex(e.key);
   };
 
-  const buildFileMenu = (files: SolutionFileType[] | HelperFileType[]) => {
+  const buildFileMenu = (files: SolutionFileType[] | HelperFileType[]): MenuProps['items'] => {
     return files.map((file) => {
       const sortedIndex = sortedFiles.findIndex((f) => {
         return f.id === file.id;
       });
-      return (
-        <Menu.Item key={sortedIndex.toString()} style={{ height: 'fit-content', minHeight: 40 }}>
-          {file.name}
-        </Menu.Item>
-      );
+      return {
+        type: 'item' as const,
+        key: sortedIndex.toString(),
+        label: file.name,
+        style: { height: 'fit-content', minHeight: 40 },
+      };
     });
   };
 
   let menu;
   if (directory) {
-    const folders = directory.folders.map((f: IFolder<SolutionFileType | HelperFileType>) => {
+    const folders = directory.folders.flatMap((f: IFolder<SolutionFileType | HelperFileType>) => {
       return buildFolderMenu('', f, buildFileMenu);
     });
 
-    menu = (
-      <Menu onClick={changeIndex} mode="inline" selectedKeys={[currentIndex]}>
-        {buildFileMenu(directory.files)}
-        {folders}
-      </Menu>
-    );
+    const items = [...(buildFileMenu(directory.files) || []), ...folders];
+
+    menu = <Menu onClick={changeIndex} mode="inline" selectedKeys={[currentIndex]} items={items} />;
   }
   /***************************** Return ****************************************/
   if (sortedFiles.length === 0) {

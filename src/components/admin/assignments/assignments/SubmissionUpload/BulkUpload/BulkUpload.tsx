@@ -10,19 +10,19 @@ import { Divider, Modal, Progress, Steps } from 'antd';
 
 /* codePost imports */
 import {
-  UPLOAD_STATUS,
-  STUDENT_STATUS,
   getSubforStudent,
   isEqual,
   processSubmissionsFromFiles,
+  STUDENT_STATUS,
+  UPLOAD_STATUS,
 } from './BulkUploadHelpers';
 
 /* codePost imports */
-import { AssignmentType, CourseType, SubmissionInfoType } from '../../../../../../infrastructure/types';
+import { AssignmentType, CourseType, FileType, SubmissionInfoType } from '../../../../../../infrastructure/types';
 
-import UploadForm from './UploadForm';
+import { BulkUploadComplete, BulkUploadFooter, BulkUploadHeader, BulkUploadNoStudents } from './BulkUploadComponents';
 import BulkUploadConfirm from './BulkUploadConfirm';
-import { BulkUploadFooter, BulkUploadNoStudents, BulkUploadHeader, BulkUploadComplete } from './BulkUploadComponents';
+import UploadForm from './UploadForm';
 
 import { INTEGRATIONS } from '../../../../../landing/Integrations';
 
@@ -49,7 +49,7 @@ interface IProps {
   assignment: AssignmentType;
   submissions: SubmissionInfoType[];
   students: string[];
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<void>;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: FileType[]) => Promise<void>;
   updateSubmission: (submission: SubmissionInfoType) => Promise<void>;
   deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   showImportOptions?: boolean;
@@ -209,15 +209,14 @@ class BulkUpload extends React.Component<IProps, IState> {
     const submissions = this.state.protoSubmissions;
 
     await Promise.all(
-      submissions.map(async (submission, index: number) => {
+      submissions.map(async (submission) => {
         const submitters = submission.students.join(',');
         for (const file of submission.files) {
           try {
             let outputFiles;
-            // @ts-ignore FIXME
-            if (file.file) {
-              // @ts-ignore
-              outputFiles = await readUploadedFile(file.file);
+            if ('file' in file && file.file) {
+              const f = file.file;
+              outputFiles = await readUploadedFile(f as File | Blob);
             } else {
               outputFiles = await readUploadedFile(file);
             }
@@ -238,7 +237,7 @@ class BulkUpload extends React.Component<IProps, IState> {
               });
             }
           } catch (e) {
-            this.setState({ errorPaths: [...this.state.errorPaths, e], status: STATUS.FILE_ERROR });
+            this.setState({ errorPaths: [...this.state.errorPaths, String(e)], status: STATUS.FILE_ERROR });
           }
         }
       }),
@@ -296,14 +295,14 @@ class BulkUpload extends React.Component<IProps, IState> {
     }
     return this.props
       .uploadSubmission(this.props.assignment, submission.students, files)
-      .then((newSub) => {
+      .then(() => {
         const uploadMap = this.state.uploadMap;
         submission.students.forEach((student) => {
           uploadMap[student] = UPLOAD_STATUS.SUCCESS;
         });
         this.setState({ uploadMap, numUploaded: this.state.numUploaded + 1 });
       })
-      .catch((errors) => {
+      .catch(() => {
         const uploadMap = this.state.uploadMap;
         submission.students.forEach((student) => {
           uploadMap[student] = UPLOAD_STATUS.SUCCESS;
@@ -314,7 +313,7 @@ class BulkUpload extends React.Component<IProps, IState> {
 
   // Make sure all the files are read, and if so, upload them
   public upload = () => {
-    const { protoSubmissions, fileMap } = this.state;
+    const { protoSubmissions } = this.state;
 
     // tslint:disable
     const toUpload = this.state.overwriteMode
@@ -328,7 +327,7 @@ class BulkUpload extends React.Component<IProps, IState> {
 
     // Recursive function to upload, and then upload the next submission in the queue
     // Returns a promise that only finishes when all of it's recursive children finish
-    const uploadAndPop: any = (submission: IProtoSubmission) => {
+    const uploadAndPop = (submission: IProtoSubmission): Promise<void> => {
       return this.uploadSubmission(submission).then(() => {
         if (toUpload.length) {
           const newSub = toUpload.pop();

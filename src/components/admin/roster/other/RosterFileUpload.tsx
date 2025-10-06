@@ -6,8 +6,8 @@
 import * as React from 'react';
 
 /* style imports */
-import { Alert, Button, Divider, Modal, Spin, Steps, Table, Result } from 'antd';
 import { UserAddOutlined } from '@ant-design/icons';
+import { Alert, Button, Divider, Modal, Result, Steps, Table } from 'antd';
 
 /* codePost imports */
 
@@ -128,15 +128,15 @@ class RosterFileUpload extends React.Component<IProps, {}> {
       this.props.roleType === 'student'
         ? USER_TYPE.STUDENT
         : this.props.roleType === 'grader'
-        ? USER_TYPE.GRADER
-        : USER_TYPE.ADMIN,
+          ? USER_TYPE.GRADER
+          : USER_TYPE.ADMIN,
       this.props.admins,
       this.props.graders,
       this.props.students,
     ).join('\n'),
   };
 
-  public componentDidUpdate(prevProps: IProps, prevState: IState) {
+  public componentDidUpdate(_prevProps: IProps, prevState: IState) {
     // clear information from modal after it is unmounted, so appearance
     // doesn't change during the unmounting process
     if (prevState.dialogVisible && !this.state.dialogVisible) {
@@ -162,7 +162,8 @@ class RosterFileUpload extends React.Component<IProps, {}> {
 
   public validateEmail = (email: string) => {
     // 🙏 https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript
-    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    const re =
+      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
   };
 
@@ -194,7 +195,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             case 1:
               newRoster[tokens[0].trim()] = {};
               break;
-            case 2:
+            case 2: {
               let sectionName = null;
               if (tokens[1] !== 'null' && tokens[1] !== '') {
                 // remove leading and trailing whitespace
@@ -202,6 +203,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
               }
               newRoster[tokens[0].trim()] = { section: sectionName };
               break;
+            }
             default:
               errors.push(`Invalid row detected: row ${i}| ${line}`);
           }
@@ -231,11 +233,11 @@ class RosterFileUpload extends React.Component<IProps, {}> {
 
   public updateRoster = () => {
     const diff = this.state.updates;
-    const { students, graders, admins } = this.props;
+    const { students } = this.props;
 
     this.setState({ updatingRoster: true }, () => {
       // we don't want to declare success until all the work below completes
-      const promises: Array<Promise<any>> = [];
+      const promises: Array<Promise<void>> = [];
 
       if (this.props.roleType === 'student') {
         /* remove and add users */
@@ -576,7 +578,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             ];
           }
 
-          const dataSource = diffItem.items.map((el: any, j: number) => {
+          const dataSource = diffItem.items.map((el: string) => {
             if (diffItem.title === 'Changed: ') {
               let toSectionName = changes.changed[el].new.section;
               if (toSectionName === null || toSectionName === undefined) {
@@ -613,7 +615,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             <div key={i} style={{ margin: '10px 0px' }}>
               <h4>{diffItem.title}</h4>
               <Table
-                pagination={dataSource.length > 3 ? { position: 'bottom', defaultPageSize: 3 } : false}
+                pagination={dataSource.length > 3 ? { position: ['bottomCenter'], defaultPageSize: 3 } : false}
                 size="small"
                 style={{ lineHeight: 1 }}
                 dataSource={dataSource}
@@ -666,7 +668,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             },
           ];
 
-          const dataSource = diffItem.items.map((el: any, j: number) => {
+          const dataSource = diffItem.items.map((el: string) => {
             return { email: el };
           });
 
@@ -675,7 +677,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
               <br />
               <h4>{diffItem.title}</h4>
               <Table
-                pagination={dataSource.length > 3 ? { position: 'bottom', defaultPageSize: 3 } : false}
+                pagination={dataSource.length > 3 ? { position: ['bottomCenter'], defaultPageSize: 3 } : false}
                 style={{ lineHeight: 1 }}
                 dataSource={dataSource}
                 columns={columns}

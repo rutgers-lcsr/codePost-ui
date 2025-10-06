@@ -7,11 +7,10 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
 
 /* antd imports */
 import { Divider, Spin } from 'antd';
-import { ClickParam } from 'antd/lib/menu';
+import type { MenuInfo } from 'rc-menu/lib/interface';
 
 /* codePost imports */
 import CPDropdown from './CPDropdown';
@@ -32,12 +31,12 @@ interface IProps {
   title2?: string; // title above the second selector
 
   // First Selector
-  onFirstSelectorClick: (e: ClickParam) => void; // callback when the first selector is clicked
+  onFirstSelectorClick: (e: MenuInfo) => void; // callback when the first selector is clicked
   activeFirstSelector?: IOption; // active first selector item - controlled
   firstSelectorItems: IOptionWithDisabled[];
 
   // Second Selector
-  onSecondSelectorClick: (e: ClickParam) => void; // callback when the first selector is clicked
+  onSecondSelectorClick: (e: MenuInfo) => void; // callback when the first selector is clicked
   activeSecondSelector?: IOption; // active first selector item - controlled
   secondSelectorItems: IOptionWithDisabled[];
   disabledMessage: string;
@@ -48,7 +47,7 @@ interface IProps {
 }
 
 const getMenuItems = (items: IOptionWithDisabled[], disabledMessage: string) => {
-  return items.map((item: IOptionWithDisabled, index: number) => {
+  return items.map((item: IOptionWithDisabled) => {
     if (item.isDisabled) {
       return {
         key: item.value,
@@ -82,7 +81,7 @@ const MultiSelectorSider = (props: IProps) => {
         key="selector1"
         value={props.activeFirstSelector ? props.activeFirstSelector.label : 'Select...'}
         menu={{ items: firstSelectorItems, onClick: props.onFirstSelectorClick }}
-        dropdownRender={(menu) => <div style={{ maxHeight: '300px', overflowY: 'auto' }}>{menu}</div>}
+        popupRender={(menu) => <div style={{ maxHeight: '300px', overflowY: 'auto' }}>{menu}</div>}
         placement="bottomLeft"
         theme={theme}
         justifyContent="space-between"
@@ -100,7 +99,7 @@ const MultiSelectorSider = (props: IProps) => {
           key="selector2"
           value={props.activeSecondSelector ? props.activeSecondSelector.label : 'Select...'}
           menu={{ items: secondSelectorItems, onClick: props.onSecondSelectorClick }}
-          dropdownRender={(menu) => <div style={{ maxHeight: '300px', overflowY: 'auto' }}>{menu}</div>}
+          popupRender={(menu) => <div style={{ maxHeight: '300px', overflowY: 'auto' }}>{menu}</div>}
           placement="bottomLeft"
           theme={theme}
           justifyContent="space-between"

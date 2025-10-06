@@ -6,7 +6,6 @@
 
 /* ant imports */
 
-import * as React from 'react';
 
 /* ant imports */
 import { Typography } from 'antd';

@@ -2,8 +2,8 @@ import * as React from 'react';
 
 // We ignore eslint since Popover never explicitly used. We just use the classNames
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Input, message, Popover, Typography } from 'antd';
-import { SaveOutlined, DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
+import { Input, message, Typography } from 'antd';
 
 import CPButton from '../../../core/CPButton';
 import CPFlex from '../../../core/CPFlex';
@@ -16,7 +16,7 @@ import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 
 import { wait } from '../../../../infrastructure/animation';
 
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { Components } from 'react-markdown';
 import { consoleThemes } from '../../../../styles/abstracts/_console-theme-context';
 
 export type UICommentType = 'readonly' | 'active' | 'inactive';
@@ -197,45 +197,34 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
     }
   };
 
-  public markdownRenderers = () => {
-    const blockProps = () => {
-      return {
-        style: {
-          color: consoleThemes.light.text,
-        },
-      };
-    };
-
-    const rootRenderer = (props: any) => {
-      return (
-        <div className="comment__comment" style={{ color: consoleThemes.light.text }}>
-          {props.children}
-        </div>
-      );
-    };
-
-    const headingRenderer = (props: any) => {
-      return React.createElement(`h${props.level}`, blockProps(), props.children);
-    };
-
-    const inlineCodeRenderer = (props: any) => {
-      const style = {
-        backgroundColor: consoleThemes.light.commentTitle,
-        color: consoleThemes.light.text,
-      };
-
-      return <code style={style}>{props.children}</code>;
-    };
-
-    const thematicBreakRenderer = (props: any) => {
-      return <hr {...blockProps()}>{props.children}</hr>;
+  public markdownRenderers = (): Components => {
+    const blockStyle = {
+      color: consoleThemes.light.text,
     };
 
     return {
-      root: rootRenderer,
-      heading: headingRenderer,
-      inlineCode: inlineCodeRenderer,
-      thematicBreak: thematicBreakRenderer,
+      div: ({ node: _node, ...props }) => (
+        <div className="comment__comment" style={{ color: consoleThemes.light.text }}>
+          {props.children}
+        </div>
+      ),
+      h1: ({ node: _node, ...props }) => <h1 style={blockStyle}>{props.children}</h1>,
+      h2: ({ node: _node, ...props }) => <h2 style={blockStyle}>{props.children}</h2>,
+      h3: ({ node: _node, ...props }) => <h3 style={blockStyle}>{props.children}</h3>,
+      h4: ({ node: _node, ...props }) => <h4 style={blockStyle}>{props.children}</h4>,
+      h5: ({ node: _node, ...props }) => <h5 style={blockStyle}>{props.children}</h5>,
+      h6: ({ node: _node, ...props }) => <h6 style={blockStyle}>{props.children}</h6>,
+      code: ({ node: _node, ...props }) => (
+        <code
+          style={{
+            backgroundColor: consoleThemes.light.commentTitle,
+            color: consoleThemes.light.text,
+          }}
+        >
+          {props.children}
+        </code>
+      ),
+      hr: () => <hr style={blockStyle} />,
     };
   };
 
@@ -363,7 +352,7 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
       //     <ReactMarkdown renderers={markdownRenderers} source={this.state.text} />
       //   </Paragraph>
       // );
-      commentElements.comment = <ReactMarkdown renderers={markdownRenderers} source={this.state.text} />;
+      commentElements.comment = <ReactMarkdown components={markdownRenderers}>{this.state.text}</ReactMarkdown>;
       commentElements.deleteButton = <CPButton cpType="danger" icon={<DeleteOutlined />} onClick={this.delete} />;
 
       onClick = this.onCommentClick;
@@ -386,7 +375,7 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
             onExpand: this.props.setCommentPlacements,
           }}
         >
-          <ReactMarkdown renderers={markdownRenderers} source={this.state.text} />
+          <ReactMarkdown components={markdownRenderers}>{this.state.text}</ReactMarkdown>;
         </Paragraph>
       );
     }

@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { Link } from 'react-router-dom';
 
 import { Popover } from 'antd';
@@ -13,7 +12,7 @@ const PreAuthFooter = () => {
   const logoTextAlign = windowSize.width < breakpoint ? 'center' : 'left';
   const mobileFlexStyle =
     windowSize.width < breakpoint
-      ? { display: 'flex', fontSize: 10, flexWrap: 'wrap' as 'wrap', justifyContent: 'center' }
+      ? { display: 'flex', fontSize: 10, flexWrap: 'wrap' as const, justifyContent: 'center' }
       : {};
   const horizontalPadding = windowSize.width < breakpoint ? 0 : 65; // For mobile view we want less horizontal padding
 

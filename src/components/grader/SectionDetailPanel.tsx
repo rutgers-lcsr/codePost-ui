@@ -3,7 +3,6 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
 
 import { LoadingOutlined } from '@ant-design/icons';
 
@@ -24,11 +23,10 @@ import CPAdminDetail from '../admin/other/CPAdminDetail';
 import { TestingSummary } from '../admin/assignments/tests/results/TestingSummary';
 import SectionSubmissionsTable from './SectionSubmissionsTable';
 
+import { Component } from 'react';
 import { AutograderInfoModal, SubmissionInfoModal } from './InfoModals';
 
 const { Option } = Select;
-
-type alignType = 'left' | 'right' | 'center';
 
 /**********************************************************************************************************************/
 
@@ -59,7 +57,7 @@ interface IState {
   selectedSubmissions: number[];
 }
 
-class SectionDetailPanel extends React.Component<IProps, IState> {
+class SectionDetailPanel extends Component<IProps, IState> {
   /***********************************************************************************
   /* Lifecycle methods
   /**********************************************************************************/
@@ -89,7 +87,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
     this.initialLoad();
   }
 
-  public componentDidUpdate(_oldProps: IProps) {
+  public componentDidUpdate(oldProps: IProps) {
     if (oldProps.assignment !== this.props.assignment) {
       this.initialLoad();
     }
@@ -110,7 +108,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
   public loadSubmissionsForSection = async () => {
     const submissionMap: any = {};
     for (const section of this.props.sections) {
-      let mapValue: any = {};
+      const mapValue: any = {};
       const submissions = await Section.readSubmissions(section.id, {
         assignment: this.props.assignment.id.toString(),
       });
@@ -203,7 +201,7 @@ class SectionDetailPanel extends React.Component<IProps, IState> {
   /**********************************************************************************/
 
   public render() {
-    const { activeSection, isLoading } = this.state;
+    const { activeSection } = this.state;
     const showingEmails = !this.props.assignment.anonymousGrading || this.state.showStudentEmails;
 
     if (this.props.sections.length === 0) {

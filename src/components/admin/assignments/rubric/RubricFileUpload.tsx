@@ -259,7 +259,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
     } else return;
   };
 
-  public dummyUpload = (file: File) => {
+  public dummyUpload = (_file: File) => {
     return;
   };
 
@@ -272,7 +272,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
 
   // FIXME: this method of reading file contents relies on a race win, since
   // we need the fileReaders to finish before we hit upload.
-  public beforeUpload = (file: any, fileList: any) => {
+  public beforeUpload = (file: any, _fileList: any) => {
     const reader = new FileReader();
     reader.onload = () => {
       if (reader.result) {
@@ -333,7 +333,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
                   <WarningOutlined /> One common mistake: don't use trailing commas (e.g.{' '}
                   <Typography.Text code>[el1, el2,]</Typography.Text> should be{' '}
                   <Typography.Text code>[el1, el2]</Typography.Text>) <br /> <br />
-                  <ReactMarkdown source={exampleText} />
+                  <ReactMarkdown>{exampleText}</ReactMarkdown>
                 </Collapse.Panel>
               </Collapse>
               <br />

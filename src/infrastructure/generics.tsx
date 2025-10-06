@@ -15,7 +15,7 @@ function decodeToPromise<T, O, I>(validator: t.Type<T, O, I>, input: I): Promise
   return pipe(
     result,
     E.fold(
-      (errors: any) => {
+      (_errors: t.Errors) => {
         const messages = reporter(result);
 
         const payload = {
@@ -28,7 +28,7 @@ function decodeToPromise<T, O, I>(validator: t.Type<T, O, I>, input: I): Promise
 
         return Promise.reject(new Error(messages.join('\n')));
       },
-      (value: any) => {
+      (value: T) => {
         return Promise.resolve(value);
       },
     ),
@@ -43,7 +43,7 @@ export type GenericObjectType = t.TypeOf<typeof GenericObject>;
 
 function createObject<T, Q, O, I>(
   output: t.Type<T, O, I>,
-  input: t.Type<Q, O, I>,
+  _input: t.Type<Q, O, I>,
   url: string,
 ): (object: Q) => Promise<T> {
   const foo = async (object: Q) => {
@@ -92,12 +92,12 @@ function readObject<T, O, I>(arg: t.Type<T, O, I>, url: string): (arg0: number) 
   return foo;
 }
 
-function listObject<T, O, I>(arg: t.Type<T, O, I>, obj: string): () => Promise<T[]> {
+function listObject<T, O, I>(_arg: t.Type<T, O, I>, obj: string): () => Promise<T[]> {
   const foo = async () => {
     let objects: T[] = [];
     let url: string | null = `${process.env.REACT_APP_API_URL}/${obj}/`;
     while (url !== null) {
-      const res: any = await fetch(url, {
+      const res: Response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
           'Content-Type': 'application/json',
@@ -109,14 +109,14 @@ function listObject<T, O, I>(arg: t.Type<T, O, I>, obj: string): () => Promise<T
         const data = await res.json();
 
         // Is this list paginated?
-        if (data.hasOwnProperty('results')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'results')) {
           objects = objects.concat(data['results']);
         } else {
           objects = data;
           url = null;
         }
 
-        if (data.hasOwnProperty('next')) {
+        if (Object.prototype.hasOwnProperty.call(data, 'next')) {
           url = data['next'];
         } else {
           url = null;
@@ -135,7 +135,7 @@ function listObject<T, O, I>(arg: t.Type<T, O, I>, obj: string): () => Promise<T
 
 function updateObject<T, O, I, Q extends GenericObjectType>(
   output: t.Type<T, O, I>,
-  input: t.Type<Q, O, I>,
+  _input: t.Type<Q, O, I>,
   url: string,
 ): (object: Q) => Promise<T> {
   const foo = async (object: Q) => {
@@ -162,9 +162,12 @@ function updateObject<T, O, I, Q extends GenericObjectType>(
 }
 
 // Should change the return value to accept an object of type T (mandated to have an id field) instead of an id
-function deleteObject<T, O, I>(arg: t.Type<T, O, I>, url: string): (id: number) => Promise<void> {
-  const foo = async (id: number) => {
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/`, {
+function deleteObject<T extends GenericObjectType, O, I>(
+  _arg: t.Type<T, O, I>,
+  url: string,
+): (object: Partial<T> & GenericObjectType) => Promise<void> {
+  const foo = async (object: Partial<T> & GenericObjectType) => {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json',
@@ -230,7 +233,7 @@ function readObjectDetail<T, O, I>(
 
 function updateObjectDetail<T, O, I, J, K, Q extends GenericObjectType>(
   output: t.Type<T, O, I>,
-  input: t.Type<Q, K, J>,
+  _input: t.Type<Q, K, J>,
   url: string,
   detail: string,
 ): (object: Q, urlArgs?: { [arg: string]: string }) => Promise<T> {
@@ -261,7 +264,7 @@ function updateObjectDetail<T, O, I, J, K, Q extends GenericObjectType>(
 
 function createObjectDetail<T, O, I, J, K, Q extends GenericObjectType>(
   output: t.Type<T, O, I>,
-  input: t.Type<Q, K, J>,
+  _input: t.Type<Q, K, J>,
   url: string,
   detail: string,
 ): (object: Q, urlArgs?: { [arg: string]: string }) => Promise<T> {
@@ -292,7 +295,7 @@ function createObjectDetail<T, O, I, J, K, Q extends GenericObjectType>(
 
 async function loadIDList(ids: number[], klass: any, method: string = 'read', urlArgs?: { [arg: string]: string }) {
   const ignoreRejects = (p: Promise<any>) => {
-    return p.catch((e: any) => {
+    return p.catch((_: any) => {
       return undefined;
     });
   };
@@ -312,12 +315,12 @@ async function loadIDList(ids: number[], klass: any, method: string = 'read', ur
 export {
   createObject,
   createObjectDetail,
-  readObject,
-  listObject,
-  updateObject,
   deleteObject,
   GenericObject,
-  readObjectDetail,
-  updateObjectDetail,
+  listObject,
   loadIDList,
+  readObject,
+  readObjectDetail,
+  updateObject,
+  updateObjectDetail,
 };

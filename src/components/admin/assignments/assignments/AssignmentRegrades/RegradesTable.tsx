@@ -26,7 +26,7 @@ import CPButton from '../../../../../components/core/CPButton';
 
 import { openSubmission } from '../../../other/AdminUtils';
 
-import { CodePostDate } from '../../../../utils/DateUtils';
+import { CodePostDate } from '../../../../utils/CodepostDate';
 
 const { TextArea } = Input;
 const { Paragraph, Text } = Typography;

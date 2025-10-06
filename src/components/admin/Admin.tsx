@@ -3,7 +3,6 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
 
 import { SettingOutlined } from '@ant-design/icons';
 
@@ -43,8 +42,8 @@ import {
 /* API library */
 import { Assignment, AssignmentPatchType, AssignmentType, sortAssignments } from '../../infrastructure/assignment';
 import { Course, CoursePatchType, CourseType, RosterType } from '../../infrastructure/course';
-import { File } from '../../infrastructure/file';
-import { RubricCategory } from '../../infrastructure/rubricCategory';
+import { File, FileType } from '../../infrastructure/file';
+import { RubricCategory, RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { RubricComment } from '../../infrastructure/rubricComment';
 import { Section, SectionType } from '../../infrastructure/section';
 import { Submission, SubmissionInfoType } from '../../infrastructure/submission';
@@ -65,6 +64,7 @@ import { AssignmentSetupBanner } from './assignments/assignments/AssignmentSetup
 
 import { CIPAdminModal } from '../cip/components';
 
+import { Component } from 'react';
 import VideoModal from '../landing/VideoModal';
 
 /**********************************************************************************************************************/
@@ -105,21 +105,16 @@ interface IAdminState {
   submissionsByGrader: IGraderSubmissionsDataTable;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
 
-  showBillingBanner: any;
+  showBillingBanner: boolean;
 }
 
 const formatCourseURL = (course: CourseType) => {
   return `/admin/${encodeURIComponent(course.name)}/${encodeURIComponent(course.period)}`;
 };
 
-class Admin extends React.Component<IComponentProps, IAdminState> {
-  private timer: any;
-  private times: any = [];
-
+class Admin extends Component<IComponentProps, IAdminState> {
   public constructor(props: IComponentProps) {
     super(props);
-
-    this.timer = Date.now();
 
     if (this.props.currentCourse) {
       this.loadAllCourseData(this.props.currentCourse);
@@ -180,7 +175,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     window.CommandBar.addRouter(routerFunc);
   }
 
-  public componentDidUpdate(prevProps: any, prevState: any) {
+  public componentDidUpdate(_: IComponentProps, prevState: IAdminState) {
     if (this.state.students && (!prevState.students || prevState.students != this.state.students)) {
       window.CommandBar.addContext({
         course: this.props.currentCourse,
@@ -188,39 +183,6 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       });
     }
   }
-
-  // public componentDidUpdate = (prevProps: any, prevState: any) => {
-  // if (!prevState.submissionsLoadComplete && this.state.submissionsLoadComplete) {
-  //   const current = Date.now() - this.timer;
-  //   this.times = [...this.times, current];
-  // console.log('SUBMISSIONS COMPLETE: ', current);
-  // console.log(this.times.join('|'));
-  // }
-  // if (!prevState.rosterLoadComplete && this.state.rosterLoadComplete) {
-  //   const current = Date.now() - this.timer;
-  //   this.times = [...this.times, current];
-  //   console.log('ROSTER COMPLETE: ', current);
-  //   console.log(this.times.join('|'));
-  // }
-  // if (!prevState.sectionsLoadComplete && this.state.sectionsLoadComplete) {
-  //   const current = Date.now() - this.timer;
-  //   this.times = [...this.times, current];
-  //   console.log('SECTIONS COMPLETE: ', current);
-  //   console.log(this.times.join('|'));
-  // }
-  // if (!prevState.assignmentsLoadComplete && this.state.assignmentsLoadComplete) {
-  //   const current = Date.now() - this.timer;
-  //   this.times = [...this.times, current];
-  //   console.log('ASSIGNMENTS COMPLETE: ', current);
-  //   console.log(this.times.join('|'));
-  // }
-  // if (!prevState.submissionsbyUserLoadComplete && this.state.submissionsbyUserLoadComplete) {
-  //   const current = Date.now() - this.timer;
-  //   this.times = [...this.times, current];
-  //   console.log('SUBMISSIONS BY USER COMPLETE: ', current);
-  //   console.log(this.times.join('|'));
-  // }
-  // };
 
   /***********************************************************************************
   /* URL + UI handling methods
@@ -343,8 +305,8 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
           }
           return {};
         })
-        .then((data: any) => {
-          if (Object.prototype.hasOwnProperty.call(data, 'show_banner')) {
+        .then((data: { show_banner?: boolean }) => {
+          if (Object.prototype.hasOwnProperty.call(data, 'show_banner') && data['show_banner'] !== undefined) {
             this.setState({ showBillingBanner: data['show_banner'] });
           }
         });
@@ -491,7 +453,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   };
 
   /************************** Pagination Functions **************************/
-  public onSubmissionsPagination = (course: CourseType, assignment: number, submissions: any[]) => {
+  public onSubmissionsPagination = (course: CourseType, assignment: number, submissions: SubmissionInfoType[]) => {
     // use currentCourse as a nonce to see if this request is still desired
     if (this.props.currentCourse !== course) {
       return;
@@ -501,7 +463,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       const oldSubmissions = this.state.submissions[assignment] || [];
       const submissionMap = { ...this.state.submissions, [assignment]: [...oldSubmissions, ...submissions] };
       this.updateSubmissionsByUser(undefined, submissionMap, undefined, () => {
-        this.setState((prevState, props) => {
+        this.setState((prevState, _props) => {
           const oldSubmissions = prevState.submissions[assignment] || [];
           return {
             submissions: { ...prevState.submissions, [assignment]: [...oldSubmissions, ...submissions] },
@@ -510,7 +472,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
         });
       });
     } else {
-      this.setState((prevState, props) => {
+      this.setState((prevState, _props) => {
         const oldSubmissions = prevState.submissions[assignment] || [];
         return {
           submissions: { ...prevState.submissions, [assignment]: [...oldSubmissions, ...submissions] },
@@ -525,7 +487,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       return;
     }
 
-    this.setState((prevState, prevProps) => {
+    this.setState((prevState, _prevProps) => {
       const newViewsBySubmission = { ...prevState.viewsBySubmission };
       viewHistoryList.forEach((viewHistory: SubmissionHistoryType) => {
         const { submission, student, hasViewed, dateViewed } = viewHistory;
@@ -595,69 +557,94 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     };
 
     return Course.create(payload).then((course: CourseType) => {
-      if (copiedCourse) {
-        const getData = Promise.all(
-          copiedCourse.assignments.map((assignmentID: number) => {
-            return Assignment.read(assignmentID);
-          }),
-        ).then((assignments: AssignmentType[]) => {
-          const sortedAssignments: AssignmentType[] = sortAssignments(assignments);
-          return Promise.all(
-            sortedAssignments.map((assignment) => {
-              return Assignment.readRubric(assignment.id);
-            }),
-          ).then((rubrics: any) => {
-            return [sortedAssignments, rubrics];
-          });
-        });
+      if (!copiedCourse) {
+        this.props.addCourse(course);
+        this.props.history.push(`${formatCourseURL(course)}/assignments/overview`);
+        return;
+      }
 
-        return getData.then(([assignments, rubrics]) => {
-          const sortedAssignments: AssignmentType[] = sortAssignments(assignments);
+      // Load all assignments and their rubrics from the copied course
+      const assignmentPromises = copiedCourse.assignments.map((assignmentID: number) => Assignment.read(assignmentID));
+
+      return Promise.all(assignmentPromises)
+        .then((assignments) => {
+          const validAssignments = (assignments as AssignmentType[]).filter(
+            (a): a is AssignmentType =>
+              a &&
+              typeof a.name === 'string' &&
+              typeof a.points === 'number' &&
+              typeof a.isReleased === 'boolean' &&
+              typeof a.hideGrades === 'boolean',
+          );
+
+          const sortedAssignments = sortAssignments(validAssignments);
+
+          // Load rubrics for all assignments
+          return Promise.all(sortedAssignments.map((assignment) => Assignment.readRubric(assignment.id))).then(
+            (rubrics) => [sortedAssignments, rubrics] as const,
+          );
+        })
+        .then(([sortedAssignments, rubrics]) => {
+          // Create each assignment with its rubric
           return Promise.all(
             sortedAssignments.map((assignment: AssignmentType, index: number) => {
               const oldAssignmentID = assignment.id;
-              assignment.id = -1;
-              assignment.course = course.id;
-              assignment.isReleased = false;
-              assignment.sortKey = index;
-              // Create Assignments
-              return Assignment.create(assignment).then((newAssignment: AssignmentType) => {
-                const rubric = rubrics.find((r: any) => r.id === oldAssignmentID);
+              const newAssignmentPayload = {
+                ...assignment,
+                id: -1,
+                course: course.id,
+                isReleased: false,
+                sortKey: index,
+              };
+
+              return Assignment.create(newAssignmentPayload).then((newAssignment: AssignmentType) => {
+                const rubric = rubrics.find((r) => r.id === oldAssignmentID);
+                if (!rubric) {
+                  return newAssignment;
+                }
+
+                // Create rubric categories and their comments
                 return Promise.all(
-                  rubric.rubricCategories.map((rubricCategory: any) => {
-                    const oldRubricCategoryId = rubricCategory.id;
-                    rubricCategory.id = -1;
-                    rubricCategory.assignment = newAssignment.id;
-                    rubricCategory.rubricComments = [];
-                    // Create Rubric Categories
-                    return RubricCategory.create(rubricCategory).then((newRubricCategory: any) => {
-                      const rubricComments = rubric.rubricComments.filter(
-                        (c: any) => c.category === oldRubricCategoryId,
+                  rubric.rubricCategories.map((rubricCategory) => {
+                    // Handle case where rubricCategory might be just an ID
+                    if (typeof rubricCategory === 'number') {
+                      return Promise.resolve();
+                    }
+                    const oldCategoryId = rubricCategory.id;
+                    const newCategoryPayload = {
+                      ...rubricCategory,
+                      id: -1,
+                      assignment: newAssignment.id,
+                      rubricComments: [],
+                    };
+
+                    return RubricCategory.create(newCategoryPayload).then((newRubricCategory: RubricCategoryType) => {
+                      const categoryComments = rubric.rubricComments.filter(
+                        (c: { category: number }) => c.category === oldCategoryId,
                       );
-                      rubricComments.map((rubricComment: any) => {
-                        rubricComment.id = -1;
-                        rubricComment.category = newRubricCategory.id;
-                        rubricComment.comments = [];
-                        // Create Rubric Comments
-                        return RubricComment.create(rubricComment);
-                      });
+
+                      return Promise.all(
+                        categoryComments.map((rubricComment) => {
+                          const newCommentPayload = {
+                            ...rubricComment,
+                            id: -1,
+                            category: newRubricCategory.id,
+                            comments: [],
+                          };
+                          return RubricComment.create(newCommentPayload);
+                        }),
+                      );
                     });
                   }),
-                ).then(() => {
-                  // Return the new assignment so that it can be assigned to the course
-                  return newAssignment;
-                });
+                ).then(() => newAssignment);
               });
             }),
-          ).then((newAssignments) => {
-            this.props.addCourse(course);
-            this.props.history.push(`${formatCourseURL(course)}/assignments/overview`);
-          });
+          );
+        })
+        .then(() => {
+          this.props.addCourse(course);
+          this.props.history.push(`${formatCourseURL(course)}/assignments/overview`);
         });
-      } else {
-        this.props.addCourse(course);
-        this.props.history.push(`${formatCourseURL(course)}/assignments/overview`);
-      }
     });
   };
 
@@ -794,7 +781,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     }
 
     const students = thisSection.students;
-    return Section.delete(sectionID).then(() => {
+    return Section.delete({ id: sectionID }).then(() => {
       const { sectionsByStudent } = this.state;
       const { currentCourse } = this.props;
       // remove deleted section from state
@@ -1015,7 +1002,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       return Promise.reject();
     }
 
-    return Assignment.delete(toDelete.id).then(() => {
+    return Assignment.delete(toDelete).then(() => {
       const newAssignments = assignments.filter((el) => {
         return el.id !== toDelete.id;
       });
@@ -1054,12 +1041,15 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
   // submissionsByStudent (map: student email => {assignment id => submission})
   // submissionsByGrader (map: grader email => {assignment id => submission list})
 
-  public bulkUpdateSubmissions = (assignmentID: number, getPayload: (sub: SubmissionInfoType) => any) => {
+  public bulkUpdateSubmissions = (
+    assignmentID: number,
+    getPayload: (sub: SubmissionInfoType) => Partial<SubmissionInfoType>,
+  ) => {
     const { submissions } = this.state;
     const submissionsToUpdate = submissions[assignmentID];
 
     const promises = submissionsToUpdate.map((s) => {
-      const payload = getPayload(s);
+      const payload = { id: s.id, ...getPayload(s) };
       return Submission.update(payload);
     });
 
@@ -1164,7 +1154,7 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       return Promise.reject('Submission does not exist');
     }
 
-    return Submission.delete(sub.id).then(() => {
+    return Submission.delete(sub).then(() => {
       submissions[assignmentID] = submissions[assignmentID].filter((s) => {
         return s.id !== sub.id;
       });
@@ -1187,14 +1177,14 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
     return split.length === 1 ? 'txt' : split[split.length - 1];
   };
 
-  public addFilesToSubmission = (submission: SubmissionInfoType, files: any[]) => {
-    const filePromises = files.map((file: any) => {
+  public addFilesToSubmission = (submission: SubmissionInfoType, files: FileType[]) => {
+    const filePromises = files.map((file: FileType) => {
       const ext = this.getFileExtension(file.name);
       const filePayload = {
         id: -1,
         name: file.name,
         extension: ext,
-        code: file.data,
+        code: (file as unknown as { data: string }).data,
         submission: submission.id,
         comments: [],
         path: file.path ? file.path : null,
@@ -1202,13 +1192,13 @@ class Admin extends React.Component<IComponentProps, IAdminState> {
       return File.create(filePayload);
     });
 
-    return Promise.all(filePromises).then((files) => {
+    return Promise.all(filePromises).then(() => {
       return submission;
     });
   };
 
   // Upload a submission in cautious mode
-  public uploadSubmission = (assignment: AssignmentType, partners: string[], files: any[]) => {
+  public uploadSubmission = (assignment: AssignmentType, partners: string[], files: FileType[]) => {
     if (partners.length === 0) {
       return Promise.reject();
     }

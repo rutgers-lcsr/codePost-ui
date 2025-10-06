@@ -1,87 +1,90 @@
-import * as React from 'react';
-
 import { Card, Input, Table } from 'antd';
-
+import type { ColumnsType } from 'antd/es/table';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { CourseType } from '../../infrastructure/course';
 import { OrganizationType } from '../../infrastructure/organization';
+import { AdminData } from './Dashboard';
 
 const { Search } = Input;
 
-const fullstoryQuery = (email: string) => {
-  // tslint:disable-next-line
-  return `https://app.fullstory.com/ui/MFFNS/segments/everyone/people:search:((NOW%2FDAY-29DAY:NOW%2FDAY%2B1DAY):((UserEmail:==:%22${email}%22)):():():():)/0`;
-};
+export interface AdminRecord {
+  email: string;
+  organization: OrganizationType;
+  course: CourseType;
+  course_name: string;
+  course_period: string;
+}
 
-const cols = [
+interface AdminTableProps {
+  admins: AdminData[];
+}
+
+const fullstoryQuery = (email: string) =>
+  `https://app.fullstory.com/ui/MFFNS/segments/everyone/people:search:((NOW%2FDAY-29DAY:NOW%2FDAY%2B1DAY):((UserEmail:==:%22${email}%22)):():():():)/0`;
+
+const columns: ColumnsType<AdminData> = [
   {
     title: 'Email',
     dataIndex: 'email',
     key: 'email',
-    render: (email: string) => {
-      return email;
-    },
   },
   {
     title: 'Organization',
     dataIndex: 'organization',
     key: 'organization',
-    render: (organization: OrganizationType) => {
-      return `${organization.name} (${organization.shortname})`;
-    },
+    render: (org: OrganizationType) => `${org.name} (${org.shortname})`,
   },
   {
     title: 'Course',
     dataIndex: 'course',
     key: 'course',
-    render: (course: any, record: any) => {
-      return `${record['course_name']} | ${record['course_period']}`;
-    },
+    render: (course: CourseType) => `${course.name} | ${course.period}`,
   },
   {
     title: 'Actions',
-    dataIndex: 'actions',
     key: 'actions',
-    render: (actions: string, record: any) => {
-      return (
-        <span>
-          <Link to={`/loginas/${record['email']}`} target="_blank" rel="noopener noreferrer">
-            loginas
-          </Link>{' '}
-          |{' '}
-          <a href={fullstoryQuery(record['email'])} target="_blank" rel="noopener noreferrer">
-            fullstory
-          </a>
-        </span>
-      );
-    },
+    render: (_: unknown, record: AdminData) => (
+      <span>
+        <Link to={`/loginas/${record.email}`} target="_blank" rel="noopener noreferrer">
+          loginas
+        </Link>{' '}
+        <a href={fullstoryQuery(record.email)} target="_blank" rel="noopener noreferrer">
+          fullstory
+        </a>
+      </span>
+    ),
   },
 ];
 
-const AdminTable = (props: any) => {
-  const [filteredAdmins, setFilteredAdmins] = React.useState(props.admins);
+const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
+  const [searchValue, setSearchValue] = useState('');
 
-  const onSearch = (value: string) => {
-    const v = value.toLowerCase();
-    setFilteredAdmins(
-      props.admins.filter((admin: any) => {
-        return (
-          admin['email'].toLowerCase().includes(v) ||
-          admin['course_name'].toLowerCase().includes(v) ||
-          admin['course_period'].toLowerCase().includes(v) ||
-          admin['organization']['name'].toLowerCase().includes(v)
-        );
-      }),
+  const filteredAdmins = useMemo(() => {
+    const search = searchValue.toLowerCase();
+    if (!search) return admins;
+
+    return admins.filter(
+      (admin) =>
+        admin.email.toLowerCase().includes(search) ||
+        admin.course_name.toLowerCase().includes(search) ||
+        admin.course_period.toLowerCase().includes(search) ||
+        admin.organization?.name.toLowerCase().includes(search),
     );
-  };
+  }, [admins, searchValue]);
 
   return (
-    <Card title="Admins" bordered={false} style={{ width: '100%' }}>
-      <div style={{ padding: '14px 0px', width: '400px' }}>
-        <Search placeholder="search..." onSearch={onSearch} enterButton />
-      </div>
-      <div style={{ padding: '14px 0px' }}>Admin Count: {filteredAdmins.length}</div>
-      <Table columns={cols} dataSource={filteredAdmins} size="small" />
+    <Card title="Admins" style={{ width: '100%' }}>
+      <Search
+        placeholder="Search..."
+        onSearch={setSearchValue}
+        onChange={(e) => setSearchValue(e.target.value)}
+        enterButton
+        style={{ width: 400, marginBottom: 14 }}
+      />
+      <div style={{ marginBottom: 14 }}>Admin Count: {filteredAdmins.length}</div>
+      <Table columns={columns} dataSource={filteredAdmins} size="small" rowKey="email" />
     </Card>
   );
 };

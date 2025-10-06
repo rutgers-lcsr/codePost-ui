@@ -1,23 +1,21 @@
 import * as React from 'react';
 
-import SplitPane from 'react-split-pane';
-
 import { Menu, message, Select, Skeleton } from 'antd';
 
-import { CodeWindow } from '../admin/assignments/tests/edit/utils/CodeWindow';
-import { PseudoTerminal, RESULT_TYPE, ILogType } from '../admin/assignments/tests/edit/TestDefinitions/PseudoTerminal';
-import useWindowSize from './useWindowSize';
 import _ from 'lodash';
+import { ILogType, PseudoTerminal, RESULT_TYPE } from '../admin/assignments/tests/edit/TestDefinitions/PseudoTerminal';
+import { CodeWindow } from '../admin/assignments/tests/edit/utils/CodeWindow';
+import useWindowSize from './useWindowSize';
 
-import { AnonymousSubmissionType } from '../../infrastructure/submission';
 import { EnvironmentType } from '../../infrastructure/autograder/environment';
+import { AnonymousSubmissionType } from '../../infrastructure/submission';
 // import { SolutionFile, SolutionFileType } from '../../infrastructure/autograder/solutionFile';
 // import { HelperFile, HelperFileType } from '../../infrastructure/autograder/helperFile';
 // import { SourceFile, SourceFileType } from '../../infrastructure/autograder/sourceFile';
+import { BasicTestResultType, TestEditorResultType } from '../../infrastructure/autograder/runTypes';
 import { arrayUpdate } from '../../infrastructure/immutable';
-import { AssignmentType, TestCaseType, TestCategoryType, FileType } from '../../infrastructure/types';
-import { TestEditorResultType, BasicTestResultType } from '../../infrastructure/autograder/runTypes';
 import { TestCase } from '../../infrastructure/testCase';
+import { AssignmentType, FileType, TestCaseType, TestCategoryType } from '../../infrastructure/types';
 
 import { fetchEnvironment, fetchTestData, TestCasesByCategory } from './testFetchUtils';
 
@@ -37,7 +35,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
 
   const height = useWindowSize().height * 0.85;
 
-  const setTestSubject = (tmp: string) => {
+  const setTestSubject = () => {
     // console.log('placeholder');
   };
 
@@ -50,7 +48,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
       return Promise.resolve();
     }
 
-    let thisFile = filesCopy[thisFileIndex];
+    const thisFile = filesCopy[thisFileIndex];
     thisFile.code = code;
 
     setFilesCopy(arrayUpdate(filesCopy, thisFile, thisFileIndex));
@@ -62,9 +60,9 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
       setFilesCopy(_.cloneDeep(props.files));
       setCurrentFileID(props.files[0].id);
     }
-  }, [props.files]);
+  }, [props.files, currentFileID]);
 
-  const handleClick = (e: any) => {
+  const handleClick = (e: { key: string }) => {
     const fileID = +e.key.split('-')[1];
 
     setCurrentFileID(fileID);
@@ -95,9 +93,13 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
         // setHelpers(helpers);
         // const sourceFiles: SourceFileType[] = await fetchSourceFiles(currEnv);
         // setSourceFiles(sourceFiles);
-        const [_categories, _casesByCategory]: any = await fetchTestData(props.assignment);
-        setCategories(_categories);
-        setCasesByCategory(_casesByCategory);
+        const [testCategories, testCasesByCategory] = await fetchTestData(props.assignment);
+        if (Array.isArray(testCategories)) {
+          setCategories(testCategories);
+        }
+        if (!Array.isArray(testCasesByCategory)) {
+          setCasesByCategory(testCasesByCategory);
+        }
       }
       setLoading(false);
     };
@@ -187,23 +189,30 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
   if (loading) {
     return (
       <div style={{ height: `${height}px`, position: 'relative' }} className="pseudo-ide">
-        <SplitPane split="vertical" defaultSize="20%" minSize={100}>
-          <div style={{ padding: '20px 40px' }}>
+        <div style={{ display: 'flex', height: '100%', width: '100%' }}>
+          <div style={{ width: '20%', minWidth: '100px', borderRight: '1px solid #d9d9d9', padding: '20px 40px' }}>
             <Skeleton active />
           </div>
-          <SplitPane split="vertical" defaultSize="50%" pane1Style={{ overflowY: 'auto' }} minSize={100}>
-            <div style={{ padding: '20px 40px' }}>
+          <div style={{ display: 'flex', flex: 1, minWidth: 0 }}>
+            <div
+              style={{
+                width: '50%',
+                minWidth: '100px',
+                overflowY: 'auto',
+                borderRight: '1px solid #d9d9d9',
+                padding: '20px 40px',
+              }}
+            >
               <Skeleton active />
             </div>
-
-            <div />
-          </SplitPane>
-        </SplitPane>
+            <div style={{ flex: 1, minWidth: '100px' }} />
+          </div>
+        </div>
       </div>
     );
   }
 
-  const onTestCaseSelectChange = (_value: any) => {
+  const onTestCaseSelectChange = (value: string) => {
     const thisID = value.split('-')[1];
 
     const thisTestCase = Object.values(casesByCategory)
@@ -226,7 +235,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
     >
       {categories.map((category: TestCategoryType) => {
         let options = null;
-        if (casesByCategory.hasOwnProperty(+category.id)) {
+        if (Object.prototype.hasOwnProperty.call(casesByCategory, +category.id)) {
           options = casesByCategory[+category.id].map((testcase: TestCaseType) => {
             return (
               <Select.Option key={`testcase-${testcase.id}`} value={`testcase-${testcase.id}`}>
@@ -246,8 +255,8 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
 
   return (
     <div style={{ height: `${height} px`, position: 'relative' }} className="pseudo-ide">
-      <SplitPane split="vertical" defaultSize="20%" minSize={100}>
-        <div>
+      <div style={{ display: 'flex', height: '100%', width: '100%' }}>
+        <div style={{ width: '20%', minWidth: '100px', borderRight: '1px solid #d9d9d9' }}>
           <div style={{ backgroundColor: '#fafafa', padding: '8px 16px', fontSize: '20px', fontWeight: 500 }}>
             Files ({props.files.length})
           </div>
@@ -259,7 +268,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
           >
             {props.files.map((file: FileType) => {
               return (
-                <Menu.Item key={`file - ${file.id} `}>
+                <Menu.Item key={`file-${file.id}`}>
                   {file.path && <span style={{ color: '#c0c0c0' }}>{file.path}/</span>}
                   <span style={{ fontWeight: 500 }}>{file.name}</span>
                 </Menu.Item>
@@ -267,14 +276,8 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
             })}
           </Menu>
         </div>
-        <SplitPane
-          split="vertical"
-          defaultSize="50%"
-          pane1Style={{ overflowY: 'auto' }}
-          pane2Style={{ overflowX: 'auto' }}
-          minSize={100}
-        >
-          <div>
+        <div style={{ display: 'flex', flex: 1, minWidth: 0 }}>
+          <div style={{ width: '50%', minWidth: '100px', overflowY: 'auto', borderRight: '1px solid #d9d9d9' }}>
             <div style={{ display: 'flex', padding: '4px 0px' }}>
               <div
                 style={{
@@ -299,18 +302,20 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
             />
           </div>
 
-          <PseudoTerminal
-            env={env}
-            submissions={[]}
-            setTestSubject={setTestSubject}
-            resizable={false}
-            log={logs}
-            isRunning={running}
-            runTest={runTest}
-            testSelectComponent={testCaseSelect}
-          />
-        </SplitPane>
-      </SplitPane>
+          <div style={{ flex: 1, minWidth: '100px', overflowX: 'auto' }}>
+            <PseudoTerminal
+              env={env}
+              submissions={[]}
+              setTestSubject={setTestSubject}
+              resizable={false}
+              log={logs}
+              isRunning={running}
+              runTest={runTest}
+              testSelectComponent={testCaseSelect}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

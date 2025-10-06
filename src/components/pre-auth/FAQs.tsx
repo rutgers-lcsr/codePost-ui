@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import { Typography } from 'antd';
 import { Link } from 'react-router-dom';
 
@@ -137,7 +135,7 @@ const FAQs = (props: IProps) => {
   } else {
     content = (
       <div className="display-flex flex-direction-column">
-        {questions.map((q, _i) => {
+        {questions.map((q, i) => {
           if (i % 2 === 1) {
             return null;
           }

@@ -1,5 +1,4 @@
 /* react imports  */
-import React from 'react';
 
 import { CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 

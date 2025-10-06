@@ -3,7 +3,6 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
 
 import { SettingOutlined } from '@ant-design/icons';
 
@@ -11,7 +10,7 @@ import { SettingOutlined } from '@ant-design/icons';
 import { Button, Layout } from 'antd';
 
 /* other library imports */
-import { Link, Route, Switch } from 'react-router-dom';
+import { Link, Route, RouteComponentProps, Switch } from 'react-router-dom';
 
 import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
 
@@ -45,6 +44,7 @@ import { IComponentProps } from '../core/ComponentManager';
 
 import { CIPGraderModal } from '../cip/components';
 
+import { Component } from 'react';
 import VideoModal from '../landing/VideoModal';
 
 /**********************************************************************************************************************/
@@ -59,9 +59,9 @@ interface IGraderState {
   showConversionModal: boolean;
 }
 
-class Grader extends React.Component<IComponentProps, IGraderState> {
-  private timer: any;
-  private times: any = [];
+class Grader extends Component<IComponentProps, IGraderState> {
+  private timer: number;
+  private times: number[] = [];
 
   public constructor(props: IComponentProps) {
     super(props);
@@ -100,7 +100,7 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
   //   }, 1000);
   // }
 
-  public componentDidUpdate = (prevProps: any, prevState: any) => {
+  public componentDidUpdate = (_prevProps: IComponentProps, prevState: IGraderState) => {
     if (!prevState.assignments && this.state.assignments) {
       const current = Date.now() - this.timer;
 
@@ -144,7 +144,7 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
             <Route
               key="my_submissions"
               path={`${this.props.match.url}/my_submissions`}
-              render={(_props: any) => (
+              render={(_props: RouteComponentProps) => (
                 <MySubmissionsPanel
                   {..._props}
                   course={currentCourse}
@@ -161,13 +161,16 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
             <Route
               key="my_sections"
               path={`${this.props.match.url}/my_sections`}
-              render={(_props: any) => (
+              render={(_props: RouteComponentProps) => (
                 <SectionPanel
                   {..._props}
                   course={currentCourse}
                   assignments={this.state.assignments}
                   graderEmail={this.props.user.email}
                   sections={this.state.sectionsLed}
+                  isAdmin={this.props.user.courseadminCourses.some((el) => {
+                    return el.id === currentCourse.id;
+                  })}
                 />
               )}
             />
@@ -176,21 +179,22 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
             <Route
               key="all_submissions"
               path={`${this.props.match.url}/all_submissions`}
-              render={(_props: any) => (
+              render={(_props: RouteComponentProps) => (
                 <ViewAllPanel {..._props} course={currentCourse} assignments={this.state.assignments} />
               )}
             />
           ) : undefined}
-          {someRegrades ? (
+          {someRegrades && currentCourse ? (
             <Route
               path={`${this.props.match.url}/regrades`}
               key="regrades"
-              render={(_props: any) => (
+              render={(_props: RouteComponentProps) => (
                 <RegradesPanel
                   {..._props}
-                  course={this.props.currentCourse}
+                  course={currentCourse}
                   assignments={this.state.assignments}
                   user={this.props.user}
+                  isAnonymous={false}
                   isAdmin={this.props.user.courseadminCourses.some((el) => {
                     return el.id === currentCourse.id;
                   })}
@@ -202,7 +206,9 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
           <Route
             path={`${this.props.match.url}/video`}
             key="video"
-            render={(_props: any) => <VideoModal open={true} onCancel={() => this.props.history.push('/grader')} />}
+            render={(_props: RouteComponentProps) => (
+              <VideoModal open={true} onCancel={() => this.props.history.push('/grader')} />
+            )}
           />
         </Switch>
       );
@@ -222,8 +228,8 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
     if (currentCourse) {
       assignmentDropdown = (
         <Route
-          path={`${this.props.match.url}/:panel?/:assignment?`}
-          render={(_props: any) => (
+          path={`${this.props.match.url}/:panel/:assignment`}
+          render={(_props: RouteComponentProps<{ panel: string; assignment: string }>) => (
             <AssignmentMenu
               {..._props}
               currentCourse={currentCourse}
@@ -267,15 +273,15 @@ class Grader extends React.Component<IComponentProps, IGraderState> {
       <Switch>
         <Route
           path={`${this.props.match.url}/:panel?`}
-          render={(_props: any) => (
+          render={(_props: RouteComponentProps<{ panel?: string }>) => (
             <GraderNav
-              {..._props}
+              {...(_props as RouteComponentProps<{ panel: string }>)}
               baseURL={this.props.match.url}
               collapsed={collapsed}
               isSuperGrader={this.state.isSuperGrader}
               isSectionLeader={this.state.sectionsLed.length > 0}
               regradesAllowed={someRegrades}
-              activateQueue={this.props.currentCourse && this.props.currentCourse.activateQueue}
+              activateQueue={!!(this.props.currentCourse && this.props.currentCourse.activateQueue)}
             />
           )}
         />

@@ -33,7 +33,7 @@ export const EditObjectModal = (props: IUploadProps) => {
   };
 
   /******************************* State Change Functions ****************************/
-  const toggleVisible = (e: any) => {
+  const toggleVisible = (_e: any) => {
     setVisible(!visible);
   };
 

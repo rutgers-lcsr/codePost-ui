@@ -3,30 +3,30 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /* library imports */
 import { Layout, Typography } from 'antd';
 
 /* codePost object imports */
-import { TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
-import { SubmissionInfoType } from '../../../../../infrastructure/submission';
+import { TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
 import { SourceFile, SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
+import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 import { TestCaseType } from '../../../../../infrastructure/testCase';
 import { TestCategoryType } from '../../../../../infrastructure/types';
 
 /* codePost interface imports */
-import { IBasicFile } from './TestDefinitions';
 import { TestCasesByCategory } from '../../../../core/testFetchUtils';
+import { IBasicFile } from './TestDefinitions';
 import { FILE_TYPE } from './TestingSetup';
 
 /* codePost component imports */
 import FileTag from './TestDefinitions/FileTag';
 
-import { CodeWindow } from './utils/CodeWindow';
+import { ILogType, PseudoTerminal } from './TestDefinitions/PseudoTerminal';
 import { TestsChangeModal } from './TestDefinitions/TestsChangeModal';
-import { PseudoTerminal, ILogType } from './TestDefinitions/PseudoTerminal';
+import { CodeWindow } from './utils/CodeWindow';
 
 /* codePost util imports */
 import { awaitTestResult } from '../autograderPollingUtils';
@@ -146,8 +146,8 @@ export const SourceEditor = (props: IProps) => {
           props.currentFile.type === FILE_TYPE.SOURCEFILE
             ? onSourceFileSave
             : props.currentFile.canSave && !noPreviewString
-            ? props.updateFile.bind({}, props.currentFile.type, props.currentFile.id)
-            : undefined
+              ? props.updateFile.bind({}, props.currentFile.type, props.currentFile.id)
+              : undefined
         }
         height={'350px'}
       />

@@ -2,9 +2,9 @@ import * as React from 'react';
 
 import { Modal, Spin } from 'antd';
 
-import ReactMarkdown from 'react-markdown';
 import moment from 'moment-timezone';
-import { CodePostDate } from '../utils/DateUtils';
+import ReactMarkdown from 'react-markdown';
+import { CodePostDate } from '../utils/CodepostDate';
 
 import {
   AssignmentStudent,

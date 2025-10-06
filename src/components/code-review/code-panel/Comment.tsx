@@ -10,7 +10,7 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 // We ignore eslint since Popover never explicitly used. We just use the classNames
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { CheckOutlined, DeleteOutlined, LinkOutlined } from '@ant-design/icons';
-import { Card, Input, message, Popover, Space, Tooltip } from 'antd';
+import { Card, Input, message, Popover } from 'antd';
 
 /* codePost imports */
 import { hostname } from '../../../serviceWorker';
@@ -37,7 +37,7 @@ import CodePanelHighlighting from './CodePanelHighlighting';
 
 import { wait } from '../../../infrastructure/animation';
 
-import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
 import { findBlockElement } from './BlockUtils.tsx';
 
@@ -196,7 +196,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
   }, []);
 
   const highlightRelatedComment = useCallback(() => {
-    CodePanelHighlighting.brightenHighlight(props.comment.id, consoleTheme.consoleTheme.highlightActive);
+    CodePanelHighlighting.brightenHighlight(props.comment.id);
 
     const blockElement = findBlockElement(props.file, props.comment.startLine) as HTMLElement | null;
 
@@ -206,10 +206,10 @@ const Comment: React.FC<ICommentProps> = (props) => {
       }`;
       blockElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-  }, [props.comment.id, props.comment.startLine, props.file, props.commentType, consoleTheme]);
+  }, [props.comment.id, props.comment.startLine, props.file, props.commentType]);
 
   const unhighlightRelatedComment = useCallback(() => {
-    CodePanelHighlighting.darkenHighlight(props.comment.id, consoleTheme.consoleTheme.highlight);
+    CodePanelHighlighting.darkenHighlight(props.comment.id);
 
     const blockElement = findBlockElement(props.file, props.comment.startLine) as HTMLElement | null;
 
@@ -218,7 +218,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
         props.commentType === 'readonly' ? 'readonly' : 'active'
       }`;
     }
-  }, [props.comment.id, props.comment.startLine, props.file, props.commentType, consoleTheme]);
+  }, [props.comment.id, props.comment.startLine, props.file, props.commentType]);
 
   /**
    * Saves the comment with current local state (text and points).
@@ -361,11 +361,6 @@ const Comment: React.FC<ICommentProps> = (props) => {
       } else {
         idle();
       }
-
-      // Don't recalculate placements on every keystroke - it causes render loops
-      // The TextArea has autoSize which triggers layout changes, but we don't need
-      // to recalculate all comment placements just because one is being edited
-      // setCommentPlacementsRef.current();
     },
     [props.comment.text, edited, idle],
   );
@@ -1010,43 +1005,62 @@ const Comment: React.FC<ICommentProps> = (props) => {
   //////////////////////////////////////////////////////////////////////////////////////////
 
   let feedback = null;
+
   if (props.isStudent && props.rubricComment && props.studentFeedbackOn) {
-    const setFeedback = (feedbackNum: number) => {
-      updateFeedback(feedbackNum);
+    const feedbackScore = props.comment.feedback;
+
+    const handleMouseDownThumbsDown = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      updateFeedback(feedbackScore === -1 ? 0 : -1);
     };
 
-    const feedbackScore = props.comment.feedback;
-    const negTheme =
-      feedbackScore === -1 ? 'primary' : consoleTheme.consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
-
-    const posTheme =
-      feedbackScore === 1 ? 'primary' : consoleTheme.consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
+    const handleMouseDownThumbsUp = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      updateFeedback(feedbackScore === 1 ? 0 : 1);
+    };
 
     feedback = (
-      <Space.Compact style={{ width: '100%' }}>
-        <Tooltip title={feedbackScore === -1 ? 'Click to undo.' : 'I found this comment unhelpful.'}>
-          <CPButton
-            style={{ width: '50%', borderTopLeftRadius: '0px' }}
-            cpType={negTheme}
-            onClick={() => setFeedback(feedbackScore === -1 ? 0 : -1)}
-          >
-            <span role="img" aria-label="downvote">
-              👎
-            </span>
-          </CPButton>
-        </Tooltip>
-        <Tooltip title={feedbackScore === 1 ? 'Click to undo.' : 'I found this comment helpful.'}>
-          <CPButton
-            style={{ width: '50%', borderTopRightRadius: '0px' }}
-            cpType={posTheme}
-            onClick={() => setFeedback(feedbackScore === 1 ? 0 : 1)}
-          >
-            <span role="img" aria-label="upvote">
-              👍
-            </span>
-          </CPButton>
-        </Tooltip>
-      </Space.Compact>
+      <div
+        style={{
+          display: 'flex',
+          width: '100%',
+          marginTop: '0px',
+        }}
+      >
+        <CPButton
+          onMouseDown={handleMouseDownThumbsDown}
+          style={{
+            width: '50%',
+            padding: '8px',
+            cursor: 'pointer',
+            backgroundColor: feedbackScore === -1 ? '#1890ff' : '#f0f0f0',
+            color: feedbackScore === -1 ? 'white' : 'black',
+            border: '1px solid #d9d9d9',
+            borderRadius: '2px 0 0 0',
+          }}
+          title={feedbackScore === -1 ? 'Click to undo.' : 'I found this comment unhelpful.'}
+        >
+          👎
+        </CPButton>
+        <CPButton
+          onMouseDown={handleMouseDownThumbsUp}
+          style={{
+            width: '50%',
+            padding: '8px',
+            cursor: 'pointer',
+            backgroundColor: feedbackScore === 1 ? '#1890ff' : '#f0f0f0',
+            color: feedbackScore === 1 ? 'white' : 'black',
+            border: '1px solid #d9d9d9',
+            borderLeft: 'none',
+            borderRadius: '0 2px 0 0',
+          }}
+          title={feedbackScore === 1 ? 'Click to undo.' : 'I found this comment helpful.'}
+        >
+          👍
+        </CPButton>
+      </div>
     );
   }
 
@@ -1084,60 +1098,63 @@ const Comment: React.FC<ICommentProps> = (props) => {
       <CPFlex left={footerLeft} right={footerRight} gutterSize={10} style={{ minHeight: '32px' }} />
     );
   return (
-    <div
-      className={className}
-      id={`comment-${props.comment.id}`}
-      style={{
-        cursor,
-        position: 'relative',
-        marginBottom: '10px',
-      }}
-      onClick={onClick}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      data-status={status}
-    >
-      <Card
-        title={cardTitle}
-        variant="outlined"
+    <>
+      <div
+        className={className}
+        id={`comment-${props.comment.id}`}
         style={{
-          backgroundColor,
-          ...shadow,
+          cursor,
+          position: 'relative',
+          marginBottom: feedback ? '0px' : '10px',
         }}
-        styles={{
-          body: {
-            padding: '12px 16px',
-            backgroundColor,
-          },
-          header: { padding: '8px 16px', minHeight: '40px' },
-          title: { fontSize: '14px', fontWeight: 500, color: consoleTheme.consoleTheme.commentTitleText },
-          extra: { marginTop: '4px' },
-        }}
+        onClick={onClick}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        data-status={status}
       >
-        <div className="ant-popover-arrow" style={{ borderColor: backgroundColor }} />
-        {commentElements.rubricComment}
-        {commentElements.comment}
-        {cardExtra && (
-          <div
-            style={{
-              marginTop: '12px',
-              paddingTop: '12px',
-              borderTop: `1px solid ${consoleTheme.consoleTheme.commentTitleBorder}`,
-            }}
-          >
-            {cardExtra}
-          </div>
-        )}
-      </Card>
-      {feedback}
-      <CommentToRubric
-        initialText={text}
-        initialPointDelta={points}
-        visible={makeRubric}
-        rubricCategories={props.rubricCategories}
-        onCancel={() => setMakeRubric(false)}
-      />
-    </div>
+        <Card
+          title={cardTitle}
+          variant="outlined"
+          style={{
+            backgroundColor,
+            ...shadow,
+          }}
+          styles={{
+            body: {
+              padding: '12px 16px',
+              backgroundColor,
+            },
+            header: { padding: '8px 16px', minHeight: '40px' },
+            title: { fontSize: '14px', fontWeight: 500, color: consoleTheme.consoleTheme.commentTitleText },
+            extra: { marginTop: '4px' },
+          }}
+        >
+          <div className="ant-popover-arrow" style={{ borderColor: backgroundColor }} />
+          {commentElements.rubricComment}
+          {commentElements.comment}
+          {cardExtra && (
+            <div
+              style={{
+                marginTop: '12px',
+                paddingTop: '12px',
+                borderTop: `1px solid ${consoleTheme.consoleTheme.commentTitleBorder}`,
+              }}
+            >
+              {cardExtra}
+            </div>
+          )}
+        </Card>
+        {feedback && <div style={{ marginBottom: '10px' }}>{feedback}</div>}
+
+        <CommentToRubric
+          initialText={text}
+          initialPointDelta={points}
+          visible={makeRubric}
+          rubricCategories={props.rubricCategories}
+          onCancel={() => setMakeRubric(false)}
+        />
+      </div>
+    </>
   );
 };
 

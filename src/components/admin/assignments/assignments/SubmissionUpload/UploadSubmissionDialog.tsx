@@ -8,8 +8,8 @@ import * as React from 'react';
 import {
   CalculatorOutlined,
   CheckCircleOutlined,
-  ContainerOutlined,
   CloseCircleOutlined,
+  ContainerOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
 
@@ -18,20 +18,19 @@ import {
   Alert,
   Button,
   Checkbox,
+  Divider,
   message,
   Modal,
-  Progress,
+  Result,
   Select,
   Spin,
   Switch,
-  Upload,
   Table,
-  Tag,
-  Divider,
-  Result,
-  Typography,
   Tabs,
+  Tag,
   Tooltip,
+  Typography,
+  Upload,
 } from 'antd';
 
 /* other library imports */
@@ -42,28 +41,28 @@ import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 
 /* codePost imports */
+import { AssignmentStudent, AssignmentStudentType } from '../../../../../infrastructure/assignment';
+import { Environment } from '../../../../../infrastructure/autograder/environment';
+import { File as CodePostFile, FileType } from '../../../../../infrastructure/file';
+import { FileTemplate } from '../../../../../infrastructure/fileTemplate';
+import { Submission } from '../../../../../infrastructure/submission';
+import { SubmissionTest } from '../../../../../infrastructure/submissionTest';
 import {
   AssignmentType,
-  TestCategoryType,
-  SubmissionTestType,
-  SubmissionInfoType,
-  StudentSubmissionType,
-  FileTemplateType,
   CourseType,
+  FileTemplateType,
+  StudentSubmissionType,
+  SubmissionInfoType,
+  SubmissionTestType,
+  TestCategoryType,
 } from '../../../../../infrastructure/types';
-import { AssignmentStudent, AssignmentStudentType } from '../../../../../infrastructure/assignment';
-import { File as CodePostFile } from '../../../../../infrastructure/file';
-import { Environment } from '../../../../../infrastructure/autograder/environment';
-import { FileTemplate } from '../../../../../infrastructure/fileTemplate';
-import { SubmissionTest } from '../../../../../infrastructure/submissionTest';
-import { Submission } from '../../../../../infrastructure/submission';
 
 import CPTooltip from '../../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../../components/core/tooltips';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
-import { IBaseFileUpload, IProtoFileUpload, fileToProtoFileUpload, readUploadedFile } from './FileReader';
+import { fileToProtoFileUpload, IBaseFileUpload, IProtoFileUpload, readUploadedFile } from './FileReader';
 
 import TestsList from '../../../../../components/code-review/code-panel/TestsList';
 import { StudentTestCasesByCategory } from '../../../../../components/core/testFetchUtils';
@@ -76,11 +75,12 @@ import { slack } from '../../../../../components/core/slack';
 
 import { encodeForLink } from '../../../../../components/core/URLutils';
 
-import { CodePostDate, dueDatePassed } from '../../../../../components/utils/DateUtils';
+import { CodePostDate } from '../../../../../components/utils/CodepostDate';
+import { dueDatePassed } from '../../../../../components/utils/DateUtils';
 
-import ViewUpload from '../../../../../components/student/ViewUpload';
 import InvitePartnersLink from '../../../../../components/student/InvitePartnersLink';
 import LateSubmissionModal from '../../../../../components/student/LateSubmissionModal';
+import ViewUpload from '../../../../../components/student/ViewUpload';
 
 import { LOCAL_SETTINGS } from '../../../../../components/utils/LocalSettings';
 
@@ -102,13 +102,13 @@ interface IUploadSubmissionDialogProps {
     | ((
         assignment: AssignmentStudentType,
         partners: string[],
-        files: any[],
+        files: FileType[],
         sendConfirmationEmail: boolean,
       ) => Promise<StudentSubmissionType>)
     | ((
         assignment: AssignmentType,
         partners: string[],
-        files: any[],
+        files: FileType[],
         sendConfirmationEmail: boolean,
       ) => Promise<SubmissionInfoType>);
 
@@ -163,7 +163,7 @@ interface IUploadSubmissionDialogState {
 }
 
 class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProps, IUploadSubmissionDialogState> {
-  public assignmentOptions = this.props.assignments.map((assignment: AssignmentType | AssignmentStudentType, i) => {
+  public assignmentOptions = this.props.assignments.map((assignment: AssignmentType | AssignmentStudentType) => {
     return (
       <Select.Option key={assignment.id} value={assignment.id}>
         {assignment.name}
@@ -196,12 +196,12 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
   /* Lifecycle methods
   /********************************************************************************************************/
 
-  public toggleState = (key: keyof IUploadSubmissionDialogState) => (
-    prevState: IUploadSubmissionDialogState,
-  ): IUploadSubmissionDialogState => ({
-    ...prevState,
-    [key]: !prevState[key],
-  });
+  public toggleState =
+    (key: keyof IUploadSubmissionDialogState) =>
+    (prevState: IUploadSubmissionDialogState): IUploadSubmissionDialogState => ({
+      ...prevState,
+      [key]: !prevState[key],
+    });
 
   public getState = (key: keyof IUploadSubmissionDialogState): any => {
     return this.state[key];
@@ -213,7 +213,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     }
   }
 
-  public componentDidUpdate(prevProps: IUploadSubmissionDialogProps, prevState: IUploadSubmissionDialogState) {
+  public componentDidUpdate(prevProps: IUploadSubmissionDialogProps) {
     if (
       prevProps.selectedAssignment !== this.props.selectedAssignment ||
       (!prevProps.isVisible && this.props.isVisible)
@@ -270,13 +270,11 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
       const now = Date.now();
 
       this.props.defaultFiles.forEach((baseFile: IBaseFileUpload, index: number) => {
-        // @ts-ignore
         // const file = new File(baseFile.data.split('\n'), baseFile.name);
         // IE, Edge compatibility
         // https://stackoverflow.com/questions/49890537/javascript-edge-browser-typeerror-function-expected
-        const file = new Blob(baseFile.data.split('\n'), { type: 'text/plain' });
-        // @ts-ignore
-        file.name = baseFile.name;
+        const fileData = baseFile.data && typeof baseFile.data === 'string' ? baseFile.data.split('\n') : [];
+        const file = new File(fileData, baseFile.name, { type: 'text/plain' });
 
         // FIXME: dirs
         const ff = {
@@ -331,7 +329,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     }
   };
 
-  public loadTestResults = async (sub: StudentSubmissionType | SubmissionInfoType | undefined, loadLogs: boolean) => {
+  public loadTestResults = async (sub: StudentSubmissionType | SubmissionInfoType | undefined, _loadLogs: boolean) => {
     if (sub) {
       const results = await Submission.readTestResults(sub.id, { isStudentMode: 'True' });
       if (results !== null && results !== undefined) {
@@ -467,11 +465,11 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
   /********************************************************************************************************/
 
   public confirmUpload = () => {
-    if (this.state.selectedAssignment === undefined) {
+    if (this.state.selectedAssignment === undefined || this.state.selectedAssignment.uploadDueDate === undefined) {
       return;
     }
 
-    if (dueDatePassed(this.state.selectedAssignment)) {
+    if (dueDatePassed(this.state.selectedAssignment.uploadDueDate)) {
       if (this.props.isStudent) {
         this.openLateSubmissionModal();
       } else {
@@ -538,12 +536,10 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
       this.setState({ status: STATUS.SAVING }, () => {
         if (this.state.selectedAssignment) {
           this.props
-            // @ts-ignore
             .uploadSubmission(
-              // @ts-ignore
-              this.state.selectedAssignment!,
+              this.state.selectedAssignment! as any,
               this.state.selectedStudents,
-              this.state.files,
+              this.state.files as any,
               this.state.sendMeAConfirmationEmail,
             )
             .then((newSubmission: StudentSubmissionType | SubmissionInfoType) => {
@@ -563,7 +559,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                 activeTab: '1',
               });
             })
-            .catch((error: any) => {
+            .catch((error) => {
               let logError;
               try {
                 logError = !error.includes('Due date has passed');
@@ -593,7 +589,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
 
   // FIXME: this method of reading file contents relies on a race win, since
   // we need the fileReaders to finish before we hit upload.
-  public beforeUpload = async (file: any, fileList: UploadFile[]) => {
+  public beforeUpload = async (file: any, _fileList: UploadFile[]) => {
     const ProtoFileUpload: IProtoFileUpload = fileToProtoFileUpload(file);
 
     try {
@@ -612,7 +608,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
       });
 
       const fileNames = outputFiles
-        .map((f: any) => {
+        .map((f) => {
           return [f.longname, f.zipSource];
         })
         .flat();
@@ -626,7 +622,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
       });
     } catch (e) {
       this.setState({ rejectedFiles: [...this.state.rejectedFiles, ProtoFileUpload.longname] });
-      message.error(e);
+      message.error(String(e));
     }
 
     return Promise.reject();
@@ -669,7 +665,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
       });
     }
 
-    this.setState((prevState) => {
+    this.setState(() => {
       return {
         loadingTests: false,
         status: STATUS.COMPLETE,
@@ -707,8 +703,11 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
         };
       });
 
+      // Type assertion to ensure selectedAssignment is treated as AssignmentType
+      const assignment = this.state.selectedAssignment as AssignmentType;
+
       const payload = {
-        id: this.state.selectedAssignment!.environment!,
+        id: assignment.environment!,
         files: JSON.stringify(filesJson),
         submission: submission.id,
         simulate: true,
@@ -724,23 +723,35 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
   public setMockResults = (result: TestEditorResultType) => {
     if (result) {
       // Note: we need to increment the testRunsCompleted in state, because a student could go back to the upload tab (without refreshing submission) and re-upload
-      // @ts-ignore
+      const submissionId = this.state.submission?.id || 0;
+      const now = new Date().toISOString();
+      const mappedResults: SubmissionTestType[] = result.results.map((test, index) => ({
+        id: -index - 1, // Use negative IDs for mock results to avoid conflicts
+        testCase: test.testCase,
+        testCategory: test.testCategory,
+        submission: submissionId,
+        logs: test.logs,
+        passed: test.passed,
+        created: now,
+        modified: now,
+        isError: test.isError,
+      }));
+
       this.setState({
-        // @ts-ignore
-        submissionTests: result.results,
+        submissionTests: mappedResults,
         testsLog: result.logs,
         runMessage: '',
       });
     }
 
-    this.setState((prevState) => {
+    this.setState(() => {
       return {
         loadingTests: false,
       };
     });
   };
 
-  public toggleSendMeAConfirmationEmail = (e: any) => {
+  public toggleSendMeAConfirmationEmail = () => {
     const toggled = !this.state.sendMeAConfirmationEmail;
     LOCAL_SETTINGS.sendMeAConfirmationEmail.setter(toggled);
     this.setState({ sendMeAConfirmationEmail: toggled });
@@ -810,7 +821,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           </div>
         );
         goBackButton = (
-          <Button key="back" onClick={this.cancel.bind(this, undefined)}>
+          <Button key="back" onClick={this.cancel.bind(this)}>
             Close
           </Button>
         );
@@ -827,7 +838,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           </div>
         );
         break;
-      case STATUS.NONE:
+      case STATUS.NONE: {
         const studentOptions = this.buildStudentOptions(
           this.props.students,
           this.props.submissions,
@@ -894,7 +905,6 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
         ];
 
         // If required files are present, then a student must upload them before submitting.
-        // But if _only_ optional files are specified, then a student can ignore them. This can result in
         // problems if optional files are being used to specify files that a student _should_ upload but can omit.
         const ignoringOptionalFiles =
           this.state.files.length > 0 &&
@@ -973,7 +983,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
         /* Build buttons
         /*****************************************************************************************/
         goBackButton = (
-          <Button key="back" onClick={this.cancel.bind(this, undefined)}>
+          <Button key="back" onClick={this.cancel.bind(this)}>
             Close
           </Button>
         );
@@ -992,8 +1002,9 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
         if (this.props.isStudent && this.state.activeTab === '1') {
           sendMeAConfirmationEmailCheckbox = (
             <span key="sendMeAConfirmationEmailCheckbox">
-              {this.state.selectedAssignment !== undefined &&
-              dueDatePassed(this.state.selectedAssignment) &&
+              {this.state.selectedAssignment &&
+              this.state.selectedAssignment.uploadDueDate &&
+              dueDatePassed(this.state.selectedAssignment.uploadDueDate) &&
               !hideDueDate ? (
                 <Tag color="volcano">Due Date Passed</Tag>
               ) : null}
@@ -1191,6 +1202,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           );
         }
         break;
+      }
     }
 
     // We show tests tab if:

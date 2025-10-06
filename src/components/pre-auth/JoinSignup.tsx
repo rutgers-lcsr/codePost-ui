@@ -8,7 +8,7 @@ import * as React from 'react';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Alert, Input, Spin, Typography, Checkbox, Tooltip } from 'antd';
+import { Alert, Checkbox, Input, Spin, Tooltip, Typography } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -24,25 +24,28 @@ import CPButton from '../core/CPButton';
 
 /**********************************************************************************************************************/
 
-interface IState {
-  email: string;
-  acceptedTerms: boolean;
+// interface IState {
+//   email: string;
+//   acceptedTerms: boolean;
 
-  // Join Flow states
-  hasSubmitted: boolean;
-  confirmEmailSent: boolean;
-}
+//   // Join Flow states
+//   hasSubmitted: boolean;
+//   confirmEmailSent: boolean;
+// }
 
 const JoinSignup = (props: RouteComponentProps & { email?: string }) => {
   const [email, setEmail] = React.useState(props.email || '');
   const [hasSubmitted, setHasSubmitted] = React.useState(false);
   const [confirmEmailSent, setConfirmEmailSent] = React.useState(false);
   const [acceptedTerms, setAcceptedTerms] = React.useState(props.email ? true : false);
-  const [inviteCode, setInviteCode] = React.useState(queryString.parse(props.location.search).code || '');
+  const parsedCode = queryString.parse(props.location.search).code;
+  const [inviteCode, setInviteCode] = React.useState(
+    typeof parsedCode === 'string' ? parsedCode : Array.isArray(parsedCode) ? parsedCode[0] || '' : '',
+  );
   const [invalidCode, setInvalidCode] = React.useState(false);
   const [invalidEmail, setInvalidEmail] = React.useState(false);
 
-  const handleSignup = (e: any) => {
+  const handleSignup = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setHasSubmitted(true);
     const payload = {
@@ -66,8 +69,6 @@ const JoinSignup = (props: RouteComponentProps & { email?: string }) => {
         }
       })
       .then((res) => {
-        const emailValid = res['email_valid'];
-        const codeValid = res['code_valid'];
         if (res.success) {
           setConfirmEmailSent(res.success);
         } else if (!res.code_valid) {
@@ -79,7 +80,7 @@ const JoinSignup = (props: RouteComponentProps & { email?: string }) => {
           setInvalidEmail(true);
         }
       })
-      .catch((_err) => {
+      .catch((err) => {
         console.log(err);
       });
   };

@@ -2,14 +2,14 @@ import { demoFilesGrader, demoFilesStudent } from './demoCode';
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
-import { AnonymousSubmissionType } from '../../infrastructure/submission';
 import { FileType } from '../../infrastructure/file';
-import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
+import { AnonymousSubmissionType } from '../../infrastructure/submission';
 import { SubmissionTestType } from '../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../infrastructure/testCategory';
+import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
 import { TestCasesByCategory } from '../core/testFetchUtils';
-import { PERMISSION_LEVEL } from './CodeConsole';
+import { PERMISSION_LEVEL } from './CodeConsoleEnums';
 
 import moment from 'moment-timezone';
 
@@ -94,6 +94,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     responseDate: '',
     tests: [],
     lateDayCreditsUsed: 0,
+    testRunsCompleted: 0,
   };
 
   const fileList: FileType[] = [];
@@ -390,6 +391,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     responseDate: '',
     tests: [],
     lateDayCreditsUsed: 0,
+    testRunsCompleted: 0,
   };
 
   const comments = [
@@ -472,8 +474,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     1: [
       {
         id: 3,
-        text:
-          "This is too generic of a variable name that doesn't describe value. What would be better would be something like `reversed`.",
+        text: "This is too generic of a variable name that doesn't describe value. What would be better would be something like `reversed`.",
         category: 1,
         pointDelta: 0,
         sortKey: 2,
@@ -485,8 +486,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     2: [
       {
         id: 6,
-        text:
-          'This function will correctly sort the list, though very slowly in the worst case! The implementation here is known as [Bubble Sort](https://algs4.cs.princeton.edu/21elementary/Bubble.java.html). If the list is in reverse order, then every element will need to be swapped, resulting in `O(n^2)` runtime complexity in the worst case. For other ideas of how to sort a list, checkout the [Algs4 cheatsheet](https://algs4.cs.princeton.edu/cheatsheet/).',
+        text: 'This function will correctly sort the list, though very slowly in the worst case! The implementation here is known as [Bubble Sort](https://algs4.cs.princeton.edu/21elementary/Bubble.java.html). If the list is in reverse order, then every element will need to be swapped, resulting in `O(n^2)` runtime complexity in the worst case. For other ideas of how to sort a list, checkout the [Algs4 cheatsheet](https://algs4.cs.princeton.edu/cheatsheet/).',
         category: 2,
         pointDelta: 0,
         sortKey: 0,
@@ -500,8 +500,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
   const commentRubricComments = {
     1: {
       id: 6,
-      text:
-        'This function will correctly sort the list, though very slowly in the worst case! The implementation here is known as [Bubble Sort](https://algs4.cs.princeton.edu/21elementary/Bubble.java.html). If the list is in reverse order, then every element will need to be swapped, resulting in `O(n^2)` runtime complexity in the worst case. For other ideas of how to sort a list, checkout the [Algs4 cheatsheet](https://algs4.cs.princeton.edu/cheatsheet/).',
+      text: 'This function will correctly sort the list, though very slowly in the worst case! The implementation here is known as [Bubble Sort](https://algs4.cs.princeton.edu/21elementary/Bubble.java.html). If the list is in reverse order, then every element will need to be swapped, resulting in `O(n^2)` runtime complexity in the worst case. For other ideas of how to sort a list, checkout the [Algs4 cheatsheet](https://algs4.cs.princeton.edu/cheatsheet/).',
       category: 2,
       pointDelta: 0,
       sortKey: 0,
@@ -511,8 +510,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     },
     2: {
       id: 3,
-      text:
-        "This is too generic of a variable name that doesn't describe value. What would be better would be something like `reversed`.",
+      text: "This is too generic of a variable name that doesn't describe value. What would be better would be something like `reversed`.",
       category: 1,
       pointDelta: 0,
       sortKey: 2,

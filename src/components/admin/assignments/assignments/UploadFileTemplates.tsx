@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import { DeleteOutlined, UploadOutlined } from '@ant-design/icons';
 
 import { Button, message, Upload } from 'antd';

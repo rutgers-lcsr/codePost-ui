@@ -16,9 +16,9 @@
 .ant-btn.cp-button-highlight {
   &:hover {
     // border-color: lighten(#24be85, 10%) !important;
-    background-color: color.adjust(#24be85, $lightness: 10%) !important;
+    background-color: color.adjust(#24be85, $alpha: -0.2) !important;
     // color: lighten(#24be85, 10%) !important;
-    color: color.adjust(#24be85, $lightness: 10%) !important;
+    color: color.adjust(#24be85, $alpha: -0.2) !important;
   }
 }
 

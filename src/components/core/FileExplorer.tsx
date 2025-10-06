@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import { Button, Modal, Tabs } from 'antd';
 
 import { FileTemplateType } from '../../infrastructure/types';

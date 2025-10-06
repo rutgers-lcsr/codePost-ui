@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import CPButton from '../CPButton';
 import CPFlex from '../CPFlex';
 

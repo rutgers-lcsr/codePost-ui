@@ -69,6 +69,8 @@ const RosterV = t.intersection(
   [
     GenericObject,
     t.type({
+      name: t.string,
+      period: t.string,
       students: t.array(t.string),
       inactive_students: t.array(t.string),
       inactive_graders: t.array(t.string),
@@ -77,8 +79,11 @@ const RosterV = t.intersection(
       superGraders: t.array(t.string),
       courseAdmins: t.array(t.string),
       not_activated: t.array(t.string),
+      organization: t.number, // API returns organization ID, not full object
     }),
-    t.partial({}),
+    t.partial({
+      inactive: t.boolean,
+    }),
   ],
   'Roster',
 );

@@ -15,7 +15,7 @@ import { POSITION } from '../../../types/common';
 
 import { wait } from '../../../infrastructure/animation';
 
-import { CURSOR_DOMAIN } from '../CodeConsole';
+import { CURSOR_DOMAIN } from '../CodeConsoleEnums';
 
 import {
   back,
@@ -85,7 +85,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     // FIXME: we can come up with a better solution
     await wait(5);
 
-    CodePanelHighlighting.brightenHighlight(newComment.id, consoleTheme.highlightActive);
+    CodePanelHighlighting.brightenHighlight(newComment.id);
   };
 
   // Handle code scrolling
@@ -181,7 +181,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     };
   });
 
-  const onMouseUp = async (event: React.MouseEvent) => {
+  const onMouseUp = async (_: React.MouseEvent) => {
     const selection = window.getSelection();
     // https://developer.mozilla.org/en-US/docs/Web/API/Selection/isCollapsed
     // selection.isCollapsed
@@ -200,14 +200,12 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
       // The Node is an HTMLElement
       selection.anchorNode &&
       selection.anchorNode.nodeName === 'DIV' &&
-      // @ts-ignore
-      selection.anchorNode.id.includes('line')
+      (selection.anchorNode as HTMLElement).id.includes('line')
     ) {
-      // @ts-ignore
-      startLine = selection.anchorNode.id.split('-')[1];
+      startLine = +(selection.anchorNode as HTMLElement).id.split('-')[1];
     } else {
-      const anchorParent: any = selection.anchorNode.parentNode;
-      startLine = +anchorParent.id.split('-')[1];
+      const anchorParent = selection.anchorNode.parentNode as HTMLElement;
+      startLine = +anchorParent?.id.split('-')[1];
     }
 
     let endLine;
@@ -216,13 +214,11 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
       // The Node is an HTMLElement
       selection.focusNode &&
       selection.focusNode.nodeName === 'DIV' &&
-      // @ts-ignore
-      selection.focusNode.id.includes('line')
+      (selection.focusNode as HTMLElement).id.includes('line')
     ) {
-      // @ts-ignore
-      endLine = selection.focusNode.id.split('-')[1];
+      endLine = +(selection.focusNode as HTMLElement).id.split('-')[1];
     } else {
-      const focusParent: any = selection.focusNode.parentNode;
+      const focusParent = selection.focusNode.parentNode as HTMLElement;
       endLine = +focusParent.id.split('-')[1];
     }
 

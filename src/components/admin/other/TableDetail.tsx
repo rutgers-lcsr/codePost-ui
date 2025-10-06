@@ -13,8 +13,8 @@ import { ColumnProps } from 'antd/lib/table';
 import Highlighter from 'react-highlight-words';
 
 /* codePost imports */
-import CPAdminDetail from '../other/CPAdminDetail';
 import CPFlex from '../../core/CPFlex';
+import CPAdminDetail from '../other/CPAdminDetail';
 
 import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
 
@@ -72,14 +72,14 @@ class TableDetail extends React.Component<IProps, IState> {
    * Otherwise, we have no way to inject highlighting into the cell, so
    * just render the cell value as is.
    */
-  public getColumnSearchProps = (column: ITableDetailColumn): ColumnProps<any> => {
+  public getColumnSearchProps = (column: ITableDetailColumn): ColumnProps => {
     let renderFunction;
     if (column.render !== undefined) {
       renderFunction = column.render;
     } else if (column.renderForSearch !== undefined) {
       renderFunction = column.renderForSearch(this.state.searchText);
     } else {
-      renderFunction = (text: any, record: any, index: number) => {
+      renderFunction = (text: unknown, _record: unknown, _index: number): React.ReactNode => {
         switch (typeof text) {
           case 'string':
             return (
@@ -100,7 +100,7 @@ class TableDetail extends React.Component<IProps, IState> {
               />
             );
           default:
-            return text;
+            return text as React.ReactNode;
         }
       };
     }
@@ -115,7 +115,7 @@ class TableDetail extends React.Component<IProps, IState> {
     this.setState({ searchText: event.target.value.toUpperCase() });
   };
 
-  public onShowSizeChange = (current: number, size: number) => {
+  public onShowSizeChange = (_current: number, size: number) => {
     LOCAL_SETTINGS.defaultPageSize.setter(size);
   };
 
@@ -138,8 +138,8 @@ class TableDetail extends React.Component<IProps, IState> {
         content = this.props.emptyNode;
       } else {
         const oldColumns = this.props.columns;
-        const newColumns: Array<ColumnProps<any>> = [];
-        oldColumns.forEach((column, i) => {
+        const newColumns: Array<ColumnProps<Record<string, unknown>>> = [];
+        oldColumns.forEach((_, i) => {
           newColumns[i] = {
             ...oldColumns[i],
             ...this.getColumnSearchProps(oldColumns[i]),
@@ -148,7 +148,7 @@ class TableDetail extends React.Component<IProps, IState> {
 
         // Cache keys so we can search each field of the row
         const keys = this.props.data.length > 0 ? Object.keys(this.props.data[0]) : [];
-        const data = this.props.data.filter((el: any) => {
+        const data = this.props.data.filter((el: Record<string, unknown>) => {
           if (this.state.searchText === '') {
             return true;
           } else {
@@ -202,29 +202,29 @@ class TableDetail extends React.Component<IProps, IState> {
                 this.props.onRow !== undefined
                   ? this.props.onRow
                   : this.props.onRowClick !== undefined
-                  ? (record, rowIndex) => {
-                      return {
-                        onClick: (event) => {
-                          if (this.props.onRowClick) {
-                            return this.props.onRowClick(record);
-                          }
-                        },
-                      };
-                    }
-                  : undefined
+                    ? (record, _rowIndex) => {
+                        return {
+                          onClick: (_event) => {
+                            if (this.props.onRowClick) {
+                              return this.props.onRowClick(record);
+                            }
+                          },
+                        };
+                      }
+                    : undefined
               }
               pagination={
                 this.props.pagination !== undefined
                   ? this.props.pagination
                   : data.length < MIN_ROWS
-                  ? false
-                  : {
-                      showSizeChanger: true,
-                      pageSizeOptions: ['10', '50', '100'],
-                      position: data.length > MANY_ROWS ? 'both' : 'bottom',
-                      defaultPageSize: LOCAL_SETTINGS.defaultPageSize.getter(),
-                      onShowSizeChange: this.onShowSizeChange,
-                    }
+                    ? false
+                    : {
+                        showSizeChanger: true,
+                        pageSizeOptions: ['10', '50', '100'],
+                        position: data.length > MANY_ROWS ? 'both' : 'bottom',
+                        defaultPageSize: LOCAL_SETTINGS.defaultPageSize.getter(),
+                        onShowSizeChange: this.onShowSizeChange,
+                      }
               }
               {...(this.props.tableProps ? this.props.tableProps : undefined)}
             />

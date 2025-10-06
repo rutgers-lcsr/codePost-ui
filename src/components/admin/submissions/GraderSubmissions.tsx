@@ -147,8 +147,8 @@ class GraderData extends React.Component<IByGraderProps, IState> {
         <Route
           exact={true}
           path={this.props.match.url}
-          render={(props: any) => {
-            let data: any[] = [];
+          render={(_props) => {
+            let data: Record<string, unknown>[] = [];
             let columns: ITableDetailColumn[] = [];
             let toggleInactiveGraders;
 
@@ -165,9 +165,9 @@ class GraderData extends React.Component<IByGraderProps, IState> {
                   title: 'Grader',
                   dataIndex: 'grader',
                   key: 'primary',
-                  sorter: (a: any, b: any) => a.key.localeCompare(b.key),
+                  sorter: (a, b) => a.key.localeCompare(b.key),
                   renderForSearch: (searchText: string) => {
-                    return (text: string, record: any, index: number) => {
+                    return (_: string, record) => {
                       const grader = record.grader;
                       if (this.props.graders.indexOf(grader) > -1) {
                         return (
@@ -204,7 +204,7 @@ class GraderData extends React.Component<IByGraderProps, IState> {
                     title: assignment.name,
                     dataIndex: assignment.name,
                     key: assignment.name,
-                    sorter: (a: any, b: any) => {
+                    sorter: (a: Record<string, unknown>, b: Record<string, unknown>) => {
                       return this.sortFunction(a[assignment.name], b[assignment.name]);
                     },
                     align: aligner,

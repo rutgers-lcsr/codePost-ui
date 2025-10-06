@@ -1,7 +1,5 @@
-import React from 'react';
-
-import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
 import { Spin } from 'antd';
+import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
 
 export const bySubmissionColumns = (shouldSort: boolean, categories: TestCategoryType[]) => {
   const columns = [
@@ -19,7 +17,7 @@ export const bySubmissionColumns = (shouldSort: boolean, categories: TestCategor
         ),
         dataIndex: category.name,
         key: category.id.toString(),
-        align: 'center' as 'center',
+        align: 'center' as const,
         ...(shouldSort && { sorter: (a: any, b: any) => a[category.id] - b[category.id] }),
       };
     }),
@@ -27,14 +25,14 @@ export const bySubmissionColumns = (shouldSort: boolean, categories: TestCategor
       title: <span>Summary {!shouldSort && <Spin />}</span>,
       dataIndex: 'summary',
       key: 'summary',
-      align: 'center' as 'center',
+      align: 'center' as const,
       ...(shouldSort && { sorter: (a: any, b: any) => a.passed - b.passed }),
     },
     {
       title: 'Actions',
       dataIndex: 'actions',
       key: 'actions',
-      align: 'center' as 'center',
+      align: 'center' as const,
     },
   ];
   return columns;
@@ -50,28 +48,28 @@ export const byTestColumns = [
     title: 'Passed',
     dataIndex: 'passed',
     key: 'passed',
-    align: 'center' as 'center',
+    align: 'center' as const,
     sorter: (a: any, b: any) => a.passedValue - b.passedValue,
   },
   {
     title: 'Failed',
     dataIndex: 'failed',
     key: 'failed',
-    align: 'center' as 'center',
+    align: 'center' as const,
     sorter: (a: any, b: any) => a.failedValue - b.failedValue,
   },
   {
     title: 'Error',
     dataIndex: 'error',
     key: 'error',
-    align: 'center' as 'center',
+    align: 'center' as const,
     sorter: (a: any, b: any) => a.errorValue - b.errorValue,
   },
   {
     title: 'Not run',
     dataIndex: 'notRun',
     key: 'notRun',
-    align: 'center' as 'center',
+    align: 'center' as const,
     sorter: (a: any, b: any) => a.nullValue - b.nullValue,
   },
 ];

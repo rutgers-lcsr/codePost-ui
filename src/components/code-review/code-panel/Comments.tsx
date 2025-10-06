@@ -19,7 +19,7 @@ import * as Animation from '../../../infrastructure/animation';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
-import { CURSOR_DOMAIN } from '../CodeConsole';
+import { CURSOR_DOMAIN } from '../CodeConsoleEnums';
 
 interface ICommentsCoreProps extends IWithWindowWatcherProps {
   additiveGrading: boolean;
@@ -54,16 +54,6 @@ interface ICommentsEditProps {
   showExplanations: boolean;
 }
 
-interface ICommentPlacement {
-  commentID: number;
-  placement: number;
-}
-
-type BlockType = {
-  startAt: number;
-  endAt: number;
-};
-
 // Static helper function moved outside component
 const getCommentType = (readOnly: boolean, commentID: number, activeCommentID?: number) => {
   return readOnly ? 'readonly' : commentID === activeCommentID ? 'active' : 'inactive';
@@ -83,7 +73,6 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
 
   // Refs
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const nextFrameActionIdRef = useRef<number>();
   const prevPropsRef = useRef<ICommentsCoreProps & ICommentsEditProps>(props);
 
   // Disabled: Calculate comment placements

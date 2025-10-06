@@ -184,7 +184,7 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
           key: 'primary',
           sorter: (a: any, b: any) => a.key.localeCompare(b.key),
           renderForSearch: (searchText: string) => {
-            return (text: string, record: any, index: number) => {
+            return (_: string, record: any) => {
               const graderEmail = record.grader;
               const highlightedEmail = (
                 <Highlighter
@@ -232,7 +232,7 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
         },
       ];
 
-      data = this.props.graders.map((graderEmail, i) => {
+      data = this.props.graders.map((graderEmail) => {
         const hasActivated = this.props.notActivated.indexOf(graderEmail) === -1;
         let statusElement;
         if (graderEmail === this.state.activeGrader) {

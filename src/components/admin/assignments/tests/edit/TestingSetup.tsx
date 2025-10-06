@@ -105,42 +105,50 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
 
     switch (type) {
       case FILE_TYPE.SOLUTION:
-        const newSolution = await SolutionFile.create(payload);
-        setSolutions((prevState) => {
-          return [...prevState, newSolution];
-        });
-        // delete old version if it exists
-        const existingSolution = solutions.find((f) => {
-          return f.name === name && ((!f.path && !path) || f.path === path);
-        });
-        if (existingSolution) {
-          await deleteFile(FILE_TYPE.SOLUTION, existingSolution.id);
+        {
+          const newSolution = await SolutionFile.create(payload);
+          setSolutions((prevState) => {
+            return [...prevState, newSolution];
+          });
+          // delete old version if it exists
+          const existingSolution = solutions.find((f) => {
+            return f.name === name && ((!f.path && !path) || f.path === path);
+          });
+          if (existingSolution) {
+            await deleteFile(FILE_TYPE.SOLUTION, existingSolution.id);
+          }
         }
+
         break;
       case FILE_TYPE.HELPER:
-        const newHelper = await HelperFile.create(payload);
-        setHelpers((prevState) => {
-          return [...prevState, newHelper];
-        });
-        // delete old version if it exists
-        const existingHelper = solutions.find((f) => {
-          return f.name === name && ((!f.path && !path) || f.path === path);
-        });
-        if (existingHelper) {
-          await deleteFile(FILE_TYPE.HELPER, existingHelper.id);
+        {
+          const newHelper = await HelperFile.create(payload);
+          setHelpers((prevState) => {
+            return [...prevState, newHelper];
+          });
+          // delete old version if it exists
+          const existingHelper = solutions.find((f) => {
+            return f.name === name && ((!f.path && !path) || f.path === path);
+          });
+          if (existingHelper) {
+            await deleteFile(FILE_TYPE.HELPER, existingHelper.id);
+          }
         }
+
         break;
       case FILE_TYPE.SOURCEFILE:
-        const newSource = await SourceFile.create(payload);
-        setSourceFiles((prevState) => {
-          return [...prevState, newSource];
-        });
-        // delete old version if it exists
-        const existingSource = solutions.find((f) => {
-          return f.name === name && ((!f.path && !path) || f.path === path);
-        });
-        if (existingSource) {
-          await deleteFile(FILE_TYPE.SOURCEFILE, existingSource.id);
+        {
+          const newSource = await SourceFile.create(payload);
+          setSourceFiles((prevState) => {
+            return [...prevState, newSource];
+          });
+          // delete old version if it exists
+          const existingSource = solutions.find((f) => {
+            return f.name === name && ((!f.path && !path) || f.path === path);
+          });
+          if (existingSource) {
+            await deleteFile(FILE_TYPE.SOURCEFILE, existingSource.id);
+          }
         }
         break;
     }
@@ -149,7 +157,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
   const deleteFile = async (type: FILE_TYPE, id: number) => {
     switch (type) {
       case FILE_TYPE.SOLUTION:
-        await SolutionFile.delete(id);
+        await SolutionFile.delete({ id });
         setSolutions((prevState) => {
           return prevState.filter((file) => {
             return file.id !== id;
@@ -157,7 +165,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         });
         break;
       case FILE_TYPE.HELPER:
-        await HelperFile.delete(id);
+        await HelperFile.delete({ id });
         setHelpers((prevState) => {
           return prevState.filter((file) => {
             return file.id !== id;
@@ -165,7 +173,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
         });
         break;
       case FILE_TYPE.SOURCEFILE:
-        await SourceFile.delete(id);
+        await SourceFile.delete({ id });
         setSourceFiles((prevState) => {
           return prevState.filter((file) => {
             return file.id !== id;
@@ -182,48 +190,58 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     };
     switch (type) {
       case FILE_TYPE.SOLUTION:
-        const newSolution = await SolutionFile.update(payload);
-        setSolutions((prevState) => {
-          const index = prevState.findIndex((f) => {
-            return f.id === id;
+        {
+          const newSolution = await SolutionFile.update(payload);
+
+          setSolutions((prevState) => {
+            const index = prevState.findIndex((f) => {
+              return f.id === id;
+            });
+            if (index > -1) {
+              const newFiles = [...prevState];
+              newFiles.splice(index, 1, newSolution);
+              return newFiles;
+            }
+            return prevState;
           });
-          if (index > -1) {
-            const newFiles = [...prevState];
-            newFiles.splice(index, 1, newSolution);
-            return newFiles;
-          }
-          return prevState;
-        });
+        }
+
         break;
       case FILE_TYPE.HELPER:
-        const newHelper = await HelperFile.update(payload);
-        setHelpers((prevState) => {
-          const index = prevState.findIndex((f) => {
-            return f.id === id;
-          });
+        {
+          const newHelper = await HelperFile.update(payload);
+          setHelpers((prevState) => {
+            const index = prevState.findIndex((f) => {
+              return f.id === id;
+            });
 
-          if (index > -1) {
-            const newFiles = [...prevState];
-            newFiles.splice(index, 1, newHelper);
-            return newFiles;
-          }
-          return prevState;
-        });
+            if (index > -1) {
+              const newFiles = [...prevState];
+              newFiles.splice(index, 1, newHelper);
+              return newFiles;
+            }
+            return prevState;
+          });
+        }
+
         break;
       case FILE_TYPE.SOURCEFILE:
-        const newSource = await SourceFile.update(payload);
-        setSourceFiles((prevState) => {
-          const index = prevState.findIndex((f) => {
-            return f.id === id;
-          });
+        {
+          const newSource = await SourceFile.update(payload);
+          setSourceFiles((prevState) => {
+            const index = prevState.findIndex((f) => {
+              return f.id === id;
+            });
 
-          if (index > -1) {
-            const newFiles = [...prevState];
-            newFiles.splice(index, 1, newSource);
-            return newFiles;
-          }
-          return prevState;
-        });
+            if (index > -1) {
+              const newFiles = [...prevState];
+              newFiles.splice(index, 1, newSource);
+              return newFiles;
+            }
+            return prevState;
+          });
+        }
+
         break;
     }
   };
@@ -239,13 +257,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
     }
   };
 
-  const updateEnv = async (
-    language: string,
-    dependencies: string,
-    customDockerfile: string,
-    buildType: string,
-    runscript?: string,
-  ) => {
+  const updateEnv = async (language: string, dependencies: string, customDockerfile: string, buildType: string) => {
     let thisEnvironment = env;
     // If environment doesn't exist create it
 

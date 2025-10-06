@@ -49,7 +49,7 @@ const GraderDetail = (props: IProps) => {
       <Route
         path={props.match.url}
         exact={true}
-        render={(subprops: any) => {
+        render={(_subprops) => {
           const columns = [
             {
               title: 'Zoom in',

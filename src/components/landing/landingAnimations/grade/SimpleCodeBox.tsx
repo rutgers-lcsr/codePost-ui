@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { animated } from 'react-spring';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/styles/hljs';
@@ -89,4 +87,4 @@ const SimpleCodeHighlight = (props: { top: number; left: number; width: any }) =
     </div>
   );
 };
-export { SimpleCodeBox, SimpleCodeHighlight, exampleCode1, exampleCode2 };
+export { exampleCode1, exampleCode2, SimpleCodeBox, SimpleCodeHighlight };

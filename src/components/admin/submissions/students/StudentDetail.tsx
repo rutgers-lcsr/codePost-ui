@@ -46,6 +46,7 @@ import { IStudentSubmissionsDataTable } from '../../../../types/common';
 import { Environment } from '../../../../infrastructure/autograder/environment';
 import { SubmissionTestResultType } from '../../../../infrastructure/autograder/runTypes';
 
+import { FileType } from '../../../../infrastructure/file';
 import { awaitTestResult } from '../../assignments/tests/autograderPollingUtils';
 
 const confirm = Modal.confirm;
@@ -59,8 +60,8 @@ interface IProps {
   assignments: AssignmentType[];
   graders: string[];
   submissions: IStudentSubmissionsDataTable;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: any[]) => Promise<SubmissionInfoType>;
-  addFilesToSubmission: (submission: SubmissionInfoType, files: any[]) => Promise<SubmissionInfoType>;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: FileType[]) => Promise<SubmissionInfoType>;
+  addFilesToSubmission: (submission: SubmissionInfoType, files: FileType[]) => Promise<SubmissionInfoType>;
 
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   changeSubmissionGrader: (submission: SubmissionInfoType, grader: string | undefined) => Promise<void>;
@@ -104,14 +105,14 @@ class StudentDetail extends React.Component<IProps, IState> {
     });
   };
 
-  public callback = (sub: SubmissionInfoType, result: SubmissionTestResultType) => {
-    this.setState((prevState, props) => ({ subsRunning: prevState.subsRunning.filter((id) => id !== sub.id) }));
+  public callback = (sub: SubmissionInfoType, _result: SubmissionTestResultType) => {
+    this.setState((prevState, _) => ({ subsRunning: prevState.subsRunning.filter((id) => id !== sub.id) }));
     message.success('Test run completed!');
   };
 
   public runTests = async (assignment: AssignmentType, sub: SubmissionInfoType) => {
     if (assignment.environment) {
-      this.setState((prevState, props) => ({ subsRunning: [...prevState.subsRunning, sub.id] }));
+      this.setState((prevState, _) => ({ subsRunning: [...prevState.subsRunning, sub.id] }));
       const payload = {
         id: assignment.environment,
         submission: sub.id,
@@ -150,7 +151,7 @@ class StudentDetail extends React.Component<IProps, IState> {
     });
   };
 
-  public uploadSubmission = (assignment: AssignmentType, partners: string[], files: any[]) => {
+  public uploadSubmission = (assignment: AssignmentType, partners: string[], files: FileType[]) => {
     const submission = this.state.submissionsMap[assignment.id];
     if (submission) {
       return this.props.addFilesToSubmission(submission, files);

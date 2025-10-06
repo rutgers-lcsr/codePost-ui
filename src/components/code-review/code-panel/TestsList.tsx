@@ -6,17 +6,17 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Badge, Card, Input, Table, Collapse, Statistic, Spin, Typography } from 'antd';
+import { Badge, Card, Collapse, Input, Spin, Statistic, Table, Typography } from 'antd';
 
 /* other library imports */
 import ReactMarkdown from 'react-markdown';
 
 /* codePost imports */
+import { BasicTestResultType } from '../../../infrastructure/autograder/runTypes';
 import { SubmissionTest, SubmissionTestType } from '../../../infrastructure/submissionTest';
 import { TestCategoryType } from '../../../infrastructure/testCategory';
+import { StudentTestCasesByCategory, TestCasesByCategory } from '../../core/testFetchUtils';
 import useWindowSize from '../../core/useWindowSize';
-import { TestCasesByCategory, StudentTestCasesByCategory } from '../../core/testFetchUtils';
-import { BasicTestResultType } from '../../../infrastructure/autograder/runTypes';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
@@ -60,7 +60,7 @@ const TestsList = (props: IProps) => {
   // Submission-level stats
   let passed = 0;
   let failed = 0;
-  let total = Object.keys(props.cases).reduce((acc, val: string) => acc + props.cases[parseInt(val, 10)].length, 0);
+  const total = Object.keys(props.cases).reduce((acc, val: string) => acc + props.cases[parseInt(val, 10)].length, 0);
 
   // Index tests by testCategory to access their data more easily when we loop
   // over testCategories below
@@ -72,8 +72,7 @@ const TestsList = (props: IProps) => {
   // If the tests are submission tests, get the latest
   let latestTests = props.tests;
   if (props.tests.length > 0 && 'submission' in props.tests[0]) {
-    // @ts-ignore
-    latestTests = SubmissionTest.getLatest(props.tests);
+    latestTests = SubmissionTest.getLatest(props.tests as SubmissionTestType[]);
   }
 
   for (const test of latestTests) {
@@ -131,7 +130,7 @@ const TestsList = (props: IProps) => {
     <div style={{ position: 'relative', height: '100%', width: '100%', overflow: 'auto' }}>
       <div style={{ position: 'absolute', width: 'inherit', padding: '25px 50px' }}>
         <div id="tests-list" style={{ height: '100%', width: '100%' }}>
-          {<div style={{ marginBottom: 15 }}>{props.message}</div> || <div />}
+          {props.message && <div style={{ marginBottom: 15 }}>{props.message}</div>}
           {!props.hideSummary && (
             <div className="display-flex justify-content-center">
               <Card style={{ background: consoleTheme.siderBg, borderColor: consoleTheme.siderSubmenuBorder }}>
@@ -168,14 +167,16 @@ const TestsList = (props: IProps) => {
           )}
           <br />
           <Collapse
-            defaultActiveKey={props.categories.map((x, i) => i)}
+            defaultActiveKey={props.categories.map((_, i) => i)}
             bordered={false}
             style={{ background: consoleTheme.mainBg }}
           >
             {props.categories.map((category, index) => {
               const theseTests = testsByCategory[category.id];
-              // @ts-ignore
-              const numPassed = theseTests.reduce((acc: number, el: any) => acc + (el.passed === true ? 1 : 0), 0);
+              const numPassed = theseTests.reduce(
+                (acc: number, el: SubmissionTestType | BasicTestResultType) => acc + (el.passed === true ? 1 : 0),
+                0,
+              );
               const numFailed = props.redactNotShown
                 ? props.cases[category.id].length - numPassed
                 : theseTests.length - numPassed;
@@ -239,6 +240,7 @@ const TestsList = (props: IProps) => {
                       </span>
                     ),
                     points,
+                    logsRaw: result ? result.logs : '--',
                     logs: <span style={{ whiteSpace: 'pre' }}>{result ? result.logs : '--'}</span>,
                     explanation: (
                       <ReactMarkdown>{props.redactNotShown && !result ? '' : testCase.explanation}</ReactMarkdown>
@@ -247,9 +249,9 @@ const TestsList = (props: IProps) => {
                 });
 
               // Show logs when a test is expanded
-              const expandedRowRender = (record: any, index: number, indent: any, expanded: boolean) => {
+              const expandedRowRender = (record: { case: string; logsRaw: string }) => {
                 const columns = [{ title: `Logs: ${record.case}`, dataIndex: 'logs', key: 'logs' }];
-                const data = [{ logs: record.logs }];
+                const data = [{ logs: record.logsRaw }];
                 return <Table columns={columns} dataSource={data} pagination={false} />;
               };
 

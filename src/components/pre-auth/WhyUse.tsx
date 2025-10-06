@@ -174,7 +174,7 @@ const SectionRow = (props: IProps) => {
   };
   const rowStyle: React.CSSProperties = {
     display: 'flex',
-    flexDirection: windowSize.width < midBreakPoint ? 'column' : ('row' as 'row'),
+    flexDirection: windowSize.width < midBreakPoint ? 'column' : ('row' as const),
     flexWrap: 'wrap',
     width: '100%',
     justifyContent: 'center',
@@ -200,7 +200,7 @@ const SectionRow = (props: IProps) => {
         {props.title}
       </div>
       <div>
-        {props.features.map((feature, _i) => {
+        {props.features.map((feature, i) => {
           return (
             <div
               key={i.toString()}
@@ -284,11 +284,9 @@ const SectionRow = (props: IProps) => {
 };
 
 const WhyUse = (props: IPageProps) => {
-  let content;
-
-  content = (
+  const content = (
     <div>
-      {sections.map((section, _i) => {
+      {sections.map((section, i) => {
         return (
           <div key={i.toString()}>
             <SectionRow

@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import { Badge as AntBadge } from 'antd';
 
 type BadgeSize = 'standard' | 'small';
@@ -21,12 +19,14 @@ const Badge = (props: IBadgeProps) => {
 
   let showZero = false;
 
+  const numericCount = typeof count === 'number' ? count : parseFloat(count);
+
   let label = `${count}`;
   let className = `badge badge--${_size}`;
-  if (count < 0) {
+  if (numericCount < 0) {
     label = `${count}`;
     className += ' badge--negative';
-  } else if (count > 0) {
+  } else if (numericCount > 0) {
     label = `+${count}`;
     className += ' badge--positive';
   } else {

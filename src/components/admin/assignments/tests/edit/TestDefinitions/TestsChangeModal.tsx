@@ -3,18 +3,18 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /* library imports */
 import { Button, Divider, Modal, Spin, Steps, Table, Tag } from 'antd';
 import _ from 'lodash';
 
 /* codePost object imports */
-import { IBasicFile } from './../TestDefinitions';
 import { SourceFileType } from '../../../../../../infrastructure/autograder/sourceFile';
 import { TestCaseType } from '../../../../../../infrastructure/testCase';
 import { TestCategoryType } from '../../../../../../infrastructure/types';
 import { FILE_TYPE } from '../TestingSetup';
+import { IBasicFile } from './../TestDefinitions';
 
 /* codePost interface imports */
 import { TestCasesByCategory } from '../../../../../core/testFetchUtils';
@@ -297,7 +297,7 @@ export const TestsChangeModal = (props: IProps) => {
     });
   };
 
-  const deleteTests = (categoriesByName: { [categoryName: string]: TestCategoryType }) => {
+  const deleteTests = (_categoriesByName: { [categoryName: string]: TestCategoryType }) => {
     Object.keys(testsToDelete).forEach((catestName) => {
       testsToDelete[catestName].forEach((test) => {
         props.deleteTest(test);
@@ -325,139 +325,134 @@ export const TestsChangeModal = (props: IProps) => {
   ];
 
   let content;
-  let footer;
-  switch (status) {
-    case STATUS.PARSING:
-      content = (
-        <div>
-          <Spin />
-          Just a moment, we're parsing your changes...{' '}
-        </div>
-      );
-      footer = [];
-      break;
-    case STATUS.CONFIRM:
-      const categoryColumns = [
-        {
-          title: 'Name',
-          dataIndex: 'name',
-          key: 'name',
-        },
-        {
-          title: 'Change',
-          dataIndex: 'change',
-          key: 'change',
-        },
-      ];
+  let footer: React.ReactNode[] = [];
+  // Helper function to create table data for categories
+  const createCategoryRows = (categories: ICaseNamesByCategoryName, changeType: 'ADDED' | 'DELETED') => {
+    const color = changeType === 'ADDED' ? 'green' : 'volcano';
+    return Object.keys(categories).map((name) => ({
+      name,
+      change: <Tag color={color}>{changeType}</Tag>,
+    }));
+  };
 
-      const caseColumns = [
-        {
-          title: 'Category',
-          dataIndex: 'category',
-          key: 'category',
-        },
-        {
-          title: 'Name',
-          dataIndex: 'name',
-          key: 'name',
-        },
-        {
-          title: 'Change',
-          dataIndex: 'change',
-          key: 'change',
-        },
-      ];
+  // Helper function to create table data for test cases
+  const createCaseRows = (
+    data: ICaseNamesByCategoryName | ICasesByCategoryName,
+    category: string,
+    changeType: 'ADDED' | 'DELETED',
+    isTestCase: boolean = false,
+  ) => {
+    const color = changeType === 'ADDED' ? 'green' : 'volcano';
+    const items = data[category];
 
-      const newCategoryRows = Object.keys(categoriesToAdd).map((name) => {
-        return {
-          name: name,
-          change: <Tag color="green">ADDED</Tag>,
-        };
-      });
+    if (items instanceof Set) {
+      return Array.from(items).map((item: string) => ({
+        name: item,
+        category,
+        change: <Tag color={color}>{changeType}</Tag>,
+      }));
+    } else if (Array.isArray(items)) {
+      return items.map((item: TestCaseType) => ({
+        name: isTestCase ? item.description : item,
+        category,
+        change: <Tag color={color}>{changeType}</Tag>,
+      }));
+    }
+    return [];
+  };
 
-      const deleteCategoryRows = Object.keys(categoriesToDelete).map((name) => {
-        return {
-          name: name,
-          change: <Tag color="volcano">DELETED</Tag>,
-        };
-      });
+  // Render content based on status
+  const renderContent = () => {
+    switch (status) {
+      case STATUS.PARSING:
+        return (
+          <div>
+            <Spin />
+            Just a moment, we're parsing your changes...
+          </div>
+        );
 
-      const changedCategoryRows = [...newCategoryRows, ...deleteCategoryRows];
-      const changedCaseRows: any = [];
-      Object.keys(categoriesToAdd).forEach((c) => {
-        categoriesToAdd[c].forEach((name) => {
-          changedCaseRows.push({
-            name: name,
-            category: c,
-            change: <Tag color="green">ADDED</Tag>,
-          });
-        });
-      });
+      case STATUS.CONFIRM: {
+        const categoryColumns = [
+          { title: 'Name', dataIndex: 'name', key: 'name' },
+          { title: 'Change', dataIndex: 'change', key: 'change' },
+        ];
 
-      Object.keys(testsToAdd).forEach((c) => {
-        testsToAdd[c].forEach((name) => {
-          changedCaseRows.push({
-            name: name,
-            category: c,
-            change: <Tag color="green">ADDED</Tag>,
-          });
-        });
-      });
+        const caseColumns = [
+          { title: 'Category', dataIndex: 'category', key: 'category' },
+          { title: 'Name', dataIndex: 'name', key: 'name' },
+          { title: 'Change', dataIndex: 'change', key: 'change' },
+        ];
 
-      Object.keys(categoriesToDelete).forEach((c) => {
-        categoriesToDelete[c].forEach((name) => {
-          changedCaseRows.push({
-            name: name,
-            category: c,
-            change: <Tag color="volcano">DELETED</Tag>,
-          });
-        });
-      });
+        const changedCategoryRows = [
+          ...createCategoryRows(categoriesToAdd, 'ADDED'),
+          ...createCategoryRows(categoriesToDelete, 'DELETED'),
+        ];
 
-      Object.keys(testsToDelete).forEach((c) => {
-        testsToDelete[c].forEach((testCase) => {
-          changedCaseRows.push({
-            name: testCase.description,
-            category: c,
-            change: <Tag color="volcano">DELETED</Tag>,
-          });
-        });
-      });
-      content = (
-        <div>
-          <Divider>Changed Test Categories</Divider>
-          <Table size="small" style={{ lineHeight: 1 }} columns={categoryColumns} dataSource={changedCategoryRows} />
-          <Divider>Changed Test Cases</Divider>
-          <Table size="small" style={{ lineHeight: 1 }} columns={caseColumns} dataSource={changedCaseRows} />
-        </div>
-      );
-      const okButton = (
-        <Button onClick={onConfirm} type="primary">
-          Ok
-        </Button>
-      );
-      const cancelButton = <Button onClick={onCancel}>Cancel</Button>;
-      footer = [cancelButton, okButton];
-      break;
-    case STATUS.SUCCESS:
-      const doneButton = (
-        <Button onClick={onCancel} type="primary">
-          Done
-        </Button>
-      );
-      content = <div>Success!</div>;
-      footer = [doneButton];
-      break;
-  }
+        const changedCaseRows = [
+          ...Object.keys(categoriesToAdd).flatMap((c) => createCaseRows(categoriesToAdd, c, 'ADDED')),
+          ...Object.keys(testsToAdd).flatMap((c) => createCaseRows(testsToAdd, c, 'ADDED')),
+          ...Object.keys(categoriesToDelete).flatMap((c) => createCaseRows(categoriesToDelete, c, 'DELETED')),
+          ...Object.keys(testsToDelete).flatMap((c) => createCaseRows(testsToDelete, c, 'DELETED', true)),
+        ];
+
+        return (
+          <div>
+            <Divider>Changed Test Categories</Divider>
+            <Table size="small" style={{ lineHeight: 1 }} columns={categoryColumns} dataSource={changedCategoryRows} />
+            <Divider>Changed Test Cases</Divider>
+            <Table size="small" style={{ lineHeight: 1 }} columns={caseColumns} dataSource={changedCaseRows} />
+          </div>
+        );
+      }
+
+      case STATUS.SUCCESS:
+        return <div>Success!</div>;
+
+      default:
+        return null;
+    }
+  };
+
+  // Render footer based on status
+  const renderFooter = () => {
+    switch (status) {
+      case STATUS.PARSING:
+        return [];
+
+      case STATUS.CONFIRM:
+        return [
+          <Button key="cancel" onClick={onCancel}>
+            Cancel
+          </Button>,
+          <Button key="ok" onClick={onConfirm} type="primary">
+            Ok
+          </Button>,
+        ];
+
+      case STATUS.SUCCESS:
+        return [
+          <Button key="done" onClick={onCancel} type="primary">
+            Done
+          </Button>,
+        ];
+
+      default:
+        return [];
+    }
+  };
+
+  content = renderContent();
+  footer = renderFooter();
 
   return (
     <div>
       <Modal
-        visible={visible}
+        open={visible}
         title={`Save test changes`}
         onCancel={onCancel}
         width={700}
-        destroyOnClose={true}
+        destroyOnHidden={true}
         footer={footer}
       >
         <Steps size="small" current={status}>

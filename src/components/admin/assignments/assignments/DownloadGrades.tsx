@@ -1,5 +1,5 @@
 /* react imports */
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 /* ant imports */
 import { Divider, Modal, Radio, Typography } from 'antd';
@@ -138,8 +138,8 @@ const DownloadGrades = (props: IProps) => {
             submission.isFinalized && submission.grade !== null
               ? submission.grade.toString()
               : ungradedAsZero
-              ? '0'
-              : '';
+                ? '0'
+                : '';
         } else {
           // If a submission is missing
           grade = zeroForMissing ? '0' : '';

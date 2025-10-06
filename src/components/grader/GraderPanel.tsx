@@ -3,7 +3,6 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
 
 import { FolderOpenOutlined } from '@ant-design/icons';
 
@@ -22,8 +21,6 @@ import { CourseType } from '../../infrastructure/course';
 
 import { encodeForLink, encodeForRoute } from '../core/URLutils';
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
-
-type alignType = 'left' | 'right' | 'center';
 
 /**********************************************************************************************************************/
 
@@ -75,7 +72,7 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
           <Route
             key={assignment.id}
             path={`${props.match.url}/${encodeForRoute(assignment.name)}`}
-            render={(subprops: any) => {
+            render={(_subprops) => {
               LOCAL_SETTINGS.defaultAssignment.setter(assignment.id);
               return <DetailComponent {...props} assignment={assignment} breadcrumbs={breadcrumbs} />;
             }}
@@ -83,7 +80,7 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
         ))}
         <Route
           path={props.match.url}
-          render={(subprops: any) => {
+          render={(_subprops) => {
             const storedID = LOCAL_SETTINGS.defaultAssignment.getter();
             const matchedAssignment = props.assignments.find((assn) => assn.id === storedID);
             if (matchedAssignment) {

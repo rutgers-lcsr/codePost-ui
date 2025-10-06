@@ -17,7 +17,7 @@ import BlockMarkdown from '../../core/BlockMarkdown';
 import CPFlex from '../../core/CPFlex';
 import CPPointInput from '../../core/CPPointInput';
 
-import { CURSOR_DOMAIN } from '../CodeConsole';
+import { CURSOR_DOMAIN } from '../CodeConsoleEnums';
 
 import {
   IRubricCategoryManagerHelpers,

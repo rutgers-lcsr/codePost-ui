@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import { Divider, Modal, Progress, Typography } from 'antd';
 
 import { TestCaseType } from '../../../../../infrastructure/testCase';
@@ -22,7 +20,7 @@ interface IProps {
 
 const RunAllProgressModal = (props: IProps) => {
   if (props.raw && props.raw !== '{}') {
-    const castRaw = (props.raw as any) as IResultsType;
+    const castRaw = props.raw as unknown as IResultsType;
     const firstKey: number = parseInt(Object.keys(castRaw)[0], 10);
     return (
       <Modal open={props.visible} title="Results" onCancel={props.onCancel}>

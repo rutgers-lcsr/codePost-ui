@@ -1,5 +1,3 @@
-import React from 'react';
-
 // import LandingOld from './Landing.tsx';
 import LandingNew from './newlanding/Landing.tsx';
 

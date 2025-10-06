@@ -12,14 +12,13 @@ import { Select } from 'antd';
 import { RouteComponentProps } from 'react-router';
 
 /* codePost imports */
-import { Assignment, AssignmentType } from '../../infrastructure/assignment';
+import { AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
-import { SectionType } from '../../infrastructure/section';
+import { Section, SectionType } from '../../infrastructure/section';
 import { SubmissionInfoType } from '../../infrastructure/submission';
-import { Section } from '../../infrastructure/section';
 
-import SectionDetailPanel from './SectionDetailPanel';
 import GraderPanelBuilder from './GraderPanel';
+import SectionDetailPanel from './SectionDetailPanel';
 
 const SectionPanelShell = GraderPanelBuilder(SectionDetailPanel);
 
@@ -55,7 +54,7 @@ class SectionPanel extends React.Component<IProps, IState> {
     this.loadSubmissions(this.props.assignments, this.state.activeSection);
   }
 
-  public componentDidUpdate(_oldProps: IProps, prevState: IState) {
+  public componentDidUpdate(oldProps: IProps, _prevState: IState) {
     if (oldProps.assignments !== this.props.assignments) {
       this.loadSubmissions(this.props.assignments, this.state.activeSection);
     }

@@ -14,8 +14,8 @@ import { RouteComponentProps } from 'react-router';
 /* codePost imports */
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
-import { UserType } from '../../infrastructure/user';
 import { AnonymousSubmissionInfoType } from '../../infrastructure/submission';
+import { UserType } from '../../infrastructure/user';
 
 import RegradesDetailPanel from './RegradesDetailPanel';
 
@@ -56,7 +56,7 @@ class RegradesPanel extends React.Component<IProps, IState> {
     this.loadSubmissions(this.props.assignments, this.props.user.email);
   }
 
-  public componentDidUpdate(_oldProps: IProps) {
+  public componentDidUpdate(oldProps: IProps) {
     if (oldProps.assignments !== this.props.assignments) {
       this.loadSubmissions(this.props.assignments, this.props.user.email);
     }

@@ -186,7 +186,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
           {
             <ul>
               {Object.keys(errors).map((el, _i) => {
-                return errors[el].map((el2) => <li key={i}>{el2}</li>);
+                return errors[el].map((el2, idx) => <li key={`${_i}-${idx}`}>{el2}</li>);
               })}
             </ul>
           }
@@ -338,7 +338,7 @@ const CIPGraderModal = (props: IGraderModalProps) => {
           return Promise.reject();
         }
       })
-      .then((json) => {
+      .then(() => {
         notification.success({
           message: 'Course created',
           description: `Vist the newly opened codePost tab to check it out. If you don't see a new tab open, visit www.codepost.io/admin in your browser.`,

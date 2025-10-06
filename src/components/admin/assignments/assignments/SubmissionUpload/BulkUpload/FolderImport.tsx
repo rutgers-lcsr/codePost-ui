@@ -18,7 +18,7 @@ import { BulkUploadFooter } from './BulkUploadComponents';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 
-import { codePostFile, IProtoFileUpload, fileToProtoFileUpload } from './../FileReader';
+import { codePostFile, fileToProtoFileUpload, IProtoFileUpload } from './../FileReader';
 
 const Panel = Collapse.Panel;
 const Dragger = Upload.Dragger;
@@ -165,7 +165,7 @@ export const NormalFolderImport = (props: IUploadFormProps) => {
       Upload a folder with the following file structure.
       <br />
       <br />
-      <ReactMarkdown source={exampleText} />
+      <ReactMarkdown>{exampleText}</ReactMarkdown>
     </div>
   );
 

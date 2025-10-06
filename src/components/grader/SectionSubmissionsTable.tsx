@@ -145,7 +145,7 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
         })
           .then(async (res) => {
             if (res.status === 200) {
-              const json = await res.json();
+              await res.json();
               message.success('Email sent to student notifying them that their submission is ready.');
               return;
             } else {
@@ -154,7 +154,7 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
               return;
             }
           })
-          .catch((_err) => {
+          .catch((err) => {
             console.log(err);
           });
         return;

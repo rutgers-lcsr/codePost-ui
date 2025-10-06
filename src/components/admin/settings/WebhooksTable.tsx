@@ -1,5 +1,6 @@
 import { DownOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Dropdown, Form, Input, message, Popconfirm, Table, Tag } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import moment from 'moment';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { CourseType } from '../../../infrastructure/course';
@@ -7,7 +8,7 @@ import { VALID_WEBHOOKS, Webhook, WebhookType } from '../../../infrastructure/we
 
 const EditableContext = React.createContext<any>(null);
 
-const EditableRow = ({ index, ...props }: any) => {
+const EditableRow: React.FC<any> = ({ index, ...props }) => {
   const [form] = Form.useForm();
   return (
     <Form form={form} component={false}>
@@ -18,13 +19,30 @@ const EditableRow = ({ index, ...props }: any) => {
   );
 };
 
-const EditableCell = ({ title, editable, children, dataIndex, record, handleSave, ...restProps }: any) => {
+interface EditableCellProps {
+  title: string;
+  editable: boolean;
+  children: React.ReactNode;
+  dataIndex: string;
+  record: any;
+  handleSave: (record: any) => void;
+}
+
+const EditableCell: React.FC<EditableCellProps> = ({
+  title,
+  editable,
+  children,
+  dataIndex,
+  record,
+  handleSave,
+  ...restProps
+}) => {
   const [editing, setEditing] = useState(false);
-  const inputRef = useRef(null);
+  const inputRef = useRef<any>(null);
   const form = useContext(EditableContext);
+
   useEffect(() => {
-    if (editing) {
-      // @ts-ignore
+    if (editing && inputRef.current) {
       inputRef.current.focus();
     }
   }, [editing]);
@@ -36,7 +54,7 @@ const EditableCell = ({ title, editable, children, dataIndex, record, handleSave
     });
   };
 
-  const save = async (e: any) => {
+  const save = async () => {
     try {
       const values = await form.validateFields();
       toggleEdit();
@@ -51,9 +69,7 @@ const EditableCell = ({ title, editable, children, dataIndex, record, handleSave
   if (editable) {
     childNode = editing ? (
       <Form.Item
-        style={{
-          margin: 0,
-        }}
+        style={{ margin: 0 }}
         name={dataIndex}
         rules={[
           {
@@ -65,13 +81,7 @@ const EditableCell = ({ title, editable, children, dataIndex, record, handleSave
         <Input ref={inputRef} onPressEnter={save} onBlur={save} />
       </Form.Item>
     ) : (
-      <div
-        className="editable-cell-value-wrap"
-        style={{
-          paddingRight: 24,
-        }}
-        onClick={toggleEdit}
-      >
+      <div className="editable-cell-value-wrap" style={{ paddingRight: 24 }} onClick={toggleEdit}>
         {children}
       </div>
     );
@@ -85,127 +95,53 @@ interface IWebhooksTableProps {
   course: CourseType;
 }
 
-class WebhooksTable extends React.Component<IWebhooksTableProps, any> {
-  public columns: any[] = [];
+interface DataSourceType {
+  key: string;
+  webhook: WebhookType;
+  enabled: boolean;
+  object: string;
+  action: string;
+  target: string;
+  lastTriggered: React.ReactNode;
+  status: React.ReactNode;
+}
 
-  constructor(props: IWebhooksTableProps) {
-    super(props);
-
-    const objects = Object.keys(VALID_WEBHOOKS).map((obj: string) => {
-      return {
-        text: obj,
-        value: obj,
-      };
-    });
-
-    this.columns = [
-      {
-        title: 'Enabled',
-        dataIndex: 'enabled',
-        render: (enabled: any, record: any) => {
-          const onChange = (e: any) => {
-            const update = { ...record, enabled: e.target.checked };
-            this.handleSave(update);
-          };
-          return <Checkbox checked={enabled} onChange={onChange} />;
-        },
-        filters: [
-          {
-            text: 'Checked',
-            value: true,
-          },
-          {
-            text: 'Not checked',
-            value: false,
-          },
-        ],
-        onFilter: (value: any, record: any) => {
-          return record.enabled === value;
-        },
-      },
-      {
-        title: 'Object',
-        dataIndex: 'object',
-        filters: objects,
-        onFilter: (value: any, record: any) => record.object.indexOf(value) === 0,
-        sorter: (a: any, b: any) => a.object.localeCompare(b.object),
-      },
-      {
-        title: 'Action',
-        dataIndex: 'action',
-      },
-      {
-        title: 'Target',
-        dataIndex: 'target',
-        width: '30%',
-        editable: true,
-      },
-      {
-        title: 'Last Triggered',
-        dataIndex: 'lastTriggered',
-      },
-      {
-        title: 'Latest Status',
-        dataIndex: 'status',
-      },
-      {
-        title: '',
-        dataIndex: 'delete',
-        render: (text: string, record: any) =>
-          this.state.dataSource.length >= 1 ? (
-            <Popconfirm title="Are you sure?" onConfirm={() => this.handleDelete(record.webhook.id)}>
-              <a>Delete</a>
-            </Popconfirm>
-          ) : null,
-      },
-    ];
-    this.state = {
-      dataSource: props.webhooks.map((webhook: WebhookType, index: number) => {
-        const lastTriggered = webhook.last_triggered_at ? (
-          moment(webhook.last_triggered_at).format('lll')
+const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
+  const [dataSource, setDataSource] = useState<DataSourceType[]>(() =>
+    webhooks.map((webhook, index) => ({
+      key: index.toString(),
+      webhook,
+      enabled: webhook.is_active,
+      object: webhook.event.split('.')[0],
+      action: webhook.event.split('.')[1],
+      target: webhook.target,
+      lastTriggered: webhook.last_triggered_at ? (
+        moment(webhook.last_triggered_at).format('lll')
+      ) : (
+        <Tag>Never Triggered</Tag>
+      ),
+      status:
+        webhook.last_triggered_status && webhook.last_triggered_status.includes('20') ? (
+          <Tag color="green">{webhook.last_triggered_status}</Tag>
+        ) : webhook.last_triggered_status ? (
+          <Tag color="red">{webhook.last_triggered_status}</Tag>
         ) : (
-          <Tag>Never Triggered</Tag>
-        );
-        const status =
-          webhook.last_triggered_status && webhook.last_triggered_status.includes('20') ? (
-            <Tag color="green">{webhook.last_triggered_status}</Tag>
-          ) : webhook.last_triggered_status ? (
-            <Tag color="red">{webhook.last_triggered_status}</Tag>
-          ) : (
-            ''
-          );
-        return {
-          key: index.toString(),
-          webhook: webhook,
-          enabled: webhook.is_active,
-          object: webhook.event.split('.')[0],
-          action: webhook.event.split('.')[1],
-          target: webhook.target,
-          lastTriggered,
-          status,
-        };
-      }),
-      count: props.webhooks.length,
-    };
-  }
+          ''
+        ),
+    })),
+  );
+  const [count, setCount] = useState(webhooks.length);
 
-  handleDelete = async (id: any) => {
-    const dataSource = [...this.state.dataSource];
-
+  const handleDelete = async (webhook: WebhookType) => {
     try {
-      await Webhook.delete(id);
+      await Webhook.delete(webhook);
+      setDataSource((prev) => prev.filter((item) => item.webhook.id !== webhook.id));
     } catch {
       message.error('Error...');
-      return;
     }
-    this.setState({
-      dataSource: dataSource.filter((item) => item.webhook.id !== id),
-    });
   };
 
-  handleAdd = async (e: any) => {
-    const { count, dataSource } = this.state;
-
+  const handleAdd = async (e: any) => {
     const event = `${e.keyPath[1]}.${e.keyPath[0]}`;
 
     const payload = {
@@ -213,34 +149,31 @@ class WebhooksTable extends React.Component<IWebhooksTableProps, any> {
       event,
       is_active: false,
       target: 'https://my.webhook.endpoint.com',
-      course: this.props.course.id,
+      course: course.id,
     };
 
-    let newWebhook;
     try {
-      newWebhook = await Webhook.create(payload);
+      const newWebhook = await Webhook.create(payload);
+      if (newWebhook) {
+        const newData: DataSourceType = {
+          key: count.toString(),
+          target: 'https://my.webhook.endpoint.com',
+          enabled: false,
+          object: event.split('.')[0],
+          action: event.split('.')[1],
+          webhook: newWebhook,
+          lastTriggered: <Tag>Never Triggered</Tag>,
+          status: '',
+        };
+        setDataSource((prev) => [...prev, newData]);
+        setCount((prev) => prev + 1);
+      }
     } catch {
       message.error('Error...');
-      return;
-    }
-
-    if (newWebhook !== undefined) {
-      const newData = {
-        key: count,
-        target: `https://my.webhook.endpoint.com`,
-        enabled: false,
-        object: event.split('.')[0],
-        action: event.split('.')[1],
-        webhook: newWebhook,
-      };
-      this.setState({
-        dataSource: [...dataSource, newData],
-        count: count + 1,
-      });
     }
   };
 
-  handleSave = async (row: any) => {
+  const handleSave = async (row: DataSourceType) => {
     const payload = {
       id: row.webhook.id,
       is_active: row.enabled,
@@ -249,88 +182,134 @@ class WebhooksTable extends React.Component<IWebhooksTableProps, any> {
 
     try {
       await Webhook.update(payload);
-      // show saving
       message.success('Saved!');
+      setDataSource((prev) => {
+        const newData = [...prev];
+        const index = newData.findIndex((item) => row.key === item.key);
+        if (index > -1) {
+          const item = newData[index];
+          newData.splice(index, 1, { ...item, ...row });
+        }
+        return newData;
+      });
     } catch {
       message.error('Error saving...');
-      return;
     }
-
-    const newData = [...this.state.dataSource];
-    const index = newData.findIndex((item) => row.key === item.key);
-    const item = newData[index];
-    newData.splice(index, 1, { ...item, ...row });
-    this.setState({
-      dataSource: newData,
-    });
   };
 
-  render() {
-    const { dataSource } = this.state;
-    const components = {
-      body: {
-        row: EditableRow,
-        cell: EditableCell,
-      },
-    };
-    const columns = this.columns.map((col) => {
-      if (!col.editable) {
-        return {
-          ...col,
-          onCell: (record: any) => ({
-            record,
-            handleSave: this.handleSave,
-          }),
-        };
-      }
+  const objects = Object.keys(VALID_WEBHOOKS).map((obj: string) => ({
+    text: obj,
+    value: obj,
+  }));
 
+  const columns: ColumnsType<DataSourceType> = [
+    {
+      title: 'Enabled',
+      dataIndex: 'enabled',
+      render: (enabled: boolean, record: DataSourceType) => {
+        const onChange = (e: any) => {
+          const update = { ...record, enabled: e.target.checked };
+          handleSave(update);
+        };
+        return <Checkbox checked={enabled} onChange={onChange} />;
+      },
+      filters: [
+        { text: 'Checked', value: true },
+        { text: 'Not checked', value: false },
+      ],
+      onFilter: (value, record) => record.enabled === value,
+    },
+    {
+      title: 'Object',
+      dataIndex: 'object',
+      filters: objects,
+      onFilter: (value, record) => record.object.indexOf(value as string) === 0,
+      sorter: (a, b) => a.object.localeCompare(b.object),
+    },
+    {
+      title: 'Action',
+      dataIndex: 'action',
+    },
+    {
+      title: 'Target',
+      dataIndex: 'target',
+      width: '30%',
+    },
+    {
+      title: 'Last Triggered',
+      dataIndex: 'lastTriggered',
+    },
+    {
+      title: 'Latest Status',
+      dataIndex: 'status',
+    },
+    {
+      title: '',
+      dataIndex: 'delete',
+      render: (_, record) =>
+        dataSource.length >= 1 ? (
+          <Popconfirm title="Are you sure?" onConfirm={() => handleDelete(record.webhook)}>
+            <a>Delete</a>
+          </Popconfirm>
+        ) : null,
+    },
+  ];
+
+  const components = {
+    body: {
+      row: EditableRow,
+      cell: EditableCell,
+    },
+  };
+
+  const mappedColumns = columns.map((col: any) => {
+    if (!col.editable) {
       return {
         ...col,
-        onCell: (record: any) => ({
+        onCell: (record: DataSourceType) => ({
           record,
-          editable: col.editable,
-          dataIndex: col.dataIndex,
-          title: col.title,
-          handleSave: this.handleSave,
+          handleSave,
         }),
       };
-    });
+    }
 
-    const menuItems = Object.keys(VALID_WEBHOOKS).map((obj: string) => {
-      return {
-        key: obj,
-        label: obj,
-        children: VALID_WEBHOOKS[obj].map((hook: string) => {
-          return {
-            key: hook,
-            label: hook,
-          };
-        }),
-      };
-    });
+    return {
+      ...col,
+      onCell: (record: DataSourceType) => ({
+        record,
+        editable: col.editable,
+        dataIndex: col.dataIndex,
+        title: col.title,
+        handleSave,
+      }),
+    };
+  });
 
-    return (
-      <div>
-        <Dropdown menu={{ items: menuItems, onClick: this.handleAdd }}>
-          <Button
-            type="primary"
-            style={{
-              marginBottom: 16,
-            }}
-          >
-            Add a new webhook <DownOutlined />
-          </Button>
-        </Dropdown>
-        <Table
-          components={components}
-          rowClassName={() => 'editable-row'}
-          bordered
-          dataSource={dataSource}
-          columns={columns}
-        />
-      </div>
-    );
-  }
-}
+  const menuItems = Object.keys(VALID_WEBHOOKS).map((obj: string) => ({
+    key: obj,
+    label: obj,
+    children: VALID_WEBHOOKS[obj].map((hook: string) => ({
+      key: hook,
+      label: hook,
+    })),
+  }));
+
+  return (
+    <div>
+      <Dropdown menu={{ items: menuItems, onClick: handleAdd }}>
+        <Button type="primary" style={{ marginBottom: 16 }}>
+          Add a new webhook <DownOutlined />
+        </Button>
+      </Dropdown>
+      <Table
+        components={components}
+        rowClassName={() => 'editable-row'}
+        bordered
+        dataSource={dataSource}
+        columns={mappedColumns}
+      />
+    </div>
+  );
+};
 
 export default WebhooksTable;

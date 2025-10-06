@@ -392,7 +392,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
                 <Select
                   disabled={this.props.isRunning}
                   style={inputStyle}
-                  dropdownRender={(menu) => {
+                  popupRender={(menu) => {
                     return this.props.hasInstanceMethods ? (
                       <div>
                         <div style={{ padding: '4px 8px' }}>

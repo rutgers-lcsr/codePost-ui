@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
 
-import { Input, InputNumber, Button } from 'antd';
+import { Button, Input, InputNumber, Space } from 'antd';
 
 interface IInputNumberMultipleProps {
   value: number[];
@@ -35,8 +35,8 @@ class InputNumberMultiple extends React.Component<IInputNumberMultipleProps, {}>
             day + 1 === 1 ? '' : 's'
           } late`;
 
-          const onChange = (changedValue: number | undefined) => {
-            this.changeValue(changedValue !== undefined ? changedValue : 0, day);
+          const onChange = (changedValue: number | null) => {
+            this.changeValue(changedValue !== null ? changedValue : 0, day);
           };
 
           return (
@@ -45,10 +45,10 @@ class InputNumberMultiple extends React.Component<IInputNumberMultipleProps, {}>
               style={{ width: '171px', display: day === this.props.value.length - 1 ? 'inline-block' : 'block' }}
             >
               <span>
-                <Input.Group compact>
+                <Space.Compact>
                   <Input disabled={true} value={dayString} style={{ width: '110px' }} />
                   <InputNumber min={0} value={dayDeduction} style={{ width: '60px' }} onChange={onChange} />
-                </Input.Group>
+                </Space.Compact>
               </span>
             </div>
           );

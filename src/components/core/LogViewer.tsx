@@ -1,16 +1,15 @@
-import * as React from 'react';
-
 import { Controlled as CodeMirror } from 'react-codemirror2';
 
 import { Modal } from 'antd';
+import { useState } from 'react';
 
 interface ILogViewerProps {
   text: string;
 }
 
 const LogViewer = (props: ILogViewerProps) => {
-  const [hovered, setHovered] = React.useState(false);
-  const [modalVisible, setModalVisible] = React.useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const openModal = () => {
     setModalVisible(true);
@@ -20,11 +19,11 @@ const LogViewer = (props: ILogViewerProps) => {
     setModalVisible(false);
   };
 
-  const onMouseEnter = (e: React.MouseEvent) => {
+  const onMouseEnter = () => {
     setHovered(true);
   };
 
-  const onMouseLeave = (e: React.MouseEvent) => {
+  const onMouseLeave = () => {
     setHovered(false);
   };
 
@@ -37,10 +36,8 @@ const LogViewer = (props: ILogViewerProps) => {
           lineNumbers: true,
           readOnly: 'nocursor',
         }}
-        onBeforeChange={(editor: any, data: any, value: any) => {
-          return;
-        }}
-        onChange={(editor, data, value) => {}}
+        onBeforeChange={() => {}}
+        onChange={() => {}}
       />
       <div className="log-viewer__mask" onClick={openModal} />
       {hovered ? (
@@ -57,10 +54,10 @@ const LogViewer = (props: ILogViewerProps) => {
               lineNumbers: true,
               readOnly: 'nocursor',
             }}
-            onBeforeChange={(editor: any, data: any, value: any) => {
+            onBeforeChange={() => {
               return;
             }}
-            onChange={(editor, data, value) => {}}
+            onChange={() => {}}
           />
         </div>
       </Modal>

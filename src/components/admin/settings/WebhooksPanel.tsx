@@ -19,50 +19,37 @@ interface IProps {
   currentCourse: CourseType;
 }
 
-type AlignType = 'center' | 'right' | 'left' | undefined;
-
 const WebhooksPanel = (props: IProps) => {
   const [webhooks, setWebhooks] = React.useState<WebhookType[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [justSaved, setJustSaved] = React.useState<boolean>(false);
 
-  const columns = [
-    {
-      title: 'Enabled',
-      dataIndex: 'enabled',
-      key: 'enabled',
-    },
-    {
-      title: 'Object',
-      dataIndex: 'object',
-      key: 'object',
-      align: 'center' as AlignType,
-      render: (object: string) => {
-        return <Tag>{object}</Tag>;
-      },
-    },
-    {
-      title: 'Action',
-      dataIndex: 'action',
-      key: 'action',
-    },
-    {
-      title: 'Target',
-      dataIndex: 'target',
-      key: 'target',
-    },
-  ];
-
-  const data = webhooks.map((webhook: WebhookType) => {
-    const [object, action] = webhook.event.split('.');
-    return {
-      key: `webhook-${webhook.id}`,
-      enabled: webhook.is_active,
-      object,
-      action,
-      target: webhook.target,
-    };
-  });
+  // const columns = [
+  //   {
+  //     title: 'Enabled',
+  //     dataIndex: 'enabled',
+  //     key: 'enabled',
+  //   },
+  //   {
+  //     title: 'Object',
+  //     dataIndex: 'object',
+  //     key: 'object',
+  //     align: 'center' as AlignType,
+  //     render: (object: string) => {
+  //       return <Tag>{object}</Tag>;
+  //     },
+  //   },
+  //   {
+  //     title: 'Action',
+  //     dataIndex: 'action',
+  //     key: 'action',
+  //   },
+  //   {
+  //     title: 'Target',
+  //     dataIndex: 'target',
+  //     key: 'target',
+  //   },
+  // ];
 
   React.useEffect(() => {
     const fetchWebhooks = async () => {

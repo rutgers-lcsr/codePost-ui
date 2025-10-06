@@ -1,6 +1,5 @@
-import * as React from 'react';
-
 import { Spin } from 'antd';
+import { useEffect, useState } from 'react';
 
 import useFixedWindow from '../core/useFixedWindow';
 
@@ -11,62 +10,68 @@ import SummaryCard from './SummaryCard';
 import { Course, CourseType, RosterType } from '../../infrastructure/course';
 import { Organization, OrganizationType } from '../../infrastructure/organization';
 
-const Dashboard = (props: any) => {
+type TabType = 'Organizations' | 'Courses' | 'Admins';
+
+export interface AdminData {
+  id: number;
+  key: number;
+  organization: OrganizationType | undefined;
+  course_name: string;
+  course_period: string;
+  email: string;
+}
+
+const Dashboard = () => {
   useFixedWindow();
-  const [admins, setAdmins] = React.useState<any[]>([]);
-  const [courses, setCourses] = React.useState<CourseType[]>([]);
-  const [rosters, setRosters] = React.useState<RosterType[]>([]);
-  const [organizations, setOrganizations] = React.useState<OrganizationType[]>([]);
+  const [admins, setAdmins] = useState<AdminData[]>([]);
+  const [courses, setCourses] = useState<CourseType[]>([]);
+  const [rosters, setRosters] = useState<RosterType[]>([]);
+  const [organizations, setOrganizations] = useState<OrganizationType[]>([]);
+  const [current, setCurrent] = useState<TabType>('Organizations');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [current, setCurrent] = React.useState('Organizations');
-
-  const buildAdminList = (_rosters: RosterType[], _organizations: OrganizationType[]) => {
-    return _rosters
-      .map((roster: any, index: number) => {
-        return roster.courseAdmins.map((email: string) => {
-          const org = _organizations.find((_org: OrganizationType) => {
-            return _org['id'] === roster['organization'];
-          });
-          return {
-            key: index,
-            organization: org,
-            course_name: roster['name'],
-            course_period: roster['period'],
-            email,
-          };
-        });
-      })
-      .flat(1);
+  const buildAdminList = (_rosters: RosterType[], _organizations: OrganizationType[]): AdminData[] => {
+    let idCounter = 0;
+    return _rosters.flatMap((roster, index) =>
+      roster.courseAdmins.map((email) => {
+        return {
+          id: idCounter++,
+          key: index,
+          organization: _organizations.find((_org) => _org.id === roster.organization),
+          course_name: roster.name,
+          course_period: roster.period,
+          email,
+        };
+      }),
+    );
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
-      const organizationData = await Organization.list();
-      setOrganizations(organizationData);
+      try {
+        const [organizationData, courseData] = await Promise.all([Organization.list(), Course.list()]);
 
-      const courseData = await Course.list();
-      setCourses(courseData);
+        setOrganizations(organizationData);
+        setCourses(courseData);
 
-      const rosterData = await Promise.all(
-        courseData.map(async (course: CourseType) => {
-          return await Course.readRoster(course['id']);
-        }),
-      );
+        const rosterData = await Promise.all(
+          courseData.map(async (course) => {
+            const roster = await Course.readRoster(course.id);
+            return roster;
+          }),
+        );
 
-      setRosters(rosterData);
-
-      setAdmins(buildAdminList(rosterData, organizationData));
+        setRosters(rosterData);
+        setAdmins(buildAdminList(rosterData, organizationData));
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchData();
   }, []);
-
-  // console.log('courses', courses);
-  // console.log('organizations', organizations);
-  // console.log('rosters', rosters);
-  // console.log('admins', admins);
-
-  const isLoading = courses.length === 0 || organizations.length === 0 || rosters.length === 0 || admins.length === 0;
 
   if (isLoading) {
     return (
@@ -76,20 +81,17 @@ const Dashboard = (props: any) => {
     );
   }
 
-  let content;
-  switch (current) {
-    case 'Admins':
-      content = <AdminTable admins={admins} />;
-      break;
-    case 'Courses':
-      content = <div>not implemented</div>;
-      break;
-    case 'Organizations':
-      content = <OrganizationTable organizations={organizations} rosters={rosters} />;
-      break;
-    default:
-      content = <div>not implemented</div>;
-  }
+  const renderContent = () => {
+    switch (current) {
+      case 'Admins':
+        return <AdminTable admins={admins} />;
+      case 'Organizations':
+        return <OrganizationTable organizations={organizations} rosters={rosters} />;
+      case 'Courses':
+      default:
+        return <div>Not implemented</div>;
+    }
+  };
 
   return (
     <div style={{ margin: '0px 0px 90px' }}>
@@ -98,16 +100,15 @@ const Dashboard = (props: any) => {
           width: '100%',
           display: 'flex',
           flexWrap: 'wrap',
+          gap: '20px',
           marginBottom: '20px',
         }}
       >
         <SummaryCard objects={organizations} title="Organizations" onClick={setCurrent} />
-        <div style={{ width: '20px' }} />
         <SummaryCard objects={courses} title="Courses" onClick={setCurrent} />
-        <div style={{ width: '20px' }} />
         <SummaryCard objects={admins} title="Admins" onClick={setCurrent} />
       </div>
-      {content}
+      {renderContent()}
     </div>
   );
 };

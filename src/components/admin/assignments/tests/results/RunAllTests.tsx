@@ -1,5 +1,5 @@
 /* react imports */
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 /* library imports */
 import { Button, Checkbox, Modal } from 'antd';
@@ -7,9 +7,9 @@ import { Button, Checkbox, Modal } from 'antd';
 /* other library imports */
 
 /* codePost object imports */
-import RunAllProgressModal from './RunAllProgressModal';
-import { EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 import { AssignmentType } from '../../../../../infrastructure/assignment';
+import { EnvironmentType } from '../../../../../infrastructure/autograder/environment';
+import RunAllProgressModal from './RunAllProgressModal';
 
 /* codePost util imports */
 import { TestCasesByCategory } from '../../../../core/testFetchUtils';
@@ -18,7 +18,7 @@ interface IProps {
   numSubmissions: number;
   testCasesByCategory: TestCasesByCategory;
   runAllSubmissions: (
-    progressCallback: (progress: any) => void,
+    progressCallback: (progress: string) => void,
     onFinishCallback: () => void,
     sendEmail: boolean,
   ) => void;
@@ -53,7 +53,7 @@ const RunAllTests = (props: IProps) => {
   // ******************************************** State functions ************************************
 
   //   Callback for run progress
-  const progressCallback = (progress: any) => {
+  const progressCallback = (progress: string) => {
     setProgress(progress);
   };
 

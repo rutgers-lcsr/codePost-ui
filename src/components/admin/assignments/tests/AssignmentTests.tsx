@@ -30,7 +30,7 @@ interface IProps {
   submissions: SubmissionInfoType[];
   user: UserType;
   updateAssignment: (assignmentID: number, field: string, value: number) => void;
-  breadcrumbs?: React.ReactElement[];
+  breadcrumbs?: { title: React.ReactNode }[];
   fullSubmissionsLoadComplete: boolean;
 }
 
@@ -71,7 +71,7 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
     <Switch>
       <Route
         path={`${props.match.url}/edit/:tabKey`}
-        render={(subprops: any) => (
+        render={(subprops: RouteComponentProps) => (
           <TestingSetup
             {...subprops}
             breadcrumbs={breadcrumbs}
@@ -83,7 +83,7 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
       />
       <Route
         path={`${props.match.url}/edit`}
-        render={(subprops: any) => (
+        render={(subprops: RouteComponentProps) => (
           <TestingSetup
             {...subprops}
             breadcrumbs={breadcrumbs}
@@ -96,7 +96,7 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
 
       <Route
         path={`${props.match.url}/results`}
-        render={(subprops: any) => (
+        render={(subprops: RouteComponentProps) => (
           <TestingSummary
             {...props}
             {...subprops}

@@ -1,6 +1,5 @@
-import * as React from 'react';
-
 import { shallow } from 'enzyme';
+import jest from 'jest-mock';
 
 import ManageAssignments, { IManageAssignmentsProps } from '../components/admin/assignments/ManageAssignments';
 
@@ -30,6 +29,7 @@ describe('ManageAssignments', () => {
         assignments: [],
         submissionsByStudent: {},
         students: ['student1@princeton.edu', 'student2@princeton.edu'],
+        sections: [],
         toggleLock: jest.fn(),
         addToast: jest.fn(),
         addErrorToast: jest.fn(),
@@ -54,14 +54,14 @@ describe('ManageAssignments', () => {
       propOverrides,
     );
 
-    const wrapper = shallow(<ManageAssignments {...props} />);
+    const wrapper = shallow(<ManageAssignments {...(props as any)} />);
 
     return { props, wrapper };
   };
 
   it('getAllGrades()', () => {
     const students = ['student1@princeton.edu', 'student2@princeton.edu'];
-    const assignments = [
+    const assignments: any = [
       {
         id: 1,
         name: 'Hello',

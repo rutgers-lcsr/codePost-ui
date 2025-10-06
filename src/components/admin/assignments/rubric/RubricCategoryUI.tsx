@@ -5,13 +5,13 @@ import {
   CaretDownOutlined,
   CaretUpOutlined,
   CloseCircleOutlined,
-  PlusOutlined,
-  EditOutlined,
   DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
 } from '@ant-design/icons';
 
 /* ant imports */
-import { Badge, Button, Input, Popconfirm, Spin, Table, Tag, Switch } from 'antd';
+import { Badge, Button, Input, Popconfirm, Spin, Switch, Table, Tag } from 'antd';
 
 /* codePost imports */
 import CPButton from '../../../core/CPButton';
@@ -21,9 +21,9 @@ import CPTooltip from '../../../core/CPTooltip';
 import { tooltips } from '../../../core/tooltips';
 
 import {
+  IRubricCategoryManagerHelpers,
   IRubricCategoryManagerProps,
   IRubricCategoryManagerState,
-  IRubricCategoryManagerHelpers,
 } from '../../../core/rubric/RubricCategoryManager';
 
 import { RubricComment, RubricCommentType } from '../../../../infrastructure/rubricComment';
@@ -111,10 +111,6 @@ const commentTableColumns = [
 
 interface IProps {
   baseURL: string;
-}
-
-interface IState {
-  activeComment?: RubricCommentType;
 }
 
 const RubricCategoryUI = ({
@@ -222,9 +218,7 @@ const RubricCategoryUI = ({
                 />
               </CPTooltip>
             </span>
-          ) : (
-            undefined
-          ),
+          ) : undefined,
           instruction: (
             <span style={{ verticalAlign: 'middle' }}>
               <CPTooltip title="Edit comment's instructions" key={rubricComment.id}>
@@ -514,9 +508,7 @@ const RubricCategoryUI = ({
                   iconStyle={{ paddingLeft: 5 }}
                 />
               </span>
-            ) : (
-              undefined
-            )
+            ) : undefined
           }
         />
       ) : null}

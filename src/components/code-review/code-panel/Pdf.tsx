@@ -58,14 +58,14 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   // of a typescript issue with being unable to use react.forwardRef(), which we need to do because each <Comments />
   // object is wrapped in a HOC with withWindowWatcher.
   const dispatch = () => {
-    let event = new Event('pdf-loaded');
+    const event = new Event('pdf-loaded');
     document.dispatchEvent(event);
   };
 
   if (File.codeType(props.file) === 'pdf') {
     return (
       <Document file={props.file.code} onLoadSuccess={onDocumentLoadSuccess}>
-        {Array.from(new Array(numPages), (el, index) => (
+        {Array.from(new Array(numPages), (_, index) => (
           <Page
             key={`page_${index + 1}`}
             className={getBlockClassName(props.comments, props.readOnly, index + 1)}

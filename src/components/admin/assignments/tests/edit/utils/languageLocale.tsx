@@ -1,5 +1,3 @@
-import React from 'react';
-
 const locale: { [language: string]: { [attr: string]: any } } = {
   java: {
     base: false,
