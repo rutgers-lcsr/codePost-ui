@@ -7,13 +7,38 @@ import queryString from 'query-string';
 import * as React from 'react';
 import WistiaPlayer from 'react-player/lib/players/Wistia';
 
-import { Icon as LegacyIcon } from '@ant-design/compatible';
+import {
+  PlusOutlined,
+  ToolOutlined,
+  UploadOutlined,
+  HighlightOutlined,
+  LineChartOutlined,
+  EyeOutlined,
+  UserAddOutlined,
+  CoffeeOutlined,
+  FolderOutlined,
+  PullRequestOutlined,
+} from '@ant-design/icons';
 
 /* ant imports */
 import { Select } from 'antd';
 
 /* codePost imports */
-import withWindowWatcher from '../core/withWindowWatcher';
+import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
+
+// Icon mapping for modern antd icons
+const iconMap: Record<string, React.ReactNode> = {
+  plus: <PlusOutlined />,
+  tool: <ToolOutlined />,
+  upload: <UploadOutlined />,
+  highlight: <HighlightOutlined />,
+  'line-chart': <LineChartOutlined />,
+  eye: <EyeOutlined />,
+  'user-add': <UserAddOutlined />,
+  coffee: <CoffeeOutlined />,
+  folder: <FolderOutlined />,
+  'pull-request': <PullRequestOutlined />,
+};
 
 interface IVideoSection {
   id: string;
@@ -96,10 +121,17 @@ interface IVideoState {
   playing: boolean;
 }
 
+interface IVideoProps extends IWithWindowWatcherProps {
+  location: { search: string };
+  containerWidth?: number;
+}
+
 /**********************************************************************************************************************/
 
-class Video extends React.Component<any, IVideoState> {
-  public constructor(props: any) {
+class Video extends React.Component<IVideoProps, IVideoState> {
+  private player?: unknown;
+
+  public constructor(props: IVideoProps) {
     super(props);
 
     // This blob helps prevent a broken ref for the ReactPlayer onload
@@ -163,8 +195,7 @@ class Video extends React.Component<any, IVideoState> {
     this.play();
   };
 
-  public ref = (player: any) => {
-    // @ts-ignore
+  public ref = (player: unknown) => {
     this.player = player;
   };
 
@@ -206,13 +237,13 @@ class Video extends React.Component<any, IVideoState> {
   };
 
   public seek = (seconds: number) => {
-    // @ts-ignore
+    // @ts-expect-error - player is typed as unknown but has seekTo method
     this.player.seekTo(seconds);
   };
   public render() {
     let videoWidth;
 
-    let windowwidth = this.props.windowwidth;
+    let windowwidth = this.props.windowwidth || 1024;
     if (this.props.containerWidth) {
       windowwidth = this.props.containerWidth;
     }
@@ -301,7 +332,7 @@ interface ISectionButtonProps {
 }
 
 const SectionButton: React.FC<ISectionButtonProps> = (props) => {
-  const onClick = (_e: any) => {
+  const onClick = () => {
     props.setSection(props.section);
   };
   return (
@@ -310,7 +341,7 @@ const SectionButton: React.FC<ISectionButtonProps> = (props) => {
       style={{ height: `${props.height}px`, minWidth: '260px' }}
       onClick={onClick}
     >
-      <LegacyIcon type={props.section.icon} />
+      {iconMap[props.section.icon]}
       <div style={{ display: 'inline-block', width: '4px' }} />
       {props.section.name}
     </div>

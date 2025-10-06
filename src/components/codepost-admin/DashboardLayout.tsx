@@ -43,8 +43,6 @@ const DashboardLayout: React.FC = () => {
         style={{
           overflow: 'auto',
           height: '100vh',
-          position: 'fixed',
-          left: 0,
         }}
       >
         <div style={{ padding: '10px 0px' }}>

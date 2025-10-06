@@ -45,6 +45,7 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: 'build',
       sourcemap: true,
+      target: 'es2020',
       rollupOptions: {
         output: {
           manualChunks: {
@@ -57,6 +58,14 @@ export default defineConfig(({ mode }) => {
     },
     optimizeDeps: {
       include: ['react', 'react-dom', 'react-router-dom', 'antd'],
+      esbuildOptions: {
+        target: 'es2020',
+        keepNames: true,
+      },
+    },
+    esbuild: {
+      target: 'es2020',
+      keepNames: true,
     },
     css: {
       preprocessorOptions: {

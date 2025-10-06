@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useEffect } from 'react';
 
 import {
   ApiOutlined,
@@ -25,26 +24,6 @@ interface IAdminNavProps extends IWithWindowWatcherProps {
 }
 
 const AdminNav: React.FC<IAdminNavProps> = (props) => {
-  useEffect(() => {
-    /* set up Headway widget */
-    try {
-      (window as any).Headway.init({
-        selector: '.version', // CSS selector where to inject the badge
-        account: '7v3mQJ',
-      });
-    } catch {
-      console.error('Headway failed to load.');
-    }
-  }, []);
-
-  useEffect(() => {
-    /* re-mount Headway widget when collapsed changes */
-    (window as any).Headway.init({
-      selector: '.version', // CSS selector where to inject the badge
-      account: '7v3mQJ',
-    });
-  }, [props.collapsed]);
-
   const getDefaultSelectedKey = () => {
     const routes = [
       'submissions/by_student',

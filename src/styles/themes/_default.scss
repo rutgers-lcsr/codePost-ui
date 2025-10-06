@@ -1,0 +1,545 @@
+// Dark theme overrides for Ant Design components
+// These styles apply when dark theme is active in the console
+
+[data-console-theme='dark'] {
+  // Fix Ant Design text colors for dark theme
+  .ant-typography,
+  .ant-btn,
+  .ant-input,
+  .ant-select,
+  .ant-checkbox-wrapper,
+  .ant-radio-wrapper,
+  .ant-form-item-label > label,
+  .ant-descriptions-item-label,
+  .ant-descriptions-item-content,
+  .ant-table,
+  .ant-tabs,
+  .ant-collapse,
+  .ant-list-item,
+  .ant-card,
+  .ant-modal,
+  .ant-drawer {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  // Input and select elements
+  .ant-input,
+  .ant-input-number,
+  .ant-select-selector {
+    background-color: #323435 !important;
+    border-color: #57595c !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  .ant-input::placeholder,
+  .ant-input-number::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  // Select dropdown
+  .ant-select-item {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .ant-select-dropdown {
+    background-color: #323435;
+  }
+
+  .ant-select-item-option-selected {
+    background-color: #17181a;
+  }
+
+  // Table
+  .ant-table {
+    background-color: #17181a;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .ant-table-thead > tr > th {
+    background-color: #323435;
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom-color: #57595c;
+  }
+
+  .ant-table-tbody > tr > td {
+    border-bottom-color: #57595c;
+  }
+
+  .ant-table-tbody > tr:hover > td {
+    background-color: #323435;
+  }
+
+  // Modal
+  .ant-modal-content {
+    background-color: #18191b;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .ant-modal-header {
+    background-color: #323435;
+    border-bottom-color: #57595c;
+  }
+
+  .ant-modal-title {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .ant-modal-footer {
+    border-top-color: #57595c;
+  }
+
+  // Collapse
+  .ant-collapse {
+    background-color: #17181a;
+    border-color: #57595c;
+  }
+
+  .ant-collapse-item {
+    border-bottom-color: #57595c;
+  }
+
+  .ant-collapse-header {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .ant-collapse-content {
+    background-color: #18191b;
+    color: rgba(255, 255, 255, 0.9);
+    border-top-color: #57595c;
+  }
+
+  // Tabs
+  .ant-tabs-tab {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .ant-tabs-tab-active {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .ant-tabs-ink-bar {
+    background-color: #24be85;
+  }
+
+  // Checkbox and Radio
+  .ant-checkbox-wrapper,
+  .ant-radio-wrapper {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .ant-checkbox-inner,
+  .ant-radio-inner {
+    background-color: #323435;
+    border-color: #57595c;
+  }
+
+  // Buttons (secondary/default type)
+  .ant-btn-default {
+    background-color: #202223;
+    border-color: #57595c;
+    color: rgba(255, 255, 255, 0.9);
+
+    &:hover {
+      background-color: #323435;
+      border-color: #24be85;
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+
+  // Disabled state
+  .ant-btn-default[disabled],
+  .ant-input[disabled],
+  .ant-input-number[disabled] {
+    background-color: rgba(0, 0, 0, 0.2);
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  // Form items
+  .ant-form-item-label > label {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  // Divider
+  .ant-divider {
+    border-top-color: #57595c;
+  }
+
+  // Tooltip
+  .ant-tooltip-inner {
+    background-color: #323435;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .ant-tooltip-arrow-content {
+    background-color: #323435;
+  }
+
+  // Empty state
+  .ant-empty-description {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  // Dropdown menu
+  .ant-dropdown-menu {
+    background-color: #323435;
+  }
+
+  .ant-dropdown-menu-item {
+    color: rgba(255, 255, 255, 0.9);
+
+    &:hover {
+      background-color: #17181a;
+    }
+  }
+
+  // Drawer
+  .ant-drawer-content {
+    background-color: #18191b;
+  }
+
+  .ant-drawer-header {
+    background-color: #323435;
+    border-bottom-color: #57595c;
+  }
+
+  .ant-drawer-title {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .ant-drawer-body {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  // Badge
+  .ant-badge-count {
+    background-color: #f64852;
+  }
+
+  // Tag
+  .ant-tag {
+    background-color: #323435;
+    border-color: #57595c;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  // Pagination
+  .ant-pagination-item {
+    background-color: #323435;
+    border-color: #57595c;
+
+    a {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    &:hover {
+      border-color: #24be85;
+    }
+  }
+
+  .ant-pagination-item-active {
+    background-color: #24be85;
+    border-color: #24be85;
+
+    a {
+      color: #fff;
+    }
+  }
+
+  // Switch
+  .ant-switch {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .ant-switch-checked {
+    background-color: #24be85;
+  }
+
+  // Slider
+  .ant-slider-rail {
+    background-color: #323435;
+  }
+
+  .ant-slider-track {
+    background-color: #24be85;
+  }
+
+  .ant-slider-handle {
+    border-color: #24be85;
+  }
+
+  // Progress
+  .ant-progress-text {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  // Alert
+  .ant-alert {
+    background-color: #323435;
+    border-color: #57595c;
+  }
+
+  // Descriptions
+  .ant-descriptions-bordered .ant-descriptions-item-label {
+    background-color: #323435;
+  }
+
+  .ant-descriptions-bordered .ant-descriptions-item-content {
+    background-color: #18191b;
+  }
+
+  // Textarea
+  textarea.ant-input {
+    background-color: #494d4f !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  // List
+  .ant-list-item {
+    border-bottom-color: #57595c;
+  }
+
+  // Card (used for comments)
+  .ant-card {
+    background-color: #18191b;
+    color: rgba(255, 255, 255, 0.9);
+    border-color: #57595c;
+  }
+
+  .ant-card-head {
+    background-color: #494d4f;
+    border-bottom-color: rgba(0, 0, 0, 0.09);
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .ant-card-head-title {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .ant-card-body {
+    background-color: #18191b;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .ant-card-extra {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  // Comment specific styles
+  .cp-comment {
+    .ant-card-head {
+      background-color: #494d4f !important;
+    }
+
+    .ant-card-body {
+      background-color: #18191b !important;
+    }
+
+    .ant-popover-arrow {
+      border-color: #18191b !important;
+    }
+  }
+
+  // File menu and sider submenu
+  #file-menu {
+    .sider-submenu {
+      .ant-menu-submenu-title {
+        background-color: #323435 !important;
+        color: rgba(255, 255, 255, 0.9) !important;
+        border-top: 1px solid #17181a !important;
+      }
+
+      .ant-menu-item {
+        color: rgba(255, 255, 255, 0.65);
+      }
+
+      .ant-menu-item-selected {
+        color: #24be85 !important;
+      }
+    }
+
+    .ant-menu-submenu-arrow {
+      color: rgba(255, 255, 255, 0.65);
+    }
+  }
+
+  // Sider menu items
+  .sider-menu {
+    .ant-menu-item {
+      color: rgba(255, 255, 255, 0.65);
+
+      &:hover {
+        color: rgba(255, 255, 255, 0.9);
+      }
+    }
+
+    .ant-menu-item-selected {
+      background-color: #323435 !important;
+      color: #24be85 !important;
+    }
+  }
+
+  // Popover (for delete confirmations, etc.)
+  .ant-popover {
+    .ant-popover-inner {
+      background-color: #323435;
+    }
+
+    .ant-popover-title {
+      color: rgba(255, 255, 255, 0.9);
+      border-bottom-color: #57595c;
+    }
+
+    .ant-popover-inner-content {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .ant-popover-arrow-content {
+      background-color: #323435;
+    }
+  }
+
+  // Markdown content in comments
+  .markdown-body {
+    color: rgba(255, 255, 255, 0.9);
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      color: rgba(255, 255, 255, 0.95);
+      border-bottom-color: #57595c;
+    }
+
+    code {
+      background-color: #494d4f;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    pre {
+      background-color: #17181a;
+
+      code {
+        background-color: transparent;
+      }
+    }
+
+    blockquote {
+      border-left-color: #57595c;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    table {
+      th,
+      td {
+        border-color: #57595c;
+      }
+
+      tr {
+        background-color: #18191b;
+        border-top-color: #57595c;
+      }
+
+      tr:nth-child(2n) {
+        background-color: #212325;
+      }
+    }
+
+    a {
+      color: #40a9ff;
+    }
+  }
+
+  // Fix for text inputs in comment areas
+  .cp-comment__text-area {
+    background-color: #494d4f !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  // Submission info panel
+  .submission-info__late-day-credits {
+    .ant-alert {
+      background-color: #323435;
+      border-color: #57595c;
+    }
+  }
+
+  // File menu badges
+  #file-menu {
+    .ant-badge {
+      background-color: #323435 !important;
+      color: rgba(255, 255, 255, 0.7) !important;
+      box-shadow: 0 0 0 1px #57595c inset !important;
+    }
+  }
+
+  // Tree component (if used)
+  .ant-tree {
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .ant-tree-node-content-wrapper {
+    color: rgba(255, 255, 255, 0.9);
+
+    &:hover {
+      background-color: #323435;
+    }
+  }
+
+  .ant-tree-node-selected {
+    .ant-tree-node-content-wrapper {
+      background-color: #17181a !important;
+    }
+  }
+
+  // Menu submenu specifically
+  .ant-menu-submenu {
+    .ant-menu-submenu-title {
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+
+  .ant-menu-sub {
+    background-color: #18191b !important;
+  }
+
+  // Inline menu items in submenu
+  .ant-menu-inline {
+    .ant-menu-item {
+      color: rgba(255, 255, 255, 0.65);
+
+      &::after {
+        border-right-color: #24be85;
+      }
+    }
+  }
+
+  // Rate component (for feedback thumbs)
+  .ant-rate {
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  .ant-rate-star-full {
+    color: #1890ff;
+  }
+
+  // Space component
+  .ant-space-item {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  // Statistic
+  .ant-statistic {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .ant-statistic-title {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .ant-statistic-content {
+    color: rgba(255, 255, 255, 0.9);
+  }
+}

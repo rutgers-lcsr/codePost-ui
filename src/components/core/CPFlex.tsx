@@ -1,17 +1,17 @@
-import * as React from 'react';
+import { CSSProperties, Component, ReactNode } from 'react';
 
 interface ICPFlexProps {
-  left: React.ReactNode[];
-  right: React.ReactNode[];
-  middle?: React.ReactNode[];
+  left: ReactNode[];
+  right: ReactNode[];
+  middle?: ReactNode[];
   gutterSize: number;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
   className?: string;
 }
 
-class CPFlex extends React.Component<ICPFlexProps, {}> {
+class CPFlex extends Component<ICPFlexProps> {
   public render() {
-    const leftNodes = this.props.left.map((node: React.ReactNode, index: number) => {
+    const leftNodes = this.props.left.map((node: ReactNode, index: number) => {
       return (
         <div key={`left-${index}`} style={{ marginRight: `${this.props.gutterSize}px` }}>
           {node}
@@ -19,7 +19,7 @@ class CPFlex extends React.Component<ICPFlexProps, {}> {
       );
     });
 
-    const rightNodes = this.props.right.map((node: React.ReactNode, index: number) => {
+    const rightNodes = this.props.right.map((node: ReactNode, index: number) => {
       return (
         <div key={`right-${index}`} style={{ marginLeft: `${this.props.gutterSize}px` }}>
           {node}
@@ -29,7 +29,7 @@ class CPFlex extends React.Component<ICPFlexProps, {}> {
 
     let middleNodes;
     if (this.props.middle !== undefined) {
-      middleNodes = this.props.middle.map((node: React.ReactNode, index: number) => {
+      middleNodes = this.props.middle.map((node: ReactNode, index: number) => {
         return <div key={`middle-${index}`}>{node}</div>;
       });
     }

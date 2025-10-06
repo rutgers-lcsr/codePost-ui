@@ -3,7 +3,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
+import { RouteComponentProps } from 'react-router';
 
 import { CopyOutlined, RedoOutlined } from '@ant-design/icons';
 
@@ -16,6 +16,7 @@ import { UserType } from '../../infrastructure/user';
 
 import PeripheralPageLayout from './layouts/PeripheralPageLayout';
 
+import { Component } from 'react';
 import CPButton from '../core/CPButton';
 import CPTooltip from '../core/CPTooltip';
 import { tooltips } from '../core/tooltips';
@@ -30,14 +31,12 @@ interface IState {
 
 interface IProps {
   user: UserType;
-  match: any;
-  history: any;
   handleLogout: () => void;
   replaceUser: (user: UserType, redirect: boolean, isSuperUser: boolean) => void;
 }
 
-class Settings extends React.Component<IProps, IState> {
-  public constructor(props: any) {
+class Settings extends Component<IProps & RouteComponentProps, IState> {
+  public constructor(props: IProps & RouteComponentProps) {
     super(props);
     this.state = {
       errorMessage: '',
@@ -98,8 +97,7 @@ class Settings extends React.Component<IProps, IState> {
       const element = document.createElement('textarea');
       element.value = copyText.value;
       document.body.appendChild(element);
-      element.select();
-      document.execCommand('copy');
+      navigator.clipboard.writeText(element.value);
       document.body.removeChild(element);
       message.info('API key copied to clipboard.');
     }

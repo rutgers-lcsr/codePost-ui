@@ -1,16 +1,15 @@
-import * as React from 'react';
-
 import useWindowSize from '../../core/useWindowSize';
 
+import { ReactNode } from 'react';
 import landingVars from '../../../styles/pages/_landingVars';
 
 type TextOrientation = 'right' | 'left';
 
 interface IProps {
-  text: React.ReactNode;
+  text: ReactNode;
   title: string;
-  subTitle: React.ReactNode;
-  module: React.ReactNode;
+  subTitle: ReactNode;
+  module: ReactNode;
   type: TextOrientation;
   moduleMaxWidth: number;
   moduleMaxHeight: number;
@@ -32,8 +31,8 @@ const LandingPanel = (props: IProps) => {
     ? windowSize.width < landingVars.breakpoints.verticalPanels
       ? 'bevel'
       : props.type === 'right'
-      ? 'bevel bevel--left'
-      : 'bevel bevel--right'
+        ? 'bevel bevel--left'
+        : 'bevel bevel--right'
     : '';
 
   const moduleDiv = (
