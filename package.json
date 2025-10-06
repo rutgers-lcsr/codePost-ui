@@ -39,7 +39,6 @@
     "react-router": "^5.3.4",
     "react-router-dom": "^5.3.4",
     "react-scroll": "^1.9.0",
-    "react-scrollable-anchor": "^0.6.1",
     "react-select": "^5.7.7",
     "react-split-pane": "^0.1.92",
     "react-spring": "^9.7.3",
