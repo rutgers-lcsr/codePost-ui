@@ -67,13 +67,13 @@ const LinkedCommentsAlert = (props: IPropsLinkedCommentsAlert) => {
 
   return (
     <Modal
-      visible={true}
+      open={true}
       title="Warning"
       footer={[
         <Button key="cancel" onClick={onCancel} type="primary">
           Cancel
         </Button>,
-        <Button key="delete" onClick={onDelete} type="danger">
+        <Button key="delete" onClick={onDelete} danger>
           Delete
         </Button>,
         <Button key="unlink" onClick={onUnlink}>

@@ -178,7 +178,7 @@ export const TestFileUploader = (props: IUploadProps) => {
 
   const footer = [
     <Button
-      type="danger"
+      danger
       disabled={!(props.directory && (props.directory.files.length > 0 || props.directory.folders.length > 0))}
       ghost={true}
       onClick={deleteAll}
