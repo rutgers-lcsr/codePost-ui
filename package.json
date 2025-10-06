@@ -68,7 +68,7 @@
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "dev": "vite",
     "start": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build --mode development",
     "preview": "vite preview",
     "test": "vitest",
     "lint:fix": "eslint './src/**/*.{ts,tsx}' --fix",

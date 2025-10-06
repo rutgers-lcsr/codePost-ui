@@ -10,7 +10,6 @@ jobs:
     runs-on: development-ui
     env:
       REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
-      MODE: development
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -22,7 +21,6 @@ jobs:
       - name: Create .env file
         run: |
           echo "REACT_APP_API_URL=$REACT_APP_API_URL" >> .env
-          echo "MODE=$MODE" >> .env
 
       - name: Compose and build container
         run: |
