@@ -6,9 +6,9 @@ import { Button, Input, message, Popconfirm, Tooltip } from 'antd';
 
 import { hostname } from '../../serviceWorker';
 
-import { AssignmentType, AssignmentStudentType } from '../../infrastructure/assignment';
+import { AssignmentStudentType, AssignmentType } from '../../infrastructure/assignment';
 
-import { PartnerLinkType, Submission, StudentSubmissionType } from '../../infrastructure/submission';
+import { PartnerLinkType, StudentSubmissionType, Submission } from '../../infrastructure/submission';
 
 interface IInvitePartnersLinkProps {
   assignment?: AssignmentType | AssignmentStudentType;
@@ -103,7 +103,7 @@ const InvitePartnersLink = (props: IInvitePartnersLinkProps) => {
             cancelText="No"
             okType="danger"
           >
-            <Button type="danger">Remove myself</Button>
+            <Button danger>Remove myself</Button>
           </Popconfirm>
         </div>
       ) : null}
