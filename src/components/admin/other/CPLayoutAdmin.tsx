@@ -59,7 +59,6 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
 
   // Calculate margin for main content based on sider state
   const hasSider = props.hasSider === undefined || props.hasSider;
-  const contentMarginLeft = hasSider ? (collapsed ? 80 : siderWidth) : 0;
 
   // FIXME: Hardcoded height variables
   return (
@@ -100,7 +99,7 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
           {props.navigation(collapsed)}
         </Sider>
       )}
-      <Layout style={{ minWidth: layoutVars.minWidths.admin, marginLeft: contentMarginLeft }}>
+      <Layout style={{ minWidth: layoutVars.minWidths.admin }}>
         <Header className="layout--admin__header">{props.header}</Header>
         {props.showBillingBanner && (
           <Link to={props.showBillingBanner}>
