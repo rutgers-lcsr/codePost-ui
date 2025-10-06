@@ -116,10 +116,6 @@ class Admin extends Component<IComponentProps, IAdminState> {
   public constructor(props: IComponentProps) {
     super(props);
 
-    if (this.props.currentCourse) {
-      this.loadAllCourseData(this.props.currentCourse);
-    }
-
     // Load data into CommandBar context
     window.CommandBar.addContext({ currentCourse: this.props.currentCourse, courses: this.props.initialCourses });
 
@@ -173,6 +169,11 @@ class Admin extends Component<IComponentProps, IAdminState> {
     document.title = 'codePost - Admin Console';
     const routerFunc = (newUrl: string) => this.props.history.push(newUrl);
     window.CommandBar.addRouter(routerFunc);
+
+    // Load course data after component mounts
+    if (this.props.currentCourse) {
+      this.loadAllCourseData(this.props.currentCourse);
+    }
   }
 
   public componentDidUpdate(_: IComponentProps, prevState: IAdminState) {

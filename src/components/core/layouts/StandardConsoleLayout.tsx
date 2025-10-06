@@ -163,9 +163,11 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
       </Button>
     );
 
+  const themeMode = consoleTheme === consoleThemes.light ? 'light' : 'dark';
+
   return (
     <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
-      <Layout className="layout--standard-console">
+      <Layout className="layout--standard-console" data-console-theme={themeMode}>
         <Header
           style={{
             backgroundColor: consoleTheme.subheaderBg,

@@ -7,10 +7,14 @@ import landingVars from '../../../styles/pages/_landingVars';
 
 import { EmailSubscribe } from './../EmailSubscribe';
 
+// Import images as modules - Vite will handle them as assets
+import testimonialBackground from '../../../img/landing/compressed/backgrounds/testimonial.png';
+import testimonialBackgroundMobile from '../../../img/landing/compressed/backgrounds/testimonial-MOBILE.jpg';
+
 const Video = React.lazy(() => import('./../Video'));
 
 interface IProps {
-  location: any;
+  location: { search: string; pathname: string; state?: unknown; hash: string; key?: string };
   topBar: React.ReactNode;
   hero: React.ReactNode;
   testimonial: React.ReactNode;
@@ -69,22 +73,14 @@ const LandingLayout = (props: IProps) => {
     width: '100%',
   };
 
-  const absolutePosition: any = 'absolute';
   const backgroundImageStyle = {
     zIndex: -1,
-    position: absolutePosition,
+    position: 'absolute' as const,
     width:
       windowSize.width < landingVars.breakpoints.mobile
         ? landingVars.maxWidths.backgroundImageMobile
         : landingVars.maxWidths.backgroundImageNormal,
   };
-
-  const testimonialBackground = new URL('../../../img/landing/compressed/backgrounds/testimonial.png', import.meta.url)
-    .href;
-  const testimonialBackgroundMobile = new URL(
-    '../../../img/landing/compressed/backgrounds/testimonial-MOBILE.jpg',
-    import.meta.url,
-  ).href;
 
   return (
     <div
