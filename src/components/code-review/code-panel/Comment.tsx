@@ -687,7 +687,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
     share: null,
   };
 
-  let onClick;
+  let onClick: ((e: React.MouseEvent) => void) | undefined = undefined;
   let cursor = 'auto';
   let shadow;
 
@@ -750,12 +750,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
     e.stopPropagation();
     const host = hostname();
     const link = `${host}/code/${props.file.submission}/?comment=${props.comment.id}`;
-    const element = document.createElement('textarea');
-    element.value = link;
-    document.body.appendChild(element);
-    element.select();
-    document.execCommand('copy');
-    document.body.removeChild(element);
+    navigator.clipboard.writeText(link);
     message.info('Link copied to clipboard!');
   };
 
@@ -852,8 +847,8 @@ const Comment: React.FC<ICommentProps> = (props) => {
             backgroundColor: consoleTheme.consoleTheme.commentTextArea,
             color: consoleTheme.consoleTheme.text,
           }}
-          autoFocus
           disabled={shouldDisableTextArea}
+          autoFocus
           onFocus={(e) => {
             const temp_value = e.target.value;
             e.target.value = '';

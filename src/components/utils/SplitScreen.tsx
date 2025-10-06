@@ -28,8 +28,12 @@ export default function SplitScreen({ children }: Props) {
     setLeftWidth(Math.max(10, Math.min(90, newLeftWidth)));
   };
   const handleMouseUp = () => {
+    const wasDragging = isDragging.current;
     isDragging.current = false;
-    setRenderKey((prev) => prev + 1);
+    // Only force re-render if we were actually dragging
+    if (wasDragging) {
+      setRenderKey((prev) => prev + 1);
+    }
   };
 
   useEffect(() => {
