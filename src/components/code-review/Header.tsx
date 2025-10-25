@@ -18,7 +18,6 @@ import {
   MailOutlined,
   MenuOutlined,
   PlusCircleOutlined,
-  SearchOutlined,
   TagTwoTone,
   ZoomInOutlined,
   ZoomOutOutlined,

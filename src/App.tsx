@@ -32,8 +32,6 @@ import Settings from './components/core/settings';
 
 import RouterLoading from './components/core/RouterLoading';
 
-import ForbiddenManager from './components/pre-auth/ForbiddenManager';
-
 import { ShowTooltipContext } from './components/core/tooltips';
 
 import { consoleArt } from './components/utils/consoleArt';

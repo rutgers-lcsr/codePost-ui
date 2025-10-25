@@ -18,7 +18,7 @@ const { Content, Footer } = Layout;
 /**********************************************************************************************************************/
 
 interface IProps {
-  children: React.ReactChild;
+  children: React.ReactNode;
   isLoggedIn: boolean;
 }
 

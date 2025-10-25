@@ -39,16 +39,7 @@ const LogViewer = (props: ILogViewerProps) => {
           scrollBeyondLastLine: false,
         }}
       />
-      {/* <CodeMirror
-        className="log-viewer--code-mirror"
-        value={props.text}
-        options={{
-          lineNumbers: true,
-          readOnly: 'nocursor',
-        }}
-        onBeforeChange={() => {}}
-        onChange={() => {}}
-      /> */}
+
       <div className="log-viewer__mask" onClick={openModal} />
       {hovered ? (
         <div className="log-viewer__view-more" onClick={openModal}>

@@ -1375,7 +1375,7 @@ class Admin extends Component<IComponentProps, IAdminState> {
                     superGraders={this.state.superGraders}
                     loadComplete={this.state.rosterLoadComplete}
                     sectionsLoadComplete={this.state.sectionsLoadComplete}
-                    currentCourse={this.props.currentCourse}
+                    currentCourse={this.props.currentCourse!}
                     updateRoster={this.updateRoster}
                     sectionsByStudent={this.state.sectionsByStudent}
                     updateSection={this.updateSection}

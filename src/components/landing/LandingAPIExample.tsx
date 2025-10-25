@@ -5,12 +5,6 @@ import * as React from 'react';
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
 
 import landingVars from '../../styles/pages/_landingVars';
-
-// import * as CodeMirror from 'react-codemirror';
-
-// import { Controlled as CodeMirror } from 'react-codemirror2';
-
-// import 'codemirror/mode/python/python';
 import CPButton from '../core/CPButton';
 import Editor from '@monaco-editor/react';
 

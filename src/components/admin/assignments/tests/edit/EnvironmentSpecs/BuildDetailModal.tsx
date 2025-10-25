@@ -5,9 +5,6 @@
 /* react imports */
 import React, { useEffect, useState } from 'react';
 
-/* other library imports */
-import { animateScroll } from 'react-scroll';
-
 /* library imports */
 import { Button, Collapse, Modal, Result, Spin, Tag, Tooltip, Typography } from 'antd';
 
@@ -32,10 +29,10 @@ export const BuildDetailModal = (props: IProps) => {
 
   /* build pseudo-terminal */
   const scrollToBottom = () => {
-    animateScroll.scrollToBottom({
-      containerId: 'buildLogs-body',
-      animate: false,
-    });
+    const element = document.getElementById('buildLogs-body');
+    if (element) {
+      element.scrollTop = element.scrollHeight;
+    }
   };
 
   React.useEffect(scrollToBottom, [props.logs]);

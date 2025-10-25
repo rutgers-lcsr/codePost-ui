@@ -249,7 +249,7 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
         {
           key: 'profile',
           label: (
-            <Link to={match.url.replace('roster/students', `submissions/by_student/${studentEmail}`)}>
+            <Link to={match?.url.replace('roster/students', `submissions/by_student/${studentEmail}`) || ''}>
               <ProfileOutlined /> &nbsp; Open profile
             </Link>
           ),
@@ -276,8 +276,7 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
         ),
       };
     });
-  }, [props.students, props.notActivated, props.sectionsByStudent, match.url, sendActivationEmail, removeStudent]);
-
+  }, [props.students, props.notActivated, props.sectionsByStudent, match?.url, sendActivationEmail, removeStudent]);
   const actions = useMemo(() => {
     if (props.students.length === 0) return [];
 

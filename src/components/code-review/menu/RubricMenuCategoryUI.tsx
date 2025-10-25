@@ -4,7 +4,7 @@ import * as React from 'react';
 import { DeleteOutlined, DownOutlined, EditOutlined, PlusOutlined, TagOutlined } from '@ant-design/icons';
 
 /* antd imports */
-import { Button, Divider, Input, Menu, Popover, Space, Tag, Tooltip } from 'antd';
+import { Button, Divider, Input, Menu, Popover, Tag, Tooltip } from 'antd';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 

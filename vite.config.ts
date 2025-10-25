@@ -76,7 +76,6 @@ export default defineConfig(async (config) => {
           manualChunks: {
             'react-vendor': ['react', 'react-dom', 'react-router-dom'],
             'antd-vendor': ['antd', '@ant-design/icons'],
-            'codemirror-vendor': ['codemirror', 'react-codemirror2'],
           },
         },
       },

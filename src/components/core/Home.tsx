@@ -68,7 +68,7 @@ const RoleItem = (props: IRoleProps) => {
           }}
         >
           <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
-            {React.cloneElement(props.icon as React.ReactElement, {
+            {React.cloneElement(props.icon as React.ReactElement<any>, {
               style: { fontSize: '70px', color: hovered ? token.colorPrimary : token.colorTextSecondary },
             })}
           </div>

@@ -59,7 +59,7 @@ export const CategorySelectModal = (props: IUploadProps) => {
   /******************************* Return *****************************************/
   return (
     <React.Fragment>
-      {React.cloneElement(props.childToRender, {
+      {React.cloneElement(props.childToRender as React.ReactElement<any>, {
         onClick: toggleVisible,
       })}
       <Modal

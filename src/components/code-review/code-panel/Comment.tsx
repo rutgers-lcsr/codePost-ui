@@ -143,7 +143,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
   const { setHoveredCommentId } = useCommentHighlightStore();
   const hoveredCommentId = useHoveredCommentId();
   const isContextHovered = hoveredCommentId === props.comment.id;
-  const prevPropsRef = useRef<ICommentProps>();
+  const prevPropsRef = useRef<ICommentProps>(undefined);
 
   // Destructure callback functions to use in dependency arrays (prevents entire props object being a dependency)
   const { setCommentPlacements, changeActive, removeRubricComment, updateFeedback } = props;

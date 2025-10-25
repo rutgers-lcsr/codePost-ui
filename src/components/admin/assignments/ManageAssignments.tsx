@@ -72,7 +72,7 @@ export interface IManageAssignmentsProps {
     getPayload: (sub: SubmissionInfoType) => Partial<SubmissionInfoType>,
   ) => Promise<void>;
 
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: FileType[]) => Promise<void>;
+  uploadSubmission: (assignment: AssignmentType, partners: string[], files: FileType[]) => Promise<SubmissionInfoType>;
   deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   updateSubmission: (submission: SubmissionInfoType) => Promise<void>;
 

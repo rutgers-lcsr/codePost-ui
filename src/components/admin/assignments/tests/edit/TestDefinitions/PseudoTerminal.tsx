@@ -11,7 +11,6 @@ import { CopyOutlined, DeleteOutlined, FontColorsOutlined, LoadingOutlined } fro
 import { Tag, Select, Tooltip } from 'antd';
 
 /* other library imports */
-import { animateScroll } from 'react-scroll';
 import { Resizable } from 're-resizable';
 
 /* codePost imports  */
@@ -101,10 +100,10 @@ export const PseudoTerminal = (props: IResultProps) => {
 
   /* build pseudo-terminal */
   const scrollToBottom = () => {
-    animateScroll.scrollToBottom({
-      containerId: 'pseudoterminal-body',
-      animate: false,
-    });
+    const element = document.getElementById('pseudoterminal-body');
+    if (element) {
+      element.scrollTop = element.scrollHeight;
+    }
   };
 
   React.useEffect(scrollToBottom, [logs, props.isRunning]);
@@ -122,8 +121,8 @@ export const PseudoTerminal = (props: IResultProps) => {
     props.env === undefined
       ? 'undefined'
       : props.env.buildType === 'default'
-      ? props.env.language
-      : props.env.buildType;
+        ? props.env.language
+        : props.env.buildType;
   const envSpecText = lookupValue && locale[lookupValue] !== undefined ? locale[lookupValue].pseudoterminal : null;
 
   const logElem = (

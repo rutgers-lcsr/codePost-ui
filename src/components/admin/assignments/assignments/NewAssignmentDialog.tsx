@@ -27,7 +27,7 @@ import { encodeForLink } from '../../../core/URLutils';
 
 /**********************************************************************************************************************/
 
-interface IProps {
+interface IProps extends Record<string, unknown> {
   assignments: AssignmentType[];
   createAssignment: (
     assignmentName: string,
