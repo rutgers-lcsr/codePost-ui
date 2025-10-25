@@ -4,10 +4,15 @@
 
 /* react imports */
 
-import { Icon as LegacyIcon } from '@ant-design/compatible';
-
 /* antd imports */
 import { Button, Modal, Steps, Timeline } from 'antd';
+import {
+  FileDoneOutlined,
+  OrderedListOutlined,
+  PlusCircleOutlined,
+  TeamOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
 
 /* codePost imports */
 import { AssignmentType, CourseType } from '../../../../infrastructure/types';
@@ -42,7 +47,7 @@ const getSteps = (course: CourseType, assignment: AssignmentType, hasStudents: b
     description: '',
     hide: false,
     isComplete: true,
-    icon: 'plus-circle',
+    icon: <PlusCircleOutlined />,
   },
   {
     title: 'Add students',
@@ -51,7 +56,7 @@ const getSteps = (course: CourseType, assignment: AssignmentType, hasStudents: b
     description: 'Students must be added to your roster before they can submit.',
     hide: false,
     isComplete: hasStudents,
-    icon: 'team',
+    icon: <TeamOutlined />,
   },
   {
     title: 'Upload submissions',
@@ -60,7 +65,7 @@ const getSteps = (course: CourseType, assignment: AssignmentType, hasStudents: b
     description: 'Upload submissions to review them in codePost.',
     hide: assignment.allowStudentUpload,
     isComplete: hasSubmissions || false,
-    icon: 'upload',
+    icon: <UploadOutlined />,
   },
   {
     title: 'Configure upload',
@@ -70,12 +75,12 @@ const getSteps = (course: CourseType, assignment: AssignmentType, hasStudents: b
     hide: !assignment.allowStudentUpload,
     isComplete:
       assignment.allowStudentUploadWithPartners ||
-      assignment.fileTemplates.length > 0 ||
+      assignment.files.length > 0 ||
       assignment.liveFeedbackMode ||
       assignment.allowLateUploads ||
       assignment.explanation.length > 0 ||
       hasSubmissions,
-    icon: 'upload',
+    icon: <UploadOutlined />,
   },
   {
     title: 'Create tests',
@@ -84,7 +89,7 @@ const getSteps = (course: CourseType, assignment: AssignmentType, hasStudents: b
     description: 'Specify required files, allow late submissions, etc...',
     hide: false,
     isComplete: assignment.testCategories.length > 0,
-    icon: 'file-done',
+    icon: <FileDoneOutlined />,
   },
   {
     title: 'Create rubric',
@@ -93,7 +98,7 @@ const getSteps = (course: CourseType, assignment: AssignmentType, hasStudents: b
     description: 'Make it easier to review student code by creating standard comments.',
     hide: false,
     isComplete: assignment.rubricCategories.length > 0,
-    icon: 'ordered-list',
+    icon: <OrderedListOutlined />,
   },
 ];
 
@@ -126,7 +131,7 @@ export const AssignmentSetupDialog = (props: IProps) => {
 
   return (
     <Modal
-      visible={true}
+      open={true}
       title={`Setup: ${props.assignment.name}`}
       width={550}
       onCancel={props.onClose}
@@ -170,7 +175,7 @@ export const AssignmentSetupBanner = (props: IProps) => {
             status={step.isComplete ? 'finish' : 'wait'}
             description=""
             disabled={step.isComplete}
-            icon={isSmall ? <div /> : <LegacyIcon type={step.icon} />}
+            icon={isSmall ? <div /> : step.icon}
           />
         ),
       )}

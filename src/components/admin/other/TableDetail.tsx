@@ -2,22 +2,18 @@
 /* Imports
 /**********************************************************************************************************************/
 
-/* react imports */
-import * as React from 'react';
-
-/* style imports */
 import { Input, Table } from 'antd';
 import { ColumnProps } from 'antd/lib/table';
-
-/* other library imports */
+import React, { useCallback, useMemo, useState } from 'react';
 import Highlighter from 'react-highlight-words';
 
-/* codePost imports */
 import CPFlex from '../../core/CPFlex';
 import CPAdminDetail from '../other/CPAdminDetail';
 
 import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
 
+/**********************************************************************************************************************/
+/* Types
 /**********************************************************************************************************************/
 
 export interface ITableDetailColumn extends ColumnProps<any> {
@@ -43,22 +39,111 @@ interface IProps {
   components?: any;
   onRow?: any;
   expandAllRows?: boolean;
-  tableOnly?: boolean; // only show the table without the layout
+  tableOnly?: boolean;
 }
 
-interface IState {
-  searchText: string;
-}
+/**********************************************************************************************************************/
+/* Constants
+/**********************************************************************************************************************/
 
-class TableDetail extends React.Component<IProps, IState> {
-  private defaultSortOrder: 'ascend' | 'descend' = 'ascend';
+const MIN_ROWS = 10;
+const MANY_ROWS = 50;
+const DEFAULT_SORT_ORDER: 'ascend' | 'descend' = 'ascend';
+const HIGHLIGHT_BACKGROUND_COLOR = '#5CBB8B';
+const SEARCH_PLACEHOLDER = 'Search...';
+const SEARCH_INPUT_WIDTH = 300;
+const PAGE_SIZE_OPTIONS = ['10', '50', '100'];
 
-  public constructor(props: any) {
-    super(props);
-    this.state = {
-      searchText: '',
-    };
+/**********************************************************************************************************************/
+/* Helper Functions
+/**********************************************************************************************************************/
+
+/**
+ * Render a highlighter component for search text
+ */
+const renderHighlighter = (text: string, searchText: string): React.ReactNode => {
+  return (
+    <Highlighter
+      highlightStyle={{ backgroundColor: HIGHLIGHT_BACKGROUND_COLOR, padding: 0 }}
+      searchWords={[searchText]}
+      autoEscape
+      textToHighlight={text}
+    />
+  );
+};
+
+/**
+ * Get default render function for column based on data type
+ */
+const getDefaultRenderFunction = (searchText: string) => {
+  return (text: unknown, _record: unknown, _index: number): React.ReactNode => {
+    switch (typeof text) {
+      case 'string':
+        return renderHighlighter(text, searchText);
+      case 'number':
+        return renderHighlighter(text.toString(), searchText);
+      default:
+        return text as React.ReactNode;
+    }
+  };
+};
+
+/**
+ * Filter data based on search text
+ */
+const filterData = (data: any[], searchText: string): any[] => {
+  if (searchText === '') {
+    return data;
   }
+
+  const keys = data.length > 0 ? Object.keys(data[0]) : [];
+  return data.filter((el: Record<string, unknown>) => {
+    for (const key of keys) {
+      if (key !== 'key') {
+        switch (typeof el[key]) {
+          case 'string':
+            if ((el[key] as string).toUpperCase().includes(searchText)) {
+              return true;
+            }
+            break;
+          case 'number':
+            if (el[key].toString().includes(searchText)) {
+              return true;
+            }
+            break;
+        }
+      }
+    }
+    return false;
+  });
+};
+
+/**********************************************************************************************************************/
+/* Component
+/**********************************************************************************************************************/
+
+const TableDetail: React.FC<IProps> = ({
+  loadComplete,
+  isEmpty,
+  title,
+  breadcrumbs,
+  emptyNode,
+  actions,
+  columns,
+  data,
+  tableProps,
+  drawer,
+  pagination: paginationProp,
+  hideSearch = false,
+  titleInfo,
+  onRowClick,
+  detail,
+  components,
+  onRow,
+  expandAllRows = false,
+  tableOnly = false,
+}) => {
+  const [searchText, setSearchText] = useState<string>('');
 
   /* 🔥 alert, the code below is fire 🔥
    * Columns passed into this component may have an optional 'render' key.
@@ -72,176 +157,97 @@ class TableDetail extends React.Component<IProps, IState> {
    * Otherwise, we have no way to inject highlighting into the cell, so
    * just render the cell value as is.
    */
-  public getColumnSearchProps = (column: ITableDetailColumn): ColumnProps => {
-    let renderFunction;
-    if (column.render !== undefined) {
-      renderFunction = column.render;
-    } else if (column.renderForSearch !== undefined) {
-      renderFunction = column.renderForSearch(this.state.searchText);
-    } else {
-      renderFunction = (text: unknown, _record: unknown, _index: number): React.ReactNode => {
-        switch (typeof text) {
-          case 'string':
-            return (
-              <Highlighter
-                highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
-                searchWords={[this.state.searchText]}
-                autoEscape
-                textToHighlight={text.toString()}
-              />
-            );
-          case 'number':
-            return (
-              <Highlighter
-                highlightStyle={{ backgroundColor: '#5CBB8B', padding: 0 }}
-                searchWords={[this.state.searchText]}
-                autoEscape
-                textToHighlight={text.toString()}
-              />
-            );
-          default:
-            return text as React.ReactNode;
-        }
-      };
-    }
-
-    return {
-      defaultSortOrder: this.defaultSortOrder,
-      render: renderFunction,
-    };
-  };
-
-  public setSearchText = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ searchText: event.target.value.toUpperCase() });
-  };
-
-  public onShowSizeChange = (_current: number, size: number) => {
-    LOCAL_SETTINGS.defaultPageSize.setter(size);
-  };
-
-  public render() {
-    let content = null;
-    let actions: React.ReactNode[] = [];
-
-    if (!this.props.loadComplete) {
-      content = (
-        <div>
-          <Input.Search disabled={true} placeholder={'Search...'} style={{ width: 300 }} />
-          <br />
-          <br />
-          <Table columns={this.props.columns} dataSource={[]} loading={true} locale={{ emptyText: '-' }} />
-          {this.props.detail}
-        </div>
-      );
-    } else {
-      if (this.props.isEmpty) {
-        content = this.props.emptyNode;
+  const getColumnSearchProps = useCallback(
+    (column: ITableDetailColumn): ColumnProps => {
+      let renderFunction;
+      if (column.render !== undefined) {
+        renderFunction = column.render;
+      } else if (column.renderForSearch !== undefined) {
+        renderFunction = column.renderForSearch(searchText);
       } else {
-        const oldColumns = this.props.columns;
-        const newColumns: Array<ColumnProps<Record<string, unknown>>> = [];
-        oldColumns.forEach((_, i) => {
-          newColumns[i] = {
-            ...oldColumns[i],
-            ...this.getColumnSearchProps(oldColumns[i]),
-          };
-        });
-
-        // Cache keys so we can search each field of the row
-        const keys = this.props.data.length > 0 ? Object.keys(this.props.data[0]) : [];
-        const data = this.props.data.filter((el: Record<string, unknown>) => {
-          if (this.state.searchText === '') {
-            return true;
-          } else {
-            for (const key of keys) {
-              if (key !== 'key') {
-                switch (typeof el[key]) {
-                  case 'string':
-                    if (el[key].toUpperCase().includes(this.state.searchText)) {
-                      return true;
-                    }
-                    break;
-                  case 'number':
-                    if (el[key].toString().includes(this.state.searchText)) {
-                      return true;
-                    }
-                    break;
-                }
-              }
-            }
-            return false;
-          }
-        });
-
-        /***************************************/
-        /* PAGINATION CONFIG
-        /**************************************/
-
-        const MIN_ROWS = 10;
-        const MANY_ROWS = 50;
-
-        content = (
-          <div>
-            {this.props.hideSearch ? null : (
-              <div>
-                <Input.Search
-                  onChange={this.setSearchText}
-                  placeholder={'Search...'}
-                  style={{ width: 300 }}
-                  allowClear
-                />
-                <br />
-                <br />
-              </div>
-            )}
-            <Table
-              columns={newColumns}
-              dataSource={data}
-              components={this.props.components}
-              defaultExpandAllRows={this.props.expandAllRows}
-              onRow={
-                this.props.onRow !== undefined
-                  ? this.props.onRow
-                  : this.props.onRowClick !== undefined
-                    ? (record, _rowIndex) => {
-                        return {
-                          onClick: (_event) => {
-                            if (this.props.onRowClick) {
-                              return this.props.onRowClick(record);
-                            }
-                          },
-                        };
-                      }
-                    : undefined
-              }
-              pagination={
-                this.props.pagination !== undefined
-                  ? this.props.pagination
-                  : data.length < MIN_ROWS
-                    ? false
-                    : {
-                        showSizeChanger: true,
-                        pageSizeOptions: ['10', '50', '100'],
-                        position: data.length > MANY_ROWS ? 'both' : 'bottom',
-                        defaultPageSize: LOCAL_SETTINGS.defaultPageSize.getter(),
-                        onShowSizeChange: this.onShowSizeChange,
-                      }
-              }
-              {...(this.props.tableProps ? this.props.tableProps : undefined)}
-            />
-            {this.props.drawer}
-            {this.props.detail}
-          </div>
-        );
-
-        actions = this.props.actions;
+        renderFunction = getDefaultRenderFunction(searchText);
       }
-    }
 
-    if (this.props.tableOnly) {
+      return {
+        defaultSortOrder: DEFAULT_SORT_ORDER,
+        render: renderFunction,
+      };
+    },
+    [searchText],
+  );
+
+  const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(event.target.value.toUpperCase());
+  }, []);
+
+  const handleShowSizeChange = useCallback((_current: number, size: number) => {
+    LOCAL_SETTINGS.defaultPageSize.setter(size);
+  }, []);
+
+  // Generate columns with search highlighting
+  const enrichedColumns = useMemo(() => {
+    return columns.map((column) => ({
+      ...column,
+      ...getColumnSearchProps(column),
+    }));
+  }, [columns, getColumnSearchProps]);
+
+  // Filter data based on search text
+  const filteredData = useMemo(() => {
+    return filterData(data, searchText);
+  }, [data, searchText]);
+
+  // Generate row click handler
+  const rowClickHandler = useMemo(() => {
+    if (onRow !== undefined) {
+      return onRow;
+    }
+    if (onRowClick !== undefined) {
+      return (record: any, _rowIndex: number) => ({
+        onClick: (_event: React.MouseEvent) => {
+          if (onRowClick) {
+            return onRowClick(record);
+          }
+        },
+      });
+    }
+    return undefined;
+  }, [onRow, onRowClick]);
+
+  // Generate pagination config
+  const paginationConfig = useMemo(() => {
+    if (paginationProp !== undefined) {
+      return paginationProp;
+    }
+    if (filteredData.length < MIN_ROWS) {
+      return false;
+    }
+    return {
+      showSizeChanger: true,
+      pageSizeOptions: PAGE_SIZE_OPTIONS,
+      position: filteredData.length > MANY_ROWS ? 'both' : 'bottom',
+      defaultPageSize: LOCAL_SETTINGS.defaultPageSize.getter(),
+      onShowSizeChange: handleShowSizeChange,
+    };
+  }, [paginationProp, filteredData.length, handleShowSizeChange]);
+
+  // Render loading state
+  if (!loadComplete) {
+    const loadingContent = (
+      <div>
+        <Input.Search disabled={true} placeholder={SEARCH_PLACEHOLDER} style={{ width: SEARCH_INPUT_WIDTH }} />
+        <br />
+        <br />
+        <Table columns={columns} dataSource={[]} loading={true} locale={{ emptyText: '-' }} />
+        {detail}
+      </div>
+    );
+
+    if (tableOnly) {
       return (
         <div>
-          <CPFlex left={[]} right={[actions]} gutterSize={10} />
-          {content}
+          <CPFlex left={[]} right={actions} gutterSize={10} />
+          {loadingContent}
         </div>
       );
     }
@@ -249,14 +255,86 @@ class TableDetail extends React.Component<IProps, IState> {
     return (
       <CPAdminDetail
         goBack={null}
-        breadcrumbs={this.props.breadcrumbs}
-        title={this.props.title}
-        actions={actions}
-        content={content}
-        titleInfo={this.props.titleInfo}
+        breadcrumbs={breadcrumbs}
+        title={title}
+        actions={[]}
+        content={loadingContent}
+        titleInfo={titleInfo}
       />
     );
   }
-}
+
+  // Render empty state
+  if (isEmpty) {
+    if (tableOnly) {
+      return (
+        <div>
+          <CPFlex left={[]} right={actions} gutterSize={10} />
+          {emptyNode}
+        </div>
+      );
+    }
+
+    return (
+      <CPAdminDetail
+        goBack={null}
+        breadcrumbs={breadcrumbs}
+        title={title}
+        actions={[]}
+        content={emptyNode}
+        titleInfo={titleInfo}
+      />
+    );
+  }
+
+  // Render table with data
+  const tableContent = (
+    <div>
+      {!hideSearch && (
+        <div>
+          <Input.Search
+            onChange={handleSearchChange}
+            placeholder={SEARCH_PLACEHOLDER}
+            style={{ width: SEARCH_INPUT_WIDTH }}
+            allowClear
+          />
+          <br />
+          <br />
+        </div>
+      )}
+      <Table
+        columns={enrichedColumns}
+        dataSource={filteredData}
+        components={components}
+        expandable={{ defaultExpandAllRows: expandAllRows }}
+        onRow={rowClickHandler}
+        pagination={paginationConfig}
+        {...(tableProps || undefined)}
+      />
+      {drawer}
+      {detail}
+    </div>
+  );
+
+  if (tableOnly) {
+    return (
+      <div>
+        <CPFlex left={[]} right={actions} gutterSize={10} />
+        {tableContent}
+      </div>
+    );
+  }
+
+  return (
+    <CPAdminDetail
+      goBack={null}
+      breadcrumbs={breadcrumbs}
+      title={title}
+      actions={actions}
+      content={tableContent}
+      titleInfo={titleInfo}
+    />
+  );
+};
 
 export { TableDetail };

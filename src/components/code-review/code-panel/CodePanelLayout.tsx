@@ -2,15 +2,11 @@ import * as React from 'react';
 
 import { FileType } from '../../../infrastructure/file';
 
-import * as Animation from '../../../infrastructure/animation';
-
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
-
-import themeVars from '../../../styles/abstracts/_theme.js';
 
 import ErrorBoundary from '../../core/ErrorBoundary';
 import SplitScreen from '../../utils/SplitScreen.js';
-
+import { Divider } from 'antd';
 interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
   file: FileType;
   toolbarWidgets: React.ReactNode[];
@@ -21,48 +17,18 @@ interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
 }
 
 export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
-  const nextFrameActionIdRef = React.useRef<number>();
-
-  const resizeComponents = React.useCallback(async () => {
-    if (props.windowheight !== 0) {
-      const codeContainer = document.getElementById('code-container');
-      const codeMain = document.getElementById('code-main');
-      const codeSyntax = document.getElementById('code-syntax');
-      const commentsContainer = document.getElementById('code-panel--comments');
-      const comments = document.getElementById('comments');
-      const codeTemplate = document.getElementById('code-template');
-
-      if (codeContainer !== null && codeMain !== null && commentsContainer !== null && comments !== null) {
-        //  parseInt(codeMain.style.marginLeft, 10)
-        const codeMainWidth = codeContainer.offsetWidth;
-        codeMain.style.setProperty('width', `${codeMainWidth}px`);
-        if (codeSyntax !== null) {
-          codeSyntax.style.setProperty('width', `${codeMainWidth}px`);
-        }
-        if (codeTemplate !== null) {
-          codeTemplate.style.setProperty('width', `${codeMainWidth}px`);
-        }
-
-        const commentsContainerHeight =
-          props.windowheight - commentsContainer.getBoundingClientRect().top - themeVars.grade.marginBottom;
-        commentsContainer.style.setProperty('min-height', `${commentsContainerHeight}px`);
-      }
-    }
-  }, [props.windowheight]);
-
-  // Browser optimization to facilitate smoother animations
-  const resizeOnNextFrame = React.useCallback(() => {
-    if (nextFrameActionIdRef.current) {
-      Animation.clearNextFrameAction(nextFrameActionIdRef.current);
-    }
-    nextFrameActionIdRef.current = Animation.onNextFrame(resizeComponents);
-  }, [resizeComponents]);
-
   const onHighlightClick = React.useCallback(
     (e: React.MouseEvent) => {
       let commentID;
       if (e.currentTarget !== null && e.currentTarget.id.split('-').length === 3) {
         commentID = e.currentTarget.id.split('-')[2];
+      }
+
+      if (!commentID && e.currentTarget instanceof HTMLElement) {
+        const datasetComment = e.currentTarget.dataset.commentId;
+        if (datasetComment) {
+          commentID = datasetComment;
+        }
       }
 
       const codeMain = document.getElementById('code-main');
@@ -81,21 +47,6 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
     },
     [props],
   );
-
-  // ComponentDidMount - resize on initial mount
-  React.useEffect(() => {
-    resizeOnNextFrame();
-  }, [resizeOnNextFrame]);
-
-  // ComponentDidUpdate - handle window size changes
-  React.useEffect(() => {
-    resizeOnNextFrame();
-  }, [props.windowheight, props.windowwidth, resizeOnNextFrame]);
-
-  // ComponentDidUpdate - handle file changes
-  React.useEffect(() => {
-    resizeOnNextFrame();
-  }, [props.file, resizeOnNextFrame]);
 
   const zoomStyles = {
     transform: `scale(${props.zoom})`,
@@ -120,20 +71,33 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
           <div
             className="code-panel"
             id="code-panel"
-            style={{ ...codePanelStyle, height: props.windowheight - 78, padding: '20px 20px' }}
+            style={{ ...codePanelStyle, height: props.windowheight - 50, padding: '20px 20px' }}
           >
-            <SplitScreen>
+            <SplitScreen initialLeftWidth={72}>
               <div
                 className="code-panel--code"
                 style={{
                   position: 'relative',
-                  // flex: '1 1 60%',
-                  minWidth: '400px',
+                  minWidth: '300px',
                   height: '100%',
-                  overflowY: 'auto',
-                  overflowX: 'auto',
                 }}
               >
+                {/* Toolbar widgets (e.g., Execute button) */}
+                {props.toolbarWidgets && props.toolbarWidgets.length > 0 && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '10px',
+                      // backgroundColor: '#f5f5f5',
+
+                      marginBottom: '10px',
+                    }}
+                  >
+                    <Divider orientation="left">{props.toolbarWidgets}</Divider>
+                  </div>
+                )}
                 <div
                   id="code-tour-target"
                   style={{
@@ -148,11 +112,7 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
                 id="code-panel--comments"
                 className="code-panel--comments"
                 style={{
-                  flex: '1 1 40%',
-                  // minWidth: '300px',
                   height: '100%',
-                  overflowY: 'auto',
-                  overflowX: 'hidden',
                 }}
               >
                 {props.comments}

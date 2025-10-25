@@ -6,6 +6,7 @@
 
 /* other library imports */
 import { Link } from 'react-router-dom';
+import { theme } from 'antd';
 
 /* codePost imports */
 import { CourseType } from '../../infrastructure/course';
@@ -28,6 +29,7 @@ export const encodedCourseLink = (base: string, course: CourseType, panel?: stri
 };
 
 const CourseMenu = (props: IProps) => {
+  const { token } = theme.useToken();
   const sortArchived = (a: CourseType, b: CourseType) => {
     return a.archived === b.archived ? 0 : a.archived ? 1 : -1;
   };
@@ -49,7 +51,7 @@ const CourseMenu = (props: IProps) => {
           key: course.id,
           label: (
             <Link to={encodedCourseLink(props.base, course, props.panel)}>
-              <span style={{ color: course.archived ? 'rgba(0, 0, 0, 0.3)' : 'default' }}>
+              <span style={course.archived ? { color: token.colorTextQuaternary } : undefined}>
                 {`${course.name} | ${course.period}`}
               </span>
             </Link>

@@ -9,8 +9,8 @@ import React, { useEffect, useState } from 'react';
 import { Breadcrumb, Button, Checkbox, InputNumber, message, Tabs, Typography } from 'antd';
 
 /* other library imports */
-import { RouteComponentProps } from 'react-router';
-import { Link } from 'react-router-dom';
+import { RouteComponentProps } from '../../../../../router/legacy';
+import { Link, useLocation } from 'react-router-dom';
 
 /* codePost object imports */
 import { AssignmentType } from '../../../../../infrastructure/assignment';
@@ -52,6 +52,8 @@ export enum FILE_TYPE {
 
 export const TestingSetup = (props: IProps & RouteComponentProps) => {
   // ************************** State Variables ******************************
+  const location = useLocation();
+
   let defaultTab;
   if (props.match.params.tabKey !== undefined) {
     defaultTab = props.match.params.tabKey.valueOf();
@@ -491,9 +493,7 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
 
   const actions = [
     <Button type="primary">
-      <Link to={[...props.match.url.split('/').slice(0, props.match.url.split('/').length - 2), 'results'].join('/')}>
-        View results
-      </Link>
+      <Link to={location.pathname.replace(/\/edit.*$/, '/results')}>View results</Link>
     </Button>,
   ];
 

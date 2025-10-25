@@ -1,7 +1,7 @@
-import { Card, Input, Table } from 'antd';
+import { BookOutlined, GlobalOutlined, LoginOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Input, Row, Space, Statistic, Table, Tag, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import { CourseType } from '../../infrastructure/course';
 import { OrganizationType } from '../../infrastructure/organization';
@@ -21,39 +21,63 @@ interface AdminTableProps {
   admins: AdminData[];
 }
 
-const fullstoryQuery = (email: string) =>
-  `https://app.fullstory.com/ui/MFFNS/segments/everyone/people:search:((NOW%2FDAY-29DAY:NOW%2FDAY%2B1DAY):((UserEmail:==:%22${email}%22)):():():():)/0`;
-
 const columns: ColumnsType<AdminData> = [
   {
-    title: 'Email',
+    title: 'Admin Email',
     dataIndex: 'email',
     key: 'email',
+    render: (email: string) => (
+      <Space>
+        <UserOutlined style={{ color: '#722ed1' }} />
+        <strong>{email}</strong>
+      </Space>
+    ),
   },
   {
     title: 'Organization',
     dataIndex: 'organization',
     key: 'organization',
-    render: (org: OrganizationType) => `${org.name} (${org.shortname})`,
+    render: (org: OrganizationType) => (
+      <Space direction="vertical" size="small">
+        <Space>
+          <GlobalOutlined style={{ color: '#1890ff' }} />
+          {org.name}
+        </Space>
+        <Tag color="blue">{org.shortname}</Tag>
+      </Space>
+    ),
+    filters: [],
+    onFilter: (value, record: AdminData) => record.organization?.shortname === value,
   },
   {
     title: 'Course',
-    dataIndex: 'course',
+    dataIndex: 'course_name',
     key: 'course',
-    render: (course: CourseType) => `${course.name} | ${course.period}`,
+    render: (_: string, record: AdminData) => (
+      <Space direction="vertical" size="small">
+        <Space>
+          <BookOutlined style={{ color: '#52c41a' }} />
+          <strong>{record.course_name}</strong>
+        </Space>
+        <Tag color="green">{record.course_period}</Tag>
+      </Space>
+    ),
   },
   {
     title: 'Actions',
     key: 'actions',
+    width: 120,
     render: (_: unknown, record: AdminData) => (
-      <span>
-        <Link to={`/loginas/${record.email}`} target="_blank" rel="noopener noreferrer">
-          loginas
-        </Link>{' '}
-        <a href={fullstoryQuery(record.email)} target="_blank" rel="noopener noreferrer">
-          fullstory
-        </a>
-      </span>
+      <Tooltip title="Login as this user">
+        <Button
+          type="primary"
+          size="small"
+          icon={<LoginOutlined />}
+          onClick={() => window.open(`/loginAs?email=${record.email}`, '_blank')}
+        >
+          Login As
+        </Button>
+      </Tooltip>
     ),
   },
 ];
@@ -74,17 +98,106 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
     );
   }, [admins, searchValue]);
 
+  // Get unique organizations for filter
+  const uniqueOrgs = useMemo(() => {
+    const orgMap = new Map<number, OrganizationType>();
+    admins.forEach((admin) => {
+      if (admin.organization) {
+        orgMap.set(admin.organization.id, admin.organization);
+      }
+    });
+    return Array.from(orgMap.values());
+  }, [admins]);
+
+  // Update columns with filters
+  const columnsWithFilters = useMemo(() => {
+    return columns.map((col) => {
+      if (col.key === 'organization') {
+        return {
+          ...col,
+          filters: uniqueOrgs.map((org) => ({ text: org.shortname, value: org.shortname })),
+        };
+      }
+      return col;
+    });
+  }, [uniqueOrgs]);
+
+  const getStats = () => {
+    const uniqueAdmins = new Set(filteredAdmins.map((a) => a.email));
+    const uniqueCourses = new Set(filteredAdmins.map((a) => a.course_name));
+    const uniqueOrganizations = new Set(filteredAdmins.map((a) => a.organization?.id).filter(Boolean));
+
+    return {
+      totalAdmins: uniqueAdmins.size,
+      totalCourses: uniqueCourses.size,
+      totalOrganizations: uniqueOrganizations.size,
+      totalAssignments: filteredAdmins.length,
+    };
+  };
+
+  const stats = getStats();
+
   return (
-    <Card title="Admins" style={{ width: '100%' }}>
+    <Card title="Course Administrators" style={{ width: '100%' }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: '20px' }}>
+        <Col xs={24} sm={12} md={6}>
+          <Card size="small">
+            <Statistic
+              title="Unique Admins"
+              value={stats.totalAdmins}
+              prefix={<UserOutlined style={{ color: '#722ed1' }} />}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card size="small">
+            <Statistic
+              title="Organizations"
+              value={stats.totalOrganizations}
+              prefix={<GlobalOutlined style={{ color: '#1890ff' }} />}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card size="small">
+            <Statistic
+              title="Courses"
+              value={stats.totalCourses}
+              prefix={<BookOutlined style={{ color: '#52c41a' }} />}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card size="small">
+            <Statistic
+              title="Admin Assignments"
+              value={stats.totalAssignments}
+              prefix={<TeamOutlined style={{ color: '#13c2c2' }} />}
+            />
+          </Card>
+        </Col>
+      </Row>
+
       <Search
-        placeholder="Search..."
+        placeholder="Search by email, course, or organization..."
         onSearch={setSearchValue}
         onChange={(e) => setSearchValue(e.target.value)}
         enterButton
-        style={{ width: 400, marginBottom: 14 }}
+        allowClear
+        style={{ width: '100%', maxWidth: 600, marginBottom: 16 }}
       />
-      <div style={{ marginBottom: 14 }}>Admin Count: {filteredAdmins.length}</div>
-      <Table columns={columns} dataSource={filteredAdmins} size="small" rowKey="email" />
+
+      <Table
+        columns={columnsWithFilters}
+        dataSource={filteredAdmins}
+        size="middle"
+        rowKey={(record) => `${record.email}-${record.id}`}
+        pagination={{
+          pageSize: 20,
+          showSizeChanger: true,
+          showTotal: (total) => `Total ${total} admin assignments`,
+        }}
+      />
     </Card>
   );
 };

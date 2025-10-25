@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { DatabaseTwoTone, InfoOutlined } from '@ant-design/icons';
 
 /* library imports */
-import { Button, Divider, Empty, Input, Modal, Radio, Select, Skeleton, Tabs, Tooltip, Typography } from 'antd';
+import { Button, Divider, Empty, Modal, Radio, Select, Skeleton, Tabs, Tooltip, Typography } from 'antd';
 
 /* codePost object imports */
 import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
@@ -35,6 +35,7 @@ import locale from './utils/languageLocale';
 import themeVars from '../../../../../styles/abstracts/_theme.js';
 
 import { awaitBuildResult } from '../autograderPollingUtils';
+import Editor from '@monaco-editor/react';
 
 const { Option } = Select;
 const { confirm } = Modal;
@@ -289,12 +290,21 @@ ${installText} package2
 
   const dependenciesInput = (
     // Disable selector if environment has a custom dockerfile defined
-    <Input.TextArea
-      autoSize={{ minRows: 4, maxRows: 8 }}
+    // <Input.TextArea
+    //   autoSize={{ minRows: 4, maxRows: 8 }}
+    //   value={dependencies}
+    //   onChange={onDependenciesChange}
+    //   placeholder={placeholder}
+    //   style={{ marginLeft: '15px', width: '50%' }}
+    // />
+    <Editor
+      height="200px"
+      defaultLanguage="shell"
       value={dependencies}
       onChange={onDependenciesChange}
-      placeholder={placeholder}
-      style={{ marginLeft: '15px', width: '50%' }}
+      defaultValue={placeholder}
+      theme="vs-dark"
+      options={{ minimap: { enabled: false }, fontSize: 14, wordWrap: 'on' }}
     />
   );
 
@@ -305,12 +315,14 @@ RUN ${installText} package2
 ...`;
 
   const customDockerInput = props.env && (
-    <Input.TextArea
-      autoSize={{ minRows: 4 }}
+    <Editor
+      height="200px"
+      defaultLanguage="dockerfile"
       value={customDockerfile}
       onChange={onCustomDockerfileChange}
-      placeholder={dockerPlaceholder}
-      style={{ marginLeft: '15px', width: '50%' }}
+      defaultValue={dockerPlaceholder}
+      theme="vs-dark"
+      options={{ minimap: { enabled: false }, fontSize: 14, wordWrap: 'on' }}
     />
   );
 
@@ -369,7 +381,13 @@ RUN ${installText} package2
       </span>
       <br />
       <br />
-      <CodeWindow code={(props.env && props.env.compileText) || ''} name={'.sh'} onSave={saveCompileText} />
+
+      <CodeWindow
+        code={(props.env && props.env.compileText) || ''}
+        name={'.sh'}
+        onSave={saveCompileText}
+        height={'200px'}
+      />
       <Divider />
       <Typography.Title level={3}>3. Add helper files</Typography.Title>
       <span>

@@ -4,7 +4,7 @@ import * as React from 'react';
 import { DeleteOutlined, DownOutlined, EditOutlined, PlusOutlined, TagOutlined } from '@ant-design/icons';
 
 /* antd imports */
-import { Button, Divider, Input, Menu, Popover, Tag, Tooltip } from 'antd';
+import { Button, Divider, Input, Menu, Popover, Space, Tag, Tooltip } from 'antd';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
@@ -86,8 +86,8 @@ const RubricMenuCategoryUI = ({
             helpers.saveComment(thisComment.id);
           };
 
-          const deleteThisComment = (e: any) => {
-            helpers.deleteComment(rubricComment, e);
+          const deleteThisComment = () => {
+            helpers.deleteComment(rubricComment);
           };
 
           // // @ts-ignore
@@ -153,8 +153,8 @@ const RubricMenuCategoryUI = ({
             helpers.saveComment(rubricComment.id);
           };
 
-          const deleteThisComment = (e: any) => {
-            helpers.deleteComment(rubricComment, e);
+          const deleteThisComment = () => {
+            helpers.deleteComment(rubricComment);
           };
 
           const textInput = (
@@ -439,7 +439,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
     return (
       <div
         style={{
-          padding: '0px 40px 0px 0px',
+          padding: '0px 20px 0px 0px',
           fontSize: '12px',
         }}
         className={`rubric-row rubric-row--active${props.cursored ? ' rubric-row-cursored' : ''}`}
@@ -458,21 +458,24 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
         {props.textInput}
         {props.pointInput}
         <div style={{ width: '40px' }} />
-        <div
-          style={{
-            position: 'absolute',
-            right: '0px',
-            width: '35px',
-            borderLeft: '1px solid #ececec',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-evenly',
-            alignItems: 'center',
-          }}
+        <Button icon={<DeleteOutlined />} onClick={props.deleteComment} type="text" danger />
+        {/* <div
+          style={
+            {
+              // position: 'absolute',
+              // right: '0px',
+              // width: '35px',
+              // borderLeft: '1px solid #ececec',
+              // height: '100%',
+              // display: 'flex',
+              // flexDirection: 'column',
+              // justifyContent: 'space-evenly',
+              // alignItems: 'center',
+            }
+          }
         >
           <DeleteOutlined onClick={props.deleteComment} style={{ fontSize: '11px', margin: '0px' }} />
-        </div>
+        </div> */}
       </div>
     );
   } else {

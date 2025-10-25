@@ -8,7 +8,7 @@ import {
   UserSwitchOutlined,
 } from '@ant-design/icons';
 
-import { Dropdown } from 'antd';
+import { Dropdown, theme } from 'antd';
 
 import { UserType } from '../../infrastructure/user';
 import { USER_TYPE } from '../../types/common';
@@ -24,6 +24,7 @@ interface IProps {
 }
 
 const RoleMenu = (props: IProps) => {
+  const { token } = theme.useToken();
   const showStudent = props.thisApp !== USER_TYPE.STUDENT && props.user.studentCourses.length > 0;
   const showGrader = props.thisApp !== USER_TYPE.GRADER && props.user.graderCourses.length > 0;
   const showAdmin = props.thisApp !== USER_TYPE.ADMIN && props.user.canCreateCourses;
@@ -105,8 +106,10 @@ const RoleMenu = (props: IProps) => {
             paddingBottom: 2,
           }}
         >
-          <InfoCircleOutlined style={{ paddingRight: 7, color: 'grey' }} />
-          <div style={{ color: 'grey', fontStyle: 'italic', fontSize: 10, maxWidth: 55 }}>Learn more about roles</div>
+          <InfoCircleOutlined style={{ paddingRight: 7, color: token.colorTextSecondary }} />
+          <div style={{ color: token.colorTextSecondary, fontStyle: 'italic', fontSize: 10, maxWidth: 55 }}>
+            Learn more about roles
+          </div>
         </div>
       </CPTooltip>
     ),
@@ -115,7 +118,9 @@ const RoleMenu = (props: IProps) => {
   return (
     <Dropdown menu={{ items: menuItems }} trigger={['click']}>
       <CPTooltip title="Switch Roles" placement="left" hideThisOnHideTips={true}>
-        <UserSwitchOutlined style={{ color: props.theme === 'light' ? 'black' : 'white', cursor: 'pointer' }} />
+        <UserSwitchOutlined
+          style={{ color: props.theme === 'light' ? token.colorText : token.colorTextLightSolid, cursor: 'pointer' }}
+        />
       </CPTooltip>
     </Dropdown>
   );

@@ -67,63 +67,6 @@ function GradeAnimation() {
     ref: deleteCommentRef,
   });
 
-  // Attempts at restarting animation -------
-  // set the interval to incremnet the counter
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     setCounter((x) => {
-  //       return x === 2 ? 1 : 2;
-  //     });
-  //   }, 13000);
-  //
-  //   return () => {
-  //     clearInterval(interval);
-  //   };
-  // }, []);
-
-  // console.log(counter);
-  // const refs = counter === 2 ? [] : [fileRef, commentRef, commentBoxRef, textRef, savedCommentRef];
-  // useChain(
-  //   counter % 2 === 1
-  //     ? [fileRef, commentRef, commentBoxRef, textRef, savedCommentRef]
-  //     : [savedCommentRef, textRef, commentBoxRef, commentRef, fileRef],
-  //   counter % 2 === 1 ? [0.0, 2.0, 4.0, 6.0, 8.0] : [0, 0, 0, 0, 0],
-  // );
-  // File toggle
-
-  // console.log(long);
-  // const onRest1 = () => {
-  //   if (refs.length === 6) {
-  //     console.log('here');
-  //     set1({ width: 0 });
-  //     set2({ width: 0, opacity: 0 });
-  //     set5({ index: 0 });
-  //     setRefs([commentRef, commentBoxRef, textRef, savedCommentRef, delayRef]);
-  //   } else {
-  //     console.log('here1');
-  //     set1({ width: 110 });
-  //     set2({ width: 250, opacity: 1 });
-  //     set5({ index: 1 });
-  //     setRefs([fileRef, commentRef, commentBoxRef, textRef, savedCommentRef, delayRef]);
-  //   }
-  // };
-
-  // const onRest1 = () => {
-  //   console.log('hello');
-  //   setCounter((x) => {
-  //     setRefs(refs.slice().reverse());
-  //     return x + 1;
-  //   });
-  // };
-
-  // useSpring({
-  //   index: 1,
-  //   from: { index: 0 },
-  //   config: 2000,
-  //   ref: delayRef,
-  //   onRest: onRest1,
-  // });
-
   useChain(refs);
 
   const AnimatedComment = animated(SimpleComment);
@@ -139,7 +82,7 @@ function GradeAnimation() {
         zIndex: 2,
         background: 'grey',
         position: 'absolute',
-        opacity: saveCommentSpring.index.interpolate({ range: [0.0, 0.25, 0.5, 1], output: [0.0, 0.25, 0.0, 0.0] }),
+        opacity: saveCommentSpring.index.to({ range: [0.0, 0.25, 0.5, 1], output: [0.0, 0.25, 0.0, 0.0] }),
       }}
     />
   );
@@ -156,7 +99,7 @@ function GradeAnimation() {
         zIndex: 2,
         background: 'red',
         position: 'absolute',
-        opacity: deleteCommentSpring.index.interpolate({ range: [0.0, 0.25, 0.5, 1], output: [0.0, 0.25, 0.0, 0.0] }),
+        opacity: deleteCommentSpring.index.to({ range: [0.0, 0.25, 0.5, 1], output: [0.0, 0.25, 0.0, 0.0] }),
       }}
     />
   );
@@ -186,10 +129,10 @@ function GradeAnimation() {
               <animated.div
                 style={{
                   top: 164,
-                  left: commentSpring.width.interpolate((x: any) => {
+                  left: commentSpring.width.to((x: any) => {
                     return Number(x) + 350;
                   }),
-                  opacity: commentSpring.width.interpolate((x: any) => {
+                  opacity: commentSpring.width.to((x: any) => {
                     return x === 0 || x === 102 ? 0 : 1;
                   }),
                   position: 'absolute',
@@ -213,7 +156,7 @@ function GradeAnimation() {
                       height: 160,
                       opacity: commentBoxSpring.opacity,
                       overflowX: 'hidden',
-                      transform: commentBoxSpring.opacity.interpolate((x: any) => {
+                      transform: commentBoxSpring.opacity.to((x: any) => {
                         return `translateY(${Number(x) * 30 - 30}px)`;
                       }),
                       display: 'inline-block',
@@ -222,7 +165,7 @@ function GradeAnimation() {
                     <div style={{ position: 'absolute', float: 'left' }}>
                       <div style={{ minWidth: 230, minHeight: 250, width: 230, position: 'absolute' }}>
                         <AnimatedComment
-                          text={length.interpolate((l: number) => {
+                          text={length.to((l: number) => {
                             return textAnimation(
                               '*Variable naming*: How about `arr` and `el` instead of `x` and `y`?',
                               l,
@@ -231,7 +174,7 @@ function GradeAnimation() {
                           line={3}
                           points={1}
                           top={0}
-                          classType={saveCommentSpring.index.interpolate((x: number) => {
+                          classType={saveCommentSpring.index.to((x: number) => {
                             return Math.round(x) === 1 ? 'inactive' : 'active';
                           })}
                         />

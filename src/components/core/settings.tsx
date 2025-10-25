@@ -3,12 +3,12 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import { RouteComponentProps } from 'react-router';
+import { RouteComponentProps } from '../../router/legacy';
 
 import { CopyOutlined, RedoOutlined } from '@ant-design/icons';
 
 /* antd imports */
-import { Input, message, Modal, Switch, Table, Typography } from 'antd';
+import { Input, message, Modal, Switch, Table, Typography, theme } from 'antd';
 
 /* codePost imports */
 import { CourseType } from '../../infrastructure/course';
@@ -22,6 +22,12 @@ import CPTooltip from '../core/CPTooltip';
 import { tooltips } from '../core/tooltips';
 
 /**********************************************************************************************************************/
+
+const CopyTokenIcon = ({ onClick }: { onClick: () => void }) => {
+  const { token } = theme.useToken();
+
+  return <CopyOutlined style={{ color: token.colorInfo }} onClick={onClick} />;
+};
 
 interface IState {
   errorMessage: string;
@@ -197,7 +203,7 @@ class Settings extends Component<IProps & RouteComponentProps, IState> {
               value={user.api_token}
               prefix={
                 <CPTooltip title={tooltips.settings.token.copy} hideThisOnHideTips={true}>
-                  <CopyOutlined style={{ color: '#1890ff' }} onClick={this.copyKeyToClipboard} />
+                  <CopyTokenIcon onClick={this.copyKeyToClipboard} />
                 </CPTooltip>
               }
               disabled={true}
@@ -259,7 +265,7 @@ class Settings extends Component<IProps & RouteComponentProps, IState> {
             <br />
             {inputComponent}
             <Modal
-              visible={this.state.askedToReset}
+              open={this.state.askedToReset}
               title="Are you sure you want to reset your API token?"
               okText="Reset"
               onOk={this.requestToken}

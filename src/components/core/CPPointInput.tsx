@@ -1,18 +1,15 @@
-import { CaretDownOutlined, CaretUpOutlined, MinusCircleFilled, PlusCircleFilled } from '@ant-design/icons';
-import { Button, Input, InputNumber } from 'antd';
-import { useContext, useEffect, useState } from 'react';
-import ToggleButton from 'react-toggle-button';
+import { CaretDownOutlined, CaretUpOutlined, MinusOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, InputNumber, Segmented, Space, Switch, theme, Tooltip } from 'antd';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 
 export type PointType = 'positive' | 'negative';
 export type CPPointInputType = 'small' | 'default';
 
-const InputGroup = Input.Group;
-
 interface ICPPointInputProps {
   value: number | undefined;
-  size: CPPointInputType;
+  size?: CPPointInputType;
   onChange?: (value: number) => void;
   disabled?: boolean;
   defaultToPositive?: boolean;
@@ -21,6 +18,21 @@ interface ICPPointInputProps {
   onMouseLeave?: () => void;
   step?: number;
 }
+
+// Constants
+const DEFAULT_STEP = 0.5;
+const TOGGLE_MIN_WIDTH = 30;
+
+/**
+ * Helper function to determine initial point type based on value
+ */
+const getInitialPointType = (value: number | undefined, defaultToPositive?: boolean): PointType => {
+  const defaultValue = defaultToPositive ? 'positive' : 'negative';
+  if (value !== undefined && value !== 0) {
+    return value > 0 ? 'positive' : 'negative';
+  }
+  return defaultValue;
+};
 
 /**
  * CPPointInput Component
@@ -37,165 +49,122 @@ interface ICPPointInputProps {
  * This allows the parent component to work with signed values while providing
  * an intuitive UI where users toggle between bonus/penalty and enter magnitudes.
  */
-const CPPointInput: React.FC<ICPPointInputProps> = (props) => {
+const CPPointInput: React.FC<ICPPointInputProps> = ({
+  value,
+  size = 'default',
+  onChange,
+  disabled = false,
+  defaultToPositive = false,
+  onKeyDown,
+  onBlur,
+  onMouseLeave,
+  step = DEFAULT_STEP,
+}) => {
   const consoleTheme = useContext(ConsoleThemeContext);
+  const { token } = theme.useToken();
 
-  const getInitialPointType = (value: number | undefined, defaultToPositive?: boolean): PointType => {
-    const defaultValue = defaultToPositive ? 'positive' : 'negative';
-    if (value !== undefined && value !== 0) {
-      return value > 0 ? 'positive' : 'negative';
-    }
-    return defaultValue;
-  };
+  const { colorBgContainer, colorBorder, colorText, colorError, colorSuccess, colorTextLightSolid } = token;
 
-  const [pointType, setPointType] = useState<PointType>(() =>
-    getInitialPointType(props.value, props.defaultToPositive),
-  );
+  const [pointType, setPointType] = useState<PointType>(() => getInitialPointType(value, defaultToPositive));
 
   useEffect(() => {
-    const newPointType = getInitialPointType(props.value, props.defaultToPositive);
-    setPointType(newPointType);
-  }, [props.value, props.defaultToPositive]);
+    setPointType(getInitialPointType(value, defaultToPositive));
+  }, [value, defaultToPositive]);
 
-  /**
-   * Updates the point value with proper sign based on the current pointType toggle.
-   * - Positive (green/bonus): Sends negative value (e.g., -2 means +2 bonus)
-   * - Negative (red/penalty): Sends positive value (e.g., 2 means -2 penalty)
-   */
-  const setValue = (value: number | undefined | null) => {
-    if (value === undefined || value === null || !props.onChange) {
-      return;
-    }
-
-    const adjustedValue = pointType === 'positive' ? -value : value;
-    props.onChange(adjustedValue);
-  };
-
-  /**
-   * Handles toggling between positive (bonus) and negative (penalty) modes.
-   * Important: We calculate the adjusted value using the NEW pointType immediately,
-   * rather than calling setValue(), to avoid using stale state from the closure.
-   */
-  const toggleType = () => {
-    if (props.disabled || props.value === undefined || !props.onChange) {
-      return;
-    }
-
-    const newPointType = pointType === 'positive' ? 'negative' : 'positive';
-    setPointType(newPointType);
-
-    const absValue = Math.abs(props.value);
-    const adjustedValue = newPointType === 'positive' ? -absValue : absValue;
-    props.onChange(adjustedValue);
-  };
-
-  const step = props.step ?? 0.5;
-  const absValue = Math.abs(props.value ?? 0);
-
-  const onPlus = () => {
-    setValue(parseFloat((absValue + step).toFixed(2)));
-  };
-
-  const onMinus = () => {
-    setValue(parseFloat((absValue - step).toFixed(2)));
-  };
-
-  const className = `cp-point-input cp-point-input--${props.size}`;
-
-  const style = props.disabled
-    ? {
-        backgroundColor: consoleTheme.consoleTheme.buttonDisabledBg,
-        color: consoleTheme.consoleTheme.buttonDisabledColor,
-        border: `1px solid ${consoleTheme.consoleTheme.buttonSecondaryBorder}`,
+  const setValue = useCallback(
+    (newValue: number | null | undefined) => {
+      if (newValue === null || newValue === undefined || Number.isNaN(newValue) || !onChange) {
+        return;
       }
-    : {
-        backgroundColor: consoleTheme.consoleTheme.commentBody,
-        color: consoleTheme.consoleTheme.text,
-        border: `1px solid ${consoleTheme.consoleTheme.buttonSecondaryBorder}`,
-      };
 
-  const groupClass =
-    consoleTheme.consoleTheme === consoleThemes.light
-      ? 'point-input-group'
-      : 'point-input-group point-input-group--dark';
-
-  const iconStyle: React.CSSProperties = {
-    height: '10px',
-    width: '10px',
-    fill: 'rgba(0, 0, 0, 0.8)',
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-  };
-
-  const isPositive = pointType === 'positive';
-  const thumbIcon = isPositive ? (
-    <PlusCircleFilled key="plus" style={iconStyle} />
-  ) : (
-    <MinusCircleFilled key="minus" style={iconStyle} />
+      const adjustedValue = pointType === 'positive' ? -newValue : newValue;
+      onChange(adjustedValue);
+    },
+    [onChange, pointType],
   );
 
+  const toggleType = useCallback(() => {
+    if (disabled || value === undefined || !onChange) {
+      return;
+    }
+
+    const nextType = pointType === 'positive' ? 'negative' : 'positive';
+    setPointType(nextType);
+
+    const magnitude = Math.abs(value);
+    const adjustedValue = nextType === 'positive' ? -magnitude : magnitude;
+    onChange(adjustedValue);
+  }, [disabled, onChange, pointType, value]);
+
+  const absValue = Math.abs(value ?? 0);
+
+  const precision = useMemo(() => {
+    const decimals = step.toString().split('.')[1];
+    return decimals ? decimals.length : 0;
+  }, [step]);
+
+  const onPlus = useCallback(() => {
+    const nextMagnitude = absValue + step;
+    setValue(parseFloat(nextMagnitude.toFixed(precision)));
+  }, [absValue, precision, setValue, step]);
+
+  const onMinus = useCallback(() => {
+    const nextMagnitude = Math.max(0, absValue - step);
+    setValue(parseFloat(nextMagnitude.toFixed(precision)));
+  }, [absValue, precision, setValue, step]);
+
+  const groupClass = useMemo(
+    () =>
+      consoleTheme.consoleTheme === consoleThemes.light
+        ? 'point-input-group'
+        : 'point-input-group point-input-group--dark',
+    [consoleTheme.consoleTheme],
+  );
+
+  const isPositive = pointType === 'positive';
+  const displayValue = value !== undefined ? Math.abs(value) : undefined;
+  const isMinusDisabled = disabled || absValue === 0;
+
   return (
-    <div className={groupClass}>
-      <ToggleButton
-        value={isPositive}
-        inactiveLabel=""
-        activeLabel=""
-        onToggle={toggleType}
-        thumbStyle={{
-          borderRadius: 4,
-          boxShadow: 'none',
+    <Space size={size == 'small' ? 1 : 8} align="center" className={groupClass} wrap={size === 'small' ? true : false}>
+      <Switch
+        checkedChildren={<PlusOutlined />}
+        unCheckedChildren={<MinusOutlined />}
+        checked={isPositive}
+        disabled={disabled}
+        size={size}
+        style={{
+          backgroundColor: isPositive ? colorSuccess : colorError,
         }}
-        trackStyle={{ borderRadius: 5, width: '32px' }}
-        containerStyle={{
-          display: 'inline-block',
-          verticalAlign: 'middle',
-          width: '40px',
-          cursor: props.disabled ? 'not-allowed' : 'pointer',
-        }}
-        thumbIcon={thumbIcon}
-        thumbAnimateRange={[1, 13]}
-        colors={{
-          activeThumb: {
-            base: consoleTheme.consoleTheme.commentBody,
-          },
-          inactiveThumbe: {
-            base: consoleTheme.consoleTheme.commentBody,
-          },
-          active: {
-            base: '#24be85',
-          },
-          inactive: {
-            base: '#d4382a',
-          },
-        }}
+        onChange={toggleType}
       />
-      <InputGroup
-        compact
-        className={className}
-        style={{ display: 'flex', justifyContent: 'flex-end' }}
-        onBlur={props.onBlur}
-        onMouseLeave={props.onMouseLeave}
-      >
+
+      <Space.Compact size={size === 'small' ? 'small' : 'middle'}>
         <InputNumber
-          value={props.value !== undefined ? Math.abs(props.value) : undefined}
-          size={props.size === 'default' ? 'middle' : 'small'}
+          value={displayValue}
           onChange={setValue}
-          disabled={props.disabled}
-          onKeyDown={props.onKeyDown}
-          style={style}
+          disabled={disabled}
+          onKeyDown={onKeyDown}
+          onBlur={onBlur}
+          onMouseLeave={onMouseLeave}
           min={0}
+          style={{
+            maxWidth: size === 'small' ? 50 : 70,
+          }}
+          step={step}
+          precision={precision}
+          controls={false}
+          aria-label="Point value"
         />
-        <Button icon={<CaretUpOutlined />} onClick={onPlus} disabled={props.disabled} style={style} />
+        <Button icon={<CaretUpOutlined />} onClick={onPlus} disabled={disabled} aria-label="Increase points" />
         <Button
           icon={<CaretDownOutlined />}
           onClick={onMinus}
-          disabled={props.disabled || props.value === 0}
-          style={style}
+          disabled={isMinusDisabled}
+          aria-label="Decrease points"
         />
-      </InputGroup>
-    </div>
+      </Space.Compact>
+    </Space>
   );
 };
 

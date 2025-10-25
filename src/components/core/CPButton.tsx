@@ -1,6 +1,5 @@
-import { Icon as LegacyIcon } from '@ant-design/compatible';
 import { Button, ButtonProps } from 'antd';
-import React, { CSSProperties, useContext, useMemo } from 'react';
+import React, { CSSProperties, ReactNode, useContext, useMemo } from 'react';
 import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
 import CPTooltip from './CPTooltip';
 import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
@@ -9,7 +8,7 @@ export type CPButtonType = 'primary' | 'secondary' | 'dark' | 'danger' | 'highli
 
 export interface ICPButtonProps extends IWithWindowWatcherProps {
   cpType: CPButtonType;
-  fallback?: string;
+  fallbackIcon?: ReactNode;
   small?: boolean;
   isLoading?: boolean;
   fallbackWidth?: number; // Optional: window width when the button falls back to icon
@@ -19,7 +18,7 @@ type CPButtonFullProps = ButtonProps & ICPButtonProps;
 
 const CPButton: React.FC<CPButtonFullProps> = ({
   cpType,
-  fallback,
+  fallbackIcon,
   fallbackWidth = 900,
   isLoading,
   small,
@@ -91,7 +90,7 @@ const CPButton: React.FC<CPButtonFullProps> = ({
   }, [className, children, small]);
 
   // Determine if button should fallback to icon-only based on window width
-  const shouldFallbackToIcon = windowwidth < fallbackWidth && !!fallback;
+  const shouldFallbackToIcon = windowwidth < fallbackWidth && !!fallbackIcon;
 
   // Render icon-only button for small screens
   if (shouldFallbackToIcon) {
@@ -101,7 +100,7 @@ const CPButton: React.FC<CPButtonFullProps> = ({
           {...restProps}
           type={buttonType}
           shape="circle"
-          icon={<LegacyIcon type={fallback!} />}
+          icon={fallbackIcon}
           style={customStyle}
           className={classNames}
         />

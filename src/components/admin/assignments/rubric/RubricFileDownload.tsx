@@ -73,7 +73,7 @@ class RubricFileDownload extends React.Component<IProps, {}> {
         onClick={this.downloadRubric}
         disabled={this.props.isDisabled}
         icon={<DownloadOutlined />}
-        fallback="download"
+        fallbackIcon={<DownloadOutlined />}
         fallbackWidth={1250}
       >
         Download

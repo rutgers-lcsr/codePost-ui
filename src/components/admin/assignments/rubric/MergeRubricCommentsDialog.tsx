@@ -185,13 +185,13 @@ class MergeRubricCommentsDialog extends React.Component<
           disabled={this.props.isDisabled}
           cpType="secondary"
           icon={<BranchesOutlined />}
-          fallback="branches"
+          fallbackIcon={<BranchesOutlined />}
           fallbackWidth={1250}
         >
           Merge
         </CPButton>
         <Modal
-          visible={this.state.visible}
+          open={this.state.visible}
           title="Merge rubric comments"
           onCancel={this.closeDialog}
           onOk={this.mergeComments}

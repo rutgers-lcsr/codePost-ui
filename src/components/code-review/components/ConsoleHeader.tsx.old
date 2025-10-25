@@ -1,0 +1,196 @@
+/**
+ * ConsoleHeader Component
+ *
+ * Renders the header section of the code review console.
+ * Includes navigation, grade display, controls, and theme toggle.
+ *
+ * This component is extracted for:
+ * - Better maintainability
+ * - Potential reuse in Jupyter notebook extensions
+ * - Easier testing
+ */
+
+import React from 'react';
+import { AssignmentType } from '../../../infrastructure/assignment';
+import { AnonymousSubmissionType, StudentSubmissionType } from '../../../infrastructure/submission';
+import { UserType } from '../../../infrastructure/user';
+import { CURSOR_DOMAIN, PERMISSION_LEVEL } from '../../../types/CodeConsole.types';
+
+import CursorToggle from '../../core/CursorToggle';
+import ThemeToggle from '../../core/ThemeToggle';
+import { Controls, GradeButton, HeaderMenu, StatusTags, ViewAsStudent } from '../Header';
+
+export interface ConsoleHeaderProps {
+  /** Current permission level for the submission */
+  permissionLevel: PERMISSION_LEVEL;
+
+  /** Assignment data */
+  assignment?: AssignmentType;
+
+  /** Submission data (for graders) */
+  submission?: AnonymousSubmissionType;
+
+  /** Read-only submission data (for students) */
+  readOnlySubmission?: StudentSubmissionType;
+
+  /** Current user */
+  user: UserType;
+
+  /** Whether in demo mode */
+  inDemoMode: boolean;
+
+  /** Whether grades should be hidden */
+  hideGrades: boolean;
+
+  /** Whether viewing as student */
+  isStudent: boolean;
+
+  /** Cursor navigation mode enabled */
+  cursorMode: boolean;
+
+  /** Current cursor domain */
+  showCursor: CURSOR_DOMAIN;
+
+  /** Current code zoom level */
+  codeZoom: number;
+
+  /** Current vertical offset */
+  codeVerticalOffset: number;
+
+  /** Whether the submission is finalized */
+  isFinalized: boolean;
+
+  // Callbacks
+  toggleCursorMode: (mode: boolean) => void;
+  setVerticalOffset: (offset: number) => void;
+  setZoom: (zoom: number) => void;
+  handleLogout: () => void;
+  searchSubmissions?: (courseId: number, query: string) => void;
+  navigateToSubmission?: (submissionId: number) => void;
+}
+
+/**
+ * Left header section - mainly navigation
+ */
+export const LeftHeader: React.FC<Pick<ConsoleHeaderProps, 'assignment'>> = ({ assignment }) => {
+  if (!assignment) return null;
+
+  return (
+    <>
+      <HeaderMenu assignment={assignment} />
+    </>
+  );
+};
+
+/**
+ * Middle header section - grade display and status
+ */
+export const MiddleHeader: React.FC<
+  Pick<ConsoleHeaderProps, 'hideGrades' | 'submission' | 'readOnlySubmission' | 'assignment' | 'isFinalized'>
+> = ({ hideGrades, submission, readOnlySubmission, assignment, isFinalized }) => {
+  if (hideGrades || !assignment) return null;
+
+  const displaySubmission = submission || readOnlySubmission;
+  if (!displaySubmission) return null;
+
+  return (
+    <>
+      <GradeButton key="subheader-grade" submission={displaySubmission} assignment={assignment} />
+      <StatusTags key="subheader-status" submission={displaySubmission} isFinalized={isFinalized} />
+    </>
+  );
+};
+
+/**
+ * Right header section - controls and toggles
+ */
+export const RightHeader: React.FC<
+  Pick<
+    ConsoleHeaderProps,
+    | 'permissionLevel'
+    | 'inDemoMode'
+    | 'assignment'
+    | 'isStudent'
+    | 'cursorMode'
+    | 'toggleCursorMode'
+    | 'setVerticalOffset'
+    | 'setZoom'
+    | 'codeVerticalOffset'
+    | 'codeZoom'
+    | 'user'
+    | 'handleLogout'
+  >
+> = ({
+  permissionLevel,
+  inDemoMode,
+  assignment,
+  isStudent,
+  cursorMode,
+  toggleCursorMode,
+  setVerticalOffset,
+  setZoom,
+  codeVerticalOffset,
+  codeZoom,
+  user,
+  handleLogout,
+}) => {
+  const controls = (
+    <Controls key="controls" updateVerticalOffset={setVerticalOffset} updateZoom={setZoom} fallbackWidth={800} />
+  );
+
+  // Simple layout for no permission or demo mode
+  if (
+    permissionLevel === PERMISSION_LEVEL.NONE ||
+    permissionLevel === PERMISSION_LEVEL.NOT_FOUND ||
+    (inDemoMode && !assignment)
+  ) {
+    return (
+      <>
+        <CursorToggle key="cursor-toggle" toggleCursorMode={toggleCursorMode} cursorMode={cursorMode} small={true} />
+        <ThemeToggle key="theme-toggle" small={true} />
+        {controls}
+      </>
+    );
+  }
+
+  // Full header with all controls
+  if (permissionLevel === PERMISSION_LEVEL.READ && !isStudent) {
+    return (
+      <>
+        <ViewAsStudent key="view-as-student" user={user} handleLogout={handleLogout} />
+        <CursorToggle key="cursor-toggle" toggleCursorMode={toggleCursorMode} cursorMode={cursorMode} small={true} />
+        <ThemeToggle key="theme-toggle" small={true} />
+        {controls}
+      </>
+    );
+  }
+
+  return (
+    <>
+      <CursorToggle key="cursor-toggle" toggleCursorMode={toggleCursorMode} cursorMode={cursorMode} small={true} />
+      <ThemeToggle key="theme-toggle" small={true} />
+      {controls}
+    </>
+  );
+};
+
+/**
+ * Main ConsoleHeader component that combines all header sections
+ */
+export const ConsoleHeader: React.FC<ConsoleHeaderProps> = (props) => {
+  return {
+    left: <LeftHeader assignment={props.assignment} />,
+    middle: (
+      <MiddleHeader
+        hideGrades={props.hideGrades}
+        submission={props.submission}
+        readOnlySubmission={props.readOnlySubmission}
+        assignment={props.assignment}
+        isFinalized={props.isFinalized}
+      />
+    ),
+    right: <RightHeader {...props} />,
+  };
+};
+
+export default ConsoleHeader;

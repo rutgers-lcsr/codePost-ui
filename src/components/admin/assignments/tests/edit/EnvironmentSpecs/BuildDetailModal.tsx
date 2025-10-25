@@ -50,7 +50,7 @@ export const BuildDetailModal = (props: IProps) => {
   return (
     <div>
       <Modal
-        visible={visible}
+        open={visible}
         title="Build status"
         width={700}
         onCancel={() => setVisible(false)}

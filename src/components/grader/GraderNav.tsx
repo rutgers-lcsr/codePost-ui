@@ -12,7 +12,7 @@ import {
 
 import { Menu } from 'antd';
 
-import { RouteComponentProps } from 'react-router';
+import { RouteComponentProps } from '../../router/legacy';
 
 import { Link } from 'react-router-dom';
 

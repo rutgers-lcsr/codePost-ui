@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { HeartFilled } from '@ant-design/icons';
 
-import { Form, Input, message, Modal, Radio } from 'antd';
+import { Form, Input, message, Modal, Radio, theme } from 'antd';
 
 import { sendSlack } from './slack';
 
@@ -28,6 +28,7 @@ interface IFormValues {
 }
 
 const Referral = (props: IProps) => {
+  const { token } = theme.useToken();
   const [visible, setVisible] = useState(false);
   const [form] = Form.useForm();
 
@@ -95,7 +96,10 @@ const Referral = (props: IProps) => {
       <CPTooltip title="Know another course that might find codePost useful? Let us know!">
         <HeartFilled
           onClick={changeVisible}
-          style={{ color: props.theme === 'light' ? 'grey' : 'white', cursor: 'pointer' }}
+          style={{
+            color: props.theme === 'light' ? token.colorTextSecondary : token.colorTextLightSolid,
+            cursor: 'pointer',
+          }}
         />
       </CPTooltip>
     </div>
@@ -111,9 +115,10 @@ interface IFormProps {
 }
 
 const ReferralForm: React.FC<IFormProps> = ({ form, open, onCancel, submit, text }) => {
+  const { token } = theme.useToken();
   return (
     <Modal width={525} open={open} title="Refer a course to codePost" okText="Submit" onCancel={onCancel} onOk={submit}>
-      <div style={{ fontSize: 14, color: 'grey' }}>{text}</div>
+      <div style={{ fontSize: 14, color: token.colorTextSecondary }}>{text}</div>
       <br />
       <Form form={form} layout="vertical">
         <Form.Item

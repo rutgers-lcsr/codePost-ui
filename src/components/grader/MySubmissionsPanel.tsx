@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* other library imports */
-import { RouteComponentProps } from 'react-router';
+import { RouteComponentProps } from '../../router/legacy';
 
 /* codePost imports */
 import { AssignmentType, sortAssignments } from '../../infrastructure/assignment';

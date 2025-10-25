@@ -2,11 +2,11 @@
 import React from 'react';
 
 /* ant imports */
-import { Modal, Input, Select } from 'antd';
+import { Input, Modal, Select } from 'antd';
 
 /* codePost imports */
-import { RubricCategoryType } from '../../../infrastructure/types';
 import { RubricComment } from '../../../infrastructure/rubricComment';
+import { RubricCategoryType } from '../../../infrastructure/types';
 
 export interface IProps {
   initialText: string;
@@ -39,7 +39,7 @@ const CommentToRubric = (props: IProps) => {
 
   return (
     <Modal
-      visible={props.visible}
+      open={props.visible}
       title="Create a rubric comment"
       onCancel={props.onCancel}
       onOk={makeRubricComment}
@@ -51,7 +51,9 @@ const CommentToRubric = (props: IProps) => {
       Category:{' '}
       <Select style={{ width: '300px' }} onChange={onChange}>
         {props.rubricCategories.map((el) => (
-          <Select.Option value={el.id}>{el.name}</Select.Option>
+          <Select.Option key={el.id} value={el.id}>
+            {el.name}
+          </Select.Option>
         ))}
       </Select>
     </Modal>

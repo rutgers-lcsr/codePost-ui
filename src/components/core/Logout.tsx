@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* other library imports */
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
 /**********************************************************************************************************************/
 
@@ -18,7 +18,7 @@ class Logout extends React.Component<IProps, {}> {
   public render() {
     this.props.handleLogout();
 
-    return <Redirect to="/" />;
+    return <Navigate to="/" replace />;
   }
 }
 

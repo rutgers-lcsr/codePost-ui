@@ -83,7 +83,7 @@ const ShareInviteCode = (props: IProps) => {
       </Button>
       <Modal
         title="Share invite code"
-        visible={visible}
+        open={visible}
         onCancel={() => setVisible(false)}
         onOk={saveSettings}
         okText="Save"

@@ -8,10 +8,11 @@ import landingVars from '../../styles/pages/_landingVars';
 
 // import * as CodeMirror from 'react-codemirror';
 
-import { Controlled as CodeMirror } from 'react-codemirror2';
+// import { Controlled as CodeMirror } from 'react-codemirror2';
 
-import 'codemirror/mode/python/python';
+// import 'codemirror/mode/python/python';
 import CPButton from '../core/CPButton';
+import Editor from '@monaco-editor/react';
 
 /* eslint-disable no-multi-str */
 const apiCodeExamples = [
@@ -107,10 +108,6 @@ interface IState {
   exampleIndex: number;
 }
 
-const dummyFunction = () => {
-  return;
-};
-
 // @ts-expect-error CodeMirror types may not be fully compatible
 let instance: CodeMirror.Editor | null = null;
 // @ts-expect-error CodeMirror types may not be fully compatible
@@ -137,22 +134,22 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
 
   public render() {
     const { exampleIndex } = this.state;
-    const codeMirror = (
-      <CodeMirror
-        key={`codeMirror${this.state.exampleIndex}`}
-        className="api-codemirror"
-        onBeforeChange={dummyFunction}
-        editorDidMount={setEditor}
-        value={apiCodeExamples[this.state.exampleIndex].code}
-        options={{
-          lineNumbers: true,
-          readOnly: true,
-          lineWrapping: true,
-          mode: 'python',
-          theme: 'material',
-        }}
-      />
-    );
+    // const codeMirror = (
+    // <CodeMirror
+    //   key={`codeMirror${this.state.exampleIndex}`}
+    //   className="api-codemirror"
+    //   onBeforeChange={dummyFunction}
+    //   editorDidMount={setEditor}
+    //   value={apiCodeExamples[this.state.exampleIndex].code}
+    //   options={{
+    //     lineNumbers: true,
+    //     readOnly: true,
+    //     lineWrapping: true,
+    //     mode: 'python',
+    //     theme: 'material',
+    //   }}
+    // />
+    // );
 
     const customPanelStyle = {
       background: 'rgb(38, 50, 56, 0.95)',
@@ -194,7 +191,12 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
           minHeight: this.props.windowwidth < landingVars.breakpoints.mobile ? 0 : 390,
         }}
       >
-        {codeMirror}
+        <Editor
+          height="80vh"
+          defaultValue={apiCodeExamples[this.state.exampleIndex].code}
+          theme="vs-dark"
+          options={{ readOnly: true, minimap: { enabled: false } }}
+        />
       </div>
     );
 

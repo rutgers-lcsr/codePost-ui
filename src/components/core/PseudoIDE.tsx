@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Menu, message, Select, Skeleton } from 'antd';
+import { Menu, message, Select, Skeleton, theme } from 'antd';
 
 import _ from 'lodash';
 import { ILogType, PseudoTerminal, RESULT_TYPE } from '../admin/assignments/tests/edit/TestDefinitions/PseudoTerminal';
@@ -13,6 +13,7 @@ import { AnonymousSubmissionType } from '../../infrastructure/submission';
 // import { HelperFile, HelperFileType } from '../../infrastructure/autograder/helperFile';
 // import { SourceFile, SourceFileType } from '../../infrastructure/autograder/sourceFile';
 import { BasicTestResultType, TestEditorResultType } from '../../infrastructure/autograder/runTypes';
+import { getFileContent } from '../../infrastructure/file';
 import { arrayUpdate } from '../../infrastructure/immutable';
 import { TestCase } from '../../infrastructure/testCase';
 import { AssignmentType, FileType, TestCaseType, TestCategoryType } from '../../infrastructure/types';
@@ -28,6 +29,7 @@ interface IPseudoIDEProps {
 }
 
 const PseudoIDE = (props: IPseudoIDEProps) => {
+  const { token } = theme.useToken();
   const [loading, setLoading] = React.useState<boolean>(true);
 
   const [filesCopy, setFilesCopy] = React.useState<FileType[]>(_.cloneDeep(props.files));
@@ -49,7 +51,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
     }
 
     const thisFile = filesCopy[thisFileIndex];
-    thisFile.code = code;
+    thisFile.data = code;
 
     setFilesCopy(arrayUpdate(filesCopy, thisFile, thisFileIndex));
     return Promise.resolve();
@@ -134,7 +136,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
       const filesJson = filesCopy.map((file: FileType) => {
         return {
           name: file.name,
-          code: file.code,
+          code: getFileContent(file),
           path: file.path === undefined || file.path === null ? '' : file.path,
         };
       });
@@ -155,7 +157,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
     const formatted = {
       log: (
         <span>
-          <span style={{ color: '#678CAB' }}>{response.logs}</span>
+          <span style={{ color: token.colorInfo }}>{response.logs}</span>
           {`\n${result.logs}`}
         </span>
       ),
@@ -190,7 +192,14 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
     return (
       <div style={{ height: `${height}px`, position: 'relative' }} className="pseudo-ide">
         <div style={{ display: 'flex', height: '100%', width: '100%' }}>
-          <div style={{ width: '20%', minWidth: '100px', borderRight: '1px solid #d9d9d9', padding: '20px 40px' }}>
+          <div
+            style={{
+              width: '20%',
+              minWidth: '100px',
+              borderRight: `1px solid ${token.colorBorder}`,
+              padding: '20px 40px',
+            }}
+          >
             <Skeleton active />
           </div>
           <div style={{ display: 'flex', flex: 1, minWidth: 0 }}>
@@ -199,7 +208,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
                 width: '50%',
                 minWidth: '100px',
                 overflowY: 'auto',
-                borderRight: '1px solid #d9d9d9',
+                borderRight: `1px solid ${token.colorBorder}`,
                 padding: '20px 40px',
               }}
             >
@@ -256,8 +265,10 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
   return (
     <div style={{ height: `${height} px`, position: 'relative' }} className="pseudo-ide">
       <div style={{ display: 'flex', height: '100%', width: '100%' }}>
-        <div style={{ width: '20%', minWidth: '100px', borderRight: '1px solid #d9d9d9' }}>
-          <div style={{ backgroundColor: '#fafafa', padding: '8px 16px', fontSize: '20px', fontWeight: 500 }}>
+        <div style={{ width: '20%', minWidth: '100px', borderRight: `1px solid ${token.colorBorder}` }}>
+          <div
+            style={{ backgroundColor: token.colorFillTertiary, padding: '8px 16px', fontSize: '20px', fontWeight: 500 }}
+          >
             Files ({props.files.length})
           </div>
           <Menu
@@ -269,7 +280,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
             {props.files.map((file: FileType) => {
               return (
                 <Menu.Item key={`file-${file.id}`}>
-                  {file.path && <span style={{ color: '#c0c0c0' }}>{file.path}/</span>}
+                  {file.path && <span style={{ color: token.colorTextQuaternary }}>{file.path}/</span>}
                   <span style={{ fontWeight: 500 }}>{file.name}</span>
                 </Menu.Item>
               );
@@ -277,12 +288,19 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
           </Menu>
         </div>
         <div style={{ display: 'flex', flex: 1, minWidth: 0 }}>
-          <div style={{ width: '50%', minWidth: '100px', overflowY: 'auto', borderRight: '1px solid #d9d9d9' }}>
+          <div
+            style={{
+              width: '50%',
+              minWidth: '100px',
+              overflowY: 'auto',
+              borderRight: `1px solid ${token.colorBorder}`,
+            }}
+          >
             <div style={{ display: 'flex', padding: '4px 0px' }}>
               <div
                 style={{
-                  backgroundColor: '#999',
-                  color: '#fff',
+                  backgroundColor: token.colorBgContainerDisabled,
+                  color: token.colorTextLightSolid,
                   fontSize: '12px',
                   fontWeight: 500,
                   padding: '8px 20px',
@@ -296,7 +314,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
               <div style={{ flexGrow: 1 }} />
             </div>
             <CodeWindow
-              code={currentFile === undefined ? ' ' : currentFile.code}
+              code={currentFile === undefined ? ' ' : getFileContent(currentFile)}
               name={currentFile === undefined ? ' ' : currentFile.name}
               onSave={onSave}
             />

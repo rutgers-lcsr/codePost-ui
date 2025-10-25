@@ -35,8 +35,9 @@ const getTooltipState = (
   return TOOLTIP_STATE.HideTextAndChildren; // Hide text and children
 };
 
-const CPTooltip = (props: IProps) => {
-  const { children, infoIcon, title, iconStyle, hideThisOnHideTips, hideChildrenOnHideTips, ...antprops } = props;
+const CPTooltip: React.FC<IProps> = (props: IProps) => {
+  const { children, infoIcon, title, iconStyle, hideThisOnHideTips, hideChildrenOnHideTips, disabled, ...antprops } =
+    props;
   const showTooltips = useContext(ShowTooltipContext);
 
   let icon;
@@ -51,8 +52,8 @@ const CPTooltip = (props: IProps) => {
   const tooltipState = getTooltipState(showTooltips, hideThisOnHideTips, hideChildrenOnHideTips);
 
   // Avoids https://github.com/ant-design/ant-design/issues/10795
-  if (props.disabled && props.children) {
-    return <span>{props.children}</span>;
+  if (disabled && children) {
+    return <span>{children}</span>;
   }
 
   switch (tooltipState) {
@@ -61,23 +62,23 @@ const CPTooltip = (props: IProps) => {
       // One example of styling affected is if the child element is a span element and there is a line-height defined
       if (icon) {
         return (
-          <Tooltip title={props.title} {...antprops}>
+          <Tooltip title={title} {...antprops}>
             <span>
-              {props.children}
+              {children}
               {icon}
             </span>
           </Tooltip>
         );
       }
       return (
-        <Tooltip title={props.title} {...antprops}>
-          {props.children}
+        <Tooltip title={title} {...antprops}>
+          {children}
         </Tooltip>
       );
     case TOOLTIP_STATE.HideText:
       return (
         <Tooltip title={''} {...antprops}>
-          {props.children}
+          {children}
         </Tooltip>
       );
     case TOOLTIP_STATE.HideTextAndChildren:

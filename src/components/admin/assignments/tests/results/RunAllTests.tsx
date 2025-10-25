@@ -116,7 +116,7 @@ const RunAllTests = (props: IProps) => {
         numSubmissions={props.numSubmissions}
       />
       <Modal
-        visible={modalStatus === MODAL_STATUS.PendingRunAll}
+        open={modalStatus === MODAL_STATUS.PendingRunAll}
         onCancel={setModalStatus.bind({}, MODAL_STATUS.None)}
         onOk={onConfirm}
         okText="Run"

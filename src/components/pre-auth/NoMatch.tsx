@@ -5,10 +5,9 @@
 /* react imports */
 import * as React from 'react';
 
-import { Comment, Icon as LegacyIcon } from '@ant-design/compatible';
-
 /* antd imports */
-import { Divider, Typography } from 'antd';
+import { Card, Divider, Typography } from 'antd';
+import { DislikeFilled, DislikeOutlined, LikeFilled, LikeOutlined } from '@ant-design/icons';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -109,13 +108,17 @@ class NoMatch extends React.Component<IProps, IState> {
     const actions = [
       <span key="like">
         <CPTooltip title={tooltips.preauth.noMatch.like}>
-          <LegacyIcon type="like" theme={action === 'liked' ? 'filled' : 'outlined'} onClick={this.like} />
+          {action === 'liked' ? <LikeFilled onClick={this.like} /> : <LikeOutlined onClick={this.like} />}
         </CPTooltip>
         <span style={{ paddingLeft: 8, cursor: 'auto' }}>{likes}</span>
       </span>,
       <span key={tooltips.preauth.noMatch.dislike}>
         <CPTooltip title="Dislike">
-          <LegacyIcon type="dislike" theme={action === 'disliked' ? 'filled' : 'outlined'} onClick={this.dislike} />
+          {action === 'disliked' ? (
+            <DislikeFilled onClick={this.dislike} />
+          ) : (
+            <DislikeOutlined onClick={this.dislike} />
+          )}
         </CPTooltip>
         <span style={{ paddingLeft: 8, cursor: 'auto' }}>{dislikes}</span>
       </span>,
@@ -134,12 +137,14 @@ class NoMatch extends React.Component<IProps, IState> {
           <br />
           <div style={{ width: 600, textAlign: 'left', margin: '0 auto' }}>
             <Divider />
-            <Comment
+            <Card
               actions={actions}
-              author={<a href={this.state.quote.website}>{this.state.quote.author}</a>}
-              datetime={<span>{this.state.quote.source}</span>}
-              content={<p>{this.state.quote.quote}</p>}
-            />
+              title={<a href={this.state.quote.website}>{this.state.quote.author}</a>}
+              extra={<span>{this.state.quote.source}</span>}
+              size="small"
+            >
+              <p>{this.state.quote.quote}</p>
+            </Card>
           </div>
         </div>
       </PreAuthLayout>

@@ -63,7 +63,7 @@ export const AddCategoryModal = (props: IUploadProps) => {
       )}
 
       <Modal
-        visible={visible}
+        open={visible}
         title="Create new test category"
         onCancel={toggleVisible}
         onOk={onSave}

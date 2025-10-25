@@ -4,14 +4,15 @@
 
 /* react imports */
 
-import { FolderOpenOutlined } from '@ant-design/icons';
+import { ZoomInOutlined } from '@ant-design/icons';
 
 /* antd imports */
 import { Breadcrumb, Table } from 'antd';
 
 /* other library imports */
-import { RouteComponentProps } from 'react-router';
-import { Link, Redirect, Route, Switch } from 'react-router-dom';
+import { RouteComponentProps } from '../../router/legacy';
+import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import { LegacyRouteRenderer } from '../../router/legacy';
 
 /* codePost imports */
 import CPAdminDetail from '../admin/other/CPAdminDetail';
@@ -60,46 +61,56 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
         ...row,
         zoom: (
           <Link to={`${props.match.url}/${encodeForLink(row.assignment)}`}>
-            <FolderOpenOutlined />
+            <ZoomInOutlined />
           </Link>
         ),
       };
     });
 
     return (
-      <Switch>
+      <Routes>
         {props.assignments.map((assignment) => (
           <Route
             key={assignment.id}
-            path={`${props.match.url}/${encodeForRoute(assignment.name)}`}
-            render={(_subprops) => {
-              LOCAL_SETTINGS.defaultAssignment.setter(assignment.id);
-              return <DetailComponent {...props} assignment={assignment} breadcrumbs={breadcrumbs} />;
-            }}
+            path={`${encodeForRoute(assignment.name)}`}
+            element={
+              <LegacyRouteRenderer
+                path={`${props.match.url}/${encodeForRoute(assignment.name)}`}
+                render={(_subprops) => {
+                  LOCAL_SETTINGS.defaultAssignment.setter(assignment.id);
+                  return <DetailComponent {...props} assignment={assignment} breadcrumbs={breadcrumbs} />;
+                }}
+              />
+            }
           />
         ))}
         <Route
-          path={props.match.url}
-          render={(_subprops) => {
-            const storedID = LOCAL_SETTINGS.defaultAssignment.getter();
-            const matchedAssignment = props.assignments.find((assn) => assn.id === storedID);
-            if (matchedAssignment) {
-              return <Redirect to={`${props.match.url}/${encodeForLink(matchedAssignment.name)}`} />;
-            } else {
-              return (
-                <CPAdminDetail
-                  breadcrumbs={<Breadcrumb items={breadcrumbs} />}
-                  goBack={null}
-                  title={<div>{props.title}</div>}
-                  actions={props.actions}
-                  content={<Table columns={props.columns} dataSource={data} loading={props.isLoading} />}
-                  gutterSize={0}
-                />
-              );
-            }
-          }}
+          index
+          element={
+            <LegacyRouteRenderer
+              path={props.match.url}
+              render={(_subprops) => {
+                const storedID = LOCAL_SETTINGS.defaultAssignment.getter();
+                const matchedAssignment = props.assignments.find((assn) => assn.id === storedID);
+                if (matchedAssignment) {
+                  return <Navigate to={`${props.match.url}/${encodeForLink(matchedAssignment.name)}`} />;
+                } else {
+                  return (
+                    <CPAdminDetail
+                      breadcrumbs={<Breadcrumb items={breadcrumbs} />}
+                      goBack={null}
+                      title={<div>{props.title}</div>}
+                      actions={props.actions}
+                      content={<Table columns={props.columns} dataSource={data} loading={props.isLoading} />}
+                      gutterSize={0}
+                    />
+                  );
+                }
+              }}
+            />
+          }
         />
-      </Switch>
+      </Routes>
     );
   };
 }

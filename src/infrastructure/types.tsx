@@ -20,7 +20,7 @@ export { RubricCommentType } from './rubricComment';
 export { SectionType } from './section';
 
 // @ts-ignore
-export { SubmissionType, StudentSubmissionType, AnonymousSubmissionType, SubmissionInfoType } from './submission';
+export { AnonymousSubmissionType, StudentSubmissionType, SubmissionInfoType, SubmissionType } from './submission';
 
 // @ts-ignore
 export { TestCaseType } from './testCase';
@@ -36,3 +36,6 @@ export { FileTemplateType } from './fileTemplate';
 
 // @ts-ignore
 export { WebhookType } from './webhook';
+
+// @ts-ignore
+export { AssignmentDataSetType } from './assignmentDataSet';

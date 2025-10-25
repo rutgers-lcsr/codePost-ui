@@ -1,17 +1,7 @@
-/***********************************************************************************************/
-/* Imports
-/*******************************************************************************************************/
-
-/* react imports */
-
-/* ant imports */
-
-/* other library imports */
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { InputRef } from 'antd';
 import _ from 'lodash';
 
-// import { DragDropContext, DragSource, DropTarget } from 'react-dnd';
-
-/* codePost imports */
 import withWindowWatcher, { IWithWindowWatcherProps } from '../withWindowWatcher';
 
 import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
@@ -20,11 +10,7 @@ import { RubricCommentType } from '../../../infrastructure/rubricComment';
 import { DIRECTION } from '../../../types/common';
 import { STATUS, statusChange } from '../../admin/assignments/rubric/RubricUtils';
 
-import { InputRef } from 'antd/lib/input';
-import { Component, createRef } from 'react';
 import { IFeedbackScore } from './RubricManager';
-
-/************************************************************************/
 
 export interface IRubricCategoryManagerParams {
   propz: IRubricCategoryManagerProps;
@@ -41,8 +27,8 @@ export interface IRubricCategoryManagerState {
   status: STATUS;
 
   /* local rubric comment data */
-  rubricComments: { [id: number]: RubricCommentType };
-  rubricCommentStatus: { [id: number]: STATUS };
+  rubricComments: Record<number, RubricCommentType>;
+  rubricCommentStatus: Record<number, STATUS>;
 
   /* validation status */
   hasError: boolean;
@@ -57,7 +43,7 @@ export interface IRubricCategoryManagerProps extends IWithWindowWatcherProps {
   rubricComments: RubricCommentType[];
   index: number;
   numCategories: number;
-  instanceLists: { [id: number]: number[] };
+  instanceLists: Record<number, number[]>;
 
   // saved data
   savedRubricCategory?: RubricCategoryType;
@@ -79,9 +65,9 @@ export interface IRubricCategoryManagerProps extends IWithWindowWatcherProps {
   onUndo: (obj: RubricCategoryType) => void;
   onCommentEdit: (obj: RubricCommentType) => void;
   onCommentUndo: (obj: RubricCommentType) => void;
-  onCommentDragEnd: any;
+  onCommentDragEnd: (...args: unknown[]) => void;
   otherCategories: RubricCategoryType[];
-  feedbackScores?: { [commentID: number]: IFeedbackScore };
+  feedbackScores?: Record<number, IFeedbackScore>;
   commentFeedbackOn: boolean;
   showPointLimits: boolean;
   showHelpText: boolean;
@@ -93,53 +79,75 @@ export interface IRubricCategoryManagerProps extends IWithWindowWatcherProps {
 }
 
 export interface IRubricCategoryManagerHelpers {
-  buildLocalRubricCommentsStructure: any;
-  initializeRubricCommentStatus: any;
-  updateCategoryStatus: any;
-  setValue: any;
-  validateCategory: any;
-  saveCategory: any;
-  changeName: any;
-  changeHelpText: any;
-  addComment: any;
-  deleteComment: any;
-  validateComments: any;
-  saveComment: any;
-  updateCommentStatus: any;
-  updateRubricComment: any;
-  nameInput: any;
+  buildLocalRubricCommentsStructure: (comments: RubricCommentType[]) => Record<number, RubricCommentType>;
+  initializeRubricCommentStatus: (comments: RubricCommentType[]) => Record<number, STATUS>;
+  updateCategoryStatus: () => void;
+  setValue: (label: 'pointLimit' | 'atMostOnce' | 'name' | 'helpText', value: unknown) => void;
+  validateCategory: (
+    name: string,
+    helpText: string,
+    pointLimit: number | null,
+  ) => {
+    valid: boolean;
+    message: string;
+  };
+  saveCategory: () => void;
+  changeName: (event: React.ChangeEvent<HTMLInputElement> | string) => void;
+  changeHelpText: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  addComment: () => void;
+  deleteComment: (rubricComment: RubricCommentType) => void;
+  validateComments: (comment: RubricCommentType) => { valid: boolean; message: string };
+  saveComment: (rubricCommentID: number, overrideComment?: RubricCommentType) => void;
+  updateCommentStatus: (rubricComment: RubricCommentType) => void;
+  updateRubricComment: (rubricCommentID: number, key: string, event: unknown) => void;
+  nameInput: React.RefObject<InputRef>;
 }
-class RubricCategoryManager extends Component<IRubricCategoryManagerProps, IRubricCategoryManagerState> {
-  /****************************************************************************
-   Lifecycle methods
-  *****************************************************************************/
-  private nameInput = createRef<InputRef>();
 
-  public constructor(props: IRubricCategoryManagerProps) {
-    super(props);
-    this.state = {
-      name: props.rubricCategory.name,
-      pointLimit: props.rubricCategory.pointLimit,
-      helpText: props.rubricCategory.helpText ? props.rubricCategory.helpText : '',
-      atMostOnce: props.rubricCategory.atMostOnce,
-      status: typeof props.savedRubricCategory === 'undefined' ? STATUS.UNSAVED : STATUS.NONE,
-      rubricComments: this.buildLocalRubricCommentsStructure(props.rubricComments),
-      rubricCommentStatus: this.initializeRubricCommentStatus(props.rubricComments),
-      hasError: false,
-      errorMessage: '',
-      hasCommentError: false,
-      commentErrorMessage: '',
-    };
-  }
+const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => {
+  const { rubricCategory, rubricComments, savedRubricCategory, savedRubricComments } = props;
 
-  public componentDidMount() {
-    // If new category is being mounted for the first time, focus on the name
-    // Ant handles refs strangely (there are many github issues on this), and upon initial mount
-    // the element is not focusable, but is focusable shortly after
-    if (this.props.rubricCategory.id < 0) {
-      setTimeout(() => {
-        const node = this.nameInput.current;
-        if (node) {
+  const buildLocalRubricCommentsStructure = useCallback((comments: RubricCommentType[]) => {
+    const toRet: Record<number, RubricCommentType> = {};
+    for (const rubricComment of comments) {
+      toRet[rubricComment.id] = _.cloneDeep(rubricComment);
+    }
+    return toRet;
+  }, []);
+
+  const initializeRubricCommentStatus = useCallback((comments: RubricCommentType[]) => {
+    const toRet: Record<number, STATUS> = {};
+    for (const rubricComment of comments) {
+      toRet[rubricComment.id] = STATUS.NONE;
+    }
+    return toRet;
+  }, []);
+
+  const [state, setState] = useState<IRubricCategoryManagerState>(() => ({
+    name: rubricCategory.name,
+    pointLimit: rubricCategory.pointLimit,
+    helpText: rubricCategory.helpText ? rubricCategory.helpText : '',
+    atMostOnce: rubricCategory.atMostOnce,
+    status: typeof savedRubricCategory === 'undefined' ? STATUS.UNSAVED : STATUS.NONE,
+    rubricComments: buildLocalRubricCommentsStructure(rubricComments),
+    rubricCommentStatus: initializeRubricCommentStatus(rubricComments),
+    hasError: false,
+    errorMessage: '',
+    hasCommentError: false,
+    commentErrorMessage: '',
+  }));
+
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  const nameInput = useRef<InputRef>(null);
+
+  useEffect(() => {
+    if (rubricCategory.id < 0) {
+      const timer = window.setTimeout(() => {
+        const node = nameInput.current;
+        if (node && typeof node.focus === 'function') {
           try {
             node.focus();
           } catch {
@@ -147,456 +155,530 @@ class RubricCategoryManager extends Component<IRubricCategoryManagerProps, IRubr
           }
         }
       }, 100);
+      return () => window.clearTimeout(timer);
     }
-  }
+    return undefined;
+  }, [rubricCategory.id]);
 
-  public componentDidUpdate(prevProps: IRubricCategoryManagerProps) {
-    /* Update status when rubric is saved */
-    if (this.props.savedRubricCategory !== prevProps.savedRubricCategory) {
-      this.updateCategoryStatus();
-    }
-    if (this.props.savedRubricComments !== prevProps.savedRubricComments) {
-      for (const rubricComment of Object.values(this.state.rubricComments)) {
-        this.updateCommentStatus(rubricComment);
-      }
-    }
-
-    /* Undo local changes to rubricCategory */
-    if (this.props.rubricCategory !== prevProps.rubricCategory) {
-      this.setState(
-        {
-          name: this.props.rubricCategory.name,
-          pointLimit: this.props.rubricCategory.pointLimit,
-          helpText: this.props.rubricCategory.helpText ? this.props.rubricCategory.helpText : '',
-        },
-        () => {
-          this.updateCategoryStatus();
-        },
-      );
-    }
-
-    /* Undo local changes to rubricComments */
-    if (this.props.rubricComments !== prevProps.rubricComments) {
-      const newMap = this.state.rubricComments;
-      for (const rubricComment of this.props.rubricComments) {
-        const match = prevProps.rubricComments.find((el) => {
-          return el.id === rubricComment.id;
-        });
-        if (match) {
-          if (match !== rubricComment) {
-            newMap[rubricComment.id] = _.cloneDeep(rubricComment);
-          }
-        } else {
-          newMap[rubricComment.id] = _.cloneDeep(rubricComment);
-        }
-      }
-      this.setState({
-        rubricComments: newMap,
-        rubricCommentStatus: this.initializeRubricCommentStatus(this.props.rubricComments),
-      });
-    }
-  }
-
-  public buildLocalRubricCommentsStructure = (rubricComments: RubricCommentType[]) => {
-    const toRet: any = {};
-    for (const rubricComment of rubricComments) {
-      toRet[rubricComment.id] = _.cloneDeep(rubricComment);
-    }
-    return toRet;
-  };
-
-  public initializeRubricCommentStatus = (rubricComments: RubricCommentType[]) => {
-    const toRet: any = {};
-    for (const rubricComment of rubricComments) {
-      toRet[rubricComment.id] = STATUS.NONE;
-    }
-    return toRet;
-  };
-
-  /****************************************************************************
-   Category-level functions
-  *****************************************************************************/
-
-  public updateCategoryStatus = () => {
-    const { savedRubricCategory } = this.props;
-    const { name, pointLimit, helpText, status, atMostOnce } = this.state;
-    if (savedRubricCategory) {
-      const newStatus = statusChange(
-        [
-          savedRubricCategory.name,
-          savedRubricCategory.pointLimit,
-          savedRubricCategory.helpText,
-          savedRubricCategory.atMostOnce,
-        ],
-        [name, pointLimit, helpText, atMostOnce],
-        status,
-      );
-      if (newStatus !== status) {
-        this.setState({ status: newStatus }, () => {
-          switch (newStatus) {
-            case STATUS.UNSAVED:
-              this.props.onEdit(this.props.rubricCategory);
-              break;
-            case STATUS.NONE:
-              this.props.onUndo(this.props.rubricCategory);
-              break;
-          }
-        });
-      }
-    }
-  };
-
-  public setValue = (label: string, value: any) => {
-    this.setState(
-      (prevstate) => {
-        const newState: any = { ...prevstate };
-        let newVal = value;
-        if (label === 'pointLimit') {
-          // Note: isNaN('') returns false, isNaN(null) returns false
-          if (value === '' || value === null || isNaN(value)) {
-            newVal = null;
-          } else {
-            newVal = parseFloat(value);
-          }
-        }
-
-        newState[label] = newVal;
-        return newState;
-      },
-      () => {
-        this.updateCategoryStatus();
-        if (label === 'pointLimit' || label === 'atMostOnce') {
-          this.saveCategory();
-        }
-      },
-    );
-  };
-
-  public validateCategory = (name: string, helpText: string, pointLimit: number | null) => {
+  const validateCategory = useCallback((name: string, helpText: string, pointLimit: number | null) => {
     if (name.length === 0) {
-      return {
-        valid: false,
-        message: 'Category name cannot be blank.',
-      };
+      return { valid: false, message: 'Category name cannot be blank.' };
     }
 
     if (name.length < 4) {
-      return {
-        valid: false,
-        message: 'Category name must be at least 4 characters',
-      };
+      return { valid: false, message: 'Category name must be at least 4 characters' };
     }
 
     if (name.length > 72) {
-      return {
-        valid: false,
-        message: 'Category name cannot exceed 72 characters',
-      };
+      return { valid: false, message: 'Category name cannot exceed 72 characters' };
     }
 
     if (helpText.length > 500) {
-      return {
-        valid: false,
-        message: 'Helptext cannot exceed 500 characters',
-      };
+      return { valid: false, message: 'Helptext cannot exceed 500 characters' };
     }
 
     if (pointLimit !== null && !Number.isInteger(pointLimit)) {
-      return {
-        valid: false,
-        message: 'pointLimit must be a valid integer.',
-      };
+      return { valid: false, message: 'pointLimit must be a valid integer.' };
     }
 
-    return {
-      valid: true,
-      message: '',
-    };
-  };
+    return { valid: true, message: '' };
+  }, []);
 
-  public saveCategory = () => {
-    const { rubricCategory } = this.props;
-    const { name, pointLimit, helpText, atMostOnce } = this.state;
+  const validateComments = useCallback((_newComment: RubricCommentType) => {
+    return { valid: true, message: '' };
+  }, []);
 
-    if (
+  const updateCategoryStatus = useCallback(() => {
+    if (!savedRubricCategory) {
+      return;
+    }
+
+    const snapshot = stateRef.current;
+    if (!snapshot) {
+      return;
+    }
+
+    const { name, pointLimit, helpText, atMostOnce, status } = snapshot;
+    const newStatus = statusChange(
+      [
+        savedRubricCategory.name,
+        savedRubricCategory.pointLimit,
+        savedRubricCategory.helpText,
+        savedRubricCategory.atMostOnce,
+      ],
+      [name, pointLimit, helpText, atMostOnce],
+      status,
+    );
+
+    if (newStatus === status) {
+      return;
+    }
+
+    setState((prev) => {
+      const nextState = {
+        ...prev,
+        status: newStatus,
+      };
+      stateRef.current = nextState;
+      return nextState;
+    });
+
+    if (newStatus === STATUS.UNSAVED) {
+      props.onEdit(rubricCategory);
+    } else if (newStatus === STATUS.NONE) {
+      props.onUndo(rubricCategory);
+    }
+  }, [props, rubricCategory, savedRubricCategory]);
+
+  const updateCategoryStatusRef = useRef<() => void>(updateCategoryStatus);
+
+  useEffect(() => {
+    updateCategoryStatusRef.current = updateCategoryStatus;
+  }, [updateCategoryStatus]);
+
+  const setValue = useCallback((label: string, value: any) => {
+    let didUpdate = false;
+
+    setState((prev) => {
+      switch (label) {
+        case 'pointLimit': {
+          let newVal: number | null;
+          if (value === '' || value === null || Number.isNaN(Number(value))) {
+            newVal = null;
+          } else {
+            newVal = Number(value);
+          }
+          if (prev.pointLimit === newVal) {
+            return prev;
+          }
+          const nextState = {
+            ...prev,
+            pointLimit: newVal,
+          };
+          stateRef.current = nextState;
+          didUpdate = true;
+          return nextState;
+        }
+        case 'atMostOnce': {
+          const newVal = Boolean(value);
+          if (prev.atMostOnce === newVal) {
+            return prev;
+          }
+          const nextState = {
+            ...prev,
+            atMostOnce: newVal,
+          };
+          stateRef.current = nextState;
+          didUpdate = true;
+          return nextState;
+        }
+        case 'name': {
+          if (prev.name === value) {
+            return prev;
+          }
+          const nextState = {
+            ...prev,
+            name: value,
+          };
+          stateRef.current = nextState;
+          didUpdate = true;
+          return nextState;
+        }
+        case 'helpText': {
+          if (prev.helpText === value) {
+            return prev;
+          }
+          const nextState = {
+            ...prev,
+            helpText: value,
+          };
+          stateRef.current = nextState;
+          didUpdate = true;
+          return nextState;
+        }
+        default:
+          return prev;
+      }
+    });
+
+    if (didUpdate) {
+      updateCategoryStatusRef.current?.();
+    }
+  }, []);
+
+  const saveCategory = useCallback(() => {
+    const currentState = stateRef.current;
+    const { name, pointLimit, helpText, atMostOnce, hasCommentError, hasError } = currentState;
+
+    const hasChanges =
       rubricCategory.id < 0 ||
       name !== rubricCategory.name ||
       pointLimit !== rubricCategory.pointLimit ||
-      helpText !== rubricCategory.helpText ||
-      atMostOnce !== rubricCategory.atMostOnce
-    ) {
-      const { valid, message } = this.validateCategory(name, helpText, pointLimit);
-      const payload: RubricCategoryType = Object.assign({}, this.props.rubricCategory);
-      payload.name = this.state.name;
-      payload.pointLimit = this.state.pointLimit;
-      payload.helpText = this.state.helpText;
-      payload.atMostOnce = this.state.atMostOnce;
+      helpText !== (rubricCategory.helpText ? rubricCategory.helpText : '') ||
+      atMostOnce !== rubricCategory.atMostOnce;
 
-      // have to take into account the possibility of a comment error here
-      this.props.updateCategory(payload, !valid || this.state.hasCommentError);
-      this.setState({ hasError: !valid, errorMessage: message });
-    } else {
-      this.setState({ hasError: false });
+    if (hasChanges) {
+      const { valid, message } = validateCategory(name, helpText, pointLimit);
+      const payload: RubricCategoryType = {
+        ...rubricCategory,
+        name,
+        pointLimit,
+        helpText,
+        atMostOnce,
+      };
+
+      props.updateCategory(payload, !valid || hasCommentError);
+
+      setState((prev) => ({
+        ...prev,
+        hasError: !valid,
+        errorMessage: message,
+      }));
+    } else if (hasError) {
+      setState((prev) => ({
+        ...prev,
+        hasError: false,
+        errorMessage: '',
+      }));
     }
-  };
+  }, [props, rubricCategory, validateCategory]);
 
-  public changeName = (event: React.ChangeEvent<HTMLInputElement> | string) => {
-    if (typeof event === 'string') {
-      this.setValue('name', event);
-    } else {
-      this.setValue('name', event.target.value);
-    }
-  };
+  const changeName = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement> | string) => {
+      if (typeof event === 'string') {
+        setValue('name', event);
+      } else {
+        setValue('name', event.target.value);
+      }
+    },
+    [setValue],
+  );
 
-  public changeHelpText = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    this.setValue('helpText', event.target.value);
-  };
+  const changeHelpText = useCallback(
+    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setValue('helpText', event.target.value);
+    },
+    [setValue],
+  );
 
-  /****************************************************************************
-   Comment-level functions
-  *****************************************************************************/
+  const addComment = useCallback(() => {
+    props.addComment(rubricCategory);
+  }, [props, rubricCategory]);
 
-  public addComment = () => {
-    this.props.addComment(this.props.rubricCategory);
-  };
+  const deleteComment = useCallback(
+    (rubricComment: RubricCommentType) => {
+      props.deleteComment(rubricComment);
+    },
+    [props],
+  );
 
-  public deleteComment = (rubricComment: RubricCommentType) => {
-    this.props.deleteComment(rubricComment);
-  };
+  const updateCommentStatusRef = useRef<IRubricCategoryManagerHelpers['updateCommentStatus']>();
+  const saveCommentRef = useRef<IRubricCategoryManagerHelpers['saveComment']>();
 
-  public validateComments = (_newComment: RubricCommentType) => {
-    // no tests yet!
+  const updateCommentStatus = useCallback<IRubricCategoryManagerHelpers['updateCommentStatus']>(
+    (rubricComment) => {
+      if (!savedRubricComments) {
+        return;
+      }
 
-    return {
-      valid: true,
-      message: '',
-    };
-  };
+      const savedRubricComment = savedRubricComments.find((el) => el.id === rubricComment.id);
+      if (!savedRubricComment) {
+        return;
+      }
 
-  public saveComment = (rubricCommentID: number) => {
-    const { rubricComments } = this.props;
-    const rubricComment = this.state.rubricComments[rubricCommentID];
+      const snapshot = stateRef.current;
+      if (!snapshot) {
+        return;
+      }
 
-    const match = rubricComments.find((el) => {
-      return el.id === rubricComment.id;
-    });
+      const currentStatus = snapshot.rubricCommentStatus[rubricComment.id] ?? STATUS.NONE;
+      const localRubricComment = snapshot.rubricComments[rubricComment.id] ?? rubricComment;
 
-    if (match) {
-      let pointDelta = parseFloat(rubricComment.pointDelta.toFixed(1));
-      const text = rubricComment.text;
+      const newStatus = statusChange(
+        [
+          savedRubricComment.text,
+          savedRubricComment.pointDelta,
+          savedRubricComment.explanation,
+          savedRubricComment.instructionText,
+          savedRubricComment.templateTextOn,
+        ],
+        [
+          localRubricComment.text,
+          localRubricComment.pointDelta,
+          localRubricComment.explanation,
+          localRubricComment.instructionText,
+          localRubricComment.templateTextOn,
+        ],
+        currentStatus,
+      );
 
-      if (isNaN(rubricComment.pointDelta) || rubricComment.pointDelta === null) {
-        this.updateRubricComment(rubricComment.id, 'pointDelta', 0);
+      if (newStatus === currentStatus) {
+        return;
+      }
+
+      setState((prev) => {
+        const nextState: IRubricCategoryManagerState = {
+          ...prev,
+          rubricCommentStatus: {
+            ...prev.rubricCommentStatus,
+            [rubricComment.id]: newStatus,
+          },
+        };
+        stateRef.current = nextState;
+        return nextState;
+      });
+
+      if (newStatus === STATUS.UNSAVED) {
+        props.onCommentEdit(rubricComment);
+      } else if (newStatus === STATUS.NONE) {
+        props.onCommentUndo(rubricComment);
+      }
+    },
+    [props, savedRubricComments],
+  );
+
+  const saveComment = useCallback<IRubricCategoryManagerHelpers['saveComment']>(
+    (rubricCommentID, overrideComment) => {
+      const currentState = stateRef.current;
+      const localComment = overrideComment ?? currentState.rubricComments[rubricCommentID];
+      if (!localComment) {
+        return;
+      }
+
+      const match = props.rubricComments.find((el) => el.id === localComment.id);
+      if (!match) {
+        return;
+      }
+
+      let workingComment: RubricCommentType = localComment;
+      let pointDelta = parseFloat(workingComment.pointDelta.toFixed(1));
+      const text = workingComment.text;
+
+      if (Number.isNaN(workingComment.pointDelta) || workingComment.pointDelta === null) {
+        workingComment = { ...workingComment, pointDelta: 0 };
         pointDelta = 0;
       }
 
-      const { valid, message } = this.validateComments(rubricComment);
-      const payload: RubricCommentType = { ...rubricComment };
-      this.props.updateComment(payload);
+      const { valid, message } = validateComments(workingComment);
+      props.updateComment({ ...workingComment });
 
       if (
         text !== match.text ||
         pointDelta !== match.pointDelta ||
-        rubricComment.explanation !== match.explanation ||
-        rubricComment.instructionText !== match.instructionText ||
-        rubricComment.templateTextOn !== match.templateTextOn
+        workingComment.explanation !== match.explanation ||
+        workingComment.instructionText !== match.instructionText ||
+        workingComment.templateTextOn !== match.templateTextOn
       ) {
-        const hasCurrentError = this.state.hasError || this.state.hasCommentError;
-        if (hasCurrentError && !this.state.hasError && valid) {
-          // moving from error state to safe state
-          this.props.updateCategory(this.props.rubricCategory, false);
+        const hasCurrentError = currentState.hasError || currentState.hasCommentError;
+        if (hasCurrentError && !currentState.hasError && valid) {
+          props.updateCategory(props.rubricCategory, false);
         } else if (!hasCurrentError && !valid) {
-          // moving from safe state to error state
-          this.props.updateCategory(this.props.rubricCategory, true);
+          props.updateCategory(props.rubricCategory, true);
         }
       }
 
-      // we need to set state outside of the preceding if block
-      // this handles the situation in which moving from an edited state
-      // to a non-edited state clears or introduces an error
-      this.setState({ hasCommentError: !valid, commentErrorMessage: message });
-    }
-  };
-
-  public updateCommentStatus = (rubricComment: RubricCommentType) => {
-    const { savedRubricComments } = this.props;
-
-    if (savedRubricComments) {
-      const savedRubricComment = savedRubricComments.find((el) => {
-        return el.id === rubricComment.id;
+      setState((prev) => {
+        if (prev.hasCommentError === !valid && prev.commentErrorMessage === message) {
+          return prev;
+        }
+        const nextState: IRubricCategoryManagerState = {
+          ...prev,
+          hasCommentError: !valid,
+          commentErrorMessage: message,
+        };
+        stateRef.current = nextState;
+        return nextState;
       });
-      const localRubricComment = this.state.rubricComments[rubricComment.id];
-      if (savedRubricComment) {
-        const status = this.state.rubricCommentStatus[rubricComment.id];
-        const newStatus = statusChange(
-          [
-            savedRubricComment.text,
-            savedRubricComment.pointDelta,
-            savedRubricComment.explanation,
-            savedRubricComment.instructionText,
-            savedRubricComment.templateTextOn,
-          ],
-          [
-            localRubricComment.text,
-            localRubricComment.pointDelta,
-            localRubricComment.explanation,
-            localRubricComment.instructionText,
-            localRubricComment.templateTextOn,
-          ],
-          status,
-        );
-        if (newStatus !== status) {
-          const newStatusMap = { ...this.state.rubricCommentStatus };
-          newStatusMap[rubricComment.id] = newStatus;
-          this.setState({ rubricCommentStatus: newStatusMap }, () => {
-            switch (newStatus) {
-              case STATUS.UNSAVED:
-                this.props.onCommentEdit(rubricComment);
-                break;
-              case STATUS.NONE:
-                this.props.onCommentUndo(rubricComment);
-                break;
+
+      updateCommentStatus(workingComment);
+    },
+    [props, updateCommentStatus, validateComments],
+  );
+
+  const updateRubricComment = useCallback<IRubricCategoryManagerHelpers['updateRubricComment']>(
+    (rubricCommentID, key, event) => {
+      let updatedComment: RubricCommentType | undefined;
+
+      setState((prev) => {
+        const currentComment = prev.rubricComments[rubricCommentID];
+        if (!currentComment) {
+          updatedComment = undefined;
+          return prev;
+        }
+
+        let nextValue: unknown = event;
+
+        if (event === null || typeof event === 'undefined') {
+          nextValue = key === 'pointDelta' ? currentComment.pointDelta : '';
+        } else if (typeof event === 'object') {
+          const maybeTarget = event as { target?: { value?: unknown } };
+          if (maybeTarget.target && 'value' in maybeTarget.target) {
+            nextValue = maybeTarget.target.value;
+          }
+        } else if (typeof event === 'boolean' || typeof event === 'string') {
+          if (key === 'pointDelta') {
+            nextValue = currentComment.pointDelta;
+          }
+        }
+
+        if (key === 'pointDelta') {
+          const numericValue = typeof nextValue === 'number' ? nextValue : Number(nextValue);
+          nextValue = Number.isNaN(numericValue) ? currentComment.pointDelta : numericValue;
+        }
+
+        updatedComment = {
+          ...currentComment,
+          [key]: nextValue,
+        } as RubricCommentType;
+
+        const updatedComments = {
+          ...prev.rubricComments,
+          [rubricCommentID]: updatedComment!,
+        };
+
+        const nextState: IRubricCategoryManagerState = {
+          ...prev,
+          rubricComments: updatedComments,
+        };
+
+        stateRef.current = nextState;
+        return nextState;
+      });
+
+      if (updatedComment) {
+        if (key === 'text') {
+          updateCommentStatusRef.current?.(updatedComment);
+        } else {
+          saveCommentRef.current?.(rubricCommentID, updatedComment);
+        }
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    updateCommentStatusRef.current = updateCommentStatus;
+  }, [updateCommentStatus]);
+
+  useEffect(() => {
+    saveCommentRef.current = saveComment;
+  }, [saveComment]);
+
+  useEffect(() => {
+    if (savedRubricCategory) {
+      updateCategoryStatus();
+    }
+  }, [savedRubricCategory, state.name, state.pointLimit, state.helpText, state.atMostOnce, updateCategoryStatus]);
+
+  const autoSaveRef = useRef({ pointLimit: state.pointLimit, atMostOnce: state.atMostOnce });
+  useEffect(() => {
+    const prevValues = autoSaveRef.current;
+    if (prevValues.pointLimit !== state.pointLimit || prevValues.atMostOnce !== state.atMostOnce) {
+      autoSaveRef.current = { pointLimit: state.pointLimit, atMostOnce: state.atMostOnce };
+      saveCategory();
+    }
+  }, [saveCategory, state.atMostOnce, state.pointLimit]);
+
+  const prevRubricCategoryRef = useRef<RubricCategoryType | null>(null);
+  useEffect(() => {
+    const prevRubricCategory = prevRubricCategoryRef.current;
+    if (prevRubricCategory && prevRubricCategory !== rubricCategory) {
+      setState((prev) => ({
+        ...prev,
+        name: rubricCategory.name,
+        pointLimit: rubricCategory.pointLimit,
+        helpText: rubricCategory.helpText ? rubricCategory.helpText : '',
+        atMostOnce: rubricCategory.atMostOnce,
+      }));
+    }
+    prevRubricCategoryRef.current = rubricCategory;
+  }, [rubricCategory]);
+
+  const prevRubricCommentsRef = useRef<RubricCommentType[] | null>(null);
+  useEffect(() => {
+    const prevRubricComments = prevRubricCommentsRef.current;
+    if (prevRubricComments && prevRubricComments !== rubricComments) {
+      setState((prev) => {
+        const newMap = { ...prev.rubricComments };
+        for (const comment of rubricComments) {
+          const match = prevRubricComments.find((el) => el.id === comment.id);
+          if (match) {
+            if (!_.isEqual(match, comment)) {
+              newMap[comment.id] = _.cloneDeep(comment);
             }
-          });
+          } else {
+            newMap[comment.id] = _.cloneDeep(comment);
+          }
         }
-      }
-    }
-  };
 
-  public updateRubricComment = (rubricCommentID: number, key: string, event: any) => {
-    const rubricComments = { ...this.state.rubricComments };
-    switch (typeof event) {
-      case 'undefined':
-      case 'number':
-        rubricComments[rubricCommentID] = {
-          ...rubricComments[rubricCommentID],
-          [key]: event,
+        return {
+          ...prev,
+          rubricComments: newMap,
+          rubricCommentStatus: initializeRubricCommentStatus(rubricComments),
         };
-        break;
-      case 'boolean':
-      case 'string':
-        if (key !== 'pointDelta') {
-          rubricComments[rubricCommentID] = {
-            ...rubricComments[rubricCommentID],
-            [key]: event,
-          };
-        }
-        break;
-      case 'object':
-        rubricComments[rubricCommentID] = {
-          ...rubricComments[rubricCommentID],
-          [key]: event === null ? 0 : event.target.value,
-        };
-        break;
+      });
     }
+    prevRubricCommentsRef.current = rubricComments;
+  }, [initializeRubricCommentStatus, rubricComments]);
 
-    this.setState({ rubricComments }, () => {
-      this.updateCommentStatus(rubricComments[rubricCommentID]);
-      if (key !== 'text') {
-        this.saveComment(rubricCommentID);
-      }
-    });
-  };
+  const prevSavedRubricCommentsRef = useRef<RubricCommentType[] | undefined>(savedRubricComments);
+  useEffect(() => {
+    if (savedRubricComments && savedRubricComments !== prevSavedRubricCommentsRef.current) {
+      const snapshot = stateRef.current;
+      Object.values(snapshot.rubricComments).forEach((comment) => {
+        updateCommentStatusRef.current?.(comment);
+      });
+    }
+    prevSavedRubricCommentsRef.current = savedRubricComments;
+  }, [savedRubricComments, updateCommentStatus]);
 
-  public collectClass = (): IRubricCategoryManagerParams => {
-    return {
-      propz: this.props,
-      statez: this.state,
-      helperz: {
-        buildLocalRubricCommentsStructure: this.buildLocalRubricCommentsStructure,
-        initializeRubricCommentStatus: this.initializeRubricCommentStatus,
-        updateCategoryStatus: this.updateCategoryStatus,
-        setValue: this.setValue,
-        validateCategory: this.validateCategory,
-        saveCategory: this.saveCategory,
-        changeName: this.changeName,
-        changeHelpText: this.changeHelpText,
-        addComment: this.addComment,
-        deleteComment: this.deleteComment,
-        validateComments: this.validateComments,
-        saveComment: this.saveComment,
-        updateCommentStatus: this.updateCommentStatus,
-        updateRubricComment: this.updateRubricComment,
-        nameInput: this.nameInput,
-      },
-    };
-  };
+  const helpers: IRubricCategoryManagerHelpers = useMemo(
+    () => ({
+      buildLocalRubricCommentsStructure,
+      initializeRubricCommentStatus,
+      updateCategoryStatus,
+      setValue,
+      validateCategory,
+      saveCategory,
+      changeName,
+      changeHelpText,
+      addComment,
+      deleteComment,
+      validateComments,
+      saveComment,
+      updateCommentStatus,
+      updateRubricComment,
+      nameInput,
+    }),
+    [
+      addComment,
+      changeHelpText,
+      changeName,
+      deleteComment,
+      nameInput,
+      saveCategory,
+      saveComment,
+      setValue,
+      updateCategoryStatus,
+      updateCommentStatus,
+      updateRubricComment,
+      validateCategory,
+      validateComments,
+      buildLocalRubricCommentsStructure,
+      initializeRubricCommentStatus,
+    ],
+  );
 
-  public render() {
-    return this.props.children(this.collectClass());
-  }
-}
+  const params: IRubricCategoryManagerParams = useMemo(
+    () => ({
+      propz: props,
+      statez: state,
+      helperz: helpers,
+    }),
+    [helpers, props, state],
+  );
 
-/*****************************************************************************************/
-
-// let draggingIndex = -1;
-
-// interface IRowProps {
-//   index: number;
-//   style: any;
-//   className: string;
-//   isOver: boolean;
-//   connectDragSource: any;
-//   connectDropTarget: any;
-//   moveRow: any;
-// }
-
-// class BodyRow extends React.Component<IRowProps, {}> {
-//   render() {
-//     const { isOver, connectDragSource, connectDropTarget, moveRow, ...restProps } = this.props;
-//     const style = { ...restProps.style, cursor: 'move' };
-
-//     let className = restProps.className;
-//     if (isOver) {
-//       if (restProps.index > draggingIndex) {
-//         className += ' drop-over-downward';
-//       }
-//       if (restProps.index < draggingIndex) {
-//         className += ' drop-over-upward';
-//       }
-//     }
-
-//     return connectDragSource(connectDropTarget(<tr {...restProps} className={className} style={style} />));
-//   }
-// }
-
-// const rowSource = {
-//   beginDrag(props: IRowProps) {
-//     draggingIndex = props.index;
-//     return {
-//       index: props.index,
-//     };
-//   },
-// };
-
-// const rowTarget = {
-//   drop(props: IRowProps, monitor: any) {
-//     const dragIndex = monitor.getItem().index;
-//     const hoverIndex = props.index;
-
-//     // Don't replace items with themselves
-//     if (dragIndex === hoverIndex) {
-//       return;
-//     }
-
-//     // Time to actually perform the action
-//     props.moveRow(dragIndex, hoverIndex);
-
-//     // Note: we're mutating the monitor item here!
-//     // Generally it's better to avoid mutations,
-//     // but it's good here for the sake of performance
-//     // to avoid expensive index searches.
-//     monitor.getItem().index = hoverIndex;
-//   },
-// };
-
-// const DragableBodyRow = DropTarget('row', rowTarget, (connect: any, monitor: any) => ({
-//   connectDropTarget: connect.dropTarget(),
-//   isOver: monitor.isOver(),
-// }))(
-//   DragSource('row', rowSource, (connect: any) => ({
-//     connectDragSource: connect.dragSource(),
-//   }))(BodyRow),
-// );
+  return <>{props.children(params)}</>;
+};
 
 export default withWindowWatcher(RubricCategoryManager);

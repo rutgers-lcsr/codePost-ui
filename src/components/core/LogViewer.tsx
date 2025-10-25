@@ -1,7 +1,6 @@
-import { Controlled as CodeMirror } from 'react-codemirror2';
-
 import { Modal } from 'antd';
 import { useState } from 'react';
+import Editor from '@monaco-editor/react';
 
 interface ILogViewerProps {
   text: string;
@@ -29,7 +28,18 @@ const LogViewer = (props: ILogViewerProps) => {
 
   return (
     <div className="log-viewer--preview" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-      <CodeMirror
+      <Editor
+        height="200px"
+        language="log"
+        value={props.text}
+        options={{
+          readOnly: true,
+          minimap: { enabled: false },
+          lineNumbers: 'off',
+          scrollBeyondLastLine: false,
+        }}
+      />
+      {/* <CodeMirror
         className="log-viewer--code-mirror"
         value={props.text}
         options={{
@@ -38,7 +48,7 @@ const LogViewer = (props: ILogViewerProps) => {
         }}
         onBeforeChange={() => {}}
         onChange={() => {}}
-      />
+      /> */}
       <div className="log-viewer__mask" onClick={openModal} />
       {hovered ? (
         <div className="log-viewer__view-more" onClick={openModal}>
@@ -47,17 +57,16 @@ const LogViewer = (props: ILogViewerProps) => {
       ) : null}
       <Modal open={modalVisible} onCancel={closeModal} footer={null} bodyStyle={{ padding: '0px' }} width="80%">
         <div className="log-viewer--inspect">
-          <CodeMirror
-            className="log-viewer--code-mirror"
+          <Editor
+            height="100%"
+            language="log"
             value={props.text}
             options={{
-              lineNumbers: true,
-              readOnly: 'nocursor',
+              readOnly: true,
+              minimap: { enabled: false },
+              lineNumbers: 'off',
+              scrollBeyondLastLine: false,
             }}
-            onBeforeChange={() => {
-              return;
-            }}
-            onChange={() => {}}
           />
         </div>
       </Modal>

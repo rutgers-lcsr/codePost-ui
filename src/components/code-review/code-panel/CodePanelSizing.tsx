@@ -33,15 +33,22 @@ class CodePanelLayout {
   };
 
   public static lineNumberPadding = (code: string): number => {
+    // Returns the width of the line number gutter, when using SyntaxHighlighter (code--syntax) and code--underlay
+
     const codeSyntax = document.getElementById('code-syntax');
+
     if (codeSyntax !== null) {
       const lineNumbers = codeSyntax.firstChild?.firstChild as HTMLElement | null;
-      console.log(lineNumbers);
       if (lineNumbers !== null) {
         return lineNumbers.offsetWidth;
       }
     }
-    return code.split('\n').length.toString().length * 7.205;
+    // Fallback estimate
+    const numberOfLines = code.split('\n').length;
+    const digits = numberOfLines.toString().length;
+    const co = digits * 8 + 16; // approx. 8 pixels per digit + padding
+
+    return co;
   };
 }
 

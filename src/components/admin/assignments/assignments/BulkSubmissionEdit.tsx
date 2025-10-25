@@ -1,15 +1,14 @@
 /* react imports */
-import { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 /* ant imports */
+import type { RadioChangeEvent } from 'antd';
 import { Alert, message, Modal, Radio } from 'antd';
 
 /* codePost imports */
-
 import { AssignmentType } from '../../../../infrastructure/assignment';
-import { SubmissionInfoType } from '../../../../infrastructure/submission';
-
 import { CourseType } from '../../../../infrastructure/course';
+import { SubmissionInfoType } from '../../../../infrastructure/submission';
 
 export interface IProps {
   activeAssignment: AssignmentType;
@@ -25,44 +24,59 @@ enum BULK_ACTION {
   Unfinalize,
 }
 
-const BulkSubmissionEdit = (props: IProps) => {
+interface SubmissionPayload {
+  id: number;
+  isFinalized: boolean;
+  grader?: string;
+}
+
+const BulkSubmissionEdit: React.FC<IProps> = ({
+  activeAssignment,
+  submissions,
+  onCancel,
+  myEmail,
+  bulkUpdateSubmissions,
+}) => {
   const [action, setAction] = useState(BULK_ACTION.Finalize);
   const [executing, setExecuting] = useState(false);
 
   // ********************************** Bulk edit functions ****************************************
 
-  const execute = async () => {
+  const editFinalized = useCallback(
+    async (isFinalized: boolean) => {
+      const getPayload = (sub: SubmissionInfoType): SubmissionPayload => {
+        const payload: SubmissionPayload = { id: sub.id, isFinalized };
+        if (isFinalized && !sub.grader) {
+          // If finalizing and no grader is set, set a grader
+          payload.grader = myEmail;
+        }
+        return payload;
+      };
+      return await bulkUpdateSubmissions(activeAssignment.id, getPayload);
+    },
+    [activeAssignment.id, myEmail, bulkUpdateSubmissions],
+  );
+
+  const execute = useCallback(async () => {
     switch (action) {
       case BULK_ACTION.Finalize:
         return await editFinalized(true);
       case BULK_ACTION.Unfinalize:
         return await editFinalized(false);
     }
-  };
-
-  const editFinalized = async (isFinalized: boolean) => {
-    const getPayload = (sub: SubmissionInfoType) => {
-      let payload: any = { id: sub.id, isFinalized: isFinalized };
-      if (isFinalized && !sub.grader) {
-        // If finalizing and no grader is set, set a grader
-        payload = { ...payload, grader: props.myEmail };
-      }
-      return payload;
-    };
-    return await props.bulkUpdateSubmissions(props.activeAssignment.id, getPayload);
-  };
+  }, [action, editFinalized]);
 
   // ********************************** Helpers ****************************************
-  const getNumAffected = () => {
+  const getNumAffected = useCallback(() => {
     switch (action) {
       case BULK_ACTION.Finalize:
-        return props.submissions.filter((s) => !s.isFinalized).length;
+        return submissions.filter((s) => !s.isFinalized).length;
       case BULK_ACTION.Unfinalize:
-        return props.submissions.filter((s) => s.isFinalized).length;
+        return submissions.filter((s) => s.isFinalized).length;
     }
-  };
+  }, [action, submissions]);
 
-  const onSubmit = () => {
+  const onSubmit = useCallback(() => {
     const numAffected = getNumAffected();
     Modal.confirm({
       title: `Are you sure you want to perform this action?`,
@@ -82,15 +96,16 @@ const BulkSubmissionEdit = (props: IProps) => {
         return;
       },
     });
-  };
+  }, [getNumAffected, execute]);
 
-  const onChange = (e: any) => {
+  const onChange = useCallback((e: RadioChangeEvent) => {
     setAction(e.target.value);
-  };
+  }, []);
+
   // ********************************** RENDER ****************************************
 
-  const numFinalized = props.submissions.filter((s) => s.isFinalized).length;
-  const numUnfinalized = props.submissions.length - numFinalized;
+  const numFinalized = submissions.filter((s) => s.isFinalized).length;
+  const numUnfinalized = submissions.length - numFinalized;
 
   const radioStyle = {
     display: 'block',
@@ -99,11 +114,11 @@ const BulkSubmissionEdit = (props: IProps) => {
   };
   return (
     <Modal
-      visible={true}
+      open={true}
       width={550}
       title={'Bulk edit submissions'}
       okText="Execute"
-      onCancel={props.onCancel}
+      onCancel={onCancel}
       onOk={onSubmit}
       okButtonProps={{ loading: executing }}
     >

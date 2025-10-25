@@ -5,7 +5,7 @@
 
 import { AssignmentType } from '../../infrastructure/assignment';
 import { CommentIO, CommentType, UiComment } from '../../infrastructure/comment';
-import { BinaryExtensions, FileType } from '../../infrastructure/file';
+import { BinaryExtensions, FileType, getFileContent } from '../../infrastructure/file';
 import * as Immutable from '../../infrastructure/immutable';
 import { RubricCategoryType } from '../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../infrastructure/rubricComment';
@@ -32,6 +32,11 @@ export const removeCommentFromState = (comments: IFileToCommentsMap, comment: Co
 /**
  * Updates an existing comment in the state by replacing it with a new version.
  * If the comment is not found (edge case), adds it as a new comment instead.
+ * IMPORTANT: Re-sorts the comments array to maintain proper ordering after ID changes.
+ *
+ * BUG FIX: When a comment's ID changes (negative to positive after save), we need to
+ * remove the old comment and add the new one, not just update in place. Otherwise,
+ * we can end up with duplicate comments with different IDs referencing the same content.
  */
 export const updateCommentsState = (comments: IFileToCommentsMap, commentID: number, newComment: CommentType) => {
   const fileComments = comments[newComment.file] || [];
@@ -39,11 +44,30 @@ export const updateCommentsState = (comments: IFileToCommentsMap, commentID: num
 
   if (index === -1) {
     // Fallback: If comment not found, add it as a new comment
+    console.warn('[updateCommentsState] Comment not found with ID', commentID, 'adding as new');
     return addCommentToState(comments, newComment, { id: newComment.file } as any);
   }
 
+  // Check if this is an ID change (negative -> positive after save)
+  if (commentID !== newComment.id) {
+    console.log(
+      '[updateCommentsState] Comment ID changed from',
+      commentID,
+      'to',
+      newComment.id,
+      '- removing old and adding new',
+    );
+    // Remove the old comment (with negative ID)
+    const withoutOld = Immutable.arrayRemove(fileComments, index);
+    // Add the new comment (with positive ID) and re-sort
+    const withNew = [...withoutOld, newComment];
+    return { ...comments, [newComment.file]: withNew.sort(CommentIO.compare) };
+  }
+
+  // Regular update (same ID, just content changed)
   const updatedFileComments = Immutable.arrayUpdate(fileComments, newComment, index);
-  return { ...comments, [newComment.file]: updatedFileComments };
+  // CRITICAL: Re-sort after update because comment content changes might affect sort order
+  return { ...comments, [newComment.file]: updatedFileComments.sort(CommentIO.compare) };
 };
 
 /**********************************************************************************************************************/
@@ -316,7 +340,7 @@ export const fileBouncer = (files: FileType[]) => {
   const max_size_bytes = 500000;
 
   return files.map((file: FileType) => {
-    const size_bytes = new Blob([file.code]).size;
+    const size_bytes = new Blob([getFileContent(file)]).size;
 
     const bounce =
       !['.pdf', 'pdf', 'jpg', '.jpg', 'jpeg', '.jpeg', 'png', '.png', 'ipynb', '.ipynb'].includes(

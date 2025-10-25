@@ -5,7 +5,7 @@
 /* react imports */
 import queryString from 'query-string';
 import * as React from 'react';
-import WistiaPlayer from 'react-player/lib/players/Wistia';
+import { WistiaPlayer } from '@wistia/wistia-player-react';
 
 import {
   PlusOutlined,
@@ -256,10 +256,7 @@ class Video extends React.Component<IVideoProps, IVideoState> {
 
     const videoHeight = (videoWidth * 540) / 960;
 
-    const url =
-      this.state.selectedVideo === 'management'
-        ? 'https://codepost.wistia.com/medias/dkb5k6nmgb'
-        : 'https://codepost.wistia.com/medias/yx1va80hcd';
+    const url = this.state.selectedVideo === 'management' ? 'dkb5k6nmgb' : 'yx1va80hcd';
 
     const videoSelect = (
       <div style={{ paddingBottom: '20px' }}>
@@ -288,18 +285,10 @@ class Video extends React.Component<IVideoProps, IVideoState> {
             <WistiaPlayer
               ref={this.ref}
               id="video"
-              url={url}
-              onProgress={this.handleProgress}
-              height={`${videoHeight}px`}
-              width={`${videoWidth}px`}
-              playing={this.state.playing}
+              mediaId={url}
+              height={videoHeight}
+              width={videoWidth}
               style={{ transform: 'translateX(-2px)' }}
-              config={{
-                wistia: {
-                  playerId: 'video',
-                  options: {},
-                },
-              }}
             />
           </div>
           {windowwidth > 1024 ? (

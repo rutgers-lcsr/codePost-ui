@@ -3,12 +3,12 @@ import { useEffect, useState } from 'react';
 
 // library imports
 import { Button } from 'antd';
-import { Controlled as CodeMirror } from 'react-codemirror2';
 
 // codePost util imports
 import { codeMirorLanguageMap } from './languageUtils';
 
 import useHotkeys, { S_KEY } from '../../../../../code-review/useHotkeys';
+import Editor from '@monaco-editor/react';
 
 type themeType = 'light' | 'dark';
 
@@ -43,13 +43,6 @@ export const CodeWindow = (props: IProps) => {
     }
   };
 
-  const onBeforeChange = (_editor: any, _data: any, value: string) => {
-    if (props.onChange) {
-      props.onChange(value);
-    }
-    setEditedCode(value);
-  };
-
   useHotkeys(S_KEY, onSave);
 
   // ******************************* Util functions  *******************************
@@ -74,11 +67,12 @@ export const CodeWindow = (props: IProps) => {
         width: '100%',
         position: 'relative',
         height: props.height || undefined,
+        paddingTop: 30,
       }}
     >
       {!props.onChange && (
         <Button
-          style={{ position: 'absolute', right: 15, top: '-34px', zIndex: 100 }}
+          style={{ position: 'absolute', right: 15, top: '-10px', zIndex: 100 }}
           type={'primary'}
           ghost={!props.onSave}
           onClick={onSave}
@@ -88,18 +82,25 @@ export const CodeWindow = (props: IProps) => {
           {props.onSave ? 'Save [⌘+S]' : 'Editing is Disabled'}
         </Button>
       )}
-      <CodeMirror
-        key={`codeMirror`}
-        onBeforeChange={onBeforeChange}
+
+      <Editor
+        height={props.height || '100%'}
+        width="100%"
+        language={getMode()}
         value={props.onSave ? editedCode : props.code}
+        onChange={(value) => {
+          if (!value) return;
+          setEditedCode(value);
+          if (props.onChange) {
+            props.onChange(value);
+          }
+        }}
         options={{
-          lineNumbers: true,
-          lineWrapping: true,
-          mode: getMode(),
-          theme: props.theme && props.theme === 'dark' ? 'material' : 'neo',
-          styleActiveLine: { nonEmpty: true },
+          automaticLayout: true,
+          minimap: { enabled: false },
           readOnly: !(props.onSave || props.onChange) || isSaving,
         }}
+        theme={props.theme === 'dark' ? 'vs-dark' : 'light'}
       />
     </div>
   );

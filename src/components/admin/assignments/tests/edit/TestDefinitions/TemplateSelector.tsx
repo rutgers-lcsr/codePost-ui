@@ -1,10 +1,11 @@
 /* react imports */
 import React, { useState } from 'react';
 
-import { Controlled as CodeMirror } from 'react-codemirror2';
+// import { Controlled as CodeMirror } from 'react-codemirror2';
 
 /* library imports */
 import { Button, Modal, Table } from 'antd';
+import Editor from '@monaco-editor/react';
 
 interface IProps {
   populateDefinition: (template: string) => void;
@@ -161,17 +162,31 @@ export const TemplateSelector = (props: IProps) => {
     const data = [
       {
         code: (
-          <CodeMirror
-            key={`codeMirror`}
+          <Editor
+            height="200px"
+            language={props.language === 'other' ? 'java' : props.language}
             value={record.code}
-            onBeforeChange={() => 5}
+            theme="vs-dark"
             options={{
-              theme: 'neo',
               readOnly: true,
-              lineWrapping: true,
-              lineNumbers: true,
+              minimap: { enabled: false },
+              fontSize: 14,
+              lineNumbers: 'on',
+              scrollBeyondLastLine: false,
+              automaticLayout: true,
             }}
           />
+          // <CodeMirror
+          //   key={`codeMirror`}
+          //   value={record.code}
+          //   onBeforeChange={() => 5}
+          //   options={{
+          //     theme: 'neo',
+          //     readOnly: true,
+          //     lineWrapping: true,
+          //     lineNumbers: true,
+          //   }}
+          // />
         ),
       },
     ];
@@ -185,7 +200,7 @@ export const TemplateSelector = (props: IProps) => {
         Choose from template
       </Button>
       <Modal
-        visible={visible}
+        open={visible}
         title={'Select from a template below'}
         onCancel={toggleVisible}
         width={700}

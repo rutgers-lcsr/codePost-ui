@@ -14,7 +14,7 @@ import {
 import { slack } from '../components/core/slack';
 import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../types/common';
 import { CommentIO, CommentType } from './comment';
-import { File, FileType } from './file';
+import { File, FileType, SubmissionFileV } from './file';
 import { RubricComment } from './rubricComment';
 import { SubmissionHistoryV, SubmissionHistoryVPatch } from './submissionHistory';
 import { SubmissionTestV } from './submissionTest';
@@ -30,7 +30,7 @@ export const SubmissionV = t.intersection(
     GenericObject,
     t.type({
       isFinalized: t.boolean,
-      files: t.array(t.number),
+      files: t.union([t.array(t.number), t.array(SubmissionFileV)]),
       students: t.array(t.string),
       assignment: t.number,
       dateEdited: t.string,
@@ -142,7 +142,7 @@ export const StudentSubmissionV = t.intersection(
     }),
     t.partial({
       students: t.array(t.string),
-      files: t.array(t.number),
+      files: t.union([t.array(t.number), t.array(SubmissionFileV)]),
       grade: t.union([t.number, t.null]),
       questionIsOpen: t.boolean,
       questionIsRegrade: t.boolean,
@@ -181,7 +181,7 @@ const SubmissionVPatch = t.intersection(
     GenericObject,
     t.partial({
       isFinalized: t.boolean,
-      files: t.array(t.number),
+      files: t.union([t.array(t.number), t.array(SubmissionFileV)]),
       students: t.array(t.string),
       assignment: t.number,
       grader: t.union([t.string, t.null]),
@@ -201,7 +201,7 @@ export const AnonymousSubmissionV = t.intersection(
     GenericObject,
     t.type({
       isFinalized: t.boolean,
-      files: t.array(t.number),
+      files: t.union([t.array(t.number), t.array(SubmissionFileV)]),
       assignment: t.number,
       dateEdited: t.string,
       dateUploaded: t.string,
@@ -325,11 +325,16 @@ export class Submission {
     }
 
     try {
-      const files = await loadIDList(submission.files, File);
+      // Check if files are already full objects (new API) or just IDs (old API)
+      const files: FileType[] =
+        typeof submission.files[0] === 'number'
+          ? await loadIDList<FileType>(submission.files as number[], File)
+          : (submission.files as FileType[]);
+
       const comments: IFileToCommentsMap = {};
       await Promise.all(
         files.map(async (file: FileType) => {
-          comments[file.id] = (await loadIDList(file.comments, CommentIO)).sort(CommentIO.compare);
+          comments[file.id] = (await loadIDList<CommentType>(file.comments, CommentIO)).sort(CommentIO.compare);
           return;
         }),
       );

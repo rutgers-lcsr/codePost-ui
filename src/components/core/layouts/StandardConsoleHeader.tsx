@@ -1,3 +1,4 @@
+import { LogoutOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 
 import CPButton from '../CPButton';
@@ -31,7 +32,7 @@ const StandardConsoleHeader = (props: IStandardConsoleHeaderProps) => {
   ];
 
   const logout = (
-    <CPButton key="header-logout" cpType="dark" fallback="logout" onClick={props.handleLogout}>
+    <CPButton key="header-logout" cpType="dark" fallbackIcon={<LogoutOutlined />} onClick={props.handleLogout}>
       Log Out
     </CPButton>
   );

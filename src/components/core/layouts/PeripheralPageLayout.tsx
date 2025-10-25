@@ -14,7 +14,7 @@ import PeripheralPageHeader from './PeripheralPageHeader';
 import { UserType } from '../../../infrastructure/user';
 
 /* ant imports */
-import { Layout } from 'antd';
+import { Layout, theme } from 'antd';
 
 const { Content, Footer } = Layout;
 
@@ -26,13 +26,14 @@ interface IProps {
 }
 
 const PeripheralPageLayout = (props: IProps) => {
+  const { token } = theme.useToken();
   return (
-    <Layout id="PreAuth" style={{ backgroundColor: '#fff', minHeight: '100vh' }}>
+    <Layout id="PreAuth" style={{ backgroundColor: token.colorBgLayout, minHeight: '100vh' }}>
       <PeripheralPageHeader user={props.user} handleLogout={props.handleLogout} subtitle={props.subtitle} />
       <Content>
         <div
           style={{
-            background: '#fff',
+            background: token.colorBgContainer,
             padding: '25px 50px',
             maxWidth: 1200,
             margin: '0 auto',
@@ -43,7 +44,7 @@ const PeripheralPageLayout = (props: IProps) => {
       </Content>
       <Footer
         style={{
-          background: 'rgb(234,234,234)',
+          background: token.colorFillSecondary,
           width: '100%',
           padding: 0,
           marginTop: 50,

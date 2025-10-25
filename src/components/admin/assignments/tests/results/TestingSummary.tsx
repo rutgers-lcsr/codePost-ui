@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { Breadcrumb, Button } from 'antd';
 
 /* other library imports */
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 /* codePost object imports */
 import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
@@ -43,6 +43,8 @@ interface IProps {
 }
 
 export const TestingSummary = (props: IProps) => {
+  const location = useLocation();
+
   // ************************** State Variables ******************************
   // objects
   const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
@@ -164,15 +166,23 @@ export const TestingSummary = (props: IProps) => {
             env={env}
           />,
           <Button type="primary">
-            <Link
-              to={[...props.match.url.split('/').slice(0, props.match.url.split('/').length - 1), 'edit'].join('/')}
-            >
-              Edit tests
-            </Link>
+            <Link to={location.pathname.replace(/\/results.*$/, '/edit')}>Edit tests</Link>
           </Button>,
         ];
 
   console.log(props.fullSubmissionsLoadComplete);
+
+  // Deduplicate submissions by ID to prevent duplicate key warnings
+  const uniqueSubmissions = React.useMemo(() => {
+    const seen = new Set<number>();
+    return props.submissions.filter((sub) => {
+      if (seen.has(sub.id)) {
+        return false;
+      }
+      seen.add(sub.id);
+      return true;
+    });
+  }, [props.submissions]);
 
   return (
     <TestResultsTable
@@ -184,7 +194,7 @@ export const TestingSummary = (props: IProps) => {
       tableOnly={props.tableOnly}
       title={`${props.currentAssignment.name} | Tests Summary`}
       parentActions={actions}
-      submissions={props.submissions}
+      submissions={uniqueSubmissions}
       assignment={props.currentAssignment}
       testCasesByCategory={testCasesByCategory}
       testsBySubmission={testsBySubmission}

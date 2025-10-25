@@ -10,7 +10,7 @@ import landingVars from '../../styles/pages/_landingVars';
 import CPButton from '../core/CPButton';
 import useWindowSize from '../core/useWindowSize';
 
-const LandingHeader = () => {
+function LandingHeader() {
   const windowSize = useWindowSize();
   const smallScreen = windowSize.width < landingVars.breakpoints.header;
 
@@ -136,6 +136,6 @@ const LandingHeader = () => {
       </div>
     );
   }
-};
+}
 
 export default LandingHeader;

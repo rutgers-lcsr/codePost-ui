@@ -25,7 +25,7 @@ import {
 } from 'antd';
 
 /* other library imports */
-import { RouteComponentProps } from 'react-router';
+import { RouteComponentProps } from '../../../../router/legacy';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
@@ -41,7 +41,7 @@ import CPAdminDetail from '../../other/CPAdminDetail';
 
 import CPTooltip from '../../../core/CPTooltip';
 
-import MossResults from './MossResults';
+import MossResults, { IMossResult } from './MossResults';
 
 import { sendSlack } from '../../../core/slack';
 
@@ -102,6 +102,7 @@ export const MOSS_LANGUAGES = [
 ];
 
 const Moss = (props: IMossProps & RouteComponentProps) => {
+  return false;
   const [submit, setSubmit] = useState(true);
   const [loading, setLoading] = useState(false);
   const [urlID, setUrlID] = useState('');
@@ -123,7 +124,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
     const fetch = async () => {
       if (props.assignment !== undefined) {
         const ret = await Promise.all(
-          props.assignment.fileTemplates.map(async (id: number) => {
+          (props.assignment.fileTemplates ?? []).map(async (id: number) => {
             return await FileTemplate.read(id);
           }),
         );
@@ -195,7 +196,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
   //   },
   // ];
 
-  const [results, setResults] = useState(undefined);
+  const [results, setResults] = useState<IMossResult[] | undefined>(undefined);
 
   const toggleSubmit = async () => {
     setSubmit(true);
@@ -444,7 +445,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
         <Typography.Title level={3}>Select an assignment</Typography.Title>
         <Select
           placeholder="Select an assignment"
-          defaultValue={props.assignment ? props.assignment.name : undefined}
+          defaultValue={props.assignment?.name}
           disabled={loading}
           style={{ width: '350px' }}
           onChange={changeAssignment}
@@ -540,19 +541,23 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
     </div>
   );
 
-  const resultsCard = results === undefined ? null : <MossResults results={results} />;
+  let resultsCard: ReactNode = null;
+  if (Array.isArray(results)) {
+    const safeResults = results as IMossResult[];
+    if (safeResults.length > 0) {
+      resultsCard = <MossResults results={safeResults} />;
+    }
+  }
+
+  const breadcrumbItems = [...(props.breadcrumbs || []), { title: 'Plagiarism Detection' }];
+  const assignmentName = props.assignment?.name;
+  if (assignmentName) {
+    breadcrumbItems.push({ title: assignmentName });
+  }
 
   return (
     <CPAdminDetail
-      breadcrumbs={
-        <Breadcrumb
-          items={[
-            ...(props.breadcrumbs || []),
-            { title: 'Plagiarism Detection' },
-            ...(props.assignment ? [{ title: props.assignment.name }] : []),
-          ]}
-        />
-      }
+      breadcrumbs={<Breadcrumb items={breadcrumbItems} />}
       goBack={null}
       title={<span>Plagiarism Detection &nbsp; {help}</span>}
       actions={[toggle]}

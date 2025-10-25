@@ -63,7 +63,7 @@ export const CategorySelectModal = (props: IUploadProps) => {
         onClick: toggleVisible,
       })}
       <Modal
-        visible={visible && props.categories.length > 1}
+        open={visible && props.categories.length > 1}
         title={props.title}
         onCancel={toggleVisible}
         width={400}

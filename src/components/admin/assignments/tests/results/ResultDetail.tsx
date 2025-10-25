@@ -13,8 +13,10 @@ import TestsList from '../../../../code-review/code-panel/TestsList';
 
 import { RESULT_STATUS, TestCasesByCategory, TestsBySubmission } from '../../../../core/testFetchUtils';
 
-import { FixedSizeList as List } from 'react-window';
+import * as ReactWindow from 'react-window';
 import useWindowSize from '../../../../core/useWindowSize';
+
+const List = (ReactWindow as any).FixedSizeList || (ReactWindow as any).default?.FixedSizeList;
 
 interface IProps {
   visible: boolean;

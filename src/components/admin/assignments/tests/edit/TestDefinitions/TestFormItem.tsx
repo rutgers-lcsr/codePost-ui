@@ -3,10 +3,9 @@ import React from 'react';
 
 import { EditOutlined } from '@ant-design/icons';
 
-import { Form } from '@ant-design/compatible';
+import Form, { LegacyFormController } from '../../../../../core/legacyForm';
 
 /* antd imports */
-import { FormComponentProps } from '@ant-design/compatible/lib/form';
 import {
   Button,
   Collapse,
@@ -42,7 +41,8 @@ import { ILogType } from './PseudoTerminal';
 
 const { Option } = Select;
 
-interface ITestFormItemProps extends FormComponentProps {
+interface ITestFormItemProps {
+  form: LegacyFormController;
   testCase: TestCaseType;
   saveTest: (
     testType: string,

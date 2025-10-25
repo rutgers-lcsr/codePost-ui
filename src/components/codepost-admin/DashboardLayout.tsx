@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { DashboardOutlined, LineChartOutlined } from '@ant-design/icons';
+import { DashboardOutlined, GlobalOutlined } from '@ant-design/icons';
 
 import type { MenuProps } from 'antd';
 import { Layout, Menu } from 'antd';
@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import CPLogo from '../core/CPLogo';
 import useFixedWindow from '../core/useFixedWindow';
 
+import APIIframe from './APIIframe';
 import Dashboard from './Dashboard';
 
 const { Content, Sider } = Layout;
@@ -28,13 +29,8 @@ const DashboardLayout: React.FC = () => {
   if (siderKey === '1') {
     content = <Dashboard />;
   }
-
   if (siderKey === '2') {
-    content = (
-      <a href="https://analytics.google.com/analytics/web/" target="_blank" rel="noopener noreferrer">
-        analytics.google.com
-      </a>
-    );
+    content = <APIIframe />;
   }
 
   return (
@@ -66,12 +62,12 @@ const DashboardLayout: React.FC = () => {
             <span className="nav-text">dashboard</span>
           </Menu.Item>
           <Menu.Item key="2">
-            <LineChartOutlined />
-            <span className="nav-text">google analytics</span>
+            <GlobalOutlined />
+            <span className="nav-text">API</span>
           </Menu.Item>
         </Menu>
       </Sider>
-      <Layout style={{ marginLeft: 200, height: '100vh' }}>
+      <Layout style={{ height: '100vh' }}>
         <Content style={{ padding: '24px 16px 30px' }}>{content}</Content>
       </Layout>
     </Layout>

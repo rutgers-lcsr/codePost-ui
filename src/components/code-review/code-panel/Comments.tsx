@@ -166,7 +166,7 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
   // Disabled: Set bottom of comment box
   /* const setBottomOfCommentBox = useCallback(
     (lastPlacement: ICommentPlacement) => {
-      const codeHeight = CodePanelSizing.codeHeight(props.file.code);
+      const codeHeight = CodePanelSizing.codeHeight(getFileContent(props.file));
 
       let lowestCommentBottom = 0;
       if (lastPlacement) {
@@ -188,7 +188,7 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
         comments.style.setProperty('height', `${commentsMaxHeight}px`);
       }
     },
-    [props.file.code],
+    [props.file],
   ); */
 
   // No longer using absolute positioning - just provide stub functions

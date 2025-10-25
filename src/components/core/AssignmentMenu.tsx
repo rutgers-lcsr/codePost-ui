@@ -5,7 +5,7 @@
 /* react imports */
 
 /* other library imports */
-import { RouteComponentProps } from 'react-router';
+import { RouteComponentProps } from '../../router/legacy';
 import { Link } from 'react-router-dom';
 
 import { CloseOutlined } from '@ant-design/icons';

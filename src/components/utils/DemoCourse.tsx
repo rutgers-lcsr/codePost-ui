@@ -212,7 +212,7 @@ const createSubmissions = (assignment: AssignmentType, domain: string) => {
         const makeFiles = subT.files.map((fileT) => {
           const filePayload = {
             id: -1, // codePost convention
-            code: fileT.code,
+            data: fileT.code,
             comments: [], // ignored by API
             extension: fileT.ext,
             name: fileT.name,
