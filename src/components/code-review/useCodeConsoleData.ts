@@ -332,7 +332,7 @@ export const useCodeConsoleData = (params: UseCodeConsoleDataParams): CodeConsol
           let fileTemplates: FileTemplateType[] | undefined;
           if (assignment.templateMode) {
             fileTemplates = await Promise.all(
-              assignment.fileTemplates.map((fileTemplateID: number) => {
+              (assignment.fileTemplates ?? []).map((fileTemplateID: number) => {
                 return FileTemplate.read(fileTemplateID);
               }),
             );

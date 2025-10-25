@@ -10,7 +10,8 @@ import { SettingOutlined } from '@ant-design/icons';
 import { Button, Layout } from 'antd';
 
 /* other library imports */
-import { Link, Route, RouteComponentProps, Switch } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router-dom';
+import { RouteComponentProps, LegacyRouteRenderer } from '../../router/legacy';
 
 import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
 
@@ -117,8 +118,8 @@ class Grader extends Component<IComponentProps, IGraderState> {
     // }
   };
 
-  public loadAssignments = async (course: CourseType) => {
-    return loadIDList(course.assignments, Assignment);
+  public loadAssignments = async (course: CourseType): Promise<AssignmentType[]> => {
+    return loadIDList<AssignmentType>(course.assignments, Assignment);
   };
 
   /***********************************************************************************
@@ -139,78 +140,104 @@ class Grader extends Component<IComponentProps, IGraderState> {
       );
     } else {
       graderPanelContent = (
-        <Switch>
+        <Routes>
+          <Route index element={<div>Select a panel from the navigation</div>} />
           {this.props.currentCourse && this.props.currentCourse.activateQueue && (
             <Route
               key="my_submissions"
-              path={`${this.props.match.url}/my_submissions`}
-              render={(_props: RouteComponentProps) => (
-                <MySubmissionsPanel
-                  {..._props}
-                  course={currentCourse}
-                  assignments={this.state.assignments}
-                  graderEmail={this.props.user.email}
-                  isAdmin={this.props.user.courseadminCourses.some((el) => {
-                    return el.id === currentCourse.id;
-                  })}
+              path="my_submissions/*"
+              element={
+                <LegacyRouteRenderer
+                  path={`${this.props.match.url}/my_submissions/*`}
+                  render={(_props: RouteComponentProps) => (
+                    <MySubmissionsPanel
+                      {..._props}
+                      course={currentCourse}
+                      assignments={this.state.assignments}
+                      graderEmail={this.props.user.email}
+                      isAdmin={this.props.user.courseadminCourses.some((el) => {
+                        return el.id === currentCourse.id;
+                      })}
+                    />
+                  )}
                 />
-              )}
+              }
             />
           )}
           {this.state.sectionsLed.length > 0 ? (
             <Route
               key="my_sections"
-              path={`${this.props.match.url}/my_sections`}
-              render={(_props: RouteComponentProps) => (
-                <SectionPanel
-                  {..._props}
-                  course={currentCourse}
-                  assignments={this.state.assignments}
-                  graderEmail={this.props.user.email}
-                  sections={this.state.sectionsLed}
-                  isAdmin={this.props.user.courseadminCourses.some((el) => {
-                    return el.id === currentCourse.id;
-                  })}
+              path="my_sections/*"
+              element={
+                <LegacyRouteRenderer
+                  path={`${this.props.match.url}/my_sections/*`}
+                  render={(_props: RouteComponentProps) => (
+                    <SectionPanel
+                      {..._props}
+                      course={currentCourse}
+                      assignments={this.state.assignments}
+                      graderEmail={this.props.user.email}
+                      sections={this.state.sectionsLed}
+                      isAdmin={this.props.user.courseadminCourses.some((el) => {
+                        return el.id === currentCourse.id;
+                      })}
+                    />
+                  )}
                 />
-              )}
+              }
             />
           ) : undefined}
           {this.state.isSuperGrader ? (
             <Route
               key="all_submissions"
-              path={`${this.props.match.url}/all_submissions`}
-              render={(_props: RouteComponentProps) => (
-                <ViewAllPanel {..._props} course={currentCourse} assignments={this.state.assignments} />
-              )}
+              path="all_submissions/*"
+              element={
+                <LegacyRouteRenderer
+                  path={`${this.props.match.url}/all_submissions/*`}
+                  render={(_props: RouteComponentProps) => (
+                    <ViewAllPanel {..._props} course={currentCourse} assignments={this.state.assignments} />
+                  )}
+                />
+              }
             />
           ) : undefined}
           {someRegrades && currentCourse ? (
             <Route
-              path={`${this.props.match.url}/regrades`}
+              path="regrades/*"
               key="regrades"
-              render={(_props: RouteComponentProps) => (
-                <RegradesPanel
-                  {..._props}
-                  course={currentCourse}
-                  assignments={this.state.assignments}
-                  user={this.props.user}
-                  isAnonymous={false}
-                  isAdmin={this.props.user.courseadminCourses.some((el) => {
-                    return el.id === currentCourse.id;
-                  })}
-                  isSuperGrader={this.state.isSuperGrader}
+              element={
+                <LegacyRouteRenderer
+                  path={`${this.props.match.url}/regrades/*`}
+                  render={(_props: RouteComponentProps) => (
+                    <RegradesPanel
+                      {..._props}
+                      course={currentCourse}
+                      assignments={this.state.assignments}
+                      user={this.props.user}
+                      isAnonymous={false}
+                      isAdmin={this.props.user.courseadminCourses.some((el) => {
+                        return el.id === currentCourse.id;
+                      })}
+                      isSuperGrader={this.state.isSuperGrader}
+                    />
+                  )}
                 />
-              )}
+              }
             />
           ) : undefined}{' '}
           <Route
-            path={`${this.props.match.url}/video`}
+            path="video"
             key="video"
-            render={(_props: RouteComponentProps) => (
-              <VideoModal open={true} onCancel={() => this.props.history.push('/grader')} />
-            )}
+            element={
+              <LegacyRouteRenderer
+                path={`${this.props.match.url}/video`}
+                render={(_props: RouteComponentProps) => (
+                  <VideoModal open={true} onCancel={() => this.props.history.push('/grader')} />
+                )}
+              />
+            }
           />
-        </Switch>
+        </Routes>
       );
     }
 
@@ -227,17 +254,24 @@ class Grader extends Component<IComponentProps, IGraderState> {
     let assignmentDropdown;
     if (currentCourse) {
       assignmentDropdown = (
-        <Route
-          path={`${this.props.match.url}/:panel/:assignment`}
-          render={(_props: RouteComponentProps<{ panel: string; assignment: string }>) => (
-            <AssignmentMenu
-              {..._props}
-              currentCourse={currentCourse}
-              assignments={this.state.assignments}
-              baseURL={this.props.match.url}
-            />
-          )}
-        />
+        <Routes>
+          <Route
+            path=":panel/:assignment"
+            element={
+              <LegacyRouteRenderer
+                path={`${this.props.match.url}/:panel/:assignment`}
+                render={(_props: RouteComponentProps<{ panel: string; assignment: string }>) => (
+                  <AssignmentMenu
+                    {..._props}
+                    currentCourse={currentCourse}
+                    assignments={this.state.assignments}
+                    baseURL={this.props.match.url}
+                  />
+                )}
+              />
+            }
+          />
+        </Routes>
       );
     }
 
@@ -269,24 +303,29 @@ class Grader extends Component<IComponentProps, IGraderState> {
 
     const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
 
-    const navigation = (collapsed: boolean) => (
-      <Switch>
-        <Route
-          path={`${this.props.match.url}/:panel?`}
-          render={(_props: RouteComponentProps<{ panel?: string }>) => (
-            <GraderNav
-              {...(_props as RouteComponentProps<{ panel: string }>)}
-              baseURL={this.props.match.url}
-              collapsed={collapsed}
-              isSuperGrader={this.state.isSuperGrader}
-              isSectionLeader={this.state.sectionsLed.length > 0}
-              regradesAllowed={someRegrades}
-              activateQueue={!!(this.props.currentCourse && this.props.currentCourse.activateQueue)}
-            />
-          )}
+    const navigation = (collapsed: boolean) => {
+      // Extract the panel from the current location
+      const locationParts = this.props.location.pathname.split('/');
+      const baseUrlParts = this.props.match.url.split('/');
+      const panelIndex = baseUrlParts.length;
+      const panel = locationParts[panelIndex];
+
+      return (
+        <GraderNav
+          {...this.props}
+          match={{
+            ...this.props.match,
+            params: { panel: panel || '' },
+          }}
+          baseURL={this.props.match.url}
+          collapsed={collapsed}
+          isSuperGrader={this.state.isSuperGrader}
+          isSectionLeader={this.state.sectionsLed.length > 0}
+          regradesAllowed={someRegrades}
+          activateQueue={!!(this.props.currentCourse && this.props.currentCourse.activateQueue)}
         />
-      </Switch>
-    );
+      );
+    };
 
     return (
       <CPLayoutAdmin

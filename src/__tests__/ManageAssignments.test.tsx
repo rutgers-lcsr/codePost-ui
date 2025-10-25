@@ -1,67 +1,10 @@
-import { shallow } from 'enzyme';
-import jest from 'jest-mock';
+import { buildAllGradesTable } from '../components/admin/assignments/assignments/DownloadGrades';
+import { AssignmentType } from '../infrastructure/assignment';
+import { SubmissionInfoType } from '../infrastructure/types';
 
-import ManageAssignments, { IManageAssignmentsProps } from '../components/admin/assignments/ManageAssignments';
-
-describe('ManageAssignments', () => {
-  const setup = (propOverrides?: Partial<IManageAssignmentsProps>) => {
-    // default props
-    const props = Object.assign(
-      {
-        rubricCategories: {},
-        rubricComments: {},
-        submissions: {},
-        loadComplete: true,
-        lockManageAssignment: true,
-        currentCourse: {
-          id: 1,
-          name: 'COS126',
-          period: 'S2019',
-          organization: 1,
-          assignments: [],
-          sections: [],
-          sendReleasedSubmissionsToBack: false,
-          showStudentsStatistics: false,
-          timezone: 'US/Eastern',
-          emailNewUsers: false,
-        },
-        viewsBySubmission: {},
-        assignments: [],
-        submissionsByStudent: {},
-        students: ['student1@princeton.edu', 'student2@princeton.edu'],
-        sections: [],
-        toggleLock: jest.fn(),
-        addToast: jest.fn(),
-        addErrorToast: jest.fn(),
-        deleteAssignment: jest.fn(),
-        createRubricCategory: jest.fn(),
-        createRubricComment: jest.fn(),
-        deleteRubricCategory: jest.fn(),
-        deleteRubricComment: jest.fn(),
-        updateRubricCategory: jest.fn(),
-        updateRubricComment: jest.fn(),
-        updateAssignment: jest.fn(),
-        createAssignment: jest.fn(),
-        setLoadingDialog: jest.fn(),
-        clearLoadingDialog: jest.fn(),
-        uploadSubmission: jest.fn(),
-        updateSubmission: jest.fn(),
-        deleteSubmission: jest.fn(),
-        refreshCourseData: jest.fn(),
-        myEmail: 'myEmail@school.edu',
-        user: {},
-      },
-      propOverrides,
-    );
-
-    const wrapper = shallow(<ManageAssignments {...(props as any)} />);
-
-    return { props, wrapper };
-  };
-
-  it('getAllGrades()', () => {
-    const students = ['student1@princeton.edu', 'student2@princeton.edu'];
-    const assignments: any = [
+describe('buildAllGradesTable', () => {
+  it('creates a matrix of grades for each student and assignment', () => {
+    const assignments = [
       {
         id: 1,
         name: 'Hello',
@@ -72,6 +15,13 @@ describe('ManageAssignments', () => {
         mean: 20,
         median: 20,
         sortKey: 0,
+        allowStudentUpload: false,
+        allowStudentUploadWithPartners: false,
+        allowLateUploads: false,
+        explanation: '',
+        files: [],
+        liveFeedbackMode: false,
+        testCategories: [],
       },
       {
         id: 2,
@@ -83,11 +33,22 @@ describe('ManageAssignments', () => {
         mean: 20,
         median: 20,
         sortKey: 0,
+        allowStudentUpload: false,
+        allowStudentUploadWithPartners: false,
+        allowLateUploads: false,
+        explanation: '',
+        files: [],
+        liveFeedbackMode: false,
+        testCategories: [],
       },
     ];
-    const submissions = {
-      1: [
-        {
+    const typedAssignments = assignments as unknown as AssignmentType[];
+
+    const students = ['student1@princeton.edu', 'student2@princeton.edu'];
+
+    const submissionsByStudent = {
+      'student1@princeton.edu': {
+        1: {
           id: 9,
           assignment: 1,
           students: ['student1@princeton.edu'],
@@ -97,9 +58,22 @@ describe('ManageAssignments', () => {
           grade: 20,
           files: [],
           queueOrderKey: 0,
-        },
-        {
-          id: 17,
+        } as unknown as SubmissionInfoType,
+        2: {
+          id: 10,
+          assignment: 2,
+          students: ['student1@princeton.edu'],
+          grader: '',
+          isFinalized: true,
+          dateEdited: '2019-03-15T15:26:29.714396-04:00',
+          grade: 18,
+          files: [],
+          queueOrderKey: 0,
+        } as unknown as SubmissionInfoType,
+      },
+      'student2@princeton.edu': {
+        1: {
+          id: 11,
           assignment: 1,
           students: ['student2@princeton.edu'],
           grader: 'superadmin@codepost.io',
@@ -108,23 +82,10 @@ describe('ManageAssignments', () => {
           grade: 2,
           files: [],
           queueOrderKey: 0,
-        },
-      ],
-      2: [
-        {
-          id: 9,
-          assignment: 1,
-          students: ['student1@princeton.edu'],
-          grader: '',
-          isFinalized: true,
-          dateEdited: '2019-03-15T15:26:29.714396-04:00',
-          grade: 18,
-          files: [],
-          queueOrderKey: 0,
-        },
-        {
-          id: 17,
-          assignment: 1,
+        } as unknown as SubmissionInfoType,
+        2: {
+          id: 12,
+          assignment: 2,
           students: ['student2@princeton.edu'],
           grader: 'superadmin@codepost.io',
           isFinalized: true,
@@ -132,16 +93,17 @@ describe('ManageAssignments', () => {
           grade: 17.5,
           files: [],
           queueOrderKey: 0,
-        },
-      ],
+        } as unknown as SubmissionInfoType,
+      },
     };
+    const typedSubmissions = submissionsByStudent as unknown as Record<string, Record<number, SubmissionInfoType>>;
 
     const expected = [
       ['Active Student', 'Hello', 'Loops'],
       ['student1@princeton.edu', '20', '18'],
       ['student2@princeton.edu', '2', '17.5'],
     ];
-    const { wrapper } = setup();
-    expect(wrapper.instance().getAllGrades(assignments, submissions, students)).toEqual(expected);
+
+    expect(buildAllGradesTable(typedAssignments, students, typedSubmissions)).toEqual(expected);
   });
 });

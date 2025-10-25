@@ -9,9 +9,9 @@ import { useCallback, useMemo, useState } from 'react';
 import {
   DisconnectOutlined,
   EditOutlined,
-  FolderOpenOutlined,
   MailOutlined,
   MenuOutlined,
+  ProfileOutlined,
   UserDeleteOutlined,
 } from '@ant-design/icons';
 
@@ -21,7 +21,8 @@ import { Breadcrumb, Dropdown, Empty, message, Modal, Select, Spin } from 'antd'
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
-import { Link, useRouteMatch } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useRouteMatch } from '../../../router/legacy';
 
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
@@ -249,7 +250,7 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
           key: 'profile',
           label: (
             <Link to={match.url.replace('roster/students', `submissions/by_student/${studentEmail}`)}>
-              <FolderOpenOutlined /> &nbsp; Open profile
+              <ProfileOutlined /> &nbsp; Open profile
             </Link>
           ),
         },

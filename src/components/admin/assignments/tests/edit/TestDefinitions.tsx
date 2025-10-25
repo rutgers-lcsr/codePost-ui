@@ -31,8 +31,10 @@ import {
   Modal,
   Popconfirm,
   Skeleton,
+  Space,
   Tooltip,
   Typography,
+  theme,
 } from 'antd';
 import _ from 'lodash';
 
@@ -51,7 +53,7 @@ import { HelperFileType } from '../../../../../infrastructure/autograder/helperF
 import { TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
 import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
 import { SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
-import { File } from '../../../../../infrastructure/file';
+import { File, getFileContent } from '../../../../../infrastructure/file';
 import { Submission } from '../../../../../infrastructure/submission';
 import { TestCase } from '../../../../../infrastructure/testCase';
 import { TestCategory } from '../../../../../infrastructure/testCategory';
@@ -122,6 +124,8 @@ export const TestDefinitions = (props: IProps) => {
   /******************************* State Variables ****************************/
   const [casesByCategory, setCasesByCategory] = useState<TestCasesByCategory>({});
   const [categories, setCategories] = useState<TestCategoryType[]>([]);
+
+  const { token } = theme.useToken();
 
   // Edit Tests variables
   const [activeTest, setActiveTest] = useState<TestCaseType | undefined>(undefined);
@@ -412,8 +416,13 @@ export const TestDefinitions = (props: IProps) => {
     if (match) {
       // Get the latest submission files
       const submission = await Submission.read(match.id);
-      const files = submission.files.map((fileID) => File.read(fileID));
-      Promise.all(files).then((fileList) => setCurrentFiles(fileList));
+      const filePromises: Promise<FileType>[] = submission.files.map((fileOrId) => {
+        if (typeof fileOrId === 'number') {
+          return File.read(fileOrId);
+        }
+        return Promise.resolve(fileOrId);
+      });
+      Promise.all(filePromises).then((fileList) => setCurrentFiles(fileList));
       setActiveSubmission(match);
       setIndex('0-0');
     } else {
@@ -436,7 +445,7 @@ export const TestDefinitions = (props: IProps) => {
 
     //
     const formatted = {
-      log: <span style={{ color: '#678CAB' }}>{response.logs}</span>,
+      log: <Typography.Text style={{ color: token.colorInfo }}>{response.logs}</Typography.Text>,
       target: activeSubmission ? activeSubmission.students[0] : 'solution code',
       result: RESULT_TYPE.NONE,
       testCaseName: '',
@@ -473,11 +482,11 @@ export const TestDefinitions = (props: IProps) => {
       return null;
     });
     currentFiles.map((file) => {
-      zip.file(file.name, file.code);
+      zip.file(file.name, getFileContent(file));
       return null;
     });
     props.helpers.map((file) => {
-      zip.file(file.name, file.code);
+      zip.file(file.name, getFileContent(file));
       return null;
     });
 
@@ -492,20 +501,20 @@ export const TestDefinitions = (props: IProps) => {
     switch (status) {
       case 0:
         statusText = 'Solution code passed';
-        statusColor = 'lime';
+        statusColor = token.colorSuccess;
         break;
       case 1:
         statusText = 'Solution code failed';
-        statusColor = 'red';
+        statusColor = token.colorError;
         break;
       case 2:
         statusText = 'Error occurred while testing solution code';
-        statusColor = 'blue';
+        statusColor = token.colorInfo;
         break;
       case 3:
       default:
         statusText = 'Not tested on solution code';
-        statusColor = 'gray';
+        statusColor = token.colorTextDisabled;
     }
 
     return (
@@ -538,7 +547,8 @@ export const TestDefinitions = (props: IProps) => {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    background: 'rgb(217,217,217)',
+    background: token.colorFillSecondary,
+    color: token.colorText,
     padding: '6px 15px',
     fontSize: '14px',
     fontWeight: 600,
@@ -554,7 +564,7 @@ export const TestDefinitions = (props: IProps) => {
         return {
           id: file.id,
           name: file.name,
-          code: file.code,
+          code: getFileContent(file),
           canSave: true,
           type: FILE_TYPE.HELPER,
           path: file.path,
@@ -565,7 +575,7 @@ export const TestDefinitions = (props: IProps) => {
         return {
           id: file.id,
           name: file.name,
-          code: file.code,
+          code: getFileContent(file),
           canSave: !activeSubmission,
           type: activeSubmission ? FILE_TYPE.SUBMISSION : FILE_TYPE.SOLUTION,
           path: file.path,
@@ -602,7 +612,7 @@ export const TestDefinitions = (props: IProps) => {
 
       header = (
         <div>
-          <Button.Group style={{ display: 'flex', alignItems: 'flex-end' }}>
+          <Space.Compact style={{ display: 'flex', alignItems: 'flex-end' }}>
             {externalOnly ? null : (
               <Tooltip title="Exit file mode">
                 <Button onClick={togglePanel} style={{ padding: '0px 7px', height: 28, borderBottomLeftRadius: '0px' }}>
@@ -615,7 +625,7 @@ export const TestDefinitions = (props: IProps) => {
               <Button onClick={download} icon={<DownloadOutlined />} style={{ minWidth: 40, height: 28 }} />
             </Tooltip>
             <AddFileModal addFile={props.addFile} />
-          </Button.Group>
+          </Space.Compact>
           <div style={headerStyle}>Files</div>
         </div>
       );
@@ -627,7 +637,7 @@ export const TestDefinitions = (props: IProps) => {
           };
           const actions = (
             <Menu>
-              <Menu.Item style={{ paddingRight: '48px', color: '#f5222d' }}>
+              <Menu.Item danger style={{ paddingRight: '48px' }}>
                 <Popconfirm
                   title="Are you sure delete this file?"
                   onConfirm={deleteThisFile}
@@ -704,7 +714,7 @@ export const TestDefinitions = (props: IProps) => {
                     {category.id in casesByCategory ? (
                       casesByCategory[category.id].length === 0 ? (
                         <Menu.Item key={category.id * -1}>
-                          <span style={{ color: '#888888' }}>No tests yet...</span>
+                          <Typography.Text type="secondary">No tests yet...</Typography.Text>
                         </Menu.Item>
                       ) : (
                         TestCase.sort(casesByCategory[category.id]).map((el) => {
@@ -762,7 +772,7 @@ export const TestDefinitions = (props: IProps) => {
             height: 28,
             fontSize: 12,
             padding: '0px 9px',
-            borderColor: 'rgb(217,217,217)',
+            borderColor: token.colorBorder,
             borderTopRightRadius: '0px',
             borderBottomRightRadius: '0px',
             boxShadow: 'none',
@@ -829,7 +839,7 @@ export const TestDefinitions = (props: IProps) => {
                   <Menu.Item style={{ paddingRight: '48px' }}>
                     <span onClick={addTestToThisCategory}>Add Test</span>
                   </Menu.Item>
-                  <Menu.Item style={{ paddingRight: '48px', color: '#f5222d' }}>
+                  <Menu.Item danger style={{ paddingRight: '48px' }}>
                     <Popconfirm
                       title="Are you sure delete this category?"
                       onConfirm={deleteThisCategory}
@@ -862,7 +872,7 @@ export const TestDefinitions = (props: IProps) => {
                   {category.id in casesByCategory ? (
                     casesByCategory[category.id].length === 0 ? (
                       <Menu.Item key={category.id * -1}>
-                        <span style={{ color: '#888888' }}>No tests yet...</span>
+                        <Typography.Text type="secondary">No tests yet...</Typography.Text>
                       </Menu.Item>
                     ) : (
                       TestCase.sort(casesByCategory[category.id]).map((el) => {
@@ -879,7 +889,7 @@ export const TestDefinitions = (props: IProps) => {
                                 }
                               />
                             </Menu.Item>
-                            <Menu.Item style={{ paddingRight: '48px', color: '#f5222d' }}>
+                            <Menu.Item danger style={{ paddingRight: '48px' }}>
                               <span onClick={handleDelete.bind({}, el)}>Delete Test</span>
                             </Menu.Item>
                           </Menu>
@@ -1055,7 +1065,7 @@ export const TestDefinitions = (props: IProps) => {
       {
         key: '1',
         label: 'Instructions',
-        style: { backgroundColor: 'white' },
+        style: { backgroundColor: token.colorBgContainer },
         children: <Alert message={instructions} type="info" />,
       },
     ];
@@ -1071,12 +1081,18 @@ export const TestDefinitions = (props: IProps) => {
           />
         </div>
         <div style={{ fontSize: 11 }}>
-          <Layout style={{ border: '1px solid #ececec', borderRadius: '4px', marginBottom: '120px' }}>
+          <Layout
+            style={{
+              border: `1px solid ${token.colorBorderSecondary}`,
+              borderRadius: token.borderRadius,
+              marginBottom: '120px',
+            }}
+          >
             <Sider theme="light">
               {header}
               {menu}
             </Sider>
-            <div style={{ width: '5px', backgroundColor: 'rgb(217, 217, 217)' }} />
+            <div style={{ width: '5px', backgroundColor: token.colorBorder }} />
             {hasTests || panel === DETAIL_TYPE.ViewSource ? (
               content
             ) : (

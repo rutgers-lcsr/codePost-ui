@@ -1,19 +1,20 @@
 import * as React from 'react';
 
-import { FileType } from '../../../infrastructure/file';
-import { FileTemplateType } from '../../../infrastructure/fileTemplate';
+import { AssignmentFileType, FileType, getFileContent } from '../../../infrastructure/file';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
 interface ITemplateCodeProps {
   file: FileType;
-  fileTemplate: FileTemplateType;
+  assignmentFile: AssignmentFileType;
 }
 
 const TemplateCode = (props: ITemplateCodeProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
-
-  const tokens = props.fileTemplate.code.split('\n').filter((l: string) => {
+  if (!props.assignmentFile || !props.assignmentFile.data) {
+    return <div />;
+  }
+  const tokens = props.assignmentFile.data.split('\n').filter((l: string) => {
     if (l.trim().length > 2) {
       return true;
     }
@@ -29,7 +30,7 @@ const TemplateCode = (props: ITemplateCodeProps) => {
     return code.split('\n').map((text: string, i: number) => {
       let templatized = false;
 
-      for (let t of tokens) {
+      for (const t of tokens) {
         if (t.trim() === text.trim()) {
           templatized = true;
           break;
@@ -47,7 +48,7 @@ const TemplateCode = (props: ITemplateCodeProps) => {
       );
     });
   };
-  return <div>{linesOfCode(props.file.code)}</div>;
+  return <div>{linesOfCode(getFileContent(props.file))}</div>;
 };
 
 export default TemplateCode;

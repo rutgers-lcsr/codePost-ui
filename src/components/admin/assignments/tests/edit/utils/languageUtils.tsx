@@ -1,8 +1,8 @@
-import 'codemirror/mode/python/python';
-import 'codemirror/mode/clike/clike';
-import 'codemirror/mode/javascript/javascript';
-import 'codemirror/mode/mllike/mllike';
-import 'codemirror/mode/shell/shell';
+// import 'codemirror/mode/python/python';
+// import 'codemirror/mode/clike/clike';
+// import 'codemirror/mode/javascript/javascript';
+// import 'codemirror/mode/mllike/mllike';
+// import 'codemirror/mode/shell/shell';
 
 import {
   PYTHON_UNIT_TEMPLATE,
@@ -15,16 +15,27 @@ import {
 /****************************** CodeMirror Utils *********************************/
 // Map each extension to the syntax highlighter for it
 export const codeMirorLanguageMap: { [language: string]: string } = {
-  java: 'text/x-java',
-  c: 'text/x-csrc',
-  cpp: 'text/x-c++src',
+  java: 'java',
+  c: 'csrc',
+  cpp: 'c++src',
   py: 'python',
   js: 'javascript',
   jsx: 'javascript',
-  tsx: 'javascript',
-  ml: 'text/x-ocaml',
-  mli: 'text/x-ocaml',
-  sh: 'text/x-sh',
+  tsx: 'typescript',
+  ts: 'typescript',
+  rb: 'ruby',
+  php: 'php',
+  hs: 'haskell',
+  yaml: 'yaml',
+  yml: 'yaml',
+  cson: 'coffeescript',
+  coffee: 'coffeescript',
+  dockerfile: 'dockerfile',
+  ml: 'ocaml',
+  mli: 'ocaml',
+  sh: 'shell',
+  ipynb: 'json',
+  md: 'markdown',
 };
 
 export const extensionsByLanguage: { [language: string]: string } = {

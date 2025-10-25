@@ -11,8 +11,13 @@
   }
 
   .ant-card-head {
-    background-color: #f0fff6 !important;
+    background-color: var(--comment-header-bg, #d4fce4);
     padding: 5px 16px 2px 16px;
+    border-bottom: 1px solid var(--comment-header-border, #e8e8e8);
+  }
+
+  .ant-card-head-title {
+    color: var(--comment-header-text, inherit);
   }
 
   .ant-popover-inner-content {
@@ -28,21 +33,13 @@
     }
   }
 
-  &--readonly {
-    .ant-popover-arrow {
-      box-shadow: none !important;
-    }
-    .ant-popover-inner {
-      box-shadow: none;
-    }
-  }
-
   &__rubric-comment {
     padding: 0px 16px;
     margin-bottom: 6px;
 
     font-size: 12px;
     line-height: 1.67;
+    background: rgba(0, 0, 0, 0.05);
 
     &--positive {
       border-left: 3px solid $actionGreen;
@@ -51,8 +48,6 @@
     &--negative {
       border-left: 3px solid $actionRed;
       color: $actionRed;
-    }
-    &--neutral {
     }
   }
 

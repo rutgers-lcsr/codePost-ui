@@ -1,7 +1,8 @@
 import React from 'react';
 
-import { Button, Input, Modal, Tabs } from 'antd';
+import { Button, Modal, Tabs } from 'antd';
 import ReactMarkdown from 'react-markdown';
+import Editor from '@monaco-editor/react';
 
 /* codePost imports */
 
@@ -15,8 +16,8 @@ interface IRegradeInstructionsModalProps {
 const RegradeInstructionsModal = (props: IRegradeInstructionsModalProps) => {
   const [instructions, setInstructions] = React.useState(props.instructions);
 
-  const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInstructions(event.target.value);
+  const onChange = (value: string | undefined) => {
+    setInstructions(value || '');
   };
 
   const onSave = () => {
@@ -38,13 +39,21 @@ const RegradeInstructionsModal = (props: IRegradeInstructionsModalProps) => {
   return (
     <Modal
       onCancel={props.cancel}
-      visible={props.visible}
+      open={props.visible}
       title="Student Instructions for Regrade Requests"
       footer={[cancelButton, saveButton]}
     >
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane key="1" tab="Write">
-          <Input.TextArea value={instructions} onChange={onChange} autoSize={{ minRows: 10, maxRows: 16 }} />
+          <Editor
+            height="500px"
+            language="markdown"
+            value={instructions}
+            onChange={onChange}
+            options={{
+              minimap: { enabled: false },
+            }}
+          />
         </Tabs.TabPane>
         <Tabs.TabPane key="2" tab="Preview">
           <ReactMarkdown>{instructions}</ReactMarkdown>

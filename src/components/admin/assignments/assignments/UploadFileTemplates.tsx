@@ -1,6 +1,7 @@
 import { DeleteOutlined, UploadOutlined } from '@ant-design/icons';
-
 import { Button, message, Upload } from 'antd';
+import type { RcFile, UploadChangeParam, UploadFile } from 'antd/es/upload/interface';
+import React, { useCallback } from 'react';
 
 interface IProps {
   isReplacement: boolean;
@@ -8,44 +9,63 @@ interface IProps {
   fileName: string;
 }
 
-const UploadFileTemplates = (props: IProps) => {
-  const onChange = (info: any) => {
+interface CustomRequestOptions {
+  file: RcFile;
+  onSuccess: (body: unknown, file: RcFile) => void;
+  onError: (error: Error) => void;
+}
+
+const UploadFileTemplates: React.FC<IProps> = ({ isReplacement, updateTemplate, fileName }) => {
+  const onChange = useCallback((info: UploadChangeParam<UploadFile>) => {
     if (info.file.status === 'done') {
       message.success(`${info.file.name} file uploaded successfully`);
     } else if (info.file.status === 'error') {
       message.error(`${info.file.name} file upload failed.`);
     }
-  };
+  }, []);
 
-  const customRequest = async (r: any) => {
-    if (r.file.name !== props.fileName) {
-      r.onError();
-      message.error(`Upload failed. You must upload a file called ${props.fileName}`);
-      return;
-    }
+  const customRequest = useCallback(
+    async (options: CustomRequestOptions) => {
+      const { file, onSuccess, onError } = options;
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      if (reader.result) {
-        props.updateTemplate(reader.result as string);
-        r.onSuccess(props.fileName, r.file);
-      } else {
-        message.error(`${r.file.name} cannot be uploaded because it is empty.`);
-        r.onError();
+      if (file.name !== fileName) {
+        onError(new Error(`Upload failed. You must upload a file called ${fileName}`));
+        message.error(`Upload failed. You must upload a file called ${fileName}`);
+        return;
       }
-    };
-    reader.readAsText(r.file);
-  };
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (reader.result) {
+          updateTemplate(reader.result as string);
+          onSuccess(fileName, file);
+        } else {
+          const error = new Error(`${file.name} cannot be uploaded because it is empty.`);
+          message.error(error.message);
+          onError(error);
+        }
+      };
+      reader.readAsText(file);
+    },
+    [fileName, updateTemplate],
+  );
+
+  const handleClearTemplate = useCallback(() => {
+    updateTemplate('');
+  }, [updateTemplate]);
 
   return (
-    // @ts-ignore
     <div>
-      <Upload showUploadList={false} onChange={onChange} customRequest={customRequest}>
+      <Upload showUploadList={false} onChange={onChange} customRequest={customRequest as any}>
         <Button>
-          <UploadOutlined /> {props.isReplacement ? 'Replace' : 'Upload'}
+          <UploadOutlined /> {isReplacement ? 'Replace' : 'Upload'}
         </Button>
       </Upload>
-      &nbsp; {props.isReplacement ? <DeleteOutlined onClick={() => props.updateTemplate('')} /> : ''}
+      {isReplacement && (
+        <>
+          &nbsp; <DeleteOutlined onClick={handleClearTemplate} style={{ cursor: 'pointer' }} />
+        </>
+      )}
     </div>
   );
 };

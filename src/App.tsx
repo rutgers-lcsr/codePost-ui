@@ -3,13 +3,17 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import { Component, lazy, ReactNode, Suspense } from 'react';
+import { lazy, ReactElement, ReactNode, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import '@ant-design/v5-patch-for-react-19';
 
 /* other library imports */
-import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
+
+import { LegacyRouteRenderer, RouteComponentProps } from './router/legacy';
 
 /* codePost imports */
 import LogInAs from './components/core/LogInAs';
+import Logout from './components/core/Logout';
 
 import DashboardLayout from './components/codepost-admin/DashboardLayout';
 
@@ -29,8 +33,6 @@ import Settings from './components/core/settings';
 import RouterLoading from './components/core/RouterLoading';
 
 import ForbiddenManager from './components/pre-auth/ForbiddenManager';
-
-import { identifyUserForFS, runFSSetup, shutdownFS } from './components/utils/Fullstory';
 
 import { ShowTooltipContext } from './components/core/tooltips';
 
@@ -76,31 +78,28 @@ const domains = ['mooc.codepost.io', 'localhost:3000', 'compedu.stanford.edu', '
 
 const superUsers = ['james@codepost.io', 'vinay@codepost.io', 'richard@codepost.io'];
 
-const inProduction = !(process.env.NODE_ENV && process.env.NODE_ENV === 'development');
-
 /*****************************************************************************/
 
-interface IState {
-  error: string;
-  has_token: boolean;
-  user?: UserType;
-  toRedirect: boolean;
-  triedLoading: boolean;
-  isSuperUser: boolean;
-  // theme: {[key: string]: string}
+const App: React.FC = () => {
+  // State management
+  const [error, setError] = useState<string>('');
+  const [hasToken, setHasToken] = useState<boolean>(() => !!localStorage.getItem('token'));
+  const [user, setUser] = useState<UserType | undefined>(undefined);
+  const [toRedirect, setToRedirect] = useState<boolean>(false);
+  const [triedLoading, setTriedLoading] = useState<boolean>(false);
+  const [isSuperUser, setIsSuperUser] = useState<boolean>(() => localStorage.getItem('isSuperUser') !== null);
+  const [studentUploadShortcut, setStudentUploadShortcut] = useState<
+    { assignmentID: number; files: IBaseFileUpload[] } | undefined
+  >(undefined);
+  const [authType, setAuthType] = useState<string>('JWT');
+  const [propToken, setPropToken] = useState<string>('');
 
-  studentUploadShortcut?: {
-    assignmentID: number;
-    files: IBaseFileUpload[];
-  };
-  auth_type: string;
-  propToken: string;
-}
+  // Refs for mutable values
+  const loginCountRef = useRef<number>(0);
+  const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-class App extends Component<object, IState> {
-  private loginCount: number;
-  public constructor(props: object) {
-    super(props);
+  // Initialize localStorage on mount
+  useEffect(() => {
     try {
       localStorage.setItem('source', 'codePost');
     } catch (err) {
@@ -127,178 +126,225 @@ Firefox:
     }
 
     console.log(...consoleArt);
-    this.loginCount = 0;
 
-    // are we getting a token from the URL?
+    // Check for token in URL
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     const urlToken = urlParams.get('token');
     if (urlToken) {
       localStorage.setItem('token', urlToken);
       window.history.replaceState({}, document.title, window.location.href.replace(/&token=[^&]*/gm, ''));
+      setHasToken(true);
     }
+  }, []);
 
-    this.state = {
-      error: '',
-      has_token: localStorage.getItem('token') ? true : false,
-      toRedirect: false,
-      triedLoading: false,
+  // Utility functions
+  const getTokenExpiration = useCallback((token: string): number => {
+    const jwtBody = token.split('.')[1];
+    const decoded = JSON.parse(atob(jwtBody));
+    decoded.exp = decoded.exp * 1000; // convert to milliseconds
+    return decoded.exp;
+  }, []);
 
-      // Used to account for situation in which a superUser uses loginas to login
-      // as a user, and then refreshes or opens app in a new window.
-      // In these situations, the user will remain loggedinas (because the
-      // JWT they obtained via loginas persists), but this.state.isSuperUser will reset.
-      // We want to be able to distinguish these sessions from genuine user sessions,
-      // so we can record the latter but not the former with FS.
-      //
-      // This token persists the value of this.state.isSuperUser across app instances,
-      // while the session orginally triggered via loginas is active.
-      isSuperUser: localStorage.getItem('isSuperUser') !== null,
-      studentUploadShortcut: undefined,
-      auth_type: 'JWT',
-      propToken: '',
-    };
-  }
+  const wrapTooltipContext = useCallback(
+    (node: ReactNode): ReactNode => {
+      const wrappedNode = <Suspense fallback={<RouterLoading />}>{node}</Suspense>;
 
-  public componentDidUpdate(_prevProps: object, prevState: IState) {
-    if (this.state.toRedirect) {
-      this.setState({ toRedirect: false });
-    }
-
-    // Keep this token in sync with this.state.isSuperUser
-    if (this.state.isSuperUser) {
-      localStorage.setItem('isSuperUser', 'true');
-    } else {
-      localStorage.removeItem('isSuperUser');
-    }
-
-    // On login, identify user to Fullstory
-    if (inProduction) {
-      if (prevState.user !== this.state.user && this.state.user !== undefined) {
-        // we experienced a login or loginas event
-        if (this.state.isSuperUser) {
-          if (!prevState.isSuperUser) {
-            // If we were previously recording a non-superUser (logged in or pre-auth) with FS, then stop.
-            // Note: without this check, we'll try to shutdown a non-existant FS session when superusers
-            // login.
-            shutdownFS();
-          }
-        } else {
-          if (prevState.isSuperUser) {
-            // We need to start the FS session before we identify it
-            runFSSetup();
-            identifyUserForFS(this.state.user.email);
-          } else {
-            // FS session was initiated in componentDidMount
-            identifyUserForFS(this.state.user.email);
-          }
-        }
+      if (user !== undefined) {
+        return <ShowTooltipContext.Provider value={user.showProductTips}>{wrappedNode}</ShowTooltipContext.Provider>;
+      } else {
+        return wrappedNode;
       }
-    }
+    },
+    [user],
+  );
 
-    // Load CommandBar with user identity (only run on initial login)
-    if (!prevState.user && this.state.user) {
-      window.CommandBar.boot({
-        id: this.state.user.email, // [required] A unique string to identify the current user
-      });
-    }
-  }
+  // User management functions
+  const replaceUser = useCallback((newUser: UserType, redirect: boolean, isSuperUserParam: boolean) => {
+    setUser(newUser);
+    setToRedirect(redirect);
+    setIsSuperUser((prev) => prev || isSuperUserParam);
+    localStorage.setItem('token', newUser.token);
+  }, []);
 
-  public replaceUser = (newUser: UserType, redirect: boolean, isSuperUser: boolean) => {
-    this.setState(
-      (oldState: IState) => {
-        return {
-          user: newUser,
-          toRedirect: redirect,
-          isSuperUser: oldState.isSuperUser || isSuperUser,
-        };
-      },
-      () => {
-        localStorage.setItem('token', newUser.token);
-      },
-    );
-  };
-
-  public messageHandler = (event: MessageEvent) => {
-    let found = false;
-    for (const domain of domains) {
-      if (event.origin.indexOf(domain) !== -1) {
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      return;
-    }
-
-    // Validate that event.data is a string before attempting to parse
-    if (typeof event.data !== 'string') {
-      return;
-    }
-
-    try {
-      const payload = JSON.parse(event.data);
-
-      if (!Object.prototype.hasOwnProperty.call(payload, 'token') || payload.token === '') {
+  const addCreatedCourse = useCallback(
+    (course: CourseType) => {
+      if (!user) {
         return;
       }
 
-      const token = payload.token;
+      const newUser = { ...user };
+      newUser.courseadminCourses.push(course);
+      newUser.graderCourses.push(course);
+      setUser(newUser);
+    },
+    [user],
+  );
 
-      let source = 'remote';
-      if (Object.prototype.hasOwnProperty.call(payload, 'source')) {
-        source = payload.source;
-      }
+  const addAssignment = useCallback(
+    (assignment: AssignmentType) => {
+      if (!user) return;
 
-      let studentUploadShortcut;
-      if (Object.prototype.hasOwnProperty.call(payload, 'assignment') && payload.assignment !== undefined) {
-        studentUploadShortcut = {
-          assignmentID: payload.assignment,
-          files: [],
-        };
+      const courseLists = [user.graderCourses, user.studentCourses];
 
-        if (Object.prototype.hasOwnProperty.call(payload, 'files')) {
-          studentUploadShortcut = {
-            ...studentUploadShortcut,
-            files: payload.files,
-          };
+      for (const courseList of courseLists) {
+        const toChange = courseList.find((el) => el.id === assignment.course);
+
+        if (toChange) {
+          toChange.assignments = [...toChange.assignments, assignment.id];
         }
       }
+    },
+    [user],
+  );
 
-      let auth_type = 'JWT';
-      if (Object.prototype.hasOwnProperty.call(payload, 'auth_type') && payload.auth_type !== undefined) {
-        auth_type = payload.auth_type;
+  const deleteAssignment = useCallback(
+    (assignment: AssignmentType) => {
+      if (!user) return;
+
+      const courseLists = [user.graderCourses, user.studentCourses];
+
+      for (const courseList of courseLists) {
+        const toChange = courseList.find((el) => el.id === assignment.course);
+
+        if (toChange) {
+          toChange.assignments = toChange.assignments.filter((el) => el !== assignment.id);
+        }
+      }
+    },
+    [user],
+  );
+
+  // Token refresh functionality
+  const refreshToken = useCallback(
+    (currentUser: UserType) => {
+      if (!hasToken) {
+        return;
       }
 
-      localStorage.setItem('source', source);
+      fetch(`${process.env.REACT_APP_API_URL}/token-refresh/`, {
+        body: JSON.stringify({ token: localStorage.getItem('token') }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+      })
+        .then((res) => {
+          if (res.ok) {
+            return res.json();
+          }
+          return Promise.reject();
+        })
+        .then((json) => {
+          localStorage.setItem('token', json.token);
+          const exp = getTokenExpiration(json.token);
+          const now = new Date().getTime();
 
-      // This will fail for admins who are switching around users
-      // because we won't reauthenticate them with the new message
-      if (!this.state.user) {
-        this.setState({ has_token: true, studentUploadShortcut, auth_type, propToken: token }, () => {
-          this.loginCount = 0;
-          this.tryToLogin();
+          refreshTimerRef.current = setTimeout(
+            () => {
+              refreshToken(currentUser);
+            },
+            Math.max(0, exp - now - 1000),
+          );
+
+          (window as Window & typeof globalThis & { gtag?: (...args: unknown[]) => void }).gtag?.('set', {
+            user_id: currentUser.id,
+          });
+          (window as Window & typeof globalThis & { gtag?: (...args: unknown[]) => void }).gtag?.(
+            'set',
+            'organization',
+            currentUser.organization,
+          );
+        })
+        .catch((err) => {
+          console.error('Token refresh failed:', err);
         });
-        return;
-      } else if (this.state.studentUploadShortcut === undefined && studentUploadShortcut !== undefined) {
-        this.setState({ studentUploadShortcut });
-        return;
-      }
-    } catch (err) {
-      console.log(err);
-      return;
-    }
-  };
+    },
+    [hasToken, getTokenExpiration],
+  );
 
-  public tryToLogin = () => {
-    if (this.state.has_token && !this.state.user && this.loginCount < 4) {
-      // Make sure we don't use a prefix that is mismatched with token
+  // Login/Logout handlers
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('token');
+    clearLocalSettings();
+
+    // Clear refresh timer
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+    }
+
+    setHasToken(false);
+    setUser(undefined);
+    setToRedirect(true);
+    setTriedLoading(true);
+  }, []);
+
+  const handleLogin = useCallback(
+    (username: string, password: string, shouldRedirect: boolean) => {
+      setError('');
+      return fetch(`${process.env.REACT_APP_API_URL}/token-auth/`, {
+        body: JSON.stringify({ username, password }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+      })
+        .then((res) => {
+          if (res.ok) {
+            return res.json();
+          }
+          return Promise.reject();
+        })
+        .then((json) => {
+          const jwtToken = json.token;
+          localStorage.setItem('token', json.token);
+
+          setError('');
+          setHasToken(true);
+          setUser(json.user);
+          setToRedirect(shouldRedirect);
+          setIsSuperUser(superUsers.indexOf(json.user.email) > -1);
+
+          (window as Window & typeof globalThis & { gtag?: (...args: unknown[]) => void }).gtag?.('set', {
+            user_id: json.user.id,
+          });
+          (window as Window & typeof globalThis & { gtag?: (...args: unknown[]) => void }).gtag?.(
+            'set',
+            'organization',
+            json.user.organization,
+          );
+
+          const exp = getTokenExpiration(jwtToken);
+          const now = new Date().getTime();
+
+          refreshTimerRef.current = setTimeout(
+            () => {
+              refreshToken(json.user);
+            },
+            Math.max(0, exp - now - 1000),
+          );
+        })
+        .catch((_error) => {
+          localStorage.removeItem('token');
+          setHasToken(false);
+          setUser(undefined);
+          setError('invalid');
+          return Promise.reject();
+        });
+    },
+    [getTokenExpiration, refreshToken],
+  );
+
+  // Try to login with existing token
+  const tryToLogin = useCallback(() => {
+    if (hasToken && !user && loginCountRef.current < 4) {
       let authHeader = `Bearer ${localStorage.getItem('token')}`;
-      if (this.state.auth_type === 'Firebase') {
-        if (this.state.propToken === '') {
+      if (authType === 'Firebase') {
+        if (propToken === '') {
           return;
         }
-        authHeader = `Firebase ${this.state.propToken}`;
+        authHeader = `Firebase ${propToken}`;
       }
 
       fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
@@ -311,503 +357,411 @@ Firefox:
             const currentUser = await res.json();
 
             localStorage.setItem('token', currentUser.token);
-            this.setState((oldState) => {
-              return {
-                user: currentUser,
-                triedLoading: true,
-                isSuperUser: superUsers.indexOf(currentUser.email) > -1 || oldState.isSuperUser,
-                auth_type: 'JWT',
-              };
-            });
-            this.refreshToken(currentUser);
+            setUser(currentUser);
+            setTriedLoading(true);
+            setIsSuperUser((prev) => superUsers.indexOf(currentUser.email) > -1 || prev);
+            setAuthType('JWT');
+
+            refreshToken(currentUser);
           } else if (res.status === 401) {
-            // A status code of 401 indicates that the provided token is invalid => the user needs
-            // to login again, so we log them out.
-
-            this.setState({ triedLoading: true });
-            this.handleLogout();
+            setTriedLoading(true);
+            handleLogout();
           } else {
-            // A different error status code indicates some contextual problem, like a network connectivity problem.
-            // If this happens, try every 1s to login every 1s.
-            //
-            // Issue with this approach: if our API server is unavailable, the site will appear as a blank page
-            // (rather than showing users the pre-auth site).
-
             setTimeout(() => {
-              this.loginCount += 1;
-              this.tryToLogin();
+              loginCountRef.current += 1;
+              tryToLogin();
             }, 1000);
           }
         })
         .catch((_error) => {
           setTimeout(() => {
-            this.loginCount += 1;
-            this.tryToLogin();
+            loginCountRef.current += 1;
+            tryToLogin();
           }, 1000);
         });
     } else {
-      this.setState({ triedLoading: true });
+      setTriedLoading(true);
     }
-  };
+  }, [hasToken, user, authType, propToken, refreshToken, handleLogout]);
 
-  public componentDidMount() {
-    if (inProduction && !this.state.isSuperUser) {
-      runFSSetup();
+  // Message handler for cross-origin authentication
+  const messageHandler = useCallback(
+    (event: MessageEvent) => {
+      let found = false;
+      for (const domain of domains) {
+        if (event.origin.indexOf(domain) !== -1) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        return;
+      }
+
+      if (typeof event.data !== 'string') {
+        return;
+      }
+
+      try {
+        const payload = JSON.parse(event.data);
+
+        if (!Object.prototype.hasOwnProperty.call(payload, 'token') || payload.token === '') {
+          return;
+        }
+
+        const token = payload.token;
+
+        let source = 'remote';
+        if (Object.prototype.hasOwnProperty.call(payload, 'source')) {
+          source = payload.source;
+        }
+
+        let uploadShortcut;
+        if (Object.prototype.hasOwnProperty.call(payload, 'assignment') && payload.assignment !== undefined) {
+          uploadShortcut = {
+            assignmentID: payload.assignment,
+            files: [],
+          };
+
+          if (Object.prototype.hasOwnProperty.call(payload, 'files')) {
+            uploadShortcut = {
+              ...uploadShortcut,
+              files: payload.files,
+            };
+          }
+        }
+
+        let auth = 'JWT';
+        if (Object.prototype.hasOwnProperty.call(payload, 'auth_type') && payload.auth_type !== undefined) {
+          auth = payload.auth_type;
+        }
+
+        localStorage.setItem('source', source);
+
+        if (!user) {
+          setHasToken(true);
+          setStudentUploadShortcut(uploadShortcut);
+          setAuthType(auth);
+          setPropToken(token);
+          loginCountRef.current = 0;
+          // tryToLogin will be called by useEffect
+        } else if (studentUploadShortcut === undefined && uploadShortcut !== undefined) {
+          setStudentUploadShortcut(uploadShortcut);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    [user, studentUploadShortcut],
+  );
+
+  // ComponentDidMount equivalent
+  useEffect(() => {
+    window.addEventListener('message', messageHandler, false);
+    tryToLogin();
+
+    return () => {
+      window.removeEventListener('message', messageHandler, false);
+      if (refreshTimerRef.current) {
+        clearTimeout(refreshTimerRef.current);
+      }
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Trigger tryToLogin when hasToken changes
+  useEffect(() => {
+    if (hasToken && !user && !triedLoading) {
+      tryToLogin();
+    } else if (!hasToken && !triedLoading) {
+      // No token available, mark as tried loading to show login screen
+      setTriedLoading(true);
     }
+  }, [hasToken, user, triedLoading, tryToLogin]);
 
-    window.addEventListener('message', this.messageHandler, false);
+  // Handle toRedirect state
+  useEffect(() => {
+    if (toRedirect) {
+      setToRedirect(false);
+    }
+  }, [toRedirect]);
 
-    this.tryToLogin();
+  // Sync isSuperUser with localStorage
+  useEffect(() => {
+    if (isSuperUser) {
+      localStorage.setItem('isSuperUser', 'true');
+    } else {
+      localStorage.removeItem('isSuperUser');
+    }
+  }, [isSuperUser]);
+
+  // Handle CommandBar user identification
+  useEffect(() => {
+    if (user) {
+      window.CommandBar.boot({
+        id: user.email,
+      });
+    }
+  }, [user]);
+
+  // Render
+  if (toRedirect) {
+    return <Navigate to="/" replace />;
   }
 
-  public componentWillUnmount = () => {
-    window.removeEventListener('message', this.messageHandler, false);
-  };
-
-  // Adds a newly created course to the user's admin and grader course lists
-  public addCreatedCourse = (course: CourseType) => {
-    if (!this.state.user) {
-      return;
-    }
-
-    const newUser = this.state.user;
-    newUser.courseadminCourses.push(course);
-    newUser.graderCourses.push(course);
-    this.setState({ user: newUser });
-  };
-
-  public handleLogout = () => {
-    localStorage.removeItem('token');
-    clearLocalSettings();
-    this.setState({
-      has_token: false,
-      user: undefined,
-      toRedirect: true,
-      triedLoading: true,
-    });
-  };
-
-  // Adds a newly created assignment to the appropriate course object
-  public addAssignment = (assignment: AssignmentType) => {
-    // User might also be a grader and/or student of course
-    const courseLists = [this.state.user!.graderCourses, this.state.user!.studentCourses];
-
-    for (const courseList of courseLists) {
-      const toChange = courseList.find((el) => {
-        return el.id === assignment.course;
-      });
-
-      // Update via mutation
-      if (toChange) {
-        toChange.assignments = [...toChange.assignments, assignment.id];
-      }
-    }
-  };
-
-  // Removes a deleted assignment from the appropriate course object
-  public deleteAssignment = (assignment: AssignmentType) => {
-    // User might also be a grader and/or student of course
-    const courseLists = [this.state.user!.graderCourses, this.state.user!.studentCourses];
-
-    for (const courseList of courseLists) {
-      const toChange = courseList.find((el) => {
-        return el.id === assignment.course;
-      });
-
-      // Update via mutation
-      if (toChange) {
-        toChange.assignments = toChange.assignments.filter((el) => {
-          return el !== assignment.id;
-        });
-      }
-    }
-  };
-
-  // Used to implement sliding session for JWT authenticated session
-  // See discussion here: https://github.com/nsarno/knock/issues/65
-  //
-  // Note: we could also check to see if the token is close to expiring
-  // and only attempt to refresh if true.
-  public refreshToken = (currentUser: UserType) => {
-    if (!this.state.has_token) {
-      return;
-    }
-
-    // const REFRESH_MIN = 2; // should define this in a settings file somewhere
-    // const REFRESH_INT = 1000 * 60 * REFRESH_MIN; // convert to milliseconds
-
-    fetch(`${process.env.REACT_APP_API_URL}/token-refresh/`, {
-      body: JSON.stringify({ token: localStorage.getItem('token') }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-    })
-      .then((res) => {
-        if (res.ok) {
-          return res.json();
-        }
-        return Promise.reject();
-      })
-      .then((json) => {
-        localStorage.setItem('token', json.token);
-        const exp = this.getTokenExpiration(json.token);
-        const now = new Date().getTime();
-        setTimeout(
-          () => {
-            this.refreshToken(currentUser);
-          },
-          Math.max(0, exp - now - 1000),
-        );
-
-        (window as Window & typeof globalThis & { gtag?: (...args: unknown[]) => void }).gtag?.('set', {
-          user_id: currentUser.id,
-        });
-        (window as Window & typeof globalThis & { gtag?: (...args: unknown[]) => void }).gtag?.(
-          'set',
-          'organization',
-          currentUser.organization,
-        );
-      });
-  };
-  public getTokenExpiration = (token: string) => {
-    const jwtBody = token.split('.')[1];
-    const decoded = JSON.parse(atob(jwtBody));
-    decoded.exp = decoded.exp * 1000; // convert to milliseconds
-    return decoded.exp;
-  };
-
-  public wrapTooltipContext = (node: ReactNode) => {
-    const wrappedNode = <Suspense fallback={<RouterLoading />}>{node}</Suspense>;
-
-    if (typeof this.state.user !== 'undefined') {
-      return (
-        <ShowTooltipContext.Provider value={this.state.user.showProductTips}>{wrappedNode}</ShowTooltipContext.Provider>
-      );
-    } else {
-      return wrappedNode;
-    }
-  };
-
-  public handleLogin = (username: string, password: string, toRedirect: boolean) => {
-    this.setState({ error: '' });
-    return fetch(`${process.env.REACT_APP_API_URL}/token-auth/`, {
-      body: JSON.stringify({ username, password }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-    })
-      .then((res) => {
-        if (res.ok) {
-          return res.json();
-        }
-        return Promise.reject();
-      })
-      .then((json) => {
-        const jwtToken = json.token;
-        localStorage.setItem('token', json.token);
-        this.setState({
-          error: '',
-          has_token: true,
-          user: json.user,
-          toRedirect,
-          isSuperUser: superUsers.indexOf(json.user.email) > -1,
-        });
-        (window as Window & typeof globalThis & { gtag?: (...args: unknown[]) => void }).gtag?.('set', {
-          user_id: json.user.id,
-        });
-        (window as Window & typeof globalThis & { gtag?: (...args: unknown[]) => void }).gtag?.(
-          'set',
-          'organization',
-          json.user.organization,
-        );
-
-        const exp = this.getTokenExpiration(jwtToken);
-        const now = new Date().getTime();
-
-        setTimeout(
-          () => {
-            this.refreshToken(json.user);
-          },
-          Math.max(0, exp - now - 1000),
-        );
-      })
-      .catch((_error) => {
-        // error intentionally unused
-        localStorage.removeItem('token');
-        this.setState({ has_token: false, user: undefined, error: 'invalid' });
-        return Promise.reject();
-      });
-  };
-
-  public render() {
-    if (this.state.toRedirect) {
-      return <Redirect to={'/'} />;
-    }
-
-    /* tslint:disable:jsx-no-lambda */
-    const demoRoute = (
-      <Route
-        exact={true}
-        path={`${CODE_DEMO}/`}
-        render={(props: import('react-router').RouteComponentProps) =>
-          this.wrapTooltipContext(
-            <AsyncGrade
-              {...props}
-              user={this.state.user === undefined ? anonymousUser : this.state.user}
-              handleLogout={this.handleLogout}
-              inDemoMode={true}
-            />,
-          )
-        }
-      />
-    );
-
-    if (typeof this.state.user !== 'undefined') {
-      const { user } = this.state;
-      const courseAdminCourses = user.courseadminCourses;
-      const graderCourses = user.graderCourses;
-      const studentCourses = user.studentCourses;
-      const superGraderCourses = this.state.user.superGraderCourses;
-      const sectionsLed = user.leaderSections;
-
-      const isStudent = user ? user.studentCourses.length > 0 : false;
-      const isGrader = user ? user.graderCourses.length > 0 : false;
-      const isAdmin = user ? user.courseadminCourses.length > 0 || user.canCreateCourses : false;
-      const isCodePostAdmin = user ? user.codePostAdmin : false;
-
-      // FIXME: CIP
-      //  User has a single course and the course is code in place
-      const inCodeInPlace = user
-        ? user.studentCourses.length + user.graderCourses.length + user.courseadminCourses.length === 1 &&
-          ((isStudent && user.studentCourses[0].id === 925) ||
-            (isGrader && user.graderCourses.length > 0 && user.graderCourses[0].id === 925) ||
-            (isAdmin && user.courseadminCourses.length > 0 && user.courseadminCourses[0].id === 925))
-        : false;
-
-      let loginasRoute;
-      let dashboardRoute;
-      if (isCodePostAdmin) {
-        loginasRoute = (
-          <Route
-            exact={true}
-            path={'/loginAs/:email'}
-            render={(props: import('react-router').RouteComponentProps) => (
-              <LogInAs {...props} replaceUser={this.replaceUser} />
-            )}
-          />
-        );
-        dashboardRoute = <Route exact={true} path={'/dashboard'} render={() => <DashboardLayout />} />;
-      }
-
-      // const isLostCodeInPlace = user
-      //   ? user.courseadminCourses.length === 0 &&
-      //     user.graderCourses.length === 0 &&
-      //     user.studentCourses.length === 1 &&
-      //     user.studentCourses[0].id === 925 &&
-      //     localStorage.getItem('source') === 'codePost'
-      //   : false;
-
-      // if (isLostCodeInPlace && !this.state.isSuperUser) {
-      //   return (
-      //     <div>
-      //       <BrowserRouter>
-      //         <Switch>
-      //           <Route component={RemoteAuthRedirect} />
-      //         </Switch>
-      //       </BrowserRouter>
-      //     </div>
-      //   );
-      // }
-      if (inCodeInPlace || localStorage.getItem('source') !== 'codePost') {
-        (window as Window & typeof globalThis & { Intercom?: (...args: unknown[]) => void }).Intercom?.('shutdown');
-      } else if (isAdmin || isGrader) {
-        (window as Window & typeof globalThis & { Intercom?: (...args: unknown[]) => void }).Intercom?.('boot', {
-          app_id: 'kg4u5rp1',
-          email: user.email,
-          user_id: user.email,
-          custom_launcher_selector: '#IntercomDefaultWidget',
-          isAdmin: String(isAdmin),
-          isGrader: String(isGrader),
-        });
-      } else if (isStudent) {
-        (window as Window & typeof globalThis & { Intercom?: (...args: unknown[]) => void }).Intercom?.('boot', {
-          app_id: 'kg4u5rp1',
-          custom_launcher_selector: '#IntercomDefaultWidget',
-          isStudent: String(isStudent),
-        });
-      } else {
-        (window as Window & typeof globalThis & { Intercom?: (...args: unknown[]) => void }).Intercom?.('shutdown');
-      }
-
-      const consoleProps = {
-        user: this.state.user,
-        handleLogout: this.handleLogout,
-        addAssignment: this.addAssignment,
-        deleteAssignment: this.deleteAssignment,
-        addCourse: this.addCreatedCourse,
-        superGraderCourses,
-        sectionsLed,
-      };
-      const healthcheck = <Route exact={true} path={HEALTH_CHECK} render={() => <div>OK</div>} />;
-      /* tslint:disable:jsx-no-lambda */
-      let studentRoute;
-      if (isStudent) {
-        studentRoute = (
-          <Route
-            path={STUDENT}
-            render={(props: import('react-router').RouteComponentProps) =>
-              this.wrapTooltipContext(<AsyncStudent {...props} {...consoleProps} initialCourses={studentCourses} />)
-            }
-          />
-        );
-      }
-
-      let graderRoute;
-      if (isGrader) {
-        graderRoute = (
-          <Route
-            path={GRADER}
-            render={(props: import('react-router').RouteComponentProps) =>
-              this.wrapTooltipContext(<AsyncGrader {...props} {...consoleProps} initialCourses={graderCourses} />)
-            }
-          />
-        );
-      }
-
-      let adminRoute;
-      if (isAdmin) {
-        adminRoute = (
-          <Route
-            path={ADMIN}
-            render={(props: import('react-router').RouteComponentProps) =>
-              this.wrapTooltipContext(<AsyncAdmin {...props} {...consoleProps} initialCourses={courseAdminCourses} />)
-            }
-          />
-        );
-      }
-
-      const gradeRoute = (
-        <Route
-          exact={true}
-          path={`${CODE}/:submissionId`}
-          render={(props: import('react-router').RouteComponentProps) => {
-            return this.wrapTooltipContext(
+  const renderDemoRoute = () => (
+    <Route
+      path={`${CODE_DEMO}/*`}
+      element={
+        <LegacyRouteRenderer
+          path={CODE_DEMO}
+          render={(props: RouteComponentProps) =>
+            wrapTooltipContext(
               <AsyncGrade
                 {...props}
-                user={this.state.user === undefined ? anonymousUser : this.state.user}
-                handleLogout={this.handleLogout}
-                inDemoMode={false}
+                user={user === undefined ? anonymousUser : user}
+                handleLogout={handleLogout}
+                inDemoMode={true}
               />,
-            );
-          }}
+            )
+          }
         />
-      );
-
-      // If user has only one role, use / to redirect to relevant role's page. Otherwise, allow user to choose
-      // role from /
-      let pageSelector = null;
-      if (isStudent && !isGrader && !isAdmin) {
-        pageSelector = <Route exact={true} path={HOME} render={RedirectPath('student')} />;
-      } else if (!isStudent && isGrader && !isAdmin) {
-        pageSelector = <Route exact={true} path={HOME} render={RedirectPath('grader')} />;
-      } else if (!isStudent && !isGrader && isAdmin) {
-        pageSelector = <Route exact={true} path={HOME} render={RedirectPath('admin')} />;
-      } else {
-        pageSelector = (
-          <Route
-            exact={true}
-            path={HOME}
-            render={(props: import('react-router').RouteComponentProps) => (
-              <Home
-                {...props}
-                isStudent={isStudent}
-                isGrader={isGrader}
-                isAdmin={isAdmin}
-                handleLogout={this.handleLogout}
-                user={this.state.user === undefined ? anonymousUser : this.state.user}
-              />
-            )}
-          />
-        );
       }
+    />
+  );
 
-      return (
-        <Switch>
-          {loginasRoute}
-          {dashboardRoute}
-          <Route
-            exact={true}
-            path={'/settings'}
-            render={(props: import('react-router').RouteComponentProps) =>
-              this.wrapTooltipContext(
+  if (user !== undefined) {
+    const courseAdminCourses = user.courseadminCourses;
+    const graderCourses = user.graderCourses;
+    const studentCourses = user.studentCourses;
+    const superGraderCourses = user.superGraderCourses;
+    const sectionsLed = user.leaderSections;
+
+    const isStudent = studentCourses.length > 0;
+    const isGrader = graderCourses.length > 0;
+    const isAdmin = courseAdminCourses.length > 0 || user.canCreateCourses;
+    const isCodePostAdmin = user.codePostAdmin;
+
+    const inCodeInPlace =
+      studentCourses.length + graderCourses.length + courseAdminCourses.length === 1 &&
+      ((isStudent && studentCourses[0].id === 925) ||
+        (isGrader && graderCourses.length > 0 && graderCourses[0].id === 925) ||
+        (isAdmin && courseAdminCourses.length > 0 && courseAdminCourses[0].id === 925));
+
+    if (inCodeInPlace || localStorage.getItem('source') !== 'codePost') {
+      (window as Window & typeof globalThis & { Intercom?: (...args: unknown[]) => void }).Intercom?.('shutdown');
+    } else if (isAdmin || isGrader) {
+      (window as Window & typeof globalThis & { Intercom?: (...args: unknown[]) => void }).Intercom?.('boot', {
+        app_id: 'kg4u5rp1',
+        email: user.email,
+        user_id: user.email,
+        custom_launcher_selector: '#IntercomDefaultWidget',
+        isAdmin: String(isAdmin),
+        isGrader: String(isGrader),
+      });
+    } else if (isStudent) {
+      (window as Window & typeof globalThis & { Intercom?: (...args: unknown[]) => void }).Intercom?.('boot', {
+        app_id: 'kg4u5rp1',
+        custom_launcher_selector: '#IntercomDefaultWidget',
+        isStudent: String(isStudent),
+      });
+    } else {
+      (window as Window & typeof globalThis & { Intercom?: (...args: unknown[]) => void }).Intercom?.('shutdown');
+    }
+
+    const consoleProps = {
+      user,
+      handleLogout,
+      addAssignment,
+      deleteAssignment,
+      addCourse: addCreatedCourse,
+      superGraderCourses,
+      sectionsLed,
+    };
+
+    const loginAsRoute = isCodePostAdmin ? (
+      <Route
+        path="/loginAs/*"
+        element={
+          <LegacyRouteRenderer
+            path="/loginAs"
+            render={(props: RouteComponentProps) => <LogInAs {...props} replaceUser={replaceUser} />}
+          />
+        }
+      />
+    ) : null;
+
+    const dashboardRoute = isCodePostAdmin ? <Route path="/dashboard" element={<DashboardLayout />} /> : null;
+
+    const settingsRoute = (
+      <Route
+        path="/settings"
+        element={
+          <LegacyRouteRenderer
+            path="/settings"
+            end
+            render={(props: RouteComponentProps) =>
+              wrapTooltipContext(
                 <Settings
                   {...props}
-                  user={this.state.user === undefined ? anonymousUser : this.state.user}
-                  handleLogout={this.handleLogout}
-                  replaceUser={this.replaceUser}
+                  user={user === undefined ? anonymousUser : user}
+                  handleLogout={handleLogout}
+                  replaceUser={replaceUser}
                 />,
               )
             }
           />
-          {pageSelector}
-          {studentRoute}
-          {graderRoute}
-          {adminRoute}
-          {gradeRoute}
-          {demoRoute}
-          {healthcheck}
-          <IndexManager
-            handleLogin={this.handleLogin}
-            error={this.state.error}
-            isLoggedIn={true}
-            email={this.state.user!.email}
-            handleLogout={this.handleLogout}
-          />
-        </Switch>
-      );
-    }
+        }
+      />
+    );
 
-    if (this.state.triedLoading && localStorage.getItem('source') === 'Code in Place') {
-      return (
-        <div>
-          <BrowserRouter>
-            <Switch>
-              <Route component={RemoteAuthFailed} />
-            </Switch>
-          </BrowserRouter>
-        </div>
-      );
-    } else if (this.state.triedLoading) {
-      return (
-        <div>
-          <Switch>{demoRoute}</Switch>
-          <ForbiddenManager handleLogin={this.handleLogin} error={this.state.error} />
-          <IndexManager
-            handleLogin={this.handleLogin}
-            error={this.state.error}
-            isLoggedIn={false}
-            handleLogout={this.handleLogout}
+    const studentRoute = isStudent ? (
+      <Route
+        path={`${STUDENT}/*`}
+        element={
+          <LegacyRouteRenderer
+            path={STUDENT}
+            render={(props: RouteComponentProps) =>
+              wrapTooltipContext(<AsyncStudent {...props} {...consoleProps} initialCourses={studentCourses} />)
+            }
           />
-        </div>
-      );
+        }
+      />
+    ) : null;
+
+    const graderRoute = isGrader ? (
+      <Route
+        path={`${GRADER}/*`}
+        element={
+          <LegacyRouteRenderer
+            path={GRADER}
+            render={(props: RouteComponentProps) =>
+              wrapTooltipContext(<AsyncGrader {...props} {...consoleProps} initialCourses={graderCourses} />)
+            }
+          />
+        }
+      />
+    ) : null;
+
+    const adminRoute = isAdmin ? (
+      <Route
+        path={`${ADMIN}/*`}
+        element={
+          <LegacyRouteRenderer
+            path={ADMIN}
+            render={(props: RouteComponentProps) =>
+              wrapTooltipContext(<AsyncAdmin {...props} {...consoleProps} initialCourses={courseAdminCourses} />)
+            }
+          />
+        }
+      />
+    ) : null;
+
+    const gradeRoute = (
+      <Route
+        path={`${CODE}/:submissionId`}
+        element={
+          <LegacyRouteRenderer
+            path={`${CODE}/:submissionId`}
+            end
+            render={(props: RouteComponentProps<{ submissionId: string }>) =>
+              wrapTooltipContext(
+                <AsyncGrade
+                  {...props}
+                  user={user === undefined ? anonymousUser : user}
+                  handleLogout={handleLogout}
+                  inDemoMode={false}
+                />,
+              )
+            }
+          />
+        }
+      />
+    );
+
+    const logoutRoute = (
+      <Route
+        path="/logout"
+        element={
+          <LegacyRouteRenderer
+            path="/logout"
+            end
+            render={(props: RouteComponentProps) => <Logout {...props} handleLogout={handleLogout} />}
+          />
+        }
+      />
+    );
+
+    let homeRoute: ReactElement;
+    if (isStudent && !isGrader && !isAdmin) {
+      homeRoute = <Route path={HOME} element={<Navigate to="/student" replace />} />;
+    } else if (!isStudent && isGrader && !isAdmin) {
+      homeRoute = <Route path={HOME} element={<Navigate to="/grader" replace />} />;
+    } else if (!isStudent && !isGrader && isAdmin) {
+      homeRoute = <Route path={HOME} element={<Navigate to="/admin" replace />} />;
     } else {
-      if (localStorage.getItem('source') === 'codePost') {
-        (window as Window & typeof globalThis & { Intercom?: (...args: unknown[]) => void }).Intercom?.('boot', {
-          app_id: 'kg4u5rp1',
-          custom_launcher_selector: '#IntercomDefaultWidget',
-        });
-      }
-      return <div />;
+      homeRoute = (
+        <Route
+          path={HOME}
+          element={
+            <LegacyRouteRenderer
+              path={HOME}
+              end
+              render={(props: RouteComponentProps) => (
+                <Home
+                  {...props}
+                  isStudent={isStudent}
+                  isGrader={isGrader}
+                  isAdmin={isAdmin}
+                  handleLogout={handleLogout}
+                  user={user === undefined ? anonymousUser : user}
+                />
+              )}
+            />
+          }
+        />
+      );
     }
-  }
-}
 
-const RedirectPath = (route: string) => {
-  return (_props: unknown) => {
-    return <Redirect to={`/${route}`} />;
-  };
+    return (
+      <Routes>
+        {loginAsRoute}
+        {dashboardRoute}
+        {settingsRoute}
+        {homeRoute}
+        {studentRoute}
+        {graderRoute}
+        {adminRoute}
+        {gradeRoute}
+        {renderDemoRoute()}
+        <Route path={HEALTH_CHECK} element={<div>OK</div>} />
+        {logoutRoute}
+        <Route path="*" element={<Navigate to={HOME} replace />} />
+      </Routes>
+    );
+  }
+
+  if (triedLoading && localStorage.getItem('source') === 'Code in Place') {
+    return (
+      <div>
+        <Routes>
+          <Route path="*" element={<RemoteAuthFailed />} />
+        </Routes>
+      </div>
+    );
+  }
+
+  if (triedLoading) {
+    return <IndexManager handleLogin={handleLogin} error={error} isLoggedIn={false} handleLogout={handleLogout} />;
+  }
+
+  if (localStorage.getItem('source') === 'codePost') {
+    (window as Window & typeof globalThis & { Intercom?: (...args: unknown[]) => void }).Intercom?.('boot', {
+      app_id: 'kg4u5rp1',
+      custom_launcher_selector: '#IntercomDefaultWidget',
+    });
+  }
+
+  return <div />;
 };
 
 export default App;

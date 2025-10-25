@@ -2,106 +2,24 @@
 /* Imports
 /**********************************************************************************************************************/
 
-/* react imports */
-import * as React from 'react';
-
-import { EyeFilled, EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
+import moment from 'moment';
+import React from 'react';
 
 /* antd imports */
+import { EyeFilled, EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { Typography } from 'antd';
 
-/* other library imports */
-import moment from 'moment';
-
 /* codePost imports */
-import { AssignmentType } from '../../infrastructure/assignment';
-import { AnonymousSubmissionInfoType, SubmissionType, SubmissionInfoType } from '../../infrastructure/submission';
-
 import CPTooltip from '../core/CPTooltip';
+
+import { AssignmentType } from '../../infrastructure/assignment';
+import { AnonymousSubmissionInfoType, SubmissionInfoType, SubmissionType } from '../../infrastructure/submission';
 
 const { Text } = Typography;
 
 /**********************************************************************************************************************/
-
-// Get the viewIcon for a submission
-const getViewIcon = (
-  submission: SubmissionType | SubmissionInfoType | null,
-  viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
-  studentToLookup?: string,
-) => {
-  // case: submission is null
-  if (submission === null) {
-    return '--';
-  }
-
-  // case: submission not finalized, or before views were tracked
-  if (!(submission.id in viewsBySubmission) || !submission.isFinalized) {
-    return '--';
-  }
-
-  const views = viewsBySubmission[submission.id];
-
-  // case: looking up a single student, and student has viewed the submission
-  if (studentToLookup && studentToLookup in views) {
-    return (
-      <CPTooltip title={moment(viewsBySubmission[submission.id][studentToLookup]).format('llll')}>
-        <EyeFilled />
-      </CPTooltip>
-    );
-  }
-
-  // case: looking up a single student, and student has not viewed the submission
-  if (studentToLookup && !(studentToLookup in views)) {
-    return <EyeInvisibleOutlined />;
-  }
-
-  // looking up for multiple students
-  // get the tooltip label
-  const getTooltipLabel = () => {
-    switch (submission.students.length) {
-      // For a single student submission we want only the date
-      case 1:
-        return moment(views[submission.students[0]]).format('llll');
-      // For multiple students, we want the student name and the date
-      default:
-        return `${Object.keys(views)
-          .map((student) => {
-            return `${student} on ${moment(views[student]).format('llll')}`;
-          })
-          .join(', ')}`;
-    }
-  };
-
-  switch (Object.keys(views).length) {
-    // case: no student has viewed
-    case 0:
-      return <EyeInvisibleOutlined />;
-    // case: all students have viewed
-    case submission.students.length:
-      return (
-        <CPTooltip title={getTooltipLabel()}>
-          <EyeFilled />
-        </CPTooltip>
-      );
-    default:
-      return (
-        <CPTooltip title={getTooltipLabel()}>
-          <EyeTwoTone twoToneColor="#646464" />
-        </CPTooltip>
-      );
-  }
-};
-
-const sortByGrade = (
-  a: { grade: number | null; isFinalized: boolean },
-  b: { grade: number | null; isFinalized: boolean },
-) => {
-  if (a.grade === null) return -1;
-  if (b.grade === null) return 1;
-  if (!a.isFinalized) return -1;
-  if (!b.isFinalized) return 1;
-  return a.grade - b.grade;
-};
+/* Types
+/**********************************************************************************************************************/
 
 export interface ISubDataBasic {
   gradeText: string | React.ReactElement;
@@ -111,11 +29,157 @@ export interface ISubDataBasic {
   isFinalized: boolean;
 }
 
-// Return submission data in form suitable for presenting in an antd table
+type ViewsBySubmission = {
+  [submissionID: number]: {
+    [student: string]: string;
+  };
+};
+
+type SubmissionWithStudents = {
+  id: number;
+  students: string[];
+  isFinalized: boolean;
+};
+
+type GradeInfo = {
+  grade: number | null;
+  isFinalized: boolean;
+};
+
+/**********************************************************************************************************************/
+/* Helper Functions
+/**********************************************************************************************************************/
+
+/**
+ * Generate tooltip label for view icons based on submission and views
+ */
+const getTooltipLabel = (submission: SubmissionWithStudents, views: { [student: string]: string }): string => {
+  if (submission.students.length === 1) {
+    // For a single student submission we want only the date
+    return moment(views[submission.students[0]]).format('llll');
+  }
+
+  // For multiple students, we want the student name and the date
+  return Object.keys(views)
+    .map((student) => `${student} on ${moment(views[student]).format('llll')}`)
+    .join(', ');
+};
+
+/**
+ * Get the view icon for a submission
+ * Returns an icon indicating whether students have viewed their finalized submission
+ */
+const getViewIcon = (
+  submission: SubmissionType | SubmissionInfoType | null,
+  viewsBySubmission: ViewsBySubmission,
+  studentToLookup?: string,
+): string | React.ReactElement => {
+  // Case: submission is null
+  if (submission === null) {
+    return '--';
+  }
+
+  // Case: submission not finalized, or before views were tracked
+  if (!(submission.id in viewsBySubmission) || !submission.isFinalized) {
+    return '--';
+  }
+
+  const views = viewsBySubmission[submission.id];
+
+  // Case: looking up a single student, and student has viewed the submission
+  if (studentToLookup && studentToLookup in views) {
+    const viewedTime = moment(views[studentToLookup]).format('llll');
+    return (
+      <CPTooltip title={viewedTime}>
+        <EyeFilled />
+      </CPTooltip>
+    );
+  }
+
+  // Case: looking up a single student, and student has not viewed the submission
+  if (studentToLookup && !(studentToLookup in views)) {
+    return <EyeInvisibleOutlined />;
+  }
+
+  // Looking up for multiple students
+  const viewCount = Object.keys(views).length;
+  const totalStudents = submission.students.length;
+
+  // Case: no student has viewed
+  if (viewCount === 0) {
+    return <EyeInvisibleOutlined />;
+  }
+
+  // Case: all students have viewed
+  if (viewCount === totalStudents) {
+    return (
+      <CPTooltip title={getTooltipLabel(submission, views)}>
+        <EyeFilled />
+      </CPTooltip>
+    );
+  }
+
+  // Case: some students have viewed
+  return (
+    <CPTooltip title={getTooltipLabel(submission, views)}>
+      <EyeTwoTone twoToneColor="#646464" />
+    </CPTooltip>
+  );
+};
+
+/**
+ * Sort submissions by grade
+ * Sorts null grades first, then unfinalized submissions, then by grade ascending
+ */
+const sortByGrade = (a: GradeInfo, b: GradeInfo): number => {
+  if (a.grade === null) return -1;
+  if (b.grade === null) return 1;
+  if (!a.isFinalized) return -1;
+  if (!b.isFinalized) return 1;
+  return a.grade - b.grade;
+};
+
+/**
+ * Format grade text based on submission state
+ */
+const formatGradeText = (
+  sub: SubmissionType | SubmissionInfoType | AnonymousSubmissionInfoType,
+  assignment?: AssignmentType,
+): React.ReactElement => {
+  if (sub.isFinalized) {
+    const gradeDisplay = assignment ? `${sub.grade}/${assignment.points}` : `${sub.grade}`;
+    return <Text>{gradeDisplay}</Text>;
+  }
+
+  if (sub.grader) {
+    return <Text type="warning">Unfinalized</Text>;
+  }
+
+  return <Text type="warning">Unclaimed</Text>;
+};
+
+/**
+ * Format grader text based on submission state
+ */
+const formatGraderText = (grader: string | null | undefined): string | React.ReactElement => {
+  return grader ? grader : <Text type="warning">Unclaimed</Text>;
+};
+
+/**
+ * Format date edited text
+ */
+const formatLastEdited = (dateEdited: string): string => {
+  return `${moment(dateEdited).format('l')}, ${moment(dateEdited).format('LT')}`;
+};
+
+/**
+ * Return submission data in form suitable for presenting in an antd table
+ */
 const formatSub = (
   sub?: SubmissionType | SubmissionInfoType | AnonymousSubmissionInfoType | null,
   assignment?: AssignmentType,
 ): ISubDataBasic => {
+  // Handle null or undefined submissions
   if (sub === undefined || sub === null) {
     return {
       gradeText: '--',
@@ -124,28 +188,19 @@ const formatSub = (
       grader: '--',
       lastEdited: '--',
     };
-  } else {
-    let gradeText;
-    if (sub.isFinalized) {
-      if (assignment !== undefined) {
-        gradeText = <Text>{`${sub.grade}/${assignment.points}`}</Text>;
-      } else {
-        gradeText = <Text>{`${sub.grade}`}</Text>;
-      }
-    } else if (sub.grader) {
-      gradeText = <Text type="warning">Unfinalized</Text>;
-    } else {
-      gradeText = <Text type="warning">Unclaimed</Text>;
-    }
-
-    return {
-      gradeText,
-      grade: sub.grade,
-      isFinalized: sub.isFinalized,
-      grader: sub.grader ? sub.grader : <Text type="warning">Unclaimed</Text>,
-      lastEdited: `${moment(sub.dateEdited).format('l')}, ${moment(sub.dateEdited).format('LT')}`,
-    };
   }
+
+  return {
+    gradeText: formatGradeText(sub, assignment),
+    grade: sub.grade,
+    isFinalized: sub.isFinalized,
+    grader: formatGraderText(sub.grader),
+    lastEdited: formatLastEdited(sub.dateEdited),
+  };
 };
 
-export { getViewIcon, formatSub, sortByGrade };
+/**********************************************************************************************************************/
+/* Exports
+/**********************************************************************************************************************/
+
+export { formatSub, getViewIcon, sortByGrade };

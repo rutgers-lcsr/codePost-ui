@@ -121,6 +121,7 @@ const RegradesDetailPanel = (props: IProps) => {
         <div style={{ display: 'inline-block', marginLeft: 15 }}>
           View all regrades: &nbsp;
           <Switch
+            aria-label={!viewAll ? 'View all regrade requests' : 'View my regrade requests only'}
             defaultChecked={viewAll}
             onChange={setViewAll.bind(!viewAll)}
             key="toggleViewAll"

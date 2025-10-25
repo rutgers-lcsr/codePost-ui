@@ -18,21 +18,15 @@
     font-weight: 500 !important;
 
     &::after {
-      border-right: 5px solid $brandPrimary !important;
+      border-right: 5px solid var(--file-menu-selected-color, $brandPrimary) !important;
     }
   }
 
-  &--light {
-    .ant-menu-item-selected {
-      background-color: #f0fff7 !important;
-      color: $brandPrimary;
-    }
-  }
-
+  &--light,
   &--dark {
     .ant-menu-item-selected {
-      background-color: #323435 !important;
-      color: $brandPrimary;
+      background-color: var(--file-menu-selected-bg, #f0fff7) !important;
+      color: var(--file-menu-selected-color, $brandPrimary);
     }
   }
 }
@@ -77,21 +71,14 @@
       font-weight: 400;
       margin-top: 0px;
       margin-bottom: 0px;
-      border-top: 1px solid #f4f4f4;
+      border-top: var(--file-menu-submenu-border, 1px solid #f4f4f4);
+      background-color: var(--file-menu-submenu-bg, #f9f9f9) !important;
+      color: var(--file-menu-submenu-color, inherit);
     }
 
     .ant-menu-item {
       margin-top: 0px;
       margin-bottom: 0px;
-    }
-
-    &--light {
-      .ant-menu-submenu-title {
-        background-color: #f9f9f9 !important;
-      }
-    }
-
-    &--dark {
     }
   }
 }

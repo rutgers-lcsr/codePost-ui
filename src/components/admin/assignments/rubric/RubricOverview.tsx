@@ -2,7 +2,8 @@
 /* Imports
 /**********************************************************************************************************************/
 
-import { RouteComponentProps } from 'react-router';
+import React, { useMemo } from 'react';
+import { RouteComponentProps } from '../../../../router/legacy';
 import { Link } from 'react-router-dom';
 
 import { Breadcrumb, Button, Empty, Tag } from 'antd';
@@ -15,61 +16,114 @@ import { CourseType } from '../../../../infrastructure/course';
 import { encodeForLink } from '../../../core/URLutils';
 
 /**********************************************************************************************************************/
+/* Types
+/**********************************************************************************************************************/
 
 interface IProps {
   assignments: AssignmentType[];
   course: CourseType | undefined;
 }
 
-const RubricOverview = (props: IProps & RouteComponentProps) => {
-  const columns = [
-    { title: 'Assignment', key: 'assignment', dataIndex: 'assignment' },
-    { title: 'Edit', key: 'edit', dataIndex: 'edit', align: 'center' as const },
-  ];
+/**********************************************************************************************************************/
+/* Constants
+/**********************************************************************************************************************/
 
-  const data = props.assignments.map((assignment) => {
-    return {
-      assignment: assignment.name,
-      edit: (
-        <Link to={`${props.match.url}/${encodeForLink(assignment.name)}`}>
-          <Button type={assignment.rubricCategories.length > 0 ? 'default' : 'primary'}>
-            {assignment.rubricCategories.length > 0 ? 'Edit' : 'Create'}
-          </Button>
-        </Link>
-      ),
-      rowKey: `row-assignment-${assignment.id}`,
-    };
-  });
+const PAGINATION_THRESHOLD = 10;
+const EMPTY_IMAGE_HEIGHT = 60;
+const TITLE = 'Rubrics';
+
+/**********************************************************************************************************************/
+/* Helper Functions
+/**********************************************************************************************************************/
+
+const getButtonType = (rubricCategoriesCount: number): 'default' | 'primary' => {
+  return rubricCategoriesCount > 0 ? 'default' : 'primary';
+};
+
+const getButtonText = (rubricCategoriesCount: number): string => {
+  return rubricCategoriesCount > 0 ? 'Edit' : 'Create';
+};
+
+/**********************************************************************************************************************/
+/* Component
+/**********************************************************************************************************************/
+
+const RubricOverview: React.FC<IProps & RouteComponentProps> = ({ assignments, course, match }) => {
+  const columns = useMemo(
+    () => [
+      { title: 'Assignment', key: 'assignment', dataIndex: 'assignment' },
+      { title: 'Edit', key: 'edit', dataIndex: 'edit', align: 'center' as const },
+    ],
+    [],
+  );
+
+  const data = useMemo(
+    () =>
+      assignments.map((assignment) => ({
+        assignment: assignment.name,
+        edit: (
+          <Link to={`${match.url}/${encodeForLink(assignment.name)}`}>
+            <Button type={getButtonType(assignment.rubricCategories.length)}>
+              {getButtonText(assignment.rubricCategories.length)}
+            </Button>
+          </Link>
+        ),
+        rowKey: `row-assignment-${assignment.id}`,
+      })),
+    [assignments, match.url],
+  );
+
+  const isEmpty = useMemo(() => data.length === 0, [data.length]);
+
+  const pagination = useMemo(
+    () => (assignments.length < PAGINATION_THRESHOLD ? false : undefined),
+    [assignments.length],
+  );
+
+  const emptyNode = useMemo(
+    () => (
+      <Empty
+        styles={{
+          image: {
+            height: EMPTY_IMAGE_HEIGHT,
+          },
+        }}
+        description={<span>No assignments yet</span>}
+      />
+    ),
+    [],
+  );
+
+  const breadcrumbs = useMemo(
+    () => (
+      <Breadcrumb
+        items={[
+          {
+            title: (
+              <>
+                {course !== undefined && course.archived ? <Tag>Archived</Tag> : null}
+                Assignments
+              </>
+            ),
+          },
+          { title: TITLE },
+        ]}
+      />
+    ),
+    [course],
+  );
 
   return (
     <TableDetail
       loadComplete={true}
-      pagination={props.assignments.length < 10 ? false : undefined}
-      title={'Rubrics'}
-      isEmpty={data.length === 0}
-      emptyNode={
-        <Empty
-          styles={{
-            image: {
-              height: 60,
-            },
-          }}
-          description={<span>No assignments yet</span>}
-        ></Empty>
-      }
+      pagination={pagination}
+      title={TITLE}
+      isEmpty={isEmpty}
+      emptyNode={emptyNode}
       columns={columns}
       data={data}
       actions={[]}
-      breadcrumbs={
-        <Breadcrumb
-          items={[
-            {
-              title: <>{props.course !== undefined && props.course.archived ? <Tag>Archived</Tag> : null}Assignments</>,
-            },
-            { title: 'Rubrics' },
-          ]}
-        />
-      }
+      breadcrumbs={breadcrumbs}
     />
   );
 };

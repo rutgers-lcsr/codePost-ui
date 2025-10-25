@@ -1,79 +1,163 @@
+import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { Button, Input, InputNumber, Space, Tooltip, theme } from 'antd';
 import * as React from 'react';
 
-import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
-
-import { Button, Input, InputNumber, Space } from 'antd';
-
 interface IInputNumberMultipleProps {
-  value: number[];
-  onChange: any;
+  value?: number[];
+  onChange?: (value: number[]) => void;
   emptyMessage?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  placeholder?: string;
+  disabled?: boolean;
 }
 
-class InputNumberMultiple extends React.Component<IInputNumberMultipleProps, {}> {
-  public addRow = () => {
-    const updated = [...this.props.value, 0];
-    this.props.onChange(updated);
+/**
+ * InputNumberMultiple - A component for managing multiple late deduction values
+ * Each row represents progressive days late with corresponding point deductions
+ */
+const InputNumberMultiple: React.FC<IInputNumberMultipleProps> = ({
+  value = [],
+  onChange,
+  emptyMessage = 'Add deduction',
+  min = 0,
+  max,
+  step = 1,
+  placeholder = 'Points',
+  disabled = false,
+}) => {
+  const { token } = theme.useToken();
+  const handleAddRow = React.useCallback(() => {
+    const updated = [...value, 0];
+    onChange?.(updated);
+  }, [value, onChange]);
+
+  const handleRemoveRow = React.useCallback(() => {
+    if (value.length > 0) {
+      const updated = value.slice(0, value.length - 1);
+      onChange?.(updated);
+    }
+  }, [value, onChange]);
+
+  const handleChangeValue = React.useCallback(
+    (newValue: number | null, index: number) => {
+      const updated = [...value];
+      updated[index] = newValue !== null ? newValue : 0;
+      onChange?.(updated);
+    },
+    [value, onChange],
+  );
+
+  const getDayString = (dayIndex: number, isLast: boolean): string => {
+    const dayNumber = dayIndex + 1;
+    const suffix = isLast ? '+' : '';
+    const plural = dayNumber === 1 ? '' : 's';
+    return `${dayNumber}${suffix} day${plural} late`;
   };
 
-  public removeRow = () => {
-    const updated = this.props.value.slice(0, this.props.value.length - 1);
-    this.props.onChange(updated);
-  };
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        padding: '12px',
+        backgroundColor: token.colorBgContainer,
+        borderRadius: token.borderRadiusLG,
+        border: `1px solid ${token.colorBorder}`,
+        maxWidth: 'fit-content',
+        margin: '10px 0',
+      }}
+    >
+      {value.length > 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {value.map((dayDeduction: number, index: number) => {
+            const isLast = index === value.length - 1;
+            const dayString = getDayString(index, isLast);
 
-  public changeValue = (value: number, index: number) => {
-    const updated = [...this.props.value];
-    updated[index] = value;
-    this.props.onChange(updated);
-  };
-
-  render() {
-    return (
-      <span>
-        {this.props.value.map((dayDeduction: number, day: number) => {
-          const dayString = `${day + 1}${day === this.props.value.length - 1 ? '+' : ''} day${
-            day + 1 === 1 ? '' : 's'
-          } late`;
-
-          const onChange = (changedValue: number | null) => {
-            this.changeValue(changedValue !== null ? changedValue : 0, day);
-          };
-
-          return (
-            <div
-              key={`day-${day + 1}`}
-              style={{ width: '171px', display: day === this.props.value.length - 1 ? 'inline-block' : 'block' }}
-            >
-              <span>
-                <Space.Compact>
-                  <Input disabled={true} value={dayString} style={{ width: '110px' }} />
-                  <InputNumber min={0} value={dayDeduction} style={{ width: '60px' }} onChange={onChange} />
+            return (
+              <div
+                key={`day-${index}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px',
+                  backgroundColor: token.colorBgLayout,
+                  borderRadius: token.borderRadius,
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                <Space.Compact style={{ flex: 1 }}>
+                  <Input
+                    disabled
+                    value={dayString}
+                    style={{
+                      width: '130px',
+                      fontWeight: 500,
+                      color: token.colorText,
+                    }}
+                  />
+                  <InputNumber
+                    min={min}
+                    max={max}
+                    step={step}
+                    value={dayDeduction}
+                    onChange={(changedValue) => handleChangeValue(changedValue, index)}
+                    style={{ width: '100px' }}
+                    placeholder={placeholder}
+                    disabled={disabled}
+                    addonAfter="pts"
+                  />
                 </Space.Compact>
-              </span>
-            </div>
-          );
-        })}
-        {this.props.value.length !== 0 ? (
-          <span>
-            <MinusCircleOutlined
-              style={{ color: '#eb6f00', paddingLeft: '10px', cursor: 'pointer' }}
-              onClick={this.removeRow}
-            />
-          </span>
-        ) : null}
-        {this.props.value.length === 0 && this.props.emptyMessage ? (
-          <Button onClick={this.addRow}>{this.props.emptyMessage}</Button>
+                {isLast && (
+                  <Tooltip title="Remove this deduction">
+                    <Button
+                      type="text"
+                      danger
+                      icon={<MinusCircleOutlined />}
+                      onClick={handleRemoveRow}
+                      size="small"
+                      disabled={disabled}
+                      style={{ flexShrink: 0 }}
+                    />
+                  </Tooltip>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+
+      <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+        {value.length === 0 ? (
+          <Button
+            type="dashed"
+            onClick={handleAddRow}
+            icon={<PlusCircleOutlined />}
+            disabled={disabled}
+            style={{ width: '100%' }}
+          >
+            {emptyMessage}
+          </Button>
         ) : (
-          <span>
-            <PlusCircleOutlined
-              style={{ color: '#24be85', paddingLeft: '10px', cursor: 'pointer' }}
-              onClick={this.addRow}
-            />
-          </span>
+          <Tooltip title="Add another day late deduction">
+            <Button
+              type="primary"
+              ghost
+              icon={<PlusCircleOutlined />}
+              onClick={handleAddRow}
+              size="small"
+              disabled={disabled}
+            >
+              Add Day
+            </Button>
+          </Tooltip>
         )}
-      </span>
-    );
-  }
-}
+      </div>
+    </div>
+  );
+};
 
 export default InputNumberMultiple;

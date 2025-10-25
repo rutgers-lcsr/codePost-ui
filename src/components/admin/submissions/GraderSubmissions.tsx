@@ -5,7 +5,7 @@
 /* react imports */
 import * as React from 'react';
 
-import { FolderOpenOutlined, PlusCircleOutlined, UserAddOutlined } from '@ant-design/icons';
+import { PlusCircleOutlined, UserAddOutlined, ZoomInOutlined } from '@ant-design/icons';
 
 /* ant imports */
 import { Breadcrumb, Checkbox, Empty } from 'antd';
@@ -13,7 +13,8 @@ import { Breadcrumb, Checkbox, Empty } from 'antd';
 /* other library imports */
 import Highlighter from 'react-highlight-words';
 
-import { Link, Route, Switch } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router-dom';
+import { LegacyRouteRenderer } from '../../../router/legacy';
 
 /* codePost imports  */
 import { IAssignmentToSubmissionsMap, IGraderSubmissionsDataTable } from '../../../types/common';
@@ -53,23 +54,28 @@ export interface IByGraderProps {
   match: any;
 }
 
-interface IState {
-  showInactive: boolean;
-  showActive: boolean;
-  means: { [assignmentID: number]: string | null };
-}
+const GraderData: React.FC<IByGraderProps> = (props) => {
+  const [showInactive, setShowInactive] = React.useState(false);
+  const [showActive, setShowActive] = React.useState(true);
+  const [means, setMeans] = React.useState<{ [assignmentID: number]: string | null }>({});
 
-class GraderData extends React.Component<IByGraderProps, IState> {
-  public state: Readonly<IState> = {
-    showActive: true,
-    showInactive: false,
-    means: {},
-  };
+  const {
+    loadComplete,
+    baseURL,
+    assignments,
+    submissionsByAssignment,
+    submissionsByGrader,
+    graders,
+    inactiveGraders,
+    viewsBySubmission,
+    deleteSubmission,
+    match,
+  } = props;
 
-  public componentDidMount() {
-    const newMeans: any = {};
-    for (const key of Object.keys(this.props.submissionsByAssignment)) {
-      const submissions: SubmissionInfoType[] = this.props.submissionsByAssignment[+key];
+  React.useEffect(() => {
+    const newMeans: Record<string, string | null> = {};
+    for (const key of Object.keys(submissionsByAssignment)) {
+      const submissions: SubmissionInfoType[] = submissionsByAssignment[+key];
       let scoreSum = 0;
       let numFinalized = 0;
       for (const submission of submissions) {
@@ -85,10 +91,10 @@ class GraderData extends React.Component<IByGraderProps, IState> {
         newMeans[key] = null;
       }
     }
-    this.setState({ means: newMeans });
-  }
+    setMeans(newMeans);
+  }, [submissionsByAssignment]);
 
-  public sortFunction = (a: any, b: any) => {
+  const sortFunction = React.useCallback((a: any, b: any) => {
     if (typeof a === 'number' && typeof b === 'number') {
       return b - a;
     } else if (typeof a === 'number') {
@@ -108,82 +114,75 @@ class GraderData extends React.Component<IByGraderProps, IState> {
     }
 
     return 0;
-  };
+  }, []);
 
-  public toggleValue = (value: string) => {
-    this.setState((prevState: IState) => {
-      const newState: any = { ...prevState };
-      newState[value] = !newState[value];
-      return newState;
-    });
-  };
-
-  public render() {
-    if (!this.props.loadComplete) {
-      return <Loading />;
+  const toggleValue = React.useCallback((value: 'showActive' | 'showInactive') => {
+    if (value === 'showActive') {
+      setShowActive((prev) => !prev);
+    } else {
+      setShowInactive((prev) => !prev);
     }
+  }, []);
 
-    return (
-      <Switch>
-        {this.props.graders.map((grader) => (
-          <Route
-            key={`route-grader-${grader}`}
-            path={`${this.props.match.url}/${grader}`}
-            render={(props: any) => (
-              <GraderDetail
-                {...props}
-                baseURL={this.props.match.url}
-                assignments={this.props.assignments}
-                graders={this.props.graders}
-                viewsBySubmission={this.props.viewsBySubmission}
-                deleteSubmission={this.props.deleteSubmission}
-                means={this.state.means}
-                grader={grader}
-                submissionsByAssignment={this.props.submissionsByGrader[grader]}
-              />
-            )}
-          />
-        ))}
+  if (!loadComplete) {
+    return <Loading />;
+  }
+
+  return (
+    <Routes>
+      {graders.map((grader) => (
         <Route
-          exact={true}
-          path={this.props.match.url}
-          render={(_props) => {
-            let data: Record<string, unknown>[] = [];
-            let columns: ITableDetailColumn[] = [];
-            let toggleInactiveGraders;
+          key={`route-grader-${grader}`}
+          path={`${grader}/*`}
+          element={
+            <LegacyRouteRenderer
+              path={`${match.url}/${grader}/*`}
+              render={(props: any) => (
+                <GraderDetail
+                  {...props}
+                  baseURL={match.url}
+                  assignments={assignments}
+                  graders={graders}
+                  viewsBySubmission={viewsBySubmission}
+                  deleteSubmission={deleteSubmission}
+                  means={means}
+                  grader={grader}
+                  submissionsByAssignment={submissionsByGrader[grader]}
+                />
+              )}
+            />
+          }
+        />
+      ))}
+      <Route
+        index
+        element={
+          <LegacyRouteRenderer
+            path={match.url}
+            render={(_props) => {
+              let data: Record<string, unknown>[] = [];
+              let columns: ITableDetailColumn[] = [];
+              let toggleInactiveGraders;
 
-            if (this.props.loadComplete) {
-              const aligner: 'left' | 'center' | 'right' = 'center';
-              columns = [
-                {
-                  title: 'Zoom in',
-                  dataIndex: 'expand',
-                  key: 'expand',
-                  align: aligner,
-                },
-                {
-                  title: 'Grader',
-                  dataIndex: 'grader',
-                  key: 'primary',
-                  sorter: (a, b) => a.key.localeCompare(b.key),
-                  renderForSearch: (searchText: string) => {
-                    return (_: string, record) => {
-                      const grader = record.grader;
-                      if (this.props.graders.indexOf(grader) > -1) {
-                        return (
-                          <Highlighter
-                            highlightStyle={{
-                              backgroundColor: '#5CBB8B',
-                              padding: 0,
-                            }}
-                            searchWords={[searchText]}
-                            autoEscape
-                            textToHighlight={grader}
-                          />
-                        );
-                      } else {
-                        return (
-                          <span style={{ color: '#ccc' }}>
+              if (loadComplete) {
+                const aligner: 'left' | 'center' | 'right' = 'center';
+                columns = [
+                  {
+                    title: 'Zoom in',
+                    dataIndex: 'expand',
+                    key: 'expand',
+                    align: aligner,
+                  },
+                  {
+                    title: 'Grader',
+                    dataIndex: 'grader',
+                    key: 'primary',
+                    sorter: (a, b) => a.key.localeCompare(b.key),
+                    renderForSearch: (searchText: string) => {
+                      return (_: string, record) => {
+                        const grader = record.grader;
+                        if (graders.indexOf(grader) > -1) {
+                          return (
                             <Highlighter
                               highlightStyle={{
                                 backgroundColor: '#5CBB8B',
@@ -193,155 +192,163 @@ class GraderData extends React.Component<IByGraderProps, IState> {
                               autoEscape
                               textToHighlight={grader}
                             />
-                          </span>
-                        );
-                      }
-                    };
-                  },
-                },
-                ...sortAssignments(this.props.assignments).map((assignment) => {
-                  return {
-                    title: assignment.name,
-                    dataIndex: assignment.name,
-                    key: assignment.name,
-                    sorter: (a: Record<string, unknown>, b: Record<string, unknown>) => {
-                      return this.sortFunction(a[assignment.name], b[assignment.name]);
+                          );
+                        } else {
+                          return (
+                            <span style={{ color: '#ccc' }}>
+                              <Highlighter
+                                highlightStyle={{
+                                  backgroundColor: '#5CBB8B',
+                                  padding: 0,
+                                }}
+                                searchWords={[searchText]}
+                                autoEscape
+                                textToHighlight={grader}
+                              />
+                            </span>
+                          );
+                        }
+                      };
                     },
-                    align: aligner,
-                    className: 'student-table',
-                  };
-                }),
-              ];
-
-              // UI control for selecting which graders appear in table rows
-              const hasInactiveGraders = this.props.inactiveGraders.length > 0;
-              if (hasInactiveGraders) {
-                toggleInactiveGraders = (
-                  <div>
-                    <Checkbox
-                      defaultChecked={this.state.showActive}
-                      onChange={this.toggleValue.bind(this, 'showActive')}
-                    >
-                      Active graders
-                    </Checkbox>
-                    <CPTooltip title={tooltips.admin.studentSubmissions.inactives} hideThisOnHideTips={true}>
-                      <Checkbox
-                        defaultChecked={this.state.showInactive}
-                        onChange={this.toggleValue.bind(this, 'showInactive')}
-                      >
-                        Inactive graders
-                      </Checkbox>
-                    </CPTooltip>
-                  </div>
-                );
-              }
-
-              // Figure out which set of graders to show in table rows
-              let rowValues: string[] = [];
-              if (this.state.showActive && this.state.showInactive) {
-                rowValues = Object.keys(this.props.submissionsByGrader);
-              } else if (this.state.showInactive) {
-                rowValues = this.props.inactiveGraders;
-              } else if (this.state.showActive) {
-                rowValues = this.props.graders;
-              }
-
-              data = rowValues.map((graderEmail) => {
-                const toRet: any = {
-                  expand: (
-                    <Link to={`${this.props.match.url}/${graderEmail}`}>
-                      <div style={{ cursor: 'pointer' }}>
-                        <CPTooltip title={tooltips.admin.graderSubmissions.expand} hideThisOnHideTips={true}>
-                          <FolderOpenOutlined />
-                        </CPTooltip>
-                      </div>
-                    </Link>
-                  ),
-                  key: graderEmail,
-                  grader: graderEmail,
-                };
-                for (const assignment of this.props.assignments) {
-                  const graded = this.props.submissionsByGrader[graderEmail][assignment.id];
-                  if (graded) {
-                    toRet[assignment.name] = (
-                      <Link to={`${this.props.match.url}/${graderEmail}/${encodeForLink(assignment.name)}`}>
-                        <span style={{ cursor: 'pointer' }}>{graded.length}</span>
-                      </Link>
-                    );
-                  } else {
-                    toRet[assignment.name] = 0;
-                  }
-                }
-                return toRet;
-              });
-            }
-
-            const numGraders = Object.keys(this.props.submissionsByGrader).length;
-            return (
-              <TableDetail
-                loadComplete={this.props.loadComplete}
-                title={'Submissions by Grader'}
-                isEmpty={numGraders === 0 || this.props.assignments.length === 0}
-                emptyNode={
-                  <Empty
-                    styles={{
-                      image: {
-                        height: 60,
+                  },
+                  ...sortAssignments(assignments).map((assignment) => {
+                    return {
+                      title: assignment.name,
+                      dataIndex: assignment.name,
+                      key: assignment.name,
+                      sorter: (a: Record<string, unknown>, b: Record<string, unknown>) => {
+                        return sortFunction(a[assignment.name], b[assignment.name]);
                       },
-                    }}
-                    description={
-                      this.props.assignments.length === 0 && numGraders === 0 ? (
-                        <span>No graders or assignments yet</span>
-                      ) : numGraders === 0 ? (
-                        <span>Nice job creating an assignment! Now add some graders.</span>
-                      ) : (
-                        <span>You added graders! Now create an assignment</span>
-                      )
-                    }
-                  >
-                    {numGraders === 0 ? (
-                      <Link to={`${this.props.baseURL}/roster/graders`}>
-                        <CPButton cpType="primary" key={1} icon={<UserAddOutlined />}>
-                          Add some graders
-                        </CPButton>
-                      </Link>
-                    ) : null}
+                      align: aligner,
+                      className: 'student-table',
+                    };
+                  }),
+                ];
 
-                    {this.props.assignments.length === 0 ? (
-                      <span>
-                        {numGraders === 0 ? <span>&nbsp; &nbsp;</span> : null}
-                        <Link to={`${this.props.baseURL}/assignments/overview`}>
-                          <CPButton cpType="primary" key={2} icon={<PlusCircleOutlined />}>
-                            Add an assignment
+                // UI control for selecting which graders appear in table rows
+                const hasInactiveGraders = inactiveGraders.length > 0;
+                if (hasInactiveGraders) {
+                  toggleInactiveGraders = (
+                    <div>
+                      <Checkbox defaultChecked={showActive} onChange={toggleValue.bind(this, 'showActive')}>
+                        Active graders
+                      </Checkbox>
+                      <CPTooltip title={tooltips.admin.studentSubmissions.inactives} hideThisOnHideTips={true}>
+                        <Checkbox defaultChecked={showInactive} onChange={toggleValue.bind(this, 'showInactive')}>
+                          Inactive graders
+                        </Checkbox>
+                      </CPTooltip>
+                    </div>
+                  );
+                }
+
+                // Figure out which set of graders to show in table rows
+                let rowValues: string[] = [];
+                if (showActive && showInactive) {
+                  rowValues = Object.keys(submissionsByGrader);
+                } else if (showInactive) {
+                  rowValues = inactiveGraders;
+                } else if (showActive) {
+                  rowValues = graders;
+                }
+
+                data = rowValues.map((graderEmail) => {
+                  const toRet: any = {
+                    expand: (
+                      <Link to={`${match.url}/${graderEmail}`}>
+                        <div style={{ cursor: 'pointer' }}>
+                          <CPTooltip title={tooltips.admin.graderSubmissions.expand} hideThisOnHideTips={true}>
+                            <ZoomInOutlined />
+                          </CPTooltip>
+                        </div>
+                      </Link>
+                    ),
+                    key: graderEmail,
+                    grader: graderEmail,
+                  };
+                  for (const assignment of assignments) {
+                    const graded = submissionsByGrader[graderEmail][assignment.id];
+                    if (graded) {
+                      toRet[assignment.name] = (
+                        <Link to={`${match.url}/${graderEmail}/${encodeForLink(assignment.name)}`}>
+                          <span style={{ cursor: 'pointer' }}>{graded.length}</span>
+                        </Link>
+                      );
+                    } else {
+                      toRet[assignment.name] = 0;
+                    }
+                  }
+                  return toRet;
+                });
+              }
+
+              const numGraders = Object.keys(submissionsByGrader).length;
+              return (
+                <TableDetail
+                  loadComplete={loadComplete}
+                  title={'Submissions by Grader'}
+                  isEmpty={numGraders === 0 || assignments.length === 0}
+                  emptyNode={
+                    <Empty
+                      styles={{
+                        image: {
+                          height: 60,
+                        },
+                      }}
+                      description={
+                        assignments.length === 0 && numGraders === 0 ? (
+                          <span>No graders or assignments yet</span>
+                        ) : numGraders === 0 ? (
+                          <span>Nice job creating an assignment! Now add some graders.</span>
+                        ) : (
+                          <span>You added graders! Now create an assignment</span>
+                        )
+                      }
+                    >
+                      {numGraders === 0 ? (
+                        <Link to={`${baseURL}/roster/graders`}>
+                          <CPButton cpType="primary" key={1} icon={<UserAddOutlined />}>
+                            Add some graders
                           </CPButton>
                         </Link>
-                      </span>
-                    ) : null}
-                  </Empty>
-                }
-                columns={columns}
-                data={data}
-                actions={[toggleInactiveGraders]}
-                breadcrumbs={
-                  <Breadcrumb
-                    items={[
-                      {
-                        title: <Link to={this.props.match.url}>Submissions</Link>,
-                      },
-                      {
-                        title: <Link to={this.props.match.url}>By Grader</Link>,
-                      },
-                    ]}
-                  />
-                }
-                titleInfo={tooltips.admin.graderSubmissions.title}
-              />
-            );
-          }}
-        />
-      </Switch>
-    );
-  }
-}
+                      ) : null}
+
+                      {assignments.length === 0 ? (
+                        <span>
+                          {numGraders === 0 ? <span>&nbsp; &nbsp;</span> : null}
+                          <Link to={`${baseURL}/assignments/overview`}>
+                            <CPButton cpType="primary" key={2} icon={<PlusCircleOutlined />}>
+                              Add an assignment
+                            </CPButton>
+                          </Link>
+                        </span>
+                      ) : null}
+                    </Empty>
+                  }
+                  columns={columns}
+                  data={data}
+                  actions={[toggleInactiveGraders]}
+                  breadcrumbs={
+                    <Breadcrumb
+                      items={[
+                        {
+                          title: <Link to={match.url}>Submissions</Link>,
+                        },
+                        {
+                          title: <Link to={match.url}>By Grader</Link>,
+                        },
+                      ]}
+                    />
+                  }
+                  titleInfo={tooltips.admin.graderSubmissions.title}
+                />
+              );
+            }}
+          />
+        }
+      />
+    </Routes>
+  );
+};
 
 export default GraderData;

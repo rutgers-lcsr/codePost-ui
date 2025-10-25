@@ -222,7 +222,7 @@ describe('CodePanelHighlighting', () => {
     const line = 2;
 
     const [HTMLString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
-    const expected = `<strong id=line-${line} class="highlight-${1}">Lorem</strong> ipsum dolor sit amet`;
+    const expected = `<strong id="line-${line}" class="highlight-${1}">Lorem</strong> ipsum dolor sit amet`;
     expect(HTMLString).toEqual(expected);
     expect(styles).toEqual({});
   });
@@ -233,7 +233,7 @@ describe('CodePanelHighlighting', () => {
     const line = 2;
 
     const [HTMLString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
-    const expected = `Lorem ipsum dolor sit <strong id=line-${line} class="highlight-${1}">amet</strong>`;
+    const expected = `Lorem ipsum dolor sit <strong id="line-${line}" class="highlight-${1}">amet</strong>`;
     expect(HTMLString).toEqual(expected);
     expect(styles).toEqual({});
   });
@@ -244,59 +244,71 @@ describe('CodePanelHighlighting', () => {
     const line = 2;
 
     const [HTMLString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
-    const expected = `Lorem <strong id=line-${line} class="highlight-${1}">ipsum</strong> dolor sit amet`;
+    const expected = `Lorem <strong id="line-${line}" class="highlight-${1}">ipsum</strong> dolor sit amet`;
     expect(HTMLString).toEqual(expected);
     expect(styles).toEqual({});
   });
 
   it('buildHTMLString() - Case 2a (see test file)', () => {
-    const highlights: number[][] = [[0, 5, 1], [12, 17, 2]];
+    const highlights: number[][] = [
+      [0, 5, 1],
+      [12, 17, 2],
+    ];
     const thetext = 'Lorem ipsum dolor sit amet';
     const line = 2;
 
     const [HTMLString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
-    const expected = `<strong id=line-${line} class="highlight-${1}">Lorem</strong> ipsum <strong id=line-${line} class="highlight-${2}">dolor</strong> sit amet`; // tslint:disable-line
+    const expected = `<strong id="line-${line}" class="highlight-${1}">Lorem</strong> ipsum <strong id="line-${line}" class="highlight-${2}">dolor</strong> sit amet`; // tslint:disable-line
     expect(HTMLString).toEqual(expected);
     expect(styles).toEqual({});
   });
 
   it('buildHTMLString() - Case 2b (see test file)', () => {
-    const highlights: number[][] = [[0, 5, 1], [5, 11, 2]];
+    const highlights: number[][] = [
+      [0, 5, 1],
+      [5, 11, 2],
+    ];
     const thetext = 'Lorem ipsum dolor sit amet';
     const line = 2;
 
     const [HTMLString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
-    const expected = `<strong id=line-${line} class="highlight-${1}">Lorem</strong><strong id=line-${line} class="highlight-${2}"> ipsum</strong> dolor sit amet`; // tslint:disable-line
+    const expected = `<strong id="line-${line}" class="highlight-${1}">Lorem</strong><strong id="line-${line}" class="highlight-${2}"> ipsum</strong> dolor sit amet`; // tslint:disable-line
     expect(HTMLString).toEqual(expected);
     expect(styles).toEqual({});
   });
 
   it('buildHTMLString() - Case 2c (see test file)', () => {
-    const highlights: number[][] = [[0, 11, 1], [6, 17, 2]];
+    const highlights: number[][] = [
+      [0, 11, 1],
+      [6, 17, 2],
+    ];
     const thetext = 'Lorem ipsum dolor sit amet';
     const line = 2;
 
     const [HTMLString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
     // @ts-ignore
-    const expected = `<strong id=line-${line} class="highlight-${1}">Lorem </strong><strong id=line-${line} class="highlight-${1} highlight-${2}">ipsum</strong><strong id=line-${line} class="highlight-${2}"> dolor</strong> sit amet`; // tslint:disable-line
+    const expected = `<strong id="line-${line}" class="highlight-${1}">Lorem </strong><strong id="line-${line}" class="highlight-${1} highlight-${2}">ipsum</strong><strong id="line-${line}" class="highlight-${2}"> dolor</strong> sit amet`; // tslint:disable-line
     expect(HTMLString).toEqual(expected);
     expect(styles).toEqual({ 2: 1 });
   });
 
   it('buildHTMLString() - Case 2d (see test file)', () => {
-    const highlights: number[][] = [[0, 17, 1], [6, 11, 2]];
+    const highlights: number[][] = [
+      [0, 17, 1],
+      [6, 11, 2],
+    ];
     const thetext = 'Lorem ipsum dolor sit amet';
     const line = 2;
 
     const [HTMLString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
-    const expected = `<strong id=line-${line} class="highlight-${1}">Lorem </strong><strong id=line-${line} class="highlight-${1} highlight-${2}">ipsum</strong><strong id=line-${line} class="highlight-${1}"> dolor</strong> sit amet`; // tslint:disable-line
+    const expected = `<strong id="line-${line}" class="highlight-${1}">Lorem </strong><strong id="line-${line}" class="highlight-${1} highlight-${2}">ipsum</strong><strong id="line-${line}" class="highlight-${1}"> dolor</strong> sit amet`; // tslint:disable-line
     expect(HTMLString).toEqual(expected);
     expect(styles).toEqual({ 2: 1 });
   });
 
   it('convertStringToJSX()', () => {
     const htmlString =
-      "<strong id=line-2 class='highlight-1'>Lorem </strong><strong id=line-2 class='highlight-1 highlight-2'>ipsum</strong><strong id=line-2 class='highlight-2'> dolor</strong> sit amet"; // tslint:disable-line
+      '<strong id="line-2" class="highlight-1">Lorem </strong><strong id="line-2" class="highlight-1 highlight-2">ipsum</strong><strong id="line-2" class="highlight-2"> dolor</strong> sit amet'; // tslint:disable-line
     // @ts-ignore
     const returnElements = CodePanelHighlighting.convertStringToJSX(htmlString, 2, false, undefined);
     expect(returnElements.length).toBe(7);

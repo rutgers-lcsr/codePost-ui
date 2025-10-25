@@ -1,4 +1,4 @@
-declare module '*';
+// declare module '*';
 
 // declare module 'react-dom';
 // declare module 'react-markdown';

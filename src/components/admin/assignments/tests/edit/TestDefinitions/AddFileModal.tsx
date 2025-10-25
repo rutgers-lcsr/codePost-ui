@@ -90,7 +90,7 @@ export const AddFileModal = (props: IUploadProps) => {
         Add file
       </Button>
       <Modal
-        visible={visible}
+        open={visible}
         title="Add new file"
         onCancel={toggleVisible}
         onOk={onSave}

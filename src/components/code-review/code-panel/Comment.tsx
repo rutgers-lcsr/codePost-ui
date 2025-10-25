@@ -9,8 +9,8 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 
 // We ignore eslint since Popover never explicitly used. We just use the classNames
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { CheckOutlined, DeleteOutlined, LinkOutlined } from '@ant-design/icons';
-import { Card, Input, message, Popover } from 'antd';
+import { CheckOutlined, CloseOutlined, DeleteOutlined, LinkOutlined } from '@ant-design/icons';
+import { Alert, Button, Card, Input, message, Popover, Space, Tag, Typography } from 'antd';
 
 /* codePost imports */
 import { hostname } from '../../../serviceWorker';
@@ -33,13 +33,12 @@ import { File, FileType } from '../../../infrastructure/file';
 import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
 import { RubricCommentType } from '../../../infrastructure/rubricComment';
 
-import CodePanelHighlighting from './CodePanelHighlighting';
-
 import { wait } from '../../../infrastructure/animation';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
 import { findBlockElement } from './BlockUtils.tsx';
+import { scrollHighlightIntoView, useCommentHighlightStore, useHoveredCommentId } from './CommentHighlightContext';
 
 import CommentToRubric from './CommentToRubric';
 
@@ -48,6 +47,10 @@ import CommentToRubric from './CommentToRubric';
 export type UICommentType = 'readonly' | 'active' | 'inactive';
 
 export type CommentStatus = 'edited' | 'saved' | 'idle' | 'error';
+
+type CommentCardCSSVariable = '--comment-header-bg' | '--comment-header-border' | '--comment-header-text';
+
+type CommentCardStyle = React.CSSProperties & Record<CommentCardCSSVariable, string>;
 
 const { TextArea } = Input;
 
@@ -137,6 +140,9 @@ interface ICommentProps {
  */
 const Comment: React.FC<ICommentProps> = (props) => {
   const consoleTheme = useContext(ConsoleThemeContext);
+  const { setHoveredCommentId } = useCommentHighlightStore();
+  const hoveredCommentId = useHoveredCommentId();
+  const isContextHovered = hoveredCommentId === props.comment.id;
   const prevPropsRef = useRef<ICommentProps>();
 
   // Destructure callback functions to use in dependency arrays (prevents entire props object being a dependency)
@@ -196,29 +202,155 @@ const Comment: React.FC<ICommentProps> = (props) => {
   }, []);
 
   const highlightRelatedComment = useCallback(() => {
-    CodePanelHighlighting.brightenHighlight(props.comment.id);
+    setHoveredCommentId(props.comment.id);
+    scrollHighlightIntoView(props.comment.id);
 
     const blockElement = findBlockElement(props.file, props.comment.startLine) as HTMLElement | null;
 
     if (blockElement) {
-      blockElement.className = `markdown-block markdown-block--focused ${
-        props.commentType === 'readonly' ? 'readonly' : 'active'
-      }`;
+      const stateClass = props.commentType === 'readonly' ? 'readonly' : 'active';
+      blockElement.classList.add('markdown-block');
+      blockElement.classList.remove(stateClass === 'readonly' ? 'active' : 'readonly');
+      blockElement.classList.remove('markdown-block--empty');
+      blockElement.classList.remove('markdown-block--commented');
+      blockElement.classList.add('markdown-block--focused');
+      blockElement.classList.add(stateClass);
       blockElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      if (blockElement.dataset.originalRole === undefined) {
+        const existingRole = blockElement.getAttribute('role');
+        if (existingRole !== null) {
+          blockElement.dataset.originalRole = existingRole;
+        } else {
+          blockElement.dataset.originalRole = '';
+        }
+      }
+
+      if (blockElement.dataset.originalTabIndex === undefined) {
+        const existingTabIndex = blockElement.getAttribute('tabindex');
+        if (existingTabIndex !== null) {
+          blockElement.dataset.originalTabIndex = existingTabIndex;
+        } else {
+          blockElement.dataset.originalTabIndex = '';
+        }
+      }
+
+      if (blockElement.dataset.originalAriaHidden === undefined) {
+        const existingAriaHidden = blockElement.getAttribute('aria-hidden');
+        if (existingAriaHidden !== null) {
+          blockElement.dataset.originalAriaHidden = existingAriaHidden;
+        } else {
+          blockElement.dataset.originalAriaHidden = '';
+        }
+      }
     }
-  }, [props.comment.id, props.comment.startLine, props.file, props.commentType]);
+
+    // Tell aria screen readers that the comment is highlighted, and focus on it and read it out loud
+    blockElement?.setAttribute('aria-hidden', 'false');
+    blockElement?.setAttribute('role', 'alert');
+    blockElement?.setAttribute('tabindex', '0');
+  }, [props.comment.id, props.comment.startLine, props.file, props.commentType, setHoveredCommentId]);
 
   const unhighlightRelatedComment = useCallback(() => {
-    CodePanelHighlighting.darkenHighlight(props.comment.id);
+    if (hoveredCommentId === props.comment.id) {
+      setHoveredCommentId(null);
+    }
 
     const blockElement = findBlockElement(props.file, props.comment.startLine) as HTMLElement | null;
 
     if (blockElement) {
-      blockElement.className = `markdown-block markdown-block--commented ${
-        props.commentType === 'readonly' ? 'readonly' : 'active'
-      }`;
+      const stateClass = props.commentType === 'readonly' ? 'readonly' : 'active';
+      blockElement.classList.remove('markdown-block--focused');
+      blockElement.classList.remove('markdown-block--empty');
+      if (!blockElement.classList.contains('markdown-block--commented')) {
+        blockElement.classList.add('markdown-block--commented');
+      }
+      blockElement.classList.add('markdown-block');
+      blockElement.classList.remove(stateClass === 'readonly' ? 'active' : 'readonly');
+      blockElement.classList.add(stateClass);
     }
-  }, [props.comment.id, props.comment.startLine, props.file, props.commentType]);
+
+    if (blockElement) {
+      const { originalRole, originalTabIndex, originalAriaHidden } = blockElement.dataset;
+
+      if (originalRole !== undefined) {
+        if (originalRole === '') {
+          blockElement.removeAttribute('role');
+        } else {
+          blockElement.setAttribute('role', originalRole);
+        }
+        delete blockElement.dataset.originalRole;
+      } else {
+        blockElement.removeAttribute('role');
+      }
+
+      if (originalTabIndex !== undefined) {
+        if (originalTabIndex === '') {
+          blockElement.removeAttribute('tabindex');
+        } else {
+          blockElement.setAttribute('tabindex', originalTabIndex);
+        }
+        delete blockElement.dataset.originalTabIndex;
+      } else {
+        blockElement.removeAttribute('tabindex');
+      }
+
+      if (originalAriaHidden !== undefined) {
+        if (originalAriaHidden === '') {
+          blockElement.removeAttribute('aria-hidden');
+        } else {
+          blockElement.setAttribute('aria-hidden', originalAriaHidden);
+        }
+        delete blockElement.dataset.originalAriaHidden;
+      } else {
+        blockElement.removeAttribute('aria-hidden');
+      }
+    }
+  }, [hoveredCommentId, props.comment.id, props.comment.startLine, props.file, props.commentType, setHoveredCommentId]);
+
+  const focusNextCommentBlock = useCallback(() => {
+    if (props.commentType === 'readonly') {
+      return;
+    }
+
+    const fileCodeType = File.codeType(props.file);
+    if (fileCodeType !== 'markdown' && fileCodeType !== 'jupyter') {
+      return;
+    }
+
+    const currentBlock = findBlockElement(props.file, props.comment.startLine) as HTMLElement | null;
+    const container = currentBlock?.closest('#code-markdown') ?? document.getElementById('code-markdown');
+    if (!container) {
+      return;
+    }
+
+    const focusableBlocks = Array.from(container.querySelectorAll<HTMLElement>('[index-number]')).filter((element) => {
+      return element.tabIndex >= 0 || element.getAttribute('role') === 'button';
+    });
+
+    if (focusableBlocks.length === 0) {
+      return;
+    }
+
+    const currentLine = props.comment.startLine;
+    const sortedBlocks = focusableBlocks
+      .map((element) => {
+        const attr = element.getAttribute('index-number');
+        const line = attr ? parseInt(attr, 10) : Number.NaN;
+        return { element, line } as { element: HTMLElement; line: number };
+      })
+      .filter((item) => Number.isFinite(item.line))
+      .sort((a, b) => a.line - b.line);
+
+    const nextBlock = sortedBlocks.find((item) => item.line > currentLine);
+    if (!nextBlock) {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      nextBlock.element.focus();
+    });
+  }, [props.commentType, props.file, props.comment.startLine]);
 
   /**
    * Saves the comment with current local state (text and points).
@@ -228,7 +360,18 @@ const Comment: React.FC<ICommentProps> = (props) => {
    * - Comment is deactivated with unsaved changes
    */
   const save = useCallback(
-    async (hexVal?: string) => {
+    async (hexVal?: string, options?: { autoAdvance?: boolean }) => {
+      const shouldAutoAdvance = options?.autoAdvance ?? true;
+      console.log('[Comment] save called', {
+        commentId: props.comment.id,
+        startLine: props.comment.startLine,
+        endLine: props.comment.endLine,
+        stackTrace: new Error().stack?.split('\n').slice(2, 5).join('\n'),
+      });
+
+      // Mark the comment as handled to prevent downstream auto-save duplicate triggers
+      idle();
+
       unhighlightRelatedComment();
 
       const comment = {
@@ -239,15 +382,21 @@ const Comment: React.FC<ICommentProps> = (props) => {
         color: hexVal ? hexVal : props.comment.color,
       };
 
+      console.log('[Comment] About to call props.onSave', comment.id);
       try {
         await props.onSave(comment);
+        console.log('[Comment] props.onSave completed', comment.id);
+        if (shouldAutoAdvance) {
+          focusNextCommentBlock();
+        }
         fadeSavedState();
         setCommentPlacementsRef.current();
       } catch (error) {
+        setStatus('error');
         message.error(`Error saving comment: ${JSON.stringify(error)}`);
       }
     },
-    [text, points, props, unhighlightRelatedComment, fadeSavedState],
+    [text, points, props, unhighlightRelatedComment, fadeSavedState, idle, focusNextCommentBlock],
   );
 
   const deleteComment = useCallback(
@@ -382,6 +531,16 @@ const Comment: React.FC<ICommentProps> = (props) => {
       if (e.target instanceof HTMLElement && e.target.textContent === 'expand') {
         e.stopPropagation();
       } else {
+        activate();
+      }
+    },
+    [activate],
+  );
+  const onCommentEnter = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
         activate();
       }
     },
@@ -584,56 +743,6 @@ const Comment: React.FC<ICommentProps> = (props) => {
       }
     }
 
-    /**********************************************************************************/
-    /* BEGIN: FOOBAR CONFIG
-    /**********************************************************************************/
-    if (props.commentType !== prevProps.commentType) {
-      const makeColor = (color: string) => {
-        let hexVal = '#fff';
-        switch (color) {
-          case 'red':
-            hexVal = '#D08B79';
-            break;
-          case 'green':
-            hexVal = '#A4D079';
-            break;
-          case 'purple':
-            hexVal = '#ABAEEF';
-            break;
-        }
-        save(hexVal);
-      };
-
-      const makeRubricCommentFn = () => {
-        setMakeRubric(true);
-      };
-
-      if (props.commentType === 'active') {
-        (window as any).setFoobarParams('color', ['red', 'green', 'purple']);
-        (window as any).addToFoobar({
-          label: 'Set comment color to {{color}}',
-          value: 'Set comment color to ',
-          kind: 'dynamic',
-          child: {
-            kind: 'action',
-            callback: makeColor,
-          },
-        });
-        (window as any).addToFoobar({
-          label: 'Add comment to rubric',
-          value: 'Add comment to rubric',
-          kind: 'action',
-          callback: makeRubricCommentFn,
-        });
-      } else {
-        (window as any).removeFromFoobar('Set comment color to {{color}}');
-        (window as any).removeFromFoobar('Add comment to rubric');
-      }
-    }
-    /**********************************************************************************/
-    /* END: FOOBAR CONFIG
-    /**********************************************************************************/
-
     // If a comment is finalized, then reset the state
     if (['active', 'inactive'].includes(prevProps.commentType) && props.commentType === 'readonly') {
       const newState = initState();
@@ -664,7 +773,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
       if (isEmpty(text, points, props.rubricComment)) {
         props.onDelete(props.comment);
       } else if (status === 'edited') {
-        save();
+        save(undefined, { autoAdvance: false });
       }
     }
 
@@ -688,8 +797,8 @@ const Comment: React.FC<ICommentProps> = (props) => {
   };
 
   let onClick: ((e: React.MouseEvent) => void) | undefined = undefined;
+  let onKeyDown: ((e: React.KeyboardEvent) => void) | undefined = undefined;
   let cursor = 'auto';
-  let shadow;
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // -------------------------- codeType ['code', 'markdown'] --------------------------- //
@@ -701,7 +810,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
         className="cp-label--mid-bold cp-label--italic"
         style={{ color: consoleTheme.consoleTheme.commentTitleText }}
       >
-        Block {props.comment.startLine + 1}
+        Cell {props.comment.startLine + 1}
       </span>
     );
   } else if (File.codeType(props.file) === 'pdf') {
@@ -772,20 +881,27 @@ const Comment: React.FC<ICommentProps> = (props) => {
   switch (status) {
     case 'edited':
       commentElements.status = (
-        <span
-          className="cp-label--small cp-label--italic"
-          style={{ color: consoleTheme.consoleTheme.commentTitleText, marginLeft: '-9px' }}
-        >
+        <Tag color="orange" style={{ color: consoleTheme.consoleTheme.commentTitleText, marginLeft: '-9px' }}>
           {!text ? '' : 'Edited...'}
-        </span>
+        </Tag>
       );
       break;
     case 'saved':
-      commentElements.status = <span className="cp-label--small cp-label--italic cp-label--success">Saved!</span>;
+      commentElements.status = (
+        <Tag color="success" style={{ marginLeft: '-9px' }}>
+          Saved!
+        </Tag>
+      );
       break;
     case 'error':
-      commentElements.status = <span className="cp-label--small cp-label--italic cp-label--error">Error!</span>;
+      commentElements.status = (
+        <Tag color="error" style={{ marginLeft: '-9px' }}>
+          Error!
+        </Tag>
+      );
       break;
+    default:
+      commentElements.status = null;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -821,7 +937,6 @@ const Comment: React.FC<ICommentProps> = (props) => {
         <div>
           <CPPointInput
             value={-points}
-            size="small"
             onChange={onChangePointInput}
             disabled={props.forcedRubricMode || props.rubricComment ? true : false}
             onKeyDown={handleShiftEnter}
@@ -885,21 +1000,19 @@ const Comment: React.FC<ICommentProps> = (props) => {
 
     if (props.rubricComment) {
       commentElements.rubricCommentAction = (
-        <span
-          style={{
-            position: 'absolute',
-            right: '20px',
-            top: '42px',
-            cursor: 'pointer',
+        <Button
+          type="text"
+          size="small"
+          icon={<CloseOutlined />}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            removeRubricCommentHandler();
           }}
-          onClick={removeRubricCommentHandler}
-        >
-          X
-        </span>
+          aria-label="Remove rubric comment"
+        />
       );
     }
-
-    shadow = { boxShadow: consoleTheme.consoleTheme.commentShadow };
   }
 
   const preventDefaultFn = (e: React.MouseEvent) => {
@@ -938,6 +1051,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
     );
 
     onClick = onCommentClick;
+    onKeyDown = onCommentEnter;
     cursor = 'pointer';
   }
 
@@ -956,17 +1070,20 @@ const Comment: React.FC<ICommentProps> = (props) => {
 
   if (props.rubricComment) {
     let rubricCommentClassName = 'cp-comment__rubric-comment';
-    let style: React.CSSProperties = {};
+
+    const alertStyle: React.CSSProperties = {
+      marginBottom: '12px',
+    };
+
     if (props.rubricComment.pointDelta > 0) {
       rubricCommentClassName = rubricCommentClassName.concat(' ', 'cp-comment__rubric-comment--negative');
     } else if (props.rubricComment.pointDelta < 0) {
       rubricCommentClassName = rubricCommentClassName.concat(' ', 'cp-comment__rubric-comment--positive');
     } else {
       rubricCommentClassName = rubricCommentClassName.concat(' ', 'cp-comment__rubric-comment--neutral');
-      style = {
-        color: consoleTheme.consoleTheme.commentRubricCommentNeutral,
-        borderLeft: `3px solid ${consoleTheme.consoleTheme.commentRubricCommentNeutral}`,
-      };
+      alertStyle.borderLeft = `3px solid ${consoleTheme.consoleTheme.commentRubricCommentNeutral}`;
+      alertStyle.backgroundColor = consoleTheme.consoleTheme.commentBody;
+      alertStyle.color = consoleTheme.consoleTheme.commentRubricCommentNeutral;
     }
 
     // Note: we should always be able to find the rubricComment's category in
@@ -979,19 +1096,54 @@ const Comment: React.FC<ICommentProps> = (props) => {
       rubricCategoryTitle = matchedCategory.name;
     }
 
+    const isPenalty = props.rubricComment.pointDelta > 0;
+    const isBonus = props.rubricComment.pointDelta < 0;
+    const alertType: 'error' | 'success' | 'info' = isPenalty ? 'error' : isBonus ? 'success' : 'info';
+    const pointsAbs = Math.abs(props.rubricComment.pointDelta);
+    const pointUnit = pointsAbs === 1 ? 'pt' : 'pts';
+    const pointLabel = isPenalty
+      ? `-${pointsAbs} ${pointUnit}`
+      : isBonus
+        ? `+${pointsAbs} ${pointUnit}`
+        : `0 ${pointUnit}`;
+
+    const pointTagColor = isPenalty ? 'volcano' : isBonus ? 'green' : 'default';
+    const removeAction = commentElements.rubricCommentAction;
+
     commentElements.rubricComment = (
-      <div className={rubricCommentClassName} style={style}>
-        <span className="cp-label--very-bold">{rubricCategoryTitle}</span>
-        <BlockMarkdown
-          source={
-            (props.isStudent || props.showExplanations) && props.rubricComment.explanation
-              ? props.rubricComment.explanation
-              : props.rubricComment.text
-          }
-          em={!props.isStudent && props.showExplanations && props.rubricComment.explanation.length > 0}
-        />
-        {commentElements.rubricCommentAction}
-      </div>
+      <Alert
+        className={`${rubricCommentClassName} cp-comment__rubric-alert`}
+        style={alertStyle}
+        type={alertType}
+        message={
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: removeAction ? 'space-between' : 'flex-start',
+              gap: '12px',
+            }}
+          >
+            <Space size={8} wrap>
+              <Typography.Text strong>{rubricCategoryTitle || 'Rubric Comment'}</Typography.Text>
+              <Tag color={pointTagColor}>{pointLabel}</Tag>
+            </Space>
+            {removeAction}
+          </div>
+        }
+        description={
+          <div className="cp-comment__rubric-description">
+            <BlockMarkdown
+              source={
+                (props.isStudent || props.showExplanations) && props.rubricComment.explanation
+                  ? props.rubricComment.explanation
+                  : props.rubricComment.text
+              }
+              em={!props.isStudent && props.showExplanations && props.rubricComment.explanation.length > 0}
+            />
+          </div>
+        }
+      />
     );
   }
 
@@ -1030,7 +1182,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
             width: '50%',
             padding: '8px',
             cursor: 'pointer',
-            backgroundColor: feedbackScore === -1 ? '#1890ff' : '#f0f0f0',
+            backgroundColor: feedbackScore === -1 ? '#ff4d4f' : '#f0f0f0',
             color: feedbackScore === -1 ? 'white' : 'black',
             border: '1px solid #d9d9d9',
             borderRadius: '2px 0 0 0',
@@ -1045,7 +1197,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
             width: '50%',
             padding: '8px',
             cursor: 'pointer',
-            backgroundColor: feedbackScore === 1 ? '#1890ff' : '#f0f0f0',
+            backgroundColor: feedbackScore === 1 ? '#52c41a' : '#f0f0f0',
             color: feedbackScore === 1 ? 'white' : 'black',
             border: '1px solid #d9d9d9',
             borderLeft: 'none',
@@ -1092,6 +1244,16 @@ const Comment: React.FC<ICommentProps> = (props) => {
     props.commentType === 'readonly' && props.hideAuthor ? null : (
       <CPFlex left={footerLeft} right={footerRight} gutterSize={10} style={{ minHeight: '32px' }} />
     );
+
+  const cardStyle: CommentCardStyle = {
+    backgroundColor,
+    boxShadow: isContextHovered
+      ? consoleTheme.consoleTheme.commentShadowFocused
+      : consoleTheme.consoleTheme.commentShadow,
+    '--comment-header-bg': consoleTheme.consoleTheme.commentTitle,
+    '--comment-header-border': consoleTheme.consoleTheme.commentTitleBorder,
+    '--comment-header-text': consoleTheme.consoleTheme.commentTitleText,
+  };
   return (
     <>
       <div
@@ -1102,24 +1264,29 @@ const Comment: React.FC<ICommentProps> = (props) => {
           position: 'relative',
           marginBottom: feedback ? '0px' : '10px',
         }}
+        tabIndex={0}
         onClick={onClick}
+        onKeyDown={onKeyDown}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         data-status={status}
       >
         <Card
+          hoverable={true}
           title={cardTitle}
           variant="outlined"
-          style={{
-            backgroundColor,
-            ...shadow,
-          }}
+          style={cardStyle}
           styles={{
             body: {
               padding: '12px 16px',
               backgroundColor,
             },
-            header: { padding: '8px 16px', minHeight: '40px' },
+            header: {
+              padding: '8px 16px',
+              minHeight: '40px',
+              backgroundColor: consoleTheme.consoleTheme.commentTitle,
+              borderBottom: `1px solid ${consoleTheme.consoleTheme.commentTitleBorder}`,
+            },
             title: { fontSize: '14px', fontWeight: 500, color: consoleTheme.consoleTheme.commentTitleText },
             extra: { marginTop: '4px' },
           }}
@@ -1138,8 +1305,8 @@ const Comment: React.FC<ICommentProps> = (props) => {
               {cardExtra}
             </div>
           )}
+          {feedback && <div style={{ marginBottom: '10px' }}>{feedback}</div>}
         </Card>
-        {feedback && <div style={{ marginBottom: '10px' }}>{feedback}</div>}
 
         <CommentToRubric
           initialText={text}

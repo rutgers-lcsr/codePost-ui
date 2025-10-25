@@ -126,11 +126,11 @@ Please see the course policy or contact your instructor if you have any question
   return (
     <Modal
       title="Confirm late submission"
-      visible={props.visible}
+      open={props.visible}
       onOk={props.onOk}
       onCancel={props.onCancel}
       okText={'Continue'}
-      destroyOnClose={true}
+      destroyOnHidden={true}
     >
       {content}
     </Modal>

@@ -2,25 +2,23 @@
 /* Imports
 /**********************************************************************************************************************/
 
-/* imports */
-import * as React from 'react';
-
-/* ant imports */
 import { Layout } from 'antd';
+import React, { useMemo } from 'react';
 
 import layoutVars from '../../../styles/layout/_layoutVars';
+import useWindowSize from '../../core/useWindowSize';
 
 import CPFlex from '../../core/CPFlex';
 import CPTooltip from '../../core/CPTooltip';
 
-import useWindowSize from '../../core/useWindowSize';
-
 const { Header, Content } = Layout;
 
 /**********************************************************************************************************************/
+/* Types
+/**********************************************************************************************************************/
 
 interface ICPAdminDetailProps {
-  goBack: any;
+  goBack: React.ReactNode | null;
   title: string | React.ReactNode;
   actions: React.ReactNode[];
   content: React.ReactNode;
@@ -30,57 +28,91 @@ interface ICPAdminDetailProps {
   titleInfo?: string | React.ReactNode;
 }
 
-const CPAdminDetail = (props: ICPAdminDetailProps) => {
+// Constants
+const SMALL_SCREEN_MARGIN = '20px 15px';
+const LARGE_SCREEN_MARGIN = '20px 60px';
+const SMALL_SCREEN_PADDING = '20px 15px';
+const LARGE_SCREEN_PADDING = '20px 35px';
+const DEFAULT_GUTTER_SIZE = 10;
+const BREADCRUMB_GUTTER_SIZE = 10;
+const TITLE_INFO_PADDING_LEFT = 10;
+
+/**********************************************************************************************************************/
+/* Component
+/**********************************************************************************************************************/
+
+const CPAdminDetail: React.FC<ICPAdminDetailProps> = ({
+  goBack,
+  title,
+  actions,
+  content,
+  breadcrumbs,
+  className,
+  gutterSize = DEFAULT_GUTTER_SIZE,
+  titleInfo,
+}) => {
   const windowSize = useWindowSize();
   const smallScreen = windowSize.width < layoutVars.breakpoints.smallScreen.admin;
 
-  const contentMargin = smallScreen ? '20px 15px' : '20px 60px';
-  const contentPadding = smallScreen ? '20px 15px' : '20px 35px';
+  const contentMargin = useMemo(() => (smallScreen ? SMALL_SCREEN_MARGIN : LARGE_SCREEN_MARGIN), [smallScreen]);
 
-  const titleTooltip = props.titleInfo ? (
-    <CPTooltip
-      title={props.titleInfo}
-      placement="right"
-      infoIcon={true}
-      hideThisOnHideTips={true}
-      iconStyle={{ paddingLeft: 10 }}
-    />
-  ) : (
-    <div />
+  const contentPadding = useMemo(() => (smallScreen ? SMALL_SCREEN_PADDING : LARGE_SCREEN_PADDING), [smallScreen]);
+
+  const titleTooltip = useMemo(() => {
+    if (!titleInfo) {
+      return null;
+    }
+
+    return (
+      <CPTooltip
+        title={titleInfo}
+        placement="right"
+        infoIcon={true}
+        hideThisOnHideTips={true}
+        iconStyle={{ paddingLeft: TITLE_INFO_PADDING_LEFT }}
+      />
+    );
+  }, [titleInfo]);
+
+  const subheaderLeft = useMemo(
+    () => [
+      <div key="title" style={{ display: 'flex', alignItems: 'center' }}>
+        <div role="heading" aria-level={1} className="cp-label cp-label--large cp-label--bold">
+          {title}
+        </div>
+        {titleTooltip}
+      </div>,
+    ],
+    [title, titleTooltip],
   );
 
-  const subheaderLeft = [
-    <div key="title" style={{ display: 'flex', alignItems: 'center' }}>
-      <span className="cp-label cp-label--large cp-label--bold">{props.title}</span>
-      {titleTooltip}
-    </div>,
-  ];
+  const goBackElement = useMemo(() => {
+    if (goBack === null) {
+      return null;
+    }
+    return <div className="layout--admin__subheader__go-back cp-label--subtitle">—Back</div>;
+  }, [goBack]);
 
-  let goBack = null;
-  if (props.goBack !== null) {
-    goBack = <div className="layout--admin__subheader__go-back cp-label--subtitle">—Back</div>;
-  }
+  const contentClassName = useMemo(() => `layout--admin__detail${className ? `--${className}` : ''}`, [className]);
+
+  const contentStyle = useMemo(
+    () => ({
+      padding: contentPadding,
+      margin: contentMargin,
+      transition: '0.3s',
+    }),
+    [contentPadding, contentMargin],
+  );
 
   return (
-    <Content
-      className={`layout--admin__detail${props.className ? `--${props.className}` : ''}`}
-      style={{
-        padding: contentPadding,
-        margin: contentMargin,
-        transition: '0.3s',
-      }}
-    >
+    <Content className={contentClassName} style={contentStyle}>
       <Layout>
         <Header className="layout--admin__subheader">
-          {goBack}
-          <CPFlex left={[<div key="breadcrumbs">{props.breadcrumbs}</div>]} right={[]} gutterSize={10} />
-          <CPFlex
-            left={subheaderLeft}
-            right={props.actions}
-            gutterSize={props.gutterSize !== undefined ? props.gutterSize : 10}
-          />
+          {goBackElement}
+          <CPFlex left={[<div key="breadcrumbs">{breadcrumbs}</div>]} right={[]} gutterSize={BREADCRUMB_GUTTER_SIZE} />
+          <CPFlex left={subheaderLeft} right={actions} gutterSize={gutterSize} />
         </Header>
-        <Content className="layout--admin__content">{props.content}</Content>
+        <div className="layout--admin__content">{content}</div>
       </Layout>
     </Content>
   );

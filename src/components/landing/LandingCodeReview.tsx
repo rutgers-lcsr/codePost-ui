@@ -1,12 +1,8 @@
-import * as React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import CPButton from '../core/CPButton';
 
-// import * as CodeMirror from 'react-codemirror';
-
-import { Controlled as CodeMirror } from 'react-codemirror2';
-
-import 'codemirror/mode/javascript/javascript';
+import Editor, { OnMount } from '@monaco-editor/react';
 
 import confusedStudentImg from './../../img/landing/compressed/confused_student.png';
 
@@ -14,50 +10,48 @@ import Comment from './landingAnimations/grade/SimpleComment';
 
 import { CommentType } from '../../infrastructure/comment';
 
+import { editor } from 'monaco-editor';
+
 const dummyFunction = () => {
   return;
 };
-// @ts-ignore
-let instance: CodeMirror.Editor | null = null;
-// @ts-ignore
-const setEditor = (editor: CodeMirror.Editor) => {
-  instance = editor;
+
+type EditorInstance = Parameters<OnMount>[0];
+type MonacoNamespace = Parameters<OnMount>[1];
+
+const highlightLines = [6, 9, 13];
+
+const editorOptions = {
+  readOnly: true,
+  minimap: { enabled: false },
+  wordWrap: 'on' as const,
+  fontSize: 12,
+  lineHeight: 24,
 };
 
-const badCodeMirror = (
-  <CodeMirror
-    key={'bad code'}
-    className="bad-codemirror"
-    editorDidMount={setEditor}
-    onBeforeChange={dummyFunction}
-    value={
-      '// Student: james@myschool.edu \n\
-      \n\
-// Test whether array contains an item \n\
-public boolean some(int[] x, int y) {\n\n\
-  boolean foundItem = false;\n\
-  for (int i = 0; i < x.length; i++) {\n\
-   if (x[i] == y) {\n\
-     foundItem = !foundItem;\n\
-   }\n\
-  }\n\n\
-  return foundItem;\n\
-}\n\n\
-/********************************************/\n\
-// Passed 1/2 Tests.\n\
-// Test 1: array = [1, 2, 3], target = 2\n\
-// PASSED\n\
-// Test 2: array = [1, 2, 2], target = 2\n\
-// FAILED'
-    }
-    options={{
-      lineNumbers: true,
-      readOnly: true,
-      lineWrapping: true,
-      mode: 'javascript',
-    }}
-  />
-);
+const sampleCode = [
+  '// Student: james@myschool.edu ',
+  '',
+  '// Test whether array contains an item ',
+  'public boolean some(int[] x, int y) {',
+  '',
+  '  boolean foundItem = false;',
+  '  for (int i = 0; i < x.length; i++) {',
+  '   if (x[i] == y) {',
+  '     foundItem = !foundItem;',
+  '   }',
+  '  }',
+  '',
+  '  return foundItem;',
+  '}',
+  '',
+  '/********************************************/',
+  '// Passed 1/2 Tests.',
+  '// Test 1: array = [1, 2, 3], target = 2',
+  '// PASSED',
+  '// Test 2: array = [1, 2, 2], target = 2',
+  '// FAILED',
+].join('\n');
 
 const comment1: CommentType = {
   id: -1,
@@ -105,162 +99,175 @@ const commentStyle = {
   marginLeft: 10,
 };
 
-interface IState {
-  showComments: boolean;
-}
+const CodeReview: React.FC = () => {
+  const [showComments, setShowComments] = useState(true);
+  const editorRef = useRef<EditorInstance | null>(null);
+  const monacoRef = useRef<MonacoNamespace | null>(null);
+  const decorationsRef = useRef<editor.IEditorDecorationsCollection | null>(null);
 
-class CodeReview extends React.Component<{}, IState> {
-  public constructor(props: {}) {
-    super(props);
-    this.state = {
-      showComments: true,
-    };
-  }
+  const applyHighlights = useCallback((showHighlights: boolean) => {
+    const editorInstance = editorRef.current;
+    const monacoInstance = monacoRef.current;
 
-  public changeStatus = (toChange: boolean) => {
-    this.setState({ showComments: toChange });
-  };
-
-  // @ts-ignore
-  public setMarkings = (codeMirrorInstance: CodeMirror.Editor | null) => {
-    if (codeMirrorInstance) {
-      const css = this.state.showComments
-        ? 'background: rgba(211,242,231, 1); padding: 3px 0px 3px 0px;'
-        : 'background: rgba(211,242,231, 0)';
-      const markings = [
-        { startLine: 3, startCh: 20, endLine: 3, endCh: 34 },
-        { startLine: 8, startCh: 5, endLine: 8, endCh: 28 },
-        { startLine: 13, startCh: 2, endLine: 13, endCh: 18 },
-      ];
-      markings.forEach((marking: any) => {
-        codeMirrorInstance.getDoc().markText(
-          {
-            line: marking.startLine,
-            ch: marking.startCh,
-          },
-          {
-            line: marking.endLine,
-            ch: marking.endCh,
-          },
-          {
-            css,
-          },
-        );
-      });
+    if (!editorInstance || !monacoInstance) {
+      return;
     }
-  };
 
-  public componentDidMount() {
-    this.setMarkings(instance);
-  }
+    const decorations = showHighlights
+      ? highlightLines.map((line) => ({
+          range: new monacoInstance.Range(line, 1, line, 1),
+          options: {
+            isWholeLine: true,
+            className: 'landing-code-highlight-line',
+          },
+        }))
+      : [];
 
-  public render() {
-    this.setMarkings(instance);
-    return (
-      <div
-        className="module--codeReview"
-        style={{
-          width: 685,
-          display: 'flex',
-          flexDirection: 'column',
-          paddingTop: 50,
-        }}
-      >
-        <div>
-          <div
-            style={{
-              float: 'left',
-              marginBottom: 35,
-              width: 335,
-              maxHeight: 550,
-            }}
-          >
-            {badCodeMirror}
-          </div>
-          <div style={{ width: 350, position: 'relative', float: 'right' }}>
-            <div
-              style={{
-                opacity: this.state.showComments ? 0 : 1,
-                transition: 'opacity .3s ease',
-                paddingLeft: 75,
-                top: 115,
-                position: 'absolute',
-              }}
-            >
-              <img src={confusedStudentImg} width="225" alt="" />
-            </div>
-            <div style={{ position: 'absolute', top: 40 }}>
-              <div
-                style={{
-                  ...commentStyle,
-                  opacity: this.state.showComments ? 1 : 0,
-                  transition: 'opacity .3s ease',
-                  minHeight: 74,
-                }}
-              >
-                <Comment
-                  commentType="readonly"
-                  comment={comment1}
-                  placement={0}
-                  changeActive={dummyFunction}
-                  onSave={dummyFunction}
-                  onDelete={dummyFunction}
-                  addUnsaved={dummyFunction}
-                  removeUnsaved={dummyFunction}
-                  removeRubricComment={dummyFunction}
-                  setCommentPlacements={dummyFunction}
-                />
-              </div>
-            </div>
-            <div style={{ position: 'absolute', top: 135 }}>
-              <div
-                style={{
-                  ...commentStyle,
-                  opacity: this.state.showComments ? 1 : 0,
-                  transition: 'opacity .3s ease',
-                  minHeight: 94,
-                }}
-              >
-                <Comment
-                  commentType="readonly"
-                  comment={comment2}
-                  placement={0}
-                  changeActive={dummyFunction}
-                  onSave={dummyFunction}
-                  onDelete={dummyFunction}
-                  addUnsaved={dummyFunction}
-                  removeUnsaved={dummyFunction}
-                  removeRubricComment={dummyFunction}
-                  setCommentPlacements={dummyFunction}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+    if (decorationsRef.current) {
+      decorationsRef.current.set(decorations);
+    } else {
+      decorationsRef.current = editorInstance.createDecorationsCollection(decorations);
+    }
+  }, []);
+
+  const handleEditorMount = useCallback<OnMount>(
+    (editorInstance, monacoInstance) => {
+      editorRef.current = editorInstance;
+      monacoRef.current = monacoInstance;
+      applyHighlights(showComments);
+    },
+    [applyHighlights, showComments],
+  );
+
+  const changeStatus = useCallback((toChange: boolean) => {
+    setShowComments(toChange);
+  }, []);
+
+  useEffect(() => {
+    applyHighlights(showComments);
+  }, [applyHighlights, showComments]);
+
+  useEffect(() => {
+    return () => {
+      decorationsRef.current?.clear();
+      decorationsRef.current = null;
+      editorRef.current = null;
+      monacoRef.current = null;
+    };
+  }, []);
+
+  const codeSample = useMemo(
+    () => (
+      <Editor
+        height="400px"
+        language="java"
+        value={sampleCode}
+        options={editorOptions}
+        onMount={handleEditorMount}
+        theme="vs-light"
+      />
+    ),
+    [handleEditorMount],
+  );
+
+  return (
+    <div
+      className="module--codeReview"
+      style={{
+        width: 685,
+        display: 'flex',
+        flexDirection: 'column',
+        paddingTop: 50,
+      }}
+    >
+      <div>
         <div
           style={{
-            display: 'flex',
-            justifyContent: 'center',
+            float: 'left',
             marginBottom: 35,
+            width: 335,
+            maxHeight: 550,
           }}
         >
-          <CPButton
-            cpType={this.state.showComments ? 'primary' : 'secondary'}
-            onClick={this.changeStatus.bind(this, true)}
+          {codeSample}
+        </div>
+        <div style={{ width: 350, position: 'relative', float: 'right' }}>
+          <div
+            style={{
+              opacity: showComments ? 0 : 1,
+              transition: 'opacity .3s ease',
+              paddingLeft: 75,
+              top: 115,
+              position: 'absolute',
+            }}
           >
-            With code review
-          </CPButton>
-          &nbsp; &nbsp;
-          <CPButton
-            cpType={this.state.showComments ? 'secondary' : 'primary'}
-            onClick={this.changeStatus.bind(this, false)}
-          >
-            No code review
-          </CPButton>
+            <img src={confusedStudentImg} width="225" alt="" />
+          </div>
+          <div style={{ position: 'absolute', top: 40 }}>
+            <div
+              style={{
+                ...commentStyle,
+                opacity: showComments ? 1 : 0,
+                transition: 'opacity .3s ease',
+                minHeight: 74,
+              }}
+            >
+              <Comment
+                commentType="readonly"
+                comment={comment1}
+                placement={0}
+                changeActive={dummyFunction}
+                onSave={dummyFunction}
+                onDelete={dummyFunction}
+                addUnsaved={dummyFunction}
+                removeUnsaved={dummyFunction}
+                removeRubricComment={dummyFunction}
+                setCommentPlacements={dummyFunction}
+              />
+            </div>
+          </div>
+          <div style={{ position: 'absolute', top: 135 }}>
+            <div
+              style={{
+                ...commentStyle,
+                opacity: showComments ? 1 : 0,
+                transition: 'opacity .3s ease',
+                minHeight: 94,
+              }}
+            >
+              <Comment
+                commentType="readonly"
+                comment={comment2}
+                placement={0}
+                changeActive={dummyFunction}
+                onSave={dummyFunction}
+                onDelete={dummyFunction}
+                addUnsaved={dummyFunction}
+                removeUnsaved={dummyFunction}
+                removeRubricComment={dummyFunction}
+                setCommentPlacements={dummyFunction}
+              />
+            </div>
+          </div>
         </div>
       </div>
-    );
-  }
-}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          marginBottom: 35,
+        }}
+      >
+        <CPButton cpType={showComments ? 'primary' : 'secondary'} onClick={() => changeStatus(true)}>
+          With code review
+        </CPButton>
+        &nbsp; &nbsp;
+        <CPButton cpType={showComments ? 'secondary' : 'primary'} onClick={() => changeStatus(false)}>
+          No code review
+        </CPButton>
+      </div>
+    </div>
+  );
+};
 
 export default CodeReview;

@@ -11,20 +11,20 @@ import {
 } from './generics';
 import { convertToPaginatedFunction, paginatedType } from './pagination';
 
+import { CommentV } from './comment';
 import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
 import {
-  StudentSubmissionV,
-  SubmissionInfoV,
   AnonymousSubmissionInfoV,
+  StudentSubmissionV,
   SubmissionInfoType,
+  SubmissionInfoV,
   SubmissionWithTestsType,
   SubmissionWithTestsV,
 } from './submission';
-import { SubmissionHistoryV, SubmissionHistoryType } from './submissionHistory';
+import { SubmissionHistoryType, SubmissionHistoryV } from './submissionHistory';
 import { StudentTestCaseV } from './testCase';
 import { TestCategoryV } from './testCategory';
-import { CommentV } from './comment';
 
 const AssignmentV = t.intersection(
   [
@@ -51,7 +51,7 @@ const AssignmentV = t.intersection(
       hideGradersFromStudents: t.boolean,
       forcedRubricMode: t.boolean,
       templateMode: t.boolean,
-      fileTemplates: t.array(t.number),
+      files: t.array(t.number),
       mean: t.union([t.number, t.null, t.undefined]),
       median: t.union([t.number, t.null, t.undefined]),
       testCategories: t.array(t.number),
@@ -75,6 +75,7 @@ const AssignmentV = t.intersection(
       stats_max: t.number,
       stats_min: t.number,
       stats_mean: t.number,
+      fileTemplates: t.array(t.number),
     }),
   ],
   'Assignment',
@@ -89,7 +90,7 @@ const AssignmentVStudent = t.intersection(
       rubricCategories: t.array(t.number),
       course: t.number,
       allowLateUploads: t.boolean,
-      fileTemplates: t.array(t.number),
+      files: t.array(t.number),
       maxStudentTestRuns: t.union([t.null, t.number]),
       sortKey: t.number,
       environment: t.union([t.number, t.null]),
@@ -115,6 +116,7 @@ const AssignmentVStudent = t.intersection(
       median: t.union([t.number, t.null, t.undefined]),
       points: t.number,
       exposeDumpLogs: t.union([t.null, t.boolean]),
+      fileTemplates: t.array(t.number),
     }),
   ],
   'Assignment',
@@ -169,6 +171,7 @@ const AssignmentVPatch = t.intersection(
       explanation: t.string,
       isVisible: t.boolean,
       lateDeductions: t.array(t.number),
+      fileTemplates: t.array(t.number),
     }),
   ],
   'AssignmentPatch',
@@ -245,7 +248,7 @@ const StudentUploadData = t.intersection([
     files: t.array(
       t.intersection([
         t.type({
-          code: t.string,
+          data: t.string,
           name: t.string,
           extension: t.string,
         }),
@@ -275,11 +278,17 @@ const StudentUploadInformation = t.intersection([
 ]);
 export type StudentUploadInformationType = t.TypeOf<typeof StudentUploadInformation>;
 
-// tslint:disable
 export class AssignmentStudent {
   public static read = readObject(AssignmentVStudent, 'assignments');
   public static readSubmissions = readObjectDetail(t.array(StudentSubmissionV), 'assignments', 'submissions');
-
+  public static downloadAssignmentZip = readObjectDetail(
+    t.type({
+      zip: t.string,
+      filename: t.string,
+    }),
+    'assignments',
+    'download',
+  );
   public static createStudentUpload = createObjectDetail(
     StudentSubmissionV,
     StudentUploadData,

@@ -22,7 +22,7 @@ interface ICPDropdownProps {
 const CPDropdown: React.FC<DropdownButtonProps & ICPDropdownProps> = (props) => {
   const consoleTheme = useContext(ConsoleThemeContext);
 
-  const { value, theme: _theme, ...restProps } = props;
+  const { value, ...restProps } = props;
   const justifyType = props.justifyContent === 'space-between' ? 'space-between' : 'center';
 
   const t = consoleThemes.light === consoleTheme.consoleTheme ? 'light' : 'dark';

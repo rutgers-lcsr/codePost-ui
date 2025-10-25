@@ -1,4 +1,21 @@
-/**********************************************************************************************************************/
+/************************************************************  if (!imageUrl) {
+    return <div style={{ padding: '10px', color: '#666', textAlign: 'center' }}>Loading image...</div>;
+  }
+
+  return (
+    <img 
+      src={imageUrl} 
+      style={{ 
+        maxWidth: '100%', 
+        height: 'auto', 
+        display: 'block', 
+        margin: '10px auto',
+        borderRadius: '4px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      }} 
+      alt="Matplotlib Plot" 
+    />
+  );******************************************/
 /* Imports
 /**********************************************************************************************************************/
 
@@ -6,18 +23,109 @@
 import * as React from 'react';
 
 /* other library imports */
+import { Image } from 'antd';
+import classNames from 'classnames';
 import type { Components } from 'react-markdown';
 import ReactMarkdown from 'react-markdown';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
 
 /* codePost imports */
 import { CommentType } from '../../../infrastructure/comment';
-import { File } from '../../../infrastructure/file';
+import { File, getFileContent } from '../../../infrastructure/file';
 import { getBlockClassName } from './BlockUtils.tsx';
 import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
+import CommentHighlightContext from './CommentHighlightContext';
 import { jupyterToMarkdown } from './Jupyter';
+import Link from 'antd/es/typography/Link';
+import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context.js';
+
+/**********************************************************************************************************************/
+/* Jupyter Image Component
+/**********************************************************************************************************************/
+
+// Component to handle Jupyter images using blob URLs
+// Memoized to prevent unnecessary re-renders and Object URL recreation
+const JupyterImageComponent: React.FC<{ imageId: string }> = React.memo(({ imageId }) => {
+  // Initialize with cached URL if available to prevent flicker
+  const [imageUrl, setImageUrl] = React.useState<string>(() => {
+    if (window.jupyterImages && window.jupyterImages.has(imageId)) {
+      const imageInfo = window.jupyterImages.get(imageId)!;
+      return imageInfo.objectUrl || '';
+    }
+    return '';
+  });
+  const [error, setError] = React.useState<string>('');
+
+  React.useEffect(() => {
+    if (window.jupyterImages && window.jupyterImages.has(imageId)) {
+      const imageInfo = window.jupyterImages.get(imageId)!;
+
+      // Check if we already have a cached object URL
+      if (imageInfo.objectUrl) {
+        setImageUrl(imageInfo.objectUrl);
+        return; // No cleanup needed, URL is cached
+      }
+
+      const { data: imgData, format } = imageInfo;
+      try {
+        let objectUrl: string;
+
+        if (format === 'image/svg+xml') {
+          // SVG can be used directly as text
+          const svgBlob = new Blob([imgData], { type: 'image/svg+xml' });
+          objectUrl = URL.createObjectURL(svgBlob);
+        } else {
+          // Handle base64 encoded images (PNG, JPEG, etc.)
+          const binaryString = window.atob(imgData);
+          const binaryArray = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            binaryArray[i] = binaryString.charCodeAt(i);
+          }
+
+          const blob = new Blob([binaryArray.buffer], { type: format });
+          objectUrl = URL.createObjectURL(blob);
+        }
+
+        // Cache the URL for future renders
+        imageInfo.objectUrl = objectUrl;
+        setImageUrl(objectUrl);
+
+        // Don't revoke - keep it cached
+      } catch (err) {
+        setError(`Failed to create image: ${err}`);
+      }
+    } else {
+      setError('Image data not found');
+    }
+  }, [imageId]);
+
+  if (error) {
+    return <div style={{ color: 'red', padding: '10px', border: '1px solid red' }}>❌ {error}</div>;
+  }
+
+  if (!imageUrl) {
+    return null; // Return null instead of "Loading..." to prevent flicker
+  }
+
+  return (
+    <img
+      src={imageUrl}
+      style={{
+        maxWidth: '100%',
+        height: 'auto',
+        display: 'block',
+        margin: '10px 0',
+      }}
+      alt="Jupyter Output"
+    />
+  );
+});
+
+// Add display name for React DevTools
+JupyterImageComponent.displayName = 'JupyterImageComponent';
 
 /**********************************************************************************************************************/
 /* TypeScript Interfaces for react-markdown v9
@@ -50,20 +158,116 @@ interface HeadingProps extends MarkdownNodeProps {
 interface CodeProps extends MarkdownNodeProps {
   inline?: boolean;
   className?: string;
+  'data-is-top-level'?: boolean;
 }
 
 interface ListProps extends MarkdownNodeProps {
   ordered?: boolean;
 }
 
+interface MarkdownThemeValues {
+  text: string;
+  background: string;
+  inlineCodeBg: string;
+  inlineCodeBorder: string;
+  inlineCodeColor: string;
+  codeBackground: string;
+  codeBorder: string;
+  outputBackground: string;
+  outputBorder: string;
+  blockQuoteBorder: string;
+  statusBackground: string;
+  statusBorder: string;
+  linkColor: string;
+  hoverLinkColor: string;
+  jupyterCellBorder: string;
+  blockBackground: string;
+  blockHighlightBackground: string;
+  blockHighlightShadow: string;
+  blockHighlightBorderColor: string;
+  blockHighlightHoverBackground: string;
+  blockHighlightHoverBorderColor: string;
+  blockHighlightHoverShadow: string;
+  blockCommentedBackground: string;
+  blockCommentedBorderColor: string;
+  blockFocusedBackground: string;
+  blockFocusedBorderColor: string;
+  blockFocusedShadow: string;
+  blockEmptyBorderColor: string;
+  blockEmptyHoverBorderColor: string;
+  tableBorderColor: string;
+}
+
+type MarkdownCSSVariable =
+  | '--markdown-text-color'
+  | '--markdown-bg-color'
+  | '--markdown-block-bg'
+  | '--markdown-highlight-bg'
+  | '--markdown-highlight-shadow'
+  | '--markdown-highlight-border-color'
+  | '--markdown-highlight-hover-bg'
+  | '--markdown-highlight-hover-border-color'
+  | '--markdown-highlight-hover-shadow'
+  | '--markdown-commented-bg'
+  | '--markdown-commented-border-color'
+  | '--markdown-focused-bg'
+  | '--markdown-focused-border-color'
+  | '--markdown-focused-shadow'
+  | '--markdown-empty-border-color'
+  | '--markdown-empty-hover-border-color'
+  | '--markdown-table-border-color'
+  | '--markdown-link-color'
+  | '--markdown-link-hover-color';
+
+type MarkdownCSSProperties = React.CSSProperties & Record<MarkdownCSSVariable, string>;
+
+function hexToRgb(hexColor: string | undefined): { r: number; g: number; b: number } | null {
+  if (!hexColor) {
+    return null;
+  }
+
+  const normalized = hexColor.trim().replace('#', '');
+  if (normalized.length !== 3 && normalized.length !== 6) {
+    return null;
+  }
+
+  const expanded =
+    normalized.length === 3
+      ? normalized
+          .split('')
+          .map((char) => char + char)
+          .join('')
+      : normalized;
+
+  const numeric = Number.parseInt(expanded, 16);
+  if (Number.isNaN(numeric)) {
+    return null;
+  }
+
+  return {
+    r: (numeric >> 16) & 255,
+    g: (numeric >> 8) & 255,
+    b: numeric & 255,
+  };
+}
+
+function isDarkColor(hexColor: string | undefined): boolean {
+  const rgb = hexToRgb(hexColor);
+  if (!rgb) {
+    return false;
+  }
+
+  const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+  return luminance < 0.5;
+}
+
 /**********************************************************************************************************************/
-/* Remark Plugin: Mark Top-Level Elements
+/* Remark Plugin: Mark Top-Level Elements and Track Jupyter Cells
 /**********************************************************************************************************************/
 
 /**
  * Remark plugin to mark direct children of markdown root as top-level elements.
- * This enables accurate detection of which elements should be clickable for commenting,
- * avoiding nested blocks like list items or nested blockquotes.
+ * This enables accurate detection of which elements should be clickable for commenting.
  *
  * Data flow: markdown → remark (marks isTopLevel) → HTML → component props
  */
@@ -89,54 +293,456 @@ function remarkMarkTopLevel() {
 
 interface IMarkdownProps {
   commentCounter: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  executionResult?: { success: boolean; output_data?: any; error?: string } | null;
+  onClearOutputs?: () => void;
 }
 
 const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdownProps) => {
-  // Convert file content to markdown format
-  let markdown: string;
-  if (File.codeType(props.file) === 'jupyter') {
-    markdown = jupyterToMarkdown(props.file.code);
-  } else if (File.codeType(props.file) === 'image') {
-    markdown = '![](' + props.file.code + ')';
-  } else {
-    markdown = props.file.code;
-  }
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const syntaxHighlightTheme = React.useMemo(() => {
+    return consoleTheme?.codeTheme ?? googlecode;
+  }, [consoleTheme]);
 
-  // Handle click on markdown block elements to add comments
-  const onBlockElementClick = (e: React.MouseEvent) => {
-    const lineNumberStr = e.currentTarget.getAttribute('index-number');
-    if (lineNumberStr) {
-      const lineNumber = parseInt(lineNumberStr, 10);
+  const isDarkTheme = React.useMemo(() => isDarkColor(consoleTheme?.mainBg), [consoleTheme?.mainBg]);
+
+  const markdownTheme = React.useMemo<MarkdownThemeValues>(
+    () => ({
+      text: consoleTheme?.text ?? '#1f1f1f',
+      background: consoleTheme?.mainBg ?? '#ffffff',
+      inlineCodeBg: consoleTheme?.commentCode ?? '#f6f6f6',
+      inlineCodeBorder: consoleTheme?.codeBorder ?? '#e8e8e8',
+      inlineCodeColor: consoleTheme?.highlight ?? '#DB1A1A',
+      codeBackground: consoleTheme?.codeBg ?? '#f2f2f2',
+      codeBorder: consoleTheme?.codeBorder ?? '#e3e3e3',
+      outputBackground: consoleTheme?.commentBody ?? '#f8f8f8',
+      outputBorder: consoleTheme?.codeBorder ?? '#d9d9d9',
+      blockQuoteBorder: consoleTheme?.commentRubricCommentNeutral ?? '#ddd',
+      statusBackground: consoleTheme?.subheaderBg ?? '#fafafa',
+      statusBorder: consoleTheme?.subheaderBorderBottom ?? '#e8e8e8',
+      linkColor: consoleTheme?.highlight ?? '#1677ff',
+      hoverLinkColor: consoleTheme?.highlightActive ?? '#0958d9',
+      jupyterCellBorder: consoleTheme?.codeBorder ?? '#cccccc',
+      blockBackground: 'transparent',
+      blockHighlightBackground: isDarkTheme
+        ? 'linear-gradient(90deg, rgba(36, 190, 133, 0.08) 0%, rgba(36, 190, 133, 0.24) 100%)'
+        : 'linear-gradient(90deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.98) 20%, rgba(255, 255, 255, 0.95) 100%), linear-gradient(90deg, rgba(255, 248, 225, 0.75) 0%, rgba(255, 236, 179, 0.65) 28%, rgba(46, 125, 50, 0.15) 100%)',
+      blockHighlightShadow: isDarkTheme
+        ? 'inset 0 0 0 1px rgba(36, 190, 133, 0.35), 0 1px 2px rgba(0, 0, 0, 0.35)'
+        : 'inset 0 0 0 1px rgba(46, 125, 50, 0.2), 0 1px 2px rgba(0, 0, 0, 0.08)',
+      blockHighlightBorderColor: isDarkTheme ? 'rgba(36, 190, 133, 0.45)' : 'rgba(46, 125, 50, 0.32)',
+      blockHighlightHoverBackground: isDarkTheme
+        ? 'linear-gradient(90deg, rgba(36, 190, 133, 0.22) 0%, rgba(36, 190, 133, 0.38) 100%)'
+        : 'linear-gradient(90deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.98) 18%, rgba(255, 255, 255, 0.94) 100%), linear-gradient(90deg, rgba(255, 213, 79, 0.7) 0%, rgba(255, 213, 79, 0.55) 28%, rgba(255, 143, 0, 0.28) 100%)',
+      blockHighlightHoverBorderColor: isDarkTheme ? 'rgba(36, 190, 133, 0.65)' : 'rgba(255, 167, 38, 0.55)',
+      blockHighlightHoverShadow: isDarkTheme
+        ? 'inset 0 0 0 1.5px rgba(36, 190, 133, 0.55), 0 4px 12px rgba(36, 190, 133, 0.35)'
+        : 'inset 0 0 0 1.5px rgba(255, 167, 38, 0.55), 0 4px 12px rgba(255, 213, 79, 0.35)',
+      blockCommentedBackground: isDarkTheme
+        ? 'linear-gradient(90deg, rgba(36, 190, 133, 0.16) 0%, rgba(36, 190, 133, 0.28) 100%)'
+        : 'linear-gradient(90deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%)',
+      blockCommentedBorderColor: isDarkTheme ? 'rgba(36, 190, 133, 0.45)' : 'rgba(46, 125, 50, 0.18)',
+      blockFocusedBackground: isDarkTheme
+        ? 'linear-gradient(90deg, rgba(36, 190, 133, 0.32) 0%, rgba(36, 190, 133, 0.48) 100%)'
+        : 'linear-gradient(90deg, rgba(255, 253, 218, 0.9) 0%, rgba(255, 248, 196, 0.98) 45%, rgba(255, 241, 118, 0.9) 100%)',
+      blockFocusedBorderColor: isDarkTheme ? 'rgba(36, 190, 133, 0.7)' : 'rgba(255, 167, 38, 0.65)',
+      blockFocusedShadow: isDarkTheme
+        ? '0px 6px 16px rgba(36, 190, 133, 0.28)'
+        : '0px 6px 16px rgba(255, 213, 79, 0.28)',
+      blockEmptyBorderColor: isDarkTheme ? 'rgba(255, 255, 255, 0.15)' : 'white',
+      blockEmptyHoverBorderColor: isDarkTheme ? 'rgba(64, 169, 255, 0.65)' : '#bdbdbd',
+      tableBorderColor: consoleTheme?.codeBorder ?? '#f2f2f2',
+    }),
+    [consoleTheme, isDarkTheme],
+  );
+
+  const rootStyle = React.useMemo<MarkdownCSSProperties>(
+    () => ({
+      padding: '5px 0px',
+      width: '100%',
+      boxSizing: 'border-box',
+      overflow: 'hidden',
+      color: markdownTheme.text,
+      backgroundColor: markdownTheme.background,
+      '--markdown-text-color': markdownTheme.text,
+      '--markdown-bg-color': markdownTheme.background,
+      '--markdown-block-bg': markdownTheme.blockBackground,
+      '--markdown-highlight-bg': markdownTheme.blockHighlightBackground,
+      '--markdown-highlight-shadow': markdownTheme.blockHighlightShadow,
+      '--markdown-highlight-border-color': markdownTheme.blockHighlightBorderColor,
+      '--markdown-highlight-hover-bg': markdownTheme.blockHighlightHoverBackground,
+      '--markdown-highlight-hover-border-color': markdownTheme.blockHighlightHoverBorderColor,
+      '--markdown-highlight-hover-shadow': markdownTheme.blockHighlightHoverShadow,
+      '--markdown-commented-bg': markdownTheme.blockCommentedBackground,
+      '--markdown-commented-border-color': markdownTheme.blockCommentedBorderColor,
+      '--markdown-focused-bg': markdownTheme.blockFocusedBackground,
+      '--markdown-focused-border-color': markdownTheme.blockFocusedBorderColor,
+      '--markdown-focused-shadow': markdownTheme.blockFocusedShadow,
+      '--markdown-empty-border-color': markdownTheme.blockEmptyBorderColor,
+      '--markdown-empty-hover-border-color': markdownTheme.blockEmptyHoverBorderColor,
+      '--markdown-table-border-color': markdownTheme.tableBorderColor,
+      '--markdown-link-color': markdownTheme.linkColor,
+      '--markdown-link-hover-color': markdownTheme.hoverLinkColor,
+    }),
+    [markdownTheme],
+  );
+
+  const [executedContent, setExecutedContent] = React.useState<string | null>(null);
+  const [executionError, setExecutionError] = React.useState<string | null>(null);
+  const { onClearOutputs } = props;
+  const { readOnly: isReadOnly, commentCounter, file, addComment, user } = props;
+
+  // Convert file content to markdown format
+  const fileContent = getFileContent(file);
+  const codeType = File.codeType(file);
+  const isJupyter = codeType === 'jupyter';
+
+  const baseMarkdown = React.useMemo(() => {
+    if (codeType === 'jupyter') {
+      const converted = jupyterToMarkdown(fileContent);
+      if (converted === null) {
+        console.debug('[Jupyter] Unable to convert notebook file content to markdown. Falling back to placeholder.');
+        return '# Error\n\nWe could not render this notebook file.';
+      }
+      return converted;
+    }
+
+    if (codeType === 'image') {
+      return '![](' + fileContent + ')';
+    }
+
+    return fileContent;
+  }, [codeType, fileContent]);
+
+  const markdown = executedContent ?? baseMarkdown;
+
+  // Track if we've already created a comment in this event cycle to prevent duplicates
+  const commentCreatedRef = React.useRef<{ cellIndex: number; timestamp: number } | null>(null);
+
+  // Comment highlight context (may be undefined in some usage scenarios)
+  const commentHighlight = React.useContext(CommentHighlightContext);
+  const setHoveredCommentId = commentHighlight?.setHoveredCommentId;
+  const getCommentsForLine = commentHighlight?.getCommentsForLine;
+  const lineHasComments = commentHighlight?.lineHasComments;
+  const isCommentHovered = commentHighlight?.isCommentHovered;
+  const contextOnHighlightClick = commentHighlight?.onHighlightClick;
+
+  const hasCommentsForLine = React.useCallback(
+    (lineNumber: number) => {
+      if (!lineHasComments) {
+        return false;
+      }
+      return lineHasComments(lineNumber);
+    },
+    [lineHasComments],
+  );
+
+  const handleHoverEnterLine = React.useCallback(
+    (lineNumber: number) => {
+      if (!setHoveredCommentId || !getCommentsForLine) {
+        return;
+      }
+
+      const commentsForLine = getCommentsForLine(lineNumber);
+      if (commentsForLine.length === 0) {
+        return;
+      }
+
+      setHoveredCommentId(commentsForLine[0].id);
+    },
+    [setHoveredCommentId, getCommentsForLine],
+  );
+
+  const handleHoverLeaveLine = React.useCallback(
+    (lineNumber: number) => {
+      if (!setHoveredCommentId || !getCommentsForLine || !isCommentHovered) {
+        return;
+      }
+
+      const commentsForLine = getCommentsForLine(lineNumber);
+      if (commentsForLine.some((comment) => isCommentHovered(comment.id))) {
+        setHoveredCommentId(null);
+      }
+    },
+    [setHoveredCommentId, getCommentsForLine, isCommentHovered],
+  );
+
+  type BlockInteractionEvent = React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>;
+
+  const handleExistingCommentOpen = React.useCallback(
+    (event: BlockInteractionEvent, lineNumber: number): boolean => {
+      if (!contextOnHighlightClick || !getCommentsForLine) {
+        return false;
+      }
+
+      const commentsForLine = getCommentsForLine(lineNumber);
+      if (commentsForLine.length === 0) {
+        return false;
+      }
+
+      const primaryComment = commentsForLine[0];
+      if (!primaryComment || primaryComment.id === 0 || primaryComment.id === Number.MAX_SAFE_INTEGER) {
+        return false;
+      }
+
+      contextOnHighlightClick(event as unknown as React.MouseEvent, primaryComment.id);
+      setHoveredCommentId?.(primaryComment.id);
+      return true;
+    },
+    [contextOnHighlightClick, getCommentsForLine, setHoveredCommentId],
+  );
+
+  const extractLineNumber = React.useCallback((element: HTMLElement | null): number | null => {
+    if (!element) {
+      return null;
+    }
+
+    const attributeValue =
+      element.getAttribute('index-number') ||
+      element.getAttribute('data-jupyter-cell') ||
+      element.getAttribute('data-cell-index');
+
+    if (!attributeValue) {
+      return null;
+    }
+
+    const parsed = parseInt(attributeValue, 10);
+    return Number.isNaN(parsed) ? null : parsed;
+  }, []);
+
+  const attemptAddComment = React.useCallback(
+    (lineNumber: number) => {
+      if (!addComment) {
+        return;
+      }
+
+      if (isJupyter) {
+        const now = Date.now();
+        if (
+          commentCreatedRef.current &&
+          commentCreatedRef.current.cellIndex === lineNumber &&
+          now - commentCreatedRef.current.timestamp < 200
+        ) {
+          return;
+        }
+        commentCreatedRef.current = { cellIndex: lineNumber, timestamp: now };
+      }
+
+      const displayLine = lineNumber;
+
       const newComment: CommentType = {
-        id: props.commentCounter,
+        id: commentCounter,
         endChar: 0,
-        endLine: lineNumber,
-        file: props.file.id,
+        endLine: displayLine,
+        file: file.id,
         pointDelta: 0.0,
         startChar: 0,
-        startLine: lineNumber,
+        startLine: displayLine,
         text: '',
         rubricComment: null,
-        author: props.user,
+        author: user,
         feedback: 0,
         color: null,
       };
 
-      props.addComment(newComment, props.file);
-    }
-  };
-
-  const components = useMarkdownRenderers(
-    getBlockClassName.bind({}, props.comments, props.readOnly),
-    props.readOnly ? undefined : onBlockElementClick,
+      addComment(newComment, file);
+    },
+    [addComment, commentCounter, file, user, isJupyter],
   );
 
+  const handleBlockMouseUp = React.useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      const interactiveTarget = (e.target as HTMLElement | null)?.closest('a, button, input, textarea, select, label');
+      if (interactiveTarget) {
+        return;
+      }
+
+      const target = e.currentTarget as HTMLElement | null;
+      if (!target) {
+        return;
+      }
+
+      const lineNumber = extractLineNumber(target);
+      if (lineNumber === null) {
+        return;
+      }
+
+      if (handleExistingCommentOpen(e, lineNumber)) {
+        return;
+      }
+
+      if (isReadOnly) {
+        return;
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      attemptAddComment(lineNumber);
+    },
+    [handleExistingCommentOpen, isReadOnly, attemptAddComment, extractLineNumber],
+  );
+
+  const handleBlockKeyDown = React.useCallback(
+    (e: React.KeyboardEvent<HTMLElement>) => {
+      if (e.key !== 'Enter' && e.key !== ' ') {
+        return;
+      }
+
+      const target = e.currentTarget as HTMLElement | null;
+      const lineNumber = extractLineNumber(target);
+      if (lineNumber === null) {
+        return;
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (handleExistingCommentOpen(e, lineNumber)) {
+        return;
+      }
+
+      if (isReadOnly) {
+        return;
+      }
+
+      attemptAddComment(lineNumber);
+    },
+    [extractLineNumber, handleExistingCommentOpen, isReadOnly, attemptAddComment],
+  );
+
+  const getClassNameForLine = React.useCallback(
+    (lineNumber: number) => {
+      return getBlockClassName(props.comments, isReadOnly, lineNumber);
+    },
+    [props.comments, isReadOnly],
+  );
+
+  const components = useMarkdownRenderers(getClassNameForLine, handleBlockMouseUp, handleBlockKeyDown, isJupyter, {
+    onHoverEnter: handleHoverEnterLine,
+    onHoverLeave: handleHoverLeaveLine,
+    hasCommentsForLine,
+    getCommentsForLine,
+    isReadOnly,
+    markdownTheme,
+    syntaxHighlightTheme,
+  });
+
   const remarkPlugins = [remarkGfm, remarkMarkTopLevel];
+  const rehypePlugins = [rehypeRaw];
+
+  // Handle external execution results (from ExecuteFileButton)
+  React.useEffect(() => {
+    if (!isJupyter) {
+      setExecutedContent(null);
+      setExecutionError(null);
+      return;
+    }
+
+    if (!props.executionResult) {
+      setExecutedContent(null);
+      setExecutionError(null);
+      return;
+    }
+
+    // Clean up old cached object URLs
+    if (window.jupyterImages) {
+      window.jupyterImages.forEach((imageInfo) => {
+        if (imageInfo.objectUrl) {
+          URL.revokeObjectURL(imageInfo.objectUrl);
+        }
+      });
+      window.jupyterImages.clear();
+    }
+
+    if (props.executionResult.output_data) {
+      const executedMarkdown = jupyterToMarkdown(props.executionResult.output_data);
+      if (executedMarkdown !== null) {
+        setExecutedContent(executedMarkdown);
+        setExecutionError(props.executionResult.error || null);
+      } else {
+        console.debug('[Jupyter] Execution output missing valid notebook cells. Falling back to original file.');
+        setExecutedContent(null);
+        setExecutionError(props.executionResult.error || 'Notebook output unavailable.');
+      }
+    } else {
+      setExecutedContent(null);
+      setExecutionError(props.executionResult.error || null);
+    }
+  }, [props.executionResult, isJupyter]);
+
+  const handleClearOutputs = React.useCallback(() => {
+    // Clear executed content
+    setExecutedContent(null);
+    setExecutionError(null);
+
+    // Clean up cached object URLs to prevent memory leaks
+    if (window.jupyterImages) {
+      window.jupyterImages.forEach((imageInfo) => {
+        if (imageInfo.objectUrl) {
+          URL.revokeObjectURL(imageInfo.objectUrl);
+        }
+      });
+      window.jupyterImages.clear();
+    }
+
+    // Notify parent if callback provided
+    if (onClearOutputs) {
+      onClearOutputs();
+    }
+  }, [onClearOutputs]);
 
   return (
-    <div id="code-markdown" className="markdown" style={{ padding: '5px 0px' }}>
-      <ReactMarkdown skipHtml remarkPlugins={remarkPlugins} components={components as Components}>
-        {markdown}
+    <div id="code-markdown" className="markdown" style={rootStyle}>
+      {/* Status bar for Jupyter notebooks - shows clear button and execution status */}
+      {isJupyter && executedContent && (
+        <div
+          style={{
+            padding: '10px 16px',
+            backgroundColor: markdownTheme.statusBackground,
+            borderBottom: `1px solid ${markdownTheme.statusBorder}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ color: '#52c41a', fontSize: '13px', fontWeight: 500 }}>✓ Execution results displayed</span>
+            {executionError && (
+              <span style={{ color: '#ff7875', fontSize: '12px', fontWeight: 500 }}>(contains errors)</span>
+            )}
+          </div>
+          <button
+            onClick={handleClearOutputs}
+            style={{
+              padding: '4px 12px',
+              backgroundColor: consoleTheme?.buttonSecondaryBg ?? 'white',
+              color: consoleTheme?.buttonSecondaryColor ?? '#595959',
+              border: consoleTheme?.buttonSecondaryBorder ?? '1px solid #d9d9d9',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 500,
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = consoleTheme?.buttonSecondaryBg ?? '#f5f5f5';
+              e.currentTarget.style.borderColor = consoleTheme?.highlight ?? '#40a9ff';
+              e.currentTarget.style.color = consoleTheme?.highlight ?? '#40a9ff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = consoleTheme?.buttonSecondaryBg ?? 'white';
+              e.currentTarget.style.border = consoleTheme?.buttonSecondaryBorder ?? '1px solid #d9d9d9';
+              e.currentTarget.style.color = consoleTheme?.buttonSecondaryColor ?? '#595959';
+            }}
+          >
+            Clear Results
+          </button>
+        </div>
+      )}
+
+      <ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={components as Components}>
+        {executedContent || markdown}
       </ReactMarkdown>
     </div>
   );
@@ -146,20 +752,68 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
 /* Component Renderers
 /**********************************************************************************************************************/
 
-const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp?: (e: React.MouseEvent) => void) => {
+interface MarkdownRendererOptions {
+  onHoverEnter?: (lineNumber: number) => void;
+  onHoverLeave?: (lineNumber: number) => void;
+  hasCommentsForLine?: (lineNumber: number) => boolean;
+  getCommentsForLine?: (lineNumber: number) => CommentType[];
+  isReadOnly?: boolean;
+  markdownTheme: MarkdownThemeValues;
+  syntaxHighlightTheme: React.ComponentProps<typeof SyntaxHighlighter>['style'];
+}
+
+const useMarkdownRenderers = (
+  getClassName: (index: number) => string,
+  onMouseUp: ((e: React.MouseEvent<HTMLElement>) => void) | undefined,
+  onKeyDown: ((e: React.KeyboardEvent<HTMLElement>) => void) | undefined,
+  isJupyter: boolean,
+  options: MarkdownRendererOptions,
+) => {
+  const {
+    onHoverEnter,
+    onHoverLeave,
+    hasCommentsForLine,
+    getCommentsForLine,
+    isReadOnly: renderersReadOnly = false,
+    markdownTheme,
+    syntaxHighlightTheme,
+  } = options;
   /**
    * Generate props for block-level elements.
-   * Only applies click handlers and styling to top-level elements (marked by remark plugin).
+   * Applies click handlers for commenting based on:
+   * - commentable: explicitly mark element as commentable (default true)
+   * - Line number from markdown position (or cell index for Jupyter)
+   *
+   * For Jupyter notebooks, we don't apply className OR index-number here since
+   * those are only applied to the cell wrapper div, not content elements inside.
    */
-  const blockProps = (props: MarkdownNodeProps) => {
-    const lineNumber = props.node?.position?.start?.line;
-    const isTopLevel = props.node?.properties?.['data-is-top-level'] === 'true';
+  const blockProps = (props: MarkdownNodeProps, commentable: boolean = true) => {
+    const rawLineNumber = props.node?.position?.start?.line;
+    const lineNumber = typeof rawLineNumber === 'number' ? rawLineNumber : undefined;
+    const commentsForLine = lineNumber !== undefined && getCommentsForLine ? getCommentsForLine(lineNumber) : [];
+    const hasComments =
+      lineNumber !== undefined && hasCommentsForLine ? hasCommentsForLine(lineNumber) === true : false;
+    if (lineNumber !== undefined && commentable) {
+      const displayIndex = lineNumber + 1;
+      const commentCount = commentsForLine.length;
+      const ariaLabel = hasComments
+        ? `Block ${displayIndex} with ${commentCount} comment${commentCount === 1 ? '' : 's'}`
+        : `Add comment on block ${displayIndex}`;
+      const shouldBeFocusable = !isJupyter && (!renderersReadOnly || hasComments);
 
-    if (lineNumber !== undefined && isTopLevel) {
       return {
-        className: getClassName(lineNumber),
-        'index-number': lineNumber,
-        onMouseUp,
+        className: !isJupyter ? classNames(getClassName(lineNumber)) : undefined,
+        'index-number': !isJupyter ? lineNumber : undefined,
+        onMouseUp: !isJupyter ? onMouseUp : undefined,
+        onKeyDown: !isJupyter && shouldBeFocusable ? onKeyDown : undefined,
+        onMouseEnter:
+          !isJupyter && hasComments && onHoverEnter ? (_e: React.MouseEvent) => onHoverEnter(lineNumber) : undefined,
+        onMouseLeave:
+          !isJupyter && hasComments && onHoverLeave ? (_e: React.MouseEvent) => onHoverLeave(lineNumber) : undefined,
+        'data-has-comment': hasComments ? 'true' : undefined,
+        tabIndex: !isJupyter && shouldBeFocusable ? 0 : undefined,
+        role: !isJupyter && shouldBeFocusable ? 'button' : undefined,
+        'aria-label': !isJupyter && shouldBeFocusable ? ariaLabel : undefined,
       };
     }
 
@@ -167,10 +821,15 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
       className: undefined,
       'index-number': undefined,
       onMouseUp: undefined,
+      onKeyDown: undefined,
+      onMouseEnter: undefined,
+      onMouseLeave: undefined,
+      'data-has-comment': undefined,
+      tabIndex: undefined,
+      role: undefined,
+      'aria-label': undefined,
     };
-  };
-
-  // Paragraph renderer - handle code blocks that might be wrapped in <p>
+  }; // Paragraph renderer - handle code blocks that might be wrapped in <p>
   const paragraphRenderer = (props: MarkdownNodeProps) => {
     // If paragraph only contains a code block, unwrap it to avoid DOM nesting warnings
     const hasOnlyCodeChild =
@@ -205,7 +864,8 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
 
   // Code renderer - handles both inline code and code blocks
   const codeRenderer = (props: CodeProps) => {
-    const { inline, className, children, ...rest } = props;
+    const { className, children, ...rest } = props;
+    const inline = !props['data-is-top-level'];
 
     // Extract language from className (format: "language-python")
     const match = /language-(\w+)/.exec(className || '');
@@ -219,11 +879,16 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
       return (
         <code
           style={{
-            fontFamily: 'monospace',
-            backgroundColor: '#f5f5f5',
-            padding: '2px 4px',
-            borderRadius: '3px',
-            whiteSpace: 'pre',
+            fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
+            backgroundColor: markdownTheme.inlineCodeBg,
+            color: markdownTheme.inlineCodeColor,
+            padding: '2px 6px',
+            borderRadius: '4px',
+            fontSize: '0.9em',
+            fontWeight: 500,
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            border: `1px solid ${markdownTheme.inlineCodeBorder}`,
           }}
         >
           {children}
@@ -231,20 +896,27 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
       );
     }
 
-    // Block code with special "output" language
+    // Block code with special "output" language - NOT commentable (no blockProps)
     if (language === 'output') {
       return (
-        <div {...blockProps(rest)} style={{ margin: '8px 0px 10px 0px' }}>
+        <div style={{ margin: '4px 0px 8px 0px', display: 'block', width: '100%', boxSizing: 'border-box' }}>
           <div
             style={{
-              backgroundColor: 'white',
-              border: '1px solid black',
+              backgroundColor: markdownTheme.outputBackground,
+              border: `1px solid ${markdownTheme.outputBorder}`,
+              borderLeft: '3px solid #52c41a',
               borderRadius: '4px',
               fontFamily: 'monospace',
-              padding: '4px',
+              fontSize: '13px',
+              padding: '8px 12px',
               wordBreak: 'break-word',
-              whiteSpace: 'pre',
+              whiteSpace: 'pre-wrap',
+              overflowWrap: 'anywhere',
               overflowX: 'auto',
+              width: '100%',
+              maxWidth: '100%',
+              boxSizing: 'border-box',
+              display: 'block',
             }}
           >
             {codeString || ' '}
@@ -253,24 +925,68 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
       );
     }
 
-    // Block code with syntax highlighting
+    // Block code with special "error" language - NOT commentable (no blockProps)
+    if (language === 'error') {
+      return (
+        <div style={{ margin: '4px 0px 8px 0px', display: 'block', width: '100%', boxSizing: 'border-box' }}>
+          <div
+            style={{
+              backgroundColor: markdownTheme.outputBackground,
+              border: `1px solid ${markdownTheme.outputBorder}`,
+              borderLeft: '3px solid #ff4d4f',
+              borderRadius: '4px',
+              fontFamily: 'monospace',
+              fontSize: '13px',
+              padding: '8px 12px',
+              wordBreak: 'break-word',
+              whiteSpace: 'pre-wrap',
+              overflowWrap: 'anywhere',
+              overflowX: 'auto',
+              width: '100%',
+              maxWidth: '100%',
+              boxSizing: 'border-box',
+              display: 'block',
+              color: '#cf1322',
+            }}
+          >
+            {codeString || ' '}
+          </div>
+        </div>
+      );
+    }
+
+    const extraJupyterStyles = isJupyter
+      ? {
+          border: `1px solid ${markdownTheme.jupyterCellBorder}`,
+          padding: '10px',
+          boxShadow: 'inset 0 0 2px #64b5f6',
+        }
+      : {};
+
+    // Block code with syntax highlighting - COMMENTABLE (these are actual code blocks)
     return (
       <SyntaxHighlighter
         language={language || 'text'}
-        style={googlecode}
+        style={syntaxHighlightTheme}
         customStyle={{
-          backgroundColor: '#f2f2f2',
+          backgroundColor: markdownTheme.codeBackground,
           borderTop: '0px',
           borderRight: '0px',
           borderBottom: '0px',
           margin: '8px 0px 10px 0px',
           fontFamily: 'monospace',
-          whiteSpace: 'pre',
+          whiteSpace: 'pre-wrap',
           overflowX: 'auto',
+          wordBreak: 'break-word',
+          maxWidth: '100%',
+          boxSizing: 'border-box',
+          color: markdownTheme.text,
+          ...extraJupyterStyles,
         }}
         showLineNumbers={false}
-        wrapLines={false}
-        {...blockProps(rest)}
+        wrapLines={true}
+        wrapLongLines={true}
+        {...blockProps(rest, true)} // Commentable: true for code blocks
       >
         {codeString || ' '}
       </SyntaxHighlighter>
@@ -286,7 +1002,13 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
   const blockQuoteRenderer = (props: MarkdownNodeProps) => {
     return (
       <div {...blockProps(props)} style={{ margin: '8px 0px 10px 0px' }}>
-        <blockquote style={{ marginBottom: '0px', paddingLeft: '12px', borderLeft: '3px solid #ddd' }}>
+        <blockquote
+          style={{
+            marginBottom: '0px',
+            paddingLeft: '12px',
+            borderLeft: `3px solid ${markdownTheme.blockQuoteBorder}`,
+          }}
+        >
           {props.children}
         </blockquote>
       </div>
@@ -305,7 +1027,9 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
     );
   };
   const headingRenderer = (props: HeadingProps) => {
-    const Tag = `h${props.level}` as keyof JSX.IntrinsicElements;
+    const headingTags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const;
+    const headingIndex = Math.min(Math.max(props.level ?? 1, 1), headingTags.length) - 1;
+    const Tag = headingTags[headingIndex];
     return (
       <Tag
         {...blockProps(props)}
@@ -321,6 +1045,152 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
       </Tag>
     );
   };
+
+  // Div renderer - handle jupyter image markers and cell indices
+  const divRenderer = (props: MarkdownNodeProps) => {
+    // Check if this div has special attributes
+    const properties = props.node?.properties || {};
+
+    // Try different possible property names for the image data attribute
+    const imageId = (properties['data-jupyter-image'] ||
+      properties['dataJupyterImage'] ||
+      properties['data_jupyter_image']) as string;
+
+    if (imageId) {
+      // For image divs, render without blockProps (images are outputs, not commentable)
+      return (
+        <div>
+          <JupyterImageComponent imageId={imageId} />
+        </div>
+      );
+    }
+
+    // Check for cell index marker (for Jupyter notebooks)
+    const cellIndex = (properties['dataCellIndex'] || properties['data-cell-index']) as string;
+
+    if (cellIndex !== undefined) {
+      const cellNum = parseInt(cellIndex, 10);
+      const cellComments = !Number.isNaN(cellNum) && getCommentsForLine ? getCommentsForLine(cellNum) : [];
+      const cellHasComments = cellComments.length > 0;
+      const cellIsInteractive = !Number.isNaN(cellNum) && (!renderersReadOnly || cellHasComments);
+      const cellDisplayIndex = Number.isNaN(cellNum) ? undefined : cellNum + 1;
+      const cellAriaLabel =
+        cellDisplayIndex !== undefined && cellIsInteractive
+          ? cellHasComments
+            ? `Cell ${cellDisplayIndex} with ${cellComments.length} comment${cellComments.length === 1 ? '' : 's'}`
+            : `Add comment on cell ${cellDisplayIndex}`
+          : undefined;
+
+      // Create a safe props object without spreading all properties to avoid
+      // accidentally passing data-cell-index to nested elements
+      const safeProps: Record<string, unknown> = {};
+      Object.keys(properties).forEach((key) => {
+        if (key !== 'dataCellIndex' && key !== 'data-cell-index' && key !== 'indexNumber' && key !== 'index-number') {
+          safeProps[key] = properties[key];
+        }
+      });
+
+      const baseClassName = getClassName(cellNum);
+      const baseClassTokens = baseClassName.split(' ').filter(Boolean);
+      const staticClasses = baseClassTokens.filter((cls) => !cls.startsWith('markdown-block--'));
+
+      const computedClassName = classNames(
+        staticClasses,
+        'jupyter-block',
+        {
+          'markdown-block--commented': cellHasComments,
+          'markdown-block--empty': !cellHasComments,
+        },
+        cellComments.map((comment) => `highlight-${comment.id}`),
+      );
+
+      return (
+        <div
+          data-jupyter-cell={cellIndex}
+          className={computedClassName}
+          index-number={cellIndex}
+          data-has-comment={cellHasComments ? 'true' : undefined}
+          onMouseUp={onMouseUp}
+          onKeyDown={cellIsInteractive ? onKeyDown : undefined}
+          onMouseEnter={cellHasComments && onHoverEnter ? (_e) => onHoverEnter(cellNum) : undefined}
+          onMouseLeave={cellHasComments && onHoverLeave ? (_e) => onHoverLeave(cellNum) : undefined}
+          tabIndex={cellIsInteractive ? 0 : undefined}
+          role={cellIsInteractive ? 'button' : undefined}
+          aria-label={cellAriaLabel}
+          {...safeProps}
+          title={`Cell ${1 + parseInt(cellIndex)}`}
+        >
+          {props.children}
+        </div>
+      );
+    }
+
+    // Regular div handling
+    // For Jupyter, blockProps already returns undefined for index-number
+    // For regular markdown, blockProps returns the line number
+    return <div {...blockProps(props)}>{props.children}</div>;
+  };
+
+  const imgRender = (props: MarkdownNodeProps) => {
+    const properties = props.node?.properties || {};
+    let src = properties['src'] as string;
+    let alt = properties['alt'] as string;
+
+    // remove relative urls as we cannot resolve them in the browser.
+    if (!src || !(src.startsWith('data') || src.startsWith('http'))) {
+      alt = `\`${src}\``;
+      src = '';
+    }
+
+    if (src.startsWith('http')) {
+      try {
+        // check if its a video domain
+        const VIDEODOMAINS = ['youtube.com', 'vimeo.com', 'dailymotion.com', 'wistia.com', 'vidyard.com'];
+        if (VIDEODOMAINS.some((domain) => src.toLowerCase().includes(domain))) {
+          return <video controls src={src} />;
+        }
+      } catch (err) {
+        console.error(err);
+        return <Image width={300} src="" alt={`Unable to render ${src}`} preview={false} />;
+      }
+    }
+
+    return (
+      <Image
+        title={src == '' && alt ? `Unable to render ${alt}` : undefined}
+        width={200}
+        src={src == '' ? undefined : src}
+        alt={alt}
+        onMouseOver={(e) => console.log('Hovered over image', e)}
+        preview={false}
+      />
+    );
+  };
+  const aRender = (props: MarkdownNodeProps) => {
+    const { node } = props;
+    const href = (node?.properties?.href as string) || '';
+    const title = (node?.properties?.title as string) || '';
+
+    return (
+      <Link
+        href={href}
+        title={title}
+        style={{
+          fontWeight: 600,
+          color: markdownTheme.linkColor,
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.color = markdownTheme.hoverLinkColor;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.color = markdownTheme.linkColor;
+        }}
+      >
+        {props.children}
+      </Link>
+    );
+  };
+
   return {
     // Map markdown element types to custom renderers (react-markdown v9 format)
     p: paragraphRenderer,
@@ -332,10 +1202,14 @@ const useMarkdownRenderers = (getClassName: (index: number) => string, onMouseUp
     h6: (props: MarkdownNodeProps) => headingRenderer({ ...props, level: 6 }),
     ul: (props: MarkdownNodeProps) => listRenderer({ ...props, ordered: false }),
     ol: (props: MarkdownNodeProps) => listRenderer({ ...props, ordered: true }),
+    img: imgRender,
     code: codeRenderer,
     hr: thematicBreakRenderer,
     blockquote: blockQuoteRenderer,
     table: tableRenderer,
+    div: divRenderer,
+    a: aRender,
+    // Note: No custom img renderer - let rehype-raw handle HTML img tags
   };
 };
 

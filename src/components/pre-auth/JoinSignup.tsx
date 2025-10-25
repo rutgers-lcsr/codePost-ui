@@ -13,7 +13,7 @@ import { Alert, Checkbox, Input, Spin, Tooltip, Typography } from 'antd';
 /* other library imports */
 import { Link } from 'react-router-dom';
 
-import { RouteComponentProps } from 'react-router';
+import { RouteComponentProps } from '../../router/legacy';
 
 import queryString from 'query-string';
 

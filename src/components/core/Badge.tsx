@@ -9,10 +9,10 @@ interface IBadgeProps {
   forcedStyle?: BadgeStyle;
   size?: BadgeSize;
   placeholder?: boolean;
-  hideZero?: boolean;
+  showZero?: boolean;
 }
 
-const Badge = (props: IBadgeProps) => {
+const Badge: React.FC<IBadgeProps> = (props) => {
   const { count, faded, forcedStyle, size, placeholder, ...extraProps } = props;
 
   const _size = size === undefined ? 'standard' : size;
@@ -45,7 +45,7 @@ const Badge = (props: IBadgeProps) => {
   } else {
     className += ' badge--normal';
   }
-  return <AntBadge count={label} className={className} showZero={props.hideZero ? false : showZero} {...extraProps} />;
+  return <AntBadge count={label} className={className} showZero={props.showZero || showZero} {...extraProps} />;
 };
 
 export default Badge;

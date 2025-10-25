@@ -8,7 +8,7 @@ import * as React from 'react';
 /* antd imports */
 // @ts-ignore
 import { BackwardFilled, EditFilled, PlusOutlined, SaveOutlined, UndoOutlined } from '@ant-design/icons';
-import { Empty, Input, Popconfirm, Tag } from 'antd';
+import { Button, Empty, Flex, Input, Popconfirm, Space, Tag, theme, Typography } from 'antd';
 
 /* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
@@ -23,8 +23,6 @@ import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_c
 import useHotkeys, { O_KEY, S_KEY } from '../useHotkeys';
 
 import { osControlKey } from '../../core/operatingSystem';
-
-import CPButton from '../../core/CPButton';
 
 import Loading from '../../core/Loading';
 
@@ -91,6 +89,7 @@ const RubricMenuUI = ({
   helpers: IRubricManagerHelpers;
 }) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const { token } = theme.useToken();
   const [searchTerm, setSearchTerm] = React.useState('');
   const [editingStatuses, setEditingStatuses] = React.useState({});
   const [editRubricClass, setEditRubricClass] = React.useState('');
@@ -418,57 +417,56 @@ const RubricMenuUI = ({
       helpers.onLinkedConfirmAccept(props.setRubric);
     };
 
-    const categoryForm = <Input placeholder="Category name" value={newCategoryName} onChange={onChangeCategoryName} />;
+    const categoryForm = (
+      <Input placeholder="Category name" value={newCategoryName} onChange={onChangeCategoryName} allowClear autoFocus />
+    );
 
-    const controlButtons = [
-      <Popconfirm
-        key="add-category"
-        icon={null}
-        title={categoryForm}
-        okText="Create"
-        cancelText="Cancel"
-        onConfirm={addRubricCategory}
-        onCancel={onCancel}
-      >
-        <CPButton cpType="primary" icon={<PlusOutlined />} style={{ minWidth: '80px' }}>
-          Category
-        </CPButton>
-      </Popconfirm>,
-      <CPButton
-        key="undo"
-        cpType="secondary"
-        disabled={!changesMade && Object.keys(editingStatuses).length === 0}
-        icon={<UndoOutlined />}
-        onClick={onUndo}
-        style={{ minWidth: '80px' }}
-      >
-        Undo
-      </CPButton>,
-      <Popconfirm
-        title="You have unsaved changes. Would you like to save?"
-        open={confirmChanges}
-        onConfirm={confirm}
-        onCancel={cancel}
-        okText="Yes"
-        cancelText="No, undo"
-        key="save-confirm"
-      >
-        <CPTooltip title={changesMade ? tooltips.grade.rubric.save : null} hideThisOnHideTips={true}>
-          <CPButton
-            key="save"
-            id="rubric-save-button"
-            disabled={!changesMade}
-            onClick={onSave}
-            cpType="primary"
-            icon={<SaveOutlined />}
-            loading={state.isSaving}
-            style={{ minWidth: '80px' }}
+    controls = (
+      <>
+        <Space size={[8, 8]} wrap>
+          <Popconfirm
+            icon={null}
+            title={categoryForm}
+            okText="Create"
+            cancelText="Cancel"
+            onConfirm={addRubricCategory}
+            onCancel={onCancel}
           >
-            Save
-          </CPButton>
-        </CPTooltip>
-      </Popconfirm>,
-      <div key="modals">
+            <Button type="primary" icon={<PlusOutlined />} style={{ minWidth: 112 }}>
+              New Category
+            </Button>
+          </Popconfirm>
+          <Button
+            icon={<UndoOutlined />}
+            onClick={onUndo}
+            disabled={!changesMade && Object.keys(editingStatuses).length === 0}
+            style={{ minWidth: 112 }}
+          >
+            Undo
+          </Button>
+          <Popconfirm
+            title="You have unsaved changes. Would you like to save?"
+            open={confirmChanges}
+            onConfirm={confirm}
+            onCancel={cancel}
+            okText="Yes"
+            cancelText="No, undo"
+          >
+            <CPTooltip title={changesMade ? tooltips.grade.rubric.save : null} hideThisOnHideTips={true}>
+              <Button
+                type="primary"
+                id="rubric-save-button"
+                icon={<SaveOutlined />}
+                onClick={onSave}
+                disabled={!changesMade}
+                loading={state.isSaving}
+                style={{ minWidth: 112 }}
+              >
+                Save Changes
+              </Button>
+            </CPTooltip>
+          </Popconfirm>
+        </Space>
         <LinkedCommentsAlert
           rubricComment={state.linkedComments[0]}
           onDelete={onDelete}
@@ -484,10 +482,8 @@ const RubricMenuUI = ({
           unsavedComments={state.unsavedComments}
           savedRubricComments={state.rubricComments}
         />
-      </div>,
-    ];
-
-    controls = controlButtons;
+      </>
+    );
   }
 
   const insertCategorySearch = () => {
@@ -499,37 +495,52 @@ const RubricMenuUI = ({
 
   let searchBar;
 
+  const editToggleColor = props.editRubricMode ? token.colorWarning : token.colorSuccess;
+
   if (props.canUserEdit) {
     const Icon = props.editRubricMode ? BackwardFilled : EditFilled;
+    const toggleButton = (
+      <CPTooltip title={tooltips.grade.rubric.edit} placement="right">
+        <Button
+          size="small"
+          type="text"
+          icon={<Icon />}
+          onClick={toggleEditRubricMode}
+          aria-label={props.editRubricMode ? 'Exit rubric edit mode' : 'Enter rubric edit mode'}
+          style={{ color: editToggleColor }}
+        />
+      </CPTooltip>
+    );
     searchBar = (
       <Input
         allowClear
+        aria-label="Search Rubric"
         placeholder={`Search rubric... (${osControlKey()} O)`}
         id="rubric-search"
         onChange={onSearch}
         value={searchTerm}
-        addonBefore={
-          <CPTooltip title={tooltips.grade.rubric.edit} placement="right">
-            <Icon onClick={toggleEditRubricMode} style={{ color: '#24be85', cursor: 'pointer' }} />
-          </CPTooltip>
-        }
+        addonBefore={toggleButton}
         className={consoleThemes.light === consoleTheme ? 'search--light' : 'search--dark'}
         style={{
           width: '100%',
+          // backgroundColor: token.colorBgContainer,
+          borderColor: token.colorBorderSecondary,
+          color: token.colorText,
         }}
       />
     );
   } else {
     searchBar = (
       <Input
+        aria-label="Search Rubric"
         placeholder={`Search rubric... (${osControlKey()} O)`}
         id="rubric-search"
         onChange={onSearch}
         value={searchTerm}
         style={{
-          backgroundColor: consoleTheme.siderBg,
-          border: consoleTheme.buttonSecondaryBorder,
-          color: consoleTheme.buttonSecondaryColor,
+          // backgroundColor: token.colorFillSecondary,
+          borderColor: token.colorBorderSecondary,
+          color: token.colorTextSecondary,
           width: '100%',
         }}
       />
@@ -544,18 +555,23 @@ const RubricMenuUI = ({
       };
 
       let emptyContent;
+      const descriptionColor = props.canUserEdit ? token.colorTextSecondary : token.colorText;
       if (props.canUserEdit) {
         emptyContent = (
-          <span style={{ color: consoleTheme.siderMenuItemColor }}>
-            Create your rubric either by clicking the green pen above, or visiting the{' '}
-            <a href={`/${getRubricURL(props.course, props.assignment)}`} target="_blank" rel="noopener noreferrer">
+          <Typography.Text style={{ color: descriptionColor }}>
+            Create your rubric either by clicking the edit icon above, or visiting the{' '}
+            <Typography.Link
+              href={`/${getRubricURL(props.course, props.assignment)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Rubric Editor
-            </a>{' '}
+            </Typography.Link>{' '}
             in the Admin Console.
-          </span>
+          </Typography.Text>
         );
       } else {
-        emptyContent = <span>No rubric yet</span>;
+        emptyContent = <Typography.Text style={{ color: descriptionColor }}>No rubric yet</Typography.Text>;
       }
 
       content = (
@@ -582,23 +598,37 @@ const RubricMenuUI = ({
 
   return (
     <div className="rubric-menu-container" id="rubric-menu-container">
-      <div className="rubric-menu-header" id="rubric-menu-title">
-        <div className="rubric-menu-category-search">
-          <CPTooltip title={tooltips.grade.rubric.categorySearch} hideThisOnHideTips={true}>
-            <Tag
-              className="rubric-menu-category-tag"
-              style={{
-                background: consoleTheme.siderBg,
-                color: consoleTheme.siderTitle,
-              }}
-              onClick={insertCategorySearch}
-            >
-              category:
-            </Tag>
-          </CPTooltip>
+      <Flex
+        className="rubric-menu-header"
+        id="rubric-menu-title"
+        align="center"
+        gap={token.sizeSM}
+        style={{
+          padding: `${token.paddingXS}px ${token.paddingSM}px`,
+          backgroundColor: consoleTheme.siderBg,
+          borderBottom: `1px solid ${token.colorBorderSecondary}`,
+        }}
+      >
+        <CPTooltip title={tooltips.grade.rubric.categorySearch} hideThisOnHideTips={true}>
+          <Tag
+            className="rubric-menu-category-tag"
+            bordered
+            onClick={insertCategorySearch}
+            style={{
+              cursor: 'pointer',
+              userSelect: 'none',
+              // backgroundColor: token.colorBgElevated,
+              // borderColor: token.colorBorderSecondary,
+              // color: token.colorText,
+            }}
+          >
+            category:
+          </Tag>
+        </CPTooltip>
+        <div className="rubric-menu-search" style={{ flex: 1 }}>
+          {searchBar}
         </div>
-        <div className="rubric-menu-search">{searchBar}</div>
-      </div>
+      </Flex>
       <div className="rubric-menu-content" id="rubric-menu">
         {content}
       </div>
@@ -606,7 +636,11 @@ const RubricMenuUI = ({
         <div
           className={`rubric-menu-controls ${editRubricClass}`}
           id="rubric-menu-controls"
-          style={{ backgroundColor: consoleTheme.siderBg }}
+          style={{
+            backgroundColor: consoleTheme.siderBg,
+            borderTop: `1px solid ${token.colorBorderSecondary}`,
+            padding: `${token.paddingSM}px`,
+          }}
         >
           {controls}
         </div>

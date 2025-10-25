@@ -13,7 +13,9 @@ import { Button, Empty } from 'antd';
 import _ from 'lodash';
 import queryString from 'query-string';
 
-import { Link, Route, Switch } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router-dom';
+
+import { LegacyRouteRenderer, RouteComponentProps } from '../../router/legacy';
 
 /* codePost imports */
 import AdminNav from './other/AdminNav';
@@ -104,8 +106,6 @@ interface IAdminState {
   submissionsByStudent: IStudentSubmissionsDataTable;
   submissionsByGrader: IGraderSubmissionsDataTable;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
-
-  showBillingBanner: boolean;
 }
 
 const formatCourseURL = (course: CourseType) => {
@@ -161,7 +161,6 @@ class Admin extends Component<IComponentProps, IAdminState> {
       submissionsByGrader: {},
       submissionsbyUserLoadComplete: false,
       viewsBySubmission: {},
-      showBillingBanner: false,
     };
   }
 
@@ -291,27 +290,6 @@ class Admin extends Component<IComponentProps, IAdminState> {
     });
 
     this.loadSections(course);
-
-    if (this.props.currentCourse && this.props.currentCourse.id) {
-      fetch(`${process.env.REACT_APP_API_URL}/billing/${this.props.currentCourse.id}/details/`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
-          'Content-Type': 'application/json',
-        },
-        method: 'GET',
-      })
-        .then((res) => {
-          if (res.ok) {
-            return res.json();
-          }
-          return {};
-        })
-        .then((data: { show_banner?: boolean }) => {
-          if (Object.prototype.hasOwnProperty.call(data, 'show_banner') && data['show_banner'] !== undefined) {
-            this.setState({ showBillingBanner: data['show_banner'] });
-          }
-        });
-    }
   };
 
   public loadAssignments = (course: CourseType) => {
@@ -1302,35 +1280,40 @@ class Admin extends Component<IComponentProps, IAdminState> {
       );
     } else if (this.props.currentCourse) {
       detail = (
-        <Switch>
+        <Routes>
           <Route
-            path={`${this.props.match.url}/submissions`}
-            render={(_props: any) => (
-              <SubmissionsManager
-                {..._props}
-                key="submissions"
-                course={this.props.currentCourse}
-                loadComplete={
-                  this.state.submissionsbyUserLoadComplete &&
-                  this.state.assignmentsLoadComplete &&
-                  this.state.fullSubmissionsLoadComplete
-                }
-                assignments={this.state.assignments}
-                submissionsByStudent={this.state.submissionsByStudent}
-                deleteSubmission={this.deleteSubmission}
-                graders={this.state.graders}
-                changeSubmissionGrader={this.changeSubmissionGrader}
-                uploadSubmission={this.uploadSubmission}
-                addFilesToSubmission={this.addFilesToSubmission}
-                viewsBySubmission={this.state.viewsBySubmission}
-                students={this.state.students}
-                inactiveStudents={this.state.inactiveStudents}
-                submissionsByAssignment={this.state.submissions}
-                submissionsByGrader={this.state.submissionsByGrader}
-                inactiveGraders={this.state.inactiveGraders}
-                baseURL={this.props.match.url}
+            path="submissions/*"
+            element={
+              <LegacyRouteRenderer
+                path={`${this.props.match.url}/submissions/*`}
+                render={(routeProps: RouteComponentProps) => (
+                  <SubmissionsManager
+                    {...routeProps}
+                    key="submissions"
+                    course={this.props.currentCourse}
+                    loadComplete={
+                      this.state.submissionsbyUserLoadComplete &&
+                      this.state.assignmentsLoadComplete &&
+                      this.state.fullSubmissionsLoadComplete
+                    }
+                    assignments={this.state.assignments}
+                    submissionsByStudent={this.state.submissionsByStudent}
+                    deleteSubmission={this.deleteSubmission}
+                    graders={this.state.graders}
+                    changeSubmissionGrader={this.changeSubmissionGrader}
+                    uploadSubmission={this.uploadSubmission}
+                    addFilesToSubmission={this.addFilesToSubmission}
+                    viewsBySubmission={this.state.viewsBySubmission}
+                    students={this.state.students}
+                    inactiveStudents={this.state.inactiveStudents}
+                    submissionsByAssignment={this.state.submissions}
+                    submissionsByGrader={this.state.submissionsByGrader}
+                    inactiveGraders={this.state.inactiveGraders}
+                    baseURL={this.props.match.url}
+                  />
+                )}
               />
-            )}
+            }
           />
           {/*          loadComplete={
                   this.state.submissionsLoadComplete &&
@@ -1338,93 +1321,122 @@ class Admin extends Component<IComponentProps, IAdminState> {
                   this.state.submissionsbyUserLoadComplete
                 }*/}
           <Route
-            path={`${this.props.match.url}/assignments`}
-            render={(_props: any) => (
-              <ManageAssignments
-                {..._props}
-                key="assignments"
-                loadComplete={this.state.assignmentsLoadComplete}
-                partialSubmissionsLoadComplete={this.state.partialSubmissionsLoadComplete}
-                fullSubmissionsLoadComplete={this.state.fullSubmissionsLoadComplete}
-                submissionsByUserLoadComplete={this.state.submissionsbyUserLoadComplete}
-                submissions={this.state.submissions}
-                currentCourse={this.props.currentCourse}
-                assignments={this.state.assignments}
-                updateAssignment={this.updateAssignment}
-                createAssignment={this.createAssignment}
-                deleteAssignment={this.deleteAssignment}
-                submissionsByStudent={this.state.submissionsByStudent}
-                students={this.state.students}
-                uploadSubmission={this.uploadSubmission}
-                deleteSubmission={this.deleteSubmission}
-                updateSubmission={this.updateSubmission}
-                viewsBySubmission={this.state.viewsBySubmission}
-                refreshCourseData={this.loadAllCourseData.bind(this, this.props.currentCourse!)}
-                myEmail={this.props.user.email}
-                user={this.props.user}
-                location={this.props.location}
-                shallowUpdateAssignment={this.shallowUpdateAssignment}
-                bulkUpdateSubmissions={this.bulkUpdateSubmissions}
-                sections={this.state.sections}
-                courses={this.state.courses}
+            path="assignments/*"
+            element={
+              <LegacyRouteRenderer
+                path={`${this.props.match.url}/assignments/*`}
+                render={(routeProps: RouteComponentProps) => (
+                  <ManageAssignments
+                    {...routeProps}
+                    key="assignments"
+                    loadComplete={this.state.assignmentsLoadComplete}
+                    partialSubmissionsLoadComplete={this.state.partialSubmissionsLoadComplete}
+                    fullSubmissionsLoadComplete={this.state.fullSubmissionsLoadComplete}
+                    submissionsByUserLoadComplete={this.state.submissionsbyUserLoadComplete}
+                    submissions={this.state.submissions}
+                    currentCourse={this.props.currentCourse}
+                    assignments={this.state.assignments}
+                    updateAssignment={this.updateAssignment}
+                    createAssignment={this.createAssignment}
+                    deleteAssignment={this.deleteAssignment}
+                    submissionsByStudent={this.state.submissionsByStudent}
+                    students={this.state.students}
+                    uploadSubmission={this.uploadSubmission}
+                    deleteSubmission={this.deleteSubmission}
+                    updateSubmission={this.updateSubmission}
+                    viewsBySubmission={this.state.viewsBySubmission}
+                    refreshCourseData={this.loadAllCourseData.bind(this, this.props.currentCourse!)}
+                    myEmail={this.props.user.email}
+                    user={this.props.user}
+                    location={this.props.location}
+                    shallowUpdateAssignment={this.shallowUpdateAssignment}
+                    bulkUpdateSubmissions={this.bulkUpdateSubmissions}
+                    sections={this.state.sections}
+                    courses={this.state.courses}
+                  />
+                )}
               />
-            )}
+            }
           />
           <Route
-            path={`${this.props.match.url}/roster`}
-            render={(_props: any) => (
-              <RosterManager
-                {..._props}
-                key="roster"
-                notActivated={this.state.notActivated}
-                sections={this.state.sections}
-                students={this.state.students}
-                graders={this.state.graders}
-                admins={this.state.admins}
-                superGraders={this.state.superGraders}
-                loadComplete={this.state.rosterLoadComplete}
-                sectionsLoadComplete={this.state.sectionsLoadComplete}
-                currentCourse={this.props.currentCourse}
-                updateRoster={this.updateRoster}
-                sectionsByStudent={this.state.sectionsByStudent}
-                updateSection={this.updateSection}
-                createSection={this.createSection}
-                updateStudentSection={this.updateStudentSection}
-                myEmail={this.props.user.email}
-                deleteSection={this.deleteSection}
+            path="roster/*"
+            element={
+              <LegacyRouteRenderer
+                path={`${this.props.match.url}/roster/*`}
+                render={(routeProps: RouteComponentProps) => (
+                  <RosterManager
+                    {...routeProps}
+                    key="roster"
+                    notActivated={this.state.notActivated}
+                    sections={this.state.sections}
+                    students={this.state.students}
+                    graders={this.state.graders}
+                    admins={this.state.admins}
+                    superGraders={this.state.superGraders}
+                    loadComplete={this.state.rosterLoadComplete}
+                    sectionsLoadComplete={this.state.sectionsLoadComplete}
+                    currentCourse={this.props.currentCourse}
+                    updateRoster={this.updateRoster}
+                    sectionsByStudent={this.state.sectionsByStudent}
+                    updateSection={this.updateSection}
+                    createSection={this.createSection}
+                    updateStudentSection={this.updateStudentSection}
+                    myEmail={this.props.user.email}
+                    deleteSection={this.deleteSection}
+                  />
+                )}
               />
-            )}
+            }
           />
           <Route
-            path={`${this.props.match.url}/settings/webhooks`}
-            render={(_props: any) => <WebhooksPanel {..._props} currentCourse={this.props.currentCourse!} />}
-          />
-          <Route
-            path={`${this.props.match.url}/settings`}
-            render={(_props: any) => (
-              <CourseSettingsPanel
-                {..._props}
-                currentCourse={this.props.currentCourse!}
-                updateSettings={this.updateSettings}
+            path="settings/webhooks"
+            element={
+              <LegacyRouteRenderer
+                path={`${this.props.match.url}/settings/webhooks`}
+                end
+                render={(routeProps: RouteComponentProps) => (
+                  <WebhooksPanel {...routeProps} currentCourse={this.props.currentCourse!} />
+                )}
               />
-            )}
+            }
           />
           <Route
-            path={`${this.props.match.url}/video`}
-            key="video"
-            render={(_props: any) => <VideoModal open={true} onCancel={() => this.props.history.push('/admin')} />}
+            path="settings"
+            element={
+              <LegacyRouteRenderer
+                path={`${this.props.match.url}/settings`}
+                end
+                render={(routeProps: RouteComponentProps) => (
+                  <CourseSettingsPanel
+                    {...routeProps}
+                    currentCourse={this.props.currentCourse!}
+                    updateSettings={this.updateSettings}
+                  />
+                )}
+              />
+            }
           />
-        </Switch>
+          <Route
+            path="video"
+            element={
+              <LegacyRouteRenderer
+                path={`${this.props.match.url}/video`}
+                end
+                render={() => <VideoModal open={true} onCancel={() => this.props.history.push('/admin')} />}
+              />
+            }
+          />
+        </Routes>
       );
     }
 
     const navigation = (collapsed: boolean) => (
-      <Switch>
-        <Route
-          path={`${this.props.match.url}/:panel1?/:panel2?`}
-          render={(_props: any) => <AdminNav {..._props} baseURL={this.props.match.url} collapsed={collapsed} />}
-        />
-      </Switch>
+      <LegacyRouteRenderer
+        path={`${this.props.match.url}/*`}
+        render={(routeProps: RouteComponentProps) => (
+          <AdminNav {...routeProps} baseURL={this.props.match.url} collapsed={collapsed} />
+        )}
+      />
     );
 
     // Only shoow banner if a coursei s defined, assignemtns
@@ -1445,7 +1457,6 @@ class Admin extends Component<IComponentProps, IAdminState> {
 
     return (
       <CPLayoutAdmin
-        showBillingBanner={this.state.showBillingBanner ? this.props.match.url + '/billing' : undefined}
         header={header}
         banner={banner}
         detail={

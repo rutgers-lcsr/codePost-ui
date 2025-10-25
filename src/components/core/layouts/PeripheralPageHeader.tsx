@@ -1,3 +1,4 @@
+import { theme } from 'antd';
 import { Link } from 'react-router-dom';
 
 import { SettingOutlined } from '@ant-design/icons';
@@ -24,9 +25,10 @@ interface IProps {
 const PeripheralPageHeader = (props: IProps) => {
   const windowSize = useWindowSize();
   const mobile = windowSize.width < layoutVars.breakpoints.mobile.peripheral;
+  const { token } = theme.useToken();
 
   const logo = (
-    <Link style={{ fontSize: 34, color: 'black', paddingLeft: 10 }} className="link--header" to={'/'}>
+    <Link style={{ fontSize: 34, color: token.colorTextHeading, paddingLeft: 10 }} className="link--header" to={'/'}>
       code<b>Post</b>
     </Link>
   );

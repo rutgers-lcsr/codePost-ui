@@ -5,8 +5,8 @@
 /* react imports */
 
 /* other library imports */
-import { RouteComponentProps } from 'react-router';
-import { Route, Switch } from 'react-router-dom';
+import { RouteComponentProps, LegacyRouteRenderer } from '../../../router/legacy';
+import { Route, Routes } from 'react-router-dom';
 
 /* codePost imports */
 import ManageAdmins, { IManageAdminsProps } from './ManageAdmins';
@@ -20,24 +20,44 @@ type IProps = IManageStudentsProps & IManageGradersProps & IManageAdminsProps & 
 
 const RosterManager = (props: IProps & RouteComponentProps<{}>) => {
   return (
-    <Switch>
+    <Routes>
       <Route
-        path={`${props.match.url}/students`}
-        render={(subprops: any) => <ManageStudents {...props} {...subprops} key="students" />}
+        path="students"
+        element={
+          <LegacyRouteRenderer
+            path={`${props.match.url}/students`}
+            render={(subprops: any) => <ManageStudents {...props} {...subprops} key="students" />}
+          />
+        }
       />
       <Route
-        path={`${props.match.url}/graders`}
-        render={(subprops: any) => <ManageGraders {...props} {...subprops} key="graders" />}
+        path="graders"
+        element={
+          <LegacyRouteRenderer
+            path={`${props.match.url}/graders`}
+            render={(subprops: any) => <ManageGraders {...props} {...subprops} key="graders" />}
+          />
+        }
       />
       <Route
-        path={`${props.match.url}/admins`}
-        render={(subprops: any) => <ManageAdmins {...props} {...subprops} key="admins" />}
+        path="admins"
+        element={
+          <LegacyRouteRenderer
+            path={`${props.match.url}/admins`}
+            render={(subprops: any) => <ManageAdmins {...props} {...subprops} key="admins" />}
+          />
+        }
       />
       <Route
-        path={`${props.match.url}/sections`}
-        render={(subprops: any) => <ManageSections {...props} {...subprops} key="sections" />}
+        path="sections"
+        element={
+          <LegacyRouteRenderer
+            path={`${props.match.url}/sections`}
+            render={(subprops: any) => <ManageSections {...props} {...subprops} key="sections" />}
+          />
+        }
       />
-    </Switch>
+    </Routes>
   );
 };
 

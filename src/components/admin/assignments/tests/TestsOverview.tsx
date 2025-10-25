@@ -2,7 +2,8 @@
 /* Imports
 /**********************************************************************************************************************/
 
-import { RouteComponentProps } from 'react-router';
+import React from 'react';
+import { RouteComponentProps } from '../../../../router/legacy';
 import { Link } from 'react-router-dom';
 
 import { Breadcrumb, Button, Empty } from 'antd';
@@ -26,8 +27,19 @@ const TestsOverview = (props: IProps & RouteComponentProps) => {
     { title: 'View test results', key: 'tests', dataIndex: 'tests', align: 'center' as const },
   ];
 
-  const data = props.assignments.map((assignment) => {
+  // Deduplicate assignments by ID
+  const uniqueAssignments = React.useMemo(() => {
+    const seen = new Set<number>();
+    return props.assignments.filter((assignment) => {
+      if (seen.has(assignment.id)) return false;
+      seen.add(assignment.id);
+      return true;
+    });
+  }, [props.assignments]);
+
+  const data = uniqueAssignments.map((assignment) => {
     return {
+      key: `assignment-${assignment.id}`,
       assignment: assignment.name,
       tests: (
         <Link to={`${props.match.url}/${encodeForLink(assignment.name)}/results`}>
@@ -45,7 +57,7 @@ const TestsOverview = (props: IProps & RouteComponentProps) => {
   return (
     <TableDetail
       loadComplete={true}
-      pagination={props.assignments.length < 10 ? false : undefined}
+      pagination={uniqueAssignments.length < 10 ? false : undefined}
       title={<div className="display-flex align-items-center">Tests</div>}
       isEmpty={data.length === 0}
       emptyNode={

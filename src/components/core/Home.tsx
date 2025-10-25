@@ -5,10 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
-import { AuditOutlined, IdcardOutlined, SlidersOutlined } from '@ant-design/icons';
+import { AuditOutlined, DashboardOutlined, IdcardOutlined, SlidersOutlined } from '@ant-design/icons';
 
 /* antd imports */
-import { Divider, Typography } from 'antd';
+import { Divider, Typography, theme } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -40,6 +40,7 @@ interface IRoleProps {
 
 const RoleItem = (props: IRoleProps) => {
   const [hovered, setHovered] = React.useState(false);
+  const { token } = theme.useToken();
 
   const onMouseEnter = (_e: React.MouseEvent) => {
     setHovered(true);
@@ -61,18 +62,24 @@ const RoleItem = (props: IRoleProps) => {
             margin: '8px',
             width: '120px',
             height: '120px',
-            border: '1px solid rgb(232, 232, 232)',
-            boxShadow: hovered ? '0 2px 8px rgba(0,0,0,.15)' : undefined,
+            border: `1px solid ${token.colorBorderSecondary}`,
+            boxShadow: hovered ? token.boxShadow : undefined,
             display: 'table',
           }}
         >
           <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
             {React.cloneElement(props.icon as React.ReactElement, {
-              style: { fontSize: '70px', color: hovered ? '#24be85' : 'rgba(0, 0, 0, 0.7)' },
+              style: { fontSize: '70px', color: hovered ? token.colorPrimary : token.colorTextSecondary },
             })}
           </div>
         </div>
-        <div style={{ fontWeight: hovered ? 560 : 380, fontSize: '16px', color: 'rgba(0, 0, 0, 0.7)' }}>
+        <div
+          style={{
+            fontWeight: hovered ? 560 : 380,
+            fontSize: '16px',
+            color: hovered ? token.colorText : token.colorTextSecondary,
+          }}
+        >
           {props.title}
         </div>
       </div>
@@ -91,6 +98,9 @@ const Home = (props: IProps) => {
     ) : null,
     props.isGrader ? <RoleItem key="grader" title="Grader Console" icon={<AuditOutlined />} linkTo="/grader" /> : null,
     props.isAdmin ? <RoleItem key="admin" title="Admin Console" icon={<SlidersOutlined />} linkTo="/admin" /> : null,
+    props.user.codePostAdmin ? (
+      <RoleItem key="admin" title="Staff Dashboard" icon={<DashboardOutlined />} linkTo="/dashboard" />
+    ) : null,
   ];
 
   return (

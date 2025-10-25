@@ -277,7 +277,7 @@ const RubricUI = ({
         cpType="secondary"
         disabled={!changesMade}
         icon={<UndoOutlined />}
-        fallback="undo"
+        fallbackIcon={<UndoOutlined />}
         fallbackWidth={1250}
       >
         Undo
@@ -288,7 +288,7 @@ const RubricUI = ({
         disabled={!changesMade}
         cpType="primary"
         icon={<SaveOutlined />}
-        fallback="save"
+        fallbackIcon={<SaveOutlined />}
         fallbackWidth={500}
         loading={state.isSaving}
       >

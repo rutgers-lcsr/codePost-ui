@@ -12,9 +12,9 @@ import { Table } from 'antd';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
-import { AssignmentType, SubmissionTestType, TestCategoryType } from '../../../infrastructure/types';
 import { SubmissionTest } from '../../../infrastructure/submissionTest';
-import { TestCasesByCategory, StudentTestCasesByCategory } from '../../core/testFetchUtils';
+import { AssignmentType, SubmissionTestType, TestCategoryType } from '../../../infrastructure/types';
+import { StudentTestCasesByCategory, TestCasesByCategory } from '../../core/testFetchUtils';
 
 import { BasicTestResultType } from '../../../infrastructure/autograder/runTypes';
 import Badge from '../../core/Badge';
@@ -35,7 +35,8 @@ interface IProps {
   assignment: AssignmentType;
   showLink?: boolean;
   emptyMessage: string;
-  onClick?: (e: any) => void;
+  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
+  headerActions?: React.ReactNode;
 }
 
 const TestsMenu = (props: IProps) => {
@@ -67,10 +68,9 @@ const TestsMenu = (props: IProps) => {
   const data = props.categories.map((category) => {
     let latest = testsByCategory[category.id];
     if (props.tests && props.tests[0] instanceof SubmissionTest) {
-      // @ts-ignore
+      // @ts-expect-error --- IGNORE ---
       latest = SubmissionTest.getLatest(latest);
     }
-    // @ts-ignore
     const numPassed = latest.reduce((prev, newVal) => prev + (newVal.passed ? 1 : 0), 0);
     const numTotal = latest.length;
 
@@ -92,8 +92,8 @@ const TestsMenu = (props: IProps) => {
     return {
       category: (
         <span>
-          {category.name} <Badge hideZero={true} count={parseFloat(positivePoints.toPrecision(1))} size="small" />
-          <Badge count={parseFloat(negativePoints.toPrecision(1))} hideZero={true} size="small" />
+          {category.name} <Badge showZero={false} count={parseFloat(positivePoints.toPrecision(1))} size="small" />
+          <Badge count={parseFloat(negativePoints.toPrecision(1))} showZero={false} size="small" />
         </span>
       ),
       passed: `${numPassed}/${numTotal}`,
@@ -111,6 +111,18 @@ const TestsMenu = (props: IProps) => {
       }}
       onClick={props.onClick}
     >
+      {props.headerActions ? (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: props.categories.length > 0 ? 12 : 8,
+          }}
+          onClick={(event) => event.stopPropagation()}
+        >
+          {props.headerActions}
+        </div>
+      ) : null}
       <div
         className={`tests-menu${consoleTheme === consoleThemes.dark ? '--dark' : ''}`}
         style={{ fontSize: 12, overflowX: 'auto', color: consoleTheme.text, background: consoleTheme.siderBg }}

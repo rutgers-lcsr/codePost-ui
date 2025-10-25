@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import * as React from 'react';
 import { CommentType } from '../../../infrastructure/comment';
 import { POSITION } from '../../../types/common';
@@ -6,21 +7,6 @@ import Highlight from './Highlight';
 
 type StyleType = {
   [highlightID: string]: number;
-};
-
-/**
- * Convert hex color to rgba with alpha transparency
- */
-const hexToRgba = (hex: string, alpha: number): string => {
-  // Remove # if present
-  hex = hex.replace('#', '');
-
-  // Parse hex values
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
 /**
@@ -35,7 +21,7 @@ export const getHighlights = (sortedComments: CommentType[], thetext: string, li
   // e.g.
   // <strong className=1> first highlight </strong><strong className=1 2>middle
   //          </strong><strong className=2>second highlight</strong>
-  const highlights: any[] = [];
+  const highlights: Array<[number, number, number]> = [];
   for (const highlight of sortedComments) {
     if (highlight.startLine < line && highlight.endLine > line) {
       // this line sits between a multi-line highlight
@@ -44,6 +30,9 @@ export const getHighlights = (sortedComments: CommentType[], thetext: string, li
       // we may be in a partial highlight situation
       // is the whole comment in one line?
       if (highlight.endLine === highlight.startLine) {
+        if (highlight.startChar === highlight.endChar) {
+          continue;
+        }
         highlights.push([highlight.startChar, highlight.endChar, highlight.id]);
       } else {
         // Avoid starting and stopping a highlight on the same char
@@ -66,7 +55,7 @@ export const getHighlights = (sortedComments: CommentType[], thetext: string, li
  * Build HTML string from highlights for a line
  */
 export const buildHTMLString = (highlights: number[][], thetext: string, line: number): [string, StyleType] => {
-  const elements: any[] = [];
+  const elements: string[] = [];
   let prevIDs: number[] = [];
   let styles: StyleType = {};
 
@@ -105,8 +94,9 @@ export const buildHTMLString = (highlights: number[][], thetext: string, line: n
     let element = '';
 
     // We've reached the end of the line, and there are highlights that need closing
-    if (i === thetext.length && remIDs.length >= 1) {
-      element = '</strong> ';
+    // Close if ANY highlights are open (prevIDs) OR if highlights are ending (remIDs)
+    if (i === thetext.length && (prevIDs.length >= 1 || remIDs.length >= 1)) {
+      element = '</strong>';
     } else {
       const className = updatedIDs
         .map((id) => {
@@ -119,13 +109,13 @@ export const buildHTMLString = (highlights: number[][], thetext: string, line: n
         element = `${thetext.charAt(i)}`;
         // Starting new highlights with none existing -> ret: `<strong>{char}`
       } else if (prevIDs.length === 0 && newIDs.length >= 1) {
-        element = `<strong id=line-${line} class="${className}">${thetext.charAt(i)}`;
+        element = `<strong id="line-${line}" class="${className}">${thetext.charAt(i)}`;
         // Closing highlights with no new or existing -> ret: `</strong>{char}`
       } else if (updatedIDs.length === 0 && remIDs.length >= 1) {
         element = `</strong>${thetext.charAt(i)}`;
         // Starting and/or closing highlights -> ret: `</strong><strong>{char}`
       } else {
-        element = `</strong><strong id=line-${line} class="${className}">${thetext.charAt(i)}`;
+        element = `</strong><strong id="line-${line}" class="${className}">${thetext.charAt(i)}`;
       }
     }
     prevIDs = updatedIDs;
@@ -141,18 +131,34 @@ export const convertStringToJSX = (
   htmlString: string,
   line: number,
   readOnly: boolean,
-  onHighlightClick: (e: React.MouseEvent) => void,
+  onHighlightClick: (e: React.MouseEvent, commentId: number) => void,
 ) => {
-  const components = htmlString.split(/(<strong .*?>.*?<\/strong>)/g);
+  // Fixed regex: space after <strong is optional (was causing highlights to render as text)
+  const components = htmlString.split(/(<strong\s.*?>.*?<\/strong>)/g);
+
   const returnElements = components.map((html: string, i: number) => {
     if (html.includes('</strong>')) {
       let className = html.match(/class=".*?"/g) ? html.match(/class=".*?"/g)![0] : '';
       let commentID = 0;
+      let commentIDs: number[] = [];
+
       if (className !== '') {
         className = className.split('=')[1];
         className = className.substring(1, className.length - 1);
-        commentID = +className.substring(10);
+
+        // Extract ALL comment IDs from the class name
+        // Class name can be like: "highlight-123" or "highlight-123 highlight-456 highlight-789"
+        const classNames = className.split(' ');
+        commentIDs = classNames
+          .filter((cls) => cls.startsWith('highlight-'))
+          .map((cls) => parseInt(cls.replace('highlight-', ''), 10))
+          .filter((id) => !isNaN(id));
+
+        // Use the FIRST valid comment ID (primary highlight)
+        // This is the outermost/first comment that covers this span
+        commentID = commentIDs.length > 0 ? commentIDs[0] : 0;
       }
+
       const text = html.replace(/<\/?strong.*?>/g, '');
       return (
         <Highlight
@@ -182,89 +188,22 @@ export const highlight = (
   thetext: string,
   line: number,
   readOnly: boolean,
-  color: string,
-  onHighlightClick: (e: React.MouseEvent) => void,
+  _color: string,
+  onHighlightClick: (e: React.MouseEvent, commentId: number) => void,
 ) => {
   const highlights = getHighlights(sortedComments, thetext, line);
 
-  const [htmlString, styles] = buildHTMLString(highlights, thetext, line);
+  const [htmlString] = buildHTMLString(highlights, thetext, line);
 
-  // In Firefox, stylesheet.insertRule produces a SecurityError
-  // https://stackoverflow.com/questions/15229330/attempt-to-add-a-rule-to-a-css-stylesheet-gives-the-operation-is-insecure-in-f
-  // So, we skip stylesheet manipulation on Firefox
-  const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-
-  if (!isFirefox) {
-    // Collect all unique comment IDs that need CSS rules
-    const allHighlightIds = new Set<string>();
-
-    // Add IDs from nested highlights (from styles object)
-    Object.keys(styles).forEach((id) => {
-      if (id !== '0' && id !== `${Number.MAX_SAFE_INTEGER}`) {
-        allHighlightIds.add(id);
-      }
-    });
-
-    // Add IDs from ALL highlights on this line (not just nested ones)
-    highlights.forEach(([_start, _end, id]) => {
-      const idStr = `${id}`;
-      if (idStr !== '0' && idStr !== `${Number.MAX_SAFE_INTEGER}`) {
-        allHighlightIds.add(idStr);
-      }
-    });
-
-    // Find a stylesheet we can modify
-    let rules;
-    let stylesheet;
-    for (let i = 0; i < document.styleSheets.length; i++) {
-      if (document.styleSheets[i].href === null) {
-        stylesheet = document.styleSheets[i] as CSSStyleSheet;
-        rules = stylesheet.cssRules;
-        break;
-      }
-    }
-
-    if (stylesheet && rules) {
-      // Create CSS rules for all highlights
-      allHighlightIds.forEach((highlightId) => {
-        const className = `.highlight-${highlightId}`;
-        const level = styles[highlightId] || 0;
-
-        // Better alpha scaling for visual hierarchy with MORE CONTRAST
-        // Single highlights: 0.55 (much more visible)
-        // Nested highlights: DECREASE alpha to show layering (0.47, 0.39, etc.)
-        const alpha = level > 0 ? Math.max(0.35, 0.55 - 0.08 * level) : 0.6;
-
-        // Convert hex to rgba for transparency - this way text remains visible!
-        const rgbaColor = hexToRgba(color, alpha);
-
-        let ruleExists = false;
-        for (const x in rules) {
-          if (rules[x].selectorText === className) {
-            rules[x].style.backgroundColor = rgbaColor;
-            ruleExists = true;
-            break;
-          }
-        }
-
-        if (!ruleExists) {
-          try {
-            stylesheet.insertRule(
-              `.highlight-${highlightId} {
-                background-color: ${rgbaColor} !important; 
-                transition: background-color 0.2s ease-in-out, box-shadow 0.15s ease-in-out, transform 0.1s ease-in-out !important;
-                border-radius: 3px !important;
-                box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
-              }`,
-            );
-          } catch (e) {
-            // Silently fail if rule insertion fails
-            console.warn('Failed to insert highlight rule:', e);
-          }
-        }
-      });
-    }
-  }
+  // NOTE: We no longer use dynamic CSS injection via stylesheet.insertRule()
+  // Instead, we rely on static CSS in _code.scss which is more reliable and works in all browsers
+  // The SCSS has comprehensive styling for .code--underlay .highlight and .code--underlay [class*='highlight-']
+  // This approach is:
+  // - More maintainable (styles in one place)
+  // - Works in Firefox (no security issues)
+  // - Better for hot module replacement
+  // - Easier to debug (visible in source files)
+  // - Faster (no runtime DOM manipulation)
 
   const returnElements = convertStringToJSX(htmlString, line, readOnly, onHighlightClick);
 
@@ -275,94 +214,62 @@ export const highlight = (
  * Get the selection offset relative to parent element
  * https://stackoverflow.com/questions/48810664/get-click-range-relative-to-parent-element
  */
-export const getSelectionOffsetRelativeToParent = (parentElement: any, currentNode: any, position: POSITION): any => {
-  let currentSelection;
-  let currentRange;
-  let offset = 0;
-  let prevSibling;
-  let nodeContent;
-  let currNode = currentNode;
+export const getSelectionOffsetRelativeToParent = (
+  parentElement: Node,
+  currentNode: Node | null,
+  position: POSITION,
+  initialOffset: number = 0,
+): number => {
+  if (!parentElement || !currentNode) {
+    return -1;
+  }
 
-  if (!currNode) {
-    currentSelection = window.getSelection();
-    if (currentSelection === null) {
-      return -1;
-    }
-    currentRange = currentSelection.getRangeAt(0);
-    if (position === POSITION.Start) {
-      currNode = currentRange.startContainer;
-      offset += currentRange.startOffset;
-    } else if (position === POSITION.End) {
-      currNode = currentRange.endContainer;
-      offset += currentRange.endOffset;
+  // Ensure the current node is within the parent element
+  if (!parentElement.contains(currentNode)) {
+    return -1;
+  }
+
+  let offset = 0;
+
+  // Include offset within the current node
+  if (currentNode.nodeType === Node.TEXT_NODE) {
+    offset += initialOffset;
+  } else if (currentNode.nodeType === Node.ELEMENT_NODE) {
+    const element = currentNode as Element;
+    const childCount = Math.min(initialOffset, element.childNodes.length);
+    for (let i = 0; i < childCount; i++) {
+      const child = element.childNodes[i];
+      offset += child.textContent ? child.textContent.length : 0;
     }
   }
 
-  if (currNode === parentElement) {
+  // Add lengths of all previous siblings
+  let prevSibling = currentNode.previousSibling;
+  while (prevSibling) {
+    offset += prevSibling.textContent ? prevSibling.textContent.length : 0;
+    prevSibling = prevSibling.previousSibling;
+  }
+
+  if (currentNode === parentElement) {
     return offset;
   }
 
-  if (!parentElement) {
+  const parentNode = currentNode.parentNode;
+
+  if (!parentNode) {
+    return offset;
+  }
+
+  if (parentNode === parentElement) {
+    return offset;
+  }
+
+  const parentOffset = getSelectionOffsetRelativeToParent(parentElement, parentNode, position, 0);
+  if (parentOffset === -1) {
     return -1;
   }
 
-  if (!parentElement.contains(currNode)) {
-    return -1;
-  }
-
-  // tslint:disable-next-line
-  while ((prevSibling = (prevSibling || currNode).previousSibling)) {
-    nodeContent = prevSibling.innerText || prevSibling.nodeValue || '';
-    offset += nodeContent.length;
-  }
-
-  return offset + getSelectionOffsetRelativeToParent(parentElement, currNode.parentNode, position);
-};
-
-/**
- * Brighten a highlight by changing its background color
- * Enhanced with better visual feedback
- */
-export const brightenHighlight = (commentID: number) => {
-  if (commentID === 0 || commentID === Number.MAX_SAFE_INTEGER) {
-    return;
-  }
-
-  if (commentID < 0) {
-    return;
-  }
-
-  const className = `highlight-${commentID}`;
-  const elems = document.getElementsByClassName(className);
-  let hasScrolled = false;
-  [].forEach.call(elems, (elem: HTMLElement) => {
-    // Convert hex color to rgba with transparency - brighter and more prominent
-    elem.classList.add(`highlight--hovered`);
-    if (!hasScrolled) {
-      elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      hasScrolled = true;
-    }
-  });
-};
-
-/**
- * Darken a highlight by changing its background color
- * Enhanced to restore original appearance
- */
-export const darkenHighlight = (commentID: number) => {
-  if (commentID === 0 || commentID === Number.MAX_SAFE_INTEGER) {
-    return;
-  }
-  if (commentID < 0) {
-    return;
-  }
-
-  const className = `highlight-${commentID}`;
-  const elems = document.getElementsByClassName(className);
-
-  [].forEach.call(elems, (elem: any) => {
-    elem.classList.remove(`highlight--hovered`);
-  });
+  return offset + parentOffset;
 };
 
 // For backward compatibility, export all functions as a single object
@@ -372,8 +279,6 @@ const CodePanelHighlighting = {
   convertStringToJSX,
   highlight,
   getSelectionOffsetRelativeToParent,
-  brightenHighlight,
-  darkenHighlight,
 };
 
 export default CodePanelHighlighting;

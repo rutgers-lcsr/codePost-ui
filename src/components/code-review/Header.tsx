@@ -40,7 +40,7 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 
 import { wait } from '../../infrastructure/animation';
 import { AssignmentType } from '../../infrastructure/assignment';
-import { File } from '../../infrastructure/file';
+import { SubmissionFile, getFileContent } from '../../infrastructure/file';
 import { Submission } from '../../infrastructure/submission';
 
 import { CourseType } from '../../infrastructure/course';
@@ -160,7 +160,7 @@ export const ViewAsStudent = (props: IViewAsStudentProps) => {
   const cpType = consoleTheme === consoleThemes.light ? 'secondary' : 'dark';
 
   return (
-    <Link to={{ pathname: `${props.pathname}?student=1` }} target="_blank">
+    <Link to={{ pathname: props.pathname, search: '?student=1' }} target="_blank">
       <CPTooltip title={tooltips.grade.header.viewAsStudent} hideThisOnHideTips={true}>
         <Space.Compact>
           <CPButton id="view-as-student" cpType={cpType} small={true}>
@@ -189,7 +189,11 @@ export const DownloadCode = (props: IDownloadCodeProps) => {
     const latestSubmission = await Submission.readAnonymous(props.submission.id);
     const files = await Promise.all(
       latestSubmission.files.map((f) => {
-        return File.read(f);
+        if (typeof f === 'number') {
+          return SubmissionFile.read(f);
+        } else {
+          return SubmissionFile.read(f.id);
+        }
       }),
     );
 
@@ -207,7 +211,7 @@ export const DownloadCode = (props: IDownloadCodeProps) => {
           dir = nextDir ? nextDir : dir;
         });
       }
-      dir.file(file.name, file.code);
+      dir.file(file.name, getFileContent(file));
       return true;
     });
 
@@ -215,8 +219,6 @@ export const DownloadCode = (props: IDownloadCodeProps) => {
       saveAs(content, `submission-${files[0].submission}.zip`);
     });
   };
-
-  (window as any).addToFoobar({ value: 'Download code', label: 'Download code', callback: onClick, kind: 'action' });
 
   return (
     <CPTooltip title={tooltips.grade.header.downloadCode} hideThisOnHideTips={true}>
@@ -385,12 +387,12 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   };
 
   useHotkeys(F_KEY, onClick, true);
-  (window as any).addToFoobar({
-    value: 'Finalize / unfinalize',
-    label: 'Finalize / unfinalize',
-    callback: onClick,
-    kind: 'action',
-  });
+  // (window as any).addToFoobar({
+  //   value: 'Finalize / unfinalize',
+  //   label: 'Finalize / unfinalize',
+  //   callback: onClick,
+  //   kind: 'action',
+  // });
 
   React.useEffect(() => {
     // Activate the nudge when these elements are clicked
@@ -450,6 +452,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
           &nbsp;
           <span>
             <Switch
+              aria-label={isFinalized ? 'Click to unfinalize' : 'Click to Finalize'}
               checked={isFinalized}
               onClick={onClick}
               disabled={
@@ -734,7 +737,6 @@ export const StatusTags = (props: IStatusTagsProps) => {
 
   const statusTagType: StatusTagType = subStatus(props.submission.isFinalized, props.assignment.isReleased);
 
-  // @ts-ignore
   let tagColor;
   let tagText;
   let tooltipText;
@@ -913,31 +915,5 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
     <Dropdown menu={{ items: menuItems }} trigger={['click']}>
       <MenuOutlined style={{ color: consoleTheme.text }} />
     </Dropdown>
-  );
-};
-
-export const HeaderSearch = () => {
-  const onClick = () => {
-    (window as any).openFoobar();
-  };
-
-  return (
-    <span onClick={onClick} style={{ cursor: 'pointer' }}>
-      {/* <Input.Search id="foobar-search" disabled={true} placeholder="Find anything" /> */}
-      <div
-        className="foobar-search"
-        style={{
-          background: '#f5f5f5',
-          border: '1px solid #d9d9d9',
-          borderRadius: '4px',
-          padding: '4px 11px',
-          lineHeight: '1.5',
-          width: '175px',
-          color: 'rgba(0, 0, 0, 0.3)',
-        }}
-      >
-        Find anything <SearchOutlined style={{ float: 'right', marginTop: '2px' }} />
-      </div>
-    </span>
   );
 };

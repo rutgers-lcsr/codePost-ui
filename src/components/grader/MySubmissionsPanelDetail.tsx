@@ -3,54 +3,67 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 
+/* antd imports */
+import {
+  Breadcrumb,
+  Button,
+  Divider,
+  Dropdown,
+  Empty,
+  InputNumber,
+  Popconfirm,
+  Select,
+  Space,
+  Switch,
+  Table,
+  Tag,
+} from 'antd';
+
+/* antd icons */
 import {
   CloseCircleOutlined,
   CodeOutlined,
   FilterOutlined,
   InboxOutlined,
+  InfoCircleOutlined,
   MinusCircleTwoTone,
   PlusCircleOutlined,
   RedoOutlined,
 } from '@ant-design/icons';
 
-/* antd imports */
-import { Breadcrumb, Button, Divider, Dropdown, Empty, Popconfirm, Select, Switch, Table } from 'antd';
-
-/* other library imports */
-import { Link } from 'react-router-dom';
-
 /* codePost imports */
 import CPAdminDetail from '../admin/other/CPAdminDetail';
-
-import { BUTTON_STATE } from '../../types/common';
 import CPButton from '../core/CPButton';
 import CPTooltip from '../core/CPTooltip';
 import { tooltips } from '../core/tooltips';
 
+import { compare } from '../utils/SortUtils';
 import { formatSub, ISubDataBasic, sortByGrade } from './GraderUtils';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
 import { Section, SectionType } from '../../infrastructure/section';
 import { AnonymousSubmissionInfoType, Submission, SubmissionType } from '../../infrastructure/submission';
-import { compare } from '../utils/SortUtils';
-
-import { loadIDList } from '../../infrastructure/generics';
-
 import { ADMIN } from '../../routes';
+import { BUTTON_STATE } from '../../types/common';
 
 type alignType = 'left' | 'right' | 'center';
 
 const { Option } = Select;
 
-// 5 minute interval for automatic reload
-const LOADING_INTERVAL = 15000;
+// Constants
+const LOADING_INTERVAL = 15000; // 15 seconds for automatic reload
+const MIN_CLAIM_AMOUNT = 1;
+const MAX_CLAIM_AMOUNT = 10;
+const DEFAULT_CLAIM_AMOUNT = 1;
 
 /**********************************************************************************************************************/
+/* Types
+/**********************************************************************************************************************/
 
-/* for type checking functions that operate on table rows */
 interface ITableRow extends ISubDataBasic {
   key: number;
   student: string | number;
@@ -70,139 +83,155 @@ interface IProps {
   breadcrumbs: Array<{ title: React.ReactNode }>;
 }
 
-interface IState {
-  /* data */
-  currentSections: SectionType[];
-  sections: SectionType[];
-  submissions: AnonymousSubmissionInfoType[];
+/**********************************************************************************************************************/
+/* Helper Functions
+/**********************************************************************************************************************/
 
-  /* UI control */
-  buttonState: BUTTON_STATE;
-  isLoadingSubmissions: boolean;
-  filterType: FILTER_TYPE;
+const loadSections = async (course: CourseType): Promise<SectionType[]> => {
+  const sections = await Promise.all(course.sections.map((id) => Section.read(id)));
+  return sections.filter((section): section is SectionType => section !== undefined);
+};
 
-  /* Anonymous grading control */
-  canViewSubmissionInfo: boolean;
-  showStudentEmails: boolean;
-}
+const loadSubmissions = (currentAssignment: AssignmentType, user: string): Promise<AnonymousSubmissionInfoType[]> => {
+  return Assignment.readSubmissionsAnonymous(currentAssignment.id, {
+    grader: user,
+    compact: '1',
+  });
+};
 
-class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
-  // @ts-ignore
-  private interval: number;
+const getSectionParameters = (sections: SectionType[]): Array<SectionType | undefined> => {
+  return sections.length === 0 ? [undefined] : sections;
+};
 
-  public constructor(props: IProps) {
-    super(props);
-    this.state = {
-      currentSections: [],
-      sections: [],
-      submissions: [],
+/**********************************************************************************************************************/
+/* Main Component
+/**********************************************************************************************************************/
 
-      buttonState: BUTTON_STATE.Active,
-      isLoadingSubmissions: true,
-      filterType: FILTER_TYPE.NONE,
+const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, graderEmail, isAdmin, breadcrumbs }) => {
+  // State
+  const [currentSections, setCurrentSections] = useState<SectionType[]>([]);
+  const [sections, setSections] = useState<SectionType[]>([]);
+  const [submissions, setSubmissions] = useState<AnonymousSubmissionInfoType[]>([]);
+  const [buttonState, setButtonState] = useState<BUTTON_STATE>(BUTTON_STATE.Active);
+  const [isLoadingSubmissions, setIsLoadingSubmissions] = useState<boolean>(true);
+  const [filterType, setFilterType] = useState<FILTER_TYPE>(FILTER_TYPE.NONE);
+  const [showStudentEmails, setShowStudentEmails] = useState<boolean>(false);
+  const [canViewSubmissionInfo, setCanViewSubmissionInfo] = useState<boolean>(false);
+  const [claimAmount, setClaimAmount] = useState<number>(DEFAULT_CLAIM_AMOUNT);
+  const [queueLength, setQueueLength] = useState<number | null>(null);
+  const [isLoadingQueueLength, setIsLoadingQueueLength] = useState<boolean>(false);
 
-      showStudentEmails: false,
-      canViewSubmissionInfo: false,
-    };
-  }
-
-  /***********************************************************************************
-  /* Lifecycle methods
-  /**********************************************************************************/
-
-  public componentDidMount() {
-    this.changeAssignment(this.props.assignment);
-    this.interval = window.setInterval(() => {
-      this.changeAssignment(this.props.assignment);
-    }, LOADING_INTERVAL);
-  }
-
-  public componentDidUpdate(oldProps: IProps, _prevState: IState) {
-    if (oldProps.assignment !== this.props.assignment) {
-      this.changeAssignment(this.props.assignment);
-    }
-  }
-
-  public changeAssignment = (newAssignment: AssignmentType) => {
-    this.setState({ isLoadingSubmissions: true }, () => {
-      this.loadSubmissions(newAssignment, this.props.graderEmail).then((submissions) => {
-        this.setState({
-          submissions,
-          canViewSubmissionInfo: submissions.length > 0 ? typeof submissions[0].students !== 'undefined' : false,
-          isLoadingSubmissions: false,
-        });
-      });
-
-      this.loadSections(this.props.course).then((sections) => {
-        this.setState({ sections });
-      });
-    });
-  };
+  const intervalRef = useRef<number | null>(null);
 
   /***********************************************************************************
-  /* API operations methods
+  /* API operations
   /**********************************************************************************/
 
-  public loadSections = (course: CourseType) => {
-    return loadIDList(course.sections, Section);
-  };
+  const changeAssignment = useCallback(
+    (newAssignment: AssignmentType) => {
+      setIsLoadingSubmissions(true);
 
-  /* eslint-disable no-useless-computed-key */
-  public loadSubmissions = (currentAssignment: AssignmentType, user: string) => {
-    return Assignment.readSubmissionsAnonymous(currentAssignment.id, {
-      grader: user,
-      ['compact']: '1',
-    });
-  };
-  /* eslint-enable no-useless-computed-key */
+      loadSubmissions(newAssignment, graderEmail).then((subs) => {
+        setSubmissions(subs);
+        setCanViewSubmissionInfo(subs.length > 0 ? typeof subs[0].students !== 'undefined' : false);
+        setIsLoadingSubmissions(false);
+      });
 
-  public fetchSubmission = async (
-    assignment: AssignmentType,
-    section?: SectionType,
-  ): Promise<SubmissionType | undefined> => {
-    const params = section ? `?section=${section.name}` : '';
-    return await fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/drawUnassigned/${params}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    })
-      .then((res) => {
-        if (res.status === 204) {
-          return undefined;
+      loadSections(course).then((secs) => {
+        setSections(secs);
+      });
+    },
+    [graderEmail, course],
+  );
+
+  // Fetch queue length
+  const fetchQueueLength = useCallback(
+    async (assignmentId: number, sections?: SectionType[]): Promise<number | null> => {
+      try {
+        const params = new URLSearchParams();
+        if (sections && sections.length > 0) {
+          sections.forEach((section) => {
+            params.append('section', section.id.toString());
+          });
         }
-        return res.json();
-      })
-      .then((json) => {
-        return json;
-      });
-  };
 
-  public claimSubmission = async (
-    assignment: AssignmentType,
-    sections: SectionType[],
-  ): Promise<SubmissionType | undefined> => {
-    let submission;
-    const sectionParameters = this.getSectionParameters(sections);
+        const response = await fetch(
+          `${process.env.REACT_APP_API_URL}/assignments/${assignmentId}/queueLength/?${params.toString()}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          },
+        );
 
-    // Note that calling fetchSubmission with section=undefined performs
-    // the fetchSubmission operation without a section filter
-    for (const section of sectionParameters) {
-      submission = await this.fetchSubmission(assignment, section);
-      if (submission) {
-        break;
+        if (response.ok) {
+          const data = await response.json();
+          return data.queueLength || 0;
+        }
+        return null;
+      } catch (error) {
+        console.error('Error fetching queue length:', error);
+        return null;
       }
-    }
+    },
+    [],
+  );
 
-    if (submission) {
-      this.setState({
-        submissions: [...this.state.submissions, submission],
-      });
-    }
+  const fetchSubmission = useCallback(
+    async (assignmentId: number, section?: SectionType, amount: number = 1): Promise<SubmissionType[] | undefined> => {
+      const params = new URLSearchParams();
+      if (section) {
+        params.append('section', section.id.toString());
+      }
+      params.append('amount', amount.toString());
 
-    return submission;
-  };
+      return await fetch(
+        `${process.env.REACT_APP_API_URL}/assignments/${assignmentId}/drawUnassigned/?${params.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        },
+      )
+        .then((res) => {
+          if (res.status === 204) {
+            return undefined;
+          }
+          return res.json();
+        })
+        .then((json) => json);
+    },
+    [],
+  );
 
-  public releaseSubmission = async (submission: SubmissionType): Promise<SubmissionType> => {
+  const claimSubmission = useCallback(
+    async (
+      assignmentId: number,
+      sections: SectionType[],
+      amount: number = 1,
+    ): Promise<SubmissionType[] | undefined> => {
+      let submission;
+      const sectionParameters = getSectionParameters(sections);
+
+      // Note that calling fetchSubmission with section=undefined performs
+      // the fetchSubmission operation without a section filter
+      for (const section of sectionParameters) {
+        submission = await fetchSubmission(assignmentId, section, amount);
+        if (submission) {
+          break;
+        }
+      }
+
+      if (submission) {
+        setSubmissions((prev) => [...prev, ...submission]);
+      }
+
+      return submission;
+    },
+    [fetchSubmission],
+  );
+
+  const releaseSubmission = useCallback(async (submission: SubmissionType): Promise<SubmissionType> => {
     const payload = {
       id: submission.id,
       grader: '',
@@ -211,369 +240,416 @@ class MySubmissionsPanelDetail extends React.Component<IProps, IState> {
 
     const releasedSubmission = await Submission.update(payload);
 
-    this.setState({
-      submissions: this.state.submissions.filter((sub) => {
-        return sub.id !== releasedSubmission.id;
-      }),
-    });
+    setSubmissions((prev) => prev.filter((sub) => sub.id !== releasedSubmission.id));
 
     return releasedSubmission;
-  };
+  }, []);
 
-  public getAnotherSubmission = async () => {
-    const { assignment } = this.props;
+  const updateQueueLength = useCallback(async () => {
+    setIsLoadingQueueLength(true);
+    const length = await fetchQueueLength(assignment.id, currentSections.length > 0 ? currentSections : undefined);
+    setQueueLength(length);
+    setIsLoadingQueueLength(false);
+  }, [assignment.id, currentSections, fetchQueueLength]);
 
-    this.setState({ buttonState: BUTTON_STATE.Loading });
-    const claimedSubmission = await this.claimSubmission(assignment, this.state.currentSections);
+  const getAnotherSubmission = useCallback(async () => {
+    setButtonState(BUTTON_STATE.Loading);
+    const claimedSubmission = await claimSubmission(assignment.id, currentSections, claimAmount);
     if (!claimedSubmission) {
-      this.setState({ buttonState: BUTTON_STATE.Inactive });
+      setButtonState(BUTTON_STATE.Inactive);
     } else {
-      this.setState({ buttonState: BUTTON_STATE.Active });
+      setButtonState(BUTTON_STATE.Active);
     }
-  };
+    // Update queue length after claiming
+    await updateQueueLength();
+  }, [assignment.id, currentSections, claimAmount, claimSubmission, updateQueueLength]);
 
   /***********************************************************************************
-  /* Utility functions
+  /* Event handlers
   /**********************************************************************************/
 
-  public openGradePage = (submission: AnonymousSubmissionInfoType) => {
+  const openGradePage = useCallback((submission: AnonymousSubmissionInfoType) => {
     if (localStorage.getItem('source') === 'codePost') {
       window.open(`/code/${submission.id}`);
     } else {
       window.open(`/code/${submission.id}`, '_self');
     }
-  };
+  }, []);
 
-  public getSectionParameters = (sections: SectionType[]) => {
-    return sections.length === 0 ? [undefined] : sections;
-  };
-
-  public handleSelect = (sectionID: string) => {
-    const match = this.state.sections.find((obj: SectionType) => {
-      return obj.id === Number(sectionID);
-    });
-    if (match) {
-      // If selected sections change, we want to offer the grader another chance to claim
-      // One exception is if currentSections goes from [] --> [x1, ..., xn], since if no submissions
-      // are available without section filtering, none will be available with section filtering
-      if (this.state.currentSections.length === 0) {
-        this.setState({ currentSections: [match] });
-      } else {
-        this.setState({
-          currentSections: [...this.state.currentSections, match],
-          buttonState: BUTTON_STATE.Active,
-        });
+  const handleSelect = useCallback(
+    (sectionID: string) => {
+      const match = sections.find((obj: SectionType) => obj.id === Number(sectionID));
+      if (match) {
+        // If selected sections change, we want to offer the grader another chance to claim
+        // One exception is if currentSections goes from [] --> [x1, ..., xn], since if no submissions
+        // are available without section filtering, none will be available with section filtering
+        if (currentSections.length === 0) {
+          setCurrentSections([match]);
+        } else {
+          setCurrentSections([...currentSections, match]);
+          setButtonState(BUTTON_STATE.Active);
+        }
+        // Update queue length when section filter changes
+        updateQueueLength();
       }
-    }
-  };
+    },
+    [sections, currentSections, updateQueueLength],
+  );
 
-  public handleDeselect = (sectionID: string) => {
-    const newSections = this.state.currentSections.filter((obj) => {
-      return obj.id !== Number(sectionID);
-    });
-    this.setState({
-      currentSections: newSections,
-      buttonState: BUTTON_STATE.Active,
-    });
-  };
+  const handleDeselect = useCallback(
+    (sectionID: string) => {
+      const newSections = currentSections.filter((obj) => obj.id !== Number(sectionID));
+      setCurrentSections(newSections);
+      setButtonState(BUTTON_STATE.Active);
+      // Update queue length when section filter changes
+      updateQueueLength();
+    },
+    [currentSections, updateQueueLength],
+  );
 
-  public setFilterType = (filterType: FILTER_TYPE) => {
-    this.setState({ filterType, currentSections: [] });
-  };
+  const handleSetFilterType = useCallback(
+    (newFilterType: FILTER_TYPE) => {
+      setFilterType(newFilterType);
+      setCurrentSections([]);
+      // Update queue length when filter type changes
+      updateQueueLength();
+    },
+    [updateQueueLength],
+  );
 
-  public getAnotherSubmissionButton = (buttonState: BUTTON_STATE, handleClick: () => void) => {
-    /* build claim button based on state of submission queue */
-    let claimButton;
-    let refreshButton;
+  const toggleShowStudentEmails = useCallback(() => {
+    setShowStudentEmails((prev) => !prev);
+  }, []);
+
+  const onSubmissionRelease = useCallback(
+    (sub: SubmissionType) => {
+      releaseSubmission(sub).then(() => {
+        setButtonState(BUTTON_STATE.Active);
+        updateQueueLength();
+      });
+    },
+    [releaseSubmission, updateQueueLength],
+  );
+
+  /***********************************************************************************
+  /* Effects
+  /**********************************************************************************/
+
+  // Initial load and interval setup
+  useEffect(() => {
+    changeAssignment(assignment);
+    updateQueueLength();
+
+    intervalRef.current = window.setInterval(() => {
+      changeAssignment(assignment);
+      updateQueueLength();
+    }, LOADING_INTERVAL);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [assignment, changeAssignment, updateQueueLength]);
+
+  // Handle assignment changes
+  useEffect(() => {
+    changeAssignment(assignment);
+    updateQueueLength();
+  }, [assignment.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /***********************************************************************************
+  /* Render helpers
+  /**********************************************************************************/
+
+  const renderClaimControls = useMemo(() => {
+    let claimButton: React.ReactNode;
+    let refreshButton: React.ReactNode;
+
     switch (buttonState) {
-      case BUTTON_STATE.Active:
+      case BUTTON_STATE.Active: {
         claimButton = (
-          <CPTooltip title={tooltips.grader.mySubmissions.claim} hideThisOnHideTips={true}>
-            <CPButton
-              cpType="primary"
-              key={2}
-              icon={<PlusCircleOutlined />}
-              onClick={handleClick}
-              fallback="plus-circle"
-              style={{ display: 'inline-block' }}
-            >
-              Claim
-            </CPButton>
-          </CPTooltip>
+          <Space.Compact>
+            <CPTooltip title={tooltips.grader.mySubmissions.claim} hideThisOnHideTips={true}>
+              <CPButton
+                cpType="primary"
+                icon={<PlusCircleOutlined />}
+                onClick={getAnotherSubmission}
+                fallbackIcon={<PlusCircleOutlined />}
+                style={{ display: 'inline-block' }}
+              >
+                Claim
+              </CPButton>
+            </CPTooltip>
+            <InputNumber
+              min={MIN_CLAIM_AMOUNT}
+              max={MAX_CLAIM_AMOUNT}
+              value={claimAmount}
+              onChange={(value) => setClaimAmount(value || DEFAULT_CLAIM_AMOUNT)}
+              style={{ width: 60 }}
+            />
+          </Space.Compact>
         );
         break;
-      case BUTTON_STATE.Inactive:
+      }
+      case BUTTON_STATE.Inactive: {
         claimButton = (
           <CPButton
             cpType="disabled"
-            key={2}
             icon={<InboxOutlined />}
-            fallback="inbox"
+            fallbackIcon={<InboxOutlined />}
             style={{ display: 'inline-block' }}
           >
             Queue empty
           </CPButton>
         );
-        const refreshFunction = () => this.setState({ buttonState: BUTTON_STATE.Active });
         refreshButton = (
-          <CPButton cpType="secondary" icon={<RedoOutlined />} onClick={refreshFunction} fallback="redo">
+          <CPButton
+            cpType="secondary"
+            icon={<RedoOutlined />}
+            onClick={() => {
+              setButtonState(BUTTON_STATE.Active);
+              updateQueueLength();
+            }}
+            fallbackIcon={<RedoOutlined />}
+          >
             Refresh
           </CPButton>
         );
         break;
-      case BUTTON_STATE.Loading:
+      }
+      case BUTTON_STATE.Loading: {
         claimButton = (
-          <CPButton cpType="primary" key={2} loading={true} style={{ display: 'inline-block' }}>
+          <CPButton cpType="primary" loading={true} style={{ display: 'inline-block' }}>
             Claim
           </CPButton>
         );
         break;
+      }
     }
 
-    /* build filter component */
-    let filterComponent;
-    switch (this.state.filterType) {
-      case FILTER_TYPE.NONE:
+    // Queue length display
+    const queueLengthDisplay =
+      queueLength !== null ? (
+        <Tag color="blue" icon={<InfoCircleOutlined />}>
+          {isLoadingQueueLength ? 'Loading...' : `${queueLength} in queue`}
+        </Tag>
+      ) : null;
+
+    return (
+      <Space size="small">
+        {claimButton}
+        {refreshButton}
+        {queueLengthDisplay}
+      </Space>
+    );
+  }, [buttonState, claimAmount, getAnotherSubmission, queueLength, isLoadingQueueLength, updateQueueLength]);
+
+  const renderFilterComponent = useMemo(() => {
+    switch (filterType) {
+      case FILTER_TYPE.NONE: {
         const filterMenuItems = [
           {
             key: 'by-section',
             label: 'By section',
-            onClick: this.setFilterType.bind(this, FILTER_TYPE.BY_SECTION),
+            onClick: () => handleSetFilterType(FILTER_TYPE.BY_SECTION),
           },
         ];
-        filterComponent = (
+        return (
           <CPTooltip title={tooltips.grader.mySubmissions.filter} hideThisOnHideTips={true}>
             <Dropdown menu={{ items: filterMenuItems }} trigger={['click']}>
               <Button icon={<FilterOutlined />}>Filter</Button>
             </Dropdown>
           </CPTooltip>
         );
-        break;
-      case FILTER_TYPE.BY_SECTION:
-        filterComponent = (
-          <div style={{ display: 'inline-block' }}>
+      }
+      case FILTER_TYPE.BY_SECTION: {
+        return (
+          <Space size="small">
             <SelectSection
-              sections={this.state.sections}
-              currentSections={this.state.currentSections}
-              onSelect={this.handleSelect}
-              onDeselect={this.handleDeselect}
-              disabled={this.state.isLoadingSubmissions}
+              sections={sections}
+              currentSections={currentSections}
+              onSelect={handleSelect}
+              onDeselect={handleDeselect}
+              disabled={isLoadingSubmissions}
             />
-            &nbsp;
-            <CloseCircleOutlined onClick={this.setFilterType.bind(this, FILTER_TYPE.NONE)} />
-          </div>
-        );
-        break;
-    }
-
-    return (
-      <div style={{ display: 'inline-block' }}>
-        {claimButton} &nbsp; {refreshButton} &nbsp; {filterComponent}
-      </div>
-    );
-  };
-
-  public toggleShowStudentEmails = () => {
-    this.setState({
-      showStudentEmails: !this.state.showStudentEmails,
-    });
-  };
-
-  public onSubmissionRelease = (sub: SubmissionType) => {
-    this.releaseSubmission(sub).then(() => {
-      this.setState({ buttonState: BUTTON_STATE.Active });
-    });
-  };
-
-  /***********************************************************************************
-  /* Utility functions
-  /**********************************************************************************/
-
-  public render() {
-    let content;
-    let actions: any[];
-    const getAnotherSubmissionButton = this.getAnotherSubmissionButton(
-      this.state.buttonState,
-      this.getAnotherSubmission,
-    );
-    if (this.state.submissions.length > 0 || this.state.isLoadingSubmissions) {
-      // If we're in anonymous grading mode, add a toggle to reveal student emails
-      let anonymousToggle;
-      if (this.props.assignment.anonymousGrading && this.state.canViewSubmissionInfo) {
-        anonymousToggle = (
-          <div>
-            <div style={{ display: 'inline-block' }}>
-              Reveal students: &nbsp;
-              <Switch
-                defaultChecked={this.state.showStudentEmails}
-                onChange={this.toggleShowStudentEmails}
-                key="toggleShowStudents"
-                style={{ display: 'inline-block' }}
-              />
-            </div>
-            <Divider type="vertical" style={{ height: 25 }} />
-          </div>
+            <CloseCircleOutlined onClick={() => handleSetFilterType(FILTER_TYPE.NONE)} />
+          </Space>
         );
       }
+    }
+  }, [filterType, sections, currentSections, handleSelect, handleDeselect, isLoadingSubmissions, handleSetFilterType]);
 
-      const centerAlign: alignType = 'center';
-      const columns = [
-        {
-          title: 'Open',
-          dataIndex: 'open',
-          align: centerAlign,
-        },
-        {
-          title: 'Student',
-          dataIndex: 'student',
-          sorter: (a: ITableRow, b: ITableRow) => compare(true, a.student, b.student),
-        },
-        {
-          title: 'Grade',
-          dataIndex: 'gradeText',
-          sorter: (a: ITableRow, b: ITableRow) => {
-            return sortByGrade(
-              { grade: a.grade, isFinalized: a.isFinalized },
-              { grade: b.grade, isFinalized: b.isFinalized },
-            );
-          },
-          align: centerAlign,
-        },
-        {
-          title: 'Last Edited',
-          dataIndex: 'lastEdited',
-          align: centerAlign,
-          sorter: (a: ITableRow, b: ITableRow) => {
-            const date1 = new Date(a.lastEdited);
-            const date2 = new Date(b.lastEdited);
-            return date2.valueOf() - date1.valueOf();
-          },
-        },
-        {
-          title: (
-            <span>
-              Unclaim &nbsp;
-              <CPTooltip
-                title="Remove yourself as the grader of this submission, and return the submission to the ungraded queue."
-                hideThisOnHideTips={true}
-                infoIcon={true}
-              />
-            </span>
-          ),
-          dataIndex: 'release',
-          align: centerAlign,
-        },
-      ];
+  let content: React.ReactNode;
+  let actions: Array<React.ReactNode> = [];
 
-      const showingEmails = !this.props.assignment.anonymousGrading || this.state.showStudentEmails;
-
-      const data = this.state.submissions.map((sub) => {
-        const releaseSubmission = () => {
-          // @ts-ignore
-          this.releaseSubmission(sub);
-        };
-        const students = showingEmails && sub.students ? sub.students.join(', ') : sub.id;
-        return {
-          ...formatSub(sub, this.props.assignment),
-          open: <CodeOutlined onClick={this.openGradePage.bind(this, sub)} />,
-          key: sub.id,
-          student: students,
-          release: (
-            <div>
-              <Popconfirm
-                title="Are you sure you want to unclaim this submission?"
-                onConfirm={releaseSubmission}
-                okText={sub.isFinalized ? 'Unclaim and unfinalize' : 'Unclaim'}
-                cancelText="Cancel"
-                placement="left"
-              >
-                <MinusCircleTwoTone twoToneColor="#eb2f96" />
-              </Popconfirm>
-            </div>
-          ),
-        };
-      });
-
-      actions = [anonymousToggle, getAnotherSubmissionButton];
-      content = (
-        <Table columns={columns} dataSource={data} pagination={false} loading={this.state.isLoadingSubmissions} />
+  if (submissions.length > 0 || isLoadingSubmissions) {
+    // If we're in anonymous grading mode, add a toggle to reveal student emails
+    let anonymousToggle;
+    if (assignment.anonymousGrading && canViewSubmissionInfo) {
+      anonymousToggle = (
+        <Space size="small">
+          <span>Reveal students:</span>
+          <Switch checked={showStudentEmails} onChange={toggleShowStudentEmails} />
+          <Divider type="vertical" style={{ height: 25 }} />
+        </Space>
       );
-    } else {
-      actions = [];
+    }
 
-      let emptyMessage: string | React.ReactElement = 'No submissions yet. Click claim to start grading!';
-      if (this.props.isAdmin) {
-        emptyMessage = (
+    const centerAlign: alignType = 'center';
+    const columns = [
+      {
+        title: 'Open',
+        dataIndex: 'open',
+        align: centerAlign,
+      },
+      {
+        title: 'Student',
+        dataIndex: 'student',
+        sorter: (a: ITableRow, b: ITableRow) => compare(true, a.student, b.student),
+      },
+      {
+        title: 'Grade',
+        dataIndex: 'gradeText',
+        sorter: (a: ITableRow, b: ITableRow) => {
+          return sortByGrade(
+            { grade: a.grade, isFinalized: a.isFinalized },
+            { grade: b.grade, isFinalized: b.isFinalized },
+          );
+        },
+        align: centerAlign,
+      },
+      {
+        title: 'Last Edited',
+        dataIndex: 'lastEdited',
+        align: centerAlign,
+        sorter: (a: ITableRow, b: ITableRow) => {
+          const date1 = new Date(a.lastEdited);
+          const date2 = new Date(b.lastEdited);
+          return date2.valueOf() - date1.valueOf();
+        },
+      },
+      {
+        title: (
           <span>
-            This is where you can claim submissions to grade. If you're looking to manage your course, head to the{' '}
-            <Link to={`${ADMIN}/${this.props.course.name}/${this.props.course.period}`}>Admin Console</Link>
+            Unclaim &nbsp;
+            <CPTooltip
+              title="Remove yourself as the grader of this submission, and return the submission to the ungraded queue."
+              hideThisOnHideTips={true}
+              infoIcon={true}
+            />
           </span>
-        );
-      }
+        ),
+        dataIndex: 'release',
+        align: centerAlign,
+      },
+    ];
 
-      content = (
-        <Empty
-          styles={{
-            image: {
-              height: 60,
-            },
-          }}
-          description={emptyMessage}
-        >
-          {getAnotherSubmissionButton}
-        </Empty>
+    const showingEmails = !assignment.anonymousGrading || showStudentEmails;
+
+    const data = submissions.map((sub) => {
+      const students = showingEmails && sub.students ? sub.students.join(', ') : sub.id;
+      return {
+        ...formatSub(sub, assignment),
+        open: <CodeOutlined onClick={() => openGradePage(sub)} />,
+        key: sub.id,
+        student: students,
+        release: (
+          <Popconfirm
+            title="Are you sure you want to unclaim this submission?"
+            onConfirm={() => onSubmissionRelease(sub as SubmissionType)}
+            okText={sub.isFinalized ? 'Unclaim and unfinalize' : 'Unclaim'}
+            cancelText="Cancel"
+            placement="left"
+          >
+            <MinusCircleTwoTone twoToneColor="#eb2f96" />
+          </Popconfirm>
+        ),
+      };
+    });
+
+    actions = [anonymousToggle, renderClaimControls, renderFilterComponent].filter(Boolean);
+    content = <Table columns={columns} dataSource={data} pagination={false} loading={isLoadingSubmissions} />;
+  } else {
+    let emptyMessage: string | React.ReactElement = 'No submissions yet. Click claim to start grading!';
+    if (isAdmin) {
+      emptyMessage = (
+        <span>
+          This is where you can claim submissions to grade. If you're looking to manage your course, head to the{' '}
+          <Link to={`${ADMIN}/${course.name}/${course.period}`}>Admin Console</Link>
+        </span>
       );
     }
 
-    return (
-      <CPAdminDetail
-        goBack={null}
-        breadcrumbs={<Breadcrumb items={[...this.props.breadcrumbs, { title: this.props.assignment.name }]} />}
-        title={<div>{`Claimed by Me: ${this.props.assignment.name}`}</div>}
-        titleInfo={tooltips.grader.mySubmissions.title}
-        actions={actions}
-        content={content}
-        gutterSize={0}
-      />
+    content = (
+      <Empty
+        styles={{
+          image: {
+            height: 60,
+          },
+        }}
+        description={emptyMessage}
+      >
+        <Space direction="vertical" size="middle" align="center">
+          {renderClaimControls}
+          {renderFilterComponent}
+        </Space>
+      </Empty>
     );
   }
-}
+
+  return (
+    <CPAdminDetail
+      goBack={null}
+      breadcrumbs={<Breadcrumb items={[...breadcrumbs, { title: assignment.name }]} />}
+      title={<div>{`Claimed by Me: ${assignment.name}`}</div>}
+      titleInfo={tooltips.grader.mySubmissions.title}
+      actions={actions}
+      content={content}
+      gutterSize={0}
+    />
+  );
+};
+
+/**********************************************************************************************************************/
+/* SelectSection Component
+/**********************************************************************************************************************/
 
 interface ISelectSectionProps {
   sections: SectionType[];
   currentSections: SectionType[];
-  onSelect: any;
-  onDeselect: any;
+  onSelect: (sectionID: string) => void;
+  onDeselect: (sectionID: string) => void;
   disabled: boolean;
 }
 
-export const SelectSection = (props: ISelectSectionProps) => {
-  const { sections, onSelect, onDeselect } = props;
-
-  const selectorItemsFormatter = (items: SectionType[]) => {
-    return items.map((section, _i) => (
-      <Option key={section.id} value={section.id}>
-        {section.name}
-      </Option>
-    ));
-  };
+export const SelectSection: React.FC<ISelectSectionProps> = ({ sections, onSelect, onDeselect, disabled }) => {
+  const selectorItems = useMemo(
+    () =>
+      sections.map((section) => (
+        <Option key={section.id} value={section.id}>
+          {section.name}
+        </Option>
+      )),
+    [sections],
+  );
 
   if (sections.length === 0) {
     return null;
-  } else {
-    return (
-      <Select
-        placeholder="Filter by section"
-        mode="multiple"
-        onSelect={onSelect}
-        onDeselect={onDeselect}
-        style={{ width: 250 }}
-        disabled={props.disabled}
-      >
-        {selectorItemsFormatter(sections)}
-      </Select>
-    );
   }
+
+  return (
+    <Select
+      placeholder="Filter by section"
+      mode="multiple"
+      onSelect={onSelect}
+      onDeselect={onDeselect}
+      style={{ width: 250 }}
+      disabled={disabled}
+    >
+      {selectorItems}
+    </Select>
+  );
 };
 
 export default MySubmissionsPanelDetail;

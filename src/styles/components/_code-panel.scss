@@ -1,7 +1,6 @@
 .code-panel {
   margin: 0px 0px 0px 0px;
-  padding: 0px 0px 14px 0px;
-
+  padding: 0px 0px;
   // flex: 1;
   overflow: hidden;
   white-space: nowrap;
@@ -26,18 +25,6 @@
       max-width: 100%;
       width: 100%;
       min-height: 100%;
-    }
-  }
-}
-
-.sidebar-resizer {
-  .rc-slider-handle {
-    background-color: transparent;
-    border: 0px solid transparent;
-    border-radius: 0;
-    cursor: col-resize;
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.25);
     }
   }
 }

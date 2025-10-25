@@ -187,7 +187,12 @@ export const calculateGradingProgressStats = (
     };
   }
 
-  const assignmentSubs = submissions;
+  // Deduplicate submissions by ID before calculating stats
+  const uniqueSubmissionsMap = new Map<number, SubmissionInfoType>();
+  submissions.forEach((sub) => {
+    uniqueSubmissionsMap.set(sub.id, sub);
+  });
+  const assignmentSubs = Array.from(uniqueSubmissionsMap.values());
   const numSubmissions = assignmentSubs.length;
 
   let numGraded = 0;
@@ -369,6 +374,7 @@ export const StatsDrawer = (props: {
 }) => {
   const actionLabel = props.type === DRAWER_TYPE.Missing ? 'Upload' : 'Open';
   let body = <Loading />;
+  let actualSubtitle = props.content.subtitle;
 
   if (props.content.content !== null) {
     const columns = [
@@ -385,7 +391,15 @@ export const StatsDrawer = (props: {
       },
     ];
 
-    const data = props.content.content.map((row) => {
+    // Deduplicate by creating a unique key from email and subID
+    const uniqueContent = props.content.content.filter((row, index, self) => {
+      return index === self.findIndex((r) => r.email === row.email && r.subID === row.subID);
+    });
+
+    // Recalculate subtitle with actual deduplicated count
+    actualSubtitle = getDrawerTitle(props.type, uniqueContent.length, false);
+
+    const data = uniqueContent.map((row) => {
       let actionElement;
       if (actionLabel === 'Open') {
         const action = () => openSubmission(row.subID!);
@@ -404,6 +418,7 @@ export const StatsDrawer = (props: {
       }
 
       return {
+        key: `${row.email}-${row.subID}`,
         students: row.email,
         action: actionElement,
       };
@@ -427,15 +442,17 @@ export const StatsDrawer = (props: {
     <Drawer
       title={
         <span>
-          {props.content.title} | {props.content.subtitle}
+          {props.content.title} | {actualSubtitle}
         </span>
       }
       placement="right"
       closable={true}
       onClose={props.onClose}
-      visible={props.isVisible}
+      open={props.isVisible}
       width={600}
-      bodyStyle={{ paddingBottom: 0 }}
+      styles={{
+        body: { paddingBottom: 0 },
+      }}
     >
       {body}
     </Drawer>

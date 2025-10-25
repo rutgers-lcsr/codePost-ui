@@ -9,7 +9,7 @@ import * as React from 'react';
 import { Switch } from 'antd';
 
 /* other library imports */
-import { RouteComponentProps } from 'react-router';
+import { RouteComponentProps } from '../../router/legacy';
 
 /* codePost imports */
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
@@ -156,7 +156,11 @@ class RegradesPanel extends React.Component<IProps, IState> {
       viewToggle = (
         <div>
           View all regrades: &nbsp;
-          <Switch onChange={this.toggleViewAll} defaultChecked={this.state.viewAll} />
+          <Switch
+            aria-label={!this.state.viewAll ? 'View all regrade requests' : 'View my regrade requests only'}
+            onChange={this.toggleViewAll}
+            defaultChecked={this.state.viewAll}
+          />
         </div>
       );
     }

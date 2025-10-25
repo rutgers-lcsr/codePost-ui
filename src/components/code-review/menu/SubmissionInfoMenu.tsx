@@ -151,7 +151,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
 
   return (
     <div id="submission-info" style={{ paddingLeft: '15px', paddingBottom: '10px' }}>
-      <span style={{ fontSize: '12px', color: '#ccc' }}>{submitted}</span>
+      <span style={{ fontSize: '12px', color: '#111' }}>{submitted}</span>
       <div style={{ fontSize: 12, overflowX: 'auto' }}>
         <b style={{ color: consoleTheme.siderMenuItemColor }}>Students</b>: {studentList}
         {props.submission !== undefined ? (
@@ -626,7 +626,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
           </div>
           <Modal
             onCancel={toggleModalVisible}
-            visible={isModalVisible}
+            open={isModalVisible}
             title="View Question Response"
             footer={[cancelButton]}
           >

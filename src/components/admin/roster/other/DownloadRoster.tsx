@@ -214,7 +214,7 @@ class DownloadRoster extends React.Component<IProps, IState> {
           Download roster
         </CPButton>
         <Modal
-          visible={this.state.dialogVisible}
+          open={this.state.dialogVisible}
           onCancel={this.toggleDialog}
           title={`Download roster: ${this.props.downloadType}s`}
           okText="Download"

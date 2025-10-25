@@ -1,6 +1,6 @@
 import * as t from 'io-ts';
 
-import { GenericObject, readObject } from './generics';
+import { GenericObject, listObject, readObject } from './generics';
 
 import { CourseV } from './course';
 import { SectionV } from './section';
@@ -34,6 +34,7 @@ export type UserType = t.TypeOf<typeof UserV>;
 
 export class UserIO {
   public static read = readObject(UserV, 'comments');
+  public static list = listObject(UserV, 'users');
 }
 
 // export { UserType, UserIO };

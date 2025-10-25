@@ -1,10 +1,10 @@
 import * as React from 'react';
 
-import { FileType } from '../../infrastructure/file';
+import { FileType, getFileContent } from '../../infrastructure/file';
 
 import { slack } from './slack';
 
-import { Collapse } from 'antd';
+import { Collapse, theme } from 'antd';
 
 const { Panel } = Collapse;
 
@@ -23,6 +23,56 @@ interface IErrorBoundaryState {
   url?: string;
 }
 
+const SiteDataSettingsBlurb = () => {
+  const { token } = theme.useToken();
+
+  return (
+    <div
+      style={{
+        backgroundColor: token.colorInfoBg,
+        borderRadius: token.borderRadius,
+        padding: '16px',
+        boxShadow: token.boxShadow,
+      }}
+    >
+      <h2>⭐ Troubleshooting</h2>
+      <br />
+      <div style={{ fontSize: '18px' }}>
+        <div>
+          codePost needs permission from your browser to run. Please follow these steps for your current browser...
+        </div>
+        <br />
+        <b>Google Chrome:</b>
+        <ul>
+          <li>
+            Open up Chrome cookie settings:{' '}
+            <a href="chrome://settings/content/cookies">chrome://settings/content/cookies</a>
+          </li>
+          <li>
+            Click Allow {'>'} Add {'>'} https://codepost.cs.rutgers.edu
+            <br />
+            See a screenshot here:{' '}
+            <a href="https://share.getcloudapp.com/eDu69Dnz">https://share.getcloudapp.com/eDu69Dnz</a>
+          </li>
+          <li>Try refreshing!</li>
+        </ul>
+        <br />
+        <b>Firefox:</b>
+        <ul>
+          <li>
+            Open up Firefox cookie settings: <a href="about:preferences#privacy">about:preferences#privacy</a>
+          </li>
+          <li>Click Cookies and Site Data {'>'} Manage Permissions</li>
+          <li>
+            Type in https://codepost.cs.rutgers.edu {'>'} Allow {'>'} Save Changes
+          </li>
+          <li>Try refreshing!</li>
+        </ul>
+      </div>
+    </div>
+  );
+};
+
 class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryState> {
   public state: Readonly<IErrorBoundaryState> = {};
 
@@ -38,57 +88,13 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
       errorDetail: JSON.stringify(error, Object.getOwnPropertyNames(error)),
       url: window.location.href,
     };
-
+    console.error('ErrorBoundary caught an error:', payload);
     slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, payload);
   }
 
   public render() {
     if (this.state.error) {
-      const siteDataSettingsBlurb = (
-        <div
-          style={{
-            backgroundColor: 'lightblue',
-            borderRadius: '4px',
-            padding: '16px',
-            boxShadow: '0 4px 8px 0 rgba(0,0,0,0.2)',
-          }}
-        >
-          <h2>⭐ Troubleshooting</h2>
-          <br />
-          <div style={{ fontSize: '18px' }}>
-            <div>
-              codePost needs permission from your browser to run. Please follow these steps for your current browser...
-            </div>
-            <br />
-            <b>Google Chrome:</b>
-            <ul>
-              <li>
-                Open up Chrome cookie settings:{' '}
-                <a href="chrome://settings/content/cookies">chrome://settings/content/cookies</a>
-              </li>
-              <li>
-                Click Allow {'>'} Add {'>'} https://codepost.cs.rutgers.edu
-                <br />
-                See a screenshot here:{' '}
-                <a href="https://share.getcloudapp.com/eDu69Dnz">https://share.getcloudapp.com/eDu69Dnz</a>
-              </li>
-              <li>Try refreshing!</li>
-            </ul>
-            <br />
-            <b>Firefox:</b>
-            <ul>
-              <li>
-                Open up Firefox cookie settings: <a href="about:preferences#privacy">about:preferences#privacy</a>
-              </li>
-              <li>Click Cookies and Site Data {'>'} Manage Permissions</li>
-              <li>
-                Type in https://codepost.cs.rutgers.edu {'>'} Allow {'>'} Save Changes
-              </li>
-              <li>Try refreshing!</li>
-            </ul>
-          </div>
-        </div>
-      );
+      const siteDataSettingsBlurb = <SiteDataSettingsBlurb />;
 
       if (this.props.type === 'codepanel') {
         return (
@@ -117,7 +123,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
                 <Collapse>
                   <Panel header="File Code" key="1">
                     <p style={{ maxHeight: '280px', overflow: 'auto' }}>
-                      {this.props.file ? this.props.file.code : '?'}
+                      {this.props.file ? getFileContent(this.props.file) : '?'}
                     </p>
                   </Panel>
                   <Panel header="Error Info" key="2">

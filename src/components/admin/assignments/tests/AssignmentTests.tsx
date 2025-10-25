@@ -8,11 +8,13 @@ import React, { useEffect, useState } from 'react';
 /* antd imports */
 
 /* other library imports */
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 
 /* other library imports */
-import { RouteComponentProps } from 'react-router';
-import { Route, Switch } from 'react-router-dom';
+import { RouteComponentProps } from '../../../../router/legacy';
+import { Route, Routes } from 'react-router-dom';
+
+import { LegacyRouteRenderer } from '../../../../router/legacy';
 
 /* codePost object imports */
 import { Assignment, AssignmentType } from '../../../../infrastructure/assignment';
@@ -68,46 +70,65 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
 
   // ************************ Return ************************************
   return (
-    <Switch>
+    <Routes>
       <Route
-        path={`${props.match.url}/edit/:tabKey`}
-        render={(subprops: RouteComponentProps) => (
-          <TestingSetup
-            {...subprops}
-            breadcrumbs={breadcrumbs}
-            currentAssignment={assignment}
-            submissions={props.submissions}
-            updateAssignment={props.updateAssignment}
+        path="edit/:tabKey"
+        element={
+          <LegacyRouteRenderer
+            path={`${props.match.url}/edit/:tabKey`}
+            end
+            render={(subprops: RouteComponentProps) => (
+              <TestingSetup
+                {...subprops}
+                breadcrumbs={breadcrumbs}
+                currentAssignment={assignment}
+                submissions={props.submissions}
+                updateAssignment={props.updateAssignment}
+              />
+            )}
           />
-        )}
+        }
       />
       <Route
-        path={`${props.match.url}/edit`}
-        render={(subprops: RouteComponentProps) => (
-          <TestingSetup
-            {...subprops}
-            breadcrumbs={breadcrumbs}
-            currentAssignment={assignment}
-            submissions={props.submissions}
-            updateAssignment={props.updateAssignment}
+        path="edit"
+        element={
+          <LegacyRouteRenderer
+            path={`${props.match.url}/edit`}
+            end
+            render={(subprops: RouteComponentProps) => (
+              <TestingSetup
+                {...subprops}
+                breadcrumbs={breadcrumbs}
+                currentAssignment={assignment}
+                submissions={props.submissions}
+                updateAssignment={props.updateAssignment}
+              />
+            )}
           />
-        )}
+        }
       />
 
       <Route
-        path={`${props.match.url}/results`}
-        render={(subprops: RouteComponentProps) => (
-          <TestingSummary
-            {...props}
-            {...subprops}
-            breadcrumbs={breadcrumbs}
-            currentAssignment={assignment}
-            submissions={props.submissions}
-            isAdmin={true}
-            tableOnly={false}
+        path="results"
+        element={
+          <LegacyRouteRenderer
+            path={`${props.match.url}/results`}
+            end
+            render={(subprops: RouteComponentProps) => (
+              <TestingSummary
+                {...props}
+                {...subprops}
+                breadcrumbs={breadcrumbs}
+                currentAssignment={assignment}
+                submissions={props.submissions}
+                isAdmin={true}
+                tableOnly={false}
+              />
+            )}
           />
-        )}
+        }
       />
-    </Switch>
+      <Route index element={<Navigate to="edit" replace />} />
+    </Routes>
   );
 };

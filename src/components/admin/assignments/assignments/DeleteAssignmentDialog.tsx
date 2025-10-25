@@ -3,7 +3,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import * as React from 'react';
+import React, { useCallback, useState } from 'react';
 
 /* ant imports */
 import { Input, Modal } from 'antd';
@@ -20,65 +20,59 @@ interface IProps {
   assignmentName: string;
 }
 
-interface IState {
-  typedName: string;
-  isDeleting: boolean;
-}
+const DeleteAssignmentDialog: React.FC<IProps> = ({ isVisible, onCancel, onDelete, assignmentName }) => {
+  const [typedName, setTypedName] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
-class DeleteAssignmentDialog extends React.Component<IProps, IState> {
-  public state: Readonly<IState> = {
-    typedName: '',
-    isDeleting: false,
-  };
+  const changeTypedName = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setTypedName(e.target.value);
+  }, []);
 
-  public changeTypedName = (e: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ typedName: e.target.value });
-  };
+  const handleDelete = useCallback(() => {
+    setIsDeleting(true);
+    onDelete();
+  }, [onDelete]);
 
-  public delete = () => {
-    this.setState({ isDeleting: true });
-    this.props.onDelete();
-  };
-
-  public render() {
-    if (!this.props.isVisible) {
-      return <div />;
-    }
-    const content = (
-      <div>
-        Are you sure you want to delete this assignment? If you proceed, you will delete all submissions associated with
-        this assignment, including all grades and comments. <b>You cannot undo this.</b>
-        <br />
-        <br />
-        To continue, type the <b>name of the assignment</b> into the field below.
-        <br />
-        <br />
-        <Input onChange={this.changeTypedName} placeholder="Assignment name" />
-      </div>
-    );
-    return (
-      <Modal
-        visible={this.props.isVisible}
-        title={`Delete assignment: ${this.props.assignmentName}`}
-        okText="Delete"
-        footer={[
-          <CPButton cpType="secondary" key="back" onClick={this.props.onCancel}>
-            Cancel
-          </CPButton>,
-          <CPButton
-            key="submit"
-            disabled={this.state.typedName !== this.props.assignmentName}
-            cpType="danger"
-            loading={this.state.isDeleting}
-            onClick={this.delete}
-          >
-            Delete
-          </CPButton>,
-        ]}
-      >
-        {content}
-      </Modal>
-    );
+  if (!isVisible) {
+    return null;
   }
-}
+
+  const content = (
+    <div>
+      Are you sure you want to delete this assignment? If you proceed, you will delete all submissions associated with
+      this assignment, including all grades and comments. <b>You cannot undo this.</b>
+      <br />
+      <br />
+      To continue, type the <b>name of the assignment</b> into the field below.
+      <br />
+      <br />
+      <Input onChange={changeTypedName} placeholder="Assignment name" value={typedName} />
+    </div>
+  );
+
+  return (
+    <Modal
+      open={isVisible}
+      title={`Delete assignment: ${assignmentName}`}
+      okText="Delete"
+      footer={[
+        <CPButton cpType="secondary" key="back" onClick={onCancel}>
+          Cancel
+        </CPButton>,
+        <CPButton
+          key="submit"
+          disabled={typedName !== assignmentName}
+          cpType="danger"
+          loading={isDeleting}
+          onClick={handleDelete}
+        >
+          Delete
+        </CPButton>,
+      ]}
+    >
+      {content}
+    </Modal>
+  );
+};
+
 export default DeleteAssignmentDialog;

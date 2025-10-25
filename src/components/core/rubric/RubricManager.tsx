@@ -2,6 +2,9 @@
 /* Imports
 /**********************************************************************************************************************/
 
+/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /* React imports */
 import * as React from 'react';
 
@@ -141,9 +144,15 @@ export interface IRubricManagerState {
 
 /**********************************************************************************************************************/
 
-class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerState> {
-  // @ts-ignore
+class RubricManager extends React.PureComponent<IRubricManagerProps, IRubricManagerState> {
+  // @ts-expect-error - window.setInterval returns number in browsers
   private interval: number;
+
+  // Memoization cache for collectClass to prevent unnecessary child rerenders
+  private _memoizedHelpers: IRubricManagerHelpers | null = null;
+  private _memoizedParams: IRubricManagerParams | null = null;
+  private _lastPropsRef: IRubricManagerProps | null = null;
+  private _lastStateRef: IRubricManagerState | null = null;
 
   constructor(props: IRubricManagerProps) {
     super(props);
@@ -184,10 +193,6 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
       instanceLists: {},
     };
     this.onUnload = this.onUnload.bind(this);
-
-    if (!props.defaultRubric) {
-      this.loadAssignmentRubric(props.assignment, props.shouldLoadInstanceLists, props.shouldLoadFeedback);
-    }
   }
 
   public loadAssignmentRubric = (
@@ -198,6 +203,10 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     return Assignment.readRubric(assignment.id)
       .then((rubric: RubricType) => {
         const commentMap = this.buildCommentMap(rubric.rubricCategories, rubric.rubricComments);
+
+        const categoriesChanged = !_.isEqual(this.state.savedRubricCategories, rubric.rubricCategories);
+        const commentsChanged = !_.isEqual(this.state.savedRubricComments, commentMap);
+        const shouldUpdateState = !this.state.loadComplete || categoriesChanged || commentsChanged;
 
         // calculate diff between old rubric and new rubric, and notify user of new comments
         const oldComments = Object.values(this.state.rubricComments).flat();
@@ -214,19 +223,26 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
           }
         }
 
-        if (this.props.setRubric !== undefined) {
+        if (shouldUpdateState && this.props.setRubric !== undefined) {
           this.props.setRubric({
             rubricCategories: rubric.rubricCategories,
             rubricComments: commentMap,
           });
         }
 
+        if (!shouldUpdateState) {
+          return;
+        }
+
+        const clonedCategories = _.cloneDeep(rubric.rubricCategories);
+        const clonedComments = _.cloneDeep(commentMap);
+
         this.setState(
           {
-            rubricCategories: _.cloneDeep(rubric.rubricCategories),
-            rubricComments: _.cloneDeep(commentMap),
-            savedRubricCategories: _.cloneDeep(rubric.rubricCategories),
-            savedRubricComments: _.cloneDeep(commentMap),
+            rubricCategories: clonedCategories,
+            rubricComments: clonedComments,
+            savedRubricCategories: clonedCategories,
+            savedRubricComments: clonedComments,
             loadComplete: true,
           },
           () => {
@@ -279,6 +295,15 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
 
   public componentDidMount() {
     window.addEventListener('beforeunload', this.onUnload);
+
+    // Load rubric if not provided via defaultRubric prop
+    if (!this.props.defaultRubric) {
+      this.loadAssignmentRubric(
+        this.props.assignment,
+        this.props.shouldLoadInstanceLists,
+        this.props.shouldLoadFeedback,
+      );
+    }
 
     if (this.props.reloadInterval !== undefined) {
       this.interval = window.setInterval(() => {
@@ -454,7 +479,8 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
             if (categoryNeedsSaving) {
               // We don't want to pass in the ids of comments on update
               // Passing in these comments can create race conditions
-              const { rubricComments, ...payload } = category;
+              const { rubricComments: _unusedRubricComments, ...payload } = category;
+              void _unusedRubricComments;
               categoryPromise = RubricCategory.update(payload);
             } else {
               categoryPromise = Promise.resolve();
@@ -473,7 +499,8 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
                   // We don't want to pass in the ids of linked comments on update
                   // Passing in these comments can create race conditions
                   // An example is if a linked comment gets deleted between rubric saves
-                  const { category: rubricCategory, ...payload } = comment;
+                  const { category: _unusedCategory, ...payload } = comment;
+                  void _unusedCategory;
                   return RubricComment.update(payload);
                 } else {
                   return Promise.resolve();
@@ -987,7 +1014,7 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     }
   };
 
-  public onUnload(event: any) {
+  public onUnload(event: BeforeUnloadEvent) {
     // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload
     // chrome requires return value to be set
     if (this.changesMade()) {
@@ -1019,7 +1046,10 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
     this.setState({ activeComment: undefined });
   };
 
-  public onCommentDragEnd = (result: any) => {
+  public onCommentDragEnd = (result: {
+    destination?: { droppableId: string; index: number } | null;
+    source: { index: number };
+  }) => {
     // dropped outside the list
     if (!result.destination) {
       return;
@@ -1066,10 +1096,15 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
   /***********************************************************************/
 
   public collectClass = (): IRubricManagerParams => {
-    return {
-      props: this.props,
-      state: this.state,
-      helpers: {
+    // Memoize to prevent unnecessary child rerenders
+    // Only create new object if props or state reference actually changed
+    if (this._memoizedParams && this._lastStateRef === this.state && this._lastPropsRef === this.props) {
+      return this._memoizedParams;
+    }
+
+    // Cache helpers object separately to maintain stable references
+    if (!this._memoizedHelpers) {
+      this._memoizedHelpers = {
         loadAssignmentRubric: this.loadAssignmentRubric,
         loadFeedbackScores: this.loadFeedbackScores,
         loadInstanceLists: this.loadInstanceLists,
@@ -1104,8 +1139,22 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
         activateCommentExplorer: this.activateCommentExplorer,
         clearCommentExplorer: this.clearCommentExplorer,
         onCommentDragEnd: this.onCommentDragEnd,
-      },
+      };
+    }
+
+    // Create new params object
+    const params = {
+      props: this.props,
+      state: this.state,
+      helpers: this._memoizedHelpers,
     };
+
+    // Cache for next render
+    this._memoizedParams = params;
+    this._lastStateRef = this.state;
+    this._lastPropsRef = this.props;
+
+    return params;
   };
 
   public render() {
@@ -1113,4 +1162,5 @@ class RubricManager extends React.Component<IRubricManagerProps, IRubricManagerS
   }
 }
 
-export default RubricManager;
+// Wrap with React.memo to prevent unnecessary rerenders from parent components
+export default React.memo(RubricManager);

@@ -3,7 +3,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useState } from 'react';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
 
 /* other library imports */
 import { Document, Page } from 'react-pdf';
@@ -14,40 +14,132 @@ import { pdfjs } from 'react-pdf';
 import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
 
 import { CommentType } from '../../../infrastructure/comment';
-import { File } from '../../../infrastructure/file';
+import { File, getFileContent } from '../../../infrastructure/file';
 
 import { getBlockClassName } from './BlockUtils.tsx';
+import CommentHighlightContext from './CommentHighlightContext';
 
 /**********************************************************************************************************************/
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
-export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
-  const [numPages, setPages] = useState(null);
+type PdfDocumentProxyLike = {
+  numPages: number;
+};
 
-  const onBlockElementClick = (e: React.MouseEvent) => {
-    const index = e.currentTarget.getAttribute('data-page-number');
-    if (index) {
+export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
+  const [numPages, setPages] = useState<number | null>(null);
+
+  const { addComment, commentCounter, comments, file, readOnly, user } = props;
+
+  const commentHighlight = useContext(CommentHighlightContext);
+  const setHoveredCommentId = commentHighlight?.setHoveredCommentId;
+  const getCommentsForLine = commentHighlight?.getCommentsForLine;
+  const lineHasComments = commentHighlight?.lineHasComments;
+  const isCommentHovered = commentHighlight?.isCommentHovered;
+  const contextOnHighlightClick = commentHighlight?.onHighlightClick;
+
+  const hasCommentsForPage = useCallback(
+    (pageNumber: number): boolean => {
+      if (!lineHasComments) {
+        return false;
+      }
+
+      return lineHasComments(pageNumber);
+    },
+    [lineHasComments],
+  );
+
+  const handleHoverEnterPage = useCallback(
+    (pageNumber: number) => {
+      if (!setHoveredCommentId || !getCommentsForLine) {
+        return;
+      }
+
+      const commentsForPage = getCommentsForLine(pageNumber);
+      if (commentsForPage.length === 0) {
+        return;
+      }
+
+      setHoveredCommentId(commentsForPage[0].id);
+    },
+    [getCommentsForLine, setHoveredCommentId],
+  );
+
+  const handleHoverLeavePage = useCallback(
+    (pageNumber: number) => {
+      if (!setHoveredCommentId || !getCommentsForLine || !isCommentHovered) {
+        return;
+      }
+
+      const commentsForPage = getCommentsForLine(pageNumber);
+      if (commentsForPage.some((comment) => isCommentHovered(comment.id))) {
+        setHoveredCommentId(null);
+      }
+    },
+    [getCommentsForLine, isCommentHovered, setHoveredCommentId],
+  );
+
+  const handleExistingCommentOpen = useCallback(
+    (event: React.MouseEvent, pageNumber: number): boolean => {
+      if (!contextOnHighlightClick || !getCommentsForLine) {
+        return false;
+      }
+
+      const commentsForPage = getCommentsForLine(pageNumber);
+      if (commentsForPage.length === 0) {
+        return false;
+      }
+
+      const primaryComment = commentsForPage[0];
+      if (!primaryComment || primaryComment.id === 0 || primaryComment.id === Number.MAX_SAFE_INTEGER) {
+        return false;
+      }
+
+      contextOnHighlightClick(event, primaryComment.id);
+      setHoveredCommentId?.(primaryComment.id);
+      return true;
+    },
+    [contextOnHighlightClick, getCommentsForLine, setHoveredCommentId],
+  );
+
+  const handlePageClick = useCallback(
+    (event: React.MouseEvent, pageNumber: number) => {
+      if (handleExistingCommentOpen(event, pageNumber)) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
+      if (readOnly) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
       const newComment: CommentType = {
-        id: props.commentCounter,
+        id: commentCounter,
         endChar: 0,
-        endLine: +index,
-        file: props.file.id,
+        endLine: pageNumber,
+        file: file.id,
         pointDelta: 0.0,
         startChar: 0,
-        startLine: +index,
+        startLine: pageNumber,
         text: '',
         rubricComment: null,
-        author: props.user,
+        author: user,
         feedback: 0,
         color: '',
       };
 
-      props.addComment(newComment, props.file);
-    }
-  };
+      addComment(newComment, file);
+      setHoveredCommentId?.(newComment.id);
+    },
+    [addComment, commentCounter, file, handleExistingCommentOpen, readOnly, setHoveredCommentId, user],
+  );
 
-  const onDocumentLoadSuccess = (pdf: any) => {
+  const onDocumentLoadSuccess = (pdf: PdfDocumentProxyLike) => {
     setPages(pdf.numPages);
     dispatch();
   };
@@ -62,17 +154,44 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     document.dispatchEvent(event);
   };
 
+  const getPageClassName = useCallback(
+    (pageNumber: number) => {
+      return getBlockClassName(comments, readOnly, pageNumber);
+    },
+    [comments, readOnly],
+  );
+
+  const pageEventHandlers = useMemo(
+    () =>
+      Array.from({ length: numPages ?? 0 }, (_, index) => {
+        const pageNumber = index + 1;
+        const pageHasComments = hasCommentsForPage(pageNumber);
+
+        return {
+          pageNumber,
+          pageHasComments,
+          onMouseEnter: pageHasComments ? () => handleHoverEnterPage(pageNumber) : undefined,
+          onMouseLeave: pageHasComments ? () => handleHoverLeavePage(pageNumber) : undefined,
+          onClick: (event: React.MouseEvent) => handlePageClick(event, pageNumber),
+        };
+      }),
+    [handleHoverEnterPage, handleHoverLeavePage, handlePageClick, hasCommentsForPage, numPages],
+  );
+
   if (File.codeType(props.file) === 'pdf') {
     return (
-      <Document file={props.file.code} onLoadSuccess={onDocumentLoadSuccess}>
-        {Array.from(new Array(numPages), (_, index) => (
+      <Document file={getFileContent(props.file)} onLoadSuccess={onDocumentLoadSuccess}>
+        {pageEventHandlers.map(({ pageNumber, pageHasComments, onMouseEnter, onMouseLeave, onClick }) => (
           <Page
-            key={`page_${index + 1}`}
-            className={getBlockClassName(props.comments, props.readOnly, index + 1)}
-            pageNumber={index + 1}
+            key={`page_${pageNumber}`}
+            className={getPageClassName(pageNumber)}
+            data-has-comment={pageHasComments ? 'true' : undefined}
+            pageNumber={pageNumber}
             renderTextLayer={false}
             onRenderSuccess={dispatch}
-            onClick={onBlockElementClick}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+            onClick={onClick}
           />
         ))}
       </Document>

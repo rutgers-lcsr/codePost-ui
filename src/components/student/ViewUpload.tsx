@@ -3,7 +3,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState, type CSSProperties } from 'react';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
@@ -11,7 +11,7 @@ import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { Layout, Menu, MenuProps, Spin } from 'antd';
 
 import { AssignmentStudent, AssignmentStudentType } from '../../infrastructure/assignment';
-import { File } from '../../infrastructure/file';
+import { File, getFileContent } from '../../infrastructure/file';
 import { FileType } from '../../infrastructure/types';
 
 import ReactMarkdown from 'react-markdown';
@@ -19,20 +19,26 @@ import ReactMarkdown from 'react-markdown';
 import { Document, Page } from 'react-pdf';
 
 import { pdfjs } from 'react-pdf';
+import { FileOutlined } from '@ant-design/icons';
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 const { Sider, Content } = Layout;
+
+import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context.js';
 
 interface IProps {
   assignment?: AssignmentStudentType;
 }
 
 function ViewUpload(props: IProps) {
+  const { consoleTheme } = useContext(ConsoleThemeContext);
   const [currentIndex, setIndex] = useState('0');
   const [files, setFiles] = useState<FileType[]>([]);
   const [loadComplete, setLoadComplete] = useState(false);
 
   const [numPages, setNumPages] = useState<number | null>(null);
+
+  const syntaxHighlightTheme = useMemo(() => consoleTheme.codeTheme ?? googlecode, [consoleTheme]);
 
   const onDocumentLoadSuccess = (pdf: any) => {
     setNumPages(pdf.numPages);
@@ -54,11 +60,14 @@ function ViewUpload(props: IProps) {
         }
       }
       setFiles(mostRecentFiles);
+      setIndex('0');
+      setNumPages(null);
       setLoadComplete(true);
     } else {
       // Reset state variables if passed an undefined submission
       setFiles([]);
       setIndex('0');
+      setNumPages(null);
       setLoadComplete(true);
     }
   };
@@ -71,64 +80,127 @@ function ViewUpload(props: IProps) {
 
   const changeIndex: MenuProps['onClick'] = (e) => {
     setIndex(e.key);
+    setNumPages(null);
   };
 
   if (!loadComplete) {
     return <Spin />;
-  } else if (files.length === 0) {
+  }
+
+  if (files.length === 0) {
     return <div>No files for this submission</div>;
-  } else {
-    let fileContent;
+  }
 
-    if (File.codeType(files[parseInt(currentIndex, 10)]) === 'image') {
-      fileContent = <ReactMarkdown>{'![](' + files[parseInt(currentIndex, 10)].code + ')'}</ReactMarkdown>;
-    } else if (File.codeType(files[parseInt(currentIndex, 10)]) === 'pdf') {
-      const file = files[parseInt(currentIndex, 10)];
-      fileContent = (
-        <div style={{ padding: '30px', textAlign: 'center' }}>
-          <Document file={file.code} onLoadSuccess={onDocumentLoadSuccess}>
-            {Array.from(new Array(numPages), (_, index) => (
-              <Page key={`page_${index + 1}`} pageNumber={index + 1} renderTextLayer={false} />
-            ))}
-          </Document>
-        </div>
-      );
-    } else {
-      fileContent = (
-        <SyntaxHighlighter
-          language={File.language(files[parseInt(currentIndex, 10)])}
-          style={googlecode}
-          showLineNumbers={true}
-          wrapLines={true}
-        >
-          {files[parseInt(currentIndex, 10)].code}
-        </SyntaxHighlighter>
-      );
-    }
+  const activeIndex = Math.min(Math.max(parseInt(currentIndex, 10) || 0, 0), files.length - 1);
+  const activeFile = files[activeIndex];
+  const activeFileType = File.codeType(activeFile);
 
-    return (
-      <div>
-        <Layout>
-          <Sider theme="light">
-            <Menu selectedKeys={[currentIndex]} mode="inline" onClick={changeIndex}>
-              {files.map((file, index) => {
-                const pathName = `${file.path ? `${file.path}/` : ''}`;
-                return (
-                  <Menu.Item key={index.toString()} style={{ height: 'fit-content', minHeight: 40 }}>
-                    <div style={{ lineHeight: pathName ? 1.5 : 3, marginTop: 4 }}>
-                      <div style={{ fontSize: 10, fontStyle: 'italic', whiteSpace: 'normal' }}>{pathName}</div>
-                      <div>{file.name}</div>
-                    </div>
-                  </Menu.Item>
-                );
-              })}
-            </Menu>
-          </Sider>
-          <Content style={{ maxHeight: '70vh', overflow: 'auto' }}>{fileContent}</Content>
-        </Layout>
+  let fileContent: React.ReactNode;
+
+  if (activeFileType === 'image') {
+    fileContent = <ReactMarkdown>{'![](' + getFileContent(activeFile) + ')'}</ReactMarkdown>;
+  } else if (activeFileType === 'pdf') {
+    fileContent = (
+      <div style={{ padding: '24px', textAlign: 'center' }}>
+        <Document file={getFileContent(activeFile)} onLoadSuccess={onDocumentLoadSuccess}>
+          {Array.from({ length: numPages ?? 0 }, (_, index) => (
+            <Page key={`page_${index + 1}`} pageNumber={index + 1} renderTextLayer={false} />
+          ))}
+        </Document>
       </div>
     );
+  } else {
+    fileContent = (
+      <SyntaxHighlighter
+        language={File.language(activeFile)}
+        style={syntaxHighlightTheme}
+        showLineNumbers={true}
+        wrapLines={true}
+        customStyle={{
+          backgroundColor: consoleTheme.codeBg,
+          borderRadius: '8px',
+          padding: '16px',
+          margin: 0,
+        }}
+      >
+        {getFileContent(activeFile)}
+      </SyntaxHighlighter>
+    );
   }
+
+  const borderColor = consoleTheme.codeBorder ?? '#f0f0f0';
+  const selectedKey = activeIndex.toString();
+
+  const layoutStyle: CSSProperties = {
+    backgroundColor: consoleTheme.mainBg,
+    color: consoleTheme.text,
+    borderRadius: '12px',
+    overflow: 'hidden',
+    boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)',
+  };
+
+  const siderStyle: CSSProperties = {
+    backgroundColor: consoleTheme.siderBg,
+    borderRight: `1px solid ${borderColor}`,
+    paddingTop: 0,
+  };
+
+  const headerStyle: CSSProperties = {
+    padding: '16px 20px',
+    fontWeight: 600,
+    letterSpacing: '0.01em',
+    color: consoleTheme.siderTitle,
+  };
+
+  const menuStyle: CSSProperties = {
+    backgroundColor: 'transparent',
+    borderInlineEnd: 'none',
+  };
+
+  const contentStyle: CSSProperties = {
+    backgroundColor: consoleTheme.codeBg,
+    padding: '24px',
+    maxHeight: '70vh',
+    overflow: 'auto',
+  };
+
+  const menuItems: MenuProps['items'] = files.map((file, index) => {
+    const key = index.toString();
+    const isActive = key === selectedKey;
+    const pathName = file.path ? `${file.path}/` : '';
+    const itemColor = isActive ? consoleTheme.commentTitleText : consoleTheme.siderMenuItemColor;
+    const helperTextColor = isActive
+      ? consoleTheme.commentTitleText
+      : (consoleTheme.commentRubricCommentNeutral ?? '#8c8c8c');
+
+    return {
+      key,
+      icon: <FileOutlined style={{ color: itemColor }} />,
+      style: {
+        margin: '4px 12px',
+        borderRadius: '8px',
+        backgroundColor: isActive ? consoleTheme.commentTitle : 'transparent',
+        color: itemColor,
+        transition: 'background-color 0.2s ease, color 0.2s ease',
+      },
+      label: (
+        <div style={{ lineHeight: 1.3 }}>
+          {pathName && <div style={{ fontSize: 11, color: helperTextColor }}>{pathName}</div>}
+          <div style={{ fontSize: 14, fontWeight: 500, whiteSpace: 'normal', color: itemColor }}>{file.name}</div>
+        </div>
+      ),
+    };
+  });
+
+  return (
+    <Layout style={layoutStyle} hasSider>
+      <Sider width={260} style={siderStyle} theme="light">
+        <div style={headerStyle}>Submitted Files</div>
+        <Menu mode="inline" selectedKeys={[selectedKey]} onClick={changeIndex} items={menuItems} style={menuStyle} />
+      </Sider>
+      <Content style={contentStyle}>{fileContent}</Content>
+    </Layout>
+  );
 }
 
 export default ViewUpload;

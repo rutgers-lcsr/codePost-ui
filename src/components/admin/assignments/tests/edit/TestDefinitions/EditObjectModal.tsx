@@ -61,7 +61,7 @@ export const EditObjectModal = (props: IUploadProps) => {
     <span>
       <span onClick={toggleVisible}>Rename</span>
       <Modal
-        visible={visible}
+        open={visible}
         title={`Edit: ${props.item.name}`}
         onCancel={toggleVisible}
         width={400}

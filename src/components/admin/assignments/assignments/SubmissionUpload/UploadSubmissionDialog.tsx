@@ -1,9 +1,18 @@
+/**********************************************************************************************************************
+ * UploadSubmissionDialog Component
+ *
+ * A comprehensive dialog for managing student submission uploads in codePost.
+ * Supports file validation, automated testing, late submissions, and partner collaboration.
+ *
+ * @author codePost Team
+ * @version 2.0.0 - Refactored to functional component with hooks
+ **********************************************************************************************************************/
+
 /**********************************************************************************************************************/
 /* Imports
 /**********************************************************************************************************************/
 
-/* react imports */
-import * as React from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
 import {
   CalculatorOutlined,
@@ -13,7 +22,6 @@ import {
   UploadOutlined,
 } from '@ant-design/icons';
 
-/* ant imports */
 import {
   Alert,
   Button,
@@ -33,16 +41,12 @@ import {
   Upload,
 } from 'antd';
 
-/* other library imports */
-// import Select from 'react-select';
-
 import { Link } from 'react-router-dom';
-
 import ReactMarkdown from 'react-markdown';
 
-/* codePost imports */
 import { AssignmentStudent, AssignmentStudentType } from '../../../../../infrastructure/assignment';
 import { Environment } from '../../../../../infrastructure/autograder/environment';
+import { SubmissionTestResultType, TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
 import { File as CodePostFile, FileType } from '../../../../../infrastructure/file';
 import { FileTemplate } from '../../../../../infrastructure/fileTemplate';
 import { Submission } from '../../../../../infrastructure/submission';
@@ -57,47 +61,67 @@ import {
   TestCategoryType,
 } from '../../../../../infrastructure/types';
 
-import CPTooltip from '../../../../../components/core/CPTooltip';
-import { tooltips } from '../../../../../components/core/tooltips';
-
-import { UploadFile } from 'antd/lib/upload/interface';
+import CPTooltip from '../../../../core/CPTooltip';
+import { tooltips } from '../../../../core/tooltips';
+import { slack } from '../../../../core/slack';
+import { StudentTestCasesByCategory } from '../../../../core/testFetchUtils';
+import { encodeForLink } from '../../../../core/URLutils';
+import { CodePostDate } from '../../../../utils/CodepostDate';
+import { dueDatePassed } from '../../../../utils/DateUtils';
+import { LOCAL_SETTINGS } from '../../../../utils/LocalSettings';
+import TestsList from '../../../../code-review/code-panel/TestsList';
+import InvitePartnersLink from '../../../../student/InvitePartnersLink';
+import LateSubmissionModal from '../../../../student/LateSubmissionModal';
+import ViewUpload from '../../../../student/ViewUpload';
+import { awaitTestResult } from '../../tests/autograderPollingUtils';
 
 import { fileToProtoFileUpload, IBaseFileUpload, IProtoFileUpload, readUploadedFile } from './FileReader';
 
-import TestsList from '../../../../../components/code-review/code-panel/TestsList';
-import { StudentTestCasesByCategory } from '../../../../../components/core/testFetchUtils';
-
-import { awaitTestResult } from '../../../../../components/admin/assignments/tests/autograderPollingUtils';
-
-import { SubmissionTestResultType, TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
-
-import { slack } from '../../../../../components/core/slack';
-
-import { encodeForLink } from '../../../../../components/core/URLutils';
-
-import { CodePostDate } from '../../../../../components/utils/CodepostDate';
-import { dueDatePassed } from '../../../../../components/utils/DateUtils';
-
-import InvitePartnersLink from '../../../../../components/student/InvitePartnersLink';
-import LateSubmissionModal from '../../../../../components/student/LateSubmissionModal';
-import ViewUpload from '../../../../../components/student/ViewUpload';
-
-import { LOCAL_SETTINGS } from '../../../../../components/utils/LocalSettings';
+import { UploadFile } from 'antd/lib/upload/interface';
 
 /**********************************************************************************************************************/
+/* Constants
+/**********************************************************************************************************************/
+
+const CIP_COURSE_ID = 925; // FIXME: Hardcoded for Code in Place - should be configurable
+const MODAL_WIDTH = 1100;
+const MIN_TEST_HEIGHT = 400;
+
+const TABLE_COLUMNS = [
+  { title: 'Assignment files', dataIndex: 'name', key: 'file' },
+  { title: 'Uploaded', dataIndex: 'uploaded', key: 'uploaded', align: 'center' as const },
+];
+
+/**********************************************************************************************************************/
+/* Types
+/**********************************************************************************************************************/
+
+enum STATUS {
+  NONE,
+  SAVING,
+  COMPLETE,
+}
 
 interface IUploadSubmissionDialogProps {
+  /** Controls visibility of the dialog */
   isVisible: boolean;
+  /** Callback when dialog is cancelled/closed */
   onCancel: () => void;
+  /** List of available assignments */
   assignments: (AssignmentType | AssignmentStudentType)[];
+  /** Currently selected assignment */
   selectedAssignment?: AssignmentType | AssignmentStudentType;
+  /** List of student emails */
   students: string[];
+  /** Currently selected student emails */
   selectedStudents: string[];
+  /** Map of student submissions indexed by email and assignment ID */
   submissions: {
     [userEmail: string]: {
       [assignmentID: number]: SubmissionInfoType | StudentSubmissionType;
     };
   };
+  /** Function to upload submission */
   uploadSubmission:
     | ((
         assignment: AssignmentStudentType,
@@ -111,250 +135,152 @@ interface IUploadSubmissionDialogProps {
         files: FileType[],
         sendConfirmationEmail: boolean,
       ) => Promise<SubmissionInfoType>);
-
+  /** Disable student selection dropdown */
   disableStudentSelect?: boolean;
+  /** Callback when upload is successful */
   onSuccess?: (newSubmissionID: number) => void;
+  /** Whether this is being used in student view */
   isStudent?: boolean;
+  /** Current course information */
   course?: CourseType;
+  /** Custom title for the dialog */
   title?: string;
+  /** Info message to display at top of dialog */
   infoMessage?: React.ReactNode;
-
+  /** Default files to pre-populate */
   defaultFiles?: IBaseFileUpload[];
 }
 
-enum STATUS {
-  NONE,
-  SAVING /* reading files from user's file system */,
-  COMPLETE /* completed upload */,
-}
+/**********************************************************************************************************************/
+/* Main Component
+/**********************************************************************************************************************/
 
-interface IUploadSubmissionDialogState {
-  selectedStudents: string[];
-  selectedAssignment?: AssignmentType | AssignmentStudentType;
-  // List of files in codePost format for upload
-  files: IProtoFileUpload[];
-  // List of files in ant format. Required to make make the dialog a controlled list so we
-  // can remove files from the list if they are not valid
-  fileList: UploadFile[];
-  status: STATUS;
-
-  rejectedFiles: string[];
-
-  uploadDirectory: boolean;
-
-  testCategories: TestCategoryType[];
-  testCases: StudentTestCasesByCategory;
-
-  submission?: StudentSubmissionType;
-  loadingTests: boolean;
-
-  fileTemplates: FileTemplateType[];
-  sendMeAConfirmationEmail: boolean;
-
-  // Test results
-  submissionTests: SubmissionTestType[];
-  testsLog: string | null; // If the admin turns off exposeDumpLogs then the log will be none
-  runMessage: string; // A message to show students from the result of their run
-  activeTab: string;
-
-  lateSubmissionModalVisible: boolean;
-
-  isTestingSimulated: boolean; // CIP FIXME: remove this state variable
-}
-
-class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProps, IUploadSubmissionDialogState> {
-  public assignmentOptions = this.props.assignments.map((assignment: AssignmentType | AssignmentStudentType) => {
-    return (
-      <Select.Option key={assignment.id} value={assignment.id}>
-        {assignment.name}
-      </Select.Option>
-    );
-  });
-
-  public state: Readonly<IUploadSubmissionDialogState> = {
-    selectedStudents: this.props.selectedStudents,
-    selectedAssignment: this.props.selectedAssignment,
-    files: [],
-    fileList: [],
-    rejectedFiles: [],
-    status: STATUS.NONE,
-    uploadDirectory: false,
-    testCases: {},
-    testCategories: [],
-    submissionTests: [],
-    testsLog: null,
-    loadingTests: false,
-    fileTemplates: [],
-    sendMeAConfirmationEmail: LOCAL_SETTINGS.sendMeAConfirmationEmail.getter(),
-    runMessage: '',
-    activeTab: '1',
-    lateSubmissionModalVisible: false,
-    isTestingSimulated: false,
-  };
+/**
+ * UploadSubmissionDialog - A comprehensive dialog for uploading student submissions
+ *
+ * Features:
+ * - File upload with directory support
+ * - Template file validation
+ * - Automated test execution
+ * - Late submission handling
+ * - Partner collaboration
+ * - Test result viewing
+ *
+ * @component
+ */
+const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) => {
+  const {
+    isVisible,
+    assignments,
+    selectedAssignment: propsSelectedAssignment,
+    selectedStudents: propsSelectedStudents,
+    students,
+    submissions,
+    uploadSubmission,
+    disableStudentSelect,
+    onSuccess,
+    onCancel,
+    isStudent,
+    course,
+    title,
+    infoMessage,
+    defaultFiles,
+  } = props;
 
   /********************************************************************************************************/
-  /* Lifecycle methods
+  /* State management
   /********************************************************************************************************/
 
-  public toggleState =
-    (key: keyof IUploadSubmissionDialogState) =>
-    (prevState: IUploadSubmissionDialogState): IUploadSubmissionDialogState => ({
-      ...prevState,
-      [key]: !prevState[key],
-    });
+  const [selectedStudents, setSelectedStudents] = useState<string[]>(propsSelectedStudents);
+  const [selectedAssignment, setSelectedAssignment] = useState<AssignmentType | AssignmentStudentType | undefined>(
+    propsSelectedAssignment,
+  );
+  const [files, setFiles] = useState<IProtoFileUpload[]>([]);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [status, setStatus] = useState<STATUS>(STATUS.NONE);
+  const [rejectedFiles, setRejectedFiles] = useState<string[]>([]);
+  const [uploadDirectory, setUploadDirectory] = useState<boolean>(false);
+  const [testCategories, setTestCategories] = useState<TestCategoryType[]>([]);
+  const [testCases, setTestCases] = useState<StudentTestCasesByCategory>({});
+  const [submission, setSubmission] = useState<StudentSubmissionType | undefined>(undefined);
+  const [loadingTests, setLoadingTests] = useState<boolean>(false);
+  const [fileTemplates, setFileTemplates] = useState<FileTemplateType[]>([]);
+  const [sendMeAConfirmationEmail, setSendMeAConfirmationEmail] = useState<boolean>(
+    LOCAL_SETTINGS.sendMeAConfirmationEmail.getter(),
+  );
+  const [submissionTests, setSubmissionTests] = useState<SubmissionTestType[]>([]);
+  const [testsLog, setTestsLog] = useState<string | null>(null);
+  const [runMessage, setRunMessage] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<string>('1');
+  const [lateSubmissionModalVisible, setLateSubmissionModalVisible] = useState<boolean>(false);
+  const [isTestingSimulated, setIsTestingSimulated] = useState<boolean>(false);
 
-  public getState = (key: keyof IUploadSubmissionDialogState): any => {
-    return this.state[key];
-  };
+  /********************************************************************************************************/
+  /* Memoized values
+  /********************************************************************************************************/
 
-  public componentDidMount() {
-    if (this.props.selectedAssignment) {
-      this.loadTemplates(this.props.selectedAssignment);
-    }
-  }
-
-  public componentDidUpdate(prevProps: IUploadSubmissionDialogProps) {
-    if (
-      prevProps.selectedAssignment !== this.props.selectedAssignment ||
-      (!prevProps.isVisible && this.props.isVisible)
-    ) {
-      this.setState({
-        selectedAssignment: this.props.selectedAssignment,
-        testCategories: [],
-        testCases: [],
-      });
-      if (this.props.selectedAssignment) {
-        this.loadTemplates(this.props.selectedAssignment);
-        this.loadTests();
-        if (this.props.selectedStudents.length > 0) {
-          let primaryStudent = null;
-
-          this.props.selectedStudents.forEach((email: string) => {
-            if (this.props.submissions.hasOwnProperty(email)) {
-              if (
-                this.props.selectedAssignment !== undefined &&
-                this.props.submissions[email].hasOwnProperty(this.props.selectedAssignment.id)
-              ) {
-                primaryStudent = email;
-              }
-            }
-          });
-
-          if (primaryStudent !== null) {
-            this.setState({
-              submission: this.props.submissions[primaryStudent][this.props.selectedAssignment.id],
-            });
-            this.loadTestResults(
-              this.props.submissions[primaryStudent][this.props.selectedAssignment.id],
-              this.props.selectedAssignment.exposeDumpLogs === true,
-            );
-          }
-        }
-      }
-    }
-    if (prevProps.selectedStudents !== this.props.selectedStudents) {
-      this.setState({ selectedStudents: this.props.selectedStudents });
-    }
-
-    if (prevProps.isVisible && !this.props.isVisible) {
-      this.setState({ submissionTests: [], testsLog: null, runMessage: '' });
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////
-    // If default files are included, then prepare them for upload
-    /////////////////////////////////////////////////////////////////////////////////
-    if (prevProps.defaultFiles === undefined && this.props.defaultFiles !== undefined) {
-      let files: any = [];
-      let fileList: any = [];
-
-      const now = Date.now();
-
-      this.props.defaultFiles.forEach((baseFile: IBaseFileUpload, index: number) => {
-        // const file = new File(baseFile.data.split('\n'), baseFile.name);
-        // IE, Edge compatibility
-        // https://stackoverflow.com/questions/49890537/javascript-edge-browser-typeerror-function-expected
-        const fileData = baseFile.data && typeof baseFile.data === 'string' ? baseFile.data.split('\n') : [];
-        const file = new File(fileData, baseFile.name, { type: 'text/plain' });
-
-        // FIXME: dirs
-        const ff = {
-          data: baseFile.data,
-          longname: baseFile.name,
-          name: baseFile.name,
-          extension: CodePostFile.extension(baseFile.name),
-          path: '',
-          zipSource: undefined,
-          file: file,
-        };
-
-        const fl = {
-          name: baseFile.name,
-          uid: `manual-upload-${now}-${index}`,
-          type: file.type,
-          size: file.size,
-        };
-
-        files = [...files, ff];
-        fileList = [...fileList, fl];
-      });
-
-      this.setState({ files, fileList });
-    }
-    /////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////
-  }
+  const assignmentOptions = useMemo(
+    () =>
+      assignments.map((assignment: AssignmentType | AssignmentStudentType) => (
+        <Select.Option key={assignment.id} value={assignment.id}>
+          {assignment.name}
+        </Select.Option>
+      )),
+    [assignments],
+  );
 
   /********************************************************************************************************/
   /* Loading and data formatting methods
   /********************************************************************************************************/
 
-  public loadTemplates = (assignment: AssignmentType | AssignmentStudentType) => {
-    const promises = assignment.fileTemplates.map((el) => FileTemplate.read(el));
-    Promise.all(promises).then((fileTemplates) => this.setState({ fileTemplates }));
-  };
+  const loadTemplates = useCallback(async (assignment: AssignmentType | AssignmentStudentType) => {
+    const promises = (assignment.fileTemplates ?? []).map((el) => FileTemplate.read(el));
+    const templates = await Promise.all(promises);
+    setFileTemplates(templates);
+  }, []);
 
-  public loadTests = async () => {
-    if (this.props.isStudent && this.props.selectedAssignment) {
-      this.setState({ loadingTests: true });
-      const { testCases, testCategories } = await AssignmentStudent.readStudentTests(this.props.selectedAssignment.id);
-      const caseObj: StudentTestCasesByCategory = {};
-      const exposedTestCases = testCases.filter((t) => t.exposed);
-      testCategories.forEach((category) => {
-        caseObj[category.id] = [];
-      });
-      exposedTestCases.forEach((testCase) => {
-        caseObj[testCase.testCategory] = [...caseObj[testCase.testCategory], testCase];
-      });
-      this.setState({ testCategories, testCases: caseObj, loadingTests: false });
-    }
-  };
-
-  public loadTestResults = async (sub: StudentSubmissionType | SubmissionInfoType | undefined, _loadLogs: boolean) => {
-    if (sub) {
-      const results = await Submission.readTestResults(sub.id, { isStudentMode: 'True' });
-      if (results !== null && results !== undefined) {
-        this.setState({ submissionTests: SubmissionTest.getLatest(results.submissionTests), testsLog: results.logs });
+  const loadTests = useCallback(
+    async (assignmentId: number) => {
+      if (isStudent) {
+        setLoadingTests(true);
+        const { testCases: fetchedTestCases, testCategories: fetchedCategories } =
+          await AssignmentStudent.readStudentTests(assignmentId);
+        const caseObj: StudentTestCasesByCategory = {};
+        const exposedTestCases = fetchedTestCases.filter((t) => t.exposed);
+        fetchedCategories.forEach((category) => {
+          caseObj[category.id] = [];
+        });
+        exposedTestCases.forEach((testCase) => {
+          caseObj[testCase.testCategory] = [...caseObj[testCase.testCategory], testCase];
+        });
+        setTestCategories(fetchedCategories);
+        setTestCases(caseObj);
+        setLoadingTests(false);
       }
-    }
-  };
-
-  /* build a list of two student groups: missing submissions and not missing submissions */
-  /* use these two groups to populate select */
-  public buildStudentOptions = (
-    students: string[],
-    submissions: {
-      [userEmail: string]: {
-        [assignmentID: number]: SubmissionInfoType | StudentSubmissionType;
-      };
     },
-    assignment?: AssignmentType | AssignmentStudentType,
-  ) => {
+    [isStudent],
+  );
+
+  const loadTestResults = useCallback(
+    async (sub: StudentSubmissionType | SubmissionInfoType | undefined, _loadLogs: boolean) => {
+      if (sub) {
+        const results = await Submission.readTestResults(sub.id, { isStudentMode: 'True' });
+        if (results !== null && results !== undefined) {
+          setSubmissionTests(SubmissionTest.getLatest(results.submissionTests));
+          setTestsLog(results.logs);
+        }
+      }
+    },
+    [],
+  );
+
+  const buildStudentOptions = useMemo(() => {
     const notSubmitted = [];
     const hasSubmitted = [];
 
     for (const student of students) {
-      if (assignment) {
-        if (submissions[student][assignment.id]) {
+      if (selectedAssignment) {
+        if (submissions[student]?.[selectedAssignment.id]) {
           hasSubmitted.push(
             <Select.Option key={student} value={student} disabled={true}>
               {student}
@@ -362,14 +288,14 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           );
         } else {
           notSubmitted.push(
-            <Select.Option value={student} disabled={false}>
+            <Select.Option key={student} value={student} disabled={false}>
               {student}
             </Select.Option>,
           );
         }
       } else {
         notSubmitted.push(
-          <Select.Option value={student} disabled={false}>
+          <Select.Option key={student} value={student} disabled={false}>
             {student}
           </Select.Option>,
         );
@@ -377,7 +303,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
     }
 
     return (
-      <React.Fragment>
+      <>
         <Select.Option key="missing" value={''} disabled={true}>
           <span style={{ paddingTop: 10, color: 'grey', fontSize: '10px' }}>STUDENTS MISSING SUBMISSIONS</span>
         </Select.Option>
@@ -388,119 +314,323 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           </span>
         </Select.Option>
         {hasSubmitted}
-      </React.Fragment>
+      </>
     );
-  };
+  }, [students, submissions, selectedAssignment]);
+
+  /********************************************************************************************************/
+  /* Lifecycle effects
+  /********************************************************************************************************/
+
+  // Initial mount - load templates if assignment is selected
+  useEffect(() => {
+    if (propsSelectedAssignment) {
+      loadTemplates(propsSelectedAssignment);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Handle changes to selectedAssignment or visibility
+  useEffect(() => {
+    const prevAssignment = selectedAssignment;
+
+    if (propsSelectedAssignment?.id !== prevAssignment?.id || isVisible) {
+      setSelectedAssignment(propsSelectedAssignment);
+      setTestCategories([]);
+      setTestCases({});
+
+      if (propsSelectedAssignment) {
+        loadTemplates(propsSelectedAssignment);
+        loadTests(propsSelectedAssignment.id);
+
+        if (propsSelectedStudents.length > 0) {
+          let primaryStudent: string | null = null;
+
+          propsSelectedStudents.forEach((email: string) => {
+            if (submissions[email]?.[propsSelectedAssignment.id]) {
+              primaryStudent = email;
+            }
+          });
+
+          if (primaryStudent !== null) {
+            const sub = submissions[primaryStudent][propsSelectedAssignment.id];
+            setSubmission(sub);
+            loadTestResults(sub, propsSelectedAssignment.exposeDumpLogs === true);
+          }
+        }
+      }
+    }
+  }, [
+    propsSelectedAssignment,
+    isVisible,
+    propsSelectedStudents,
+    submissions,
+    loadTemplates,
+    loadTests,
+    loadTestResults,
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Handle selected students changes
+  useEffect(() => {
+    setSelectedStudents(propsSelectedStudents);
+  }, [propsSelectedStudents]);
+
+  // Clear test data when dialog closes
+  useEffect(() => {
+    if (!isVisible) {
+      setSubmissionTests([]);
+      setTestsLog(null);
+      setRunMessage('');
+    }
+  }, [isVisible]);
+
+  // Handle default files
+  useEffect(() => {
+    if (defaultFiles && defaultFiles.length > 0) {
+      const newFiles: IProtoFileUpload[] = [];
+      const newFileList: UploadFile[] = [];
+
+      const now = Date.now();
+
+      defaultFiles.forEach((baseFile: IBaseFileUpload, index: number) => {
+        const fileData = baseFile.data && typeof baseFile.data === 'string' ? baseFile.data.split('\n') : [];
+        const file = new File(fileData, baseFile.name, { type: 'text/plain' });
+
+        const ff: IProtoFileUpload = {
+          data: baseFile.data,
+          longname: baseFile.name,
+          name: baseFile.name,
+          extension: CodePostFile.extension(baseFile.name),
+          path: '',
+          zipSource: undefined,
+          file: file,
+        };
+
+        const fl: UploadFile = {
+          name: baseFile.name,
+          uid: `manual-upload-${now}-${index}`,
+          type: file.type,
+          size: file.size,
+        };
+
+        newFiles.push(ff);
+        newFileList.push(fl);
+      });
+
+      setFiles(newFiles);
+      setFileList(newFileList);
+    }
+  }, [defaultFiles]);
 
   /********************************************************************************************************/
   /* State handlers
   /********************************************************************************************************/
 
-  public changeStudents = (options: string[]) => {
-    this.setState({ selectedStudents: options });
-  };
+  const handleChangeStudents = useCallback((options: string[]) => {
+    setSelectedStudents(options);
+  }, []);
 
-  public changeAssignment = (option: number) => {
-    const selectedAssignment = this.props.assignments.find((assn) => {
-      return assn.id === option;
-    });
+  const handleChangeAssignment = useCallback(
+    (option: number) => {
+      const newAssignment = assignments.find((assn) => assn.id === option);
+      setSelectedAssignment(newAssignment);
+      setSelectedStudents([]);
+    },
+    [assignments],
+  );
 
-    this.setState({ selectedAssignment, selectedStudents: [] });
-  };
+  const handleCancel = useCallback(() => {
+    setStatus(STATUS.NONE);
+    setFiles([]);
+    setFileList([]);
+    setRejectedFiles([]);
+    setActiveTab('1');
+    setIsTestingSimulated(false);
+    onCancel();
+  }, [onCancel]);
 
-  public cancel = () => {
-    this.setState({
-      status: STATUS.NONE,
-      files: [],
-      fileList: [],
-      rejectedFiles: [],
-      activeTab: '1',
-      isTestingSimulated: false,
-    });
-    this.props.onCancel();
-  };
+  const handleSuccess = useCallback(() => {
+    setStatus(STATUS.NONE);
+    setFiles([]);
+    setFileList([]);
+    setRejectedFiles([]);
+    onSuccess ? onSuccess(submission!.id) : onCancel();
+  }, [onSuccess, onCancel, submission]);
 
-  public onSuccess = () => {
-    this.setState({ status: STATUS.NONE, files: [], fileList: [], rejectedFiles: [] });
-    this.props.onSuccess ? this.props.onSuccess(this.state.submission!.id) : this.props.onCancel();
-  };
+  const toggleDirectoryUpload = useCallback(() => {
+    setStatus(STATUS.NONE);
+    setFiles([]);
+    setFileList([]);
+    setRejectedFiles([]);
+    setUploadDirectory((prev) => !prev);
+  }, []);
 
-  public toggleDirectoryUpload = () => {
-    this.setState({
-      status: STATUS.NONE,
-      files: [],
-      fileList: [],
-      rejectedFiles: [],
-      uploadDirectory: !this.state.uploadDirectory,
-    });
-  };
-
-  public onRemove = (file: UploadFile) => {
+  const handleRemove = useCallback((file: UploadFile) => {
     const protoFileUpload = fileToProtoFileUpload(file);
 
-    const files = this.state.files.filter((f: IProtoFileUpload) => {
-      return (
-        f.longname !== protoFileUpload.longname &&
-        (f.zipSource === undefined || f.zipSource !== protoFileUpload.zipSource)
+    setFiles((prevFiles) =>
+      prevFiles.filter(
+        (f: IProtoFileUpload) =>
+          f.longname !== protoFileUpload.longname &&
+          (f.zipSource === undefined || f.zipSource !== protoFileUpload.zipSource),
+      ),
+    );
+
+    setFileList((prevList) => prevList.filter((f: UploadFile) => f.name !== protoFileUpload.longname));
+  }, []);
+
+  const openLateSubmissionModal = useCallback(() => {
+    setLateSubmissionModalVisible(true);
+  }, []);
+
+  const closeLateSubmissionModal = useCallback(() => {
+    setLateSubmissionModalVisible(false);
+  }, []);
+
+  const toggleSendMeAConfirmationEmail = useCallback(() => {
+    setSendMeAConfirmationEmail((prev) => {
+      const toggled = !prev;
+      LOCAL_SETTINGS.sendMeAConfirmationEmail.setter(toggled);
+      return toggled;
+    });
+  }, []);
+
+  /********************************************************************************************************/
+  /* Testing infrastructure
+  /********************************************************************************************************/
+
+  const shouldRunTests = useCallback(() => {
+    const testsToRun = (selectedAssignment && selectedAssignment.exposeDumpLogs) || testCategories.length > 0;
+
+    const runsSoFar = submission ? submission.testRunsCompleted : 0;
+    const maxRuns =
+      selectedAssignment && selectedAssignment.maxStudentTestRuns ? selectedAssignment.maxStudentTestRuns : -1;
+
+    return testsToRun && (maxRuns < 0 || runsSoFar < maxRuns);
+  }, [selectedAssignment, testCategories, submission]);
+
+  const setResults = useCallback((result: SubmissionTestResultType) => {
+    if (result) {
+      setSubmissionTests(result.submissionTests);
+      setTestsLog(result.logs);
+      setRunMessage(result.message);
+      setSubmission((prevSubmission) =>
+        prevSubmission ? { ...prevSubmission, testRunsCompleted: prevSubmission.testRunsCompleted + 1 } : undefined,
       );
-    });
+    }
 
-    const fileList = this.state.fileList.filter((f: UploadFile) => {
-      return f.name !== protoFileUpload.longname;
-    });
+    setLoadingTests(false);
+    setStatus(STATUS.COMPLETE);
+  }, []);
 
-    this.setState({ files, fileList });
-  };
+  const runTests = useCallback(
+    async (sub: StudentSubmissionType | SubmissionInfoType) => {
+      if (shouldRunTests() && selectedAssignment?.environment) {
+        setLoadingTests(true);
+        setStatus(STATUS.SAVING);
+        const result = await Environment.run({
+          id: selectedAssignment.environment,
+          submission: sub.id,
+          simulate: false,
+          exposedOnly: true,
+        });
+        awaitTestResult(result.task, setResults);
+      }
+    },
+    [shouldRunTests, selectedAssignment, setResults],
+  );
 
-  public openLateSubmissionModal = () => {
-    this.setState({ lateSubmissionModalVisible: true });
-  };
+  const setMockResults = useCallback(
+    (result: TestEditorResultType) => {
+      if (result) {
+        const submissionId = submission?.id || 0;
+        const now = new Date().toISOString();
+        const mappedResults: SubmissionTestType[] = result.results.map((test, index) => ({
+          id: -index - 1,
+          testCase: test.testCase,
+          testCategory: test.testCategory,
+          submission: submissionId,
+          logs: test.logs,
+          passed: test.passed,
+          created: now,
+          modified: now,
+          isError: test.isError,
+        }));
 
-  public closeLateSubmissionModal = () => {
-    this.setState({ lateSubmissionModalVisible: false });
-  };
+        setSubmissionTests(mappedResults);
+        setTestsLog(result.logs);
+        setRunMessage('');
+      }
+
+      setLoadingTests(false);
+    },
+    [submission],
+  );
+
+  const runTestsMock = useCallback(
+    async (sub: StudentSubmissionType | SubmissionInfoType) => {
+      if (shouldRunTests() && selectedAssignment) {
+        setLoadingTests(true);
+
+        const filesJson = files.map((file: IProtoFileUpload) => ({
+          name: file.name,
+          code: file.data,
+          path: file.path === undefined || file.path === null ? '' : file.path,
+        }));
+
+        const assignment = selectedAssignment as AssignmentType;
+
+        const payload = {
+          id: assignment.environment!,
+          files: JSON.stringify(filesJson),
+          submission: sub.id,
+          simulate: true,
+          exposedOnly: true,
+        };
+
+        const result = await Environment.run(payload);
+        awaitTestResult(result.task, setMockResults);
+      }
+    },
+    [shouldRunTests, selectedAssignment, files, setMockResults],
+  );
+
+  /********************************************************************************************************/
+  /* Helper functions
+  /********************************************************************************************************/
+
+  /**
+   * Check if this is a Code in Place course (special handling required)
+   * TODO: Make this configurable instead of hardcoded
+   */
+  const isCodeInPlaceCourse = useMemo(() => selectedAssignment?.course === CIP_COURSE_ID, [selectedAssignment]);
+
+  /**
+   * Check if the submission is locked (finalized or has a grader)
+   */
+  const isSubmissionLocked = useMemo(
+    () => submission && (submission.isFinalized || submission.hasGrader),
+    [submission],
+  );
 
   /********************************************************************************************************/
   /* Submission upload
   /********************************************************************************************************/
 
-  public confirmUpload = () => {
-    if (this.state.selectedAssignment === undefined || this.state.selectedAssignment.uploadDueDate === undefined) {
-      return;
-    }
+  const handleUpload = useCallback(() => {
+    closeLateSubmissionModal();
 
-    if (dueDatePassed(this.state.selectedAssignment.uploadDueDate)) {
-      if (this.props.isStudent) {
-        this.openLateSubmissionModal();
-      } else {
-        this.upload();
-      }
-    } else {
-      this.upload();
-    }
-  };
-
-  public upload = () => {
-    this.closeLateSubmissionModal();
-    // Instead of blocking this on an api error, block the student from submitting
-    if (
-      this.state.submission &&
-      (this.state.submission.isFinalized || this.state.submission.hasGrader) &&
-      this.props.isStudent
-    ) {
-      // CIP FIXME: Hardcoded logic for CIP course to allow students to submit after finalization
-      // Only tests are run on submit, so props.uploadSubmission isn't
-      if (this.state.selectedAssignment && this.state.selectedAssignment.course === 925) {
+    if (isSubmissionLocked && isStudent) {
+      // Special case for Code in Place: allow simulated test runs
+      if (isCodeInPlaceCourse) {
         const execute = () => {
-          this.runTestsMock(this.state.submission!);
-          this.setState({
-            isTestingSimulated: true,
-            files: [],
-            fileList: [],
-            rejectedFiles: [],
-            activeTab: '3',
-          });
+          runTestsMock(submission!);
+          setIsTestingSimulated(true);
+          setFiles([]);
+          setFileList([]);
+          setRejectedFiles([]);
+          setActiveTab('3');
         };
+
         Modal.confirm({
           title: 'Submission in review',
           content: (
@@ -518,805 +648,612 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
             </div>
           ),
           okText: 'Continue and simulate tests',
-          onOk() {
-            execute();
-          },
-          onCancel() {
-            return;
-          },
+          onOk: execute,
+          onCancel: () => {},
         });
       } else {
-        // Prevent a student from submitting and hitting an api error if their submission is claimed or finalized
         message.warning(
           'This submission is currently being reviewed and cannot be re-uploaded. Please contact your instructor if you have any questions.',
           10,
         );
       }
-    } else if (this.state.selectedAssignment) {
-      this.setState({ status: STATUS.SAVING }, () => {
-        if (this.state.selectedAssignment) {
-          this.props
-            .uploadSubmission(
-              this.state.selectedAssignment! as any,
-              this.state.selectedStudents,
-              this.state.files as any,
-              this.state.sendMeAConfirmationEmail,
-            )
-            .then((newSubmission: StudentSubmissionType | SubmissionInfoType) => {
-              const shouldRun = this.shouldRunTests();
-              if (shouldRun) {
-                // message.success('Submission uploaded!');
-                this.runTests(newSubmission);
-              }
-              this.setState({
-                submission: newSubmission,
-                status: shouldRun ? STATUS.SAVING : STATUS.COMPLETE,
-                files: [],
-                fileList: [],
-                rejectedFiles: [],
-                selectedStudents: this.props.selectedStudents,
-                selectedAssignment: this.props.selectedAssignment ? this.props.selectedAssignment : undefined,
-                activeTab: '1',
-              });
-            })
-            .catch((error) => {
-              let logError;
-              try {
-                logError = !error.includes('Due date has passed');
-              } catch (err) {
-                logError = true;
-              }
-
-              if (logError) {
-                message.error(
-                  'Sorry, something went wrong. Please try uploading again. If the problem persists, contact the codePost team.',
-                );
-                const payload = {
-                  error: error.toString(),
-                  errorDetail: JSON.stringify(error, Object.getOwnPropertyNames(error)),
-                  url: window.location.href,
-                };
-
-                slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, payload);
-              }
-
-              this.cancel();
-            });
-        }
-      });
+      return;
     }
-  };
 
-  // FIXME: this method of reading file contents relies on a race win, since
-  // we need the fileReaders to finish before we hit upload.
-  public beforeUpload = async (file: any, _fileList: UploadFile[]) => {
+    if (!selectedAssignment) {
+      return;
+    }
+
+    setStatus(STATUS.SAVING);
+
+    uploadSubmission(selectedAssignment as any, selectedStudents, files as any, sendMeAConfirmationEmail)
+      .then((newSubmission: StudentSubmissionType | SubmissionInfoType) => {
+        const shouldRun = shouldRunTests();
+        if (shouldRun) {
+          runTests(newSubmission);
+        }
+        setSubmission(newSubmission);
+        setStatus(shouldRun ? STATUS.SAVING : STATUS.COMPLETE);
+        setFiles([]);
+        setFileList([]);
+        setRejectedFiles([]);
+        setSelectedStudents(propsSelectedStudents);
+        setSelectedAssignment(propsSelectedAssignment || undefined);
+        setActiveTab('1');
+      })
+      .catch((error) => {
+        const isDueDateError = error?.toString?.()?.includes('Due date has passed') ?? false;
+
+        if (!isDueDateError) {
+          message.error(
+            'Sorry, something went wrong. Please try uploading again. If the problem persists, contact the codePost team.',
+          );
+
+          slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, {
+            error: error.toString(),
+            errorDetail: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+            url: window.location.href,
+          });
+        }
+
+        handleCancel();
+      });
+  }, [
+    closeLateSubmissionModal,
+    isSubmissionLocked,
+    isStudent,
+    isCodeInPlaceCourse,
+    submission,
+    runTestsMock,
+    selectedAssignment,
+    selectedStudents,
+    files,
+    sendMeAConfirmationEmail,
+    uploadSubmission,
+    shouldRunTests,
+    runTests,
+    propsSelectedStudents,
+    propsSelectedAssignment,
+    handleCancel,
+  ]);
+
+  const confirmUpload = useCallback(() => {
+    if (selectedAssignment === undefined || selectedAssignment.uploadDueDate === undefined) {
+      return;
+    }
+
+    if (dueDatePassed(selectedAssignment.uploadDueDate)) {
+      if (isStudent) {
+        openLateSubmissionModal();
+      } else {
+        handleUpload();
+      }
+    } else {
+      handleUpload();
+    }
+  }, [selectedAssignment, isStudent, openLateSubmissionModal, handleUpload]);
+
+  const beforeUpload = useCallback(async (file: any, _fileList: UploadFile[]) => {
     const ProtoFileUpload: IProtoFileUpload = fileToProtoFileUpload(file);
 
     try {
       const outputFiles = await readUploadedFile(file);
 
-      const newFileList = this.state.fileList.filter((f: UploadFile) => {
-        return f.name !== ProtoFileUpload.longname;
+      setFileList((prevFileList) => {
+        const newFileList = prevFileList.filter((f: UploadFile) => f.name !== ProtoFileUpload.longname);
+        const fileNames = outputFiles.map((f) => [f.longname, f.zipSource]).flat();
+        const newFileListItem = { ...file, name: ProtoFileUpload.longname };
+
+        return fileNames.includes(ProtoFileUpload.longname) ? [...newFileList, newFileListItem] : newFileList;
       });
 
-      const newFiles = this.state.files.filter((f: IProtoFileUpload) => {
-        return !outputFiles
-          .map((outputFile: IProtoFileUpload) => {
-            return outputFile.longname;
-          })
-          .includes(f.longname);
-      });
-
-      const fileNames = outputFiles
-        .map((f) => {
-          return [f.longname, f.zipSource];
-        })
-        .flat();
-
-      const newFileListItem = { ...file, name: ProtoFileUpload.longname };
-
-      this.setState({
-        // Don't show files in the list that won't get uploaded
-        fileList: fileNames.includes(ProtoFileUpload.longname) ? [...newFileList, newFileListItem] : newFileList,
-        files: [...newFiles, ...outputFiles],
+      setFiles((prevFiles) => {
+        const newFiles = prevFiles.filter((f: IProtoFileUpload) => {
+          return !outputFiles.map((outputFile: IProtoFileUpload) => outputFile.longname).includes(f.longname);
+        });
+        return [...newFiles, ...outputFiles];
       });
     } catch (e) {
-      this.setState({ rejectedFiles: [...this.state.rejectedFiles, ProtoFileUpload.longname] });
+      setRejectedFiles((prev) => [...prev, ProtoFileUpload.longname]);
       message.error(String(e));
     }
 
     return Promise.reject();
-  };
+  }, []);
 
   /********************************************************************************************************/
-  /* Testing infrastructure
+  /* Render helpers
   /********************************************************************************************************/
 
-  /* Utility function used to determine whether we should run automated tests against student code when
-   * code is uploaded.
-   */
-  public shouldRunTests = () => {
-    const testsToRun =
-      (this.state.selectedAssignment && this.state.selectedAssignment.exposeDumpLogs) ||
-      this.state.testCategories.length > 0;
-
-    // Has the student surpassed the maximum submission limit?
-    const runsSoFar = this.state.submission ? this.state.submission.testRunsCompleted : 0;
-    const maxRuns =
-      this.state.selectedAssignment && this.state.selectedAssignment.maxStudentTestRuns
-        ? this.state.selectedAssignment.maxStudentTestRuns
-        : -1;
-
-    return testsToRun && (maxRuns < 0 || runsSoFar < maxRuns);
-  };
-
-  public setResults = (result: SubmissionTestResultType) => {
-    if (result) {
-      // Note: we need to increment the testRunsCompleted in state, because a student could go back to the upload tab (without refreshing submission) and re-upload
-      this.setState((prevState) => {
-        return {
-          submissionTests: result.submissionTests,
-          testsLog: result.logs,
-          runMessage: result.message,
-          submission: prevState.submission
-            ? { ...prevState.submission, testRunsCompleted: prevState.submission.testRunsCompleted + 1 }
-            : undefined,
-        };
-      });
+  const renderRejectedFiles = useMemo(() => {
+    if (rejectedFiles.length === 0) {
+      return null;
     }
+    return (
+      <div style={{ color: 'red', marginBottom: 10, marginTop: '10px' }}>
+        The following files were not uploaded:{' '}
+        {rejectedFiles.map((fileName, index) => {
+          return `${fileName}${index === rejectedFiles.length - 1 ? '' : ', '}`;
+        })}
+      </div>
+    );
+  }, [rejectedFiles]);
 
-    this.setState(() => {
-      return {
-        loadingTests: false,
-        status: STATUS.COMPLETE,
-      };
-    });
-  };
-
-  public runTests = async (submission: StudentSubmissionType | SubmissionInfoType) => {
-    if (this.shouldRunTests()) {
-      // Make sure the loading is set
-      this.setState({ loadingTests: true, status: STATUS.SAVING });
-      const result = await Environment.run({
-        id: this.state.selectedAssignment!.environment!,
-        submission: submission.id,
-        simulate: false,
-        exposedOnly: true,
-      });
-      awaitTestResult(result.task, this.setResults);
-    }
-  };
-
-  // FIXME CIP: This is a method to run tests without uploading the files to a submission
-  // It's purpose is to allow CIP students to submit and see test results after their
-  //   submission has been claimed or finalized
-  public runTestsMock = async (submission: StudentSubmissionType | SubmissionInfoType) => {
-    if (this.shouldRunTests()) {
-      // Make sure the loading is set
-      this.setState({ loadingTests: true });
-
-      const filesJson = this.state.files.map((file: IProtoFileUpload) => {
-        return {
-          name: file.name,
-          code: file.data,
-          path: file.path === undefined || file.path === null ? '' : file.path,
-        };
-      });
-
-      // Type assertion to ensure selectedAssignment is treated as AssignmentType
-      const assignment = this.state.selectedAssignment as AssignmentType;
-
-      const payload = {
-        id: assignment.environment!,
-        files: JSON.stringify(filesJson),
-        submission: submission.id,
-        simulate: true,
-        exposedOnly: true,
-      };
-
-      const result = await Environment.run(payload);
-      awaitTestResult(result.task, this.setMockResults);
-    }
-  };
-
-  // FIXME CIP: This is a method to run tests without uploading the files to a submission
-  public setMockResults = (result: TestEditorResultType) => {
-    if (result) {
-      // Note: we need to increment the testRunsCompleted in state, because a student could go back to the upload tab (without refreshing submission) and re-upload
-      const submissionId = this.state.submission?.id || 0;
-      const now = new Date().toISOString();
-      const mappedResults: SubmissionTestType[] = result.results.map((test, index) => ({
-        id: -index - 1, // Use negative IDs for mock results to avoid conflicts
-        testCase: test.testCase,
-        testCategory: test.testCategory,
-        submission: submissionId,
-        logs: test.logs,
-        passed: test.passed,
-        created: now,
-        modified: now,
-        isError: test.isError,
-      }));
-
-      this.setState({
-        submissionTests: mappedResults,
-        testsLog: result.logs,
-        runMessage: '',
-      });
-    }
-
-    this.setState(() => {
-      return {
-        loadingTests: false,
-      };
-    });
-  };
-
-  public toggleSendMeAConfirmationEmail = () => {
-    const toggled = !this.state.sendMeAConfirmationEmail;
-    LOCAL_SETTINGS.sendMeAConfirmationEmail.setter(toggled);
-    this.setState({ sendMeAConfirmationEmail: toggled });
-  };
-
-  /********************************************************************************************************/
-
-  public render() {
-    const { isVisible } = this.props;
-    const { status } = this.state;
-
-    if (!isVisible) {
-      return <div />;
-    }
-
-    // CIP FIXME - HARDCODED FOR CODE IN PLACE
-    const hideDueDate = this.props.course && this.props.course.id === 925;
-
-    let content;
-    let sendMeAConfirmationEmailCheckbox = null;
-    let goForwardButton = null;
-    let goBackButton = null;
-    switch (status) {
-      case STATUS.COMPLETE:
-        content = (
-          <div>
-            <Result status="success" title="Upload complete!" />
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                {this.props.isStudent && (
-                  <Button
-                    key="submit"
-                    onClick={() => {
-                      this.props.isStudent && this.setState({ activeTab: '1' });
-                      this.onSuccess();
-                    }}
-                  >
-                    <UploadOutlined /> Submit again
-                  </Button>
-                )}
-                {this.state.submissionTests.length > 0 && (
-                  <Button
-                    key="tests"
-                    type="primary"
-                    onClick={() => {
-                      this.props.isStudent && this.setState({ activeTab: '3' });
-                      this.onSuccess();
-                    }}
-                    style={{ marginLeft: 25 }}
-                  >
-                    <CalculatorOutlined /> View test results
-                  </Button>
-                )}
-                <Button
-                  key="files"
-                  type="primary"
-                  onClick={() => {
-                    this.props.isStudent && this.setState({ activeTab: '4' });
-                    this.onSuccess();
-                  }}
-                  style={{ marginLeft: 25 }}
-                >
-                  <ContainerOutlined /> View files
-                </Button>
-              </div>
-            </div>
-          </div>
-        );
-        goBackButton = (
-          <Button key="back" onClick={this.cancel.bind(this)}>
-            Close
-          </Button>
-        );
-        break;
-      case STATUS.SAVING:
-        content = (
-          <div style={{ textAlign: 'center', margin: '0 auto', padding: '30px 50px' }}>
-            <Spin size="large" />
-            <br />
-            <br />
-            <Typography.Title level={4}>{`Uploading your files${
-              this.state.loadingTests ? ' and running tests...' : ''
-            }`}</Typography.Title>
-          </div>
-        );
-        break;
-      case STATUS.NONE: {
-        const studentOptions = this.buildStudentOptions(
-          this.props.students,
-          this.props.submissions,
-          this.state.selectedAssignment,
-        );
-
-        const rejectedFiles =
-          this.state.rejectedFiles.length === 0 ? (
-            <div />
-          ) : (
-            <div style={{ color: 'red', marginBottom: 10, marginTop: '10px' }}>
-              The following files were not uploaded:{' '}
-              {this.state.rejectedFiles.map((fileName, index) => {
-                return `${fileName}${index === this.state.rejectedFiles.length - 1 ? '' : ', '}`;
-              })}
-            </div>
-          );
-
-        /*****************************************************************************************/
-        /* Build list of settings and toggles
-        /*****************************************************************************************/
-
-        const settings = [
-          {
-            setting: 'Upload a directory',
-            tooltip: 'Turn this on to upload nested folders.',
-            variable: 'uploadDirectory' as keyof IUploadSubmissionDialogState,
-          },
-          // {
-          //   setting: 'Upload an incomplete submission',
-          //   tooltip: 'Turn this on to a submission missing required files.',
-          //   variable: 'allowIncomplete' as keyof IUploadSubmissionDialogState,
-          // },
-          // {
-          //   setting: 'Upload extra files',
-          //   tooltip: 'Turn this on to upload files not specifed by the assignment.',
-          //   variable: 'allowExtra' as keyof IUploadSubmissionDialogState,
-          // },
-        ];
-
-        const settingList = (
-          <span>
-            {settings.map((setting) => (
-              <span key={setting.setting}>
-                {setting.setting} <CPTooltip title={setting.tooltip} infoIcon={true} /> &nbsp;{' '}
-                <Switch
-                  checked={this.getState(setting.variable)}
-                  onClick={() => {
-                    this.setState(this.toggleState(setting.variable));
-                    return;
-                  }}
-                />
-              </span>
-            ))}
-          </span>
-        );
-
-        /*****************************************************************************************/
-        /* Build list of required and optional files
-        /*****************************************************************************************/
-        const requiredColumns = [
-          { title: 'Assignment files', dataIndex: 'name', key: 'file' },
-          { title: 'Uploaded', dataIndex: 'uploaded', key: 'uploaded', align: 'center' as const },
-        ];
-
-        // If required files are present, then a student must upload them before submitting.
-        // problems if optional files are being used to specify files that a student _should_ upload but can omit.
-        const ignoringOptionalFiles =
-          this.state.files.length > 0 &&
-          this.state.fileTemplates.every((ft) => !ft.required && !this.state.files.some((el) => el.name === ft.name));
-
-        // Has the student uploaded any .zip file?
-        const hasUploadedZip = this.state.files.some((el) => el.zipSource !== undefined && el.zipSource.length > 0);
-
-        const fileList =
-          this.state.fileTemplates.length > 0 ? (
-            <span>
-              <Table
-                columns={requiredColumns}
-                dataSource={this.state.fileTemplates.map((el) => {
-                  const exists = this.state.files.some((file) => file.name === el.name);
-                  return {
-                    ...el,
-                    name: (
-                      <span>
-                        {el.required ? <Tag color={exists ? 'green' : 'volcano'}>REQUIRED</Tag> : <Tag>OPTIONAL</Tag>}
-                        {el.name}
-                      </span>
-                    ),
-                    uploaded: exists ? (
-                      <CheckCircleOutlined style={{ color: 'green' }} />
-                    ) : (
-                      <CloseCircleOutlined style={{ color: 'red' }} />
-                    ),
-                  };
-                })}
-                pagination={false}
-              />
-              {ignoringOptionalFiles && (
-                <span>
-                  <br />
-                  <Alert
-                    type="warning"
-                    message={
-                      <span>
-                        You haven't uploaded any of the specified files. Make sure this is your intention before
-                        submitting.
-                        {this.shouldRunTests() && ' File names must match the specified files exactly to pass tests. '}
-                        {hasUploadedZip && (
-                          <span>
-                            If you're uploading a zip, make sure you're the zipping the folder that contains your files,
-                            and not a folder that contains a folder with your files.
-                          </span>
-                        )}
-                      </span>
-                    }
-                  />
-                </span>
-              )}
-              {/* this.state.files.length > 0 && fewerFilesSubmitted && (
-                <span>
-                  <br />
-                  <Alert
-                    type="warning"
-                    message={
-                      <span>
-                        You're missing some files you uploaded when you last submitted. You must re-submit files if you
-                        want to include them and/or test them.
-                      </span>
-                    }
-                  />
-                </span>
-              ) */}
-            </span>
-          ) : (
-            <span />
-          );
-
-        const unzippedFiles = this.state.files.filter((el) => el.zipSource !== undefined);
-
-        /*****************************************************************************************/
-        /* Build buttons
-        /*****************************************************************************************/
-        goBackButton = (
-          <Button key="back" onClick={this.cancel.bind(this)}>
-            Close
-          </Button>
-        );
-
-        const areRequiredFilesPresent = this.state.fileTemplates.every(
-          (ft) => !ft.required || this.state.files.some((el) => el.name === ft.name),
-        );
-
-        const disableUpload = !(
-          areRequiredFilesPresent &&
-          this.state.files.length > 0 &&
-          this.state.selectedStudents.length > 0 &&
-          this.state.selectedAssignment
-        );
-
-        if (this.props.isStudent && this.state.activeTab === '1') {
-          sendMeAConfirmationEmailCheckbox = (
-            <span key="sendMeAConfirmationEmailCheckbox">
-              {this.state.selectedAssignment &&
-              this.state.selectedAssignment.uploadDueDate &&
-              dueDatePassed(this.state.selectedAssignment.uploadDueDate) &&
-              !hideDueDate ? (
-                <Tag color="volcano">Due Date Passed</Tag>
-              ) : null}
-              <Checkbox
-                key="send-me-a-confirmation-email"
-                checked={this.state.sendMeAConfirmationEmail}
-                onChange={this.toggleSendMeAConfirmationEmail}
-              >
-                Send me email confirmation
-              </Checkbox>
-              <CPTooltip
-                title={
-                  this.state.submission && this.state.submission.students && this.state.submission.students.length > 1
-                    ? 'If checked, codePost will send you and your partners an email confirming a successful submission.'
-                    : 'If checked, codePost will send you an email confirming a successful submission.'
-                }
-                infoIcon={true}
-              />
-              &nbsp; &nbsp;
-            </span>
-          );
-        }
-
-        // only show upload if we're on the upload tab
-        goForwardButton =
-          this.state.activeTab === '1' ? (
-            <span key="goForwardButton" style={{ marginLeft: '8px' }}>
-              <Button key="submit" type="primary" disabled={disableUpload} onClick={this.confirmUpload}>
-                {this.state.submission ? 'Re-s' : 'S'}ubmit {this.shouldRunTests() && 'and run tests'}
-              </Button>
-              {this.state.selectedAssignment === undefined ? null : (
-                <LateSubmissionModal
-                  visible={this.state.lateSubmissionModalVisible}
-                  assignment={this.state.selectedAssignment}
-                  onCancel={this.closeLateSubmissionModal}
-                  onOk={this.upload}
-                />
-              )}
-            </span>
-          ) : (
-            <span />
-          );
-
-        if (disableUpload) {
-          let disabledText = '';
-          if (!areRequiredFilesPresent) {
-            disabledText = 'You must upload all required files before submitting.';
-          } else if (this.state.files.length === 0) {
-            disabledText = 'You must upload at least one file before submitting.';
-          } else if (this.state.selectedStudents.length === 0) {
-            disabledText = 'You must select at least one student before uploading.';
-          } else if (!this.state.selectedAssignment) {
-            disabledText = 'You must select an assignment before uploading.';
-          }
-
-          goForwardButton = <Tooltip title={disabledText}>{goForwardButton}</Tooltip>;
-        }
-
-        /*****************************************************************************************/
-
-        // Address https://github.com/codepost-io/codePost-ui/issues/1039
-        if (!this.props.isStudent && this.props.students.length === 0) {
-          content = (
-            <div>
-              After you add students, you can upload their submissions here. <br />
-              <br />{' '}
-              <Link
-                to={
-                  this.props.course
-                    ? `/admin/${encodeForLink(this.props.course.name)}/${encodeForLink(
-                        this.props.course.period,
-                      )}/roster/students`
-                    : ''
-                }
-              >
-                <Button>Add students</Button>
-              </Link>
-            </div>
-          );
-        } else {
-          // Is this student allowed to run tests?
-          const runsSoFar = this.state.submission ? this.state.submission.testRunsCompleted : 0;
-          const maxRuns = this.state.selectedAssignment ? this.state.selectedAssignment.maxStudentTestRuns || -1 : -1;
-
-          let testMessage;
-          if (this.state.selectedAssignment && this.state.selectedAssignment.maxStudentTestRuns) {
-            const numRemaining = Math.max(maxRuns - runsSoFar, 0);
-            testMessage = (
-              <Alert
-                message={
-                  <span>
-                    You have used <b>{runsSoFar}</b> test runs so far. You have <b>{numRemaining}</b> test{' '}
-                    {numRemaining === 1 ? 'run' : 'runs'} remaining.{' '}
-                    {numRemaining === 0 ? ' You can still continue to submit, but no additional tests will be run' : ''}
-                  </span>
-                }
-                type={numRemaining === 0 ? 'error' : numRemaining === 1 ? 'warning' : 'info'}
-              />
-            );
-          }
-
-          content = (
-            <div>
-              {this.props.infoMessage && (
-                <Alert message={this.props.infoMessage} type={'info'} style={{ margin: '10px 0px' }} />
-              )}
-              Assignment:
-              <div>
-                <Select
-                  value={this.state.selectedAssignment ? this.state.selectedAssignment.id : undefined}
-                  disabled={typeof this.props.selectedAssignment === 'object'}
-                  onChange={this.changeAssignment}
-                  style={{ width: '100%' }}
-                  showSearch={true}
-                >
-                  {this.assignmentOptions}
-                </Select>
-              </div>
-              <br />
-              <br />
-              Students:{' '}
-              {this.props.isStudent ? (
-                <CPTooltip title={tooltips.admin.assignments.uploadSubmission} infoIcon={true} />
-              ) : (
-                <span />
-              )}
-              <div>
-                <Select
-                  value={this.state.selectedStudents}
-                  disabled={this.props.disableStudentSelect}
-                  onChange={this.changeStudents}
-                  showSearch={true}
-                  mode="multiple"
-                  placeholder={'Select students'}
-                  style={{ width: '100%' }}
-                >
-                  {studentOptions}
-                </Select>
-              </div>
-              <Divider />
-              {/*  beforeUpload prop stops Upload component from trying to upload files to external server */}
-              {/*  FIXME: we should prevent users from uploading image files here */}
-              {fileList}
-              <br />
-              {settingList}
-              <br />
-              <br />
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <Upload
-                  beforeUpload={this.beforeUpload}
-                  listType="text"
-                  multiple={true}
-                  onRemove={this.onRemove}
-                  fileList={this.state.fileList}
-                  directory={this.state.uploadDirectory}
-                >
-                  <Button>
-                    <UploadOutlined /> Upload files
-                  </Button>{' '}
-                  {this.state.submission && (
-                    <span>
-                      &nbsp; <b>Note</b>: you must re-submit all files each time you submit.
-                    </span>
-                  )}
-                </Upload>
-              </div>
-              <span>
-                {unzippedFiles.length > 0 ? (
-                  <span>
-                    <br />
-                    <b>The following files will be unzipped and uploaded with the submission:</b>{' '}
-                    <ul>
-                      {unzippedFiles.map((el) => {
-                        return (
-                          <li>
-                            {el.path}/{el.name}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </span>
-                ) : (
-                  <div />
-                )}
-              </span>
-              <br />
-              {rejectedFiles}
-              {testMessage && (
-                <div>
-                  <Divider />
-                  <div style={{ marginBottom: 15 }}>{testMessage}</div>
-                </div>
-              )}
-            </div>
-          );
-        }
-        break;
-      }
-    }
-
-    // We show tests tab if:
-    //   Case A: There are test categories, and the student is not seeing the assignment for the first time in nudge mode
-    //   Case B: There is a log to show. For example, assignments that only use file mode
-    //   Case C: Tests are loading. This is for assignments that use file mode, and we want to show the students that tests are running
-    // Also show it if loading, if the tests are running
-
-    const showTestsTab =
-      (this.state.testCategories.length > 0 &&
-        (!this.state.selectedAssignment!.nudgeMode || this.state.submissionTests.length > 0)) ||
-      this.state.testsLog ||
-      this.state.loadingTests;
+  const renderSettings = useMemo(() => {
+    const settings = [
+      {
+        setting: 'Upload a directory',
+        tooltip: 'Turn this on to upload nested folders.',
+        checked: uploadDirectory,
+        onChange: toggleDirectoryUpload,
+      },
+    ];
 
     return (
-      <Modal
-        visible={true}
-        title={this.props.title || 'Upload Submissions'}
-        onCancel={this.cancel}
-        width={1100}
-        footer={[sendMeAConfirmationEmailCheckbox, goBackButton, goForwardButton]}
-      >
-        {status !== STATUS.NONE || !this.props.isStudent ? (
-          content
-        ) : (
-          <Tabs
-            activeKey={this.state.activeTab || '1'}
-            onChange={(activeKey) => this.setState({ activeTab: activeKey })}
-          >
-            <Tabs.TabPane tab="Submit" key="1">
-              {content}
-            </Tabs.TabPane>
-
-            {this.state.selectedAssignment && this.state.selectedAssignment.explanation.length > 0 ? (
-              <Tabs.TabPane tab="Instructions" key="2">
-                <ReactMarkdown>{this.state.selectedAssignment.explanation}</ReactMarkdown>
-              </Tabs.TabPane>
-            ) : null}
-
-            {this.state.selectedAssignment && this.state.selectedAssignment.allowStudentUploadWithPartners && (
-              <Tabs.TabPane tab="Partners" key="partners">
-                To add a partner to your submission, share this link with them.
-                <InvitePartnersLink assignment={this.state.selectedAssignment} submission={this.state.submission} />
-              </Tabs.TabPane>
-            )}
-
-            {showTestsTab && (
-              <Tabs.TabPane tab="Tests" key="3">
-                <div style={{ minHeight: 400, height: 'calc(100vh - 400px)' }}>
-                  <TestsList
-                    tests={this.state.submissionTests.filter((el) => {
-                      const correspondingTest = Object.values(this.state.testCases)
-                        .flat()
-                        .find((el2) => el2.id === el.testCase);
-                      return correspondingTest && correspondingTest.exposed;
-                    })}
-                    hideNotRun={false}
-                    redactNotShown={this.state.selectedAssignment!.nudgeMode}
-                    cases={this.state.testCases}
-                    categories={this.state.testCategories}
-                    isLoading={this.state.loadingTests}
-                    logs={
-                      this.state.testsLog === null || this.state.testsLog.length === 0 ? undefined : this.state.testsLog
-                    }
-                    showLogs={this.state.selectedAssignment!.exposeDumpLogs === true}
-                    message={
-                      <div>
-                        {this.state.submissionTests.length > 0 && (
-                          <Alert
-                            type="info"
-                            message={
-                              this.state.isTestingSimulated ? (
-                                <div>
-                                  Showing <span style={{ fontWeight: 500 }}>simulated results</span> from most recent
-                                  upload.
-                                </div>
-                              ) : (
-                                <div>
-                                  Showing results from most recent submission at:{' '}
-                                  <CodePostDate datetime={this.state.submission!.dateUploaded || ''} />
-                                </div>
-                              )
-                            }
-                          />
-                        )}
-                        <br />
-                        {this.state.runMessage && <Alert type="warning" message={this.state.runMessage} />}
-                      </div>
-                    }
-                    hideSummary={this.state.testCategories.length === 0}
-                  />
-                </div>
-              </Tabs.TabPane>
-            )}
-
-            {this.state.submission ? (
-              <Tabs.TabPane tab="Most recent submission" key="4">
-                <Alert
-                  type="info"
-                  message={
-                    <div>
-                      Showing results from most recent submission at:{' '}
-                      <CodePostDate datetime={this.state.submission!.dateUploaded || ''} />
-                    </div>
-                  }
-                />
-                <br />
-                <ViewUpload assignment={this.state.selectedAssignment} />
-              </Tabs.TabPane>
-            ) : null}
-          </Tabs>
-        )}
-      </Modal>
+      <span>
+        {settings.map((setting) => (
+          <span key={setting.setting}>
+            {setting.setting} <CPTooltip title={setting.tooltip} infoIcon={true} /> &nbsp;{' '}
+            <Switch checked={setting.checked} onClick={setting.onChange} />
+          </span>
+        ))}
+      </span>
     );
+  }, [uploadDirectory, toggleDirectoryUpload]);
+
+  const renderFileList = useMemo(() => {
+    if (fileTemplates.length === 0) {
+      return null;
+    }
+
+    const ignoringOptionalFiles =
+      files.length > 0 && fileTemplates.every((ft) => !ft.required && !files.some((el) => el.name === ft.name));
+
+    const hasUploadedZip = files.some((el) => el.zipSource !== undefined && el.zipSource.length > 0);
+
+    return (
+      <>
+        <Table
+          columns={TABLE_COLUMNS}
+          dataSource={fileTemplates.map((el) => {
+            const exists = files.some((file) => file.name === el.name);
+            return {
+              ...el,
+              key: el.id,
+              name: (
+                <span>
+                  {el.required ? <Tag color={exists ? 'green' : 'volcano'}>REQUIRED</Tag> : <Tag>OPTIONAL</Tag>}
+                  {el.name}
+                </span>
+              ),
+              uploaded: exists ? (
+                <CheckCircleOutlined style={{ color: 'green' }} />
+              ) : (
+                <CloseCircleOutlined style={{ color: 'red' }} />
+              ),
+            };
+          })}
+          pagination={false}
+        />
+        {ignoringOptionalFiles && (
+          <>
+            <br />
+            <Alert
+              type="warning"
+              message={
+                <>
+                  You haven't uploaded any of the specified files. Make sure this is your intention before submitting.
+                  {shouldRunTests() && ' File names must match the specified files exactly to pass tests. '}
+                  {hasUploadedZip && (
+                    <span>
+                      If you're uploading a zip, make sure you're zipping the folder that contains your files, and not a
+                      folder that contains a folder with your files.
+                    </span>
+                  )}
+                </>
+              }
+            />
+          </>
+        )}
+      </>
+    );
+  }, [fileTemplates, files, shouldRunTests]);
+
+  const renderUnzippedFiles = useMemo(() => {
+    const unzippedFiles = files.filter((el) => el.zipSource !== undefined);
+    if (unzippedFiles.length === 0) {
+      return null;
+    }
+
+    return (
+      <>
+        <br />
+        <b>The following files will be unzipped and uploaded with the submission:</b>
+        <ul>
+          {unzippedFiles.map((el, index) => (
+            <li key={index}>
+              {el.path}/{el.name}
+            </li>
+          ))}
+        </ul>
+      </>
+    );
+  }, [files]);
+
+  /********************************************************************************************************/
+  /* Render
+  /********************************************************************************************************/
+
+  if (!isVisible) {
+    return null;
   }
-}
+
+  const hideDueDate = isCodeInPlaceCourse;
+
+  let content: React.ReactNode;
+  let sendMeAConfirmationEmailCheckbox: React.ReactNode = null;
+  let goForwardButton: React.ReactNode = null;
+  let goBackButton: React.ReactNode = null;
+
+  switch (status) {
+    case STATUS.COMPLETE: {
+      content = (
+        <div>
+          <Result status="success" title="Upload complete!" />
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              {isStudent && (
+                <Button
+                  key="submit"
+                  onClick={() => {
+                    setActiveTab('1');
+                    handleSuccess();
+                  }}
+                >
+                  <UploadOutlined /> Submit again
+                </Button>
+              )}
+              {submissionTests.length > 0 && (
+                <Button
+                  key="tests"
+                  type="primary"
+                  onClick={() => {
+                    setActiveTab('3');
+                    handleSuccess();
+                  }}
+                >
+                  <CalculatorOutlined /> View test results
+                </Button>
+              )}
+              <Button
+                key="files"
+                type="primary"
+                onClick={() => {
+                  setActiveTab('4');
+                  handleSuccess();
+                }}
+              >
+                <ContainerOutlined /> View files
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+
+      goBackButton = (
+        <Button key="back" onClick={handleCancel}>
+          Close
+        </Button>
+      );
+      break;
+    }
+
+    case STATUS.SAVING: {
+      content = (
+        <div style={{ textAlign: 'center', margin: '0 auto', padding: '30px 50px' }}>
+          <Spin size="large" />
+          <br />
+          <br />
+          <Typography.Title level={4}>Uploading your files{loadingTests && ' and running tests'}...</Typography.Title>
+        </div>
+      );
+      break;
+    }
+
+    case STATUS.NONE: {
+      goBackButton = (
+        <Button key="back" onClick={handleCancel}>
+          Close
+        </Button>
+      );
+
+      const areRequiredFilesPresent = fileTemplates.every(
+        (ft) => !ft.required || files.some((el) => el.name === ft.name),
+      );
+
+      const disableUpload = !(
+        areRequiredFilesPresent &&
+        files.length > 0 &&
+        selectedStudents.length > 0 &&
+        selectedAssignment
+      );
+
+      if (isStudent && activeTab === '1') {
+        sendMeAConfirmationEmailCheckbox = (
+          <span key="sendMeAConfirmationEmailCheckbox">
+            {selectedAssignment &&
+            selectedAssignment.uploadDueDate &&
+            dueDatePassed(selectedAssignment.uploadDueDate) &&
+            !hideDueDate ? (
+              <Tag color="volcano">Due Date Passed</Tag>
+            ) : null}
+            <Checkbox checked={sendMeAConfirmationEmail} onChange={toggleSendMeAConfirmationEmail}>
+              Send me email confirmation
+            </Checkbox>
+            <CPTooltip
+              title={
+                submission && submission.students && submission.students.length > 1
+                  ? 'If checked, codePost will send you and your partners an email confirming a successful submission.'
+                  : 'If checked, codePost will send you an email confirming a successful submission.'
+              }
+              infoIcon={true}
+            />
+            &nbsp; &nbsp;
+          </span>
+        );
+      }
+
+      goForwardButton =
+        activeTab === '1' ? (
+          <span key="goForwardButton" style={{ marginLeft: '8px' }}>
+            <Button key="submit" type="primary" disabled={disableUpload} onClick={confirmUpload}>
+              {submission ? 'Re-s' : 'S'}ubmit{shouldRunTests() && ' and run tests'}
+            </Button>
+            {selectedAssignment && (
+              <LateSubmissionModal
+                visible={lateSubmissionModalVisible}
+                assignment={selectedAssignment}
+                onCancel={closeLateSubmissionModal}
+                onOk={handleUpload}
+              />
+            )}
+          </span>
+        ) : null;
+
+      if (disableUpload) {
+        const getDisabledReason = () => {
+          if (!areRequiredFilesPresent) {
+            return 'You must upload all required files before submitting.';
+          }
+          if (files.length === 0) {
+            return 'You must upload at least one file before submitting.';
+          }
+          if (selectedStudents.length === 0) {
+            return 'You must select at least one student before uploading.';
+          }
+          if (!selectedAssignment) {
+            return 'You must select an assignment before uploading.';
+          }
+          return '';
+        };
+
+        goForwardButton = <Tooltip title={getDisabledReason()}>{goForwardButton}</Tooltip>;
+      }
+
+      // Handle case where no students exist (admin view only)
+      if (!isStudent && students.length === 0) {
+        content = (
+          <div>
+            After you add students, you can upload their submissions here.
+            <br />
+            <br />
+            {course && (
+              <Link to={`/admin/${encodeForLink(course.name)}/${encodeForLink(course.period)}/roster/students`}>
+                <Button>Add students</Button>
+              </Link>
+            )}
+          </div>
+        );
+      } else {
+        // Calculate test run information
+        const runsSoFar = submission?.testRunsCompleted ?? 0;
+        const maxRuns = selectedAssignment?.maxStudentTestRuns ?? -1;
+        const numRemaining = maxRuns > 0 ? Math.max(maxRuns - runsSoFar, 0) : Infinity;
+
+        const testMessage = selectedAssignment?.maxStudentTestRuns ? (
+          <Alert
+            message={
+              <>
+                You have used <strong>{runsSoFar}</strong> test runs so far. You have{' '}
+                <strong>{numRemaining === Infinity ? 'unlimited' : numRemaining}</strong> test{' '}
+                {numRemaining === 1 ? 'run' : 'runs'} remaining.
+                {numRemaining === 0 && ' You can still continue to submit, but no additional tests will be run.'}
+              </>
+            }
+            type={numRemaining === 0 ? 'error' : numRemaining === 1 ? 'warning' : 'info'}
+          />
+        ) : null;
+
+        content = (
+          <div>
+            {infoMessage && <Alert message={infoMessage} type="info" style={{ marginBottom: 16 }} />}
+
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ marginBottom: 8 }}>Assignment:</div>
+              <Select
+                value={selectedAssignment?.id}
+                disabled={!!propsSelectedAssignment}
+                onChange={handleChangeAssignment}
+                style={{ width: '100%' }}
+                showSearch
+                placeholder="Select an assignment"
+              >
+                {assignmentOptions}
+              </Select>
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ marginBottom: 8 }}>
+                Students: {isStudent && <CPTooltip title={tooltips.admin.assignments.uploadSubmission} infoIcon />}
+              </div>
+              <Select
+                value={selectedStudents}
+                disabled={disableStudentSelect}
+                onChange={handleChangeStudents}
+                showSearch
+                mode="multiple"
+                placeholder="Select students"
+                style={{ width: '100%' }}
+              >
+                {buildStudentOptions}
+              </Select>
+            </div>
+
+            <Divider />
+
+            {renderFileList}
+
+            {renderSettings}
+
+            <div style={{ margin: '16px 0' }}>
+              <Upload
+                beforeUpload={beforeUpload}
+                listType="text"
+                multiple
+                onRemove={handleRemove}
+                fileList={fileList}
+                directory={uploadDirectory}
+              >
+                <Button icon={<UploadOutlined />}>Upload files</Button>
+              </Upload>
+              {submission && (
+                <div style={{ marginTop: 8, color: '#666' }}>
+                  <strong>Note:</strong> you must re-submit all files each time you submit.
+                </div>
+              )}
+            </div>
+
+            {renderUnzippedFiles}
+            {renderRejectedFiles}
+
+            {testMessage && (
+              <>
+                <Divider />
+                {testMessage}
+              </>
+            )}
+          </div>
+        );
+      }
+      break;
+    }
+  }
+
+  const showTestsTab =
+    (testCategories.length > 0 && (!selectedAssignment?.nudgeMode || submissionTests.length > 0)) ||
+    testsLog ||
+    loadingTests;
+
+  return (
+    <Modal
+      open
+      title={title || 'Upload Submissions'}
+      onCancel={handleCancel}
+      width={MODAL_WIDTH}
+      footer={[sendMeAConfirmationEmailCheckbox, goBackButton, goForwardButton]}
+    >
+      {status !== STATUS.NONE || !isStudent ? (
+        content
+      ) : (
+        <Tabs activeKey={activeTab} onChange={setActiveTab}>
+          <Tabs.TabPane tab="Submit" key="1">
+            {content}
+          </Tabs.TabPane>
+
+          {selectedAssignment?.explanation && (
+            <Tabs.TabPane tab="Instructions" key="2">
+              <ReactMarkdown>{selectedAssignment.explanation}</ReactMarkdown>
+            </Tabs.TabPane>
+          )}
+
+          {selectedAssignment?.allowStudentUploadWithPartners && (
+            <Tabs.TabPane tab="Partners" key="partners">
+              <div>
+                To add a partner to your submission, share this link with them.
+                <InvitePartnersLink assignment={selectedAssignment} submission={submission} />
+              </div>
+            </Tabs.TabPane>
+          )}
+
+          {showTestsTab && (
+            <Tabs.TabPane tab="Tests" key="3">
+              <div style={{ minHeight: MIN_TEST_HEIGHT, height: 'calc(100vh - 400px)' }}>
+                <TestsList
+                  tests={submissionTests.filter((el) => {
+                    const correspondingTest = Object.values(testCases)
+                      .flat()
+                      .find((el2) => el2.id === el.testCase);
+                    return correspondingTest?.exposed;
+                  })}
+                  hideNotRun={false}
+                  redactNotShown={selectedAssignment?.nudgeMode || false}
+                  cases={testCases}
+                  categories={testCategories}
+                  isLoading={loadingTests}
+                  logs={testsLog || undefined}
+                  showLogs={selectedAssignment?.exposeDumpLogs === true}
+                  message={
+                    <>
+                      {submissionTests.length > 0 && (
+                        <Alert
+                          type="info"
+                          message={
+                            isTestingSimulated ? (
+                              <div>
+                                Showing <strong>simulated results</strong> from most recent upload.
+                              </div>
+                            ) : (
+                              <div>
+                                Showing results from most recent submission at:{' '}
+                                <CodePostDate datetime={submission?.dateUploaded || ''} />
+                              </div>
+                            )
+                          }
+                        />
+                      )}
+                      {runMessage && (
+                        <>
+                          <br />
+                          <Alert type="warning" message={runMessage} />
+                        </>
+                      )}
+                    </>
+                  }
+                  hideSummary={testCategories.length === 0}
+                />
+              </div>
+            </Tabs.TabPane>
+          )}
+
+          {submission && (
+            <Tabs.TabPane tab="Most recent submission" key="4">
+              <Alert
+                type="info"
+                message={
+                  <div>
+                    Showing results from most recent submission at:{' '}
+                    <CodePostDate datetime={submission.dateUploaded || ''} />
+                  </div>
+                }
+              />
+              <br />
+              <ViewUpload assignment={selectedAssignment} />
+            </Tabs.TabPane>
+          )}
+        </Tabs>
+      )}
+    </Modal>
+  );
+};
+
 export default UploadSubmissionDialog;

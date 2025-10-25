@@ -1,13 +1,13 @@
 import React, { Children, useEffect, useRef, useState } from 'react';
 
 type Props = {
+  initialLeftWidth?: number; // percentage
   children?: React.ReactNode;
 };
 
-export default function SplitScreen({ children }: Props) {
-  const [leftWidth, setLeftWidth] = useState(50);
+export default function SplitScreen({ children, initialLeftWidth = 50 }: Props) {
+  const [leftWidth, setLeftWidth] = useState(initialLeftWidth);
   const [isDividerHovered, setIsDividerHovered] = useState(false);
-  const [renderKey, setRenderKey] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
 
@@ -28,12 +28,7 @@ export default function SplitScreen({ children }: Props) {
     setLeftWidth(Math.max(10, Math.min(90, newLeftWidth)));
   };
   const handleMouseUp = () => {
-    const wasDragging = isDragging.current;
     isDragging.current = false;
-    // Only force re-render if we were actually dragging
-    if (wasDragging) {
-      setRenderKey((prev) => prev + 1);
-    }
   };
 
   useEffect(() => {
@@ -47,24 +42,20 @@ export default function SplitScreen({ children }: Props) {
   }, []);
   return (
     <div ref={containerRef} style={{ display: 'flex', height: '100%', width: '100%' }}>
-      <div key={`left-${renderKey}`} style={{ width: `${leftWidth}%`, overflow: 'auto' }}>
-        {leftChild && <>{leftChild}</>}
-      </div>
+      <div style={{ width: `${leftWidth}%`, overflow: 'auto' }}>{leftChild && <>{leftChild}</>}</div>
       <div
         onMouseDown={handleMouseDown}
         onMouseEnter={() => setIsDividerHovered(true)}
         onMouseLeave={() => setIsDividerHovered(false)}
         style={{
           width: '6px',
-          margin: '0px 4px',
+          margin: '0px 10px',
           cursor: 'col-resize',
           backgroundColor: isDividerHovered ? '#aaa' : '#ccc',
           userSelect: 'none',
         }}
       />
-      <div key={`right-${renderKey}`} style={{ flex: 1, overflow: 'auto' }}>
-        {rightChild && <>{rightChild}</>}
-      </div>
+      <div style={{ flex: 1, overflow: 'auto' }}>{rightChild && <>{rightChild}</>}</div>
     </div>
   );
 }

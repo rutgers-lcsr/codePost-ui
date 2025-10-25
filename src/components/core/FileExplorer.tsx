@@ -2,7 +2,7 @@ import { Button, Modal, Tabs } from 'antd';
 
 import { FileTemplateType } from '../../infrastructure/types';
 
-import { UnControlled as CodeMirror } from 'react-codemirror2';
+import Editor from '@monaco-editor/react';
 
 interface IProps {
   // files: FileType[] | FileTemplateType[];
@@ -14,7 +14,7 @@ interface IProps {
 const FileExplorer = (props: IProps) => {
   return (
     <Modal
-      visible={props.visible}
+      open={props.visible}
       closable={true}
       width={'90%'}
       onCancel={props.toggleVisible}
@@ -29,7 +29,7 @@ const FileExplorer = (props: IProps) => {
           {props.files.map((file: FileTemplateType) => {
             return (
               <Tabs.TabPane tab={file.name} key={`file-${file.id}`}>
-                <CodeMirror
+                {/* <CodeMirror
                   key={`codeMirror-${file.id}`}
                   value={file.code}
                   options={{
@@ -40,6 +40,12 @@ const FileExplorer = (props: IProps) => {
                     styleActiveLine: { nonEmpty: true },
                     readOnly: true,
                   }}
+                /> */}
+                <Editor
+                  height="80vh"
+                  defaultValue={file.code}
+                  theme="vs-dark"
+                  options={{ readOnly: true, minimap: { enabled: false } }}
                 />
               </Tabs.TabPane>
             );

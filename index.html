@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="theme-color" content="#000000" />
 
+    <!-- Polyfill for AWS SDK and other Node.js libraries -->
+    <script>
+        window.global = window;
+    </script>
+
     <!-- Preventing caching of index.html
       https://stackoverflow.com/questions/49547/how-to-control-web-page-caching-across-all-browsers -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -28,7 +33,7 @@
     <meta name="description"
         content="codePost is a free autograder and code annotation tool that makes it easy to grade computer science course work." />
 
-    <!-- foobar -->
+    <!-- foobar
     <script>
         (function () {
             var w = window;
@@ -57,11 +62,11 @@
                 w.addEventListener('load', l, false);
             }
         })();
-    </script>
+    </script> -->
 
     <!-- JQuery -->
-    <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-
+    <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <!-- 
     <script defer>
         console.log("LOADING INTERCOM");
         var w = window;
@@ -90,7 +95,7 @@
             w.addEventListener('load', l, false);
         }
 
-    </script>
+    </script> -->
 
 
 

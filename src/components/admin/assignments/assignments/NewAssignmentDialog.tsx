@@ -13,7 +13,7 @@ import { DatePicker, Form, Input, InputNumber, Modal, Radio, Select, message } f
 /* other library imports */
 import moment from 'moment-timezone';
 
-import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { RouteComponentProps, withRouter } from '../../../../router/legacy';
 
 /* codePost imports */
 import CPButton from '../../../../components/core/CPButton';
@@ -58,7 +58,7 @@ const NewAssignmentDialog: React.FC<IProps & RouteComponentProps> = (props) => {
     await Promise.all(
       props.courses.map(async (course: CourseType) => {
         const courseTitle = `${course.name} | ${course.period}`;
-        assignments[courseTitle] = await loadIDList(course.assignments, Assignment);
+        assignments[courseTitle] = await loadIDList<AssignmentType>(course.assignments, Assignment);
         return;
       }),
     );

@@ -3,10 +3,12 @@
 /**********************************************************************************************************************/
 
 /* react imports */
+import React from 'react';
 
 /* other library imports */
-import { RouteComponentProps } from 'react-router';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
+
+import { LegacyRouteRenderer, RouteComponentProps } from '../../../router/legacy';
 
 /* codePost imports */
 import GraderData, { IByGraderProps } from './GraderSubmissions';
@@ -16,18 +18,30 @@ import StudentData, { IByStudentProps } from './StudentSubmissions';
 
 type IProps = IByGraderProps & IByStudentProps;
 
-const SubmissionsManager = (props: IProps & RouteComponentProps<{}>) => {
+const SubmissionsManager: React.FC<IProps & RouteComponentProps> = (props) => {
+  const { match } = props;
+
   return (
-    <Switch>
+    <Routes>
       <Route
-        path={`${props.match.url}/by_student`}
-        render={(subprops: any) => <StudentData {...props} {...subprops} key="by_student" />}
+        path="by_student/*"
+        element={
+          <LegacyRouteRenderer
+            path={`${match.url}/by_student/*`}
+            render={(subprops: RouteComponentProps) => <StudentData {...props} {...subprops} key="by_student" />}
+          />
+        }
       />
       <Route
-        path={`${props.match.url}/by_grader`}
-        render={(subprops: any) => <GraderData {...props} {...subprops} key="by_grader" />}
+        path="by_grader/*"
+        element={
+          <LegacyRouteRenderer
+            path={`${match.url}/by_grader/*`}
+            render={(subprops: RouteComponentProps) => <GraderData {...props} {...subprops} key="by_grader" />}
+          />
+        }
       />
-    </Switch>
+    </Routes>
   );
 };
 

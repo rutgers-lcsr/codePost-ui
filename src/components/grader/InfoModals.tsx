@@ -11,7 +11,7 @@ export const AutograderInfoModal = () => {
     <div>
       <a onClick={() => setVisible((prevState) => !prevState)}>How are these tests created?</a>
       <Modal
-        visible={visible}
+        open={visible}
         title="How are these tests created?"
         onCancel={() => setVisible(false)}
         cancelText={'Close'}
@@ -57,7 +57,7 @@ export const SubmissionInfoModal = () => {
     <div>
       <a onClick={() => setVisible((prevState) => !prevState)}>How do students submit code?</a>
       <Modal
-        visible={visible}
+        open={visible}
         title="How do students submit code?"
         onCancel={() => setVisible(false)}
         cancelText={'Close'}

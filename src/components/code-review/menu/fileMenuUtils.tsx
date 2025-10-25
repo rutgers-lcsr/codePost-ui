@@ -14,7 +14,8 @@ export interface IDirectoryStructure<T> {
 
 interface IBasicFile {
   name: string;
-  code: string;
+  code?: string;
+  data?: string;
   id: number;
   path: string | null;
 }

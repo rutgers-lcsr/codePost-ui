@@ -12,6 +12,45 @@ import { AssignmentType } from '../../../../infrastructure/assignment';
 
 import { CourseType } from '../../../../infrastructure/course';
 
+export interface BuildAllGradesOptions {
+  zeroForMissing?: boolean;
+  ungradedAsZero?: boolean;
+}
+
+export const buildAllGradesTable = (
+  assignments: AssignmentType[],
+  students: string[],
+  submissionsByStudent: IStudentSubmissionsDataTable,
+  options: BuildAllGradesOptions = {},
+): string[][] => {
+  const { zeroForMissing = false, ungradedAsZero = false } = options;
+
+  const header = ['Active Student', ...assignments.map((assignment) => assignment.name)];
+  const rows: string[][] = [header];
+
+  students.forEach((student) => {
+    const row: string[] = [student];
+
+    assignments.forEach((assignment) => {
+      const submission = submissionsByStudent[student]?.[assignment.id];
+
+      let grade = '';
+      if (submission) {
+        grade =
+          submission.isFinalized && submission.grade !== null ? submission.grade.toString() : ungradedAsZero ? '0' : '';
+      } else {
+        grade = zeroForMissing ? '0' : '';
+      }
+
+      row.push(grade);
+    });
+
+    rows.push(row);
+  });
+
+  return rows;
+};
+
 export interface IProps {
   activeAssignment?: AssignmentType;
   assignments: AssignmentType[];
@@ -110,46 +149,17 @@ const DownloadGrades = (props: IProps) => {
   };
 
   const downloadAllGrades = (zeroForMissing?: boolean) => {
-    const csv = getAllGrades(props.assignments, props.students, zeroForMissing).join('\n');
+    const rows = buildAllGradesTable(props.assignments, props.students, props.submissionsByStudent, {
+      zeroForMissing,
+      ungradedAsZero,
+    });
+    const csv = rows.map((row) => row.join(',')).join('\n');
     const a = document.createElement('a');
     a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
     a.download = `${props.currentCourse.name}-${props.currentCourse.period}-grades.csv`;
 
     document.body.appendChild(a);
     a.click();
-  };
-
-  const getAllGrades = (assignments: AssignmentType[], students: string[], zeroForMissing?: boolean) => {
-    const columns: string[] = ['Active Student'].concat(
-      assignments.map((assignment: AssignmentType) => {
-        return assignment.name;
-      }),
-    );
-
-    const csv = [columns];
-    students.forEach((student: string) => {
-      const row: string[] = [student];
-      assignments.forEach((assignment: AssignmentType) => {
-        const submission = props.submissionsByStudent[student][assignment.id];
-        let grade;
-        if (submission) {
-          // If a submission exists
-          grade =
-            submission.isFinalized && submission.grade !== null
-              ? submission.grade.toString()
-              : ungradedAsZero
-                ? '0'
-                : '';
-        } else {
-          // If a submission is missing
-          grade = zeroForMissing ? '0' : '';
-        }
-        row.push(grade);
-      });
-      csv.push(row);
-    });
-
-    return csv;
   };
 
   // ********************************** RENDER ****************************************

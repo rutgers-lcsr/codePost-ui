@@ -9,7 +9,7 @@ import * as React from 'react';
 import { Select } from 'antd';
 
 /* other library imports */
-import { RouteComponentProps } from 'react-router';
+import { RouteComponentProps } from '../../router/legacy';
 
 /* codePost imports */
 import { AssignmentType } from '../../infrastructure/assignment';

@@ -1,10 +1,10 @@
 import react from '@vitejs/plugin-react';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv, type UserConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(async (config) => {
+  const { mode } = config;
   // Load env file based on `mode` in the current working directory.
   // Load all env variables (empty string prefix means load all)
   const env = loadEnv(mode, process.cwd(), '');
@@ -14,21 +14,39 @@ export default defineConfig(({ mode }) => {
     mode,
   });
 
-  return {
-    plugins: [
-      svgr({
-        // Enable named export for ReactComponent (CRA compatibility)
-        svgrOptions: {
-          exportType: 'named',
-        },
-        include: '**/*.svg',
-      }),
-      react({
-        // Enable automatic JSX runtime
-        jsxRuntime: 'automatic',
-      }),
-      tsconfigPaths(),
-    ],
+  const plugins = [
+    svgr({
+      // Enable named export for ReactComponent (CRA compatibility)
+      svgrOptions: {
+        exportType: 'named',
+      },
+      include: '**/*.svg',
+    }),
+    react({
+      // Enable automatic JSX runtime
+      jsxRuntime: 'automatic',
+    }),
+    tsconfigPaths(),
+  ];
+
+  if (mode === 'analyze') {
+    try {
+      const { visualizer } = await import('rollup-plugin-visualizer');
+      plugins.push(
+        visualizer({
+          filename: 'build/bundle-report.html',
+          open: true,
+          gzipSize: true,
+          brotliSize: true,
+        }),
+      );
+    } catch (error) {
+      console.warn('rollup-plugin-visualizer not installed; skipping bundle analysis.');
+    }
+  }
+
+  const configuration: UserConfig = {
+    plugins,
     // Expose REACT_APP_* variables as process.env for compatibility with CRA code
     define: {
       'process.env.REACT_APP_API_URL': JSON.stringify(env.REACT_APP_API_URL || 'http://localhost:8000'),
@@ -41,6 +59,13 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       open: true,
       host: true,
+      proxy: {
+        // Optional: if you need to proxy API requests during development
+        // '/api': 'http://localhost:8000'
+      },
+    },
+    preview: {
+      port: 3000,
     },
     build: {
       outDir: 'build',
@@ -71,7 +96,6 @@ export default defineConfig(({ mode }) => {
       preprocessorOptions: {
         scss: {
           // Variables are imported in main.scss
-          api: 'modern-compiler', // Use modern Sass API (silences legacy-js-api warning)
           silenceDeprecations: ['import', 'legacy-js-api'], // Silence known deprecations
         },
       },
@@ -82,4 +106,5 @@ export default defineConfig(({ mode }) => {
       },
     },
   };
+  return configuration;
 });

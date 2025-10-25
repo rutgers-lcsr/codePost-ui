@@ -7,7 +7,6 @@ import React, { useEffect, useState } from 'react';
 
 /* antd imports */
 import { message, Modal } from 'antd';
-import { FormComponentProps } from '@ant-design/compatible/lib/form';
 
 /* codePost object imports */
 import { AssignmentType, TestCaseType, SubmissionInfoType } from '../../../../../../infrastructure/types';
@@ -55,7 +54,7 @@ interface IFormValues {
 
 export const TestItem = (props: ITestItemProps) => {
   /******************************* State Variables ****************************/
-  let formRef: any = React.createRef();
+  let formRef = React.createRef<any>();
   const [testOutput, setTestOutput] = useState<ILogType | undefined>(undefined);
   const [isRunning, setIsRunning] = useState(false);
   const [hasInstanceMethods, setHasInstanceMethods] = useState(false);
@@ -80,10 +79,7 @@ export const TestItem = (props: ITestItemProps) => {
 
         code.forEach((line) => {
           if (line.match(/(public|protected|private|\s)?static +[\w\<\>\[\]]+\s+(\w+) *\([^\)]*\) *(\{?|[^;])/)) {
-            const tokens = line
-              .split('(')[0]
-              .trim()
-              .split(' ');
+            const tokens = line.split('(')[0].trim().split(' ');
             methodNames.push(tokens[tokens.length - 1]);
           }
         });
@@ -106,7 +102,10 @@ export const TestItem = (props: ITestItemProps) => {
     outputType: string,
     codeString?: string,
   ) => {
-    const form = formRef.props.form;
+    const form = formRef.current?.props.form;
+    if (!form) {
+      return;
+    }
     form.validateFields((err: any, values: IFormValues) => {
       if (err) {
         return;
@@ -122,7 +121,10 @@ export const TestItem = (props: ITestItemProps) => {
     outputType: string,
     codeString?: string,
   ) => {
-    const form = formRef.props.form;
+    const form = formRef.current?.props.form;
+    if (!form) {
+      return;
+    }
     form.validateFields((err: any, values: IFormValues) => {
       if (err) {
         return;
@@ -256,7 +258,7 @@ export const TestItem = (props: ITestItemProps) => {
   };
 
   /******************************* State Change Functions ****************************/
-  const saveFormRef = (fRef: React.RefObject<FormComponentProps>) => {
+  const saveFormRef = (fRef: React.RefObject<any>) => {
     formRef = fRef;
   };
 

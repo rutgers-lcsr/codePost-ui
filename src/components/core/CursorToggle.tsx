@@ -1,118 +1,54 @@
-import * as React from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ReactComponent as HighlighterSvg } from '../../img/icons/highlighter.svg';
 import { ReactComponent as HighlighterSelectedSvg } from '../../img/icons/highlighterselected.svg';
-// import { ReactComponent as SunSvg } from '../../img/icons/sun.svg';
-
-import ToggleButton from 'react-toggle-button';
 
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
 import CPTooltip from './CPTooltip';
 import { tooltips } from './tooltips';
 
-interface IProps {
+import { Switch, theme } from 'antd';
+
+interface CursorToggleProps {
   toggleCursorMode: (cursorMode: boolean) => void;
   cursorMode: boolean;
   small?: boolean;
 }
 
-const CursorToggle = (props: IProps) => {
-  // const { toggleConsoleTheme } = React.useContext(ConsoleThemeContext);
-  // const [checked, setChecked] = React.useState(LOCAL_SETTINGS.darkMode.getter());
-  const [checked, setChecked] = React.useState(props.cursorMode);
+// Constants
+const LARGE_ICON_SIZE = 16;
+const SMALL_ICON_SIZE = 12;
 
-  React.useEffect(() => {
-    setChecked(props.cursorMode);
+const CursorToggle: React.FC<CursorToggleProps> = ({ toggleCursorMode, cursorMode, small = false }) => {
+  const [checked, setChecked] = useState(cursorMode);
+  const { token } = theme.useToken();
 
-    // Should implement useCallback()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.cursorMode]);
+  useEffect(() => {
+    setChecked(cursorMode);
+  }, [cursorMode]);
 
-  const onClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onChange();
-  };
+  const onChange = useCallback(() => {
+    const newChecked = !checked;
+    setChecked(newChecked);
+    toggleCursorMode(newChecked);
+    LOCAL_SETTINGS.cursorMode.setter(newChecked);
+  }, [checked, toggleCursorMode]);
 
-  const onChange = () => {
-    if (checked) {
-      setChecked(false);
-      props.toggleCursorMode(false);
-      LOCAL_SETTINGS.cursorMode.setter(false);
-    } else {
-      setChecked(true);
-      props.toggleCursorMode(true);
-      LOCAL_SETTINGS.cursorMode.setter(true);
-    }
-  };
-
-  // useHotkeys(L_KEY, onChange, true);
-
-  // @ts-ignore
-  const HighlighterLight = (
-    <HighlighterSvg
-      onClick={onClick}
-      style={{
-        height: props.small ? '12px' : '16px',
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-      }}
-    />
-  );
-
-  const HighlighterDark = (
-    <HighlighterSelectedSvg
-      onClick={onClick}
-      key="highlighter-dark"
-      style={{
-        height: props.small ? '12px' : '16px',
-        fill: 'rgba(0, 0, 255, 0.5)',
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-      }}
-    />
-  );
-
-  const icon = checked ? HighlighterDark : HighlighterLight;
-
-  const border = checked ? '1px solid rgb(220, 220, 220)' : '1px solid rgb(220, 220, 220)';
+  // Memoized styles
+  const iconSize = useMemo(() => (small ? SMALL_ICON_SIZE : LARGE_ICON_SIZE), [small]);
 
   return (
     <CPTooltip title={tooltips.grade.header.cursorMode} hideThisOnHideTips={false}>
-      <ToggleButton
-        inactiveLabel={''}
-        activeLabel={''}
-        colors={{
-          activeThumb: {
-            base: '#fff',
-          },
-          inactiveThumb: {
-            base: '#fff',
-          },
-          active: {
-            base: 'rgb(220, 220, 220)',
-          },
-          inactive: {
-            base: 'rgb(220, 220, 220)',
-          },
+      <Switch
+        checked={checked}
+        onChange={onChange}
+        aria-label={checked ? 'Switch to normal cursor' : 'Switch to line mode'}
+        style={{
+          backgroundColor: token.colorFillSecondary,
         }}
-        trackStyle={{ width: props.small ? '25px' : '30px', height: props.small ? '10px' : '12px' }}
-        thumbStyle={{
-          width: props.small ? '20px' : '25px',
-          height: props.small ? '20px' : '25px',
-          border,
-          boxShadow: 'rgba(0, 0, 0, 0.0) 0px 0px 0px 1px',
-        }}
-        thumbAnimateRange={[-12, 16]}
-        thumbIcon={icon}
-        value={checked}
-        onToggle={onChange}
-        containerStyle={{ width: props.small ? '25px' : '30px', marginRight: '12px' }}
+        checkedChildren={<HighlighterSelectedSvg style={{ height: `${iconSize}px`, fill: token.colorInfo }} />}
+        unCheckedChildren={<HighlighterSvg style={{ height: `${iconSize}px` }} />}
       />
     </CPTooltip>
   );

@@ -324,20 +324,20 @@
     color: rgba(255, 255, 255, 0.85);
   }
 
-  // Comment specific styles
-  .cp-comment {
-    .ant-card-head {
-      background-color: #494d4f !important;
-    }
+  // // Comment specific styles
+  // .cp-comment {
+  //   .ant-card-head {
+  //     background-color: #578d6f !important;
+  //   }
 
-    .ant-card-body {
-      background-color: #18191b !important;
-    }
+  //   .ant-card-body {
+  //     background-color: #18191b !important;
+  //   }
 
-    .ant-popover-arrow {
-      border-color: #18191b !important;
-    }
-  }
+  //   .ant-popover-arrow {
+  //     border-color: #18191b !important;
+  //   }
+  // }
 
   // File menu and sider submenu
   #file-menu {
@@ -470,7 +470,6 @@
     .ant-badge {
       background-color: #323435 !important;
       color: rgba(255, 255, 255, 0.7) !important;
-      box-shadow: 0 0 0 1px #57595c inset !important;
     }
   }
 

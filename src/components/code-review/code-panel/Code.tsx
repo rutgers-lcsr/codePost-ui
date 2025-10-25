@@ -11,6 +11,10 @@ import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-co
 
 import { CommentIO, CommentType } from '../../../infrastructure/comment';
 
+import { scrollHighlightIntoView, useCommentHighlightStore } from './CommentHighlightContext';
+
+import { getFileContent } from '../../../infrastructure/file';
+
 import { POSITION } from '../../../types/common';
 
 import { wait } from '../../../infrastructure/animation';
@@ -39,8 +43,16 @@ interface ICodeProps {
   updateCursorDomain: (domain: CURSOR_DOMAIN) => void;
 }
 
-const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps) => {
+// Code component no longer needs comments in props - gets from CommentHighlightContext
+type CodePropsWithoutComments = Omit<ICodeContentCoreProps, 'comments'> & ICodeContentEditProps & ICodeProps;
+
+const Code = (props: CodePropsWithoutComments) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const {
+    comments: contextComments,
+    setHoveredCommentId,
+    onHighlightClick: contextOnHighlightClick,
+  } = useCommentHighlightStore();
 
   const [cursor, setCursor] = React.useState<ICursorType>({
     startChar: 0,
@@ -85,11 +97,16 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     // FIXME: we can come up with a better solution
     await wait(5);
 
-    CodePanelHighlighting.brightenHighlight(newComment.id);
+    setHoveredCommentId(newComment.id);
+    scrollHighlightIntoView(newComment.id);
   };
 
   // Handle code scrolling
-  const handleVerticalScroll = (codeScrollArea: any, _cursor: ICursorType) => {
+  const handleVerticalScroll = (codeScrollArea: HTMLElement | null, _cursor: ICursorType) => {
+    if (!codeScrollArea) {
+      return;
+    }
+
     const cursorTop = _cursor.startLine * CodePanelSizing.pixelsPerLine();
     const cursorBottom = cursorTop + (_cursor.endLine - _cursor.startLine) * CodePanelSizing.pixelsPerLine();
 
@@ -120,10 +137,10 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
   };
 
   React.useEffect(() => {
-    const code = props.file.code.split('\n');
+    const code = getFileContent(props.file).split('\n');
     const codeScrollArea = document.getElementById('code-scroll-area');
 
-    const handleKeydown = async (e: any) => {
+    const handleKeydown = async (e: KeyboardEvent) => {
       if (props.cursorMode) {
         const os = getOperatingSystem();
         const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
@@ -181,99 +198,173 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     };
   });
 
-  const onMouseUp = async (_: React.MouseEvent) => {
-    const selection = window.getSelection();
-    // https://developer.mozilla.org/en-US/docs/Web/API/Selection/isCollapsed
-    // selection.isCollapsed
-    if (
-      selection === null ||
-      selection.toString() === '' ||
-      selection.anchorNode === null ||
-      selection.focusNode === null
-    ) {
-      return;
+  // Helper function to find line number by walking up DOM tree
+  const getLineNumberFromNode = (node: Node | null): number | null => {
+    if (!node) return null;
+
+    let currentNode: Node | null = node;
+
+    // Walk up the DOM tree until we find an element with line-N id
+    while (currentNode && currentNode !== document.body) {
+      if (currentNode.nodeType === Node.ELEMENT_NODE) {
+        const element = currentNode as HTMLElement;
+        const id = element.id;
+
+        if (id && id.startsWith('line-')) {
+          const lineNum = parseInt(id.split('-')[1], 10);
+          if (!isNaN(lineNum) && lineNum >= 0) {
+            return lineNum;
+          }
+        }
+      }
+      currentNode = currentNode.parentNode;
     }
 
-    let startLine;
-    if (
-      // This selection ended on top of the code but outside of a text highlight
-      // The Node is an HTMLElement
-      selection.anchorNode &&
-      selection.anchorNode.nodeName === 'DIV' &&
-      (selection.anchorNode as HTMLElement).id.includes('line')
-    ) {
-      startLine = +(selection.anchorNode as HTMLElement).id.split('-')[1];
-    } else {
-      const anchorParent = selection.anchorNode.parentNode as HTMLElement;
-      startLine = +anchorParent?.id.split('-')[1];
-    }
-
-    let endLine;
-    if (
-      // This selection ended on top of the code but outside of a text highlight
-      // The Node is an HTMLElement
-      selection.focusNode &&
-      selection.focusNode.nodeName === 'DIV' &&
-      (selection.focusNode as HTMLElement).id.includes('line')
-    ) {
-      endLine = +(selection.focusNode as HTMLElement).id.split('-')[1];
-    } else {
-      const focusParent = selection.focusNode.parentNode as HTMLElement;
-      endLine = +focusParent.id.split('-')[1];
-    }
-
-    // Check to see if the comment was made backwards
-    if (startLine !== null && endLine != null && startLine > endLine) {
-      // swap endlines
-      const temp1 = startLine;
-      startLine = endLine;
-      endLine = temp1;
-    }
-
-    let startChar = CodePanelHighlighting.getSelectionOffsetRelativeToParent(
-      document.querySelector(`div#line-${startLine}`),
-      null,
-      POSITION.Start,
-    );
-    let endChar = CodePanelHighlighting.getSelectionOffsetRelativeToParent(
-      document.querySelector(`div#line-${endLine}`),
-      null,
-      POSITION.End,
-    );
-
-    if (startLine === endLine) {
-      // Handle reverse highlight in a single line
-      const temp1 = startChar;
-      const temp2 = endChar;
-      startChar = temp1 < temp2 ? temp1 : temp2;
-      endChar = temp1 < temp2 ? temp2 : temp1;
-    }
-
-    // Catch all to prevent errors
-    if (
-      isNaN(startLine) ||
-      startLine < 0 ||
-      isNaN(endLine) ||
-      endLine < 0 ||
-      isNaN(startChar) ||
-      startChar < 0 ||
-      isNaN(endChar) ||
-      endChar < 0
-    ) {
-      return;
-    }
-
-    await addNewComment(startLine, endLine, startChar, endChar);
+    return null;
   };
 
-  const onLineClick = (e: any) => {
-    if (e.target.id.split('-').length < 2) {
+  const onMouseUp = async (_: React.MouseEvent) => {
+    try {
+      const selection = window.getSelection();
+      const range = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
+
+      // IMMEDIATELY capture selection data before any async operations
+      // This prevents race conditions where selection is cleared before we process it
+      const selectionData = {
+        selectedText: selection?.toString() ?? '',
+        anchorNode: selection?.anchorNode ?? null,
+        focusNode: selection?.focusNode ?? null,
+        anchorOffset: selection?.anchorOffset ?? 0,
+        focusOffset: selection?.focusOffset ?? 0,
+        rangeCount: selection?.rangeCount ?? 0,
+        startContainer: range?.startContainer ?? null,
+        endContainer: range?.endContainer ?? null,
+        startOffset: range?.startOffset ?? 0,
+        endOffset: range?.endOffset ?? 0,
+      };
+
+      // Early validation checks
+      if (
+        !selectionData.anchorNode ||
+        !selectionData.focusNode ||
+        selectionData.selectedText.trim() === '' ||
+        selectionData.startContainer === null ||
+        selectionData.endContainer === null ||
+        selectionData.rangeCount === 0
+      ) {
+        return;
+      }
+
+      // Find line numbers using improved DOM traversal
+      let startLine = getLineNumberFromNode(selectionData.startContainer);
+      let endLine = getLineNumberFromNode(selectionData.endContainer);
+
+      // Validate line numbers were found
+      if (startLine === null || endLine === null) {
+        console.warn('[Comment Selection] Could not determine line numbers from selection');
+        return;
+      }
+
+      let startNode = selectionData.startContainer;
+      let endNode = selectionData.endContainer;
+      let startOffset = selectionData.startOffset;
+      let endOffset = selectionData.endOffset;
+
+      // Normalize line order (handle backwards selection)
+      if (startLine > endLine) {
+        [startLine, endLine] = [endLine, startLine];
+        [startNode, endNode] = [endNode, startNode];
+        [startOffset, endOffset] = [endOffset, startOffset];
+      }
+
+      // Get the line elements for character offset calculation
+      const startLineEl = document.querySelector(`div#line-${startLine}`);
+      const endLineEl = document.querySelector(`div#line-${endLine}`);
+
+      if (!startLineEl || !endLineEl) {
+        console.warn('[Comment Selection] Could not find line elements', { startLine, endLine });
+        return;
+      }
+
+      if (!startNode || !endNode) {
+        console.warn('[Comment Selection] Could not resolve selection nodes', { startNode, endNode });
+        return;
+      }
+
+      // Calculate character offsets using selection data
+      // Use the more reliable getSelectionOffsetRelativeToParent but with captured data
+      let startChar = CodePanelHighlighting.getSelectionOffsetRelativeToParent(
+        startLineEl,
+        startNode,
+        POSITION.Start,
+        startOffset,
+      );
+      let endChar = CodePanelHighlighting.getSelectionOffsetRelativeToParent(
+        endLineEl,
+        endNode,
+        POSITION.End,
+        endOffset,
+      );
+
+      // Handle single-line selection with reverse highlighting
+      if (startLine === endLine && startChar > endChar) {
+        [startChar, endChar] = [endChar, startChar];
+      }
+
+      // Final validation
+      if (
+        isNaN(startLine) ||
+        startLine < 0 ||
+        isNaN(endLine) ||
+        endLine < 0 ||
+        isNaN(startChar) ||
+        startChar < 0 ||
+        isNaN(endChar) ||
+        endChar < 0
+      ) {
+        console.warn('[Comment Selection] Invalid position values', {
+          startLine,
+          endLine,
+          startChar,
+          endChar,
+        });
+        return;
+      }
+
+      // Log successful selection for debugging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Comment Selection]', {
+          startLine,
+          endLine,
+          startChar,
+          endChar,
+          selectedText:
+            selectionData.selectedText.substring(0, 50) + (selectionData.selectedText.length > 50 ? '...' : ''),
+        });
+      }
+
+      await addNewComment(startLine, endLine, startChar, endChar);
+    } catch (error) {
+      console.error('[Comment Selection Error]', error, {
+        selection: window.getSelection()?.toString(),
+        anchorNode: window.getSelection()?.anchorNode,
+        focusNode: window.getSelection()?.focusNode,
+      });
+    }
+  };
+
+  const onLineClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const element = e.currentTarget;
+    const idParts = element.id.split('-');
+
+    if (idParts.length < 2) {
       return;
     }
-    const lineNumber = +e.target.id.split('-')[1];
-    const lineLength = e.target.textContent.length;
+    const lineNumber = Number(idParts[1]);
+    const textContent = element.textContent ?? '';
+    const lineLength = textContent.length;
 
-    const startChar = e.target.textContent.search(/\S/);
+    const startChar = textContent.search(/\S/);
 
     const newCursor = {
       startChar: startChar === -1 ? 0 : startChar,
@@ -286,7 +377,7 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
     setCursor(newCursor);
   };
 
-  const onMouseDown = (event: any) => {
+  const onMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
     const callback = () => {
       onMouseUp(event);
       document.removeEventListener('mouseup', callback);
@@ -302,30 +393,30 @@ const Code = (props: ICodeContentCoreProps & ICodeContentEditProps & ICodeProps)
       if (readOnly) {
         return (
           <div key={i} id={`line-${i}`}>
-            {CodePanelHighlighting.highlight(comments, t, i, readOnly, consoleTheme.highlight, props.onHighlightClick)}
+            {CodePanelHighlighting.highlight(comments, t, i, readOnly, consoleTheme.highlight, contextOnHighlightClick)}
           </div>
         );
       }
 
       return (
         <div key={i} id={`line-${i}`} onClick={onLineClick} onMouseDown={onMouseDown}>
-          {CodePanelHighlighting.highlight(comments, t, i, readOnly, consoleTheme.highlight, props.onHighlightClick)}
+          {CodePanelHighlighting.highlight(comments, t, i, readOnly, consoleTheme.highlight, contextOnHighlightClick)}
         </div>
       );
     });
   };
 
-  let comments = props.comments;
+  // Use comments from context instead of props
+  let comments = contextComments;
   if (!props.readOnly && props.cursorMode && props.showCursor === CURSOR_DOMAIN.CODE) {
-    const cursorInsertIndex = CommentIO.sortedIndex(props.comments, cursorComment);
+    const cursorInsertIndex = CommentIO.sortedIndex(contextComments, cursorComment);
     comments = [
-      ...props.comments.slice(0, cursorInsertIndex),
+      ...contextComments.slice(0, cursorInsertIndex),
       cursorComment,
-      ...props.comments.slice(cursorInsertIndex),
+      ...contextComments.slice(cursorInsertIndex),
     ];
   }
-
-  return <div>{linesOfCode(props.readOnly, props.file.code, comments)}</div>;
+  return <div>{linesOfCode(props.readOnly, getFileContent(props.file), comments)}</div>;
 };
 
 export default Code;

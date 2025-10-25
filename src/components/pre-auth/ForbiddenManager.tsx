@@ -6,7 +6,9 @@
 import * as React from 'react';
 
 /* other library imports */
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
+
+import { LegacyRouteRenderer } from '../../router/legacy';
 
 /* codePost imports */
 import LoginForm from './LoginForm';
@@ -23,76 +25,58 @@ interface IndexManagerProps {
 class ForbiddenManager extends React.Component<IndexManagerProps, {}> {
   public render() {
     /* tslint:disable:jsx-no-lambda */
+    const renderLogin = () => (
+      <LoginForm
+        handleLogin={this.props.handleLogin}
+        error={this.props.error}
+        title={'Login to see this page'}
+        redirectAfterLogin={false}
+      />
+    );
+
     return (
       <div>
-        <BrowserRouter>
-          <Switch>
-            <Route
-              exact={true}
-              path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
-              render={(_props: any) => (
-                <LoginForm
-                  handleLogin={this.props.handleLogin}
-                  error={this.props.error}
-                  title={'Login to see this page'}
-                  redirectAfterLogin={false}
-                />
-              )}
-            />
+        <Routes>
+          <Route
+            path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
+            element={
+              <LegacyRouteRenderer
+                path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
+                end
+                render={renderLogin}
+              />
+            }
+          />
 
-            <Route
-              exact={true}
-              path={`${GRADER}/:courseName?/:period?/:assignmentName?/:panelName1?`}
-              render={(_props: any) => (
-                <LoginForm
-                  handleLogin={this.props.handleLogin}
-                  error={this.props.error}
-                  title={'Login to see this page'}
-                  redirectAfterLogin={false}
-                />
-              )}
-            />
+          <Route
+            path={`${GRADER}/:courseName?/:period?/:assignmentName?/:panelName1?`}
+            element={
+              <LegacyRouteRenderer
+                path={`${GRADER}/:courseName?/:period?/:assignmentName?/:panelName1?`}
+                end
+                render={renderLogin}
+              />
+            }
+          />
 
-            <Route
-              exact={true}
-              path={`${ADMIN}/:courseName?/:period?/:panelName1?/:panelName2?`}
-              render={(_props: any) => (
-                <LoginForm
-                  handleLogin={this.props.handleLogin}
-                  error={this.props.error}
-                  title={'Login to see this page'}
-                  redirectAfterLogin={false}
-                />
-              )}
-            />
+          <Route
+            path={`${ADMIN}/:courseName?/:period?/:panelName1?/:panelName2?`}
+            element={
+              <LegacyRouteRenderer
+                path={`${ADMIN}/:courseName?/:period?/:panelName1?/:panelName2?`}
+                end
+                render={renderLogin}
+              />
+            }
+          />
 
-            <Route
-              exact={true}
-              path={`${CODE}/:submissionId`}
-              render={(_props: any) => (
-                <LoginForm
-                  handleLogin={this.props.handleLogin}
-                  error={this.props.error}
-                  title={'Login to see this page'}
-                  redirectAfterLogin={false}
-                />
-              )}
-            />
+          <Route
+            path={`${CODE}/:submissionId`}
+            element={<LegacyRouteRenderer path={`${CODE}/:submissionId`} end render={renderLogin} />}
+          />
 
-            <Route
-              exact={true}
-              path={'/settings'}
-              render={(_props: any) => (
-                <LoginForm
-                  handleLogin={this.props.handleLogin}
-                  error={this.props.error}
-                  title={'Login to see this page'}
-                  redirectAfterLogin={false}
-                />
-              )}
-            />
-          </Switch>
-        </BrowserRouter>
+          <Route path={'/settings'} element={<LegacyRouteRenderer path={'/settings'} end render={renderLogin} />} />
+        </Routes>
       </div>
     );
   }

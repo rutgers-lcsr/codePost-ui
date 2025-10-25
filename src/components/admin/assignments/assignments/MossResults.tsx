@@ -18,7 +18,7 @@ interface IMossResultFile {
   similarity: string;
 }
 
-interface IMossResult {
+export interface IMossResult {
   matchURL: string;
   file1: IMossResultFile;
   file2: IMossResultFile;

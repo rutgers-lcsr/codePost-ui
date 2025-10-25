@@ -8,9 +8,9 @@ import * as React from 'react';
 import {
   DisconnectOutlined,
   EditOutlined,
-  FolderOpenOutlined,
   MailOutlined,
   MenuOutlined,
+  ProfileOutlined,
   UserDeleteOutlined,
 } from '@ant-design/icons';
 
@@ -20,7 +20,7 @@ import { Breadcrumb, Dropdown, Empty, message, Modal, Switch } from 'antd';
 /* other library imports */
 import memoizeOne from 'memoize-one';
 import Highlighter from 'react-highlight-words';
-import { RouteComponentProps } from 'react-router';
+import { RouteComponentProps } from '../../../router/legacy';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
@@ -274,7 +274,7 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
             key: 'profile',
             label: (
               <Link to={this.props.match.url.replace('roster/graders', `submissions/by_grader/${graderEmail}`)}>
-                <FolderOpenOutlined /> &nbsp; Open profile
+                <ProfileOutlined /> &nbsp; Open profile
               </Link>
             ),
           },

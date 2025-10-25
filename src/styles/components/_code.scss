@@ -34,6 +34,7 @@
 
     code {
       white-space: pre;
+      font-family: inherit !important;
     }
 
     &--underlay {
@@ -49,6 +50,17 @@
       margin-top: 0px;
 
       background-color: transparent !important;
+
+      code {
+        font-family: inherit !important;
+        .linenumber {
+          color: rgb(30, 78, 11) !important;
+        }
+      }
+
+      // Critical: Disable pointer events so clicks pass through to the underlay
+      // This ensures comment selection and interaction only happens on the main layer
+      // pointer-events: none;
 
       // We can hide code-syntax scrollbar while showing code-main scrollbar
       &::-webkit-scrollbar {
@@ -67,6 +79,9 @@
       // z-index: 1;
 
       background-color: transparent !important;
+
+      // Critical: Disable pointer events so clicks pass through to the underlay
+      pointer-events: none;
 
       // We can hide code-syntax scrollbar while showing code-main scrollbar
       &::-webkit-scrollbar {
@@ -91,110 +106,141 @@
       color: inherit;
     }
 
-    .highlight {
-      display: inline-block;
-      height: $highlightHeight + 0px;
-      vertical-align: middle;
-
-      // Smooth transitions for all color changes
-      transition:
-        background-color 0.2s ease-in-out,
-        box-shadow 0.15s ease-in-out,
-        transform 0.1s ease-in-out;
-
-      // Rounded corners for modern appearance
-      border-radius: 3px;
-
-      // Subtle border and shadow for depth
-      box-shadow:
-        0 0 0 0.5px rgba(0, 0, 0, 0.1),
-        0 1px 2px rgba(0, 0, 0, 0.05);
-
-      // Selection styling within highlights
-      &::selection {
-        background-color: rgba(100, 200, 100, 0.4);
-        color: inherit;
-      }
-
-      &::-moz-selection {
-        background-color: rgba(100, 200, 100, 0.4);
-        color: inherit;
-      }
-
-      // Enhanced hover effect for better interactivity
-      &:hover {
-        box-shadow:
-          0 0 0 1px rgba(0, 0, 0, 0.2),
-          0 2px 4px rgba(0, 0, 0, 0.1);
-        transform: translateY(-0.5px);
-        cursor: pointer;
-      }
-      &--hovered {
-        box-shadow:
-          0 0 0 1px rgba(0, 0, 0, 0.2),
-          0 2px 4px rgba(0, 0, 0, 0.1);
-        transform: translateY(-0.5px);
-        cursor: pointer;
-        // Slightly brighter background on hover,
-        background-color: rgba(15, 23, 42) !important;
-        opacity: 0.3 !important;
-      }
-    }
-
-    // Default background for all highlight classes
-    // This will be overridden by specific highlight-{id} rules created dynamically
-    [class*='highlight-'] {
-      background-color: rgba(15, 23, 42, 0.55); // Dark blue with good contrast
-      // Keep syntax highlighting colors intact
-
-      // Add subtle inner glow for depth
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-
-      // Position relative for proper rendering but no z-index to avoid conflicts
-      position: relative;
-
-      // Nested highlights get slightly different styling for visual depth
+    // CRITICAL: Scope ALL highlight styles to code--underlay ONLY
+    // This prevents highlights from appearing in notebooks/markdown
+    &--underlay {
       .highlight {
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+        display: inline;
+        line-height: inherit;
+        vertical-align: baseline;
+        padding: 0.02em 0 0.02em;
+        color: transparent;
+        text-shadow: none;
 
+        // Smooth transitions for all color changes
+        transition:
+          background-color 0.2s ease-in-out,
+          box-shadow 0.15s ease-in-out,
+          transform 0.1s ease-in-out;
+
+        // Rounded corners for modern appearance
+        border-radius: 3px;
+
+        // Subtle border and shadow for depth
+        box-shadow:
+          0 0 0 0.5px rgba(0, 0, 0, 0.1),
+          0 1px 2px rgba(0, 0, 0, 0.05);
+
+        // Selection styling within highlights
+        &::selection {
+          background-color: rgba(100, 200, 100, 0.4);
+          color: inherit;
+        }
+
+        &::-moz-selection {
+          background-color: rgba(100, 200, 100, 0.4);
+          color: inherit;
+        }
+
+        // Enhanced hover effect for better interactivity
+        &:hover {
+          box-shadow:
+            0 0 0 1px rgba(0, 0, 0, 0.2),
+            0 2px 4px rgba(0, 0, 0, 0.1);
+          transform: translateY(-0.5px);
+          cursor: pointer;
+        }
+        &--hovered {
+          box-shadow:
+            0 0 0 2px rgba(255, 152, 0, 0.7),
+            0 3px 8px rgba(255, 152, 0, 0.4),
+            0 0 12px rgba(255, 152, 0, 0.3);
+          transform: translateY(-0.5px);
+          cursor: pointer;
+          // Much brighter and more orange on hover for maximum visibility
+          background-color: rgba(255, 152, 0, 0.6) !important;
+          opacity: 1 !important;
+          // Add subtle scale for extra emphasis
+          transform: translateY(-0.5px) scale(1.01);
+          z-index: 10; // Bring to front on hover
+        }
+      }
+
+      // Default background for all highlight classes
+      // This will be overridden by specific highlight-{id} rules created dynamically
+      // IMPORTANT: This provides visible highlighting for code comments
+      // SCOPED to code--underlay to prevent affecting notebooks/markdown
+      [class*='highlight-'] {
+        // Forest green highlight - high contrast with syntax colors
+        background-color: rgba(46, 125, 50, 0.5) !important;
+
+        // Add subtle border and shadow for better definition
+        box-shadow:
+          inset 0 0 0 1px rgba(27, 94, 32, 0.4),
+          0 1px 2px rgba(0, 0, 0, 0.12);
+
+        // Position relative for proper rendering but no z-index to avoid conflicts
+        position: relative;
+
+        // Nested highlights get slightly different styling for visual depth
         .highlight {
-          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
 
           .highlight {
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+
+            .highlight {
+              box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+            }
           }
         }
       }
-    }
 
-    //////////////////////////////////////////////////////
-    // CURSOR
-    //////////////////////////////////////////////////////
+      // Hover state for highlights - React Context managed
+      // Applied via 'highlight--hovered' class when hoveredCommentId matches
+      .highlight--hovered {
+        // Deep green on hover for clarity
+        background-color: rgba(27, 94, 32, 0.7) !important;
 
-    .highlight-0 {
-      opacity: 1 !important;
-      border-left-width: 2px;
-      border-left-style: solid;
-      border-left-color: rgba(0, 0, 0, 0.6) !important;
-      margin-right: -2px;
-      animation: blink-left 1s ease-in infinite;
-    }
+        // Stronger border and shadow for emphasis
+        box-shadow:
+          inset 0 0 0 1px rgba(20, 70, 26, 0.6),
+          0 2px 4px rgba(0, 0, 0, 0.18);
 
-    .highlight-9007199254740991 {
-      opacity: 1 !important;
-      border-right-width: 2px;
-      border-right-style: solid;
-      border-right-color: rgba(0, 0, 0, 0.8) !important;
-      margin-right: -2px;
-      animation: blink-right 1s ease-in infinite;
-    }
+        // Smooth transition for better UX
+        transition:
+          background-color 0.15s ease,
+          box-shadow 0.15s ease;
+      }
 
-    .highlight-cursor-light {
-      background-color: rgba(0, 0, 255, 0.2) !important;
-    }
+      //////////////////////////////////////////////////////
+      // CURSOR (must be inside underlay block to work)
+      //////////////////////////////////////////////////////
 
-    .highlight-cursor-dark {
-      background-color: rgba(36, 190, 133, 0.6) !important;
+      .highlight-0 {
+        opacity: 1 !important;
+        border-left-width: 2px;
+        border-left-style: solid;
+        margin-right: -2px;
+        animation: blink-left 1s ease-in infinite;
+      }
+
+      .highlight-9007199254740991 {
+        opacity: 1 !important;
+        border-right-width: 2px;
+        border-right-style: solid;
+        border-right-color: rgba(0, 0, 0, 0.8) !important;
+        margin-right: -2px;
+        animation: blink-right 1s ease-in infinite;
+      }
+
+      .highlight-cursor-light {
+        background-color: rgba(0, 0, 255, 0.8) !important;
+      }
+
+      .highlight-cursor-dark {
+        background-color: rgba(36, 190, 133, 0.6) !important;
+      }
     }
 
     @keyframes blink-left {
