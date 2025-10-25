@@ -156,24 +156,24 @@ export const greenButtonTheme = createButtonTheme(colors.brandPrimary);
 export const blueButtonTheme = createButtonTheme(colors.actionBlue);
 export const redButtonTheme = createButtonTheme(colors.actionRed);
 
-// ============================================================================
-// ANTI-PATTERNS (Don't do this!)
-// ============================================================================
+// // ============================================================================
+// // ANTI-PATTERNS (Don't do this!)
+// // ============================================================================
 
-// ❌ BAD: Hardcoded colors
-const BadExample1 = () => <div style={{ color: '#24be85' }}>Don't hardcode colors!</div>;
+// // ❌ BAD: Hardcoded colors
+// const BadExample1 = () => <div style={{ color: '#24be85' }}>Don't hardcode colors!</div>;
 
-// ❌ BAD: Magic color values
-const BadExample2 = () => <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>Use neutralColors instead!</div>;
+// // ❌ BAD: Magic color values
+// const BadExample2 = () => <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>Use neutralColors instead!</div>;
 
-// ✅ GOOD: Use color tokens
-const GoodExample = () => (
-  <div
-    style={{
-      color: colors.brandPrimary,
-      backgroundColor: colors.neutralSecondaryText,
-    }}
-  >
-    Always use color tokens!
-  </div>
-);
+// // ✅ GOOD: Use color tokens
+// const GoodExample = () => (
+//   <div
+//     style={{
+//       color: colors.brandPrimary,
+//       backgroundColor: colors.neutralSecondaryText,
+//     }}
+//   >
+//     Always use color tokens!
+//   </div>
+// );
