@@ -6,6 +6,9 @@
 import * as React from 'react';
 import { useCallback, useContext, useEffect, useState } from 'react';
 
+/* theme imports */
+import { colors } from '../../../theme/colors';
+
 /* antd imports */
 import type { MenuProps } from 'antd';
 import { Badge as AntBadge, Dropdown, Menu } from 'antd';
@@ -100,7 +103,7 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
       '--file-menu-history-badge-bg': consoleTheme.consoleTheme.commentBody ?? '#ffffff',
       '--file-menu-history-badge-color': consoleTheme.consoleTheme.commentRubricCommentNeutral ?? 'rgba(0, 0, 0, 0.45)',
       '--file-menu-history-badge-shadow': `0 0 0 1px ${historyBorder} inset`,
-      '--file-menu-bonus-badge-bg': isDarkTheme ? '#24be85' : '#24be85',
+      '--file-menu-bonus-badge-bg': colors.brandPrimary,
       '--file-menu-deduction-badge-bg': isDarkTheme ? '#ff7875' : '#ff4d4f',
       '--file-menu-comment-badge-bg': consoleTheme.consoleTheme.commentRubricCommentNeutral ?? 'rgba(0, 0, 0, 0.45)',
     };
@@ -577,6 +580,7 @@ interface IFileMenuTitleProps {
 }
 export const FileMenuTitle = (props: IFileMenuTitleProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const isDarkTheme = consoleThemes.dark === consoleTheme;
 
   const numUniqueFiles = CodeConsoleUtils.filterCurrentFileVersions(props.files)[0].size;
   const numOldVersions = props.files.length - numUniqueFiles;
@@ -584,9 +588,9 @@ export const FileMenuTitle = (props: IFileMenuTitleProps) => {
   const badge = (
     <AntBadge
       style={{
-        backgroundColor: consoleTheme.siderBg,
-        color: consoleTheme.commentRubricCommentNeutral,
-        boxShadow: `0 0 0 1px ${consoleTheme.buttonDisabledColor} inset`,
+        backgroundColor: isDarkTheme ? colors.neutralDarkBackground : colors.neutralBackground,
+        color: isDarkTheme ? colors.neutralDarkMainText : colors.neutralMainText,
+        boxShadow: `0 0 0 1px ${isDarkTheme ? colors.neutralDarkBorder : colors.neutralBorder} inset`,
       }}
       count={numUniqueFiles}
     />

@@ -9,6 +9,7 @@ import landingVars from '../../styles/pages/_landingVars';
 
 import CPButton from '../core/CPButton';
 import useWindowSize from '../core/useWindowSize';
+import { colors } from '../../theme/colors';
 
 function LandingHeader() {
   const windowSize = useWindowSize();
@@ -85,7 +86,11 @@ function LandingHeader() {
             {faqs}
             {features}
             {login}
-            <Link style={{ ...linkStyle, background: '#24be85', color: 'white' }} className="link--header" to="/signup">
+            <Link
+              style={{ ...linkStyle, background: colors.brandPrimary, color: 'white' }}
+              className="link--header"
+              to="/signup"
+            >
               Sign Up
             </Link>
           </div>

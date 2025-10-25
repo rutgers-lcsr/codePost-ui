@@ -3,6 +3,7 @@ import { Button, Card, Col, Input, Row, Space, Statistic, Table, Tag, Tooltip } 
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
 
+import { colors } from '../../theme/colors';
 import { CourseType } from '../../infrastructure/course';
 import { OrganizationType } from '../../infrastructure/organization';
 import { AdminData } from './Dashboard';
@@ -40,7 +41,7 @@ const columns: ColumnsType<AdminData> = [
     render: (org: OrganizationType) => (
       <Space direction="vertical" size="small">
         <Space>
-          <GlobalOutlined style={{ color: '#1890ff' }} />
+          <GlobalOutlined style={{ color: colors.actionBlue }} />
           {org.name}
         </Space>
         <Tag color="blue">{org.shortname}</Tag>
@@ -154,7 +155,7 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
             <Statistic
               title="Organizations"
               value={stats.totalOrganizations}
-              prefix={<GlobalOutlined style={{ color: '#1890ff' }} />}
+              prefix={<GlobalOutlined style={{ color: colors.actionBlue }} />}
             />
           </Card>
         </Col>

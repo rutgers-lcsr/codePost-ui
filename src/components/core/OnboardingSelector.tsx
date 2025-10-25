@@ -11,6 +11,8 @@ import { SmileTwoTone, UploadOutlined } from '@ant-design/icons';
 import { Button, Divider, Modal, Tooltip, Upload } from 'antd';
 import { UploadChangeParam } from 'antd/lib/upload';
 
+import { colors } from '../../theme/colors';
+
 /* codePost imports */
 import { CourseType } from '../../infrastructure/course';
 
@@ -123,7 +125,7 @@ const AdminOnboardingSelector = (props: IProps) => {
     <OnboardingSelector
       title={
         <span>
-          Welcome to the codePost Admin Console! <SmileTwoTone twoToneColor={'#24be85'} />
+          Welcome to the codePost Admin Console! <SmileTwoTone twoToneColor={colors.brandPrimary} />
         </span>
       }
       options={[tour1, tour2, hangTight]}
@@ -255,7 +257,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
 
     title = (
       <span>
-        Welcome to codePost! <SmileTwoTone twoToneColor={'#24be85'} />
+        Welcome to codePost! <SmileTwoTone twoToneColor={colors.brandPrimary} />
       </span>
     );
 
@@ -305,7 +307,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
 
     title = (
       <span>
-        Welcome to codePost! <SmileTwoTone twoToneColor={'#24be85'} />
+        Welcome to codePost! <SmileTwoTone twoToneColor={colors.brandPrimary} />
       </span>
     );
     options = [useDefaultFile, uploadFile];

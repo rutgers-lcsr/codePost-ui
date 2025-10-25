@@ -23,6 +23,7 @@ import queryString from 'query-string';
 
 /* codePost imports */
 import Loading from '../core/Loading';
+import { colors } from '../../theme/colors';
 
 import { getOperatingSystem, OS } from '../core/operatingSystem';
 
@@ -1111,7 +1112,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           `${state.submission.id} ${state.assignment ? state.assignment.name : ''} | ${
             state.course ? state.course.name : ''
           } ${state.course ? state.course.period : ''}`,
-          '#24be85',
+          colors.brandPrimary,
           '#user_notifications_everything',
           state.course ? state.course.id : 0,
         );

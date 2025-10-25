@@ -9,6 +9,7 @@ import {
 import { Badge, Button, Card, Col, Descriptions, Drawer, Input, Row, Space, Statistic, Table, Tag } from 'antd';
 import * as React from 'react';
 import { Link } from 'react-router-dom';
+import { colors } from '../../theme/colors';
 import { RosterType as InfraRosterType } from '../../infrastructure/course';
 import { OrganizationType } from '../../infrastructure/organization';
 
@@ -98,7 +99,7 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters }) => {
       key: 'organization',
       render: (_: string, record: OrganizationRow) => (
         <Space>
-          <GlobalOutlined style={{ color: '#1890ff' }} />
+          <GlobalOutlined style={{ color: colors.actionBlue }} />
           <span>
             <strong>{record.name}</strong>
             <br />
@@ -325,7 +326,7 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters }) => {
             <Statistic
               title="Organizations"
               value={organizationRows.length}
-              prefix={<GlobalOutlined style={{ color: '#1890ff' }} />}
+              prefix={<GlobalOutlined style={{ color: colors.actionBlue }} />}
             />
           </Card>
         </Col>

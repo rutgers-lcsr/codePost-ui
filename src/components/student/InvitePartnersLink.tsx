@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { CopyOutlined } from '@ant-design/icons';
 
+import { colors } from '../../theme/colors';
 import { Button, Input, message, Popconfirm, Tooltip } from 'antd';
 
 import { hostname } from '../../serviceWorker';
@@ -87,7 +88,7 @@ const InvitePartnersLink = (props: IInvitePartnersLinkProps) => {
           addonBefore="Partner Invite Link"
           addonAfter={
             <Tooltip title="Copy link">
-              <CopyOutlined style={{ color: '#1890ff', cursor: 'pointer' }} onClick={copyToClipboard} />
+              <CopyOutlined style={{ color: colors.actionBlue, cursor: 'pointer' }} onClick={copyToClipboard} />
             </Tooltip>
           }
           value={`${host}/invite/${props.submission.id}/${link['token']}`}

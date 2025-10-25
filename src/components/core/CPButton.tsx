@@ -1,6 +1,7 @@
 import { Button, ButtonProps } from 'antd';
 import React, { CSSProperties, ReactNode, useContext, useMemo } from 'react';
 import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
+import { colors } from '../../theme/colors';
 import CPTooltip from './CPTooltip';
 import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
 
@@ -54,8 +55,8 @@ const CPButton: React.FC<CPButtonFullProps> = ({
     }
 
     if (cpType === 'highlight') {
-      baseStyle.border = 'solid 1px #24be85';
-      baseStyle.color = '#24be85';
+      baseStyle.border = `solid 1px ${colors.brandPrimary}`;
+      baseStyle.color = colors.brandPrimary;
     }
 
     if (isLoading) {

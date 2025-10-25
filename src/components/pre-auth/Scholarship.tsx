@@ -9,6 +9,8 @@ import { CalendarOutlined, CrownOutlined, IdcardOutlined, ProfileOutlined } from
 /* ant imports */
 import { Button, Typography } from 'antd';
 
+import { colors } from '../../theme/colors';
+
 /* other library imports */
 
 /* codePost imports */
@@ -41,7 +43,7 @@ const Scholarship = (props: IProps) => {
       </div>
       <div style={{ marginBottom: 25 }}>
         We know firsthand that{' '}
-        <span style={{ fontWeight: 600, color: '#24be85' }}>
+        <span style={{ fontWeight: 600, color: colors.brandPrimary }}>
           Computer Science students play key roles in advancing CS education.
         </span>
       </div>

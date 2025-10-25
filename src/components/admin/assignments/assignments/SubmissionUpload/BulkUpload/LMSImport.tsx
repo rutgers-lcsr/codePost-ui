@@ -7,6 +7,8 @@ import React, { useState } from 'react';
 
 import { EditOutlined, InboxOutlined, RocketOutlined, UploadOutlined } from '@ant-design/icons';
 
+import { colors } from '../../../../../../theme/colors';
+
 import {
   Button,
   Card,
@@ -418,7 +420,7 @@ const StepTwoSelectUserName = (props: IStepTwoProps) => {
 
   const foldersToShow = folders.length > toShow ? folders.slice(0, toShow) : folders;
 
-  const highlightedStyle = { fontWeight: 600, color: '#24be85', fontSize: 16 };
+  const highlightedStyle = { fontWeight: 600, color: colors.brandPrimary, fontSize: 16 };
   const normalStyle = { fontWeight: 400, color: 'grey', fontSize: 14 };
   const renderFolder = (f: string) => {
     const elems = f.split(props.delimiter);
@@ -685,7 +687,7 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
           <Statistic
             title="Mapped submissions"
             value={mappedStudents.length}
-            valueStyle={{ color: '#24be85' }}
+            valueStyle={{ color: colors.brandPrimary }}
             style={{ marginRight: 20 }}
           />
           <Statistic

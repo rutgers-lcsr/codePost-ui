@@ -8,6 +8,7 @@ import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructure/submissionTest';
 import { TestCaseType } from '../../../../../infrastructure/testCase';
 import { TestCategoryType } from '../../../../../infrastructure/testCategory';
+import { colors } from '../../../../../theme/colors';
 
 import TestsList from '../../../../code-review/code-panel/TestsList';
 
@@ -242,7 +243,7 @@ export const ResultDetail = (props: IProps) => {
 
         const inactiveStyle = { color: 'grey', backgroundColor: 'rgb(0,0,0,0.02)', fontStyle: 'italic' };
         const defaultStyle = { backgroundColor: 'rgb(0,0,0,0)' };
-        const selectedStyle = { color: 'white', backgroundColor: '#24be85' };
+        const selectedStyle = { color: 'white', backgroundColor: colors.brandPrimary };
 
         const thisStyle = isInactive(el)
           ? inactiveStyle
@@ -310,7 +311,7 @@ interface IResultProps {
 const TestDetail = (props: IResultProps) => {
   const status = props.test ? (
     props.test.passed ? (
-      <span style={{ color: '#24be85' }}>Passed</span>
+      <span style={{ color: colors.brandPrimary }}>Passed</span>
     ) : props.test.isError ? (
       <span style={{ color: 'blue' }}>Error</span>
     ) : (

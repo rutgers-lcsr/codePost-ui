@@ -7,6 +7,8 @@ import * as React from 'react';
 
 import { ArrowRightOutlined } from '@ant-design/icons';
 
+import { colors } from '../../theme/colors';
+
 /* ant imports */
 import { Button, Divider } from 'antd';
 
@@ -44,7 +46,7 @@ const optionStyle = {
 const freeButtonStyle = {
   borderRadius: 5,
   backgroundColor: '#fff',
-  color: '#24be85',
+  color: colors.brandPrimary,
 };
 
 const premiumButtonStyle = {
@@ -61,7 +63,7 @@ const Pricing = (props: IProps) => {
   const freeStyle = {
     ...optionStyle,
     width: 275,
-    backgroundColor: '#24be85',
+    backgroundColor: colors.brandPrimary,
     padding: '35px 35px 35px 35px',
     color: '#fff',
   } as React.CSSProperties;
@@ -69,7 +71,7 @@ const Pricing = (props: IProps) => {
   const premiumStyle = {
     ...optionStyle,
     width: 275,
-    backgroundColor: '#1b1b1b',
+    backgroundColor: colors.brandBlack,
     marginLeft: windowSize.width < breakpoint ? 0 : 50,
     padding: '35px 35px 35px 35px',
     color: '#fff',

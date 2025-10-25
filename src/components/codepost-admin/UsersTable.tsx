@@ -13,6 +13,7 @@ import { Badge, Button, Card, Col, Input, Row, Space, Statistic, Table, Tag, Too
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
 
+import { colors } from '../../theme/colors';
 import { RosterType } from '../../infrastructure/course';
 import { OrganizationType } from '../../infrastructure/organization';
 import { UserType } from '../../infrastructure/user';
@@ -265,8 +266,8 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users }
       width: 200,
       render: (orgs: Set<string>) => (
         <Space size={4} wrap>
-          <GlobalOutlined style={{ color: '#1890ff' }} />
-          <Badge count={orgs.size} showZero style={{ backgroundColor: '#1890ff' }} />
+          <GlobalOutlined style={{ color: colors.actionBlue }} />
+          <Badge count={orgs.size} showZero style={{ backgroundColor: colors.actionBlue }} />
           <Tooltip title={Array.from(orgs).join(', ')}>
             <span style={{ color: '#666' }}>{Array.from(orgs).slice(0, 2).join(', ')}</span>
             {orgs.size > 2 && <span style={{ color: '#999' }}> +{orgs.size - 2}</span>}
@@ -318,7 +319,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users }
             <Statistic
               title="Total Users"
               value={stats.totalUsers}
-              valueStyle={{ color: '#1890ff' }}
+              valueStyle={{ color: colors.actionBlue }}
               prefix={<UserOutlined />}
             />
           </Card>
@@ -358,7 +359,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users }
             <Statistic
               title="Graders"
               value={stats.graders}
-              valueStyle={{ color: '#1890ff' }}
+              valueStyle={{ color: colors.actionBlue }}
               prefix={<TeamOutlined />}
             />
           </Card>

@@ -29,6 +29,9 @@ import {
 /* ant imports */
 import { Breadcrumb, Dropdown, Empty, message, Popconfirm, Spin, Switch, Tooltip, Typography } from 'antd';
 
+/* codePost imports */
+import { colors } from '../../../theme/colors';
+
 import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
 import { tooltips } from '../../../components/core/tooltips';
@@ -410,7 +413,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
           `${assignment.name} | ${currentCourse ? currentCourse.name : ''} ${
             currentCourse ? currentCourse.period : ''
           }`,
-          '#24be85',
+          colors.brandPrimary,
           '#user_notifications_everything',
           currentCourse ? currentCourse.id : 0,
         );

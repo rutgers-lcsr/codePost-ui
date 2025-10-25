@@ -16,6 +16,7 @@ import { Resizable } from 're-resizable';
 /* codePost imports  */
 import { SubmissionInfoType } from '../../../../../../infrastructure/submission';
 import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
+import { colors } from '../../../../../../theme/colors';
 import CPFlex from '../../../../../core/CPFlex';
 import { copyTextToClipboard } from '../../../../../utils/Browser';
 
@@ -56,11 +57,11 @@ interface IResultProps {
 const getResultSpan = (resultType: RESULT_TYPE) => {
   switch (resultType) {
     case RESULT_TYPE.PASSED:
-      return <span style={{ color: '#24be85', fontWeight: 600, fontSize: 16 }}>PASSED</span>;
+      return <span style={{ color: colors.brandPrimary, fontWeight: 600, fontSize: 16 }}>PASSED</span>;
     case RESULT_TYPE.FAILED:
-      return <span style={{ color: '#f5222d', fontWeight: 600, fontSize: 16 }}>FAILED</span>;
+      return <span style={{ color: colors.actionRed, fontWeight: 600, fontSize: 16 }}>FAILED</span>;
     case RESULT_TYPE.ERROR:
-      return <span style={{ color: '#eb6f00', fontWeight: 600, fontSize: 16 }}>ERROR</span>;
+      return <span style={{ color: colors.actionYellow, fontWeight: 600, fontSize: 16 }}>ERROR</span>;
   }
 };
 
@@ -72,11 +73,11 @@ const getResultTag = (results: RESULT_TYPE[]) => {
   const allPassed = results.every((el) => el === RESULT_TYPE.PASSED || el === RESULT_TYPE.NONE);
   const noErrors = results.every((el) => el !== RESULT_TYPE.ERROR);
   if (allPassed) {
-    return <Tag color="#24be85">PASSED</Tag>;
+    return <Tag color={colors.brandPrimary}>PASSED</Tag>;
   } else if (noErrors) {
-    return <Tag color="#f5222d">FAILED</Tag>;
+    return <Tag color={colors.actionRed}>FAILED</Tag>;
   } else {
-    return <Tag color="#eb6f00">ERROR</Tag>;
+    return <Tag color={colors.actionYellow}>ERROR</Tag>;
   }
 };
 
@@ -289,7 +290,7 @@ export const PseudoTerminal = (props: IResultProps) => {
     <Tooltip
       title={
         <div style={{ padding: 5 }}>
-          <div style={{ fontWeight: 600, color: '#24be85', marginBottom: 5 }}>Color Key:</div>
+          <div style={{ fontWeight: 600, color: colors.brandPrimary, marginBottom: 5 }}>Color Key:</div>
           <div style={{ color: 'white', marginBottom: 3 }}>[White] Test logs (shown to student)</div>
           <div style={{ color: '#678CAB', marginBottom: 3 }}>
             [Blue] Outputs (only shown to student if "dump outputs" setting is turned on)

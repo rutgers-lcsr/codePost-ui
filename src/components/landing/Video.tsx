@@ -25,6 +25,7 @@ import { Select } from 'antd';
 
 /* codePost imports */
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
+import { colors } from '../../theme/colors';
 
 // Icon mapping for modern antd icons
 const iconMap: Record<string, React.ReactNode> = {
@@ -277,7 +278,7 @@ class Video extends React.Component<IVideoProps, IVideoState> {
               width: `${videoWidth - 4}px`,
               height: `${videoHeight - 1}px`,
               borderRadius: '6px',
-              border: '2px solid #24be85',
+              border: `2px solid ${colors.brandPrimary}`,
               overflow: 'hidden',
               display: 'inline-block',
             }}

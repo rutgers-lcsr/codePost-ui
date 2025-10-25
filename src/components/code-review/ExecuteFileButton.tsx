@@ -9,6 +9,7 @@ import { Button, message, Tooltip } from 'antd';
 import React from 'react';
 import { useExecuteFileStreaming } from '../../hooks/useExecuteFileStreaming';
 import { FileType } from '../../infrastructure/file';
+import { colors } from '../../theme/colors';
 import { ExecutionResult } from '../../utils/executeFileStreaming';
 
 interface ExecuteFileButtonProps {
@@ -32,6 +33,7 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
     executedBy?: string;
     executionTime?: number;
   } | null>(null);
+  const [lastProcessedResult, setLastProcessedResult] = React.useState<ExecutionResult | null>(null);
 
   const handleExecute = React.useCallback(
     async (forceExecute: boolean = false) => {
@@ -98,10 +100,13 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
   }, [file]);
 
   // Call onExecutionComplete when result is available
+  // Use a ref to track the last processed result to avoid re-processing the same result
+  // when file changes
   React.useEffect(() => {
-    if (result && onExecutionComplete && file) {
+    if (result && onExecutionComplete && file && result !== lastProcessedResult) {
       // Include file_id in the result
       onExecutionComplete({ ...result, file_id: file.id });
+      setLastProcessedResult(result);
 
       // Check if result is cached
       if ('cached' in result && result.cached) {
@@ -120,7 +125,7 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
         setCachedInfo(null);
       }
     }
-  }, [result, onExecutionComplete, file]);
+  }, [result, onExecutionComplete, file, lastProcessedResult]);
 
   // Determine if file is executable
   // Extensions can be stored with or without the dot prefix
@@ -157,15 +162,15 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
   const getButtonStyle = (): React.CSSProperties => {
     if (showSuccess) {
       return {
-        backgroundColor: '#52c41a',
-        borderColor: '#52c41a',
+        backgroundColor: colors.actionGreen,
+        borderColor: colors.actionGreen,
         color: 'white',
       };
     }
     if (isExecuting) {
       return {
-        backgroundColor: '#1890ff',
-        borderColor: '#1890ff',
+        backgroundColor: colors.actionBlue,
+        borderColor: colors.actionBlue,
       };
     }
     return {};

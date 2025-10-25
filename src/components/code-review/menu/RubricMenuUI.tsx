@@ -521,12 +521,14 @@ const RubricMenuUI = ({
         value={searchTerm}
         addonBefore={toggleButton}
         className={consoleThemes.light === consoleTheme ? 'search--light' : 'search--dark'}
-        style={{
-          width: '100%',
-          // backgroundColor: token.colorBgContainer,
-          borderColor: token.colorBorderSecondary,
-          color: token.colorText,
-        }}
+        style={
+          {
+            // width: '100%',
+            // backgroundColor: token.colorBgContainer,
+            // borderColor: token.colorBorderSecondary,
+            // color: token.colorText,
+          }
+        }
       />
     );
   } else {
@@ -537,12 +539,14 @@ const RubricMenuUI = ({
         id="rubric-search"
         onChange={onSearch}
         value={searchTerm}
-        style={{
-          // backgroundColor: token.colorFillSecondary,
-          borderColor: token.colorBorderSecondary,
-          color: token.colorTextSecondary,
-          width: '100%',
-        }}
+        style={
+          {
+            // backgroundColor: token.colorFillSecondary,
+            // borderColor: token.colorBorderSecondary,
+            // color: token.colorTextSecondary,
+            // width: '100%',
+          }
+        }
       />
     );
   }
@@ -555,10 +559,10 @@ const RubricMenuUI = ({
       };
 
       let emptyContent;
-      const descriptionColor = props.canUserEdit ? token.colorTextSecondary : token.colorText;
+      // const descriptionColor = props.canUserEdit ? token.colorTextSecondary : token.colorText;
       if (props.canUserEdit) {
         emptyContent = (
-          <Typography.Text style={{ color: descriptionColor }}>
+          <Typography.Text>
             Create your rubric either by clicking the edit icon above, or visiting the{' '}
             <Typography.Link
               href={`/${getRubricURL(props.course, props.assignment)}`}
@@ -571,7 +575,7 @@ const RubricMenuUI = ({
           </Typography.Text>
         );
       } else {
-        emptyContent = <Typography.Text style={{ color: descriptionColor }}>No rubric yet</Typography.Text>;
+        emptyContent = <Typography.Text>No rubric yet</Typography.Text>;
       }
 
       content = (

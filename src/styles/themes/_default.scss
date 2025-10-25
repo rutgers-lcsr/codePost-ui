@@ -26,7 +26,7 @@
   .ant-input,
   .ant-input-number,
   .ant-select-selector {
-    background-color: #323435 !important;
+    // background-color: #323435 !important;
     border-color: #57595c !important;
     color: rgba(255, 255, 255, 0.9) !important;
   }
@@ -212,7 +212,7 @@
 
   // Badge
   .ant-badge-count {
-    background-color: #f64852;
+    // background-color: #f64852;
   }
 
   // Tag
@@ -467,9 +467,19 @@
 
   // File menu badges
   #file-menu {
-    .ant-badge {
+    .badge.badge--neutral .ant-badge-count {
       background-color: #323435 !important;
       color: rgba(255, 255, 255, 0.7) !important;
+    }
+
+    .badge.badge--positive .ant-badge-count {
+      background-color: $brandPrimary !important;
+      color: #fff !important;
+    }
+
+    .badge.badge--negative .ant-badge-count {
+      background-color: $actionRed !important;
+      color: #fff !important;
     }
   }
 

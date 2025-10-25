@@ -1,22 +1,29 @@
 import type { ThemeConfig } from 'antd';
+import { colors } from './colors';
 
+/**
+ * Ant Design Theme Configuration
+ *
+ * This configuration is used by the ConfigProvider in index.tsx
+ * All colors are imported from ./colors.ts for consistency
+ */
 const themeConfig: ThemeConfig = {
   token: {
     fontFamily: 'Avenir Next, Lato, sans-serif',
     colorPrimary: '#198665',
     colorLink: '#1473ccff',
-    colorSuccess: '#24be85',
+    colorSuccess: colors.brandPrimary,
     colorWarning: '#a26510ff',
-    colorError: '#f64852',
-    colorInfo: '#1890ff',
+    colorError: colors.actionRed,
+    colorInfo: colors.actionBlue,
     colorBgLayout: '#f2f2f2',
     colorBgContainer: '#ffffff',
     colorBgElevated: '#ffffff',
-    colorBorder: 'rgba(0, 0, 0, 0.1)',
+    colorBorder: colors.neutralBorder,
     colorBorderSecondary: 'rgba(0, 0, 0, 0.06)',
     colorTextHeading: 'rgba(0, 0, 0, 0.9)',
-    colorText: 'rgba(0, 0, 0, 0.8)',
-    colorTextSecondary: 'rgba(0, 0, 0, 0.5)',
+    colorText: colors.neutralTitle,
+    colorTextSecondary: colors.neutralSecondaryText,
     colorTextPlaceholder: 'rgba(0, 0, 0, 0.45)',
     colorTextDisabled: 'rgba(0, 0, 0, 0.25)',
     fontSize: 14,
@@ -27,30 +34,30 @@ const themeConfig: ThemeConfig = {
   components: {
     Layout: {
       bodyBg: '#f2f2f2',
-      headerBg: '#1b1b1b',
+      headerBg: colors.brandBlack,
       headerHeight: 64,
       headerPadding: '0 61px',
       headerColor: '#000000',
-      siderBg: '#1b1b1b',
-      triggerBg: '#0f0f0f',
+      siderBg: colors.brandBlack,
+      triggerBg: colors.brandBlackHighlight,
       triggerColor: '#ffffff',
     },
     Menu: {
-      itemBg: '#1b1b1b',
-      subMenuItemBg: '#0f0f0f',
+      itemBg: colors.brandBlack,
+      subMenuItemBg: '#f7f7f7ff',
       itemBorderRadius: 4,
       itemColor: 'rgba(38, 36, 36, 0.85)',
-      itemHoverColor: '#24be85',
+      itemHoverColor: colors.brandPrimary,
       itemActiveBg: 'rgba(36, 190, 133, 0.2)',
       itemSelectedBg: '#198665',
       itemSelectedColor: '#fff',
-      darkItemBg: '#1b1b1b',
-      darkSubMenuItemBg: '#0f0f0f',
+      darkItemBg: colors.brandBlack,
+      darkSubMenuItemBg: colors.brandBlackHighlight,
       darkItemSelectedBg: '#198665',
       darkItemSelectedColor: '#fff',
       darkItemHoverBg: 'rgba(36, 190, 133, 0.2)',
       darkItemColor: 'rgba(255, 255, 255, 0.85)',
-      darkItemHoverColor: '#24be85',
+      darkItemHoverColor: colors.brandPrimary,
     },
     Typography: {
       linkDecoration: 'none',
@@ -126,3 +133,6 @@ const themeConfig: ThemeConfig = {
 };
 
 export default themeConfig;
+
+// Re-export colors for convenience
+export { colors, brandColors, actionColors, greenPalette, neutralColors, neutralDarkColors } from './colors';

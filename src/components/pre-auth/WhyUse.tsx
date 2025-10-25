@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { Divider, Typography } from 'antd';
 
+import { colors } from '../../theme/colors';
 import useWindowSize from '../core/useWindowSize';
 
 import landingVars from '../../styles/pages/_landingVars';
@@ -207,7 +208,7 @@ const SectionRow = (props: IProps) => {
               style={{
                 fontSize: '16px',
                 margin: '5px 0',
-                background: activeFeature === i ? '#24be85' : 'none',
+                background: activeFeature === i ? colors.brandPrimary : 'none',
                 color: activeFeature === i ? 'white' : 'black',
                 borderRadius: '2px',
                 cursor: 'pointer',
@@ -310,7 +311,8 @@ const WhyUse = (props: IPageProps) => {
       <div id="WhyUse">
         <div style={{ marginBottom: 75, textAlign: 'center' }}>
           <Typography.Title level={1} style={{ fontSize: 30, color: 'black' }}>
-            codePost users asked for these features, <span style={{ color: '#24be85' }}>so we built them.</span>{' '}
+            codePost users asked for these features,{' '}
+            <span style={{ color: colors.brandPrimary }}>so we built them.</span>{' '}
           </Typography.Title>
         </div>
         {content}
