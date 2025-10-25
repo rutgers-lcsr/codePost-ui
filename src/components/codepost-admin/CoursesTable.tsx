@@ -12,6 +12,7 @@ import { Badge, Card, Col, Input, Row, Space, Statistic, Table, Tag, Tooltip } f
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
 
+import { colors } from '../../theme/colors';
 import { CourseType, RosterType } from '../../infrastructure/course';
 import { OrganizationType } from '../../infrastructure/organization';
 
@@ -101,7 +102,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
       render: (org?: OrganizationType) =>
         org ? (
           <Space>
-            <GlobalOutlined style={{ color: '#1890ff' }} />
+            <GlobalOutlined style={{ color: colors.actionBlue }} />
             <Tooltip title={org.name}>
               <Tag color="blue">{org.shortname}</Tag>
             </Tooltip>

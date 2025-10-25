@@ -1,3 +1,5 @@
+import { colors } from '../../theme/colors';
+
 const art = `
 Welcome to...
 %c
@@ -15,6 +17,6 @@ Welcome to...
 // prettier-ignore
 export const consoleArt = [
   art,
-  'color: #24be85',
+  `color: ${colors.brandPrimary}`,
   'color: #C0C0C0',
 ];

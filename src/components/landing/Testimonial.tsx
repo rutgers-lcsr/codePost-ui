@@ -15,6 +15,7 @@ import { A11y, Navigation, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
 import PreAuthLayout from '../pre-auth/PreAuthLayout';
+import { colors } from '../../theme/colors';
 
 /*************************************************************************************/
 /* IMAGES
@@ -300,8 +301,8 @@ const Testimonials = () => {
           </p>
           <p style={{ breakInside: 'avoid' }}>
             codePost is fast and easy-to-use.{' '}
-            <span style={{ fontWeight: 600, color: '#24be85' }}>Actually easy to use.</span> And it includes advanced
-            features that will supercharge your teaching and save you time.
+            <span style={{ fontWeight: 600, color: colors.brandPrimary }}>Actually easy to use.</span> And it includes
+            advanced features that will supercharge your teaching and save you time.
           </p>
           <p style={{ breakInside: 'avoid' }}>
             Leave comments on code with your keyboard. Write tests that compare student code against solution code in

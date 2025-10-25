@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Button, Modal } from 'antd';
 
+import { colors } from '../../theme/colors';
 import TestGIF from '../../img/gifs/AdminTestCreation.gif';
 import SubmitGIF from '../../img/gifs/StudentSubmit.gif';
 
@@ -19,8 +20,8 @@ export const AutograderInfoModal = () => {
         style={{ minWidth: 800 }}
       >
         <div style={{ fontSize: 15, maxHeight: 650, overflow: 'auto' }}>
-          Tests are created in the <b style={{ color: '#24be85' }}>Admin Console</b> by course admins. From here, course
-          admins can:
+          Tests are created in the <b style={{ color: colors.brandPrimary }}>Admin Console</b> by course admins. From
+          here, course admins can:
           <ul style={{ fontSize: 15, marginTop: 10, marginBottom: 20 }}>
             <li>
               Specify an environment (language, dependencies) in which student code and tests can run. Every assignment
@@ -65,8 +66,8 @@ export const SubmissionInfoModal = () => {
         style={{ minWidth: 800 }}
       >
         <div style={{ fontSize: 15, maxHeight: 650, overflow: 'auto' }}>
-          Students use the <b style={{ color: '#24be85' }}>Student Console</b> to interact with codePost. From there,
-          they can can:
+          Students use the <b style={{ color: colors.brandPrimary }}>Student Console</b> to interact with codePost. From
+          there, they can can:
           <ul style={{ fontSize: 15, marginTop: 10, marginBottom: 20 }}>
             <li>Submit code for assignments (so long as a specified due date hasn't passed).</li>
             <li>

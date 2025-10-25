@@ -18,6 +18,7 @@ import {
 } from './BulkUploadHelpers';
 
 /* codePost imports */
+import { colors } from '../../../../../../theme/colors';
 import { AssignmentType, CourseType, FileType, SubmissionInfoType } from '../../../../../../infrastructure/types';
 
 import { BulkUploadComplete, BulkUploadFooter, BulkUploadHeader, BulkUploadNoStudents } from './BulkUploadComponents';
@@ -445,7 +446,7 @@ class BulkUpload extends React.Component<IProps, IState> {
             style={{ width: '25px', marginRight: 5, marginBottom: 3 }}
             alt=""
           />
-          <span style={{ color: '#24be85' }}>
+          <span style={{ color: colors.brandPrimary }}>
             {this.state.mode.charAt(0).toUpperCase() + this.state.mode.slice(1)} import:
           </span>{' '}
           {this.props.assignment.name}

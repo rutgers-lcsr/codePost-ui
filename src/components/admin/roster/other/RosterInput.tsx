@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { InfoCircleFilled, InfoCircleTwoTone, UploadOutlined } from '@ant-design/icons';
 
+import { colors } from '../../../../theme/colors';
 import { Button, Card, Input, Tooltip, Upload } from 'antd';
 import type { RcFile } from 'antd/es/upload';
 
@@ -109,7 +110,7 @@ ${props.roleType}3@myschool.edu,P02
           </div>
         }
       >
-        <InfoCircleTwoTone twoToneColor="#24be85" style={{ marginLeft: 10 }} />
+        <InfoCircleTwoTone twoToneColor={colors.brandPrimary} style={{ marginLeft: 10 }} />
       </Tooltip>
     </div>
   );
@@ -135,7 +136,7 @@ ${props.roleType}3@myschool.edu,P02
       <Card {...tabProps} size="small" actions={[uploadButton, reviewButton]}>
         {currentTab === 'with' ? (
           <div style={{ marginBottom: '10px' }}>
-            <InfoCircleFilled style={{ color: '#ffd129' }} />
+            <InfoCircleFilled style={{ color: colors.actionYellowFade }} />
             <span>
               {'  '} To remove a student from any section, set the student's section to "null". To leave a student's
               section unchanged, include only the student's email.

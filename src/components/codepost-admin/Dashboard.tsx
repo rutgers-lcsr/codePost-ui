@@ -10,6 +10,7 @@ import {
 import { Alert, Card, Col, Progress, Row, Spin, Statistic, Table, Tabs, Tag, Typography } from 'antd';
 import { useEffect, useState } from 'react';
 
+import { colors } from '../../theme/colors';
 import useFixedWindow from '../core/useFixedWindow';
 
 import AdminTable from './AdminTable';
@@ -236,8 +237,8 @@ const Dashboard = () => {
               <Statistic
                 title="Organizations"
                 value={stats.totalOrganizations}
-                prefix={<GlobalOutlined style={{ color: '#1890ff' }} />}
-                valueStyle={{ color: '#1890ff' }}
+                prefix={<GlobalOutlined style={{ color: colors.actionBlue }} />}
+                valueStyle={{ color: colors.actionBlue }}
               />
               <div style={{ marginTop: '8px' }}>
                 <Text type="secondary">{stats.avgCoursesPerOrg} avg courses/org</Text>
@@ -296,8 +297,8 @@ const Dashboard = () => {
               <Statistic
                 title="Total Unique Users"
                 value={stats.totalUniqueUsers}
-                prefix={<UserOutlined style={{ color: '#1890ff' }} />}
-                valueStyle={{ color: '#1890ff' }}
+                prefix={<UserOutlined style={{ color: colors.actionBlue }} />}
+                valueStyle={{ color: colors.actionBlue }}
               />
               <div style={{ marginTop: '8px' }}>
                 <Text type="secondary">Unique people (any role)</Text>

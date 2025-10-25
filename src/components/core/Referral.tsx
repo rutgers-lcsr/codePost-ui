@@ -4,6 +4,7 @@ import { HeartFilled } from '@ant-design/icons';
 
 import { Form, Input, message, Modal, Radio, theme } from 'antd';
 
+import { colors } from '../../theme/colors';
 import { sendSlack } from './slack';
 
 import { UserType } from '../../infrastructure/user';
@@ -78,7 +79,7 @@ const Referral = (props: IProps) => {
           `Course: ${values.course}\nInstructor: ${values.instructor}\nEmail: ${
             values.email || ''
           }\nDescription: ${values.description || ''}\nCan use name in referral: ${values.canUseReferralName}`,
-          '#24be85',
+          colors.brandPrimary,
           '#user_referrals',
         );
         setVisible(false);

@@ -19,24 +19,24 @@
 
   &--neutral {
     .ant-badge-count {
-      background-color: $neutralSecondaryText;
+      // background-color: $neutralSecondaryText;
     }
   }
 
   &--negative {
     .ant-badge-count {
-      background-color: $actionRed;
+      background-color: $actionRed !important;
     }
   }
   &--placeholder {
     .ant-badge-count {
-      color: transparent;
+      color: transparent !important;
     }
   }
 
   &--positive {
     .ant-badge-count {
-      background-color: $actionGreen !important;
+      background-color: $brandPrimary !important;
     }
   }
 

@@ -9,6 +9,7 @@ import * as React from 'react';
 import { RedoOutlined } from '@ant-design/icons';
 import { Breadcrumb, Card, Col, Progress, Row, Spin, Statistic, Table, Typography } from 'antd';
 
+import { colors } from '../../../../../theme/colors';
 import CPButton from '../../../../../components/core/CPButton';
 import CPTooltip from '../../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../../components/core/tooltips';
@@ -410,7 +411,7 @@ class AssignmentStats extends React.Component<IProps, IState> {
                 paddingTop: 30,
               }}
             >
-              <Title level={3} style={{ color: '#24be85' }}>
+              <Title level={3} style={{ color: colors.brandPrimary }}>
                 Grading Progress Summary
               </Title>
               <CPButton

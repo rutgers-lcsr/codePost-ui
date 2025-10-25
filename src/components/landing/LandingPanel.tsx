@@ -3,6 +3,7 @@ import * as React from 'react';
 import useWindowSize from '../core/useWindowSize';
 
 import landingVars from '../../styles/pages/_landingVars';
+import { colors } from '../../theme/colors';
 
 type TextOrientation = 'right' | 'left';
 type TextSize = 'big' | 'normal';
@@ -22,7 +23,7 @@ interface IProps {
 }
 
 const LandingPanel = (props: IProps) => {
-  const brandColor = '#24be85';
+  const brandColor = colors.brandPrimary;
   const textColor = '#7F7F7F';
   const titleSize = props.textSize === 'big' ? 28 : 20;
   const subTitleSize = props.textSize === 'big' ? 26 : 22;
@@ -34,8 +35,8 @@ const LandingPanel = (props: IProps) => {
     ? windowSize.width < landingVars.breakpoints.verticalPanels
       ? 'bevel'
       : props.type === 'right'
-      ? 'bevel bevel--left'
-      : 'bevel bevel--right'
+        ? 'bevel bevel--left'
+        : 'bevel bevel--right'
     : '';
 
   const moduleDiv = (

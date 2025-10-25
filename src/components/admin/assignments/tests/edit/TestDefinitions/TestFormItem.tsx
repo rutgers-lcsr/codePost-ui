@@ -25,6 +25,7 @@ import {
 import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
 import { SolutionFileType } from '../../../../../../infrastructure/autograder/solutionFile';
 import { SubmissionInfoType, TestCaseType } from '../../../../../../infrastructure/types';
+import { colors } from '../../../../../../theme/colors';
 
 /* codePost component imports */
 import ExplanationModal from '../../../../assignments/rubric/ExplanationModal';
@@ -180,7 +181,7 @@ class TestFormItem extends React.Component<ITestFormItemProps, IState> {
   public getPseudoCode = () => {
     const missingArgStyle = { color: '#BBBBBB', fontWeight: 300, fontStyle: 'italic' };
     const filledArgStyle = { color: 'grey', fontWeight: 600 };
-    const passStyle = { color: '#24be85', opacity: 0.7, fontWeight: 500 };
+    const passStyle = { color: colors.brandPrimary, opacity: 0.7, fontWeight: 500 };
     const failStyle = { color: 'red', opacity: 0.4, fontWeight: 500 };
     if (this.state.testType === 'io') {
       let file = this.props.form.getFieldValue('fileName') || 'file';

@@ -16,15 +16,16 @@ import React, { useCallback, useMemo, useState } from 'react';
 
 import { Execution } from '../../../infrastructure/execution';
 import { FileType } from '../../../infrastructure/file';
+import { colors } from '../../../theme/colors';
 
 const { Text } = Typography;
 const { Panel } = Collapse;
 
 // Design Constants
-const SUCCESS_COLOR = '#52c41a';
-const ERROR_COLOR = '#ff4d4f';
-const INFO_COLOR = '#1890ff';
-const WARNING_COLOR = '#faad14';
+const SUCCESS_COLOR = colors.actionGreen;
+const ERROR_COLOR = colors.actionRed;
+const INFO_COLOR = colors.actionBlue;
+const WARNING_COLOR = colors.actionYellow;
 const PANEL_BG = '#fafafa';
 const OUTPUT_BG = '#f5f5f5';
 const CODE_FONT = "'Courier New', Courier, monospace";

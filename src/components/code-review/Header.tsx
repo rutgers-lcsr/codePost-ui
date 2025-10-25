@@ -32,6 +32,7 @@ import { trackFeature } from '../utils/Fullstory';
 import CPButton from '../core/CPButton';
 import CPTooltip from '../core/CPTooltip';
 import { tooltips } from '../core/tooltips';
+import { colors } from '../../theme/colors';
 
 import { osControlKey } from '../core/operatingSystem';
 
@@ -741,7 +742,7 @@ export const StatusTags = (props: IStatusTagsProps) => {
   let tooltipText;
   switch (statusTagType) {
     case 0:
-      tagColor = theme === 'light' ? 'blue' : '#1890ff';
+      tagColor = theme === 'light' ? 'blue' : colors.actionBlue;
       tagText = 'not finalized and not published';
       tooltipText = 'student cannot view';
       break;

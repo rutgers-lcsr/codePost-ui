@@ -6,6 +6,7 @@ import { CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined } f
 import { Popover } from 'antd';
 
 /* codePost other imports  */
+import { colors } from '../../../../../../theme/colors';
 import { CodeWindow } from './CodeWindow';
 
 interface IResultProps {
@@ -19,7 +20,7 @@ interface IResultProps {
 export const TestResult = (props: IResultProps) => {
   // ************************** Return utils  ******************************
 
-  const color = props.passed ? '#24be85' : props.isError ? 'red' : 'orange';
+  const color = props.passed ? colors.brandPrimary : props.isError ? 'red' : 'orange';
   const iconStyle = { color: color, fontSize: 16 };
   const icon = props.passed ? (
     <CheckCircleOutlined style={iconStyle} />

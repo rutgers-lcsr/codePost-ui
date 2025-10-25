@@ -1,3 +1,5 @@
+import { colors } from '../../theme/colors';
+
 export const slack = (url: string, payload: any) => {
   fetch(url, {
     headers: {
@@ -22,7 +24,7 @@ export const slack = (url: string, payload: any) => {
 export const sendSlack = (
   message: string,
   text = '',
-  color = '#24be85',
+  color = colors.brandPrimary,
   channel = '#user_notifications_everything',
   courseID = 0,
 ) => {

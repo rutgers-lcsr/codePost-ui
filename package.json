@@ -70,7 +70,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "lint:fix": "eslint './src/**/*.{ts,tsx}' --fix",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "find-hardcoded-colors": "node scripts/find-hardcoded-colors.js"
   },
   "eslintConfig": {
     "extends": "react-app"

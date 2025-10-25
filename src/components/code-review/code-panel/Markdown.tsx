@@ -35,6 +35,7 @@ import remarkGfm from 'remark-gfm';
 /* codePost imports */
 import { CommentType } from '../../../infrastructure/comment';
 import { File, getFileContent } from '../../../infrastructure/file';
+import { colors } from '../../../theme/colors';
 import { getBlockClassName } from './BlockUtils.tsx';
 import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
 import CommentHighlightContext from './CommentHighlightContext';
@@ -727,8 +728,8 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = consoleTheme?.buttonSecondaryBg ?? '#f5f5f5';
-              e.currentTarget.style.borderColor = consoleTheme?.highlight ?? '#40a9ff';
-              e.currentTarget.style.color = consoleTheme?.highlight ?? '#40a9ff';
+              e.currentTarget.style.borderColor = consoleTheme?.highlight ?? colors.actionBlueFade;
+              e.currentTarget.style.color = consoleTheme?.highlight ?? colors.actionBlueFade;
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = consoleTheme?.buttonSecondaryBg ?? 'white';

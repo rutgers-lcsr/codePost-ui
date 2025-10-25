@@ -1,16 +1,19 @@
 import { Badge, Menu } from 'antd';
 import { animated } from 'react-spring';
+import { colors } from '../../../../theme/colors';
 const SubMenu = Menu.SubMenu;
 
 function getFileItem(name: string, points: number) {
   let pointsBadge;
 
   if (points < 0) {
-    pointsBadge = <Badge count={points} className="badge badge--standard" style={{ backgroundColor: '#f64852' }} />;
+    pointsBadge = (
+      <Badge count={points} className="badge badge--standard" style={{ backgroundColor: colors.actionRed }} />
+    );
   }
   if (points > 0) {
     pointsBadge = (
-      <Badge count={`+${points}`} className="badge badge--standard" style={{ backgroundColor: '#24be85' }} />
+      <Badge count={`+${points}`} className="badge badge--standard" style={{ backgroundColor: colors.brandPrimary }} />
     );
   }
 

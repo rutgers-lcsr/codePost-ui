@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { Alert, Button, Spin } from 'antd';
 
+import { colors } from '../../theme/colors';
 import PreAuthLayout from '../pre-auth/PreAuthLayout';
 
 import { Submission } from '../../infrastructure/submission';
@@ -97,7 +98,7 @@ const ValidateInvite = (props: IValidateInviteProps) => {
         message="Successfully joined submission!"
         description={
           <div>
-            <span style={{ color: '#24be85' }} onClick={redirect}>
+            <span style={{ color: colors.brandPrimary }} onClick={redirect}>
               Click here
             </span>{' '}
             to go to the Student Console.

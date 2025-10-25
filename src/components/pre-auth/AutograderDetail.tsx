@@ -8,6 +8,8 @@ import React, { useState } from 'react';
 /* ant imports */
 import { Radio, Typography } from 'antd';
 
+import { colors } from '../../theme/colors';
+
 /* codePost imports */
 import useWindowSize from '../core/useWindowSize';
 import PreAuthLayout from './PreAuthLayout';
@@ -86,7 +88,9 @@ const AutograderDetail = (props: IProps) => {
   const title = (
     <div>
       <Typography.Title level={2}>codePost Autograder</Typography.Title>
-      <div style={{ marginTop: 15, fontSize: 24, color: '#24be85' }}>Easy to use, flexible, and powerful.</div>
+      <div style={{ marginTop: 15, fontSize: 24, color: colors.brandPrimary }}>
+        Easy to use, flexible, and powerful.
+      </div>
     </div>
   );
 
@@ -279,7 +283,7 @@ const AutograderDetail = (props: IProps) => {
       module={
         <div style={{ minHeight: 200, display: 'flex', alignItems: 'center' }}>
           <span style={{ fontSize: 40 }}>
-            code<b>Post</b> <span style={{ color: '#24be85' }}>API</span>
+            code<b>Post</b> <span style={{ color: colors.brandPrimary }}>API</span>
           </span>
         </div>
       }

@@ -34,6 +34,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import JSZip from 'jszip';
 import * as React from 'react';
+import { colors } from '../../../../theme/colors';
 import { AssignmentFileType } from '../../../../infrastructure/file';
 
 const { Text } = Typography;
@@ -344,7 +345,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
                 <FolderOutlined style={{ color: '#faad14', fontSize: 16 }} />
               </Tooltip>
             )}
-            <FileOutlined style={{ color: '#1890ff', fontSize: 16 }} />
+            <FileOutlined style={{ color: colors.actionBlue, fontSize: 16 }} />
             <Text strong style={{ fontSize: 13 }}>
               {fullPath}
             </Text>
@@ -464,7 +465,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
             message={
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
                 <Space size={6} style={{ padding: '4px 12px', background: '#e6f7ff', borderRadius: 4 }}>
-                  <DownloadOutlined style={{ color: '#1890ff' }} />
+                  <DownloadOutlined style={{ color: colors.actionBlue }} />
                   <Text strong style={{ fontSize: 13 }}>
                     Download Assignment files
                   </Text>
@@ -494,7 +495,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
             style={{ margin: 16, border: '1px solid #91d5ff', borderRadius: 6 }}
           />
           <Space size={12}>
-            <FileOutlined style={{ fontSize: 18, color: '#1890ff' }} />
+            <FileOutlined style={{ fontSize: 18, color: colors.actionBlue }} />
             <Text strong style={{ fontSize: 16 }}>
               Assignment Files
             </Text>
@@ -660,7 +661,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
       <Modal
         title={
           <Space size={8}>
-            <CodeOutlined style={{ fontSize: 18, color: '#1890ff' }} />
+            <CodeOutlined style={{ fontSize: 18, color: colors.actionBlue }} />
             <Text strong style={{ fontSize: 15 }}>
               {viewingCode?.file.path ? `${viewingCode.file.path}/` : ''}
               {viewingCode?.file.name}

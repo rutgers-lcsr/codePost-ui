@@ -1,6 +1,7 @@
 import React, { useState, Suspense } from 'react';
 
 import LandingPanel from './LandingPanel';
+import { colors } from '../../theme/colors';
 
 const AnnotationModule = React.lazy(() => import('./landingAnimations/annotation/AnnotationModule'));
 
@@ -14,7 +15,7 @@ const LandingAnnotationPanel = () => {
           <div style={{ paddingBottom: 15 }}>
             Use codePost to annotate programming assignments with easy-to-read comments that don't clutter{' '}
             <span
-              style={{ color: index === 0 ? '#24be85' : '', fontWeight: 600, cursor: 'pointer' }}
+              style={{ color: index === 0 ? colors.brandPrimary : '', fontWeight: 600, cursor: 'pointer' }}
               onClick={setIndex.bind({}, 0)}
             >
               code
@@ -22,14 +23,14 @@ const LandingAnnotationPanel = () => {
             . You and your course staff can provide custom feedback, as well as apply standardized rubrics. And we
             support{' '}
             <span
-              style={{ color: index === 1 ? '#24be85' : '', fontWeight: 600, cursor: 'pointer' }}
+              style={{ color: index === 1 ? colors.brandPrimary : '', fontWeight: 600, cursor: 'pointer' }}
               onClick={setIndex.bind({}, 1)}
             >
               Jupyter notebooks
             </span>{' '}
             and{' '}
             <span
-              style={{ color: index === 2 ? '#24be85' : '', fontWeight: 600, cursor: 'pointer' }}
+              style={{ color: index === 2 ? colors.brandPrimary : '', fontWeight: 600, cursor: 'pointer' }}
               onClick={setIndex.bind({}, 2)}
             >
               PDFs

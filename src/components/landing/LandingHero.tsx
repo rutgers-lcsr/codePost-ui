@@ -11,6 +11,7 @@ import CPButton from '../core/CPButton';
 
 import { Suspense } from 'react';
 import landingVars from '../../styles/pages/_landingVars';
+import { colors } from '../../theme/colors';
 
 const GradeAnimationVideo = React.lazy(() => import('./landingAnimations/grade/GradeAnimationVideo'));
 
@@ -50,7 +51,7 @@ const LandingHero = () => {
       >
         Autograding, code annotation, rubrics, plagiarism detection, and more. &nbsp;
         <Link to="/pricing">
-          <span style={{ fontWeight: 600, color: '#24be85' }}>Free for educators.</span>
+          <span style={{ fontWeight: 600, color: colors.brandPrimary }}>Free for educators.</span>
         </Link>
       </div>
       <div

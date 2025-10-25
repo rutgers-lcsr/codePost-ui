@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 
 import CPLogo from '../core/CPLogo';
 import useFixedWindow from '../core/useFixedWindow';
+import { colors } from '../../theme/colors';
 
 import APIIframe from './APIIframe';
 import Dashboard from './Dashboard';
@@ -48,7 +49,7 @@ const DashboardLayout: React.FC = () => {
           <div
             style={{
               textAlign: 'center',
-              color: '#24be85',
+              color: colors.brandPrimary,
               lineHeight: 1,
               paddingTop: 10,
             }}

@@ -9,6 +9,8 @@ import * as React from 'react';
 import { TeamOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Input, message, Modal, notification, Popover, Select, Switch } from 'antd';
 
+import { colors } from '../../theme/colors';
+
 /* other library imports */
 // import Select from 'react-select';
 
@@ -49,7 +51,7 @@ const slackCIPNotification = (email: string, message: string, type: CIP_NOTIFICA
       color = '#fc4903';
       break;
     case CIP_NOTIFICATION.success:
-      color = '#24be85';
+      color = colors.brandPrimary;
       break;
   }
   sendSlack(email, message, color, '#cip-sl-notifications');

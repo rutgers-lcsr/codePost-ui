@@ -46,7 +46,7 @@ const green10 = '#02261e';
 // Neutral Colors - Light Background
 const neutralTitle = 'rgba(0, 0, 0, 0.8)';
 const neutralMainText = 'rgba(0, 0, 0, 0.7)';
-const neutralSecondaryText = 'rgba(0, 0, 0, 0.5)';
+// const neutralSecondaryText = 'rgba(0, 0, 0, 0.5)';
 const neutralDisable = 'rgba(0, 0, 0, 0.3)';
 const neutralBorder = 'rgba(0, 0, 0, 0.2)';
 const neutralDivider = 'rgba(0, 0, 0, 0.1)';
@@ -116,7 +116,7 @@ export default {
     'font-size-base': '14px', // major text font size
     'heading-color': neutralTitle, // heading text color
     'text-color': neutralMainText, // major text color
-    'text-color-secondary': neutralSecondaryText, // secondary text color
+    // 'text-color-secondary': neutralSecondaryText, // secondary text color
     'disabled-color': neutralDisable, // disable state color
     'border-radius-base': '4px', // major border radius
     'border-color-base': '#d9d9d9', // major border color
@@ -172,7 +172,7 @@ export default {
 
     neutralTitle: neutralTitle,
     neutralMainText: neutralMainText,
-    neutralSecondaryText: neutralSecondaryText,
+    // neutralSecondaryText: neutralSecondaryText,
     neutralDisable: neutralDisable,
     neutralBorder: neutralBorder,
     neutralDivider: neutralDivider,

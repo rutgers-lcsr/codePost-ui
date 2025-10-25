@@ -9,6 +9,8 @@ import * as React from 'react';
 import { UserAddOutlined } from '@ant-design/icons';
 import { Alert, Button, Divider, Modal, Result, Steps, Table } from 'antd';
 
+import { colors } from '../../../../theme/colors';
+
 /* codePost imports */
 
 import { rosterToCsv } from './DownloadRoster';
@@ -249,7 +251,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           'Updated roster',
           `${toAdd.length} ${this.props.roleType}s | ${this.props.course.name} ${this.props.course.period}\n
           _[${toAdd.join(', ')}]_`,
-          '#24be85',
+          colors.brandPrimary,
           '#user_notifications',
           this.props.course.id,
         );
@@ -359,7 +361,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           'Updated roster',
           `${toAdd.length} ${this.props.roleType}s | ${this.props.course.name} ${this.props.course.period}\n
           _[${toAdd.join(', ')}]_`,
-          '#24be85',
+          colors.brandPrimary,
           '#user_notifications',
           this.props.course.id,
         );
@@ -375,7 +377,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
             this.props.course.period
           }\n
           _[${Object.keys(diff.added).join(', ')}]_`,
-          '#24be85',
+          colors.brandPrimary,
           '#user_notifications',
           this.props.course.id,
         );
