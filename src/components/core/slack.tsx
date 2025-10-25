@@ -24,7 +24,7 @@ export const slack = (url: string, payload: any) => {
 export const sendSlack = (
   message: string,
   text = '',
-  color = colors.brandPrimary,
+  color: string = colors.brandPrimary,
   channel = '#user_notifications_everything',
   courseID = 0,
 ) => {
