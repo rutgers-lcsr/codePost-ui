@@ -19,7 +19,7 @@ import { Layout, theme } from 'antd';
 const { Content, Footer } = Layout;
 
 interface IProps {
-  children: React.ReactChild;
+  children: React.ReactNode;
   user: UserType;
   handleLogout: () => void;
   subtitle?: string;

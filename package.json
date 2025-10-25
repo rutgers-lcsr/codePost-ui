@@ -66,6 +66,7 @@
     "dev": "vite",
     "start": "vite",
     "build": "tsc && vite build --mode development",
+    "build:production": "tsc && vite build --mode production",
     "preview": "vite preview",
     "test": "vitest",
     "lint:fix": "eslint './src/**/*.{ts,tsx}' --fix",

@@ -43,7 +43,7 @@ export interface IByStudentProps extends RouteComponentProps {
   /* UI control */
   loadComplete: boolean;
 
-  course: CourseType;
+  course?: CourseType;
 
   /* submissions data */
   assignments: AssignmentType[];

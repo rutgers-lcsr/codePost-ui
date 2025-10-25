@@ -100,7 +100,7 @@ export interface IRubricCategoryManagerHelpers {
   saveComment: (rubricCommentID: number, overrideComment?: RubricCommentType) => void;
   updateCommentStatus: (rubricComment: RubricCommentType) => void;
   updateRubricComment: (rubricCommentID: number, key: string, event: unknown) => void;
-  nameInput: React.RefObject<InputRef>;
+  nameInput: React.RefObject<InputRef | null>;
 }
 
 const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => {
@@ -372,8 +372,8 @@ const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => 
     [props],
   );
 
-  const updateCommentStatusRef = useRef<IRubricCategoryManagerHelpers['updateCommentStatus']>();
-  const saveCommentRef = useRef<IRubricCategoryManagerHelpers['saveComment']>();
+  const updateCommentStatusRef = useRef<IRubricCategoryManagerHelpers['updateCommentStatus']>(undefined);
+  const saveCommentRef = useRef<IRubricCategoryManagerHelpers['saveComment']>(undefined);
 
   const updateCommentStatus = useCallback<IRubricCategoryManagerHelpers['updateCommentStatus']>(
     (rubricComment) => {

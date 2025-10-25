@@ -1,5 +1,5 @@
 import { CaretDownOutlined, CaretUpOutlined, MinusOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, InputNumber, Segmented, Space, Switch, theme, Tooltip } from 'antd';
+import { Button, InputNumber, Space, Switch, theme } from 'antd';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
@@ -21,7 +21,6 @@ interface ICPPointInputProps {
 
 // Constants
 const DEFAULT_STEP = 0.5;
-const TOGGLE_MIN_WIDTH = 30;
 
 /**
  * Helper function to determine initial point type based on value
@@ -63,7 +62,7 @@ const CPPointInput: React.FC<ICPPointInputProps> = ({
   const consoleTheme = useContext(ConsoleThemeContext);
   const { token } = theme.useToken();
 
-  const { colorBgContainer, colorBorder, colorText, colorError, colorSuccess, colorTextLightSolid } = token;
+  const { colorError, colorSuccess } = token;
 
   const [pointType, setPointType] = useState<PointType>(() => getInitialPointType(value, defaultToPositive));
 

@@ -70,7 +70,7 @@ const SignupHeader = (props: { step: SignupStep }) => {
   );
 };
 
-const PreAuthSignupLayout = (props: { step: SignupStep; children: React.ReactChild }) => {
+const PreAuthSignupLayout = (props: { step: SignupStep; children: React.ReactNode }) => {
   return (
     <Layout id="PreAuth" style={{ backgroundColor: '#fff', minHeight: '100vh' }}>
       <Content>

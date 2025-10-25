@@ -1,8 +1,6 @@
 /* react imports */
 import React, { useState } from 'react';
 
-// import { Controlled as CodeMirror } from 'react-codemirror2';
-
 /* library imports */
 import { Button, Modal, Table } from 'antd';
 import Editor from '@monaco-editor/react';
@@ -176,17 +174,6 @@ export const TemplateSelector = (props: IProps) => {
               automaticLayout: true,
             }}
           />
-          // <CodeMirror
-          //   key={`codeMirror`}
-          //   value={record.code}
-          //   onBeforeChange={() => 5}
-          //   options={{
-          //     theme: 'neo',
-          //     readOnly: true,
-          //     lineWrapping: true,
-          //     lineNumbers: true,
-          //   }}
-          // />
         ),
       },
     ];

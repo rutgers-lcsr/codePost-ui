@@ -1,9 +1,3 @@
-// import 'codemirror/mode/python/python';
-// import 'codemirror/mode/clike/clike';
-// import 'codemirror/mode/javascript/javascript';
-// import 'codemirror/mode/mllike/mllike';
-// import 'codemirror/mode/shell/shell';
-
 import {
   PYTHON_UNIT_TEMPLATE,
   BASH_PYTHON_TEMPLATE,
