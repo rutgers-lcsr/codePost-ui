@@ -129,10 +129,17 @@ Firefox:
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     const urlToken = urlParams.get('token');
+    const redirectUrl = urlParams.get('redirect');
+
     if (urlToken) {
       localStorage.setItem('token', urlToken);
       window.history.replaceState({}, document.title, window.location.href.replace(/&token=[^&]*/gm, ''));
       setHasToken(true);
+
+      // If redirect URL is provided, redirect after token is set
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      }
     }
   }, []);
 
