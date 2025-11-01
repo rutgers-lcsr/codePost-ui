@@ -40,7 +40,16 @@ const NewCourseDialog: React.FC<IProps> = (props) => {
 
     if (!cloneID || cloneCourse) {
       setLoading(true);
-      props.createCourse(name, period, cloneCourse);
+      props
+        .createCourse(name, period, cloneCourse)
+        .then(() => {
+          setLoading(false);
+          toggleDialog();
+        })
+        .catch((error) => {
+          console.error('Error creating course:', error);
+          setLoading(false);
+        });
     }
   };
 
