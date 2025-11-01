@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 
 import { DownOutlined } from '@ant-design/icons';
 
@@ -17,18 +17,30 @@ interface ICPDropdownProps {
   theme?: ThemeType;
   justifyContent?: JustifyType;
   label?: string;
+  minWidth?: number;
 }
 
 const CPDropdown: React.FC<DropdownButtonProps & ICPDropdownProps> = (props) => {
   const consoleTheme = useContext(ConsoleThemeContext);
+  const [open, setOpen] = useState(false);
 
-  const { value, ...restProps } = props;
+  const { value, minWidth, ...restProps } = props;
   const justifyType = props.justifyContent === 'space-between' ? 'space-between' : 'center';
 
   const t = consoleThemes.light === consoleTheme.consoleTheme ? 'light' : 'dark';
 
   return (
-    <Dropdown className={`cp-dropdown cp-dropdown--${t}`} {...restProps}>
+    <Dropdown
+      className={`cp-dropdown cp-dropdown--${t}`}
+      {...restProps}
+      open={open}
+      onOpenChange={setOpen}
+      trigger={['click']}
+      overlayStyle={{
+        minWidth: minWidth || 250,
+        ...restProps.overlayStyle,
+      }}
+    >
       <Space.Compact style={{ display: 'flex', width: '100%' }}>
         {props.label !== undefined ? (
           <Button
@@ -41,15 +53,35 @@ const CPDropdown: React.FC<DropdownButtonProps & ICPDropdownProps> = (props) => 
             {props.label}
           </Button>
         ) : null}
-        <Button style={{ flexGrow: 1 }}>
+        <Button
+          style={{
+            flexGrow: 1,
+            textAlign: 'left',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
           <div
             style={{
               display: 'flex',
               justifyContent: justifyType,
               alignItems: 'center',
+              width: '100%',
             }}
           >
-            {value} &nbsp; <DownOutlined />
+            <span
+              style={{
+                flex: 1,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                marginRight: '8px',
+              }}
+            >
+              {value}
+            </span>
+            <DownOutlined style={{ fontSize: '10px' }} />
           </div>
         </Button>
       </Space.Compact>

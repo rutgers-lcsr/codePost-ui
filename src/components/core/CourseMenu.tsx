@@ -3,10 +3,12 @@
 /**********************************************************************************************************************/
 
 /* react imports */
+import { useMemo, useState } from 'react';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
-import { theme } from 'antd';
+import { theme, Input } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 
 /* codePost imports */
 import { CourseType } from '../../infrastructure/course';
@@ -30,9 +32,7 @@ export const encodedCourseLink = (base: string, course: CourseType, panel?: stri
 
 const CourseMenu = (props: IProps) => {
   const { token } = theme.useToken();
-  const sortArchived = (a: CourseType, b: CourseType) => {
-    return a.archived === b.archived ? 0 : a.archived ? 1 : -1;
-  };
+  const [searchText, setSearchText] = useState('');
 
   let selectorText = 'No courses yet...';
   if (props.courses.length > 0) {
@@ -42,21 +42,126 @@ const CourseMenu = (props: IProps) => {
   if (props.currentCourse) {
     selectorText = `${props.currentCourse.name} | ${props.currentCourse.period}`;
   }
-  // Dropdown menu maxHeight is to create scroll for long menus that scales with window height
+
+  // Organize and filter courses
+  const { activeCourses, archivedCourses } = useMemo(() => {
+    const filtered = props.courses.filter((course) => {
+      if (!searchText) return true;
+      const search = searchText.toLowerCase();
+      return course.name.toLowerCase().includes(search) || course.period.toLowerCase().includes(search);
+    });
+
+    const active = filtered.filter((c) => !c.archived);
+    const archived = filtered.filter((c) => c.archived);
+
+    // Sort by name, then period
+    const sortCourses = (a: CourseType, b: CourseType) => {
+      const nameCompare = a.name.localeCompare(b.name);
+      return nameCompare !== 0 ? nameCompare : a.period.localeCompare(b.period);
+    };
+
+    return {
+      activeCourses: active.sort(sortCourses),
+      archivedCourses: archived.sort(sortCourses),
+    };
+  }, [props.courses, searchText]);
+
+  // Build menu items
+  const menuItems = [];
+
+  // Add search input as a non-selectable item
+  if (props.courses.length > 5) {
+    menuItems.push({
+      key: 'search',
+      label: (
+        <div onClick={(e) => e.stopPropagation()} style={{ padding: '4px 0' }}>
+          <Input
+            placeholder="Search courses..."
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            allowClear
+            autoFocus
+          />
+        </div>
+      ),
+      disabled: true,
+      style: { cursor: 'default' },
+    });
+
+    menuItems.push({
+      type: 'divider' as const,
+      key: 'search-divider',
+    });
+  }
+
+  // Add active courses
+  if (activeCourses.length > 0) {
+    activeCourses.forEach((course) => {
+      menuItems.push({
+        key: course.id,
+        label: (
+          <Link to={encodedCourseLink(props.base, course, props.panel)}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>{course.name}</span>
+              <span style={{ color: token.colorTextTertiary, fontSize: '0.9em', marginLeft: '16px' }}>
+                {course.period}
+              </span>
+            </div>
+          </Link>
+        ),
+      });
+    });
+  }
+
+  // Add divider and archived courses if they exist
+  if (archivedCourses.length > 0) {
+    if (activeCourses.length > 0) {
+      menuItems.push({
+        type: 'divider' as const,
+        key: 'archived-divider',
+      });
+      menuItems.push({
+        key: 'archived-label',
+        label: <span style={{ color: token.colorTextTertiary, fontSize: '0.85em' }}>Archived Courses</span>,
+        disabled: true,
+        style: { cursor: 'default' },
+      });
+    }
+
+    archivedCourses.forEach((course) => {
+      menuItems.push({
+        key: course.id,
+        label: (
+          <Link to={encodedCourseLink(props.base, course, props.panel)}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: token.colorTextQuaternary }}>{course.name}</span>
+              <span style={{ color: token.colorTextQuaternary, fontSize: '0.9em', marginLeft: '16px' }}>
+                {course.period}
+              </span>
+            </div>
+          </Link>
+        ),
+      });
+    });
+  }
+
+  // Show "No results" if search returns nothing
+  if (searchText && activeCourses.length === 0 && archivedCourses.length === 0) {
+    menuItems.push({
+      key: 'no-results',
+      label: <span style={{ color: token.colorTextTertiary }}>No courses found</span>,
+      disabled: true,
+    });
+  }
+
   return (
     <CPDropdown
       value={selectorText}
+      minWidth={350}
       menu={{
-        items: props.courses.sort(sortArchived).map((course) => ({
-          key: course.id,
-          label: (
-            <Link to={encodedCourseLink(props.base, course, props.panel)}>
-              <span style={course.archived ? { color: token.colorTextQuaternary } : undefined}>
-                {`${course.name} | ${course.period}`}
-              </span>
-            </Link>
-          ),
-        })),
+        items: menuItems,
+        style: { maxHeight: '400px', overflowY: 'auto' },
       }}
     />
   );
