@@ -4,6 +4,7 @@ export enum PERMISSION_LEVEL {
   NOT_FOUND,
   NONE,
   READ,
+  READ_FILES_ONLY, // Student can view files but no comments/rubrics
   WRITE,
 }
 

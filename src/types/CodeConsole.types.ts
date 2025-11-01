@@ -32,6 +32,7 @@ export enum PERMISSION_LEVEL {
   NOT_FOUND,
   NONE,
   READ,
+  READ_FILES_ONLY,
   WRITE,
 }
 
