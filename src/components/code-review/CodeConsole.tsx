@@ -15,7 +15,7 @@ import * as React from 'react';
 
 /* antd imports */
 import { BugOutlined, FolderOpenOutlined } from '@ant-design/icons';
-import { Button, Empty, message, Progress, Space, Typography } from 'antd';
+import { Button, Empty, message, Progress, Space, Tag, Typography } from 'antd';
 
 /* other library imports */
 import _ from 'lodash';
@@ -1509,22 +1509,23 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       /* Build header
       /*********************************************************/
 
-    middleHeader = state.hideGrades
-      ? []
-      : [
-          <GradeButton
-            key="subheader-grade"
-            assignment={state.assignment!}
-            submission={state.submission === undefined ? state.readOnlySubmission! : state.submission}
-            calculateGrade={calculateGradeFromState}
-            rubricCategories={state.rubricCategories}
-            comments={state.comments}
-            commentRubricComments={state.commentRubricComments}
-            files={state.files}
-            submissionTests={state.tests}
-            testCases={Object.values(state.testCases).flat() as any} // eslint-disable-line @typescript-eslint/no-explicit-any
-          />,
-        ];
+    middleHeader =
+      state.hideGrades || state.permissionLevel === PERMISSION_LEVEL.READ_FILES_ONLY
+        ? []
+        : [
+            <GradeButton
+              key="subheader-grade"
+              assignment={state.assignment!}
+              submission={state.submission === undefined ? state.readOnlySubmission! : state.submission}
+              calculateGrade={calculateGradeFromState}
+              rubricCategories={state.rubricCategories}
+              comments={state.comments}
+              commentRubricComments={state.commentRubricComments}
+              files={state.files}
+              submissionTests={state.tests}
+              testCases={Object.values(state.testCases).flat() as any} // eslint-disable-line @typescript-eslint/no-explicit-any
+            />,
+          ];
 
     const fileMenuTitle = <FileMenuTitle key="files" files={state.files} />;
     if (props.inDemoMode) {
@@ -1980,19 +1981,9 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
       leftHeader = [
         <SubheaderTitle key="subheader-title" assignment={state.assignment!} />,
-        <div
-          key="files-only-notice"
-          style={{
-            marginLeft: '16px',
-            padding: '4px 12px',
-            backgroundColor: '#ffa940',
-            borderRadius: '4px',
-            fontSize: '12px',
-            color: '#fff',
-          }}
-        >
+        <Tag key="files-only-notice" color="warning">
           Files Only - Feedback not yet available
-        </div>,
+        </Tag>,
       ];
 
       rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
