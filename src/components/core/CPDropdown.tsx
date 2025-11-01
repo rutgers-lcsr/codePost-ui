@@ -22,19 +22,29 @@ interface ICPDropdownProps {
 
 const CPDropdown: React.FC<DropdownButtonProps & ICPDropdownProps> = (props) => {
   const consoleTheme = useContext(ConsoleThemeContext);
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
 
-  const { value, minWidth, ...restProps } = props;
+  const { value, minWidth, open, onOpenChange, ...restProps } = props;
   const justifyType = props.justifyContent === 'space-between' ? 'space-between' : 'center';
 
   const t = consoleThemes.light === consoleTheme.consoleTheme ? 'light' : 'dark';
+
+  // Use controlled open state if provided, otherwise use internal state
+  const isOpen = open !== undefined ? open : internalOpen;
+  const handleOpenChange = (newOpen: boolean, info: { source: 'trigger' | 'menu' }) => {
+    if (onOpenChange) {
+      onOpenChange(newOpen, info);
+    } else {
+      setInternalOpen(newOpen);
+    }
+  };
 
   return (
     <Dropdown
       className={`cp-dropdown cp-dropdown--${t}`}
       {...restProps}
-      open={open}
-      onOpenChange={setOpen}
+      open={isOpen}
+      onOpenChange={handleOpenChange}
       trigger={['click']}
       overlayStyle={{
         minWidth: minWidth || 250,
