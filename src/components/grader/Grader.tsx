@@ -101,7 +101,31 @@ class Grader extends Component<IComponentProps, IGraderState> {
   //   }, 1000);
   // }
 
-  public componentDidUpdate = (_prevProps: IComponentProps, prevState: IGraderState) => {
+  public componentDidUpdate = (prevProps: IComponentProps, prevState: IGraderState) => {
+    // Check if the current course has changed
+    const courseChanged = prevProps.currentCourse?.id !== this.props.currentCourse?.id;
+
+    if (courseChanged && this.props.currentCourse) {
+      // Reload assignments for the new course
+      this.setState({ isLoading: true, assignments: [] });
+      this.loadAssignments(this.props.currentCourse).then((assignments) => {
+        // Update sections led and super grader status for the new course
+        const isSuperGrader = this.props.superGraderCourses.some((course) => {
+          return course.id === this.props.currentCourse?.id;
+        });
+        const sectionsLed = this.props.sectionsLed.slice().filter((section) => {
+          return this.props.currentCourse?.sections.indexOf(section.id) !== -1;
+        });
+
+        this.setState({
+          assignments,
+          isLoading: false,
+          isSuperGrader,
+          sectionsLed,
+        });
+      });
+    }
+
     if (!prevState.assignments && this.state.assignments) {
       const current = Date.now() - this.timer;
 

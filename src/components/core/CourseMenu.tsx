@@ -3,7 +3,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -33,6 +33,14 @@ export const encodedCourseLink = (base: string, course: CourseType, panel?: stri
 const CourseMenu = (props: IProps) => {
   const { token } = theme.useToken();
   const [searchText, setSearchText] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Reset search when dropdown closes
+  useEffect(() => {
+    if (!dropdownOpen) {
+      setSearchText('');
+    }
+  }, [dropdownOpen]);
 
   let selectorText = 'No courses yet...';
   if (props.courses.length > 0) {
@@ -98,11 +106,19 @@ const CourseMenu = (props: IProps) => {
   // Add active courses
   if (activeCourses.length > 0) {
     activeCourses.forEach((course) => {
+      const isCurrentCourse = props.currentCourse?.id === course.id;
       menuItems.push({
         key: course.id,
         label: (
           <Link to={encodedCourseLink(props.base, course, props.panel)}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontWeight: isCurrentCourse ? 600 : 400,
+              }}
+            >
               <span>{course.name}</span>
               <span style={{ color: token.colorTextTertiary, fontSize: '0.9em', marginLeft: '16px' }}>
                 {course.period}
@@ -130,11 +146,19 @@ const CourseMenu = (props: IProps) => {
     }
 
     archivedCourses.forEach((course) => {
+      const isCurrentCourse = props.currentCourse?.id === course.id;
       menuItems.push({
         key: course.id,
         label: (
           <Link to={encodedCourseLink(props.base, course, props.panel)}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontWeight: isCurrentCourse ? 600 : 400,
+              }}
+            >
               <span style={{ color: token.colorTextQuaternary }}>{course.name}</span>
               <span style={{ color: token.colorTextQuaternary, fontSize: '0.9em', marginLeft: '16px' }}>
                 {course.period}
@@ -159,6 +183,8 @@ const CourseMenu = (props: IProps) => {
     <CPDropdown
       value={selectorText}
       minWidth={350}
+      open={dropdownOpen}
+      onOpenChange={setDropdownOpen}
       menu={{
         items: menuItems,
         style: { maxHeight: '400px', overflowY: 'auto' },
