@@ -366,6 +366,26 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
 
     const values = queryString.parse(props.location.search);
     let simulatingStudent = false;
+    
+    // Check for permissionLevel override in query params (admin only)
+    // permissionLevel: 0=NOT_FOUND, 1=NONE, 2=READ, 3=READ_FILES_ONLY, 4=WRITE
+    if (values.permissionLevel !== undefined && permissionLevel === PERMISSION_LEVEL.WRITE) {
+      const levelOverride = parseInt(values.permissionLevel as string);
+      if (!isNaN(levelOverride)) {
+        if (levelOverride === 0) {
+          permissionLevel = PERMISSION_LEVEL.NOT_FOUND;
+        } else if (levelOverride === 1) {
+          permissionLevel = PERMISSION_LEVEL.NONE;
+        } else if (levelOverride === 2) {
+          permissionLevel = PERMISSION_LEVEL.READ;
+        } else if (levelOverride === 3) {
+          permissionLevel = PERMISSION_LEVEL.READ_FILES_ONLY;
+        } else if (levelOverride === 4) {
+          permissionLevel = PERMISSION_LEVEL.WRITE;
+        }
+      }
+    }
+    
     if (permissionLevel === PERMISSION_LEVEL.WRITE && values.student !== undefined) {
       permissionLevel = PERMISSION_LEVEL.READ;
       simulatingStudent = true;
@@ -393,6 +413,66 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
       case PERMISSION_LEVEL.NONE: {
         // Will trigger 403 or 404 message in render
         setState((prev) => ({ ...prev, permissionLevel, isLoading: false }));
+        break;
+      }
+      case PERMISSION_LEVEL.READ_FILES_ONLY: {
+        // load the data with files only (no comments, rubrics, or grades)
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/submissions/${submissionID}/?filesOnly=true`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        
+        if (!res.ok) {
+          setState((prev) => ({ ...prev, permissionLevel: PERMISSION_LEVEL.NONE, isLoading: false }));
+          break;
+        }
+        
+        const submissionData: StudentSubmissionType = await res.json();
+        assignment = await Assignment.read(submissionData.assignment);
+        
+        document.title = `${submissionID}-Submission [${assignment.name}]`;
+        
+        course = await Course.read(assignment.course);
+        
+        // Files are already included in the response as full objects
+        files = (submissionData.files as FileType[]) || [];
+        
+        files = files.sort((a, b) => {
+          return a.name.localeCompare(b.name);
+        });
+        
+        files = fileBouncer(files);
+        
+        if (selectedFile === undefined && files.length > 0) {
+          selectedFile = files[0];
+        }
+        
+        // No comments, rubrics, or tests in files-only mode
+        comments = {};
+        commentRubricComments = {};
+        rubricCategories = [];
+        tests = [];
+        
+        setState((prev) => ({
+          ...prev,
+          noSave,
+          assignment,
+          course,
+          readOnlySubmission: submissionData,
+          files,
+          comments,
+          commentRubricComments,
+          rubricCategories,
+          isLoading: false,
+          selectedFile,
+          permissionLevel,
+          testCategories: [],
+          testCases: {},
+          tests: [],
+          isStudent: true,
+        }));
+        
         break;
       }
       case PERMISSION_LEVEL.READ: {
@@ -622,6 +702,8 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
           return PERMISSION_LEVEL.WRITE;
         } else if (json.read) {
           return PERMISSION_LEVEL.READ;
+        } else if (json.filesOnly) {
+          return PERMISSION_LEVEL.READ_FILES_ONLY;
         } else {
           return PERMISSION_LEVEL.NONE;
         }
@@ -1868,6 +1950,72 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       ];
 
       siderTitles = ['Submission Info', testsTitle, fileMenuTitle];
+    } else if (state.permissionLevel === PERMISSION_LEVEL.READ_FILES_ONLY) {
+      // Files-only mode: show files but no comments, rubrics, or grades
+      if (state.selectedFile) {
+        const code = (_onHighlightClick: (e: React.MouseEvent) => void) => (
+          <StudentCode
+            key={state.selectedFile!.id}
+            file={state.selectedFile!}
+            comments={[]} // No comments in files-only mode
+            readOnly={true}
+            user={props.user.email}
+            onHighlightClick={(_e) => {}}
+            executionResult={state.executionResults[state.selectedFile!.id] || null}
+            onClearOutputs={handleClearOutputs}
+          />
+        );
+
+        content = (
+          <CodePanelLayout
+            comments={null} // No comments panel
+            code={code}
+            toolbarWidgets={toolbarWidgets}
+            file={state.selectedFile}
+            zoom={state.codeZoom}
+            updateVerticalOffset={setVerticalOffset}
+          />
+        );
+      }
+
+      leftHeader = [
+        <SubheaderTitle key="subheader-title" assignment={state.assignment!} />,
+        <div key="files-only-notice" style={{ 
+          marginLeft: '16px', 
+          padding: '4px 12px', 
+          backgroundColor: '#ffa940', 
+          borderRadius: '4px',
+          fontSize: '12px',
+          color: '#fff'
+        }}>
+          Files Only - Feedback not yet available
+        </div>
+      ];
+
+      rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
+
+      sider = [
+        <ReadOnlySubmissionInfo
+          key="submission-info"
+          title="Submission Info"
+          assignment={state.assignment}
+          readOnlySubmission={state.readOnlySubmission!}
+          submitStudentQuestion={undefined} // No regrade requests in files-only mode
+          deleteStudentQuestion={undefined}
+          isStudentMode={true}
+        />,
+        <FileMenu
+          key="file-menu"
+          title="Files"
+          files={state.files}
+          comments={{}} // No comments to show
+          selectedFile={state.selectedFile}
+          getPointsInFile={getPointsInFile}
+          changeSelectedFile={changeSelectedFile}
+        />,
+      ];
+
+      siderTitles = ['Submission Info', fileMenuTitle];
     } else {
       leftHeader = [
         <HeaderMenu
