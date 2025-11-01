@@ -24,6 +24,25 @@ interface IAdminNavProps extends IWithWindowWatcherProps {
 }
 
 const AdminNav: React.FC<IAdminNavProps> = (props) => {
+  // Extract the base URL (up to /admin/courseName/period) by removing any nested paths
+  const getCourseBaseURL = () => {
+    // baseURL might be something like /admin/CourseName/Period/assignments/overview
+    // We need to extract just /admin/CourseName/Period
+    const parts = props.baseURL.split('/').filter((p) => p);
+
+    // Find the admin index
+    const adminIndex = parts.indexOf('admin');
+    if (adminIndex !== -1 && parts.length >= adminIndex + 3) {
+      // Return /admin/courseName/period
+      return '/' + parts.slice(0, adminIndex + 3).join('/');
+    }
+
+    // Fallback to baseURL if pattern doesn't match
+    return props.baseURL;
+  };
+
+  const courseBaseURL = getCourseBaseURL();
+
   const getDefaultSelectedKey = () => {
     const routes = [
       'submissions/by_student',
@@ -74,35 +93,19 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
           children: [
             {
               key: 'assignments/overview',
-              label: (
-                <Link to="assignments/overview" relative="path">
-                  Overview
-                </Link>
-              ),
+              label: <Link to={`${courseBaseURL}/assignments/overview`}>Overview</Link>,
             },
             {
               key: 'assignments/rubrics',
-              label: (
-                <Link to="assignments/rubrics" relative="path">
-                  Rubrics
-                </Link>
-              ),
+              label: <Link to={`${courseBaseURL}/assignments/rubrics`}>Rubrics</Link>,
             },
             {
               key: 'assignments/tests',
-              label: (
-                <Link to="assignments/tests" relative="path">
-                  Tests
-                </Link>
-              ),
+              label: <Link to={`${courseBaseURL}/assignments/tests`}>Tests</Link>,
             },
             {
               key: 'assignments/plagiarism',
-              label: (
-                <Link to="assignments/plagiarism" relative="path">
-                  Plagiarism
-                </Link>
-              ),
+              label: <Link to={`${courseBaseURL}/assignments/plagiarism`}>Plagiarism</Link>,
             },
           ],
         },
@@ -113,19 +116,11 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
           children: [
             {
               key: 'submissions/by_student',
-              label: (
-                <Link to="submissions/by_student" relative="path">
-                  By Student
-                </Link>
-              ),
+              label: <Link to={`${courseBaseURL}/submissions/by_student`}>By Student</Link>,
             },
             {
               key: 'submissions/by_grader',
-              label: (
-                <Link to="submissions/by_grader" relative="path">
-                  By Grader
-                </Link>
-              ),
+              label: <Link to={`${courseBaseURL}/submissions/by_grader`}>By Grader</Link>,
             },
           ],
         },
@@ -136,35 +131,19 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
           children: [
             {
               key: 'roster/students',
-              label: (
-                <Link to="roster/students" relative="path">
-                  Students
-                </Link>
-              ),
+              label: <Link to={`${courseBaseURL}/roster/students`}>Students</Link>,
             },
             {
               key: 'roster/graders',
-              label: (
-                <Link to="roster/graders" relative="path">
-                  Graders
-                </Link>
-              ),
+              label: <Link to={`${courseBaseURL}/roster/graders`}>Graders</Link>,
             },
             {
               key: 'roster/admins',
-              label: (
-                <Link to="roster/admins" relative="path">
-                  Admins
-                </Link>
-              ),
+              label: <Link to={`${courseBaseURL}/roster/admins`}>Admins</Link>,
             },
             {
               key: 'roster/sections',
-              label: (
-                <Link to="roster/sections" relative="path">
-                  Sections
-                </Link>
-              ),
+              label: <Link to={`${courseBaseURL}/roster/sections`}>Sections</Link>,
             },
           ],
         },
@@ -175,19 +154,11 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
           children: [
             {
               key: 'course-settings/general',
-              label: (
-                <Link to="settings" relative="path">
-                  General
-                </Link>
-              ),
+              label: <Link to={`${courseBaseURL}/settings`}>General</Link>,
             },
             {
               key: 'course-settings/webhooks',
-              label: (
-                <Link to="settings/webhooks" relative="path">
-                  Webhooks
-                </Link>
-              ),
+              label: <Link to={`${courseBaseURL}/settings/webhooks`}>Webhooks</Link>,
             },
           ],
         },
@@ -205,11 +176,7 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
           {
             key: 'video',
             icon: <VideoCameraOutlined />,
-            label: (
-              <Link to="video" relative="path">
-                Video
-              </Link>
-            ),
+            label: <Link to={`${courseBaseURL}/video`}>Video</Link>,
           },
           {
             key: 'docs',
