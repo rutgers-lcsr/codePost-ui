@@ -550,7 +550,7 @@ class Admin extends Component<IComponentProps, IAdminState> {
       const copyCourseFiles = fetch(`${process.env.REACT_APP_API_URL}/courseFiles/?course=${copiedCourse.id}`, {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Token ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       })
         .then((res) => (res.ok ? res.json() : []))
@@ -565,7 +565,7 @@ class Admin extends Component<IComponentProps, IAdminState> {
               fetch(`${process.env.REACT_APP_API_URL}/courseFiles/`, {
                 headers: {
                   'Content-Type': 'application/json',
-                  Authorization: `Token ${localStorage.getItem('token')}`,
+                  Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
                 method: 'POST',
                 body: JSON.stringify({

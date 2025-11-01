@@ -218,7 +218,7 @@ export class Assignment {
     const res = await fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignmentId}/clone/`, {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Token ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
       method: 'POST',
       body: JSON.stringify({ course: destinationCourseId }),
