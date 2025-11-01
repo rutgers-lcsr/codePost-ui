@@ -45,6 +45,8 @@ const NewCourseDialog: React.FC<IProps> = (props) => {
         .then(() => {
           setLoading(false);
           toggleDialog();
+          // Reload the page to show the new course
+          window.location.reload();
         })
         .catch((error) => {
           console.error('Error creating course:', error);
