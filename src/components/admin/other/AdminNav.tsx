@@ -74,19 +74,35 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
           children: [
             {
               key: 'assignments/overview',
-              label: <Link to={`${props.baseURL}/assignments/overview`}>Overview</Link>,
+              label: (
+                <Link to="assignments/overview" relative="path">
+                  Overview
+                </Link>
+              ),
             },
             {
               key: 'assignments/rubrics',
-              label: <Link to={`${props.baseURL}/assignments/rubrics`}>Rubrics</Link>,
+              label: (
+                <Link to="assignments/rubrics" relative="path">
+                  Rubrics
+                </Link>
+              ),
             },
             {
               key: 'assignments/tests',
-              label: <Link to={`${props.baseURL}/assignments/tests`}>Tests</Link>,
+              label: (
+                <Link to="assignments/tests" relative="path">
+                  Tests
+                </Link>
+              ),
             },
             {
               key: 'assignments/plagiarism',
-              label: <Link to={`${props.baseURL}/assignments/plagiarism`}>Plagiarism</Link>,
+              label: (
+                <Link to="assignments/plagiarism" relative="path">
+                  Plagiarism
+                </Link>
+              ),
             },
           ],
         },
@@ -97,11 +113,19 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
           children: [
             {
               key: 'submissions/by_student',
-              label: <Link to={`${props.baseURL}/submissions/by_student`}>By Student</Link>,
+              label: (
+                <Link to="submissions/by_student" relative="path">
+                  By Student
+                </Link>
+              ),
             },
             {
               key: 'submissions/by_grader',
-              label: <Link to={`${props.baseURL}/submissions/by_grader`}>By Grader</Link>,
+              label: (
+                <Link to="submissions/by_grader" relative="path">
+                  By Grader
+                </Link>
+              ),
             },
           ],
         },
@@ -112,19 +136,35 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
           children: [
             {
               key: 'roster/students',
-              label: <Link to={`${props.baseURL}/roster/students`}>Students</Link>,
+              label: (
+                <Link to="roster/students" relative="path">
+                  Students
+                </Link>
+              ),
             },
             {
               key: 'roster/graders',
-              label: <Link to={`${props.baseURL}/roster/graders`}>Graders</Link>,
+              label: (
+                <Link to="roster/graders" relative="path">
+                  Graders
+                </Link>
+              ),
             },
             {
               key: 'roster/admins',
-              label: <Link to={`${props.baseURL}/roster/admins`}>Admins</Link>,
+              label: (
+                <Link to="roster/admins" relative="path">
+                  Admins
+                </Link>
+              ),
             },
             {
               key: 'roster/sections',
-              label: <Link to={`${props.baseURL}/roster/sections`}>Sections</Link>,
+              label: (
+                <Link to="roster/sections" relative="path">
+                  Sections
+                </Link>
+              ),
             },
           ],
         },
@@ -135,11 +175,19 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
           children: [
             {
               key: 'course-settings/general',
-              label: <Link to={`${props.baseURL}/settings`}>General</Link>,
+              label: (
+                <Link to="settings" relative="path">
+                  General
+                </Link>
+              ),
             },
             {
               key: 'course-settings/webhooks',
-              label: <Link to={`${props.baseURL}/settings/webhooks`}>Webhooks</Link>,
+              label: (
+                <Link to="settings/webhooks" relative="path">
+                  Webhooks
+                </Link>
+              ),
             },
           ],
         },
@@ -157,7 +205,11 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
           {
             key: 'video',
             icon: <VideoCameraOutlined />,
-            label: <Link to={`${props.baseURL}/video`}>Video</Link>,
+            label: (
+              <Link to="video" relative="path">
+                Video
+              </Link>
+            ),
           },
           {
             key: 'docs',
