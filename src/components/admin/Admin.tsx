@@ -42,11 +42,9 @@ import {
 } from '../../types/common';
 
 /* API library */
-import { Assignment, AssignmentPatchType, AssignmentType, sortAssignments } from '../../infrastructure/assignment';
+import { Assignment, AssignmentPatchType, AssignmentType } from '../../infrastructure/assignment';
 import { Course, CoursePatchType, CourseType, RosterType } from '../../infrastructure/course';
 import { File, FileType } from '../../infrastructure/file';
-import { RubricCategory, RubricCategoryType } from '../../infrastructure/rubricCategory';
-import { RubricComment } from '../../infrastructure/rubricComment';
 import { Section, SectionType } from '../../infrastructure/section';
 import { Submission, SubmissionInfoType } from '../../infrastructure/submission';
 import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
@@ -542,88 +540,53 @@ class Admin extends Component<IComponentProps, IAdminState> {
         return;
       }
 
-      // Load all assignments and their rubrics from the copied course
-      const assignmentPromises = copiedCourse.assignments.map((assignmentID: number) => Assignment.read(assignmentID));
+      // Use the backend's clone endpoint to properly copy all assignments
+      // This includes assignment files, test cases, rubrics, and environment settings
+      const assignmentClonePromises = copiedCourse.assignments.map((assignmentID: number) =>
+        Assignment.clone(assignmentID, course.id),
+      );
 
-      return Promise.all(assignmentPromises)
-        .then((assignments) => {
-          const validAssignments = (assignments as AssignmentType[]).filter(
-            (a): a is AssignmentType =>
-              a &&
-              typeof a.name === 'string' &&
-              typeof a.points === 'number' &&
-              typeof a.isReleased === 'boolean' &&
-              typeof a.hideGrades === 'boolean',
-          );
+      // Also copy course files (if any)
+      const copyCourseFiles = fetch(`${process.env.REACT_APP_API_URL}/courseFiles/?course=${copiedCourse.id}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Token ${localStorage.getItem('token')}`,
+        },
+      })
+        .then((res) => (res.ok ? res.json() : []))
+        .then((courseFiles: any[]) => {
+          if (!courseFiles || courseFiles.length === 0) {
+            return Promise.resolve([]);
+          }
 
-          const sortedAssignments = sortAssignments(validAssignments);
-
-          // Load rubrics for all assignments
-          return Promise.all(sortedAssignments.map((assignment) => Assignment.readRubric(assignment.id))).then(
-            (rubrics) => [sortedAssignments, rubrics] as const,
-          );
-        })
-        .then(([sortedAssignments, rubrics]) => {
-          // Create each assignment with its rubric
+          // Create a copy of each course file for the new course
           return Promise.all(
-            sortedAssignments.map((assignment: AssignmentType, index: number) => {
-              const oldAssignmentID = assignment.id;
-              const newAssignmentPayload = {
-                ...assignment,
-                id: -1,
-                course: course.id,
-                isReleased: false,
-                sortKey: index,
-              };
-
-              return Assignment.create(newAssignmentPayload).then((newAssignment: AssignmentType) => {
-                const rubric = rubrics.find((r) => r.id === oldAssignmentID);
-                if (!rubric) {
-                  return newAssignment;
-                }
-
-                // Create rubric categories and their comments
-                return Promise.all(
-                  rubric.rubricCategories.map((rubricCategory) => {
-                    // Handle case where rubricCategory might be just an ID
-                    if (typeof rubricCategory === 'number') {
-                      return Promise.resolve();
-                    }
-                    const oldCategoryId = rubricCategory.id;
-                    const newCategoryPayload = {
-                      ...rubricCategory,
-                      id: -1,
-                      assignment: newAssignment.id,
-                      rubricComments: [],
-                    };
-
-                    return RubricCategory.create(newCategoryPayload).then((newRubricCategory: RubricCategoryType) => {
-                      const categoryComments = rubric.rubricComments.filter(
-                        (c: { category: number }) => c.category === oldCategoryId,
-                      );
-
-                      return Promise.all(
-                        categoryComments.map((rubricComment) => {
-                          const newCommentPayload = {
-                            ...rubricComment,
-                            id: -1,
-                            category: newRubricCategory.id,
-                            comments: [],
-                          };
-                          return RubricComment.create(newCommentPayload);
-                        }),
-                      );
-                    });
-                  }),
-                ).then(() => newAssignment);
-              });
-            }),
+            courseFiles.map((file) =>
+              fetch(`${process.env.REACT_APP_API_URL}/courseFiles/`, {
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Token ${localStorage.getItem('token')}`,
+                },
+                method: 'POST',
+                body: JSON.stringify({
+                  course: course.id,
+                  name: file.name,
+                  extension: file.extension,
+                  data: file.data,
+                }),
+              }),
+            ),
           );
         })
-        .then(() => {
-          this.props.addCourse(course);
-          this.props.history.push(`${formatCourseURL(course)}/assignments/overview`);
+        .catch((error) => {
+          console.error('Error copying course files:', error);
+          return Promise.resolve([]);
         });
+
+      return Promise.all([...assignmentClonePromises, copyCourseFiles]).then(() => {
+        this.props.addCourse(course);
+        this.props.history.push(`${formatCourseURL(course)}/assignments/overview`);
+      });
     });
   };
 

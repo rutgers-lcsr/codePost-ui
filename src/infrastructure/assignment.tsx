@@ -213,6 +213,29 @@ export class Assignment {
   public static update = updateObject(AssignmentV, AssignmentVPatch, 'assignments');
   public static delete = deleteObject(AssignmentV, 'assignments');
 
+  // Clone an assignment to a course
+  public static clone = async (assignmentId: number, destinationCourseId: number): Promise<AssignmentType> => {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignmentId}/clone/`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Token ${localStorage.getItem('token')}`,
+      },
+      method: 'POST',
+      body: JSON.stringify({ course: destinationCourseId }),
+    });
+
+    if (res.status === 200) {
+      const data = await res.json();
+      const decoded = AssignmentV.decode(data);
+      if (decoded._tag === 'Right') {
+        return decoded.right;
+      }
+      throw new Error('Invalid assignment data received from clone endpoint');
+    }
+
+    throw new Error(`Failed to clone assignment: ${res.status} ${res.statusText}`);
+  };
+
   public static readRubric = readObjectDetail(RubricV, 'assignments', 'rubric');
   public static readSubmissions = readObjectDetail(t.array(SubmissionInfoV), 'assignments', 'submissions');
   public static readSubmissionsAnonymous = readObjectDetail(
