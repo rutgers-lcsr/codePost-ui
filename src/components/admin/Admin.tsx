@@ -173,7 +173,15 @@ class Admin extends Component<IComponentProps, IAdminState> {
     }
   }
 
-  public componentDidUpdate(_: IComponentProps, prevState: IAdminState) {
+  public componentDidUpdate(prevProps: IComponentProps, prevState: IAdminState) {
+    // Check if the current course has changed
+    const courseChanged = prevProps.currentCourse?.id !== this.props.currentCourse?.id;
+
+    if (courseChanged && this.props.currentCourse) {
+      // Reload all course data for the new course
+      this.loadAllCourseData(this.props.currentCourse);
+    }
+
     if (this.state.students && (!prevState.students || prevState.students != this.state.students)) {
       window.CommandBar.addContext({
         course: this.props.currentCourse,
