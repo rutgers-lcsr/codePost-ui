@@ -366,7 +366,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
 
     const values = queryString.parse(props.location.search);
     let simulatingStudent = false;
-    
+
     // Check for permissionLevel override in query params (admin only)
     // permissionLevel: 0=NOT_FOUND, 1=NONE, 2=READ, 3=READ_FILES_ONLY, 4=WRITE
     if (values.permissionLevel !== undefined && permissionLevel === PERMISSION_LEVEL.WRITE) {
@@ -385,7 +385,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
         }
       }
     }
-    
+
     if (permissionLevel === PERMISSION_LEVEL.WRITE && values.student !== undefined) {
       permissionLevel = PERMISSION_LEVEL.READ;
       simulatingStudent = true;
@@ -422,38 +422,38 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-        
+
         if (!res.ok) {
           setState((prev) => ({ ...prev, permissionLevel: PERMISSION_LEVEL.NONE, isLoading: false }));
           break;
         }
-        
+
         const submissionData: StudentSubmissionType = await res.json();
         assignment = await Assignment.read(submissionData.assignment);
-        
+
         document.title = `${submissionID}-Submission [${assignment.name}]`;
-        
+
         course = await Course.read(assignment.course);
-        
+
         // Files are already included in the response as full objects
         files = (submissionData.files as FileType[]) || [];
-        
+
         files = files.sort((a, b) => {
           return a.name.localeCompare(b.name);
         });
-        
+
         files = fileBouncer(files);
-        
+
         if (selectedFile === undefined && files.length > 0) {
           selectedFile = files[0];
         }
-        
+
         // No comments, rubrics, or tests in files-only mode
         comments = {};
         commentRubricComments = {};
         rubricCategories = [];
         tests = [];
-        
+
         setState((prev) => ({
           ...prev,
           noSave,
@@ -472,7 +472,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
           tests: [],
           isStudent: true,
         }));
-        
+
         break;
       }
       case PERMISSION_LEVEL.READ: {
@@ -1980,16 +1980,19 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
       leftHeader = [
         <SubheaderTitle key="subheader-title" assignment={state.assignment!} />,
-        <div key="files-only-notice" style={{ 
-          marginLeft: '16px', 
-          padding: '4px 12px', 
-          backgroundColor: '#ffa940', 
-          borderRadius: '4px',
-          fontSize: '12px',
-          color: '#fff'
-        }}>
+        <div
+          key="files-only-notice"
+          style={{
+            marginLeft: '16px',
+            padding: '4px 12px',
+            backgroundColor: '#ffa940',
+            borderRadius: '4px',
+            fontSize: '12px',
+            color: '#fff',
+          }}
+        >
           Files Only - Feedback not yet available
-        </div>
+        </div>,
       ];
 
       rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
