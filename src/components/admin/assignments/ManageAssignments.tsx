@@ -96,6 +96,22 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
     return;
   };
 
+  // Extract the course base URL from the current path
+  // props.match.url might be /admin/CourseName/Period/assignments/overview/something
+  // We need to extract just /admin/CourseName/Period/assignments
+  const getCourseBaseURL = () => {
+    const parts = props.match.url.split('/').filter(Boolean);
+    const adminIndex = parts.findIndex((part) => part === 'admin');
+    if (adminIndex !== -1 && parts.length > adminIndex + 3) {
+      // Take admin + courseName + period + assignments
+      const baseParts = parts.slice(0, adminIndex + 4);
+      return '/' + baseParts.join('/');
+    }
+    // Fallback: just use match.url
+    return props.match.url;
+  };
+  const baseURL = getCourseBaseURL();
+
   const breadcrumbs: Array<{ title: React.ReactNode }> = [
     {
       title: (
@@ -224,7 +240,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                     currentCourse={props.currentCourse!}
                     activeAssignment={assignment}
                     detailType={DETAIL_TYPE.Settings}
-                    baseURL={props.match.url}
+                    baseURL={baseURL}
                     breadcrumbs={breadcrumbs}
                     sections={props.sections}
                     courses={props.courses}
@@ -249,7 +265,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                       currentCourse={props.currentCourse!}
                       activeAssignment={assignment}
                       detailType={DETAIL_TYPE.DownloadGrades}
-                      baseURL={props.match.url}
+                      baseURL={baseURL}
                       breadcrumbs={breadcrumbs}
                       sections={props.sections}
                       courses={props.courses}
@@ -272,7 +288,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                     currentCourse={props.currentCourse!}
                     activeAssignment={assignment}
                     detailType={DETAIL_TYPE.Delete}
-                    baseURL={props.match.url}
+                    baseURL={baseURL}
                     breadcrumbs={breadcrumbs}
                     sections={props.sections}
                     courses={props.courses}
@@ -297,7 +313,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                       currentCourse={props.currentCourse!}
                       activeAssignment={assignment}
                       detailType={DETAIL_TYPE.Upload_Single}
-                      baseURL={props.match.url}
+                      baseURL={baseURL}
                       breadcrumbs={breadcrumbs}
                       sections={props.sections}
                       courses={props.courses}
@@ -323,7 +339,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                       currentCourse={props.currentCourse!}
                       activeAssignment={assignment}
                       detailType={DETAIL_TYPE.Upload_Multiple}
-                      baseURL={props.match.url}
+                      baseURL={baseURL}
                       breadcrumbs={breadcrumbs}
                       sections={props.sections}
                       courses={props.courses}
@@ -349,7 +365,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                       currentCourse={props.currentCourse!}
                       activeAssignment={assignment}
                       detailType={DETAIL_TYPE.Upload_Import}
-                      baseURL={props.match.url}
+                      baseURL={baseURL}
                       breadcrumbs={breadcrumbs}
                       sections={props.sections}
                       courses={props.courses}
@@ -375,7 +391,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                       currentCourse={props.currentCourse!}
                       activeAssignment={assignment}
                       detailType={DETAIL_TYPE.BulkSubmissionEdit}
-                      baseURL={props.match.url}
+                      baseURL={baseURL}
                       breadcrumbs={breadcrumbs}
                       sections={props.sections}
                       courses={props.courses}
@@ -401,7 +417,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                       currentCourse={props.currentCourse!}
                       activeAssignment={assignment}
                       detailType={DETAIL_TYPE.Onboarding}
-                      baseURL={props.match.url}
+                      baseURL={baseURL}
                       breadcrumbs={breadcrumbs}
                       sections={props.sections}
                       courses={props.courses}
@@ -492,7 +508,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   currentCourse={props.currentCourse!}
                   breadcrumbs={breadcrumbs}
                   detailType={DETAIL_TYPE.DownloadGrades}
-                  baseURL={props.match.url}
+                  baseURL={baseURL}
                   sections={props.sections}
                   courses={props.courses}
                 />
@@ -514,7 +530,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                   {...subprops}
                   currentCourse={props.currentCourse!}
                   breadcrumbs={breadcrumbs}
-                  baseURL={props.match.url}
+                  baseURL={baseURL}
                   courses={props.courses}
                 />
               );
