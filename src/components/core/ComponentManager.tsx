@@ -119,7 +119,7 @@ const ComponentManager = (
                     LOCAL_SETTINGS.defaultCourse.setter(course.id);
                     return (
                       <CourseContext.Provider value={course}>
-                        <MyComponent {...props} {...subprops} currentCourse={course} />
+                        <MyComponent key={`course-${course.id}`} {...props} {...subprops} currentCourse={course} />
                       </CourseContext.Provider>
                     );
                   }}
