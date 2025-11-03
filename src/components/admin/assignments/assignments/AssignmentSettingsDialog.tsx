@@ -9,7 +9,6 @@ import * as React from 'react';
 import {
   Checkbox,
   DatePicker,
-  Empty,
   Form,
   FormInstance,
   Input,
@@ -18,7 +17,6 @@ import {
   Modal,
   Select,
   Switch,
-  Table,
   Tabs,
   Tag,
 } from 'antd';
@@ -30,8 +28,6 @@ import moment from 'moment-timezone';
 import { AssignmentPatchType } from '../../../../infrastructure/assignment';
 import { AssignmentType, SectionType } from '../../../../infrastructure/types';
 import InputNumberMultiple from '../../settings/InputNumberMultiple';
-
-import UploadFileTemplates from './UploadFileTemplates';
 
 import ReactMarkdown from 'react-markdown';
 import { AssignmentDataSet, AssignmentDataSetType } from '../../../../infrastructure/assignmentDataSet';
@@ -271,16 +267,6 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
   React.useEffect(() => {
     setTemplates(initialAssignmentFiles);
   }, [initialAssignmentFiles]);
-
-  /****************************************************************************************/
-  /* Template file handling
-  /****************************************************************************************/
-
-  const updateTemplateCode = (id: number, newCode: string) => {
-    const old = templates.find((el) => el.id === id);
-    const updatedTemplates = [...templates.filter((el) => el.id !== id), { ...old!, code: newCode }];
-    setTemplates(updatedTemplates);
-  };
 
   /****************************************************************************************/
 
