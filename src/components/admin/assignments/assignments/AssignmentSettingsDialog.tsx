@@ -638,63 +638,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                   >
                     <Switch />
                   </Form.Item>
-                  <Form.Item
-                    label="File template code"
-                    extra={
-                      <div>
-                        Use file templates to help speed up grading by de-emphasizing template-provided versus
-                        student-written code. Template files names must match a file added as a "Submission File".
-                        <br />
-                      </div>
-                    }
-                    labelCol={{ span: 4 }}
-                    wrapperCol={{ span: 20 }}
-                  >
-                    <Table
-                      columns={[
-                        {
-                          title: 'File',
-                          dataIndex: 'name',
-                          key: 'file',
-                        },
-                        {
-                          title: 'Template code',
-                          dataIndex: 'template',
-                          key: 'template',
-                          align: 'center' as const,
-                        },
-                      ]}
-                      dataSource={templates
-                        .sort((a, b) => a.id - b.id)
-                        .map((el) => {
-                          return {
-                            name: el.name,
-                            template: (
-                              <UploadFileTemplates
-                                fileName={el.name}
-                                isReplacement={(el.data?.length || 0) > 0}
-                                updateTemplate={(newCode: string) => updateTemplateCode(el.id, newCode)}
-                              />
-                            ),
-                            key: el.id.toString(),
-                          };
-                        })}
-                      pagination={false}
-                      locale={{
-                        emptyText: (
-                          <Empty
-                            image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            description={
-                              <div style={{ fontWeight: 500 }}>
-                                No files. In order to upload template code, the file must first be added as an Optional
-                                or Required <b>Submission File</b> in the <b>Submission tab</b>.
-                              </div>
-                            }
-                          />
-                        ),
-                      }}
-                    />
-                  </Form.Item>
+
                   <Form.Item
                     name="showFrequentlyUsedRubricComments"
                     label="Freq. rubric comments"
