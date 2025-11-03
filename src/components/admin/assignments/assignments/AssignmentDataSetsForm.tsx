@@ -204,7 +204,8 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
           }}
         >
           <p style={{ color: '#888', margin: 0 }}>
-            No datasets uploaded yet. Upload a dataset to make it available during code execution.
+            No datasets uploaded yet. Upload a dataset to make it available during code execution. Will be mounted at
+            ~/shared/&lt;dataset_name&gt; by default.
           </p>
         </div>
       )}
