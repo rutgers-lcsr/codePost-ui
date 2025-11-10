@@ -75,6 +75,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
       if (props.assignment.allowStudentUpload && props.assignment.uploadDueDate) {
         const two_hours = 3.6e6 * 2; // ms grace period
         const isLate =
+          props.submission.dateUploaded !== null &&
           Date.parse(props.submission.dateUploaded) > Date.parse(props.assignment.uploadDueDate) + two_hours;
 
         const uploaded = moment(props.submission.dateUploaded);
@@ -123,7 +124,8 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
         submitted = (
           <div>
             <div>
-              Uploaded: <CodePostDate datetime={props.submission.dateUploaded} />{' '}
+              Uploaded:{' '}
+              {props.submission.dateUploaded && <CodePostDate datetime={props.submission.dateUploaded} />}{' '}
             </div>
             <div>
               Due: <CodePostDate datetime={props.assignment.uploadDueDate} />{' '}
