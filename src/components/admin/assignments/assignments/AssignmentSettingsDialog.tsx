@@ -111,6 +111,7 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
       allowStudentUpload: values.allowStudentUpload,
       allowStudentUploadWithPartners: values.allowStudentUploadWithPartners,
       uploadDueDate: values.uploadDueDate,
+      maxLateDays: values.maxLateDays,
       liveFeedbackMode: values.liveFeedbackMode,
       additiveGrading: values.additiveGrading,
       forcedRubricMode: values.forcedRubricMode,
@@ -220,6 +221,7 @@ interface IFormValues {
   allowStudentUpload: boolean;
   allowStudentUploadWithPartners: boolean;
   uploadDueDate: string;
+  maxLateDays: number;
   liveFeedbackMode: boolean;
   additiveGrading: boolean;
   forcedRubricMode: boolean;
@@ -497,6 +499,21 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                         ]}
                       >
                         <DatePicker showTime placeholder="Select Time" disabled={!studentUploadEnabled} />
+                      </Form.Item>
+
+                      <Form.Item
+                        name="maxLateDays"
+                        label="Max late days"
+                        extra={
+                          <div>
+                            The maximum number of late days to continue to accept submissions for this assignment.
+                          </div>
+                        }
+                        labelCol={{ span: 4 }}
+                        wrapperCol={{ span: 20 }}
+                        initialValue={assignment.maxLateDays ?? 2}
+                      >
+                        <InputNumber min={0} max={365} disabled={!studentUploadEnabled} />
                       </Form.Item>
 
                       <Form.Item
