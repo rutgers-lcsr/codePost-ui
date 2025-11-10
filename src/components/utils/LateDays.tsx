@@ -4,7 +4,7 @@ import { SubmissionType, AnonymousSubmissionType } from '../../infrastructure/su
 import moment from 'moment';
 
 const getDaysLate = (assignment: AssignmentType, submission: SubmissionType | AnonymousSubmissionType) => {
-  if (assignment.uploadDueDate === null) {
+  if (assignment.uploadDueDate === null || submission.dateUploaded === null) {
     return 0;
   }
 

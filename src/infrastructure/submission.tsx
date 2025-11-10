@@ -34,7 +34,7 @@ export const SubmissionV = t.intersection(
       students: t.array(t.string),
       assignment: t.number,
       dateEdited: t.string,
-      dateUploaded: t.string,
+      dateUploaded: t.union([t.string, t.null]),
       grade: t.union([t.number, t.null]),
       grader: t.union([t.string, t.null]),
       questionIsOpen: t.boolean,
