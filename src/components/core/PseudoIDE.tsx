@@ -9,9 +9,6 @@ import useWindowSize from './useWindowSize';
 
 import { EnvironmentType } from '../../infrastructure/autograder/environment';
 import { AnonymousSubmissionType } from '../../infrastructure/submission';
-// import { SolutionFile, SolutionFileType } from '../../infrastructure/autograder/solutionFile';
-// import { HelperFile, HelperFileType } from '../../infrastructure/autograder/helperFile';
-// import { SourceFile, SourceFileType } from '../../infrastructure/autograder/sourceFile';
 import { BasicTestResultType, TestEditorResultType } from '../../infrastructure/autograder/runTypes';
 import { getFileContent } from '../../infrastructure/file';
 import { arrayUpdate } from '../../infrastructure/immutable';
@@ -75,9 +72,6 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
   //////////////////////////////////////////////////////////
 
   const [env, setEnv] = React.useState<EnvironmentType | undefined>(undefined);
-  // const [solutions, setSolutions] = React.useState<SolutionFileType[]>([]);
-  // const [helpers, setHelpers] = React.useState<HelperFileType[]>([]);
-  // const [sourceFiles, setSourceFiles] = React.useState<SourceFileType[]>([]);
   const [casesByCategory, setCasesByCategory] = React.useState<TestCasesByCategory>({});
   const [categories, setCategories] = React.useState<TestCategoryType[]>([]);
 
@@ -89,12 +83,6 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
       const currEnv = await fetchEnvironment(props.assignment);
       setEnv(currEnv);
       if (currEnv) {
-        // const solutionFiles = await fetchSolutionFiles(currEnv);
-        // setSolutions(solutionFiles);
-        // const helpers = await fetchHelpers(currEnv);
-        // setHelpers(helpers);
-        // const sourceFiles: SourceFileType[] = await fetchSourceFiles(currEnv);
-        // setSourceFiles(sourceFiles);
         const [testCategories, testCasesByCategory] = await fetchTestData(props.assignment);
         if (Array.isArray(testCategories)) {
           setCategories(testCategories);

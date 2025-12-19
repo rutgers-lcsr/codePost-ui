@@ -75,7 +75,7 @@
 //       {
 //         id: 1,
 //         text: 'good job',
-//         // @ts-ignore
+//         // @ts-expect-error: legacy-ts-ignore
 //         pointDelta: undefined,
 //         startChar: 0,
 //         endChar: 1,
@@ -87,7 +87,7 @@
 //       {
 //         id: 3,
 //         text: 'good job',
-//         // @ts-ignore
+//         // @ts-expect-error: legacy-ts-ignore
 //         pointDelta: 2,
 //         startChar: 0,
 //         endChar: 1,

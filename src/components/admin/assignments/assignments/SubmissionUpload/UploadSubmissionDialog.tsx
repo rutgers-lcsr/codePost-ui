@@ -47,7 +47,7 @@ import ReactMarkdown from 'react-markdown';
 import { AssignmentStudent, AssignmentStudentType } from '../../../../../infrastructure/assignment';
 import { Environment } from '../../../../../infrastructure/autograder/environment';
 import { SubmissionTestResultType, TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
-import { File as CodePostFile, FileType } from '../../../../../infrastructure/file';
+import { File as CodePostFile, FileType, AssignmentFileType } from '../../../../../infrastructure/file';
 import { FileTemplate } from '../../../../../infrastructure/fileTemplate';
 import { Submission } from '../../../../../infrastructure/submission';
 import { SubmissionTest } from '../../../../../infrastructure/submissionTest';
@@ -354,7 +354,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
           if (primaryStudent !== null) {
             const sub = submissions[primaryStudent][propsSelectedAssignment.id];
             setSubmission(sub);
-            loadTestResults(sub, propsSelectedAssignment.exposeDumpLogs === true);
+            loadTestResults(sub, false);
           }
         }
       }
@@ -367,7 +367,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
     loadTemplates,
     loadTests,
     loadTestResults,
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
+  ]);
 
   // Handle selected students changes
   useEffect(() => {
@@ -499,7 +499,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
   /********************************************************************************************************/
 
   const shouldRunTests = useCallback(() => {
-    const testsToRun = (selectedAssignment && selectedAssignment.exposeDumpLogs) || testCategories.length > 0;
+    const testsToRun = testCategories.length > 0;
 
     const runsSoFar = submission ? submission.testRunsCompleted : 0;
     const maxRuns =
@@ -668,6 +668,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
 
     uploadSubmission(selectedAssignment as any, selectedStudents, files as any, sendMeAConfirmationEmail)
       .then((newSubmission: StudentSubmissionType | SubmissionInfoType) => {
+        console.log('Upload response:', newSubmission);
         const shouldRun = shouldRunTests();
         if (shouldRun) {
           runTests(newSubmission);
@@ -800,6 +801,55 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
       </span>
     );
   }, [uploadDirectory, toggleDirectoryUpload]);
+
+  const renderRequiredFiles = useMemo(() => {
+    const assignmentFiles = selectedAssignment?.files;
+    // Check if we have files and if they are objects (new backend)
+    if (!assignmentFiles || assignmentFiles.length === 0 || typeof assignmentFiles[0] === 'number') {
+      return null;
+    }
+
+    const typedFiles = assignmentFiles as unknown as AssignmentFileType[];
+
+    return (
+      <div style={{ marginBottom: 16 }}>
+        <Table
+          columns={[
+            { title: 'Filename', dataIndex: 'name', key: 'name' },
+            { title: 'Description', dataIndex: 'description', key: 'description' },
+            { title: 'Status', dataIndex: 'status', key: 'status', align: 'center' as const },
+          ]}
+          dataSource={typedFiles.map((f) => {
+            const uploaded = files.some((uploadedFile) => uploadedFile.name === f.name);
+            return {
+              key: f.id,
+              name: (
+                <span>
+                  {f.name}{' '}
+                  {f.required && (
+                    <Tag color="volcano" style={{ marginLeft: 8 }}>
+                      Required
+                    </Tag>
+                  )}
+                </span>
+              ),
+              description: f.description,
+              status: uploaded ? (
+                <CheckCircleOutlined style={{ color: 'green', fontSize: 16 }} />
+              ) : f.required ? (
+                <CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: 16 }} />
+              ) : (
+                <Tag>Optional</Tag>
+              ),
+            };
+          })}
+          pagination={false}
+          size="small"
+          bordered
+        />
+      </div>
+    );
+  }, [selectedAssignment, files]);
 
   const renderFileList = useMemo(() => {
     if (fileTemplates.length === 0) {
@@ -1012,7 +1062,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
             {selectedAssignment && (
               <LateSubmissionModal
                 visible={lateSubmissionModalVisible}
-                assignment={selectedAssignment}
+                assignment={selectedAssignment as AssignmentStudentType}
                 onCancel={closeLateSubmissionModal}
                 onOk={handleUpload}
               />
@@ -1111,6 +1161,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
 
             <Divider />
 
+            {renderRequiredFiles}
             {renderFileList}
 
             {renderSettings}
@@ -1201,7 +1252,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
                   categories={testCategories}
                   isLoading={loadingTests}
                   logs={testsLog || undefined}
-                  showLogs={selectedAssignment?.exposeDumpLogs === true}
+                  showLogs={false}
                   message={
                     <>
                       {submissionTests.length > 0 && (
@@ -1247,7 +1298,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
                 }
               />
               <br />
-              <ViewUpload assignment={selectedAssignment} />
+              <ViewUpload assignment={selectedAssignment as AssignmentStudentType} />
             </Tabs.TabPane>
           )}
         </Tabs>

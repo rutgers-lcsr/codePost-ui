@@ -49,6 +49,7 @@ interface ISubmissionReadProps {
   ) => Promise<StudentSubmissionType>;
   deleteStudentQuestion?: (submission: StudentSubmissionType) => Promise<StudentSubmissionType>;
   isStudentMode: boolean;
+  courseStudentsCanSeeGraders?: boolean;
 }
 
 interface ISubmissionInfoWriteProps {
@@ -61,6 +62,7 @@ interface ISubmissionInfoWriteProps {
   ) => Promise<AnonymousSubmissionType>;
   addLateDayCreditComment: any;
 }
+
 
 const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
@@ -92,7 +94,6 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
             }
           };
 
-          // @ts-ignore
           const arr = [...Array(props.courseLateDayCreditsAllowable).keys(), props.courseLateDayCreditsAllowable];
           const content = (
             <div>
@@ -148,8 +149,19 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
   if (props.submission !== undefined) {
     studentList = <Students submission={props.submission} isAnonymous={props.assignment.anonymousGrading} />;
   } else {
-    studentList = <Students submission={props.readOnlySubmission!} isAnonymous={props.isStudentMode} />;
+    studentList = <Students submission={props.readOnlySubmission!} isAnonymous={false} />;
   }
+
+  // Check if students should see the grader
+  // For students, we trust the backend (props.readOnlySubmission.grader is filtered)
+  // For admins simulating students (readOnlySubmission undefined), we calculate permission manually
+  const canSeeGrader =
+    props.assignment.studentsCanSeeGraders === true ||
+    (props.assignment.studentsCanSeeGraders === null && props.courseStudentsCanSeeGraders === true);
+
+  const graderEmail = props.readOnlySubmission ? props.readOnlySubmission.grader : props.submission?.grader;
+
+  const showGraderToStudent = props.isStudentMode && graderEmail && canSeeGrader;
 
   return (
     <div id="submission-info" style={{ paddingLeft: '15px', paddingBottom: '10px' }}>
@@ -168,9 +180,36 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
             />
           </div>
         ) : null}
+        {/* Show grader to students when studentsCanSeeGraders is enabled */}
+        {showGraderToStudent && (
+          <div id="submission-grader-student">
+            <br />
+            <b style={{ color: consoleTheme.siderMenuItemColor }}>Grader</b>:{' '}
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Avatar
+                size="small"
+                icon={<AuditOutlined />}
+                shape="square"
+                style={{ backgroundColor: consoleTheme.avatarBackground }}
+              />
+              <span style={{ width: '8px' }} />
+              <span
+                style={{
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  width: '80%',
+                  color: consoleTheme.siderMenuItemColor,
+                }}
+              >
+                {props.readOnlySubmission?.grader}
+              </span>
+            </div>
+          </div>
+        )}
         {props.readOnlySubmission !== undefined &&
-        props.submitStudentQuestion &&
-        props.assignment.allowRegradeRequests ? (
+          props.submitStudentQuestion &&
+          props.assignment.allowRegradeRequests ? (
           <StudentRegrade
             submission={props.readOnlySubmission}
             assignment={props.assignment}
@@ -204,6 +243,7 @@ const makeReadOnly = (Component: React.ComponentType<ISubmissionReadProps & ISub
           isCourseAdmin={false}
           graders={[]}
           addLateDayCreditComment={this.addLateDayCreditComment}
+          courseStudentsCanSeeGraders={this.props.courseStudentsCanSeeGraders}
         />
       );
     }
@@ -524,6 +564,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
   switch (regradeStatus) {
     case QUESTION_STATUS.NOT_SUBMITTED: {
       // Case 0: Student has not submitted a question or regrade request
+      // eslint-disable-next-line react-hooks/purity
       if (props.assignment.regradeDeadline && Date.parse(props.assignment.regradeDeadline) <= Date.now()) {
         // Case 1: No regraded summited and deadline has passed
         return (

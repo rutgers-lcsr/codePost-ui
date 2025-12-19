@@ -4,7 +4,6 @@
 
 /* react imports */
 import { lazy, ReactElement, ReactNode, Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import '@ant-design/v5-patch-for-react-19';
 
 /* other library imports */
 import { Navigate, Route, Routes } from 'react-router-dom';

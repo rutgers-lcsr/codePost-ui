@@ -162,18 +162,20 @@ export const LegacyRouteRenderer = <P extends StringMap = StringMap, State = unk
 export const useHistory = <State = unknown,>(): LegacyHistory<State> => {
   const context = useContext(LegacyRouteContext) as LegacyRouteComponentProps<any, State> | null;
   const location = useLocation() as Location & { state: State };
+  const fallbackRouteProps = useLegacyRouteProps(location.pathname || '/', true);
 
   if (context) {
     return context.history;
   }
 
-  return useLegacyRouteProps(location.pathname || '/', true).history;
+  return fallbackRouteProps.history;
 };
 
 export const useRouteMatch = <P extends StringMap = StringMap>(pattern?: string | string[]): LegacyMatch<P> | null => {
   const context = useContext(LegacyRouteContext);
   const location = useLocation();
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   return useMemo(() => {
     if (!pattern) {
       return (
@@ -212,7 +214,8 @@ export const withRouter = <OwnProps extends Record<string, unknown>, P extends S
   const Wrapped = (props: OwnProps) => {
     const context = useContext(LegacyRouteContext) as RouteComponentProps<P, State> | null;
     const location = useLocation() as Location & { state: State };
-    const routeProps = context ?? useLegacyRouteProps<P, State>(location.pathname || '/', true);
+    const fallbackProps = useLegacyRouteProps<P, State>(location.pathname || '/', true);
+    const routeProps = context ?? fallbackProps;
 
     return <Component {...props} {...routeProps} />;
   };

@@ -8,7 +8,7 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 /* antd imports */
 
 // We ignore eslint since Popover never explicitly used. We just use the classNames
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 import { CheckOutlined, CloseOutlined, DeleteOutlined, LinkOutlined } from '@ant-design/icons';
 import { Alert, Button, Card, Input, message, Popover, Space, Tag, Typography } from 'antd';
 

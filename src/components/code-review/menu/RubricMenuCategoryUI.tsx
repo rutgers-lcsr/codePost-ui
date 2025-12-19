@@ -90,7 +90,7 @@ const RubricMenuCategoryUI = ({
             helpers.deleteComment(rubricComment);
           };
 
-          // // @ts-ignore
+          // // @ts-expect-error: legacy-ts-ignore
           // const activateThisCommentExplorer = () => {
           //   props.activateCommentExplorer(thisComment);
           // };

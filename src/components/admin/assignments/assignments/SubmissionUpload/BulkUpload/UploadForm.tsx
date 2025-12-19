@@ -6,7 +6,6 @@
 
 /* ant imports */
 
-
 /* ant imports */
 import { Typography } from 'antd';
 

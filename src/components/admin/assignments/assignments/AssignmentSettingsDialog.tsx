@@ -22,7 +22,12 @@ import {
 } from 'antd';
 
 /* other library imports */
-import moment from 'moment-timezone';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 /* codePost imports */
 import { AssignmentPatchType } from '../../../../infrastructure/assignment';
@@ -103,14 +108,20 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
       points: values.points,
       anonymousGrading: values.anonymousGrading,
       collaborativeRubricMode: values.collaborativeRubricMode,
-      hideGradersFromStudents: values.hideGradersFromStudents,
+
       hideGrades: values.hideGrades,
       commentFeedback: values.commentFeedback,
       allowRegradeRequests: values.allowRegradeRequests,
-      regradeDeadline: values.regradeDeadline,
       allowStudentUpload: values.allowStudentUpload,
       allowStudentUploadWithPartners: values.allowStudentUploadWithPartners,
-      uploadDueDate: values.uploadDueDate,
+      uploadDueDate:
+        values.allowStudentUpload && values.uploadDueDate
+          ? dayjs.tz(values.uploadDueDate.format('YYYY-MM-DD HH:mm:ss'), props.timezone).utc().format()
+          : null,
+      regradeDeadline:
+        values.allowRegradeRequests && values.regradeDeadline
+          ? dayjs.tz(values.regradeDeadline.format('YYYY-MM-DD HH:mm:ss'), props.timezone).utc().format()
+          : null,
       maxLateDays: values.maxLateDays,
       liveFeedbackMode: values.liveFeedbackMode,
       additiveGrading: values.additiveGrading,
@@ -121,6 +132,7 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
       explanation: values.explanation,
       hideFrom: values.hideFrom,
       lateDeductions: values.lateDeductions,
+      studentsCanSeeGraders: values.studentsCanSeeGraders,
     };
 
     await props.onSave(payload);
@@ -130,7 +142,12 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
 
   const handleCreate = async (templates: AssignmentFileType[]) => {
     try {
-      const values = await form.validateFields();
+      // We must merge getFieldsValue(true) to ensure we capture values from unmounted tabs (like Submission)
+      // which validateFields() would otherwise omit.
+      const allValues = form.getFieldsValue(true);
+      const validatedValues = await form.validateFields();
+      const values = { ...allValues, ...validatedValues };
+
       setIsLoading(true);
 
       const fileTemplatePromises: Promise<AssignmentFileType | void>[] = [];
@@ -213,14 +230,15 @@ interface IFormValues {
   points: number;
   anonymousGrading: boolean;
   collaborativeRubricMode: boolean;
-  hideGradersFromStudents: boolean;
+
+  studentsCanSeeGraders: boolean | null;
   hideGrades: boolean;
   commentFeedback: boolean;
   allowRegradeRequests: boolean;
-  regradeDeadline: string | null;
+  regradeDeadline: any;
   allowStudentUpload: boolean;
   allowStudentUploadWithPartners: boolean;
-  uploadDueDate: string;
+  uploadDueDate: any;
   maxLateDays: number;
   liveFeedbackMode: boolean;
   additiveGrading: boolean;
@@ -229,7 +247,7 @@ interface IFormValues {
   showFrequentlyUsedRubricComments: boolean;
   allowLateUploads: boolean;
   explanation: string;
-  hideFrom: string[];
+  hideFrom: number[];
   lateDeductions: number[];
 }
 
@@ -263,8 +281,44 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
     if (visible) {
       setExplanation(assignment.explanation);
       setExplanationPreview(false);
+
+      form.setFieldsValue({
+        name: assignment.name,
+        points: assignment.points,
+        anonymousGrading: assignment.anonymousGrading,
+        collaborativeRubricMode: assignment.collaborativeRubricMode,
+
+        studentsCanSeeGraders: assignment.studentsCanSeeGraders,
+        hideGrades: assignment.hideGrades,
+        commentFeedback: assignment.commentFeedback,
+        allowRegradeRequests: assignment.allowRegradeRequests,
+        allowStudentUpload: assignment.allowStudentUpload,
+        allowStudentUploadWithPartners: assignment.allowStudentUploadWithPartners,
+        maxLateDays: assignment.maxLateDays ?? 2,
+        liveFeedbackMode: assignment.liveFeedbackMode,
+        additiveGrading: assignment.additiveGrading,
+        forcedRubricMode: assignment.forcedRubricMode,
+        templateMode: assignment.templateMode,
+        showFrequentlyUsedRubricComments: assignment.showFrequentlyUsedRubricComments,
+        allowLateUploads: assignment.allowLateUploads,
+        explanation: assignment.explanation,
+        hideFrom: assignment.hideFrom,
+        lateDeductions: assignment.lateDeductions || [],
+
+        // Date fields handling
+        // Wall Clock Shift (Day.js Modern Usage):
+        // 1. Get the time in the COURSE timezone using dayjs.tz
+        // 2. Format it as a string (YYYY-MM-DD HH:mm:ss) to strip timezone data.
+        // 3. Create a LOCAL dayjs object from that string.
+        uploadDueDate: assignment.uploadDueDate
+          ? dayjs(dayjs(assignment.uploadDueDate).tz(timezone).format('YYYY-MM-DD HH:mm:ss'))
+          : dayjs(dayjs().tz(timezone).endOf('day').format('YYYY-MM-DD HH:mm:ss')),
+        regradeDeadline: assignment.regradeDeadline
+          ? dayjs(dayjs(assignment.regradeDeadline).tz(timezone).format('YYYY-MM-DD HH:mm:ss'))
+          : dayjs(dayjs().tz(timezone).format('YYYY-MM-DD HH:mm:ss')),
+      });
     }
-  }, [visible, assignment]);
+  }, [visible, assignment, form, timezone]);
 
   React.useEffect(() => {
     setTemplates(initialAssignmentFiles);
@@ -337,7 +391,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
           items={[
             {
               label: 'General',
-              key: '1',
+              key: 'general',
               children: (
                 <div style={tabPaneStyle}>
                   <Form.Item
@@ -395,6 +449,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                       <Input.TextArea
                         placeholder="Type text or Markdown"
                         onChange={(e) => setExplanation(e.target.value)}
+                        rows={6}
                       />
                     )}
                   </Form.Item>
@@ -420,24 +475,19 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
               ),
             },
             {
-              label: 'Files',
-              key: '5',
+              label: 'Resources',
+              key: 'resources',
               children: (
                 <div style={tabPaneStyle}>
+                  <h3>Assignment Files</h3>
                   <Form.Item
                     // label="Assignment files"
                     extra="Starter files that students will download, complete, and submit back for grading."
                   >
                     <AssignmentFilesForm value={templates} onChange={setTemplates} assignmentId={assignment.id} />
                   </Form.Item>
-                </div>
-              ),
-            },
-            {
-              label: 'Datasets',
-              key: '6',
-              children: (
-                <div style={tabPaneStyle}>
+                  <div style={{ marginTop: 24, marginBottom: 24, borderTop: '1px solid #f0f0f0' }} />
+                  <h3>Datasets</h3>
                   <AssignmentDataSetsForm
                     assignmentId={assignment.id}
                     datasets={datasets}
@@ -448,15 +498,15 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
             },
             {
               label: 'Submission',
-              key: '2',
+              key: 'submission',
               children: (
                 <div style={tabPaneStyle}>
                   <Form.Item
                     name="allowStudentUpload"
                     label="Allow student upload"
                     extra={<div>When enabled, students can upload submissions before the given due date.</div>}
-                    labelCol={{ span: 4 }}
-                    wrapperCol={{ span: 20 }}
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
                     initialValue={assignment.allowStudentUpload}
                     valuePropName="checked"
                   >
@@ -465,17 +515,6 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                   {studentUploadEnabled && (
                     <>
                       <Form.Item
-                        name="allowStudentUploadWithPartners"
-                        label="Allow partners"
-                        extra={<div>Allow students to submit in groups of their choosing.</div>}
-                        labelCol={{ span: 4 }}
-                        wrapperCol={{ span: 20 }}
-                        initialValue={assignment.allowStudentUploadWithPartners}
-                        valuePropName="checked"
-                      >
-                        <Switch disabled={!studentUploadEnabled} />
-                      </Form.Item>
-                      <Form.Item
                         name="uploadDueDate"
                         label="Due Date"
                         extra={
@@ -483,14 +522,13 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                             Due date for student uploads. Your course's timezone is <b>{timezone}.</b>
                           </span>
                         }
-                        labelCol={{ span: 4 }}
-                        wrapperCol={{ span: 20 }}
+                        labelCol={{ span: 6 }}
+                        wrapperCol={{ span: 18 }}
                         initialValue={
                           assignment.uploadDueDate
-                            ? moment(assignment.uploadDueDate).tz(timezone)
-                            : moment().tz(timezone).endOf('day')
+                            ? dayjs(dayjs(assignment.uploadDueDate).tz(timezone).format('YYYY-MM-DD HH:mm:ss'))
+                            : dayjs(dayjs().tz(timezone).endOf('day').format('YYYY-MM-DD HH:mm:ss'))
                         }
-                        valuePropName="value"
                         rules={[
                           {
                             required: studentUploadEnabled,
@@ -498,23 +536,29 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                           },
                         ]}
                       >
-                        <DatePicker showTime placeholder="Select Time" disabled={!studentUploadEnabled} />
+                        <DatePicker
+                          showTime
+                          format="YYYY-MM-DD HH:mm:ss"
+                          placeholder="Select Time"
+                          disabled={!studentUploadEnabled}
+                          inputReadOnly
+                        />
                       </Form.Item>
 
                       <Form.Item
-                        name="maxLateDays"
-                        label="Max late days"
-                        extra={
-                          <div>
-                            The maximum number of late days to continue to accept submissions for this assignment.
-                          </div>
-                        }
-                        labelCol={{ span: 4 }}
-                        wrapperCol={{ span: 20 }}
-                        initialValue={assignment.maxLateDays ?? 2}
+                        name="allowStudentUploadWithPartners"
+                        label="Allow partners"
+                        extra={<div>Allow students to submit in groups of their choosing.</div>}
+                        labelCol={{ span: 6 }}
+                        wrapperCol={{ span: 18 }}
+                        initialValue={assignment.allowStudentUploadWithPartners}
+                        valuePropName="checked"
                       >
-                        <InputNumber min={0} max={365} disabled={!studentUploadEnabled} />
+                        <Switch disabled={!studentUploadEnabled} />
                       </Form.Item>
+
+                      <div style={{ marginTop: 24, marginBottom: 24, borderTop: '1px solid #f0f0f0' }} />
+                      <h3>Late Policy</h3>
 
                       <Form.Item
                         name="allowLateUploads"
@@ -525,13 +569,29 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                             passed.
                           </div>
                         }
-                        labelCol={{ span: 4 }}
-                        wrapperCol={{ span: 20 }}
+                        labelCol={{ span: 6 }}
+                        wrapperCol={{ span: 18 }}
                         initialValue={assignment.allowLateUploads}
                         valuePropName="checked"
                       >
                         <Switch disabled={!studentUploadEnabled} onChange={handleAllowLateUploadsChange} />
                       </Form.Item>
+
+                      <Form.Item
+                        name="maxLateDays"
+                        label="Max late days"
+                        extra={
+                          <div>
+                            The maximum number of late days to continue to accept submissions for this assignment.
+                          </div>
+                        }
+                        labelCol={{ span: 6 }}
+                        wrapperCol={{ span: 18 }}
+                        initialValue={assignment.maxLateDays ?? 2}
+                      >
+                        <InputNumber min={0} max={365} disabled={!studentUploadEnabled} />
+                      </Form.Item>
+
                       <Form.Item
                         name="lateDeductions"
                         label="Late deductions"
@@ -546,8 +606,8 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                               )}
                           </div>
                         }
-                        labelCol={{ span: 4 }}
-                        wrapperCol={{ span: 20 }}
+                        labelCol={{ span: 6 }}
+                        wrapperCol={{ span: 18 }}
                         initialValue={assignment.lateDeductions || []}
                       >
                         <InputNumberMultiple
@@ -557,6 +617,10 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                           emptyMessage="Add a late deduction"
                         />
                       </Form.Item>
+
+                      <div style={{ marginTop: 24, marginBottom: 24, borderTop: '1px solid #f0f0f0' }} />
+                      <h3>Feedback Config</h3>
+
                       <Form.Item
                         name="liveFeedbackMode"
                         label="Live feedback mode"
@@ -566,8 +630,8 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                             published. Ideal for office hours or ungraded feedback.
                           </div>
                         }
-                        labelCol={{ span: 4 }}
-                        wrapperCol={{ span: 20 }}
+                        labelCol={{ span: 6 }}
+                        wrapperCol={{ span: 18 }}
                         initialValue={assignment.liveFeedbackMode}
                         valuePropName="checked"
                       >
@@ -580,35 +644,15 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
             },
             {
               label: 'Grading',
-              key: '3',
+              key: 'grading',
               children: (
                 <div style={tabPaneStyle}>
-                  <Form.Item
-                    name="anonymousGrading"
-                    label="Anonymous grading"
-                    extra={
-                      <div>
-                        When enabled, graders will not be able to see student emails associated with submissions. For
-                        more info, see{' '}
-                        <a href="https://help.codepost.io/en/articles/3164756-how-to-enable-anonymous-grading-mode">
-                          our docs
-                        </a>
-                        .
-                      </div>
-                    }
-                    labelCol={{ span: 4 }}
-                    wrapperCol={{ span: 20 }}
-                    initialValue={assignment.anonymousGrading}
-                    valuePropName="checked"
-                  >
-                    <Switch />
-                  </Form.Item>
                   <Form.Item
                     name="additiveGrading"
                     label="Additive grading"
                     extra={<div>Start submission scores at 0 instead of at an assignment's point value.</div>}
-                    labelCol={{ span: 4 }}
-                    wrapperCol={{ span: 20 }}
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
                     initialValue={assignment.additiveGrading}
                     valuePropName="checked"
                   >
@@ -618,8 +662,8 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                     name="forcedRubricMode"
                     label="Rubric-only mode"
                     extra={<div>Require graders to link all submission comments to a Rubric Comment.</div>}
-                    labelCol={{ span: 4 }}
-                    wrapperCol={{ span: 20 }}
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
                     initialValue={assignment.forcedRubricMode}
                     valuePropName="checked"
                   >
@@ -634,8 +678,8 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                         Graders will have full permission to create, modify and delete rubric items.
                       </div>
                     }
-                    labelCol={{ span: 4 }}
-                    wrapperCol={{ span: 20 }}
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
                     initialValue={assignment.collaborativeRubricMode}
                     valuePropName="checked"
                   >
@@ -651,9 +695,32 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                         the code console to make them easily accessible.
                       </div>
                     }
-                    labelCol={{ span: 4 }}
-                    wrapperCol={{ span: 20 }}
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
                     initialValue={assignment.showFrequentlyUsedRubricComments}
+                    valuePropName="checked"
+                  >
+                    <Switch />
+                  </Form.Item>
+
+                  <div style={{ marginTop: 24, marginBottom: 24, borderTop: '1px solid #f0f0f0' }} />
+                  <h3>Anonymous Grading</h3>
+                  <Form.Item
+                    name="anonymousGrading"
+                    label="Anonymous grading"
+                    extra={
+                      <div>
+                        When enabled, graders will not be able to see student emails associated with submissions. For
+                        more info, see{' '}
+                        <a href="https://help.codepost.io/en/articles/3164756-how-to-enable-anonymous-grading-mode">
+                          our docs
+                        </a>
+                        .
+                      </div>
+                    }
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
+                    initialValue={assignment.anonymousGrading}
                     valuePropName="checked"
                   >
                     <Switch />
@@ -663,18 +730,22 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
             },
             {
               label: 'Publishing',
-              key: '4',
+              key: 'publishing',
               children: (
                 <div style={tabPaneStyle}>
+
                   <Form.Item
-                    name="hideGradersFromStudents"
-                    label="Hide graders"
+                    name="studentsCanSeeGraders"
+                    label="Show graders"
                     extra={
-                      <div>When enabled, students will not be able to see the grader associated with a submission.</div>
+                      <div>
+                        When enabled, students will see the grader who graded their submission. Overrides course
+                        default.
+                      </div>
                     }
-                    labelCol={{ span: 4 }}
-                    wrapperCol={{ span: 20 }}
-                    initialValue={assignment.hideGradersFromStudents}
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
+                    initialValue={assignment.studentsCanSeeGraders}
                     valuePropName="checked"
                   >
                     <Switch />
@@ -683,8 +754,8 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                     name="commentFeedback"
                     label="Student feedback"
                     extra={<div>When enabled, students will be able to leave feedback on applied rubric comments.</div>}
-                    labelCol={{ span: 4 }}
-                    wrapperCol={{ span: 20 }}
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
                     initialValue={assignment.commentFeedback}
                     valuePropName="checked"
                   >
@@ -694,19 +765,23 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                     name="hideGrades"
                     label="Hide grades"
                     extra=" When enabled, students won't be able to view the grades associated with their submissions."
-                    labelCol={{ span: 4 }}
-                    wrapperCol={{ span: 20 }}
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
                     initialValue={assignment.hideGrades}
                     valuePropName="checked"
                   >
                     <Switch />
                   </Form.Item>
+
+                  <div style={{ marginTop: 24, marginBottom: 24, borderTop: '1px solid #f0f0f0' }} />
+                  <h3>Regrade Requests</h3>
+
                   <Form.Item
                     name="allowRegradeRequests"
                     label="Regrade requests"
                     extra=" When enabled, students can submit a question on their graded submission and request a regrade."
-                    labelCol={{ span: 4 }}
-                    wrapperCol={{ span: 20 }}
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
                     initialValue={assignment.allowRegradeRequests}
                     valuePropName="checked"
                   >
@@ -721,16 +796,16 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                         <b>{timezone}.</b>
                       </span>
                     }
-                    labelCol={{ span: 4 }}
-                    wrapperCol={{ span: 20 }}
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
                     initialValue={
                       assignment.regradeDeadline
-                        ? moment(assignment.regradeDeadline).tz(timezone)
-                        : moment().tz(timezone)
+                        ? dayjs(dayjs(assignment.regradeDeadline).tz(timezone).format('YYYY-MM-DD HH:mm:ss'))
+                        : dayjs(dayjs().tz(timezone).endOf('day').format('YYYY-MM-DD HH:mm:ss'))
                     }
                     valuePropName="value"
                   >
-                    <DatePicker showTime placeholder="Select Time" disabled={!regradesEnabled} />
+                    <DatePicker showTime placeholder="Select Time" disabled={!regradesEnabled} inputReadOnly />
                   </Form.Item>
                 </div>
               ),

@@ -26,7 +26,7 @@ import { encodeForRoute, encodeForLink } from '../core/URLutils';
 
 /**********************************************************************************************************************/
 
-interface IComponentManagerProps extends RouteComponentProps<{}> {
+interface IComponentManagerProps extends RouteComponentProps {
   initialCourses: CourseType[];
   user: UserType;
 

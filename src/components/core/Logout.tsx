@@ -14,7 +14,7 @@ interface IProps {
   handleLogout: () => void;
 }
 
-class Logout extends React.Component<IProps, {}> {
+class Logout extends React.Component<IProps> {
   public render() {
     this.props.handleLogout();
 

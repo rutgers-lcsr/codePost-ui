@@ -99,7 +99,7 @@ export function awaitBuildResult(id: number, callback: (result: any) => any) {
 async function pollBuildResult(id: number, interval: any, callback: (result: any) => any) {
   // We use fetch instead of io-ts functions because we need to turn off the timer in case
   //    of a failed response (e.g., 404)
-  const res = await fetch(`${process.env.REACT_APP_API_URL}/autograder/environments/${id}/status`, {
+  const res = await fetch(`${process.env.REACT_APP_API_URL}/autograder/environments/${id}/build_status/`, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
       'Content-Type': 'application/json',

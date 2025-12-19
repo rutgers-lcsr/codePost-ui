@@ -9,7 +9,6 @@ import {
   BarChartOutlined,
   CompassOutlined,
   DeleteOutlined,
-  DiffOutlined,
   DownloadOutlined,
   EditOutlined,
   EyeInvisibleOutlined,
@@ -27,7 +26,23 @@ import {
 } from '@ant-design/icons';
 
 /* ant imports */
-import { Breadcrumb, Dropdown, Empty, message, Popconfirm, Spin, Switch, Tooltip, Typography } from 'antd';
+import {
+  Badge,
+  Breadcrumb,
+  Button,
+  Dropdown,
+  Empty,
+  Flex,
+  message,
+  Popconfirm,
+  Popover,
+  Progress,
+  Space,
+  Spin,
+  Switch,
+  Tooltip,
+  Typography,
+} from 'antd';
 
 /* codePost imports */
 import { colors } from '../../../theme/colors';
@@ -43,6 +58,14 @@ import update from 'immutability-helper';
 import { TableDetail } from '../other/TableDetail';
 
 /* other library imports */
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(advancedFormat);
 import { RouteComponentProps } from '../../../router/legacy';
 
 import { Link } from 'react-router-dom';
@@ -86,6 +109,8 @@ import BulkSubmissionEdit from './assignments/BulkSubmissionEdit';
 import { AssignmentSetupDialog } from './assignments/AssignmentSetupDialog';
 
 const { Text } = Typography;
+
+import { DETAIL_TYPE } from './types';
 
 type alignType = 'left' | 'right' | 'center';
 
@@ -148,18 +173,6 @@ export interface IManageAssignmentsProps {
   breadcrumbs?: Array<{ title: React.ReactNode }>;
 }
 
-export enum DETAIL_TYPE {
-  Upload_Single,
-  Upload_Multiple,
-  Upload_Import,
-  Settings,
-  Delete,
-  Drawer,
-  DownloadGrades,
-  BulkSubmissionEdit,
-  Onboarding,
-}
-
 interface DrawerContentState {
   title: string;
   subtitle: React.ReactNode;
@@ -192,6 +205,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
     history,
     loadComplete,
     breadcrumbs,
+    refreshCourseData,
   } = props;
 
   // State management with hooks
@@ -206,6 +220,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
 
   // Update sortedOrder when assignments change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSortedOrder(sortAssignments(props.assignments).map((el) => el.id));
   }, [props.assignments]);
 
@@ -232,6 +247,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
 
       const title = getDrawerTitle(drawerType, newContent.length, !fullSubmissionsLoadComplete);
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDrawerContent({
         title: thisAssignment.name,
         subtitle: title,
@@ -317,7 +333,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
     (assignment: AssignmentPatchType) => {
       return updateAssignmentProp(assignment);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [updateAssignmentProp],
   );
 
@@ -329,7 +345,6 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
         history.push(`${baseURL}/overview`);
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeAssignment, deleteAssignmentProp, history, baseURL]);
 
   const uploadForStudent = useCallback(
@@ -345,6 +360,10 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
     setActiveStudent(undefined);
   }, [history, baseURL]);
 
+  const cancel = useCallback(() => {
+    history.push(`${baseURL}/overview`);
+  }, [history, baseURL]);
+
   const createAssignment = useCallback(
     (name: string, points: number, upload: boolean, isVisible: boolean, dueDate?: string) => {
       // Place assignment at the end of the assignment list
@@ -357,7 +376,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
 
       return createAssignmentProp(name, points, upload, isVisible, dueDate, sortKey);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [sortedOrder, createAssignmentProp],
   );
 
@@ -444,116 +463,35 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
    * Render
    ******************************************************************************/
 
-  const aligner: alignType = 'center';
   const columns = [
     {
       title: 'Assignment',
       dataIndex: 'assignment',
       key: 'assignment',
+      width: '30%',
       className: 'draggable',
     },
     {
-      title: (
-        <div>
-          Visible
-          <CPTooltip
-            title={'If visible, students can see the assignment in the Student Console.'}
-            infoIcon={true}
-            hideThisOnHideTips={true}
-            iconStyle={{ paddingLeft: 5 }}
-          />
-        </div>
-      ),
-      dataIndex: 'visible',
-      key: 'visible',
-      align: aligner,
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      width: '230px',
     },
     {
-      title: (
-        <div>
-          Published
-          <CPTooltip
-            title={tooltips.admin.assignments.published}
-            infoIcon={true}
-            hideThisOnHideTips={true}
-            iconStyle={{ paddingLeft: 5 }}
-          />
-        </div>
-      ),
-      dataIndex: 'published',
-      key: 'published',
-      align: aligner,
-    },
-    {
-      title: (
-        <div>
-          Submissions
-          <CPTooltip
-            title={tooltips.admin.assignments.submissions}
-            infoIcon={true}
-            hideThisOnHideTips={true}
-            iconStyle={{ paddingLeft: 5 }}
-          />
-        </div>
-      ),
-      dataIndex: 'submissions',
-      key: 'submissions',
-      align: aligner,
-    },
-    {
-      title: (
-        <div>
-          Finalized
-          <CPTooltip
-            title={tooltips.admin.assignments.finalized}
-            infoIcon={true}
-            hideThisOnHideTips={true}
-            iconStyle={{ paddingLeft: 5 }}
-          />
-        </div>
-      ),
-      dataIndex: 'finalized',
-      key: 'finalized',
-      align: aligner,
-    },
-    {
-      title: (
-        <div>
-          Missing
-          <CPTooltip
-            title={tooltips.admin.assignments.missing}
-            infoIcon={true}
-            hideThisOnHideTips={true}
-            iconStyle={{ paddingLeft: 5 }}
-          />
-        </div>
-      ),
-      dataIndex: 'missing',
-      key: 'missing',
-      align: aligner,
+      title: 'Progress',
+      dataIndex: 'progress',
+      key: 'progress',
+      width: '350px',
     },
     {
       title: 'Actions',
       dataIndex: 'actions',
       key: 'actions',
-      align: aligner,
+      align: 'right' as alignType,
     },
   ];
 
-  const actions: React.ReactNode[] = [
-    <NewAssignmentDialog
-      key={1}
-      {...props}
-      assignments={assignments}
-      createAssignment={createAssignment}
-      timezone={currentCourse.timezone}
-    />,
-    <Link to={`${baseURL}/download/grades`}>
-      <CPButton cpType="secondary" key={2} icon={<DownloadOutlined />} disabled={Object.keys(submissions).length === 0}>
-        Download grades
-      </CPButton>
-    </Link>,
-  ];
+  /* ... data mapping ... */
 
   const data = sortedOrder.map((id: number) => {
     const assignment = assignments.find((el) => el.id === id);
@@ -562,7 +500,10 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
     }
     const statsForRow = assignmentStats[assignment.id];
     const encodedName = encodeForLink(assignment.name);
+
+    // --- Actions Menu ---
     const menuItems = [
+      /*
       {
         key: '1',
         label: (
@@ -571,19 +512,12 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
           </Link>
         ),
       },
+      */
       {
         key: 'tests',
         label: (
-          <Link to={`${baseURL}/tests/${encodedName}/edit`}>
-            <FileDoneOutlined /> &nbsp; Edit tests
-          </Link>
-        ),
-      },
-      {
-        key: 'plagiarism',
-        label: (
-          <Link to={`${baseURL}/plagiarism/${encodedName}`}>
-            <DiffOutlined /> &nbsp; Check for plagiarism
+          <Link to={`${baseURL}/environment/${encodedName}/edit`}>
+            <FileDoneOutlined /> &nbsp; Environment Setup
           </Link>
         ),
       },
@@ -665,6 +599,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
           </Link>
         ),
       },
+      /*
       {
         key: '6',
         label: (
@@ -673,6 +608,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
           </Link>
         ),
       },
+      */
       {
         type: 'divider' as const,
       },
@@ -687,46 +623,70 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
       },
     ];
 
+    // --- Helpers ---
     const publishToggleText = getPublishConfirmText(assignment);
+    const onConfirmPublish = () => toggleAssignmentPublish(assignment);
+    const toggleVisible = () => toggleAssignmentVisibility(assignment);
 
     const notifyButton = (toggleDialog: () => void) => {
       return (
-        <CPTooltip title="Notify students via email. ">
-          <MailOutlined onClick={toggleDialog} style={{ cursor: 'pointer' }} />
-        </CPTooltip>
+        <CPButton size="small" icon={<MailOutlined />} onClick={toggleDialog}>
+          Notify
+        </CPButton>
       );
     };
 
-    const onConfirm = () => toggleAssignmentPublish(assignment);
-    const toggleVisible = () => toggleAssignmentVisibility(assignment);
+    // --- New Status Logic ---
+    let statusBadge: 'success' | 'warning' | 'default' = 'default';
+    let statusText = 'Draft';
 
-    return {
-      key: assignment.id,
-      assignment: (
-        <Text strong>
-          {assignment.name}
-          {assignment.hideFrom.length > 0 && (
-            <Tooltip title={`Assignment hidden from the following sections: ${getSectionNames(assignment.hideFrom)}`}>
-              <EyeInvisibleOutlined style={{ marginLeft: 5 }} />
-            </Tooltip>
-          )}
-        </Text>
-      ),
-      visible: <Switch checked={assignment.isVisible} onChange={toggleVisible} />,
-      published: (
-        <span className="display-flex align-items-center justify-content-center">
-          {!assignment.isVisible && !assignment.isReleased ? (
-            <Tooltip title={'Your assignment cannot be published unless it is made visible to students.'}>
-              <Switch disabled={true} checked={assignment.isReleased} />
-            </Tooltip>
-          ) : (
-            <Popconfirm onConfirm={onConfirm} title={publishToggleText} icon={<QuestionCircleOutlined />}>
-              <Switch checked={assignment.isReleased} />
-            </Popconfirm>
-          )}
-          {assignment.isReleased ? (
-            <span>
-              &nbsp; &nbsp;
+    if (assignment.isReleased) {
+      statusBadge = 'success';
+      statusText = 'Published';
+    } else if (assignment.isVisible) {
+      statusBadge = 'warning';
+      statusText = 'Visible';
+    }
+
+    const statusContent = (
+      <div style={{ width: 300 }}>
+        <Flex vertical gap="middle">
+          <Flex justify="space-between" align="center">
+            <span style={{ fontSize: '14px' }}>
+              Visible to Students
+              <CPTooltip
+                title={'If visible, students can see the assignment in the Student Console.'}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 8, color: colors.neutralSecondaryText }}
+              />
+            </span>
+            <Switch checked={assignment.isVisible} onChange={toggleVisible} size="small" />
+          </Flex>
+
+          <Flex justify="space-between" align="center">
+            <span style={{ fontSize: '14px' }}>
+              Published
+              <CPTooltip
+                title={tooltips.admin.assignments.published}
+                infoIcon={true}
+                hideThisOnHideTips={true}
+                iconStyle={{ paddingLeft: 8, color: colors.neutralSecondaryText }}
+              />
+            </span>
+            {!assignment.isVisible && !assignment.isReleased ? (
+              <Tooltip title={'Your assignment cannot be published unless it is made visible to students.'}>
+                <Switch disabled={true} checked={assignment.isReleased} size="small" />
+              </Tooltip>
+            ) : (
+              <Popconfirm onConfirm={onConfirmPublish} title={publishToggleText} icon={<QuestionCircleOutlined />}>
+                <Switch checked={assignment.isReleased} size="small" />
+              </Popconfirm>
+            )}
+          </Flex>
+
+          {assignment.isReleased && (
+            <div style={{ textAlign: 'right' }}>
               <SendEmailModal
                 buttonText={'Notify students'}
                 title="Notify students via email"
@@ -738,57 +698,154 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
                 body={<div>Notify students via email that {assignment.name} has been published.</div>}
                 button={notifyButton}
               />
-            </span>
-          ) : null}
-        </span>
+            </div>
+          )}
+        </Flex>
+      </div>
+    );
+
+    // --- New Progress Logic ---
+    const totalSubmissions = statsForRow.numSubmissions;
+    const graded = statsForRow.numGraded;
+    const missing = statsForRow.numMissing;
+
+    // Calculate percentage for progress bar
+    const percent = totalSubmissions > 0 ? Math.round((graded / totalSubmissions) * 100) : 0;
+
+    return {
+      key: assignment.id,
+      assignment: (
+        <Space direction="vertical" size={0}>
+          <Text strong style={{ fontSize: '16px' }}>
+            {assignment.name}
+            {assignment.hideFrom.length > 0 && (
+              <Tooltip title={`Assignment hidden from the following sections: ${getSectionNames(assignment.hideFrom)}`}>
+                <EyeInvisibleOutlined style={{ marginLeft: 5, color: colors.neutralMainText }} />
+              </Tooltip>
+            )}
+          </Text>
+          {assignment.allowStudentUpload && assignment.uploadDueDate ? (
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              Due {dayjs(assignment.uploadDueDate).tz(currentCourse.timezone).format('MMM D, h:mm A z')}
+            </Text>
+          ) : (
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              {assignment.allowStudentUpload ? 'No due date' : 'No upload required'}
+            </Text>
+          )}
+        </Space>
       ),
-      submissions:
-        statsForRow.numSubmissions === 0 ? (
-          <CPButton cpType="secondary">
-            <Link to={`${baseURL}/${encodeURIComponent(assignment.name)}/upload/multiple`}>
-              <UploadOutlined /> &nbsp; Upload
-            </Link>
-          </CPButton>
-        ) : (
-          <span onClick={() => openDrawer(assignment, DRAWER_TYPE.Submitted)} className="text-link">
-            {statsForRow.numSubmissions}
-          </span>
-        ),
-      finalized: (
-        <span onClick={() => openDrawer(assignment, DRAWER_TYPE.Graded)} className="text-link">
-          {statsForRow.numGraded}
-        </span>
+      status: (
+        <Popover content={statusContent} trigger="click" title="Assignment Status" styles={{ root: { width: 320 } }}>
+          <div style={{ cursor: 'pointer', display: 'inline-block', whiteSpace: 'nowrap' }}>
+            <Badge status={statusBadge} text={statusText} />{' '}
+            <SettingOutlined style={{ fontSize: '10px', color: colors.neutralMainText, marginLeft: 4 }} />
+          </div>
+        </Popover>
       ),
-      missing: (
-        <span onClick={() => openDrawer(assignment, DRAWER_TYPE.Missing)} className="text-link">
-          {statsForRow.numMissing}
-        </span>
+      progress: (
+        <div style={{ paddingRight: 20 }}>
+          <div className="display-flex align-items-center" style={{ marginBottom: 4 }}>
+            <Space split={<span style={{ color: colors.neutralBorder }}>|</span>}>
+              <Text
+                type={totalSubmissions === 0 ? 'secondary' : undefined}
+                className={totalSubmissions > 0 ? 'text-link' : ''}
+                onClick={totalSubmissions > 0 ? () => openDrawer(assignment, DRAWER_TYPE.Submitted) : undefined}
+              >
+                {totalSubmissions} Submissions
+              </Text>
+              <Text
+                type="secondary"
+                className={missing > 0 ? 'text-link' : ''}
+                onClick={() => openDrawer(assignment, DRAWER_TYPE.Missing)}
+              >
+                {missing} Missing
+              </Text>
+              <Text type="secondary" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>
+                {percent}% Graded
+              </Text>
+            </Space>
+          </div>
+          <div onClick={() => openDrawer(assignment, DRAWER_TYPE.Graded)} style={{ cursor: 'pointer' }}>
+            <Progress
+              percent={percent}
+              showInfo={false}
+              strokeColor={colors.brandPrimary}
+              trailColor={colors.brandLight}
+              size="small"
+            />
+          </div>
+        </div>
       ),
       actions: (
-        <Dropdown menu={{ items: menuItems }} trigger={['click']}>
-          <MenuOutlined />
-        </Dropdown>
+        <Space>
+          <Tooltip title="Edit rubric">
+            <Link to={`${baseURL}/rubrics/${encodedName}`}>
+              <Button shape="circle" icon={<OrderedListOutlined />} />
+            </Link>
+          </Tooltip>
+          <Tooltip title="Settings">
+            <Link to={`${baseURL}/${encodedName}/settings`}>
+              <Button shape="circle" icon={<SettingOutlined />} />
+            </Link>
+          </Tooltip>
+          <Dropdown menu={{ items: menuItems }} trigger={['click']}>
+            <Button shape="circle" icon={<MenuOutlined />} />
+          </Dropdown>
+        </Space>
       ),
     };
   });
 
-  const cancel = () => {
-    history.push(`${baseURL}/overview`);
-  };
+  const tableActions: React.ReactNode[] = [
+    <NewAssignmentDialog
+      key={1}
+      {...props}
+      assignments={assignments}
+      createAssignment={createAssignment}
+      timezone={currentCourse.timezone}
+    />,
+    <Link to={`${baseURL}/download/grades`}>
+      <CPButton cpType="secondary" key={2} icon={<DownloadOutlined />} disabled={Object.keys(submissions).length === 0}>
+        Download grades
+      </CPButton>
+    </Link>,
+  ];
 
-  const drawerComponent =
-    drawerType === undefined ? (
-      <div />
-    ) : (
-      <StatsDrawer
-        type={drawerType}
-        content={drawerContent}
-        isVisible={true}
-        onClose={closeDrawer}
-        uploadSubmission={uploadForStudent}
-        loadComplete={fullSubmissionsLoadComplete}
-      />
-    );
+  const handleDeleteSubmission = useCallback(
+    (subID: number) => {
+      // activeAssignment is undefined when opening drawer via "Submissions" link
+      // relying on drawerContent.title which always contains the assignment name
+      const assignmentName = drawerContent.title;
+      const assignment = assignments.find((a) => a.name === assignmentName);
+
+      if (assignment) {
+        const subList = submissions[assignment.id] || [];
+        const sub = subList.find((s: SubmissionInfoType) => s.id === subID);
+
+        if (sub) {
+          deleteSubmission(sub)
+            .then(() => {
+              message.success('Submission successfully deleted');
+              // Update local state for immediate feedback
+              setDrawerContent((prev) => ({
+                ...prev,
+                content: prev.content ? prev.content.filter((item) => item.subID !== subID) : null,
+              }));
+              // Refresh global data
+              refreshCourseData();
+            })
+            .catch(() => {
+              message.error('Failed to delete submission');
+            });
+        }
+      }
+    },
+    [drawerContent.title, assignments, submissions, deleteSubmission, refreshCourseData],
+  );
+
+  // The StatsDrawer is now rendered directly, not via a variable passed to TableDetail
+  // The main component's return structure is also changed to wrap in a div.
 
   let detailComponent;
   if (activeAssignment !== undefined && detailType !== undefined) {
@@ -948,49 +1005,62 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
         }
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [sortedOrder, assignments, updateAssignmentProp],
   );
 
   return (
-    <TableDetail
-      title={'Assignments'}
-      isEmpty={assignments.length === 0}
-      loadComplete={loadComplete}
-      emptyNode={
-        <Empty
-          styles={{
-            image: {
-              height: 60,
-            },
-          }}
-          description={<span>No assignments yet</span>}
-        >
-          <NewAssignmentDialog
-            key={1}
-            {...props}
-            timezone={currentCourse.timezone}
-            assignments={assignments}
-            createAssignment={createAssignmentProp}
-            baseURL={baseURL}
-          />
-        </Empty>
-      }
-      columns={columns}
-      data={data}
-      actions={actions}
-      breadcrumbs={<Breadcrumb items={[...(breadcrumbs || []), { title: 'Overview' }]} />}
-      titleInfo={'Use this space to add assignments to your course, and edit existing ones.'}
-      drawer={drawerComponent}
-      hideSearch={true}
-      detail={detailComponent}
-      components={components}
-      onRow={(_record: { key: number }, index: number) => ({
-        index,
-        moveRow: moveRow,
-      })}
-      pagination={assignments.length < DEFAULT_PAGINATION_SIZE ? false : undefined}
-    />
+    <div className="manage-assignments">
+      <StatsDrawer
+        type={drawerType || DRAWER_TYPE.None}
+        content={drawerContent}
+        onClose={closeDrawer}
+        isVisible={drawerType !== undefined}
+        uploadSubmission={uploadForStudent}
+        onDeleteSubmission={handleDeleteSubmission}
+        loadComplete={loadComplete}
+      />
+
+      {detailComponent ? (
+        detailComponent
+      ) : (
+        <TableDetail
+          data={data}
+          title={'Assignments'}
+          columns={columns}
+          actions={tableActions}
+          loadComplete={loadComplete}
+          isEmpty={assignments.length === 0}
+          emptyNode={
+            <Empty
+              styles={{
+                image: {
+                  height: 60,
+                },
+              }}
+              description={<span>No assignments yet</span>}
+            >
+              <NewAssignmentDialog
+                key={1}
+                {...props}
+                timezone={currentCourse.timezone}
+                assignments={assignments}
+                createAssignment={createAssignmentProp}
+              />
+            </Empty>
+          }
+          breadcrumbs={<Breadcrumb items={[...(breadcrumbs || []), { title: 'Overview' }]} />}
+          titleInfo={'Use this space to add assignments to your course, and edit existing ones.'}
+          hideSearch={true}
+          components={components}
+          onRow={(_record: { key: number }, index: number) => ({
+            index,
+            moveRow: moveRow,
+          })}
+          pagination={assignments.length < DEFAULT_PAGINATION_SIZE ? false : undefined}
+        />
+      )}
+    </div>
   );
 };
 

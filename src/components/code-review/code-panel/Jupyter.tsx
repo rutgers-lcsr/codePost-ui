@@ -1,7 +1,70 @@
 import TurndownService from 'turndown';
 import * as turndownPluginGfm from 'turndown-plugin-gfm';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// =============================================================================
+// nbformat v4 Type Definitions
+// Jupyter Notebook Format Specification v4.5
+// https://nbformat.readthedocs.io/en/latest/format_description.html
+// =============================================================================
+
+/**
+ * Output from a code cell (nbformat v4).
+ * Different output types use different fields:
+ * - stream: output_type, name, text
+ * - execute_result: output_type, data, metadata, execution_count
+ * - display_data: output_type, data, metadata
+ * - error: output_type, ename, evalue, traceback
+ */
+export interface NotebookCellOutput {
+  output_type: 'stream' | 'execute_result' | 'display_data' | 'error';
+  // For stream output
+  name?: 'stdout' | 'stderr';
+  text?: string | string[];
+  // For execute_result/display_data (MIME-type keyed)
+  data?: Record<string, string | string[]>;
+  metadata?: Record<string, unknown>;
+  execution_count?: number | null;
+  // For error output
+  ename?: string;
+  evalue?: string;
+  traceback?: string[];
+}
+
+/**
+ * A cell in a Jupyter notebook (nbformat v4).
+ */
+export interface NotebookCell {
+  cell_type: 'code' | 'markdown' | 'raw';
+  source: string | string[];
+  metadata?: Record<string, unknown>;
+  // Code cells only
+  outputs?: NotebookCellOutput[];
+  execution_count?: number | null;
+}
+
+/**
+ * Notebook-level metadata (nbformat v4).
+ */
+export interface NotebookMetadata {
+  kernelspec?: {
+    name: string;
+    display_name?: string;
+  };
+  language_info?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+/**
+ * A complete Jupyter notebook (nbformat v4).
+ */
+export interface Notebook {
+  cells: NotebookCell[];
+  metadata?: NotebookMetadata;
+  nbformat?: number;
+  nbformat_minor?: number;
+  // Allow index access for dynamic property lookup during normalization
+  [key: string]: unknown;
+}
 
 // Extend window interface for jupyter images
 declare global {
@@ -13,13 +76,7 @@ declare global {
 const turndown = new TurndownService();
 turndown.use(turndownPluginGfm.tables);
 
-type NotebookJson = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  cells?: any[];
-  [key: string]: unknown;
-};
-
-const normalizeNotebookJson = (content: unknown, visited: Set<unknown> = new Set()): NotebookJson | null => {
+const normalizeNotebookJson = (content: unknown, visited: Set<unknown> = new Set()): Notebook | null => {
   if (content === null || content === undefined) {
     return null;
   }
@@ -56,7 +113,7 @@ const normalizeNotebookJson = (content: unknown, visited: Set<unknown> = new Set
     return null;
   }
 
-  const candidate = content as NotebookJson;
+  const candidate = content as Notebook;
   if (Array.isArray(candidate.cells)) {
     return candidate;
   }
@@ -103,7 +160,7 @@ export const jupyterToMarkdown = (content: unknown): string | null => {
     return null;
   }
 
-  jupyterJson.cells.forEach((cell: any, cellIndex: number) => {
+  jupyterJson.cells.forEach((cell: NotebookCell, cellIndex: number) => {
     if (cell.cell_type === 'markdown') {
       // For markdown cells, add cell index as HTML comment before content
       markdown += `<div data-cell-index="${cellIndex}">\n\n`;
@@ -128,26 +185,30 @@ export const jupyterToMarkdown = (content: unknown): string | null => {
 
       // Only process outputs if they exist
       if (cell.outputs && Array.isArray(cell.outputs)) {
-        cell.outputs.forEach((output: any, outputIndex: number) => {
+        cell.outputs.forEach((output: NotebookCellOutput, outputIndex: number) => {
           if (output.data) {
-            Object.keys(output.data).forEach((key) => {
+            const data = output.data;
+            Object.keys(data).forEach((key) => {
+              const value = data[key];
+              if (!value) return;
+
               switch (key) {
                 case 'text/plain':
                   markdown += '\n```output\n';
-                  if (Array.isArray(output.data['text/plain'])) {
-                    markdown += output.data['text/plain'].join('');
+                  if (Array.isArray(value)) {
+                    markdown += value.join('');
                   } else {
-                    markdown += output.data['text/plain'];
+                    markdown += value;
                   }
                   markdown += '\n```\n';
                   break;
                 case 'text/html':
                   markdown += '\n';
                   // Convert HTML to markdown
-                  if (Array.isArray(output.data['text/html'])) {
-                    markdown += turndown.turndown(output.data['text/html'].join(''));
+                  if (Array.isArray(value)) {
+                    markdown += turndown.turndown(value.join(''));
                   } else {
-                    markdown += turndown.turndown(output.data['text/html']);
+                    markdown += turndown.turndown(value);
                   }
                   markdown += '\n';
                   break;
@@ -156,7 +217,7 @@ export const jupyterToMarkdown = (content: unknown): string | null => {
                 case 'image/jpg':
                 case 'image/svg+xml': {
                   // We need to trim the spaces on the end of the tags, or the data won't be recognized
-                  const imgData = output.data[key].trim();
+                  const imgData = Array.isArray(value) ? value.join('').trim() : value.trim();
 
                   // Use a STABLE image ID based on cell and output index to prevent flickering
                   // This ensures the same image always gets the same ID across re-renders
@@ -212,7 +273,10 @@ export const jupyterToMarkdown = (content: unknown): string | null => {
             markdown += '\n```\n';
           }
           // Only show stderr if there's no structured error output
-          else if (output.name === 'stderr' && !cell.outputs.some((o: any) => o.output_type === 'error')) {
+          else if (
+            output.name === 'stderr' &&
+            !cell.outputs?.some((o: NotebookCellOutput) => o.output_type === 'error')
+          ) {
             if (output.text) {
               markdown += '\n```error\n⚠️  STDERR:\n';
               if (Array.isArray(output.text)) {

@@ -4,7 +4,7 @@
 
 // import Student, { IStudentProps } from '../Student';
 
-// // @ts-ignore
+// // @ts-expect-error: legacy-ts-ignore
 // import { loadIDList } from '../infrastructure/generics';
 
 // describe('Student', () => {
@@ -93,7 +93,7 @@
 //   //     },
 //   //   ];
 
-//   //   // @ts-ignore
+//   //   // @ts-expect-error: legacy-ts-ignore
 //   //   loadIDList = jest.fn().mockReturnValue(assignments);
 
 //   //   const { wrapper } = setup();

@@ -22,7 +22,8 @@ import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../..
 import RubricManager, { IRubricManagerParams } from '../../../components/core/rubric/RubricManager';
 import AssignmentRegrades from './assignments/AssignmentRegrades';
 import AssignmentStats from './assignments/AssignmentStats/AssignmentStats';
-import AssignmentsTable, { DETAIL_TYPE } from './AssignmentsTable';
+import AssignmentsTable from './AssignmentsTable';
+import { DETAIL_TYPE } from './types';
 import RubricUI from './rubric/RubricUI';
 import Moss from './assignments/Moss';
 
@@ -428,11 +429,11 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             }
           />,
           <Route
-            key={`${encodedName}-tests`}
-            path={`tests/${encodedName}/*`}
+            key={`${encodedName}-environment`}
+            path={`environment/${encodedName}/*`}
             element={
               <LegacyRouteRenderer
-                path={`${props.match.url}/tests/${encodedName}/*`}
+                path={`${props.match.url}/environment/${encodedName}/*`}
                 render={(subprops: RouteComponentProps) => (
                   <AssignmentTests
                     {...subprops}
@@ -471,10 +472,10 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
       })}
 
       <Route
-        path="tests"
+        path="environment"
         element={
           <LegacyRouteRenderer
-            path={`${props.match.url}/tests`}
+            path={`${props.match.url}/environment`}
             end
             render={(subprops: RouteComponentProps) => <TestsOverview {...subprops} assignments={props.assignments} />}
           />

@@ -25,6 +25,8 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 const { Sider, Content } = Layout;
 
 import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context.js';
+import Markdown from '../code-review/code-panel/Markdown';
+import { CURSOR_DOMAIN } from '../code-review/CodeConsoleEnums';
 
 interface IProps {
   assignment?: AssignmentStudentType;
@@ -108,6 +110,21 @@ function ViewUpload(props: IProps) {
           ))}
         </Document>
       </div>
+    );
+  } else if (activeFileType === 'jupyter') {
+    fileContent = (
+      <Markdown
+        file={activeFile}
+        comments={[]}
+        readOnly={true}
+        user=""
+        onHighlightClick={() => {}}
+        commentCounter={0}
+        addComment={() => {}}
+        cursorMode={false}
+        showCursor={CURSOR_DOMAIN.CODE_HIDDEN}
+        updateCursorDomain={() => {}}
+      />
     );
   } else {
     fileContent = (

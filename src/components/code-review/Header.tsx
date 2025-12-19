@@ -485,7 +485,6 @@ interface IGradeBreakdownProps {
 //         Possibly with Snapshot tests
 //         Wrong values here will damage the accountability chain.
 export const GradeBreakdown = (props: IGradeBreakdownProps) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   // Import these from codeConsoleUtils instead of using CodeConsole static
   const [, currentCommentSet] = filterCurrentFileVersions(props.files, props.comments);
   const pointsPerCategoryVal = pointsPerCategory(props.commentRubricComments, currentCommentSet);

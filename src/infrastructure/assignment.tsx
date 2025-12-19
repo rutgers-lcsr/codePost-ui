@@ -12,6 +12,7 @@ import {
 import { convertToPaginatedFunction, paginatedType } from './pagination';
 
 import { CommentV } from './comment';
+import { AssignmentFileV } from './file';
 import { RubricCategoryV } from './rubricCategory';
 import { RubricCommentV } from './rubricComment';
 import {
@@ -50,17 +51,18 @@ const AssignmentV = t.intersection(
       regradeInstructions: t.string,
       regradeDeadline: t.union([t.null, t.string]),
       hideGradersFromStudents: t.boolean,
+      studentsCanSeeGraders: t.union([t.boolean, t.null]),
       forcedRubricMode: t.boolean,
       templateMode: t.boolean,
       files: t.array(t.number),
       mean: t.union([t.number, t.null, t.undefined]),
       median: t.union([t.number, t.null, t.undefined]),
       testCategories: t.array(t.number),
+      dataSets: t.array(t.number),
       environment: t.union([t.number, t.null]),
       showFrequentlyUsedRubricComments: t.boolean,
       allowLateUploads: t.boolean,
       maxStudentTestRuns: t.union([t.null, t.number]),
-      exposeDumpLogs: t.union([t.null, t.boolean]),
       explanation: t.string,
       isVisible: t.boolean,
       hideFrom: t.array(t.number),
@@ -91,7 +93,7 @@ const AssignmentVStudent = t.intersection(
       rubricCategories: t.array(t.number),
       course: t.number,
       allowLateUploads: t.boolean,
-      files: t.array(t.number),
+      files: t.array(t.union([t.number, AssignmentFileV])),
       maxStudentTestRuns: t.union([t.null, t.number]),
       sortKey: t.number,
       environment: t.union([t.number, t.null]),
@@ -114,10 +116,10 @@ const AssignmentVStudent = t.intersection(
       regradeInstructions: t.string,
       regradeDeadline: t.union([t.null, t.string]),
       hideGradersFromStudents: t.boolean,
+      studentsCanSeeGraders: t.union([t.boolean, t.null]),
       mean: t.union([t.number, t.null, t.undefined]),
       median: t.union([t.number, t.null, t.undefined]),
       points: t.number,
-      exposeDumpLogs: t.union([t.null, t.boolean]),
       fileTemplates: t.array(t.number),
     }),
   ],
@@ -137,7 +139,12 @@ const AssignmentVPost = t.intersection(
     t.partial({
       anonymousGrading: t.boolean,
       hideGradersFromStudents: t.boolean,
+      studentsCanSeeGraders: t.union([t.boolean, t.null]),
       course: t.number,
+      allowStudentUpload: t.boolean,
+      uploadDueDate: t.union([t.string, t.null]),
+      isVisible: t.boolean,
+      sortKey: t.number,
     }),
   ],
   'Assignment',
@@ -155,6 +162,7 @@ const AssignmentVPatch = t.intersection(
       course: t.number,
       anonymousGrading: t.boolean,
       hideGradersFromStudents: t.boolean,
+      studentsCanSeeGraders: t.union([t.boolean, t.null]),
       commentFeedback: t.boolean,
       allowRegradeRequests: t.boolean,
       regradeInstructions: t.string,

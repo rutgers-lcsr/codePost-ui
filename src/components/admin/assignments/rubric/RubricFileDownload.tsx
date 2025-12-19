@@ -28,7 +28,7 @@ interface IProps {
 
 /**********************************************************************************************************************/
 
-class RubricFileDownload extends React.Component<IProps, {}> {
+class RubricFileDownload extends React.Component<IProps> {
   // create a nested rubric object from existing rubric for download purposes
   public getNestedRubricForDownload = (
     rubricCategories: RubricCategoryType[],

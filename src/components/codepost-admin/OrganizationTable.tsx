@@ -13,11 +13,12 @@ import { colors } from '../../theme/colors';
 import { RosterType as InfraRosterType } from '../../infrastructure/course';
 import { OrganizationType } from '../../infrastructure/organization';
 
+import { PlusOutlined } from '@ant-design/icons';
+import NewOrganizationDialog from './NewOrganizationDialog';
+
 const { Search } = Input;
 
-interface RosterType extends InfraRosterType {
-  // Using the infrastructure RosterType which has organization as number
-}
+type RosterType = InfraRosterType;
 
 interface OrganizationRow extends OrganizationType {
   rosters: RosterType[];
@@ -35,9 +36,10 @@ interface CourseRow {
 interface Props {
   organizations: OrganizationType[];
   rosters: RosterType[];
+  onRefresh: () => void;
 }
 
-const OrganizationTable: React.FC<Props> = ({ organizations, rosters }) => {
+const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh }) => {
   const getOrganizationRows = React.useCallback((): OrganizationRow[] => {
     return organizations.map((organization) => {
       const orgRosters = rosters.filter((roster) => roster.organization === organization.id);
@@ -47,6 +49,7 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters }) => {
 
   const [organizationRows, setOrganizationRows] = React.useState<OrganizationRow[]>(getOrganizationRows);
   const [visible, setVisible] = React.useState(false);
+  const [showCreateDialog, setShowCreateDialog] = React.useState(false);
   const [currentRoster, setCurrentRoster] = React.useState<RosterType | undefined>(undefined);
 
   const showDrawer = (roster: RosterType) => {
@@ -319,7 +322,16 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters }) => {
   const orgStats = getTotalOrgStats();
 
   return (
-    <Card title="Organizations" variant="outlined" style={{ width: '100%' }}>
+    <Card
+      title="Organizations"
+      variant="outlined"
+      style={{ width: '100%' }}
+      extra={
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setShowCreateDialog(true)}>
+          Create Organization
+        </Button>
+      }
+    >
       <Row gutter={[16, 16]} style={{ marginBottom: '20px' }}>
         <Col xs={24} sm={12} md={6}>
           <Card size="small">
@@ -446,6 +458,14 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters }) => {
           </div>
         )}
       </Drawer>
+      <NewOrganizationDialog
+        visible={showCreateDialog}
+        onClose={() => setShowCreateDialog(false)}
+        onSuccess={() => {
+          setShowCreateDialog(false);
+          onRefresh();
+        }}
+      />
     </Card>
   );
 };

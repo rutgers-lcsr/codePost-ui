@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 // We ignore eslint since Popover never explicitly used. We just use the classNames
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { Input, message, Typography } from 'antd';
 

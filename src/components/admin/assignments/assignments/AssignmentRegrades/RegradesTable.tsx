@@ -166,7 +166,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
             {submission.questionResponse}
           </Paragraph>
         );
-      case RESPONSE_STATUS.EDIT_ALLOWED_NEW_RESPONSE:
+      case RESPONSE_STATUS.EDIT_ALLOWED_NEW_RESPONSE: {
         const toggle = () => {
           toggleModal(false, submission);
         };
@@ -176,6 +176,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
             Respond
           </CPButton>
         );
+      }
     }
   };
 

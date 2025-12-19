@@ -93,6 +93,8 @@ const demoCourse = (testName: string) => {
     emailWhitelist: '',
     inviteCodeEnabled: false,
     enableStudentFeedbackNotifications: false,
+    expiration_date: null,
+    studentsCanSeeGraders: false,
   };
 };
 

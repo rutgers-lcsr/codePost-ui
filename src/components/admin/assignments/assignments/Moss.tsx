@@ -293,7 +293,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
         } else {
           const resPayload = await JSON.parse(res['Payload']);
           // Completed Running Function
-          if (resPayload.hasOwnProperty('errorMessage')) {
+          if (Object.prototype.hasOwnProperty.call(resPayload, 'errorMessage')) {
             const error = resPayload['errorMessage'];
             return Promise.reject(error);
           } else if (resPayload['statusCode'] !== '200') {

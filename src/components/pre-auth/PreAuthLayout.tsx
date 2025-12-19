@@ -22,7 +22,7 @@ interface IProps {
   isLoggedIn: boolean;
 }
 
-class PreAuthLayout extends React.Component<IProps, {}> {
+class PreAuthLayout extends React.Component<IProps> {
   public componentDidMount() {
     // Calendly widget setup
     const head = document.querySelector('head');

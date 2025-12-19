@@ -7,14 +7,17 @@ import {
   GlobalOutlined,
   TeamOutlined,
   UserOutlined,
+  PlusOutlined,
 } from '@ant-design/icons';
-import { Badge, Card, Col, Input, Row, Space, Statistic, Table, Tag, Tooltip } from 'antd';
+import { Badge, Button, Card, Col, Input, Row, Space, Statistic, Table, Tag, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
 
 import { colors } from '../../theme/colors';
 import { CourseType, RosterType } from '../../infrastructure/course';
 import { OrganizationType } from '../../infrastructure/organization';
+
+import NewCourseDialog from './NewCourseDialog';
 
 const { Search } = Input;
 
@@ -27,10 +30,12 @@ interface CoursesTableProps {
   courses: CourseType[];
   rosters: RosterType[];
   organizations: OrganizationType[];
+  onRefresh: () => void;
 }
 
-const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizations }) => {
+const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizations, onRefresh }) => {
   const [searchValue, setSearchValue] = useState('');
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const coursesWithData: CourseWithRoster[] = useMemo(() => {
     return courses.map((course) => {
@@ -215,7 +220,15 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
   ];
 
   return (
-    <Card title="Courses" style={{ width: '100%' }}>
+    <Card
+      title="Courses"
+      style={{ width: '100%' }}
+      extra={
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setShowCreateDialog(true)}>
+          Create Course
+        </Button>
+      }
+    >
       <Row gutter={[16, 16]} style={{ marginBottom: '20px' }}>
         <Col xs={24} sm={12} md={8} lg={6}>
           <Card size="small">
@@ -276,6 +289,15 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
           pageSizeOptions: ['10', '20', '50', '100'],
           showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} courses`,
         }}
+      />
+      <NewCourseDialog
+        visible={showCreateDialog}
+        onClose={() => setShowCreateDialog(false)}
+        onSuccess={() => {
+          setShowCreateDialog(false);
+          onRefresh();
+        }}
+        organizations={organizations}
       />
     </Card>
   );

@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-class WistiaVideo extends React.Component<{}, {}> {
+class WistiaVideo extends React.Component {
   public componentDidMount() {
     const load_wistia = () => {
       const script1 = document.createElement('script');

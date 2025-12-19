@@ -18,8 +18,7 @@ const submission = (domain: string) => {
         /* tslint:ensable */
         comments: [
           {
-            text:
-              "This logic is correct, but it requires you to create a new arrays of sizes `n-1, n-2, ..., 1` (where n is the length of the original array). You can get around this by creating a helper function and passing the index of the 'new' array to it.",
+            text: "This logic is correct, but it requires you to create a new arrays of sizes `n-1, n-2, ..., 1` (where n is the length of the original array). You can get around this by creating a helper function and passing the index of the 'new' array to it.",
             startChar: 22,
             endChar: 60,
             startLine: 21,
@@ -39,8 +38,7 @@ const submission = (domain: string) => {
             rubric: null,
           },
           {
-            text:
-              'The same concept applies here as in my comment above. Instead of creating a new array, you can create a helper function that takes as argument a `lower` and `upper` bound.',
+            text: 'The same concept applies here as in my comment above. Instead of creating a new array, you can create a helper function that takes as argument a `lower` and `upper` bound.',
             startChar: 24,
             endChar: 64,
             startLine: 44,
@@ -50,8 +48,7 @@ const submission = (domain: string) => {
             rubric: 'Uses extra arrays',
           },
           {
-            text:
-              "Don't forget to catch the case where `arr.length == 0`! Right now, if I let `arr = []`, your code produces an `IndexOutofBounds` error when trying to access `arr[0]`.",
+            text: "Don't forget to catch the case where `arr.length == 0`! Right now, if I let `arr = []`, your code produces an `IndexOutofBounds` error when trying to access `arr[0]`.",
             startChar: 2,
             endChar: 36,
             startLine: 17,

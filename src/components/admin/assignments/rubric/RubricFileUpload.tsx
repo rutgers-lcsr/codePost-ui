@@ -22,8 +22,6 @@ import { RubricCommentType } from '../../../../infrastructure/rubricComment';
 
 import CPButton from '../../../../components/core/CPButton';
 
-const { Step } = Steps;
-
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -301,8 +299,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
       case STATUS.LOADING:
         content = <Spin />;
         break;
-      case STATUS.OPEN:
-        /* eslint-disable no-multi-str */
+      case STATUS.OPEN: {
         const exampleText =
           '    [\n\
         {\n\
@@ -318,7 +315,6 @@ class RubricFileUpload extends React.Component<IProps, IState> {
         }\n\
         ...\n\
       ]';
-        /* eslint-enable no-multi-str */
 
         content = (
           <div>
@@ -352,6 +348,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
           </Button>,
         ];
         break;
+      }
       case STATUS.UPLOAD_ERRORS:
         content = this.state.uploadErrors.map((error, index) => {
           return (
@@ -367,7 +364,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
           </Button>,
         ];
         break;
-      case STATUS.FILE_UPLOADED:
+      case STATUS.FILE_UPLOADED: {
         const isReplacement = this.props.rubricCategories.length > 0;
         content = (
           <div>
@@ -392,6 +389,7 @@ class RubricFileUpload extends React.Component<IProps, IState> {
             {isReplacement ? 'Overwrite' : 'Save'}
           </Button>,
         ];
+      }
     }
 
     const steps = ['Upload', 'Review'];
@@ -428,11 +426,14 @@ class RubricFileUpload extends React.Component<IProps, IState> {
           width={600}
           footer={footer}
         >
-          <Steps size="small" current={currentStep}>
-            {steps.map((item) => {
-              return <Step key={item} title={item} />;
-            })}
-          </Steps>
+          <Steps
+            size="small"
+            current={currentStep}
+            items={steps.map((item) => ({
+              key: item,
+              title: item,
+            }))}
+          />
           <br />
           {content}
         </Modal>

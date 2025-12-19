@@ -7,11 +7,7 @@ import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submiss
 import { TestCategory, TestCategoryType } from '../../infrastructure/testCategory';
 import { AnonymousSubmissionType } from '../../infrastructure/submission';
 
-import { SolutionFile } from '../../infrastructure/autograder/solutionFile';
-import { Environment, EnvironmentType } from '../../infrastructure/autograder/environment';
-import { HelperFile } from '../../infrastructure/autograder/helperFile';
-
-import { SourceFile } from '../../infrastructure/autograder/sourceFile';
+import { Environment } from '../../infrastructure/autograder/environment';
 
 //********************************** Interfaces **** ******************************
 export interface TestsBySubmission {
@@ -45,20 +41,6 @@ export const fetchTestCategories = async (assignment: AssignmentType) => {
   return await Promise.all(categoryPromises);
 };
 
-export const fetchSourceFiles = async (env: EnvironmentType) => {
-  const promises = env.sourceFiles.map((id) => {
-    return SourceFile.read(id);
-  });
-  return await Promise.all(promises);
-};
-
-export const fetchSolutionFiles = async (env: EnvironmentType) => {
-  const solutionFilePromises = env.solutionFiles.map((id) => {
-    return SolutionFile.read(id);
-  });
-  return await Promise.all(solutionFilePromises);
-};
-
 export const fetchEnvironment = async (assignment: AssignmentType) => {
   // If assignment has an environment, fetch it
   // We don't allow users to delete environments in the UI, so once an assignment has
@@ -69,15 +51,6 @@ export const fetchEnvironment = async (assignment: AssignmentType) => {
   if (latestAssignment.environment) {
     return await Environment.read(latestAssignment.environment);
   }
-};
-
-export const fetchHelpers = async (env: EnvironmentType) => {
-  const promises = env.helperFiles.map((f) => {
-    return HelperFile.read(f);
-  });
-
-  const helpers = await Promise.all(promises);
-  return helpers;
 };
 
 //********************************** Complex Fetch Utils (some data processing) *****************************
@@ -132,8 +105,8 @@ export const getTestsByCase = (testsBySubmission: TestsBySubmission, casesByCate
       const status: RESULT_STATUS = t.passed
         ? RESULT_STATUS.Passed
         : t.isError
-        ? RESULT_STATUS.Error
-        : RESULT_STATUS.Failed;
+          ? RESULT_STATUS.Error
+          : RESULT_STATUS.Failed;
 
       switch (status) {
         case RESULT_STATUS.Passed:

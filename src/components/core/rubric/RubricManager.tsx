@@ -1001,7 +1001,6 @@ class RubricManager extends React.PureComponent<IRubricManagerProps, IRubricMana
     const changesMade = this.changesMade();
 
     if (changesMade && !this.state.changeLock) {
-      /* eslint-disable */
       const wantsToLeave = confirm(
         'You will lose your unsaved changes if you leave this page without saving. Are you sure you want to leave?',
       );

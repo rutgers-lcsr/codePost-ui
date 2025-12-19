@@ -36,7 +36,7 @@ const AutograderModule = React.lazy(() => import('./landingAnimations/autograder
 const LandingFlowChart = React.lazy(() => import('./landingAnimations/flowchart/LandingFlowChart'));
 /**********************************************************************************************************************/
 
-class Landing extends React.Component<IWithWindowWatcherProps, {}> {
+class Landing extends React.Component<IWithWindowWatcherProps> {
   public componentDidMount() {
     // Calendly widget setup
     const head = document.querySelector('head');
@@ -201,7 +201,7 @@ class Landing extends React.Component<IWithWindowWatcherProps, {}> {
 
     return (
       <LandingLayout
-        // @ts-ignore
+        // @ts-expect-error: legacy-ts-ignore
         location={this.props.location}
         topBar={<LandingHeader />}
         hero={<LandingHero />}

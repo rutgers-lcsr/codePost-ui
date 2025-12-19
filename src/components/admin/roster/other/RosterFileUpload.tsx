@@ -28,8 +28,6 @@ import { tooltips } from '../../../../components/core/tooltips';
 
 import { sendSlack } from '../../../../components/core/slack';
 
-const { Step } = Steps;
-
 /**********************************************************************************************************************/
 
 /*****************************************************/
@@ -117,7 +115,7 @@ interface IState {
   rosterInput: string;
 }
 
-class RosterFileUpload extends React.Component<IProps, {}> {
+class RosterFileUpload extends React.Component<IProps> {
   public state: Readonly<IState> = {
     dialogVisible: false,
     uploadErrors: [],
@@ -601,7 +599,7 @@ class RosterFileUpload extends React.Component<IProps, {}> {
                 to: `Section: ${toSectionName}`,
               };
             } else {
-              // @ts-ignore
+              // @ts-expect-error: legacy-ts-ignore
               let sectionName = changes[diffItem.key][el].section;
               if (sectionName === null || sectionName === undefined) {
                 sectionName = 'No section';
@@ -734,10 +732,10 @@ class RosterFileUpload extends React.Component<IProps, {}> {
 
           content = (
             <div>
-              <Divider orientation="left">Overview</Divider>
+              <Divider titlePlacement="left">Overview</Divider>
               <b>Total {this.props.roleType}s parsed: </b>
               <em>{Object.keys(uploadedUsers!).length}</em>
-              <Divider orientation="left">Changes</Divider>
+              <Divider titlePlacement="left">Changes</Divider>
               {sectionContent}
             </div>
           );
@@ -847,11 +845,14 @@ class RosterFileUpload extends React.Component<IProps, {}> {
           footer={[goBackButton, goForwardButton]}
           destroyOnHidden={true}
         >
-          <Steps size="small" current={this.state.status}>
-            {steps.map((item) => {
-              return <Step key={item.title} title={item.title} />;
-            })}
-          </Steps>
+          <Steps
+            size="small"
+            current={this.state.status}
+            items={steps.map((item) => ({
+              key: item.title,
+              title: item.title,
+            }))}
+          />
           <br />
           <br />
           {content}

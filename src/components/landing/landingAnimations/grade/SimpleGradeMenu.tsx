@@ -25,9 +25,10 @@ function getFileItem(name: string, points: number) {
   );
 }
 
+const AnimatedMenu = animated(Menu);
+const AnimatedItem = animated(Menu.Item);
+
 const SimpleGradeMenu = (props: { selectedKeys: string[]; secondFileDeduction: any }) => {
-  const AnimatedMenu = animated(Menu);
-  const AnimatedItem = animated(Menu.Item);
   return (
     <div className="SimpleGradeMenu" style={{ height: 530 }}>
       <div style={{ padding: '13px 20px 0px 16px' }}>
@@ -35,7 +36,7 @@ const SimpleGradeMenu = (props: { selectedKeys: string[]; secondFileDeduction: a
           Files
         </div>
       </div>
-      // @ts-ignore
+
       <AnimatedMenu
         theme="light"
         style={{ width: 150, maxWidth: 150, minWidth: 150, borderRadius: 5 }}
@@ -80,7 +81,7 @@ const SimpleGradeMenu = (props: { selectedKeys: string[]; secondFileDeduction: a
           </Menu.Item>
         </SubMenu>
       </Menu>
-    </div>
+    </div >
   );
 };
 

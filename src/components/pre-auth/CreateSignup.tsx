@@ -133,7 +133,7 @@ class CreateSignup extends React.Component<IProps, IState> {
   public toggleCheck = (label: string) => {
     this.setState((prevstate) => {
       const newState: any = { ...prevstate };
-      // @ts-ignore
+      // @ts-expect-error: legacy-ts-ignore
       newState[label] = !this.state[label];
       return newState;
     });

@@ -164,7 +164,7 @@ class AssignmentStats extends React.Component<IProps, IState> {
    ******************************************************************************/
 
   public render() {
-    let content;
+    // let content;
 
     const statsForRow: IFullStats = this.calculateStats(
       this.props.assignment,
@@ -398,7 +398,7 @@ class AssignmentStats extends React.Component<IProps, IState> {
     const reminderEmails = this.props.submissions !== null ? this.sendReminders(this.props.submissions) : [];
 
     const divStyle = { padding: '20px 40px' };
-    content = (
+    const content = (
       <div>
         <div className="display-flex flex-direction-column align-items-center" style={{ paddingBottom: 50 }}>
           <div style={{ ...divStyle, paddingBottom: 50 }}>{summaryData}</div>
@@ -456,7 +456,7 @@ class AssignmentStats extends React.Component<IProps, IState> {
                   percent={Math.floor(
                     ((statsForRow.numGraded + statsForRow.numInProgress) / statsForRow.numSubmissions) * 100,
                   )}
-                  successPercent={Math.floor((statsForRow.numGraded / statsForRow.numSubmissions) * 100)}
+                  success={{ percent: Math.floor((statsForRow.numGraded / statsForRow.numSubmissions) * 100) }}
                   type="dashboard"
                 />
                 <Typography.Text style={{ paddingBottom: 10 }}>

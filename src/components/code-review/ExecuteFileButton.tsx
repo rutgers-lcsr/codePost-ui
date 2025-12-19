@@ -1,16 +1,18 @@
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
+  EyeOutlined,
   LoadingOutlined,
   PlayCircleOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
 import { Button, message, Tooltip } from 'antd';
-import React from 'react';
-import { useExecuteFileStreaming } from '../../hooks/useExecuteFileStreaming';
+import React, { useState } from 'react';
+import { useExecuteFileAsync } from '../../hooks/useExecuteFileAsync';
 import { FileType } from '../../infrastructure/file';
 import { colors } from '../../theme/colors';
 import { ExecutionResult } from '../../utils/executeFileStreaming';
+import { FileExecutionModal } from './FileExecutionModal';
 
 interface ExecuteFileButtonProps {
   file: FileType | undefined;
@@ -25,7 +27,7 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
   onExecutionComplete,
   canWrite = false,
 }) => {
-  const { execute, isExecuting, progress, result, error } = useExecuteFileStreaming();
+  const { execute, isExecuting, result, error } = useExecuteFileAsync();
   const [showSuccess, setShowSuccess] = React.useState(false);
   const [isCached, setIsCached] = React.useState(false);
   const [cachedInfo, setCachedInfo] = React.useState<{
@@ -33,6 +35,9 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
     executedBy?: string;
     executionTime?: number;
   } | null>(null);
+
+  const [modalVisible, setModalVisible] = useState(false);
+
   const [lastProcessedResult, setLastProcessedResult] = React.useState<ExecutionResult | null>(null);
 
   const handleExecute = React.useCallback(
@@ -45,11 +50,8 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
       setShowSuccess(false);
       try {
         await execute(file.id, { force_execute: forceExecute });
-        setShowSuccess(true);
-        // Hide success indicator after 3 seconds
-        setTimeout(() => setShowSuccess(false), 3000);
       } catch (err) {
-        message.error(`Execution failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        // error handled by hook and displayed in modal
       }
     },
     [file, execute],
@@ -64,10 +66,7 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
         const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
         const token = localStorage.getItem('token');
 
-        if (!token) {
-          console.warn('No authentication token found for cache check');
-          return;
-        }
+        if (!token) return;
 
         const response = await fetch(`${API_URL}/autograder/execute/file/cache/check/?file_id=${file.id}`, {
           headers: {
@@ -88,8 +87,6 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
             setIsCached(false);
             setCachedInfo(null);
           }
-        } else {
-          console.warn('Failed to check cache:', response.status, await response.text());
         }
       } catch (err) {
         console.error('Failed to check cache:', err);
@@ -100,51 +97,37 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
   }, [file]);
 
   // Call onExecutionComplete when result is available
-  // Use a ref to track the last processed result to avoid re-processing the same result
-  // when file changes
   React.useEffect(() => {
-    if (result && onExecutionComplete && file && result !== lastProcessedResult) {
-      // Include file_id in the result
-      onExecutionComplete({ ...result, file_id: file.id });
-      setLastProcessedResult(result);
+    if (result && !isExecuting && result !== lastProcessedResult) {
+      if (result.success) {
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
 
-      // Check if result is cached
-      if ('cached' in result && result.cached) {
+        // Update cache info regarding of whether it was cached or fresh
+        // Since we just ran it successfully, it is now effectively cached for future
         setIsCached(true);
-        const execResult = result as ExecutionResult & {
-          executed_at?: string;
-          executed_by?: string;
-        };
         setCachedInfo({
-          executedAt: execResult.executed_at,
-          executedBy: execResult.executed_by,
+          executedAt: result.cached ? result.executed_at : result.timestamp || new Date().toISOString(),
+          executedBy: result.cached ? result.executed_by : 'You',
           executionTime: result.execution_time,
         });
-      } else {
-        setIsCached(false);
-        setCachedInfo(null);
       }
+
+      if (file && onExecutionComplete) {
+        onExecutionComplete({ ...result, file_id: file.id });
+      }
+      setLastProcessedResult(result);
     }
-  }, [result, onExecutionComplete, file, lastProcessedResult]);
+  }, [result, isExecuting, file, onExecutionComplete, lastProcessedResult]);
 
   // Determine if file is executable
-  // Extensions can be stored with or without the dot prefix
   const isExecutable =
     file &&
     (() => {
-      const ext = file.extension.toLowerCase().replace(/^\./, ''); // Remove leading dot if present
-      const executableExtensions = [
-        'py', // Python
-        'ipynb', // Jupyter Notebook
-        'js', // JavaScript
-        'java', // Java
-        'cpp', // C++
-        'c', // C
-        'rb', // Ruby
-        'go', // Go
-        'rs', // Rust
-        'sh', // Shell script
-      ];
+      const ext = file.extension.toLowerCase().replace(/^\./, '');
+      console.log(ext);
+      const executableExtensions = ['py', 'ipynb', 'js', 'java', 'cpp', 'c', 'rb', 'go', 'rs', 'sh', 'r'];
+
       return executableExtensions.includes(ext);
     })();
 
@@ -167,22 +150,11 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
         color: 'white',
       };
     }
-    if (isExecuting) {
-      return {
-        backgroundColor: colors.actionBlue,
-        borderColor: colors.actionBlue,
-      };
-    }
+    // Remove blue for executing as modal shows it
     return {};
   };
 
-  const tooltipTitle = !isExecutable
-    ? 'This file type cannot be executed. Supported: .py, .ipynb, .js, .java, .cpp, .c, .rb, .go, .rs, .sh'
-    : showSuccess
-      ? 'Execution completed successfully'
-      : isExecuting
-        ? 'Executing...'
-        : 'Run this file';
+  const tooltipTitle = !isExecutable ? 'This file type cannot be executed.' : 'Run this file';
 
   const formatCachedTime = (executedAt?: string) => {
     if (!executedAt) return '';
@@ -197,90 +169,79 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-      <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-        <Tooltip title={canWrite ? 'Run (use cache if available)' : tooltipTitle}>
-          <Button
-            type={getButtonType()}
-            size="small"
-            icon={getButtonIcon()}
-            onClick={() => handleExecute(false)}
-            disabled={disabled || !isExecutable || isExecuting}
-            style={getButtonStyle()}
-          >
-            {showSuccess ? 'Success' : isExecuting ? 'Running' : 'Run'}
-          </Button>
-        </Tooltip>
-
-        {canWrite && !isExecuting && isExecutable && (
-          <Tooltip title="Force re-execute (ignore cache)">
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+          <Tooltip title={tooltipTitle}>
             <Button
-              type="default"
+              type={getButtonType()}
               size="small"
-              icon={<ReloadOutlined />}
-              onClick={() => handleExecute(true)}
-              disabled={disabled || isExecuting}
-              style={{
-                borderColor: isCached ? '#faad14' : '#d9d9d9',
-                color: isCached ? '#faad14' : '#595959',
-                backgroundColor: isCached ? '#fffbe6' : 'transparent',
-              }}
+              icon={getButtonIcon()}
+              onClick={() => handleExecute(false)}
+              disabled={disabled || !isExecutable || isExecuting}
+              style={getButtonStyle()}
             >
-              Force Run
+              {showSuccess ? `Success (${lastProcessedResult?.execution_time?.toFixed(2) || '0.00'}s)` : 'Run'}
             </Button>
           </Tooltip>
+
+          {canWrite && !isExecuting && isExecutable && (
+            <Tooltip title="Force re-execute (ignore cache)">
+              <Button
+                type="default"
+                size="small"
+                icon={<ReloadOutlined />}
+                onClick={() => handleExecute(true)}
+                disabled={disabled || isExecuting}
+                style={{
+                  borderColor: isCached ? '#faad14' : '#d9d9d9',
+                  color: isCached ? '#faad14' : '#595959',
+                  backgroundColor: isCached ? '#fffbe6' : 'transparent',
+                }}
+              >
+                Force Run
+              </Button>
+            </Tooltip>
+          )}
+
+          {(result || isExecuting || error) && (
+            <Tooltip title="View execution output and logs">
+              <Button size="small" icon={<EyeOutlined />} onClick={() => setModalVisible(true)} disabled={false} />
+            </Tooltip>
+          )}
+        </div>
+
+        {isCached && !isExecuting && cachedInfo && (
+          <div
+            style={{
+              fontSize: '10px',
+              maxWidth: '220px',
+              textAlign: 'center',
+              color: '#8c8c8c',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              justifyContent: 'center',
+            }}
+          >
+            <ClockCircleOutlined style={{ fontSize: '10px' }} />
+            <span>
+              Cached result
+              {cachedInfo.executedAt && ` ${formatCachedTime(cachedInfo.executedAt)}`}
+            </span>
+          </div>
         )}
       </div>
 
-      {isCached && !isExecuting && cachedInfo && (
-        <div
-          style={{
-            fontSize: '10px',
-            maxWidth: '220px',
-            textAlign: 'center',
-            color: '#8c8c8c',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            justifyContent: 'center',
-          }}
-        >
-          <ClockCircleOutlined style={{ fontSize: '10px' }} />
-          <span>
-            Cached result
-            {cachedInfo.executedAt && ` ${formatCachedTime(cachedInfo.executedAt)}`}
-          </span>
-        </div>
-      )}
-
-      {isExecuting && progress && (
-        <div
-          style={{
-            fontSize: '11px',
-            maxWidth: '200px',
-            textAlign: 'center',
-            color: '#595959',
-            fontWeight: 500,
-          }}
-        >
-          {progress}
-        </div>
-      )}
-
-      {error && !isExecuting && (
-        <div
-          style={{
-            color: '#ff4d4f',
-            fontSize: '11px',
-            maxWidth: '200px',
-            textAlign: 'center',
-            fontWeight: 500,
-          }}
-        >
-          {error}
-        </div>
-      )}
-    </div>
+      <FileExecutionModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        result={result}
+        isExecuting={isExecuting}
+        error={error}
+        fileName={file?.name}
+      />
+    </>
   );
 };
 

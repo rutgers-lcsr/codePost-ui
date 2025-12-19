@@ -236,7 +236,7 @@ const testmonialInfo: TestimonialData[] = [
  * @param {Array} a items An array containing the items.
  */
 function shuffle(a: any[]) {
-  var j, x, i;
+  let j, x, i;
   for (i = a.length - 1; i > 0; i--) {
     j = Math.floor(Math.random() * (i + 1));
     x = a[i];
@@ -403,7 +403,7 @@ const AllTestimonials = (props: IProps) => {
   const justifyRow = windowSize.width < landingVars.breakpoints.testimonial ? 'center' : 'space-between';
 
   for (let i = 0; i < shuffledTestimonials.length; i += itemsPerRow) {
-    var row = [];
+    const row = [];
     for (let z = 0; z < itemsPerRow; z++) {
       row.push(shuffledTestimonials[i + z]);
     }

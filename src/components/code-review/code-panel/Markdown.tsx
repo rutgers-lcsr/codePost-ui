@@ -23,7 +23,7 @@
 import * as React from 'react';
 
 /* other library imports */
-import { Image } from 'antd';
+import { Button, Flex, Image, Space, Typography } from 'antd';
 import classNames from 'classnames';
 import type { Components } from 'react-markdown';
 import ReactMarkdown from 'react-markdown';
@@ -35,13 +35,13 @@ import remarkGfm from 'remark-gfm';
 /* codePost imports */
 import { CommentType } from '../../../infrastructure/comment';
 import { File, getFileContent } from '../../../infrastructure/file';
-import { colors } from '../../../theme/colors';
 import { getBlockClassName } from './BlockUtils.tsx';
 import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
 import CommentHighlightContext from './CommentHighlightContext';
 import { jupyterToMarkdown } from './Jupyter';
 import Link from 'antd/es/typography/Link';
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context.js';
+import { CloseOutlined } from '@ant-design/icons';
 
 /**********************************************************************************************************************/
 /* Jupyter Image Component
@@ -697,49 +697,29 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
     <div id="code-markdown" className="markdown" style={rootStyle}>
       {/* Status bar for Jupyter notebooks - shows clear button and execution status */}
       {isJupyter && executedContent && (
-        <div
+        <Flex
+          justify="space-between"
+          align="center"
           style={{
-            padding: '10px 16px',
+            padding: '0px 16px 16px 16px',
             backgroundColor: markdownTheme.statusBackground,
             borderBottom: `1px solid ${markdownTheme.statusBorder}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ color: '#52c41a', fontSize: '13px', fontWeight: 500 }}>✓ Execution results displayed</span>
+          <Space align="center" size={8}>
+            <Typography.Text type="success" strong style={{ fontSize: '13px' }}>
+              Execution results displayed
+            </Typography.Text>
             {executionError && (
-              <span style={{ color: '#ff7875', fontSize: '12px', fontWeight: 500 }}>(contains errors)</span>
+              <Typography.Text type="danger" style={{ fontSize: '12px', fontWeight: 500 }}>
+                (contains errors)
+              </Typography.Text>
             )}
-          </div>
-          <button
-            onClick={handleClearOutputs}
-            style={{
-              padding: '4px 12px',
-              backgroundColor: consoleTheme?.buttonSecondaryBg ?? 'white',
-              color: consoleTheme?.buttonSecondaryColor ?? '#595959',
-              border: consoleTheme?.buttonSecondaryBorder ?? '1px solid #d9d9d9',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: 500,
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = consoleTheme?.buttonSecondaryBg ?? '#f5f5f5';
-              e.currentTarget.style.borderColor = consoleTheme?.highlight ?? colors.actionBlueFade;
-              e.currentTarget.style.color = consoleTheme?.highlight ?? colors.actionBlueFade;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = consoleTheme?.buttonSecondaryBg ?? 'white';
-              e.currentTarget.style.border = consoleTheme?.buttonSecondaryBorder ?? '1px solid #d9d9d9';
-              e.currentTarget.style.color = consoleTheme?.buttonSecondaryColor ?? '#595959';
-            }}
-          >
-            Clear Results
-          </button>
-        </div>
+          </Space>
+          <Button type="text" size="small" icon={<CloseOutlined />} onClick={handleClearOutputs} danger>
+            Clear
+          </Button>
+        </Flex>
       )}
 
       <ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={components as Components}>

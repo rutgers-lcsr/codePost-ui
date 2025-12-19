@@ -18,11 +18,9 @@ const submission = (domain: string) => {
         /* tslint:ensable */
         comments: [
           {
-            /* eslint-disable no-multi-str */
-            text:
-              'Careful! The `++` operator, when placed _after_ the variable name, increments the value of the variable after it is evaluated. This means that if `someVar = 1`, `someFunction(someVar++)` is equivalent to `someFunction(1)`.\n\
+            text: 'Careful! The `++` operator, when placed _after_ the variable name, increments the value of the variable after it is evaluated. This means that if `someVar = 1`, `someFunction(someVar++)` is equivalent to `someFunction(1)`.\n\
 \nBecause of this behavior, your code infinitely loops, continually calling `sumHelper(arr, 0)` and never reaching your base case.',
-            /* eslint-enable no-multi-str */
+
             startChar: 41,
             endChar: 48,
             startLine: 31,

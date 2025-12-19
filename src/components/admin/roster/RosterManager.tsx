@@ -18,7 +18,7 @@ import ManageStudents, { IManageStudentsProps } from './ManageStudents';
 
 type IProps = IManageStudentsProps & IManageGradersProps & IManageAdminsProps & IManageSectionsProps;
 
-const RosterManager = (props: IProps & RouteComponentProps<{}>) => {
+const RosterManager = (props: IProps & RouteComponentProps) => {
   return (
     <Routes>
       <Route

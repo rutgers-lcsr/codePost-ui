@@ -1,5 +1,5 @@
 // react imports
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 // library imports
 import { Button } from 'antd';
@@ -25,11 +25,13 @@ interface IProps {
 export const CodeWindow = (props: IProps) => {
   // ************************** State Variables ******************************
   const [editedCode, setEditedCode] = useState(props.code);
+  const [prevCode, setPrevCode] = useState(props.code);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
+  if (props.code !== prevCode) {
+    setPrevCode(props.code);
     setEditedCode(props.code);
-  }, [props.code]);
+  }
   // ******************************* State change functions  *******************************
   // const onEdit = () => {
   //   setEditedCode(props.code);

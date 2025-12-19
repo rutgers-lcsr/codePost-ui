@@ -20,7 +20,7 @@ interface IProps {
   isLoggedIn: boolean;
 }
 
-class TermsOfService extends React.Component<IProps, {}> {
+class TermsOfService extends React.Component<IProps> {
   public componentDidMount() {
     window.scrollTo(0, 0);
   }

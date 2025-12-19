@@ -5,7 +5,7 @@ const FileTemplateV = t.intersection(
   [
     GenericObject,
     t.type({
-      code: t.string,
+      data: t.string,
       extension: t.string,
       name: t.string,
       assignment: t.number,
@@ -21,7 +21,7 @@ const FileTemplateVPatch = t.intersection(
   [
     GenericObject,
     t.partial({
-      code: t.string,
+      data: t.string,
       extension: t.string,
       name: t.string,
       assignment: t.number,
@@ -36,7 +36,7 @@ const FileTemplateVPost = t.intersection(
   [
     GenericObject,
     t.type({
-      code: t.string,
+      data: t.string,
       extension: t.string,
       name: t.string,
       assignment: t.number,

@@ -87,7 +87,8 @@ const BulkUploadConfirm = (props: IBulkUploadConfirmProps) => {
   ];
 
   // data for impacted table
-  let hasCollisions = false;
+  const hasCollisions = Object.values(studentLists.impacted).some((sub) => sub.isCollision);
+
   const dataSource = Object.keys(studentLists.impacted)
     .sort((a, b) => {
       const studentMap = props.studentMap;
@@ -98,7 +99,6 @@ const BulkUploadConfirm = (props: IBulkUploadConfirmProps) => {
       const sub = studentLists.impacted[el];
 
       if (sub.isCollision) {
-        hasCollisions = true;
         if (props.overwriteMode) {
           status = (
             <Tag color="green" key={el}>
@@ -167,7 +167,7 @@ const BulkUploadConfirm = (props: IBulkUploadConfirmProps) => {
     <div>
       {props.errorPaths.length > 0 ? (
         <div>
-          <Divider orientation="left" style={{ color: 'red' }}>
+          <Divider titlePlacement="left" style={{ color: 'red' }}>
             Errors
           </Divider>
           <div>
@@ -185,7 +185,7 @@ const BulkUploadConfirm = (props: IBulkUploadConfirmProps) => {
           </div>
         </div>
       ) : null}
-      <Divider orientation="left">Instructions</Divider>
+      <Divider titlePlacement="left">Instructions</Divider>
       You are about to upload <Typography.Text strong>{numSubmissions}</Typography.Text> submission
       {numSubmissions > 1 ? 's ' : ' '}
       corresponding to <Typography.Text strong>{numStudents}</Typography.Text> student
@@ -210,7 +210,7 @@ const BulkUploadConfirm = (props: IBulkUploadConfirmProps) => {
         </div>
       ) : null}
       <Table pagination={{ pageSize: 5 }} dataSource={dataSource} columns={columns} />
-      <Divider orientation="left">Students not uploaded</Divider>
+      <Divider titlePlacement="left">Students not uploaded</Divider>
       <Collapse>
         <Panel header="Students without submissions" key="1">
           <Table pagination={{ pageSize: 5 }} dataSource={withoutSubmissionsData} columns={studentColumns} />

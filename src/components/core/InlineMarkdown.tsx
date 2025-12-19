@@ -17,7 +17,7 @@ const InlineMarkdown = (props: IInlineMarkdownProps) => {
   const allowedTypes = ['paragraph', 'text', 'emphasis', 'strong', 'inlineCode', 'delete', 'link', 'break'];
   const markdown = (
     <ReactMarkdown
-      // @ts-ignore
+      // @ts-expect-error: legacy-ts-ignore
       allowedTypes={allowedTypes}
       renderers={renderers}
       source={props.source}

@@ -24,7 +24,7 @@ const invokeAWSLambda = async (props: IAWSLambdaProps) => {
   // This function invokes a lambda function based on a service lambda, arn, and payload
   const invokeLambda = (lambda: any, arn: string, payload: any) => {
     return new Promise((resolve, reject) => {
-      const timeout = setTimeout(function() {
+      const timeout = setTimeout(function () {
         resolve('DELAY');
       }, FETCH_TIMEOUT);
 

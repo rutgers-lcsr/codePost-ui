@@ -2,7 +2,7 @@ import { Tag } from 'antd';
 
 import CPTooltip from '../../../../../core/CPTooltip';
 
-import { FILE_TYPE } from '../TestingSetup';
+import { FILE_TYPE } from './FileType';
 
 interface IProps {
   type: FILE_TYPE;
@@ -14,16 +14,6 @@ const FileTag = (props: IProps) => {
   let abbrev;
   let color;
   switch (props.type) {
-    case FILE_TYPE.HELPER:
-      name = 'Helper file';
-      abbrev = 'H';
-      color = 'purple';
-      break;
-    case FILE_TYPE.SOLUTION:
-      name = 'Solution File';
-      abbrev = 'S';
-      color = 'orange';
-      break;
     case FILE_TYPE.SUBMISSION:
       name = 'Submission File';
       abbrev = 'S';
@@ -38,11 +28,6 @@ const FileTag = (props: IProps) => {
       name = 'codePost generated testfile';
       abbrev = 'CT';
       color = 'green';
-      break;
-    case FILE_TYPE.SOURCEFILE:
-      name = 'User generated testfile';
-      abbrev = 'UT';
-      color = 'lime';
       break;
   }
 

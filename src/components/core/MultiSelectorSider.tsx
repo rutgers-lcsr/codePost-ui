@@ -10,7 +10,7 @@
 
 /* antd imports */
 import { Divider, Spin } from 'antd';
-import type { MenuInfo } from 'rc-menu/lib/interface';
+import type { MenuProps } from 'antd';
 
 /* codePost imports */
 import CPDropdown from './CPDropdown';
@@ -31,12 +31,12 @@ interface IProps {
   title2?: string; // title above the second selector
 
   // First Selector
-  onFirstSelectorClick: (e: MenuInfo) => void; // callback when the first selector is clicked
+  onFirstSelectorClick: MenuProps['onClick']; // callback when the first selector is clicked
   activeFirstSelector?: IOption; // active first selector item - controlled
   firstSelectorItems: IOptionWithDisabled[];
 
   // Second Selector
-  onSecondSelectorClick: (e: MenuInfo) => void; // callback when the first selector is clicked
+  onSecondSelectorClick: MenuProps['onClick']; // callback when the first selector is clicked
   activeSecondSelector?: IOption; // active first selector item - controlled
   secondSelectorItems: IOptionWithDisabled[];
   disabledMessage: string;

@@ -6,6 +6,8 @@ import Comment from '../../../../components/code-review/code-panel/Comment';
 
 export type CPCommentType = 'readonly' | 'active' | 'inactive';
 
+const AnimatedComment = animated(Comment);
+
 const SimpleComment = (props: {
   text: string;
   points: number;
@@ -32,7 +34,6 @@ const SimpleComment = (props: {
     return;
   };
 
-  const AnimatedComment = animated(Comment);
   return (
     <AnimatedComment
       showExplanations={false}

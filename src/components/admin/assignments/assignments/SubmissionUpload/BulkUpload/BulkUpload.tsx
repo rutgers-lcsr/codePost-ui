@@ -29,8 +29,6 @@ import { INTEGRATIONS } from '../../../../../landing/Integrations';
 
 import { codePostFile, IProtoFileUpload, IProtoSubmission, readUploadedFile } from './../FileReader';
 
-const { Step } = Steps;
-
 /**********************************************************************************************************************/
 
 /************************************************
@@ -279,7 +277,7 @@ class BulkUpload extends React.Component<IProps, IState> {
     const files: any[] = [];
     const submitter = submission.students.join(',');
 
-    if (fileMap.hasOwnProperty(submitter)) {
+    if (Object.prototype.hasOwnProperty.call(fileMap, submitter)) {
       Object.keys(fileMap[submitter]).forEach((fullname: string) => {
         const path = fullname;
         const fileName = fullname.split('/').slice(-1)[0];
@@ -537,7 +535,7 @@ class BulkUpload extends React.Component<IProps, IState> {
         );
 
         break;
-      case STATUS.READING:
+      case STATUS.READING: {
         const readFiles = Object.keys(this.state.fileMap).reduce((acc, el) => {
           const subTotal = Object.keys(this.state.fileMap[el]).reduce((acc2: any, el2: any) => {
             const toAdd = typeof this.state.fileMap[el][el2] === 'undefined' ? 0 : 1;
@@ -554,6 +552,7 @@ class BulkUpload extends React.Component<IProps, IState> {
           </div>
         );
         break;
+      }
       case STATUS.UPLOADING:
         content = (
           <div>
@@ -609,11 +608,14 @@ class BulkUpload extends React.Component<IProps, IState> {
     /*************************** 4. Return modal ******************************/
     return (
       <Modal open={true} title={title} width={900} onCancel={this.props.onCancel} footer={null} style={{ top: 20 }}>
-        <Steps size="small" current={stepNumber}>
-          {steps.map((item) => {
-            return <Step key={item.title} title={item.title} />;
-          })}
-        </Steps>
+        <Steps
+          size="small"
+          current={stepNumber}
+          items={steps.map((item) => ({
+            key: item.title,
+            title: item.title,
+          }))}
+        />
         <br />
         {content}
         {footer}

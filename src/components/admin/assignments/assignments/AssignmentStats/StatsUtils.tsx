@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { CodeOutlined, UploadOutlined } from '@ant-design/icons';
+import { CodeOutlined, UploadOutlined, DeleteOutlined } from '@ant-design/icons';
 
-import { Drawer, Spin } from 'antd';
+import { Drawer, Spin, Popconfirm } from 'antd';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../../infrastructure/assignment';
@@ -67,7 +67,7 @@ export const calculateMultipleAssignmentProgressStats = (
   assignments.forEach((assignment) => {
     const stats = calculateGradingProgressStats(
       assignment,
-      submissions.hasOwnProperty(assignment.id) ? submissions[assignment.id] : null,
+      Object.prototype.hasOwnProperty.call(submissions, assignment.id) ? submissions[assignment.id] : null,
       submissionsByStudent,
       viewsBySubmission,
       activeStudents,
@@ -370,9 +370,10 @@ export const StatsDrawer = (props: {
   onClose: () => void;
   isVisible: boolean;
   uploadSubmission?: (assignmentName: string, students: string) => void;
+  onDeleteSubmission?: (subID: number) => void;
   loadComplete: boolean;
 }) => {
-  const actionLabel = props.type === DRAWER_TYPE.Missing ? 'Upload' : 'Open';
+  const actionLabel = props.type === DRAWER_TYPE.Missing ? 'Upload' : 'Actions';
   let body = <Loading />;
   let actualSubtitle = props.content.subtitle;
 
@@ -388,6 +389,7 @@ export const StatsDrawer = (props: {
         title: actionLabel,
         dataIndex: 'action',
         key: 'action',
+        align: 'right' as const,
       },
     ];
 
@@ -401,7 +403,7 @@ export const StatsDrawer = (props: {
 
     const data = uniqueContent.map((row) => {
       let actionElement;
-      if (actionLabel === 'Open') {
+      if (actionLabel === 'Actions') {
         const action = () => openSubmission(row.subID!);
         actionElement = <CodeOutlined onClick={action} />;
       } else if (actionLabel === 'Upload') {
@@ -417,10 +419,29 @@ export const StatsDrawer = (props: {
         );
       }
 
+      let deleteElement = null;
+      if (row.subID !== null && props.onDeleteSubmission) {
+        deleteElement = (
+          <Popconfirm
+            title="Are you sure you want to delete this submission?"
+            onConfirm={() => props.onDeleteSubmission!(row.subID!)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
+          </Popconfirm>
+        );
+      }
+
       return {
         key: `${row.email}-${row.subID}`,
         students: row.email,
-        action: actionElement,
+        action: (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
+            {actionElement}
+            {deleteElement}
+          </div>
+        ),
       };
     });
 

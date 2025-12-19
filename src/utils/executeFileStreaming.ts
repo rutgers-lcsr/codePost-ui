@@ -17,16 +17,20 @@ export interface ExecutionResult {
   cells?: any[]; // For notebooks (legacy, use output_data)
   stdout?: string; // For code (legacy, use output_data)
   stderr?: string; // For code (legacy, use output_data)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  output_data?: any; // Unified output data from backend
   error?: string;
   execution_time: number;
-  file_id: number;
-  file_name: string;
+  file_id?: number;
+  file_name?: string;
   submission_id?: number;
   cached?: boolean; // Whether result is from cache
   executed_at?: string; // ISO timestamp of when cached result was executed
   executed_by?: string; // Username who executed cached result
+  timestamp?: string; // ISO timestamp from fresh execution
+  system_logs?: string[];
+  output_data?: {
+    cells?: any[];
+    [key: string]: any;
+  };
 }
 
 export interface ExecutionCallbacks {
@@ -92,7 +96,6 @@ export async function executeFileWithStreaming(
     let currentEvent = '';
     let receivedComplete = false;
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const { done, value } = await reader.read();
 

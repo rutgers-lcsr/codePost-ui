@@ -44,7 +44,7 @@ import {
 /* API library */
 import { Assignment, AssignmentPatchType, AssignmentType } from '../../infrastructure/assignment';
 import { Course, CoursePatchType, CourseType, RosterType } from '../../infrastructure/course';
-import { File, FileType } from '../../infrastructure/file';
+import { FileType, SubmissionFile } from '../../infrastructure/file';
 import { Section, SectionType } from '../../infrastructure/section';
 import { Submission, SubmissionInfoType } from '../../infrastructure/submission';
 import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
@@ -305,7 +305,6 @@ class Admin extends Component<IComponentProps, IAdminState> {
     return Promise.all(getData);
   };
 
-  /* eslint-disable no-useless-computed-key */
   public loadSubmissions = (course: CourseType) => {
     this.setState({ submissions: {}, partialSubmissionsLoadComplete: false, fullSubmissionsLoadComplete: false });
     const promises = course.assignments.map((assignmentID) => {
@@ -318,7 +317,6 @@ class Admin extends Component<IComponentProps, IAdminState> {
       this.setState({ partialSubmissionsLoadComplete: true, fullSubmissionsLoadComplete: true }),
     );
   };
-  /* eslint-enable no-useless-computed-key */
 
   public loadRoster = (course: CourseType) => {
     return Course.readRoster(course.id);
@@ -539,6 +537,8 @@ class Admin extends Component<IComponentProps, IAdminState> {
       emailWhitelist: '',
       inviteCodeEnabled: false,
       enableStudentFeedbackNotifications: false,
+      expiration_date: null,
+      studentsCanSeeGraders: false,
     };
 
     return Course.create(payload).then((course: CourseType) => {
@@ -1134,12 +1134,12 @@ class Admin extends Component<IComponentProps, IAdminState> {
         id: -1,
         name: file.name,
         extension: ext,
-        code: (file as unknown as { data: string }).data,
+        data: (file as unknown as { data: string }).data,
         submission: submission.id,
         comments: [],
         path: file.path ? file.path : null,
       };
-      return File.create(filePayload);
+      return SubmissionFile.create(filePayload);
     });
 
     return Promise.all(filePromises).then(() => {

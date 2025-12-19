@@ -1,13 +1,13 @@
-/**
- * Code Execution Output Display Component
- *
- * Displays execution results for code files (Python, JavaScript, etc.)
- * with stdout, stderr, and error output
- */
-
-import { CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, CloseOutlined } from '@ant-design/icons';
-import { Alert, Button, Card, Space, Tag, Typography } from 'antd';
-import React from 'react';
+import {
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  CloseCircleOutlined,
+  CloseOutlined,
+  CodeOutlined,
+  FileImageOutlined,
+} from '@ant-design/icons';
+import { Alert, Button, Card, Space, Tabs, Tag, Typography } from 'antd';
+import React, { useMemo } from 'react';
 import { FileType } from '../../../infrastructure/file';
 
 const { Text } = Typography;
@@ -16,12 +16,13 @@ const { Text } = Typography;
 const SUCCESS_COLOR = '#52c41a';
 const ERROR_COLOR = '#ff4d4f';
 const WARNING_COLOR = '#faad14';
-const OUTPUT_BG = '#1e1e1e';
-const OUTPUT_TEXT = '#d4d4d4';
+const TERMINAL_BG = '#1e1e1e';
+const TERMINAL_TEXT = '#f0f0f0';
 const CODE_FONT = "'Courier New', Courier, monospace";
 
 interface CodeExecutionOutputProps {
-  file: FileType;
+  file?: FileType;
+  fileName?: string;
   executionResult: {
     success: boolean;
     stdout?: string;
@@ -33,6 +34,7 @@ interface CodeExecutionOutputProps {
       stdout?: string;
       stderr?: string;
       error?: string;
+      [key: string]: any; // Allow other keys like image/png
     };
     cached?: boolean;
     executed_at?: string;
@@ -41,172 +43,214 @@ interface CodeExecutionOutputProps {
   onClearOutputs?: () => void;
 }
 
-const CodeExecutionOutput: React.FC<CodeExecutionOutputProps> = ({ file, executionResult, onClearOutputs }) => {
-  // Don't display if this is a notebook file (handled by Jupyter component)
-  const isNotebook = file.extension?.toLowerCase() === 'ipynb';
-  if (isNotebook) {
-    return null;
-  }
+// Helper Component for Terminal Block
+const TerminalBlock = ({ content, type }: { content: string; type: 'stdout' | 'stderr' }) => (
+  <div style={{ marginBottom: '16px' }}>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginBottom: '4px',
+        color: type === 'stderr' ? WARNING_COLOR : '#8c8c8c',
+        fontSize: '12px',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+      }}
+    >
+      <span>{type === 'stderr' ? 'Standard Error' : 'Standard Output'}</span>
+    </div>
+    <div
+      style={{
+        backgroundColor: TERMINAL_BG,
+        color: type === 'stderr' ? '#ffccc7' : TERMINAL_TEXT,
+        padding: '12px',
+        borderRadius: '6px',
+        border: `1px solid ${type === 'stderr' ? '#431418' : '#303030'}`,
+        maxHeight: '400px',
+        overflowY: 'auto',
+        fontSize: '13px',
+        fontFamily: CODE_FONT,
+        whiteSpace: 'pre-wrap',
+        wordBreak: 'break-word',
+        boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.2)',
+      }}
+    >
+      {content}
+    </div>
+  </div>
+);
 
-  // Don't display if the execution result is for a notebook (has cells)
-  // This happens when switching from a notebook to a code file before clearing
-  if (executionResult.output_data?.cells && Array.isArray(executionResult.output_data.cells)) {
-    return null;
-  }
+// Helper to render a single image
+const renderImage = (base64: string, index: number, outputImages: string[] | undefined) => (
+  <div key={index} style={{ marginBottom: '24px', textAlign: 'center' }}>
+    <img
+      src={`data:image/png;base64,${base64}`}
+      alt={`Execution Plot ${index + 1}`}
+      style={{
+        maxWidth: '100%',
+        maxHeight: '600px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        border: '1px solid #f0f0f0',
+      }}
+    />
+    {outputImages && outputImages.length > 1 && (
+      <div style={{ marginTop: '8px', color: '#8c8c8c', fontSize: '12px' }}>
+        Image {index + 1} of {outputImages.length}
+      </div>
+    )}
+  </div>
+);
 
-  // Extract output data - handle both direct properties and nested output_data
+const CodeExecutionOutput: React.FC<CodeExecutionOutputProps> = ({
+  file,
+  fileName,
+  executionResult,
+  onClearOutputs,
+}) => {
+  // Determine if notebook
+  const ext = file?.extension || (fileName ? fileName.split('.').pop() : '');
+  const isNotebook = ext?.toLowerCase() === 'ipynb';
+
+  // Extract output data
   const stdout = executionResult.stdout || executionResult.output_data?.stdout || '';
   const stderr = executionResult.stderr || executionResult.output_data?.stderr || '';
   const error = executionResult.error || executionResult.output_data?.error || '';
+  const outputImage = executionResult.output_data?.['image/png'];
+  const outputImages = executionResult.output_data?.['images'] as string[] | undefined;
   const success = executionResult.success;
   const executionTime = executionResult.execution_time || 0;
 
-  // Don't display if there's no output
-  if (!stdout && !stderr && !error) {
-    return null;
-  }
+  // Early returns
+  // Early returns
+  // if (isNotebook) return null; // Allow notebooks to show console output
+  // if (executionResult.output_data?.cells && Array.isArray(executionResult.output_data.cells)) return null; // Allow cells if implemented
+
+  const hasImages = (outputImages && outputImages.length > 0) || !!outputImage;
+
+  // Determine active tab
+  const defaultActiveKey = useMemo(() => {
+    if (hasImages) return 'plot';
+    if (error) return 'console'; // Show console if error (to see traceback)
+    return 'console';
+  }, [hasImages, error]);
+
+  if (!stdout && !stderr && !error && !hasImages) return null;
 
   // Format execution time
   const formatExecutionTime = (seconds: number): string => {
-    if (seconds < 1) {
-      return `${(seconds * 1000).toFixed(0)}ms`;
-    }
-    return `${seconds.toFixed(2)}s`;
+    return seconds < 1 ? `${(seconds * 1000).toFixed(0)}ms` : `${seconds.toFixed(2)}s`;
   };
+
+
+
+
 
   return (
     <Card
       style={{
         marginTop: '16px',
         marginBottom: '16px',
-        border: `1px solid ${success ? SUCCESS_COLOR : ERROR_COLOR}`,
-        backgroundColor: success ? '#f6ffed' : '#fff2f0',
+        borderRadius: '8px',
+        border: '1px solid #d9d9d9',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+        overflow: 'hidden',
       }}
-      bodyStyle={{ padding: '16px' }}
+      bodyStyle={{ padding: 0 }}
     >
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+      {/* Header Bar */}
+      <div
+        style={{
+          padding: '12px 16px',
+          backgroundColor: '#fafafa',
+          borderBottom: '1px solid #f0f0f0',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
         <Space>
           {success ? (
-            <CheckCircleOutlined style={{ fontSize: '20px', color: SUCCESS_COLOR }} />
+            <CheckCircleOutlined style={{ fontSize: '18px', color: SUCCESS_COLOR }} />
           ) : (
-            <CloseCircleOutlined style={{ fontSize: '20px', color: ERROR_COLOR }} />
+            <CloseCircleOutlined style={{ fontSize: '18px', color: ERROR_COLOR }} />
           )}
-          <Text strong style={{ fontSize: '16px' }}>
-            Execution Output
+          <Text strong style={{ fontSize: '14px' }}>
+            Result
           </Text>
-          <Tag color={success ? 'success' : 'error'}>{success ? 'Success' : 'Failed'}</Tag>
+          <Tag color={success ? 'success' : 'error'} style={{ borderRadius: '4px', marginLeft: '8px' }}>
+            {success ? 'Success' : 'Failed'}
+          </Tag>
+          {executionTime > 0 && <Tag icon={<ClockCircleOutlined />}>{formatExecutionTime(executionTime)}</Tag>}
           {executionResult.cached && <Tag color="blue">Cached</Tag>}
+          {isNotebook && <Tag color="purple">Notebook</Tag>}
         </Space>
-
-        <Space>
-          {executionTime > 0 && (
-            <>
-              <ClockCircleOutlined />
-              <Text type="secondary">{formatExecutionTime(executionTime)}</Text>
-            </>
-          )}
-          {onClearOutputs && (
-            <Button size="small" icon={<CloseOutlined />} onClick={onClearOutputs}>
-              Clear
-            </Button>
-          )}
-        </Space>
+        {onClearOutputs && (
+          <Button type="text" size="small" icon={<CloseOutlined />} onClick={onClearOutputs} danger>
+            Clear
+          </Button>
+        )}
       </div>
 
-      {/* Cached execution info */}
-      {executionResult.cached && executionResult.executed_at && (
+      {error && (
         <Alert
-          message={<span>Cached result from {new Date(executionResult.executed_at).toLocaleString()}</span>}
-          type="info"
+          message="Execution Error"
+          description={error}
+          type="error"
           showIcon
-          style={{ marginBottom: '16px' }}
+          banner
+          style={{ borderBottom: '1px solid #ffccc7' }}
         />
       )}
 
-      {/* Standard Output */}
-      {stdout && (
-        <div style={{ marginBottom: stderr || error ? '16px' : 0 }}>
-          <Text strong style={{ display: 'block', marginBottom: '8px', color: SUCCESS_COLOR }}>
-            Standard Output (stdout):
-          </Text>
-          <div
-            style={{
-              backgroundColor: OUTPUT_BG,
-              color: OUTPUT_TEXT,
-              padding: '16px',
-              borderRadius: '4px',
-              border: '1px solid #303030',
-              maxHeight: '400px',
-              overflowY: 'auto',
-            }}
-          >
-            <pre
-              style={{
-                margin: 0,
-                fontFamily: CODE_FONT,
-                fontSize: '13px',
-                lineHeight: '1.5',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
-              }}
-            >
-              {stdout}
-            </pre>
-          </div>
-        </div>
-      )}
-
-      {/* Standard Error */}
-      {stderr && (
-        <div style={{ marginBottom: error ? '16px' : 0 }}>
-          <Text strong style={{ display: 'block', marginBottom: '8px', color: WARNING_COLOR }}>
-            Standard Error (stderr):
-          </Text>
-          <div
-            style={{
-              backgroundColor: '#fffbe6',
-              padding: '16px',
-              borderRadius: '4px',
-              border: `1px solid ${WARNING_COLOR}`,
-              maxHeight: '300px',
-              overflowY: 'auto',
-            }}
-          >
-            <pre
-              style={{
-                margin: 0,
-                fontFamily: CODE_FONT,
-                fontSize: '13px',
-                lineHeight: '1.5',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
-                color: '#d48806',
-              }}
-            >
-              {stderr}
-            </pre>
-          </div>
-        </div>
-      )}
-
-      {/* Error Details */}
-      {error && (
-        <div>
-          <Text strong style={{ display: 'block', marginBottom: '8px', color: ERROR_COLOR }}>
-            Error:
-          </Text>
-          <Alert
-            message={error}
-            type="error"
-            showIcon
-            style={{
-              fontFamily: CODE_FONT,
-              fontSize: '13px',
-            }}
-          />
-        </div>
-      )}
+      {/* Content Tabs */}
+      <Tabs
+        defaultActiveKey={defaultActiveKey}
+        tabBarStyle={{ paddingLeft: '16px', marginBottom: 0 }}
+        items={[
+          // Tab 1: Image (Conditional)
+          ...(hasImages
+            ? [
+              {
+                key: 'plot',
+                label: (
+                  <span>
+                    <FileImageOutlined /> Image
+                    {outputImages && outputImages.length > 1 ? `s (${outputImages.length})` : ''}
+                  </span>
+                ),
+                children: (
+                  <div style={{ padding: '24px', backgroundColor: '#fff' }}>
+                    {outputImages && outputImages.length > 0
+                      ? outputImages.map((img, idx) => renderImage(img, idx, outputImages))
+                      : outputImage && renderImage(outputImage, 0, outputImages)}
+                  </div>
+                ),
+              },
+            ]
+            : []),
+          // Tab 2: Console Output
+          {
+            key: 'console',
+            label: (
+              <span>
+                <CodeOutlined /> Console
+              </span>
+            ),
+            children: (
+              <div style={{ padding: '20px' }}>
+                {!stdout && !stderr && (
+                  <Text type="secondary" italic>
+                    No text output produced.
+                  </Text>
+                )}
+                {stdout && <TerminalBlock content={stdout} type="stdout" />}
+                {stderr && <TerminalBlock content={stderr} type="stderr" />}
+              </div>
+            ),
+          },
+        ]}
+      />
     </Card>
   );
 };

@@ -45,7 +45,7 @@ interface IndexManagerProps {
   email?: string;
 }
 
-class IndexManager extends React.Component<IndexManagerProps, {}> {
+class IndexManager extends React.Component<IndexManagerProps> {
   public render() {
     /* tslint:disable:jsx-no-lambda */
     return (

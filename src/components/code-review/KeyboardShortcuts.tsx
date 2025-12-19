@@ -109,8 +109,8 @@ const KeyboardShortcuts = (props: IKeyboardShortCutsProps) => {
       style={{ color: 'rgba(255, 255, 255, 0.65)' }}
       styles={{
         header: { backgroundColor: 'rgb(33, 35, 37)', color: 'rgba(255, 255, 255, 0.65)' },
-        body: { padding: '0px 24px' },
-        content: { backgroundColor: 'rgb(33, 35, 37)', color: 'rgba(255, 255, 255, 0.65)' },
+        body: { padding: '0px 24px', backgroundColor: 'rgb(33, 35, 37)', color: 'rgba(255, 255, 255, 0.65)' },
+        wrapper: { backgroundColor: 'rgb(33, 35, 37)', color: 'rgba(255, 255, 255, 0.65)' },
       }}
     >
       <div style={{ textAlign: 'center' }} className="keyboard-shortcuts">

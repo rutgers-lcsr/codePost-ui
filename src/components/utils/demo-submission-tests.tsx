@@ -145,48 +145,42 @@ export function getDemoSubmissionTests(domain: string) {
         {
           passed: false,
           isError: false,
-          logs:
-            'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+          logs: 'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
           testCase: 'Test on [1,2,3]',
           testCategory: 'LoopUtils.max',
         },
         {
           passed: false,
           isError: false,
-          logs:
-            'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+          logs: 'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
           testCase: 'Test on [1]',
           testCategory: 'LoopUtils.max',
         },
         {
           passed: false,
           isError: false,
-          logs:
-            'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+          logs: 'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
           testCase: 'Test on [-1,-2,-3]',
           testCategory: 'LoopUtils.max',
         },
         {
           passed: false,
           isError: false,
-          logs:
-            'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+          logs: 'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
           testCase: 'Test on random arrays',
           testCategory: 'LoopUtils.max',
         },
         {
           passed: false,
           isError: false,
-          logs:
-            'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+          logs: 'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
           testCase: 'Test on [1,2,3] with 3',
           testCategory: 'LoopUtils.contains',
         },
         {
           passed: false,
           isError: false,
-          logs:
-            'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
+          logs: 'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nOperation Timed Out. Timeout set at 20 seconds. Please check student code for an infinite loop or if it is waiting for user input.\n',
           testCase: 'Test on [1,2,3] with 0',
           testCategory: 'LoopUtils.contains',
         },
@@ -206,8 +200,7 @@ export function getDemoSubmissionTests(domain: string) {
         {
           passed: false,
           isError: false,
-          logs:
-            '\n=============================\nEXPECTED OUTPUT:\n-1\n------------------------------------------------------------\nACTUAL OUTPUT:\n0\n=============================\n',
+          logs: '\n=============================\nEXPECTED OUTPUT:\n-1\n------------------------------------------------------------\nACTUAL OUTPUT:\n0\n=============================\n',
           testCase: 'Test on [-1,-2,-3]',
           testCategory: 'LoopUtils.max',
         },
@@ -288,16 +281,14 @@ export function getDemoSubmissionTests(domain: string) {
         {
           passed: false,
           isError: false,
-          logs:
-            'java.lang.ArrayIndexOutOfBoundsException: 3\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat _test610.main(_test610.java:13)\n',
+          logs: 'java.lang.ArrayIndexOutOfBoundsException: 3\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat _test610.main(_test610.java:13)\n',
           testCase: 'Test on [1,2,3]',
           testCategory: 'LoopUtils.max',
         },
         {
           passed: false,
           isError: false,
-          logs:
-            'java.lang.ArrayIndexOutOfBoundsException: 3\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat _test612.main(_test612.java:13)\n',
+          logs: 'java.lang.ArrayIndexOutOfBoundsException: 3\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat _test612.main(_test612.java:13)\n',
           testCase: 'Test on [-1,-2,-3]',
           testCategory: 'LoopUtils.max',
         },
@@ -306,8 +297,7 @@ export function getDemoSubmissionTests(domain: string) {
         {
           passed: false,
           isError: false,
-          logs:
-            'java.lang.ArrayIndexOutOfBoundsException: 1\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat _test611.main(_test611.java:13)\n',
+          logs: 'java.lang.ArrayIndexOutOfBoundsException: 1\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat _test611.main(_test611.java:13)\n',
           testCase: 'Test on [1]',
           testCategory: 'LoopUtils.max',
         },
@@ -328,8 +318,7 @@ export function getDemoSubmissionTests(domain: string) {
         {
           passed: false,
           isError: false,
-          logs:
-            'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nException in thread "main" java.lang.ArrayIndexOutOfBoundsException: 4\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat Test.Test(_test613.java:31)\n\tat _test613.main(_test613.java:53)\n',
+          logs: 'No Result received.\n_test617.java:7: error: duplicate class: Test\nclass Test {\n^\n_test617.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n_test618.java:7: error: duplicate class: Test\nclass Test {\n^\n_test618.java:20: error: duplicate class: TestOutput\nclass TestOutput {\n^\n4 errors\nException in thread "main" java.lang.ArrayIndexOutOfBoundsException: 4\n\tat LoopUtils.max(LoopUtils.java:21)\n\tat Test.Test(_test613.java:31)\n\tat _test613.main(_test613.java:53)\n',
           testCase: 'Test on random arrays',
           testCategory: 'LoopUtils.max',
         },
@@ -395,8 +384,7 @@ export function getDemoSubmissionTests(domain: string) {
         {
           passed: false,
           isError: false,
-          logs:
-            '\n=============================\nEXPECTED OUTPUT:\ntrue\n------------------------------------------------------------\nACTUAL OUTPUT:\nfalse\n=============================\n',
+          logs: '\n=============================\nEXPECTED OUTPUT:\ntrue\n------------------------------------------------------------\nACTUAL OUTPUT:\nfalse\n=============================\n',
           testCase: 'Test on [1,2,3] with 3',
           testCategory: 'RecursionUtils.contains',
         },
@@ -424,16 +412,14 @@ export function getDemoSubmissionTests(domain: string) {
         {
           passed: false,
           isError: false,
-          logs:
-            'java.lang.IllegalArgumentException: 1 > 0\n\tat java.util.Arrays.copyOfRange(Arrays.java:3591)\n\tat RecursionUtils.sum(RecursionUtils.java:22)\n\tat _test621.main(_test621.java:13)\n',
+          logs: 'java.lang.IllegalArgumentException: 1 > 0\n\tat java.util.Arrays.copyOfRange(Arrays.java:3591)\n\tat RecursionUtils.sum(RecursionUtils.java:22)\n\tat _test621.main(_test621.java:13)\n',
           testCase: 'Test on []',
           testCategory: 'RecursionUtils.sum',
         },
         {
           passed: false,
           isError: false,
-          logs:
-            '\n=============================\nEXPECTED OUTPUT:\ntrue\n------------------------------------------------------------\nACTUAL OUTPUT:\nfalse\n=============================\n',
+          logs: '\n=============================\nEXPECTED OUTPUT:\ntrue\n------------------------------------------------------------\nACTUAL OUTPUT:\nfalse\n=============================\n',
           testCase: 'Test on [1,2,3] with 3',
           testCategory: 'RecursionUtils.contains',
         },
@@ -454,8 +440,7 @@ export function getDemoSubmissionTests(domain: string) {
         {
           passed: false,
           isError: false,
-          logs:
-            'java.lang.ArrayIndexOutOfBoundsException: 0\n\tat RecursionUtils.containsHelper(RecursionUtils.java:51)\n\tat RecursionUtils.contains(RecursionUtils.java:40)\n\tat _test623.main(_test623.java:13)\n',
+          logs: 'java.lang.ArrayIndexOutOfBoundsException: 0\n\tat RecursionUtils.containsHelper(RecursionUtils.java:51)\n\tat RecursionUtils.contains(RecursionUtils.java:40)\n\tat _test623.main(_test623.java:13)\n',
           testCase: 'Test on [] with 3',
           testCategory: 'RecursionUtils.contains',
         },
@@ -484,8 +469,7 @@ export function getDemoSubmissionTests(domain: string) {
         {
           passed: false,
           isError: false,
-          logs:
-            'java.lang.ArrayIndexOutOfBoundsException: 0\n\tat RecursionUtils.containsHelper(RecursionUtils.java:51)\n\tat RecursionUtils.contains(RecursionUtils.java:40)\n\tat _test623.main(_test623.java:13)\n',
+          logs: 'java.lang.ArrayIndexOutOfBoundsException: 0\n\tat RecursionUtils.containsHelper(RecursionUtils.java:51)\n\tat RecursionUtils.contains(RecursionUtils.java:40)\n\tat _test623.main(_test623.java:13)\n',
           testCase: 'Test on [] with 3',
           testCategory: 'RecursionUtils.contains',
         },
@@ -500,8 +484,7 @@ export function getDemoSubmissionTests(domain: string) {
         {
           passed: false,
           isError: false,
-          logs:
-            'No Result received.\nException in thread "main" java.lang.StackOverflowError\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n',
+          logs: 'No Result received.\nException in thread "main" java.lang.StackOverflowError\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n\tat RecursionUtils.sumHelper(RecursionUtils.java:32)\n',
           testCase: 'Test on [1,2,3]',
           testCategory: 'RecursionUtils.sum',
         },
@@ -514,8 +497,7 @@ export function getDemoSubmissionTests(domain: string) {
         {
           passed: false,
           isError: false,
-          logs:
-            'java.lang.ArrayIndexOutOfBoundsException: 0\n\tat RecursionUtils.containsHelper(RecursionUtils.java:49)\n\tat RecursionUtils.contains(RecursionUtils.java:38)\n\tat _test623.main(_test623.java:13)\n',
+          logs: 'java.lang.ArrayIndexOutOfBoundsException: 0\n\tat RecursionUtils.containsHelper(RecursionUtils.java:49)\n\tat RecursionUtils.contains(RecursionUtils.java:38)\n\tat _test623.main(_test623.java:13)\n',
           testCase: 'Test on [] with 3',
           testCategory: 'RecursionUtils.contains',
         },
@@ -524,16 +506,14 @@ export function getDemoSubmissionTests(domain: string) {
         {
           passed: false,
           isError: false,
-          logs:
-            'No Result received.\nException in thread "main" java.lang.StackOverflowError\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils',
+          logs: 'No Result received.\nException in thread "main" java.lang.StackOverflowError\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils',
           testCase: 'Test on [1,2,3] with 3',
           testCategory: 'RecursionUtils.contains',
         },
         {
           passed: false,
           isError: false,
-          logs:
-            'No Result received.\nException in thread "main" java.lang.StackOverflowError\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils',
+          logs: 'No Result received.\nException in thread "main" java.lang.StackOverflowError\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils.containsHelper(RecursionUtils.java:50)\n\tat RecursionUtils',
           testCase: 'Test on [1,2,3] with 0',
           testCategory: 'RecursionUtils.contains',
         },

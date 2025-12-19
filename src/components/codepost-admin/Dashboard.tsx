@@ -169,37 +169,43 @@ const Dashboard = () => {
     };
   };
 
+  const fetchData = async () => {
+    // setIsLoading(true); // Maybe don't show full page loader on refresh, or handle loading state in Table?
+    // For now let's keep it simple. If we want background refresh we shouldn't set isLoading(true) which hides everything.
+    // The original code set isLoading(true). I'll omit it for refresh to avoid flashing, or check if it's initial load.
+    // But since `isLoading` hides the whole dashboard, I should arguably not set it to true for soft refreshes.
+
+    try {
+      const [organizationData, courseData, userData] = await Promise.all([
+        Organization.list(),
+        Course.list(),
+        UserIO.list(),
+      ]);
+
+      setOrganizations(organizationData);
+      setCourses(courseData);
+      setUsers(userData);
+
+      const rosterData = await Promise.all(
+        courseData.map(async (course) => {
+          const roster = await Course.readRoster(course.id);
+          return roster;
+        }),
+      );
+
+      setRosters(rosterData);
+      const adminList = buildAdminList(rosterData, organizationData);
+      setAdmins(adminList);
+      setStats(calculateStats(organizationData, courseData, rosterData, userData));
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [organizationData, courseData, userData] = await Promise.all([
-          Organization.list(),
-          Course.list(),
-          UserIO.list(),
-        ]);
-
-        setOrganizations(organizationData);
-        setCourses(courseData);
-        setUsers(userData);
-
-        const rosterData = await Promise.all(
-          courseData.map(async (course) => {
-            const roster = await Course.readRoster(course.id);
-            return roster;
-          }),
-        );
-
-        setRosters(rosterData);
-        const adminList = buildAdminList(rosterData, organizationData);
-        setAdmins(adminList);
-        setStats(calculateStats(organizationData, courseData, rosterData, userData));
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
+    setIsLoading(true);
     fetchData();
   }, []);
 
@@ -446,17 +452,17 @@ const Dashboard = () => {
       case 'Organizations':
         return (
           <div style={{ padding: '24px' }}>
-            <OrganizationTable organizations={organizations} rosters={rosters} />
+            <OrganizationTable organizations={organizations} rosters={rosters} onRefresh={fetchData} />
           </div>
         );
       case 'Courses':
         return (
           <div style={{ padding: '24px' }}>
-            <CoursesTable courses={courses} rosters={rosters} organizations={organizations} />
+            <CoursesTable courses={courses} rosters={rosters} organizations={organizations} onRefresh={fetchData} />
           </div>
         );
       case 'Users':
-        return <UsersTable rosters={rosters} organizations={organizations} users={users} />;
+        return <UsersTable rosters={rosters} organizations={organizations} users={users} onRefresh={fetchData} />;
       default:
         return null;
     }

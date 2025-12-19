@@ -17,7 +17,7 @@ interface IProps {
   isLoggedIn: boolean;
 }
 
-class PrivacyPolicy extends React.Component<IProps, {}> {
+class PrivacyPolicy extends React.Component<IProps> {
   public render() {
     return (
       <PreAuthLayout isLoggedIn={this.props.isLoggedIn}>

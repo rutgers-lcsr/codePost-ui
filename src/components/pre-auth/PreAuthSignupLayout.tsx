@@ -14,7 +14,6 @@ import useWindowSize from '../core/useWindowSize';
 
 /* ant imports */
 import { Layout, Steps } from 'antd';
-const { Step } = Steps;
 
 const { Content, Footer } = Layout;
 
@@ -59,11 +58,11 @@ const SignupHeader = (props: { step: SignupStep }) => {
           </Link>
         </div>
         <div style={{ paddingTop: paddingTopSteps }}>
-          <Steps current={props.step} direction={stepDirection}>
-            <Step title="Choose role" />
-            <Step title="Create Account" />
-            <Step title="Start using codePost!" />
-          </Steps>
+          <Steps
+            current={props.step}
+            direction={stepDirection}
+            items={[{ title: 'Choose role' }, { title: 'Create Account' }, { title: 'Start using codePost!' }]}
+          />
         </div>
       </div>
     </div>

@@ -37,16 +37,16 @@ export const fileToProtoFileUpload = (
   inputFile: codePostFile | File | UploadFile | Blob,
   zipSource?: string,
 ): IProtoFileUpload => {
-  // @ts-ignore
+  // @ts-expect-error: legacy-ts-ignore
   let longname: string = inputFile.name;
 
-  // @ts-ignore
+  // @ts-expect-error: legacy-ts-ignore
   if (inputFile.pathOverride) {
-    // @ts-ignore
+    // @ts-expect-error: legacy-ts-ignore
     longname = inputFile.pathOverride;
-    // @ts-ignore
+    // @ts-expect-error: legacy-ts-ignore
   } else if (inputFile.webkitRelativePath && inputFile.webkitRelativePath !== '') {
-    // @ts-ignore
+    // @ts-expect-error: legacy-ts-ignore
     longname = inputFile.webkitRelativePath;
   }
 
@@ -70,7 +70,7 @@ export const fileToProtoFileUpload = (
   };
 };
 
-const FILE_SIZE_LIMIT_IN_BYTES = 3e6; // 3 megabytes
+const FILE_SIZE_LIMIT_IN_BYTES = 10e6; // 10 megabytes
 
 export const readUploadedFile = (inputFile: File | Blob, zipSource?: string): Promise<IProtoFileUpload[]> => {
   const reader = new FileReader();
@@ -78,7 +78,7 @@ export const readUploadedFile = (inputFile: File | Blob, zipSource?: string): Pr
   const size_bytes = inputFile.size;
   if (size_bytes > FILE_SIZE_LIMIT_IN_BYTES) {
     message.warning(
-      // @ts-ignore
+      // @ts-expect-error: legacy-ts-ignore
       `${inputFile.name} exceeds file size limit of ${
         FILE_SIZE_LIMIT_IN_BYTES / 1e6
       } MB and cannot be uploaded (its size is ${(size_bytes / 1e6).toFixed(
@@ -132,7 +132,7 @@ export const readUploadedFile = (inputFile: File | Blob, zipSource?: string): Pr
                   // Recursively read the new files, but we need to cast the
                   // Blob object into a File
                   if (blob.size < FILE_SIZE_LIMIT_IN_BYTES) {
-                    // @ts-ignore
+                    // @ts-expect-error: legacy-ts-ignore
                     blob.name = zippedFile.name;
                     const unzippedFile = await readUploadedFile(blob, outputFile.longname);
                     return unzippedFile;
@@ -251,7 +251,7 @@ export const readZipTopLevel = (inputFile: File): Promise<File[]> => {
 
               if (!zippedFile.dir) {
                 return zippedFile.async('blob').then((blob: Blob) => {
-                  // @ts-ignore
+                  // @ts-expect-error: legacy-ts-ignore
                   blob.name = zippedFile.name;
                   return blob;
                 });

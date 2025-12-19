@@ -18,14 +18,12 @@ const submission = (domain: string) => {
         /* tslint:ensable */
         comments: [
           {
-            /* eslint-disable no-multi-str */
-            text:
-              'Whoops! Your loop goes one step too far. Try working through an even-length example like `arr = [1,2,3,4].`\n\
+            text: 'Whoops! Your loop goes one step too far. Try working through an even-length example like `arr = [1,2,3,4].`\n\
 Here, `arr.length == 4`, so `arr.length/2 + 1 == 3`.\n\
 At `i = 0`: `arr = [4, 2, 3, 1]` (good)\n\
 At `i = 1`: `arr = [4, 3, 2, 1]` (good)\n\
 At `i = 2`: `arr = [4, 2, 3, 1]` (one too many swaps!)',
-            /* eslint-enable no-multi-str */
+
             startChar: 20,
             endChar: 38,
             startLine: 29,
@@ -35,8 +33,7 @@ At `i = 2`: `arr = [4, 2, 3, 1]` (one too many swaps!)',
             rubric: "Doesn't correctly loop through array.",
           },
           {
-            text:
-              'We want our function to work for any array, so we need to set arrayLength dynamically. You can do this by setting `arrayLength = arr.length`.',
+            text: 'We want our function to work for any array, so we need to set arrayLength dynamically. You can do this by setting `arrayLength = arr.length`.',
             startChar: 4,
             endChar: 25,
             startLine: 17,

@@ -11,7 +11,12 @@ import { PlusCircleOutlined } from '@ant-design/icons';
 import { DatePicker, Form, Input, InputNumber, Modal, Radio, Select, message } from 'antd';
 
 /* other library imports */
-import moment from 'moment-timezone';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 import { RouteComponentProps, withRouter } from '../../../../router/legacy';
 
@@ -89,9 +94,9 @@ const NewAssignmentDialog: React.FC<IProps & RouteComponentProps> = (props) => {
     points: number,
     upload: boolean,
     isVisible: boolean,
-    uploadDueDate: string,
+    uploadDueDate: string | null,
   ) => {
-    return props.createAssignment(name, points, upload, isVisible, uploadDueDate);
+    return props.createAssignment(name, points, upload, isVisible, uploadDueDate || undefined);
   };
 
   const cloneAssignment = async (cloneID: number) => {
@@ -142,7 +147,9 @@ const NewAssignmentDialog: React.FC<IProps & RouteComponentProps> = (props) => {
             values.points,
             studentsCanUpload,
             isAssignmentVisible,
-            values.uploadDueDate,
+            values.uploadDueDate
+              ? dayjs.tz((values.uploadDueDate as any).format('YYYY-MM-DD HH:mm:ss'), props.timezone).format()
+              : null,
           );
 
           setDialogVisible(false);
@@ -313,9 +320,10 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                 <Form.Item
                   label="Set a due date. You'll be able to edit this later in the assignment settings."
                   name="uploadDueDate"
-                  initialValue={moment().tz(props.timezone).endOf('day')}
+                  // Wall clock shift as in AssignmentSettingsDialog
+                  initialValue={dayjs(dayjs().tz(props.timezone).endOf('day').format('YYYY-MM-DD HH:mm:ss'))}
                 >
-                  <DatePicker showTime placeholder="Click to select" />
+                  <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" placeholder="Click to select" />
                 </Form.Item>
                 <span>
                   Do you want students to be able to submit right away? If not, you can choose when to make your

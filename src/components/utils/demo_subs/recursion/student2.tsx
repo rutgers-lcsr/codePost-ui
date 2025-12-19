@@ -28,8 +28,7 @@ const submission = (domain: string) => {
             rubric: null,
           },
           {
-            text:
-              'While this function will work for well-formatted inputs, you should perform a check to make sure `index < arr.length` before accessing `arr[index]`.',
+            text: 'While this function will work for well-formatted inputs, you should perform a check to make sure `index < arr.length` before accessing `arr[index]`.',
             startChar: 2,
             endChar: 52,
             startLine: 25,

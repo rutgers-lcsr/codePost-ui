@@ -132,7 +132,7 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
 
     let content;
     switch (loadState) {
-      case 'valid':
+      case 'valid': {
         const errorList = Object.keys(formErrors).map((el, i) => {
           return (
             <li key={i}>
@@ -167,7 +167,8 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
           </div>
         );
         break;
-      case 'invalidToken':
+      }
+      case 'invalidToken': {
         let newLinkMessage;
         switch (this.props.message) {
           case 'forgot':
@@ -206,6 +207,7 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
         );
 
         break;
+      }
       case 'success':
         content = (
           <div>

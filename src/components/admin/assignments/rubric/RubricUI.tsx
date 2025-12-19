@@ -7,7 +7,7 @@ import * as React from 'react';
 
 /* antd imports */
 import { SaveOutlined, SettingOutlined, UndoOutlined } from '@ant-design/icons';
-import { Breadcrumb, Checkbox, Empty, Modal } from 'antd';
+import { Breadcrumb, Checkbox, Empty, Modal, Tabs } from 'antd';
 
 /* codePost imports */
 import RubricCommentExplorer from './RubricCommentExplorer';
@@ -106,51 +106,6 @@ const RubricUI = ({
 
   if (loadComplete) {
     const changesMade = helpers.changesMade();
-
-    const categoryTables = rubricCategories
-      .sort(RubricCategory.compare)
-      .map((cat: RubricCategoryType, catIndex: number) => {
-        const savedCategory = state.savedRubricCategories.find((el: any) => {
-          return el.id === cat.id;
-        });
-
-        return (
-          <RubricCategoryManager
-            key={cat.id}
-            rubricCategory={cat}
-            savedRubricCategory={savedCategory}
-            rubricComments={cat.id in rubricComments ? rubricComments[cat.id].sort(RubricComment.compare) : []}
-            savedRubricComments={savedCategory ? state.savedRubricComments[savedCategory.id] : undefined}
-            updateCategory={helpers.updateRubricCategory}
-            deleteCategory={helpers.deleteRubricCategory}
-            addComment={helpers.addRubricComment}
-            updateComment={helpers.updateRubricComment}
-            deleteComment={helpers.deleteRubricComment}
-            onEdit={helpers.onCategoryEdit}
-            onUndo={helpers.onCategoryUndo}
-            onCommentEdit={helpers.onCommentEdit}
-            onCommentUndo={helpers.onCommentUndo}
-            activateCommentExplorer={helpers.activateCommentExplorer}
-            onCommentDragEnd={helpers.onCommentDragEnd}
-            moveCategory={helpers.moveCategory}
-            index={catIndex}
-            numCategories={state.rubricCategories.length}
-            otherCategories={state.rubricCategories}
-            feedbackScores={state.feedbackScores}
-            commentFeedbackOn={props.assignment.commentFeedback}
-            showPointLimits={showPointLimits}
-            showHelpText={showHelpText}
-            showExplanations={showExplanations}
-            showInstructions={showInstructions}
-            showAtMostOnce={showAtMostOnce}
-            instanceLists={state.instanceLists}
-          >
-            {({ propz, statez, helperz }: IRubricCategoryManagerParams) => {
-              return <RubricCategoryUI props={{ ...propz, baseURL: props.baseURL }} state={statez} helpers={helperz} />;
-            }}
-          </RubricCategoryManager>
-        );
-      });
 
     const onSave = (_e: any) => {
       helpers.onSave(undefined);
@@ -311,10 +266,72 @@ const RubricUI = ({
     const content = (
       <div>
         {settingsModal}
-        {categoryTables}
-        <CPButton cpType="primary" onClick={addRubricCategory}>
-          Add New Category
-        </CPButton>
+        <Tabs
+          type="editable-card"
+          defaultActiveKey={rubricCategories.length > 0 ? rubricCategories[0].id.toString() : undefined}
+          style={{ marginBottom: 16 }}
+          onEdit={(targetKey, action) => {
+            if (action === 'add') {
+              addRubricCategory(null);
+            } else if (action === 'remove') {
+              const catToDelete = rubricCategories.find((c) => c.id.toString() === targetKey);
+              if (catToDelete) {
+                helpers.deleteRubricCategory(catToDelete);
+              }
+            }
+          }}
+          hideAdd={false}
+          items={rubricCategories.sort(RubricCategory.compare).map((cat: RubricCategoryType, catIndex: number) => {
+            const savedCategory = state.savedRubricCategories.find((el: any) => {
+              return el.id === cat.id;
+            });
+
+            return {
+              label: cat.name || 'Untitled Category',
+              key: cat.id.toString(),
+              closable: false,
+              children: (
+                <RubricCategoryManager
+                  key={cat.id}
+                  rubricCategory={cat}
+                  savedRubricCategory={savedCategory}
+                  rubricComments={cat.id in rubricComments ? rubricComments[cat.id].sort(RubricComment.compare) : []}
+                  savedRubricComments={savedCategory ? state.savedRubricComments[savedCategory.id] : undefined}
+                  updateCategory={helpers.updateRubricCategory}
+                  deleteCategory={helpers.deleteRubricCategory}
+                  addComment={helpers.addRubricComment}
+                  updateComment={helpers.updateRubricComment}
+                  deleteComment={helpers.deleteRubricComment}
+                  onEdit={helpers.onCategoryEdit}
+                  onUndo={helpers.onCategoryUndo}
+                  onCommentEdit={helpers.onCommentEdit}
+                  onCommentUndo={helpers.onCommentUndo}
+                  activateCommentExplorer={helpers.activateCommentExplorer}
+                  onCommentDragEnd={helpers.onCommentDragEnd}
+                  moveCategory={helpers.moveCategory}
+                  index={catIndex}
+                  numCategories={state.rubricCategories.length}
+                  otherCategories={state.rubricCategories}
+                  feedbackScores={state.feedbackScores}
+                  commentFeedbackOn={props.assignment.commentFeedback}
+                  showPointLimits={showPointLimits}
+                  showHelpText={showHelpText}
+                  showExplanations={showExplanations}
+                  showInstructions={showInstructions}
+                  showAtMostOnce={showAtMostOnce}
+                  instanceLists={state.instanceLists}
+                >
+                  {({ propz, statez, helperz }: IRubricCategoryManagerParams) => {
+                    return (
+                      <RubricCategoryUI props={{ ...propz, baseURL: props.baseURL }} state={statez} helpers={helperz} />
+                    );
+                  }}
+                </RubricCategoryManager>
+              ),
+            };
+          })}
+        />
+
         {state.activeComment ? (
           <RubricCommentExplorer
             rubricComment={state.activeComment}

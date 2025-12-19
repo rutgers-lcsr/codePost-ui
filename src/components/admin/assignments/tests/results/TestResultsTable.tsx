@@ -46,7 +46,6 @@ interface IProps {
   subsLoading: number[];
   resultsLoading: boolean;
   runSubmission: (sub: SubmissionInfoType) => Promise<void>;
-  hasSourceFiles: boolean;
 
   breadcrumbs?: React.ReactNode;
   title?: string;
@@ -103,7 +102,7 @@ const TestResultsTable = (props: IProps) => {
   };
 
   const onSummaryTypeChange = (e: any) => {
-    // @ts-ignore
+    // @ts-expect-error: legacy-ts-ignore
     const newType: SUMMARY_TYPE = SUMMARY_TYPE[e.target.value];
     setSummaryType(newType);
   };
@@ -145,7 +144,7 @@ const TestResultsTable = (props: IProps) => {
     const totalTests = Object.values(props.testCasesByCategory).flat().length;
 
     switch (summaryType) {
-      case SUMMARY_TYPE.BySubmission:
+      case SUMMARY_TYPE.BySubmission: {
         const allowSort = !props.resultsLoading && !props.isLoading;
         columns = bySubmissionColumns(allowSort, props.categories);
         if (props.submissions === undefined) {
@@ -203,8 +202,11 @@ const TestResultsTable = (props: IProps) => {
           // Group the SubmissionTests by category
           const testByCategory: { [id: number]: SubmissionTestType[] } = {};
           tests.forEach((test) => {
-            (testByCategory[test.testCategory] && testByCategory[test.testCategory].push(test)) ||
-              (testByCategory[test.testCategory] = [test]);
+            if (testByCategory[test.testCategory]) {
+              testByCategory[test.testCategory].push(test);
+            } else {
+              testByCategory[test.testCategory] = [test];
+            }
             if (test.passed) {
               passed += 1;
             }
@@ -244,6 +246,7 @@ const TestResultsTable = (props: IProps) => {
           return toRet;
         });
         break;
+      }
       case SUMMARY_TYPE.ByTest:
         columns = byTestColumns;
         data = props.categories.map((category) => {
@@ -257,61 +260,61 @@ const TestResultsTable = (props: IProps) => {
           const children = !props.testCasesByCategory[category.id]
             ? []
             : props.testCasesByCategory[category.id].map((testCase) => {
-                //  If the pagination hasn't completed, show skeletons
-                if (props.resultsLoading) {
-                  return {
-                    description: <span>{testCase.description}</span>,
-                    passed: <Skeleton.Button active={true} size="default" shape="round" />,
-                    failed: <Skeleton.Button active={true} size="default" shape="round" />,
-                    error: <Skeleton.Button active={true} size="default" shape="round" />,
-                    notRun: <Skeleton.Button active={true} size="default" shape="round" />,
-                    key: `testCase-${testCase.id}`,
-                  };
-                }
-
-                const thisNotRun =
-                  props.submissions.length -
-                  passedByCase[testCase.id].length -
-                  failedByCase[testCase.id].length -
-                  errorByCase[testCase.id].length;
-                passed += passedByCase[testCase.id].length;
-                failed += failedByCase[testCase.id].length;
-                error += errorByCase[testCase.id].length;
-                notRun += thisNotRun;
+              //  If the pagination hasn't completed, show skeletons
+              if (props.resultsLoading) {
                 return {
-                  description: (
-                    <span className="text-link" onClick={openDetail.bind({}, category, testCase, undefined, undefined)}>
-                      {testCase.description}
-                    </span>
-                  ),
-                  passed: (
-                    <div
-                      className="text-link"
-                      onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Passed, undefined)}
-                    >
-                      {passedByCase[testCase.id].length}
-                    </div>
-                  ),
-                  failed: (
-                    <div
-                      className="text-link"
-                      onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Failed, undefined)}
-                    >
-                      {failedByCase[testCase.id].length}
-                    </div>
-                  ),
-                  error: (
-                    <div
-                      className="text-link"
-                      onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Error, undefined)}
-                    >
-                      {errorByCase[testCase.id].length}
-                    </div>
-                  ),
-                  notRun: thisNotRun,
+                  description: <span>{testCase.description}</span>,
+                  passed: <Skeleton.Button active={true} size="default" shape="round" />,
+                  failed: <Skeleton.Button active={true} size="default" shape="round" />,
+                  error: <Skeleton.Button active={true} size="default" shape="round" />,
+                  notRun: <Skeleton.Button active={true} size="default" shape="round" />,
                   key: `testCase-${testCase.id}`,
                 };
-              });
+              }
+
+              const thisNotRun =
+                props.submissions.length -
+                passedByCase[testCase.id].length -
+                failedByCase[testCase.id].length -
+                errorByCase[testCase.id].length;
+              passed += passedByCase[testCase.id].length;
+              failed += failedByCase[testCase.id].length;
+              error += errorByCase[testCase.id].length;
+              notRun += thisNotRun;
+              return {
+                description: (
+                  <span className="text-link" onClick={openDetail.bind({}, category, testCase, undefined, undefined)}>
+                    {testCase.description}
+                  </span>
+                ),
+                passed: (
+                  <div
+                    className="text-link"
+                    onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Passed, undefined)}
+                  >
+                    {passedByCase[testCase.id].length}
+                  </div>
+                ),
+                failed: (
+                  <div
+                    className="text-link"
+                    onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Failed, undefined)}
+                  >
+                    {failedByCase[testCase.id].length}
+                  </div>
+                ),
+                error: (
+                  <div
+                    className="text-link"
+                    onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Error, undefined)}
+                  >
+                    {errorByCase[testCase.id].length}
+                  </div>
+                ),
+                notRun: thisNotRun,
+                key: `testCase-${testCase.id}`,
+              };
+            });
 
           if (props.resultsLoading) {
             //  If the pagination hasn't completed, show skeletons
@@ -390,10 +393,7 @@ const TestResultsTable = (props: IProps) => {
     <div>
       <TableDetail
         loadComplete={!props.isLoading && !isProcessing}
-        isEmpty={
-          (Object.keys(props.testCasesByCategory).length === 0 && props.hasSourceFiles) ||
-          props.submissions.length === 0
-        }
+        isEmpty={props.submissions.length === 0}
         title={props.title}
         breadcrumbs={props.breadcrumbs}
         emptyNode={emptyMessage}

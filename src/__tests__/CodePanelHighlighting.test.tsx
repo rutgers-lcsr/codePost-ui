@@ -286,7 +286,6 @@ describe('CodePanelHighlighting', () => {
     const line = 2;
 
     const [HTMLString, styles] = CodePanelHighlighting.buildHTMLString(highlights, thetext, line);
-    // @ts-ignore
     const expected = `<strong id="line-${line}" class="highlight-${1}">Lorem </strong><strong id="line-${line}" class="highlight-${1} highlight-${2}">ipsum</strong><strong id="line-${line}" class="highlight-${2}"> dolor</strong> sit amet`; // tslint:disable-line
     expect(HTMLString).toEqual(expected);
     expect(styles).toEqual({ 2: 1 });
@@ -309,8 +308,7 @@ describe('CodePanelHighlighting', () => {
   it('convertStringToJSX()', () => {
     const htmlString =
       '<strong id="line-2" class="highlight-1">Lorem </strong><strong id="line-2" class="highlight-1 highlight-2">ipsum</strong><strong id="line-2" class="highlight-2"> dolor</strong> sit amet'; // tslint:disable-line
-    // @ts-ignore
-    const returnElements = CodePanelHighlighting.convertStringToJSX(htmlString, 2, false, undefined);
+    const returnElements = CodePanelHighlighting.convertStringToJSX(htmlString, 2, false, () => {});
     expect(returnElements.length).toBe(7);
   });
 });

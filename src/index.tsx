@@ -6,10 +6,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 
-// eslint-disable-next-line
-
-// eslint-disable-next-line
-
 import App from './App';
 
 import { StrictMode } from 'react';

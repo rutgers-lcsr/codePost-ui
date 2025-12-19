@@ -66,13 +66,11 @@ class RegradesPanel extends React.Component<IProps, IState> {
     this.setState({ isLoading: true }, () => {
       const toRet = [];
       for (const assn of assignments) {
-        /* eslint-disable no-useless-computed-key */
         if (grader !== undefined) {
           toRet.push(Assignment.readSubmissionsAnonymous(assn.id, { grader, ['compact']: '1' }));
         } else {
           toRet.push(Assignment.readSubmissionsAnonymous(assn.id, { ['compact']: '1' }));
         }
-        /* eslint-enable no-useless-computed-key */
       }
 
       Promise.all(toRet).then((lists) => {

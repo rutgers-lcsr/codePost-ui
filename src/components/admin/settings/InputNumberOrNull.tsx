@@ -7,7 +7,7 @@ interface IInputNumberOrNullProps {
   onChange: any;
 }
 
-class InputNumberOrNull extends React.Component<IInputNumberOrNullProps, {}> {
+class InputNumberOrNull extends React.Component<IInputNumberOrNullProps> {
   public handleOnOffChange = (status: any) => {
     if (status === 'On') {
       this.triggerChange(0);
