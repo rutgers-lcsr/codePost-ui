@@ -6,7 +6,6 @@
 import * as React from 'react';
 
 /* antd imports */
-// @ts-ignore
 import { BackwardFilled, EditFilled, PlusOutlined, SaveOutlined, UndoOutlined } from '@ant-design/icons';
 import { Button, Empty, Flex, Input, Popconfirm, Space, Tag, theme, Typography } from 'antd';
 

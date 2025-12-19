@@ -95,7 +95,7 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
                       marginBottom: '10px',
                     }}
                   >
-                    <Divider orientation="left">{props.toolbarWidgets}</Divider>
+                    <Divider titlePlacement="left">{props.toolbarWidgets}</Divider>
                   </div>
                 )}
                 <div

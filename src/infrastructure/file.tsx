@@ -1,6 +1,5 @@
 import * as t from 'io-ts';
 import { createObject, deleteObject, GenericObject, readObject, updateObject } from './generics';
-import type { SolutionFileType } from './autograder/solutionFile';
 
 import LangMap from 'lang-map';
 
@@ -16,7 +15,6 @@ const BaseFileV = t.intersection(
     }),
     t.partial({
       data: t.string, // New field name
-      code: t.string, // Legacy field name (for backwards compatibility)
     }),
   ],
   'BaseFile',
@@ -47,7 +45,6 @@ const SubmissionFileVPost = t.intersection(
       path: t.union([t.string, t.null]),
     }),
     t.partial({
-      code: t.string,
       data: t.string,
       comments: t.array(t.number),
       hiddenBeforePublish: t.boolean,
@@ -60,7 +57,6 @@ const SubmissionFileVPatch = t.intersection(
   [
     GenericObject,
     t.partial({
-      code: t.string,
       data: t.string,
       comments: t.array(t.number),
       extension: t.string,
@@ -96,7 +92,6 @@ const AssignmentFileVPost = t.intersection(
       path: t.union([t.string, t.null]),
     }),
     t.partial({
-      code: t.string,
       data: t.string,
     }),
   ],
@@ -124,7 +119,6 @@ const CourseFileVPost = t.intersection(
       path: t.union([t.string, t.null]),
     }),
     t.partial({
-      code: t.string,
       data: t.string,
     }),
   ],
@@ -181,12 +175,10 @@ export const BinaryExtensions = [
 type CodeType = 'code' | 'markdown' | 'jupyter' | 'image' | 'pdf';
 
 // Helper to get file content (supports both 'data' and 'code' fields)
-export const getFileContent = (
-  file: FileType | SubmissionFileType | AssignmentFileType | CourseFileType | SolutionFileType,
-): string => {
+export const getFileContent = (file: FileType | SubmissionFileType | AssignmentFileType | CourseFileType): string => {
   // Prefer 'data' field, fall back to 'code' for backwards compatibility
-  const fileWithContent = file as { data?: string; code?: string };
-  return fileWithContent.data || fileWithContent.code || '';
+  const fileWithContent = file as { data?: string };
+  return fileWithContent.data || '';
 };
 
 export class File {
@@ -273,7 +265,7 @@ export const FileMock: FileType = {
   id: 1,
   name: 'hello.java',
   extension: 'java',
-  code: codeString,
+  data: codeString,
   comments: [1],
   submission: 1,
   path: null,

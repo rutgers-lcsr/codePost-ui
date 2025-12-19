@@ -8,7 +8,7 @@ export interface IWithWindowWatcherProps {
 const withWindowWatcher = <P extends IWithWindowWatcherProps>(Component: React.ComponentType<P>) => {
   return class WrappedComponent extends React.Component<
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
+    // @ts-expect-error: legacy-ts-ignore
     Subtract<P, IWithWindowWatcherProps>,
     any
   > {

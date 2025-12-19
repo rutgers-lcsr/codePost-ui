@@ -223,7 +223,7 @@ const Code = (props: CodePropsWithoutComments) => {
     return null;
   };
 
-  const onMouseUp = async (_: React.MouseEvent) => {
+  const onMouseUp = async (_: any) => {
     try {
       const selection = window.getSelection();
       const range = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
@@ -332,16 +332,7 @@ const Code = (props: CodePropsWithoutComments) => {
       }
 
       // Log successful selection for debugging
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Comment Selection]', {
-          startLine,
-          endLine,
-          startChar,
-          endChar,
-          selectedText:
-            selectionData.selectedText.substring(0, 50) + (selectionData.selectedText.length > 50 ? '...' : ''),
-        });
-      }
+      console.log('[Comment Selection] Success, calling addNewComment');
 
       await addNewComment(startLine, endLine, startChar, endChar);
     } catch (error) {

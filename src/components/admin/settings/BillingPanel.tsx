@@ -33,7 +33,7 @@ const BillingPanel = (props: IProps) => {
     const urlParams = new URLSearchParams(queryString);
     const urlSession = urlParams.get('session_id');
     if (urlSession) {
-      if (!!urlSession) {
+      if (urlSession) {
         if (urlSession === 'cancel') {
           message.error('Payment cancelled.');
         } else {

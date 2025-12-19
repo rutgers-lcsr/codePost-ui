@@ -46,9 +46,12 @@ const CPDropdown: React.FC<DropdownButtonProps & ICPDropdownProps> = (props) => 
       open={isOpen}
       onOpenChange={handleOpenChange}
       trigger={['click']}
-      overlayStyle={{
-        minWidth: minWidth || 250,
-        ...restProps.overlayStyle,
+      menu={{
+        items: restProps.menu?.items,
+        style: {
+          minWidth: minWidth || 250,
+          ...restProps.overlayStyle,
+        },
       }}
     >
       <Space.Compact style={{ display: 'flex', width: '100%' }}>

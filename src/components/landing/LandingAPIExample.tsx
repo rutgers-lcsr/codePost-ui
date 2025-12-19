@@ -8,7 +8,6 @@ import landingVars from '../../styles/pages/_landingVars';
 import CPButton from '../core/CPButton';
 import Editor from '@monaco-editor/react';
 
-/* eslint-disable no-multi-str */
 const apiCodeExamples = [
   {
     title: 'Export grades',
@@ -96,7 +95,6 @@ for category in rubric_categories:\n\
   print(_freq_list)',
   },
 ];
-/* eslint-enable no-multi-str */
 
 interface IState {
   exampleIndex: number;

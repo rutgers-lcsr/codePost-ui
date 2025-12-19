@@ -1203,7 +1203,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         message.success('Successfully unfinalized submission');
       }
 
-      setState((prev) => ({ ...prev, submission }));
+      setState((prev) => ({ ...prev, submission: { ...submission, files: submission.files || [] } }));
     } catch (error) {
       message.error(`Error updating submission: ${JSON.stringify(error)}`);
     }
@@ -1217,8 +1217,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     };
 
     return Submission.update(payload).then((submission) => {
-      setState((prev) => ({ ...prev, submission }));
-      return submission;
+      setState((prev) => ({ ...prev, submission: { ...submission, files: submission.files || [] } }));
+      return { ...submission, files: submission.files || [] };
     });
   };
 
@@ -1408,13 +1408,12 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
   const toolbarWidgets: React.ReactElement[] = [];
 
-  // Add execute button for Python and Jupyter files
+  // Add execute button for supported executable files
   if (state.selectedFile) {
-    const ext = state.selectedFile.extension.toLowerCase();
-    const isPython = ext === 'py' || ext === '.py';
-    const isJupyter = ext === 'ipynb' || ext === '.ipynb';
+    const ext = state.selectedFile.extension.toLowerCase().replace(/^\./, '');
+    const executableExtensions = ['py', 'ipynb', 'r', 'rb', 'js', 'java', 'cpp', 'c', 'go', 'rs', 'sh'];
 
-    if (isPython || isJupyter) {
+    if (executableExtensions.includes(ext)) {
       toolbarWidgets.push(
         <ExecuteFileButton
           key="execute-file-button"
@@ -1919,10 +1918,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           readOnlySubmission={state.readOnlySubmission!}
           submitStudentQuestion={submitStudentQuestion}
           deleteStudentQuestion={deleteStudentQuestion}
-          isStudentMode={
-            state.readOnlySubmission!.students === undefined ||
-            state.readOnlySubmission!.students.find((el) => el === props.user.email) === undefined
-          }
+          isStudentMode={state.isStudent}
+          courseStudentsCanSeeGraders={state.course?.studentsCanSeeGraders}
         />,
         <TestsMenu
           key="tests-menu"
@@ -1997,6 +1994,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           submitStudentQuestion={undefined} // No regrade requests in files-only mode
           deleteStudentQuestion={undefined}
           isStudentMode={true}
+          courseStudentsCanSeeGraders={state.course?.studentsCanSeeGraders}
         />,
         <FileMenu
           key="file-menu"
@@ -2169,24 +2167,29 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           isCourseAdmin={isCourseAdmin(state.assignment)}
           updateGrader={updateGrader}
           addLateDayCreditComment={addLateDayCreditComment}
-          isStudentMode={false}
+          isStudentMode={state.isStudent}
+          courseStudentsCanSeeGraders={state.course?.studentsCanSeeGraders}
         />,
-        <TestsMenu
-          key="tests-menu"
-          isOpen={state.panelType === PANEL_TYPE.TESTS}
-          tests={state.tests}
-          cases={state.testCases}
-          categories={state.testCategories}
-          assignment={state.assignment}
-          emptyMessage="No tests have been defined for this assignment."
-          showLink={true}
-          headerActions={testsActions}
-          onClick={(e: React.MouseEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setState((prev) => ({ ...prev, panelType: PANEL_TYPE.TESTS, selectedFile: undefined }));
-          }}
-        />,
+        isCourseAdmin(state.assignment) || state.testCategories.length > 0 ? (
+          <TestsMenu
+            key="tests-menu"
+            isOpen={state.panelType === PANEL_TYPE.TESTS}
+            tests={state.tests}
+            cases={state.testCases}
+            categories={state.testCategories}
+            assignment={state.assignment}
+            emptyMessage="No tests have been defined for this assignment."
+            showLink={isCourseAdmin(state.assignment)}
+            headerActions={testsActions}
+            onClick={(e: React.MouseEvent) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setState((prev) => ({ ...prev, panelType: PANEL_TYPE.TESTS, selectedFile: undefined }));
+            }}
+          />
+        ) : (
+          <React.Fragment />
+        ),
         <FileMenu
           key="file-menu"
           title="Files"

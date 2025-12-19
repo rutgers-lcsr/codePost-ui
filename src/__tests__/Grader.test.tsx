@@ -4,7 +4,7 @@
 
 // import Grader, { IGraderProps } from '../Grader';
 
-// // @ts-ignore
+// // @ts-expect-error: legacy-ts-ignore
 // import { loadIDList } from '../infrastructure/generics';
 
 // describe('Grader', () => {
@@ -73,7 +73,7 @@
 //   //     },
 //   //   ];
 
-//   //   // @ts-ignore
+//   //   // @ts-expect-error: legacy-ts-ignore
 //   //   loadIDList.mockReturnValue(assignments);
 
 //   //   const { wrapper } = setup();

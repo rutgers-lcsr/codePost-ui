@@ -1,41 +1,41 @@
-// @ts-ignore
+// @ts-expect-error: legacy-ts-ignore
 export { CourseType } from './course';
 
-// @ts-ignore
+// @ts-expect-error: legacy-ts-ignore
 export { AssignmentType } from './assignment';
 
-// @ts-ignore
+// @ts-expect-error: legacy-ts-ignore
 export { CommentType } from './comment';
 
-// @ts-ignore
+// @ts-expect-error: legacy-ts-ignore
 export { FileType } from './file';
 
-// @ts-ignore
+// @ts-expect-error: legacy-ts-ignore
 export { RubricCategoryType } from './rubricCategory';
 
-// @ts-ignore
+// @ts-expect-error: legacy-ts-ignore
 export { RubricCommentType } from './rubricComment';
 
-// @ts-ignore
+// @ts-expect-error: legacy-ts-ignore
 export { SectionType } from './section';
 
-// @ts-ignore
+// @ts-expect-error: legacy-ts-ignore
 export { AnonymousSubmissionType, StudentSubmissionType, SubmissionInfoType, SubmissionType } from './submission';
 
-// @ts-ignore
+// @ts-expect-error: legacy-ts-ignore
 export { TestCaseType } from './testCase';
 
-// @ts-ignore
+// @ts-expect-error: legacy-ts-ignore
 export { TestCategoryType } from './testCategory';
 
-// @ts-ignore
+// @ts-expect-error: legacy-ts-ignore
 export { SubmissionTestType } from './submissionTest';
 
-// @ts-ignore
+// @ts-expect-error: legacy-ts-ignore
 export { FileTemplateType } from './fileTemplate';
 
-// @ts-ignore
+// @ts-expect-error: legacy-ts-ignore
 export { WebhookType } from './webhook';
 
-// @ts-ignore
+// @ts-expect-error: legacy-ts-ignore
 export { AssignmentDataSetType } from './assignmentDataSet';

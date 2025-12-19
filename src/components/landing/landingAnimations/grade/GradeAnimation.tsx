@@ -19,6 +19,8 @@ function textAnimation(text: string, indexFloat: number) {
   return text.substring(0, indexTo);
 }
 
+const AnimatedComment = animated(SimpleComment);
+
 function GradeAnimation() {
   const commentRef = useSpringRef();
   const commentBoxRef = useSpringRef();
@@ -69,7 +71,8 @@ function GradeAnimation() {
 
   useChain(refs);
 
-  const AnimatedComment = animated(SimpleComment);
+  useChain(refs);
+
   // A shadow to show the user that the save button is being clicked on
   const saveShadow = (
     <animated.div

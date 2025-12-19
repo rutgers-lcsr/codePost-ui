@@ -151,7 +151,7 @@ interface IUploadSubmissionDialogState {
 
   // Test results
   submissionTests: SubmissionTestType[];
-  testsLog: string | null; // If the admin turns off exposeDumpLogs then the log will be none
+  testsLog: string | null;
   runMessage: string; // A message to show students from the result of their run
   activeTab: string;
 
@@ -228,10 +228,10 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           let primaryStudent = null;
 
           this.props.selectedStudents.forEach((email: string) => {
-            if (this.props.submissions.hasOwnProperty(email)) {
+            if (Object.prototype.hasOwnProperty.call(this.props.submissions, email)) {
               if (
                 this.props.selectedAssignment !== undefined &&
-                this.props.submissions[email].hasOwnProperty(this.props.selectedAssignment.id)
+                Object.prototype.hasOwnProperty.call(this.props.submissions[email], this.props.selectedAssignment.id)
               ) {
                 primaryStudent = email;
               }
@@ -242,10 +242,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
             this.setState({
               submission: this.props.submissions[primaryStudent][this.props.selectedAssignment.id],
             });
-            this.loadTestResults(
-              this.props.submissions[primaryStudent][this.props.selectedAssignment.id],
-              this.props.selectedAssignment.exposeDumpLogs === true,
-            );
+            this.loadTestResults(this.props.submissions[primaryStudent][this.props.selectedAssignment.id], false);
           }
         }
       }
@@ -634,9 +631,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
    * code is uploaded.
    */
   public shouldRunTests = () => {
-    const testsToRun =
-      (this.state.selectedAssignment && this.state.selectedAssignment.exposeDumpLogs) ||
-      this.state.testCategories.length > 0;
+    const testsToRun = this.state.testCategories && this.state.testCategories.length > 0;
 
     // Has the student surpassed the maximum submission limit?
     const runsSoFar = this.state.submission ? this.state.submission.testRunsCompleted : 0;
@@ -1265,7 +1260,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                     logs={
                       this.state.testsLog === null || this.state.testsLog.length === 0 ? undefined : this.state.testsLog
                     }
-                    showLogs={this.state.selectedAssignment!.exposeDumpLogs === true}
+                    showLogs={false}
                     message={
                       <div>
                         {this.state.submissionTests.length > 0 && (

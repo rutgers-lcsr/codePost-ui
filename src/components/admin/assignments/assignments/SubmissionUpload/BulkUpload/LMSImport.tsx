@@ -118,7 +118,7 @@ export const LMSImport = (props: IUploadFormProps) => {
       // On iniital upload, we represent studentFile1 and studentFile2 as different entries
       // in our mapping becasue we don't know the unique identifier to match.
       // Once we do, we can consolide studentFile1 and studentFile2 into a single mapping entry
-      case IMPORT_TYPE.fileList:
+      case IMPORT_TYPE.fileList: {
         const map: FolderToStudentMap = {};
         fileList.forEach((el) => {
           const elems = el.pathOverride!.split('/')[1].split(delimiter);
@@ -129,6 +129,7 @@ export const LMSImport = (props: IUploadFormProps) => {
         });
         setMap(map);
         setUserIndex(newIndex);
+      }
     }
   };
 
@@ -615,7 +616,6 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
   const data = Object.keys(props.folderMap).map((folderName) => {
     const id = getIdentifierFromFolder(folderName, props.idIndex);
 
-    // @ts-ignore
     const lastOption = <Select.Option value={undefined}> </Select.Option>;
     const studentEmail = !editMode ? (
       <span>{props.folderMap[folderName] || undefined}</span>

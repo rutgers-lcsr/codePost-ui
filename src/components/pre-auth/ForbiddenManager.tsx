@@ -22,7 +22,7 @@ interface IndexManagerProps {
   handleLogin: (email: string, password: string, toRedirect: boolean) => Promise<void>;
 }
 
-class ForbiddenManager extends React.Component<IndexManagerProps, {}> {
+class ForbiddenManager extends React.Component<IndexManagerProps> {
   public render() {
     /* tslint:disable:jsx-no-lambda */
     const renderLogin = () => (

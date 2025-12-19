@@ -11,12 +11,13 @@ import {
   DeleteOutlined,
   EditOutlined,
   PlusOutlined,
+  UserOutlined,
+  LikeOutlined,
+  DislikeOutlined,
 } from '@ant-design/icons';
 
-import { Badge, Button, Input, Popconfirm, Spin, Switch, Table, Tag } from 'antd';
+import { Button, Empty, Input, Spin, Tag, Popconfirm, Switch } from 'antd';
 
-import CPButton from '../../../core/CPButton';
-import CPFlex from '../../../core/CPFlex';
 import CPPointInput from '../../../core/CPPointInput';
 import CPTooltip from '../../../core/CPTooltip';
 import { tooltips } from '../../../core/tooltips';
@@ -39,108 +40,14 @@ const { TextArea } = Input;
 /* Constants
 /**********************************************************************************************************************/
 
-const TOOLTIP_ICON_PADDING_LEFT = 5;
-const TEXTAREA_WIDTH = '80%';
-const TEXT_FLEX_STYLE = { display: 'flex' } as const;
+const BUTTON_SPACING = '8px';
 
 // Design Constants
-const CATEGORY_HEADER_BG = '#fafafa';
-const CATEGORY_HEADER_BORDER = '#e8e8e8';
-const SETTINGS_CARD_BG = '#ffffff';
-const SETTINGS_CARD_BORDER = '#f0f0f0';
-const EXPLANATION_BG = '#f0fff7';
-const INSTRUCTION_BG = '#fff7e6';
-
-// Spacing Constants
-const HEADER_PADDING = '16px 24px';
-const CONTENT_PADDING = '24px';
-const CARD_MARGIN_BOTTOM = '16px';
-const SECTION_SPACING = '24px';
-const BUTTON_SPACING = '8px';
 
 /**********************************************************************************************************************/
 /* Column Definitions
 /**********************************************************************************************************************/
 
-const COLUMN_ALIGNMENT: 'left' | 'center' | 'right' = 'center';
-
-// Need to rename deductions to just points.
-
-const commentTableColumns = [
-  {
-    title: 'Comment Text',
-    dataIndex: 'text',
-    key: 'text',
-  },
-  {
-    title: (
-      <div>
-        Points
-        <CPTooltip
-          title={tooltips.admin.rubric.deduction}
-          infoIcon={true}
-          hideThisOnHideTips={true}
-          iconStyle={{ paddingLeft: TOOLTIP_ICON_PADDING_LEFT }}
-        />
-      </div>
-    ),
-    dataIndex: 'deduction',
-    key: 'deduction',
-    align: COLUMN_ALIGNMENT,
-  },
-  {
-    title: (
-      <div>
-        Instances
-        <CPTooltip
-          title={tooltips.admin.rubric.instances}
-          infoIcon={true}
-          hideThisOnHideTips={true}
-          iconStyle={{ paddingLeft: TOOLTIP_ICON_PADDING_LEFT }}
-        />
-      </div>
-    ),
-    key: 'linked',
-    dataIndex: 'linked',
-    align: COLUMN_ALIGNMENT,
-  },
-  {
-    title: 'Explanations',
-    key: 'explanation',
-    dataIndex: 'explanation',
-    align: COLUMN_ALIGNMENT,
-  },
-  {
-    title: 'Instructions',
-    key: 'instruction',
-    dataIndex: 'instruction',
-    align: COLUMN_ALIGNMENT,
-  },
-  {
-    title: (
-      <div>
-        Feedback
-        <CPTooltip
-          title={'Comprehension scores from students.'}
-          infoIcon={true}
-          hideThisOnHideTips={true}
-          iconStyle={{ paddingLeft: TOOLTIP_ICON_PADDING_LEFT }}
-        />
-      </div>
-    ),
-    key: 'feedback',
-    dataIndex: 'feedback',
-    align: COLUMN_ALIGNMENT,
-  },
-  {
-    title: '',
-    dataIndex: 'delete',
-    key: 'delete',
-    align: COLUMN_ALIGNMENT,
-  },
-];
-
-/**********************************************************************************************************************/
 /* Types
 /**********************************************************************************************************************/
 
@@ -170,13 +77,15 @@ const RubricCategoryUI: React.FC<{
     showExplanations,
     commentFeedbackOn,
     numCategories,
+    showInstructions,
   } = props;
   const { rubricComments: stateRubricComments, atMostOnce } = state;
 
   const [activeComment, setActiveComment] = useState<RubricCommentType | undefined>(undefined);
   const [activeField, setActiveField] = useState<'explanation' | 'instructionText'>('explanation');
 
-  const buildCommentTableData = useCallback(
+  /* Card-Based Layout Implementation */
+  const renderCommentCards = useCallback(
     (rubricComments: RubricCommentType[], commentMap: { [id: number]: RubricCommentType }) => {
       return rubricComments.sort(RubricComment.compare).map((rubricComment) => {
         const thisComment = commentMap[rubricComment.id];
@@ -186,167 +95,225 @@ const RubricCategoryUI: React.FC<{
           thisFeedback = feedbackScores[thisComment.id];
         }
 
-        if (thisComment) {
-          const onChangeText = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-            helpers.updateRubricComment(thisComment.id, 'text', e);
-          };
+        /* Accessors and Handlers */
+        const currentComment = thisComment || rubricComment;
+        const currentPointDelta = -currentComment.pointDelta;
 
-          const onChangePointDelta = (value: number) => {
-            helpers.updateRubricComment(thisComment.id, 'pointDelta', value);
-          };
+        // Handlers
+        const onChangeText = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+          helpers.updateRubricComment(currentComment.id, 'text', e);
+        };
+        const onChangePointDelta = (value: number) => {
+          helpers.updateRubricComment(currentComment.id, 'pointDelta', value);
+        };
+        const saveComment = () => {
+          helpers.saveComment(currentComment.id);
+        };
+        const deleteComment = () => {
+          helpers.deleteComment(rubricComment);
+        };
+        const handleActivateCommentExplorer = () => {
+          if (thisComment) activateCommentExplorer(thisComment);
+        };
+        const onDeleteField = (field: string) => {
+          helpers.updateRubricComment(currentComment.id, field, '');
+        };
 
-          const onDeleteField = (field: string) => {
-            helpers.updateRubricComment(thisComment.id, field, '');
-          };
+        return (
+          <div
+            key={currentComment.id}
+            style={{
+              background: '#fff',
+              border: '1px solid #f0f0f0',
+              borderRadius: '8px',
+              padding: '16px',
+              marginBottom: '12px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              gap: '16px',
+              transition: 'box-shadow 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
+            }}
+          >
+            {/* Left: Content */}
+            <div style={{ flex: 1 }}>
+              <TextArea
+                autoSize
+                value={currentComment.text || ''}
+                onChange={onChangeText}
+                onBlur={saveComment}
+                bordered={false}
+                placeholder="Enter comment text..."
+                style={{
+                  width: '100%',
+                  padding: 0,
+                  fontSize: '14px',
+                  color: '#262626',
+                  resize: 'none',
+                }}
+              />
 
-          const saveComment = () => {
-            helpers.saveComment(thisComment.id);
-          };
+              {/* Metadata Row for Explanations/Instructions within the card content flow */}
+              {(showExplanations || showInstructions) && (
+                <div style={{ marginTop: '8px', display: 'flex', gap: '12px' }}>
+                  {showExplanations && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Button
+                        size="small"
+                        type={currentComment.explanation ? 'link' : 'text'}
+                        icon={!currentComment.explanation && <EditOutlined style={{ fontSize: '10px' }} />}
+                        onClick={() => {
+                          setActiveComment(currentComment);
+                          setActiveField('explanation');
+                        }}
+                        style={{
+                          padding: 0,
+                          height: 'auto',
+                          fontSize: '12px',
+                          color: currentComment.explanation ? '#1890ff' : '#8c8c8c',
+                        }}
+                      >
+                        {currentComment.explanation ? 'Edit Explanation' : 'Add Explanation'}
+                      </Button>
+                      {currentComment.explanation && (
+                        <Button
+                          type="text"
+                          danger
+                          size="small"
+                          icon={<DeleteOutlined style={{ fontSize: '10px' }} />}
+                          onClick={() => onDeleteField('explanation')}
+                          style={{ width: '16px', height: '16px', minWidth: 0 }}
+                        />
+                      )}
+                    </div>
+                  )}
+                  {showInstructions && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Button
+                        size="small"
+                        type={currentComment.instructionText ? 'link' : 'text'}
+                        icon={!currentComment.instructionText && <EditOutlined style={{ fontSize: '10px' }} />}
+                        onClick={() => {
+                          setActiveComment(currentComment);
+                          setActiveField('instructionText');
+                        }}
+                        style={{
+                          padding: 0,
+                          height: 'auto',
+                          fontSize: '12px',
+                          color: currentComment.instructionText ? '#faad14' : '#8c8c8c',
+                        }}
+                      >
+                        {currentComment.instructionText ? 'Edit Instructions' : 'Add Instructions'}
+                      </Button>
+                      {currentComment.instructionText && (
+                        <Button
+                          type="text"
+                          danger
+                          size="small"
+                          icon={<DeleteOutlined style={{ fontSize: '10px' }} />}
+                          onClick={() => onDeleteField('instructionText')}
+                          style={{ width: '16px', height: '16px', minWidth: 0 }}
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
-          const deleteComment = () => {
-            helpers.deleteComment(rubricComment);
-          };
+            {/* Right: Metadata & Actions */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              {/* 1. Instances */}
+              <CPTooltip title="Instances">
+                <span
+                  onClick={thisComment ? handleActivateCommentExplorer : undefined}
+                  style={{
+                    cursor: thisComment ? 'pointer' : 'default',
+                    display: 'flex',
+                    alignItems: 'center',
+                    color: '#8c8c8c',
+                    fontSize: '12px',
+                    gap: '4px',
+                    minWidth: '40px',
+                    justifyContent: 'flex-end',
+                  }}
+                >
+                  <UserOutlined style={{ fontSize: '12px' }} />
+                  {instanceLists[currentComment.id] ? (
+                    instanceLists[currentComment.id].length
+                  ) : (
+                    <Spin size="small" style={{ zoom: 0.5 }} />
+                  )}
+                </span>
+              </CPTooltip>
 
-          const handleActivateCommentExplorer = () => {
-            activateCommentExplorer(thisComment);
-          };
-          return {
-            key: thisComment.id,
-            text: (
-              <span style={TEXT_FLEX_STYLE}>
-                <TextArea
-                  autoSize
-                  value={thisComment.text}
-                  onChange={onChangeText}
-                  onBlur={saveComment}
-                  style={{ width: TEXTAREA_WIDTH }}
+              {/* 2. Feedback (Sentiment) */}
+              {commentFeedbackOn && (
+                <CPTooltip title="Student Feedback">
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '12px',
+                      minWidth: '60px',
+                      justifyContent: 'flex-end',
+                    }}
+                  >
+                    {thisFeedback === undefined ? (
+                      <span style={{ color: '#d9d9d9' }}>--</span>
+                    ) : (
+                      <>
+                        <span style={{ color: '#ff4d4f', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                          <DislikeOutlined /> {Math.trunc(thisFeedback.negative * 100)}%
+                        </span>
+                        <span style={{ color: '#52c41a', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                          <LikeOutlined /> {Math.trunc(thisFeedback.positive * 100)}%
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </CPTooltip>
+              )}
+
+              {/* 3. Points Badge */}
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <CPPointInput value={currentPointDelta} size="small" onChange={onChangePointDelta} disabled={false} />
+              </div>
+              {/* 4. Delete Action */}
+              <CPTooltip title={tooltips.admin.rubric.deleteComment}>
+                <Button
+                  type="text"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={deleteComment}
+                  style={{ color: '#bfbfbf', transition: 'color 0.2s' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#ff4d4f')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#bfbfbf')}
                 />
-                &nbsp;
-              </span>
-            ),
-            deduction: (
-              <CPPointInput
-                value={-thisComment.pointDelta}
-                size="small"
-                onChange={onChangePointDelta}
-                disabled={false}
-              />
-            ),
-            linked: (
-              <span onClick={handleActivateCommentExplorer}>
-                {instanceLists[thisComment.id] ? (
-                  <Badge
-                    count={instanceLists[thisComment.id].length}
-                    className="badge badge--standard"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.5)', cursor: 'pointer' }}
-                  />
-                ) : (
-                  <Spin />
-                )}
-              </span>
-            ),
-            explanation: showExplanations ? (
-              <span style={{ verticalAlign: 'middle', display: 'flex', gap: '4px' }}>
-                <CPTooltip title={thisComment.explanation ? 'Edit explanation' : 'Add explanation'}>
-                  <CPButton
-                    icon={<EditOutlined />}
-                    style={{ background: thisComment.explanation ? EXPLANATION_BG : undefined }}
-                    onClick={() => {
-                      setActiveComment(thisComment);
-                      setActiveField('explanation');
-                    }}
-                  />
-                </CPTooltip>
-                {thisComment.explanation && (
-                  <CPTooltip title="Delete explanation">
-                    <CPButton
-                      icon={<DeleteOutlined />}
-                      onClick={() => {
-                        onDeleteField('explanation');
-                      }}
-                    />
-                  </CPTooltip>
-                )}
-              </span>
-            ) : undefined,
-            instruction: (
-              <span style={{ verticalAlign: 'middle', display: 'flex', gap: '4px' }}>
-                <CPTooltip title={thisComment.instructionText ? 'Edit instructions' : 'Add instructions'}>
-                  <CPButton
-                    icon={<EditOutlined />}
-                    style={{ background: thisComment.instructionText ? INSTRUCTION_BG : undefined }}
-                    onClick={() => {
-                      setActiveComment(thisComment);
-                      setActiveField('instructionText');
-                    }}
-                  />
-                </CPTooltip>
-                {thisComment.instructionText && (
-                  <CPTooltip title="Delete instructions">
-                    <CPButton
-                      icon={<DeleteOutlined />}
-                      onClick={() => {
-                        onDeleteField('instructionText');
-                      }}
-                    />
-                  </CPTooltip>
-                )}
-              </span>
-            ),
-            feedback: !commentFeedbackOn ? (
-              <Tag color="volcano" key="disabled">
-                DISABLED
-              </Tag>
-            ) : thisFeedback === undefined ? (
-              <Spin />
-            ) : (
-              `👎 ${Math.trunc(thisFeedback.negative * 100)}%   👍 ${Math.trunc(thisFeedback.positive * 100)}%`
-            ),
-            delete: (
-              <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
-                <DeleteOutlined onClick={deleteComment} />
               </CPTooltip>
-            ),
-          };
-        } else {
-          const updateRubricCommentText = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-            helpers.updateRubricComment(rubricComment.id, 'text', e);
-          };
-
-          const updateRubricCommentPointDelta = (value: number) => {
-            helpers.updateRubricComment(rubricComment.id, 'pointDelta', value);
-          };
-
-          const saveComment = () => {
-            helpers.saveComment(rubricComment.id);
-          };
-
-          const deleteComment = () => {
-            helpers.deleteComment(rubricComment);
-          };
-
-          return {
-            key: rubricComment.id,
-            text: <TextArea autoSize value={''} onChange={updateRubricCommentText} onBlur={saveComment} />,
-            deduction: (
-              <CPPointInput
-                value={-rubricComment.pointDelta}
-                size="small"
-                onChange={updateRubricCommentPointDelta}
-                disabled={false}
-              />
-            ),
-            linked: null,
-            delete: (
-              <CPTooltip title={tooltips.admin.rubric.deleteComment} hideThisOnHideTips={true}>
-                <DeleteOutlined onClick={deleteComment} />
-              </CPTooltip>
-            ),
-          };
-        }
+            </div>
+          </div>
+        );
       });
     },
-    [feedbackScores, instanceLists, activateCommentExplorer, helpers, showExplanations, commentFeedbackOn],
+    [
+      feedbackScores,
+      instanceLists,
+      activateCommentExplorer,
+      helpers,
+      showExplanations,
+      showInstructions,
+      commentFeedbackOn,
+    ],
   );
   const moveUp = useCallback(() => {
     moveCategory(rubricCategory, DIRECTION.Up);
@@ -375,226 +342,10 @@ const RubricCategoryUI: React.FC<{
     helpers.setValue('atMostOnce', !atMostOnce);
   }, [helpers, atMostOnce]);
 
-  const data = useMemo(
-    () => buildCommentTableData(rubricComments, stateRubricComments),
-    [buildCommentTableData, rubricComments, stateRubricComments],
-  );
-
-  // Enhanced Header with better visual hierarchy
-  const headerStyle = useMemo(
-    () => ({
-      background: CATEGORY_HEADER_BG,
-      borderBottom: `2px solid ${CATEGORY_HEADER_BORDER}`,
-      padding: HEADER_PADDING,
-      borderRadius: '8px 8px 0 0',
-    }),
-    [],
-  );
-
-  const categoryTitleStyle = useMemo(
-    () => ({
-      fontSize: '18px',
-      fontWeight: 600,
-      color: '#262626',
-      marginRight: '16px',
-    }),
-    [],
-  );
-
-  const titleLeft = [
-    <div key="title-section" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-      <span style={categoryTitleStyle}>{rubricCategory.name}</span>
-      <div style={{ display: 'flex', gap: BUTTON_SPACING }}>
-        <CPTooltip title={categoryIndex === 0 ? 'First category' : 'Move category up'} hideThisOnHideTips={true}>
-          <Button
-            icon={<CaretUpOutlined />}
-            size="middle"
-            onClick={moveUp}
-            disabled={categoryIndex === 0}
-            type={categoryIndex === 0 ? 'default' : 'primary'}
-          />
-        </CPTooltip>
-        <CPTooltip
-          title={categoryIndex === numCategories - 1 ? 'Last category' : 'Move category down'}
-          hideThisOnHideTips={true}
-        >
-          <Button
-            icon={<CaretDownOutlined />}
-            size="middle"
-            disabled={categoryIndex === numCategories - 1}
-            onClick={moveDown}
-            type={categoryIndex === numCategories - 1 ? 'default' : 'primary'}
-          />
-        </CPTooltip>
-      </div>
-    </div>,
-    state.hasError ? (
-      <Tag color="error" key="warning" icon={<CloseCircleOutlined />}>
-        {state.errorMessage}
-      </Tag>
-    ) : state.hasCommentError ? (
-      <Tag color="error" key="warning" icon={<CloseCircleOutlined />}>
-        {state.commentErrorMessage}
-      </Tag>
-    ) : null,
-  ];
-
-  const titleRight = [
-    <Popconfirm
-      key="delete"
-      title="Delete this category?"
-      description="This action cannot be undone. All rubric comments in this category will be deleted."
-      onConfirm={deleteCat}
-      okText="Yes, Delete"
-      cancelText="Cancel"
-      okButtonProps={{ danger: true }}
-    >
-      <Button danger icon={<DeleteOutlined />}>
-        Delete Category
-      </Button>
-    </Popconfirm>,
-  ];
-
-  // Enhanced Settings Cards
-  const settingCardStyle = useMemo(
-    () => ({
-      background: SETTINGS_CARD_BG,
-      border: `1px solid ${SETTINGS_CARD_BORDER}`,
-      borderRadius: '6px',
-      padding: '16px',
-      marginBottom: CARD_MARGIN_BOTTOM,
-    }),
-    [],
-  );
-
-  const labelStyle = useMemo(
-    () => ({
-      fontSize: '14px',
-      fontWeight: 600,
-      color: '#595959',
-      marginBottom: '8px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '4px',
-    }),
-    [],
-  );
-
-  const categoryName = (
-    <div key="name" style={settingCardStyle}>
-      <div style={labelStyle}>
-        <span>Category Name</span>
-      </div>
-      <Input
-        value={state.name}
-        onChange={helpers.changeName}
-        onBlur={helpers.saveCategory}
-        ref={helpers.nameInput}
-        placeholder="Enter category name..."
-        size="large"
-      />
-    </div>
-  );
-
-  const categoryPoints = props.showPointLimits ? (
-    <div key="points" style={settingCardStyle}>
-      <div style={labelStyle}>
-        <span>Point Limit</span>
-        <CPTooltip
-          title={tooltips.admin.rubric.categoryPointLimit}
-          infoIcon={true}
-          hideThisOnHideTips={true}
-          iconStyle={{ marginLeft: 4 }}
-        />
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <CPPointInput
-          value={state.pointLimit !== null ? -state.pointLimit : undefined}
-          size="small"
-          onChange={setVal}
-          disabled={false}
-          step={1}
-        />
-        <CPTooltip title="Clear point limit (allow unlimited points)">
-          <Button
-            icon={<CloseCircleOutlined />}
-            onClick={clearPointLimit}
-            onBlur={helpers.saveCategory}
-            disabled={state.pointLimit === null}
-          >
-            Clear
-          </Button>
-        </CPTooltip>
-      </div>
-    </div>
-  ) : null;
-
-  const helpText = props.showHelpText ? (
-    <div key="help-text" style={settingCardStyle}>
-      <div style={labelStyle}>
-        <span>Help Text</span>
-        <CPTooltip
-          title={tooltips.admin.rubric.categoryHelpText}
-          infoIcon={true}
-          hideThisOnHideTips={true}
-          iconStyle={{ marginLeft: 4 }}
-        />
-      </div>
-      <Input.TextArea
-        value={state.helpText}
-        onChange={helpers.changeHelpText}
-        onBlur={helpers.saveCategory}
-        autoSize={{ minRows: 2, maxRows: 6 }}
-        placeholder="Add helpful guidance for graders..."
-      />
-    </div>
-  ) : null;
-
-  const atMostOnceToggle = props.showAtMostOnce ? (
-    <div key="atMostOnce" style={settingCardStyle}>
-      <div style={labelStyle}>
-        <span>"At Most Once" Mode</span>
-        <CPTooltip
-          infoIcon={true}
-          title="If enabled, this category can be applied at most once to any submission"
-          iconStyle={{ marginLeft: 4 }}
-        />
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <Switch checked={state.atMostOnce} onChange={toggleAtMostOnce} />
-        <span style={{ color: '#8c8c8c', fontSize: '13px' }}>
-          {state.atMostOnce ? 'Limited to one application' : 'Can be applied multiple times'}
-        </span>
-      </div>
-    </div>
-  ) : null;
-
-  // Better responsive layout
-  const contentStyle = useMemo(
-    () => ({
-      padding: CONTENT_PADDING,
-      background: '#fff',
-    }),
-    [],
-  );
-
-  const settingsGridStyle = useMemo(
-    () => ({
-      display: 'grid',
-      gridTemplateColumns: props.windowwidth < 1200 ? '1fr' : 'repeat(2, 1fr)',
-      gap: '16px',
-      marginBottom: SECTION_SPACING,
-    }),
-    [props.windowwidth],
-  );
-
-  const contentLeft = (
-    <div style={settingsGridStyle}>
-      {categoryName}
-      {categoryPoints}
-      {helpText}
-      {atMostOnceToggle}
-    </div>
+  /* Render Cards instead of Table */
+  const cards = useMemo(
+    () => renderCommentCards(rubricComments, stateRubricComments),
+    [renderCommentCards, rubricComments, stateRubricComments],
   );
 
   const setField = (field: 'explanation' | 'instructionText', draft?: string) => {
@@ -612,51 +363,233 @@ const RubricCategoryUI: React.FC<{
     toRemove.push('instruction');
   }
 
-  // Enhanced table section header
-  const tableSectionStyle = useMemo(
-    () => ({
-      marginBottom: SECTION_SPACING,
-    }),
-    [],
-  );
-
-  const tableTitleStyle = useMemo(
-    () => ({
-      fontSize: '16px',
-      fontWeight: 600,
-      color: '#262626',
-      marginBottom: '16px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    }),
-    [],
-  );
-
   return (
-    <div className="cp-rubric-category" style={{ marginBottom: '32px' }}>
-      <div style={headerStyle}>
-        <CPFlex left={titleLeft} right={titleRight} gutterSize={10} />
-      </div>
-      <div style={contentStyle}>
-        {contentLeft}
-        <div style={tableSectionStyle}>
-          <div style={tableTitleStyle}>
-            <span>Rubric Comments ({data.length})</span>
-            <Button type="primary" icon={<PlusOutlined />} onClick={helpers.addComment} size="large">
-              Add Comment
-            </Button>
+    <div
+      className="cp-rubric-category"
+      style={{
+        marginBottom: '24px',
+        // Removed card styling from container, as items are now individual cards
+        background: 'transparent',
+        border: 'none',
+        boxShadow: 'none',
+      }}
+    >
+      {/* Header (Category Name & Actions) */}
+      <div
+        style={{
+          padding: '0 0 16px 0', // Adjusted padding
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
+          <div style={{ flex: 1, maxWidth: '400px' }}>
+            <Input
+              value={state.name}
+              onChange={helpers.changeName}
+              onBlur={helpers.saveCategory}
+              ref={helpers.nameInput}
+              placeholder="Category Name"
+              size="large"
+              bordered={false}
+              style={{ fontSize: '18px', fontWeight: 600, padding: 0 }}
+            />
           </div>
-          <Table
-            columns={commentTableColumns.filter((el) => toRemove.indexOf(el.key) === -1)}
-            dataSource={data}
-            pagination={false}
-            locale={{ emptyText: 'No comments yet. Click "Add Comment" to create your first rubric comment.' }}
-            bordered
-            size="middle"
-          />
+
+          <div style={{ display: 'flex', gap: BUTTON_SPACING }}>
+            <CPTooltip title={categoryIndex === 0 ? 'First category' : 'Move category up'} hideThisOnHideTips={true}>
+              <Button
+                icon={<CaretUpOutlined />}
+                size="small"
+                onClick={moveUp}
+                disabled={categoryIndex === 0}
+                type="text"
+              />
+            </CPTooltip>
+            <CPTooltip
+              title={categoryIndex === numCategories - 1 ? 'Last category' : 'Move category down'}
+              hideThisOnHideTips={true}
+            >
+              <Button
+                icon={<CaretDownOutlined />}
+                size="small"
+                disabled={categoryIndex === numCategories - 1}
+                onClick={moveDown}
+                type="text"
+              />
+            </CPTooltip>
+          </div>
+
+          {state.hasError && (
+            <Tag color="error" icon={<CloseCircleOutlined />}>
+              {state.errorMessage}
+            </Tag>
+          )}
+          {state.hasCommentError && (
+            <Tag color="error" icon={<CloseCircleOutlined />}>
+              {state.commentErrorMessage}
+            </Tag>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Popconfirm
+            title="Delete this category?"
+            description="This action cannot be undone. All rubric comments in this category will be deleted."
+            onConfirm={deleteCat}
+            okText="Yes, Delete"
+            cancelText="Cancel"
+            okButtonProps={{ danger: true }}
+          >
+            <Button danger type="text" icon={<DeleteOutlined />} />
+          </Popconfirm>
         </div>
       </div>
+
+      <div style={{ padding: '24px' }}>
+        {/* Settings Bar - Horizontal Layout */}
+        {(props.showPointLimits || props.showHelpText || props.showAtMostOnce) && (
+          <div
+            style={{
+              display: 'flex',
+              gap: '24px',
+              marginBottom: '24px',
+              alignItems: 'flex-start',
+              flexWrap: 'wrap',
+              padding: '16px',
+              background: '#fafafa',
+              borderRadius: '6px',
+              border: '1px solid #f0f0f0',
+            }}
+          >
+            {props.showPointLimits && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: '#8c8c8c',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}
+                >
+                  Max Points
+                  <CPTooltip
+                    title={tooltips.admin.rubric.categoryPointLimit}
+                    infoIcon={true}
+                    hideThisOnHideTips={true}
+                    iconStyle={{ marginLeft: 4 }}
+                  />
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CPPointInput
+                    value={state.pointLimit !== null ? -state.pointLimit : undefined}
+                    size="small"
+                    onChange={setVal}
+                    disabled={false}
+                    step={1}
+                  />
+                  <CPTooltip title="Clear point limit">
+                    <Button
+                      icon={<CloseCircleOutlined />}
+                      type="text"
+                      size="small"
+                      onClick={clearPointLimit}
+                      onBlur={helpers.saveCategory}
+                      disabled={state.pointLimit === null}
+                      style={{ color: '#bfbfbf' }}
+                    />
+                  </CPTooltip>
+                </div>
+              </div>
+            )}
+
+            {props.showHelpText && (
+              <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: '#8c8c8c',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}
+                >
+                  Help Text
+                  <CPTooltip
+                    title={tooltips.admin.rubric.categoryHelpText}
+                    infoIcon={true}
+                    hideThisOnHideTips={true}
+                    iconStyle={{ marginLeft: 4 }}
+                  />
+                </span>
+                <Input.TextArea
+                  value={state.helpText}
+                  onChange={helpers.changeHelpText}
+                  onBlur={helpers.saveCategory}
+                  autoSize={{ minRows: 1, maxRows: 3 }}
+                  placeholder="Guidance for graders..."
+                  style={{ resize: 'none', fontSize: '13px' }}
+                />
+              </div>
+            )}
+
+            {props.showAtMostOnce && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: '#8c8c8c',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}
+                >
+                  Limits
+                  <CPTooltip
+                    infoIcon={true}
+                    title="If enabled, this category can be applied at most once to any submission"
+                    iconStyle={{ marginLeft: 4 }}
+                  />
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', height: '32px' }}>
+                  <Switch size="small" checked={state.atMostOnce} onChange={toggleAtMostOnce} />
+                  <span style={{ fontSize: '13px', color: '#595959' }}>At most once</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Comments Section */}
+        <div>
+          {/* Add Comment Button */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontWeight: 600, fontSize: '15px', color: '#262626' }}>Comments</span>
+              <Tag style={{ margin: 0, border: 'none', background: '#f5f5f5', color: '#595959' }}>
+                {rubricComments.length}
+              </Tag>
+            </div>
+            <Button type="primary" icon={<PlusOutlined />} onClick={helpers.addComment}>
+              Add Criteria
+            </Button>
+          </div>
+
+          <div style={{ marginTop: '8px' }}>
+            {cards}
+
+            {/* Empty State */}
+            {rubricComments.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '32px 0', color: '#bfbfbf' }}>
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No criteria defined" />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {activeComment ? (
         <ExplanationModal
           title={activeComment.text}

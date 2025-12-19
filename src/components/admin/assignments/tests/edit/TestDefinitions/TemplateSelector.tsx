@@ -29,7 +29,6 @@ const dataSource = [
   },
 ];
 
-/* eslint-disable no-useless-computed-key */
 const codeMap: { [id: string]: any } = {
   '1': {
     java: `javac *.java && TestOutput true "Compiled!" || TestOutput false "Didn't compile"`,
@@ -112,7 +111,6 @@ if [ "$studentValue" == "$solutionValue" ]
 fi`,
   },
 };
-/* eslint-enable no-useless-computed-key */
 
 /************************************************************************************/
 

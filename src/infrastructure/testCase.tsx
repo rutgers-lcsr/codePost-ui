@@ -1,5 +1,14 @@
 import * as t from 'io-ts';
-import { createObject, createObjectDetail, deleteObject, GenericObject, readObject, updateObject } from './generics';
+import {
+  createObject,
+  createObjectDetail,
+  deleteObject,
+  GenericObject,
+  readObject,
+  updateObject,
+  getHeaders,
+  handleErrorResponse,
+} from './generics';
 import { TaskV } from './autograder/runTypes';
 export const TestCaseV = t.intersection(
   [
@@ -25,6 +34,9 @@ export const TestCaseV = t.intersection(
       outputIsFile: t.boolean,
       isFlexible: t.boolean,
       outputIsRegexp: t.boolean,
+      expectPlot: t.boolean,
+      dataSet: t.union([t.number, t.null]),
+      targetCellId: t.union([t.number, t.string, t.null]),
     }),
   ],
   'TestCase',
@@ -51,6 +63,8 @@ const TestCaseVPatch = t.intersection(
       outputIsFile: t.boolean,
       isFlexible: t.boolean,
       outputIsRegexp: t.boolean,
+      expectPlot: t.boolean,
+      dataSet: t.union([t.number, t.null]),
     }),
   ],
   'TestCasePatch',
@@ -76,8 +90,11 @@ const TestCaseVPost = t.intersection(
       outputIsFile: t.boolean,
       isFlexible: t.boolean,
       outputIsRegexp: t.boolean,
+      expectPlot: t.boolean,
     }),
-    t.partial({}),
+    t.partial({
+      dataSet: t.union([t.number, t.null]),
+    }),
   ],
   'TestCasePost',
 );
@@ -130,5 +147,18 @@ export class TestCase {
     };
 
     return testCases.sort(compare);
+  };
+
+  public static runV2 = async (payload: { testId: number; submissionId: string }) => {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/autograder/v2/run/`, {
+      headers: getHeaders(),
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+
+    if (res.status === 200) {
+      return await res.json();
+    }
+    return handleErrorResponse(res);
   };
 }

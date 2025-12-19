@@ -205,7 +205,7 @@
 //         {
 //           id: 1,
 //           text: 'good job',
-//           // @ts-ignore
+//           // @ts-expect-error: legacy-ts-ignore
 //           pointDelta: undefined,
 //           startChar: 0,
 //           endChar: 1,

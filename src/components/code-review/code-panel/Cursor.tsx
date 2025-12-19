@@ -95,7 +95,6 @@ export const left = (
       newEndChar = 1;
     } else if (optionKey) {
       const regexp = /\s/g;
-      // @ts-ignore
       const spaces = line.matchAll(regexp);
       const spaceIndices = [...spaces].filter((match: any) => {
         return match.index < cursor.startChar - 1;
@@ -169,7 +168,6 @@ export const right = (
       newEndChar = line.length - 1;
     } else if (optionKey) {
       const regexp = /\s/g;
-      // @ts-ignore
       const spaces = line.matchAll(regexp);
       const spaceIndices = [...spaces].filter((match: any) => {
         return match.index > cursor.endChar;

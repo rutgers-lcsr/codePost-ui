@@ -8,6 +8,25 @@
   margin: 0px 0px 14px 0px;
   padding: 30px 0px;
 
+  // Modern scrollbar styling
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.3);
+    }
+  }
+
   .code {
     z-index: 0;
     position: relative;
@@ -58,9 +77,12 @@
         }
       }
 
+      // Ensure syntax layer is above the underlay (transparent text) layer
+      z-index: 5;
+
       // Critical: Disable pointer events so clicks pass through to the underlay
       // This ensures comment selection and interaction only happens on the main layer
-      // pointer-events: none;
+      pointer-events: none;
 
       // We can hide code-syntax scrollbar while showing code-main scrollbar
       &::-webkit-scrollbar {

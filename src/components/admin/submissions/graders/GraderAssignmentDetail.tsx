@@ -44,7 +44,7 @@ interface IProps {
   submissions: SubmissionInfoType[];
 }
 
-class GraderAssignmentDetail extends React.Component<IProps, {}> {
+class GraderAssignmentDetail extends React.Component<IProps> {
   public removeSubmission = (toRemove: SubmissionInfoType) => {
     confirm({
       title: 'Are you sure you want to delete this submission?',

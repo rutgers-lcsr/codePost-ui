@@ -28,8 +28,7 @@ const submission = (domain: string) => {
             rubric: null,
           },
           {
-            text:
-              'it would be helpful to comment your if statements in this `while` body (this will be even more true next week, when we re-write this function using recursion).',
+            text: 'it would be helpful to comment your if statements in this `while` body (this will be even more true next week, when we re-write this function using recursion).',
             startChar: 6,
             endChar: 32,
             startLine: 45,
@@ -39,8 +38,7 @@ const submission = (domain: string) => {
             rubric: null,
           },
           {
-            text:
-              'As we discussed in class, you can re-write this line to `maxSoFar = Math.max(maxSoFar, arr[i])` to avoid the if statement (but your code totally works too!)',
+            text: 'As we discussed in class, you can re-write this line to `maxSoFar = Math.max(maxSoFar, arr[i])` to avoid the if statement (but your code totally works too!)',
             startChar: 6,
             endChar: 7,
             startLine: 18,

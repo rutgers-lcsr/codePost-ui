@@ -242,6 +242,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
 
   // Load data on mount and when uploadShortcut changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
 
@@ -611,10 +612,10 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
           : columns;
         columns =
           currentCourse &&
-          currentCourse.showStudentsStatistics &&
-          visibleAssignments.some((assn) => {
-            return assn.mean || assn.median;
-          })
+            currentCourse.showStudentsStatistics &&
+            visibleAssignments.some((assn) => {
+              return assn.mean || assn.median;
+            })
             ? [...columns, statsColumn]
             : columns;
       }
@@ -699,11 +700,11 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
                 submission.students !== undefined && submission.students.length === 1
                   ? '--'
                   : submission.students !== undefined &&
-                    submission.students
-                      .filter((student) => {
-                        return student !== user.email;
-                      })
-                      .join(', '),
+                  submission.students
+                    .filter((student) => {
+                      return student !== user.email;
+                    })
+                    .join(', '),
               grade: showGrade ? (
                 submission.grade !== null && submission.grade !== undefined ? (
                   `${submission.grade}/${assignment.points}`
@@ -783,8 +784,8 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
 
     const defaultFiles =
       uploadShortcut !== undefined &&
-      detailAssignment !== undefined &&
-      uploadShortcut.assignmentID === detailAssignment.id
+        detailAssignment !== undefined &&
+        uploadShortcut.assignmentID === detailAssignment.id
         ? uploadShortcut.files
         : undefined;
 

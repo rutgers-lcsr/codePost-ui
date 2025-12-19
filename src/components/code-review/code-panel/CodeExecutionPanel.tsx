@@ -86,7 +86,8 @@ const CodeExecutionPanel: React.FC<CodeExecutionPanelProps> = ({ file, readOnly 
   // Determine if file is executable
   const isExecutable = useMemo(() => {
     if (!file.extension) return false;
-    const executableExtensions = ['py', 'js', 'java', 'c', 'cpp', 'rb', 'go', 'rs', 'sh', 'ipynb'];
+    const executableExtensions = ['py', 'js', 'java', 'c', 'cpp', 'rb', 'go', 'rs', 'sh', 'ipynb', 'r'];
+
     return executableExtensions.includes(file.extension.toLowerCase());
   }, [file.extension]);
 

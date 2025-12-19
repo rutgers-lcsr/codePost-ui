@@ -13,7 +13,7 @@ const submission = (domain: string) => {
       {
         name: 'HelloWorld.java',
         ext: 'java',
-        // eslint-disable-next-line
+
         code: `/******************************************************************************\n *  Student: ${studentEmail}\n *  Section: ${sectionName}\n *\n *  Partner: ${partnerEmail}\n *  Partner section: ${partnerSection}\n *\n *  Description:  Prints 'Hello, World' to the terminal.\n *                By tradition, this is everyone's first program.\n *                Brian Kernighan initiated this tradition in 1974.\n *\n ******************************************************************************/\n\npublic class HelloWorld {\n    public static void main(String[] args) {\n        System.out.print("Hello, World");\n\n    }\n}`,
         comments: [
           {
@@ -27,8 +27,7 @@ const submission = (domain: string) => {
             rubric: null,
           },
           {
-            text:
-              "This program is really simple, so it's fine that you didn't comment anything. That said, when your programs become more complex, comments will be crucial for helping others (like me!) understand your code.",
+            text: "This program is really simple, so it's fine that you didn't comment anything. That said, when your programs become more complex, comments will be crucial for helping others (like me!) understand your code.",
             startChar: 4,
             endChar: 44,
             startLine: 14,

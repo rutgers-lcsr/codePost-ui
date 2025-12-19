@@ -45,8 +45,8 @@ class ForgotPasswordForm extends React.Component<IProps, State> {
     const data = this.state;
 
     for (const key in data) {
-      if (data.hasOwnProperty(key)) {
-        // @ts-ignore
+      if (Object.prototype.hasOwnProperty.call(data, key)) {
+        // @ts-expect-error: legacy-ts-ignore
         payload.append(key, data[key]);
       }
     }

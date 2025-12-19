@@ -62,7 +62,7 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
             .slice(0, props.match.url.split('/').length - 1)
             .join('/')}
         >
-          Tests
+          Environment Setup
         </Link>
       ),
     },
@@ -84,6 +84,7 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
                 currentAssignment={assignment}
                 submissions={props.submissions}
                 updateAssignment={props.updateAssignment}
+                user={props.user}
               />
             )}
           />
@@ -102,6 +103,7 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
                 currentAssignment={assignment}
                 submissions={props.submissions}
                 updateAssignment={props.updateAssignment}
+                user={props.user}
               />
             )}
           />

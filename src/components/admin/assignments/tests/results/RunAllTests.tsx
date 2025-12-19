@@ -44,12 +44,10 @@ const RunAllTests = (props: IProps) => {
   // ******************************************** Can you run all tests? ************************************
   const testCases = Object.values(props.testCasesByCategory).flat();
   const hasSubmissions = props.numSubmissions > 0;
-  const hasSourceFiles = (props.env && props.env.sourceFiles.length > 0) || false;
   const hasTestCases = testCases.length > 0;
   const notTooBig = props.numSubmissions < 800; // disable run all for really big courses -- takes forever
   const notCodeInPlace = props.assignment.course !== 925; // disable for code in place
-  const canRun =
-    hasSubmissions && (hasTestCases || hasSourceFiles) && props.numSubmissions && notTooBig && notCodeInPlace;
+  const canRun = hasSubmissions && hasTestCases && props.numSubmissions && notTooBig && notCodeInPlace;
   // ******************************************** State functions ************************************
 
   //   Callback for run progress

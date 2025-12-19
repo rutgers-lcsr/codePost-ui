@@ -5,7 +5,6 @@
 import {
   CodeOutlined,
   DeleteOutlined,
-  DownloadOutlined,
   EditOutlined,
   EyeOutlined,
   FileOutlined,
@@ -30,12 +29,14 @@ import {
   Typography,
   Upload,
   message,
+  Radio, // Added Radio
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import JSZip from 'jszip';
 import * as React from 'react';
 import { colors } from '../../../../theme/colors';
 import { AssignmentFileType } from '../../../../infrastructure/file';
+import NotebookEditor from './NotebookEditor'; // Added import
 
 const { Text } = Typography;
 
@@ -121,6 +122,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
   const [newFilePath, setNewFilePath] = React.useState('');
   const [viewingCode, setViewingCode] = React.useState<{ file: EditableFile; visible: boolean } | null>(null);
   const [editingCode, setEditingCode] = React.useState<string>('');
+  const [viewMode, setViewMode] = React.useState<'json' | 'notebook'>('json');
 
   // Update internal state when external value changes
   React.useEffect(() => {
@@ -131,6 +133,11 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
   React.useEffect(() => {
     if (viewingCode?.file) {
       setEditingCode(viewingCode.file.data || '');
+      if (viewingCode.file.extension === 'ipynb') {
+        setViewMode('notebook');
+      } else {
+        setViewMode('json');
+      }
     }
   }, [viewingCode]);
 
@@ -258,6 +265,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
           const content = await zipEntry.async('text');
 
           // Generate ID
+          // eslint-disable-next-line react-hooks/purity
           const newId = -1 * (files.length + newFiles.length + Date.now() + processedCount);
 
           newFiles.push({
@@ -460,40 +468,6 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
         }}
       >
         <Space direction="vertical" size={8} style={{ width: '100%' }}>
-          {/* Workflow Banner */}
-          <Alert
-            message={
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-                <Space size={6} style={{ padding: '4px 12px', background: '#e6f7ff', borderRadius: 4 }}>
-                  <DownloadOutlined style={{ color: colors.actionBlue }} />
-                  <Text strong style={{ fontSize: 13 }}>
-                    Download Assignment files
-                  </Text>
-                </Space>
-                <Text type="secondary" style={{ fontSize: 20 }}>
-                  →
-                </Text>
-                <Space size={6} style={{ padding: '4px 12px', background: '#fff7e6', borderRadius: 4 }}>
-                  <CodeOutlined style={{ color: '#fa8c16' }} />
-                  <Text strong style={{ fontSize: 13 }}>
-                    Complete the work
-                  </Text>
-                </Space>
-                <Text type="secondary" style={{ fontSize: 20 }}>
-                  →
-                </Text>
-                <Space size={6} style={{ padding: '4px 12px', background: '#f6ffed', borderRadius: 4 }}>
-                  <UploadOutlined style={{ color: '#52c41a' }} />
-                  <Text strong style={{ fontSize: 13 }}>
-                    Submit for grading
-                  </Text>
-                </Space>
-              </div>
-            }
-            type="info"
-            showIcon={false}
-            style={{ margin: 16, border: '1px solid #91d5ff', borderRadius: 6 }}
-          />
           <Space size={12}>
             <FileOutlined style={{ fontSize: 18, color: colors.actionBlue }} />
             <Text strong style={{ fontSize: 16 }}>
@@ -580,7 +554,8 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
                   </Button>
                 </Upload>
                 <Text type="secondary" style={{ fontSize: 12 }}>
-                  Upload a single file, or a .zip archive containing your entire project structure
+                  Upload a single file, or a .zip archive containing your entire project structure. Maximum file size is
+                  3MB.
                 </Text>
               </Space>
             </div>
@@ -660,14 +635,28 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
       {/* Code Viewing/Editing Modal */}
       <Modal
         title={
-          <Space size={8}>
-            <CodeOutlined style={{ fontSize: 18, color: colors.actionBlue }} />
-            <Text strong style={{ fontSize: 15 }}>
-              {viewingCode?.file.path ? `${viewingCode.file.path}/` : ''}
-              {viewingCode?.file.name}
-            </Text>
-            <Tag color="blue">{viewingCode?.file.extension}</Tag>
-          </Space>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: 30 }}>
+            <Space size={8}>
+              <CodeOutlined style={{ fontSize: 18, color: colors.actionBlue }} />
+              <Text strong style={{ fontSize: 15 }}>
+                {viewingCode?.file.path ? `${viewingCode.file.path}/` : ''}
+                {viewingCode?.file.name}
+              </Text>
+              <Tag color="blue">{viewingCode?.file.extension}</Tag>
+            </Space>
+
+            {viewingCode?.file.extension === 'ipynb' && (
+              <Radio.Group
+                value={viewMode}
+                onChange={(e) => setViewMode(e.target.value as 'json' | 'notebook')}
+                buttonStyle="solid"
+                size="small"
+              >
+                <Radio.Button value="notebook">Notebook View</Radio.Button>
+                <Radio.Button value="json">Raw JSON</Radio.Button>
+              </Radio.Group>
+            )}
+          </div>
         }
         open={viewingCode?.visible || false}
         onCancel={() => setViewingCode(null)}
@@ -716,59 +705,64 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
             showIcon
             style={{ marginBottom: 8 }}
           />
-          <Editor
-            height="500px"
-            defaultLanguage={(() => {
-              const lang = getCodingLanguage(viewingCode?.file.extension || 'txt');
-              console.log('lang', lang);
-              return lang;
-            })()}
-            value={editingCode || viewingCode?.file.data || ''}
-            onChange={(value) => setEditingCode(value || '')}
-            theme="vs-light"
-            options={{
-              minimap: { enabled: false },
-              fontSize: 13,
-              lineHeight: 1.6,
-              fontFamily: "'Fira Code', 'Courier New', monospace",
-              scrollBeyondLastLine: false,
-              wordWrap: 'on',
-              automaticLayout: true,
-            }}
-          />
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              Lines: {(editingCode || viewingCode?.file.data || '').split('\n').length} | Characters:{' '}
-              {(editingCode || viewingCode?.file.data || '').length}
-            </Text>
-            <Space size={8}>
-              <Button
-                size="small"
-                onClick={() => setEditingCode('')}
-                disabled={!editingCode && !viewingCode?.file.data}
-              >
-                Clear
-              </Button>
-              <Upload
-                accept="*/*"
-                showUploadList={false}
-                beforeUpload={(file) => {
-                  const reader = new FileReader();
-                  reader.onload = (e) => {
-                    const content = e.target?.result as string;
-                    setEditingCode(content);
-                    message.success(`Loaded code from ${file.name}`);
-                  };
-                  reader.readAsText(file);
-                  return false;
+
+          {viewingCode?.file.extension === 'ipynb' && viewMode === 'notebook' ? (
+            <NotebookEditor content={editingCode} onChange={setEditingCode} />
+          ) : (
+            <>
+              <Editor
+                height="500px"
+                defaultLanguage={(() => {
+                  const lang = getCodingLanguage(viewingCode?.file.extension || 'txt');
+                  return lang;
+                })()}
+                value={editingCode}
+                onChange={(value) => setEditingCode(value || '')}
+                theme="vs-light"
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 13,
+                  lineHeight: 1.6,
+                  fontFamily: "'Fira Code', 'Courier New', monospace",
+                  scrollBeyondLastLine: false,
+                  wordWrap: 'on',
+                  automaticLayout: true,
                 }}
-              >
-                <Button size="small" icon={<UploadOutlined />}>
-                  Load from File
-                </Button>
-              </Upload>
-            </Space>
-          </div>
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  Lines: {(editingCode || '').split('\n').length} | Characters: {(editingCode || '').length}
+                </Text>
+                <Space size={8}>
+                  <Button
+                    size="small"
+                    onClick={() => setEditingCode('')}
+                    disabled={!editingCode && !viewingCode?.file.data}
+                  >
+                    Clear
+                  </Button>
+                  <Upload
+                    accept="*/*"
+                    showUploadList={false}
+                    beforeUpload={(file) => {
+                      const reader = new FileReader();
+                      reader.onload = (e) => {
+                        const content = e.target?.result as string;
+                        setEditingCode(content);
+                        message.success(`Loaded code from ${file.name}`);
+                      };
+                      reader.readAsText(file);
+                      return false;
+                    }}
+                  >
+                    <Button size="small" icon={<UploadOutlined />}>
+                      Load from File
+                    </Button>
+                  </Upload>
+                </Space>
+              </div>
+            </>
+          )}
         </Space>
       </Modal>
     </div>

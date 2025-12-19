@@ -5,30 +5,51 @@
 /* react imports */
 import { useEffect, useState } from 'react';
 
-import { DatabaseTwoTone, InfoOutlined } from '@ant-design/icons';
+import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  SyncOutlined,
+  BuildOutlined,
+  CodeOutlined,
+  RobotOutlined,
+  EyeOutlined,
+  SearchOutlined,
+  DeleteOutlined,
+} from '@ant-design/icons';
 
 /* library imports */
-import { Button, Divider, Empty, Modal, Radio, Select, Skeleton, Tabs, Tooltip, Typography } from 'antd';
+import {
+  Button,
+  Drawer,
+  Radio,
+  Select,
+  Skeleton,
+  Tabs,
+  Typography,
+  Card,
+  Tag,
+  Result,
+  Alert,
+  Space,
+  message,
+  Tooltip,
+  Input,
+} from 'antd';
 
 /* codePost object imports */
-import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
-import { EnvironmentType } from '../../../../../infrastructure/autograder/environment';
+import { AssignmentType } from '../../../../../infrastructure/assignment';
+import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 
 import { BuildDetailModal } from './EnvironmentSpecs/BuildDetailModal';
+import { AutoDetectStatus } from './EnvironmentSpecs/AutoDetectStatus';
 
 /* codePost component imports */
 import { CodeWindow } from './utils/CodeWindow';
+import CPTooltip from '../../../../core/CPTooltip';
 
 /* codePost util imports */
 import { languages } from './utils/languageUtils';
-
-import { Environment } from '../../../../../infrastructure/autograder/environment';
-import { TestFileList } from './EnvironmentSpecs/TestFileList';
-
-import { HelperFileType } from '../../../../../infrastructure/autograder/helperFile';
-import { SolutionFileType } from '../../../../../infrastructure/autograder/solutionFile';
-
-import { FILE_TYPE } from './TestingSetup';
+import { useEnvironmentSpecs } from './hooks/useEnvironmentSpecs';
 
 import locale from './utils/languageLocale';
 
@@ -38,7 +59,6 @@ import { awaitBuildResult } from '../autograderPollingUtils';
 import Editor from '@monaco-editor/react';
 
 const { Option } = Select;
-const { confirm } = Modal;
 
 /**********************************************************************************************************************/
 
@@ -50,74 +70,174 @@ interface IProps {
     dependencies: string,
     customDockerfile: string,
     buildType: string,
+    requirements: string,
+    autoDetect: boolean,
+    envVars: Record<string, string>,
   ) => Promise<EnvironmentType>;
   reloadEnv: () => void;
   updateCompileText: (compileText: string) => Promise<void>;
-  helpers: SolutionFileType[] | HelperFileType[];
-  solutions: SolutionFileType[] | HelperFileType[];
-  addFile: (type: FILE_TYPE, name: string, code: string, path?: string) => Promise<void>;
-  deleteFile: (type: FILE_TYPE, id: number) => Promise<void>;
-  updateFile: (type: FILE_TYPE, id: number, newCode: string) => Promise<void>;
   loading: boolean;
+  helpers?: any[];
+  solutions?: any[];
 }
 
 export const EnvironmentSpecs = (props: IProps) => {
-  /******************************* State Variables ****************************/
-  // Environment specification variables
-  const [language, setLanguage] = useState<string | null>(props.env ? props.env.language : null);
-  const [buildType, setBuildType] = useState<string>(props.env ? props.env.buildType : 'default');
-  const [dependencies, setDependencies] = useState<string>(props.env ? props.env.dockerRunInstructions.join('\n') : '');
-  const [customDockerfile, setCustomDockerfile] = useState<string>(props.env ? props.env.dockerfile : '');
+  const {
+    language,
+    setLanguage,
+    buildType,
+    setBuildType,
+    dependencies,
+    setDependencies,
+    customDockerfile,
+    setCustomDockerfile,
+    requirements,
+    setRequirements,
+    autoDetect,
+    setAutoDetect,
+    buildInProgress,
+    setBuildInProgress,
+    buildLogs,
+    setBuildLogs,
+    buildIsSuccess,
+    setBuildIsSuccess,
+    buildDockerfile,
+    setBuildDockerfile,
+    stateRef,
+    scanForManifests,
+    saveEnv,
+    envVars,
+    setEnvVars,
+  } = useEnvironmentSpecs(props, props.env ? props.env.language : '');
 
-  // Build status variables
-  const [buildInProgress, setBuildInProgress] = useState(false);
-  const [buildIsSuccess, setBuildIsSuccess] = useState<boolean | null>(null);
-  const [buildLogs, setBuildLogs] = useState('');
-  const [dockerfile, setDockerfile] = useState('');
+  // UI State (local to component)
+  const [showLogsModal, setShowLogsModal] = useState(false);
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewContent, setPreviewContent] = useState('');
+  const [newEnvKey, setNewEnvKey] = useState('');
+  const [newEnvVal, setNewEnvVal] = useState('');
 
-  /******************************* API / State Change Functions ****************************/
-
-  useEffect(() => {
-    if (props.env) {
-      setLanguage(props.env.language);
-      setDependencies(props.env.dockerRunInstructions.join('\n'));
-      setBuildType(props.env.buildType);
-      setCustomDockerfile(props.env.dockerfile);
+  // Helper to normalize family names consistently
+  const getLanguageFamily = (lang: string) => {
+    if (!lang) return null;
+    let family = lang;
+    if (lang.includes('-')) {
+      family = lang.split('-')[0];
     }
-  }, [props.env]);
+    family = family.toLowerCase();
 
-  useEffect(() => {
-    // Get the last result (if completed)
-    // If in progress, this restarts polling to give the user updates
-    if (props.env && props.env.id) {
-      awaitBuildResult(props.env.id, buildStatusCallback);
-    }
-  }, [props.env && props.env.id]);
+    if (family === 'python') return 'Python';
+    if (family === 'java') return 'Java';
+    if (family === 'javascript' || family === 'node' || family === 'js') return 'Node.js';
+    if (family === 'r') return 'R';
+    if (family === 'c/c++') return 'C/C++';
+    if (family === 'haskell') return 'Haskell';
+    if (family === 'ocaml') return 'Ocaml';
+    if (family === 'ruby') return 'Ruby';
+    if (family === 'php') return 'PHP';
 
-  useEffect(() => {
-    // If language was just created, launch a save
-    // We don't do this in the on save function because useState is asynchronous
-    if (!props.env && language) {
-      onSave();
-    }
-  }, [language]);
+    return family.charAt(0).toUpperCase() + family.slice(1);
+  };
 
-  const saveEnv = async () => {
-    setBuildInProgress(true);
-    // Show a warning if a user is switching from default to a custom image
-    if (props.env && props.env.buildType === 'default' && buildType !== props.env.buildType && language !== 'other') {
-      confirm({
-        title: `Are you sure you want to use a custom build?`,
-        content:
-          'When you use a custom build, the only default packages are those built into the operating system. Please make sure to install the required language packages for your langauge in the "Install Packages" field.',
-        async onOk() {
-          await buildEnv(language !== null ? language : '', dependencies, customDockerfile, buildType);
-        },
-      });
+  // Derived State for Language Selector
+  const languageFamilyMap = languages.reduce((acc: any, lang) => {
+    const family = getLanguageFamily(lang);
+
+    // Determine version for display
+    let version = 'Default';
+    if (lang.includes('-')) {
+      version = lang.split('-')[1];
     } else {
-      await buildEnv(language !== null ? language : '', dependencies, customDockerfile, buildType);
+      // e.g. 'java' -> 'Default' (or could use "Latest")
+    }
+
+    if (family) {
+      if (!acc[family]) acc[family] = [];
+      acc[family].push({ key: lang, version });
+    }
+    return acc;
+  }, {});
+
+  const currentFamily = getLanguageFamily(language || '');
+  const currentVersions = currentFamily && languageFamilyMap[currentFamily] ? languageFamilyMap[currentFamily] : [];
+
+  const isDirty = () => {
+    if (!props.env) return true;
+    const currentRunInstructions = dependencies;
+    const initialRunInstructions = props.env.dockerRunInstructions.join('\n');
+
+    return (
+      language !== props.env.language ||
+      buildType !== props.env.buildType ||
+      currentRunInstructions !== initialRunInstructions ||
+      customDockerfile !== props.env.dockerfile ||
+      requirements !== (props.env.requirements || '') ||
+      autoDetect !== props.env.autoDetect ||
+      !dictionariesEqual(envVars, props.env.envVars || {})
+    );
+  };
+
+  const dictionariesEqual = (a: Record<string, string>, b: Record<string, string>) => {
+    const aKeys = Object.keys(a).sort();
+    const bKeys = Object.keys(b).sort();
+    if (aKeys.length !== bKeys.length) return false;
+    for (let i = 0; i < aKeys.length; i++) {
+      const key = aKeys[i];
+      if (key !== bKeys[i] || a[key] !== b[key]) return false;
+    }
+    return true;
+  };
+
+  const buildStatusCallback = (result: any) => {
+    const { inProgress, isSuccess, logs, dockerfile } = result;
+    setBuildLogs(logs || '');
+    setBuildDockerfile(dockerfile || '');
+    if (inProgress === false) {
+      setBuildInProgress(false);
+      setBuildIsSuccess(isSuccess);
+      props.reloadEnv();
     }
   };
+
+  // Preview Logic
+  const fetchPreview = async () => {
+    if (!props.env) return;
+    try {
+      const result = await Environment.preview({
+        id: props.env.id,
+        language: language || props.env.language,
+        buildType: buildType,
+        dockerfile: customDockerfile,
+        dockerRunInstructions: dependencies ? dependencies.split('\n') : [],
+        requirements: requirements,
+      });
+      setPreviewContent(result);
+    } catch (e) {
+      message.error('Failed to generate preview');
+    }
+  };
+
+  useEffect(() => {
+    if (previewVisible) {
+      fetchPreview();
+    }
+  }, [previewVisible]);
+
+  // Keyboard shortcut for Save (Ctrl+S / Cmd+S)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        message.loading({ content: 'Saving...', key: 'save_shortcut' });
+        saveEnv(false).then(() => {
+          message.success({ content: 'Saved via shortcut', key: 'save_shortcut' });
+        });
+      }
+    };
+    // Use capture phase to intercept Ctrl+S before Monaco Editor consumes it
+    window.addEventListener('keydown', handleKeyDown, { capture: true });
+    return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
+  }, [saveEnv]);
 
   const saveCompileText = async (newText: string) => {
     await props.updateCompileText(newText);
@@ -127,334 +247,634 @@ export const EnvironmentSpecs = (props: IProps) => {
     if (props.env) {
       const dockerfile = await Environment.dockerfile(props.env.id);
       const a = document.createElement('a');
-      a.href = `data:text/plain;charset=utf-8,${dockerfile}`;
+      a.href = `data:text/plain;charset=utf-8,${encodeURIComponent(dockerfile)}`;
       a.download = `${props.currentAssignment.name}-dockerfile`;
       document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
     }
   };
 
-  const buildEnv = async (language: string, dependencies: string, customDockerfile: string, buildType: string) => {
-    // First post/patch the new fields to the object
-    const newEnvironment = await props.updateEnv(language, dependencies, customDockerfile, buildType);
+  // Run on mount
+  useEffect(() => {
+    scanForManifests(false);
+  }, [props.env?.id]);
 
-    // Reset the logs and the in progress
-    setBuildInProgress(true);
-    setBuildLogs('');
+  /******************************* API / State Change Functions ****************************/
 
-    // Wait for the build to be triggered
-    await Environment.build({ ...newEnvironment, language });
-
-    // Set up polling for the result
-    awaitBuildResult(newEnvironment.id, buildStatusCallback);
-  };
-
-  const onSave = async () => {
-    const latestAssignment = await Assignment.read(props.currentAssignment.id);
-    // Show a warning if the language has changed or test categories have been defined already
-    if (props.env && language !== props.env.language && latestAssignment.testCategories.length > 0) {
-      // prompt warning
-      confirm({
-        title: `Are you sure you want to change the language of the environment?`,
-        content: 'This may cause existing tests to stop working.',
-        onOk() {
-          saveEnv();
-        },
-        onCancel() {
-          return;
-        },
-      });
-    } else {
-      saveEnv();
+  useEffect(() => {
+    if (props.env) {
+      // Only set these if they aren't already set, or if we switched environments
+      setLanguage(props.env.language);
+      setDependencies(props.env.dockerRunInstructions.join('\n'));
+      setBuildType(props.env.buildType);
+      setCustomDockerfile(props.env.dockerfile);
+      setRequirements(props.env.requirements || '');
+      setAutoDetect(props.env.autoDetect);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.env?.id]);
 
-  /******************************* State Change Functions ****************************/
-  // Callback function for each poll to build status
-  const buildStatusCallback = (result: {
-    inProgress: boolean;
-    isSuccess: boolean;
-    logs: string;
-    dockerfile: string;
-  }) => {
-    setBuildInProgress(result.inProgress);
-    setBuildIsSuccess(result.isSuccess);
-    setBuildLogs(result.logs);
-    setDockerfile(result.dockerfile);
+  useEffect(() => {
+    if (props.env && props.env.id) {
+      awaitBuildResult(props.env.id, buildStatusCallback);
+    }
+  }, [props.env && props.env.id]);
 
-    if (result.isSuccess) {
-      props.reloadEnv();
+  useEffect(() => {
+    if (!props.env && language) {
+      // Logic for new environment creation immediate save (if applicable)
+    }
+  }, [language]);
+
+  /******************************* UI Helpers ****************************/
+
+  const onFamilyChange = (family: string) => {
+    if (!family) {
+      setLanguage('');
+      return;
+    }
+    const versions = languageFamilyMap[family];
+    // Default to first version
+    if (versions && versions.length > 0) {
+      onLanguageChange(versions[0].key);
     }
   };
 
   const onLanguageChange = (value: string) => {
-    setLanguage(value);
-    setBuildType(value === 'other' ? 'alpine' : 'default');
-
-    // if it's a new language, reset dependencies
-    if (!props.env || value !== props.env.language) {
-      setDependencies('');
-      setBuildType(value === 'other' ? 'alpine' : 'default');
-    }
-    // if we return to old language, reset dependencies to props
-    if (props.env && value === props.env.language) {
-      setDependencies(props.env.dockerRunInstructions.join('\n'));
-      setBuildType(props.env.buildType);
+    setLanguage(value || '');
+    if (value === 'other') {
+      setBuildType('ubuntu');
+    } else {
+      setBuildType('default');
     }
   };
 
-  const onDependenciesChange = (event: any) => {
-    setDependencies(event.target.value);
+  // ... (deps change handlers same as before) ...
+  const onDependenciesChange = (value: string | undefined) => {
+    const newVal = value || '';
+    setDependencies(newVal);
+    stateRef.current.dependencies = newVal;
   };
 
-  const onCustomDockerfileChange = (event: any) => {
-    setCustomDockerfile(event.target.value);
+  const onCustomDockerfileChange = (value: string | undefined) => {
+    const newVal = value || '';
+    setCustomDockerfile(newVal);
+    stateRef.current.customDockerfile = newVal;
   };
 
-  const onBuildTypeChange = (e: any) => {
-    const newBuildType = e.target.value === 'default' ? 'default' : 'ubuntu';
-    setBuildType(newBuildType);
-    if (!props.env || newBuildType !== props.env.buildType) {
-      setDependencies('');
-    }
-    if (props.env && newBuildType === props.env.buildType) {
-      setDependencies(props.env.dockerRunInstructions.join('\n'));
-    }
-  };
-
-  const onCustomBuildChange = (type: string) => {
+  const changeBuildType = (type: string) => {
     setBuildType(type);
+  };
+
+  const onAutoDetectChange = (checked: boolean) => {
+    setAutoDetect(checked);
   };
 
   /******************************* Return ****************************/
 
   if (props.loading) {
-    return (
-      <div className="display-flex justify-content-center align-items-center">
-        <Skeleton active />
-      </div>
-    );
+    return <Skeleton active />;
   }
 
-  //************ 1A. ENVIRONMENT -  SELECT LANGUAGE
-  const selectLanguage = (
-    // Disable selector if environment has a custom dockerfile defined
-    <Select value={language || undefined} onChange={onLanguageChange} style={{ minWidth: 300 }}>
-      {languages.map((language) => {
-        return (
-          <Option key={language} value={language}>
-            {language}
-          </Option>
-        );
-      })}
-    </Select>
+  // Show auto-detect status panel when autoDetect is enabled
+  const autoDetectStatusPanel = props.env && props.env.autoDetect && (
+    <AutoDetectStatus environment={props.env} onRefresh={props.reloadEnv} />
   );
-  const lookupValue = buildType === 'default' ? language : buildType;
-  const installText = (lookupValue && locale[lookupValue].installCmd) || '';
-  const envSpecText = lookupValue && locale[lookupValue].environment;
-  const languageIcon = (
-    <Tooltip title={envSpecText}>
-      <DatabaseTwoTone twoToneColor={themeVars.theme.brandPrimary} />
-    </Tooltip>
+
+  //************ 1A. ENVIRONMENT -  SELECT TEMPLATE
+  const selectTemplate = (
+    <div style={{ display: 'flex', gap: 10 }}>
+      <Select
+        placeholder="Select Language"
+        value={currentFamily || undefined}
+        onChange={onFamilyChange}
+        style={{ width: 200 }}
+        size="large"
+      >
+        {Object.keys(languageFamilyMap).map((family) => (
+          <Option key={family} value={family}>
+            {family}
+          </Option>
+        ))}
+      </Select>
+
+      {currentVersions.length > 1 && (
+        <Select
+          placeholder="Version"
+          value={language || undefined}
+          onChange={onLanguageChange}
+          style={{ width: 150 }}
+          size="large"
+        >
+          {currentVersions.map((v: any) => (
+            <Option key={v.key} value={v.key}>
+              {v.version}
+            </Option>
+          ))}
+        </Select>
+      )}
+      <Tooltip
+        title={`Scan for ${locale[language || 'python-3.12']?.dependencyFile || 'manifest'} files in the assignment`}
+      >
+        <Button icon={<SearchOutlined />} onClick={() => scanForManifests(true)} size="large">
+          Scan for Manifests
+        </Button>
+      </Tooltip>
+    </div>
   );
 
   //************ 1B. ENVIRONMENT -  SELECT BUILD TYPE
-  const buildOptions = (
-    <Radio.Group onChange={onBuildTypeChange} value={buildType === 'default' ? 'default' : 'custom'}>
-      <Radio value={'default'} disabled={language === 'other'}>
-        Default (recommended)
-      </Radio>
-      <Radio value={'custom'}>Custom</Radio>
-    </Radio.Group>
-  );
 
-  const customBuildSelect = buildType !== 'default' && (
-    <Select value={buildType} onChange={onCustomBuildChange} style={{ minWidth: 200 }}>
-      <Option key={'ubuntu'} value={'ubuntu'}>
-        Ubuntu
-      </Option>
-      <Option key={'alpine'} value={'alpine'}>
-        Alpine-Linux
-      </Option>
-      <Option key={'windows'} disabled={true} value={'windows'}>
-        Windows (coming soon)
-      </Option>
-    </Select>
-  );
+  const depConfig = language && locale[language] && locale[language].dependencyFile ? locale[language] : null;
 
-  //************ 1C. Install packages ******************
-  const placeholder = `// new line separated
-${installText} package1
-${installText} package2
-...`;
+  //************ 2. ADVANCED CONFIGURATION
 
   const dependenciesInput = (
-    // Disable selector if environment has a custom dockerfile defined
-    // <Input.TextArea
-    //   autoSize={{ minRows: 4, maxRows: 8 }}
-    //   value={dependencies}
-    //   onChange={onDependenciesChange}
-    //   placeholder={placeholder}
-    //   style={{ marginLeft: '15px', width: '50%' }}
-    // />
     <Editor
-      height="200px"
+      height="250px"
       defaultLanguage="shell"
       value={dependencies}
       onChange={onDependenciesChange}
-      defaultValue={placeholder}
       theme="vs-dark"
-      options={{ minimap: { enabled: false }, fontSize: 14, wordWrap: 'on' }}
+      options={{ minimap: { enabled: false }, fontSize: 13, wordWrap: 'on', padding: { top: 10 } }}
     />
   );
-
-  const dockerPlaceholder = `// docker file syntax
-// adding commands here will replace any text in 'Install packages'
-RUN ${installText} package1
-RUN ${installText} package2
-...`;
 
   const customDockerInput = props.env && (
     <Editor
-      height="200px"
+      height="300px"
       defaultLanguage="dockerfile"
       value={customDockerfile}
       onChange={onCustomDockerfileChange}
-      defaultValue={dockerPlaceholder}
       theme="vs-dark"
-      options={{ minimap: { enabled: false }, fontSize: 14, wordWrap: 'on' }}
+      options={{ minimap: { enabled: false }, fontSize: 13, wordWrap: 'on', padding: { top: 10 } }}
     />
   );
 
-  const install =
-    buildType === 'default' ? (
-      <span>
-        <div className="display-flex">
-          <div className="display-flex flex-direction-column">
-            <span>
-              Install packages:{' '}
-              <Tooltip title="Add newline-delimited install commands">
-                <InfoOutlined />
-              </Tooltip>
-            </span>{' '}
-          </div>{' '}
-          <br />
-          {dependenciesInput}
-        </div>
-      </span>
-    ) : (
-      <Tabs defaultActiveKey={props.env && props.env.dockerfile.length > 0 ? '2' : '1'} style={{ width: '80%' }}>
-        <Tabs.TabPane key="1" tab="Install packages">
-          {dependenciesInput}
-        </Tabs.TabPane>
-        <Tabs.TabPane key="2" tab="[Advanced] Custom dockerfile">
-          {customDockerInput}
-        </Tabs.TabPane>
-      </Tabs>
-    );
+  const manifestTab = depConfig
+    ? {
+        key: '1',
+        label: depConfig.dependencyFile, // e.g. "Project Dependencies (pom.xml)"? User said "Manifest" defaults.
+        children: (
+          <>
+            <Alert message={depConfig.dependencyHelp} type="info" showIcon style={{ marginBottom: 10 }} />
+            <Editor
+              height="250px"
+              defaultLanguage={depConfig.dependencyMode || 'text'}
+              value={requirements}
+              onChange={(value) => setRequirements(value || '')}
+              theme="vs-dark"
+              options={{ minimap: { enabled: false }, fontSize: 13, wordWrap: 'on', padding: { top: 10 } }}
+            />
+          </>
+        ),
+      }
+    : null;
 
-  if (props.env === undefined && language === null) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <Empty
-          style={{ marginTop: '20px', maxWidth: '400px' }}
-          description={
-            <span>
-              To run tests using codePost, start by creating a language. Otherwise, you can define tests but you'll have
-              to run them elsewhere.
-            </span>
-          }
-        >
-          Select language: {selectLanguage}
-        </Empty>
+  const systemTab = {
+    key: '2',
+    label: 'System Packages',
+    children: (
+      <>
+        <Alert
+          message="Install system-level packages (e.g. via apt-get or apk)."
+          type="info"
+          showIcon
+          style={{ marginBottom: 10 }}
+        />
+        {dependenciesInput}
+      </>
+    ),
+  };
+
+  // Env Vars Logic
+
+  const addEnvVar = () => {
+    if (!newEnvKey.trim()) {
+      message.warning('Key cannot be empty');
+      return;
+    }
+    if (envVars[newEnvKey.trim()]) {
+      message.warning('Key already exists');
+      return;
+    }
+    setEnvVars({ ...envVars, [newEnvKey.trim()]: newEnvVal });
+    setNewEnvKey('');
+    setNewEnvVal('');
+  };
+
+  const removeEnvVar = (key: string) => {
+    const next = { ...envVars };
+    delete next[key];
+    setEnvVars(next);
+  };
+
+  const updateEnvVarVal = (key: string, val: string) => {
+    setEnvVars({ ...envVars, [key]: val });
+  };
+
+  const envVarsInput = (
+    <div style={{ padding: 10 }}>
+      <Typography.Title level={5}>Runtime Environment Variables</Typography.Title>
+      <Alert
+        message="These variables will be available to the student code at runtime."
+        type="info"
+        showIcon
+        style={{ marginBottom: 15 }}
+      />
+
+      {Object.entries(envVars).map(([k, v]) => (
+        <div key={k} style={{ display: 'flex', marginBottom: 8, gap: 10 }}>
+          <Input value={k} disabled style={{ width: '30%' }} />
+          <Input
+            value={v}
+            onChange={(e) => updateEnvVarVal(k, e.target.value)}
+            style={{ flex: 1 }}
+            placeholder="Value"
+          />
+          <Button danger icon={<DeleteOutlined />} onClick={() => removeEnvVar(k)} />
+        </div>
+      ))}
+
+      <div
+        style={{
+          display: 'flex',
+          marginTop: 15,
+          gap: 10,
+          alignItems: 'center',
+          borderTop: '1px solid #eee',
+          paddingTop: 15,
+        }}
+      >
+        <Input
+          placeholder="NEW_VAR_NAME"
+          value={newEnvKey}
+          onChange={(e) => setNewEnvKey(e.target.value.toUpperCase())}
+          style={{ width: '30%' }}
+        />
+        <Input
+          placeholder="Value"
+          value={newEnvVal}
+          onChange={(e) => setNewEnvVal(e.target.value)}
+          style={{ flex: 1 }}
+          onPressEnter={addEnvVar}
+        />
+        <Button type="primary" onClick={addEnvVar}>
+          Add
+        </Button>
       </div>
-    );
-  }
+    </div>
+  );
+
+  const envVarsTab = {
+    key: '4',
+    label: 'Environment Variables',
+    children: envVarsInput,
+  };
+
+  // Logic: Use Manifest tab as default if available.
+  const DEFAULT_TAB = manifestTab ? '1' : '2';
 
   const showAfterCreation = (
-    <div>
-      <Divider />
-      <Typography.Title level={3}>2. Create a runscript</Typography.Title>
-      <span>
-        <b>Instructions</b>: A runscript is run once before any test run. If you're using a compiled language, use this
-        script to compile. You can also perform pre-processing here.
-      </span>
-      <br />
-      <br />
-
+    <Card
+      title={
+        <span>
+          <CodeOutlined /> Pre-test Runscript{' '}
+          <CPTooltip title="Runs before tests (e.g., compile code)." infoIcon={true} style={{ marginLeft: 8 }} />
+        </span>
+      }
+      style={{ marginTop: 20 }}
+      extra={<Typography.Text type="secondary">Runs before tests (e.g., compile code)</Typography.Text>}
+      variant="borderless"
+    >
       <CodeWindow
         code={(props.env && props.env.compileText) || ''}
         name={'.sh'}
         onSave={saveCompileText}
         height={'200px'}
       />
-      <Divider />
-      <Typography.Title level={3}>3. Add helper files</Typography.Title>
-      <span>
-        <b>Instructions</b>: Helper files can be imported by tests, student code, or solution code.
-      </span>
-      <br />
-      <br />
-      <TestFileList
-        files={props.helpers}
-        addFile={props.addFile.bind({}, FILE_TYPE.HELPER)}
-        deleteFile={props.deleteFile.bind({}, FILE_TYPE.HELPER)}
-        updateFile={props.updateFile.bind({}, FILE_TYPE.HELPER)}
-        height={300}
-        title="Upload custom dependencies"
-      />
-      <Divider />
-      <Typography.Title level={3}>4. Add solution code</Typography.Title>
-      <span>
-        <b>Instructions</b>: Solution code is used to check the correctness of your tests. Though optional, it is
-        strongly recommended to verify that your tests perform as expected on solution code.
-      </span>
-      <br />
-      <br />
-      <TestFileList
-        files={props.solutions}
-        addFile={props.addFile.bind({}, FILE_TYPE.SOLUTION)}
-        deleteFile={props.deleteFile.bind({}, FILE_TYPE.SOLUTION)}
-        updateFile={props.updateFile.bind({}, FILE_TYPE.SOLUTION)}
-        height={300}
-        title="Upload solution code"
+    </Card>
+  );
+
+  // ****************** RENDER HELPERS ******************
+
+  let statusBadge = (
+    <Tag icon={<CloseCircleOutlined />} color="default">
+      Not Configured
+    </Tag>
+  );
+
+  if (buildInProgress) {
+    statusBadge = (
+      <Tag icon={<SyncOutlined spin />} color="processing">
+        Building...
+      </Tag>
+    );
+  } else if (buildIsSuccess === true) {
+    statusBadge = (
+      <Tag
+        icon={<CheckCircleOutlined />}
+        color="success"
+        style={{ cursor: 'pointer' }}
+        onClick={() => setShowLogsModal(true)}
+      >
+        Build Successful
+      </Tag>
+    );
+  } else if (buildIsSuccess === false) {
+    if (buildLogs && buildLogs.includes('Reset for Auto-Detection')) {
+      statusBadge = (
+        <Tag icon={<SyncOutlined />} color="processing">
+          Waiting for Auto-Detect
+        </Tag>
+      );
+    } else {
+      statusBadge = (
+        <Tag
+          icon={<CloseCircleOutlined />}
+          color="error"
+          style={{ cursor: 'pointer' }}
+          onClick={() => setShowLogsModal(true)}
+        >
+          Build Failed
+        </Tag>
+      );
+    }
+  } else if (props.env) {
+    // Existing env but no recent build info in session vertical
+    // Use lastBuilt if available or just say "Ready"
+    statusBadge = (
+      <Tag icon={<CheckCircleOutlined />} color="default">
+        Ready
+      </Tag>
+    );
+  }
+
+  //************ 1B. ENVIRONMENT -  STRATEGY SELECTION
+  // Grouping Build Type and Base Image logic into a clearer "Strategy" selector
+
+  const onStrategyChange = (e: any) => {
+    const strategy = e.target.value;
+    if (strategy === 'default') {
+      setBuildType('default');
+      // If language was 'other', reset to python default or something?
+      if (language === 'other') {
+        onFamilyChange('Python'); // fallback
+      }
+    } else {
+      // Custom strategy
+      setBuildType('ubuntu'); // default custom base
+      setLanguage('other');
+    }
+  };
+
+  const strategySelector = (
+    <div style={{ marginBottom: 20 }}>
+      <Typography.Title level={5}>
+        1. Environment Strategy
+        <CPTooltip
+          title="Choose between a pre-configured environment (Managed) or a fully custom Dockerfile."
+          infoIcon={true}
+          style={{ marginLeft: 8 }}
+        />
+      </Typography.Title>
+      <Radio.Group onChange={onStrategyChange} value={buildType === 'default' ? 'default' : 'custom'}>
+        <Radio.Button value="default" style={{ width: 150, textAlign: 'center' }}>
+          Managed
+        </Radio.Button>
+        <Radio.Button value="custom" style={{ width: 150, textAlign: 'center' }}>
+          Custom Dockerfile
+        </Radio.Button>
+      </Radio.Group>
+      <div style={{ marginTop: 8 }}>
+        {buildType === 'default' ? (
+          <Typography.Text type="secondary">
+            Pre-built environments for common languages. Easy to configure.
+          </Typography.Text>
+        ) : (
+          <Typography.Text type="secondary">Full control via Dockerfile. For advanced users.</Typography.Text>
+        )}
+      </div>
+    </div>
+  );
+
+  //************ 2. MANAGED CONFIGURATION
+  const managedConfig = (
+    <div style={{ marginTop: 20 }}>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 20 }}>{selectTemplate}</div>
+
+      <Typography.Title level={5}>
+        2. Configuration
+        <CPTooltip title="Manage dependencies and packages." infoIcon={true} style={{ marginLeft: 8 }} />
+      </Typography.Title>
+      <Tabs
+        defaultActiveKey={DEFAULT_TAB}
+        type="card"
+        items={[...(manifestTab ? [manifestTab] : []), systemTab, envVarsTab]}
       />
     </div>
   );
 
-  return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
-          <Typography.Title level={3} style={{ marginBottom: 0 }}>
-            1. Define environment
-          </Typography.Title>
-          <BuildDetailModal
-            inProgress={buildInProgress}
-            isSuccess={buildIsSuccess}
-            logs={buildLogs}
-            dockerfile={dockerfile}
-          />
-        </div>
-        <div>
-          <Button type="primary" onClick={onSave} loading={buildInProgress}>
-            {props.env ? 'Update' : 'Create'}
+  //************ 3. CUSTOM CONFIGURATION
+  const customConfig = (
+    <div style={{ marginTop: 20 }}>
+      <div style={{ marginBottom: 20 }}>
+        <Typography.Text strong>Base Image Logic: </Typography.Text>
+        <Radio.Group
+          onChange={(e) => changeBuildType(e.target.value)}
+          value={buildType === 'ubuntu' || buildType === 'alpine' ? buildType : 'ubuntu'}
+        >
+          <Radio value={'ubuntu'}>Ubuntu 18.04 (apt-get)</Radio>
+          <Radio value={'alpine'}>Alpine Linux (apk)</Radio>
+        </Radio.Group>
+      </div>
+
+      <Alert
+        message={`You are in Custom Mode. The detected overrides will be appended to the ${buildType === 'alpine' ? 'Alpine' : 'Ubuntu'} base image.`}
+        type="info"
+        showIcon
+        style={{ marginBottom: 15 }}
+        action={
+          <Button
+            size="small"
+            type="primary"
+            onClick={() => {
+              // Load template
+              const isAlpine = buildType === 'alpine';
+              const install = isAlpine ? 'apk add' : 'apt-get install -y';
+              const base = isAlpine ? 'alpine:3.11' : 'ubuntu:18.04';
+
+              const content = `# Dockerfile template for Custom Build\n# Base Image: ${base} (inc. bash, python3, make)\n\nRUN ${install} git\n\n`;
+              setCustomDockerfile(content);
+            }}
+          >
+            Reset to Template
           </Button>
-          {props.env && (
-            <Button style={{ marginLeft: 10 }} onClick={downloadDockerfile} disabled={buildInProgress}>
-              Download
-            </Button>
+        }
+      />
+      <Typography.Title level={5}>Additional Dockerfile Commands</Typography.Title>
+      {customDockerInput}
+    </div>
+  );
+
+  const manualConfiguration = (
+    <div style={{ marginTop: 20 }}>
+      {strategySelector}
+
+      {buildType === 'default' ? managedConfig : customConfig}
+    </div>
+  );
+
+  const autoDetectView = (
+    <div style={{ padding: '20px 0' }}>
+      <div style={{ textAlign: 'center' }}>
+        <Result
+          icon={<RobotOutlined style={{ color: themeVars.theme.brandPrimary }} />}
+          title="Auto-Detect Enabled"
+          subTitle="We will automatically detect the language and dependencies from student submissions."
+          extra={[
+            <div key="desc" style={{ maxWidth: 500, margin: '0 auto', textAlign: 'left', color: 'rgba(0,0,0,0.65)' }}>
+              <ul style={{ listStyleType: 'circle' }}>
+                <li>
+                  Submissions with <b>.py</b> files will trigger Python environment.
+                </li>
+                <li>
+                  Submissions with <b>pkg.json</b> or <b>requirements.txt</b> will auto-install dependencies.
+                </li>
+                <li>
+                  <b>Note:</b> You can still define a Runscript below.
+                </li>
+              </ul>
+            </div>,
+          ]}
+        />
+      </div>
+
+      {/* Environment Variables (available in both modes) */}
+      <Card
+        title="Runtime Environment Variables"
+        style={{ marginTop: 20, textAlign: 'left', maxWidth: 700, margin: '20px auto' }}
+      >
+        {envVarsInput}
+      </Card>
+
+      {/* Auto-Detect Status Panel moved below Env Vars as requested */}
+      {autoDetectStatusPanel}
+    </div>
+  );
+
+  return (
+    <div style={{ padding: 20, backgroundColor: '#f0f2f5', minHeight: '100%' }}>
+      {/* Header Section */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <div>
+          <Typography.Title level={4} style={{ marginBottom: 5 }}>
+            Environment Configuration
+          </Typography.Title>
+          <Space>
+            Status: {statusBadge}
+            {buildIsSuccess === false && (
+              <Button size="small" type="link" onClick={() => setShowLogsModal(true)}>
+                View Logs
+              </Button>
+            )}
+          </Space>
+        </div>
+        <Space>
+          <Button type="default" size="large" onClick={() => setShowLogsModal(true)} icon={<BuildOutlined />}>
+            Build Logs
+          </Button>
+
+          <Button icon={<EyeOutlined />} onClick={() => setPreviewVisible(true)} size="large">
+            Preview
+          </Button>
+          <Button
+            type="default"
+            size="large"
+            onClick={() => saveEnv(false)}
+            loading={buildInProgress}
+            disabled={!isDirty()}
+          >
+            Save Changes
+          </Button>
+          <Button type="primary" size="large" onClick={() => saveEnv(true)} loading={buildInProgress}>
+            {props.env ? 'Update & Build' : 'Create & Build'}
+          </Button>
+        </Space>
+      </div>
+
+      {/* Main Configuration Card */}
+      <Card bordered={false} style={{ marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', paddingBottom: 20, borderBottom: '1px solid #f0f0f0' }}>
+          <span style={{ marginRight: 15, fontWeight: 600, fontSize: 16 }}>Mode:</span>
+          <Radio.Group
+            value={autoDetect ? 'auto' : 'manual'}
+            onChange={(e) => onAutoDetectChange(e.target.value === 'auto')}
+            buttonStyle="solid"
+          >
+            <Radio.Button value="auto">Auto-Detect</Radio.Button>
+            <Radio.Button value="manual">Manual Configuration</Radio.Button>
+          </Radio.Group>
+
+          {autoDetect && (
+            <Tag color="blue" style={{ marginLeft: 15 }}>
+              Recommended
+            </Tag>
           )}
         </div>
-      </div>
-      Language: {selectLanguage} &nbsp; {languageIcon}
-      <br />
-      <br />
-      <span style={{ lineHeight: '32px' }}>Build type:</span> {buildOptions} {customBuildSelect}
-      <br />
-      <br />
-      <div>{install}</div>
+
+        {autoDetect ? autoDetectView : manualConfiguration}
+      </Card>
+
+      {/* Runscript Section */}
       {props.env ? showAfterCreation : null}
+
+      {/* Modals */}
+      <BuildDetailModal
+        visible={showLogsModal}
+        onClose={() => setShowLogsModal(false)}
+        inProgress={buildInProgress}
+        isSuccess={buildIsSuccess}
+        logs={buildLogs}
+        dockerfile={buildDockerfile}
+      />
+
+      {/* Dockerfile Preview Drawer */}
+      <Drawer
+        title="Parsed Dockerfile Preview"
+        placement="right"
+        width={720}
+        onClose={() => setPreviewVisible(false)}
+        open={previewVisible}
+        extra={
+          <Button type="primary" onClick={downloadDockerfile}>
+            Download
+          </Button>
+        }
+      >
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Alert
+            message="This is a preview of the Dockerfile that will be generated based on your current settings."
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+          <div style={{ flex: 1, border: '1px solid #d9d9d9' }}>
+            <Editor
+              language="dockerfile"
+              theme="vs-light"
+              value={previewContent || '// Loading...'}
+              options={{
+                readOnly: true,
+                minimap: { enabled: false },
+                fontSize: 12,
+                scrollBeyondLastLine: false,
+              }}
+            />
+          </div>
+        </div>
+      </Drawer>
     </div>
   );
 };

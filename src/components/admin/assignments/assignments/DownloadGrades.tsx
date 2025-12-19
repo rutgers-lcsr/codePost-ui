@@ -73,9 +73,11 @@ const DownloadGrades = (props: IProps) => {
 
   // ********************************** HELPER FUNCTIONS ****************************************
   const onDownload = () => {
-    props.activeAssignment
-      ? downloadAssignmentGrades(props.activeAssignment, missingAsZero)
-      : downloadAllGrades(missingAsZero);
+    if (props.activeAssignment) {
+      downloadAssignmentGrades(props.activeAssignment, missingAsZero);
+    } else {
+      downloadAllGrades(missingAsZero);
+    }
     props.onCancel();
   };
 
@@ -184,9 +186,8 @@ const DownloadGrades = (props: IProps) => {
         onOk={onDownload}
       >
         <div>
-          <div>{`Some students in your course have ${numMissing ? 'missing' : ''} ${
-            numMissing && numUngraded ? 'and' : ''
-          } ${numUngraded ? 'unfinalized' : ''} submissions. How would you like to handle these?`}</div>
+          <div>{`Some students in your course have ${numMissing ? 'missing' : ''} ${numMissing && numUngraded ? 'and' : ''
+            } ${numUngraded ? 'unfinalized' : ''} submissions. How would you like to handle these?`}</div>
           {numMissing ? (
             <div>
               <Divider />

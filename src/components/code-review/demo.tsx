@@ -24,6 +24,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     sortKey: 0,
     anonymousGrading: false,
     allowRegradeRequests: false,
+    studentsCanSeeGraders: false,
     regradeInstructions: '',
     regradeDeadline: '',
     hideGradersFromStudents: false,
@@ -47,12 +48,13 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     showFrequentlyUsedRubricComments: false,
     allowLateUploads: false,
     maxStudentTestRuns: null,
-    exposeDumpLogs: false,
+
     explanation: '',
     isVisible: true,
     hideFrom: [],
     nudgeMode: false,
     lateDeductions: [],
+    dataSets: [],
   };
 
   const demoCourse: CourseType = {
@@ -75,6 +77,8 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     emailWhitelist: '',
     inviteCodeEnabled: false,
     enableStudentFeedbackNotifications: false,
+    expiration_date: null,
+    studentsCanSeeGraders: false,
   };
 
   const demoSubmission: AnonymousSubmissionType = {
@@ -105,7 +109,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     files.forEach((file, index) => {
       fileList.push({
         id: index,
-        code: file.data,
+        data: file.data,
         comments: [],
         extension: file.name.split('.')[1],
         name: file.name,
@@ -266,6 +270,9 @@ IndexError: list index out of range`,
         outputIsFile: false,
         isFlexible: false,
         outputIsRegexp: false,
+        expectPlot: false,
+        dataSet: null,
+        targetCellId: null,
       },
       {
         id: -2,
@@ -289,6 +296,9 @@ IndexError: list index out of range`,
         outputIsFile: false,
         isFlexible: false,
         outputIsRegexp: false,
+        expectPlot: false,
+        dataSet: null,
+        targetCellId: null,
       },
     ],
   };
@@ -323,6 +333,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     sortKey: 0,
     anonymousGrading: false,
     allowRegradeRequests: false,
+    studentsCanSeeGraders: false,
     regradeInstructions: '',
     regradeDeadline: '',
     hideGradersFromStudents: false,
@@ -346,12 +357,13 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     showFrequentlyUsedRubricComments: false,
     allowLateUploads: false,
     maxStudentTestRuns: null,
-    exposeDumpLogs: false,
+
     explanation: '',
     isVisible: true,
     hideFrom: [],
     nudgeMode: false,
     lateDeductions: [],
+    dataSets: [],
   };
 
   const demoCourse: CourseType = {
@@ -374,6 +386,8 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     emailWhitelist: '',
     inviteCodeEnabled: false,
     enableStudentFeedbackNotifications: false,
+    expiration_date: null,
+    studentsCanSeeGraders: false,
   };
 
   const demoSubmission: AnonymousSubmissionType = {
@@ -433,7 +447,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     files.forEach((file, index) => {
       fileList.push({
         id: index,
-        code: file.data,
+        data: file.data,
         comments: [],
         extension: file.name.split('.')[1],
         name: file.name,
@@ -459,6 +473,16 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
       assignment: 1,
       pointLimit: null,
       sortKey: 0,
+      helpText: '',
+      atMostOnce: false,
+    },
+    {
+      id: 2,
+      name: 'Performance',
+      rubricComments: [],
+      assignment: 1,
+      pointLimit: null,
+      sortKey: 1,
       helpText: '',
       atMostOnce: false,
     },
@@ -524,6 +548,10 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     },
   };
 
+  const tests: SubmissionTestType[] = [];
+  const testCategories: TestCategoryType[] = [];
+  const testCases: TestCasesByCategory = {};
+
   return {
     assignment: demoAssignment,
     course: demoCourse,
@@ -534,9 +562,9 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     selectedFile: fileList.length > 0 ? fileList[0] : undefined,
     rubricCategories: rubricCategoryList,
     rubricComments: rubricCommentsMap,
-    tests: [],
-    testCategories: [],
-    testCases: {},
+    tests,
+    testCategories,
+    testCases,
     permissionLevel: PERMISSION_LEVEL.READ,
     readOnlySubmission: demoSubmission,
     isStudent: true,

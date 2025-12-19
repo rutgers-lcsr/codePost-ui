@@ -344,7 +344,7 @@ const CIPGraderModal = (props: IGraderModalProps) => {
         notification.success({
           message: 'Course created',
           description: `Vist the newly opened codePost tab to check it out. If you don't see a new tab open, visit www.codepost.io/admin in your browser.`,
-          duration: null,
+          duration: 0,
         });
         props.onClose();
         goToAdminConsole();

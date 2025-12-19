@@ -30,7 +30,6 @@ export const SubmissionV = t.intersection(
     GenericObject,
     t.type({
       isFinalized: t.boolean,
-      files: t.union([t.array(t.number), t.array(SubmissionFileV)]),
       students: t.array(t.string),
       assignment: t.number,
       dateEdited: t.string,
@@ -47,6 +46,9 @@ export const SubmissionV = t.intersection(
       tests: t.array(t.number),
       testRunsCompleted: t.number,
       lateDayCreditsUsed: t.number,
+    }),
+    t.partial({
+      files: t.union([t.array(t.number), t.array(SubmissionFileV)]),
     }),
   ],
   'Submission',
@@ -73,6 +75,9 @@ export const SubmissionInfoV = t.intersection(
       tests: t.array(t.number),
       testRunsCompleted: t.number,
       lateDayCreditsUsed: t.number,
+    }),
+    t.partial({
+      files: t.union([t.array(t.number), t.array(SubmissionFileV)]),
     }),
   ],
   'Submission',
@@ -153,6 +158,7 @@ export const StudentSubmissionV = t.intersection(
       responseDate: t.union([t.string, t.null]),
       dateUploaded: t.union([t.string, t.null]),
       hasGrader: t.boolean,
+      grader: t.union([t.string, t.null]), // Included when studentsCanSeeGraders is enabled
       tests: t.array(t.number),
       lateDayCreditsUsed: t.number,
     }),

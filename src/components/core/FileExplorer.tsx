@@ -43,7 +43,7 @@ const FileExplorer = (props: IProps) => {
                 /> */}
                 <Editor
                   height="80vh"
-                  defaultValue={file.code}
+                  defaultValue={file.data}
                   theme="vs-dark"
                   options={{ readOnly: true, minimap: { enabled: false } }}
                 />

@@ -10,10 +10,8 @@ import { Button, Divider, Modal, Spin, Steps, Table, Tag } from 'antd';
 import _ from 'lodash';
 
 /* codePost object imports */
-import { SourceFileType } from '../../../../../../infrastructure/autograder/sourceFile';
 import { TestCaseType } from '../../../../../../infrastructure/testCase';
 import { TestCategoryType } from '../../../../../../infrastructure/types';
-import { FILE_TYPE } from '../TestingSetup';
 import { IBasicFile } from './../TestDefinitions';
 
 /* codePost interface imports */
@@ -21,7 +19,7 @@ import { TestCasesByCategory } from '../../../../../core/testFetchUtils';
 
 interface IProps {
   // files
-  sourceFiles: SourceFileType[];
+  // files
   currentFile: IBasicFile;
   currentFileCode: string;
 
@@ -63,6 +61,147 @@ export const TestsChangeModal = (props: IProps) => {
   const [status, setStatus] = useState<STATUS>(STATUS.PARSING);
   const [visible, setVisible] = useState(false);
 
+  const checkForErrors = (currentCode: string) => {
+    const errors: { lineNumber: number; log: string }[] = [];
+    const re = /^([^#]*\s)*TestOutput(?!([ ]{1,}"([^"]+?)"[ ]{1,}"([^"]+?)"[ ]{1,}(true|false)( "([^"]*?)")?)).*/g;
+    const lines = currentCode.split('\n');
+
+    lines.forEach((l, i) => {
+      const t = l.match(re);
+      if (t) {
+        errors.push({ lineNumber: i, log: t.toString() });
+      }
+    });
+
+    return errors;
+  };
+
+  // ********************* GET DIFF BETWEEN FILES ******************************
+  const parseTests = (currentCode: string) => {
+    const parsedTests: { [categoryName: string]: Set<string> } = {};
+    const re = /TestOutput[ ]{1,}"([^"]+?)"[ ]{1,}"([^"]+?)"[ ]{1,}(true|false)([ ]{1,}"([^"]*?)")?/g;
+
+    const tests = currentCode.match(re);
+
+    if (tests) {
+      tests.forEach((t) => {
+        // Syntax for the regex match is <TestOutput> <category> <test> <boolean> <log>
+        const [, category, test, ,] = t.split(/(?:"[ ]{1,}|[ ]{1,}")+/);
+
+        const categoryName = category.replace(/"/g, '');
+        const testestName = test.replace(/"/g, '');
+
+        if (categoryName in parsedTests) {
+          parsedTests[categoryName].add(testestName);
+        } else {
+          parsedTests[categoryName] = new Set<string>([testestName]);
+        }
+      });
+    }
+    return parsedTests;
+  };
+
+  const compareDiff = (parsedTests: { [categoryName: string]: Set<string> }, casesByCategory: TestCasesByCategory) => {
+    // 1. Pre-process data to make comparison faster
+    //    a) We get categories by id for fast lookup
+    //    b) We get test cases by name by category name. That way we can find the
+    //       testcase obj corresponding to a (categoryName, testCaseName) in O(1)
+    const categoriesByID: { [categoryID: number]: TestCategoryType } = props.categories.reduce(
+      (acc: { [categoryID: number]: TestCategoryType }, val) => {
+        acc[val.id] = val;
+        return acc;
+      },
+      {},
+    );
+
+    const casesByCategoryName: { [categoryName: string]: { [testCaseName: string]: TestCaseType } } = {};
+    Object.keys(props.casesByCategory).forEach((cat) => {
+      const cases = casesByCategory[parseInt(cat, 10)];
+      const categoryName = categoriesByID[parseInt(cat, 10)].name;
+      cases.forEach((c) => {
+        // We want to ignore any non file-defined tests in the comparison
+        if (c.type === 'file') {
+          if (categoryName in casesByCategoryName) {
+            casesByCategoryName[categoryName][c.description] = c;
+          } else {
+            casesByCategoryName[categoryName] = { [c.description]: c };
+          }
+        } else {
+          // Even if the category doesn't have file tests, we still want to include the category so
+          // we don't end up creating duplicates
+          if (!(categoryName in casesByCategoryName)) {
+            casesByCategoryName[categoryName] = {};
+          }
+        }
+      });
+    });
+
+    // 2. Create result data structures
+    const categsToAdd: ICaseNamesByCategoryName = {};
+    const categsToDelete: ICaseNamesByCategoryName = {};
+    const casesToAdd: ICaseNamesByCategoryName = {};
+    const casesToDelete: ICasesByCategoryName = {};
+
+    // 3. Go through new data structure and find diffs to add
+    // For clarity on names vs. objects, we adopt the following:
+    Object.keys(parsedTests).forEach((categName) => {
+      // Check for new categories
+      if (!(categName in casesByCategoryName)) {
+        categsToAdd[categName] = new Set(parsedTests[categName]);
+        return;
+      }
+
+      // Check for new tests in existing categories
+      parsedTests[categName].forEach((testName) => {
+        if (!(testName in casesByCategoryName[categName])) {
+          if (categName in casesToAdd) {
+            casesToAdd[categName].add(testName);
+          } else {
+            casesToAdd[categName] = new Set([testName]);
+          }
+        }
+      });
+    });
+
+    // 4. Go through old data structure and find diffs to delete
+    Object.keys(casesByCategoryName).forEach((categName) => {
+      // Check for deleted categories
+      if (!(categName in parsedTests)) {
+        // check to see if the category contains test cases that aren't file defined
+        let canDelete = true;
+        const thisCategory = props.categories.find((c) => c.name === categName);
+        if (thisCategory && props.casesByCategory[thisCategory.id] !== undefined) {
+          const thisCategoryCases = props.casesByCategory[thisCategory.id];
+          // If the category has no cases then it can't be file defined
+          if (thisCategoryCases.length === 0) canDelete = false;
+          // If any of the cases aren't file defined, set canDelete to false
+          thisCategoryCases.forEach((c) => c.type !== 'file' && (canDelete = false));
+        }
+
+        if (canDelete) {
+          // We store the test names as well to display in the confirmation modal
+          categsToDelete[categName] = new Set(Object.keys(casesByCategoryName[categName]));
+          // We don't need to loop through the test cases if the category is to be deleted, so we return
+          return;
+        }
+      }
+
+      // Check for deleted tests in existing categories
+      Object.keys(casesByCategoryName[categName]).forEach((testName) => {
+        if (!(categName in parsedTests) || !parsedTests[categName].has(testName)) {
+          const test = { ...casesByCategoryName[categName][testName] };
+          if (categName in casesToDelete) {
+            casesToDelete[categName].push(test);
+          } else {
+            casesToDelete[categName] = [test];
+          }
+        }
+      });
+    });
+
+    return [categsToAdd, categsToDelete, casesToAdd, casesToDelete];
+  };
+
   /******************************* State Variables ****************************/
   useEffect(() => {
     if (props.checkChanges) {
@@ -96,7 +235,7 @@ export const TestsChangeModal = (props: IProps) => {
         });
       } else {
         // No errors
-        const parsedTests = parseTests(props.sourceFiles, props.currentFile, props.currentFileCode);
+        const parsedTests = parseTests(props.currentFileCode);
         const [newCategories, deletedCategories, newTests, deletedTests]: any = compareDiff(
           parsedTests,
           props.casesByCategory,
@@ -120,139 +259,6 @@ export const TestsChangeModal = (props: IProps) => {
       }
     }
   }, [props.checkChanges]);
-
-  const checkForErrors = (currentCode: string) => {
-    const errors: { lineNumber: number; log: string }[] = [];
-    const re = /^([^#]*\s)*TestOutput(?!([ ]{1,}"([^"]+?)"[ ]{1,}"([^"]+?)"[ ]{1,}(true|false)( "([^"]*?)")?)).*/g;
-    const lines = currentCode.split('\n');
-
-    lines.forEach((l, i) => {
-      const t = l.match(re);
-      if (t) {
-        errors.push({ lineNumber: i, log: t.toString() });
-      }
-    });
-
-    return errors;
-  };
-
-  // ********************* GET DIFF BETWEEN FILES ******************************
-  const parseTests = (sourceFiles: SourceFileType[], currentFile: IBasicFile, currentCode: string) => {
-    const parsedTests: { [categoryName: string]: Set<string> } = {};
-    sourceFiles.forEach((f) => {
-      const re = /TestOutput[ ]{1,}"([^"]+?)"[ ]{1,}"([^"]+?)"[ ]{1,}(true|false)([ ]{1,}"([^"]*?)")?/g;
-
-      // The current file is updated, so we want to use the latest code
-      const code = f.id === currentFile.id && currentFile.type === FILE_TYPE.SOURCEFILE ? currentCode : f.code;
-      const tests = code.match(re);
-
-      if (tests) {
-        tests.forEach((t) => {
-          // Syntax for the regex match is <TestOutput> <category> <test> <boolean> <log>
-          const [, category, test, ,] = t.split(/(?:"[ ]{1,}|[ ]{1,}")+/);
-
-          const categoryName = category.replace(/"/g, '');
-          const testestName = test.replace(/"/g, '');
-
-          if (categoryName in parsedTests) {
-            parsedTests[categoryName].add(testestName);
-          } else {
-            parsedTests[categoryName] = new Set<string>([testestName]);
-          }
-        });
-      }
-    });
-    return parsedTests;
-  };
-
-  const compareDiff = (parsedTests: { [categoryName: string]: Set<string> }, casesByCategory: TestCasesByCategory) => {
-    // 1. Pre-process data to make comparison faster
-    //    a) We get categories by id for fast lookup
-    //    b) We get test cases by name by category name. That way we can find the
-    //       testcase obj corresponding to a (categoryName, testCaseName) in O(1)
-    const categoriesByID: { [categoryID: number]: TestCategoryType } = props.categories.reduce(
-      (acc: { [categoryID: number]: TestCategoryType }, val) => {
-        acc[val.id] = val;
-        return acc;
-      },
-      {},
-    );
-
-    const casesByCategoryName: { [categoryName: string]: { [testCaseName: string]: TestCaseType } } = {};
-    Object.keys(props.casesByCategory).forEach((cat) => {
-      const cases = casesByCategory[parseInt(cat, 10)];
-      const categoryName = categoriesByID[parseInt(cat, 10)].name;
-      cases.forEach((c) => {
-        // We want to ignore any non file-defined tests in the comparison
-        if (c.type === 'file') {
-          (categoryName in casesByCategoryName && (casesByCategoryName[categoryName][c.description] = c)) ||
-            (casesByCategoryName[categoryName] = { [c.description]: c });
-        } else {
-          // Even if the category doesn't have file tests, we still want to include the category so
-          // we don't end up creating duplicates
-          !(categoryName in casesByCategoryName) && (casesByCategoryName[categoryName] = {});
-        }
-      });
-    });
-
-    // 2. Create result data structures
-    const categsToAdd: ICaseNamesByCategoryName = {};
-    const categsToDelete: ICaseNamesByCategoryName = {};
-    const casesToAdd: ICaseNamesByCategoryName = {};
-    const casesToDelete: ICasesByCategoryName = {};
-
-    // 3. Go through new data structure and find diffs to add
-    // For clarity on names vs. objects, we adopt the following:
-    Object.keys(parsedTests).forEach((categName) => {
-      // Check for new categories
-      if (!(categName in casesByCategoryName)) {
-        categsToAdd[categName] = new Set(parsedTests[categName]);
-        return;
-      }
-
-      // Check for new tests in existing categories
-      parsedTests[categName].forEach((testName) => {
-        if (!(testName in casesByCategoryName[categName])) {
-          (categName in casesToAdd && casesToAdd[categName].add(testName)) ||
-            (casesToAdd[categName] = new Set([testName]));
-        }
-      });
-    });
-
-    // 4. Go through old data structure and find diffs to delete
-    Object.keys(casesByCategoryName).forEach((categName) => {
-      // Check for deleted categories
-      if (!(categName in parsedTests)) {
-        // check to see if the category contains test cases that aren't file defined
-        let canDelete = true;
-        const thisCategory = props.categories.find((c) => c.name === categName);
-        if (thisCategory && props.casesByCategory[thisCategory.id] !== undefined) {
-          const thisCategoryCases = props.casesByCategory[thisCategory.id];
-          // If the category has no cases then it can't be file defined
-          if (thisCategoryCases.length === 0) canDelete = false;
-          // If any of the cases aren't file defined, set canDelete to false
-          thisCategoryCases.forEach((c) => c.type !== 'file' && (canDelete = false));
-        }
-
-        if (canDelete) {
-          // We store the test names as well to display in the confirmation modal
-          categsToDelete[categName] = new Set(Object.keys(casesByCategoryName[categName]));
-          // We don't need to loop through the test cases if the category is to be deleted, so we return
-          return;
-        }
-      }
-
-      // Check for deleted tests in existing categories
-      Object.keys(casesByCategoryName[categName]).forEach((testName) => {
-        if (!(categName in parsedTests) || !parsedTests[categName].has(testName)) {
-          const test = { ...casesByCategoryName[categName][testName] };
-          (categName in casesToDelete && casesToDelete[categName].push(test)) || (casesToDelete[categName] = [test]);
-        }
-      });
-    });
-
-    return [categsToAdd, categsToDelete, casesToAdd, casesToDelete];
-  };
 
   // ********************* API Chamges ******************************
 
@@ -324,8 +330,6 @@ export const TestsChangeModal = (props: IProps) => {
     },
   ];
 
-  let content;
-  let footer: React.ReactNode[] = [];
   // Helper function to create table data for categories
   const createCategoryRows = (categories: ICaseNamesByCategoryName, changeType: 'ADDED' | 'DELETED') => {
     const color = changeType === 'ADDED' ? 'green' : 'volcano';
@@ -442,8 +446,8 @@ export const TestsChangeModal = (props: IProps) => {
     }
   };
 
-  content = renderContent();
-  footer = renderFooter();
+  const content = renderContent();
+  const footer = renderFooter();
 
   return (
     <div>
@@ -455,11 +459,14 @@ export const TestsChangeModal = (props: IProps) => {
         destroyOnHidden={true}
         footer={footer}
       >
-        <Steps size="small" current={status}>
-          {steps.map((item) => {
-            return <Steps.Step key={item.title} title={item.title} />;
-          })}
-        </Steps>
+        <Steps
+          size="small"
+          current={status}
+          items={steps.map((item) => ({
+            key: item.title,
+            title: item.title,
+          }))}
+        />
         {content}
       </Modal>
     </div>

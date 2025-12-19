@@ -1,0 +1,5 @@
+export enum FILE_TYPE {
+  SUBMISSION,
+  CODEPOST_TEST_FILE,
+  MAIN,
+}

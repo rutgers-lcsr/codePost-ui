@@ -18,8 +18,7 @@ const submission = (domain: string) => {
         /* tslint:ensable */
         comments: [
           {
-            text:
-              'You actually need to pass `midpoint + 1` here. Why? Because you know `arr[midpoint] != el`, so you no longer need to keep it around.',
+            text: 'You actually need to pass `midpoint + 1` here. Why? Because you know `arr[midpoint] != el`, so you no longer need to keep it around.',
             startChar: 39,
             endChar: 47,
             startLine: 49,

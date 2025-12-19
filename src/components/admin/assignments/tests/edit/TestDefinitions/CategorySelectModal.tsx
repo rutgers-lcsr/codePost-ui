@@ -22,6 +22,10 @@ export const CategorySelectModal = (props: IUploadProps) => {
     props.defaultCategory ? props.defaultCategory.id : undefined,
   );
 
+  const toggleVisible = () => {
+    setVisible(!visible);
+  };
+
   // If the user has only created a single category, don't make them choose it
   // through a modal: select it automatically.
   React.useEffect(() => {
@@ -48,9 +52,6 @@ export const CategorySelectModal = (props: IUploadProps) => {
   };
 
   /******************************* State Change Functions ****************************/
-  const toggleVisible = () => {
-    setVisible(!visible);
-  };
 
   const onChange = (value: string) => {
     setCategory(parseInt(value, 10));

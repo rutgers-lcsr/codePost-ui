@@ -29,26 +29,38 @@ export interface FileExecutionResult extends ExecutionResult {
 }
 
 /**
- * Notebook cell output
+ * Notebook cell output (nbformat v4).
+ *
+ * Different output types use different fields:
+ * - stream: output_type, name, text
+ * - execute_result: output_type, data, metadata, execution_count
+ * - display_data: output_type, data, metadata
+ * - error: output_type, ename, evalue, traceback
  */
 export interface NotebookCellOutput {
-  output_type: string;
-  text?: string;
-  name?: string;
-  data?: Record<string, unknown>;
-  execution_count?: number;
+  output_type: 'stream' | 'execute_result' | 'display_data' | 'error';
+  // For stream output
+  name?: 'stdout' | 'stderr';
+  text?: string | string[];
+  // For execute_result/display_data (MIME-type keyed)
+  data?: Record<string, string | string[]>;
+  metadata?: Record<string, unknown>;
+  execution_count?: number | null;
+  // For error output
   ename?: string;
   evalue?: string;
   traceback?: string[];
 }
 
 /**
- * Notebook cell with outputs
+ * Notebook cell (nbformat v4).
  */
 export interface NotebookCell {
-  source: string;
-  outputs: NotebookCellOutput[];
-  execution_count: number | null;
+  cell_type: 'code' | 'markdown' | 'raw';
+  source: string | string[];
+  outputs?: NotebookCellOutput[];
+  execution_count?: number | null;
+  metadata?: Record<string, unknown>;
 }
 
 /**

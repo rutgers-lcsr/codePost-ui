@@ -3,15 +3,14 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 /* library imports */
-import { Layout, Typography } from 'antd';
+import { Button, Card, Col, Row, Space, Typography } from 'antd';
 
 /* codePost object imports */
 import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 import { TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
-import { SourceFile, SourceFileType } from '../../../../../infrastructure/autograder/sourceFile';
 import { SubmissionInfoType } from '../../../../../infrastructure/submission';
 import { TestCaseType } from '../../../../../infrastructure/testCase';
 import { TestCategoryType } from '../../../../../infrastructure/types';
@@ -19,7 +18,7 @@ import { TestCategoryType } from '../../../../../infrastructure/types';
 /* codePost interface imports */
 import { TestCasesByCategory } from '../../../../core/testFetchUtils';
 import { IBasicFile } from './TestDefinitions';
-import { FILE_TYPE } from './TestingSetup';
+import { FILE_TYPE } from './TestDefinitions/FileType';
 
 /* codePost component imports */
 import FileTag from './TestDefinitions/FileTag';
@@ -30,6 +29,7 @@ import { CodeWindow } from './utils/CodeWindow';
 
 /* codePost util imports */
 import { awaitTestResult } from '../autograderPollingUtils';
+import { CaretRightOutlined, SaveOutlined } from '@ant-design/icons';
 
 /**********************************************************************************************************************/
 interface IProps {
@@ -40,7 +40,6 @@ interface IProps {
 
   // files
   currentFile?: IBasicFile;
-  sourceFiles: SourceFileType[];
   updateFile: (type: FILE_TYPE, id: number, newCode: string) => Promise<void>;
 
   // environment
@@ -59,14 +58,10 @@ interface IProps {
   updateTestStatus: (testID: number, status: number) => void;
 }
 
-const { Content } = Layout;
-
 export const SourceEditor = (props: IProps) => {
   /************************** State variables  ****************************/
   const [running, setRunning] = useState(false);
   const [saving, setSaving] = useState(false);
-  // The new code of the edited sourceFile
-  const [newCode, setNewCode] = useState('');
   const [fileToRun, setFileToRun] = useState('main.sh');
   const [logs, setLogs] = useState<ILogType[]>([]);
 
@@ -77,45 +72,19 @@ export const SourceEditor = (props: IProps) => {
       let result: any;
       if (fileToRun === 'main.sh') {
         // Run all tests
-        let payload: any = { id: props.env.id };
+        const payload: any = { id: props.env.id };
         if (props.activeSubmission) {
-          payload = { ...payload, submission: props.activeSubmission.id, simulate: true };
+          Object.assign(payload, { submission: props.activeSubmission.id, simulate: true });
         }
 
         result = await Environment.run(payload);
-      } else {
-        const found = props.sourceFiles.find((el) => el.name === fileToRun);
-        if (found !== undefined) {
-          result = await SourceFile.run(
-            found.id,
-            props.activeSubmission
-              ? {
-                  submission: props.activeSubmission.id.toString(),
-                }
-              : {},
-          );
-        }
       }
       awaitTestResult(result.task, callback);
     }
   };
 
   // On confirm of tests change, update the sourcefile
-  const onConfirm = () => {
-    if (props.currentFile) {
-      props.updateFile(FILE_TYPE.SOURCEFILE, props.currentFile.id, newCode);
-    }
-  };
-
-  /************************** State change Functions ****************************/
-  useEffect(() => {
-    // open modal when new code of current file is saved, only if the newCode isn't being set to empty
-    if (newCode && props.env && !props.env.testParsing) {
-      onConfirm();
-    } else {
-      newCode && setSaving(true);
-    }
-  }, [newCode]);
+  const onConfirm = () => {};
 
   // callback called when run is complete
   const callback = async (response: TestEditorResultType) => {
@@ -124,68 +93,99 @@ export const SourceEditor = (props: IProps) => {
     setLogs(newLogs);
   };
 
-  const onSourceFileSave = (code: string) => {
-    if (props.currentFile) {
-      setNewCode(code);
-    }
-    return Promise.resolve();
-  };
-
   /************************** Return ****************************/
   const noPreviewString =
     props.currentFile && props.currentFile.code.startsWith('data:application/octet-stream;base64')
       ? 'No Preview Available'
       : undefined;
 
-  const content = props.currentFile && (
-    <div>
-      <CodeWindow
-        code={noPreviewString || props.currentFile.code}
-        name={props.currentFile.name}
-        onSave={
-          props.currentFile.type === FILE_TYPE.SOURCEFILE
-            ? onSourceFileSave
-            : props.currentFile.canSave && !noPreviewString
-              ? props.updateFile.bind({}, props.currentFile.type, props.currentFile.id)
-              : undefined
-        }
-        height={'350px'}
-      />
-      <PseudoTerminal
-        log={logs}
-        isRunning={running}
-        runTest={runTest}
-        submissions={props.submissions}
-        setTestSubject={props.setTestSubject}
-        files={props.sourceFiles.map((el) => el.name)}
-        defaultFile="main.sh"
-        updateFile={setFileToRun}
-        env={props.env}
-        resizable={true}
-      />
-    </div>
-  );
-  const title = props.currentFile && (
-    <div style={{ padding: '12px 20px 8px 25px', display: 'flex' }}>
-      <Typography.Title level={4} style={{ opacity: 0.6, marginBottom: 0 }}>
-        {props.currentFile.name}
-      </Typography.Title>
-      &nbsp; &nbsp; &nbsp;
-      <FileTag type={props.currentFile.type} small={false} />
-    </div>
-  );
+  if (!props.currentFile) {
+    return null;
+  }
 
   return (
-    <Layout>
-      <Content style={{ paddingLeft: 5 }}>
-        {title}
-        {content}
-      </Content>
+    <div style={{ padding: '0px 15px', maxWidth: '1400px', margin: '0 auto' }}>
+      {/* Header Card */}
+      <Card
+        bordered={false}
+        bodyStyle={{ padding: '12px 24px' }}
+        style={{ marginBottom: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', borderRadius: 8 }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Typography.Title level={4} style={{ marginBottom: 0 }}>
+              {props.currentFile.name}
+            </Typography.Title>
+            <FileTag type={props.currentFile.type} small={false} />
+          </div>
+          <Space>
+            {props.currentFile.canSave && !noPreviewString && (
+              <Button
+                icon={<SaveOutlined />}
+                onClick={() =>
+                  props.updateFile(props.currentFile!.type, props.currentFile!.id, props.currentFile!.code)
+                }
+              >
+                Save File
+              </Button>
+            )}
+            <Button type="primary" icon={<CaretRightOutlined />} onClick={runTest} loading={running}>
+              Run Environment
+            </Button>
+          </Space>
+        </div>
+      </Card>
+
+      {/* Content */}
+      <Row gutter={24}>
+        <Col span={14}>
+          <Card
+            title="Source Code"
+            bordered={false}
+            style={{ height: '100%', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
+            headStyle={{ borderBottom: '1px solid #f0f0f0', fontWeight: 600 }}
+          >
+            <CodeWindow
+              key={props.currentFile.id}
+              code={noPreviewString || props.currentFile.code}
+              name={props.currentFile.name}
+              onSave={
+                props.currentFile.canSave && !noPreviewString
+                  ? props.updateFile.bind({}, props.currentFile.type, props.currentFile.id)
+                  : undefined
+              }
+              height={'500px'}
+            />
+          </Card>
+        </Col>
+        <Col span={10}>
+          <Card
+            title="Terminal & Execution"
+            bordered={false}
+            style={{ height: '100%', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
+            headStyle={{ borderBottom: '1px solid #f0f0f0', fontWeight: 600 }}
+          >
+            <div style={{ height: '500px' }}>
+              <PseudoTerminal
+                log={logs}
+                isRunning={running}
+                runTest={runTest}
+                submissions={props.submissions}
+                setTestSubject={props.setTestSubject}
+                files={[]}
+                defaultFile="main.sh"
+                updateFile={setFileToRun}
+                env={props.env}
+                resizable={true}
+              />
+            </div>
+          </Card>
+        </Col>
+      </Row>
       <TestsChangeModal
         checkChanges={saving}
         currentFile={props.currentFile!}
-        currentFileCode={newCode}
-        sourceFiles={props.sourceFiles}
+        currentFileCode={''}
         categories={props.categories}
         casesByCategory={props.casesByCategory}
         onCancel={setSaving.bind({}, false)}
@@ -195,6 +195,6 @@ export const SourceEditor = (props: IProps) => {
         addTest={props.addTest}
         deleteTest={props.deleteTest}
       />
-    </Layout>
+    </div>
   );
 };

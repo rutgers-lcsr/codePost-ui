@@ -25,7 +25,7 @@ interface IProps extends RouteComponentProps {
   course: CourseType;
 }
 
-class ViewAllPanel extends React.Component<IProps, {}> {
+class ViewAllPanel extends React.Component<IProps> {
   public render() {
     const centerAlign: alignType = 'center';
     const columns = [

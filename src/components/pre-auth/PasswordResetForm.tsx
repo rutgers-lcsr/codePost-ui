@@ -33,7 +33,7 @@ const ForgotPasswordForm: React.FC<IProps> = ({ handleSubmit }) => {
   const password2 = Form.useWatch('password2', form);
 
   return (
-    <Form form={form} layout="horizontal" hideRequiredMark={true} onFinish={onFinish}>
+    <Form form={form} layout="horizontal" requiredMark={false} onFinish={onFinish}>
       <Form.Item
         label="Password"
         name="password1"

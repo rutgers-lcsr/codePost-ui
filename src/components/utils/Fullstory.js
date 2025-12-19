@@ -1,4 +1,4 @@
-/* eslint-disable */
+ 
 export const runFSSetup = () => {
   window['_fs_debug'] = false;
   window['_fs_host'] = 'fullstory.com';

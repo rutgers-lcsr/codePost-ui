@@ -39,21 +39,18 @@ export const getIdentifierFromFolder = (folderName: string, idIndex: number) => 
 export const beforeLMSImport = (files: UploadFile[], acceptZipsOnly: boolean, callback: any) => {
   const copyFile = (f: File, parentPath: string) => {
     // We can't set the path of a file, so need to do a path override
-    // @ts-ignore
-    const cPFile: codePostFile = new File([f], f.name);
+    const cPFile: codePostFile = new File([f], f.name) as any;
     cPFile['uid'] = '';
-    // @ts-ignore
     cPFile['pathOverride'] = `${parentPath}/${f.name}`;
     return cPFile;
   };
 
   const addPathToFiles = (zipFile: File, unzippedFiles: File[]) => {
-    // @ts-ignore
     return unzippedFiles.map((f: File) => copyFile(f, zipFile.webkitRelativePath));
   };
 
   const beforeUpload = async (file: File, fileList: File[]) => {
-    let newList: codePostFile[] = [];
+    const newList: codePostFile[] = [];
     // Only run it for the first file, but run across all files in the fileList
     if (fileList.length > 1 && file === fileList[0]) {
       const promises = fileList.map(async (thisFile) => {
@@ -62,7 +59,6 @@ export const beforeLMSImport = (files: UploadFile[], acceptZipsOnly: boolean, ca
           const filesWithPath = addPathToFiles(thisFile, unzippedFiles);
           newList.push(...filesWithPath);
         } else if (!acceptZipsOnly) {
-          // @ts-ignore
           const cPFile: codePostFile = copyFile(thisFile, thisFile.webkitRelativePath);
           newList.push(cPFile);
         }

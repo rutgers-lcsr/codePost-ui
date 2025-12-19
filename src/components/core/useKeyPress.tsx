@@ -16,15 +16,15 @@ const useKeyPress = (targetKey: any) => {
   };
 
   React.useEffect(() => {
-    // @ts-ignore
+    // @ts-expect-error: legacy-ts-ignore
     window.addEventListener('keydown', downHandler);
-    // @ts-ignore
+    // @ts-expect-error: legacy-ts-ignore
     window.addEventListener('keyup', upHandler);
 
     return () => {
-      // @ts-ignore
+      // @ts-expect-error: legacy-ts-ignore
       window.removeEventListener('keydown', downHandler);
-      // @ts-ignore
+      // @ts-expect-error: legacy-ts-ignore
       window.removeEventListener('keyup', upHandler);
     };
     // Should implement useCallback()

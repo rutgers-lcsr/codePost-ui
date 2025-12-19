@@ -23,8 +23,8 @@ interface IProps {
 const TestsOverview = (props: IProps & RouteComponentProps) => {
   const columns = [
     { title: 'Assignment', key: 'assignment', dataIndex: 'assignment' },
-    { title: 'Edit tests', key: 'edit', dataIndex: 'edit', align: 'center' as const },
-    { title: 'View test results', key: 'tests', dataIndex: 'tests', align: 'center' as const },
+    { title: 'Edit Environment', key: 'edit', dataIndex: 'edit', align: 'center' as const },
+    { title: 'View Test Results', key: 'tests', dataIndex: 'tests', align: 'center' as const },
   ];
 
   // Deduplicate assignments by ID
@@ -58,7 +58,7 @@ const TestsOverview = (props: IProps & RouteComponentProps) => {
     <TableDetail
       loadComplete={true}
       pagination={uniqueAssignments.length < 10 ? false : undefined}
-      title={<div className="display-flex align-items-center">Tests</div>}
+      title={<div className="display-flex align-items-center">Environment Setup</div>}
       isEmpty={data.length === 0}
       emptyNode={
         <Empty
@@ -73,7 +73,7 @@ const TestsOverview = (props: IProps & RouteComponentProps) => {
       columns={columns}
       data={data}
       actions={[]}
-      breadcrumbs={<Breadcrumb items={[{ title: 'Assignments' }, { title: 'Tests' }]} />}
+      breadcrumbs={<Breadcrumb items={[{ title: 'Assignments' }, { title: 'Environment Setup' }]} />}
     />
   );
 };

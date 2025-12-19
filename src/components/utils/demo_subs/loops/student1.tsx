@@ -18,8 +18,7 @@ const submission = (domain: string) => {
         /* tslint:ensable */
         comments: [
           {
-            text:
-              'Try working through an example where you input `arr = [-1, -2, -3]`. Since no element of `arr` is greater than the initial value of `maxSoFar`, your `max` function will incorrectly report 0 as the maximum element. Remember, ints can be negative!',
+            text: 'Try working through an example where you input `arr = [-1, -2, -3]`. Since no element of `arr` is greater than the initial value of `maxSoFar`, your `max` function will incorrectly report 0 as the maximum element. Remember, ints can be negative!',
             startChar: 4,
             endChar: 21,
             startLine: 15,

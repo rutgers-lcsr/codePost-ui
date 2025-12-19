@@ -138,7 +138,7 @@ class MergeRubricCommentsDialog extends React.Component<
     }> = [];
 
     rubricCategories.forEach((rubricCategory: RubricCategoryType) => {
-      if (rubricComments.hasOwnProperty(rubricCategory.id)) {
+      if (Object.prototype.hasOwnProperty.call(rubricComments, rubricCategory.id)) {
         const comments = rubricComments[rubricCategory.id].map((rubricComment: RubricCommentType) => {
           return {
             label: rubricComment.text,

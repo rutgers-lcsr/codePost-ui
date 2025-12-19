@@ -27,8 +27,6 @@ import {
 
 import useWindowSize from '../../../core/useWindowSize';
 
-const { Step } = Steps;
-
 /**********************************************************************************************************************/
 
 interface IProps {
@@ -163,23 +161,25 @@ export const AssignmentSetupBanner = (props: IProps) => {
 
   const isSmall = windowSize.width < 1250;
   const options = (
-    <Steps type={'navigation'} onChange={onStepChange} current={7} size={'small'}>
-      {steps.map((step, index) =>
-        step.hide ? (
-          <span key={index} />
-        ) : (
-          <Step
-            key={index}
-            title={step.title}
-            subTitle={step.isOptional && !isSmall ? '(optional)' : ''}
-            status={step.isComplete ? 'finish' : 'wait'}
-            description=""
-            disabled={step.isComplete}
-            icon={isSmall ? <div /> : step.icon}
-          />
-        ),
+    <Steps
+      type={'navigation'}
+      onChange={onStepChange}
+      current={7}
+      size={'small'}
+      items={steps.map((step, index) =>
+        step.hide
+          ? { key: index.toString(), className: 'hidden-step' }
+          : {
+              key: index.toString(),
+              title: step.title,
+              subTitle: step.isOptional && !isSmall ? '(optional)' : '',
+              status: step.isComplete ? 'finish' : 'wait',
+              description: '',
+              disabled: step.isComplete,
+              icon: isSmall ? <div /> : step.icon,
+            },
       )}
-    </Steps>
+    />
   );
 
   return <div style={{ width: '100%' }}>{options}</div>;

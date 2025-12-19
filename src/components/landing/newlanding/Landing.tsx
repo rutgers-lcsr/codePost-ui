@@ -44,8 +44,8 @@ import iowaImg from '../../../img/landing/compressed/logos/iowa.png';
 import princetonImg from '../../../img/landing/compressed/logos/princeton.png';
 import ucsdImg from '../../../img/landing/compressed/logos/ucsd.png';
 
-class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
-  public componentDidMount() {}
+class LandingOld extends React.Component<IWithWindowWatcherProps> {
+  public componentDidMount() { }
 
   public render() {
     const panelOne = <LandingAnnotationPanel />;
@@ -214,12 +214,12 @@ class LandingOld extends React.Component<IWithWindowWatcherProps, {}> {
       paddingBottom: 5,
       maxWidth: 115,
       fontWeight: 600,
-      textAlign: 'center' as 'center',
+      textAlign: 'center' as const,
     };
     const logoWidth = this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 70 : 115;
     return (
       <LandingLayout
-        // @ts-ignore
+        // @ts-expect-error: legacy-ts-ignore
         location={this.props.location}
         topBar={<LandingHeader />}
         hero={<LandingHero />}

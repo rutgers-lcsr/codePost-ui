@@ -59,6 +59,16 @@ export const TestingSummary = (props: IProps) => {
   const [fetchLoading, setFetchLoading] = useState(false);
   const [resultsLoading, setResultsLoading] = useState(false);
   // ************************** Fetch Data ******************************
+  const submissionTestsCallback = (results: SubmissionWithTestsType[]) => {
+    setTestsBySubmission((prevState) => {
+      const oldTests = { ...prevState };
+      results.forEach((submission) => {
+        oldTests[submission.id] = submission.tests;
+      });
+      return oldTests;
+    });
+  };
+
   const fetchPaginatedResults = async () => {
     if (props.currentAssignment) {
       setResultsLoading(true);
@@ -91,15 +101,6 @@ export const TestingSummary = (props: IProps) => {
     fetchData();
   }, [props.currentAssignment && props.currentAssignment.id]);
 
-  const submissionTestsCallback = (results: SubmissionWithTestsType[]) => {
-    setTestsBySubmission((prevState) => {
-      const oldTests = { ...prevState };
-      results.forEach((submission) => {
-        oldTests[submission.id] = submission.tests;
-      });
-      return oldTests;
-    });
-  };
 
   // ******************************* API / State change functions  *******************************
 
@@ -158,17 +159,17 @@ export const TestingSummary = (props: IProps) => {
     !props.isAdmin || !props.match
       ? []
       : [
-          <RunAllTests
-            numSubmissions={props.submissions.length}
-            testCasesByCategory={testCasesByCategory}
-            runAllSubmissions={runAllSubmissions}
-            assignment={props.currentAssignment}
-            env={env}
-          />,
-          <Button type="primary">
-            <Link to={location.pathname.replace(/\/results.*$/, '/edit')}>Edit tests</Link>
-          </Button>,
-        ];
+        <RunAllTests
+          numSubmissions={props.submissions.length}
+          testCasesByCategory={testCasesByCategory}
+          runAllSubmissions={runAllSubmissions}
+          assignment={props.currentAssignment}
+          env={env}
+        />,
+        <Button type="primary">
+          <Link to={location.pathname.replace(/\/results.*$/, '/edit')}>Edit tests</Link>
+        </Button>,
+      ];
 
   console.log(props.fullSubmissionsLoadComplete);
 
@@ -203,7 +204,6 @@ export const TestingSummary = (props: IProps) => {
       subsLoading={subsLoading}
       resultsLoading={resultsLoading}
       runSubmission={runSubmission}
-      hasSourceFiles={(env && env.sourceFiles.length > 0) || false}
     />
   );
 };

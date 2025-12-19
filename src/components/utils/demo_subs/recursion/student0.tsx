@@ -18,8 +18,7 @@ const submission = (domain: string) => {
         /* tslint:ensable */
         comments: [
           {
-            text:
-              "This logic is correct, but it requires you to create a new arrays of sizes `n-1, n-2, ..., 1` (where n is the length of the original array). You can get around this by creating a helper function and passing the index of the 'new' array to it.",
+            text: "This logic is correct, but it requires you to create a new arrays of sizes `n-1, n-2, ..., 1` (where n is the length of the original array). You can get around this by creating a helper function and passing the index of the 'new' array to it.",
             startChar: 6,
             endChar: 61,
             startLine: 25,
@@ -29,8 +28,7 @@ const submission = (domain: string) => {
             rubric: 'Uses extra arrays',
           },
           {
-            text:
-              'The same concept applies here as in my comment above. Instead of creating a new array, you can create a helper function that takes as argument a `lower` and `upper` bound.',
+            text: 'The same concept applies here as in my comment above. Instead of creating a new array, you can create a helper function that takes as argument a `lower` and `upper` bound.',
             startChar: 22,
             endChar: 66,
             startLine: 48,
@@ -40,8 +38,7 @@ const submission = (domain: string) => {
             rubric: 'Uses extra arrays',
           },
           {
-            text:
-              "This works (and satisfies the compiler). But it's weird to have a never reached statement in your code. Instead, use, `if...else` logic (instead of serial ifs) to encode mutually exclusive paths.",
+            text: "This works (and satisfies the compiler). But it's weird to have a never reached statement in your code. Instead, use, `if...else` logic (instead of serial ifs) to encode mutually exclusive paths.",
             startChar: 4,
             endChar: 17,
             startLine: 60,
@@ -51,8 +48,7 @@ const submission = (domain: string) => {
             rubric: null,
           },
           {
-            text:
-              "Nice job! Let me know if you'd like to discuss how to effectively use helper functions in future assignments.",
+            text: "Nice job! Let me know if you'd like to discuss how to effectively use helper functions in future assignments.",
             startChar: 13,
             endChar: 27,
             startLine: 14,

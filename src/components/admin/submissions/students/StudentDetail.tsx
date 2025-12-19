@@ -387,7 +387,6 @@ class StudentDetail extends React.Component<IProps, IState> {
       let graderElement;
       if (submission && assignment.name === this.state.selectedSubmission) {
         const undefinedOption = (
-          // @ts-ignore
           <Select.Option key={0} value={undefined}>
             No grader
           </Select.Option>

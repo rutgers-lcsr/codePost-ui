@@ -101,12 +101,13 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
             },
             {
               key: 'assignments/tests',
-              label: <Link to={`${courseBaseURL}/assignments/tests`}>Tests</Link>,
+              label: <Link to={`${courseBaseURL}/assignments/environment`}>Environment Setup</Link>,
             },
-            {
-              key: 'assignments/plagiarism',
-              label: <Link to={`${courseBaseURL}/assignments/plagiarism`}>Plagiarism</Link>,
-            },
+            // TODO: Re-enable plagiarism at some point
+            // {
+            //   key: 'assignments/plagiarism',
+            //   label: <Link to={`${courseBaseURL}/assignments/plagiarism`}>Plagiarism</Link>,
+            // },
           ],
         },
         {

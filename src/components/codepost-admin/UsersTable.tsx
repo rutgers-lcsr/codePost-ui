@@ -18,6 +18,10 @@ import { RosterType } from '../../infrastructure/course';
 import { OrganizationType } from '../../infrastructure/organization';
 import { UserType } from '../../infrastructure/user';
 
+import { PlusOutlined, EditOutlined } from '@ant-design/icons';
+import NewUserDialog from './NewUserDialog';
+import EditUserDialog from './EditUserDialog';
+
 const { Search } = Input;
 
 export interface UserData {
@@ -36,10 +40,14 @@ interface UsersTableProps {
   rosters: RosterType[];
   organizations: OrganizationType[];
   users: UserType[];
+  onRefresh: () => void;
 }
 
-const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users }) => {
+const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, onRefresh }) => {
   const [searchText, setSearchText] = useState('');
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserType | null>(null);
 
   // Build comprehensive user list from rosters AND User.list()
   const usersMap = useMemo(() => {
@@ -296,16 +304,30 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users }
       width: 120,
       fixed: 'right',
       render: (_: unknown, record: UserData) => (
-        <Tooltip title="Login as this user">
-          <Button
-            type="primary"
-            size="small"
-            icon={<LoginOutlined />}
-            onClick={() => window.open(`/loginAs?email=${record.email}`, '_blank')}
-          >
-            Login As
-          </Button>
-        </Tooltip>
+        <Space>
+          {record.fullUserData && (
+            <Tooltip title="Edit Permissions">
+              <Button
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => {
+                  setEditingUser(record.fullUserData!);
+                  setShowEditDialog(true);
+                }}
+              />
+            </Tooltip>
+          )}
+          <Tooltip title="Login as this user">
+            <Button
+              type="primary"
+              size="small"
+              icon={<LoginOutlined />}
+              onClick={() => window.open(`/loginAs?email=${record.email}`, '_blank')}
+            >
+              Login As
+            </Button>
+          </Tooltip>
+        </Space>
       ),
     },
   ];
@@ -386,16 +408,21 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users }
         </Col>
       </Row>
 
-      {/* Search */}
-      <Search
-        placeholder="Search by email, organization, course, or role..."
-        allowClear
-        enterButton
-        size="large"
-        style={{ marginBottom: 16, maxWidth: 600 }}
-        onChange={(e) => setSearchText(e.target.value)}
-        onSearch={setSearchText}
-      />
+      {/* Search and Create */}
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+        <Search
+          placeholder="Search by email, organization, course, or role..."
+          allowClear
+          enterButton
+          size="large"
+          style={{ maxWidth: 600 }}
+          onChange={(e) => setSearchText(e.target.value)}
+          onSearch={setSearchText}
+        />
+        <Button type="primary" size="large" icon={<PlusOutlined />} onClick={() => setShowCreateDialog(true)}>
+          Create User
+        </Button>
+      </div>
 
       {/* Table */}
       <Table
@@ -409,6 +436,31 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users }
           pageSizeOptions: ['20', '50', '100', '200'],
         }}
         scroll={{ x: 1200 }}
+      />
+
+      <NewUserDialog
+        visible={showCreateDialog}
+        onClose={() => setShowCreateDialog(false)}
+        onSuccess={() => {
+          setShowCreateDialog(false);
+          onRefresh();
+        }}
+        organizations={organizations}
+      />
+
+      <EditUserDialog
+        visible={showEditDialog}
+        user={editingUser}
+        onClose={() => {
+          setShowEditDialog(false);
+          setEditingUser(null);
+        }}
+        onSuccess={() => {
+          setShowEditDialog(false);
+          setEditingUser(null);
+          onRefresh();
+        }}
+        organizations={organizations}
       />
     </div>
   );

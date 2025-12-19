@@ -43,13 +43,16 @@ export const ResultDetail = (props: IProps) => {
 
   /********************** Props on change functions **********************************/
   useEffect(() => {
-    props.visible && setFilterCategory(props.filterCategory);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (props.visible) setFilterCategory(props.filterCategory);
   }, [props.filterCategory, props.visible]);
   useEffect(() => {
-    props.visible && setFilterCase(props.filterCase);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (props.visible) setFilterCase(props.filterCase);
   }, [props.filterCase, props.visible]);
   useEffect(() => {
-    props.visible && setFilterStatus(props.filterStatus);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (props.visible) setFilterStatus(props.filterStatus);
   }, [props.filterStatus, props.visible]);
   useEffect(() => {
     const newSub = props.filterSubmission
@@ -57,15 +60,20 @@ export const ResultDetail = (props: IProps) => {
       : props.submissions !== undefined && props.submissions.length > 0
         ? props.submissions[0]
         : undefined;
-    props.visible && setFilterSubmission(newSub);
-  }, [props.filterSubmission, props.visible]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (props.visible) setFilterSubmission(newSub);
+  }, [props.filterSubmission, props.visible, props.submissions]);
 
   /********************** State change functions **********************************/
 
   const handleCategoryChange = (value: string) => {
     const categoryID = parseInt(value, 10);
     const category = props.categories.find((c) => c.id === categoryID);
-    category ? setFilterCategory(category) : setFilterCategory(undefined);
+    if (category) {
+      setFilterCategory(category);
+    } else {
+      setFilterCategory(undefined);
+    }
   };
 
   const handleCaseChange = (value: string) => {
@@ -73,7 +81,11 @@ export const ResultDetail = (props: IProps) => {
     const cases =
       filterCategory && filterCategory.id in props.casesByCategory ? props.casesByCategory[filterCategory.id] : [];
     const testCase = cases.find((c) => c.id === caseID);
-    testCase ? setFilterCase(testCase) : setFilterCase(undefined);
+    if (testCase) {
+      setFilterCase(testCase);
+    } else {
+      setFilterCase(undefined);
+    }
   };
 
   const handleSubmissionChange = (submission: SubmissionInfoType) => {
@@ -84,7 +96,7 @@ export const ResultDetail = (props: IProps) => {
     if (e.target.value === '-1') {
       setFilterStatus(undefined);
     } else {
-      // @ts-ignore
+      // @ts-expect-error: legacy-ts-ignore
       const newStatus: RESULT_STATUS = RESULT_STATUS[e.target.value];
       setFilterStatus(newStatus);
     }

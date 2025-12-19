@@ -463,4 +463,6 @@ export {
   readObjectDetail,
   updateObject,
   updateObjectDetail,
+  handleErrorResponse,
+  decodeToPromise,
 };
