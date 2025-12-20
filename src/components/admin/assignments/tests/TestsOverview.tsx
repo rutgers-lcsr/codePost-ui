@@ -2,7 +2,7 @@
 /* Imports
 /**********************************************************************************************************************/
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { RouteComponentProps } from '../../../../router/legacy';
 import { Link } from 'react-router-dom';
 
@@ -11,6 +11,7 @@ import { Breadcrumb, Button, Empty } from 'antd';
 import { TableDetail } from '../../other/TableDetail';
 
 import { AssignmentType } from '../../../../infrastructure/types';
+import { Environment } from '../../../../infrastructure/autograder/environment';
 
 import { encodeForLink } from '../../../core/URLutils';
 
@@ -21,10 +22,11 @@ interface IProps {
 }
 
 const TestsOverview = (props: IProps & RouteComponentProps) => {
+  const [envBuildStatuses, setEnvBuildStatuses] = useState<{ [key: number]: number }>({});
+
   const columns = [
     { title: 'Assignment', key: 'assignment', dataIndex: 'assignment' },
     { title: 'Edit Environment', key: 'edit', dataIndex: 'edit', align: 'center' as const },
-    { title: 'View Test Results', key: 'tests', dataIndex: 'tests', align: 'center' as const },
   ];
 
   // Deduplicate assignments by ID
@@ -37,18 +39,52 @@ const TestsOverview = (props: IProps & RouteComponentProps) => {
     });
   }, [props.assignments]);
 
+  useEffect(() => {
+    let isMounted = true;
+    const fetchStatuses = async () => {
+      const statuses: { [key: number]: number } = {};
+      const promises = uniqueAssignments
+        .filter((a) => a.environment !== null)
+        .map(async (a) => {
+          try {
+            if (a.environment) {
+              const env = await Environment.read(a.environment);
+              statuses[a.environment] = env.buildStatus;
+            }
+          } catch (e) {
+            console.error(`Failed to fetch environment status for assignment ${a.name}`, e);
+          }
+        });
+
+      await Promise.all(promises);
+
+      if (isMounted) {
+        setEnvBuildStatuses(statuses);
+      }
+    };
+
+    fetchStatuses();
+    const interval = setInterval(fetchStatuses, 3000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [uniqueAssignments]);
+
   const data = uniqueAssignments.map((assignment) => {
     return {
       key: `assignment-${assignment.id}`,
       assignment: assignment.name,
-      tests: (
-        <Link to={`${props.match.url}/${encodeForLink(assignment.name)}/results`}>
-          <Button disabled={!assignment.environment}>Results</Button>
-        </Link>
-      ),
       edit: (
         <Link to={`${props.match.url}/${encodeForLink(assignment.name)}/edit`}>
-          <Button>{assignment.environment ? 'Edit' : 'Create'}</Button>
+          <Button loading={assignment.environment ? envBuildStatuses[assignment.environment] === 1 : false}>
+            {assignment.environment
+              ? envBuildStatuses[assignment.environment] === 1
+                ? 'Building'
+                : 'Edit'
+              : 'Create'}
+          </Button>
         </Link>
       ),
     };
