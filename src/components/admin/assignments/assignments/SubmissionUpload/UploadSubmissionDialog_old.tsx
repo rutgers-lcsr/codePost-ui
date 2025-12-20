@@ -97,18 +97,18 @@ interface IUploadSubmissionDialogProps {
     };
   };
   uploadSubmission:
-    | ((
-        assignment: AssignmentStudentType,
-        partners: string[],
-        files: FileType[],
-        sendConfirmationEmail: boolean,
-      ) => Promise<StudentSubmissionType>)
-    | ((
-        assignment: AssignmentType,
-        partners: string[],
-        files: FileType[],
-        sendConfirmationEmail: boolean,
-      ) => Promise<SubmissionInfoType>);
+  | ((
+    assignment: AssignmentStudentType,
+    partners: string[],
+    files: FileType[],
+    sendConfirmationEmail: boolean,
+  ) => Promise<StudentSubmissionType>)
+  | ((
+    assignment: AssignmentType,
+    partners: string[],
+    files: FileType[],
+    sendConfirmationEmail: boolean,
+  ) => Promise<SubmissionInfoType>);
 
   disableStudentSelect?: boolean;
   onSuccess?: (newSubmissionID: number) => void;
@@ -196,10 +196,10 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
 
   public toggleState =
     (key: keyof IUploadSubmissionDialogState) =>
-    (prevState: IUploadSubmissionDialogState): IUploadSubmissionDialogState => ({
-      ...prevState,
-      [key]: !prevState[key],
-    });
+      (prevState: IUploadSubmissionDialogState): IUploadSubmissionDialogState => ({
+        ...prevState,
+        [key]: !prevState[key],
+      });
 
   public getState = (key: keyof IUploadSubmissionDialogState): any => {
     return this.state[key];
@@ -825,9 +825,8 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
             <Spin size="large" />
             <br />
             <br />
-            <Typography.Title level={4}>{`Uploading your files${
-              this.state.loadingTests ? ' and running tests...' : ''
-            }`}</Typography.Title>
+            <Typography.Title level={4}>{`Uploading your files${this.state.loadingTests ? ' and running tests...' : ''
+              }`}</Typography.Title>
           </div>
         );
         break;
@@ -996,9 +995,9 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           sendMeAConfirmationEmailCheckbox = (
             <span key="sendMeAConfirmationEmailCheckbox">
               {this.state.selectedAssignment &&
-              this.state.selectedAssignment.uploadDueDate &&
-              dueDatePassed(this.state.selectedAssignment.uploadDueDate) &&
-              !hideDueDate ? (
+                this.state.selectedAssignment.uploadDueDate &&
+                dueDatePassed(this.state.selectedAssignment.uploadDueDate) &&
+                !hideDueDate ? (
                 <Tag color="volcano">Due Date Passed</Tag>
               ) : null}
               <Checkbox
@@ -1068,8 +1067,8 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                 to={
                   this.props.course
                     ? `/admin/${encodeForLink(this.props.course.name)}/${encodeForLink(
-                        this.props.course.period,
-                      )}/roster/students`
+                      this.props.course.period,
+                    )}/roster/students`
                     : ''
                 }
               >
@@ -1245,48 +1244,7 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
             {showTestsTab && (
               <Tabs.TabPane tab="Tests" key="3">
                 <div style={{ minHeight: 400, height: 'calc(100vh - 400px)' }}>
-                  <TestsList
-                    tests={this.state.submissionTests.filter((el) => {
-                      const correspondingTest = Object.values(this.state.testCases)
-                        .flat()
-                        .find((el2) => el2.id === el.testCase);
-                      return correspondingTest && correspondingTest.exposed;
-                    })}
-                    hideNotRun={false}
-                    redactNotShown={this.state.selectedAssignment!.nudgeMode}
-                    cases={this.state.testCases}
-                    categories={this.state.testCategories}
-                    isLoading={this.state.loadingTests}
-                    logs={
-                      this.state.testsLog === null || this.state.testsLog.length === 0 ? undefined : this.state.testsLog
-                    }
-                    showLogs={false}
-                    message={
-                      <div>
-                        {this.state.submissionTests.length > 0 && (
-                          <Alert
-                            type="info"
-                            message={
-                              this.state.isTestingSimulated ? (
-                                <div>
-                                  Showing <span style={{ fontWeight: 500 }}>simulated results</span> from most recent
-                                  upload.
-                                </div>
-                              ) : (
-                                <div>
-                                  Showing results from most recent submission at:{' '}
-                                  <CodePostDate datetime={this.state.submission!.dateUploaded || ''} />
-                                </div>
-                              )
-                            }
-                          />
-                        )}
-                        <br />
-                        {this.state.runMessage && <Alert type="warning" message={this.state.runMessage} />}
-                      </div>
-                    }
-                    hideSummary={this.state.testCategories.length === 0}
-                  />
+                  <TestsList />
                 </div>
               </Tabs.TabPane>
             )}

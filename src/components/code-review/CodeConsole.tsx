@@ -14,8 +14,7 @@ import {
 import * as React from 'react';
 
 /* antd imports */
-import { BugOutlined, FolderOpenOutlined } from '@ant-design/icons';
-import { Button, Empty, message, Progress, Space, Tag, Typography } from 'antd';
+import { Empty, message, Progress, Tag, Typography } from 'antd';
 
 /* other library imports */
 import _ from 'lodash';
@@ -1191,8 +1190,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       if (!state.submission.isFinalized) {
         sendSlack(
           'Submission finalized',
-          `${state.submission.id} ${state.assignment ? state.assignment.name : ''} | ${
-            state.course ? state.course.name : ''
+          `${state.submission.id} ${state.assignment ? state.assignment.name : ''} | ${state.course ? state.course.name : ''
           } ${state.course ? state.course.period : ''}`,
           colors.brandPrimary,
           '#user_notifications_everything',
@@ -1436,39 +1434,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
   const testsTitle = 'Tests';
 
-  const testsActions = (
-    <Space.Compact
-      style={{
-        fontWeight: 600,
-      }}
-    >
-      <Button
-        size="small"
-        type="primary"
-        icon={<FolderOpenOutlined />}
-        onClick={(e: React.MouseEvent) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setState((prev) => ({ ...prev, panelType: PANEL_TYPE.TESTS, selectedFile: undefined }));
-        }}
-        disabled={state.testCategories.length === 0}
-      >
-        View
-      </Button>
-      <Button
-        size="small"
-        icon={<BugOutlined />}
-        onClick={(e: React.MouseEvent) => {
-          e.preventDefault();
-          e.stopPropagation();
-          showInlineTestsModal();
-        }}
-        disabled={state.testCategories.length === 0}
-      >
-        Debug
-      </Button>
-    </Space.Compact>
-  );
 
   if (state.permissionLevel === PERMISSION_LEVEL.NONE || state.permissionLevel === PERMISSION_LEVEL.NOT_FOUND) {
     rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
@@ -1512,19 +1477,19 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       state.hideGrades || state.permissionLevel === PERMISSION_LEVEL.READ_FILES_ONLY
         ? []
         : [
-            <GradeButton
-              key="subheader-grade"
-              assignment={state.assignment!}
-              submission={state.submission === undefined ? state.readOnlySubmission! : state.submission}
-              calculateGrade={calculateGradeFromState}
-              rubricCategories={state.rubricCategories}
-              comments={state.comments}
-              commentRubricComments={state.commentRubricComments}
-              files={state.files}
-              submissionTests={state.tests}
-              testCases={Object.values(state.testCases).flat() as any} // eslint-disable-line @typescript-eslint/no-explicit-any
-            />,
-          ];
+          <GradeButton
+            key="subheader-grade"
+            assignment={state.assignment!}
+            submission={state.submission === undefined ? state.readOnlySubmission! : state.submission}
+            calculateGrade={calculateGradeFromState}
+            rubricCategories={state.rubricCategories}
+            comments={state.comments}
+            commentRubricComments={state.commentRubricComments}
+            files={state.files}
+            submissionTests={state.tests}
+            testCases={Object.values(state.testCases).flat() as any} // eslint-disable-line @typescript-eslint/no-explicit-any
+          />,
+        ];
 
     const fileMenuTitle = <FileMenuTitle key="files" files={state.files} />;
     if (props.inDemoMode) {
@@ -1583,7 +1548,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             </CommentHighlightProvider>
           );
         } else if (state.panelType === PANEL_TYPE.TESTS) {
-          content = <TestsList tests={state.tests} cases={state.testCases} categories={state.testCategories} />;
+          content = <TestsList />;
         }
 
         leftHeader = [
@@ -1699,7 +1664,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             </CommentHighlightProvider>
           );
         } else if (state.panelType === PANEL_TYPE.TESTS) {
-          content = <TestsList tests={state.tests} cases={state.testCases} categories={state.testCategories} />;
+          content = <TestsList />;
         }
 
         const onCancel = () => {
@@ -1719,22 +1684,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             addLateDayCreditComment={addLateDayCreditComment}
             isStudentMode={false}
           />,
-          <TestsMenu
-            key="tests-menu"
-            isOpen={state.panelType === PANEL_TYPE.TESTS}
-            tests={state.tests}
-            cases={state.testCases}
-            categories={state.testCategories}
-            assignment={state.assignment}
-            emptyMessage="Your instructor didn't define any tests for this assignment. "
-            showLink={true}
-            onClick={(e: React.MouseEvent) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setState((prev) => ({ ...prev, panelType: PANEL_TYPE.TESTS, selectedFile: undefined }));
-            }}
-            headerActions={testsActions}
-          />,
+          <TestsMenu />,
           <FileMenu
             key="file-menu"
             title="Files"
@@ -1888,7 +1838,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           </CommentHighlightProvider>
         );
       } else if (state.panelType === PANEL_TYPE.TESTS) {
-        content = <TestsList tests={state.tests} cases={state.testCases} categories={state.testCategories} />;
+        content = <TestsList />;
       }
 
       leftHeader = [
@@ -1921,21 +1871,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           isStudentMode={state.isStudent}
           courseStudentsCanSeeGraders={state.course?.studentsCanSeeGraders}
         />,
-        <TestsMenu
-          key="tests-menu"
-          isOpen={state.panelType === PANEL_TYPE.TESTS}
-          tests={state.tests}
-          cases={state.testCases}
-          categories={state.testCategories}
-          assignment={state.assignment}
-          emptyMessage="Your instructor didn't define any tests for this assignment. "
-          headerActions={testsActions}
-          onClick={(e: React.MouseEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setState((prev) => ({ ...prev, panelType: PANEL_TYPE.TESTS, selectedFile: undefined }));
-          }}
-        />,
+        <TestsMenu />,
         <FileMenu
           key="file-menu"
           title="Files"
@@ -1958,7 +1894,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             comments={[]} // No comments in files-only mode
             readOnly={true}
             user={props.user.email}
-            onHighlightClick={(_e) => {}}
+            onHighlightClick={(_e) => { }}
             executionResult={state.executionResults[state.selectedFile!.id] || null}
             onClearOutputs={handleClearOutputs}
           />
@@ -2150,7 +2086,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           </div>
         );
       } else if (state.panelType === PANEL_TYPE.TESTS) {
-        content = <TestsList tests={state.tests} cases={state.testCases} categories={state.testCategories} />;
+        content = <TestsList />;
       }
 
       const onCancel = () => {
@@ -2171,22 +2107,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           courseStudentsCanSeeGraders={state.course?.studentsCanSeeGraders}
         />,
         isCourseAdmin(state.assignment) || state.testCategories.length > 0 ? (
-          <TestsMenu
-            key="tests-menu"
-            isOpen={state.panelType === PANEL_TYPE.TESTS}
-            tests={state.tests}
-            cases={state.testCases}
-            categories={state.testCategories}
-            assignment={state.assignment}
-            emptyMessage="No tests have been defined for this assignment."
-            showLink={isCourseAdmin(state.assignment)}
-            headerActions={testsActions}
-            onClick={(e: React.MouseEvent) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setState((prev) => ({ ...prev, panelType: PANEL_TYPE.TESTS, selectedFile: undefined }));
-            }}
-          />
+          <TestsMenu />
         ) : (
           <React.Fragment />
         ),
@@ -2461,8 +2382,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           isStudent={state.isStudent}
         />
         {state.permissionLevel === PERMISSION_LEVEL.WRITE &&
-        state.assignment !== undefined &&
-        state.submission !== undefined ? (
+          state.assignment !== undefined &&
+          state.submission !== undefined ? (
           <InlineTestsModal
             key="inline-tests-modal"
             visible={state.showInlineTestsModal}

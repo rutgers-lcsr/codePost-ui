@@ -123,18 +123,18 @@ interface IUploadSubmissionDialogProps {
   };
   /** Function to upload submission */
   uploadSubmission:
-    | ((
-        assignment: AssignmentStudentType,
-        partners: string[],
-        files: FileType[],
-        sendConfirmationEmail: boolean,
-      ) => Promise<StudentSubmissionType>)
-    | ((
-        assignment: AssignmentType,
-        partners: string[],
-        files: FileType[],
-        sendConfirmationEmail: boolean,
-      ) => Promise<SubmissionInfoType>);
+  | ((
+    assignment: AssignmentStudentType,
+    partners: string[],
+    files: FileType[],
+    sendConfirmationEmail: boolean,
+  ) => Promise<StudentSubmissionType>)
+  | ((
+    assignment: AssignmentType,
+    partners: string[],
+    files: FileType[],
+    sendConfirmationEmail: boolean,
+  ) => Promise<SubmissionInfoType>);
   /** Disable student selection dropdown */
   disableStudentSelect?: boolean;
   /** Callback when upload is successful */
@@ -201,7 +201,6 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
   const [rejectedFiles, setRejectedFiles] = useState<string[]>([]);
   const [uploadDirectory, setUploadDirectory] = useState<boolean>(false);
   const [testCategories, setTestCategories] = useState<TestCategoryType[]>([]);
-  const [testCases, setTestCases] = useState<StudentTestCasesByCategory>({});
   const [submission, setSubmission] = useState<StudentSubmissionType | undefined>(undefined);
   const [loadingTests, setLoadingTests] = useState<boolean>(false);
   const [fileTemplates, setFileTemplates] = useState<FileTemplateType[]>([]);
@@ -210,10 +209,8 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
   );
   const [submissionTests, setSubmissionTests] = useState<SubmissionTestType[]>([]);
   const [testsLog, setTestsLog] = useState<string | null>(null);
-  const [runMessage, setRunMessage] = useState<string>('');
   const [activeTab, setActiveTab] = useState<string>('1');
   const [lateSubmissionModalVisible, setLateSubmissionModalVisible] = useState<boolean>(false);
-  const [isTestingSimulated, setIsTestingSimulated] = useState<boolean>(false);
 
   /********************************************************************************************************/
   /* Memoized values
@@ -254,7 +251,6 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
           caseObj[testCase.testCategory] = [...caseObj[testCase.testCategory], testCase];
         });
         setTestCategories(fetchedCategories);
-        setTestCases(caseObj);
         setLoadingTests(false);
       }
     },
@@ -336,7 +332,6 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
     if (propsSelectedAssignment?.id !== prevAssignment?.id || isVisible) {
       setSelectedAssignment(propsSelectedAssignment);
       setTestCategories([]);
-      setTestCases({});
 
       if (propsSelectedAssignment) {
         loadTemplates(propsSelectedAssignment);
@@ -379,7 +374,6 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
     if (!isVisible) {
       setSubmissionTests([]);
       setTestsLog(null);
-      setRunMessage('');
     }
   }, [isVisible]);
 
@@ -444,7 +438,6 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
     setFileList([]);
     setRejectedFiles([]);
     setActiveTab('1');
-    setIsTestingSimulated(false);
     onCancel();
   }, [onCancel]);
 
@@ -510,9 +503,6 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
 
   const setResults = useCallback((result: SubmissionTestResultType) => {
     if (result) {
-      setSubmissionTests(result.submissionTests);
-      setTestsLog(result.logs);
-      setRunMessage(result.message);
       setSubmission((prevSubmission) =>
         prevSubmission ? { ...prevSubmission, testRunsCompleted: prevSubmission.testRunsCompleted + 1 } : undefined,
       );
@@ -558,7 +548,6 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
 
         setSubmissionTests(mappedResults);
         setTestsLog(result.logs);
-        setRunMessage('');
       }
 
       setLoadingTests(false);
@@ -624,7 +613,6 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
       if (isCodeInPlaceCourse) {
         const execute = () => {
           runTestsMock(submission!);
-          setIsTestingSimulated(true);
           setFiles([]);
           setFileList([]);
           setRejectedFiles([]);
@@ -649,7 +637,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
           ),
           okText: 'Continue and simulate tests',
           onOk: execute,
-          onCancel: () => {},
+          onCancel: () => { },
         });
       } else {
         message.warning(
@@ -1032,9 +1020,9 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
         sendMeAConfirmationEmailCheckbox = (
           <span key="sendMeAConfirmationEmailCheckbox">
             {selectedAssignment &&
-            selectedAssignment.uploadDueDate &&
-            dueDatePassed(selectedAssignment.uploadDueDate) &&
-            !hideDueDate ? (
+              selectedAssignment.uploadDueDate &&
+              dueDatePassed(selectedAssignment.uploadDueDate) &&
+              !hideDueDate ? (
               <Tag color="volcano">Due Date Passed</Tag>
             ) : null}
             <Checkbox checked={sendMeAConfirmationEmail} onChange={toggleSendMeAConfirmationEmail}>
@@ -1239,49 +1227,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
           {showTestsTab && (
             <Tabs.TabPane tab="Tests" key="3">
               <div style={{ minHeight: MIN_TEST_HEIGHT, height: 'calc(100vh - 400px)' }}>
-                <TestsList
-                  tests={submissionTests.filter((el) => {
-                    const correspondingTest = Object.values(testCases)
-                      .flat()
-                      .find((el2) => el2.id === el.testCase);
-                    return correspondingTest?.exposed;
-                  })}
-                  hideNotRun={false}
-                  redactNotShown={selectedAssignment?.nudgeMode || false}
-                  cases={testCases}
-                  categories={testCategories}
-                  isLoading={loadingTests}
-                  logs={testsLog || undefined}
-                  showLogs={false}
-                  message={
-                    <>
-                      {submissionTests.length > 0 && (
-                        <Alert
-                          type="info"
-                          message={
-                            isTestingSimulated ? (
-                              <div>
-                                Showing <strong>simulated results</strong> from most recent upload.
-                              </div>
-                            ) : (
-                              <div>
-                                Showing results from most recent submission at:{' '}
-                                <CodePostDate datetime={submission?.dateUploaded || ''} />
-                              </div>
-                            )
-                          }
-                        />
-                      )}
-                      {runMessage && (
-                        <>
-                          <br />
-                          <Alert type="warning" message={runMessage} />
-                        </>
-                      )}
-                    </>
-                  }
-                  hideSummary={testCategories.length === 0}
-                />
+                <TestsList />
               </div>
             </Tabs.TabPane>
           )}
