@@ -1,13 +1,6 @@
-import * as React from 'react';
-import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 import { Alert } from 'antd';
 
-interface IProps {
-  [key: string]: any;
-}
-
-const TestsMenu = (props: IProps) => {
-  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+const TestsMenu = () => {
   return (
     <div
       id="tests-info"
