@@ -12,8 +12,10 @@ import { useEffect, useState } from 'react';
 
 import { colors } from '../../theme/colors';
 import useFixedWindow from '../core/useFixedWindow';
+import _ from 'lodash';
 
 import AdminTable from './AdminTable';
+import SystemHealth from './SystemHealth';
 import CoursesTable from './CoursesTable';
 import OrganizationTable from './OrganizationTable';
 import UsersTable from './UsersTable';
@@ -182,21 +184,26 @@ const Dashboard = () => {
         UserIO.list(),
       ]);
 
-      setOrganizations(organizationData);
-      setCourses(courseData);
-      setUsers(userData);
+      const uniqueOrgs = _.uniqBy(organizationData, 'id');
+      const uniqueCourses = _.uniqBy(courseData, 'id');
+      // Users might have duplicates if listing endpoint is buggy, safe to unique them too
+      const uniqueUsers = _.uniqBy(userData, 'email');
+
+      setOrganizations(uniqueOrgs);
+      setCourses(uniqueCourses);
+      setUsers(uniqueUsers);
 
       const rosterData = await Promise.all(
-        courseData.map(async (course) => {
+        uniqueCourses.map(async (course) => {
           const roster = await Course.readRoster(course.id);
           return roster;
         }),
       );
 
       setRosters(rosterData);
-      const adminList = buildAdminList(rosterData, organizationData);
+      const adminList = buildAdminList(rosterData, uniqueOrgs);
       setAdmins(adminList);
-      setStats(calculateStats(organizationData, courseData, rosterData, userData));
+      setStats(calculateStats(uniqueOrgs, uniqueCourses, rosterData, uniqueUsers));
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -229,11 +236,13 @@ const Dashboard = () => {
     return (
       <div style={{ padding: '24px' }}>
         {/* Header */}
-        <div style={{ marginBottom: '32px' }}>
+        <div style={{ marginBottom: '46px' }}>
           <Title level={2} style={{ marginBottom: '8px' }}>
             Admin Dashboard
           </Title>
-          <Text type="secondary">Welcome back! Here's what's happening with your platform.</Text>
+          <Text type="secondary" style={{ fontSize: '16px' }}>
+            Welcome back! Here's what's happening with your platform.
+          </Text>
         </div>
 
         {/* Stats Cards Row 1 */}
@@ -421,6 +430,9 @@ const Dashboard = () => {
               />
             </Card>
           </Col>
+          <Col xs={24} lg={12}>
+            <SystemHealth />
+          </Col>
         </Row>
 
         {/* Quick Actions */}
@@ -464,7 +476,7 @@ const Dashboard = () => {
       case 'Users':
         return <UsersTable rosters={rosters} organizations={organizations} users={users} onRefresh={fetchData} />;
       default:
-        return null;
+        return null; // Should fall back to overview if needed, but currentTab limits logic
     }
   };
 

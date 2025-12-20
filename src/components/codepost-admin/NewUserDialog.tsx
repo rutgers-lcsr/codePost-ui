@@ -20,13 +20,14 @@ const NewUserDialog: React.FC<NewUserDialogProps> = ({ visible, onClose, onSucce
     try {
       const payload: any = {
         email: values.email,
+        password: values.password,
         organization: values.organization, // ID
         // Default booleans
         codePostAdmin: false,
         canCreateCourses: false,
         canModifyRosters: false,
         showProductTips: true,
-        hasCredentials: true, // Assuming we set password or it handles it
+        hasCredentials: true,
         // Dummy fields for creation
         id: -1,
         created: new Date().toISOString(),
@@ -72,6 +73,14 @@ const NewUserDialog: React.FC<NewUserDialogProps> = ({ visible, onClose, onSucce
           ]}
         >
           <Input placeholder="user@example.com" />
+        </Form.Item>
+
+        <Form.Item
+          name="password"
+          label="Password"
+          rules={[{ required: true, message: 'Please enter a password' }]}
+        >
+          <Input.Password placeholder="Password" />
         </Form.Item>
 
         <Form.Item

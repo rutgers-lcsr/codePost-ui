@@ -28,7 +28,7 @@ ENV REACT_APP_GA_ID=$REACT_APP_GA_ID
 ENV REACT_APP_OPTIMIZE_ID=$REACT_APP_OPTIMIZE_ID
 
 # Build the application with Vite
-RUN npm run build
+RUN npm run build:production
 
 # Production stage
 FROM nginx:alpine AS production
