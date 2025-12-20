@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { DashboardOutlined, GlobalOutlined } from '@ant-design/icons';
+import { DashboardOutlined, GlobalOutlined, RiseOutlined } from '@ant-design/icons';
 
 import type { MenuProps } from 'antd';
 import { Layout, Menu } from 'antd';
@@ -13,6 +13,7 @@ import { colors } from '../../theme/colors';
 
 import APIIframe from './APIIframe';
 import Dashboard from './Dashboard';
+import ActivityFeed from './ActivityFeed';
 
 const { Content, Sider } = Layout;
 
@@ -32,6 +33,9 @@ const DashboardLayout: React.FC = () => {
   }
   if (siderKey === '2') {
     content = <APIIframe />;
+  }
+  if (siderKey === '3') {
+    content = <ActivityFeed />;
   }
 
   return (
@@ -66,10 +70,14 @@ const DashboardLayout: React.FC = () => {
             <GlobalOutlined />
             <span className="nav-text">API</span>
           </Menu.Item>
+          <Menu.Item key="3">
+            <RiseOutlined />
+            <span className="nav-text">Activity</span>
+          </Menu.Item>
         </Menu>
       </Sider>
       <Layout style={{ height: '100vh' }}>
-        <Content style={{ padding: '24px 16px 30px' }}>{content}</Content>
+        <Content style={{ padding: '24px 16px 30px', maxWidth: '100%', overflowX: 'hidden' }}>{content}</Content>
       </Layout>
     </Layout>
   );

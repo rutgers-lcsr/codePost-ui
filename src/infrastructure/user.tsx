@@ -34,7 +34,9 @@ const UserV = t.intersection(
       codePostAdmin: t.boolean,
       hasCredentials: t.boolean,
     }),
-    t.partial({}),
+    t.partial({
+      password: t.string,
+    }),
   ],
   'User',
 );

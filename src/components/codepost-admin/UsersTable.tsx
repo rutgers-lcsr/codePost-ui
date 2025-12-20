@@ -60,18 +60,19 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
 
       // Helper to add or update user
       const addUser = (
-        email: string,
+        emailRaw: string,
         role: 'student' | 'grader' | 'superGrader' | 'courseAdmin',
         isActive: boolean,
       ) => {
+        const email = emailRaw.toLowerCase();
         if (!map.has(email)) {
           map.set(email, {
-            email,
+            email: emailRaw,
             organizations: new Set(),
             courses: new Set(),
             roles: new Set(),
             isCodePostAdmin: false, // Will be set from User.list() data
-            isActive: true, // Will be set to false if any inactive
+            isActive: false, // Default to false, OR logic will enable it
             totalCourses: 0,
             organizationDetails: [],
           });
@@ -88,9 +89,10 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
         user.roles.add(role);
         user.totalCourses = user.courses.size;
 
-        // If user is inactive in any course, mark as not fully active
-        if (!isActive) {
-          user.isActive = false;
+        // If user is active in *any* course context, they are active overall.
+        // OR logic: (current) OR (new entry)
+        if (isActive) {
+          user.isActive = true;
         }
       };
 
@@ -108,11 +110,18 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
 
     // Then, merge in full user data from User.list()
     users.forEach((fullUser) => {
-      if (map.has(fullUser.email)) {
+      const email = fullUser.email.toLowerCase();
+      if (map.has(email)) {
         // User exists from rosters, add full user data and codePostAdmin status
-        const user = map.get(fullUser.email)!;
+        const user = map.get(email)!;
         user.fullUserData = fullUser;
         user.isCodePostAdmin = fullUser.codePostAdmin;
+        // Also ensure isActive is true if they exist in User.list (which means they are a platform user)
+        // Unless we only want "Active in a Course" to count.
+        // Usually User.list users are active unless 'is_active' flag on user model is false.
+        // But here we're tracking course activity.
+        // Let's assume User.list() returns active accounts.
+        // Actually, let's trust the course logic for course activity, and just set platform admin flag.
       } else {
         // User not in rosters, add them with data from User object
         const userOrg = organizations.find((o) => o.id === fullUser.organization);
@@ -133,7 +142,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
           ...fullUser.courseadminCourses,
         ].forEach((course) => allCourses.add(`${course.name} (${course.period})`));
 
-        map.set(fullUser.email, {
+        map.set(email, {
           email: fullUser.email,
           organizations: userOrg ? new Set([userOrg.shortname]) : new Set(),
           courses: allCourses,
