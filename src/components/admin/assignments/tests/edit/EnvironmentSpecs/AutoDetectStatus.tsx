@@ -33,7 +33,6 @@ import {
   HistoryOutlined,
   SyncOutlined,
   CheckCircleOutlined,
-  QuestionOutlined,
 } from '@ant-design/icons';
 import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
 import CPTooltip from '../../../../../core/CPTooltip';
