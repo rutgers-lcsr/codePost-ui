@@ -1,5 +1,5 @@
 /* react imports */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 /* ant imports */
 import { Divider, Modal, Radio, Typography } from 'antd';
@@ -143,7 +143,7 @@ const DownloadGrades = (props: IProps) => {
 
     const csv = grades.join('\n');
     const a = document.createElement('a');
-    a.href = `data:text/csv;charset=utf-8,${csv}`;
+    a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
     a.download = `${props.currentCourse.name}-${props.currentCourse.period}-${assignment.name}-grades.csv`;
 
     document.body.appendChild(a);
@@ -172,60 +172,70 @@ const DownloadGrades = (props: IProps) => {
   const numMissing = warningSubmissions.missing;
   const numUngraded = warningSubmissions.ungraded;
 
+  // ********************************** EFFECTS ****************************************
+
+  useEffect(() => {
+    if (!numMissing && !numUngraded) {
+      onDownload();
+    }
+  }, [numMissing, numUngraded]);
+
+  // ********************************** RENDER ****************************************
+
   if (!numMissing && !numUngraded) {
-    onDownload();
-    return <div />;
-  } else {
-    return (
-      <Modal
-        visible={true}
-        width={550}
-        title={props.activeAssignment ? `Download grades: ${props.activeAssignment.name}` : 'Download grades'}
-        okText="Download"
-        onCancel={props.onCancel}
-        onOk={onDownload}
-      >
-        <div>
-          <div>{`Some students in your course have ${numMissing ? 'missing' : ''} ${numMissing && numUngraded ? 'and' : ''
-            } ${numUngraded ? 'unfinalized' : ''} submissions. How would you like to handle these?`}</div>
-          {numMissing ? (
-            <div>
-              <Divider />
-              <div style={{ padding: '10px 20px' }} className="display-flex justify-content-space-between">
-                <div>
-                  <Text style={{ fontWeight: 600 }} type="danger">
-                    {numMissing > 1 ? `${numMissing} missing submissions` : '1 missing submission'}
-                  </Text>
-                </div>
-                <Radio.Group onChange={changeMissingAsZero} value={missingAsZero} style={{ width: 250 }}>
-                  <Radio value={false}>Leave blank (no grade)</Radio>
-                  <Radio value={true}>Assign grade of 0</Radio>
-                </Radio.Group>
-              </div>
-            </div>
-          ) : (
-            <div />
-          )}
-          {numUngraded ? (
-            <div>
-              <Divider />
-              <div style={{ padding: '10px 20px' }} className="display-flex justify-content-space-between">
-                <Text style={{ fontWeight: 600 }} type="warning">
-                  {numUngraded > 1 ? `${numUngraded} unfinalized submissions` : '1 unfinalized submission'}
-                </Text>
-                <Radio.Group onChange={changeUngradedAsZero} value={ungradedAsZero} style={{ width: 250 }}>
-                  <Radio value={false}>Leave blank (no grade)</Radio>
-                  <Radio value={true}>Assign grade of 0</Radio>
-                </Radio.Group>
-              </div>
-            </div>
-          ) : (
-            <div />
-          )}
-        </div>
-      </Modal>
-    );
+    return null;
   }
+
+  return (
+    <Modal
+      open={true}
+      width={550}
+      title={props.activeAssignment ? `Download grades: ${props.activeAssignment.name}` : 'Download grades'}
+      okText="Download"
+      onCancel={props.onCancel}
+      onOk={onDownload}
+    >
+      <div>
+        <div>{`Some students in your course have ${numMissing ? 'missing' : ''} ${
+          numMissing && numUngraded ? 'and' : ''
+        } ${numUngraded ? 'unfinalized' : ''} submissions. How would you like to handle these?`}</div>
+        {numMissing ? (
+          <div>
+            <Divider />
+            <div style={{ padding: '10px 20px' }} className="display-flex justify-content-space-between">
+              <div>
+                <Text style={{ fontWeight: 600 }} type="danger">
+                  {numMissing > 1 ? `${numMissing} missing submissions` : '1 missing submission'}
+                </Text>
+              </div>
+              <Radio.Group onChange={changeMissingAsZero} value={missingAsZero} style={{ width: 250 }}>
+                <Radio value={false}>Leave blank (no grade)</Radio>
+                <Radio value={true}>Assign grade of 0</Radio>
+              </Radio.Group>
+            </div>
+          </div>
+        ) : (
+          <div />
+        )}
+        {numUngraded ? (
+          <div>
+            <Divider />
+            <div style={{ padding: '10px 20px' }} className="display-flex justify-content-space-between">
+              <Text style={{ fontWeight: 600 }} type="warning">
+                {numUngraded > 1 ? `${numUngraded} unfinalized submissions` : '1 unfinalized submission'}
+              </Text>
+              <Radio.Group onChange={changeUngradedAsZero} value={ungradedAsZero} style={{ width: 250 }}>
+                <Radio value={false}>Leave blank (no grade)</Radio>
+                <Radio value={true}>Assign grade of 0</Radio>
+              </Radio.Group>
+            </div>
+          </div>
+        ) : (
+          <div />
+        )}
+      </div>
+    </Modal>
+  );
 };
 
 export default DownloadGrades;
