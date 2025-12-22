@@ -8,7 +8,8 @@ import * as React from 'react';
 import { FolderOpenOutlined, PlusCircleOutlined, UserAddOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Checkbox, Empty } from 'antd';
+import { Breadcrumb, Empty, Typography, Tag, Button, Tooltip } from 'antd';
+import moment from 'moment';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -159,33 +160,9 @@ class StudentData extends React.Component<IByStudentProps, IState> {
               path={this.props.match.url}
               end={true}
               render={(_props: any) => {
-                let toggleInactiveStudents;
                 let columns: ITableDetailColumn[] = [];
                 let data: any[] = [];
-
                 if (this.props.loadComplete) {
-                  const hasInactiveStudents = this.props.inactiveStudents.length > 0;
-                  if (hasInactiveStudents) {
-                    toggleInactiveStudents = (
-                      <div>
-                        <Checkbox
-                          defaultChecked={this.state.showActive}
-                          onChange={this.toggleValue.bind(this, 'showActive')}
-                        >
-                          Active students
-                        </Checkbox>
-                        <CPTooltip title={tooltips.admin.studentSubmissions.inactives} hideThisOnHideTips={true}>
-                          <Checkbox
-                            defaultChecked={this.state.showInactive}
-                            onChange={this.toggleValue.bind(this, 'showInactive')}
-                          >
-                            Inactive students
-                          </Checkbox>
-                        </CPTooltip>
-                      </div>
-                    );
-                  }
-
                   const aligner: 'left' | 'center' | 'right' = 'center';
                   columns = [
                     {
@@ -202,21 +179,21 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                       renderForSearch: (searchText: string) => {
                         return (_text: string, record: any, _index: number) => {
                           const student = record.student;
-                          if (this.props.students.indexOf(student) > -1) {
-                            return (
-                              <Highlighter
-                                highlightStyle={{
-                                  backgroundColor: '#5CBB8B',
-                                  padding: 0,
-                                }}
-                                searchWords={[searchText]}
-                                autoEscape
-                                textToHighlight={student}
-                              />
-                            );
-                          } else {
-                            return (
-                              <span style={{ color: '#ccc' }}>
+                          const content =
+                            this.props.students.indexOf(student) > -1 ? (
+                              <Typography.Text strong>
+                                <Highlighter
+                                  highlightStyle={{
+                                    backgroundColor: '#5CBB8B',
+                                    padding: 0,
+                                  }}
+                                  searchWords={[searchText]}
+                                  autoEscape
+                                  textToHighlight={student}
+                                />
+                              </Typography.Text>
+                            ) : (
+                              <span style={{ color: '#999' }}>
                                 <Highlighter
                                   highlightStyle={{
                                     backgroundColor: '#5CBB8B',
@@ -228,7 +205,7 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                                 />
                               </span>
                             );
-                          }
+                          return content;
                         };
                       },
                     },
@@ -249,10 +226,35 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                               return '--';
                             } else {
                               const submission = this.props.submissionsByStudent[record.student][assignment.id];
+                              let color = 'default';
+                              const content: React.ReactNode = score;
+
+                              if (score === 'Unfinalized') {
+                                color = 'warning';
+                              } else {
+                                color = 'success';
+                              }
+
+                              const dateTip = submission.dateUploaded
+                                ? `Submitted: ${moment(submission.dateUploaded).format('MMM D, h:mm A')}`
+                                : 'No submission date';
+
                               return (
-                                <span className="text-link" onClick={this.onSubmissionClick.bind(this, submission.id)}>
-                                  {score}
-                                </span>
+                                <Tooltip title={dateTip}>
+                                  <Tag
+                                    color={color}
+                                    onClick={this.onSubmissionClick.bind(this, submission.id)}
+                                    style={{
+                                      cursor: 'pointer',
+                                      display: 'block',
+                                      textAlign: 'center',
+                                      width: '100%',
+                                      margin: 0,
+                                    }}
+                                  >
+                                    {content}
+                                  </Tag>
+                                </Tooltip>
                               );
                             }
                           };
@@ -304,7 +306,11 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                 return (
                   <TableDetail
                     loadComplete={this.props.loadComplete}
-                    title={'Submissions by Student'}
+                    title={
+                      <Typography.Text strong style={{ fontSize: '16px' }}>
+                        Submissions by Student
+                      </Typography.Text>
+                    }
                     isEmpty={this.props.assignments.length === 0 || numStudents === 0}
                     emptyNode={
                       <Empty
@@ -345,7 +351,21 @@ class StudentData extends React.Component<IByStudentProps, IState> {
                     }
                     columns={columns}
                     data={data}
-                    actions={[toggleInactiveStudents]}
+                    actions={[
+                      <Tooltip title={this.state.showInactive ? 'Hide inactive students' : 'Show inactive students'}>
+                        <Button
+                          shape="circle"
+                          icon={
+                            this.state.showInactive ? (
+                              <UserAddOutlined />
+                            ) : (
+                              <UserAddOutlined style={{ color: '#ccc' }} />
+                            )
+                          }
+                          onClick={this.toggleValue.bind(this, 'showInactive')}
+                        />
+                      </Tooltip>,
+                    ]}
                     breadcrumbs={<Breadcrumb items={[{ title: 'Submissions' }, { title: 'By Student' }]} />}
                     titleInfo={tooltips.admin.studentSubmissions.title}
                   />

@@ -476,9 +476,8 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   const envVarsInput = (
     <div style={{ padding: 10 }}>
-      <Typography.Title level={5}>Runtime Environment Variables</Typography.Title>
       <Alert
-        message="These variables will be available to the student code at runtime."
+        title="These variables will be available to the student code at runtime."
         type="info"
         showIcon
         style={{ marginBottom: 15 }}

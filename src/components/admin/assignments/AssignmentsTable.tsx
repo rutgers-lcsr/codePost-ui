@@ -513,14 +513,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
         ),
       },
       */
-      {
-        key: 'tests',
-        label: (
-          <Link to={`${baseURL}/environment/${encodedName}/edit`}>
-            <FileDoneOutlined /> &nbsp; Environment Setup
-          </Link>
-        ),
-      },
+
       {
         key: '2',
         label: (
@@ -779,6 +772,11 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
       ),
       actions: (
         <Space>
+          <Tooltip title="Environment Setup">
+            <Link to={`${baseURL}/environment/${encodedName}/edit`}>
+              <Button shape="circle" icon={<FileDoneOutlined />} />
+            </Link>
+          </Tooltip>
           <Tooltip title="Edit rubric">
             <Link to={`${baseURL}/rubrics/${encodedName}`}>
               <Button shape="circle" icon={<OrderedListOutlined />} />

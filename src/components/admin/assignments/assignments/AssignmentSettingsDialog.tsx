@@ -479,15 +479,10 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
               key: 'resources',
               children: (
                 <div style={tabPaneStyle}>
-                  <h3>Assignment Files</h3>
-                  <Form.Item
-                    // label="Assignment files"
-                    extra="Starter files that students will download, complete, and submit back for grading."
-                  >
+                  <Form.Item extra="Starter files that students will download, complete, and submit back for grading. Also used for figuring out the environment to run student code.">
                     <AssignmentFilesForm value={templates} onChange={setTemplates} assignmentId={assignment.id} />
                   </Form.Item>
                   <div style={{ marginTop: 24, marginBottom: 24, borderTop: '1px solid #f0f0f0' }} />
-                  <h3>Datasets</h3>
                   <AssignmentDataSetsForm
                     assignmentId={assignment.id}
                     datasets={datasets}
@@ -733,7 +728,6 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
               key: 'publishing',
               children: (
                 <div style={tabPaneStyle}>
-
                   <Form.Item
                     name="studentsCanSeeGraders"
                     label="Show graders"

@@ -7,7 +7,7 @@
 import { MenuOutlined, ZoomInOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Dropdown } from 'antd';
+import { Breadcrumb, Dropdown, Typography, Tag, Button } from 'antd';
 
 /* other library imports */
 import { Link, Route, Routes } from 'react-router-dom';
@@ -140,15 +140,15 @@ const GraderDetail = (props: IProps) => {
                     <Link to={`${props.match.url}/${encodeForLink(assignment.name)}`}>
                       <div style={{ cursor: 'pointer' }}>
                         <CPTooltip title={tooltips.admin.graderSubmissions.expandAssignment} hideThisOnHideTips={true}>
-                          <ZoomInOutlined />
+                          <Button shape="circle" icon={<ZoomInOutlined />} />
                         </CPTooltip>
                       </div>
                     </Link>
                   ),
-                  assignment: assignment.name,
-                  claimed: graded ? graded.length : 0,
-                  finalized: numFinalized,
-                  unfinalized: numUnfinalized,
+                  assignment: <Typography.Text strong>{assignment.name}</Typography.Text>,
+                  claimed: <Tag color="processing">{graded ? graded.length : 0}</Tag>,
+                  finalized: <Tag color="success">{numFinalized}</Tag>,
+                  unfinalized: <Tag color="warning">{numUnfinalized}</Tag>,
                   graderAverage: numFinalized > 0 ? `${avgGrade.toFixed(1)}/${assignment.points}` : '--',
                   assignmentAverage: assignment.mean
                     ? `${assignment.mean.toFixed(1)}/${assignment.points}`
@@ -157,7 +157,7 @@ const GraderDetail = (props: IProps) => {
                       : '--',
                   actions: (
                     <Dropdown menu={{ items: menuItems }} trigger={['click']} placement={'bottomRight'}>
-                      <MenuOutlined />
+                      <Button shape="circle" icon={<MenuOutlined />} />
                     </Dropdown>
                   ),
                 };
@@ -167,7 +167,11 @@ const GraderDetail = (props: IProps) => {
                 <div>
                   <TableDetail
                     loadComplete={true}
-                    title={`Submissions graded by: ${props.grader}`}
+                    title={
+                      <Typography.Title level={4} style={{ margin: 0 }}>
+                        Submissions graded by: {props.grader}
+                      </Typography.Title>
+                    }
                     breadcrumbs={
                       <Breadcrumb
                         items={[

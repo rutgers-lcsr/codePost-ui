@@ -8,7 +8,7 @@ import * as React from 'react';
 import { CodeOutlined, DeleteOutlined, EyeFilled, EyeInvisibleOutlined, MenuOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Badge, Breadcrumb, Dropdown, Modal } from 'antd';
+import { Breadcrumb, Dropdown, Modal, Tag, Button, Tooltip, Typography } from 'antd';
 
 /* other library imports */
 import moment from 'moment';
@@ -57,35 +57,30 @@ class GraderAssignmentDetail extends React.Component<IProps> {
   };
 
   public getStatus = (submission: SubmissionInfoType | undefined) => {
-    let badgeStatus: 'default' | 'error' | 'success' | 'warning' | 'processing' | undefined;
+    let color: 'default' | 'error' | 'success' | 'warning' | 'processing' | undefined;
     let cellText;
     if (submission) {
       if (submission.isFinalized) {
-        badgeStatus = 'success';
+        color = 'success';
         cellText = 'Finalized';
       } else if (submission.grader) {
-        badgeStatus = 'processing';
+        color = 'processing';
         cellText = 'Unfinalized';
       } else {
-        badgeStatus = 'warning';
+        color = 'warning';
         cellText = 'Unclaimed';
       }
     } else {
-      badgeStatus = 'default';
+      color = 'default';
       cellText = 'Missing';
     }
-    return (
-      <span>
-        <Badge status={badgeStatus} />
-        {cellText}
-      </span>
-    );
+    return <Tag color={color}>{cellText}</Tag>;
   };
 
   public getViewIcon = (submission: SubmissionInfoType) => {
     if (!(submission.id in this.props.viewsBySubmission) || !submission.isFinalized) {
       // case: No history object or unfinalized
-      return '--';
+      return <span style={{ color: '#999' }}>--</span>;
     } else {
       const viewed = this.props.viewsBySubmission[submission.id];
 
@@ -215,16 +210,20 @@ class GraderAssignmentDetail extends React.Component<IProps> {
         }
 
         return {
-          open: <CodeOutlined onClick={open} />,
+          open: (
+            <Tooltip title="Open Submission">
+              <Button shape="circle" icon={<CodeOutlined />} onClick={open} />
+            </Tooltip>
+          ),
           key: submission.id,
-          assignment: selectedAssignment.name,
+          assignment: <Typography.Text strong>{selectedAssignment.name}</Typography.Text>,
           status: this.getStatus(submission),
-          students: submission.students.join(', '),
+          students: <Typography.Text strong>{submission.students.join(', ')}</Typography.Text>,
           grade: gradeString,
           viewed: this.getViewIcon(submission),
           actions: (
             <Dropdown menu={{ items: menuItems }} trigger={['click']} placement={'bottomRight'}>
-              <MenuOutlined />
+              <Button shape="circle" icon={<MenuOutlined />} />
             </Dropdown>
           ),
         };
@@ -234,7 +233,11 @@ class GraderAssignmentDetail extends React.Component<IProps> {
         <div>
           <TableDetail
             loadComplete={true}
-            title={`Submissions graded by: ${this.props.grader} for ${selectedAssignment.name}`}
+            title={
+              <Typography.Title level={4} style={{ margin: 0 }}>
+                Submissions graded by: {this.props.grader} for {selectedAssignment.name}
+              </Typography.Title>
+            }
             breadcrumbs={
               <Breadcrumb
                 items={[

@@ -20,7 +20,7 @@ import {
 } from '@ant-design/icons';
 
 /* style imports */
-import { Badge, Breadcrumb, Dropdown, message, Modal, Select } from 'antd';
+import { Breadcrumb, Dropdown, message, Modal, Select, Tag, Typography, Button, Tooltip } from 'antd';
 
 /* other library imports */
 import moment from 'moment';
@@ -228,10 +228,9 @@ class StudentDetail extends React.Component<IProps, IState> {
       cellText = 'Missing';
     }
     return (
-      <span>
-        <Badge status={badgeStatus} />
+      <Tag color={badgeStatus} style={{ minWidth: 80, textAlign: 'center' }}>
         {cellText}
-      </span>
+      </Tag>
     );
   };
 
@@ -252,6 +251,12 @@ class StudentDetail extends React.Component<IProps, IState> {
         title: 'Assignment',
         dataIndex: 'assignment',
         key: 'assignment',
+      },
+      {
+        title: 'Submitted',
+        dataIndex: 'submitted',
+        key: 'submitted',
+        align: aligner,
       },
       {
         title: 'Status',
@@ -432,8 +437,22 @@ class StudentDetail extends React.Component<IProps, IState> {
 
       return {
         key: assignment.name,
-        open: submission ? <CodeOutlined onClick={openSubmission.bind(this, submission.id)} /> : '--',
-        assignment: assignment.name,
+        open: submission ? (
+          <Tooltip title="Open submission">
+            <CodeOutlined onClick={openSubmission.bind(this, submission.id)} style={{ cursor: 'pointer' }} />
+          </Tooltip>
+        ) : (
+          '--'
+        ),
+        assignment: <Typography.Text strong>{assignment.name}</Typography.Text>,
+        submitted:
+          submission && submission.dateUploaded ? (
+            <Typography.Text type="secondary" style={{ fontSize: '12px' }}>
+              {moment(submission.dateUploaded).format('MMM D, h:mm A')}
+            </Typography.Text>
+          ) : (
+            '--'
+          ),
         partners: submission
           ? submission.students
               .filter((student) => {
@@ -448,7 +467,7 @@ class StudentDetail extends React.Component<IProps, IState> {
         viewed: submission ? this.getViewIcon(submission, this.props.student) : '--',
         actions: (
           <Dropdown menu={{ items: menuItems }} trigger={['click']} placement={'bottomRight'}>
-            <MenuOutlined />
+            <Button shape="circle" icon={<MenuOutlined />} />
           </Dropdown>
         ),
       };
@@ -459,10 +478,9 @@ class StudentDetail extends React.Component<IProps, IState> {
         <TableDetail
           loadComplete={true}
           title={
-            <span>
-              <span>Submissions: </span>
-              <span>{this.props.student}</span>
-            </span>
+            <Typography.Title level={4} style={{ margin: 0 }}>
+              Submissions: {this.props.student}
+            </Typography.Title>
           }
           breadcrumbs={
             <Breadcrumb
