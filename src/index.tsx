@@ -26,8 +26,8 @@ const maintenanceBanner = (
       textAlign: 'center',
     }}
   >
-    codePost is currently experiencing technical difficulties and is unavailable. We're working hard to get it back
-    online.
+    The codePost autograder test runner is currently experiencing technical difficulties. Some test runs may not
+    complete. We're working hard to get it back working.
   </div>
 );
 
