@@ -8,7 +8,7 @@ import * as React from 'react';
 import { PlusCircleOutlined, UserAddOutlined, ZoomInOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Breadcrumb, Checkbox, Empty } from 'antd';
+import { Breadcrumb, Checkbox, Empty, Space, Typography, Tag, Button } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -183,19 +183,21 @@ const GraderData: React.FC<IByGraderProps> = (props) => {
                         const grader = record.grader;
                         if (graders.indexOf(grader) > -1) {
                           return (
-                            <Highlighter
-                              highlightStyle={{
-                                backgroundColor: '#5CBB8B',
-                                padding: 0,
-                              }}
-                              searchWords={[searchText]}
-                              autoEscape
-                              textToHighlight={grader}
-                            />
+                            <Typography.Text strong>
+                              <Highlighter
+                                highlightStyle={{
+                                  backgroundColor: '#5CBB8B',
+                                  padding: 0,
+                                }}
+                                searchWords={[searchText]}
+                                autoEscape
+                                textToHighlight={grader}
+                              />
+                            </Typography.Text>
                           );
                         } else {
                           return (
-                            <span style={{ color: '#ccc' }}>
+                            <span style={{ color: '#999' }}>
                               <Highlighter
                                 highlightStyle={{
                                   backgroundColor: '#5CBB8B',
@@ -230,14 +232,16 @@ const GraderData: React.FC<IByGraderProps> = (props) => {
                 if (hasInactiveGraders) {
                   toggleInactiveGraders = (
                     <div>
-                      <Checkbox defaultChecked={showActive} onChange={toggleValue.bind(this, 'showActive')}>
-                        Active graders
-                      </Checkbox>
-                      <CPTooltip title={tooltips.admin.studentSubmissions.inactives} hideThisOnHideTips={true}>
-                        <Checkbox defaultChecked={showInactive} onChange={toggleValue.bind(this, 'showInactive')}>
-                          Inactive graders
+                      <Space size="large">
+                        <Checkbox defaultChecked={showActive} onChange={toggleValue.bind(this, 'showActive')}>
+                          Active graders
                         </Checkbox>
-                      </CPTooltip>
+                        <CPTooltip title={tooltips.admin.studentSubmissions.inactives} hideThisOnHideTips={true}>
+                          <Checkbox defaultChecked={showInactive} onChange={toggleValue.bind(this, 'showInactive')}>
+                            Inactive graders
+                          </Checkbox>
+                        </CPTooltip>
+                      </Space>
                     </div>
                   );
                 }
@@ -258,7 +262,7 @@ const GraderData: React.FC<IByGraderProps> = (props) => {
                       <Link to={`${match.url}/${graderEmail}`}>
                         <div style={{ cursor: 'pointer' }}>
                           <CPTooltip title={tooltips.admin.graderSubmissions.expand} hideThisOnHideTips={true}>
-                            <ZoomInOutlined />
+                            <Button shape="circle" icon={<ZoomInOutlined />} />
                           </CPTooltip>
                         </div>
                       </Link>
@@ -271,11 +275,22 @@ const GraderData: React.FC<IByGraderProps> = (props) => {
                     if (graded) {
                       toRet[assignment.name] = (
                         <Link to={`${match.url}/${graderEmail}/${encodeForLink(assignment.name)}`}>
-                          <span style={{ cursor: 'pointer' }}>{graded.length}</span>
+                          <span
+                            style={{
+                              cursor: 'pointer',
+                              display: 'block',
+                              width: '100%',
+                            }}
+                            title="Click to view details"
+                          >
+                            <Tag color="processing" style={{ margin: 0 }}>
+                              {graded.length} Graded
+                            </Tag>
+                          </span>
                         </Link>
                       );
                     } else {
-                      toRet[assignment.name] = 0;
+                      toRet[assignment.name] = <span style={{ color: '#999' }}>--</span>;
                     }
                   }
                   return toRet;
@@ -286,7 +301,11 @@ const GraderData: React.FC<IByGraderProps> = (props) => {
               return (
                 <TableDetail
                   loadComplete={loadComplete}
-                  title={'Submissions by Grader'}
+                  title={
+                    <Typography.Title level={4} style={{ margin: 0 }}>
+                      Submissions by Grader
+                    </Typography.Title>
+                  }
                   isEmpty={numGraders === 0 || assignments.length === 0}
                   emptyNode={
                     <Empty

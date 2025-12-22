@@ -613,22 +613,6 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
               </Button>
             </Space.Compact>
           </div>
-
-          {/* Help Text */}
-          <Alert
-            message={
-              <Space>
-                <InfoCircleOutlined />
-                <Text style={{ fontSize: 12 }}>
-                  <strong>Tip:</strong> Add files one-by-one above, or save time by uploading a .zip with your complete
-                  project structure.
-                </Text>
-              </Space>
-            }
-            type="info"
-            showIcon={false}
-            style={{ background: '#e6f7ff', border: '1px solid #91d5ff' }}
-          />
         </Space>
       </div>
 

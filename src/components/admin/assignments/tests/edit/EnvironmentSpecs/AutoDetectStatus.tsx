@@ -33,8 +33,10 @@ import {
   HistoryOutlined,
   SyncOutlined,
   CheckCircleOutlined,
+  QuestionOutlined,
 } from '@ant-design/icons';
 import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
+import CPTooltip from '../../../../../core/CPTooltip';
 
 interface AutoDetectStatusProps {
   environment: EnvironmentType;
@@ -150,6 +152,11 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
         <Space>
           <SyncOutlined spin={environment.convergencePending} />
           Auto-Detect Status
+          <CPTooltip
+            title="Auto-detect status shows the current state of the environment. Runs can be per file"
+            infoIcon={true}
+            style={{ marginLeft: 8 }}
+          />
         </Space>
       }
       size="small"
@@ -163,17 +170,21 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
       {/* Stats Row */}
       <Row gutter={16} style={{ marginBottom: 16 }}>
         <Col span={6}>
-          <Statistic title="Version" value={`v${environment.currentBuildVersion || 1}`} valueStyle={{ fontSize: 20 }} />
+          <Statistic
+            title="Version"
+            value={`v${environment.currentBuildVersion || 1}`}
+            styles={{ content: { fontSize: 20 } }}
+          />
         </Col>
         <Col span={6}>
-          <Statistic title="Total Runs" value={environment.totalRuns || 0} valueStyle={{ fontSize: 20 }} />
+          <Statistic title="Total Runs" value={environment.totalRuns || 0} styles={{ content: { fontSize: 20 } }} />
         </Col>
         <Col span={6}>
           <Statistic
             title="Success Rate"
             value={successRate}
             suffix="%"
-            valueStyle={{ color: getStatusColor(successRate), fontSize: 20 }}
+            styles={{ content: { color: getStatusColor(successRate), fontSize: 20 } }}
           />
         </Col>
         <Col span={6}>

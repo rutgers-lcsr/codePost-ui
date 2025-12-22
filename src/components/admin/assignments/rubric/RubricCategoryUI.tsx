@@ -16,7 +16,7 @@ import {
   DislikeOutlined,
 } from '@ant-design/icons';
 
-import { Button, Empty, Input, Spin, Tag, Popconfirm, Switch } from 'antd';
+import { Button, Empty, Input, Spin, Tag, Popconfirm, Switch, Divider } from 'antd';
 
 import CPPointInput from '../../../core/CPPointInput';
 import CPTooltip from '../../../core/CPTooltip';
@@ -457,8 +457,8 @@ const RubricCategoryUI: React.FC<{
               marginBottom: '24px',
               alignItems: 'flex-start',
               flexWrap: 'wrap',
-              padding: '16px',
-              background: '#fafafa',
+              padding: '12px 16px',
+              background: '#fff',
               borderRadius: '6px',
               border: '1px solid #f0f0f0',
             }}
@@ -576,6 +576,8 @@ const RubricCategoryUI: React.FC<{
               Add Criteria
             </Button>
           </div>
+
+          <Divider style={{ margin: '24px 0' }} />
 
           <div style={{ marginTop: '8px' }}>
             {cards}
