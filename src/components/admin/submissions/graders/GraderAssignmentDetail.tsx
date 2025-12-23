@@ -37,7 +37,7 @@ interface IProps {
 
   grader: string;
 
-  match: any;
+
   baseURL: string;
 
   selectedAssignment: AssignmentType;
@@ -123,12 +123,7 @@ class GraderAssignmentDetail extends React.Component<IProps> {
     const aligner: 'left' | 'center' | 'right' = 'center';
 
     const columns = [
-      {
-        title: 'Open',
-        dataIndex: 'open',
-        key: 'open',
-        align: aligner,
-      },
+
       {
         title: 'Assignment',
         dataIndex: 'assignment',
@@ -165,11 +160,13 @@ class GraderAssignmentDetail extends React.Component<IProps> {
       },
     ];
 
-    const submissions = this.props.submissions;
+
     const selectedAssignment = this.props.selectedAssignment;
 
     if (selectedAssignment) {
-      const data = submissions.map((submission) => {
+      // Deduplicate submissions by ID to handle potential duplicate data
+      const uniqueSubmissions = Array.from(new Map(this.props.submissions.map((s) => [s.id, s])).values());
+      const data = uniqueSubmissions.map((submission, index) => {
         const open = () => {
           if (localStorage.getItem('source') === 'codePost') {
             openSubmission(submission.id);
@@ -178,15 +175,7 @@ class GraderAssignmentDetail extends React.Component<IProps> {
           }
         };
         const menuItems = [
-          {
-            key: 'open',
-            label: (
-              <>
-                <CodeOutlined /> Open
-              </>
-            ),
-            onClick: open,
-          },
+
           {
             type: 'divider' as const,
           },
@@ -210,21 +199,37 @@ class GraderAssignmentDetail extends React.Component<IProps> {
         }
 
         return {
-          open: (
-            <Tooltip title="Open Submission">
-              <Button shape="circle" icon={<CodeOutlined />} onClick={open} />
-            </Tooltip>
-          ),
-          key: submission.id,
+
+          key: `${submission.id}-${index}`,
           assignment: <Typography.Text strong>{selectedAssignment.name}</Typography.Text>,
           status: this.getStatus(submission),
-          students: <Typography.Text strong>{submission.students.join(', ')}</Typography.Text>,
+          students: (
+            <Typography.Text strong>
+              {submission.students.map((student, i) => {
+                const root = this.props.baseURL.split('/submissions/by_grader')[0];
+                const link = `${root}/submissions/by_student/${student}`;
+                return (
+                  <span key={student}>
+                    {i > 0 && ', '}
+                    <Link to={link} className="text-link">
+                      {student}
+                    </Link>
+                  </span>
+                );
+              })}
+            </Typography.Text>
+          ),
           grade: gradeString,
           viewed: this.getViewIcon(submission),
           actions: (
-            <Dropdown menu={{ items: menuItems }} trigger={['click']} placement={'bottomRight'}>
-              <Button shape="circle" icon={<MenuOutlined />} />
-            </Dropdown>
+            <div style={{ whiteSpace: 'nowrap' }}>
+              <Tooltip title="Open Submission">
+                <Button shape="circle" icon={<CodeOutlined />} onClick={open} style={{ marginRight: 8 }} />
+              </Tooltip>
+              <Dropdown menu={{ items: menuItems }} trigger={['click']} placement={'bottomRight'}>
+                <Button shape="circle" icon={<MenuOutlined />} />
+              </Dropdown>
+            </div>
           ),
         };
       });

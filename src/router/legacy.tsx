@@ -208,7 +208,7 @@ export const useRouteMatch = <P extends StringMap = StringMap>(pattern?: string 
   }, [pattern, context, location.pathname]);
 };
 
-export const withRouter = <OwnProps extends Record<string, unknown>, P extends StringMap = StringMap, State = unknown>(
+export const withRouter = <OwnProps extends object, P extends StringMap = StringMap, State = unknown>(
   Component: ComponentType<OwnProps & RouteComponentProps<P, State>>,
 ) => {
   const Wrapped = (props: OwnProps) => {

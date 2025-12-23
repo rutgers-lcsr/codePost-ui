@@ -26,3 +26,12 @@
 
 // 7. Themes
 @import 'themes/default';
+
+// Override CommandBar launcher position to prevent overlap
+#commandbar-launcher,
+.commandbar-launcher,
+[class*="commandbar-launcher"] {
+  left: 20px !important;
+  right: auto !important;
+  bottom: 20px !important;
+}

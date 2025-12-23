@@ -11,7 +11,7 @@ import { Button, Layout } from 'antd';
 
 /* other library imports */
 import { Link, Route, Routes } from 'react-router-dom';
-import { RouteComponentProps, LegacyRouteRenderer } from '../../router/legacy';
+import { RouteComponentProps, withRouter } from '../../router/legacy';
 
 import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
 
@@ -60,11 +60,11 @@ interface IGraderState {
   showConversionModal: boolean;
 }
 
-class Grader extends Component<IComponentProps, IGraderState> {
+class Grader extends Component<IComponentProps & RouteComponentProps, IGraderState> {
   private timer: number;
   private times: number[] = [];
 
-  public constructor(props: IComponentProps) {
+  public constructor(props: IComponentProps & RouteComponentProps) {
     super(props);
     this.timer = Date.now();
     document.title = 'codePost - Grader Console';
@@ -81,13 +81,13 @@ class Grader extends Component<IComponentProps, IGraderState> {
       assignments: [],
       isSuperGrader: currentCourse
         ? superGraderCourses.some((course) => {
-            return course.id === currentCourse.id;
-          })
+          return course.id === currentCourse.id;
+        })
         : false,
       sectionsLed: currentCourse
         ? sectionsLed.slice().filter((section) => {
-            return currentCourse.sections.indexOf(section.id) !== -1;
-          })
+          return currentCourse.sections.indexOf(section.id) !== -1;
+        })
         : [],
       showBanner: false,
       showConversionModal: false,
@@ -171,19 +171,13 @@ class Grader extends Component<IComponentProps, IGraderState> {
               key="my_submissions"
               path="my_submissions/*"
               element={
-                <LegacyRouteRenderer
-                  path={`${this.props.match.url}/my_submissions/*`}
-                  render={(_props: RouteComponentProps) => (
-                    <MySubmissionsPanel
-                      {..._props}
-                      course={currentCourse}
-                      assignments={this.state.assignments}
-                      graderEmail={this.props.user.email}
-                      isAdmin={this.props.user.courseadminCourses.some((el) => {
-                        return el.id === currentCourse.id;
-                      })}
-                    />
-                  )}
+                <MySubmissionsPanel
+                  assignments={this.state.assignments}
+                  course={currentCourse}
+                  graderEmail={this.props.user.email}
+                  isAdmin={this.props.user.courseadminCourses.some((el) => {
+                    return el.id === currentCourse.id;
+                  })}
                 />
               }
             />
@@ -193,20 +187,14 @@ class Grader extends Component<IComponentProps, IGraderState> {
               key="my_sections"
               path="my_sections/*"
               element={
-                <LegacyRouteRenderer
-                  path={`${this.props.match.url}/my_sections/*`}
-                  render={(_props: RouteComponentProps) => (
-                    <SectionPanel
-                      {..._props}
-                      course={currentCourse}
-                      assignments={this.state.assignments}
-                      graderEmail={this.props.user.email}
-                      sections={this.state.sectionsLed}
-                      isAdmin={this.props.user.courseadminCourses.some((el) => {
-                        return el.id === currentCourse.id;
-                      })}
-                    />
-                  )}
+                <SectionPanel
+                  assignments={this.state.assignments}
+                  course={currentCourse}
+                  graderEmail={this.props.user.email}
+                  sections={this.state.sectionsLed}
+                  isAdmin={this.props.user.courseadminCourses.some((el) => {
+                    return el.id === currentCourse.id;
+                  })}
                 />
               }
             />
@@ -216,12 +204,7 @@ class Grader extends Component<IComponentProps, IGraderState> {
               key="all_submissions"
               path="all_submissions/*"
               element={
-                <LegacyRouteRenderer
-                  path={`${this.props.match.url}/all_submissions/*`}
-                  render={(_props: RouteComponentProps) => (
-                    <ViewAllPanel {..._props} course={currentCourse} assignments={this.state.assignments} />
-                  )}
-                />
+                <ViewAllPanel course={currentCourse} assignments={this.state.assignments} />
               }
             />
           ) : undefined}
@@ -230,21 +213,15 @@ class Grader extends Component<IComponentProps, IGraderState> {
               path="regrades/*"
               key="regrades"
               element={
-                <LegacyRouteRenderer
-                  path={`${this.props.match.url}/regrades/*`}
-                  render={(_props: RouteComponentProps) => (
-                    <RegradesPanel
-                      {..._props}
-                      course={currentCourse}
-                      assignments={this.state.assignments}
-                      user={this.props.user}
-                      isAnonymous={false}
-                      isAdmin={this.props.user.courseadminCourses.some((el) => {
-                        return el.id === currentCourse.id;
-                      })}
-                      isSuperGrader={this.state.isSuperGrader}
-                    />
-                  )}
+                <RegradesPanel
+                  course={currentCourse}
+                  assignments={this.state.assignments}
+                  user={this.props.user}
+                  isAnonymous={false}
+                  isAdmin={this.props.user.courseadminCourses.some((el) => {
+                    return el.id === currentCourse.id;
+                  })}
+                  isSuperGrader={this.state.isSuperGrader}
                 />
               }
             />
@@ -253,12 +230,7 @@ class Grader extends Component<IComponentProps, IGraderState> {
             path="video"
             key="video"
             element={
-              <LegacyRouteRenderer
-                path={`${this.props.match.url}/video`}
-                render={(_props: RouteComponentProps) => (
-                  <VideoModal open={true} onCancel={() => this.props.history.push('/grader')} />
-                )}
-              />
+              <VideoModal open={true} onCancel={() => this.props.history.push('/grader')} />
             }
           />
         </Routes>
@@ -282,16 +254,10 @@ class Grader extends Component<IComponentProps, IGraderState> {
           <Route
             path=":panel/:assignment"
             element={
-              <LegacyRouteRenderer
-                path={`${this.props.match.url}/:panel/:assignment`}
-                render={(_props: RouteComponentProps<{ panel: string; assignment: string }>) => (
-                  <AssignmentMenu
-                    {..._props}
-                    currentCourse={currentCourse}
-                    assignments={this.state.assignments}
-                    baseURL={this.props.match.url}
-                  />
-                )}
+              <AssignmentMenu
+                currentCourse={currentCourse}
+                assignments={this.state.assignments}
+                baseURL={this.props.match.url}
               />
             }
           />
@@ -329,18 +295,9 @@ class Grader extends Component<IComponentProps, IGraderState> {
 
     const navigation = (collapsed: boolean) => {
       // Extract the panel from the current location
-      const locationParts = this.props.location.pathname.split('/');
-      const baseUrlParts = this.props.match.url.split('/');
-      const panelIndex = baseUrlParts.length;
-      const panel = locationParts[panelIndex];
-
       return (
         <GraderNav
           {...this.props}
-          match={{
-            ...this.props.match,
-            params: { panel: panel || '' },
-          }}
           baseURL={this.props.match.url}
           collapsed={collapsed}
           isSuperGrader={this.state.isSuperGrader}
@@ -384,4 +341,4 @@ class Grader extends Component<IComponentProps, IGraderState> {
   }
 }
 
-export default Grader;
+export default withRouter(Grader) as React.ComponentType<IComponentProps>;

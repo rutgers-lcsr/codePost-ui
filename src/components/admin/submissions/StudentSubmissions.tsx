@@ -5,18 +5,18 @@
 /* react imports */
 import * as React from 'react';
 
-import { FolderOpenOutlined, PlusCircleOutlined, UserAddOutlined } from '@ant-design/icons';
+import { PlusCircleOutlined, UserAddOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Empty, Typography, Tag, Button, Tooltip } from 'antd';
-import moment from 'moment';
+import { Breadcrumb, Empty, Typography, Button, Tooltip } from 'antd';
+import dayjs from 'dayjs';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
 
 import { Link, Route, Routes } from 'react-router-dom';
 
-import { LegacyRouteRenderer, RouteComponentProps, withRouter } from '../../../router/legacy';
+
 
 /* codePost imports  */
 import { IStudentSubmissionsDataTable } from '../../../types/common';
@@ -32,7 +32,6 @@ import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 import StudentDetail from './students/StudentDetail';
 
 import CPButton from '../../../components/core/CPButton';
-import CPTooltip from '../../../components/core/CPTooltip';
 import { tooltips } from '../../../components/core/tooltips';
 
 import Loading from '../../../components/core/Loading';
@@ -40,7 +39,7 @@ import { FileType } from '../../../infrastructure/file';
 
 /**********************************************************************************************************************/
 
-export interface IByStudentProps extends RouteComponentProps {
+export interface IByStudentProps {
   /* UI control */
   loadComplete: boolean;
 
@@ -122,6 +121,8 @@ class StudentData extends React.Component<IByStudentProps, IState> {
       return <Loading />;
     }
 
+    const currentBaseURL = `${this.props.baseURL}/submissions/by_student`;
+
     return (
       <Routes>
         {this.props.students.map((student) => (
@@ -129,254 +130,223 @@ class StudentData extends React.Component<IByStudentProps, IState> {
             key={`route-student-${student}`}
             path={`${student}`}
             element={
-              <LegacyRouteRenderer
-                path={`${this.props.match.url}/${student}`}
-                end={true}
-                render={(subprops: any) => (
-                  <StudentDetail
-                    {...subprops}
-                    course={this.props.course}
-                    baseURL={this.props.match.url}
-                    assignments={this.props.assignments}
-                    graders={this.props.graders}
-                    submissions={this.props.submissionsByStudent}
-                    uploadSubmission={this.props.uploadSubmission}
-                    addFilesToSubmission={this.props.addFilesToSubmission}
-                    students={Object.keys(this.props.submissionsByStudent)}
-                    student={student}
-                    viewsBySubmission={this.props.viewsBySubmission}
-                    deleteSubmission={this.props.deleteSubmission}
-                    changeSubmissionGrader={this.props.changeSubmissionGrader}
-                  />
-                )}
+              <StudentDetail
+                course={this.props.course!}
+                baseURL={currentBaseURL}
+                assignments={this.props.assignments}
+                graders={this.props.graders}
+                submissions={this.props.submissionsByStudent}
+                uploadSubmission={this.props.uploadSubmission}
+                addFilesToSubmission={this.props.addFilesToSubmission}
+                students={Object.keys(this.props.submissionsByStudent)}
+                student={student}
+                viewsBySubmission={this.props.viewsBySubmission}
+                deleteSubmission={this.props.deleteSubmission}
+                changeSubmissionGrader={this.props.changeSubmissionGrader}
               />
             }
           />
         ))}
         <Route
           index
-          element={
-            <LegacyRouteRenderer
-              path={this.props.match.url}
-              end={true}
-              render={(_props: any) => {
-                let columns: ITableDetailColumn[] = [];
-                let data: any[] = [];
-                if (this.props.loadComplete) {
-                  const aligner: 'left' | 'center' | 'right' = 'center';
-                  columns = [
-                    {
-                      title: 'Zoom in',
-                      dataIndex: 'expand',
-                      key: 'expand',
-                      align: aligner,
-                    },
-                    {
-                      title: 'Student',
-                      dataIndex: 'student',
-                      key: 'primary',
-                      sorter: (a: any, b: any) => a.key.localeCompare(b.key),
-                      renderForSearch: (searchText: string) => {
-                        return (_text: string, record: any, _index: number) => {
-                          const student = record.student;
-                          const content =
-                            this.props.students.indexOf(student) > -1 ? (
-                              <Typography.Text strong>
-                                <Highlighter
-                                  highlightStyle={{
-                                    backgroundColor: '#5CBB8B',
-                                    padding: 0,
-                                  }}
-                                  searchWords={[searchText]}
-                                  autoEscape
-                                  textToHighlight={student}
-                                />
-                              </Typography.Text>
-                            ) : (
-                              <span style={{ color: '#999' }}>
-                                <Highlighter
-                                  highlightStyle={{
-                                    backgroundColor: '#5CBB8B',
-                                    padding: 0,
-                                  }}
-                                  searchWords={[searchText]}
-                                  autoEscape
-                                  textToHighlight={student}
-                                />
-                              </span>
-                            );
-                          return content;
-                        };
-                      },
-                    },
-                    ...sortAssignments(this.props.assignments).map((assignment) => {
-                      return {
-                        title: assignment.name,
-                        dataIndex: assignment.name,
-                        key: assignment.name,
-                        sorter: (a: any, b: any) => {
-                          return this.sortFunction(a[assignment.name], b[assignment.name]);
-                        },
-                        align: aligner,
-                        className: 'student-table',
-                        renderForSearch: () => {
-                          return (_text: string, record: any, _index: number) => {
-                            const score: string | number = record[assignment.name];
-                            if (score === '--') {
-                              return '--';
-                            } else {
-                              const submission = this.props.submissionsByStudent[record.student][assignment.id];
-                              let color = 'default';
-                              const content: React.ReactNode = score;
-
-                              if (score === 'Unfinalized') {
-                                color = 'warning';
-                              } else {
-                                color = 'success';
-                              }
-
-                              const dateTip = submission.dateUploaded
-                                ? `Submitted: ${moment(submission.dateUploaded).format('MMM D, h:mm A')}`
-                                : 'No submission date';
-
-                              return (
-                                <Tooltip title={dateTip}>
-                                  <Tag
-                                    color={color}
-                                    onClick={this.onSubmissionClick.bind(this, submission.id)}
-                                    style={{
-                                      cursor: 'pointer',
-                                      display: 'block',
-                                      textAlign: 'center',
-                                      width: '100%',
-                                      margin: 0,
-                                    }}
-                                  >
-                                    {content}
-                                  </Tag>
-                                </Tooltip>
-                              );
-                            }
-                          };
-                        },
-                      };
-                    }),
-                  ];
-
-                  // Figure out which set of students to show in table rows
-                  let rowValues: string[] = [];
-                  if (this.state.showActive && this.state.showInactive) {
-                    rowValues = Object.keys(this.props.submissionsByStudent);
-                  } else if (this.state.showInactive) {
-                    rowValues = this.props.inactiveStudents;
-                  } else if (this.state.showActive) {
-                    rowValues = this.props.students;
-                  }
-
-                  data = rowValues.map((studentEmail) => {
-                    const toRet: any = {
-                      expand: (
-                        <Link to={`${this.props.match.url}/${studentEmail}`}>
-                          <div style={{ cursor: 'pointer' }}>
-                            <CPTooltip title={tooltips.admin.studentSubmissions.expand} hideThisOnHideTips={true}>
-                              <FolderOpenOutlined />
-                            </CPTooltip>
-                          </div>
-                        </Link>
-                      ),
-                      student: studentEmail,
-                      key: studentEmail,
-                    };
-                    for (const assignment of this.props.assignments) {
-                      const submission = this.props.submissionsByStudent[studentEmail][assignment.id];
-                      if (submission && submission.isFinalized) {
-                        toRet[assignment.name] = submission.grade;
-                      } else if (submission) {
-                        toRet[assignment.name] = 'Unfinalized';
-                      } else {
-                        toRet[assignment.name] = '--';
-                      }
-                    }
-                    return toRet;
-                  });
-                }
-
-                const numStudents = Object.keys(this.props.submissionsByStudent).length;
-
-                return (
-                  <TableDetail
-                    loadComplete={this.props.loadComplete}
-                    title={
-                      <Typography.Text strong style={{ fontSize: '16px' }}>
-                        Submissions by Student
-                      </Typography.Text>
-                    }
-                    isEmpty={this.props.assignments.length === 0 || numStudents === 0}
-                    emptyNode={
-                      <Empty
-                        styles={{
-                          image: {
-                            height: 60,
-                          },
-                        }}
-                        description={
-                          this.props.assignments.length === 0 && numStudents === 0 ? (
-                            <span>No students or assignments yet</span>
-                          ) : numStudents === 0 ? (
-                            <span>Nice job creating an assignment! Now add some students.</span>
-                          ) : (
-                            <span>You added students! Now create an assignment</span>
-                          )
-                        }
-                      >
-                        {numStudents === 0 ? (
-                          <Link to={`${this.props.baseURL}/roster/students`}>
-                            <CPButton cpType="primary" key={1} icon={<UserAddOutlined />}>
-                              Add some students
-                            </CPButton>
-                          </Link>
-                        ) : null}
-
-                        {this.props.assignments.length === 0 ? (
-                          <span>
-                            {numStudents === 0 ? <span>&nbsp; &nbsp;</span> : null}
-                            <Link to={`${this.props.baseURL}/assignments/overview`}>
-                              <CPButton cpType="primary" key={2} icon={<PlusCircleOutlined />}>
-                                Add an assignment
-                              </CPButton>
-                            </Link>
+          element={React.createElement(() => {
+            let columns: ITableDetailColumn[] = [];
+            let data: any[] = [];
+            if (this.props.loadComplete) {
+              const aligner: 'left' | 'center' | 'right' = 'center';
+              columns = [
+                {
+                  title: 'Student',
+                  dataIndex: 'student',
+                  key: 'primary',
+                  sorter: (a: any, b: any) => a.key.localeCompare(b.key),
+                  renderForSearch: (searchText: string) => {
+                    return (_text: string, record: any, _index: number) => {
+                      const student = record.student;
+                      const content =
+                        this.props.students.indexOf(student) > -1 ? (
+                          <Typography.Text strong>
+                            <Highlighter
+                              highlightStyle={{
+                                backgroundColor: '#5CBB8B',
+                                padding: 0,
+                              }}
+                              searchWords={[searchText]}
+                              autoEscape
+                              textToHighlight={student}
+                            />
+                          </Typography.Text>
+                        ) : (
+                          <span style={{ color: '#999' }}>
+                            <Highlighter
+                              highlightStyle={{
+                                backgroundColor: '#5CBB8B',
+                                padding: 0,
+                              }}
+                              searchWords={[searchText]}
+                              autoEscape
+                              textToHighlight={student}
+                            />
                           </span>
-                        ) : null}
-                      </Empty>
+                        );
+                      return (
+                        <Link to={`${currentBaseURL}/${student}`} className="text-link">
+                          {content}
+                        </Link>
+                      );
+                    };
+                  },
+                },
+                ...sortAssignments(this.props.assignments).map((assignment) => {
+                  return {
+                    title: assignment.name,
+                    dataIndex: assignment.name,
+                    key: assignment.name,
+                    sorter: (a: any, b: any) => {
+                      return this.sortFunction(a[assignment.name], b[assignment.name]);
+                    },
+                    align: aligner,
+                    className: 'student-table',
+                    renderForSearch: () => {
+                      return (_text: string, record: any, _index: number) => {
+                        const score: string | number = record[assignment.name];
+                        if (score === '--') {
+                          return '--';
+                        } else {
+                          const submission = this.props.submissionsByStudent[record.student][assignment.id];
+                          const content: React.ReactNode = score;
+
+                          const dateTip = submission.dateUploaded
+                            ? `Submitted: ${dayjs(submission.dateUploaded).format('MMM D, h:mm A')}`
+                            : 'No submission date';
+
+                          return (
+                            <Tooltip title={dateTip}>
+                              <span
+                                onClick={this.onSubmissionClick.bind(this, submission.id)}
+                                style={{
+                                  cursor: 'pointer',
+                                  display: 'block',
+                                  textAlign: 'center',
+                                  width: '100%',
+                                  color: 'rgba(0, 0, 0, 0.85)', // Standard AntD text color
+                                  fontSize: '14px', // Explicitly match standard table font size if needed, though inheritance should work
+                                }}
+                              >
+                                {content}
+                              </span>
+                            </Tooltip>
+                          );
+                        }
+                      };
+                    },
+                  };
+                }),
+              ];
+
+              // Figure out which set of students to show in table rows
+              let rowValues: string[] = [];
+              if (this.state.showActive && this.state.showInactive) {
+                rowValues = Object.keys(this.props.submissionsByStudent);
+              } else if (this.state.showInactive) {
+                rowValues = this.props.inactiveStudents;
+              } else if (this.state.showActive) {
+                rowValues = this.props.students;
+              }
+
+              data = rowValues.map((studentEmail) => {
+                const toRet: any = {
+                  student: studentEmail,
+                  key: studentEmail,
+                };
+                for (const assignment of this.props.assignments) {
+                  const submission = this.props.submissionsByStudent[studentEmail][assignment.id];
+                  if (submission && submission.isFinalized) {
+                    toRet[assignment.name] = submission.grade && assignment.points !== null ? submission.grade + '/' + assignment.points : submission.grade;
+                  } else if (submission) {
+                    toRet[assignment.name] = 'Unfinalized';
+                  } else {
+                    toRet[assignment.name] = '--';
+                  }
+                }
+                return toRet;
+              });
+            }
+
+            const numStudents = Object.keys(this.props.submissionsByStudent).length;
+
+            return (
+              <TableDetail
+                loadComplete={this.props.loadComplete}
+                title={
+                  <Typography.Text strong style={{ fontSize: '16px' }}>
+                    Submissions by Student
+                  </Typography.Text>
+                }
+                isEmpty={this.props.assignments.length === 0 || numStudents === 0}
+                emptyNode={
+                  <Empty
+                    styles={{
+                      image: {
+                        height: 60,
+                      },
+                    }}
+                    description={
+                      this.props.assignments.length === 0 && numStudents === 0 ? (
+                        <span>No students or assignments yet</span>
+                      ) : numStudents === 0 ? (
+                        <span>Nice job creating an assignment! Now add some students.</span>
+                      ) : (
+                        <span>You added students! Now create an assignment</span>
+                      )
                     }
-                    columns={columns}
-                    data={data}
-                    actions={[
-                      <Tooltip title={this.state.showInactive ? 'Hide inactive students' : 'Show inactive students'}>
-                        <Button
-                          shape="circle"
-                          icon={
-                            this.state.showInactive ? (
-                              <UserAddOutlined />
-                            ) : (
-                              <UserAddOutlined style={{ color: '#ccc' }} />
-                            )
-                          }
-                          onClick={this.toggleValue.bind(this, 'showInactive')}
-                        />
-                      </Tooltip>,
-                    ]}
-                    breadcrumbs={<Breadcrumb items={[{ title: 'Submissions' }, { title: 'By Student' }]} />}
-                    titleInfo={tooltips.admin.studentSubmissions.title}
-                  />
-                );
-              }}
-            />
-          }
+                  >
+                    {numStudents === 0 ? (
+                      <Link to={`${this.props.baseURL}/roster/students`}>
+                        <CPButton cpType="primary" key={1} icon={<UserAddOutlined />}>
+                          Add some students
+                        </CPButton>
+                      </Link>
+                    ) : null}
+
+                    {this.props.assignments.length === 0 ? (
+                      <span>
+                        {numStudents === 0 ? <span>&nbsp; &nbsp;</span> : null}
+                        <Link to={`${this.props.baseURL}/assignments/overview`}>
+                          <CPButton cpType="primary" key={2} icon={<PlusCircleOutlined />}>
+                            Add an assignment
+                          </CPButton>
+                        </Link>
+                      </span>
+                    ) : null}
+                  </Empty>
+                }
+                columns={columns}
+                data={data}
+                actions={[
+                  <Tooltip title={this.state.showInactive ? 'Hide inactive students' : 'Show inactive students'}>
+                    <Button
+                      shape="circle"
+                      icon={
+                        this.state.showInactive ? (
+                          <UserAddOutlined />
+                        ) : (
+                          <UserAddOutlined style={{ color: '#ccc' }} />
+                        )
+                      }
+                      onClick={this.toggleValue.bind(this, 'showInactive')}
+                    />
+                  </Tooltip>,
+                ]}
+                breadcrumbs={<Breadcrumb items={[{ title: 'Submissions' }, { title: 'By Student' }]} />}
+                titleInfo={tooltips.admin.studentSubmissions.title}
+              />
+            );
+          })}
         />
       </Routes>
     );
   }
 }
 
-export default withRouter<Omit<IByStudentProps, keyof RouteComponentProps>>(StudentData);
+export default StudentData;

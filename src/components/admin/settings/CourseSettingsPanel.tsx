@@ -8,7 +8,7 @@ import * as React from 'react';
 import { RedoOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Form, Input, message, Select, Switch, Table, Typography } from 'antd';
+import { Breadcrumb, Form, Input, message, Select, Space, Switch, Table, Typography } from 'antd';
 
 import CPButton from '../../../components/core/CPButton';
 import CPAdminDetail from '../other/CPAdminDetail';
@@ -22,6 +22,7 @@ import { timezones } from '../other/timezones';
 type alignType = 'left' | 'right' | 'center';
 
 const { Text, Title } = Typography;
+import dayjs from 'dayjs';
 
 /**********************************************************************************************************************/
 
@@ -249,6 +250,35 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
 
   const tableTitle = () => <Title level={4}>Misc. settings</Title>;
 
+  const courseInfoTitle = () => <Title level={4}>Course info</Title>;
+
+
+  const courseInfoData = [
+    {
+      key: '1',
+      info: <Text strong>ID</Text>,
+      description: thisCourse.id,
+    },
+    {
+      key: "5",
+      info: <Text strong>Expires</Text>,
+      description: thisCourse.expiration_date ? dayjs(thisCourse.expiration_date).format('YYYY-MM-DD') : "Never",
+    }
+  ];
+
+  const courseInfoColumns = [
+    {
+      title: 'Course Info',
+      dataIndex: 'info',
+      key: 'info',
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      key: 'description',
+    },
+  ];
+
   return (
     <Form form={form} layout="horizontal" onChange={makeDirty}>
       <div style={{ width: 500 }}>
@@ -267,7 +297,12 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
             },
           ]}
         >
-          <Input addonBefore="Course name" />
+          <Space.Compact style={{ width: 500 }}>
+            <Space.Addon >Name</Space.Addon>
+            <Input defaultValue={thisCourse.name} maxLength={36} minLength={4} count={{
+              show: true,
+            }} />
+          </Space.Compact>
         </Form.Item>
         <Form.Item
           name="period"
@@ -280,10 +315,17 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
             },
           ]}
         >
-          <Input addonBefore="Course period" />
+          <Space.Compact style={{ width: 500 }}>
+            <Space.Addon>Period</Space.Addon>
+            <Input defaultValue={thisCourse.period} maxLength={32} minLength={1} count={{
+              show: true,
+            }} />
+          </Space.Compact>
         </Form.Item>
       </div>
       <Table title={tableTitle} pagination={false} columns={columns} dataSource={data} />
+      <Table title={courseInfoTitle} pagination={false} columns={courseInfoColumns} dataSource={courseInfoData} />
+      <div style={{ height: 60 }} />
     </Form>
   );
 };

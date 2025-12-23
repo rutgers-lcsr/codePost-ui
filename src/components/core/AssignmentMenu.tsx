@@ -5,8 +5,8 @@
 /* react imports */
 
 /* other library imports */
-import { RouteComponentProps } from '../../router/legacy';
-import { Link } from 'react-router-dom';
+
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { CloseOutlined } from '@ant-design/icons';
 
@@ -22,16 +22,21 @@ import { encodeForLink } from '../core/URLutils';
 
 /**********************************************************************************************************************/
 
-interface IProps extends RouteComponentProps<{ assignment: string; panel: string }> {
+interface IProps {
   currentCourse: CourseType;
   assignments: AssignmentType[];
   baseURL: string;
 }
 
 const AssignmentMenu = (props: IProps) => {
+  const navigate = useNavigate();
+  const params = useParams();
+  const panel = params.panel || '';
+  const assignmentParam = params.assignment || '';
+
   const clear = () => {
     LOCAL_SETTINGS.defaultAssignment.setter(0);
-    props.history.push(`${props.baseURL}/${props.match.params.panel}/`);
+    navigate(`${props.baseURL}/${panel}/`);
   };
 
   const menuItems = [
@@ -44,7 +49,7 @@ const AssignmentMenu = (props: IProps) => {
       ),
     },
     ...sortAssignments(props.assignments).map((assignment) => {
-      const path = `${props.baseURL}/${props.match.params.panel}/${encodeForLink(assignment.name)}`;
+      const path = `${props.baseURL}/${panel}/${encodeForLink(assignment.name)}`;
       return {
         key: assignment.id,
         label: (
@@ -61,7 +66,7 @@ const AssignmentMenu = (props: IProps) => {
     selectorText = 'Select an assignment';
   }
 
-  const currentAssignment = props.assignments.find((el) => encodeForLink(el.name) === props.match.params.assignment);
+  const currentAssignment = props.assignments.find((el) => encodeForLink(el.name) === assignmentParam);
   if (currentAssignment) {
     selectorText = currentAssignment.name;
   }

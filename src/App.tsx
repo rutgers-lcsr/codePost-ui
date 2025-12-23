@@ -622,12 +622,9 @@ Firefox:
       <Route
         path={`${STUDENT}/*`}
         element={
-          <LegacyRouteRenderer
-            path={STUDENT}
-            render={(props: RouteComponentProps) =>
-              wrapTooltipContext(<AsyncStudent {...props} {...consoleProps} initialCourses={studentCourses} />)
-            }
-          />
+          wrapTooltipContext(
+            <AsyncStudent {...consoleProps} initialCourses={studentCourses} baseURL={STUDENT} />
+          )
         }
       />
     ) : null;
@@ -636,12 +633,9 @@ Firefox:
       <Route
         path={`${GRADER}/*`}
         element={
-          <LegacyRouteRenderer
-            path={GRADER}
-            render={(props: RouteComponentProps) =>
-              wrapTooltipContext(<AsyncGrader {...props} {...consoleProps} initialCourses={graderCourses} />)
-            }
-          />
+          wrapTooltipContext(
+            <AsyncGrader {...consoleProps} initialCourses={graderCourses} baseURL={GRADER} />
+          )
         }
       />
     ) : null;
@@ -650,12 +644,9 @@ Firefox:
       <Route
         path={`${ADMIN}/*`}
         element={
-          <LegacyRouteRenderer
-            path={ADMIN}
-            render={(props: RouteComponentProps) =>
-              wrapTooltipContext(<AsyncAdmin {...props} {...consoleProps} initialCourses={courseAdminCourses} />)
-            }
-          />
+          wrapTooltipContext(
+            <AsyncAdmin {...consoleProps} initialCourses={courseAdminCourses} baseURL={ADMIN} />
+          )
         }
       />
     ) : null;

@@ -19,8 +19,7 @@ import { Button, Modal, Space, Spin, Tag, Tooltip, message } from 'antd';
 import type { ColumnType } from 'antd/es/table';
 
 /* other library imports */
-import { Link } from 'react-router-dom';
-import { useHistory } from '../../router/legacy';
+import { Link, useNavigate } from 'react-router-dom';
 
 /* codePost imports */
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
@@ -95,7 +94,7 @@ const getFileExtensionFromName = (fileName: string): string => {
  */
 const StudentComponent: React.FC<StudentProps> = (props) => {
   const { initialCourses, currentCourse, user, uploadShortcut, handleLogout, windowwidth } = props;
-  const history = useHistory();
+  const navigate = useNavigate();
 
   // State
   const [assignments, setAssignments] = useState<ICourseToAssignmentStudentMap>({});
@@ -196,7 +195,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
 
         if (foundCourse !== undefined) {
           const link = encodedCourseLink('student', foundCourse);
-          history.push(link);
+          navigate(link);
         }
       }
 
@@ -237,7 +236,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     currentCourse,
     uploadShortcut,
     user.email,
-    history,
+    navigate,
   ]);
 
   // Load data on mount and when uploadShortcut changes

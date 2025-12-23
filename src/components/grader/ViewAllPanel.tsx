@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* other library imports */
-import { RouteComponentProps } from '../../router/legacy';
+
 
 /* codePost imports */
 import { AssignmentType } from '../../infrastructure/assignment';
@@ -20,7 +20,7 @@ const ViewAllShell = GraderPanelBuilder(ViewAllDetailPanel);
 
 /**********************************************************************************************************************/
 
-interface IProps extends RouteComponentProps {
+interface IProps {
   assignments: AssignmentType[];
   course: CourseType;
 }
