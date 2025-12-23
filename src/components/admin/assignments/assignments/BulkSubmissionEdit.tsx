@@ -125,7 +125,7 @@ const BulkSubmissionEdit: React.FC<IProps> = ({
       <Alert
         type="warning"
         style={{ marginBottom: 15 }}
-        message={
+        title={
           <div>
             <b>WARNING:</b> Performing bulk actions on submissions cannot be undone.
           </div>

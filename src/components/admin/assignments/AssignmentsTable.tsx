@@ -429,8 +429,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
       if (!assignment.isReleased) {
         sendSlack(
           'Assignment published',
-          `${assignment.name} | ${currentCourse ? currentCourse.name : ''} ${
-            currentCourse ? currentCourse.period : ''
+          `${assignment.name} | ${currentCourse ? currentCourse.name : ''} ${currentCourse ? currentCourse.period : ''
           }`,
           colors.brandPrimary,
           '#user_notifications_everything',
@@ -532,15 +531,15 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
       },
       ...(assignment.allowRegradeRequests
         ? [
-            {
-              key: '3.1',
-              label: (
-                <Link to={`${baseURL}/${encodedName}/regrades`}>
-                  <MessageOutlined /> &nbsp; View Regrades
-                </Link>
-              ),
-            },
-          ]
+          {
+            key: '3.1',
+            label: (
+              <Link to={`${baseURL}/${encodedName}/regrades`}>
+                <MessageOutlined /> &nbsp; View Regrades
+              </Link>
+            ),
+          },
+        ]
         : []),
       {
         key: '4',
@@ -708,7 +707,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
     return {
       key: assignment.id,
       assignment: (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <Text strong style={{ fontSize: '16px' }}>
             {assignment.name}
             {assignment.hideFrom.length > 0 && (
@@ -739,7 +738,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
       progress: (
         <div style={{ paddingRight: 20 }}>
           <div className="display-flex align-items-center" style={{ marginBottom: 4 }}>
-            <Space split={<span style={{ color: colors.neutralBorder }}>|</span>}>
+            <Space separator={<span style={{ color: colors.neutralBorder }}>|</span>}>
               <Text
                 type={totalSubmissions === 0 ? 'secondary' : undefined}
                 className={totalSubmissions > 0 ? 'text-link' : ''}
@@ -764,7 +763,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
               percent={percent}
               showInfo={false}
               strokeColor={colors.brandPrimary}
-              trailColor={colors.brandLight}
+              railColor={colors.brandLight}
               size="small"
             />
           </div>
@@ -1019,45 +1018,42 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
         loadComplete={loadComplete}
       />
 
-      {detailComponent ? (
-        detailComponent
-      ) : (
-        <TableDetail
-          data={data}
-          title={'Assignments'}
-          columns={columns}
-          actions={tableActions}
-          loadComplete={loadComplete}
-          isEmpty={assignments.length === 0}
-          emptyNode={
-            <Empty
-              styles={{
-                image: {
-                  height: 60,
-                },
-              }}
-              description={<span>No assignments yet</span>}
-            >
-              <NewAssignmentDialog
-                key={1}
-                {...props}
-                timezone={currentCourse.timezone}
-                assignments={assignments}
-                createAssignment={createAssignmentProp}
-              />
-            </Empty>
-          }
-          breadcrumbs={<Breadcrumb items={[...(breadcrumbs || []), { title: 'Overview' }]} />}
-          titleInfo={'Use this space to add assignments to your course, and edit existing ones.'}
-          hideSearch={true}
-          components={components}
-          onRow={(_record: { key: number }, index: number) => ({
-            index,
-            moveRow: moveRow,
-          })}
-          pagination={assignments.length < DEFAULT_PAGINATION_SIZE ? false : undefined}
-        />
-      )}
+      {detailComponent}
+      <TableDetail
+        data={data}
+        title={'Assignments'}
+        columns={columns}
+        actions={tableActions}
+        loadComplete={loadComplete}
+        isEmpty={assignments.length === 0}
+        emptyNode={
+          <Empty
+            styles={{
+              image: {
+                height: 60,
+              },
+            }}
+            description={<span>No assignments yet</span>}
+          >
+            <NewAssignmentDialog
+              key={1}
+              {...props}
+              timezone={currentCourse.timezone}
+              assignments={assignments}
+              createAssignment={createAssignmentProp}
+            />
+          </Empty>
+        }
+        breadcrumbs={<Breadcrumb items={[...(breadcrumbs || []), { title: 'Overview' }]} />}
+        titleInfo={'Use this space to add assignments to your course, and edit existing ones.'}
+        hideSearch={true}
+        components={components}
+        onRow={(_record: { key: number }, index: number) => ({
+          index,
+          moveRow: moveRow,
+        })}
+        pagination={assignments.length < DEFAULT_PAGINATION_SIZE ? false : undefined}
+      />
     </div>
   );
 };

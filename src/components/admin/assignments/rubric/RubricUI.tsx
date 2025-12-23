@@ -136,63 +136,165 @@ const RubricUI = ({
     };
 
     const settingsModal = (
-      <Modal title="Rubric settings" open={settingsOpen} footer={null} onCancel={() => setSettingsOpen(false)}>
-        <div>
-          {showPointLimitCheckbox ? (
-            <div>
-              Show point limits <Checkbox checked={showPointLimits} onChange={toggleShowPointLimit} />{' '}
-              <CPTooltip
-                title={tooltips.admin.rubric.categoryPointLimit}
-                infoIcon={true}
-                hideThisOnHideTips={true}
-                iconStyle={{ paddingLeft: 5 }}
-              />
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <SettingOutlined style={{ fontSize: 18, color: '#1890ff' }} />
+            <span style={{ fontWeight: 600, fontSize: 16 }}>Rubric Settings</span>
+          </div>
+        }
+        open={settingsOpen}
+        footer={null}
+        onCancel={() => setSettingsOpen(false)}
+        width={480}
+        styles={{
+          body: { padding: '16px 24px 24px' },
+        }}
+      >
+        <p style={{ color: '#8c8c8c', fontSize: 13, marginBottom: 20, marginTop: 0 }}>
+          Customize which features are visible in the rubric editor.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {showPointLimitCheckbox && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                background: showPointLimits ? '#f6ffed' : '#fafafa',
+                borderRadius: 8,
+                border: showPointLimits ? '1px solid #b7eb8f' : '1px solid #f0f0f0',
+                transition: 'all 0.2s',
+              }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontWeight: 500, fontSize: 14, color: '#262626' }}>Point Limits</span>
+                  <CPTooltip
+                    title={tooltips.admin.rubric.categoryPointLimit}
+                    infoIcon={true}
+                    hideThisOnHideTips={true}
+                    iconStyle={{ fontSize: 12, color: '#bfbfbf' }}
+                  />
+                </div>
+                <span style={{ fontSize: 12, color: '#8c8c8c' }}>Set maximum deductions per category</span>
+              </div>
+              <Checkbox checked={showPointLimits} onChange={toggleShowPointLimit} />
             </div>
-          ) : null}
-          {showHelpTextCheckbox ? (
-            <div>
-              Show help text <Checkbox checked={showHelpText} onChange={toggleShowHelpText} />{' '}
-              <CPTooltip
-                title={tooltips.admin.rubric.categoryHelpText}
-                infoIcon={true}
-                hideThisOnHideTips={true}
-                iconStyle={{ paddingLeft: 5 }}
-              />
+          )}
+          {showHelpTextCheckbox && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                background: showHelpText ? '#f6ffed' : '#fafafa',
+                borderRadius: 8,
+                border: showHelpText ? '1px solid #b7eb8f' : '1px solid #f0f0f0',
+                transition: 'all 0.2s',
+              }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontWeight: 500, fontSize: 14, color: '#262626' }}>Help Text</span>
+                  <CPTooltip
+                    title={tooltips.admin.rubric.categoryHelpText}
+                    infoIcon={true}
+                    hideThisOnHideTips={true}
+                    iconStyle={{ fontSize: 12, color: '#bfbfbf' }}
+                  />
+                </div>
+                <span style={{ fontSize: 12, color: '#8c8c8c' }}>Guidance text for graders on each category</span>
+              </div>
+              <Checkbox checked={showHelpText} onChange={toggleShowHelpText} />
             </div>
-          ) : null}
-          {showExplanationsCheckbox ? (
-            <div>
-              Show explanation editors <Checkbox checked={showExplanations} onChange={toggleShowExplanations} />{' '}
-              <CPTooltip
-                title={tooltips.admin.rubric.explanations}
-                infoIcon={true}
-                hideThisOnHideTips={true}
-                iconStyle={{ paddingLeft: 5 }}
-              />
+          )}
+          {showExplanationsCheckbox && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                background: showExplanations ? '#f6ffed' : '#fafafa',
+                borderRadius: 8,
+                border: showExplanations ? '1px solid #b7eb8f' : '1px solid #f0f0f0',
+                transition: 'all 0.2s',
+              }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontWeight: 500, fontSize: 14, color: '#262626' }}>Explanations</span>
+                  <CPTooltip
+                    title={tooltips.admin.rubric.explanations}
+                    infoIcon={true}
+                    hideThisOnHideTips={true}
+                    iconStyle={{ fontSize: 12, color: '#bfbfbf' }}
+                  />
+                </div>
+                <span style={{ fontSize: 12, color: '#8c8c8c' }}>Detailed explanations shown to students</span>
+              </div>
+              <Checkbox checked={showExplanations} onChange={toggleShowExplanations} />
             </div>
-          ) : null}
-          {showInstructionsCheckbox ? (
-            <div>
-              Show instruction editors <Checkbox checked={showInstructions} onChange={toggleShowInstructions} />{' '}
-              <CPTooltip
-                title={`An optional textarea that allows you to give graders instructions for personalizing a rubric comment.`}
-                infoIcon={true}
-                hideThisOnHideTips={true}
-                iconStyle={{ paddingLeft: 5 }}
-              />
+          )}
+          {showInstructionsCheckbox && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                background: showInstructions ? '#f6ffed' : '#fafafa',
+                borderRadius: 8,
+                border: showInstructions ? '1px solid #b7eb8f' : '1px solid #f0f0f0',
+                transition: 'all 0.2s',
+              }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontWeight: 500, fontSize: 14, color: '#262626' }}>Instructions</span>
+                  <CPTooltip
+                    title="An optional textarea that allows you to give graders instructions for personalizing a rubric comment."
+                    infoIcon={true}
+                    hideThisOnHideTips={true}
+                    iconStyle={{ fontSize: 12, color: '#bfbfbf' }}
+                  />
+                </div>
+                <span style={{ fontSize: 12, color: '#8c8c8c' }}>Grader instructions for each comment</span>
+              </div>
+              <Checkbox checked={showInstructions} onChange={toggleShowInstructions} />
             </div>
-          ) : null}
-          {showAtMostOnceCheckbox ? (
-            <div>
-              Show "At Most Once" toggle <Checkbox checked={showAtMostOnce} onChange={toggleShowAtMostOnce} />{' '}
-              <CPTooltip
-                title={'Show the option to require a rubric category be applied at most once.'}
-                infoIcon={true}
-                hideThisOnHideTips={true}
-                iconStyle={{ paddingLeft: 5 }}
-              />
+          )}
+          {showAtMostOnceCheckbox && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                background: showAtMostOnce ? '#f6ffed' : '#fafafa',
+                borderRadius: 8,
+                border: showAtMostOnce ? '1px solid #b7eb8f' : '1px solid #f0f0f0',
+                transition: 'all 0.2s',
+              }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontWeight: 500, fontSize: 14, color: '#262626' }}>At Most Once</span>
+                  <CPTooltip
+                    title="Show the option to require a rubric category be applied at most once."
+                    infoIcon={true}
+                    hideThisOnHideTips={true}
+                    iconStyle={{ fontSize: 12, color: '#bfbfbf' }}
+                  />
+                </div>
+                <span style={{ fontSize: 12, color: '#8c8c8c' }}>Limit category to single application</span>
+              </div>
+              <Checkbox checked={showAtMostOnce} onChange={toggleShowAtMostOnce} />
             </div>
-          ) : null}
+          )}
         </div>
       </Modal>
     );

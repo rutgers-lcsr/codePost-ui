@@ -8,7 +8,7 @@ import * as React from 'react';
 import { RedoOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Form, Input, message, Select, Space, Switch, Table, Typography } from 'antd';
+import { Breadcrumb, Card, Descriptions, Flex, Form, Input, message, Select, Space, Switch, Typography } from 'antd';
 
 import CPButton from '../../../components/core/CPButton';
 import CPAdminDetail from '../other/CPAdminDetail';
@@ -19,9 +19,7 @@ import InputNumberOrNull from './InputNumberOrNull';
 
 import { timezones } from '../other/timezones';
 
-type alignType = 'left' | 'right' | 'center';
-
-const { Text, Title } = Typography;
+const { Text } = Typography;
 import dayjs from 'dayjs';
 
 /**********************************************************************************************************************/
@@ -128,203 +126,188 @@ interface IFormProps {
 const SettingsForm: React.FC<IFormProps> = (props) => {
   const { form, thisCourse, makeDirty } = props;
 
-  /* create misc. settings table */
-  const aligner: alignType = 'center';
-  const columns = [
-    {
-      title: 'Setting',
-      dataIndex: 'setting',
-      key: 'setting',
-    },
-    {
-      title: 'Description',
-      dataIndex: 'description',
-      key: 'description',
-    },
-    {
-      title: 'Action',
-      dataIndex: 'action',
-      key: 'action',
-      align: aligner,
-    },
-  ];
+  // Watch form values for visual feedback
+  const showStudentsStatistics = Form.useWatch('showStudentsStatistics', form);
+  const sendReleasedSubmissionsToBack = Form.useWatch('sendReleasedSubmissionsToBack', form);
+  const emailNewUsers = Form.useWatch('emailNewUsers', form);
+  const anonymousGradingDefault = Form.useWatch('anonymousGradingDefault', form);
+  const archived = Form.useWatch('archived', form);
 
-  /* UPDATE TABLE HERE */
-  const data = [
+  const settingsData = [
     {
-      key: '1',
-      setting: <Text strong>Show statistics to students</Text>,
-      description: 'Selecting will show assignment mean and median to students when the assignment is released.',
-      action: (
-        <Form.Item
-          name="showStudentsStatistics"
-          valuePropName="checked"
-          initialValue={thisCourse.showStudentsStatistics}
-        >
-          <Switch onChange={makeDirty} />
-        </Form.Item>
-      ),
+      key: 'showStudentsStatistics',
+      title: 'Show Statistics to Students',
+      description: 'Display assignment mean and median to students when the assignment is released.',
+      enabled: showStudentsStatistics ?? thisCourse.showStudentsStatistics,
+      initialValue: thisCourse.showStudentsStatistics,
     },
     {
-      key: '2',
-      setting: <Text strong>Send released submissions to back of grader queue</Text>,
-      description: `Selecting will move released assignments to the back of the course queue, preventing
-         situations in which a grader reclaims a submission that was just released. For more information see our
-         docs.`,
-      action: (
-        <Form.Item
-          name="sendReleasedSubmissionsToBack"
-          valuePropName="checked"
-          initialValue={thisCourse.sendReleasedSubmissionsToBack}
-        >
-          <Switch onChange={makeDirty} />
-        </Form.Item>
-      ),
+      key: 'sendReleasedSubmissionsToBack',
+      title: 'Send Released to Back of Queue',
+      description: 'Move released submissions to the back of the grader queue, preventing graders from reclaiming just-released work.',
+      enabled: sendReleasedSubmissionsToBack ?? thisCourse.sendReleasedSubmissionsToBack,
+      initialValue: thisCourse.sendReleasedSubmissionsToBack,
     },
     {
-      key: '3',
-      setting: <Text strong>Email users when added to roster</Text>,
-      description: `If selected, emails will be sent to users notifying them that they have been added
-         to this course's roster. New codePost users will be prompted to create an account.`,
-      action: (
-        <Form.Item name="emailNewUsers" valuePropName="checked" initialValue={thisCourse.emailNewUsers}>
-          <Switch onChange={makeDirty} />
-        </Form.Item>
-      ),
+      key: 'emailNewUsers',
+      title: 'Email Users on Roster Add',
+      description: 'Send notification emails to users when they are added to this course. New users will be prompted to create an account.',
+      enabled: emailNewUsers ?? thisCourse.emailNewUsers,
+      initialValue: thisCourse.emailNewUsers,
     },
     {
-      key: '4',
-      setting: <Text strong>Default to Anonymous Grading Mode</Text>,
-      description: `If selected, new Assignments will default to Anonymous Grading Mode. You can
-          toggle this setting at the assignment level from Assignment settings.`,
-      action: (
-        <Form.Item
-          name="anonymousGradingDefault"
-          valuePropName="checked"
-          initialValue={thisCourse.anonymousGradingDefault}
-        >
-          <Switch onChange={makeDirty} />
-        </Form.Item>
-      ),
+      key: 'anonymousGradingDefault',
+      title: 'Default to Anonymous Grading',
+      description: 'New assignments will default to Anonymous Grading Mode. This can be toggled per-assignment.',
+      enabled: anonymousGradingDefault ?? thisCourse.anonymousGradingDefault,
+      initialValue: thisCourse.anonymousGradingDefault,
     },
     {
-      key: '5',
-      setting: <Text strong>Late Day Credits Allowed</Text>,
-      description:
-        "The maximum number of Late Day Credits a student can use. Only used if the Assignment Setting 'Allow Student Upload' is turned on.",
-      action: (
-        <Form.Item name="lateDayCreditsAllowable" initialValue={thisCourse.lateDayCreditsAllowable}>
-          <InputNumberOrNull value={null} onChange={makeDirty} />
-        </Form.Item>
-      ),
-    },
-    {
-      key: '6',
-      setting: <Text strong>Course timezone</Text>,
-      description: 'Timezone in which all time fields for this course (for all users) will appear.',
-      action: (
-        <Form.Item name="timezone" initialValue={thisCourse.timezone}>
-          <Select style={{ width: 200 }} onChange={makeDirty}>
-            {timezones.map((tz, i) => {
-              return (
-                <Select.Option key={i} value={tz}>
-                  {tz}
-                </Select.Option>
-              );
-            })}
-          </Select>
-        </Form.Item>
-      ),
-    },
-    {
-      key: '7',
-      setting: <Text strong>Archived</Text>,
-      description: 'When a Course is Archived, its content will not be editable.',
-      action: (
-        <Form.Item name="archived" valuePropName="checked" initialValue={thisCourse.archived}>
-          <Switch onChange={makeDirty} />
-        </Form.Item>
-      ),
-    },
-  ];
-
-  const tableTitle = () => <Title level={4}>Misc. settings</Title>;
-
-  const courseInfoTitle = () => <Title level={4}>Course info</Title>;
-
-
-  const courseInfoData = [
-    {
-      key: '1',
-      info: <Text strong>ID</Text>,
-      description: thisCourse.id,
-    },
-    {
-      key: "5",
-      info: <Text strong>Expires</Text>,
-      description: thisCourse.expiration_date ? dayjs(thisCourse.expiration_date).format('YYYY-MM-DD') : "Never",
-    }
-  ];
-
-  const courseInfoColumns = [
-    {
-      title: 'Course Info',
-      dataIndex: 'info',
-      key: 'info',
-    },
-    {
-      title: 'Description',
-      dataIndex: 'description',
-      key: 'description',
+      key: 'archived',
+      title: 'Archive Course',
+      description: 'Archived courses are read-only. All content will be preserved but cannot be edited.',
+      enabled: archived ?? thisCourse.archived,
+      initialValue: thisCourse.archived,
+      danger: true,
     },
   ];
 
   return (
     <Form form={form} layout="horizontal" onChange={makeDirty}>
-      <div style={{ width: 500 }}>
-        <Form.Item
-          name="name"
-          initialValue={thisCourse.name}
-          rules={[
-            {
-              required: true,
-              message: 'Please enter a course name with at least 4 characters',
-              min: 4,
-            },
-            {
-              message: 'Course name cannot exceed 36 characters',
-              max: 36,
-            },
-          ]}
-        >
-          <Space.Compact style={{ width: 500 }}>
-            <Space.Addon >Name</Space.Addon>
-            <Input defaultValue={thisCourse.name} maxLength={36} minLength={4} count={{
-              show: true,
-            }} />
-          </Space.Compact>
-        </Form.Item>
-        <Form.Item
-          name="period"
-          initialValue={thisCourse.period}
-          rules={[
-            { required: true, message: 'Please enter a course period.' },
-            {
-              message: 'Course period cannot exceed 32 characters',
-              max: 32,
-            },
-          ]}
-        >
-          <Space.Compact style={{ width: 500 }}>
-            <Space.Addon>Period</Space.Addon>
-            <Input defaultValue={thisCourse.period} maxLength={32} minLength={1} count={{
-              show: true,
-            }} />
-          </Space.Compact>
-        </Form.Item>
-      </div>
-      <Table title={tableTitle} pagination={false} columns={columns} dataSource={data} />
-      <Table title={courseInfoTitle} pagination={false} columns={courseInfoColumns} dataSource={courseInfoData} />
+      {/* Course Name & Period */}
+      <Card title="Course Identity" style={{ marginBottom: 24, maxWidth: 600 }}>
+        <Flex vertical gap={16}>
+          <Form.Item
+            name="name"
+            initialValue={thisCourse.name}
+            style={{ marginBottom: 0 }}
+            rules={[
+              { required: true, message: 'Please enter a course name with at least 4 characters', min: 4 },
+              { message: 'Course name cannot exceed 36 characters', max: 36 },
+            ]}
+          >
+            <Space.Compact style={{ width: '100%' }}>
+              <Space.Addon>Name</Space.Addon>
+              <Input defaultValue={thisCourse.name} maxLength={36} minLength={4} count={{ show: true }} />
+            </Space.Compact>
+          </Form.Item>
+          <Form.Item
+            name="period"
+            initialValue={thisCourse.period}
+            style={{ marginBottom: 0 }}
+            rules={[
+              { required: true, message: 'Please enter a course period.' },
+              { message: 'Course period cannot exceed 32 characters', max: 32 },
+            ]}
+          >
+            <Space.Compact style={{ width: '100%' }}>
+              <Space.Addon>Period</Space.Addon>
+              <Input defaultValue={thisCourse.period} maxLength={32} minLength={1} count={{ show: true }} />
+            </Space.Compact>
+          </Form.Item>
+        </Flex>
+      </Card>
+
+      {/* Toggle Settings */}
+      <Card
+        title="Course Settings"
+        extra={<Text type="secondary">Configure course behavior</Text>}
+        style={{ marginBottom: 24, maxWidth: 800 }}
+      >
+        <Flex vertical gap={12}>
+          {settingsData.map((setting) => (
+            <Card
+              key={setting.key}
+              size="small"
+              style={{
+                background: setting.enabled ? (setting.danger ? '#fff2f0' : '#f6ffed') : '#fafafa',
+                borderColor: setting.enabled ? (setting.danger ? '#ffccc7' : '#b7eb8f') : '#f0f0f0',
+              }}
+            >
+              <Flex justify="space-between" align="flex-start">
+                <Flex vertical style={{ flex: 1, paddingRight: 16 }}>
+                  <Text
+                    strong
+                    style={{
+                      fontSize: 15,
+                      color: setting.danger && setting.enabled ? '#cf1322' : undefined,
+                    }}
+                  >
+                    {setting.title}
+                  </Text>
+                  <Text type="secondary" style={{ fontSize: 13 }}>
+                    {setting.description}
+                  </Text>
+                </Flex>
+                <Form.Item
+                  name={setting.key}
+                  valuePropName="checked"
+                  initialValue={setting.initialValue}
+                  style={{ marginBottom: 0 }}
+                >
+                  <Switch onChange={makeDirty} />
+                </Form.Item>
+              </Flex>
+            </Card>
+          ))}
+        </Flex>
+      </Card>
+
+      {/* Additional Settings */}
+      <Card
+        title="Additional Options"
+        extra={<Text type="secondary">Late days and timezone</Text>}
+        style={{ marginBottom: 24, maxWidth: 800 }}
+      >
+        <Flex vertical gap={12}>
+          {/* Late Day Credits */}
+          <Card size="small" style={{ background: '#fafafa', borderColor: '#f0f0f0' }}>
+            <Flex justify="space-between" align="flex-start">
+              <Flex vertical style={{ flex: 1, paddingRight: 16 }}>
+                <Text strong style={{ fontSize: 15 }}>Late Day Credits Allowed</Text>
+                <Text type="secondary" style={{ fontSize: 13 }}>
+                  Maximum late day credits a student can use. Only applies when "Allow Student Upload" is enabled.
+                </Text>
+              </Flex>
+              <Form.Item name="lateDayCreditsAllowable" initialValue={thisCourse.lateDayCreditsAllowable} style={{ marginBottom: 0 }}>
+                <InputNumberOrNull value={null} onChange={makeDirty} />
+              </Form.Item>
+            </Flex>
+          </Card>
+
+          {/* Timezone */}
+          <Card size="small" style={{ background: '#fafafa', borderColor: '#f0f0f0' }}>
+            <Flex justify="space-between" align="flex-start">
+              <Flex vertical style={{ flex: 1, paddingRight: 16 }}>
+                <Text strong style={{ fontSize: 15 }}>Course Timezone</Text>
+                <Text type="secondary" style={{ fontSize: 13 }}>
+                  All dates and times in this course will be displayed in this timezone.
+                </Text>
+              </Flex>
+              <Form.Item name="timezone" initialValue={thisCourse.timezone} style={{ marginBottom: 0 }}>
+                <Select style={{ width: 180 }} onChange={makeDirty}>
+                  {timezones.map((tz, i) => (
+                    <Select.Option key={i} value={tz}>{tz}</Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Flex>
+          </Card>
+        </Flex>
+      </Card>
+
+      {/* Course Info */}
+      <Card title="Course Information" style={{ marginBottom: 24, maxWidth: 800 }}>
+        <Descriptions column={1} bordered size="small">
+          <Descriptions.Item label="Course ID">
+            <Text code>{thisCourse.id}</Text>
+          </Descriptions.Item>
+          <Descriptions.Item label="Expires">
+            {thisCourse.expiration_date ? dayjs(thisCourse.expiration_date).format('YYYY-MM-DD') : 'Never'}
+          </Descriptions.Item>
+        </Descriptions>
+      </Card>
+
       <div style={{ height: 60 }} />
     </Form>
   );

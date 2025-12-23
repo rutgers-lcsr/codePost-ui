@@ -470,9 +470,9 @@ export const StatsDrawer = (props: {
       closable={true}
       onClose={props.onClose}
       open={props.isVisible}
-      width={600}
       styles={{
         body: { paddingBottom: 0 },
+        wrapper: { width: 600 },
       }}
     >
       {body}

@@ -104,12 +104,15 @@ export const AssignmentSetupDialog = (props: IProps) => {
   const steps = getSteps(props.course, props.assignment, props.hasStudents);
 
   const timeline = (
-    <Timeline>
-      {steps.map((step: any) => {
-        const title = step.isOptional ? `${step.title} (optional)` : step.title;
-        return step.hide ? null : (
-          <Timeline.Item color={step.isComplete ? 'green' : 'grey'}>
-            {step.isComplete ? (
+    <Timeline
+      items={steps
+        .filter((step: any) => !step.hide)
+        .map((step: any, index: number) => {
+          const title = step.isOptional ? `${step.title} (optional)` : step.title;
+          return {
+            key: index,
+            color: step.isComplete ? 'green' : 'grey',
+            children: step.isComplete ? (
               title
             ) : (
               <div>
@@ -120,11 +123,10 @@ export const AssignmentSetupDialog = (props: IProps) => {
                   <em>{step.description}</em>
                 </p>
               </div>
-            )}
-          </Timeline.Item>
-        );
-      })}
-    </Timeline>
+            ),
+          };
+        })}
+    />
   );
 
   return (
@@ -170,14 +172,14 @@ export const AssignmentSetupBanner = (props: IProps) => {
         step.hide
           ? { key: index.toString(), className: 'hidden-step' }
           : {
-              key: index.toString(),
-              title: step.title,
-              subTitle: step.isOptional && !isSmall ? '(optional)' : '',
-              status: step.isComplete ? 'finish' : 'wait',
-              description: '',
-              disabled: step.isComplete,
-              icon: isSmall ? <div /> : step.icon,
-            },
+            key: index.toString(),
+            title: step.title,
+            subTitle: step.isOptional && !isSmall ? '(optional)' : '',
+            status: step.isComplete ? 'finish' : 'wait',
+            description: '',
+            disabled: step.isComplete,
+            icon: isSmall ? <div /> : step.icon,
+          },
       )}
     />
   );

@@ -524,6 +524,15 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
         }
       />
       <Route index element={<Navigate to="overview" replace />} />
+      <Route
+        path="*"
+        element={
+          <div style={{ padding: 20 }}>
+            <h3>404 - Page not found</h3>
+            <p>Current URL: {window.location.href}</p>
+          </div>
+        }
+      />
     </Routes>
   );
 };
