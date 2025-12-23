@@ -131,7 +131,7 @@ const FlowNode = (props: FlowNodeProps) => {
         width: width,
         height: height,
         backgroundColor: props.isCategory ? '#FFF' : hexToRGB(props.color, (props.tint / 100).toString()),
-        color: props.isCategory ? props.color : props.tint < 35 ? props.color : 'white',
+        color: props.isCategory ? '#0d7354' : '#02261e',
         border: props.isCategory ? `5px solid ${hexToRGB(props.color, (props.tint / 100).toString())}` : '',
         display: 'flex',
         justifyContent: 'center',
@@ -147,7 +147,7 @@ const FlowNode = (props: FlowNodeProps) => {
         (() => {
           const IconComponent = iconMap[props.icon];
           return IconComponent ? (
-            <IconComponent style={{ color: props.tint < 35 ? props.color : 'white', fontSize: 20, marginRight: 5 }} />
+            <IconComponent style={{ color: '#02261e', fontSize: 20, marginRight: 5 }} />
           ) : null;
         })()}
       <div style={{ maxWidth: 60, minWidth: 60 }}>{props.title}</div>

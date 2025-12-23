@@ -41,7 +41,7 @@ const defaultTextStyle: React.CSSProperties = {
   fontStyle: 'italic',
   fontSize: 16,
   lineHeight: 1.57,
-  color: 'grey',
+  color: '#545454',
 };
 
 const adamText = (

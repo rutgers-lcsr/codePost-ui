@@ -249,8 +249,11 @@ class Video extends React.Component<IVideoProps, IVideoState> {
       windowwidth = this.props.containerWidth;
     }
 
+    // For large screens, use a max width to prevent the video from getting too wide
+    const maxVideoWidth = 900;
+
     if (windowwidth > 1024) {
-      videoWidth = windowwidth - 460;
+      videoWidth = Math.min(windowwidth - 200, maxVideoWidth);
     } else {
       videoWidth = windowwidth - 100;
     }
@@ -261,81 +264,84 @@ class Video extends React.Component<IVideoProps, IVideoState> {
 
     const videoSelect = (
       <div style={{ paddingBottom: '20px' }}>
-        <Select value={this.state.selectedVideo} size="large" style={{ width: '100%' }} onChange={this.handleChange}>
+        <Select
+          value={this.state.selectedVideo}
+          size="large"
+          style={{ width: '100%' }}
+          onChange={this.handleChange}
+          aria-label="Select video topic"
+        >
           <Select.Option value="overview">Overview</Select.Option>
           <Select.Option value="management">Managing a large course</Select.Option>
         </Select>
       </div>
     );
 
-    return (
-      <div>
-        {windowwidth < 1024 ? videoSelect : null}
-        <div className="video">
-          <div
-            className="video__video"
-            style={{
-              width: `${videoWidth - 4}px`,
-              height: `${videoHeight - 1}px`,
-              borderRadius: '6px',
-              border: `2px solid ${colors.brandPrimary}`,
-              overflow: 'hidden',
-              display: 'inline-block',
-            }}
-          >
-            <WistiaPlayer
-              ref={this.ref}
-              id="video"
-              mediaId={url}
-              height={videoHeight}
-              width={videoWidth}
-              style={{ transform: 'translateX(-2px)' }}
-            />
-          </div>
-          {windowwidth > 1024 ? (
-            <div className="video__sections" style={{ display: 'inline-block' }}>
-              {videoSelect}
-              {this.state.videoSections.map((section: IVideoSection) => {
-                return (
-                  <SectionButton
-                    key={section.id}
-                    section={section}
-                    active={section.id === this.state.selectedSectionId}
-                    setSection={this.setSection}
-                    height={videoHeight / this.state.videoSections.length - 62 / this.state.videoSections.length}
-                  />
-                );
-              })}
+    // Horizontal tabs for large screens
+    const horizontalTabs = (
+      <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        gap: '8px',
+        marginBottom: '20px',
+        maxWidth: `${videoWidth}px`,
+      }}>
+        <div style={{ width: '200px', marginRight: '16px' }}>
+          {videoSelect}
+        </div>
+        {this.state.videoSections.map((section: IVideoSection) => {
+          const isActive = section.id === this.state.selectedSectionId;
+          return (
+            <div
+              key={section.id}
+              onClick={() => this.setSection(section)}
+              style={{
+                padding: '10px 16px',
+                cursor: 'pointer',
+                borderBottom: isActive ? `3px solid ${colors.brandPrimary}` : '3px solid transparent',
+                color: isActive ? colors.brandPrimary : '#333',
+                fontWeight: 600,
+                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {iconMap[section.icon]}
+              {section.name}
             </div>
-          ) : null}
+          );
+        })}
+      </div>
+    );
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        {windowwidth < 1024 ? videoSelect : horizontalTabs}
+        <div
+          className="video__video"
+          style={{
+            width: `${videoWidth - 4}px`,
+            height: `${videoHeight - 1}px`,
+            borderRadius: '6px',
+            border: `2px solid ${colors.brandPrimary}`,
+            overflow: 'hidden',
+          }}
+        >
+          <WistiaPlayer
+            ref={this.ref}
+            id="video"
+            mediaId={url}
+            height={videoHeight}
+            width={videoWidth}
+            style={{ transform: 'translateX(-2px)' }}
+          />
         </div>
       </div>
     );
   }
 }
-
-interface ISectionButtonProps {
-  section: IVideoSection;
-  active: boolean;
-  setSection: (id: IVideoSection) => void;
-  height: number;
-}
-
-const SectionButton: React.FC<ISectionButtonProps> = (props) => {
-  const onClick = () => {
-    props.setSection(props.section);
-  };
-  return (
-    <div
-      className={`video__sections__button video__sections__button--${props.active ? 'selected' : 'idle'}`}
-      style={{ height: `${props.height}px`, minWidth: '260px' }}
-      onClick={onClick}
-    >
-      {iconMap[props.section.icon]}
-      <div style={{ display: 'inline-block', width: '4px' }} />
-      {props.section.name}
-    </div>
-  );
-};
 
 export default withWindowWatcher(Video);

@@ -29,9 +29,8 @@ const SubHero = () => {
   return (
     <div>
       <div
-        className={`display-flex ${
-          windowSize.width < landingVars.breakpoints.verticalPanels ? 'flex-direction-column' : ''
-        } justify-content-center align-items-center`}
+        className={`display-flex ${windowSize.width < landingVars.breakpoints.verticalPanels ? 'flex-direction-column' : ''
+          } justify-content-center align-items-center`}
       >
         <div
           className={'display-flex flex-direction-column justify-content-center align-items-center'}
@@ -40,7 +39,7 @@ const SubHero = () => {
             paddingRight: windowSize.width < landingVars.breakpoints.verticalPanels ? 0 : 50,
           }}
         >
-          <Typography.Title level={3}>codePost isn’t just another grading tool</Typography.Title>
+          <Typography.Title level={2}>codePost isn’t just another grading tool</Typography.Title>
           <span style={{ maxWidth: '700px', lineHeight: 1.5, fontSize: '17px', marginTop: 15 }}>
             <p style={{ breakInside: 'avoid', marginBottom: '1.2em' }}>
               We rebuilt the feedback-giving process from the ground up to make you brilliant at what you do: teaching

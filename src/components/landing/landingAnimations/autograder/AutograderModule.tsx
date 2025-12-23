@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import { Slider, Typography } from 'antd';
 
@@ -8,6 +8,17 @@ import unit from './Unit.jpg';
 
 const AutograderModule = () => {
   const [index, setIndex] = useState(0);
+  const sliderRef = useRef<HTMLDivElement>(null);
+
+  // Add aria-label to the slider handle for accessibility
+  useEffect(() => {
+    if (sliderRef.current) {
+      const handle = sliderRef.current.querySelector('.ant-slider-handle');
+      if (handle) {
+        handle.setAttribute('aria-label', 'Test complexity: Simple to Flexible');
+      }
+    }
+  }, []);
 
   const noCodeImg = <img style={{ marginTop: 5, marginLeft: 10 }} width={550} src={noCode} alt="" />;
   const unitImg = <img style={{ marginTop: 6, marginLeft: 10 }} width={550} src={unit} alt="" />;
@@ -31,7 +42,7 @@ const AutograderModule = () => {
   }
   return (
     <div style={{ marginRight: 25 }}>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
+      <div ref={sliderRef} style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
         <Typography.Text
           className={index === 0 ? 'slider-text--active' : index === 1 ? 'slider-text' : 'slider-text--inactive'}
           style={{ marginRight: 15 }}
@@ -46,6 +57,7 @@ const AutograderModule = () => {
           dots={true}
           onChange={handleChange}
           value={index}
+          aria-label="Test complexity: Simple to Flexible"
         />
         <Typography.Text
           className={index === 2 ? 'slider-text--active' : index === 1 ? 'slider-text' : 'slider-text--inactive'}
@@ -58,7 +70,7 @@ const AutograderModule = () => {
         style={{
           fontWeight: 500,
           fontSize: 18,
-          color: '#AAAAAA',
+          color: '#666666',
           fontStyle: 'italic',
           marginBottom: 10,
         }}
@@ -77,25 +89,22 @@ const AutograderModule = () => {
       >
         <div
           style={{ position: 'absolute', maxWidth: 550, borderRadius: 8 }}
-          className={`display-flex justify-content-center align-items-center bevel autograder-image${
-            index === 0 ? '--active' : ''
-          }`}
+          className={`display-flex justify-content-center align-items-center bevel autograder-image${index === 0 ? '--active' : ''
+            }`}
         >
           {noCodeImg}
         </div>
         <div
           style={{ position: 'absolute', maxWidth: 550, borderRadius: 8 }}
-          className={`display-flex justify-content-center align-items-center bevel autograder-image${
-            index === 1 ? '--active' : ''
-          }`}
+          className={`display-flex justify-content-center align-items-center bevel autograder-image${index === 1 ? '--active' : ''
+            }`}
         >
           {unitImg}
         </div>
         <div
           style={{ position: 'absolute', maxWidth: 550, borderRadius: 8 }}
-          className={`display-flex justify-content-center align-items-center bevel autograder-image${
-            index === 2 ? '--active' : ''
-          }`}
+          className={`display-flex justify-content-center align-items-center bevel autograder-image${index === 2 ? '--active' : ''
+            }`}
         >
           {fileModeImg}
         </div>

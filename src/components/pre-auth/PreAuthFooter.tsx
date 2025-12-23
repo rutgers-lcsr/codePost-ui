@@ -19,7 +19,7 @@ const PreAuthFooter = () => {
   // We need some horitzontal padding on mobile to make sure the intercom button doesn't block the terms
   const bottomPadding = windowSize.width < breakpoint ? 0 : 0;
 
-  const linkStyle = { fontSize: 17, paddingLeft: 8, paddingRight: 8 };
+  const linkStyle = { fontSize: 17, paddingLeft: 8, paddingRight: 8, color: '#222', textDecoration: 'none' };
 
   const content = (
     <div style={{ textAlign: 'center' }}>

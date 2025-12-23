@@ -8,6 +8,7 @@ import useWindowSize from '../../core/useWindowSize';
 import CPButton from '../../core/CPButton';
 
 import landingVars from '../../../styles/pages/_landingVars';
+import { colors } from '../../../theme/colors';
 
 const LandingHero = () => {
   const windowSize = useWindowSize();
@@ -15,7 +16,14 @@ const LandingHero = () => {
   const isMobile = windowSize.width < landingVars.breakpoints.mobile;
   const [modalShowing, setModalShowing] = React.useState(false);
 
-  const buttonStyle = { width: isMobile ? 170 : 220, height: 60, fontSize: isMobile ? 16 : 22, display: 'inline' };
+  const buttonStyle = {
+    width: isMobile ? 170 : 220,
+    height: 60,
+    fontSize: isMobile ? 16 : 22,
+    display: 'inline',
+    backgroundColor: colors.green8,
+    borderColor: colors.green8,
+  };
 
   const hero = (
     <div
@@ -50,9 +58,8 @@ const LandingHero = () => {
         style={{
           width: '100%',
         }}
-        className={`landing__heroButtons display-flex ${
-          windowSize.width < landingVars.breakpoints.removeModule ? 'flex-direction-column' : ''
-        } align-items-center justify-content-center`}
+        className={`landing__heroButtons display-flex ${windowSize.width < landingVars.breakpoints.removeModule ? 'flex-direction-column' : ''
+          } align-items-center justify-content-center`}
       >
         <Link to="/signup/create">
           <CPButton style={buttonStyle} cpType="primary">

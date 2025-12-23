@@ -20,7 +20,7 @@ interface IProps {
 
 const LandingPanel = (props: IProps) => {
   const brandColor = '#476b63';
-  const textColor = '#7F7F7F';
+  const textColor = '#666666';
   const titleSize = 32;
   const subTitleSize = 22;
   const textSize = 18;
