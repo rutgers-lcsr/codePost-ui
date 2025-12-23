@@ -22,7 +22,7 @@ const LandingGetStarted = () => {
     >
       <div className="display-flex flex-direction-column justify-content-center">
         <div style={{ fontSize: 30, color: '#707070', marginBottom: 5, fontWeight: 600 }}>Ready?</div>
-        <div style={{ fontSize: 24, color: '#A3A3A3' }}>Get started using codePost in minutes.</div>
+        <div style={{ fontSize: 24, color: '#666666' }}>Get started using codePost in minutes.</div>
       </div>
       <div
         style={{

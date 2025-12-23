@@ -42,7 +42,7 @@ const defaultTextStyle: React.CSSProperties = {
   fontStyle: 'italic',
   fontSize: 16,
   lineHeight: 1.57,
-  color: 'grey',
+  color: '#545454',
 };
 
 const adamText = (
@@ -293,7 +293,7 @@ const Testimonials = () => {
         className={'display-flex justify-content-center flex-direction-column align-items-center'}
         style={{ textAlign: windowSize.width < landingVars.breakpoints.verticalPanels ? 'center' : 'left' }}
       >
-        <Typography.Title level={3}>codePost isn’t just another grading tool</Typography.Title>
+        <Typography.Title level={2}>codePost isn't just another grading tool</Typography.Title>
         <span style={{ maxWidth: '700px', lineHeight: '24px', fontSize: '16px' }}>
           <p style={{ breakInside: 'avoid' }}>
             We rebuilt the feedback-giving process from the ground up to make you brilliant at what you do: teaching the

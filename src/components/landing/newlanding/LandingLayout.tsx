@@ -93,135 +93,137 @@ const LandingLayout = (props: IProps) => {
       }}
       id="LandingLayout"
     >
-      <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }} className={sectionClass}>
-        <div
-          style={{
-            width: '100%',
-            paddingTop: verticalPadddingHeader,
-            paddingBottom: verticalPadddingHeader,
-          }}
-        >
-          {props.topBar}
-        </div>
-      </div>
-      <div
-        style={{
-          ...sectionStyle,
-          background: landingVars.backgrounds.hero,
-          paddingLeft: horizontalPaddingHero,
-          paddingRight: horizontalPaddingHero,
-        }}
-        className={sectionClass}
-      >
-        <div
-          style={{
-            maxWidth: landingVars.maxWidths.panel,
-            paddingTop: verticalPaddingHero,
-            paddingBottom: verticalPaddingHero,
-            width: '100%',
-          }}
-          className="display-flex justify-content-space-between"
-        >
-          {props.hero}
-        </div>
-      </div>
-      <div
-        style={{
-          ...sectionStyle,
-          background: landingVars.backgrounds.hero,
-          paddingLeft: 50,
-          paddingRight: 50,
-          marginTop: 25,
-        }}
-        className={sectionClass}
-      >
-        <div
-          style={{
-            maxWidth: landingVars.maxWidths.panel,
-            paddingTop: 30,
-            paddingBottom: 25,
-            width: '100%',
-          }}
-          className="display-flex justify-content-space-between"
-        >
-          {props.testimonial}
-        </div>
-      </div>
-      <Divider />
-      <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }} className={sectionClass}>
-        <img
-          src={windowSize.width < landingVars.breakpoints.mobile ? testimonialBackgroundMobile : testimonialBackground}
-          style={{
-            ...backgroundImageStyle,
-            paddingTop:
-              windowSize.width < landingVars.breakpoints.mobile
-                ? landingVars.backgroundOffsets.testimonialMobile
-                : landingVars.backgroundOffsets.testimonial,
-          }}
-          alt=""
-        />
-        <div
-          style={{
-            paddingTop: verticalPaddingHero,
-            paddingBottom: verticalPaddingHero,
-            paddingLeft: landingVars.Hpadding.testimonial,
-            paddingRight: landingVars.Hpadding.testimonial,
-            width: '100%',
-            maxWidth: landingVars.maxWidths.panel,
-          }}
-        >
-          {props.subHero}
-        </div>
-      </div>
-      <Divider style={{ margin: 0 }} />
-      <div style={{ ...sectionStyle }} className={sectionClass}>
-        <div style={{ ...panelStyle }}>{props.panelOne}</div>
-      </div>
-      <div style={{ ...sectionStyle }} className={sectionClass}>
-        <div style={panelStyle}>{props.panelTwo}</div>
-      </div>
-      <div style={{ ...sectionStyle, background: landingVars.backgrounds.panelThree }} className={sectionClass}>
-        <div style={{ ...panelStyle }}>{props.panelThree}</div>
-      </div>
-      <div style={{ ...sectionStyle, background: landingVars.backgrounds.panelThree }} className={sectionClass}>
-        <div style={{ ...panelStyle }}>{props.panelFour}</div>
-      </div>
-      <Divider style={{ margin: 0 }} />
-      <div style={{ ...sectionStyle }} className={sectionClass}>
-        <div style={{ ...panelStyle, maxWidth: '1920px', textAlign: 'center' }}>
-          <Suspense fallback={<div style={{ width: '100%', height: 400 }} />}>
-            <Video location={props.location} />
-          </Suspense>
-        </div>
-      </div>
-      <div>
-        <Divider style={{ margin: 0 }} />
-        <div style={{ ...sectionStyle, background: landingVars.backgrounds.getStarted }} className={sectionClass}>
+      <main>
+        <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }} className={sectionClass}>
           <div
             style={{
-              maxWidth,
               width: '100%',
-              paddingTop: landingVars.Vpadding.getStartedNormal,
-              paddingBottom: landingVars.Vpadding.getStartedNormal,
+              paddingTop: verticalPadddingHeader,
+              paddingBottom: verticalPadddingHeader,
             }}
           >
-            {props.getStarted}
-            <div
-              style={{
-                width: '100%',
-                marginTop: 25,
-                padding: '0 25px',
-              }}
-            >
-              <EmailSubscribe />
-            </div>
+            {props.topBar}
           </div>
         </div>
-
-        <div style={{ ...sectionStyle, background: landingVars.backgrounds.footer }} className={sectionClass}>
-          <div style={{ maxWidth: landingVars.maxWidths.footer, width: '100%' }}>{props.footer}</div>
+        <div
+          style={{
+            ...sectionStyle,
+            background: landingVars.backgrounds.hero,
+            paddingLeft: horizontalPaddingHero,
+            paddingRight: horizontalPaddingHero,
+          }}
+          className={sectionClass}
+        >
+          <div
+            style={{
+              maxWidth: landingVars.maxWidths.panel,
+              paddingTop: verticalPaddingHero,
+              paddingBottom: verticalPaddingHero,
+              width: '100%',
+            }}
+            className="display-flex justify-content-space-between"
+          >
+            {props.hero}
+          </div>
         </div>
-      </div>
+        <div
+          style={{
+            ...sectionStyle,
+            background: landingVars.backgrounds.hero,
+            paddingLeft: 50,
+            paddingRight: 50,
+            marginTop: 25,
+          }}
+          className={sectionClass}
+        >
+          <div
+            style={{
+              maxWidth: landingVars.maxWidths.panel,
+              paddingTop: 30,
+              paddingBottom: 25,
+              width: '100%',
+            }}
+            className="display-flex justify-content-space-between"
+          >
+            {props.testimonial}
+          </div>
+        </div>
+        <Divider />
+        <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }} className={sectionClass}>
+          <img
+            src={windowSize.width < landingVars.breakpoints.mobile ? testimonialBackgroundMobile : testimonialBackground}
+            style={{
+              ...backgroundImageStyle,
+              paddingTop:
+                windowSize.width < landingVars.breakpoints.mobile
+                  ? landingVars.backgroundOffsets.testimonialMobile
+                  : landingVars.backgroundOffsets.testimonial,
+            }}
+            alt=""
+          />
+          <div
+            style={{
+              paddingTop: verticalPaddingHero,
+              paddingBottom: verticalPaddingHero,
+              paddingLeft: landingVars.Hpadding.testimonial,
+              paddingRight: landingVars.Hpadding.testimonial,
+              width: '100%',
+              maxWidth: landingVars.maxWidths.panel,
+            }}
+          >
+            {props.subHero}
+          </div>
+        </div>
+        <Divider style={{ margin: 0 }} />
+        <div style={{ ...sectionStyle }} className={sectionClass}>
+          <div style={{ ...panelStyle }}>{props.panelOne}</div>
+        </div>
+        <div style={{ ...sectionStyle }} className={sectionClass}>
+          <div style={panelStyle}>{props.panelTwo}</div>
+        </div>
+        <div style={{ ...sectionStyle, background: landingVars.backgrounds.panelThree }} className={sectionClass}>
+          <div style={{ ...panelStyle }}>{props.panelThree}</div>
+        </div>
+        <div style={{ ...sectionStyle, background: landingVars.backgrounds.panelThree }} className={sectionClass}>
+          <div style={{ ...panelStyle }}>{props.panelFour}</div>
+        </div>
+        <Divider style={{ margin: 0 }} />
+        <div style={{ ...sectionStyle }} className={sectionClass}>
+          <div style={{ ...panelStyle, maxWidth: '1920px', textAlign: 'center' }}>
+            <Suspense fallback={<div style={{ width: '100%', height: 400 }} />}>
+              <Video location={props.location} />
+            </Suspense>
+          </div>
+        </div>
+        <div>
+          <Divider style={{ margin: 0 }} />
+          <div style={{ ...sectionStyle, background: landingVars.backgrounds.getStarted }} className={sectionClass}>
+            <div
+              style={{
+                maxWidth,
+                width: '100%',
+                paddingTop: landingVars.Vpadding.getStartedNormal,
+                paddingBottom: landingVars.Vpadding.getStartedNormal,
+              }}
+            >
+              {props.getStarted}
+              <div
+                style={{
+                  width: '100%',
+                  marginTop: 25,
+                  padding: '0 25px',
+                }}
+              >
+                <EmailSubscribe />
+              </div>
+            </div>
+          </div>
+
+          <div style={{ ...sectionStyle, background: landingVars.backgrounds.footer }} className={sectionClass}>
+            <div style={{ maxWidth: landingVars.maxWidths.footer, width: '100%' }}>{props.footer}</div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };

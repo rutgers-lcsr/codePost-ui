@@ -98,8 +98,8 @@ export const EmailSubscribe: React.FC = () => {
     <Form form={form} onFinish={handleSubmit}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
         <div>
-          <div style={{ fontWeight: 600, fontSize: '22px', color: '#8a8a8a' }}>Want to stay in touch?</div>
-          <div style={{ fontSize: '18px', color: '#A3A3A3' }}>Subscribe for new feature announcements.</div>
+          <div style={{ fontWeight: 600, fontSize: '22px', color: '#666666' }}>Want to stay in touch?</div>
+          <div style={{ fontSize: '18px', color: '#666666' }}>Subscribe for new feature announcements.</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           {input}

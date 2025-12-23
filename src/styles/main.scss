@@ -12,11 +12,11 @@
 
 // 4. Components
 @import 'components/cp-button', 'components/cp-logo', 'components/rubric-menu', 'components/sider-menu',
-  'components/comment', 'components/cp-point-input', 'components/cp-label', 'components/badge',
-  'components/cp-dropdown', 'components/cp-rubric-category', 'components/code-panel', 'components/code',
-  'components/markdown', 'components/header', 'components/integrations', 'components/roster', 'components/moss',
-  'components/text-link', 'components/log-viewer', 'components/keyboard-shortcuts', 'components/video',
-  'components/pseudo-terminal', 'components/tests', 'components/pseudo-ide', 'components/webhooks';
+'components/comment', 'components/cp-point-input', 'components/cp-label', 'components/badge',
+'components/cp-dropdown', 'components/cp-rubric-category', 'components/code-panel', 'components/code',
+'components/markdown', 'components/header', 'components/integrations', 'components/roster', 'components/moss',
+'components/text-link', 'components/log-viewer', 'components/keyboard-shortcuts', 'components/video',
+'components/pseudo-terminal', 'components/tests', 'components/pseudo-ide', 'components/webhooks';
 
 // 5. Layout-related sections
 @import 'layout/layout';
@@ -31,7 +31,7 @@
 #commandbar-launcher,
 .commandbar-launcher,
 [class*="commandbar-launcher"] {
-  left: 20px !important;
-  right: auto !important;
+  right: 20px !important;
+  left: auto !important;
   bottom: 20px !important;
 }
