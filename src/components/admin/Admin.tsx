@@ -1280,7 +1280,7 @@ class Admin extends Component<IComponentProps & RouteComponentProps, IAdminState
                 submissionsByAssignment={this.state.submissions}
                 submissionsByGrader={this.state.submissionsByGrader}
                 inactiveGraders={this.state.inactiveGraders}
-                baseURL={courseURL}
+                baseURL={`${courseURL}/submissions`}
               />
             }
           />
@@ -1317,7 +1317,7 @@ class Admin extends Component<IComponentProps & RouteComponentProps, IAdminState
                 bulkUpdateSubmissions={this.bulkUpdateSubmissions}
                 sections={this.state.sections}
                 courses={this.state.courses}
-                baseURL={courseURL}
+                baseURL={`${courseURL}/assignments`}
               />
             }
           />

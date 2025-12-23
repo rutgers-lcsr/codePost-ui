@@ -149,7 +149,7 @@ const RubricCategoryUI: React.FC<{
                 value={currentComment.text || ''}
                 onChange={onChangeText}
                 onBlur={saveComment}
-                bordered={false}
+                variant="borderless"
                 placeholder="Enter comment text..."
                 style={{
                   width: '100%',
@@ -392,7 +392,7 @@ const RubricCategoryUI: React.FC<{
               ref={helpers.nameInput}
               placeholder="Category Name"
               size="large"
-              bordered={false}
+              variant="borderless"
               style={{ fontSize: '18px', fontWeight: 600, padding: 0 }}
             />
           </div>

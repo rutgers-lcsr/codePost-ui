@@ -121,7 +121,7 @@ class StudentData extends React.Component<IByStudentProps, IState> {
       return <Loading />;
     }
 
-    const currentBaseURL = `${this.props.baseURL}/submissions/by_student`;
+    const currentBaseURL = `${this.props.baseURL}/by_student`;
 
     return (
       <Routes>

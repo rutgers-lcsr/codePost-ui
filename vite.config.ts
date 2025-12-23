@@ -2,6 +2,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv, type UserConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import packageJson from './package.json';
 
 export default defineConfig(async (config) => {
   const { mode } = config;
@@ -50,7 +51,7 @@ export default defineConfig(async (config) => {
     // Expose REACT_APP_* variables as process.env for compatibility with CRA code
     define: {
       'process.env.REACT_APP_API_URL': JSON.stringify(env.REACT_APP_API_URL || 'http://localhost:8000'),
-      'process.env.REACT_APP_VERSION': JSON.stringify(env.REACT_APP_VERSION || ''),
+      'process.env.REACT_APP_VERSION': JSON.stringify(packageJson.version),
       'process.env.REACT_APP_GA_ID': JSON.stringify(env.REACT_APP_GA_ID || ''),
       'process.env.REACT_APP_OPTIMIZE_ID': JSON.stringify(env.REACT_APP_OPTIMIZE_ID || ''),
       'process.env.NODE_ENV': JSON.stringify(mode),

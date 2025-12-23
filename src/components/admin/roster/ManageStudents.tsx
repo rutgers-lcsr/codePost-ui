@@ -10,14 +10,12 @@ import {
   DisconnectOutlined,
   EditOutlined,
   MailOutlined,
-  MenuOutlined,
   ProfileOutlined,
   UserDeleteOutlined,
 } from '@ant-design/icons';
 
 /* style imports */
-import type { MenuProps } from 'antd';
-import { Breadcrumb, Dropdown, Empty, message, Modal, Select, Spin } from 'antd';
+import { Breadcrumb, Button, Empty, message, Modal, Select, Space, Spin, Tooltip } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -222,7 +220,7 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
         title: 'Actions',
         dataIndex: 'actions',
         key: 'actions',
-        align: 'center' as const,
+        align: 'right' as const,
       },
     ],
     [renderStudentCell, renderSectionCell],
@@ -232,47 +230,34 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
     return props.students.map((studentEmail) => {
       const hasActivated = !props.notActivated.includes(studentEmail);
 
-      const menuItems: MenuProps['items'] = [
-        ...(!hasActivated
-          ? [
-              {
-                key: 'activation',
-                label: (
-                  <>
-                    <MailOutlined /> Send activation email
-                  </>
-                ),
-                onClick: () => sendActivationEmail(studentEmail),
-              },
-            ]
-          : []),
-        {
-          key: 'profile',
-          label: (
-            <Link to={match?.url.replace('roster/students', `submissions/by_student/${studentEmail}`) || ''}>
-              <ProfileOutlined /> &nbsp; Open profile
-            </Link>
-          ),
-        },
-        {
-          key: 'unenroll',
-          label: (
-            <>
-              <UserDeleteOutlined /> Unenroll
-            </>
-          ),
-          onClick: () => removeStudent(studentEmail),
-        },
-      ];
-
       return {
         key: studentEmail,
         student: studentEmail,
         section: props.sectionsByStudent[studentEmail]?.name ?? 'No section',
         actions: (
-          <Dropdown menu={{ items: menuItems }} trigger={['click']}>
-            <MenuOutlined style={{ cursor: 'pointer' }} />
-          </Dropdown>
+          <Space>
+            {!hasActivated && (
+              <Tooltip title="Send activation email">
+                <Button
+                  shape="circle"
+                  icon={<MailOutlined />}
+                  onClick={() => sendActivationEmail(studentEmail)}
+                />
+              </Tooltip>
+            )}
+            <Tooltip title="Open profile">
+              <Link to={match?.url.replace('roster/students', `submissions/by_student/${studentEmail}`) || ''}>
+                <Button shape="circle" icon={<ProfileOutlined />} />
+              </Link>
+            </Tooltip>
+            <Tooltip title="Unenroll">
+              <Button
+                shape="circle"
+                icon={<UserDeleteOutlined />}
+                onClick={() => removeStudent(studentEmail)}
+              />
+            </Tooltip>
+          </Space>
         ),
       };
     });

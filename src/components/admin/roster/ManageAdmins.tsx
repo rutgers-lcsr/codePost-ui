@@ -5,10 +5,10 @@
 /* react imports */
 import * as React from 'react';
 
-import { DisconnectOutlined, MailOutlined, MenuOutlined, UserDeleteOutlined } from '@ant-design/icons';
+import { DisconnectOutlined, MailOutlined, UserDeleteOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Dropdown, Modal } from 'antd';
+import { Breadcrumb, Button, Modal, Space, Tooltip } from 'antd';
 
 /* other library imports */
 import memoizeOne from 'memoize-one';
@@ -148,7 +148,6 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
         />,
       ];
 
-      const aligner: 'left' | 'center' | 'right' = 'center';
       columns = [
         {
           title: 'Admin',
@@ -189,59 +188,37 @@ class ManageAdmins extends React.Component<IManageAdminsProps, IState> {
           title: 'Actions',
           dataIndex: 'actions',
           key: 'actions',
-          align: aligner,
+          align: 'right' as const,
         },
       ];
 
       data = this.props.admins.map((adminEmail) => {
         const hasActivated = this.props.notActivated.indexOf(adminEmail) === -1;
-        const menuItems =
-          adminEmail === this.props.myEmail
-            ? [
-                {
-                  key: '1',
-                  disabled: true,
-                  label: (
-                    <CPTooltip title={tooltips.admin.adminRoster.removeSelf}>
-                      <div>
-                        <UserDeleteOutlined /> &nbsp; Unenroll
-                      </div>
-                    </CPTooltip>
-                  ),
-                },
-              ]
-            : [
-                ...(hasActivated
-                  ? []
-                  : [
-                      {
-                        key: 'activation',
-                        label: (
-                          <>
-                            <MailOutlined /> Send activation email
-                          </>
-                        ),
-                        onClick: this.sendActivationEmail.bind(this, adminEmail),
-                      },
-                    ]),
-                {
-                  key: '1',
-                  label: (
-                    <>
-                      <UserDeleteOutlined /> Unenroll
-                    </>
-                  ),
-                  onClick: this.removeAdmin.bind(this, adminEmail),
-                },
-              ];
+        const isSelf = adminEmail === this.props.myEmail;
 
         return {
           key: adminEmail,
           admin: adminEmail,
           actions: (
-            <Dropdown menu={{ items: menuItems }} trigger={['click']}>
-              <MenuOutlined />
-            </Dropdown>
+            <Space>
+              {!hasActivated && !isSelf && (
+                <Tooltip title="Send activation email">
+                  <Button
+                    shape="circle"
+                    icon={<MailOutlined />}
+                    onClick={this.sendActivationEmail.bind(this, adminEmail)}
+                  />
+                </Tooltip>
+              )}
+              <Tooltip title={isSelf ? tooltips.admin.adminRoster.removeSelf : "Unenroll"}>
+                <Button
+                  shape="circle"
+                  icon={<UserDeleteOutlined />}
+                  disabled={isSelf}
+                  onClick={isSelf ? undefined : this.removeAdmin.bind(this, adminEmail)}
+                />
+              </Tooltip>
+            </Space>
           ),
         };
       });

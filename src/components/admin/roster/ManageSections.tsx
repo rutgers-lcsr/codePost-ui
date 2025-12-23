@@ -6,11 +6,10 @@
 import * as React from 'react';
 import { useCallback, useMemo, useState } from 'react';
 
-import { DeleteOutlined, EditOutlined, MenuOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
 /* style imports */
-import type { MenuProps } from 'antd';
-import { Breadcrumb, Button, Checkbox, Drawer, Dropdown, Empty, message, Modal, Select, Table } from 'antd';
+import { Breadcrumb, Button, Checkbox, Drawer, Empty, message, Modal, Select, Table, Tooltip } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -163,7 +162,7 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
         title: 'Actions',
         dataIndex: 'actions',
         key: 'actions',
-        align: 'center' as const,
+        align: 'right' as const,
       },
     ],
     [renderLeadersCell],
@@ -171,18 +170,6 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
 
   const data = useMemo(() => {
     return props.sections.map((section) => {
-      const menuItems: MenuProps['items'] = [
-        {
-          key: '1',
-          label: (
-            <>
-              <DeleteOutlined /> Delete
-            </>
-          ),
-          onClick: () => deleteSection(section.id),
-        },
-      ];
-
       return {
         key: section.id,
         section: section.name,
@@ -194,9 +181,13 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
         leaderData: section.leaders,
         leadersForSearch: section.leaders.join(', '),
         actions: (
-          <Dropdown menu={{ items: menuItems }} trigger={['click']}>
-            <MenuOutlined />
-          </Dropdown>
+          <Tooltip title="Delete section">
+            <Button
+              shape="circle"
+              icon={<DeleteOutlined />}
+              onClick={() => deleteSection(section.id)}
+            />
+          </Tooltip>
         ),
       };
     });

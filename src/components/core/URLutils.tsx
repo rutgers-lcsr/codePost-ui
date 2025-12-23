@@ -10,15 +10,15 @@ import { CourseType, AssignmentType } from '../../infrastructure/types';
 // foo/bar according to https://www.w3schools.com/tags/ref_urlencode.asp
 export const encodeForLink = (pathComponent: string) => {
   return pathComponent
-    .replace('%', '%25')
-    .replace('/', '%2F')
-    .replace('#', '%23')
-    .replace('?', '%3F')
-    .replace('&', '%26')
-    .replace('+', '%2B')
-    .replace(',', '%2C')
-    .replace('(', '28')
-    .replace(')', '29');
+    .replace(/%/g, '%25')
+    .replace(/\//g, '%2F')
+    .replace(/#/g, '%23')
+    .replace(/\?/g, '%3F')
+    .replace(/&/g, '%26')
+    .replace(/\+/g, '%2B')
+    .replace(/,/g, '%2C')
+    .replace(/\(/g, '%28')
+    .replace(/\)/g, '%29');
 };
 
 // Parentheses must be esscaped to use literally in a route

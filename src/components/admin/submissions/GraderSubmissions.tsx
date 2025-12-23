@@ -131,7 +131,7 @@ const GraderData: React.FC<IByGraderProps> = (props) => {
     return <Loading />;
   }
 
-  const currentBaseURL = `${baseURL}/submissions/by_grader`;
+  const currentBaseURL = `${baseURL}/by_grader`;
 
   return (
     <Routes>

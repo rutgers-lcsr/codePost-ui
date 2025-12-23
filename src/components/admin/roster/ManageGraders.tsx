@@ -9,13 +9,12 @@ import {
   DisconnectOutlined,
   EditOutlined,
   MailOutlined,
-  MenuOutlined,
   ProfileOutlined,
   UserDeleteOutlined,
 } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Dropdown, Empty, message, Modal, Switch } from 'antd';
+import { Breadcrumb, Button, Empty, message, Modal, Space, Switch, Tooltip } from 'antd';
 
 /* other library imports */
 import memoizeOne from 'memoize-one';
@@ -228,7 +227,7 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
           title: 'Actions',
           dataIndex: 'actions',
           key: 'actions',
-          align: aligner,
+          align: 'right' as const,
         },
       ];
 
@@ -255,49 +254,35 @@ class ManageGraders extends React.Component<IManageGradersProps & RouteComponent
             </div>
           );
         }
-
-        const menuItems = [
-          ...(hasActivated
-            ? []
-            : [
-                {
-                  key: 'activation',
-                  label: (
-                    <>
-                      <MailOutlined /> Send activation email
-                    </>
-                  ),
-                  onClick: this.sendActivationEmail.bind(this, graderEmail),
-                },
-              ]),
-          {
-            key: 'profile',
-            label: (
-              <Link to={this.props.match.url.replace('roster/graders', `submissions/by_grader/${graderEmail}`)}>
-                <ProfileOutlined /> &nbsp; Open profile
-              </Link>
-            ),
-          },
-          {
-            key: '1',
-            label: (
-              <>
-                <UserDeleteOutlined /> Unenroll
-              </>
-            ),
-            onClick: this.removeGrader.bind(this, graderEmail),
-          },
-        ];
-
         return {
           key: graderEmail,
           grader: graderEmail,
           status: statusElement,
           superGrader: this.props.superGraders.includes(graderEmail),
           actions: (
-            <Dropdown menu={{ items: menuItems }} trigger={['click']}>
-              <MenuOutlined />
-            </Dropdown>
+            <Space>
+              {!hasActivated && (
+                <Tooltip title="Send activation email">
+                  <Button
+                    shape="circle"
+                    icon={<MailOutlined />}
+                    onClick={this.sendActivationEmail.bind(this, graderEmail)}
+                  />
+                </Tooltip>
+              )}
+              <Tooltip title="Open profile">
+                <Link to={this.props.match.url.replace('roster/graders', `submissions/by_grader/${graderEmail}`)}>
+                  <Button shape="circle" icon={<ProfileOutlined />} />
+                </Link>
+              </Tooltip>
+              <Tooltip title="Unenroll">
+                <Button
+                  shape="circle"
+                  icon={<UserDeleteOutlined />}
+                  onClick={this.removeGrader.bind(this, graderEmail)}
+                />
+              </Tooltip>
+            </Space>
           ),
         };
       });
