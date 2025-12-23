@@ -909,18 +909,20 @@ const Comment: React.FC<ICommentProps> = (props) => {
   //////////////////////////////////////////////////////////////////////////////////////////
 
   const popoverContent = (
-    <CPFlex
-      left={[]}
-      right={[
-        <CPButton cpType="secondary" size="small" style={{ width: '60px' }} onClick={confirmCancelDelete}>
-          No
-        </CPButton>,
-        <CPButton cpType="danger" size="small" style={{ width: '60px' }} onClick={confirmDelete}>
-          Yes
-        </CPButton>,
-      ]}
-      gutterSize={14}
-    />
+    <div onMouseDown={(e) => e.stopPropagation()}>
+      <CPFlex
+        left={[]}
+        right={[
+          <CPButton cpType="secondary" size="small" style={{ width: '60px' }} onClick={confirmCancelDelete}>
+            No
+          </CPButton>,
+          <CPButton cpType="danger" size="small" style={{ width: '60px' }} onClick={confirmDelete}>
+            Yes
+          </CPButton>,
+        ]}
+        gutterSize={14}
+      />
+    </div>
   );
 
   if (props.commentType === 'active') {
@@ -993,8 +995,12 @@ const Comment: React.FC<ICommentProps> = (props) => {
         trigger="click"
         placement="bottomRight"
         content={popoverContent}
+        overlayClassName="cp-delete-comment-popover"
+        overlayStyle={{ zIndex: 2000 }}
       >
-        <CPButton cpType="danger" icon={<DeleteOutlined />} />
+        <span onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+          <CPButton cpType="danger" icon={<DeleteOutlined />} />
+        </span>
       </Popover>
     );
 
@@ -1015,10 +1021,6 @@ const Comment: React.FC<ICommentProps> = (props) => {
     }
   }
 
-  const preventDefaultFn = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
 
   if (props.commentType === 'inactive') {
     commentElements.points = badge;
@@ -1036,8 +1038,12 @@ const Comment: React.FC<ICommentProps> = (props) => {
         trigger="click"
         placement="bottomRight"
         content={popoverContent}
+        overlayClassName="cp-delete-comment-popover"
+        overlayStyle={{ zIndex: 2000 }}
       >
-        <CPButton cpType="danger" icon={<DeleteOutlined />} onClick={preventDefaultFn} />
+        <span onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+          <CPButton cpType="danger" icon={<DeleteOutlined />} />
+        </span>
       </Popover>
     ) : (
       <Popover
@@ -1047,6 +1053,8 @@ const Comment: React.FC<ICommentProps> = (props) => {
         trigger="click"
         placement="bottomRight"
         content={popoverContent}
+        overlayClassName="cp-delete-comment-popover"
+        overlayStyle={{ zIndex: 2000 }}
       />
     );
 
