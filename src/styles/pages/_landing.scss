@@ -160,7 +160,7 @@
     border-radius: 3px !important;
     padding: 2px 5px 1px 5px !important;
     font-weight: 600 !important;
-    color: rgba(0, 0, 0, 0.55);
+    color: #444 !important;
   }
 }
 
@@ -405,7 +405,7 @@
 }
 
 @mixin cpLink($name) {
-  color: #666666;
+  color: #0d7354;
 
   .#{$name}__arrow {
     transform: translateX(0px);
@@ -415,7 +415,7 @@
 
   &:hover {
     transform: scale(1.02);
-    color: #7bd8b5;
+    color: #02261e;
 
     .#{$name}__arrow {
       transform: translateX(5px);
@@ -425,7 +425,7 @@
   }
 
   &:focus {
-    color: #7bd8b5;
+    color: #02261e;
   }
 }
 
