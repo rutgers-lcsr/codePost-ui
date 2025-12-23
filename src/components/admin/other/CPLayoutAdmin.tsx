@@ -102,7 +102,7 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
           {props.navigation(collapsed)}
         </Sider>
       )}
-      <Layout style={{ minWidth: layoutVars.minWidths.admin }}>
+      <Layout style={{ minWidth: layoutVars.minWidths.admin, height: '100vh', overflowY: 'auto', overflowX: 'auto' }}>
         <Header className="layout--admin__header">{props.header}</Header>
         {props.banner && windowSize.width > layoutVars.breakpoints.smallScreen.admin && (
           <Header className="layout--admin__banner">{props.banner}</Header>

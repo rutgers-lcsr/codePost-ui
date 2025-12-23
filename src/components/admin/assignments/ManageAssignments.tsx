@@ -8,9 +8,9 @@
 import { Tag } from 'antd';
 
 /* other library imports */
-import { RouteComponentProps } from '../../../router/legacy';
+
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
-import { LegacyRouteRenderer } from '../../../router/legacy';
+
 
 /* codePost imports */
 import { AssignmentPatchType, AssignmentType } from '../../../infrastructure/assignment';
@@ -84,12 +84,35 @@ export interface IManageAssignmentsProps {
   myEmail: string;
 
   /* user data */
+  /* user data */
   user: UserType;
+  baseURL: string;
 }
 
 /**********************************************************************************************************************/
 
-const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps) => {
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
+
+const RoutePropsWrapper = ({ render }: { render: (props: any) => React.ReactElement }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const params = useParams();
+
+  // Mock match and history
+  const match = { params, url: location.pathname, path: location.pathname, isExact: true };
+  const history = {
+    push: (path: string) => navigate(path),
+    replace: (path: string) => navigate(path, { replace: true }),
+    go: (n: number) => navigate(n),
+    goBack: () => navigate(-1),
+    goForward: () => navigate(1),
+    location,
+  } as any;
+
+  return render({ match, location, history });
+};
+
+const ManageAssignments = (props: IManageAssignmentsProps) => {
   if (!props.loadComplete || props.currentCourse === undefined) {
     return <Loading />;
   }
@@ -97,21 +120,7 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
     return;
   };
 
-  // Extract the course base URL from the current path
-  // props.match.url might be /admin/CourseName/Period/assignments/overview/something
-  // We need to extract just /admin/CourseName/Period/assignments
-  const getCourseBaseURL = () => {
-    const parts = props.match.url.split('/').filter(Boolean);
-    const adminIndex = parts.findIndex((part) => part === 'admin');
-    if (adminIndex !== -1 && parts.length > adminIndex + 3) {
-      // Take admin + courseName + period + assignments
-      const baseParts = parts.slice(0, adminIndex + 4);
-      return '/' + baseParts.join('/');
-    }
-    // Fallback: just use match.url
-    return props.match.url;
-  };
-  const baseURL = getCourseBaseURL();
+  const baseURL = props.baseURL;
 
   const breadcrumbs: Array<{ title: React.ReactNode }> = [
     {
@@ -124,19 +133,14 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
   return (
     <Routes>
       {props.assignments.flatMap((assignment) => {
-        // Note: we don't have to use encodeURIComponent, because react-router automatically
-        // encodes assignment.name for us when parsing path strings.
-        //
-        // See here: https://github.com/ReactTraining/history/issues/505
         const encodedName = encodeForRoute(assignment.name);
         return [
           <Route
             key={`${encodedName}-rubric`}
             path={`rubrics/${encodedName}`}
             element={
-              <LegacyRouteRenderer
-                path={`${props.match.url}/rubrics/${encodedName}`}
-                render={(subprops: RouteComponentProps) => (
+              <RoutePropsWrapper
+                render={(subprops: any) => (
                   <RubricManager
                     {...subprops}
                     assignment={assignment}
@@ -151,11 +155,11 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
                         breadcrumbs: [
                           ...breadcrumbs,
                           {
-                            title: <Link to={`${props.match.url}/rubrics`}>Rubrics</Link>,
+                            title: <Link to={`${props.baseURL}/rubrics`}>Rubrics</Link>,
                           },
                         ],
-                        baseURL: `${props.match.url}/${encodedName}/rubric`,
-                        history: props.history,
+                        baseURL: `${props.baseURL}/${encodedName}/rubric`,
+                        history: subprops.history,
                       };
                       return (
                         <RubricUI
@@ -175,9 +179,8 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             key={`${encodedName}-stats`}
             path={`${encodedName}/stats`}
             element={
-              <LegacyRouteRenderer
-                path={`${props.match.url}/${encodedName}/stats`}
-                render={(subprops: RouteComponentProps) =>
+              <RoutePropsWrapper
+                render={(subprops: any) =>
                   !props.fullSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
@@ -206,9 +209,8 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             key={`${encodedName}-regrades`}
             path={`${encodedName}/regrades`}
             element={
-              <LegacyRouteRenderer
-                path={`${props.match.url}/${encodedName}/regrades`}
-                render={(subprops: RouteComponentProps) =>
+              <RoutePropsWrapper
+                render={(subprops: any) =>
                   !props.partialSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
@@ -232,9 +234,8 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             key={`${encodedName}-settings`}
             path={`${encodedName}/settings`}
             element={
-              <LegacyRouteRenderer
-                path={`${props.match.url}/${encodedName}/settings`}
-                render={(subprops: RouteComponentProps) => (
+              <RoutePropsWrapper
+                render={(subprops: any) => (
                   <AssignmentsTable
                     {...props}
                     {...subprops}
@@ -254,9 +255,8 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             key={`${encodedName}-download-grades`}
             path={`${encodedName}/download/grades`}
             element={
-              <LegacyRouteRenderer
-                path={`${props.match.url}/${encodedName}/download/grades`}
-                render={(subprops: RouteComponentProps) =>
+              <RoutePropsWrapper
+                render={(subprops: any) =>
                   !props.fullSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
@@ -280,9 +280,8 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             key={`${encodedName}-delete`}
             path={`${encodedName}/delete`}
             element={
-              <LegacyRouteRenderer
-                path={`${props.match.url}/${encodedName}/delete`}
-                render={(subprops: RouteComponentProps) => (
+              <RoutePropsWrapper
+                render={(subprops: any) => (
                   <AssignmentsTable
                     {...props}
                     {...subprops}
@@ -302,9 +301,8 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             key={`${encodedName}-upload-single`}
             path={`${encodedName}/upload/single`}
             element={
-              <LegacyRouteRenderer
-                path={`${props.match.url}/${encodedName}/upload/single`}
-                render={(subprops: RouteComponentProps) =>
+              <RoutePropsWrapper
+                render={(subprops: any) =>
                   !props.partialSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
@@ -328,9 +326,8 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             key={`${encodedName}-upload-multiple`}
             path={`${encodedName}/upload/multiple`}
             element={
-              <LegacyRouteRenderer
-                path={`${props.match.url}/${encodedName}/upload/multiple`}
-                render={(subprops: RouteComponentProps) =>
+              <RoutePropsWrapper
+                render={(subprops: any) =>
                   !props.fullSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
@@ -354,9 +351,8 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             key={`${encodedName}-upload-import`}
             path={`${encodedName}/upload/import`}
             element={
-              <LegacyRouteRenderer
-                path={`${props.match.url}/${encodedName}/upload/import`}
-                render={(subprops: RouteComponentProps) =>
+              <RoutePropsWrapper
+                render={(subprops: any) =>
                   !props.partialSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
@@ -380,9 +376,8 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             key={`${encodedName}-bulk-edit`}
             path={`${encodedName}/bulk-edit`}
             element={
-              <LegacyRouteRenderer
-                path={`${props.match.url}/${encodedName}/bulk-edit`}
-                render={(subprops: RouteComponentProps) =>
+              <RoutePropsWrapper
+                render={(subprops: any) =>
                   !props.fullSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
@@ -406,9 +401,8 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             key={`${encodedName}-onboarding`}
             path={`${encodedName}/onboarding`}
             element={
-              <LegacyRouteRenderer
-                path={`${props.match.url}/${encodedName}/onboarding`}
-                render={(subprops: RouteComponentProps) =>
+              <RoutePropsWrapper
+                render={(subprops: any) =>
                   !props.partialSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
@@ -432,9 +426,8 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             key={`${encodedName}-environment`}
             path={`environment/${encodedName}/*`}
             element={
-              <LegacyRouteRenderer
-                path={`${props.match.url}/environment/${encodedName}/*`}
-                render={(subprops: RouteComponentProps) => (
+              <RoutePropsWrapper
+                render={(subprops: any) => (
                   <AssignmentTests
                     {...subprops}
                     breadcrumbs={breadcrumbs}
@@ -452,9 +445,8 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
             key={`${encodedName}-plagiarism`}
             path={`plagiarism/${encodedName}`}
             element={
-              <LegacyRouteRenderer
-                path={`${props.match.url}/plagiarism/${encodedName}`}
-                render={(subprops: RouteComponentProps) => (
+              <RoutePropsWrapper
+                render={(subprops: any) => (
                   <Moss
                     {...subprops}
                     assignment={assignment}
@@ -474,20 +466,16 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
       <Route
         path="environment"
         element={
-          <LegacyRouteRenderer
-            path={`${props.match.url}/environment`}
-            end
-            render={(subprops: RouteComponentProps) => <TestsOverview {...subprops} assignments={props.assignments} />}
+          <RoutePropsWrapper
+            render={(subprops: any) => <TestsOverview {...subprops} assignments={props.assignments} />}
           />
         }
       />
       <Route
         path="rubrics"
         element={
-          <LegacyRouteRenderer
-            path={`${props.match.url}/rubrics`}
-            end
-            render={(subprops: RouteComponentProps) => (
+          <RoutePropsWrapper
+            render={(subprops: any) => (
               <RubricOverview {...subprops} assignments={props.assignments} course={props.currentCourse} />
             )}
           />
@@ -496,10 +484,8 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
       <Route
         path="download/grades"
         element={
-          <LegacyRouteRenderer
-            path={`${props.match.url}/download/grades`}
-            end
-            render={(subprops: RouteComponentProps) =>
+          <RoutePropsWrapper
+            render={(subprops: any) =>
               !props.submissionsByUserLoadComplete ? (
                 <Loading />
               ) : (
@@ -521,10 +507,8 @@ const ManageAssignments = (props: IManageAssignmentsProps & RouteComponentProps)
       <Route
         path="overview"
         element={
-          <LegacyRouteRenderer
-            path={`${props.match.url}/overview`}
-            end
-            render={(subprops: RouteComponentProps) => {
+          <RoutePropsWrapper
+            render={(subprops: any) => {
               return (
                 <AssignmentsTable
                   {...props}

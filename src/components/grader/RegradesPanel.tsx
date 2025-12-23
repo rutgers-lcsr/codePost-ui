@@ -9,7 +9,7 @@ import * as React from 'react';
 import { Switch } from 'antd';
 
 /* other library imports */
-import { RouteComponentProps } from '../../router/legacy';
+
 
 /* codePost imports */
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
@@ -27,7 +27,7 @@ type alignType = 'left' | 'right' | 'center';
 
 /**********************************************************************************************************************/
 
-interface IProps extends RouteComponentProps {
+interface IProps {
   assignments: AssignmentType[];
   course: CourseType;
   user: UserType;

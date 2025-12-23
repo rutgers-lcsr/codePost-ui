@@ -90,7 +90,7 @@ const CPAdminDetail: React.FC<ICPAdminDetailProps> = ({
     if (goBack === null) {
       return null;
     }
-    return <div className="layout--admin__subheader__go-back cp-label--subtitle">—Back</div>;
+    return <div className="layout--admin__subheader__go-back cp-label--subtitle">{goBack}</div>;
   }, [goBack]);
 
   const contentClassName = useMemo(() => `layout--admin__detail${className ? `--${className}` : ''}`, [className]);

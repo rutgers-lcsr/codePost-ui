@@ -9,7 +9,7 @@ import * as React from 'react';
 import { Select } from 'antd';
 
 /* other library imports */
-import { RouteComponentProps } from '../../router/legacy';
+
 
 /* codePost imports */
 import { AssignmentType } from '../../infrastructure/assignment';
@@ -26,7 +26,7 @@ type alignType = 'left' | 'right' | 'center';
 
 /**********************************************************************************************************************/
 
-interface IProps extends RouteComponentProps {
+interface IProps {
   assignments: AssignmentType[];
   sections: SectionType[];
   course: CourseType;
@@ -131,8 +131,8 @@ class SectionPanel extends React.Component<IProps, IState> {
         grade:
           numFinalized > 0
             ? `${(list.reduce((acc, sub) => (sub.isFinalized ? sub.grade! + acc : acc), 0) / numFinalized).toFixed(
-                1,
-              )}/${assignment.points}`
+              1,
+            )}/${assignment.points}`
             : '--',
       };
     });

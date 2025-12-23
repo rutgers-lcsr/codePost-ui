@@ -54,7 +54,7 @@ const confirm = Modal.confirm;
 
 interface IProps {
   course: CourseType;
-  onBack: () => void;
+  onBack?: () => void;
   students: string[];
   deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   assignments: AssignmentType[];
@@ -67,7 +67,6 @@ interface IProps {
   changeSubmissionGrader: (submission: SubmissionInfoType, grader: string | undefined) => Promise<void>;
   student: string;
 
-  match: any;
   baseURL: string;
 }
 
@@ -242,12 +241,6 @@ class StudentDetail extends React.Component<IProps, IState> {
     const aligner: 'left' | 'center' | 'right' = 'center';
     const columns = [
       {
-        title: 'Open',
-        dataIndex: 'open',
-        key: 'open',
-        align: aligner,
-      },
-      {
         title: 'Assignment',
         dataIndex: 'assignment',
         key: 'assignment',
@@ -321,73 +314,64 @@ class StudentDetail extends React.Component<IProps, IState> {
 
       const menuItems = submission
         ? [
-            {
-              key: '0',
-              label: (
-                <>
-                  <CodeOutlined /> Open submission
-                </>
-              ),
-              onClick: openSubmission.bind(this, submission.id),
-            },
-            {
-              key: '1',
-              label: (
-                <>
-                  <RedoOutlined /> Replace files
-                </>
-              ),
-              onClick: this.reUploadSubmission.bind(this, submission),
-            },
-            {
-              key: '2',
-              label: (
-                <>
-                  <FileAddOutlined /> Add / Update files
-                </>
-              ),
-              onClick: this.toggleUploadSubmissionVisible.bind(this, assignment.id),
-            },
-            ...(assignment.environment
-              ? [
-                  {
-                    key: '3',
-                    label: (
-                      <>
-                        {this.state.subsRunning.includes(submission.id) ? <LoadingOutlined /> : <CaretRightOutlined />}{' '}
-                        Run Tests
-                      </>
-                    ),
-                    disabled: this.state.subsRunning.includes(submission.id),
-                    onClick: this.runTests.bind(this, assignment, submission),
-                  },
-                ]
-              : []),
-            {
-              type: 'divider' as const,
-            },
-            {
-              key: '4',
-              label: (
-                <>
-                  <DeleteOutlined /> Delete submission
-                </>
-              ),
-              danger: true,
-              onClick: this.removeSubmission.bind(this, submission),
-            },
-          ]
+          {
+            key: '1',
+            label: (
+              <>
+                <RedoOutlined /> Replace files
+              </>
+            ),
+            onClick: this.reUploadSubmission.bind(this, submission),
+          },
+          {
+            key: '2',
+            label: (
+              <>
+                <FileAddOutlined /> Add / Update files
+              </>
+            ),
+            onClick: this.toggleUploadSubmissionVisible.bind(this, assignment.id),
+          },
+          ...(assignment.environment
+            ? [
+              {
+                key: '3',
+                label: (
+                  <>
+                    {this.state.subsRunning.includes(submission.id) ? <LoadingOutlined /> : <CaretRightOutlined />}{' '}
+                    Run Tests
+                  </>
+                ),
+                disabled: this.state.subsRunning.includes(submission.id),
+                onClick: this.runTests.bind(this, assignment, submission),
+              },
+            ]
+            : []),
+          {
+            type: 'divider' as const,
+          },
+          {
+            key: '4',
+            label: (
+              <>
+                <DeleteOutlined /> Delete submission
+              </>
+            ),
+            danger: true,
+            onClick: this.removeSubmission.bind(this, submission),
+          },
+        ]
         : [
-            {
-              key: '0',
-              label: (
-                <>
-                  <UploadOutlined /> Upload submission
-                </>
-              ),
-              onClick: this.toggleUploadSubmissionVisible.bind(this, assignment.id),
-            },
-          ];
+          {
+            key: '0',
+            label: (
+              <>
+                <UploadOutlined /> Upload submission
+              </>
+            ),
+            onClick: this.toggleUploadSubmissionVisible.bind(this, assignment.id),
+          },
+        ];
 
       let graderElement;
       if (submission && assignment.name === this.state.selectedSubmission) {
@@ -437,14 +421,19 @@ class StudentDetail extends React.Component<IProps, IState> {
 
       return {
         key: assignment.name,
-        open: submission ? (
-          <Tooltip title="Open submission">
-            <CodeOutlined onClick={openSubmission.bind(this, submission.id)} style={{ cursor: 'pointer' }} />
-          </Tooltip>
+        assignment: submission ? (
+          <span
+            onClick={openSubmission.bind(this, submission.id)}
+            className="text-link"
+            style={{ cursor: 'pointer' }}
+          >
+            <Typography.Text strong className="text-link">
+              {assignment.name}
+            </Typography.Text>
+          </span>
         ) : (
-          '--'
+          <Typography.Text strong>{assignment.name}</Typography.Text>
         ),
-        assignment: <Typography.Text strong>{assignment.name}</Typography.Text>,
         submitted:
           submission && submission.dateUploaded ? (
             <Typography.Text type="secondary" style={{ fontSize: '12px' }}>
@@ -455,10 +444,10 @@ class StudentDetail extends React.Component<IProps, IState> {
           ),
         partners: submission
           ? submission.students
-              .filter((student) => {
-                return student !== this.props.student;
-              })
-              .join(',')
+            .filter((student) => {
+              return student !== this.props.student;
+            })
+            .join(',')
           : '--',
         grade: gradeString,
         grader: graderElement,
@@ -466,9 +455,21 @@ class StudentDetail extends React.Component<IProps, IState> {
         lateDayCreditsUsed: submission !== undefined ? submission.lateDayCreditsUsed : '',
         viewed: submission ? this.getViewIcon(submission, this.props.student) : '--',
         actions: (
-          <Dropdown menu={{ items: menuItems }} trigger={['click']} placement={'bottomRight'}>
-            <Button shape="circle" icon={<MenuOutlined />} />
-          </Dropdown>
+          <div style={{ whiteSpace: 'nowrap' }}>
+            {submission && (
+              <Tooltip title="Open submission">
+                <Button
+                  shape="circle"
+                  icon={<CodeOutlined />}
+                  onClick={openSubmission.bind(this, submission.id)}
+                  style={{ marginRight: 8 }}
+                />
+              </Tooltip>
+            )}
+            <Dropdown menu={{ items: menuItems }} trigger={['click']} placement={'bottomRight'}>
+              <Button shape="circle" icon={<MenuOutlined />} />
+            </Dropdown>
+          </div>
         ),
       };
     });
@@ -496,7 +497,7 @@ class StudentDetail extends React.Component<IProps, IState> {
                     // eslint-disable-next-line jsx-a11y/anchor-is-valid
                     <Link to={this.props.baseURL}>Students</Link>
                   ),
-                  onClick: this.props.onBack,
+                  // onClick: this.props.onBack,
                 },
                 { title: this.props.student },
               ]}

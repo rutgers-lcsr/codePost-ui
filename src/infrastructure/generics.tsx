@@ -92,6 +92,28 @@ function getHeaders(): HeadersInit {
 }
 
 /**
+ * Wraps fetch with retry logic for 5xx errors and network failures
+ */
+async function fetchWithRetry(url: string, options: RequestInit, retries = 3, backoff = 1000): Promise<Response> {
+  try {
+    const res = await fetch(url, options);
+    // Retry on 5xx errors
+    if (res.status >= 500 && retries > 0) {
+      await new Promise((r) => setTimeout(r, backoff));
+      return fetchWithRetry(url, options, retries - 1, backoff * 2);
+    }
+    return res;
+  } catch (error) {
+    // Retry on network errors
+    if (retries > 0) {
+      await new Promise((r) => setTimeout(r, backoff));
+      return fetchWithRetry(url, options, retries - 1, backoff * 2);
+    }
+    throw error;
+  }
+}
+
+/**
  * Handles HTTP response errors with user-friendly messages
  */
 async function handleErrorResponse(res: Response): Promise<never> {
@@ -142,7 +164,7 @@ function createObject<T, TO, TI, Q, QO, QI>(
   url: string,
 ): (object: Q) => Promise<T> {
   return async (object: Q) => {
-    const res: Response = await fetch(`${process.env.REACT_APP_API_URL}/${url}/`, {
+    const res: Response = await fetchWithRetry(`${process.env.REACT_APP_API_URL}/${url}/`, {
       headers: getHeaders(),
       method: 'POST',
       body: JSON.stringify(object),
@@ -166,7 +188,7 @@ function createObject<T, TO, TI, Q, QO, QI>(
  */
 function readObject<T, O, I>(arg: t.Type<T, O, I>, url: string): (id: number) => Promise<T> {
   return async (id: number) => {
-    const res: Response = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/`, {
+    const res: Response = await fetchWithRetry(`${process.env.REACT_APP_API_URL}/${url}/${id}/`, {
       headers: getHeaders(),
       method: 'GET',
     });
@@ -195,7 +217,7 @@ function listObjectPaginated<T, O, I>(
   pageSize?: number,
 ) => Promise<{ results: T[]; count: number; next: string | null; previous: string | null }> {
   return async (page: number = 1, pageSize: number = 100) => {
-    const res: Response = await fetch(`${process.env.REACT_APP_API_URL}/${obj}/?page=${page}&page_size=${pageSize}`, {
+    const res: Response = await fetchWithRetry(`${process.env.REACT_APP_API_URL}/${obj}/?page=${page}&page_size=${pageSize}`, {
       headers: getHeaders(),
       method: 'GET',
     });
@@ -228,7 +250,7 @@ function listObject<T, O, I>(_arg: t.Type<T, O, I>, obj: string): () => Promise<
     let url: string | null = `${process.env.REACT_APP_API_URL}/${obj}/`;
 
     while (url !== null) {
-      const res: Response = await fetch(url, {
+      const res: Response = await fetchWithRetry(url, {
         headers: getHeaders(),
         method: 'GET',
       });
@@ -272,7 +294,7 @@ function updateObject<T, O, I, Q extends GenericObjectType>(
   url: string,
 ): (object: Q) => Promise<T> {
   return async (object: Q) => {
-    const res: Response = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/`, {
+    const res: Response = await fetchWithRetry(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/`, {
       headers: getHeaders(),
       method: 'PATCH',
       body: JSON.stringify(object),
@@ -299,7 +321,7 @@ function deleteObject<T extends GenericObjectType, O, I>(
   url: string,
 ): (object: Partial<T> & GenericObjectType) => Promise<void> {
   return async (object: Partial<T> & GenericObjectType) => {
-    const res: Response = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/`, {
+    const res: Response = await fetchWithRetry(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/`, {
       headers: getHeaders(),
       method: 'DELETE',
     });
@@ -343,7 +365,7 @@ function readObjectDetail<T, O, I>(
   return async (id: number, urlArgs?: { [arg: string]: string }) => {
     const urlString = getURLString(urlArgs);
 
-    const res: Response = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${id}/${detail}/${urlString}`, {
+    const res: Response = await fetchWithRetry(`${process.env.REACT_APP_API_URL}/${url}/${id}/${detail}/${urlString}`, {
       headers: getHeaders(),
       method: 'GET',
     });
@@ -375,7 +397,7 @@ function updateObjectDetail<T, O, I, J, K, Q extends GenericObjectType>(
   return async (object: Q, urlArgs?: { [arg: string]: string }) => {
     const urlString = getURLString(urlArgs);
 
-    const res: Response = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}`, {
+    const res: Response = await fetchWithRetry(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}`, {
       headers: getHeaders(),
       method: 'PATCH',
       body: JSON.stringify(object),
@@ -408,7 +430,7 @@ function createObjectDetail<T, O, I, J, K, Q extends GenericObjectType>(
   return async (object: Q, urlArgs?: { [arg: string]: string }) => {
     const urlString = getURLString(urlArgs);
 
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}`, {
+    const res = await fetchWithRetry(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}`, {
       headers: getHeaders(),
       method: 'POST',
       body: JSON.stringify(object),

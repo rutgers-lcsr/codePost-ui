@@ -5,8 +5,7 @@
 /* react imports */
 
 /* other library imports */
-import { RouteComponentProps, LegacyRouteRenderer } from '../../../router/legacy';
-import { Route, Routes } from 'react-router-dom';
+import { useNavigate, useLocation, useParams, Route, Routes } from 'react-router-dom';
 
 /* codePost imports */
 import ManageAdmins, { IManageAdminsProps } from './ManageAdmins';
@@ -18,14 +17,32 @@ import ManageStudents, { IManageStudentsProps } from './ManageStudents';
 
 type IProps = IManageStudentsProps & IManageGradersProps & IManageAdminsProps & IManageSectionsProps;
 
-const RosterManager = (props: IProps & RouteComponentProps) => {
+const RoutePropsWrapper = ({ render }: { render: (props: any) => React.ReactElement }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const params = useParams();
+
+  // Mock match and history
+  const match = { params, url: location.pathname, path: location.pathname, isExact: true };
+  const history = {
+    push: (path: string) => navigate(path),
+    replace: (path: string) => navigate(path, { replace: true }),
+    go: (n: number) => navigate(n),
+    goBack: () => navigate(-1),
+    goForward: () => navigate(1),
+    location,
+  } as any;
+
+  return render({ match, location, history });
+};
+
+const RosterManager = (props: IProps) => {
   return (
     <Routes>
       <Route
         path="students"
         element={
-          <LegacyRouteRenderer
-            path={`${props.match.url}/students`}
+          <RoutePropsWrapper
             render={(subprops: any) => <ManageStudents {...props} {...subprops} key="students" />}
           />
         }
@@ -33,8 +50,7 @@ const RosterManager = (props: IProps & RouteComponentProps) => {
       <Route
         path="graders"
         element={
-          <LegacyRouteRenderer
-            path={`${props.match.url}/graders`}
+          <RoutePropsWrapper
             render={(subprops: any) => <ManageGraders {...props} {...subprops} key="graders" />}
           />
         }
@@ -42,8 +58,7 @@ const RosterManager = (props: IProps & RouteComponentProps) => {
       <Route
         path="admins"
         element={
-          <LegacyRouteRenderer
-            path={`${props.match.url}/admins`}
+          <RoutePropsWrapper
             render={(subprops: any) => <ManageAdmins {...props} {...subprops} key="admins" />}
           />
         }
@@ -51,8 +66,7 @@ const RosterManager = (props: IProps & RouteComponentProps) => {
       <Route
         path="sections"
         element={
-          <LegacyRouteRenderer
-            path={`${props.match.url}/sections`}
+          <RoutePropsWrapper
             render={(subprops: any) => <ManageSections {...props} {...subprops} key="sections" />}
           />
         }

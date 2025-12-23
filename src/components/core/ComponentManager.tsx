@@ -6,9 +6,9 @@
 import * as React from 'react';
 
 /* other library imports */
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
-import { LegacyRouteRenderer, RouteComponentProps } from '../../router/legacy';
+
 
 /* codePost imports */
 
@@ -26,7 +26,7 @@ import { encodeForRoute, encodeForLink } from '../core/URLutils';
 
 /**********************************************************************************************************************/
 
-interface IComponentManagerProps extends RouteComponentProps {
+interface IComponentManagerProps {
   initialCourses: CourseType[];
   user: UserType;
 
@@ -38,16 +38,14 @@ interface IComponentManagerProps extends RouteComponentProps {
   sectionsLed: SectionType[];
 
   handleLogout: () => void;
+  baseURL: string;
 }
 
 export interface IComponentProps extends IComponentManagerProps {
   currentCourse?: CourseType;
 }
 
-const formURL = (baseURL: string, course: CourseType, page?: string) => {
-  const base = `${baseURL}/${encodeForRoute(course.name)}/${encodeForRoute(course.period)}`;
-  return page !== undefined ? `${base}/${page}` : base;
-};
+
 
 const formURLforLink = (baseURL: string, course: CourseType, page?: string) => {
   const base = `${baseURL}/${encodeForLink(course.name)}/${encodeForLink(course.period)}`;
@@ -59,72 +57,64 @@ const ComponentManager = (
   defaultPage?: ((c: CourseType) => string) | string,
 ) => {
   const CatchAllElement = (props: IComponentManagerProps) => {
-    return (
-      <LegacyRouteRenderer
-        path={`${props.match.url}/*`}
-        render={(subprops: RouteComponentProps) => {
-          const storedID = LOCAL_SETTINGS.defaultCourse.getter();
-          if (storedID !== 0) {
-            const found = props.initialCourses.find((course: CourseType) => course.id === storedID);
-            if (found !== undefined) {
-              let dPage =
-                typeof defaultPage === 'string' || typeof defaultPage === 'undefined'
-                  ? defaultPage
-                  : defaultPage(found);
+    // Hooks
+    const location = useLocation();
 
-              if (subprops.location.pathname === '/admin/billing') {
-                dPage = 'billing';
-              }
-              return <Navigate to={formURLforLink(props.match.url, found, dPage)} />;
-            }
-          }
+    const storedID = LOCAL_SETTINGS.defaultCourse.getter();
 
-          if (props.initialCourses.length > 0) {
-            const lastResort = props.initialCourses.slice().sort((a, b) => {
-              return b.id - a.id;
-            })[0];
-            let dPage =
-              typeof defaultPage === 'string' || typeof defaultPage === 'undefined'
-                ? defaultPage
-                : defaultPage(lastResort);
+    if (storedID !== 0) {
+      const found = props.initialCourses.find((course: CourseType) => course.id === storedID);
+      if (found !== undefined) {
+        let dPage =
+          typeof defaultPage === 'string' || typeof defaultPage === 'undefined'
+            ? defaultPage
+            : defaultPage(found);
 
-            if (subprops.location.pathname === '/admin/billing') {
-              dPage = 'billing';
-            }
-            return <Navigate to={formURLforLink(props.match.url, lastResort, dPage)} />;
-          }
+        if (location.pathname === '/admin/billing') {
+          dPage = 'billing';
+        }
 
-          return <MyComponent {...props} {...subprops} currentCourse={undefined} />;
-        }}
-      />
-    );
+        return <Navigate to={formURLforLink(props.baseURL, found, dPage)} />;
+      }
+    }
+
+    if (props.initialCourses.length > 0) {
+      const lastResort = props.initialCourses.slice().sort((a, b) => {
+        return b.id - a.id;
+      })[0];
+      let dPage =
+        typeof defaultPage === 'string' || typeof defaultPage === 'undefined'
+          ? defaultPage
+          : defaultPage(lastResort);
+
+      if (location.pathname === '/admin/billing') {
+        dPage = 'billing';
+      }
+      return <Navigate to={formURLforLink(props.baseURL, lastResort, dPage)} />;
+    }
+
+    // Fallback: render component with no course
+    return <MyComponent {...props} currentCourse={undefined} />;
   };
 
   return (props: IComponentManagerProps) => {
     return (
       <Routes>
         {props.initialCourses.map((course) => {
-          const coursePath = formURL(props.match.url, course);
-          // Remove the base URL to make it relative for nested Routes
-          const relativeCoursePath = coursePath.replace(props.match.url, '').replace(/^\//, '');
+          const routePath = `${encodeForRoute(course.name)}/${encodeForRoute(course.period)}/*`;
 
           return (
             <Route
               key={course.id.toString()}
-              path={`${relativeCoursePath}/*`}
-              element={
-                <LegacyRouteRenderer
-                  path={`${coursePath}/*`}
-                  render={(subprops: RouteComponentProps) => {
-                    LOCAL_SETTINGS.defaultCourse.setter(course.id);
-                    return (
-                      <CourseContext.Provider value={course}>
-                        <MyComponent key={`course-${course.id}`} {...props} {...subprops} currentCourse={course} />
-                      </CourseContext.Provider>
-                    );
-                  }}
-                />
-              }
+              path={routePath}
+              element={React.createElement(() => {
+                LOCAL_SETTINGS.defaultCourse.setter(course.id);
+                return (
+                  <CourseContext.Provider value={course}>
+                    <MyComponent key={`course-${course.id}`} {...props} currentCourse={course} />
+                  </CourseContext.Provider>
+                );
+              })}
             />
           );
         })}

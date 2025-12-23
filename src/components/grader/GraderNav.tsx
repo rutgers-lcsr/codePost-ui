@@ -12,11 +12,11 @@ import {
 
 import { Menu } from 'antd';
 
-import { RouteComponentProps } from '../../router/legacy';
 
-import { Link } from 'react-router-dom';
 
-interface IProps extends RouteComponentProps<{ panel: string }> {
+import { Link, useParams } from 'react-router-dom';
+
+interface IProps {
   collapsed: boolean;
   isSuperGrader: boolean;
   isSectionLeader: boolean;
@@ -26,6 +26,9 @@ interface IProps extends RouteComponentProps<{ panel: string }> {
 }
 
 const GraderNav: React.FC<IProps> = (props) => {
+  const params = useParams();
+  const panel = params.panel || '';
+
   const openLink = (url: string) => {
     const w = window.open(url, '_blank');
     if (w) {
@@ -36,7 +39,7 @@ const GraderNav: React.FC<IProps> = (props) => {
   const getDefaultSelectedKeys = () => {
     const routes = ['my_submissions', 'my_sections', 'all_submissions', 'regrades'];
 
-    const match = routes.indexOf(props.match.params.panel).toString();
+    const match = routes.indexOf(panel).toString();
 
     // default to /assignments
     if (match === '-1') {
@@ -49,39 +52,39 @@ const GraderNav: React.FC<IProps> = (props) => {
   const mainMenuItems = [
     ...(props.activateQueue
       ? [
-          {
-            key: '0',
-            icon: <ContainerOutlined />,
-            label: <Link to={`${props.baseURL}/my_submissions`}>Claimed by Me</Link>,
-          },
-        ]
+        {
+          key: '0',
+          icon: <ContainerOutlined />,
+          label: <Link to={`${props.baseURL}/my_submissions`}>Claimed by Me</Link>,
+        },
+      ]
       : []),
     ...(props.isSectionLeader
       ? [
-          {
-            key: '1',
-            icon: <ClusterOutlined />,
-            label: <Link to={`${props.baseURL}/my_sections`}>My Sections</Link>,
-          },
-        ]
+        {
+          key: '1',
+          icon: <ClusterOutlined />,
+          label: <Link to={`${props.baseURL}/my_sections`}>My Sections</Link>,
+        },
+      ]
       : []),
     ...(props.isSuperGrader
       ? [
-          {
-            key: '2',
-            icon: <InboxOutlined />,
-            label: <Link to={`${props.baseURL}/all_submissions`}>All Submissions</Link>,
-          },
-        ]
+        {
+          key: '2',
+          icon: <InboxOutlined />,
+          label: <Link to={`${props.baseURL}/all_submissions`}>All Submissions</Link>,
+        },
+      ]
       : []),
     ...(props.regradesAllowed
       ? [
-          {
-            key: '3',
-            icon: <MessageOutlined />,
-            label: <Link to={`${props.baseURL}/regrades`}>Regrade Requests</Link>,
-          },
-        ]
+        {
+          key: '3',
+          icon: <MessageOutlined />,
+          label: <Link to={`${props.baseURL}/regrades`}>Regrade Requests</Link>,
+        },
+      ]
       : []),
   ];
 

@@ -13,17 +13,17 @@ import {
 
 import { Menu } from 'antd';
 
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 
 interface IAdminNavProps extends IWithWindowWatcherProps {
   collapsed: boolean;
-  match: any;
   baseURL: string;
 }
 
 const AdminNav: React.FC<IAdminNavProps> = (props) => {
+  const location = useLocation();
   // Extract the base URL (up to /admin/courseName/period) by removing any nested paths
   const getCourseBaseURL = () => {
     // baseURL might be something like /admin/CourseName/Period/assignments/overview
@@ -49,7 +49,7 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
       'submissions/by_grader',
       'assignments/overview',
       'assignments/rubrics',
-      'assignments/tests',
+      'assignments/environment',
       'assignments/plagiarism',
       'roster/students',
       'roster/graders',
@@ -58,15 +58,33 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
       'settings/',
     ];
 
-    const routeString = `${props.match.params.panel1}/${
-      props.match.params.panel2 !== undefined ? props.match.params.panel2 : ''
-    }`;
+    // Calculate panels from location.pathname manually since parent routes might not capture them in params
+    let panel1 = '';
+    let panel2: string | undefined;
 
-    const match = routes.indexOf(routeString).toString();
+    if (location.pathname.startsWith(courseBaseURL)) {
+      const relativePath = location.pathname.substring(courseBaseURL.length);
+      const parts = relativePath.split('/').filter(p => p);
+      if (parts.length > 0) panel1 = parts[0];
+      if (parts.length > 1) panel2 = parts[1];
+    }
+
+    const routeString = `${panel1}/${panel2 !== undefined ? panel2 : ''
+      }`;
+
+    // Check for exact match or prefix match for deep routes (e.g. /submissions/by_grader/graderId)
+    // The key in routes is "submissions/by_grader", so we want to match that.
+
+    // First try exact match of the constructed routeString (which might have extra segments if we just took first 2)
+    // The construction above only takes first 2 segments.
+
+    const matchKey = routes.indexOf(routeString).toString();
 
     // default to /assignments
-    if (match === '-1') {
-      return '/assignments/overview';
+    if (matchKey === '-1') {
+      // If we are at /admin/course/period/assignments/overview, routeString is assignments/overview.
+      // If at /admin/course/period, routeString is /. 
+      return 'assignments/overview';
     } else {
       return routeString;
     }
@@ -100,7 +118,7 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
               label: <Link to={`${courseBaseURL}/assignments/rubrics`}>Rubrics</Link>,
             },
             {
-              key: 'assignments/tests',
+              key: 'assignments/environment',
               label: <Link to={`${courseBaseURL}/assignments/environment`}>Environment Setup</Link>,
             },
             // TODO: Re-enable plagiarism at some point

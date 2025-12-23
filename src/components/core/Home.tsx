@@ -99,7 +99,7 @@ const Home = (props: IProps) => {
     props.isGrader ? <RoleItem key="grader" title="Grader Console" icon={<AuditOutlined />} linkTo="/grader" /> : null,
     props.isAdmin ? <RoleItem key="admin" title="Admin Console" icon={<SlidersOutlined />} linkTo="/admin" /> : null,
     props.user.codePostAdmin ? (
-      <RoleItem key="admin" title="Staff Dashboard" icon={<DashboardOutlined />} linkTo="/dashboard" />
+      <RoleItem key="dashboard" title="Staff Dashboard" icon={<DashboardOutlined />} linkTo="/dashboard" />
     ) : null,
   ];
 

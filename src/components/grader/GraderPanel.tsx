@@ -3,16 +3,16 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-
+import * as React from 'react';
 import { ZoomInOutlined } from '@ant-design/icons';
 
 /* antd imports */
 import { Breadcrumb, Table } from 'antd';
 
 /* other library imports */
-import { RouteComponentProps } from '../../router/legacy';
-import { Link, Navigate, Route, Routes } from 'react-router-dom';
-import { LegacyRouteRenderer } from '../../router/legacy';
+
+import { Link, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+
 
 /* codePost imports */
 import CPAdminDetail from '../admin/other/CPAdminDetail';
@@ -25,7 +25,7 @@ import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
 /**********************************************************************************************************************/
 
-interface IParentProps extends RouteComponentProps {
+interface IParentProps {
   assignments: AssignmentType[];
   course: CourseType;
   actions: React.ReactElement[];
@@ -42,10 +42,14 @@ interface IDetailProps {
 
 function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.ComponentType<T>) {
   return (props: IParentProps & T) => {
+    const navigate = useNavigate();
+
+    // In v6, simple back navigation to index or explicit path
     const back = () => {
       LOCAL_SETTINGS.defaultAssignment.setter(0);
-      props.history.push(props.match.url);
+      navigate('.', { replace: true });
     };
+
     const breadcrumbs = [
       {
         title: (
@@ -60,7 +64,7 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
       return {
         ...row,
         zoom: (
-          <Link to={`${props.match.url}/${encodeForLink(row.assignment)}`}>
+          <Link to={`${encodeForLink(row.assignment)}`}>
             <ZoomInOutlined />
           </Link>
         ),
@@ -73,42 +77,32 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
           <Route
             key={assignment.id}
             path={`${encodeForRoute(assignment.name)}`}
-            element={
-              <LegacyRouteRenderer
-                path={`${props.match.url}/${encodeForRoute(assignment.name)}`}
-                render={(_subprops) => {
-                  LOCAL_SETTINGS.defaultAssignment.setter(assignment.id);
-                  return <DetailComponent {...props} assignment={assignment} breadcrumbs={breadcrumbs} />;
-                }}
-              />
-            }
+            element={React.createElement(() => {
+              LOCAL_SETTINGS.defaultAssignment.setter(assignment.id);
+              return <DetailComponent {...props} assignment={assignment} breadcrumbs={breadcrumbs} />;
+            })}
           />
         ))}
         <Route
           index
-          element={
-            <LegacyRouteRenderer
-              path={props.match.url}
-              render={(_subprops) => {
-                const storedID = LOCAL_SETTINGS.defaultAssignment.getter();
-                const matchedAssignment = props.assignments.find((assn) => assn.id === storedID);
-                if (matchedAssignment) {
-                  return <Navigate to={`${props.match.url}/${encodeForLink(matchedAssignment.name)}`} />;
-                } else {
-                  return (
-                    <CPAdminDetail
-                      breadcrumbs={<Breadcrumb items={breadcrumbs} />}
-                      goBack={null}
-                      title={<div>{props.title}</div>}
-                      actions={props.actions}
-                      content={<Table columns={props.columns} dataSource={data} loading={props.isLoading} />}
-                      gutterSize={0}
-                    />
-                  );
-                }
-              }}
-            />
-          }
+          element={React.createElement(() => {
+            const storedID = LOCAL_SETTINGS.defaultAssignment.getter();
+            const matchedAssignment = props.assignments.find((assn) => assn.id === storedID);
+            if (matchedAssignment) {
+              return <Navigate to={`${encodeForLink(matchedAssignment.name)}`} replace />;
+            } else {
+              return (
+                <CPAdminDetail
+                  breadcrumbs={<Breadcrumb items={breadcrumbs} />}
+                  goBack={null}
+                  title={<div>{props.title}</div>}
+                  actions={props.actions}
+                  content={<Table columns={props.columns} dataSource={data} loading={props.isLoading} />}
+                  gutterSize={0}
+                />
+              );
+            }
+          })}
         />
       </Routes>
     );
