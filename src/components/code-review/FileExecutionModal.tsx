@@ -26,13 +26,13 @@ export const FileExecutionModal: React.FC<FileExecutionModalProps> = ({
       return (
         <div style={{ textAlign: 'center', padding: '40px' }}>
           <Spin size="large" tip="Running on CodePost Autograder..." />
-          <div style={{ marginTop: 16 }}>Queued in Celery Worker</div>
+          <div style={{ marginTop: 16 }}>Queued</div>
         </div>
       );
     }
 
     if (error) {
-      return <Alert type="error" message="Execution Error" description={error} />;
+      return <Alert type="error" title="Execution Error" description={error} />;
     }
 
     if (!result) {
@@ -50,7 +50,7 @@ export const FileExecutionModal: React.FC<FileExecutionModalProps> = ({
         {result.error && (
           <Alert
             type="error"
-            message="Runtime Error"
+            title="Runtime Error"
             description={<pre style={{ maxHeight: 200, overflow: 'auto' }}>{result.error}</pre>}
             style={{ marginBottom: 16 }}
           />
@@ -136,7 +136,7 @@ export const FileExecutionModal: React.FC<FileExecutionModalProps> = ({
       onCancel={onClose}
       footer={null}
       width={800}
-      destroyOnClose
+      destroyOnHidden
     >
       {renderContent()}
     </Modal>
