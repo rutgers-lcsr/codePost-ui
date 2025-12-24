@@ -147,6 +147,30 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
     onChange?.(updatedFiles);
   };
 
+  // Helper to check for binary content
+  const hasNullBytes = (str: string): boolean => {
+    return str.indexOf('\0') !== -1;
+  };
+
+  // Helper for binary file error message
+  const showBinaryFileError = (fileName: string) => {
+    Modal.error({
+      title: 'Unsupported File Type',
+      content: (
+        <div>
+          <p>
+            <b>{fileName}</b> appears to be a binary file (e.g., image, PDF, executable).
+          </p>
+          <p>
+            "Assignment Files" are strictly for text-based source code.
+            <br />
+            To provide binary files to students, please upload them to <b>Assignment Datasets</b> in the Resources tab instead.
+          </p>
+        </div>
+      ),
+    });
+  };
+
   // Add a new file
   const handleAddFile = () => {
     if (!newFileName.trim()) {
@@ -192,6 +216,10 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
     const reader = new FileReader();
     reader.onload = (e) => {
       const content = e.target?.result as string;
+      if (hasNullBytes(content)) {
+        showBinaryFileError(file.name);
+        return;
+      }
       updateFiles(files.map((f) => (f.id === id ? { ...f, data: content } : f)));
       message.success(`Uploaded code for ${file.name}`);
     };
@@ -210,11 +238,18 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
         content: (
           <Space direction="vertical" style={{ width: '100%' }}>
             <div>
+                // Update edit placeholder
               <Text>Directory (leave empty for root):</Text>
-              <Input id="edit-path-input" placeholder="e.g., src or tests/unit" defaultValue={file.path || ''} />
+              <Input id="edit-path-input" placeholder="e.g., src or /srv/share" defaultValue={file.path || ''} />
             </div>
             <div>
               <Text>File name:</Text>
+// ...
+              // Update add placeholder
+              <Space.Compact style={{ width: '100%' }}>
+                <Input
+                  placeholder="Directory (e.g., src or /srv/share)"
+                  value={newFilePath}
               <Input id="edit-name-input" placeholder="e.g., main.py" defaultValue={file.name} />
             </div>
           </Space>
@@ -264,6 +299,15 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
           // Read file content
           const content = await zipEntry.async('text');
 
+          if (hasNullBytes(content)) {
+            // Skip binary files in zip silently or with a toast? 
+            // Ideally we warn, but preventing the whole zip might be annoying.
+            // Let's console warn and skip, or show a single warning at end.
+            // For now, let's just skip them to prevent errors.
+            console.warn(`Skipping binary file in zip: ${fileName}`);
+            continue;
+          }
+
           // Generate ID
           // eslint-disable-next-line react-hooks/purity
           const newId = -1 * (files.length + newFiles.length + Date.now() + processedCount);
@@ -307,6 +351,12 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target?.result as string;
+
+        if (hasNullBytes(content)) {
+          showBinaryFileError(file.name);
+          return;
+        }
+
         const newId = -1 * (files.length + Date.now());
 
         const newFile: EditableFile = {
@@ -576,7 +626,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
             </Text>
             <Space.Compact style={{ width: '100%' }}>
               <Input
-                placeholder="Directory (e.g., src or tests/unit)"
+                placeholder="Directory (e.g., src or /srv/share)"
                 value={newFilePath}
                 onChange={(e) => setNewFilePath(e.target.value)}
                 style={{ width: '30%' }}
