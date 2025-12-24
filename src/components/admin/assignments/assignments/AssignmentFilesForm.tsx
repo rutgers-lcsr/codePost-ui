@@ -238,18 +238,11 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
         content: (
           <Space direction="vertical" style={{ width: '100%' }}>
             <div>
-                // Update edit placeholder
               <Text>Directory (leave empty for root):</Text>
               <Input id="edit-path-input" placeholder="e.g., src or /srv/share" defaultValue={file.path || ''} />
             </div>
             <div>
               <Text>File name:</Text>
-// ...
-              // Update add placeholder
-              <Space.Compact style={{ width: '100%' }}>
-                <Input
-                  placeholder="Directory (e.g., src or /srv/share)"
-                  value={newFilePath}
               <Input id="edit-name-input" placeholder="e.g., main.py" defaultValue={file.name} />
             </div>
           </Space>
@@ -582,7 +575,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
           borderTop: '1px solid #e8e8e8',
         }}
       >
-        <Space direction="vertical" style={{ width: '100%' }} size={16}>
+        <Space vertical style={{ width: '100%' }} size={16}>
           {/* Bulk Upload Section */}
           <div>
             <Text strong style={{ fontSize: 13, display: 'block', marginBottom: 8 }}>
@@ -597,8 +590,8 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
                 textAlign: 'center',
               }}
             >
-              <Space direction="vertical" size={8}>
-                <Upload accept="*" showUploadList={false} beforeUpload={handleBulkUpload} multiple={false}>
+              <Space vertical size={8}>
+                <Upload showUploadList={false} beforeUpload={handleBulkUpload} multiple={false} accept="*">
                   <Button icon={<UploadOutlined />} size="large" type="dashed">
                     Upload File or Zip Archive
                   </Button>

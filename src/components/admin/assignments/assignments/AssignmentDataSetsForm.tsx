@@ -215,7 +215,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
         <div>
           <h3 style={{ margin: 0 }}>Assignment Datasets</h3>
           <div style={{ fontSize: '12px', color: '#888', marginTop: 4 }}>
-            Large files (e.g., training data) that will be automatically mounted when executing student code.
+            Large files (e.g., training data, binary files) that will be automatically mounted when executing student code.
           </div>
         </div>
         <Button type="primary" icon={<UploadOutlined />} onClick={() => showModal()}>
