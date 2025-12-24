@@ -1,4 +1,4 @@
-import { DeleteOutlined, DownloadOutlined, UploadOutlined } from '@ant-design/icons';
+import { DeleteOutlined, DownloadOutlined, UploadOutlined, EditOutlined } from '@ant-design/icons';
 import { Button, Form, Input, message, Modal, Space, Switch, Table, Upload } from 'antd';
 import type { UploadFile } from 'antd/es/upload/interface';
 import * as React from 'react';
@@ -14,60 +14,89 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
   const [isModalVisible, setIsModalVisible] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
   const [fileList, setFileList] = React.useState<UploadFile[]>([]);
+  const [editingDataset, setEditingDataset] = React.useState<AssignmentDataSetType | null>(null);
   const [form] = Form.useForm();
 
-  const showModal = () => {
+  const showModal = (dataset?: AssignmentDataSetType) => {
+    setEditingDataset(dataset || null);
+    if (dataset) {
+      form.setFieldsValue({
+        name: dataset.name,
+        description: dataset.description,
+        mount_path: dataset.mount_path,
+        is_active: dataset.is_active,
+      });
+    } else {
+      form.resetFields();
+      setFileList([]);
+    }
     setIsModalVisible(true);
-    form.resetFields();
-    setFileList([]);
   };
 
   const handleCancel = () => {
     setIsModalVisible(false);
+    setEditingDataset(null);
     form.resetFields();
     setFileList([]);
   };
 
-  const handleUpload = async (values: {
+  const handleSubmit = async (values: {
     name: string;
     description?: string;
     mount_path?: string;
     is_active?: boolean;
   }) => {
-    if (fileList.length === 0) {
-      message.error('Please select a file');
-      return;
-    }
-
-    const file = fileList[0].originFileObj;
-    if (!file) {
-      message.error('File object is not available');
-      return;
-    }
-
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('assignment', assignmentId.toString());
-      formData.append('name', values.name);
-      if (values.description) {
-        formData.append('description', values.description);
-      }
-      if (values.mount_path) {
-        formData.append('mount_path', values.mount_path);
-      }
-      formData.append('is_active', values.is_active !== false ? 'true' : 'false');
-      formData.append('file', file);
+      if (editingDataset) {
+        // Update existing dataset
+        await AssignmentDataSet.update({
+          id: editingDataset.id,
+          name: values.name,
+          description: values.description,
+          mount_path: values.mount_path,
+          is_active: values.is_active,
+        });
+        message.success('Dataset updated successfully');
+      } else {
+        // Create new dataset
+        if (fileList.length === 0) {
+          message.error('Please select a file');
+          setUploading(false);
+          return;
+        }
 
-      await AssignmentDataSet.create(formData);
-      message.success('Dataset uploaded successfully');
+        const file = fileList[0].originFileObj;
+        if (!file) {
+          message.error('File object is not available');
+          setUploading(false);
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('assignment', assignmentId.toString());
+        formData.append('name', values.name);
+        if (values.description) {
+          formData.append('description', values.description);
+        }
+        if (values.mount_path) {
+          formData.append('mount_path', values.mount_path);
+        }
+        formData.append('is_active', values.is_active !== false ? 'true' : 'false');
+        formData.append('file', file);
+
+        await AssignmentDataSet.create(formData);
+        message.success('Dataset uploaded successfully');
+      }
+
       setIsModalVisible(false);
+      setEditingDataset(null);
       form.resetFields();
       setFileList([]);
       onDatasetsChange();
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      message.error(`Failed to upload dataset: ${errorMessage}`);
+      message.error(`Failed to ${editingDataset ? 'update' : 'upload'} dataset: ${errorMessage}`);
     } finally {
       setUploading(false);
     }
@@ -166,6 +195,9 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
       key: 'actions',
       render: (_: unknown, record: AssignmentDataSetType) => (
         <Space>
+          <Button type="link" size="small" icon={<EditOutlined />} onClick={() => showModal(record)}>
+            Edit
+          </Button>
           <Button type="link" size="small" icon={<DownloadOutlined />} onClick={() => handleDownload(record)}>
             Download
           </Button>
@@ -186,7 +218,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
             Large files (e.g., training data) that will be automatically mounted when executing student code.
           </div>
         </div>
-        <Button type="primary" icon={<UploadOutlined />} onClick={showModal}>
+        <Button type="primary" icon={<UploadOutlined />} onClick={() => showModal()}>
           Upload Dataset
         </Button>
       </div>
@@ -212,7 +244,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
       )}
 
       <Modal
-        title="Upload Dataset"
+        title={editingDataset ? "Edit Dataset" : "Upload Dataset"}
         open={isModalVisible}
         onCancel={handleCancel}
         onOk={() => form.submit()}
@@ -222,7 +254,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
         <Form
           form={form}
           layout="vertical"
-          onFinish={handleUpload}
+          onFinish={handleSubmit}
           initialValues={{
             is_active: true,
           }}
@@ -260,43 +292,45 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
             <Switch checkedChildren="Yes" unCheckedChildren="No" />
           </Form.Item>
 
-          <Form.Item label="File" extra="Maximum file size: 1 GB">
-            <Upload
-              fileList={fileList}
-              beforeUpload={(file) => {
-                // Check file size (1GB limit)
-                const maxSize = 1024 * 1024 * 1024; // 1GB in bytes
-                if (file.size > maxSize) {
-                  message.error('File size exceeds 1 GB limit');
-                  return Upload.LIST_IGNORE;
-                }
+          {!editingDataset && (
+            <Form.Item label="File" extra="Maximum file size: 1 GB">
+              <Upload
+                fileList={fileList}
+                beforeUpload={(file) => {
+                  // Check file size (1GB limit)
+                  const maxSize = 1024 * 1024 * 1024; // 1GB in bytes
+                  if (file.size > maxSize) {
+                    message.error('File size exceeds 1 GB limit');
+                    return Upload.LIST_IGNORE;
+                  }
 
-                // Store the file with originFileObj set
-                const uploadFile: UploadFile = {
-                  uid: file.uid || `${Date.now()}`,
-                  name: file.name,
-                  status: 'done',
-                  size: file.size,
-                  type: file.type,
-                  originFileObj: file,
-                };
-                setFileList([uploadFile]);
+                  // Store the file with originFileObj set
+                  const uploadFile: UploadFile = {
+                    uid: file.uid || `${Date.now()}`,
+                    name: file.name,
+                    status: 'done',
+                    size: file.size,
+                    type: file.type,
+                    originFileObj: file,
+                  };
+                  setFileList([uploadFile]);
 
-                // Auto-populate name field with filename if empty
-                if (!form.getFieldValue('name')) {
-                  form.setFieldsValue({ name: file.name });
-                }
+                  // Auto-populate name field with filename if empty
+                  if (!form.getFieldValue('name')) {
+                    form.setFieldsValue({ name: file.name });
+                  }
 
-                return false; // Prevent automatic upload
-              }}
-              onRemove={() => {
-                setFileList([]);
-              }}
-              maxCount={1}
-            >
-              <Button icon={<UploadOutlined />}>Select File</Button>
-            </Upload>
-          </Form.Item>
+                  return false; // Prevent automatic upload
+                }}
+                onRemove={() => {
+                  setFileList([]);
+                }}
+                maxCount={1}
+              >
+                <Button icon={<UploadOutlined />}>Select File</Button>
+              </Upload>
+            </Form.Item>
+          )}
 
           <div
             style={{
