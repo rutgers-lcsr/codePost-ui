@@ -1,49 +1,43 @@
-import * as React from 'react';
+import { FC } from 'react';
 
 import { Input, InputNumber, Select } from 'antd';
 
 interface IInputNumberOrNullProps {
   value: number | null;
-  onChange: any;
+  onChange: (value: number | null) => void;
 }
 
-class InputNumberOrNull extends React.Component<IInputNumberOrNullProps> {
-  public handleOnOffChange = (status: any) => {
+const InputNumberOrNull: FC<IInputNumberOrNullProps> = ({ value, onChange }) => {
+  const handleOnOffChange = (status: string) => {
     if (status === 'On') {
-      this.triggerChange(0);
+      onChange(0);
     } else {
-      this.triggerChange(null);
+      onChange(null);
     }
   };
 
-  public handleNumberChange = (value: any) => {
-    this.triggerChange(value);
+  const handleNumberChange = (newValue: number | null) => {
+    onChange(newValue);
   };
 
-  public triggerChange = (changedValue: number | null) => {
-    this.props.onChange(changedValue);
-  };
+  const selectValue = value !== null ? 'On' : 'Off';
 
-  render() {
-    const selectValue = this.props.value !== null ? 'On' : 'Off';
-
-    return (
-      <span>
-        <Input.Group compact>
-          <Select onChange={this.handleOnOffChange} value={selectValue}>
-            <Select.Option value="Off">Off</Select.Option>
-            <Select.Option value="On">On</Select.Option>
-          </Select>
-          <InputNumber
-            min={0}
-            onChange={this.handleNumberChange}
-            disabled={this.props.value === null}
-            value={this.props.value === null ? undefined : this.props.value}
-          />
-        </Input.Group>
-      </span>
-    );
-  }
-}
+  return (
+    <span>
+      <Input.Group compact>
+        <Select onChange={handleOnOffChange} value={selectValue}>
+          <Select.Option value="Off">Off</Select.Option>
+          <Select.Option value="On">On</Select.Option>
+        </Select>
+        <InputNumber
+          min={0}
+          onChange={handleNumberChange}
+          disabled={value === null}
+          value={value === null ? undefined : value}
+        />
+      </Input.Group>
+    </span>
+  );
+};
 
 export default InputNumberOrNull;

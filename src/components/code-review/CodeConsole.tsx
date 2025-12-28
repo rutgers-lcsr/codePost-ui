@@ -19,6 +19,7 @@ import { Empty, message, Progress, Tag, Typography } from 'antd';
 /* other library imports */
 import _ from 'lodash';
 import queryString from 'query-string';
+import { useLocation, useParams } from 'react-router-dom';
 
 /* codePost imports */
 import Loading from '../core/Loading';
@@ -133,6 +134,8 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
   /***********************************************************************************************/
 
   const context = React.useContext(ConsoleThemeContext);
+  const location = useLocation();
+  const params = useParams<{ submissionId?: string }>();
 
   // Refs for intervals (replacing instance variables)
   const checkNewFilesInterval = React.useRef<number | undefined>(undefined);
@@ -330,7 +333,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
 
     document.addEventListener('keydown', handleCursor);
     document.addEventListener('keydown', handleHotkeys);
-    const queryValues = queryString.parse(props.location.search);
+    const queryValues = queryString.parse(location.search);
 
     if (props.inDemoMode) {
       document.title = 'codePost | Code Console Demo';
@@ -354,7 +357,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
     }
 
     // Set window title
-    const submissionIdParam = props.match.params.submissionId;
+    const submissionIdParam = params.submissionId;
     if (!submissionIdParam) {
       setState((prev) => ({ ...prev, isLoading: false }));
       return;
@@ -363,7 +366,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
 
     let permissionLevel = await detectPermissionType(submissionID);
 
-    const values = queryString.parse(props.location.search);
+    const values = queryString.parse(location.search);
     let simulatingStudent = false;
 
     // Check for permissionLevel override in query params (admin only)
@@ -1812,7 +1815,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             hideAuthor={state.assignment.hideGradersFromStudents}
             additiveGrading={false}
             rubricCategories={state.rubricCategories}
-            scrollToCommentID={parseInt(queryString.parse(props.location.search).comment as string)}
+            scrollToCommentID={parseInt(queryString.parse(location.search).comment as string)}
           />
         );
 
@@ -1978,7 +1981,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         <ThemeToggle key="theme-toggle" small={true} />,
         <DownloadCode key="download-code" submission={state.submission!} />,
         controls,
-        <ViewAsStudent key="view-as-student" pathname={props.location.pathname} />,
+        <ViewAsStudent key="view-as-student" pathname={location.pathname} />,
         <FinalizeButton
           key="subheader-finalize"
           course={state.course!}
@@ -2045,7 +2048,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             forcedRubricMode={state.assignment.forcedRubricMode}
             rubricCategories={state.rubricCategories}
             showCursor={state.showCursor}
-            scrollToCommentID={parseInt(queryString.parse(props.location.search).comment as string)}
+            scrollToCommentID={parseInt(queryString.parse(location.search).comment as string)}
           />
         );
 

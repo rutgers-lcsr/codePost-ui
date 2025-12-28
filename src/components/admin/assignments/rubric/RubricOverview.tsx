@@ -3,8 +3,7 @@
 /**********************************************************************************************************************/
 
 import React, { useMemo } from 'react';
-import { RouteComponentProps } from '../../../../router/legacy';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import { Breadcrumb, Button, Empty, Tag } from 'antd';
 
@@ -48,7 +47,8 @@ const getButtonText = (rubricCategoriesCount: number): string => {
 /* Component
 /**********************************************************************************************************************/
 
-const RubricOverview: React.FC<IProps & RouteComponentProps> = ({ assignments, course, match }) => {
+const RubricOverview: React.FC<IProps> = ({ assignments, course }) => {
+  const location = useLocation();
   const columns = useMemo(
     () => [
       { title: 'Assignment', key: 'assignment', dataIndex: 'assignment' },
@@ -62,7 +62,7 @@ const RubricOverview: React.FC<IProps & RouteComponentProps> = ({ assignments, c
       assignments.map((assignment) => ({
         assignment: assignment.name,
         edit: (
-          <Link to={`${match.url}/${encodeForLink(assignment.name)}`}>
+          <Link to={`${location.pathname}/${encodeForLink(assignment.name)}`}>
             <Button type={getButtonType(assignment.rubricCategories.length)}>
               {getButtonText(assignment.rubricCategories.length)}
             </Button>
@@ -70,7 +70,7 @@ const RubricOverview: React.FC<IProps & RouteComponentProps> = ({ assignments, c
         ),
         rowKey: `row-assignment-${assignment.id}`,
       })),
-    [assignments, match.url],
+    [assignments, location.pathname],
   );
 
   const isEmpty = useMemo(() => data.length === 0, [data.length]);

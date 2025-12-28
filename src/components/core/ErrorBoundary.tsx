@@ -140,24 +140,41 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
         return (
           <div style={{ padding: '40px' }}>
             <h1>Something went wrong.</h1>
-            <h2>
-              <span role="img" aria-label="downvote">
-                🕑
-              </span>{' '}
-              Our team has been notified, and we will investigate the issue as soon as possible.
-            </h2>
+            <h2>Our team has been notified, and we will investigate the issue as soon as possible.</h2>
             {localStorage.getItem('source') !== 'codePost' ? (
               siteDataSettingsBlurb
             ) : (
               <h2>
-                <span role="img" aria-label="downvote">
-                  🙏
-                </span>{' '}
                 Try refreshing the page to get back to codePost! Or,{' '}
                 <b>try switching to Chrome if you're using a different browser</b>. If that doesn't work, email us at{' '}
                 <a href="mailto:team@codepost.io">team@codepost.io</a> if the problem persists.
               </h2>
             )}
+            {/* Show error if in debug */}
+            {process.env.NODE_ENV === 'development' ? (
+              <div style={{ padding: '50px' }}>
+                <h3>Details:</h3>
+                <div style={{ paddingTop: '20px' }}>
+                  <h4>Submission ID: {this.props.submissionID ? this.props.submissionID : '?'}</h4>
+                  <h4>File ID: {this.props.file ? this.props.file.id : '?'}</h4>
+                  <h4>URL: {this.state.url}</h4>
+                  <Collapse>
+                    <Panel header="File Code" key="1">
+                      <p style={{ maxHeight: '280px', overflow: 'auto' }}>
+                        {this.props.file ? getFileContent(this.props.file) : '?'}
+                      </p>
+                    </Panel>
+                    <Panel header="Error Info" key="2">
+                      <p style={{ maxHeight: '280px', overflow: 'auto' }}>
+                        {this.state.error ? this.state.error.toString() : '...'} <br />
+                        {this.state.error?.message ? this.state.error : '...'} <br />
+                        {this.state.errorInfo ? this.state.errorInfo.componentStack : '...'}
+                      </p>
+                    </Panel>
+                  </Collapse>
+                </div>
+              </div>
+            ) : null}
           </div>
         );
       }

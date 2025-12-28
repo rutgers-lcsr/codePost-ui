@@ -3,8 +3,7 @@
 /**********************************************************************************************************************/
 
 import React, { useEffect, useState } from 'react';
-import { RouteComponentProps } from '../../../../router/legacy';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import { Breadcrumb, Button, Empty } from 'antd';
 
@@ -21,7 +20,8 @@ interface IProps {
   assignments: AssignmentType[];
 }
 
-const TestsOverview = (props: IProps & RouteComponentProps) => {
+const TestsOverview = (props: IProps) => {
+  const location = useLocation();
   const [envBuildStatuses, setEnvBuildStatuses] = useState<{ [key: number]: number }>({});
 
   const columns = [
@@ -77,7 +77,7 @@ const TestsOverview = (props: IProps & RouteComponentProps) => {
       key: `assignment-${assignment.id}`,
       assignment: assignment.name,
       edit: (
-        <Link to={`${props.match.url}/${encodeForLink(assignment.name)}/edit`}>
+        <Link to={`${location.pathname}/${encodeForLink(assignment.name)}/edit`}>
           <Button loading={assignment.environment ? envBuildStatuses[assignment.environment] === 1 : false}>
             {assignment.environment
               ? envBuildStatuses[assignment.environment] === 1

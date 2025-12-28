@@ -4,6 +4,7 @@
 
 /* react imports */
 import * as React from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 /* style imports */
 import { UserAddOutlined } from '@ant-design/icons';
@@ -93,344 +94,325 @@ interface IProps {
   buttonText?: string;
 }
 
-interface IState {
-  /* if false, only button will be shown */
-  dialogVisible: boolean;
+const validateEmail = (email: string) => {
+  // 🙏 https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript
+  const re =
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(String(email).toLowerCase());
+};
 
-  /* errors parsed from uploaded roster */
-  uploadErrors: string[];
+const RosterFileUpload: React.FC<IProps> = (props) => {
+  const [dialogVisible, setDialogVisible] = useState<boolean>(false);
+  const [uploadErrors, setUploadErrors] = useState<string[]>([]);
+  const [updatingRoster, setUpdatingRoster] = useState<boolean>(false);
+  const [updates, setUpdates] = useState<IChangeType>({ deleted: {}, changed: {}, added: {} });
+  const [status, setStatus] = useState<UPLOAD_STATUS>(UPLOAD_STATUS.UPLOAD);
+  const [newRoster, setNewRoster] = useState<IUserMap | undefined>(undefined);
+  const [rosterInput, setRosterInput] = useState<string>('');
 
-  /* are we in the process of updating roster? Show loading status, if so */
-  updatingRoster: boolean;
+  // Initial roster input calculation
+  useEffect(() => {
+    setRosterInput(
+      rosterToCsv(
+        props.sectionsByStudent,
+        true,
+        props.roleType === 'student'
+          ? USER_TYPE.STUDENT
+          : props.roleType === 'grader'
+            ? USER_TYPE.GRADER
+            : USER_TYPE.ADMIN,
+        props.admins,
+        props.graders,
+        props.students,
+      ).join('\n'),
+    );
+  }, [props.sectionsByStudent, props.roleType, props.admins, props.graders, props.students]);
 
-  /* updates that will be made if uploaded roster is confirmed by user */
-  updates: IChangeType;
-
-  /* which step of the upload process are we on? */
-  status: UPLOAD_STATUS;
-
-  /* new roster from uploaded file */
-  newRoster?: IUserMap;
-
-  rosterInput: string;
-}
-
-class RosterFileUpload extends React.Component<IProps> {
-  public state: Readonly<IState> = {
-    dialogVisible: false,
-    uploadErrors: [],
-    updates: { deleted: {}, changed: {}, added: {} },
-    updatingRoster: false,
-    status: UPLOAD_STATUS.UPLOAD,
-    rosterInput: rosterToCsv(
-      this.props.sectionsByStudent,
-      true,
-      this.props.roleType === 'student'
-        ? USER_TYPE.STUDENT
-        : this.props.roleType === 'grader'
-          ? USER_TYPE.GRADER
-          : USER_TYPE.ADMIN,
-      this.props.admins,
-      this.props.graders,
-      this.props.students,
-    ).join('\n'),
-  };
-
-  public componentDidUpdate(_prevProps: IProps, prevState: IState) {
-    // clear information from modal after it is unmounted, so appearance
-    // doesn't change during the unmounting process
-    if (prevState.dialogVisible && !this.state.dialogVisible) {
-      this.setState({
-        uploadErrors: [],
-        status: UPLOAD_STATUS.UPLOAD,
-        updates: { deleted: {}, changed: {}, added: {} },
-        updatingRoster: false,
-      });
+  // Clean up on dialog close
+  useEffect(() => {
+    if (!dialogVisible) {
+      setUploadErrors([]);
+      setStatus(UPLOAD_STATUS.UPLOAD);
+      setUpdates({ deleted: {}, changed: {}, added: {} });
+      setUpdatingRoster(false);
+      setNewRoster(undefined);
     }
-  }
+  }, [dialogVisible]);
 
-  public toggleDialog = () => {
-    const { dialogVisible } = this.state;
-    this.setState({
-      dialogVisible: !dialogVisible,
-    });
+  const toggleDialog = () => {
+    setDialogVisible(!dialogVisible);
   };
 
-  public changeStatus = (newStatus: UPLOAD_STATUS) => {
-    this.setState({ status: newStatus });
-  };
+  const convertCSVtoJSON = useCallback(
+    (csv: string) => {
+      const csvLines = csv.split('\n');
 
-  public validateEmail = (email: string) => {
-    // 🙏 https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript
-    const re =
-      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(String(email).toLowerCase());
-  };
-
-  public convertCSVtoJSON = (csv: string) => {
-    const csvLines = csv.split('\n');
-
-    /* is file empty */
-    if (csvLines.length === 0) {
-      throw new Error('Uploaded file is empty');
-    }
-
-    const newRoster: IUserMap = {};
-    const errors: string[] = [];
-    csvLines.forEach((line, i) => {
-      // skip empty lines and lines containing only space chars
-      if (line.replace(/\s/g, '').length === 0) {
-        return;
+      /* is file empty */
+      if (csvLines.length === 0) {
+        throw new Error('Uploaded file is empty');
       }
 
-      const tokens = line.replace(/['"]+/g, '').split(',');
+      const parsedNewRoster: IUserMap = {};
+      const errors: string[] = [];
+      csvLines.forEach((line, i) => {
+        // skip empty lines and lines containing only space chars
+        if (line.replace(/\s/g, '').length === 0) {
+          return;
+        }
 
-      if (!this.validateEmail(tokens[0])) {
-        errors.push(`Invalid email detected: row ${i}| ${tokens[0]}`);
-      }
+        const tokens = line.replace(/['"]+/g, '').split(',');
 
-      switch (this.props.roleType) {
-        case 'student':
-          switch (tokens.length) {
-            case 1:
-              newRoster[tokens[0].trim()] = {};
-              break;
-            case 2: {
-              let sectionName = null;
-              if (tokens[1] !== 'null' && tokens[1] !== '') {
-                // remove leading and trailing whitespace
-                sectionName = tokens[1].trim();
+        if (!validateEmail(tokens[0])) {
+          errors.push(`Invalid email detected: row ${i}| ${tokens[0]}`);
+        }
+
+        switch (props.roleType) {
+          case 'student':
+            switch (tokens.length) {
+              case 1:
+                parsedNewRoster[tokens[0].trim()] = {};
+                break;
+              case 2: {
+                let sectionName = null;
+                if (tokens[1] !== 'null' && tokens[1] !== '') {
+                  // remove leading and trailing whitespace
+                  sectionName = tokens[1].trim();
+                }
+                parsedNewRoster[tokens[0].trim()] = { section: sectionName };
+                break;
               }
-              newRoster[tokens[0].trim()] = { section: sectionName };
-              break;
+              default:
+                errors.push(`Invalid row detected: row ${i}| ${line}`);
             }
-            default:
+            break;
+          case 'grader':
+          case 'admin':
+            if (tokens.length > 1) {
               errors.push(`Invalid row detected: row ${i}| ${line}`);
-          }
-          break;
-        case 'grader':
-        case 'admin':
-          if (tokens.length > 1) {
-            errors.push(`Invalid row detected: row ${i}| ${line}`);
-          }
-          newRoster[tokens[0].trim()] = {};
-          break;
-      }
-    });
-    return { newRoster, errors };
-  };
+            }
+            parsedNewRoster[tokens[0].trim()] = {};
+            break;
+        }
+      });
+      return { newRoster: parsedNewRoster, errors };
+    },
+    [props.roleType],
+  );
 
-  public getSectionIDFromName = (sectionName: string) => {
-    if (typeof sectionName === 'undefined' || sectionName === null) {
-      return undefined;
+  const getSectionIDFromName = useCallback(
+    (sectionName: string) => {
+      if (typeof sectionName === 'undefined' || sectionName === null) {
+        return undefined;
+      }
+
+      const thisSection = props.sections.find((section) => {
+        return section.name.trim() === sectionName.trim();
+      });
+      return thisSection ? thisSection.id : undefined;
+    },
+    [props.sections],
+  );
+
+  const updateRoster = useCallback(() => {
+    const diff = updates;
+    const { students } = props;
+
+    setUpdatingRoster(true);
+
+    // we don't want to declare success until all the work below completes
+    const promises: Array<Promise<void>> = [];
+
+    if (props.roleType === 'student') {
+      /* remove and add users */
+      const toAdd = Object.keys(diff.added);
+      const toRemove = Object.keys(diff.deleted);
+      const toChange = Object.keys(diff.changed);
+
+      sendSlack(
+        'Updated roster',
+        `${toAdd.length} ${props.roleType}s | ${props.course.name} ${props.course.period}\n
+          _[${toAdd.join(', ')}]_`,
+        colors.brandPrimary,
+        '#user_notifications',
+        props.course.id,
+      );
+
+      promises.push(
+        props.changeRoster(toAdd, toRemove, USER_APP.Student).then(() => {
+          // build new sections
+          const sectionMap: any = {};
+          const innerPromises: Array<Promise<any>> = [];
+
+          // Pre-fill sections to account for students whose sections we aren't
+          // updating.
+          for (const student of students) {
+            if (
+              toAdd.indexOf(student) === -1 &&
+              toChange.indexOf(student) === -1 &&
+              toRemove.indexOf(student) === -1
+            ) {
+              const section = props.sectionsByStudent[student];
+              const sectionValue = section ? section.name : undefined;
+              if (sectionValue !== null && sectionValue !== undefined) {
+                if (sectionMap[sectionValue] === undefined) {
+                  sectionMap[sectionValue] = [student];
+                } else {
+                  sectionMap[sectionValue] = [...sectionMap[sectionValue], student];
+                }
+              }
+            }
+          }
+
+          // Pull information from added students
+          for (const student of toAdd) {
+            const sectionValue = diff.added[student]['section'];
+            if (sectionValue !== null && sectionValue !== undefined) {
+              if (sectionMap[sectionValue] === undefined) {
+                sectionMap[sectionValue] = [student];
+              } else {
+                sectionMap[sectionValue] = [...sectionMap[sectionValue], student];
+              }
+            }
+          }
+
+          // Pull information from changed students
+          for (const student of toChange) {
+            const sectionValue = diff.changed[student].new['section'];
+            if (sectionValue !== null && sectionValue !== undefined) {
+              if (sectionMap[sectionValue] === undefined) {
+                sectionMap[sectionValue] = [student];
+              } else {
+                sectionMap[sectionValue] = [...sectionMap[sectionValue], student];
+              }
+            }
+          }
+
+          // At this point, sectionMap.keys contains only sections with > 0
+          // students, as defined by the uploaded roster.
+          // This ignores a corner case: sections which had students in the old roster,
+          // but have 0 students in the new roster.
+
+          // Example:
+          // SectionA.students = [student1, student2]
+          // Then in the new roster, student1.section = null and student2.section = null
+          // So far, these students won't be removed from SectionA, since SectionA won't
+          // be updated with new students
+
+          // To solve this, add sections with empty student lists to the section map
+          for (const oldSection of props.sections) {
+            if (sectionMap[oldSection.name] === undefined) {
+              sectionMap[oldSection.name] = [];
+            }
+          }
+
+          // Set section lists (for sections with students)
+          for (const sectionName of Object.keys(sectionMap)) {
+            const sectionObj = props.sections.find((el) => {
+              return el.name === sectionName;
+            });
+
+            if (sectionObj !== undefined) {
+              // If section exists, set students to list we just created
+              const toClone = { ...sectionObj };
+              toClone.students = [...sectionMap[sectionName]];
+              innerPromises.push(props.updateSection(toClone));
+            } else {
+              // Otherwise, create section before settings its student list
+              innerPromises.push(
+                props.createSection(sectionName).then((newSection) => {
+                  const toClone = { ...newSection };
+                  toClone.students = [...sectionMap[sectionName]];
+                  return props.updateSection(toClone);
+                }),
+              );
+            }
+          }
+
+          return Promise.all(innerPromises).then(() => {
+            setStatus(UPLOAD_STATUS.SAVE);
+          });
+        }),
+      );
     }
 
-    const thisSection = this.props.sections.find((section) => {
-      return section.name.trim() === sectionName.trim();
-    });
-    return thisSection ? thisSection.id : undefined;
-  };
-
-  public updateRoster = () => {
-    const diff = this.state.updates;
-    const { students } = this.props;
-
-    this.setState({ updatingRoster: true }, () => {
-      // we don't want to declare success until all the work below completes
-      const promises: Array<Promise<void>> = [];
-
-      if (this.props.roleType === 'student') {
-        /* remove and add users */
-        const toAdd = Object.keys(diff.added);
-        const toRemove = Object.keys(diff.deleted);
-        const toChange = Object.keys(diff.changed);
-
-        sendSlack(
-          'Updated roster',
-          `${toAdd.length} ${this.props.roleType}s | ${this.props.course.name} ${this.props.course.period}\n
+    if (props.roleType === 'grader') {
+      const toAdd = Object.keys(diff.added);
+      const toRemove = Object.keys(diff.deleted);
+      sendSlack(
+        'Updated roster',
+        `${toAdd.length} ${props.roleType}s | ${props.course.name} ${props.course.period}\n
           _[${toAdd.join(', ')}]_`,
-          colors.brandPrimary,
-          '#user_notifications',
-          this.props.course.id,
-        );
+        colors.brandPrimary,
+        '#user_notifications',
+        props.course.id,
+      );
+      promises.push(props.changeRoster(toAdd, toRemove, USER_APP.Grader));
+    }
 
-        promises.push(
-          this.props.changeRoster(toAdd, toRemove, USER_APP.Student).then(() => {
-            // build new sections
-            const sectionMap: any = {};
-            const innerPromises: Array<Promise<any>> = [];
-
-            // Pre-fill sections to account for students whose sections we aren't
-            // updating.
-            for (const student of students) {
-              if (
-                toAdd.indexOf(student) === -1 &&
-                toChange.indexOf(student) === -1 &&
-                toRemove.indexOf(student) === -1
-              ) {
-                const section = this.props.sectionsByStudent[student];
-                const sectionValue = section ? section.name : undefined;
-                if (sectionValue !== null && sectionValue !== undefined) {
-                  if (sectionMap[sectionValue] === undefined) {
-                    sectionMap[sectionValue] = [student];
-                  } else {
-                    sectionMap[sectionValue] = [...sectionMap[sectionValue], student];
-                  }
-                }
-              }
-            }
-
-            // Pull information from added students
-            for (const student of toAdd) {
-              const sectionValue = diff.added[student]['section'];
-              if (sectionValue !== null && sectionValue !== undefined) {
-                if (sectionMap[sectionValue] === undefined) {
-                  sectionMap[sectionValue] = [student];
-                } else {
-                  sectionMap[sectionValue] = [...sectionMap[sectionValue], student];
-                }
-              }
-            }
-
-            // Pull information from changed students
-            for (const student of toChange) {
-              const sectionValue = diff.changed[student].new['section'];
-              if (sectionValue !== null && sectionValue !== undefined) {
-                if (sectionMap[sectionValue] === undefined) {
-                  sectionMap[sectionValue] = [student];
-                } else {
-                  sectionMap[sectionValue] = [...sectionMap[sectionValue], student];
-                }
-              }
-            }
-
-            // At this point, sectionMap.keys contains only sections with > 0
-            // students, as defined by the uploaded roster.
-            // This ignores a corner case: sections which had students in the old roster,
-            // but have 0 students in the new roster.
-
-            // Example:
-            // SectionA.students = [student1, student2]
-            // Then in the new roster, student1.section = null and student2.section = null
-            // So far, these students won't be removed from SectionA, since SectionA won't
-            // be updated with new students
-
-            // To solve this, add sections with empty student lists to the section map
-            for (const oldSection of this.props.sections) {
-              if (sectionMap[oldSection.name] === undefined) {
-                sectionMap[oldSection.name] = [];
-              }
-            }
-
-            // Set section lists (for sections with students)
-            for (const sectionName of Object.keys(sectionMap)) {
-              const sectionObj = this.props.sections.find((el) => {
-                return el.name === sectionName;
-              });
-
-              if (sectionObj !== undefined) {
-                // If section exists, set students to list we just created
-                const toClone = { ...sectionObj };
-                toClone.students = [...sectionMap[sectionName]];
-                innerPromises.push(this.props.updateSection(toClone));
-              } else {
-                // Otherwise, create section before settings its student list
-                innerPromises.push(
-                  this.props.createSection(sectionName).then((newSection) => {
-                    const toClone = { ...newSection };
-                    toClone.students = [...sectionMap[sectionName]];
-                    return this.props.updateSection(toClone);
-                  }),
-                );
-              }
-            }
-
-            return Promise.all(innerPromises).then(() => {
-              this.setState({ status: UPLOAD_STATUS.SAVE });
-            });
-          }),
-        );
-      }
-
-      if (this.props.roleType === 'grader') {
-        const toAdd = Object.keys(diff.added);
-        const toRemove = Object.keys(diff.deleted);
-        sendSlack(
-          'Updated roster',
-          `${toAdd.length} ${this.props.roleType}s | ${this.props.course.name} ${this.props.course.period}\n
-          _[${toAdd.join(', ')}]_`,
-          colors.brandPrimary,
-          '#user_notifications',
-          this.props.course.id,
-        );
-        promises.push(this.props.changeRoster(toAdd, toRemove, USER_APP.Grader));
-      }
-
-      if (this.props.roleType === 'admin') {
-        const toAdd = Object.keys(diff.added);
-        const toRemove = Object.keys(diff.deleted);
-        sendSlack(
-          'Updated roster',
-          `${Object.keys(diff.added).length} ${this.props.roleType}s | ${this.props.course.name} ${
-            this.props.course.period
-          }\n
+    if (props.roleType === 'admin') {
+      const toAdd = Object.keys(diff.added);
+      const toRemove = Object.keys(diff.deleted);
+      sendSlack(
+        'Updated roster',
+        `${Object.keys(diff.added).length} ${props.roleType}s | ${props.course.name} ${props.course.period}\n
           _[${Object.keys(diff.added).join(', ')}]_`,
-          colors.brandPrimary,
-          '#user_notifications',
-          this.props.course.id,
-        );
-        promises.push(this.props.changeRoster(toAdd, toRemove, USER_APP.CourseAdmin));
-      }
+        colors.brandPrimary,
+        '#user_notifications',
+        props.course.id,
+      );
+      promises.push(props.changeRoster(toAdd, toRemove, USER_APP.CourseAdmin));
+    }
 
-      /* update status */
-      Promise.all(promises).then(() => {
-        this.setState({ updatingRoster: false, status: UPLOAD_STATUS.SAVE });
-      });
+    /* update status */
+    Promise.all(promises).then(() => {
+      setUpdatingRoster(false);
+      setStatus(UPLOAD_STATUS.SAVE);
     });
-  };
+  }, [updates, props]);
 
-  public rosterDiff = (oldRoster: IUserMap, newRoster: IUserMap) => {
-    const oldList: string[] = Array.from(Object.keys(oldRoster));
-    const newList: string[] = Array.from(Object.keys(newRoster));
+  const rosterDiff = useCallback(
+    (oldRoster: IUserMap, nextRoster: IUserMap) => {
+      const oldList: string[] = Array.from(Object.keys(oldRoster));
+      const newList: string[] = Array.from(Object.keys(nextRoster));
 
-    /* calculate changed users and removed users */
-    const deletedList: any = {};
-    const changedList: any = {};
-    for (const user of oldList) {
-      if (!newList.includes(user)) {
-        deletedList[user] = oldRoster[user];
-      } else {
-        if (this.props.roleType === 'student') {
-          if (newRoster[user].section !== undefined) {
-            if (newRoster[user].section !== oldRoster[user].section) {
-              changedList[user] = {
-                old: oldRoster[user],
-                new: newRoster[user],
-              };
+      /* calculate changed users and removed users */
+      const deletedList: any = {};
+      const changedList: any = {};
+      for (const user of oldList) {
+        if (!newList.includes(user)) {
+          deletedList[user] = oldRoster[user];
+        } else {
+          if (props.roleType === 'student') {
+            if (nextRoster[user].section !== undefined) {
+              if (nextRoster[user].section !== oldRoster[user].section) {
+                changedList[user] = {
+                  old: oldRoster[user],
+                  new: nextRoster[user],
+                };
+              }
             }
           }
         }
       }
-    }
 
-    /* calculate added users */
-    const addedList: any = {};
-    for (const user of newList) {
-      if (!oldList.includes(user)) {
-        addedList[user] = newRoster[user];
+      /* calculate added users */
+      const addedList: any = {};
+      for (const user of newList) {
+        if (!oldList.includes(user)) {
+          addedList[user] = nextRoster[user];
+        }
       }
-    }
 
-    return {
-      deleted: deletedList,
-      added: addedList,
-      changed: changedList,
-    };
-  };
+      return {
+        deleted: deletedList,
+        added: addedList,
+        changed: changedList,
+      };
+    },
+    [props.roleType],
+  );
 
-  // Check to make sure the uploaded file is a valid roster
-  public checkRoster = (roster: IUserMap) => {
-    const uploadErrors: string[] = [];
+  const checkRoster = useCallback((roster: IUserMap) => {
     const keys = Object.keys(roster);
 
     /* check to make sure uploaded roster isn't empty */
@@ -438,78 +420,81 @@ class RosterFileUpload extends React.Component<IProps> {
       return ['Uploaded roster is empty.'];
     }
 
-    // FIXME: add more tests here
+    return [];
+  }, []);
 
-    return uploadErrors;
-  };
-
-  public transformOldRoster = (
-    userType: string,
-    users: string[],
-    sectionsByStudent: { [studentEmail: string]: SectionType },
-  ): IUserMap => {
-    const userMap: any = {};
-    users.forEach((user) => {
-      switch (userType) {
-        case 'student':
-          userMap[user] = {
-            section: sectionsByStudent[user] ? sectionsByStudent[user].name : null,
-          };
-          break;
-        case 'grader':
-        case 'admin':
-          userMap[user] = {};
-      }
-    });
-
-    return userMap;
-  };
-
-  // Function called immediately after an uploaded file is read
-  public onRosterUpload = (result: string) => {
-    this.setState(
-      {
-        rosterInput: result,
-        updates: { deleted: [], changed: {}, added: [] },
-        newRoster: undefined,
-      },
-      () => {
-        const { newRoster, errors } = this.convertCSVtoJSON(result);
-
-        /* make sure newRoster is free of errors */
-        const uploadErrors = errors.concat(this.checkRoster(newRoster));
-
-        if (uploadErrors.length > 0) {
-          this.setState({ status: UPLOAD_STATUS.REVIEW, uploadErrors });
-          return;
-        }
-
-        /* calculate diff between old and new roster */
-        let oldRoster = {};
-        switch (this.props.roleType) {
+  const transformOldRoster = useCallback(
+    (userType: string, users: string[], sectionsByStudent: { [studentEmail: string]: SectionType }): IUserMap => {
+      const userMap: any = {};
+      users.forEach((user) => {
+        switch (userType) {
           case 'student':
-            oldRoster = this.transformOldRoster('student', this.props.students, this.props.sectionsByStudent);
+            userMap[user] = {
+              section: sectionsByStudent[user] ? sectionsByStudent[user].name : null,
+            };
             break;
           case 'grader':
-            oldRoster = this.transformOldRoster('grader', this.props.graders, {});
-            break;
           case 'admin':
-            oldRoster = this.transformOldRoster('admin', this.props.admins, {});
-            break;
+            userMap[user] = {};
         }
-        const diff = this.rosterDiff(oldRoster, newRoster);
+      });
 
-        this.setState({
-          status: UPLOAD_STATUS.REVIEW,
-          updates: diff,
-          newRoster,
-          uploadErrors: [],
-        });
-      },
-    );
-  };
+      return userMap;
+    },
+    [],
+  );
 
-  public changedStudentsToJSX = (changes: IChangeType) => {
+  const onRosterUpload = useCallback(
+    (result: string) => {
+      setRosterInput(result);
+      setUpdates({ deleted: {}, changed: {}, added: {} });
+      setNewRoster(undefined);
+
+      const { newRoster: parsedRoster, errors } = convertCSVtoJSON(result);
+
+      /* make sure newRoster is free of errors */
+      const currentUploadErrors = errors.concat(checkRoster(parsedRoster));
+
+      if (currentUploadErrors.length > 0) {
+        setStatus(UPLOAD_STATUS.REVIEW);
+        setUploadErrors(currentUploadErrors);
+        return;
+      }
+
+      /* calculate diff between old and new roster */
+      let oldRoster = {};
+      switch (props.roleType) {
+        case 'student':
+          oldRoster = transformOldRoster('student', props.students, props.sectionsByStudent);
+          break;
+        case 'grader':
+          oldRoster = transformOldRoster('grader', props.graders, {});
+          break;
+        case 'admin':
+          oldRoster = transformOldRoster('admin', props.admins, {});
+          break;
+      }
+      const diff = rosterDiff(oldRoster, parsedRoster);
+
+      setStatus(UPLOAD_STATUS.REVIEW);
+      setUpdates(diff);
+      setNewRoster(parsedRoster);
+      setUploadErrors([]);
+    },
+    [
+      convertCSVtoJSON,
+      checkRoster,
+      props.roleType,
+      props.students,
+      props.sectionsByStudent,
+      props.graders,
+      props.admins,
+      transformOldRoster,
+      rosterDiff,
+    ],
+  );
+
+  const changedStudentsToJSX = (changes: IChangeType) => {
     const diffItems = [
       {
         title: 'Removed from roster and will be unenrolled: ',
@@ -517,9 +502,7 @@ class RosterFileUpload extends React.Component<IProps> {
         key: 'deleted',
       },
       {
-        title: `Added (${
-          this.props.emailNewUsers ? 'will' : "won't"
-        } be notified via email, per your course settings):`,
+        title: `Added (${props.emailNewUsers ? 'will' : "won't"} be notified via email, per your course settings):`,
         items: Object.keys(changes.added),
         key: 'added',
       },
@@ -583,7 +566,7 @@ class RosterFileUpload extends React.Component<IProps> {
               let toSectionName = changes.changed[el].new.section;
               if (toSectionName === null || toSectionName === undefined) {
                 toSectionName = 'No section';
-              } else if (!this.getSectionIDFromName(toSectionName)) {
+              } else if (!getSectionIDFromName(toSectionName)) {
                 toSectionName = `${toSectionName}*`;
                 addingSections = true;
               }
@@ -603,7 +586,7 @@ class RosterFileUpload extends React.Component<IProps> {
               let sectionName = changes[diffItem.key][el].section;
               if (sectionName === null || sectionName === undefined) {
                 sectionName = 'No section';
-              } else if (!this.getSectionIDFromName(sectionName)) {
+              } else if (!getSectionIDFromName(sectionName)) {
                 sectionName = `${sectionName}*`;
                 addingSections = true;
               }
@@ -636,14 +619,14 @@ class RosterFileUpload extends React.Component<IProps> {
     );
   };
 
-  public changesToJSX = (changes: IChangeType) => {
+  const changesToJSX = (changes: IChangeType) => {
     const diffItems = [
       {
         title: 'Deleted: ',
         items: Object.keys(changes.deleted),
       },
       {
-        title: `Added (${this.props.emailNewUsers ? 'will' : "won't"} be emailed):`,
+        title: `Added (${props.emailNewUsers ? 'will' : "won't"} be emailed):`,
         items: Object.keys(changes.added),
       },
     ];
@@ -689,176 +672,174 @@ class RosterFileUpload extends React.Component<IProps> {
     );
   };
 
-  public render() {
-    const steps = [
-      {
-        title: 'Upload',
-      },
-      {
-        title: 'Review',
-      },
-      {
-        title: 'Save',
-      },
-    ];
+  const steps = [
+    {
+      title: 'Upload',
+    },
+    {
+      title: 'Review',
+    },
+    {
+      title: 'Save',
+    },
+  ];
 
-    // content encodes the modal's content BELOW the steps component
-    let content;
-    switch (this.state.status) {
-      case UPLOAD_STATUS.UPLOAD:
-        content = (
-          <RosterInput
-            onRosterUpload={this.onRosterUpload}
-            roleType={this.props.roleType}
-            sections={this.props.sections}
-            rosterInput={this.state.rosterInput}
-            emailNewUsers={this.props.emailNewUsers}
-          />
-        );
-        break;
-      case UPLOAD_STATUS.REVIEW:
-        if (this.state.uploadErrors.length === 0) {
-          const uploadedUsers = this.state.newRoster;
-          let sectionContent: React.ReactNode;
-          switch (this.props.roleType) {
-            case 'student':
-              sectionContent = this.changedStudentsToJSX(this.state.updates);
-              break;
-            case 'grader':
-            case 'admin':
-              sectionContent = this.changesToJSX(this.state.updates);
-              break;
-          }
-
-          content = (
-            <div>
-              <Divider titlePlacement="left">Overview</Divider>
-              <b>Total {this.props.roleType}s parsed: </b>
-              <em>{Object.keys(uploadedUsers!).length}</em>
-              <Divider titlePlacement="left">Changes</Divider>
-              {sectionContent}
-            </div>
-          );
-        } else {
-          content = (
-            <div>
-              <Alert
-                message="Your roster contains some errors. Check out the area below to get them fixed."
-                type="error"
-              />
-              <br />
-              <b>Errors:</b>
-              <ul>
-                {this.state.uploadErrors.map((el, i) => {
-                  if (el.split('|').length > 1) {
-                    return (
-                      <li key={i}>
-                        {el.split('|')[0]}
-                        {' | '}
-                        <span
-                          style={{
-                            fontFamily: 'monospace',
-                            fontWeight: 500,
-                            backgroundColor: '#ececec',
-                            borderRadius: '2px',
-                          }}
-                        >
-                          {el.split('|')[1]}
-                        </span>
-                      </li>
-                    );
-                  }
-                  return <li key={i}>{el}</li>;
-                })}
-              </ul>
-            </div>
-          );
+  // content encodes the modal's content BELOW the steps component
+  let content;
+  switch (status) {
+    case UPLOAD_STATUS.UPLOAD:
+      content = (
+        <RosterInput
+          onRosterUpload={onRosterUpload}
+          roleType={props.roleType}
+          sections={props.sections}
+          rosterInput={rosterInput}
+          emailNewUsers={props.emailNewUsers}
+        />
+      );
+      break;
+    case UPLOAD_STATUS.REVIEW:
+      if (uploadErrors.length === 0) {
+        const uploadedUsers = newRoster;
+        let sectionContent: React.ReactNode;
+        switch (props.roleType) {
+          case 'student':
+            sectionContent = changedStudentsToJSX(updates);
+            break;
+          case 'grader':
+          case 'admin':
+            sectionContent = changesToJSX(updates);
+            break;
         }
-        break;
-      case UPLOAD_STATUS.SAVE:
+
         content = (
-          <Result
-            status="success"
-            title="Your roster was successfully updated!"
-            subTitle="Click Close below to continue."
-          />
-        );
-        break;
-    }
-
-    // modal's back button
-    let goBackButton;
-    switch (this.state.status) {
-      case UPLOAD_STATUS.UPLOAD:
-        goBackButton = (
-          <Button key="back" onClick={this.toggleDialog}>
-            Cancel
-          </Button>
-        );
-        break;
-      case UPLOAD_STATUS.REVIEW:
-        goBackButton = (
-          <Button key="back" onClick={this.changeStatus.bind(this, UPLOAD_STATUS.UPLOAD)}>
-            Back
-          </Button>
-        );
-        break;
-      case UPLOAD_STATUS.SAVE:
-        goBackButton = (
-          <Button key="back" type="primary" onClick={this.toggleDialog} disabled={this.state.updatingRoster}>
-            Close
-          </Button>
-        );
-        break;
-    }
-
-    // modal's forward button
-    let goForwardButton = null;
-    if (this.state.status === UPLOAD_STATUS.REVIEW) {
-      if (this.state.uploadErrors.length > 0) {
-        goForwardButton = (
-          <CPTooltip key="submit" title={tooltips.admin.uploadRoster.error}>
-            <Button key="submit" type="primary" disabled={true}>
-              Continue
-            </Button>
-          </CPTooltip>
+          <div>
+            <Divider titlePlacement="left">Overview</Divider>
+            <b>Total {props.roleType}s parsed: </b>
+            <em>{Object.keys(uploadedUsers!).length}</em>
+            <Divider titlePlacement="left">Changes</Divider>
+            {sectionContent}
+          </div>
         );
       } else {
-        goForwardButton = (
-          <Button key="submit" type="primary" onClick={this.updateRoster} loading={this.state.updatingRoster}>
-            Confirm
-          </Button>
+        content = (
+          <div>
+            <Alert
+              message="Your roster contains some errors. Check out the area below to get them fixed."
+              type="error"
+            />
+            <br />
+            <b>Errors:</b>
+            <ul>
+              {uploadErrors.map((el, i) => {
+                if (el.split('|').length > 1) {
+                  return (
+                    <li key={i}>
+                      {el.split('|')[0]}
+                      {' | '}
+                      <span
+                        style={{
+                          fontFamily: 'monospace',
+                          fontWeight: 500,
+                          backgroundColor: '#ececec',
+                          borderRadius: '2px',
+                        }}
+                      >
+                        {el.split('|')[1]}
+                      </span>
+                    </li>
+                  );
+                }
+                return <li key={i}>{el}</li>;
+              })}
+            </ul>
+          </div>
         );
       }
-    }
-
-    return (
-      <div>
-        <CPButton icon={<UserAddOutlined />} cpType="primary" onClick={this.toggleDialog}>
-          {this.props.buttonText || `Add ${this.props.roleType}s`}
-        </CPButton>
-        <Modal
-          open={this.state.dialogVisible}
-          onCancel={this.toggleDialog}
-          title={`Upload roster: ${this.props.roleType[0].toUpperCase() + this.props.roleType.slice(1)}s`}
-          width={700}
-          footer={[goBackButton, goForwardButton]}
-          destroyOnHidden={true}
-        >
-          <Steps
-            size="small"
-            current={this.state.status}
-            items={steps.map((item) => ({
-              key: item.title,
-              title: item.title,
-            }))}
-          />
-          <br />
-          <br />
-          {content}
-        </Modal>
-      </div>
-    );
+      break;
+    case UPLOAD_STATUS.SAVE:
+      content = (
+        <Result
+          status="success"
+          title="Your roster was successfully updated!"
+          subTitle="Click Close below to continue."
+        />
+      );
+      break;
   }
-}
+
+  // modal's back button
+  let goBackButton;
+  switch (status) {
+    case UPLOAD_STATUS.UPLOAD:
+      goBackButton = (
+        <Button key="back" onClick={toggleDialog}>
+          Cancel
+        </Button>
+      );
+      break;
+    case UPLOAD_STATUS.REVIEW:
+      goBackButton = (
+        <Button key="back" onClick={() => setStatus(UPLOAD_STATUS.UPLOAD)}>
+          Back
+        </Button>
+      );
+      break;
+    case UPLOAD_STATUS.SAVE:
+      goBackButton = (
+        <Button key="back" type="primary" onClick={toggleDialog} disabled={updatingRoster}>
+          Close
+        </Button>
+      );
+      break;
+  }
+
+  // modal's forward button
+  let goForwardButton = null;
+  if (status === UPLOAD_STATUS.REVIEW) {
+    if (uploadErrors.length > 0) {
+      goForwardButton = (
+        <CPTooltip key="submit" title={tooltips.admin.uploadRoster.error}>
+          <Button key="submit" type="primary" disabled={true}>
+            Continue
+          </Button>
+        </CPTooltip>
+      );
+    } else {
+      goForwardButton = (
+        <Button key="submit" type="primary" onClick={updateRoster} loading={updatingRoster}>
+          Confirm
+        </Button>
+      );
+    }
+  }
+
+  return (
+    <div>
+      <CPButton icon={<UserAddOutlined />} cpType="primary" onClick={toggleDialog}>
+        {props.buttonText || `Add ${props.roleType}s`}
+      </CPButton>
+      <Modal
+        open={dialogVisible}
+        onCancel={toggleDialog}
+        title={`Upload roster: ${props.roleType[0].toUpperCase() + props.roleType.slice(1)}s`}
+        width={700}
+        footer={[goBackButton, goForwardButton]}
+        destroyOnHidden={true}
+      >
+        <Steps
+          size="small"
+          current={status}
+          items={steps.map((item) => ({
+            key: item.title,
+            title: item.title,
+          }))}
+        />
+        <br />
+        <br />
+        {content}
+      </Modal>
+    </div>
+  );
+};
 export default RosterFileUpload;

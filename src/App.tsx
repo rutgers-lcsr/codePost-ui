@@ -8,7 +8,7 @@ import { lazy, ReactElement, ReactNode, Suspense, useCallback, useEffect, useRef
 /* other library imports */
 import { Navigate, Route, Routes } from 'react-router-dom';
 
-import { LegacyRouteRenderer, RouteComponentProps } from './router/legacy';
+
 
 /* codePost imports */
 import LogInAs from './components/core/LogInAs';
@@ -516,19 +516,13 @@ Firefox:
     <Route
       path={`${CODE_DEMO}/*`}
       element={
-        <LegacyRouteRenderer
-          path={CODE_DEMO}
-          render={(props: RouteComponentProps) =>
-            wrapTooltipContext(
-              <AsyncGrade
-                {...props}
-                user={user === undefined ? anonymousUser : user}
-                handleLogout={handleLogout}
-                inDemoMode={true}
-              />,
-            )
-          }
-        />
+        wrapTooltipContext(
+          <AsyncGrade
+            user={user === undefined ? anonymousUser : user}
+            handleLogout={handleLogout}
+            inDemoMode={true}
+          />,
+        )
       }
     />
   );
@@ -585,12 +579,7 @@ Firefox:
     const loginAsRoute = isCodePostAdmin ? (
       <Route
         path="/loginAs/*"
-        element={
-          <LegacyRouteRenderer
-            path="/loginAs"
-            render={(props: RouteComponentProps) => <LogInAs {...props} replaceUser={replaceUser} />}
-          />
-        }
+        element={<LogInAs replaceUser={replaceUser} />}
       />
     ) : null;
 
@@ -600,20 +589,13 @@ Firefox:
       <Route
         path="/settings"
         element={
-          <LegacyRouteRenderer
-            path="/settings"
-            end
-            render={(props: RouteComponentProps) =>
-              wrapTooltipContext(
-                <Settings
-                  {...props}
-                  user={user === undefined ? anonymousUser : user}
-                  handleLogout={handleLogout}
-                  replaceUser={replaceUser}
-                />,
-              )
-            }
-          />
+          wrapTooltipContext(
+            <Settings
+              user={user === undefined ? anonymousUser : user}
+              handleLogout={handleLogout}
+              replaceUser={replaceUser}
+            />,
+          )
         }
       />
     );
@@ -655,35 +637,19 @@ Firefox:
       <Route
         path={`${CODE}/:submissionId`}
         element={
-          <LegacyRouteRenderer
-            path={`${CODE}/:submissionId`}
-            end
-            render={(props: RouteComponentProps<{ submissionId: string }>) =>
-              wrapTooltipContext(
-                <AsyncGrade
-                  {...props}
-                  user={user === undefined ? anonymousUser : user}
-                  handleLogout={handleLogout}
-                  inDemoMode={false}
-                />,
-              )
-            }
-          />
+          wrapTooltipContext(
+            <AsyncGrade
+              user={user === undefined ? anonymousUser : user}
+              handleLogout={handleLogout}
+              inDemoMode={false}
+            />,
+          )
         }
       />
     );
 
     const logoutRoute = (
-      <Route
-        path="/logout"
-        element={
-          <LegacyRouteRenderer
-            path="/logout"
-            end
-            render={(props: RouteComponentProps) => <Logout {...props} handleLogout={handleLogout} />}
-          />
-        }
-      />
+      <Route path="/logout" element={<Logout handleLogout={handleLogout} />} />
     );
 
     let homeRoute: ReactElement;
@@ -698,19 +664,12 @@ Firefox:
         <Route
           path={HOME}
           element={
-            <LegacyRouteRenderer
-              path={HOME}
-              end
-              render={(props: RouteComponentProps) => (
-                <Home
-                  {...props}
-                  isStudent={isStudent}
-                  isGrader={isGrader}
-                  isAdmin={isAdmin}
-                  handleLogout={handleLogout}
-                  user={user === undefined ? anonymousUser : user}
-                />
-              )}
+            <Home
+              isStudent={isStudent}
+              isGrader={isGrader}
+              isAdmin={isAdmin}
+              handleLogout={handleLogout}
+              user={user === undefined ? anonymousUser : user}
             />
           }
         />

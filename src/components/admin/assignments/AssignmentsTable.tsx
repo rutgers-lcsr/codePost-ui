@@ -66,9 +66,7 @@ import advancedFormat from 'dayjs/plugin/advancedFormat';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(advancedFormat);
-import { RouteComponentProps } from '../../../router/legacy';
-
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 /* codePost imports */
 import { AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
@@ -181,7 +179,7 @@ interface DrawerContentState {
 
 /**********************************************************************************************************************/
 
-const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> = (props) => {
+const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
   const {
     assignments,
     submissions,
@@ -202,11 +200,12 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
     deleteSubmission,
     updateSubmission,
     bulkUpdateSubmissions,
-    history,
     loadComplete,
     breadcrumbs,
     refreshCourseData,
   } = props;
+
+  const navigate = useNavigate();
 
   // State management with hooks
   const [drawerType, setDrawerType] = useState<DRAWER_TYPE | undefined>(undefined);
@@ -342,27 +341,27 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps & RouteComponentProps> 
     if (deletingAssignment) {
       deleteAssignmentProp(deletingAssignment).then(() => {
         message.success('Assignment successfully deleted!');
-        history.push(`${baseURL}/overview`);
+        navigate(`${baseURL}/overview`);
       });
     }
-  }, [activeAssignment, deleteAssignmentProp, history, baseURL]);
+  }, [activeAssignment, deleteAssignmentProp, navigate, baseURL]);
 
   const uploadForStudent = useCallback(
     (assignmentName: string, student: string) => {
       setActiveStudent(student);
-      history.push(`${baseURL}/${encodeForLink(assignmentName)}/upload/single`);
+      navigate(`${baseURL}/${encodeForLink(assignmentName)}/upload/single`);
     },
-    [history, baseURL],
+    [navigate, baseURL],
   );
 
   const closeSingleSubmissionUpload = useCallback(() => {
-    history.push(`${baseURL}/overview`);
+    navigate(`${baseURL}/overview`);
     setActiveStudent(undefined);
-  }, [history, baseURL]);
+  }, [navigate, baseURL]);
 
   const cancel = useCallback(() => {
-    history.push(`${baseURL}/overview`);
-  }, [history, baseURL]);
+    navigate(`${baseURL}/overview`);
+  }, [navigate, baseURL]);
 
   const createAssignment = useCallback(
     (name: string, points: number, upload: boolean, isVisible: boolean, dueDate?: string) => {

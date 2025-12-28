@@ -3,7 +3,6 @@
  * Extracted for reusability in Jupyter notebook integrations and other contexts
  */
 
-import { RouteComponentProps } from '../router/legacy';
 import { AssignmentType } from '../infrastructure/assignment';
 import { CommentType } from '../infrastructure/comment';
 import { CourseType } from '../infrastructure/course';
@@ -219,7 +218,7 @@ export interface ICodeConsoleState {
 /**
  * Props interface for CodeConsole component
  */
-export interface ICodeConsoleProps extends RouteComponentProps<CodeConsoleRouteParams> {
+export interface ICodeConsoleProps {
   /** Currently logged-in user */
   user: UserType;
 

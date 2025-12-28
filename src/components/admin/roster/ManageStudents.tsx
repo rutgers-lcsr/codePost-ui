@@ -19,8 +19,7 @@ import { Breadcrumb, Button, Empty, message, Modal, Select, Space, Spin, Tooltip
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
-import { Link } from 'react-router-dom';
-import { useRouteMatch } from '../../../router/legacy';
+import { Link, useLocation } from 'react-router-dom';
 
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
@@ -71,7 +70,7 @@ export interface IManageStudentsProps {
 }
 
 const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
-  const match = useRouteMatch();
+  const location = useLocation();
   const [activeStudent, setActiveStudent] = useState<string>('');
 
   const sendActivationEmail = useCallback(
@@ -246,7 +245,7 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
               </Tooltip>
             )}
             <Tooltip title="Open profile">
-              <Link to={match?.url.replace('roster/students', `submissions/by_student/${studentEmail}`) || ''}>
+              <Link to={location.pathname.replace('roster/students', `submissions/by_student/${studentEmail}`) || ''}>
                 <Button shape="circle" icon={<ProfileOutlined />} />
               </Link>
             </Tooltip>
@@ -261,7 +260,7 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
         ),
       };
     });
-  }, [props.students, props.notActivated, props.sectionsByStudent, match?.url, sendActivationEmail, removeStudent]);
+  }, [props.students, props.notActivated, props.sectionsByStudent, location.pathname, sendActivationEmail, removeStudent]);
   const actions = useMemo(() => {
     if (props.students.length === 0) return [];
 

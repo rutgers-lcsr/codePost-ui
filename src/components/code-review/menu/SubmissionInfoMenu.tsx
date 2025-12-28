@@ -225,28 +225,26 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
 };
 
 const makeReadOnly = (Component: React.ComponentType<ISubmissionReadProps & ISubmissionInfoWriteProps>) => {
-  return class WrappedComponent extends React.Component<ISubmissionReadProps> {
-    public updateGrader = (submission: AnonymousSubmissionType) => {
+  return (props: ISubmissionReadProps) => {
+    const updateGrader = (submission: AnonymousSubmissionType) => {
       return Promise.resolve(submission);
     };
 
-    public addLateDayCreditComment = () => {
+    const addLateDayCreditComment = () => {
       return;
     };
 
-    public render() {
-      return (
-        <Component
-          {...(this.props as ISubmissionReadProps)}
-          updateGrader={this.updateGrader}
-          courseLateDayCreditsAllowable={null}
-          isCourseAdmin={false}
-          graders={[]}
-          addLateDayCreditComment={this.addLateDayCreditComment}
-          courseStudentsCanSeeGraders={this.props.courseStudentsCanSeeGraders}
-        />
-      );
-    }
+    return (
+      <Component
+        {...props}
+        updateGrader={updateGrader}
+        courseLateDayCreditsAllowable={null}
+        isCourseAdmin={false}
+        graders={[]}
+        addLateDayCreditComment={addLateDayCreditComment}
+        courseStudentsCanSeeGraders={props.courseStudentsCanSeeGraders}
+      />
+    );
   };
 };
 

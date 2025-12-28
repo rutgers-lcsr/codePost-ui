@@ -40,6 +40,7 @@ export interface IByGraderProps {
   /* UI control */
   loadComplete: boolean;
   baseURL: string;
+  courseURL: string;
 
   /* submissions data */
   assignments: AssignmentType[];
@@ -255,7 +256,8 @@ const GraderData: React.FC<IByGraderProps> = (props) => {
                 grader: graderEmail,
               };
               for (const assignment of assignments) {
-                const graded = submissionsByGrader[graderEmail][assignment.id];
+                const graderSubmissions = submissionsByGrader[graderEmail];
+                const graded = graderSubmissions ? graderSubmissions[assignment.id] : undefined;
                 if (graded) {
                   const uniqueGraded = Array.from(new Map(graded.map((s) => [s.id, s])).values());
                   toRet[assignment.name] = (
@@ -310,7 +312,7 @@ const GraderData: React.FC<IByGraderProps> = (props) => {
                   }
                 >
                   {numGraders === 0 ? (
-                    <Link to={`${baseURL}/roster/graders`}>
+                    <Link to={`${props.courseURL}/roster/graders`}>
                       <CPButton cpType="primary" key={1} icon={<UserAddOutlined />}>
                         Add some graders
                       </CPButton>
@@ -320,7 +322,7 @@ const GraderData: React.FC<IByGraderProps> = (props) => {
                   {assignments.length === 0 ? (
                     <span>
                       {numGraders === 0 ? <span>&nbsp; &nbsp;</span> : null}
-                      <Link to={`${baseURL}/assignments/overview`}>
+                      <Link to={`${props.courseURL}/assignments/overview`}>
                         <CPButton cpType="primary" key={2} icon={<PlusCircleOutlined />}>
                           Add an assignment
                         </CPButton>

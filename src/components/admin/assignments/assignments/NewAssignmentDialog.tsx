@@ -18,7 +18,7 @@ import timezone from 'dayjs/plugin/timezone';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-import { RouteComponentProps, withRouter } from '../../../../router/legacy';
+import { useNavigate } from 'react-router-dom';
 
 /* codePost imports */
 import CPButton from '../../../../components/core/CPButton';
@@ -47,7 +47,8 @@ interface IProps extends Record<string, unknown> {
   currentCourse: CourseType;
 }
 
-const NewAssignmentDialog: React.FC<IProps & RouteComponentProps> = (props) => {
+const NewAssignmentDialog: React.FC<IProps> = (props) => {
+  const navigate = useNavigate();
   const [dialogVisible, setDialogVisible] = React.useState(false);
   const [studentsCanUpload, setStudentsCanUpload] = React.useState(false);
   const [isAssignmentVisible, setIsAssignmentVisible] = React.useState(false);
@@ -161,7 +162,7 @@ const NewAssignmentDialog: React.FC<IProps & RouteComponentProps> = (props) => {
           //    * no students
           //    * no submissions in course
           if (props.assignments.length < 2) {
-            props.history.push(`${props.baseURL}/${encodeForLink(values.name)}/onboarding`);
+            navigate(`${props.baseURL}/${encodeForLink(values.name)}/onboarding`);
           }
         }
       })
@@ -345,4 +346,4 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
   );
 };
 
-export default withRouter(NewAssignmentDialog);
+export default NewAssignmentDialog;

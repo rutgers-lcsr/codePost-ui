@@ -11,9 +11,9 @@ import { QuestionCircleOutlined } from '@ant-design/icons';
 import { Alert, Checkbox, Input, Spin, Tooltip, Typography } from 'antd';
 
 /* other library imports */
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
-import { RouteComponentProps } from '../../router/legacy';
+
 
 import queryString from 'query-string';
 
@@ -33,12 +33,13 @@ import CPButton from '../core/CPButton';
 //   confirmEmailSent: boolean;
 // }
 
-const JoinSignup = (props: RouteComponentProps & { email?: string }) => {
+const JoinSignup = (props: { email?: string }) => {
+  const location = useLocation();
   const [email, setEmail] = React.useState(props.email || '');
   const [hasSubmitted, setHasSubmitted] = React.useState(false);
   const [confirmEmailSent, setConfirmEmailSent] = React.useState(false);
   const [acceptedTerms, setAcceptedTerms] = React.useState(props.email ? true : false);
-  const parsedCode = queryString.parse(props.location.search).code;
+  const parsedCode = queryString.parse(location.search).code;
   const [inviteCode, setInviteCode] = React.useState(
     typeof parsedCode === 'string' ? parsedCode : Array.isArray(parsedCode) ? parsedCode[0] || '' : '',
   );

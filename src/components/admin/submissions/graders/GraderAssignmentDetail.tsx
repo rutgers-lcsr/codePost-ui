@@ -4,6 +4,7 @@
 
 /* react imports */
 import * as React from 'react';
+import { useCallback } from 'react';
 
 import { CodeOutlined, DeleteOutlined, EyeFilled, EyeInvisibleOutlined, MenuOutlined } from '@ant-design/icons';
 
@@ -11,7 +12,8 @@ import { CodeOutlined, DeleteOutlined, EyeFilled, EyeInvisibleOutlined, MenuOutl
 import { Breadcrumb, Dropdown, Modal, Tag, Button, Tooltip, Typography } from 'antd';
 
 /* other library imports */
-import moment from 'moment';
+import dayjs from 'dayjs';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
 
 import { Link } from 'react-router-dom';
 
@@ -25,6 +27,8 @@ import CPTooltip from '../../../../components/core/CPTooltip';
 
 import { openSubmission, openSubmissionInSameTab } from '../../other/AdminUtils';
 
+dayjs.extend(localizedFormat);
+
 const confirm = Modal.confirm;
 
 /**********************************************************************************************************************/
@@ -37,26 +41,28 @@ interface IProps {
 
   grader: string;
 
-
   baseURL: string;
 
   selectedAssignment: AssignmentType;
   submissions: SubmissionInfoType[];
 }
 
-class GraderAssignmentDetail extends React.Component<IProps> {
-  public removeSubmission = (toRemove: SubmissionInfoType) => {
-    confirm({
-      title: 'Are you sure you want to delete this submission?',
-      content: `The following students are associated with this submission: ${toRemove.students.join(',')}.`,
-      onOk: () => {
-        return this.props.deleteSubmission(toRemove);
-      },
-      okText: 'Remove',
-    });
-  };
+const GraderAssignmentDetail: React.FC<IProps> = (props) => {
+  const removeSubmission = useCallback(
+    (toRemove: SubmissionInfoType) => {
+      confirm({
+        title: 'Are you sure you want to delete this submission?',
+        content: `The following students are associated with this submission: ${toRemove.students.join(',')}.`,
+        onOk: () => {
+          return props.deleteSubmission(toRemove);
+        },
+        okText: 'Remove',
+      });
+    },
+    [props.deleteSubmission],
+  );
 
-  public getStatus = (submission: SubmissionInfoType | undefined) => {
+  const getStatus = (submission: SubmissionInfoType | undefined) => {
     let color: 'default' | 'error' | 'success' | 'warning' | 'processing' | undefined;
     let cellText;
     if (submission) {
@@ -77,19 +83,19 @@ class GraderAssignmentDetail extends React.Component<IProps> {
     return <Tag color={color}>{cellText}</Tag>;
   };
 
-  public getViewIcon = (submission: SubmissionInfoType) => {
-    if (!(submission.id in this.props.viewsBySubmission) || !submission.isFinalized) {
+  const getViewIcon = (submission: SubmissionInfoType) => {
+    if (!(submission.id in props.viewsBySubmission) || !submission.isFinalized) {
       // case: No history object or unfinalized
       return <span style={{ color: '#999' }}>--</span>;
     } else {
-      const viewed = this.props.viewsBySubmission[submission.id];
+      const viewed = props.viewsBySubmission[submission.id];
 
       // case: submission has been viewed
       if (Object.keys(viewed).length > 0) {
         const tooltipText = submission.students
           .map((student) => {
             if (Object.keys(viewed).indexOf(student) > -1) {
-              return `${student}: ${moment(viewed[student]).format('llll')}`;
+              return `${student}: ${dayjs(viewed[student]).format('llll')}`;
             } else {
               return `${student}: unviewed`;
             }
@@ -119,165 +125,160 @@ class GraderAssignmentDetail extends React.Component<IProps> {
     }
   };
 
-  public render() {
-    const aligner: 'left' | 'center' | 'right' = 'center';
+  const aligner: 'left' | 'center' | 'right' = 'center';
 
-    const columns = [
+  const columns = [
+    {
+      title: 'Assignment',
+      dataIndex: 'assignment',
+      key: 'assignment',
+    },
+    {
+      title: 'Students',
+      dataIndex: 'students',
+      key: 'students',
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      align: aligner,
+    },
+    {
+      title: 'Grade',
+      dataIndex: 'grade',
+      key: 'grade',
+      align: aligner,
+    },
+    {
+      title: 'Viewed',
+      dataIndex: 'viewed',
+      key: 'viewed',
+      align: aligner,
+    },
+    {
+      title: 'Actions',
+      dataIndex: 'actions',
+      key: 'actions',
+      align: aligner,
+    },
+  ];
 
-      {
-        title: 'Assignment',
-        dataIndex: 'assignment',
-        key: 'assignment',
-      },
-      {
-        title: 'Students',
-        dataIndex: 'students',
-        key: 'students',
-      },
-      {
-        title: 'Status',
-        dataIndex: 'status',
-        key: 'status',
-        align: aligner,
-      },
-      {
-        title: 'Grade',
-        dataIndex: 'grade',
-        key: 'grade',
-        align: aligner,
-      },
-      {
-        title: 'Viewed',
-        dataIndex: 'viewed',
-        key: 'viewed',
-        align: aligner,
-      },
-      {
-        title: 'Actions',
-        dataIndex: 'actions',
-        key: 'actions',
-        align: aligner,
-      },
-    ];
+  const selectedAssignment = props.selectedAssignment;
 
-
-    const selectedAssignment = this.props.selectedAssignment;
-
-    if (selectedAssignment) {
-      // Deduplicate submissions by ID to handle potential duplicate data
-      const uniqueSubmissions = Array.from(new Map(this.props.submissions.map((s) => [s.id, s])).values());
-      const data = uniqueSubmissions.map((submission, index) => {
-        const open = () => {
-          if (localStorage.getItem('source') === 'codePost') {
-            openSubmission(submission.id);
-          } else {
-            openSubmissionInSameTab(submission.id);
-          }
-        };
-        const menuItems = [
-
-          {
-            type: 'divider' as const,
-          },
-          {
-            key: 'delete',
-            label: (
-              <>
-                <DeleteOutlined /> Delete
-              </>
-            ),
-            danger: true,
-            onClick: this.removeSubmission.bind(this, submission),
-          },
-        ];
-
-        let gradeString: string;
-        if (submission.isFinalized) {
-          gradeString = `${String(submission.grade)}/${selectedAssignment.points}`;
+  if (selectedAssignment) {
+    // Deduplicate submissions by ID to handle potential duplicate data
+    const uniqueSubmissions = Array.from(new Map(props.submissions.map((s) => [s.id, s])).values());
+    const data = uniqueSubmissions.map((submission, index) => {
+      const open = () => {
+        if (localStorage.getItem('source') === 'codePost') {
+          openSubmission(submission.id);
         } else {
-          gradeString = 'Unfinalized';
+          openSubmissionInSameTab(submission.id);
         }
-
-        return {
-
-          key: `${submission.id}-${index}`,
-          assignment: <Typography.Text strong>{selectedAssignment.name}</Typography.Text>,
-          status: this.getStatus(submission),
-          students: (
-            <Typography.Text strong>
-              {submission.students.map((student, i) => {
-                const root = this.props.baseURL.split('/submissions/by_grader')[0];
-                const link = `${root}/submissions/by_student/${student}`;
-                return (
-                  <span key={student}>
-                    {i > 0 && ', '}
-                    <Link to={link} className="text-link">
-                      {student}
-                    </Link>
-                  </span>
-                );
-              })}
-            </Typography.Text>
+      };
+      const menuItems = [
+        {
+          type: 'divider' as const,
+        },
+        {
+          key: 'delete',
+          label: (
+            <>
+              <DeleteOutlined /> Delete
+            </>
           ),
-          grade: gradeString,
-          viewed: this.getViewIcon(submission),
-          actions: (
-            <div style={{ whiteSpace: 'nowrap' }}>
-              <Tooltip title="Open Submission">
-                <Button shape="circle" icon={<CodeOutlined />} onClick={open} style={{ marginRight: 8 }} />
-              </Tooltip>
-              <Dropdown menu={{ items: menuItems }} trigger={['click']} placement={'bottomRight'}>
-                <Button shape="circle" icon={<MenuOutlined />} />
-              </Dropdown>
-            </div>
-          ),
-        };
-      });
+          danger: true,
+          onClick: () => removeSubmission(submission),
+        },
+      ];
 
-      return (
-        <div>
-          <TableDetail
-            loadComplete={true}
-            title={
-              <Typography.Title level={4} style={{ margin: 0 }}>
-                Submissions graded by: {this.props.grader} for {selectedAssignment.name}
-              </Typography.Title>
-            }
-            breadcrumbs={
-              <Breadcrumb
-                items={[
-                  { title: 'Submissions' },
-                  {
-                    title: (
-                      // eslint-disable-next-line jsx-a11y/anchor-is-valid
-                      <Link to={this.props.baseURL}>By Grader</Link>
-                    ),
-                  },
-                  {
-                    title: (
-                      // eslint-disable-next-line jsx-a11y/anchor-is-valid
-                      <Link to={this.props.baseURL}>{this.props.grader}</Link>
-                    ),
-                  },
-                  {
-                    title: (
-                      // eslint-disable-next-line jsx-a11y/anchor-is-valid
-                      <a>{selectedAssignment.name}</a>
-                    ),
-                  },
-                ]}
-              />
-            }
-            isEmpty={false}
-            emptyNode={null}
-            columns={columns}
-            data={data}
-            actions={[]}
-          />
-        </div>
-      );
-    }
+      let gradeString: string;
+      if (submission.isFinalized) {
+        gradeString = `${String(submission.grade)}/${selectedAssignment.points}`;
+      } else {
+        gradeString = 'Unfinalized';
+      }
+
+      return {
+        key: `${submission.id}-${index}`,
+        assignment: <Typography.Text strong>{selectedAssignment.name}</Typography.Text>,
+        status: getStatus(submission),
+        students: (
+          <Typography.Text strong>
+            {submission.students.map((student, i) => {
+              const root = props.baseURL.split('/submissions/by_grader')[0];
+              const link = `${root}/submissions/by_student/${student}`;
+              return (
+                <span key={student}>
+                  {i > 0 && ', '}
+                  <Link to={link} className="text-link">
+                    {student}
+                  </Link>
+                </span>
+              );
+            })}
+          </Typography.Text>
+        ),
+        grade: gradeString,
+        viewed: getViewIcon(submission),
+        actions: (
+          <div style={{ whiteSpace: 'nowrap' }}>
+            <Tooltip title="Open Submission">
+              <Button shape="circle" icon={<CodeOutlined />} onClick={open} style={{ marginRight: 8 }} />
+            </Tooltip>
+            <Dropdown menu={{ items: menuItems }} trigger={['click']} placement={'bottomRight'}>
+              <Button shape="circle" icon={<MenuOutlined />} />
+            </Dropdown>
+          </div>
+        ),
+      };
+    });
+
+    return (
+      <div>
+        <TableDetail
+          loadComplete={true}
+          title={
+            <Typography.Title level={4} style={{ margin: 0 }}>
+              Submissions graded by: {props.grader} for {selectedAssignment.name}
+            </Typography.Title>
+          }
+          breadcrumbs={
+            <Breadcrumb
+              items={[
+                { title: 'Submissions' },
+                {
+                  title: (
+                    // eslint-disable-next-line jsx-a11y/anchor-is-valid
+                    <Link to={props.baseURL}>By Grader</Link>
+                  ),
+                },
+                {
+                  title: (
+                    // eslint-disable-next-line jsx-a11y/anchor-is-valid
+                    <Link to={props.baseURL}>{props.grader}</Link>
+                  ),
+                },
+                {
+                  title: (
+                    // eslint-disable-next-line jsx-a11y/anchor-is-valid
+                    <a>{selectedAssignment.name}</a>
+                  ),
+                },
+              ]}
+            />
+          }
+          isEmpty={false}
+          emptyNode={null}
+          columns={columns}
+          data={data}
+          actions={[]}
+        />
+      </div>
+    );
   }
-}
+  return null;
+};
 
 export default GraderAssignmentDetail;
