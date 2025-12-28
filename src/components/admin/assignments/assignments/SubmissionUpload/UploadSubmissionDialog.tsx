@@ -78,12 +78,13 @@ import { awaitTestResult } from '../../tests/autograderPollingUtils';
 import { fileToProtoFileUpload, IBaseFileUpload, IProtoFileUpload, readUploadedFile } from './FileReader';
 
 import { UploadFile } from 'antd/lib/upload/interface';
+import { CIP_COURSE_ID } from '../../../../../config';
 
 /**********************************************************************************************************************/
 /* Constants
 /**********************************************************************************************************************/
 
-const CIP_COURSE_ID = 925; // FIXME: Hardcoded for Code in Place - should be configurable
+
 const MODAL_WIDTH = 1100;
 const MIN_TEST_HEIGHT = 400;
 

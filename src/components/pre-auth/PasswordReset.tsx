@@ -4,12 +4,13 @@
 
 /* react imports */
 import * as React from 'react';
+import { useState, useEffect } from 'react';
 
 /* ant imports */
 import { Typography } from 'antd';
 
 /* other library imports */
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 /* codePost */
 import PasswordResetForm from './PasswordResetForm';
@@ -43,38 +44,24 @@ present error message.
 */
 
 interface IPasswordResetProps {
-  match: any;
   message: string;
   isLoggedIn: boolean;
 }
 
-interface IPasswordResetState {
-  formErrors: { [key: string]: string };
-  loadState: string; // have we validated the token? Note we need to validate on server side
-  email: string;
-}
-
-class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetState> {
-  public state: Readonly<IPasswordResetState> = {
-    formErrors: {},
-    loadState: '',
-    email: '',
-  };
-
-  public componentDidMount = () => {
-    this.validateToken(this.props.match.params.token);
-  };
+const PasswordReset: React.FC<IPasswordResetProps> = ({ message, isLoggedIn }) => {
+  const params = useParams<{ uid: string; token: string }>();
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  const [loadState, setLoadState] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
 
   // After validating the token, we should take it out of the URl to avoiding leaking
   // the token in HTTP referer field if the user navigates away from the page.
   // For an explanation of this vulnerability:
   // https://robots.thoughtbot.com/is-your-site-leaking-password-reset-links
-  public validateToken = (_token: string) => {
-    // figure out what this function does
-
+  const validateToken = () => {
     const payload = {
-      uid: this.props.match.params.uid,
-      token: this.props.match.params.token,
+      uid: params.uid,
+      token: params.token,
     };
 
     fetch(`${process.env.REACT_APP_API_URL}/registration/verifyRegistrationToken/`, {
@@ -89,17 +76,23 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
       })
       .then((json) => {
         if (json.isValid) {
-          this.setState({ loadState: 'valid', email: json.email });
+          setLoadState('valid');
+          setEmail(json.email);
         } else {
-          this.setState({ loadState: 'invalidToken' });
+          setLoadState('invalidToken');
         }
       });
   };
 
-  public handleReset = (password: string) => {
+  useEffect(() => {
+    validateToken();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.token, params.uid]);
+
+  const handleReset = (password: string) => {
     const payload = {
-      token: this.props.match.params.token,
-      uid: this.props.match.params.uid,
+      token: params.token,
+      uid: params.uid,
       password1: password,
       password2: password,
     };
@@ -120,133 +113,129 @@ class PasswordReset extends React.Component<IPasswordResetProps, IPasswordResetS
       })
       .then((json) => {
         if (json.isValid) {
-          this.setState({ loadState: 'success' });
+          setLoadState('success');
         } else {
-          this.setState({ formErrors: json.errors });
+          setFormErrors(json.errors);
         }
       });
   };
 
-  public render() {
-    const { loadState, formErrors } = this.state;
-
-    let content;
-    switch (loadState) {
-      case 'valid': {
-        const errorList = Object.keys(formErrors).map((el, i) => {
-          return (
-            <li key={i}>
-              {el}: {formErrors[el]}
-            </li>
-          );
-        });
-
-        let message;
-        switch (this.props.message) {
-          case 'forgot':
-            message = 'Set a new password below';
-            break;
-          case 'activate':
-            message = 'Set your codePost password below.';
-            break;
-          case 'upgrade':
-            message = 'Set up a new codePost password to access your old account';
-            break;
-          default:
-            message = '';
-        }
-
-        content = (
-          <div>
-            <p>{message}</p>
-            <p>
-              Your codePost email address: <Typography.Text code>{this.state.email}</Typography.Text>
-            </p>
-            <PasswordResetForm handleSubmit={this.handleReset} />
-            <ul>{errorList}</ul>
-          </div>
+  let content;
+  switch (loadState) {
+    case 'valid': {
+      const errorList = Object.keys(formErrors).map((el, i) => {
+        return (
+          <li key={i}>
+            {el}: {formErrors[el]}
+          </li>
         );
-        break;
+      });
+
+      let messageText;
+      switch (message) {
+        case 'forgot':
+          messageText = 'Set a new password below';
+          break;
+        case 'activate':
+          messageText = 'Set your codePost password below.';
+          break;
+        case 'upgrade':
+          messageText = 'Set up a new codePost password to access your old account';
+          break;
+        default:
+          messageText = '';
       }
-      case 'invalidToken': {
-        let newLinkMessage;
-        switch (this.props.message) {
-          case 'forgot':
-            newLinkMessage = (
-              <span>
-                Request a new password reset link <Link to="/forgot-password/">here</Link>.
-              </span>
-            );
-            break;
-          case 'activate':
-            newLinkMessage = (
-              <span>
-                Request a new account activation link <Link to="/signup/join/">here</Link>.
-              </span>
-            );
-            break;
-          case 'upgrade':
-            newLinkMessage = (
-              <span>
-                Request a new account upgrade link <Link to="/upgrade/">here</Link>.
-              </span>
-            );
-            break;
-          default:
-            newLinkMessage = '';
-        }
 
-        content = (
-          <div>
-            <Typography.Title level={4}>There's something wrong with your link.</Typography.Title>Make sure you haven't
-            received a more recent email from us (only the latest link will work).
-            <br />
-            <br />
-            <div>{newLinkMessage}</div>
-          </div>
-        );
-
-        break;
-      }
-      case 'success':
-        content = (
-          <div>
-            <Typography.Title level={4}>Success!</Typography.Title>
-            <div>
-              Try <Link to="/login">logging in</Link> now.
-            </div>
-          </div>
-        );
-
-        break;
-      default:
-        content = <p>Hang tight...validating your token</p>;
-    }
-
-    let title = '';
-    switch (this.props.message) {
-      case 'forgot':
-        title = 'Reset your password';
-        break;
-      case 'activate':
-        title = 'Set your password';
-        break;
-      case 'upgrade':
-        title = 'Set your password';
-        break;
-    }
-
-    return (
-      <PreAuthLayout isLoggedIn={this.props.isLoggedIn}>
-        <div style={{ maxWidth: 500, margin: '0 auto' }}>
-          <br />
-          <br />
-          <Typography.Title level={1}>{title}</Typography.Title>
-          {content}
+      content = (
+        <div>
+          <p>{messageText}</p>
+          <p>
+            Your codePost email address: <Typography.Text code>{email}</Typography.Text>
+          </p>
+          <PasswordResetForm handleSubmit={handleReset} />
+          <ul>{errorList}</ul>
         </div>
-      </PreAuthLayout>
-    );
+      );
+      break;
+    }
+    case 'invalidToken': {
+      let newLinkMessage;
+      switch (message) {
+        case 'forgot':
+          newLinkMessage = (
+            <span>
+              Request a new password reset link <Link to="/forgot-password/">here</Link>.
+            </span>
+          );
+          break;
+        case 'activate':
+          newLinkMessage = (
+            <span>
+              Request a new account activation link <Link to="/signup/join/">here</Link>.
+            </span>
+          );
+          break;
+        case 'upgrade':
+          newLinkMessage = (
+            <span>
+              Request a new account upgrade link <Link to="/upgrade/">here</Link>.
+            </span>
+          );
+          break;
+        default:
+          newLinkMessage = '';
+      }
+
+      content = (
+        <div>
+          <Typography.Title level={4}>There's something wrong with your link.</Typography.Title>Make sure you haven't
+          received a more recent email from us (only the latest link will work).
+          <br />
+          <br />
+          <div>{newLinkMessage}</div>
+        </div>
+      );
+
+      break;
+    }
+    case 'success':
+      content = (
+        <div>
+          <Typography.Title level={4}>Success!</Typography.Title>
+          <div>
+            Try <Link to="/login">logging in</Link> now.
+          </div>
+        </div>
+      );
+
+      break;
+    default:
+      content = <p>Hang tight...validating your token</p>;
   }
-}
+
+  let title = '';
+  switch (message) {
+    case 'forgot':
+      title = 'Reset your password';
+      break;
+    case 'activate':
+      title = 'Set your password';
+      break;
+    case 'upgrade':
+      title = 'Set your password';
+      break;
+  }
+
+  return (
+    <PreAuthLayout isLoggedIn={isLoggedIn}>
+      <div style={{ maxWidth: 500, margin: '0 auto' }}>
+        <br />
+        <br />
+        <Typography.Title level={1}>{title}</Typography.Title>
+        {content}
+      </div>
+    </PreAuthLayout>
+  );
+};
 
 export default PasswordReset;

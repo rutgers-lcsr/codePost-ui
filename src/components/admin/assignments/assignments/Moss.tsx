@@ -25,7 +25,7 @@ import {
 } from 'antd';
 
 /* other library imports */
-import { RouteComponentProps } from '../../../../router/legacy';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 /* codePost imports */
 import { AssignmentType } from '../../../../infrastructure/assignment';
@@ -101,7 +101,9 @@ export const MOSS_LANGUAGES = [
   'verilog',
 ];
 
-const Moss = (props: IMossProps & RouteComponentProps) => {
+const Moss = (props: IMossProps) => {
+  const location = useLocation();
+  const navigate = useNavigate();
   return false;
   const [submit, setSubmit] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -115,7 +117,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
   const [fileExplorerVisible, setFileExplorerVisible] = useState(false);
 
   let testMode = false;
-  const values = queryString.parse(props.location.search);
+  const values = queryString.parse(location.search);
   if (values.test !== undefined) {
     testMode = true;
   }
@@ -139,7 +141,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
   }, [props.assignment]);
 
   useEffect(() => {
-    const values = queryString.parse(props.location.search);
+    const values = queryString.parse(location.search);
     if (values.resultsid !== undefined && typeof values.resultsid === 'string') {
       const formattedUrlID = values.resultsid.replace('%2F', '/');
       setUrlID(formattedUrlID);
@@ -379,7 +381,7 @@ const Moss = (props: IMossProps & RouteComponentProps) => {
   const requestEmailBody = `registeruser${escape('\r\n')} mail ${props.user.email} `;
 
   const changeAssignment = (assignment: string) => {
-    props.history.push(
+    navigate(
       `/admin/${encodeForLink(props.course.name)}/${encodeForLink(
         props.course.period,
       )}/assignments/plagiarism/${encodeForLink(assignment)}`,

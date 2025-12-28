@@ -468,51 +468,41 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
 };
 
 const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & ICommentsEditProps>) => {
-  return class WrappedComponent extends React.Component<ICommentsCoreProps, Record<string, never>> {
-    public readOnly = true;
-    public activeCommentID = undefined;
+  return (props: ICommentsCoreProps) => {
+    const readOnly = true;
+    const activeCommentID = undefined;
 
-    public saveComment = () => {
+    const saveComment = () => {
       return;
     };
 
-    public changeActive = () => {
+    const changeActive = () => {
       return;
     };
 
-    public deleteComment = () => {
+    const deleteComment = () => {
       return;
     };
 
-    public addUnsaved = () => {
+    const removeRubricComment = () => {
       return;
     };
 
-    public removeUnsaved = () => {
-      return;
-    };
-
-    public removeRubricComment = () => {
-      return;
-    };
-
-    public render() {
-      return (
-        <Component
-          {...(this.props as ICommentsCoreProps)}
-          readOnly={this.readOnly}
-          activeCommentID={this.activeCommentID}
-          changeActive={this.changeActive}
-          saveComment={this.saveComment}
-          deleteComment={this.deleteComment}
-          removeRubricComment={this.removeRubricComment}
-          forcedRubricMode={false}
-          oldCommentIDs={{}}
-          showCursor={CURSOR_DOMAIN.CODE_HIDDEN}
-          showExplanations={false}
-        />
-      );
-    }
+    return (
+      <Component
+        {...props}
+        readOnly={readOnly}
+        activeCommentID={activeCommentID}
+        changeActive={changeActive}
+        saveComment={saveComment}
+        deleteComment={deleteComment}
+        removeRubricComment={removeRubricComment}
+        forcedRubricMode={false}
+        oldCommentIDs={{}}
+        showCursor={CURSOR_DOMAIN.CODE_HIDDEN}
+        showExplanations={false}
+      />
+    );
   };
 };
 

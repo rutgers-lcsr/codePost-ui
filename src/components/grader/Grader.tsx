@@ -3,15 +3,15 @@
 /**********************************************************************************************************************/
 
 /* react imports */
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 
 import { SettingOutlined } from '@ant-design/icons';
 
 /* antd imports */
-import { Button, Layout } from 'antd';
+import { Button } from 'antd';
 
 /* other library imports */
 import { Link, Route, Routes } from 'react-router-dom';
-import { RouteComponentProps, withRouter } from '../../router/legacy';
 
 import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
 
@@ -20,20 +20,17 @@ import CPTooltip from '../core/CPTooltip';
 import { tooltips } from '../core/tooltips';
 
 /* codePost imports */
-import MySubmissionsPanel from './MySubmissionsPanel';
-import SectionPanel from './SectionPanel';
-import ViewAllPanel from './ViewAllPanel';
 
 import { USER_TYPE } from '../../types/common';
 
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
-import { CourseType } from '../../infrastructure/course';
+
 import { loadIDList } from '../../infrastructure/generics';
 import { SectionType } from '../../infrastructure/section';
 
 import GraderNav from './GraderNav';
 
-import RegradesPanel from './RegradesPanel';
+import GraderRoutes from './GraderRoutes';
 
 import Referral from '../core/Referral';
 import RoleMenu from '../core/RoleMenu';
@@ -45,300 +42,196 @@ import { IComponentProps } from '../core/ComponentManager';
 
 import { CIPGraderModal } from '../cip/components';
 
-import { Component } from 'react';
-import VideoModal from '../landing/VideoModal';
-
 /**********************************************************************************************************************/
 
-interface IGraderState {
-  /* tab data */
-  isSuperGrader: boolean;
-  sectionsLed: SectionType[];
-  assignments: AssignmentType[];
-  isLoading: boolean;
-  showBanner: boolean;
-  showConversionModal: boolean;
-}
+const Grader: React.FC<IComponentProps> = (props) => {
 
-class Grader extends Component<IComponentProps & RouteComponentProps, IGraderState> {
-  private timer: number;
-  private times: number[] = [];
+  const { currentCourse, superGraderCourses, sectionsLed } = props;
 
-  public constructor(props: IComponentProps & RouteComponentProps) {
-    super(props);
-    this.timer = Date.now();
-    document.title = 'codePost - Grader Console';
-    const { currentCourse, superGraderCourses, sectionsLed } = props;
+  // State
+  const [assignments, setAssignments] = useState<AssignmentType[]>([]);
 
-    if (currentCourse !== undefined) {
-      this.loadAssignments(currentCourse).then((assignments) => {
-        this.setState({ assignments, isLoading: false });
+  const [isSuperGrader, setIsSuperGrader] = useState<boolean>(false);
+  const [localSectionsLed, setLocalSectionsLed] = useState<SectionType[]>([]);
+
+  const [showConversionModal, setShowConversionModal] = useState<boolean>(false);
+
+  // Refs for timer logging (keeping original behavior though it was commented out)
+  const timerRef = useRef<number>(Date.now());
+  const timesRef = useRef<number[]>([]);
+
+  // 1. Initial Load & Course Change
+  useEffect(() => {
+    // If we have a course, load assignments
+    if (currentCourse) {
+      if (assignments.length === 0) {
+        // setIsLoading(true);
+      }
+
+      // Load assignments
+      loadIDList<AssignmentType>(currentCourse.assignments, Assignment).then((newAssignments) => {
+        // Calculate derived state dependent on course
+        const newIsSuperGrader = superGraderCourses.some((course) => course.id === currentCourse.id);
+        const newSectionsLed = sectionsLed.slice().filter((section) => currentCourse.sections.indexOf(section.id) !== -1);
+
+        setAssignments(newAssignments);
+        setIsSuperGrader(newIsSuperGrader);
+        setLocalSectionsLed(newSectionsLed);
+        // setIsLoading(false);
+
+        // Timer logging (porting logic from componentDidUpdate)
+        const current = Date.now() - timerRef.current;
+        timesRef.current = [...timesRef.current, current];
+        // console.log('ASSIGNMENTS COMPLETE: ', current);
       });
+    } else {
+      // No course, just stop loading
+      // setIsLoading(false);
+      setAssignments([]);
+      setLocalSectionsLed([]);
+      setIsSuperGrader(false);
     }
-
-    this.state = {
-      isLoading: true,
-      assignments: [],
-      isSuperGrader: currentCourse
-        ? superGraderCourses.some((course) => {
-          return course.id === currentCourse.id;
-        })
-        : false,
-      sectionsLed: currentCourse
-        ? sectionsLed.slice().filter((section) => {
-          return currentCourse.sections.indexOf(section.id) !== -1;
-        })
-        : [],
-      showBanner: false,
-      showConversionModal: false,
-    };
-  }
+  }, [currentCourse?.id, superGraderCourses, sectionsLed]); // Depend on ID to trigger reload only when course changes
 
   // ADD THIS BACK TO TURN ON THE SURVEY AGAIN
-  // public componentDidMount() {
+  // useEffect(() => {
   //   setTimeout(() => {
-  //     this.setState({ showBanner: true });
+  //     setShowBanner(true);
   //   }, 1000);
-  // }
+  // }, []);
 
-  public componentDidUpdate = (prevProps: IComponentProps, prevState: IGraderState) => {
-    // Check if the current course has changed
-    const courseChanged = prevProps.currentCourse?.id !== this.props.currentCourse?.id;
+  useEffect(() => {
+    document.title = 'codePost - Grader Console';
+  }, []);
 
-    if (courseChanged && this.props.currentCourse) {
-      // Reload assignments for the new course
-      this.setState({ isLoading: true, assignments: [] });
-      this.loadAssignments(this.props.currentCourse).then((assignments) => {
-        // Update sections led and super grader status for the new course
-        const isSuperGrader = this.props.superGraderCourses.some((course) => {
-          return course.id === this.props.currentCourse?.id;
-        });
-        const sectionsLed = this.props.sectionsLed.slice().filter((section) => {
-          return this.props.currentCourse?.sections.indexOf(section.id) !== -1;
-        });
-
-        this.setState({
-          assignments,
-          isLoading: false,
-          isSuperGrader,
-          sectionsLed,
-        });
-      });
-    }
-
-    if (!prevState.assignments && this.state.assignments) {
-      const current = Date.now() - this.timer;
-
-      this.times = [...this.times, current];
-      // console.log('ASSIGNMENTS COMPLETE: ', current);
-      // console.log(this.times.join('|'));
-    }
-
-    // if (!prevState.sectionsLed && this.state.sectionsLed) {
-    //   const current = Date.now() - this.timer;
-    //   this.times = [...this.times, current];
-    //   console.log('SECTIONS COMPLETE: ', current);
-    //   console.log(this.times.join('|'));
-    // }
+  /* Helper functions */
+  const handleLogout = () => {
+    props.handleLogout();
   };
 
-  public loadAssignments = async (course: CourseType): Promise<AssignmentType[]> => {
-    return loadIDList<AssignmentType>(course.assignments, Assignment);
-  };
+  /* Render Logic */
+  const someRegrades = assignments.some((assn) => assn.allowRegradeRequests);
 
-  /***********************************************************************************
-  /* Render
-  /**********************************************************************************/
+  // Compute a stable base URL for navigation: /grader/courseName/period
+  // This prevents URL nesting when clicking sidebar links
+  const graderBaseURL = useMemo(() => {
+    if (!currentCourse) return props.baseURL;
+    // Build the base path from course info rather than parsing pathname
+    const encodedName = encodeURIComponent(currentCourse.name);
+    const encodedPeriod = encodeURIComponent(currentCourse.period);
+    return `/grader/${encodedName}/${encodedPeriod}`;
+  }, [currentCourse, props.baseURL]);
 
-  public render() {
-    const { currentCourse } = this.props;
-    const someRegrades = this.state.assignments.some((assn) => assn.allowRegradeRequests);
-
-    let graderPanelContent;
-    // if not loaded yet, render a get started div
-    if (!currentCourse) {
-      graderPanelContent = (
-        <div style={{ padding: '40px', fontSize: 28 }}>
-          <div>Select course</div>
-        </div>
-      );
-    } else {
-      graderPanelContent = (
-        <Routes>
-          <Route index element={<div>Select a panel from the navigation</div>} />
-          {this.props.currentCourse && this.props.currentCourse.activateQueue && (
-            <Route
-              key="my_submissions"
-              path="my_submissions/*"
-              element={
-                <MySubmissionsPanel
-                  assignments={this.state.assignments}
-                  course={currentCourse}
-                  graderEmail={this.props.user.email}
-                  isAdmin={this.props.user.courseadminCourses.some((el) => {
-                    return el.id === currentCourse.id;
-                  })}
-                />
-              }
-            />
-          )}
-          {this.state.sectionsLed.length > 0 ? (
-            <Route
-              key="my_sections"
-              path="my_sections/*"
-              element={
-                <SectionPanel
-                  assignments={this.state.assignments}
-                  course={currentCourse}
-                  graderEmail={this.props.user.email}
-                  sections={this.state.sectionsLed}
-                  isAdmin={this.props.user.courseadminCourses.some((el) => {
-                    return el.id === currentCourse.id;
-                  })}
-                />
-              }
-            />
-          ) : undefined}
-          {this.state.isSuperGrader ? (
-            <Route
-              key="all_submissions"
-              path="all_submissions/*"
-              element={
-                <ViewAllPanel course={currentCourse} assignments={this.state.assignments} />
-              }
-            />
-          ) : undefined}
-          {someRegrades && currentCourse ? (
-            <Route
-              path="regrades/*"
-              key="regrades"
-              element={
-                <RegradesPanel
-                  course={currentCourse}
-                  assignments={this.state.assignments}
-                  user={this.props.user}
-                  isAnonymous={false}
-                  isAdmin={this.props.user.courseadminCourses.some((el) => {
-                    return el.id === currentCourse.id;
-                  })}
-                  isSuperGrader={this.state.isSuperGrader}
-                />
-              }
-            />
-          ) : undefined}{' '}
-          <Route
-            path="video"
-            key="video"
-            element={
-              <VideoModal open={true} onCancel={() => this.props.history.push('/grader')} />
-            }
-          />
-        </Routes>
-      );
-    }
-
-    /* Build header */
-    const courseDropdown = (
-      <CourseMenu
-        courses={this.props.initialCourses}
-        currentCourse={this.props.currentCourse}
-        panel="my_submissions"
-        base="grader"
-      />
+  let graderPanelContent;
+  if (!currentCourse) {
+    graderPanelContent = (
+      <div style={{ padding: '40px', fontSize: 28 }}>
+        <div>Select course</div>
+      </div>
     );
-
-    let assignmentDropdown;
-    if (currentCourse) {
-      assignmentDropdown = (
-        <Routes>
-          <Route
-            path=":panel/:assignment"
-            element={
-              <AssignmentMenu
-                currentCourse={currentCourse}
-                assignments={this.state.assignments}
-                baseURL={this.props.match.url}
-              />
-            }
-          />
-        </Routes>
-      );
-    }
-
-    const headerLeft = [courseDropdown, assignmentDropdown];
-
-    const showNewCourseBtn = !this.props.user.hasCredentials;
-    const logout = (
-      <Button key="header-logout" onClick={this.props.handleLogout}>
-        Log Out
-      </Button>
-    );
-
-    const headerRight = [
-      showNewCourseBtn && (
-        <Button onClick={() => this.setState({ showConversionModal: true })}>Create your own course</Button>
-      ),
-      <span key="header-user" className="cp-label cp-label--bold">
-        {this.props.user.email}
-      </span>,
-      <Referral key="referral" user={this.props.user} theme="light" />,
-      <RoleMenu key="header-roles" user={this.props.user} thisApp={USER_TYPE.GRADER} theme="light" />,
-      <CPTooltip key="settings" title={tooltips.management.header.settings} hideThisOnHideTips={true}>
-        <Link className="internal-link" to="/settings">
-          <SettingOutlined />
-        </Link>
-      </CPTooltip>,
-      logout,
-    ];
-
-    const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
-
-    const navigation = (collapsed: boolean) => {
-      // Extract the panel from the current location
-      return (
-        <GraderNav
-          {...this.props}
-          baseURL={this.props.match.url}
-          collapsed={collapsed}
-          isSuperGrader={this.state.isSuperGrader}
-          isSectionLeader={this.state.sectionsLed.length > 0}
-          regradesAllowed={someRegrades}
-          activateQueue={!!(this.props.currentCourse && this.props.currentCourse.activateQueue)}
-        />
-      );
-    };
-
-    return (
-      <CPLayoutAdmin
-        header={header}
-        detail={
-          <span>
-            {this.state.showBanner ? (
-              <Layout.Footer
-                style={{ background: 'rgba(36, 190, 132, 0.13)', margin: '10px 60px 0 60px', padding: '18px 30px' }}
-              >
-                <b>Hi there!</b> Please take{' '}
-                <a href="https://forms.gle/DB8Up1EWjpyNoTHA7" target="_blank" rel="noopener noreferrer">
-                  our end-of-semester survey
-                </a>
-                . Your feedback helps make codePost possible and keeps us improving.{' '}
-              </Layout.Footer>
-            ) : null}
-
-            {graderPanelContent}
-            <CIPGraderModal
-              open={this.state.showConversionModal}
-              onClose={() => this.setState({ showConversionModal: false })}
-              email={this.props.user.email}
-            />
-          </span>
-        }
-        navigation={navigation}
-        collapsible={true}
-        role={USER_TYPE.GRADER}
+  } else {
+    graderPanelContent = (
+      <GraderRoutes
+        currentCourse={currentCourse}
+        assignments={assignments}
+        user={props.user}
+        localSectionsLed={localSectionsLed}
+        isSuperGrader={isSuperGrader}
+        someRegrades={someRegrades}
       />
     );
   }
-}
 
-export default withRouter(Grader) as React.ComponentType<IComponentProps>;
+  /* Build header */
+  const courseDropdown = (
+    <CourseMenu
+      courses={props.initialCourses}
+      currentCourse={props.currentCourse}
+      panel="my_submissions"
+      base="grader"
+    />
+  );
+
+  let assignmentDropdown;
+  if (currentCourse) {
+    assignmentDropdown = (
+      <Routes>
+        <Route
+          path=":panel/:assignment"
+          element={
+            <AssignmentMenu
+              currentCourse={currentCourse}
+              assignments={assignments}
+              baseURL={graderBaseURL}
+            />
+          }
+        />
+      </Routes>
+    );
+  }
+
+  const headerLeft = [courseDropdown, assignmentDropdown];
+  const showNewCourseBtn = !props.user.hasCredentials;
+
+  const logout = (
+    <Button key="header-logout" onClick={handleLogout}>
+      Log Out
+    </Button>
+  );
+
+  const headerRight = [
+    showNewCourseBtn && (
+      <Button key="create-course" onClick={() => setShowConversionModal(true)}>Create your own course</Button>
+    ),
+    <span key="header-user" className="cp-label cp-label--bold">
+      {props.user.email}
+    </span>,
+    <Referral key="referral" user={props.user} theme="light" />,
+    <RoleMenu key="header-roles" user={props.user} thisApp={USER_TYPE.GRADER} theme="light" />,
+    <CPTooltip key="settings" title={tooltips.management.header.settings} hideThisOnHideTips={true}>
+      <Link className="internal-link" to="/settings">
+        <SettingOutlined />
+      </Link>
+    </CPTooltip>,
+    logout,
+  ];
+
+  const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
+
+  const navigation = (collapsed: boolean) => {
+    return (
+      <GraderNav
+        {...props}
+        baseURL={graderBaseURL}
+        collapsed={collapsed}
+        isSuperGrader={isSuperGrader}
+        isSectionLeader={localSectionsLed.length > 0}
+        regradesAllowed={someRegrades}
+        activateQueue={!!(currentCourse && currentCourse.activateQueue)}
+      />
+    );
+  };
+
+  return (
+    <CPLayoutAdmin
+      header={header}
+      detail={
+        <span>
+          {null}
+
+          {graderPanelContent}
+          <CIPGraderModal
+            open={showConversionModal}
+            onClose={() => setShowConversionModal(false)}
+            email={props.user.email}
+          />
+        </span>
+      }
+      navigation={navigation}
+      collapsible={true}
+      role={USER_TYPE.GRADER}
+    />
+  );
+};
+
+export default Grader;

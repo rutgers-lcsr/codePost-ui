@@ -3,7 +3,6 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import { RouteComponentProps } from '../../router/legacy';
 
 import { CopyOutlined, RedoOutlined } from '@ant-design/icons';
 
@@ -41,8 +40,8 @@ interface IProps {
   replaceUser: (user: UserType, redirect: boolean, isSuperUser: boolean) => void;
 }
 
-class Settings extends Component<IProps & RouteComponentProps, IState> {
-  public constructor(props: IProps & RouteComponentProps) {
+class Settings extends Component<IProps, IState> {
+  public constructor(props: IProps) {
     super(props);
     this.state = {
       errorMessage: '',

@@ -1,13 +1,14 @@
 import { Alert, Button, Spin } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
-import { RouteComponentProps } from '../../router/legacy';
+import { useLocation } from 'react-router-dom';
 import { UserType } from '../../infrastructure/user';
 
-interface LogInAsProps extends RouteComponentProps {
+interface LogInAsProps {
   replaceUser: (user: UserType, redirect: boolean, isSuperUser: boolean) => void;
 }
 
-const LogInAs: React.FC<LogInAsProps> = ({ location, replaceUser }) => {
+const LogInAs: React.FC<LogInAsProps> = ({ replaceUser }) => {
+  const location = useLocation();
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 

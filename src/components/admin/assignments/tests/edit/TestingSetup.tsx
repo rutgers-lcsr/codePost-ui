@@ -9,8 +9,7 @@ import React, { useEffect, useState } from 'react';
 import { Breadcrumb, Button, Checkbox, InputNumber, message, Tabs, Typography } from 'antd';
 
 /* other library imports */
-import { RouteComponentProps } from '../../../../../router/legacy';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 
 /* codePost object imports */
 /* codePost object imports */
@@ -39,16 +38,18 @@ interface IProps {
   user: UserType;
 }
 
-export const TestingSetup = (props: IProps & RouteComponentProps) => {
+export const TestingSetup = (props: IProps) => {
   // ************************** State Variables ******************************
   const location = useLocation();
+  const navigate = useNavigate();
+  const params = useParams<{ tabKey?: string }>();
 
   let defaultTab;
-  if (props.match.params.tabKey !== undefined) {
-    defaultTab = props.match.params.tabKey.valueOf();
+  if (params.tabKey !== undefined) {
+    defaultTab = params.tabKey.valueOf();
   } else {
     defaultTab = 'environment';
-    props.history.push(`${props.match.url}/environment`);
+    navigate(`${location.pathname}/environment`, { replace: true });
   }
 
   const [currTab, setCurrTab] = useState(defaultTab);
@@ -175,8 +176,8 @@ export const TestingSetup = (props: IProps & RouteComponentProps) => {
   const onChange = (val: string) => {
     setCurrTab(val);
 
-    const newUrl = `${props.match.url.split('/').slice(0, -1).join('/')}/${val}`;
-    props.history.push(newUrl);
+    const newUrl = `${location.pathname.split('/').slice(0, -1).join('/')}/${val}`;
+    navigate(newUrl);
   };
 
   const updateEnvSetting = async (field: string, value: string | number | boolean | null) => {

@@ -8,13 +8,7 @@ import React, { useEffect, useState } from 'react';
 /* antd imports */
 
 /* other library imports */
-import { Link, Navigate } from 'react-router-dom';
-
-/* other library imports */
-import { RouteComponentProps } from '../../../../router/legacy';
-import { Route, Routes } from 'react-router-dom';
-
-import { LegacyRouteRenderer } from '../../../../router/legacy';
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
 /* codePost object imports */
 import { Assignment, AssignmentType } from '../../../../infrastructure/assignment';
@@ -36,7 +30,8 @@ interface IProps {
   fullSubmissionsLoadComplete: boolean;
 }
 
-export const AssignmentTests = (props: IProps & RouteComponentProps) => {
+export const AssignmentTests = (props: IProps) => {
+  const location = useLocation();
   // ************************** State Variables ******************************
   const [assignment, setAssignment] = useState(props.activeAssignment);
 
@@ -52,19 +47,13 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
 
   // ***************** API / State change functions ***********************
 
+  // Get base URL for Environment Setup link (remove assignment name from path)
+  const baseUrl = location.pathname.split('/').slice(0, -1).join('/');
+
   const breadcrumbs = [
     ...(props.breadcrumbs ? props.breadcrumbs : []),
     {
-      title: (
-        <Link
-          to={props.match.url
-            .split('/')
-            .slice(0, props.match.url.split('/').length - 1)
-            .join('/')}
-        >
-          Environment Setup
-        </Link>
-      ),
+      title: <Link to={baseUrl}>Environment Setup</Link>,
     },
   ];
 
@@ -74,38 +63,24 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
       <Route
         path="edit/:tabKey"
         element={
-          <LegacyRouteRenderer
-            path={`${props.match.url}/edit/:tabKey`}
-            end
-            render={(subprops: RouteComponentProps) => (
-              <TestingSetup
-                {...subprops}
-                breadcrumbs={breadcrumbs}
-                currentAssignment={assignment}
-                submissions={props.submissions}
-                updateAssignment={props.updateAssignment}
-                user={props.user}
-              />
-            )}
+          <TestingSetup
+            breadcrumbs={breadcrumbs}
+            currentAssignment={assignment}
+            submissions={props.submissions}
+            updateAssignment={props.updateAssignment}
+            user={props.user}
           />
         }
       />
       <Route
         path="edit"
         element={
-          <LegacyRouteRenderer
-            path={`${props.match.url}/edit`}
-            end
-            render={(subprops: RouteComponentProps) => (
-              <TestingSetup
-                {...subprops}
-                breadcrumbs={breadcrumbs}
-                currentAssignment={assignment}
-                submissions={props.submissions}
-                updateAssignment={props.updateAssignment}
-                user={props.user}
-              />
-            )}
+          <TestingSetup
+            breadcrumbs={breadcrumbs}
+            currentAssignment={assignment}
+            submissions={props.submissions}
+            updateAssignment={props.updateAssignment}
+            user={props.user}
           />
         }
       />
@@ -113,20 +88,13 @@ export const AssignmentTests = (props: IProps & RouteComponentProps) => {
       <Route
         path="results"
         element={
-          <LegacyRouteRenderer
-            path={`${props.match.url}/results`}
-            end
-            render={(subprops: RouteComponentProps) => (
-              <TestingSummary
-                {...props}
-                {...subprops}
-                breadcrumbs={breadcrumbs}
-                currentAssignment={assignment}
-                submissions={props.submissions}
-                isAdmin={true}
-                tableOnly={false}
-              />
-            )}
+          <TestingSummary
+            breadcrumbs={breadcrumbs}
+            currentAssignment={assignment}
+            submissions={props.submissions}
+            isAdmin={true}
+            tableOnly={false}
+            fullSubmissionsLoadComplete={props.fullSubmissionsLoadComplete}
           />
         }
       />

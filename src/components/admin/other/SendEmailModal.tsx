@@ -1,24 +1,10 @@
-/**********************************************************************************************************************/
-/* Imports
-/**********************************************************************************************************************/
-
-/* react imports */
-import * as React from 'react';
-
-/* style imports */
+import React, { FC, useState, useCallback, useEffect } from 'react';
 import { MailOutlined } from '@ant-design/icons';
 import { Button, List, message, Modal } from 'antd';
-
-/* codePost imports */
-
-// type definitions
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { CourseType } from '../../../infrastructure/course';
-
 import CPButton from '../../core/CPButton';
 import CPTooltip from '../../core/CPTooltip';
-
-/**********************************************************************************************************************/
 
 interface IProps {
   buttonText: string;
@@ -32,153 +18,145 @@ interface IProps {
   button?: (toggleDialog: () => void) => React.ReactNode;
 }
 
-interface IState {
-  /* are we in the middle of sending an email? */
-  isSending: boolean;
-  /* number of recipients to show in list */
-  usersToShow: number;
-
-  modalVisible: boolean;
-}
-
 const MAX_USERS_IN_INITIAL_LIST = 5;
 
-class SendEmailModal extends React.Component<IProps, IState> {
-  public constructor(props: IProps) {
-    super(props);
-    this.state = {
-      isSending: false,
-      modalVisible: false,
-      usersToShow: MAX_USERS_IN_INITIAL_LIST,
-    };
-  }
+const SendEmailModal: FC<IProps> = ({
+  buttonText,
+  title,
+  emails,
+  template,
+  course,
+  assignment,
+  me,
+  body,
+  button,
+}) => {
+  const [isSending, setIsSending] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [usersToShow, setUsersToShow] = useState(MAX_USERS_IN_INITIAL_LIST);
 
-  public componentDidUpdate(_oldProps: IProps, oldState: IState) {
-    if (oldState.modalVisible && !this.state.modalVisible) {
-      this.setState({
-        usersToShow: MAX_USERS_IN_INITIAL_LIST,
-      });
+  // Reset users list when modal closes
+  useEffect(() => {
+    if (!modalVisible) {
+      setUsersToShow(MAX_USERS_IN_INITIAL_LIST);
     }
-  }
+  }, [modalVisible]);
 
-  public sendTestEmail = () => {
-    this.sendEmails([this.props.me], false);
-  };
+  const toggleDialog = useCallback(() => {
+    setModalVisible((prev) => !prev);
+  }, []);
 
-  public sendLiveEmails = () => {
-    this.setState({ isSending: true }, () => {
-      this.sendEmails(this.props.emails, true);
-    });
-    this.toggleDialog();
-  };
+  const sendEmails = useCallback((toSend: string[], livemode: boolean) => {
+    setIsSending(true);
 
-  public showMore = () => {
-    this.setState((oldState: IState) => {
-      return {
-        usersToShow: oldState.usersToShow + 5,
-      };
-    });
-  };
+    const promises = toSend.map((user) =>
+      fetch(`${process.env.REACT_APP_API_URL}/users/${user}/email/`, {
+        body: JSON.stringify({
+          token: localStorage.getItem('token'),
+          template: template,
+          assignment: assignment?.id,
+          course: course.id,
+          livemode,
+        }),
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+      })
+    );
 
-  public sendEmails = (toSend: string[], livemode: boolean) => {
-    this.setState({ isSending: true }, () => {
-      toSend.forEach((users) => {
-        fetch(`${process.env.REACT_APP_API_URL}/users/${users}/email/`, {
-          body: JSON.stringify({
-            token: localStorage.getItem('token'),
-            template: this.props.template,
-            assignment: this.props.assignment !== undefined ? this.props.assignment.id : undefined,
-            course: this.props.course.id,
-            livemode,
-          }),
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
-            'Content-Type': 'application/json',
-          },
-          method: 'POST',
-        });
-      });
+    Promise.all(promises).then(() => {
+      setIsSending(false);
+      message.success(`Email${livemode ? 's' : ''} successfully sent.`);
+    }).catch(() => {
+      setIsSending(false);
+      message.error('Failed to send some emails.');
     });
 
-    this.setState({ isSending: false });
-    message.success(`Email${livemode ? 's' : ''} successfully sent.`);
-  };
+  }, [template, assignment, course.id]);
 
-  public toggleDialog = () => {
-    this.setState({
-      modalVisible: !this.state.modalVisible,
-    });
-  };
+  const sendTestEmail = useCallback(() => {
+    sendEmails([me], false);
+  }, [me, sendEmails]);
 
-  public render() {
-    return (
-      <span>
-        {this.props.button !== undefined ? (
-          this.props.button(this.toggleDialog)
-        ) : (
-          <CPButton
-            cpType="secondary"
-            icon={<MailOutlined />}
-            loading={this.state.isSending}
-            onClick={this.toggleDialog}
-          >
-            {this.props.buttonText}
-          </CPButton>
-        )}
-        <Modal
-          open={this.state.modalVisible}
-          onCancel={this.toggleDialog}
-          title={this.props.title}
-          width={600}
-          footer={[
-            <Button key="back" onClick={this.toggleDialog}>
-              Cancel
-            </Button>,
-            <Button key="submit" type="primary" disabled={false} onClick={this.sendLiveEmails}>
-              Send
-            </Button>,
-          ]}
+  const sendLiveEmails = useCallback(() => {
+    sendEmails(emails, true);
+    toggleDialog();
+  }, [emails, sendEmails, toggleDialog]);
+
+  const showMore = useCallback(() => {
+    setUsersToShow((prev) => prev + 5);
+  }, []);
+
+  return (
+    <span>
+      {button !== undefined ? (
+        button(toggleDialog)
+      ) : (
+        <CPButton
+          cpType="secondary"
+          icon={<MailOutlined />}
+          loading={isSending}
+          onClick={toggleDialog}
         >
-          {this.props.body}
-          <br />
+          {buttonText}
+        </CPButton>
+      )}
+      <Modal
+        open={modalVisible}
+        onCancel={toggleDialog}
+        title={title}
+        width={600}
+        footer={[
+          <Button key="back" onClick={toggleDialog}>
+            Cancel
+          </Button>,
+          <Button key="submit" type="primary" disabled={false} onClick={sendLiveEmails}>
+            Send
+          </Button>,
+        ]}
+      >
+        {body}
+        <br />
+        <div>
+          <CPButton onClick={sendTestEmail} cpType="secondary">
+            Send myself a test email
+          </CPButton>
+          &nbsp;{' '}
+          <CPTooltip
+            title="This will send you an email example of what the recipients will receive."
+            infoIcon={true}
+          />
+        </div>
+        {emails !== undefined ? (
           <div>
-            <CPButton onClick={this.sendTestEmail} cpType="secondary">
-              Send myself a test email
-            </CPButton>
-            &nbsp;{' '}
-            <CPTooltip
-              title="This will send you an email example of what the recipients will receive."
-              infoIcon={true}
+            <br />
+            <h3>{emails.length} users will be emailed</h3>
+            <List
+              itemLayout="horizontal"
+              loadMore={
+                emails.length > usersToShow ? (
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      marginTop: 12,
+                      height: 32,
+                      lineHeight: '32px',
+                    }}
+                  >
+                    <Button onClick={showMore}>show more</Button>
+                  </div>
+                ) : null
+              }
+              dataSource={emails.slice(0, Math.min(usersToShow, emails.length))}
+              renderItem={(item) => <List.Item>{item}</List.Item>}
             />
           </div>
-          {this.props.emails !== undefined ? (
-            <div>
-              <br />
-              <h3>{this.props.emails.length} users will be emailed</h3>
-              <List
-                itemLayout="horizontal"
-                loadMore={
-                  this.props.emails.length > this.state.usersToShow ? (
-                    <div
-                      style={{
-                        textAlign: 'center',
-                        marginTop: 12,
-                        height: 32,
-                        lineHeight: '32px',
-                      }}
-                    >
-                      <Button onClick={this.showMore}>show more</Button>
-                    </div>
-                  ) : null
-                }
-                dataSource={this.props.emails.slice(0, Math.min(this.state.usersToShow, this.props.emails.length))}
-                renderItem={(item) => <List.Item>{item}</List.Item>}
-              />
-            </div>
-          ) : null}
-        </Modal>
-      </span>
-    );
-  }
-}
+        ) : null}
+      </Modal>
+    </span>
+  );
+};
+
 export default SendEmailModal;

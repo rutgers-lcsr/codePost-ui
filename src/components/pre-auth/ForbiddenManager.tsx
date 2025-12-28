@@ -8,8 +8,6 @@ import * as React from 'react';
 /* other library imports */
 import { Route, Routes } from 'react-router-dom';
 
-import { LegacyRouteRenderer } from '../../router/legacy';
-
 /* codePost imports */
 import LoginForm from './LoginForm';
 
@@ -25,7 +23,7 @@ interface IndexManagerProps {
 class ForbiddenManager extends React.Component<IndexManagerProps> {
   public render() {
     /* tslint:disable:jsx-no-lambda */
-    const renderLogin = () => (
+    const loginElement = (
       <LoginForm
         handleLogin={this.props.handleLogin}
         error={this.props.error}
@@ -39,43 +37,25 @@ class ForbiddenManager extends React.Component<IndexManagerProps> {
         <Routes>
           <Route
             path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
-            element={
-              <LegacyRouteRenderer
-                path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
-                end
-                render={renderLogin}
-              />
-            }
+            element={loginElement}
           />
 
           <Route
             path={`${GRADER}/:courseName?/:period?/:assignmentName?/:panelName1?`}
-            element={
-              <LegacyRouteRenderer
-                path={`${GRADER}/:courseName?/:period?/:assignmentName?/:panelName1?`}
-                end
-                render={renderLogin}
-              />
-            }
+            element={loginElement}
           />
 
           <Route
             path={`${ADMIN}/:courseName?/:period?/:panelName1?/:panelName2?`}
-            element={
-              <LegacyRouteRenderer
-                path={`${ADMIN}/:courseName?/:period?/:panelName1?/:panelName2?`}
-                end
-                render={renderLogin}
-              />
-            }
+            element={loginElement}
           />
 
           <Route
             path={`${CODE}/:submissionId`}
-            element={<LegacyRouteRenderer path={`${CODE}/:submissionId`} end render={renderLogin} />}
+            element={loginElement}
           />
 
-          <Route path={'/settings'} element={<LegacyRouteRenderer path={'/settings'} end render={renderLogin} />} />
+          <Route path={'/settings'} element={loginElement} />
         </Routes>
       </div>
     );

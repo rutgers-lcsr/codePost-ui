@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { Alert, Button, Spin } from 'antd';
+import { useParams } from 'react-router-dom';
 
 import { colors } from '../../theme/colors';
 import PreAuthLayout from '../pre-auth/PreAuthLayout';
@@ -8,8 +9,6 @@ import PreAuthLayout from '../pre-auth/PreAuthLayout';
 import { Submission } from '../../infrastructure/submission';
 
 interface IValidateInviteProps {
-  match: any;
-  history: any;
   isLoggedIn: boolean;
 }
 
@@ -21,16 +20,19 @@ enum STATUS {
 }
 
 const ValidateInvite = (props: IValidateInviteProps) => {
+  const params = useParams<{ sid: string; token: string }>();
   const [submission, setSubmission] = React.useState<any>(undefined);
   const [status, setStatus] = React.useState<STATUS>(STATUS.IDLE);
 
   React.useEffect(() => {
     const validatePartnerLinkAndReturn = async () => {
-      const token = props.match.params.token;
-      const sid = props.match.params.sid;
+      const token = params.token;
+      const sid = params.sid;
+
+      if (!token || !sid) return;
 
       try {
-        const data = await Submission.validatePartnerLinkAndReturn(sid, { token });
+        const data = await Submission.validatePartnerLinkAndReturn(parseInt(sid, 10), { token });
         setSubmission(data);
       } catch (err) {
         setStatus(STATUS.INVALID);
@@ -39,15 +41,17 @@ const ValidateInvite = (props: IValidateInviteProps) => {
     };
 
     validatePartnerLinkAndReturn();
-  }, [props.match.params.sid, props.match.params.token]);
+  }, [params.sid, params.token]);
 
   const join = async () => {
-    const token = props.match.params.token;
-    const sid = props.match.params.sid;
+    const token = params.token;
+    const sid = params.sid;
+
+    if (!token || !sid) return;
 
     setStatus(STATUS.LOADING);
     try {
-      await Submission.validatePartnerLink(sid, { token });
+      await Submission.validatePartnerLink(parseInt(sid, 10), { token });
       setStatus(STATUS.SUCCESS);
     } catch (err) {
       setStatus(STATUS.INVALID);

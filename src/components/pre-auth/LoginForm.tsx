@@ -28,41 +28,38 @@ interface ILoginFormProps {
   maintenanceMode?: boolean;
 }
 
-const initialState = {
-  email: '',
-  password: '',
-  loading: false,
-};
+const LoginForm: React.FC<ILoginFormProps> = ({
+  handleLogin,
+  error,
+  title = 'Login',
+  redirectAfterLogin,
+  maintenanceMode,
+}) => {
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
 
-type State = Readonly<typeof initialState>;
-
-class LoginForm extends React.Component<ILoginFormProps, State> {
-  public readonly state: State = initialState;
-
-  public handleChange = (label: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    this.setState((prevstate) => {
-      const newState: any = { ...prevstate };
-      newState[label] = newValue;
-      return newState;
-    });
-  };
-
-  public handleLogin = () => {
-    this.setState({ loading: true });
-    this.props.handleLogin(this.state.email, this.state.password, this.props.redirectAfterLogin).catch(() => {
-      this.setState({ password: '', loading: false });
-    });
-  };
-
-  public handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.keyCode === 13) {
-      this.handleLogin();
+  const performLogin = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      await handleLogin(email, password, redirectAfterLogin);
+    } catch {
+      setPassword('');
+      setLoading(false);
     }
-  };
+  }, [email, password, redirectAfterLogin, handleLogin]);
 
-  public renderError = (error: string) => {
-    switch (error) {
+  const handleKeyPress = React.useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        performLogin();
+      }
+    },
+    [performLogin],
+  );
+
+  const renderError = (errorMsg: string) => {
+    switch (errorMsg) {
       case '':
         return '';
       case 'invalid':
@@ -92,70 +89,68 @@ class LoginForm extends React.Component<ILoginFormProps, State> {
     }
   };
 
-  public render() {
-    return (
-      <PreAuthLayout isLoggedIn={false}>
-        <div style={{ maxWidth: 500, margin: '0 auto' }}>
-          <br />
-          {this.props.maintenanceMode ? (
-            <Typography.Title level={2} style={{ textAlign: 'center', color: 'orange' }}>
-              CodePost is currently down for maintenance. Please try logging back in later.
-            </Typography.Title>
-          ) : (
-            <div />
-          )}
-          <br />
-          <Typography.Title level={2}>{this.props.title !== undefined ? this.props.title : 'Login'}</Typography.Title>
-          <form>
-            <Input
-              prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-              placeholder="Email address"
-              name="email"
-              value={this.state.email}
-              onChange={this.handleChange.bind(this, 'email')}
-              onKeyDown={this.handleKeyPress}
-              disabled={this.props.maintenanceMode}
-            />
-            <br />
-            <br />
-            <Input.Password
-              prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-              placeholder="Password"
-              autoComplete="current-password"
-              value={this.state.password}
-              onChange={this.handleChange.bind(this, 'password')}
-              onKeyDown={this.handleKeyPress}
-              visibilityToggle={false}
-              disabled={this.props.maintenanceMode}
-            />
-            {this.renderError(this.props.error)}
-            <br />
-            <br />
-            <CPButton
-              onClick={this.handleLogin}
-              cpType="primary"
-              loading={this.state.loading}
-              disabled={this.props.maintenanceMode}
-            >
-              Continue
-            </CPButton>
-          </form>
+  return (
+    <PreAuthLayout isLoggedIn={false}>
+      <div style={{ maxWidth: 500, margin: '0 auto' }}>
+        <br />
+        {maintenanceMode ? (
+          <Typography.Title level={2} style={{ textAlign: 'center', color: 'orange' }}>
+            CodePost is currently down for maintenance. Please try logging back in later.
+          </Typography.Title>
+        ) : (
+          <div />
+        )}
+        <br />
+        <Typography.Title level={2}>{title}</Typography.Title>
+        <form>
+          <Input
+            prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
+            placeholder="Email address"
+            name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={handleKeyPress}
+            disabled={maintenanceMode}
+          />
           <br />
           <br />
-          <Link to="/forgot-password">Forgot password?</Link>
+          <Input.Password
+            prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
+            placeholder="Password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={handleKeyPress}
+            visibilityToggle={false}
+            disabled={maintenanceMode}
+          />
+          {renderError(error)}
           <br />
-          <a
-            onClick={() => {
-              window.open('https://help.codepost.io/en/articles/3324251-faq-where-is-my-email', '_blank');
-            }}
-            style={{ cursor: 'pointer' }}
+          <br />
+          <CPButton
+            onClick={performLogin}
+            cpType="primary"
+            loading={loading}
+            disabled={maintenanceMode}
           >
-            Where's my sign up email?
-          </a>
-        </div>
-      </PreAuthLayout>
-    );
-  }
-}
+            Continue
+          </CPButton>
+        </form>
+        <br />
+        <br />
+        <Link to="/forgot-password">Forgot password?</Link>
+        <br />
+        <a
+          onClick={() => {
+            window.open('https://help.codepost.io/en/articles/3324251-faq-where-is-my-email', '_blank');
+          }}
+          style={{ cursor: 'pointer' }}
+        >
+          Where's my sign up email?
+        </a>
+      </div>
+    </PreAuthLayout>
+  );
+};
 
 export default LoginForm;
