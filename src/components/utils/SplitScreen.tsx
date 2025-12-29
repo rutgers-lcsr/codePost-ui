@@ -42,7 +42,7 @@ export default function SplitScreen({ children, initialLeftWidth = 50 }: Props) 
   }, []);
   return (
     <div ref={containerRef} style={{ display: 'flex', height: '100%', width: '100%' }}>
-      <div style={{ width: `${leftWidth}%`, overflow: 'auto' }}>{leftChild && <>{leftChild}</>}</div>
+      <div className="split-screen-pane" style={{ width: `${leftWidth}%`, overflow: 'auto' }}>{leftChild && <>{leftChild}</>}</div>
       <div
         onMouseDown={handleMouseDown}
         onMouseEnter={() => setIsDividerHovered(true)}
@@ -55,7 +55,7 @@ export default function SplitScreen({ children, initialLeftWidth = 50 }: Props) 
           userSelect: 'none',
         }}
       />
-      <div style={{ flex: 1, overflow: 'auto' }}>{rightChild && <>{rightChild}</>}</div>
+      <div className="split-screen-pane" style={{ flex: 1, overflow: 'auto' }}>{rightChild && <>{rightChild}</>}</div>
     </div>
   );
 }

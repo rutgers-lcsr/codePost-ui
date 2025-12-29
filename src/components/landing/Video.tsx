@@ -123,7 +123,7 @@ interface IVideoState {
 }
 
 interface IVideoProps extends IWithWindowWatcherProps {
-  location: { search: string };
+  location?: { search: string };
   containerWidth?: number;
 }
 
@@ -136,7 +136,9 @@ class Video extends React.Component<IVideoProps, IVideoState> {
     super(props);
 
     // This blob helps prevent a broken ref for the ReactPlayer onload
-    const values = queryString.parse(props.location.search);
+    // Use window.location.search as fallback if location prop is not provided
+    const searchString = props.location?.search ?? window.location.search;
+    const values = queryString.parse(searchString);
     let initialVideo = 'overview';
     if (values.video !== undefined) {
       if (values.video !== '1') {
@@ -159,7 +161,8 @@ class Video extends React.Component<IVideoProps, IVideoState> {
     // URL setup
     // codepost.io/?video=1&section=post-grading
 
-    const values = queryString.parse(this.props.location.search);
+    const searchString = this.props.location?.search ?? window.location.search;
+    const values = queryString.parse(searchString);
     if (values.video !== undefined && video !== null) {
       video.scrollIntoView();
 

@@ -6,7 +6,7 @@ import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindo
 
 import ErrorBoundary from '../../core/ErrorBoundary';
 import SplitScreen from '../../utils/SplitScreen.js';
-import { Divider } from 'antd';
+// import { Divider } from 'antd';
 interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
   file: FileType;
   toolbarWidgets: React.ReactNode[];
@@ -71,7 +71,7 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
           <div
             className="code-panel"
             id="code-panel"
-            style={{ ...codePanelStyle, height: props.windowheight - 50, padding: '20px 20px' }}
+            style={{ ...codePanelStyle, height: '100%', padding: '20px 20px 0px' }}
           >
             <SplitScreen initialLeftWidth={72}>
               <div
@@ -89,13 +89,11 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '10px',
-                      padding: '10px',
-                      // backgroundColor: '#f5f5f5',
-
-                      marginBottom: '10px',
+                      padding: '12px 20px',
+                      // borderBottom: '1px solid #f0f0f0', // Optional: subtle separator if needed
                     }}
                   >
-                    <Divider titlePlacement="left">{props.toolbarWidgets}</Divider>
+                    {props.toolbarWidgets}
                   </div>
                 )}
                 <div

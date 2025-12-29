@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, lazy } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 
 import { AssignmentType } from '../../infrastructure/assignment';
@@ -6,11 +6,12 @@ import { SectionType } from '../../infrastructure/section';
 import { CourseType } from '../../infrastructure/types';
 import { UserType } from '../../infrastructure/user';
 
-import MySubmissionsPanel from './MySubmissionsPanel';
-import SectionPanel from './SectionPanel';
-import ViewAllPanel from './ViewAllPanel';
-import RegradesPanel from './RegradesPanel';
-import VideoModal from '../landing/VideoModal';
+// Lazy-loaded route components
+const MySubmissionsPanel = lazy(() => import('./MySubmissionsPanel'));
+const SectionPanel = lazy(() => import('./SectionPanel'));
+const ViewAllPanel = lazy(() => import('./ViewAllPanel'));
+const RegradesPanel = lazy(() => import('./RegradesPanel'));
+const VideoModal = lazy(() => import('../landing/VideoModal'));
 
 interface GraderRoutesProps {
     currentCourse: CourseType;

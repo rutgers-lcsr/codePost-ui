@@ -42,8 +42,30 @@
     &__sider {
       background-color: #fff;
       box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.11);
-      height: calc(100vh - 50px);
-      overflow: hidden;
+      // height: calc(100vh - 50px); // removed as it conflicts with flex layout
+      // overflow: hidden; // conflicts with auto scroll
+
+      // Hide scrollbar
+      scrollbar-width: none;
+      /* Firefox */
+      -ms-overflow-style: none;
+
+      /* IE/Edge */
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    &__inner-sider {
+      // Hide scrollbar
+      scrollbar-width: none;
+      /* Firefox */
+      -ms-overflow-style: none;
+
+      /* IE/Edge */
+      &::-webkit-scrollbar {
+        display: none;
+      }
     }
 
     &__header {

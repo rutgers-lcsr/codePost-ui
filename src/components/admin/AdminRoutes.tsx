@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { lazy } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 
-/* codePost imports */
-import ManageAssignments from './assignments/ManageAssignments';
-import RosterManager from './roster/RosterManager';
-import CourseSettingsPanel from './settings/CourseSettingsPanel';
-import WebhooksPanel from './settings/WebhooksPanel';
-import SubmissionsManager from './submissions/SubmissionsManager';
-import VideoModal from '../landing/VideoModal';
+// Lazy-loaded route components
+const ManageAssignments = lazy(() => import('./assignments/ManageAssignments'));
+const RosterManager = lazy(() => import('./roster/RosterManager'));
+const CourseSettingsPanel = lazy(() => import('./settings/CourseSettingsPanel'));
+const WebhooksPanel = lazy(() => import('./settings/WebhooksPanel'));
+const SubmissionsManager = lazy(() => import('./submissions/SubmissionsManager'));
+const VideoModal = lazy(() => import('../landing/VideoModal'));
 
 /* types */
 import {

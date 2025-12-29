@@ -90,15 +90,7 @@ const BulkUpload: FC<IProps> = (props) => {
   }, [onCancel]);
 
   // clearFiles is available if needed for reset functionality
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _clearFiles = useCallback(() => {
-    setProtoSubmissions([]);
-    setStudentMap(buildNewStudentMap(students, submissions));
-    setFileMap({});
-    setStatus(STATUS.NONE);
-    setNumFiles(0);
-    setNumUploaded(0);
-  }, [students, submissions, buildNewStudentMap]);
+
 
   const updateProtoSubmissions = useCallback((protos: IProtoSubmission[], nFiles: number, errors: string[]) => {
     setProtoSubmissions(protos);
@@ -173,159 +165,10 @@ const BulkUpload: FC<IProps> = (props) => {
   }, [students, protoSubmissions, submissions, deleteSubmission, updateSubmission]);
 
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _performUpload = useCallback(async () => {
-    // Prepare the list to upload
-    const toUpload = overwriteMode
-      ? [...protoSubmissions]
-      : protoSubmissions.filter((el) => !el.isCollision);
-
-    // Capture fileMap at this moment
-    const currentFileMap = fileMap;
-
-    const uploadAndPop = (submission: IProtoSubmission): Promise<void> => {
-      const files: any[] = [];
-      const submitter = submission.students.join(',');
-
-      if (Object.prototype.hasOwnProperty.call(currentFileMap, submitter)) {
-        Object.keys(currentFileMap[submitter]).forEach((fullname: string) => {
-          const path = fullname;
-          const fileName = fullname.split('/').slice(-1)[0];
-          const pathDirs = path.split('/');
-          const filePath = pathDirs.length > 3 ? pathDirs.slice(2, pathDirs.length - 1).join('/') : null;
-          const payload = {
-            name: fileName,
-            data: currentFileMap[submitter][path],
-            path: filePath,
-          };
-          files.push(payload);
-        });
-      }
-
-      return uploadSubmission(assignment, submission.students, files)
-        .then(() => {
-          setUploadMap((prev) => {
-            const next = { ...prev };
-            submission.students.forEach((student) => { next[student] = UPLOAD_STATUS.SUCCESS; });
-            return next;
-          });
-          setNumUploaded((prev) => prev + 1);
-
-          if (toUpload.length) {
-            const newSub = toUpload.pop();
-            if (newSub) {
-              return uploadAndPop(newSub);
-            }
-          }
-        })
-        .catch(() => {
-          setUploadMap((prev) => {
-            const next = { ...prev };
-            submission.students.forEach((student) => { next[student] = UPLOAD_STATUS.ERROR; }); // Assuming ERROR status exists or keep SUCCESS as per original code? 
-            // Original code set SUCCESS even on catch? 
-            // "uploadMap[student] = UPLOAD_STATUS.SUCCESS;" in catch block in original code. 
-            // That seems suspicious but I will follow it for now or check if it was a typo.
-            // Actually looking at original code:
-            // .catch(() => { ... uploadMap[student] = UPLOAD_STATUS.SUCCESS; ... });
-            // That mimics the success block. Maybe they want to count it as processed?
-            // I will stick to original logic.
-            return next;
-          });
-
-          // Continue recursion
-          if (toUpload.length) {
-            const newSub = toUpload.pop();
-            if (newSub) {
-              return uploadAndPop(newSub);
-            }
-          }
-        });
-    };
-
-    const promises: Promise<void>[] = [];
-    const MAX_NUM_CONNECTIONS = 5;
-    const connectionsLimit = Math.min(toUpload.length, MAX_NUM_CONNECTIONS);
-
-    for (let i = 0; i < connectionsLimit; i++) {
-      const parentNode = toUpload.pop();
-      if (parentNode) {
-        promises.push(uploadAndPop(parentNode));
-      }
-    }
-
-    await Promise.all(promises);
-    setStatus(STATUS.COMPLETE);
-
-  }, [overwriteMode, protoSubmissions, fileMap, uploadSubmission, assignment]); // Added dependencies
 
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _readFiles = useCallback(async () => {
-    // Mutate local object then set state to minimize updates
-    // But we need to update state incrementally for progress or at least at the end?
-    // Original code: uses setState inside the loop.
-    // "this.setState((oldState) => { return { fileMap: { ...oldState.fileMap, [submitters]: subfiles } }; });"
-    // I can replicate this.
 
-    // Caution: functional updates in loop might conflict if we don't return new object every time.
-    // Better to use a functional update `setFileMap(prev => ...)` which I will do in the logic.
 
-    await Promise.all(
-      protoSubmissions.map(async (submission) => {
-        const submitters = submission.students.join(',');
-        for (const file of submission.files) {
-          try {
-            let outputFiles;
-            if ('file' in file && file.file) {
-              outputFiles = await readUploadedFile(file.file as File | Blob);
-            } else {
-              outputFiles = await readUploadedFile(file as unknown as File | Blob); // Check type matching
-            }
-
-            if (file.type === 'application/zip' || ['.zip'].includes(file.name)) {
-              outputFiles.forEach((outputFile: IProtoFileUpload) => {
-                const fullName = `anydirname/${submission.students.join(',')}/${outputFile.longname}`;
-                setFileMap((prev) => {
-                  const oldSubFiles = prev[submitters] || {};
-                  return {
-                    ...prev,
-                    [submitters]: { ...oldSubFiles, [fullName]: outputFile.data }
-                  };
-                });
-              });
-            } else {
-              outputFiles.forEach((outputFile: IProtoFileUpload) => {
-                setFileMap((prev) => {
-                  const oldSubFiles = prev[submitters] || {};
-                  return {
-                    ...prev,
-                    [submitters]: { ...oldSubFiles, [outputFile.longname]: outputFile.data }
-                  };
-                });
-              });
-            }
-          } catch (e) {
-            setErrorPaths((prev) => [...prev, String(e)]);
-            setStatus(STATUS.FILE_ERROR);
-          }
-        }
-      })
-    );
-
-    // After reading files, we need to trigger tryToUpload.
-    // But since this is async, we can just call the check function.
-    // We need to wait for state to update? `setFileMap` is async.
-    // This is the tricky part.
-    // We should probably rely on a useEffect to trigger upload when read is done?
-    // Or just pass the final map to the next step?
-    // The original code uses `tryToUpload` which checks `this.state.fileMap`.
-    // In functional, we can't easily wait for state update in the same function.
-    // Solution: check condition in a useEffect? 
-    // Or, better: build a local map and set it once, then proceed.
-    // But we want progress bars?
-    // Original has `STATUS.READING`.
-    // Let's refactor `readFiles` to accumulate locally and set state once if possible, or use a ref for the map to read it synchronously.
-  }, [protoSubmissions]);
 
   // Revised readFiles to be more robust
   const performReadAndUpload = useCallback(async () => {
