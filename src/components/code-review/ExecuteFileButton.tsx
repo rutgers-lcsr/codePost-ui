@@ -1,12 +1,13 @@
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
+  DownOutlined,
   EyeOutlined,
   LoadingOutlined,
   PlayCircleOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
-import { Button, message, Tooltip } from 'antd';
+import { Button, Dropdown, message, Tag, Tooltip } from 'antd';
 import React, { useState } from 'react';
 import { useExecuteFileAsync } from '../../hooks/useExecuteFileAsync';
 import { FileType } from '../../infrastructure/file';
@@ -14,6 +15,7 @@ import { colors } from '../../theme/colors';
 import { ExecutionResult } from '../../utils/executeFileStreaming';
 import { FileExecutionModal } from './FileExecutionModal';
 
+// Force refresh
 interface ExecuteFileButtonProps {
   file: FileType | undefined;
   disabled?: boolean;
@@ -131,29 +133,6 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
       return executableExtensions.includes(ext);
     })();
 
-  const getButtonIcon = () => {
-    if (showSuccess) return <CheckCircleOutlined />;
-    if (isExecuting) return <LoadingOutlined />;
-    return <PlayCircleOutlined />;
-  };
-
-  const getButtonType = () => {
-    if (showSuccess) return 'default';
-    return 'primary';
-  };
-
-  const getButtonStyle = (): React.CSSProperties => {
-    if (showSuccess) {
-      return {
-        backgroundColor: colors.actionGreen,
-        borderColor: colors.actionGreen,
-        color: 'white',
-      };
-    }
-    // Remove blue for executing as modal shows it
-    return {};
-  };
-
   const tooltipTitle = !isExecutable ? 'This file type cannot be executed.' : 'Run this file';
 
   const formatCachedTime = (executedAt?: string) => {
@@ -168,68 +147,80 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
     return date.toLocaleDateString();
   };
 
+  const menuItems = [];
+
+  if (canWrite && !isExecuting && isExecutable) {
+    menuItems.push({
+      key: 'force-run',
+      icon: <ReloadOutlined />,
+      label: 'Force Run (Ignore Cache)',
+      onClick: () => handleExecute(true),
+      disabled: disabled,
+    });
+  }
+
+  if (result || isExecuting || error) {
+    menuItems.push({
+      key: 'view-logs',
+      icon: <EyeOutlined />,
+      label: 'View Execution Logs',
+      onClick: () => setModalVisible(true),
+    });
+  }
+
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '0px', alignItems: 'center' }}>
           <Tooltip title={tooltipTitle}>
             <Button
-              type={getButtonType()}
-              size="small"
-              icon={getButtonIcon()}
+              type="primary"
+              size="middle"
+              icon={isExecuting ? <LoadingOutlined /> : <PlayCircleOutlined />}
               onClick={() => handleExecute(false)}
               disabled={disabled || !isExecutable || isExecuting}
-              style={getButtonStyle()}
+              style={{
+                borderTopRightRadius: 0,
+                borderBottomRightRadius: 0,
+                backgroundColor: colors.actionGreen,
+                borderColor: colors.actionGreen,
+              }}
             >
-              {showSuccess ? `Success (${lastProcessedResult?.execution_time?.toFixed(2) || '0.00'}s)` : 'Run'}
+              Run
             </Button>
           </Tooltip>
-
-          {canWrite && !isExecuting && isExecutable && (
-            <Tooltip title="Force re-execute (ignore cache)">
-              <Button
-                type="default"
-                size="small"
-                icon={<ReloadOutlined />}
-                onClick={() => handleExecute(true)}
-                disabled={disabled || isExecuting}
-                style={{
-                  borderColor: isCached ? '#faad14' : '#d9d9d9',
-                  color: isCached ? '#faad14' : '#595959',
-                  backgroundColor: isCached ? '#fffbe6' : 'transparent',
-                }}
-              >
-                Force Run
-              </Button>
-            </Tooltip>
-          )}
-
-          {(result || isExecuting || error) && (
-            <Tooltip title="View execution output and logs">
-              <Button size="small" icon={<EyeOutlined />} onClick={() => setModalVisible(true)} disabled={false} />
-            </Tooltip>
-          )}
+          <Dropdown menu={{ items: menuItems }} trigger={['click']} disabled={disabled || isExecuting}>
+            <Button
+              type="primary"
+              size="middle"
+              onClick={(e) => e.preventDefault()}
+              style={{
+                borderTopLeftRadius: 0,
+                borderBottomLeftRadius: 0,
+                marginLeft: '-1px',
+                paddingLeft: '8px',
+                paddingRight: '8px',
+                backgroundColor: colors.actionGreen,
+                borderColor: colors.actionGreen,
+              }}
+            >
+              <DownOutlined />
+            </Button>
+          </Dropdown>
         </div>
 
-        {isCached && !isExecuting && cachedInfo && (
-          <div
-            style={{
-              fontSize: '10px',
-              maxWidth: '220px',
-              textAlign: 'center',
-              color: '#8c8c8c',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              justifyContent: 'center',
-            }}
-          >
-            <ClockCircleOutlined style={{ fontSize: '10px' }} />
-            <span>
-              Cached result
-              {cachedInfo.executedAt && ` ${formatCachedTime(cachedInfo.executedAt)}`}
-            </span>
-          </div>
+        {showSuccess && !isExecuting && (
+          <Tag icon={<CheckCircleOutlined />} color="success">
+            Success ({lastProcessedResult?.execution_time?.toFixed(2) || '0.00'}s)
+          </Tag>
+        )}
+
+        {isCached && !isExecuting && !showSuccess && cachedInfo && (
+          <Tooltip title={`Executed by ${cachedInfo.executedBy || 'Unknown'}`}>
+            <Tag icon={<ClockCircleOutlined />} color="gold">
+              Cached {formatCachedTime(cachedInfo.executedAt)}
+            </Tag>
+          </Tooltip>
         )}
       </div>
 

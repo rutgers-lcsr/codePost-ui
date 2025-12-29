@@ -6,7 +6,7 @@
 import * as React from 'react';
 
 /* other library imports */
-import { Button, Flex, Image, Space, Typography } from 'antd';
+import { Image } from 'antd';
 import classNames from 'classnames';
 import type { Components } from 'react-markdown';
 import ReactMarkdown from 'react-markdown';
@@ -24,7 +24,7 @@ import CommentHighlightContext from './CommentHighlightContext';
 import { jupyterToMarkdown } from './Jupyter';
 import Link from 'antd/es/typography/Link';
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context.js';
-import { CloseOutlined } from '@ant-design/icons';
+
 import { useMarkdownTheme, MarkdownThemeValues } from './useMarkdownTheme';
 
 /**********************************************************************************************************************/
@@ -450,13 +450,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
       return;
     }
 
-    if (!props.executionResult) {
-      setExecutedContent(null);
-      setExecutionError(null);
-      return;
-    }
-
-    // Clean up old cached object URLs
+    // Clean up old cached object URLs whenever execution result changes
     if (window.jupyterImages) {
       window.jupyterImages.forEach((imageInfo) => {
         if (imageInfo.objectUrl) {
@@ -464,6 +458,12 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
         }
       });
       window.jupyterImages.clear();
+    }
+
+    if (!props.executionResult) {
+      setExecutedContent(null);
+      setExecutionError(null);
+      return;
     }
 
     if (props.executionResult.output_data) {
@@ -482,55 +482,9 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
     }
   }, [props.executionResult, isJupyter]);
 
-  const handleClearOutputs = React.useCallback(() => {
-    // Clear executed content
-    setExecutedContent(null);
-    setExecutionError(null);
-
-    // Clean up cached object URLs to prevent memory leaks
-    if (window.jupyterImages) {
-      window.jupyterImages.forEach((imageInfo) => {
-        if (imageInfo.objectUrl) {
-          URL.revokeObjectURL(imageInfo.objectUrl);
-        }
-      });
-      window.jupyterImages.clear();
-    }
-
-    // Notify parent if callback provided
-    if (onClearOutputs) {
-      onClearOutputs();
-    }
-  }, [onClearOutputs]);
-
   return (
     <div id="code-markdown" className="markdown" style={rootStyle}>
-      {/* Status bar for Jupyter notebooks - shows clear button and execution status */}
-      {isJupyter && executedContent && (
-        <Flex
-          justify="space-between"
-          align="center"
-          style={{
-            padding: '0px 16px 16px 16px',
-            backgroundColor: markdownTheme.statusBackground,
-            borderBottom: `1px solid ${markdownTheme.statusBorder}`,
-          }}
-        >
-          <Space align="center" size={8}>
-            <Typography.Text type="success" strong style={{ fontSize: '13px' }}>
-              Execution results displayed
-            </Typography.Text>
-            {executionError && (
-              <Typography.Text type="danger" style={{ fontSize: '12px', fontWeight: 500 }}>
-                (contains errors)
-              </Typography.Text>
-            )}
-          </Space>
-          <Button type="text" size="small" icon={<CloseOutlined />} onClick={handleClearOutputs} danger>
-            Clear
-          </Button>
-        </Flex>
-      )}
+
 
       <ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={components as Components}>
         {executedContent || markdown}

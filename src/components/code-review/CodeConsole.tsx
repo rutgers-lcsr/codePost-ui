@@ -14,7 +14,9 @@ import {
 import * as React from 'react';
 
 /* antd imports */
-import { Empty, message, Progress, Tag, Typography } from 'antd';
+import { Button, Divider, Empty, message, Progress, Tag, Typography } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
+
 
 /* other library imports */
 import _ from 'lodash';
@@ -1424,6 +1426,26 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           canWrite={state.permissionLevel === PERMISSION_LEVEL.WRITE}
         />,
       );
+
+      // Add execution status for Jupyter notebooks
+      const executionResult = state.executionResults[state.selectedFile.id];
+      if (ext === 'ipynb' && executionResult) {
+        toolbarWidgets.push(
+          <Divider key="execution-divider" type="vertical" style={{ height: '24px', margin: '0 8px' }} />,
+        );
+        toolbarWidgets.push(
+          <Button
+            key="execution-clear-button"
+            type="text"
+            size="small"
+            icon={<CloseOutlined />}
+            onClick={handleClearOutputs}
+            danger
+          >
+            Clear
+          </Button>,
+        );
+      }
     }
   }
 
@@ -1687,7 +1709,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             addLateDayCreditComment={addLateDayCreditComment}
             isStudentMode={false}
           />,
-          <TestsMenu />,
+          <TestsMenu key="tests-menu" />,
           <FileMenu
             key="file-menu"
             title="Files"
@@ -1874,7 +1896,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           isStudentMode={state.isStudent}
           courseStudentsCanSeeGraders={state.course?.studentsCanSeeGraders}
         />,
-        <TestsMenu />,
+        <TestsMenu key="tests-menu" />,
         <FileMenu
           key="file-menu"
           title="Files"
@@ -2053,7 +2075,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         );
 
         content = (
-          <div>
+          <div style={{ height: '100%' }}>
             <CommentHighlightProvider
               file={state.selectedFile!}
               comments={state.comments[state.selectedFile!.id]}
@@ -2098,6 +2120,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
       sider = [
         <SubmissionInfo
+          key="submission-info"
           title="Submission Info"
           assignment={state.assignment}
           courseLateDayCreditsAllowable={state.course!.lateDayCreditsAllowable}
@@ -2110,7 +2133,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           courseStudentsCanSeeGraders={state.course?.studentsCanSeeGraders}
         />,
         isCourseAdmin(state.assignment) || state.testCategories.length > 0 ? (
-          <TestsMenu />
+          <TestsMenu key="tests-menu" />
         ) : (
           <React.Fragment />
         ),

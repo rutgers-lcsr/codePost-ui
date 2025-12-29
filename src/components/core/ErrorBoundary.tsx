@@ -4,9 +4,10 @@ import { FileType, getFileContent } from '../../infrastructure/file';
 
 import { slack } from './slack';
 
-import { Collapse, theme } from 'antd';
+import { Result, Button, Collapse, Typography, Space, Card, theme, Divider } from 'antd';
+import { ReloadOutlined, MailOutlined, BugOutlined, FileTextOutlined, CodeOutlined, GlobalOutlined } from '@ant-design/icons';
 
-const { Panel } = Collapse;
+const { Text, Paragraph, Title } = Typography;
 
 type ErrorBoundaryType = 'app' | 'codepanel';
 
@@ -23,161 +24,310 @@ interface IErrorBoundaryState {
   url?: string;
 }
 
-const SiteDataSettingsBlurb = () => {
+// Helper component for development debug info
+const DebugInfoPanel: React.FC<{
+  error?: Error;
+  errorInfo?: React.ErrorInfo;
+  url?: string;
+  submissionID?: number;
+  file?: FileType;
+}> = ({ error, errorInfo, url, submissionID, file }) => {
+  const { token } = theme.useToken();
+
+  if (process.env.NODE_ENV !== 'development') {
+    return null;
+  }
+
+  const collapseItems = [
+    {
+      key: 'error',
+      label: (
+        <Space>
+          <BugOutlined />
+          <span>Error Details</span>
+        </Space>
+      ),
+      children: (
+        <div style={{ fontFamily: 'monospace', fontSize: '12px', whiteSpace: 'pre-wrap' }}>
+          <Paragraph>
+            <Text strong>Name:</Text> {error?.name}
+          </Paragraph>
+          <Paragraph>
+            <Text strong>Message:</Text> {error?.message}
+          </Paragraph>
+          <Divider style={{ margin: '8px 0' }} />
+          <Text strong>Stack Trace:</Text>
+          <pre style={{
+            background: token.colorBgContainer,
+            padding: '12px',
+            borderRadius: '4px',
+            overflow: 'auto',
+            maxHeight: '200px',
+            fontSize: '11px',
+          }}>
+            {error?.stack}
+          </pre>
+        </div>
+      ),
+    },
+    {
+      key: 'component',
+      label: (
+        <Space>
+          <CodeOutlined />
+          <span>Component Stack</span>
+        </Space>
+      ),
+      children: (
+        <pre style={{
+          fontFamily: 'monospace',
+          fontSize: '11px',
+          whiteSpace: 'pre-wrap',
+          background: token.colorBgContainer,
+          padding: '12px',
+          borderRadius: '4px',
+          overflow: 'auto',
+          maxHeight: '300px',
+        }}>
+          {errorInfo?.componentStack}
+        </pre>
+      ),
+    },
+  ];
+
+  // Add file content panel if file exists
+  if (file) {
+    collapseItems.push({
+      key: 'file',
+      label: (
+        <Space>
+          <FileTextOutlined />
+          <span>File Content ({file.name})</span>
+        </Space>
+      ),
+      children: (
+        <pre style={{
+          fontFamily: 'monospace',
+          fontSize: '11px',
+          whiteSpace: 'pre-wrap',
+          background: token.colorBgContainer,
+          padding: '12px',
+          borderRadius: '4px',
+          overflow: 'auto',
+          maxHeight: '300px',
+        }}>
+          {getFileContent(file)}
+        </pre>
+      ),
+    });
+  }
+
+  return (
+    <Card
+      size="small"
+      title={
+        <Space>
+          <BugOutlined style={{ color: token.colorWarning }} />
+          <span>Developer Debug Info</span>
+        </Space>
+      }
+      style={{
+        marginTop: '24px',
+        background: token.colorBgLayout,
+        border: `1px solid ${token.colorBorderSecondary}`,
+      }}
+    >
+      <Space direction="vertical" style={{ width: '100%' }} size="small">
+        <Space split={<Divider type="vertical" />}>
+          <Text type="secondary">
+            <GlobalOutlined /> {url}
+          </Text>
+          {submissionID && <Text type="secondary">Submission: {submissionID}</Text>}
+          {file && <Text type="secondary">File: {file.id}</Text>}
+        </Space>
+        <Collapse
+          items={collapseItems}
+          size="small"
+          style={{ marginTop: '8px' }}
+        />
+      </Space>
+    </Card>
+  );
+};
+
+// Troubleshooting blurb for cookie/permissions issues
+const TroubleshootingCard: React.FC = () => {
   const { token } = theme.useToken();
 
   return (
-    <div
+    <Card
+      size="small"
       style={{
-        backgroundColor: token.colorInfoBg,
-        borderRadius: token.borderRadius,
-        padding: '16px',
-        boxShadow: token.boxShadow,
+        marginTop: '24px',
+        background: token.colorInfoBg,
+        border: `1px solid ${token.colorInfoBorder}`,
+        maxWidth: '600px',
       }}
     >
-      <h2>⭐ Troubleshooting</h2>
-      <br />
-      <div style={{ fontSize: '18px' }}>
-        <div>
-          codePost needs permission from your browser to run. Please follow these steps for your current browser...
-        </div>
-        <br />
-        <b>Google Chrome:</b>
-        <ul>
-          <li>
-            Open up Chrome cookie settings:{' '}
-            <a href="chrome://settings/content/cookies">chrome://settings/content/cookies</a>
-          </li>
-          <li>
-            Click Allow {'>'} Add {'>'} https://codepost.cs.rutgers.edu
-            <br />
-            See a screenshot here:{' '}
-            <a href="https://share.getcloudapp.com/eDu69Dnz">https://share.getcloudapp.com/eDu69Dnz</a>
-          </li>
-          <li>Try refreshing!</li>
-        </ul>
-        <br />
-        <b>Firefox:</b>
-        <ul>
-          <li>
-            Open up Firefox cookie settings: <a href="about:preferences#privacy">about:preferences#privacy</a>
-          </li>
-          <li>Click Cookies and Site Data {'>'} Manage Permissions</li>
-          <li>
-            Type in https://codepost.cs.rutgers.edu {'>'} Allow {'>'} Save Changes
-          </li>
-          <li>Try refreshing!</li>
-        </ul>
-      </div>
-    </div>
+      <Title level={5} style={{ marginTop: 0 }}>⭐ Troubleshooting</Title>
+      <Paragraph>
+        codePost needs permission from your browser to run. Please follow these steps:
+      </Paragraph>
+
+      <Title level={5} style={{ marginBottom: '8px' }}>Google Chrome</Title>
+      <ol style={{ paddingLeft: '20px', marginBottom: '16px' }}>
+        <li>Open Chrome cookie settings: <Text code>chrome://settings/content/cookies</Text></li>
+        <li>Click <Text strong>Allow → Add → https://codepost.cs.rutgers.edu</Text></li>
+        <li>Refresh the page</li>
+      </ol>
+
+      <Title level={5} style={{ marginBottom: '8px' }}>Firefox</Title>
+      <ol style={{ paddingLeft: '20px', marginBottom: 0 }}>
+        <li>Open settings: <Text code>about:preferences#privacy</Text></li>
+        <li>Click <Text strong>Cookies and Site Data → Manage Permissions</Text></li>
+        <li>Add <Text strong>https://codepost.cs.rutgers.edu</Text> and Allow</li>
+        <li>Refresh the page</li>
+      </ol>
+    </Card>
   );
 };
 
 class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryState> {
   public state: Readonly<IErrorBoundaryState> = {};
 
-  public componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    this.setState({
+  // Flag to prevent infinite loops when errors occur within the ErrorBoundary itself
+  private hasHandledError = false;
+
+  // This static method is called during the render phase to update state and show fallback UI
+  public static getDerivedStateFromError(error: Error): Partial<IErrorBoundaryState> {
+    return {
       error,
-      errorInfo,
-      url: window.location.href,
-    });
+      url: typeof window !== 'undefined' ? window.location.href : undefined,
+    };
+  }
+
+  public componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // Prevent infinite loops - only handle the first error
+    if (this.hasHandledError) {
+      return;
+    }
+    this.hasHandledError = true;
+
+    // Store errorInfo which is only available in componentDidCatch (not in getDerivedStateFromError)
+    this.setState({ errorInfo });
 
     const payload = {
+      // Basic error info
       error: error.toString(),
+      errorName: error.name,
+      errorMessage: error.message,
+      errorStack: error.stack,
       errorDetail: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+
+      // React component stack
+      componentStack: errorInfo.componentStack,
+
+      // Context
       url: window.location.href,
+      boundaryType: this.props.type,
+      submissionId: this.props.submissionID ?? null,
+      fileId: this.props.file?.id ?? null,
+      fileName: this.props.file?.name ?? null,
+
+      // Browser/environment info
+      userAgent: navigator.userAgent,
+      timestamp: new Date().toISOString(),
+      viewport: `${window.innerWidth}x${window.innerHeight}`,
     };
     console.error('ErrorBoundary caught an error:', payload);
     slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, payload);
   }
 
+  private handleRefresh = () => {
+    window.location.reload();
+  };
+
+  private handleGoHome = () => {
+    window.location.href = '/';
+  };
+
   public render() {
     if (this.state.error) {
-      const siteDataSettingsBlurb = <SiteDataSettingsBlurb />;
+      const showTroubleshooting = localStorage.getItem('source') !== 'codePost';
 
+      // Compact error view for code panel
       if (this.props.type === 'codepanel') {
         return (
-          <div style={{ padding: '40px' }}>
-            <h1>Something went wrong</h1>
-            <h2>
-              <span role="img" aria-label="downvote">
-                🕑
-              </span>{' '}
-              Our team has been notified, and we will investigate the issue as soon as possible.
-            </h2>
-            <h2>
-              <span role="img" aria-label="downvote">
-                🙏
-              </span>{' '}
-              Feel free to try again, or email us at team@codepost.io.
-            </h2>
-            <br />
-            {localStorage.getItem('source') !== 'codePost' ? siteDataSettingsBlurb : null}
-            <br />
-            <div style={{ padding: '50px' }}>
-              <h3>Details:</h3>
-              <div style={{ paddingTop: '20px' }}>
-                <h4>Submission ID: {this.props.submissionID ? this.props.submissionID : '?'}</h4>
-                <h4>File ID: {this.props.file ? this.props.file.id : '?'}</h4>
-                <Collapse>
-                  <Panel header="File Code" key="1">
-                    <p style={{ maxHeight: '280px', overflow: 'auto' }}>
-                      {this.props.file ? getFileContent(this.props.file) : '?'}
-                    </p>
-                  </Panel>
-                  <Panel header="Error Info" key="2">
-                    <p style={{ maxHeight: '280px', overflow: 'auto' }}>
-                      {this.state.error ? this.state.error.toString() : '...'}
-                    </p>
-                  </Panel>
-                </Collapse>
-              </div>
-            </div>
-          </div>
-        );
-      } else {
-        return (
-          <div style={{ padding: '40px' }}>
-            <h1>Something went wrong.</h1>
-            <h2>Our team has been notified, and we will investigate the issue as soon as possible.</h2>
-            {localStorage.getItem('source') !== 'codePost' ? (
-              siteDataSettingsBlurb
-            ) : (
-              <h2>
-                Try refreshing the page to get back to codePost! Or,{' '}
-                <b>try switching to Chrome if you're using a different browser</b>. If that doesn't work, email us at{' '}
-                <a href="mailto:team@codepost.io">team@codepost.io</a> if the problem persists.
-              </h2>
-            )}
-            {/* Show error if in debug */}
-            {process.env.NODE_ENV === 'development' ? (
-              <div style={{ padding: '50px' }}>
-                <h3>Details:</h3>
-                <div style={{ paddingTop: '20px' }}>
-                  <h4>Submission ID: {this.props.submissionID ? this.props.submissionID : '?'}</h4>
-                  <h4>File ID: {this.props.file ? this.props.file.id : '?'}</h4>
-                  <h4>URL: {this.state.url}</h4>
-                  <Collapse>
-                    <Panel header="File Code" key="1">
-                      <p style={{ maxHeight: '280px', overflow: 'auto' }}>
-                        {this.props.file ? getFileContent(this.props.file) : '?'}
-                      </p>
-                    </Panel>
-                    <Panel header="Error Info" key="2">
-                      <p style={{ maxHeight: '280px', overflow: 'auto' }}>
-                        {this.state.error ? this.state.error.toString() : '...'} <br />
-                        {this.state.error?.message ? this.state.error : '...'} <br />
-                        {this.state.errorInfo ? this.state.errorInfo.componentStack : '...'}
-                      </p>
-                    </Panel>
-                  </Collapse>
-                </div>
-              </div>
-            ) : null}
+          <div style={{
+            padding: '24px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            minHeight: '200px',
+            justifyContent: 'center',
+          }}>
+            <Result
+              status="error"
+              title="Failed to load content"
+              subTitle="There was an error rendering this file. Our team has been notified."
+              extra={[
+                <Button key="retry" icon={<ReloadOutlined />} onClick={this.handleRefresh}>
+                  Retry
+                </Button>,
+                <Button key="email" type="link" icon={<MailOutlined />} href="mailto:help@cs.rutgers.edu">
+                  Contact Support
+                </Button>,
+              ]}
+            />
+            {showTroubleshooting && <TroubleshootingCard />}
+            <DebugInfoPanel
+              error={this.state.error}
+              errorInfo={this.state.errorInfo}
+              url={this.state.url}
+              submissionID={this.props.submissionID}
+              file={this.props.file}
+            />
           </div>
         );
       }
+
+      // Full-page error view for app-level errors
+      return (
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '40px 20px',
+          background: 'linear-gradient(180deg, #f0f2f5 0%, #ffffff 100%)',
+        }}>
+          <Result
+            status="500"
+            title="Something went wrong"
+            subTitle="Our team has been notified and we're working to fix this. Please try refreshing the page."
+            extra={[
+              <Button key="refresh" type="primary" icon={<ReloadOutlined />} onClick={this.handleRefresh} size="large">
+                Refresh Page
+              </Button>,
+              <Button key="home" onClick={this.handleGoHome} size="large">
+                Go to Homepage
+              </Button>,
+              <Button key="email" type="link" icon={<MailOutlined />} href="mailto:help@cs.rutgers.edu">
+                Contact Support
+              </Button>,
+            ]}
+          />
+          {showTroubleshooting && <TroubleshootingCard />}
+          <DebugInfoPanel
+            error={this.state.error}
+            errorInfo={this.state.errorInfo}
+            url={this.state.url}
+            submissionID={this.props.submissionID}
+            file={this.props.file}
+          />
+        </div>
+      );
     }
     return this.props.children;
   }

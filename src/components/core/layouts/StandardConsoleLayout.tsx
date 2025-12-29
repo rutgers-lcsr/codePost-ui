@@ -184,6 +184,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
           {backToSubmissionsButton}
           <div id="Code-Header" style={{ height: '100%', position: 'relative' }}>
             <Sider
+              className="layout--standard-console__sider"
               width={siderCollapsed ? collapsedSiderWidth : 300}
               collapsible
               collapsed={siderCollapsed}
@@ -203,19 +204,31 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
             >
               <Button
                 type="text"
-                icon={siderCollapsed ? <ArrowLeftOutlined rotate={180} /> : <ArrowLeftOutlined />}
+                icon={
+                  siderCollapsed ? (
+                    <ArrowLeftOutlined rotate={180} style={{ fontSize: '16px' }} />
+                  ) : (
+                    <ArrowLeftOutlined style={{ fontSize: '16px' }} />
+                  )
+                }
                 onClick={() => setSiderCollapsed(!siderCollapsed)}
                 style={{
-                  width: '100%',
+                  width: siderCollapsed ? '50px' : '100%',
+                  minWidth: siderCollapsed ? '50px' : '100%',
                   height: '40px',
                   color: consoleTheme.siderTitle,
                   borderTop: `1px solid ${consoleTheme.siderTitle}20`,
                   borderBottom: `1px solid ${consoleTheme.siderTitle}20`,
                   marginBottom: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 0,
+                  margin: '0 auto',
                 }}
               />
               {siderCollapsed && props.sider.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0', alignItems: 'center' }}>
                   {props.sider.map((siderNode, index) => (
                     <Tooltip key={index} title={props.siderTitles[index]} placement="right">
                       <Button
@@ -223,11 +236,13 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
                         icon={getMenuIcon(siderNode.key)}
                         onClick={() => setSiderCollapsed(false)}
                         style={{
-                          width: '100%',
+                          width: '50px',
+                          minWidth: '50px',
                           height: '40px',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
+                          padding: 0,
                         }}
                       />
                     </Tooltip>
@@ -235,7 +250,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
                 </div>
               )}
               {!siderCollapsed && props.sider.length > 0 && (
-                <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+                <div className="layout--standard-console__inner-sider" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
                   <Collapse
                     expandIconPosition="end"
                     activeKey={defaultOpenMenus.map((el) => {
@@ -280,6 +295,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
             <Content
               className="layout--standard-console__content"
               style={{
+                height: '100%',
                 maxHeight: '100%',
                 overflowY: 'hidden',
                 overflowX: 'hidden',

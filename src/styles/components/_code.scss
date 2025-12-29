@@ -8,10 +8,10 @@
   margin: 0px 0px 14px 0px;
   padding: 30px 0px;
 
-  // Modern scrollbar styling
+  // Modern scrollbar styling - Floating Pill Design
   &::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
 
   &::-webkit-scrollbar-track {
@@ -20,10 +20,23 @@
 
   &::-webkit-scrollbar-thumb {
     background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: content-box;
 
     &:hover {
-      background-color: rgba(0, 0, 0, 0.3);
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  // Dark Mode Overrides
+  [data-console-theme='dark'] & {
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.25);
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+      }
     }
   }
 
@@ -72,6 +85,7 @@
 
       code {
         font-family: inherit !important;
+
         .linenumber {
           color: rgb(30, 78, 11) !important;
         }
@@ -172,6 +186,7 @@
           transform: translateY(-0.5px);
           cursor: pointer;
         }
+
         &--hovered {
           box-shadow:
             0 0 0 2px rgba(255, 152, 0, 0.7),
@@ -286,6 +301,44 @@
       cursor: pointer;
       color: white;
       background: #24be85;
+    }
+  }
+}
+
+// Applying the same scrollbar styles to the split screen panes (scrolling containers)
+.split-screen-pane {
+
+  // Modern scrollbar styling - Floating Pill Design
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+  }
+}
+
+// Dark Mode Overrides for split-screen-pane
+[data-console-theme='dark'] {
+  .split-screen-pane {
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.25);
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+      }
     }
   }
 }
