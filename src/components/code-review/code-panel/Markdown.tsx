@@ -199,8 +199,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
   const { markdownTheme, rootStyle } = useMarkdownTheme(consoleTheme ?? null);
 
   const [executedContent, setExecutedContent] = React.useState<string | null>(null);
-  const [executionError, setExecutionError] = React.useState<string | null>(null);
-  const { onClearOutputs } = props;
+
   const { readOnly: isReadOnly, commentCounter, file, addComment, user } = props;
 
   // Convert file content to markdown format
@@ -446,7 +445,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
   React.useEffect(() => {
     if (!isJupyter) {
       setExecutedContent(null);
-      setExecutionError(null);
+
       return;
     }
 
@@ -462,7 +461,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
 
     if (!props.executionResult) {
       setExecutedContent(null);
-      setExecutionError(null);
+
       return;
     }
 
@@ -470,15 +469,15 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
       const executedMarkdown = jupyterToMarkdown(props.executionResult.output_data);
       if (executedMarkdown !== null) {
         setExecutedContent(executedMarkdown);
-        setExecutionError(props.executionResult.error || null);
+
       } else {
         console.debug('[Jupyter] Execution output missing valid notebook cells. Falling back to original file.');
         setExecutedContent(null);
-        setExecutionError(props.executionResult.error || 'Notebook output unavailable.');
+
       }
     } else {
       setExecutedContent(null);
-      setExecutionError(props.executionResult.error || null);
+
     }
   }, [props.executionResult, isJupyter]);
 
