@@ -111,6 +111,7 @@ export class Organization {
     active_users: number;
     total_courses: number;
     active_courses: number;
+    total_assignments: number;
     total_submissions: number;
     submissions_this_month: number;
   }> {

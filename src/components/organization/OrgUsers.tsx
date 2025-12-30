@@ -154,7 +154,7 @@ const OrgUsers: React.FC<IProps> = ({ orgId, users, loading, onRefresh, ssoEnabl
                         <>
                             {!ssoEnabled && (
                                 <Popconfirm title="Send password reset email?" onConfirm={() => handleResetPassword(record.email)}>
-                                    <Button size="small">Reset PWD</Button>
+                                    <Button size="small">Reset Password</Button>
                                 </Popconfirm>
                             )}
                             <Popconfirm title="Remove user from organization?" onConfirm={() => handleRemove(record.email)}>

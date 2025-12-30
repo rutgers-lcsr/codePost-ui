@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Card, Descriptions, Statistic, Row, Col, Spin } from 'antd';
 import { OrganizationType, Organization } from '../../infrastructure/organization';
-import { TeamOutlined, BookOutlined, FileOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { TeamOutlined, BookOutlined, FileOutlined, CheckCircleOutlined, FileTextOutlined } from '@ant-design/icons';
 
 interface IProps {
     organization: OrganizationType;
@@ -14,6 +14,7 @@ interface Analytics {
     active_users: number;
     total_courses: number;
     active_courses: number;
+    total_assignments: number;
     total_submissions: number;
     submissions_this_month: number;
 }
@@ -89,6 +90,13 @@ const OrgOverview: React.FC<IProps> = ({ organization }) => {
                                         title="Active Courses"
                                         value={analytics.active_courses}
                                         valueStyle={{ color: '#3f8600' }}
+                                    />
+                                </Col>
+                                <Col xs={12} sm={6}>
+                                    <Statistic
+                                        title="Total Assignments"
+                                        value={analytics.total_assignments}
+                                        prefix={<FileTextOutlined />}
                                     />
                                 </Col>
                                 <Col xs={12} sm={6}>
