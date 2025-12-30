@@ -2,27 +2,25 @@ import { BookOutlined, GlobalOutlined, LoginOutlined, TeamOutlined, UserOutlined
 import { Button, Card, Col, Input, Row, Space, Statistic, Table, Tag, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
+import _ from 'lodash';
 
 import { colors } from '../../theme/colors';
-import { CourseType } from '../../infrastructure/course';
 import { OrganizationType } from '../../infrastructure/organization';
 import { AdminData } from './Dashboard';
 
 const { Search } = Input;
 
-export interface AdminRecord {
-  email: string;
-  organization: OrganizationType;
-  course: CourseType;
-  course_name: string;
-  course_period: string;
-}
-
 interface AdminTableProps {
   admins: AdminData[];
 }
 
-const columns: ColumnsType<AdminData> = [
+interface GroupedAdminData {
+  email: string;
+  organizations: OrganizationType[];
+  courses: { name: string; period: string }[];
+}
+
+const columns: ColumnsType<GroupedAdminData> = [
   {
     title: 'Admin Email',
     dataIndex: 'email',
@@ -33,42 +31,53 @@ const columns: ColumnsType<AdminData> = [
         <strong>{email}</strong>
       </Space>
     ),
+    sorter: (a, b) => a.email.localeCompare(b.email),
   },
   {
     title: 'Organization',
-    dataIndex: 'organization',
+    dataIndex: 'organizations',
     key: 'organization',
-    render: (org: OrganizationType) => (
+    render: (orgs: OrganizationType[]) => (
       <Space direction="vertical" size="small">
-        <Space>
-          <GlobalOutlined style={{ color: colors.actionBlue }} />
-          {org.name}
-        </Space>
-        <Tag color="blue">{org.shortname}</Tag>
+        {orgs.map((org) => (
+          <Space key={org.id}>
+            <Space>
+              <GlobalOutlined style={{ color: colors.actionBlue }} />
+              {org.name}
+            </Space>
+            <Tag color="blue">{org.shortname}</Tag>
+          </Space>
+        ))}
       </Space>
     ),
-    filters: [],
-    onFilter: (value, record: AdminData) => record.organization?.shortname === value,
+    filters: [], // Generated dynamically
+    onFilter: (value, record) => record.organizations.some((org) => org.shortname === value),
   },
   {
-    title: 'Course',
-    dataIndex: 'course_name',
-    key: 'course',
-    render: (_: string, record: AdminData) => (
-      <Space direction="vertical" size="small">
-        <Space>
-          <BookOutlined style={{ color: '#52c41a' }} />
-          <strong>{record.course_name}</strong>
+    title: 'Courses',
+    dataIndex: 'courses',
+    key: 'courses',
+    render: (courses: { name: string; period: string }[]) => (
+      <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
+        <Space direction="vertical" size={1}>
+          {courses.map((c, i) => (
+            <Space key={i} style={{ fontSize: '12px' }}>
+              <BookOutlined style={{ color: '#52c41a', fontSize: '10px' }} />
+              <span>{c.name}</span>
+              <Tag color="green" style={{ margin: 0, fontSize: '10px', lineHeight: '18px' }}>
+                {c.period}
+              </Tag>
+            </Space>
+          ))}
         </Space>
-        <Tag color="green">{record.course_period}</Tag>
-      </Space>
+      </div>
     ),
   },
   {
     title: 'Actions',
     key: 'actions',
     width: 120,
-    render: (_: unknown, record: AdminData) => (
+    render: (_: unknown, record: GroupedAdminData) => (
       <Tooltip title="Login as this user">
         <Button
           type="primary"
@@ -87,19 +96,50 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
   const [searchValue, setSearchValue] = useState('');
   const [pageSize, setPageSize] = useState(20);
 
+  // Group admins by email
+  const groupedAdmins: GroupedAdminData[] = useMemo(() => {
+    const grouped = _.groupBy(admins, 'email');
+    return Object.keys(grouped).map((email) => {
+      const records = grouped[email];
+
+      // Get unique organizations
+      const seenOrgs = new Set<number>();
+      const uniqueOrgs: OrganizationType[] = [];
+      records.forEach(r => {
+        if (r.organization && !seenOrgs.has(r.organization.id)) {
+          seenOrgs.add(r.organization.id);
+          uniqueOrgs.push(r.organization);
+        }
+      });
+
+      // Get courses
+      const courses = records.map(r => ({ name: r.course_name, period: r.course_period }));
+      // Sort courses by name then period
+      courses.sort((a, b) => {
+        const nameCmp = a.name.localeCompare(b.name);
+        if (nameCmp !== 0) return nameCmp;
+        return a.period.localeCompare(b.period);
+      });
+
+      return {
+        email,
+        organizations: uniqueOrgs,
+        courses,
+      };
+    });
+  }, [admins]);
 
   const filteredAdmins = useMemo(() => {
     const search = searchValue.toLowerCase();
-    if (!search) return admins;
+    if (!search) return groupedAdmins;
 
-    return admins.filter(
+    return groupedAdmins.filter(
       (admin) =>
         admin.email.toLowerCase().includes(search) ||
-        admin.course_name.toLowerCase().includes(search) ||
-        admin.course_period.toLowerCase().includes(search) ||
-        admin.organization?.name.toLowerCase().includes(search),
+        admin.courses.some(c => c.name.toLowerCase().includes(search) || c.period.toLowerCase().includes(search)) ||
+        admin.organizations.some(o => o.name.toLowerCase().includes(search))
     );
-  }, [admins, searchValue]);
+  }, [groupedAdmins, searchValue]);
 
   // Get unique organizations for filter
   const uniqueOrgs = useMemo(() => {
@@ -126,15 +166,16 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
   }, [uniqueOrgs]);
 
   const getStats = () => {
-    const uniqueAdmins = new Set(filteredAdmins.map((a) => a.email));
-    const uniqueCourses = new Set(filteredAdmins.map((a) => a.course_name));
-    const uniqueOrganizations = new Set(filteredAdmins.map((a) => a.organization?.id).filter(Boolean));
+    // We can calculate total assignments from the grouped data
+    const totalAssignments = groupedAdmins.reduce((acc, curr) => acc + curr.courses.length, 0);
+    const uniqueCourses = new Set(admins.map((a) => a.course_name)); // Use original simple list for total unique courses
+    const uniqueOrganizations = new Set(admins.map((a) => a.organization?.id).filter(Boolean));
 
     return {
-      totalAdmins: uniqueAdmins.size,
+      totalAdmins: groupedAdmins.length,
       totalCourses: uniqueCourses.size,
       totalOrganizations: uniqueOrganizations.size,
-      totalAssignments: filteredAdmins.length,
+      totalAssignments: totalAssignments,
     };
   };
 
@@ -146,7 +187,7 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
         <Col xs={24} sm={12} md={6}>
           <Card size="small">
             <Statistic
-              title="Unique Admins"
+              title="Course Admins"
               value={stats.totalAdmins}
               prefix={<UserOutlined style={{ color: '#722ed1' }} />}
             />
@@ -173,7 +214,7 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
         <Col xs={24} sm={12} md={6}>
           <Card size="small">
             <Statistic
-              title="Admin Assignments"
+              title="Assignments"
               value={stats.totalAssignments}
               prefix={<TeamOutlined style={{ color: '#13c2c2' }} />}
             />
@@ -194,12 +235,12 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
         columns={columnsWithFilters}
         dataSource={filteredAdmins}
         size="middle"
-        rowKey={(record) => `${record.email}-${record.id}`}
+        rowKey={(record) => record.email}
         pagination={{
           pageSize,
           showSizeChanger: true,
           pageSizeOptions: ['10', '20', '50', '100'],
-          showTotal: (total) => `Total ${total} admin assignments`,
+          showTotal: (total) => `Total ${total} admins`,
           onShowSizeChange: (_current, size) => setPageSize(size),
         }}
       />
