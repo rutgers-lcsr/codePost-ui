@@ -64,7 +64,7 @@ const DashboardLayout: React.FC = () => {
         <Menu theme="dark" mode="inline" defaultSelectedKeys={[siderKey]} onClick={onClick}>
           <Menu.Item key="1">
             <DashboardOutlined />
-            <span className="nav-text">dashboard</span>
+            <span className="nav-text">Dashboard</span>
           </Menu.Item>
           <Menu.Item key="2">
             <GlobalOutlined />
