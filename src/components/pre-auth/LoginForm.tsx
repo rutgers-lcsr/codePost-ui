@@ -38,6 +38,7 @@ const LoginForm: React.FC<ILoginFormProps> = ({
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+  const [step, setStep] = React.useState<'email' | 'password'>('email');
 
   const performLogin = React.useCallback(async () => {
     setLoading(true);
@@ -49,13 +50,43 @@ const LoginForm: React.FC<ILoginFormProps> = ({
     }
   }, [email, password, redirectAfterLogin, handleLogin]);
 
+  const checkSSO = React.useCallback(async () => {
+    if (!email) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/sso/check/?email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+
+      if (data.sso_enabled) {
+        // Auto-redirect to SSO provider
+        const redirectUrl = `${process.env.REACT_APP_API_URL}/auth/sso/login/${data.provider}/?email=${encodeURIComponent(email)}`;
+        window.location.href = redirectUrl;
+      } else {
+        setStep('password');
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error(err);
+      // Fallback to password on error
+      setStep('password');
+      setLoading(false);
+    }
+  }, [email]);
+
+
+
   const handleKeyPress = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter') {
-        performLogin();
+        if (step === 'email') {
+          e.preventDefault();
+          checkSSO();
+        } else if (step === 'password') {
+          performLogin();
+        }
       }
     },
-    [performLogin],
+    [step, checkSSO, performLogin],
   );
 
   const renderError = (errorMsg: string) => {
@@ -80,7 +111,7 @@ const LoginForm: React.FC<ILoginFormProps> = ({
             <br />
             <Alert
               message="Error"
-              description={'An unknown error occurred. Please contact us if this issue persists.'}
+              description={errorMsg}
               type="error"
               showIcon
             />
@@ -102,7 +133,7 @@ const LoginForm: React.FC<ILoginFormProps> = ({
         )}
         <br />
         <Typography.Title level={2}>{title}</Typography.Title>
-        <form>
+        <form onSubmit={(e) => e.preventDefault()}>
           <Input
             prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
             placeholder="Email address"
@@ -110,32 +141,67 @@ const LoginForm: React.FC<ILoginFormProps> = ({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             onKeyDown={handleKeyPress}
-            disabled={maintenanceMode}
+            disabled={maintenanceMode || step !== 'email'}
+            autoFocus={step === 'email'}
           />
-          <br />
-          <br />
-          <Input.Password
-            prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-            placeholder="Password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={handleKeyPress}
-            visibilityToggle={false}
-            disabled={maintenanceMode}
-          />
+
+          {step === 'password' && (
+            <>
+              <br />
+              <br />
+              <Input.Password
+                prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
+                placeholder="Password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={handleKeyPress}
+                visibilityToggle={false}
+                disabled={maintenanceMode}
+                autoFocus
+              />
+            </>
+          )}
+
+
+
           {renderError(error)}
+
           <br />
           <br />
-          <CPButton
-            onClick={performLogin}
-            cpType="primary"
-            loading={loading}
-            disabled={maintenanceMode}
-          >
-            Continue
-          </CPButton>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {step === 'email' && (
+              <CPButton
+                onClick={checkSSO}
+                cpType="primary"
+                loading={loading}
+                disabled={maintenanceMode || !email}
+              >
+                Continue
+              </CPButton>
+            )}
+
+            {step === 'password' && (
+              <CPButton
+                onClick={performLogin}
+                cpType="primary"
+                loading={loading}
+                disabled={maintenanceMode}
+              >
+                Log In
+              </CPButton>
+            )}
+
+            {step !== 'email' && (
+              <a onClick={() => { setStep('email'); setPassword(''); }} style={{ cursor: 'pointer' }}>
+                Use a different email
+              </a>
+            )}
+          </div>
         </form>
+        <br />
+        <br />
         <br />
         <br />
         <Link to="/forgot-password">Forgot password?</Link>

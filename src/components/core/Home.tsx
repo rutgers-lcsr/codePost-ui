@@ -5,7 +5,7 @@
 /* react imports */
 import * as React from 'react';
 
-import { AuditOutlined, DashboardOutlined, IdcardOutlined, SlidersOutlined } from '@ant-design/icons';
+import { AuditOutlined, DashboardOutlined, IdcardOutlined, SlidersOutlined, TeamOutlined } from '@ant-design/icons';
 
 /* antd imports */
 import { Divider, Typography, theme } from 'antd';
@@ -100,6 +100,9 @@ const Home = (props: IProps) => {
     props.isAdmin ? <RoleItem key="admin" title="Admin Console" icon={<SlidersOutlined />} linkTo="/admin" /> : null,
     props.user.codePostAdmin ? (
       <RoleItem key="dashboard" title="Staff Dashboard" icon={<DashboardOutlined />} linkTo="/dashboard" />
+    ) : null,
+    props.user.isOrgStaff ? (
+      <RoleItem key="org" title="Organization Console" icon={<TeamOutlined />} linkTo="/organization" />
     ) : null,
   ];
 

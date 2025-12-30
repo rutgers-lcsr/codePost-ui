@@ -85,6 +85,8 @@ const columns: ColumnsType<AdminData> = [
 
 const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
   const [searchValue, setSearchValue] = useState('');
+  const [pageSize, setPageSize] = useState(20);
+
 
   const filteredAdmins = useMemo(() => {
     const search = searchValue.toLowerCase();
@@ -194,9 +196,11 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
         size="middle"
         rowKey={(record) => `${record.email}-${record.id}`}
         pagination={{
-          pageSize: 20,
+          pageSize,
           showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
           showTotal: (total) => `Total ${total} admin assignments`,
+          onShowSizeChange: (_current, size) => setPageSize(size),
         }}
       />
     </Card>

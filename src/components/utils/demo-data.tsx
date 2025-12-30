@@ -95,6 +95,7 @@ const demoCourse = (testName: string) => {
     enableStudentFeedbackNotifications: false,
     expiration_date: null,
     studentsCanSeeGraders: false,
+    studentCount: 0,
   };
 };
 

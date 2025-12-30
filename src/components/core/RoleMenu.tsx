@@ -6,6 +6,7 @@ import {
   InfoCircleOutlined,
   SlidersOutlined,
   UserSwitchOutlined,
+  TeamOutlined
 } from '@ant-design/icons';
 
 import { Dropdown, theme } from 'antd';
@@ -28,8 +29,9 @@ const RoleMenu = (props: IProps) => {
   const showStudent = props.thisApp !== USER_TYPE.STUDENT && props.user.studentCourses.length > 0;
   const showGrader = props.thisApp !== USER_TYPE.GRADER && props.user.graderCourses.length > 0;
   const showAdmin = props.thisApp !== USER_TYPE.ADMIN && props.user.canCreateCourses;
+  const showOrgStaff = props.user.isOrgStaff;
 
-  if (!(showStudent || showGrader || showAdmin)) {
+  if (!(showStudent || showGrader || showAdmin || showOrgStaff)) {
     return <div />;
   }
 
@@ -66,6 +68,18 @@ const RoleMenu = (props: IProps) => {
         <Link to="/admin">
           <SlidersOutlined />
           &nbsp; Admin
+        </Link>
+      ),
+    });
+  }
+
+  if (showOrgStaff) {
+    menuItems.push({
+      key: 'org',
+      label: (
+        <Link to="/organization">
+          <TeamOutlined />
+          &nbsp; Organization
         </Link>
       ),
     });

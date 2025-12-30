@@ -135,6 +135,7 @@ const DebugInfoPanel: React.FC<{
         marginTop: '24px',
         background: token.colorBgLayout,
         border: `1px solid ${token.colorBorderSecondary}`,
+        minWidth: '500px',
       }}
     >
       <Space direction="vertical" style={{ width: '100%' }} size="small">

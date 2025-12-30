@@ -63,7 +63,10 @@ const Dashboard = () => {
   const [users, setUsers] = useState<UserType[]>([]);
   const [currentTab, setCurrentTab] = useState<TabType>('Overview');
   const [isLoading, setIsLoading] = useState(true);
+  const [usersLoaded, setUsersLoaded] = useState(false);
+  const [usersLoading, setUsersLoading] = useState(false);
   const [stats, setStats] = useState<DashboardStats>({
+
     totalOrganizations: 0,
     totalCourses: 0,
     activeCourses: 0,
@@ -96,103 +99,24 @@ const Dashboard = () => {
     );
   };
 
-  const calculateStats = (
-    orgs: OrganizationType[],
-    courses: CourseType[],
-    rosters: RosterType[],
-    users: UserType[],
-  ): DashboardStats => {
-    const avgCoursesPerOrg = orgs.length > 0 ? courses.length / orgs.length : 0;
-
-    // Calculate active vs archived courses
-    const activeCourses = courses.filter((c) => !c.archived).length;
-    const archivedCourses = courses.filter((c) => c.archived).length;
-
-    // Calculate total sections and assignments
-    const totalSections = courses.reduce((sum, course) => sum + course.sections.length, 0);
-    const totalAssignments = courses.reduce((sum, course) => sum + course.assignments.length, 0);
-
-    // Calculate total unique users from rosters (including both active and inactive)
-    // Note: These count users WITH each role (users can have multiple roles)
-    const usersWithStudentRole = new Set<string>();
-    const usersWithGraderRole = new Set<string>();
-    const usersWithAdminRole = new Set<string>();
-    const allInactive = new Set<string>();
-
-    rosters.forEach((roster) => {
-      // Active users
-      roster.students.forEach((email) => usersWithStudentRole.add(email));
-      roster.graders.forEach((email) => usersWithGraderRole.add(email));
-      roster.superGraders.forEach((email) => usersWithGraderRole.add(email));
-      roster.courseAdmins.forEach((email) => usersWithAdminRole.add(email));
-
-      // Inactive users - add to both their role set AND the inactive set
-      roster.inactive_students.forEach((email) => {
-        usersWithStudentRole.add(email);
-        allInactive.add(email);
-      });
-      roster.inactive_graders.forEach((email) => {
-        usersWithGraderRole.add(email);
-        allInactive.add(email);
-      });
-      roster.inactive_courseAdmins.forEach((email) => {
-        usersWithAdminRole.add(email);
-        allInactive.add(email);
-      });
-    });
-
-    const totalStudents = usersWithStudentRole.size;
-    const totalGraders = usersWithGraderRole.size;
-    const totalCourseAdmins = usersWithAdminRole.size;
-
-    // Calculate codePost platform admins from users list
-    const totalCodePostAdmins = users.filter((user) => user.codePostAdmin).length;
-
-    // Calculate total unique users (union of all role sets)
-    const allUniqueUsers = new Set<string>([...usersWithStudentRole, ...usersWithGraderRole, ...usersWithAdminRole]);
-
-    const avgStudentsPerCourse = activeCourses > 0 ? totalStudents / activeCourses : 0;
-
-    return {
-      totalOrganizations: orgs.length,
-      totalCourses: courses.length,
-      activeCourses,
-      archivedCourses,
-      totalCourseAdmins,
-      totalCodePostAdmins,
-      totalGraders,
-      totalStudents,
-      totalUniqueUsers: allUniqueUsers.size,
-      totalSections,
-      totalAssignments,
-      avgCoursesPerOrg: parseFloat(avgCoursesPerOrg.toFixed(1)),
-      avgStudentsPerCourse: parseFloat(avgStudentsPerCourse.toFixed(1)),
-      totalInactiveUsers: allInactive.size,
-    };
-  };
-
   const fetchData = async () => {
-    // setIsLoading(true); // Maybe don't show full page loader on refresh, or handle loading state in Table?
-    // For now let's keep it simple. If we want background refresh we shouldn't set isLoading(true) which hides everything.
-    // The original code set isLoading(true). I'll omit it for refresh to avoid flashing, or check if it's initial load.
-    // But since `isLoading` hides the whole dashboard, I should arguably not set it to true for soft refreshes.
-
     try {
-      const [organizationData, courseData, userData] = await Promise.all([
+      // Fetch stats from backend (efficient aggregated queries)
+      // Also fetch orgs and courses for tables, but NOT all users
+      const [statsData, organizationData, courseData] = await Promise.all([
+        UserIO.getDashboardStats(),
         Organization.list(),
         Course.list(),
-        UserIO.list(),
       ]);
 
+      setStats(statsData);
       const uniqueOrgs = _.uniqBy(organizationData, 'id');
       const uniqueCourses = _.uniqBy(courseData, 'id');
-      // Users might have duplicates if listing endpoint is buggy, safe to unique them too
-      const uniqueUsers = _.uniqBy(userData, 'email');
-
       setOrganizations(uniqueOrgs);
       setCourses(uniqueCourses);
-      setUsers(uniqueUsers);
 
+      // Fetch rosters for admin list (needed for Admins tab)
+      // TODO: This could also be optimized with a bulk endpoint
       const rosterData = await Promise.all(
         uniqueCourses.map(async (course) => {
           const roster = await Course.readRoster(course.id);
@@ -203,7 +127,9 @@ const Dashboard = () => {
       setRosters(rosterData);
       const adminList = buildAdminList(rosterData, uniqueOrgs);
       setAdmins(adminList);
-      setStats(calculateStats(uniqueOrgs, uniqueCourses, rosterData, uniqueUsers));
+
+      // Users are loaded on-demand when Users tab is selected (lazy loading)
+      // setUsers is called from UsersTable component
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -215,6 +141,19 @@ const Dashboard = () => {
     setIsLoading(true);
     fetchData();
   }, []);
+
+  // Lazy load users when Users tab is selected
+  useEffect(() => {
+    if (currentTab === 'Users' && !usersLoaded && !usersLoading) {
+      setUsersLoading(true);
+      UserIO.list().then((userData) => {
+        const uniqueUsers = _.uniqBy(userData, 'email');
+        setUsers(uniqueUsers);
+        setUsersLoaded(true);
+      }).catch(console.error).finally(() => setUsersLoading(false));
+    }
+  }, [currentTab, usersLoaded, usersLoading]);
+
 
   if (isLoading) {
     return (
@@ -474,6 +413,13 @@ const Dashboard = () => {
           </div>
         );
       case 'Users':
+        if (usersLoading) {
+          return (
+            <div style={{ padding: '40px 0px', textAlign: 'center' }}>
+              <Spin size="large" tip="Loading users..." />
+            </div>
+          );
+        }
         return <UsersTable rosters={rosters} organizations={organizations} users={users} onRefresh={fetchData} />;
       default:
         return null; // Should fall back to overview if needed, but currentTab limits logic

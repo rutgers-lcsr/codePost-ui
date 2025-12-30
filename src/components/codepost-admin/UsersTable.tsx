@@ -45,6 +45,7 @@ interface UsersTableProps {
 
 const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, onRefresh }) => {
   const [searchText, setSearchText] = useState('');
+  const [pageSize, setPageSize] = useState(50);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
@@ -439,10 +440,11 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
         dataSource={filteredUsers}
         rowKey="email"
         pagination={{
-          pageSize: 50,
+          pageSize,
           showSizeChanger: true,
           showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} users`,
           pageSizeOptions: ['20', '50', '100', '200'],
+          onShowSizeChange: (_current, size) => setPageSize(size),
         }}
         scroll={{ x: 1200 }}
       />
