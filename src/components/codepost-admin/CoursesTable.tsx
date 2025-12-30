@@ -35,6 +35,7 @@ interface CoursesTableProps {
 
 const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizations, onRefresh }) => {
   const [searchValue, setSearchValue] = useState('');
+  const [pageSize, setPageSize] = useState(20);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const coursesWithData: CourseWithRoster[] = useMemo(() => {
@@ -284,10 +285,11 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
         size="middle"
         rowKey="id"
         pagination={{
-          pageSize: 20,
+          pageSize,
           showSizeChanger: true,
           pageSizeOptions: ['10', '20', '50', '100'],
           showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} courses`,
+          onShowSizeChange: (_current, size) => setPageSize(size),
         }}
       />
       <NewCourseDialog

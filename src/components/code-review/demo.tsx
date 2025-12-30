@@ -79,6 +79,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     enableStudentFeedbackNotifications: false,
     expiration_date: null,
     studentsCanSeeGraders: false,
+    studentCount: 0,
   };
 
   const demoSubmission: AnonymousSubmissionType = {
@@ -388,6 +389,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     enableStudentFeedbackNotifications: false,
     expiration_date: null,
     studentsCanSeeGraders: false,
+    studentCount: 0,
   };
 
   const demoSubmission: AnonymousSubmissionType = {

@@ -46,6 +46,7 @@ import { IBaseFileUpload } from './components/admin/assignments/assignments/Subm
 const AsyncStudent = lazy(() => import('./components/student/StudentManager'));
 const AsyncGrader = lazy(() => import('./components/grader/GraderManager'));
 const AsyncAdmin = lazy(() => import('./components/admin/AdminManager'));
+const AsyncOrg = lazy(() => import('./components/organization/OrgDashboard'));
 const AsyncGrade = lazy(() => import('./components/code-review/CodeConsole'));
 
 /*****************************************************************************/
@@ -67,6 +68,7 @@ const anonymousUser: UserType = {
   showProductTips: true,
   codePostAdmin: false,
   hasCredentials: false,
+  isOrgStaff: false,
 };
 
 const domains = ['mooc.codepost.io', 'localhost:3000', 'compedu.stanford.edu', 'princeton.edu'];
@@ -80,7 +82,10 @@ const superUsers = ['james@codepost.io', 'vinay@codepost.io', 'richard@codepost.
 const App: React.FC = () => {
   // State management
   const [error, setError] = useState<string>('');
-  const [hasToken, setHasToken] = useState<boolean>(() => !!localStorage.getItem('token'));
+  const [hasToken, setHasToken] = useState<boolean>(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return !!localStorage.getItem('token') || !!urlParams.get('token');
+  });
   const [user, setUser] = useState<UserType | undefined>(undefined);
   const [toRedirect, setToRedirect] = useState<boolean>(false);
   const [triedLoading, setTriedLoading] = useState<boolean>(false);
@@ -132,12 +137,31 @@ Firefox:
 
     if (urlToken) {
       localStorage.setItem('token', urlToken);
-      window.history.replaceState({}, document.title, window.location.href.replace(/&token=[^&]*/gm, ''));
+
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('token');
+      window.history.replaceState({}, document.title, newUrl.toString());
+
       setHasToken(true);
+      setTriedLoading(false); // Reset this so the login effect can run
 
       // If redirect URL is provided, redirect after token is set
       if (redirectUrl) {
         window.location.href = redirectUrl;
+      }
+    } else {
+      // Check for error in URL
+      const urlError = urlParams.get('error');
+      if (urlError) {
+        setError(decodeURIComponent(urlError));
+
+        // Clear any existing token to prevent auto-login retry interference
+        localStorage.removeItem('token');
+        setHasToken(false); // Update state to reflect logout
+
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete('error');
+        window.history.replaceState({}, document.title, newUrl.toString());
       }
     }
   }, []);
@@ -462,7 +486,14 @@ Firefox:
   // ComponentDidMount equivalent
   useEffect(() => {
     window.addEventListener('message', messageHandler, false);
-    tryToLogin();
+
+    // Only try to login if there is no error in the URL and no new token provided
+    // If there is an error, avoiding auto-login avoids overwrite
+    // If there is a token, setHasToken(true) above will trigger the second useEffect to login
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.get('error') && !urlParams.get('token')) {
+      tryToLogin();
+    }
 
     return () => {
       window.removeEventListener('message', messageHandler, false);
@@ -633,6 +664,17 @@ Firefox:
       />
     ) : null;
 
+    const orgRoute = user.isOrgStaff ? (
+      <Route
+        path="/organization/*"
+        element={
+          wrapTooltipContext(
+            <AsyncOrg user={user} handleLogout={handleLogout} baseURL="/organization" />
+          )
+        }
+      />
+    ) : null;
+
     const gradeRoute = (
       <Route
         path={`${CODE}/:submissionId`}
@@ -685,6 +727,7 @@ Firefox:
         {studentRoute}
         {graderRoute}
         {adminRoute}
+        {orgRoute}
         {gradeRoute}
         {renderDemoRoute()}
         <Route path={HEALTH_CHECK} element={<div>OK</div>} />

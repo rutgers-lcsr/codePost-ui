@@ -509,6 +509,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
       enableStudentFeedbackNotifications: false,
       expiration_date: null,
       studentsCanSeeGraders: false,
+      studentCount: 0,
     };
 
     return Course.create(payload).then((course: CourseType) => {

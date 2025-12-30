@@ -61,7 +61,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
   const [p1, setp1] = React.useState('');
   const [p2, setp2] = React.useState('');
   const [terms, setTerms] = React.useState(false);
-  const [panel, setPanel] = React.useState(props.user.hasCredentials ? 1 : 0);
+  const [panel, setPanel] = React.useState(props.user.hasCredentials || props.user.organization ? 1 : 0);
   const [loadingDemo, setLoadingDemo] = React.useState(false);
   const [org, setOrg] = React.useState<string | undefined>(undefined);
   const [createOrg, setCreateOrg] = React.useState(false);

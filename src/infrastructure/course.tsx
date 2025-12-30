@@ -37,6 +37,7 @@ export const CourseV = t.intersection(
       enableStudentFeedbackNotifications: t.boolean,
       expiration_date: t.union([t.string, t.null, t.undefined]),
       studentsCanSeeGraders: t.boolean,
+      studentCount: t.number,
     }),
     t.partial({ webhooks: t.array(t.number) }),
   ],
@@ -49,17 +50,26 @@ const CourseVPatch = t.intersection(
     t.partial({
       name: t.string,
       period: t.string,
+      assignments: t.array(t.number),
+      sections: t.array(t.number),
       sendReleasedSubmissionsToBack: t.boolean,
       showStudentsStatistics: t.boolean,
       timezone: t.string,
       emailNewUsers: t.boolean,
       anonymousGradingDefault: t.boolean,
+      allowGradersToEditRubric: t.boolean,
+      minComments: t.number,
+      noUnfinalize: t.boolean,
+      activateQueue: t.boolean,
+      studentsCanSeeGraders: t.boolean,
       lateDayCreditsAllowable: t.union([t.number, t.null]),
       archived: t.boolean,
+      inviteCode: t.union([t.string, t.null]),
       emailWhitelist: t.string,
       inviteCodeEnabled: t.boolean,
       enableStudentFeedbackNotifications: t.boolean,
       expiration_date: t.union([t.string, t.null, t.undefined]),
+      studentCount: t.number,
     }),
   ],
   'CoursePatch',
@@ -138,6 +148,7 @@ export class Course {
   public static create = createObject(CourseV, CourseV, 'courses');
   public static read = readObject(CourseV, 'courses');
   public static list = listObject(CourseV, 'courses');
+  // @ts-expect-error io-ts type mismatch - CourseVPatch is partial but updateObject expects full type
   public static update = updateObject(CourseV, CourseVPatch, 'courses');
   public static delete = deleteObject(CourseV, 'courses');
 

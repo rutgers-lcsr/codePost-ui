@@ -51,6 +51,7 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
   const [visible, setVisible] = React.useState(false);
   const [showCreateDialog, setShowCreateDialog] = React.useState(false);
   const [currentRoster, setCurrentRoster] = React.useState<RosterType | undefined>(undefined);
+  const [pageSize, setPageSize] = React.useState(10);
 
   const showDrawer = (roster: RosterType) => {
     setVisible(true);
@@ -380,7 +381,13 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
         dataSource={organizationRows}
         size="middle"
         expandable={{ expandedRowRender }}
-        pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (total) => `Total ${total} organizations` }}
+        pagination={{
+          pageSize,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
+          showTotal: (total) => `Total ${total} organizations`,
+          onShowSizeChange: (_current, size) => setPageSize(size),
+        }}
       />
 
       <Drawer

@@ -173,6 +173,7 @@ class IndexManager extends React.Component<IndexManagerProps> {
           />
 
           <Route path="/settings" element={loginElement} />
+          <Route path="/organization/*" element={loginElement} />
 
           <Route
             path="*"
