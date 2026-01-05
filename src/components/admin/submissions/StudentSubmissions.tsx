@@ -255,9 +255,10 @@ const StudentData: React.FC<IByStudentProps> = (props) => {
                 const submission = studentSubmissions ? studentSubmissions[assignment.id] : undefined;
 
                 if (submission && submission.isFinalized) {
-                  toRet[assignment.name] = submission.grade && assignment.points !== null ? submission.grade + '/' + assignment.points : submission.grade;
+                  const gradeText = submission.grade && assignment.points !== null ? submission.grade + '/' + assignment.points : submission.grade;
+                  toRet[assignment.name] = <Typography.Text strong>{gradeText}</Typography.Text>;
                 } else if (submission) {
-                  toRet[assignment.name] = 'Unfinalized';
+                  toRet[assignment.name] = <Typography.Text strong>Unfinalized</Typography.Text>;
                 } else {
                   toRet[assignment.name] = '--';
                 }

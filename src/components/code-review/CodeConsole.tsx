@@ -553,6 +553,26 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
         tests = await Promise.all(writableSubmission.tests.map((id) => SubmissionTest.read(id)));
         const [categories, cases] = await fetchTestData(assignment);
 
+        files = files.sort((a, b) => {
+          return a.name.localeCompare(b.name);
+        });
+
+        files = fileBouncer(files);
+
+        if (selectedFile === undefined && files.length > 0) {
+          if (typeof queryValues.comment === 'string') {
+            const matchingFile = files.find((el) =>
+              el.comments.some((c) => c === parseInt(queryValues.comment as string)),
+            );
+            selectedFile = matchingFile || files[0];
+          } else {
+            selectedFile =
+              files.find((f: FileType) => {
+                return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
+              }) || files[0];
+          }
+        }
+
         // fill in grade using available data if submission doesn't contain an up-to-date grade
         if (assignment && !writableSubmission.isFinalized) {
           const testCasesArray = Array.isArray(cases) ? cases : Object.values(cases).flat();

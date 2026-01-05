@@ -152,17 +152,17 @@ const formatGradeText = (
   }
 
   if (sub.grader) {
-    return <Text type="warning">Unfinalized</Text>;
+    return <Text strong>Unfinalized</Text>;
   }
 
-  return <Text type="warning">Unclaimed</Text>;
+  return <Text strong>Unclaimed</Text>;
 };
 
 /**
  * Format grader text based on submission state
  */
 const formatGraderText = (grader: string | null | undefined): string | React.ReactElement => {
-  return grader ? grader : <Text type="warning">Unclaimed</Text>;
+  return grader ? grader : <Text strong>Unclaimed</Text>;
 };
 
 /**

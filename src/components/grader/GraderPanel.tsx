@@ -4,14 +4,14 @@
 
 /* react imports */
 import * as React from 'react';
-import { ZoomInOutlined } from '@ant-design/icons';
+
 
 /* antd imports */
 import { Breadcrumb, Table } from 'antd';
 
 /* other library imports */
 
-import { Link, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 
 
 /* codePost imports */
@@ -60,16 +60,7 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
       },
     ];
 
-    const data = props.data.map((row) => {
-      return {
-        ...row,
-        zoom: (
-          <Link to={`${encodeForLink(row.assignment)}`}>
-            <ZoomInOutlined />
-          </Link>
-        ),
-      };
-    });
+    const data = props.data;
 
     return (
       <Routes>

@@ -11,6 +11,9 @@ import * as React from 'react';
 /* codePost imports */
 import { AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
+import { Typography } from 'antd';
+import { Link } from 'react-router-dom';
+import { encodeForLink } from '../core/URLutils';
 
 import ViewAllDetailPanel from './ViewAllDetailPanel';
 import GraderPanelBuilder from './GraderPanel';
@@ -58,12 +61,21 @@ class ViewAllPanel extends React.Component<IProps> {
     const data = this.props.assignments.map((assignment) => {
       return {
         key: assignment.id,
-        assignment: assignment.name,
-        claimed:
-          assignment.submissions_inprogress_count && assignment.submissions_finalized_count
-            ? assignment.submissions_inprogress_count + assignment.submissions_finalized_count
-            : 0,
-        finalized: assignment.submissions_finalized_count,
+        assignment: (
+          <Link to={`${encodeForLink(assignment.name)}`} className="text-link">
+            <Typography.Text strong className="text-link">
+              {assignment.name}
+            </Typography.Text>
+          </Link>
+        ),
+        claimed: (
+          <Typography.Text strong>
+            {assignment.submissions_inprogress_count && assignment.submissions_finalized_count
+              ? assignment.submissions_inprogress_count + assignment.submissions_finalized_count
+              : 0}
+          </Typography.Text>
+        ),
+        finalized: <Typography.Text strong>{assignment.submissions_finalized_count}</Typography.Text>,
         grade:
           assignment.stats_mean && assignment.submissions_finalized_count && assignment.submissions_finalized_count > 0
             ? `${assignment.stats_mean.toFixed(1)}/${assignment.points}`

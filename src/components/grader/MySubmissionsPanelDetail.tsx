@@ -20,12 +20,12 @@ import {
   Switch,
   Table,
   Tag,
+  Typography,
 } from 'antd';
 
 /* antd icons */
 import {
   CloseCircleOutlined,
-  CodeOutlined,
   FilterOutlined,
   InboxOutlined,
   InfoCircleOutlined,
@@ -66,7 +66,7 @@ const DEFAULT_CLAIM_AMOUNT = 1;
 
 interface ITableRow extends ISubDataBasic {
   key: number;
-  student: string | number;
+  student: string | number | React.ReactElement;
   releaseIcon?: React.ReactElement;
 }
 
@@ -166,7 +166,7 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
 
         if (response.ok) {
           const data = await response.json();
-          return data.queueLength || 0;
+          return data.unclaimed || 0;
         }
         return null;
       } catch (error) {
@@ -501,11 +501,6 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
     const centerAlign: alignType = 'center';
     const columns = [
       {
-        title: 'Open',
-        dataIndex: 'open',
-        align: centerAlign,
-      },
-      {
         title: 'Student',
         dataIndex: 'student',
         sorter: (a: ITableRow, b: ITableRow) => compare(true, a.student, b.student),
@@ -553,9 +548,14 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
       const students = showingEmails && sub.students ? sub.students.join(', ') : sub.id;
       return {
         ...formatSub(sub, assignment),
-        open: <CodeOutlined onClick={() => openGradePage(sub)} />,
         key: sub.id,
-        student: students,
+        student: (
+          <a onClick={() => openGradePage(sub)} className="text-link">
+            <Typography.Text strong className="text-link">
+              {students}
+            </Typography.Text>
+          </a>
+        ),
         release: (
           <Popconfirm
             title="Are you sure you want to unclaim this submission?"
@@ -564,7 +564,7 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
             cancelText="Cancel"
             placement="left"
           >
-            <MinusCircleTwoTone twoToneColor="#eb2f96" />
+            <Button shape="circle" icon={<MinusCircleTwoTone twoToneColor="#eb2f96" />} />
           </Popconfirm>
         ),
       };

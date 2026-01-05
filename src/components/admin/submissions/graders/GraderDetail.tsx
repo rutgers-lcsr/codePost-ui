@@ -6,7 +6,7 @@
 import React from 'react';
 
 /* style imports */
-import { Breadcrumb, Typography, Tag } from 'antd';
+import { Breadcrumb, Typography } from 'antd';
 
 /* other library imports */
 import { Link, Route, Routes } from 'react-router-dom';
@@ -122,9 +122,9 @@ const GraderDetail = (props: IProps) => {
                   </Typography.Text>
                 </Link>
               ),
-              claimed: <Tag color="processing">{uniqueGraded ? uniqueGraded.length : 0}</Tag>,
-              finalized: <Tag color="success">{numFinalized}</Tag>,
-              unfinalized: <Tag color="warning">{numUnfinalized}</Tag>,
+              claimed: <Typography.Text strong>{uniqueGraded ? uniqueGraded.length : 0}</Typography.Text>,
+              finalized: <Typography.Text strong>{numFinalized}</Typography.Text>,
+              unfinalized: <Typography.Text strong>{numUnfinalized}</Typography.Text>,
               graderAverage: numFinalized > 0 ? `${avgGrade.toFixed(1)}/${assignment.points}` : '--',
               assignmentAverage: assignment.mean
                 ? `${assignment.mean.toFixed(1)}/${assignment.points}`
