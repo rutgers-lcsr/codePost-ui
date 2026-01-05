@@ -112,8 +112,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
 
   // Initialize state based on props (mimicking constructor)
   useEffect(() => {
-    // Load data into CommandBar context
-    window.CommandBar.addContext({ currentCourse: props.currentCourse, courses: props.initialCourses });
+
 
     const showCIPModal = !props.user.hasCredentials;
     const showOnboarding =
@@ -128,8 +127,6 @@ const Admin: React.FC<IComponentProps> = (props) => {
   // Document Title
   useEffect(() => {
     document.title = 'codePost - Admin Console';
-    const routerFunc = (newUrl: string) => navigate(newUrl);
-    window.CommandBar.addRouter(routerFunc);
   }, [navigate]);
 
   // Load Course Data when currentCourse changes
@@ -139,15 +136,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
     }
   }, [props.currentCourse?.id]);
 
-  // Update CommandBar when students change
-  useEffect(() => {
-    if (students) {
-      window.CommandBar.addContext({
-        course: props.currentCourse,
-        students: students,
-      });
-    }
-  }, [students, props.currentCourse]);
+
 
   /***********************************************************************************
   /* Helper Functions (Business Logic)
@@ -315,7 +304,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
       .then((loadedAssignments) => {
         if (props.currentCourse?.id !== course.id) return;
 
-        window.CommandBar.addContext({ assignments: loadedAssignments });
+
         setAssignments(loadedAssignments);
         assignmentsRef.current = loadedAssignments;
         setAssignmentsLoadComplete(true);
@@ -336,7 +325,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
         loadRosterData(course).then((roster) => {
           if (props.currentCourse?.id !== course.id) return;
 
-          window.CommandBar.addContext({ graders: roster.graders });
+
 
           setStudents(roster.students);
           setGraders(roster.graders);

@@ -108,7 +108,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps> {
                 <div style={{ fontSize: '85%' }}>
                   codePost includes tools to help you run a large course team: distribute work, set up a rubric to
                   ensure consistent, fair feedback, and use{' '}
-                  <a href="https://commandbar.com" style={{ textDecoration: 'underline' }}>intuitive keyboard shortcuts</a> to review on grader work.
+                  intuitive keyboard shortcuts to review on grader work.
                 </div>
               </div>
             </div>

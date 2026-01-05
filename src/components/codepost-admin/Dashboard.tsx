@@ -3,15 +3,17 @@ import {
   CheckCircleOutlined,
   CrownOutlined,
   GlobalOutlined,
-  RiseOutlined,
   TeamOutlined,
   UserOutlined,
+  DashboardOutlined,
 } from '@ant-design/icons';
-import { Alert, Card, Col, Progress, Row, Spin, Statistic, Table, Tabs, Tag, Typography } from 'antd';
+import { Alert, Card, Col, Progress, Row, Spin, Statistic, Table, Tag, Typography, Layout, Menu, theme } from 'antd';
+import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 import { colors } from '../../theme/colors';
 import useFixedWindow from '../core/useFixedWindow';
+import CPLogo from '../core/CPLogo';
 import _ from 'lodash';
 
 import AdminTable from './AdminTable';
@@ -25,6 +27,7 @@ import { Organization, OrganizationType } from '../../infrastructure/organizatio
 import { UserIO, UserType } from '../../infrastructure/user';
 
 const { Title, Text } = Typography;
+const { Content, Sider } = Layout;
 
 type TabType = 'Overview' | 'Organizations' | 'Courses' | 'Admins' | 'Users';
 
@@ -56,6 +59,7 @@ interface DashboardStats {
 
 const Dashboard = () => {
   useFixedWindow();
+  const { token } = theme.useToken();
   const [admins, setAdmins] = useState<AdminData[]>([]);
   const [courses, setCourses] = useState<CourseType[]>([]);
   const [rosters, setRosters] = useState<RosterType[]>([]);
@@ -427,62 +431,71 @@ const Dashboard = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f0f2f5' }}>
-      <Tabs
-        activeKey={currentTab}
-        onChange={(key) => setCurrentTab(key as TabType)}
-        size="large"
-        style={{ background: 'white', padding: '0 24px', margin: 0 }}
-        items={[
-          {
-            key: 'Overview',
-            label: (
-              <span>
-                <RiseOutlined />
-                Overview
-              </span>
-            ),
-          },
-          {
-            key: 'Organizations',
-            label: (
-              <span>
-                <GlobalOutlined />
-                Organizations ({organizations.length})
-              </span>
-            ),
-          },
-          {
-            key: 'Courses',
-            label: (
-              <span>
-                <BookOutlined />
-                Courses ({courses.length})
-              </span>
-            ),
-          },
-          {
-            key: 'Admins',
-            label: (
-              <span>
-                <TeamOutlined />
-                Admins ({admins.length})
-              </span>
-            ),
-          },
-          {
-            key: 'Users',
-            label: (
-              <span>
-                <UserOutlined />
-                Users ({users.length})
-              </span>
-            ),
-          },
-        ]}
-      />
-      {renderContent()}
-    </div>
+    <Layout style={{ minHeight: '100vh' }}>
+      <Sider
+        width={200}
+        style={{
+          overflow: 'auto',
+          height: '100vh',
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          bottom: 0,
+        }}
+      >
+        <div style={{ padding: '16px', textAlign: 'center' }}>
+          <Link to="/">
+            <CPLogo cpType="main" />
+          </Link>
+          <div
+            style={{
+              color: token.colorPrimary,
+              marginTop: '8px',
+              fontWeight: 500,
+            }}
+          >
+            SuperAdmin Console
+          </div>
+        </div>
+
+        <Menu
+          theme="dark"
+          mode="inline"
+          selectedKeys={[currentTab]}
+          onClick={({ key }) => setCurrentTab(key as TabType)}
+          items={[
+            {
+              key: 'Overview',
+              icon: <DashboardOutlined />,
+              label: 'Overview',
+            },
+            {
+              key: 'Organizations',
+              icon: <GlobalOutlined />,
+              label: `Organizations (${organizations.length})`,
+            },
+            {
+              key: 'Courses',
+              icon: <BookOutlined />,
+              label: `Courses (${courses.length})`,
+            },
+            {
+              key: 'Admins',
+              icon: <TeamOutlined />,
+              label: `Admins (${admins.length})`,
+            },
+            {
+              key: 'Users',
+              icon: <UserOutlined />,
+              label: `Users (${users.length})`,
+            },
+          ]}
+        />
+      </Sider>
+      <Layout style={{ minHeight: '100vh', background: '#f0f2f5' }}>
+        <Content style={{ margin: '24px 16px 0', overflow: 'initial' }}>{renderContent()}</Content>
+      </Layout>
+    </Layout>
   );
 };
 

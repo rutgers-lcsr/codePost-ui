@@ -2,12 +2,11 @@ import { Link } from 'react-router-dom';
 
 import {
   AuditOutlined,
-  IdcardOutlined,
   InfoCircleOutlined,
-  SlidersOutlined,
   UserSwitchOutlined,
   TeamOutlined
 } from '@ant-design/icons';
+import { PiStudentFill, PiChalkboardTeacherFill } from "react-icons/pi";
 
 import { Dropdown, theme } from 'antd';
 
@@ -42,7 +41,7 @@ const RoleMenu = (props: IProps) => {
       key: 'student',
       label: (
         <Link to="/student">
-          <IdcardOutlined />
+          <PiStudentFill />
           &nbsp; Student
         </Link>
       ),
@@ -66,7 +65,7 @@ const RoleMenu = (props: IProps) => {
       key: 'admin',
       label: (
         <Link to="/admin">
-          <SlidersOutlined />
+          <PiChalkboardTeacherFill />
           &nbsp; Admin
         </Link>
       ),

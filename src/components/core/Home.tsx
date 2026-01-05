@@ -5,22 +5,21 @@
 /* react imports */
 import * as React from 'react';
 
-import { AuditOutlined, DashboardOutlined, IdcardOutlined, SlidersOutlined, TeamOutlined } from '@ant-design/icons';
-
 /* antd imports */
-import { Divider, Typography, theme } from 'antd';
+
+import { AuditOutlined, TeamOutlined, } from '@ant-design/icons';
+import { Typography, theme, Card, Row, Col } from 'antd';
+
+
 
 /* other library imports */
 import { Link } from 'react-router-dom';
-
+import { PiStudentFill, PiChalkboardTeacherFill } from "react-icons/pi";
+import { GrUserAdmin } from "react-icons/gr";
 /* codePost imports */
 import PeripheralPageLayout from './layouts/PeripheralPageLayout';
 
 import { UserType } from '../../infrastructure/user';
-
-import useWindowSize from './useWindowSize';
-
-import layoutVars from '../../styles/layout/_layoutVars';
 
 /**********************************************************************************************************************/
 
@@ -39,81 +38,99 @@ interface IRoleProps {
 }
 
 const RoleItem = (props: IRoleProps) => {
-  const [hovered, setHovered] = React.useState(false);
   const { token } = theme.useToken();
-
-  const onMouseEnter = (_e: React.MouseEvent) => {
-    setHovered(true);
-  };
-
-  const onMouseLeave = (_e: React.MouseEvent) => {
-    setHovered(false);
-  };
+  const [hovered, setHovered] = React.useState(false);
 
   return (
-    <Link to={props.linkTo}>
-      <div
-        style={{ padding: '10px', textAlign: 'center', cursor: hovered ? 'pointer' : 'auto' }}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
+    <Link to={props.linkTo} style={{ textDecoration: 'none' }}>
+      <Card
+        hoverable
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          height: '100%',
+          textAlign: 'center',
+          borderColor: hovered ? token.colorPrimary : token.colorBorderSecondary,
+          transition: 'all 0.3s ease',
+          transform: hovered ? 'translateY(-5px)' : 'none',
+        }}
+        bodyStyle={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '32px 24px',
+          gap: '24px',
+        }}
       >
         <div
           style={{
-            margin: '8px',
-            width: '120px',
-            height: '120px',
-            border: `1px solid ${token.colorBorderSecondary}`,
-            boxShadow: hovered ? token.boxShadow : undefined,
-            display: 'table',
+            fontSize: '64px',
+            color: hovered ? token.colorPrimary : token.colorTextSecondary,
+            transition: 'color 0.3s ease',
+            lineHeight: 1,
           }}
         >
-          <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
-            {React.cloneElement(props.icon as React.ReactElement<any>, {
-              style: { fontSize: '70px', color: hovered ? token.colorPrimary : token.colorText },
-            })}
-          </div>
+          {props.icon}
         </div>
-        <div
+        <Typography.Text
+          strong
           style={{
-            fontWeight: hovered ? 600 : 500,
-            fontSize: '16px',
-            color: hovered ? token.colorText : token.colorText,
+            fontSize: '18px',
+            color: hovered ? token.colorPrimary : token.colorText,
           }}
         >
           {props.title}
-        </div>
-      </div>
+        </Typography.Text>
+      </Card>
     </Link>
   );
 };
 
 const Home = (props: IProps) => {
-  const windowSize = useWindowSize();
-
-  const flexDirection = windowSize.width < 600 ? 'column' : 'row';
-
   const items = [
     props.isStudent ? (
-      <RoleItem key="student" title="Student Console" icon={<IdcardOutlined />} linkTo="/student" />
+      <Col xs={24} sm={12} md={8} lg={6} key="student">
+        <RoleItem title="Student Console" icon={<PiStudentFill />} linkTo="/student" />
+      </Col>
     ) : null,
-    props.isGrader ? <RoleItem key="grader" title="Grader Console" icon={<AuditOutlined />} linkTo="/grader" /> : null,
-    props.isAdmin ? <RoleItem key="admin" title="Admin Console" icon={<SlidersOutlined />} linkTo="/admin" /> : null,
+    props.isGrader ? (
+      <Col xs={24} sm={12} md={8} lg={6} key="grader">
+        <RoleItem title="Grader Console" icon={<AuditOutlined />} linkTo="/grader" />
+      </Col>
+    ) : null,
+    props.isAdmin ? (
+      <Col xs={24} sm={12} md={8} lg={6} key="admin">
+        <RoleItem title="Admin Console" icon={<PiChalkboardTeacherFill />} linkTo="/admin" />
+      </Col>
+    ) : null,
     props.user.codePostAdmin ? (
-      <RoleItem key="dashboard" title="Staff Dashboard" icon={<DashboardOutlined />} linkTo="/dashboard" />
+      <Col xs={24} sm={12} md={8} lg={6} key="dashboard">
+        <RoleItem title="Staff Console" icon={<GrUserAdmin />} linkTo="/dashboard" />
+      </Col>
     ) : null,
     props.user.isOrgStaff ? (
-      <RoleItem key="org" title="Organization Console" icon={<TeamOutlined />} linkTo="/organization" />
+      <Col xs={24} sm={12} md={8} lg={6} key="org">
+        <RoleItem title="Organization Console" icon={<TeamOutlined />} linkTo="/organization" />
+      </Col>
     ) : null,
   ];
 
   return (
     <PeripheralPageLayout user={props.user} handleLogout={props.handleLogout}>
-      <div style={{ maxWidth: layoutVars.maxWidths.home, margin: '0 auto' }}>
-        <Typography.Title level={3} style={{ textAlign: 'center' }}>
-          Select your Role
-        </Typography.Title>
-        <Divider />
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection }}>{items}</div>
+      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 24px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <Typography.Title level={2} style={{ margin: 0 }}>
+            Welcome Back!
+          </Typography.Title>
+          <Typography.Text style={{ fontSize: '16px' }}>
+            Select a console to continue
+          </Typography.Text>
+        </div>
+
+        <Row gutter={[24, 24]} justify="center">
+          {items}
+        </Row>
       </div>
     </PeripheralPageLayout>
   );
