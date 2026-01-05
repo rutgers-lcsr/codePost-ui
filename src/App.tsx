@@ -529,14 +529,7 @@ Firefox:
     }
   }, [isSuperUser]);
 
-  // Handle CommandBar user identification
-  useEffect(() => {
-    if (user) {
-      window.CommandBar.boot({
-        id: user.email,
-      });
-    }
-  }, [user]);
+
 
   // Render
   if (toRedirect) {

@@ -27,14 +27,7 @@
 // 7. Themes
 @import 'themes/default';
 
-// Override CommandBar launcher position to prevent overlap
-#commandbar-launcher,
-.commandbar-launcher,
-[class*="commandbar-launcher"] {
-  right: 20px !important;
-  left: auto !important;
-  bottom: 20px !important;
-}
+
 
 // Override z-index for Ant Design Message component to ensure it appears above Modals (z-index: 2000 from theme)
 .ant-message {

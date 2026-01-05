@@ -92,7 +92,7 @@ import { loadDemoGrader, loadDemoStudent } from './demo';
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 
-import { helpQueryMap } from './HelpQueries';
+
 
 import TestsList from './code-panel/TestsList';
 import TestsMenu from './menu/TestsMenu';
@@ -292,44 +292,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
   const componentDidMountLogic = React.useCallback(async () => {
     // CommandBar loading callbacks
 
-    window.CommandBar.addCallback(
-      'assignGrader',
-      // Assumes the existence of an argument called name
-      (args, _context) => {
-        if (state.submission) updateGrader(state.submission!, args.grader);
-      },
-    );
 
-    window.CommandBar.addCallback(
-      'gotoFile',
-      // Assumes the existence of an argument called name
-      (args, _context) => {
-        if (state.submission) {
-          const foundFile = state.files.find((file) => {
-            return file.name === args.filename;
-          });
-          if (foundFile) {
-            changeSelectedFile(foundFile.id);
-          }
-        }
-      },
-    );
-
-    window.CommandBar.addCallback(
-      'gotoTestResults',
-      // Assumes the existence of an argument called name
-      (_args, _context) => {
-        setState((prev) => ({ ...prev, panelType: PANEL_TYPE.TESTS, selectedFile: undefined }));
-      },
-    );
-
-    window.CommandBar.addCallback(
-      'gotoCustomCommentExplorer',
-      // Assumes the existence of an argument called name
-      (_args, _context) => {
-        toggleCustomCommentExplorer();
-      },
-    );
 
     // Other stuff
 
@@ -2296,7 +2259,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   ];
 
   if (isCourseAdmin(state.assignment)) {
-    window.CommandBar.addContext({ students: state.students });
+
 
     defaultOptions = [
       ...defaultOptions,
@@ -2358,11 +2321,10 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   }
 
   // Merge with help queries
-  const allOptions = [...defaultOptions, ...helpQueryMap];
-  void allOptions; // Preserve merged options for legacy CommandBar tooling
+
 
   // New Foobar config
-  window.CommandBar.addCallback('showInlineTestsModal', showInlineTestsModal);
+
 
   (window as { foobarIsActive?: boolean }).foobarIsActive = false; // lift off // MODIFIED ON 2020-01-20 for CommandBar
 
