@@ -4,6 +4,9 @@
 
 /* react imports */
 import * as React from 'react';
+import { Link } from 'react-router-dom';
+import { Typography } from 'antd';
+import { encodeForLink } from '../core/URLutils';
 
 /* other library imports */
 
@@ -32,22 +35,22 @@ const MySubmissionsPanel: React.FC<IProps> = (props) => {
   const centerAlign: alignType = 'center';
   const columns = [
     {
-      title: 'Zoom in',
-      dataIndex: 'zoom',
-      align: centerAlign,
-    },
-    {
       title: 'Assignment',
       dataIndex: 'assignment',
     },
     {
-      title: 'Submissions',
-      dataIndex: 'submissions',
+      title: 'Claimed',
+      dataIndex: 'claimed',
       align: centerAlign,
     },
     {
       title: 'Finalized',
       dataIndex: 'finalized',
+      align: centerAlign,
+    },
+    {
+      title: 'Unfinalized',
+      dataIndex: 'unfinalized',
       align: centerAlign,
     },
     {
@@ -58,11 +61,28 @@ const MySubmissionsPanel: React.FC<IProps> = (props) => {
   ];
 
   const data = sortAssignments(props.assignments).map((assignment) => {
+    // Calculate unfinalized based on claimed and finalized counts
+    // logic assumed: submissions_count = total claimed?
+    // In admin panel: claimed = inprogress + finalized
+    // In assignment.ts type definition: submissions_count is generic count, submissions_finalized_count.
+    // Let's assume for My Submissions: submissions_count = Total Claimed.
+
+    const claimed = assignment.submissions_count || 0;
+    const finalized = assignment.submissions_finalized_count || 0;
+    const unfinalized = claimed - finalized;
+
     return {
       key: assignment.id,
-      assignment: assignment.name,
-      submissions: assignment.submissions_count,
-      finalized: assignment.submissions_finalized_count,
+      assignment: (
+        <Link to={`${encodeForLink(assignment.name)}`} className="text-link">
+          <Typography.Text strong className="text-link">
+            {assignment.name}
+          </Typography.Text>
+        </Link>
+      ),
+      claimed: <Typography.Text strong>{claimed}</Typography.Text>,
+      finalized: <Typography.Text strong>{finalized}</Typography.Text>,
+      unfinalized: <Typography.Text strong>{unfinalized}</Typography.Text>,
       grade:
         assignment.stats_mean && assignment.submissions_count && assignment.submissions_count > 0
           ? `${assignment.stats_mean.toFixed(1)}/${assignment.points}`

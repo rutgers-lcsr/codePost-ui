@@ -9,7 +9,7 @@ import { useCallback } from 'react';
 import { CodeOutlined, DeleteOutlined, EyeFilled, EyeInvisibleOutlined, MenuOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Dropdown, Modal, Tag, Button, Tooltip, Typography } from 'antd';
+import { Breadcrumb, Dropdown, Modal, Button, Tooltip, Typography } from 'antd';
 
 /* other library imports */
 import dayjs from 'dayjs';
@@ -63,24 +63,19 @@ const GraderAssignmentDetail: React.FC<IProps> = (props) => {
   );
 
   const getStatus = (submission: SubmissionInfoType | undefined) => {
-    let color: 'default' | 'error' | 'success' | 'warning' | 'processing' | undefined;
     let cellText;
     if (submission) {
       if (submission.isFinalized) {
-        color = 'success';
         cellText = 'Finalized';
       } else if (submission.grader) {
-        color = 'processing';
         cellText = 'Unfinalized';
       } else {
-        color = 'warning';
         cellText = 'Unclaimed';
       }
     } else {
-      color = 'default';
       cellText = 'Missing';
     }
-    return <Tag color={color}>{cellText}</Tag>;
+    return <Typography.Text strong>{cellText}</Typography.Text>;
   };
 
   const getViewIcon = (submission: SubmissionInfoType) => {
@@ -220,7 +215,7 @@ const GraderAssignmentDetail: React.FC<IProps> = (props) => {
             })}
           </Typography.Text>
         ),
-        grade: gradeString,
+        grade: <Typography.Text strong>{gradeString}</Typography.Text>,
         viewed: getViewIcon(submission),
         actions: (
           <div style={{ whiteSpace: 'nowrap' }}>

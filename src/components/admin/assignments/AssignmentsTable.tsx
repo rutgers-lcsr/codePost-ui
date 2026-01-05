@@ -11,6 +11,7 @@ import {
   DeleteOutlined,
   DownloadOutlined,
   EditOutlined,
+  EyeOutlined,
   EyeInvisibleOutlined,
   FileDoneOutlined,
   FileOutlined,
@@ -34,6 +35,7 @@ import {
   Empty,
   Flex,
   message,
+  Modal,
   Popconfirm,
   Popover,
   Progress,
@@ -444,6 +446,32 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
     [currentCourse, updateAssignmentProp],
   );
 
+  // Helper to toggle submissions released
+  const toggleSubmissionsReleased = useCallback(
+    (assignment: AssignmentType) => {
+      const isReleased = assignment.submissionsReleased;
+      const action = isReleased ? 'unrelease' : 'release';
+      const title = `Are you sure you want to ${action} submissions?`;
+      const content = isReleased
+        ? 'Students will no longer be able to see their grades or feedback.'
+        : 'Students will immediately be able to see their grades and feedback for finalized submissions.';
+
+      Modal.confirm({
+        title,
+        content,
+        onOk: () => {
+          updateAssignmentProp({
+            id: assignment.id,
+            submissionsReleased: !isReleased,
+          }).then(() => {
+            message.success(`Submissions ${isReleased ? 'unreleased' : 'released'} successfully.`);
+          });
+        },
+      });
+    },
+    [updateAssignmentProp],
+  );
+
   // Helper to get section names from IDs
   const getSectionNames = useCallback(
     (sectionIDs: number[]): string => {
@@ -600,6 +628,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         ),
       },
       */
+
       {
         type: 'divider' as const,
       },
@@ -784,6 +813,13 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
             <Link to={`${baseURL}/${encodedName}/settings`}>
               <Button shape="circle" icon={<SettingOutlined />} />
             </Link>
+          </Tooltip>
+          <Tooltip title={assignment.submissionsReleased ? 'Unrelease Submissions' : 'Release Submissions'}>
+            <Button
+              shape="circle"
+              icon={assignment.submissionsReleased ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+              onClick={() => toggleSubmissionsReleased(assignment)}
+            />
           </Tooltip>
           <Dropdown menu={{ items: menuItems }} trigger={['click']}>
             <Button shape="circle" icon={<MenuOutlined />} />
