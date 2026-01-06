@@ -815,7 +815,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
               <Button shape="circle" icon={<SettingOutlined />} />
             </Link>
           </Tooltip>
-          <Tooltip title={assignment.feedbackReleased ? 'Unrelease Submissions' : 'Release Submissions'}>
+          <Tooltip title={assignment.feedbackReleased ? 'Unrelease Feedback' : 'Release Feedback'}>
             <Button
               shape="circle"
               icon={assignment.feedbackReleased ? <EyeInvisibleOutlined /> : <EyeOutlined />}
