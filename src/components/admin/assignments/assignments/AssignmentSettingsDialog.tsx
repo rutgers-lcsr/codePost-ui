@@ -60,7 +60,12 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
 
   const loadFiles = () => {
     setIsLoading(true);
-    const promises = props.currentAssignment.files.map((el) => AssignmentFile.read(el));
+    const promises = props.currentAssignment.files.map((el) => {
+      if (typeof el === 'number') {
+        return AssignmentFile.read(el);
+      }
+      return Promise.resolve(el);
+    });
     Promise.all(promises)
       .then((files) => setAssignmentFiles(files))
       .finally(() => setIsLoading(false));

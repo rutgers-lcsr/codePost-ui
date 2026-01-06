@@ -79,7 +79,12 @@ export const TestingSetup = (props: IProps) => {
         const freshAssignment = await Assignment.read(props.currentAssignment.id);
 
         if (freshAssignment.files && freshAssignment.files.length > 0) {
-          const filePromises = freshAssignment.files.map((id) => AssignmentFile.read(id));
+          const filePromises = freshAssignment.files.map((idOrFile) => {
+            if (typeof idOrFile === 'number') {
+              return AssignmentFile.read(idOrFile);
+            }
+            return Promise.resolve(idOrFile);
+          });
           const files = await Promise.all(filePromises);
           setHelperFiles(files);
         } else {
@@ -258,16 +263,21 @@ export const TestingSetup = (props: IProps) => {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontWeight: 600, fontSize: 15, color: '#262626' }}>
-                    Limit Test Run Count
-                  </span>
+                  <span style={{ fontWeight: 600, fontSize: 15, color: '#262626' }}>Limit Test Run Count</span>
                   <CPTooltip
                     infoIcon={true}
                     title="Enabling this setting will limit the amount of times students see exposed tests on student submit. After this number has been exceeded, they can still submit, but won't see test results."
                     iconStyle={{ fontSize: 12, color: '#bfbfbf' }}
                   />
                 </div>
-                <span style={{ fontSize: 13, color: '#8c8c8c', display: 'block', marginBottom: env?.maxStudentTestRuns !== null ? 12 : 0 }}>
+                <span
+                  style={{
+                    fontSize: 13,
+                    color: '#8c8c8c',
+                    display: 'block',
+                    marginBottom: env?.maxStudentTestRuns !== null ? 12 : 0,
+                  }}
+                >
                   Students can only run exposed tests a limited number of times
                 </span>
                 {env?.maxStudentTestRuns !== null && (
@@ -305,16 +315,21 @@ export const TestingSetup = (props: IProps) => {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontWeight: 600, fontSize: 15, color: '#262626' }}>
-                    Limit Failed Test Exposure
-                  </span>
+                  <span style={{ fontWeight: 600, fontSize: 15, color: '#262626' }}>Limit Failed Test Exposure</span>
                   <CPTooltip
                     infoIcon={true}
                     title="Enabling this setting will limit the amount of failed tests a student is exposed to when they submit. This is a helpful feature if you'd like your students to slowly work through failed tests, and encourage them to write their own tests."
                     iconStyle={{ fontSize: 12, color: '#bfbfbf' }}
                   />
                 </div>
-                <span style={{ fontSize: 13, color: '#8c8c8c', display: 'block', marginBottom: env?.maxExposedFailedTests !== null ? 12 : 0 }}>
+                <span
+                  style={{
+                    fontSize: 13,
+                    color: '#8c8c8c',
+                    display: 'block',
+                    marginBottom: env?.maxExposedFailedTests !== null ? 12 : 0,
+                  }}
+                >
                   Only show a limited number of failed tests per category
                 </span>
                 {env?.maxExposedFailedTests !== null && (
