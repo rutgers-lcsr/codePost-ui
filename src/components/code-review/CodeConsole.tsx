@@ -685,10 +685,11 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
       .then((json) => {
         if (json.write) {
           return PERMISSION_LEVEL.WRITE;
+        } else if (json.filesOnly) {
+          // Check filesOnly BEFORE read, since backend may set both read:true AND filesOnly:true
+          return PERMISSION_LEVEL.READ_FILES_ONLY;
         } else if (json.read) {
           return PERMISSION_LEVEL.READ;
-        } else if (json.filesOnly) {
-          return PERMISSION_LEVEL.READ_FILES_ONLY;
         } else {
           return PERMISSION_LEVEL.NONE;
         }
