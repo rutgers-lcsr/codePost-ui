@@ -216,9 +216,13 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
         )}
 
         {isCached && !isExecuting && !showSuccess && cachedInfo && (
-          <Tooltip title={`Executed by ${cachedInfo.executedBy || 'Unknown'}`}>
+          <Tooltip
+            title={
+              canWrite && cachedInfo.executedBy ? `Executed by ${cachedInfo.executedBy}` : 'Result retrieved from cache'
+            }
+          >
             <Tag icon={<ClockCircleOutlined />} color="gold">
-              Cached {formatCachedTime(cachedInfo.executedAt)}
+              Cached {canWrite ? formatCachedTime(cachedInfo.executedAt) : ''}
             </Tag>
           </Tooltip>
         )}
