@@ -38,8 +38,6 @@ import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
 import Referral from '../core/Referral';
 import RoleMenu from '../core/RoleMenu';
 
-import { TableDetail } from '../admin/other/TableDetail';
-
 import { openSubmission, openSubmissionInSameTab } from '../admin/other/AdminUtils';
 
 import CPLogo from '../core/CPLogo';
@@ -54,6 +52,9 @@ import { IComponentProps } from '../core/ComponentManager';
 import CourseMenu, { encodedCourseLink } from '../core/CourseMenu';
 
 import { CodePostDate } from '../utils/CodepostDate';
+
+import AssignmentCard, { SubmissionStatus } from './AssignmentCard';
+import './StudentConsole.css';
 
 /**********************************************************************************************************************/
 
@@ -488,11 +489,12 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     [currentCourse, changePanel, downloadAssignment],
   );
 
-  /***********************************************************************************
-   * Content area - Assignment Table Builder
-   **********************************************************************************/
+  // NOTE: buildAssignmentsTable has been removed - replaced with card-based layout
+  // See AssignmentCard.tsx for the new card component implementation.
 
-  const buildAssignmentsTable = useCallback(
+  // @ts-expect-error buildAssignmentsTable is kept for reference but no longer used
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _buildAssignmentsTable = useCallback(
     (assignmentList: AssignmentStudentType[], submissionsMap: IAssignmentToSubmissionStudentMap) => {
       const modifyIf = (modMap: { [statusTarget: number]: number }) => {
         return (row: { statusType: SUBMISSION_STATUS }) => {
@@ -611,10 +613,10 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
           : columns;
         columns =
           currentCourse &&
-            currentCourse.showStudentsStatistics &&
-            visibleAssignments.some((assn) => {
-              return assn.mean || assn.median;
-            })
+          currentCourse.showStudentsStatistics &&
+          visibleAssignments.some((assn) => {
+            return assn.mean || assn.median;
+          })
             ? [...columns, statsColumn]
             : columns;
       }
@@ -699,11 +701,11 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
                 submission.students !== undefined && submission.students.length === 1
                   ? '--'
                   : submission.students !== undefined &&
-                  submission.students
-                    .filter((student) => {
-                      return student !== user.email;
-                    })
-                    .join(', '),
+                    submission.students
+                      .filter((student) => {
+                        return student !== user.email;
+                      })
+                      .join(', '),
               grade: showGrade ? (
                 submission.grade !== null && submission.grade !== undefined ? (
                   `${submission.grade}/${assignment.points}`
@@ -771,37 +773,144 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   } else {
     const lateDayCredits = getLateDayCreditsComponent();
 
+    // Note: buildAssignmentsTable and rowClassName no longer needed with card layout
     const assignmentList = assignments[currentCourse.id];
-    const { columns, data } = buildAssignmentsTable(assignmentList, submissions);
-    const rowClassName = (record: { disabled?: boolean }, _index: number) => {
-      if (record.disabled) {
-        return 'disabled-row';
-      } else {
-        return '';
-      }
-    };
 
     const defaultFiles =
       uploadShortcut !== undefined &&
-        detailAssignment !== undefined &&
-        uploadShortcut.assignmentID === detailAssignment.id
+      detailAssignment !== undefined &&
+      uploadShortcut.assignmentID === detailAssignment.id
         ? uploadShortcut.files
         : undefined;
 
+    // Determine which features to show based on course/assignment settings
+    const visibleAssignments = assignmentList.filter((assn) => assn.isVisible);
+    // showGrades could be used in the future for additional UI elements
+    const showPartners = visibleAssignments.some((assn) => {
+      const hidePartners = assn.allowStudentUpload && !assn.allowStudentUploadWithPartners;
+      return !hidePartners;
+    });
+    const showStats =
+      currentCourse.showStudentsStatistics && visibleAssignments.some((assn) => assn.mean || assn.median);
+    const showUpload = visibleAssignments.some((assn) => assn.allowStudentUpload);
+
+    // Helper to determine submission status
+    const getSubmissionStatus = (
+      assignment: AssignmentStudentType,
+      submission?: StudentSubmissionType,
+    ): SubmissionStatus => {
+      if (!assignment.isReleased && !assignment.liveFeedbackMode) {
+        return SubmissionStatus.NOT_PUBLISHED;
+      }
+      if (!submission) {
+        return SubmissionStatus.NO_SUBMISSION;
+      }
+      // Check if submission is ready for student to view feedback
+      // It's ready if: finalized, OR in liveFeedbackMode, OR feedback has been released
+      const isReviewComplete = submission.isFinalized || assignment.liveFeedbackMode || assignment.feedbackReleased;
+      if (!isReviewComplete) {
+        return SubmissionStatus.NOT_REVIEWED;
+      }
+      // Check if viewed
+      const isViewed = !(submission.id in viewsBySubmission) || viewsBySubmission[submission.id];
+      return isViewed ? SubmissionStatus.SUBMITTED : SubmissionStatus.PENDING;
+    };
+
     studentContent = (
-      <div>
-        <TableDetail
-          loadComplete={!isLoadingAssignments && !isLoadingSubmissions}
-          isEmpty={assignmentList.length === 0}
-          title={`${currentCourse.name} | ${currentCourse.period}`}
-          emptyNode={<div>Empty...</div>}
-          actions={[lateDayCredits]}
-          columns={columns}
-          data={data}
-          pagination={false}
-          hideSearch={true}
-          tableProps={{ rowClassName, bordered: true }}
-        />
+      <div className="student-console__container">
+        {/* Header Section */}
+        <div className="student-console__header">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <h1 className="student-console__title">{currentCourse.name}</h1>
+              <p className="student-console__subtitle">{currentCourse.period}</p>
+            </div>
+            <div className="student-console__actions">
+              {lateDayCredits && <div className="student-console__late-credits">{lateDayCredits}</div>}
+            </div>
+          </div>
+        </div>
+
+        {/* Loading State */}
+        {(isLoadingAssignments || isLoadingSubmissions) && (
+          <div className="student-console__loading">
+            <Spin size="large" />
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!isLoadingAssignments && !isLoadingSubmissions && assignmentList.length === 0 && (
+          <div className="student-console__empty">
+            <MinusCircleOutlined className="student-console__empty-icon" />
+            <div className="student-console__empty-text">No assignments yet</div>
+            <div className="student-console__empty-subtext">Check back later for new assignments</div>
+          </div>
+        )}
+
+        {/* Assignment Cards Grid */}
+        {!isLoadingAssignments && !isLoadingSubmissions && assignmentList.length > 0 && (
+          <div className="assignment-card-grid">
+            {sortAssignments(assignmentList).map((assignment) => {
+              const submission = assignment.id in submissions ? submissions[assignment.id][0] : undefined;
+              const status = getSubmissionStatus(assignment, submission);
+              const partners = submission?.students?.filter((s) => s !== user.email) || [];
+              const isDisabled = status === SubmissionStatus.NOT_PUBLISHED;
+
+              return (
+                <AssignmentCard
+                  key={assignment.id}
+                  assignmentName={assignment.name}
+                  status={status}
+                  grade={submission?.grade ?? null}
+                  maxPoints={assignment.points}
+                  partners={partners}
+                  meanGrade={assignment.mean}
+                  medianGrade={assignment.median}
+                  dueDate={assignment.uploadDueDate}
+                  uploadDate={submission?.dateUploaded}
+                  showStats={showStats}
+                  showPartners={showPartners && partners.length > 0}
+                  showUpload={showUpload && assignment.allowStudentUpload}
+                  allowStudentUpload={assignment.allowStudentUpload}
+                  hasExistingSubmission={submission !== undefined}
+                  hasDownload={assignment.files && assignment.files.length > 0}
+                  liveFeedbackMode={assignment.liveFeedbackMode}
+                  isFinalized={submission?.isFinalized ?? false}
+                  disabled={isDisabled}
+                  onViewFeedback={
+                    (status === SubmissionStatus.SUBMITTED || status === SubmissionStatus.PENDING) && submission
+                      ? () => {
+                          markViewed(submission).then(() => openSubmissionInSameTab(submission.id));
+                        }
+                      : undefined
+                  }
+                  onViewFiles={
+                    status === SubmissionStatus.NOT_REVIEWED && submission
+                      ? () => openSubmissionInSameTab(submission.id)
+                      : undefined
+                  }
+                  onUpload={
+                    assignment.allowStudentUpload
+                      ? () => changePanel(CURRENT_PANEL.UPLOADFILES, assignment, submission)
+                      : undefined
+                  }
+                  onAddFiles={
+                    assignment.liveFeedbackMode && submission && !submission.isFinalized
+                      ? () => changePanel(CURRENT_PANEL.ADDFILES, assignment, submission)
+                      : undefined
+                  }
+                  onDownload={
+                    assignment.files && assignment.files.length > 0
+                      ? () => downloadAssignment(assignment.id, assignment.name)
+                      : undefined
+                  }
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {/* Upload Dialog */}
         <UploadSubmissionDialog
           isVisible={currentPanel === CURRENT_PANEL.UPLOADFILES || currentPanel === CURRENT_PANEL.ADDFILES}
           onCancel={() => changePanel(CURRENT_PANEL.TABLE, detailAssignment, undefined)}
