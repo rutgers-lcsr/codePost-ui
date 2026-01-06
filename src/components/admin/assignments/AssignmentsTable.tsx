@@ -430,7 +430,8 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       if (!assignment.isReleased) {
         sendSlack(
           'Assignment published',
-          `${assignment.name} | ${currentCourse ? currentCourse.name : ''} ${currentCourse ? currentCourse.period : ''
+          `${assignment.name} | ${currentCourse ? currentCourse.name : ''} ${
+            currentCourse ? currentCourse.period : ''
           }`,
           colors.brandPrimary,
           '#user_notifications_everything',
@@ -449,7 +450,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
   // Helper to toggle submissions released
   const toggleSubmissionsReleased = useCallback(
     (assignment: AssignmentType) => {
-      const isReleased = assignment.submissionsReleased;
+      const isReleased = assignment.feedbackReleased;
       const action = isReleased ? 'unrelease' : 'release';
       const title = `Are you sure you want to ${action} submissions?`;
       const content = isReleased
@@ -462,7 +463,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         onOk: () => {
           updateAssignmentProp({
             id: assignment.id,
-            submissionsReleased: !isReleased,
+            feedbackReleased: !isReleased,
           }).then(() => {
             message.success(`Submissions ${isReleased ? 'unreleased' : 'released'} successfully.`);
           });
@@ -558,15 +559,15 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       },
       ...(assignment.allowRegradeRequests
         ? [
-          {
-            key: '3.1',
-            label: (
-              <Link to={`${baseURL}/${encodedName}/regrades`}>
-                <MessageOutlined /> &nbsp; View Regrades
-              </Link>
-            ),
-          },
-        ]
+            {
+              key: '3.1',
+              label: (
+                <Link to={`${baseURL}/${encodedName}/regrades`}>
+                  <MessageOutlined /> &nbsp; View Regrades
+                </Link>
+              ),
+            },
+          ]
         : []),
       {
         key: '4',
@@ -814,10 +815,10 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
               <Button shape="circle" icon={<SettingOutlined />} />
             </Link>
           </Tooltip>
-          <Tooltip title={assignment.submissionsReleased ? 'Unrelease Submissions' : 'Release Submissions'}>
+          <Tooltip title={assignment.feedbackReleased ? 'Unrelease Submissions' : 'Release Submissions'}>
             <Button
               shape="circle"
-              icon={assignment.submissionsReleased ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+              icon={assignment.feedbackReleased ? <EyeInvisibleOutlined /> : <EyeOutlined />}
               onClick={() => toggleSubmissionsReleased(assignment)}
             />
           </Tooltip>

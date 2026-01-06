@@ -59,8 +59,6 @@ import { AssignmentSetupBanner } from './assignments/assignments/AssignmentSetup
 
 import { CIPAdminModal } from '../cip/components';
 
-
-
 /**********************************************************************************************************************/
 
 const formatCourseURL = (course: CourseType) => {
@@ -104,7 +102,9 @@ const Admin: React.FC<IComponentProps> = (props) => {
   const [submissions, setSubmissions] = useState<IAssignmentToSubmissionsMap>({});
   const [submissionsByStudent, setSubmissionsByStudent] = useState<IStudentSubmissionsDataTable>({});
   const [submissionsByGrader, setSubmissionsByGrader] = useState<IGraderSubmissionsDataTable>({});
-  const [viewsBySubmission, setViewsBySubmission] = useState<{ [submissionID: number]: { [student: string]: string } }>({});
+  const [viewsBySubmission, setViewsBySubmission] = useState<{ [submissionID: number]: { [student: string]: string } }>(
+    {},
+  );
 
   // Refs for async data access
   const rosterRef = useRef<RosterType | undefined>(undefined);
@@ -112,8 +112,6 @@ const Admin: React.FC<IComponentProps> = (props) => {
 
   // Initialize state based on props (mimicking constructor)
   useEffect(() => {
-
-
     const showCIPModal = !props.user.hasCredentials;
     const showOnboarding =
       Object.prototype.hasOwnProperty.call(queryString.parse(location.search), 'onboarding') ||
@@ -135,8 +133,6 @@ const Admin: React.FC<IComponentProps> = (props) => {
       loadAllCourseData(props.currentCourse);
     }
   }, [props.currentCourse?.id]);
-
-
 
   /***********************************************************************************
   /* Helper Functions (Business Logic)
@@ -271,9 +267,8 @@ const Admin: React.FC<IComponentProps> = (props) => {
     setFullSubmissionsLoadComplete(false);
 
     const promises = course.assignments.map((assignmentID) => {
-      return Assignment.readPaginatedSubmissions(
-        assignmentID,
-        (submissionsPage) => onSubmissionsPagination(course, assignmentID, submissionsPage),
+      return Assignment.readPaginatedSubmissions(assignmentID, (submissionsPage) =>
+        onSubmissionsPagination(course, assignmentID, submissionsPage),
       );
     });
     Promise.all(promises).then(() => {
@@ -294,7 +289,9 @@ const Admin: React.FC<IComponentProps> = (props) => {
 
   const loadViewsBySubmissionData = (course: CourseType) => {
     course.assignments.forEach((assignmentID) => {
-      Assignment.readPaginatedSubmissionHistories(assignmentID, (history) => onSubmissionHistoryPagination(course, history));
+      Assignment.readPaginatedSubmissionHistories(assignmentID, (history) =>
+        onSubmissionHistoryPagination(course, history),
+      );
     });
   };
 
@@ -303,7 +300,6 @@ const Admin: React.FC<IComponentProps> = (props) => {
     loadAssignmentsData(course)
       .then((loadedAssignments) => {
         if (props.currentCourse?.id !== course.id) return;
-
 
         setAssignments(loadedAssignments);
         assignmentsRef.current = loadedAssignments;
@@ -322,31 +318,30 @@ const Admin: React.FC<IComponentProps> = (props) => {
       })
       .then((loadedAssignments) => {
         // Then load roster
-        loadRosterData(course).then((roster) => {
-          if (props.currentCourse?.id !== course.id) return;
+        loadRosterData(course)
+          .then((roster) => {
+            if (props.currentCourse?.id !== course.id) return;
 
+            setStudents(roster.students);
+            setGraders(roster.graders);
+            setAdmins(roster.courseAdmins);
+            setSuperGraders(roster.superGraders);
+            setInactiveStudents(roster.inactive_students);
+            setInactiveGraders(roster.inactive_graders);
+            setNotActivated(roster.not_activated);
+            setRosterLoadComplete(true);
+            rosterRef.current = roster;
 
+            // We can try to update submissions by user if we have everything
+            // Since loadedAssignments is passed through, we can use it.
+            // Submissions might not be full yet (partial), but onSubmissionsPagination handles incremental updates.
+            // However, we should do an initial generation if we have data.
+            // But 'submissions' state is empty initially.
+            // The pagination callbacks will handle the population.
 
-          setStudents(roster.students);
-          setGraders(roster.graders);
-          setAdmins(roster.courseAdmins);
-          setSuperGraders(roster.superGraders);
-          setInactiveStudents(roster.inactive_students);
-          setInactiveGraders(roster.inactive_graders);
-          setNotActivated(roster.not_activated);
-          setRosterLoadComplete(true);
-          rosterRef.current = roster;
-
-          // We can try to update submissions by user if we have everything
-          // Since loadedAssignments is passed through, we can use it.
-          // Submissions might not be full yet (partial), but onSubmissionsPagination handles incremental updates.
-          // However, we should do an initial generation if we have data.
-          // But 'submissions' state is empty initially.
-          // The pagination callbacks will handle the population.
-
-          // If we already had data (refresh case), we might want to run update.
-          updateSubmissionsByUser(roster, {}, loadedAssignments);
-        })
+            // If we already had data (refresh case), we might want to run update.
+            updateSubmissionsByUser(roster, {}, loadedAssignments);
+          })
           .catch((err) => {
             console.error('Failed to load roster:', err);
           });
@@ -357,7 +352,6 @@ const Admin: React.FC<IComponentProps> = (props) => {
 
     loadSectionsData(course);
   };
-
 
   /***********************************************************************************
   /* Pagination Callbacks
@@ -382,7 +376,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
       // Or simply: `updateSubmissionsByUser` uses closure state.
       // If we use refs for roster/assignments, we can access them here.
 
-      // Let's assume for this complex refactor that we might need to rely on the setters to trigger re-renders 
+      // Let's assume for this complex refactor that we might need to rely on the setters to trigger re-renders
       // where we re-calculate derived data, but `updateSubmissionsByUser` is explicitly doing derived data calc.
 
       // For this step, I will construct usage of `updateSubmissionsByUser` carefully.
@@ -680,7 +674,8 @@ const Admin: React.FC<IComponentProps> = (props) => {
       for (const removed of removedStudents) delete sectionMap[removed];
       for (const added of addedStudents) sectionMap[added] = newSection;
 
-      const otherSections = sections.filter((s) => s.id !== newSection.id)
+      const otherSections = sections
+        .filter((s) => s.id !== newSection.id)
         .map((el) => ({
           ...el,
           students: el.students.filter((stu) => addedStudents.indexOf(stu) === -1),
@@ -706,7 +701,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
       promises.push(updateSection(updatedSection));
     }
 
-    return Promise.all(promises).then(() => { });
+    return Promise.all(promises).then(() => {});
   };
 
   /************************************************************************
@@ -714,15 +709,15 @@ const Admin: React.FC<IComponentProps> = (props) => {
   /***********************************************************************/
 
   const updateAssignment = (patchObj: AssignmentPatchType): Promise<void> => {
-    return Assignment.update(patchObj).then((assignment) => {
-      setAssignments(assignments.map((assn) => (assn.id === assignment.id ? assignment : assn)));
-    }).catch((errors) => Promise.reject(errors));
+    return Assignment.update(patchObj)
+      .then((assignment) => {
+        setAssignments(assignments.map((assn) => (assn.id === assignment.id ? assignment : assn)));
+      })
+      .catch((errors) => Promise.reject(errors));
   };
 
   const shallowUpdateAssignment = (assignmentID: number, field: string, value: number) => {
-    setAssignments(assignments.map((assn) =>
-      assn.id === assignmentID ? { ...assn, [field]: value } : assn
-    ));
+    setAssignments(assignments.map((assn) => (assn.id === assignmentID ? { ...assn, [field]: value } : assn)));
   };
 
   const createAssignment = (
@@ -748,7 +743,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
       allowStudentUpload: studentUpload,
       uploadDueDate: dueDate,
       isVisible,
-      submissionsReleased: false,
+      feedbackReleased: false,
     };
 
     return Assignment.create(payload).then((assignment: AssignmentType) => {
@@ -759,7 +754,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
 
       const newAssignments = _.uniqBy([...assignments, assignment], (a: AssignmentType) => a.name);
 
-      setSubmissions(prev => ({ ...prev, [assignment.id]: [] }));
+      setSubmissions((prev) => ({ ...prev, [assignment.id]: [] }));
       setAssignments(newAssignments);
       setSubmissionsByGrader(newSubsByGrader);
 
@@ -818,10 +813,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
     if (oldSubmission === undefined) return Promise.reject('Submission does not exist');
 
     return Submission.update(toUpdate).then((updated) => {
-      const newAssignmentSubs = [
-        ...submissions[assignmentID].filter((s) => s.id !== updated.id),
-        updated,
-      ];
+      const newAssignmentSubs = [...submissions[assignmentID].filter((s) => s.id !== updated.id), updated];
       const newSubmissions = { ...submissions, [assignmentID]: newAssignmentSubs };
 
       // Update student mappings
@@ -839,14 +831,16 @@ const Admin: React.FC<IComponentProps> = (props) => {
       // Update grader mappings
       const newGraderMap = { ...submissionsByGrader };
       if (oldSubmission.grader && oldSubmission.grader !== updated.grader) {
-        newGraderMap[oldSubmission.grader][assignmentID] = newGraderMap[oldSubmission.grader][assignmentID].filter((s) => s.id !== updated.id);
+        newGraderMap[oldSubmission.grader][assignmentID] = newGraderMap[oldSubmission.grader][assignmentID].filter(
+          (s) => s.id !== updated.id,
+        );
       }
 
       if (updated.grader) {
         const existingGraderSubs = newGraderMap[updated.grader][assignmentID] || [];
         newGraderMap[updated.grader][assignmentID] = [
           ...existingGraderSubs.filter((s) => s.id !== updated.id),
-          updated
+          updated,
         ];
       }
 
@@ -879,7 +873,9 @@ const Admin: React.FC<IComponentProps> = (props) => {
 
       const newSubmissionsByGrader = { ...submissionsByGrader };
       if (sub.grader) {
-        newSubmissionsByGrader[sub.grader][assignmentID] = newSubmissionsByGrader[sub.grader][assignmentID].filter((s) => s.id !== sub.id);
+        newSubmissionsByGrader[sub.grader][assignmentID] = newSubmissionsByGrader[sub.grader][assignmentID].filter(
+          (s) => s.id !== sub.id,
+        );
       }
 
       setSubmissions(newSubmissions);
@@ -941,7 +937,6 @@ const Admin: React.FC<IComponentProps> = (props) => {
     });
   };
 
-
   /************************************************************************************
   /* Render
   /************************************************************************************/
@@ -949,12 +944,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
   const courseURL = props.currentCourse ? formatCourseURL(props.currentCourse) : props.baseURL;
 
   const dropdown = (
-    <CourseMenu
-      base="admin"
-      panel="assignments"
-      courses={courses}
-      currentCourse={props.currentCourse}
-    />
+    <CourseMenu base="admin" panel="assignments" courses={courses} currentCourse={props.currentCourse} />
   );
   const createButton = <NewCourseDialog courses={courses} createCourse={createCourse} />;
   const headerLeft = [dropdown, createButton];
@@ -988,23 +978,18 @@ const Admin: React.FC<IComponentProps> = (props) => {
 
   const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
 
-  const navigation = (collapsed: boolean) => (
-    <AdminNav baseURL={courseURL} collapsed={collapsed} />
-  );
+  const navigation = (collapsed: boolean) => <AdminNav baseURL={courseURL} collapsed={collapsed} />;
 
-  const banner = props.currentCourse && assignments && assignments.length === 1 ? (
-    <AssignmentSetupBanner
-      course={props.currentCourse}
-      hasStudents={students.length > 0}
-      hasSubmissions={
-        submissions &&
-        submissions[assignments[0].id] &&
-        submissions[assignments[0].id].length > 0
-      }
-      onClose={() => { }}
-      assignment={assignments[0]}
-    />
-  ) : undefined;
+  const banner =
+    props.currentCourse && assignments && assignments.length === 1 ? (
+      <AssignmentSetupBanner
+        course={props.currentCourse}
+        hasStudents={students.length > 0}
+        hasSubmissions={submissions && submissions[assignments[0].id] && submissions[assignments[0].id].length > 0}
+        onClose={() => {}}
+        assignment={assignments[0]}
+      />
+    ) : undefined;
 
   let detail;
 
@@ -1023,7 +1008,6 @@ const Admin: React.FC<IComponentProps> = (props) => {
       <AdminRoutes
         course={props.currentCourse}
         courseURL={courseURL}
-
         // Loaded Data
         assignments={assignments}
         students={students}
@@ -1039,7 +1023,6 @@ const Admin: React.FC<IComponentProps> = (props) => {
         submissionsByStudent={submissionsByStudent}
         submissionsByGrader={submissionsByGrader}
         viewsBySubmission={viewsBySubmission}
-
         // Load Status
         loadComplete={{
           assignments: assignmentsLoadComplete,
@@ -1047,13 +1030,11 @@ const Admin: React.FC<IComponentProps> = (props) => {
           submissionsFull: fullSubmissionsLoadComplete,
           submissionsByUser: submissionsByUserLoadComplete,
           roster: rosterLoadComplete,
-          sections: sectionsLoadComplete
+          sections: sectionsLoadComplete,
         }}
-
         // User Context
         user={props.user}
         myEmail={props.user.email}
-
         // Change handlers
         createAssignment={createAssignment}
         updateAssignment={updateAssignment}
@@ -1071,9 +1052,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
         updateSubmission={updateSubmission}
         changeSubmissionGrader={changeSubmissionGrader}
         bulkUpdateSubmissions={bulkUpdateSubmissions}
-
         courses={courses}
-
         // Actions
         refreshCourseData={() => loadAllCourseData(props.currentCourse!)}
       />

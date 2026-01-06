@@ -677,6 +677,10 @@ export const GradeButton = (props: IGradeButtonProps) => {
 
   useHotkeys('b', handleClick, true);
 
+  if (gradeNum === null || gradeNum === undefined) {
+    return null;
+  }
+
   return (
     <div>
       <CPButton cpType={theme === 'light' ? 'secondary' : 'dark'} onClick={handleClick}>
@@ -734,7 +738,7 @@ export const StatusTags = (props: IStatusTagsProps) => {
     return 0;
   };
 
-  const statusTagType: StatusTagType = subStatus(props.submission.isFinalized, props.assignment.isReleased);
+  const statusTagType: StatusTagType = subStatus(props.submission.isFinalized, props.assignment.feedbackReleased);
 
   let tagColor;
   let tagText;
