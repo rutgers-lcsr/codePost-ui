@@ -113,8 +113,6 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
       points: values.points,
       anonymousGrading: values.anonymousGrading,
       collaborativeRubricMode: values.collaborativeRubricMode,
-
-      hideGrades: values.hideGrades,
       commentFeedback: values.commentFeedback,
       allowRegradeRequests: values.allowRegradeRequests,
       allowStudentUpload: values.allowStudentUpload,
@@ -237,7 +235,6 @@ interface IFormValues {
   collaborativeRubricMode: boolean;
 
   studentsCanSeeGraders: boolean | null;
-  hideGrades: boolean;
   commentFeedback: boolean;
   allowRegradeRequests: boolean;
   regradeDeadline: any;
@@ -294,7 +291,6 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
         collaborativeRubricMode: assignment.collaborativeRubricMode,
 
         studentsCanSeeGraders: assignment.studentsCanSeeGraders,
-        hideGrades: assignment.hideGrades,
         commentFeedback: assignment.commentFeedback,
         allowRegradeRequests: assignment.allowRegradeRequests,
         allowStudentUpload: assignment.allowStudentUpload,
@@ -756,17 +752,6 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                     labelCol={{ span: 6 }}
                     wrapperCol={{ span: 18 }}
                     initialValue={assignment.commentFeedback}
-                    valuePropName="checked"
-                  >
-                    <Switch />
-                  </Form.Item>
-                  <Form.Item
-                    name="hideGrades"
-                    label="Hide grades"
-                    extra=" When enabled, students won't be able to view the grades associated with their submissions."
-                    labelCol={{ span: 6 }}
-                    wrapperCol={{ span: 18 }}
-                    initialValue={assignment.hideGrades}
                     valuePropName="checked"
                   >
                     <Switch />
