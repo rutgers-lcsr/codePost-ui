@@ -17,7 +17,6 @@ import * as React from 'react';
 import { Button, Divider, Empty, message, Progress, Tag, Typography } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 
-
 /* other library imports */
 import _ from 'lodash';
 import queryString from 'query-string';
@@ -91,8 +90,6 @@ import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
 import { loadDemoGrader, loadDemoStudent } from './demo';
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
-
-
 
 import TestsList from './code-panel/TestsList';
 import TestsMenu from './menu/TestsMenu';
@@ -291,8 +288,6 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
   // Component mount logic
   const componentDidMountLogic = React.useCallback(async () => {
     // CommandBar loading callbacks
-
-
 
     // Other stuff
 
@@ -535,8 +530,11 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
         let assignmentFiles: AssignmentFileType[] = [];
         if (assignment.templateMode) {
           assignmentFiles = await Promise.all(
-            assignment.files.map((assignmentFileID: number) => {
-              return AssignmentFile.read(assignmentFileID);
+            assignment.files.map((assignmentFileOrID) => {
+              if (typeof assignmentFileOrID !== 'number') {
+                return assignmentFileOrID;
+              }
+              return AssignmentFile.read(assignmentFileOrID);
             }),
           );
         }
@@ -1178,7 +1176,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       if (!state.submission.isFinalized) {
         sendSlack(
           'Submission finalized',
-          `${state.submission.id} ${state.assignment ? state.assignment.name : ''} | ${state.course ? state.course.name : ''
+          `${state.submission.id} ${state.assignment ? state.assignment.name : ''} | ${
+            state.course ? state.course.name : ''
           } ${state.course ? state.course.period : ''}`,
           colors.brandPrimary,
           '#user_notifications_everything',
@@ -1442,7 +1441,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
   const testsTitle = 'Tests';
 
-
   if (state.permissionLevel === PERMISSION_LEVEL.NONE || state.permissionLevel === PERMISSION_LEVEL.NOT_FOUND) {
     rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
 
@@ -1485,19 +1483,19 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       state.hideGrades || state.permissionLevel === PERMISSION_LEVEL.READ_FILES_ONLY
         ? []
         : [
-          <GradeButton
-            key="subheader-grade"
-            assignment={state.assignment!}
-            submission={state.submission === undefined ? state.readOnlySubmission! : state.submission}
-            calculateGrade={calculateGradeFromState}
-            rubricCategories={state.rubricCategories}
-            comments={state.comments}
-            commentRubricComments={state.commentRubricComments}
-            files={state.files}
-            submissionTests={state.tests}
-            testCases={Object.values(state.testCases).flat() as any} // eslint-disable-line @typescript-eslint/no-explicit-any
-          />,
-        ];
+            <GradeButton
+              key="subheader-grade"
+              assignment={state.assignment!}
+              submission={state.submission === undefined ? state.readOnlySubmission! : state.submission}
+              calculateGrade={calculateGradeFromState}
+              rubricCategories={state.rubricCategories}
+              comments={state.comments}
+              commentRubricComments={state.commentRubricComments}
+              files={state.files}
+              submissionTests={state.tests}
+              testCases={Object.values(state.testCases).flat() as any} // eslint-disable-line @typescript-eslint/no-explicit-any
+            />,
+          ];
 
     const fileMenuTitle = <FileMenuTitle key="files" files={state.files} />;
     if (props.inDemoMode) {
@@ -1902,7 +1900,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             comments={[]} // No comments in files-only mode
             readOnly={true}
             user={props.user.email}
-            onHighlightClick={(_e) => { }}
+            onHighlightClick={(_e) => {}}
             executionResult={state.executionResults[state.selectedFile!.id] || null}
             onClearOutputs={handleClearOutputs}
           />
@@ -2279,8 +2277,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   ];
 
   if (isCourseAdmin(state.assignment)) {
-
-
     defaultOptions = [
       ...defaultOptions,
       {
@@ -2342,9 +2338,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
   // Merge with help queries
 
-
   // New Foobar config
-
 
   (window as { foobarIsActive?: boolean }).foobarIsActive = false; // lift off // MODIFIED ON 2020-01-20 for CommandBar
 
@@ -2390,8 +2384,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           isStudent={state.isStudent}
         />
         {state.permissionLevel === PERMISSION_LEVEL.WRITE &&
-          state.assignment !== undefined &&
-          state.submission !== undefined ? (
+        state.assignment !== undefined &&
+        state.submission !== undefined ? (
           <InlineTestsModal
             key="inline-tests-modal"
             visible={state.showInlineTestsModal}
