@@ -748,6 +748,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
       allowStudentUpload: studentUpload,
       uploadDueDate: dueDate,
       isVisible,
+      submissionsReleased: false,
     };
 
     return Assignment.create(payload).then((assignment: AssignmentType) => {
