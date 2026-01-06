@@ -118,7 +118,30 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3, ba
  */
 async function handleErrorResponse(res: Response): Promise<never> {
   const data: any = await res.json();
-  const errorMessage = typeof data === 'string' ? data : JSON.stringify(data);
+  let errorMessage: string;
+
+  if (typeof data === 'string') {
+    errorMessage = data;
+  } else if (Array.isArray(data)) {
+    // e.g. ["Late submissions are not allowed"]
+    errorMessage = data.join(' ');
+  } else if (typeof data === 'object' && data !== null) {
+    if (data.detail && typeof data.detail === 'string') {
+      // e.g. { "detail": "Authentication credentials were not provided." }
+      errorMessage = data.detail;
+    } else {
+      // e.g. { "field": ["Error description"] }
+      errorMessage = Object.keys(data)
+        .map((key) => {
+          const val = data[key];
+          const valStr = Array.isArray(val) ? val.join(' ') : String(val);
+          return `${key}: ${valStr}`;
+        })
+        .join('; ');
+    }
+  } else {
+    errorMessage = JSON.stringify(data);
+  }
   message.error(errorMessage);
 
   if (res.status === 401) {
@@ -217,10 +240,13 @@ function listObjectPaginated<T, O, I>(
   pageSize?: number,
 ) => Promise<{ results: T[]; count: number; next: string | null; previous: string | null }> {
   return async (page: number = 1, pageSize: number = 100) => {
-    const res: Response = await fetchWithRetry(`${process.env.REACT_APP_API_URL}/${obj}/?page=${page}&page_size=${pageSize}`, {
-      headers: getHeaders(),
-      method: 'GET',
-    });
+    const res: Response = await fetchWithRetry(
+      `${process.env.REACT_APP_API_URL}/${obj}/?page=${page}&page_size=${pageSize}`,
+      {
+        headers: getHeaders(),
+        method: 'GET',
+      },
+    );
 
     if (res.status === 200) {
       const data: any = await res.json();
@@ -397,11 +423,14 @@ function updateObjectDetail<T, O, I, J, K, Q extends GenericObjectType>(
   return async (object: Q, urlArgs?: { [arg: string]: string }) => {
     const urlString = getURLString(urlArgs);
 
-    const res: Response = await fetchWithRetry(`${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}`, {
-      headers: getHeaders(),
-      method: 'PATCH',
-      body: JSON.stringify(object),
-    });
+    const res: Response = await fetchWithRetry(
+      `${process.env.REACT_APP_API_URL}/${url}/${object.id}/${detail}/${urlString}`,
+      {
+        headers: getHeaders(),
+        method: 'PATCH',
+        body: JSON.stringify(object),
+      },
+    );
 
     if (res.status === 200) {
       const data: any = await res.json();

@@ -84,7 +84,6 @@ import { CIP_COURSE_ID } from '../../../../../config';
 /* Constants
 /**********************************************************************************************************************/
 
-
 const MODAL_WIDTH = 1100;
 const MIN_TEST_HEIGHT = 400;
 
@@ -124,18 +123,18 @@ interface IUploadSubmissionDialogProps {
   };
   /** Function to upload submission */
   uploadSubmission:
-  | ((
-    assignment: AssignmentStudentType,
-    partners: string[],
-    files: FileType[],
-    sendConfirmationEmail: boolean,
-  ) => Promise<StudentSubmissionType>)
-  | ((
-    assignment: AssignmentType,
-    partners: string[],
-    files: FileType[],
-    sendConfirmationEmail: boolean,
-  ) => Promise<SubmissionInfoType>);
+    | ((
+        assignment: AssignmentStudentType,
+        partners: string[],
+        files: FileType[],
+        sendConfirmationEmail: boolean,
+      ) => Promise<StudentSubmissionType>)
+    | ((
+        assignment: AssignmentType,
+        partners: string[],
+        files: FileType[],
+        sendConfirmationEmail: boolean,
+      ) => Promise<SubmissionInfoType>);
   /** Disable student selection dropdown */
   disableStudentSelect?: boolean;
   /** Callback when upload is successful */
@@ -638,7 +637,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
           ),
           okText: 'Continue and simulate tests',
           onOk: execute,
-          onCancel: () => { },
+          onCancel: () => {},
         });
       } else {
         message.warning(
@@ -674,7 +673,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
       .catch((error) => {
         const isDueDateError = error?.toString?.()?.includes('Due date has passed') ?? false;
 
-        if (!isDueDateError) {
+        if (!isDueDateError && error instanceof Error) {
           message.error(
             'Sorry, something went wrong. Please try uploading again. If the problem persists, contact the codePost team.',
           );
@@ -1021,9 +1020,9 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
         sendMeAConfirmationEmailCheckbox = (
           <span key="sendMeAConfirmationEmailCheckbox">
             {selectedAssignment &&
-              selectedAssignment.uploadDueDate &&
-              dueDatePassed(selectedAssignment.uploadDueDate) &&
-              !hideDueDate ? (
+            selectedAssignment.uploadDueDate &&
+            dueDatePassed(selectedAssignment.uploadDueDate) &&
+            !hideDueDate ? (
               <Tag color="volcano">Due Date Passed</Tag>
             ) : null}
             <Checkbox checked={sendMeAConfirmationEmail} onChange={toggleSendMeAConfirmationEmail}>
