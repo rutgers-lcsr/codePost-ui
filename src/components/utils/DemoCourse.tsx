@@ -110,7 +110,7 @@ const createAssignment = async (course: CourseType, assignment: any) => {
     rubricCategories: [], // ignored by API
     sortKey: assignment.sortKey,
     hideGrades: false,
-    submissionsReleased: false,
+    feedbackReleased: false,
   };
 
   return Assignment.create(assnPayload).then(async (assnObj: AssignmentType) => {
