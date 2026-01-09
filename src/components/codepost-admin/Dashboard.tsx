@@ -511,7 +511,7 @@ const Dashboard = () => {
           ]}
         />
       </Sider>
-      <Layout style={{ minHeight: '100vh', background: '#f0f2f5', marginLeft: 200 }}>
+      <Layout style={{ height: '100vh', overflowY: 'auto', background: '#f0f2f5', marginLeft: 200 }}>
         <Content style={{ margin: '24px 16px 0', overflow: 'initial', paddingBottom: '100px' }}>
           {renderContent()}
         </Content>
