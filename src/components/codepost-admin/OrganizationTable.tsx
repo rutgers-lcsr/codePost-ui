@@ -388,6 +388,7 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
           showTotal: (total) => `Total ${total} organizations`,
           onShowSizeChange: (_current, size) => setPageSize(size),
         }}
+        scroll={{ x: 'max-content' }}
       />
 
       <Drawer
