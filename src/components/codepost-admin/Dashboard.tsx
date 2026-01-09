@@ -6,6 +6,8 @@ import {
   TeamOutlined,
   UserOutlined,
   DashboardOutlined,
+  RiseOutlined,
+  ApiOutlined,
 } from '@ant-design/icons';
 import { Alert, Card, Col, Progress, Row, Spin, Statistic, Table, Tag, Typography, Layout, Menu, theme } from 'antd';
 import { Link } from 'react-router-dom';
@@ -21,6 +23,8 @@ import SystemHealth from './SystemHealth';
 import CoursesTable from './CoursesTable';
 import OrganizationTable from './OrganizationTable';
 import UsersTable from './UsersTable';
+import APIIframe from './APIIframe';
+import ActivityFeed from './ActivityFeed';
 
 import { Course, CourseType, RosterType } from '../../infrastructure/course';
 import { Organization, OrganizationType } from '../../infrastructure/organization';
@@ -29,7 +33,7 @@ import { UserIO, UserType } from '../../infrastructure/user';
 const { Title, Text } = Typography;
 const { Content, Sider } = Layout;
 
-type TabType = 'Overview' | 'Organizations' | 'Courses' | 'Admins' | 'Users';
+type TabType = 'Overview' | 'Organizations' | 'Courses' | 'Admins' | 'Users' | 'Activity' | 'API';
 
 export interface AdminData {
   id: number;
@@ -425,6 +429,10 @@ const Dashboard = () => {
           );
         }
         return <UsersTable rosters={rosters} organizations={organizations} users={users} onRefresh={fetchData} />;
+      case 'Activity':
+        return <ActivityFeed />;
+      case 'API':
+        return <APIIframe />;
       default:
         return null; // Should fall back to overview if needed, but currentTab limits logic
     }
@@ -488,6 +496,16 @@ const Dashboard = () => {
               key: 'Users',
               icon: <UserOutlined />,
               label: `Users (${users.length})`,
+            },
+            {
+              key: 'Activity',
+              icon: <RiseOutlined />,
+              label: 'Activity',
+            },
+            {
+              key: 'API',
+              icon: <ApiOutlined />,
+              label: 'API',
             },
           ]}
         />

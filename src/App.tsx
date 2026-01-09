@@ -14,7 +14,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import LogInAs from './components/core/LogInAs';
 import Logout from './components/core/Logout';
 
-import DashboardLayout from './components/codepost-admin/DashboardLayout';
+import Dashboard from './components/codepost-admin/Dashboard';
 
 import Home from './components/core/Home';
 
@@ -607,7 +607,7 @@ Firefox:
       />
     ) : null;
 
-    const dashboardRoute = isCodePostAdmin ? <Route path="/dashboard" element={<DashboardLayout />} /> : null;
+    const dashboardRoute = isCodePostAdmin ? <Route path="/dashboard" element={<Dashboard />} /> : null;
 
     const settingsRoute = (
       <Route
