@@ -69,6 +69,13 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ visible, user, onClose,
           Grant full platform administrative checks (Manage Orgs, All Courses, etc.)
         </p>
 
+        <Form.Item name="isOrgStaff" valuePropName="checked" label="Organization Staff">
+          <Switch />
+        </Form.Item>
+        <p style={{ color: '#888', fontSize: '12px', marginTop: '-10px' }}>
+          Grant organization management permissions (SSO, Defaults, etc.)
+        </p>
+
         <Form.Item name="canCreateCourses" valuePropName="checked">
           <Checkbox>Can Create Courses</Checkbox>
         </Form.Item>

@@ -446,7 +446,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
           pageSizeOptions: ['20', '50', '100', '200'],
           onShowSizeChange: (_current, size) => setPageSize(size),
         }}
-        scroll={{ x: 1200 }}
+        scroll={{ x: 'max-content' }}
       />
 
       <NewUserDialog

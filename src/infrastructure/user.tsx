@@ -54,6 +54,7 @@ const UserVPatch = t.intersection(
       canCreateCourses: t.boolean,
       canModifyRosters: t.boolean,
       codePostAdmin: t.boolean,
+      isOrgStaff: t.boolean,
       // Add other fields as needed for updates
     }),
   ],
@@ -123,7 +124,7 @@ export class UserIO {
   public static listPaginated = async (
     page = 1,
     pageSize = 50,
-    search = ''
+    search = '',
   ): Promise<PaginatedResponse<LightUserType>> => {
     const params = new URLSearchParams({
       page: String(page),

@@ -291,6 +291,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
           showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} courses`,
           onShowSizeChange: (_current, size) => setPageSize(size),
         }}
+        scroll={{ x: 'max-content' }}
       />
       <NewCourseDialog
         visible={showCreateDialog}

@@ -105,7 +105,7 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
       // Get unique organizations
       const seenOrgs = new Set<number>();
       const uniqueOrgs: OrganizationType[] = [];
-      records.forEach(r => {
+      records.forEach((r) => {
         if (r.organization && !seenOrgs.has(r.organization.id)) {
           seenOrgs.add(r.organization.id);
           uniqueOrgs.push(r.organization);
@@ -113,7 +113,7 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
       });
 
       // Get courses
-      const courses = records.map(r => ({ name: r.course_name, period: r.course_period }));
+      const courses = records.map((r) => ({ name: r.course_name, period: r.course_period }));
       // Sort courses by name then period
       courses.sort((a, b) => {
         const nameCmp = a.name.localeCompare(b.name);
@@ -136,8 +136,8 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
     return groupedAdmins.filter(
       (admin) =>
         admin.email.toLowerCase().includes(search) ||
-        admin.courses.some(c => c.name.toLowerCase().includes(search) || c.period.toLowerCase().includes(search)) ||
-        admin.organizations.some(o => o.name.toLowerCase().includes(search))
+        admin.courses.some((c) => c.name.toLowerCase().includes(search) || c.period.toLowerCase().includes(search)) ||
+        admin.organizations.some((o) => o.name.toLowerCase().includes(search)),
     );
   }, [groupedAdmins, searchValue]);
 
@@ -243,6 +243,7 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
           showTotal: (total) => `Total ${total} admins`,
           onShowSizeChange: (_current, size) => setPageSize(size),
         }}
+        scroll={{ x: 'max-content' }}
       />
     </Card>
   );
