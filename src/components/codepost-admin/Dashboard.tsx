@@ -74,7 +74,6 @@ const Dashboard = () => {
   const [usersLoaded, setUsersLoaded] = useState(false);
   const [usersLoading, setUsersLoading] = useState(false);
   const [stats, setStats] = useState<DashboardStats>({
-
     totalOrganizations: 0,
     totalCourses: 0,
     activeCourses: 0,
@@ -154,14 +153,16 @@ const Dashboard = () => {
   useEffect(() => {
     if (currentTab === 'Users' && !usersLoaded && !usersLoading) {
       setUsersLoading(true);
-      UserIO.list().then((userData) => {
-        const uniqueUsers = _.uniqBy(userData, 'email');
-        setUsers(uniqueUsers);
-        setUsersLoaded(true);
-      }).catch(console.error).finally(() => setUsersLoading(false));
+      UserIO.list()
+        .then((userData) => {
+          const uniqueUsers = _.uniqBy(userData, 'email');
+          setUsers(uniqueUsers);
+          setUsersLoaded(true);
+        })
+        .catch(console.error)
+        .finally(() => setUsersLoading(false));
     }
   }, [currentTab, usersLoaded, usersLoading]);
-
 
   if (isLoading) {
     return (
@@ -511,7 +512,9 @@ const Dashboard = () => {
         />
       </Sider>
       <Layout style={{ minHeight: '100vh', background: '#f0f2f5', marginLeft: 200 }}>
-        <Content style={{ margin: '24px 16px 0', overflow: 'initial' }}>{renderContent()}</Content>
+        <Content style={{ margin: '24px 16px 0', overflow: 'initial', paddingBottom: '100px' }}>
+          {renderContent()}
+        </Content>
       </Layout>
     </Layout>
   );
