@@ -39,7 +39,7 @@ export const CourseV = t.intersection(
       studentsCanSeeGraders: t.boolean,
       studentCount: t.number,
     }),
-    t.partial({ webhooks: t.array(t.number) }),
+    t.partial({ webhooks: t.array(t.number), clone_from: t.number }),
   ],
   'Course',
 );
