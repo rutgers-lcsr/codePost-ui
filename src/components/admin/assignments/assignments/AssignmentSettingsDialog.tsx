@@ -136,6 +136,7 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
       hideFrom: values.hideFrom,
       lateDeductions: values.lateDeductions,
       studentsCanSeeGraders: values.studentsCanSeeGraders,
+      ai_system_prompt: values.ai_system_prompt || '',
     };
 
     await props.onSave(payload);
@@ -156,7 +157,20 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
       const fileTemplatePromises: Promise<AssignmentFileType | void>[] = [];
       for (const ft of templates) {
         if (ft.id > 0) {
-          fileTemplatePromises.push(AssignmentFile.update(ft));
+          // Check if file actually changed to avoid triggering AutoDetectEnvironment
+          const original = assignmentFiles.find((f) => f.id === ft.id);
+          const hasChanged =
+            !original ||
+            original.name !== ft.name ||
+            original.extension !== ft.extension ||
+            original.path !== ft.path ||
+            (original as any).data !== (ft as any).data ||
+            (original as any).description !== (ft as any).description ||
+            (original as any).required !== (ft as any).required;
+
+          if (hasChanged) {
+            fileTemplatePromises.push(AssignmentFile.update(ft));
+          }
         } else {
           fileTemplatePromises.push(AssignmentFile.create(ft));
         }
@@ -251,6 +265,7 @@ interface IFormValues {
   explanation: string;
   hideFrom: number[];
   lateDeductions: number[];
+  ai_system_prompt: string;
 }
 
 const CollectionCreateForm: React.FC<IFormProps> = (props) => {
@@ -790,6 +805,77 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                     valuePropName="value"
                   >
                     <DatePicker showTime placeholder="Select Time" disabled={!regradesEnabled} inputReadOnly />
+                  </Form.Item>
+                </div>
+              ),
+            },
+            {
+              label: 'AI',
+              key: 'ai',
+              children: (
+                <div style={tabPaneStyle}>
+                  <h3>AI Comment Generation</h3>
+                  <Form.Item
+                    name="ai_system_prompt"
+                    label="System Prompt"
+                    extra={
+                      <div>
+                        <p>
+                          Customize instructions for AI comment generation.{' '}
+                          <b>
+                            Variables marked (auto) are added to the User Prompt if omitted. Variables marked (manual)
+                            MUST be included in your custom System Prompt to be available to the AI.
+                          </b>
+                        </p>
+                        <ul style={{ fontSize: '12px', paddingLeft: '20px', margin: '8px 0' }}>
+                          <li>
+                            <code>{'{assignment_name}'}</code> - Name of the assignment
+                          </li>
+                          <li>
+                            <code>{'{file_name}'}</code> - Name of the file being reviewed
+                          </li>
+                          <li>
+                            <code>{'{rubric_context}'}</code> - Selected rubric item details (auto)
+                          </li>
+                          <li>
+                            <code>{'{selected_content}'}</code> - The specific code block selected (auto)
+                          </li>
+                          <li>
+                            <code>{'{grader_draft}'}</code> - Current draft text by grader (auto)
+                          </li>
+                          <li>
+                            <code>{'{file_content}'}</code> - Full content of the current opened file <b>(manual)</b>
+                          </li>
+                          <li>
+                            <code>{'{all_files}'}</code> - Content of all files in submission <b>(manual)</b>
+                          </li>
+                        </ul>
+                        <p>Leave blank to use the course default.</p>
+                      </div>
+                    }
+                    labelCol={{ span: 4 }}
+                    wrapperCol={{ span: 20 }}
+                    initialValue={assignment.ai_system_prompt || ''}
+                  >
+                    <Input.TextArea
+                      placeholder={`You are an AI assistant helping grade student code submissions.
+Your task is to generate clear, constructive feedback for students.
+
+Guidelines:
+- Be specific about what the issue is
+- Explain why it matters
+- Suggest how to fix it when appropriate
+- Be encouraging but honest
+- Keep comments concise (1-3 sentences)
+
+Context:
+- Assignment: {assignment_name}
+- File: {file_name}
+- File Content:
+  {file_content}`}
+                      rows={20}
+                      style={{ fontFamily: 'monospace' }}
+                    />
                   </Form.Item>
                 </div>
               ),

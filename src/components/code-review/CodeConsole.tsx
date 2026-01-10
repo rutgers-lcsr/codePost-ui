@@ -100,6 +100,8 @@ import CustomCommentExplorer from './CustomCommentExplorer';
 
 import { encodeForLink, getRubricURL } from '../core/URLutils';
 
+import { getCourseAISettings } from '../../infrastructure/aiService';
+
 /**********************************************************************************************************************/
 
 /* f(logged in user, submission) */
@@ -186,6 +188,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
     panelType: PANEL_TYPE.FILE,
     hideGrades: false,
     executionResults: {},
+    aiEnabled: false, // Whether AI comment generation is available for this course
   });
 
   /***********************************************************************************************/
@@ -585,6 +588,16 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
           );
         }
 
+        // Fetch AI settings for this course
+        let aiEnabled = false;
+        try {
+          const aiSettings = await getCourseAISettings(course.id);
+          aiEnabled = aiSettings.ai_enabled;
+        } catch (error) {
+          // AI settings not available or user doesn't have permission
+          aiEnabled = false;
+        }
+
         setState((prev) => ({
           ...prev,
           noSave,
@@ -605,6 +618,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
           tests: SubmissionTest.getLatest(tests),
           testCategories: Array.isArray(categories) ? categories : [],
           testCases: cases as TestCasesByCategory,
+          aiEnabled,
         }));
         break;
       }
@@ -1645,6 +1659,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               forcedRubricMode={state.assignment.forcedRubricMode}
               rubricCategories={state.rubricCategories}
               showCursor={state.showCursor}
+              aiEnabled={state.aiEnabled}
             />
           );
 
@@ -2053,6 +2068,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             rubricCategories={state.rubricCategories}
             showCursor={state.showCursor}
             scrollToCommentID={parseInt(queryString.parse(location.search).comment as string)}
+            aiEnabled={state.aiEnabled}
           />
         );
 

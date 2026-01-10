@@ -9,7 +9,14 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 
 // We ignore eslint since Popover never explicitly used. We just use the classNames
 
-import { CheckOutlined, CloseOutlined, DeleteOutlined, LinkOutlined } from '@ant-design/icons';
+import {
+  CheckOutlined,
+  CloseOutlined,
+  DeleteOutlined,
+  LinkOutlined,
+  RobotOutlined,
+  LoadingOutlined,
+} from '@ant-design/icons';
 import { Alert, Button, Card, Input, message, Popover, Space, Tag, Typography } from 'antd';
 
 /* codePost imports */
@@ -41,6 +48,8 @@ import { findBlockElement } from './BlockUtils.tsx';
 import { scrollHighlightIntoView, useCommentHighlightStore, useHoveredCommentId } from './CommentHighlightContext';
 
 import CommentToRubric from './CommentToRubric';
+
+import { generateComment } from '../../../infrastructure/aiService';
 
 /**********************************************************************************************************************/
 
@@ -118,6 +127,7 @@ interface ICommentProps {
 
   cursored: boolean;
   isSpotlit?: boolean;
+  aiEnabled?: boolean; // Whether AI comment generation is available for this course
 }
 
 /**
@@ -170,6 +180,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
   const [showDeletePopover, setShowDeletePopover] = useState(false);
   const [hasHover, setHasHover] = useState(false);
   const [makeRubric, setMakeRubric] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   /**********************************************************************************************************************/
   /* Helper Functions
@@ -190,6 +201,42 @@ const Comment: React.FC<ICommentProps> = (props) => {
   const edited = useCallback(() => {
     setStatus('edited');
   }, []);
+
+  /**********************************************************************************************************************/
+  /* AI Comment Generation
+  /**********************************************************************************************************************/
+
+  const handleGenerateComment = useCallback(async () => {
+    if (isGenerating || !props.aiEnabled) return;
+
+    setIsGenerating(true);
+    try {
+      const generatedText = await generateComment({
+        file_id: props.file.id,
+        start_line: props.comment.startLine,
+        end_line: props.comment.endLine,
+        rubric_comment_id: props.rubricComment?.id,
+        existing_text: text,
+        points: points,
+      });
+      setText(generatedText);
+      edited(); // Mark as edited so it can be saved
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : 'Failed to generate comment');
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [
+    isGenerating,
+    props.aiEnabled,
+    props.file.id,
+    props.comment.startLine,
+    props.comment.endLine,
+    props.rubricComment?.id,
+    text,
+    points,
+    edited,
+  ]);
 
   const idle = useCallback(() => {
     setStatus('idle');
@@ -950,28 +997,54 @@ const Comment: React.FC<ICommentProps> = (props) => {
 
     commentElements.comment = (
       <CPTooltip title={forcedRubricTooltip} hideThisOnHideTips={true}>
-        <TextArea
-          id="comment-text-area"
-          autoSize
-          className="cp-comment__text-area"
-          placeholder={
-            props.rubricComment && !props.rubricComment.templateTextOn ? props.rubricComment.instructionText : undefined
-          }
-          value={text}
-          onChange={onChangeText}
-          onPressEnter={handleShiftEnter}
-          style={{
-            backgroundColor: consoleTheme.consoleTheme.commentTextArea,
-            color: consoleTheme.consoleTheme.text,
-          }}
-          disabled={shouldDisableTextArea}
-          autoFocus
-          onFocus={(e) => {
-            const temp_value = e.target.value;
-            e.target.value = '';
-            e.target.value = temp_value;
-          }}
-        />
+        <div style={{ position: 'relative' }}>
+          <TextArea
+            id="comment-text-area"
+            autoSize
+            className="cp-comment__text-area"
+            placeholder={
+              props.rubricComment && !props.rubricComment.templateTextOn
+                ? props.rubricComment.instructionText
+                : undefined
+            }
+            value={text}
+            onChange={onChangeText}
+            onPressEnter={handleShiftEnter}
+            style={{
+              backgroundColor: consoleTheme.consoleTheme.commentTextArea,
+              color: consoleTheme.consoleTheme.text,
+              paddingRight: props.aiEnabled ? '100px' : undefined, // Space for the generate button
+            }}
+            disabled={shouldDisableTextArea}
+            autoFocus
+            onFocus={(e) => {
+              const temp_value = e.target.value;
+              e.target.value = '';
+              e.target.value = temp_value;
+            }}
+          />
+          {!props.isStudent && props.aiEnabled && (
+            <CPTooltip title="Generate AI comment (Ctrl+G)" hideThisOnHideTips={true}>
+              <Button
+                type="text"
+                size="small"
+                iconPlacement="end"
+                icon={isGenerating ? <LoadingOutlined spin /> : <RobotOutlined />}
+                onClick={handleGenerateComment}
+                disabled={isGenerating || shouldDisableTextArea}
+                style={{
+                  position: 'absolute',
+                  bottom: '4px',
+                  right: '4px',
+                  opacity: 0.7,
+                  zIndex: 1,
+                }}
+              >
+                Generate
+              </Button>
+            </CPTooltip>
+          )}
+        </div>
       </CPTooltip>
     );
 
@@ -1021,11 +1094,20 @@ const Comment: React.FC<ICommentProps> = (props) => {
     }
   }
 
-
   if (props.commentType === 'inactive') {
     commentElements.points = badge;
     commentElements.comment = (
-      <div className="cp-comment__comment" style={{ color: consoleTheme.consoleTheme.text }}>
+      <div
+        className="cp-comment__comment"
+        style={{
+          color: consoleTheme.consoleTheme.text,
+          overflowWrap: 'break-word',
+          wordWrap: 'break-word',
+          wordBreak: 'break-word',
+          whiteSpace: 'pre-wrap',
+          maxWidth: '100%',
+        }}
+      >
         <BlockMarkdown source={text} />
       </div>
     );
@@ -1066,7 +1148,17 @@ const Comment: React.FC<ICommentProps> = (props) => {
   if (props.commentType === 'readonly') {
     commentElements.points = badge;
     commentElements.comment = (
-      <div className="cp-comment__comment" style={{ color: consoleTheme.consoleTheme.text }}>
+      <div
+        className="cp-comment__comment"
+        style={{
+          color: consoleTheme.consoleTheme.text,
+          overflowWrap: 'break-word',
+          wordWrap: 'break-word',
+          wordBreak: 'break-word',
+          whiteSpace: 'pre-wrap',
+          maxWidth: '100%',
+        }}
+      >
         <BlockMarkdown source={text} />
       </div>
     );
