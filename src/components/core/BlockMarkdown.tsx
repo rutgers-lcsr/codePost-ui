@@ -46,7 +46,8 @@ const useBlockMarkdownRenderers = (extraRenderers: Partial<Components> | undefin
     const language = className ? className.replace('language-', '') : '';
     const codeContent = String(children || '').replace(/\n$/, '');
 
-    if (!codeContent || inline) {
+    // If it's explicitly inline, or if it has no newlines and no language specified, treat as inline
+    if (!codeContent || inline || (!codeContent.includes('\n') && !language)) {
       return inlineCodeRenderer(props);
     }
 

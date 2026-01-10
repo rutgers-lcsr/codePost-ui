@@ -493,6 +493,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
       expiration_date: null,
       studentsCanSeeGraders: false,
       studentCount: 0,
+      ...(copiedCourse ? { clone_from: copiedCourse.id } : {}),
     };
 
     return Course.create(payload).then((course: CourseType) => {
@@ -701,7 +702,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
       promises.push(updateSection(updatedSection));
     }
 
-    return Promise.all(promises).then(() => {});
+    return Promise.all(promises).then(() => { });
   };
 
   /************************************************************************
@@ -986,7 +987,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
         course={props.currentCourse}
         hasStudents={students.length > 0}
         hasSubmissions={submissions && submissions[assignments[0].id] && submissions[assignments[0].id].length > 0}
-        onClose={() => {}}
+        onClose={() => { }}
         assignment={assignments[0]}
       />
     ) : undefined;
