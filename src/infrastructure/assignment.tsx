@@ -80,6 +80,7 @@ const AssignmentV = t.intersection(
       stats_min: t.number,
       stats_mean: t.number,
       fileTemplates: t.array(t.number),
+      ai_system_prompt: t.union([t.string, t.null]), // AI comment generation system prompt
     }),
   ],
   'Assignment',
@@ -187,6 +188,7 @@ const AssignmentVPatch = t.intersection(
       isVisible: t.boolean,
       lateDeductions: t.array(t.number),
       fileTemplates: t.array(t.number),
+      ai_system_prompt: t.union([t.string, t.null]), // AI comment generation system prompt
     }),
   ],
   'AssignmentPatch',

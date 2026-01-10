@@ -34,6 +34,7 @@ interface ICommentsCoreProps extends IWithWindowWatcherProps {
   hideAuthor: boolean;
   rubricCategories: RubricCategoryType[];
   scrollToCommentID?: number;
+  aiEnabled?: boolean; // Whether AI comment generation is available for this course
 }
 
 interface ICommentsEditProps {
@@ -431,6 +432,7 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
         rubricCategories={props.rubricCategories}
         cursored={cursored}
         isSpotlit={comment.id === props.scrollToCommentID}
+        aiEnabled={props.aiEnabled}
       />
     );
   });

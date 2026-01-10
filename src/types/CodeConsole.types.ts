@@ -213,6 +213,12 @@ export interface ICodeConsoleState {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   executionResults: { [fileId: number]: { success: boolean; output_data?: any; error?: string } };
+
+  /* ========================================
+   * AI Features
+   * ======================================== */
+  /** Whether AI comment generation is enabled for this course */
+  aiEnabled: boolean;
 }
 
 /**
