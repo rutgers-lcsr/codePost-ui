@@ -68,11 +68,7 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
             ...zoomStyles,
           }}
         >
-          <div
-            className="code-panel"
-            id="code-panel"
-            style={{ ...codePanelStyle, height: '100%', padding: '20px 20px 0px' }}
-          >
+          <div className="code-panel" id="code-panel" style={{ ...codePanelStyle, height: '100%' }}>
             <SplitScreen initialLeftWidth={72}>
               <div
                 className="code-panel--code"

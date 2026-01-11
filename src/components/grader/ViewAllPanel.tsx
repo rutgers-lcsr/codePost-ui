@@ -7,7 +7,6 @@ import * as React from 'react';
 
 /* other library imports */
 
-
 /* codePost imports */
 import { AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';
@@ -32,11 +31,6 @@ class ViewAllPanel extends React.Component<IProps> {
   public render() {
     const centerAlign: alignType = 'center';
     const columns = [
-      {
-        title: 'Zoom in',
-        dataIndex: 'zoom',
-        align: centerAlign,
-      },
       {
         title: 'Assignment',
         dataIndex: 'assignment',

@@ -16,8 +16,6 @@ import Highlighter from 'react-highlight-words';
 
 import { Link, Route, Routes } from 'react-router-dom';
 
-
-
 /* codePost imports  */
 import { IStudentSubmissionsDataTable } from '../../../types/common';
 
@@ -64,9 +62,6 @@ export interface IByStudentProps {
 const StudentData: React.FC<IByStudentProps> = (props) => {
   const [showActive, setShowActive] = useState(true);
   const [showInactive, setShowInactive] = useState(false);
-
-
-
 
   /* Helper Functions */
   const sortFunction = (a: any, b: any) => {
@@ -255,7 +250,10 @@ const StudentData: React.FC<IByStudentProps> = (props) => {
                 const submission = studentSubmissions ? studentSubmissions[assignment.id] : undefined;
 
                 if (submission && submission.isFinalized) {
-                  const gradeText = submission.grade && assignment.points !== null ? submission.grade + '/' + assignment.points : submission.grade;
+                  const gradeText =
+                    submission.grade && assignment.points !== null
+                      ? submission.grade + '/' + assignment.points
+                      : submission.grade;
                   toRet[assignment.name] = <Typography.Text strong>{gradeText}</Typography.Text>;
                 } else if (submission) {
                   toRet[assignment.name] = <Typography.Text strong>Unfinalized</Typography.Text>;
@@ -321,13 +319,7 @@ const StudentData: React.FC<IByStudentProps> = (props) => {
                 <Tooltip title={showInactive ? 'Hide inactive students' : 'Show inactive students'}>
                   <Button
                     shape="circle"
-                    icon={
-                      showInactive ? (
-                        <UserAddOutlined />
-                      ) : (
-                        <UserAddOutlined style={{ color: '#ccc' }} />
-                      )
-                    }
+                    icon={showInactive ? <UserAddOutlined /> : <UserAddOutlined style={{ color: '#ccc' }} />}
                     onClick={() => toggleValue('showInactive')}
                   />
                 </Tooltip>,

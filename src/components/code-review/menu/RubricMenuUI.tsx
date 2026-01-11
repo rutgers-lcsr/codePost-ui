@@ -59,9 +59,6 @@ interface IRubricMenuUIProps extends IRubricManagerProps {
   /* if true, simulate rubric save */
   demoMode: boolean;
 
-  /* decides whether to show text or explanations */
-  showExplanations: boolean;
-
   handleRubricCommentClick: (rubricComment: RubricCommentType) => void;
   hasActiveComment: boolean;
   toggleEditRubricMode: () => void;
@@ -255,7 +252,18 @@ const RubricMenuUI = ({
       if (cat.id in adjustedRubricComments) {
         filteredComments = adjustedRubricComments[cat.id]
           .filter((rubricComment: RubricCommentType) => {
-            return rubricComment.text.toUpperCase().includes(commentSearchTerm.toUpperCase());
+            const term = commentSearchTerm.toUpperCase();
+            const matchesText = rubricComment.text.toUpperCase().includes(term);
+            const matchesExplanation =
+              !props.editRubricMode &&
+              rubricComment.explanation &&
+              rubricComment.explanation.toUpperCase().includes(term);
+            const matchesInstruction =
+              !props.editRubricMode &&
+              rubricComment.instructionText &&
+              rubricComment.instructionText.toUpperCase().includes(term);
+
+            return matchesText || matchesExplanation || matchesInstruction;
           })
           .sort(RubricComment.compare);
       }
@@ -303,7 +311,6 @@ const RubricMenuUI = ({
               showCursor: props.showCursor,
               cursorIndex: cursorIndex,
               commentIndex: thisIndex,
-              showExplanations: props.showExplanations,
             };
             return <RubricMenuCategoryUI props={propsz} state={statez} helpers={helperz} />;
           }}
@@ -492,64 +499,6 @@ const RubricMenuUI = ({
     }
   };
 
-  let searchBar;
-
-  const editToggleColor = props.editRubricMode ? token.colorWarning : token.colorSuccess;
-
-  if (props.canUserEdit) {
-    const Icon = props.editRubricMode ? BackwardFilled : EditFilled;
-    const toggleButton = (
-      <CPTooltip title={tooltips.grade.rubric.edit} placement="right">
-        <Button
-          size="small"
-          type="text"
-          icon={<Icon />}
-          onClick={toggleEditRubricMode}
-          aria-label={props.editRubricMode ? 'Exit rubric edit mode' : 'Enter rubric edit mode'}
-          style={{ color: editToggleColor }}
-        />
-      </CPTooltip>
-    );
-    searchBar = (
-      <Input
-        allowClear
-        aria-label="Search Rubric"
-        placeholder={`Search rubric... (${osControlKey()} O)`}
-        id="rubric-search"
-        onChange={onSearch}
-        value={searchTerm}
-        addonBefore={toggleButton}
-        className={consoleThemes.light === consoleTheme ? 'search--light' : 'search--dark'}
-        style={
-          {
-            // width: '100%',
-            // backgroundColor: token.colorBgContainer,
-            // borderColor: token.colorBorderSecondary,
-            // color: token.colorText,
-          }
-        }
-      />
-    );
-  } else {
-    searchBar = (
-      <Input
-        aria-label="Search Rubric"
-        placeholder={`Search rubric... (${osControlKey()} O)`}
-        id="rubric-search"
-        onChange={onSearch}
-        value={searchTerm}
-        style={
-          {
-            // backgroundColor: token.colorFillSecondary,
-            // borderColor: token.colorBorderSecondary,
-            // color: token.colorTextSecondary,
-            // width: '100%',
-          }
-        }
-      />
-    );
-  }
-
   let content = <Loading />;
   if (state.loadComplete) {
     if (state.rubricCategories.length === 0) {
@@ -620,6 +569,7 @@ const RubricMenuUI = ({
             style={{
               cursor: 'pointer',
               userSelect: 'none',
+              margin: 0,
               // backgroundColor: token.colorBgElevated,
               // borderColor: token.colorBorderSecondary,
               // color: token.colorText,
@@ -628,9 +578,34 @@ const RubricMenuUI = ({
             category:
           </Tag>
         </CPTooltip>
-        <div className="rubric-menu-search" style={{ flex: 1 }}>
-          {searchBar}
+
+        <div className="rubric-menu-search" style={{ flex: 1, minWidth: 0 }}>
+          {/* We reconstruct the input here to separate the edit button if needed, but for now just rendering the updated searchBar */}
+          <Input
+            allowClear
+            aria-label="Search Rubric"
+            placeholder={`Search... (${osControlKey()} O)`}
+            id="rubric-search"
+            onChange={onSearch}
+            value={searchTerm}
+            className={consoleThemes.light === consoleTheme ? 'search--light' : 'search--dark'}
+          />
         </div>
+
+        {props.canUserEdit && (
+          <CPTooltip title={tooltips.grade.rubric.edit} placement="bottomRight">
+            <Button
+              size="small"
+              type={props.editRubricMode ? 'primary' : 'text'}
+              icon={props.editRubricMode ? <BackwardFilled /> : <EditFilled />}
+              onClick={toggleEditRubricMode}
+              aria-label={props.editRubricMode ? 'Exit rubric edit mode' : 'Enter rubric edit mode'}
+              style={{
+                color: props.editRubricMode ? token.colorWhite : consoleTheme.siderMenuItemColor,
+              }}
+            />
+          </CPTooltip>
+        )}
       </Flex>
       <div className="rubric-menu-content" id="rubric-menu">
         {content}

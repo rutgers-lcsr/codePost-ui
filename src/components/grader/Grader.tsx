@@ -45,7 +45,6 @@ import { CIPGraderModal } from '../cip/components';
 /**********************************************************************************************************************/
 
 const Grader: React.FC<IComponentProps> = (props) => {
-
   const { currentCourse, superGraderCourses, sectionsLed } = props;
 
   // State
@@ -72,7 +71,9 @@ const Grader: React.FC<IComponentProps> = (props) => {
       loadIDList<AssignmentType>(currentCourse.assignments, Assignment).then((newAssignments) => {
         // Calculate derived state dependent on course
         const newIsSuperGrader = superGraderCourses.some((course) => course.id === currentCourse.id);
-        const newSectionsLed = sectionsLed.slice().filter((section) => currentCourse.sections.indexOf(section.id) !== -1);
+        const newSectionsLed = sectionsLed
+          .slice()
+          .filter((section) => currentCourse.sections.indexOf(section.id) !== -1);
 
         setAssignments(newAssignments);
         setIsSuperGrader(newIsSuperGrader);
@@ -138,6 +139,7 @@ const Grader: React.FC<IComponentProps> = (props) => {
         localSectionsLed={localSectionsLed}
         isSuperGrader={isSuperGrader}
         someRegrades={someRegrades}
+        isRubricEditor={!!(currentCourse && currentCourse.isRubricEditor)}
       />
     );
   }
@@ -158,13 +160,11 @@ const Grader: React.FC<IComponentProps> = (props) => {
       <Routes>
         <Route
           path=":panel/:assignment"
-          element={
-            <AssignmentMenu
-              currentCourse={currentCourse}
-              assignments={assignments}
-              baseURL={graderBaseURL}
-            />
-          }
+          element={<AssignmentMenu currentCourse={currentCourse} assignments={assignments} baseURL={graderBaseURL} />}
+        />
+        <Route
+          path=":panel"
+          element={<AssignmentMenu currentCourse={currentCourse} assignments={assignments} baseURL={graderBaseURL} />}
         />
       </Routes>
     );
@@ -181,7 +181,9 @@ const Grader: React.FC<IComponentProps> = (props) => {
 
   const headerRight = [
     showNewCourseBtn && (
-      <Button key="create-course" onClick={() => setShowConversionModal(true)}>Create your own course</Button>
+      <Button key="create-course" onClick={() => setShowConversionModal(true)}>
+        Create your own course
+      </Button>
     ),
     <span key="header-user" className="cp-label cp-label--bold">
       {props.user.email}
@@ -208,6 +210,7 @@ const Grader: React.FC<IComponentProps> = (props) => {
         isSectionLeader={localSectionsLed.length > 0}
         regradesAllowed={someRegrades}
         activateQueue={!!(currentCourse && currentCourse.activateQueue)}
+        isRubricEditor={!!(currentCourse && currentCourse.isRubricEditor)}
       />
     );
   };

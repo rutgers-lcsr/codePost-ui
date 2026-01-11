@@ -20,17 +20,7 @@ interface IProps {
 
 const MAX_USERS_IN_INITIAL_LIST = 5;
 
-const SendEmailModal: FC<IProps> = ({
-  buttonText,
-  title,
-  emails,
-  template,
-  course,
-  assignment,
-  me,
-  body,
-  button,
-}) => {
+const SendEmailModal: FC<IProps> = ({ buttonText, title, emails, template, course, assignment, me, body, button }) => {
   const [isSending, setIsSending] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [usersToShow, setUsersToShow] = useState(MAX_USERS_IN_INITIAL_LIST);
@@ -46,35 +36,39 @@ const SendEmailModal: FC<IProps> = ({
     setModalVisible((prev) => !prev);
   }, []);
 
-  const sendEmails = useCallback((toSend: string[], livemode: boolean) => {
-    setIsSending(true);
+  const sendEmails = useCallback(
+    (toSend: string[], livemode: boolean) => {
+      setIsSending(true);
 
-    const promises = toSend.map((user) =>
-      fetch(`${process.env.REACT_APP_API_URL}/users/${user}/email/`, {
-        body: JSON.stringify({
-          token: localStorage.getItem('token'),
-          template: template,
-          assignment: assignment?.id,
-          course: course.id,
-          livemode,
+      const promises = toSend.map((user) =>
+        fetch(`${process.env.REACT_APP_API_URL}/users/${user}/email/`, {
+          body: JSON.stringify({
+            token: localStorage.getItem('token'),
+            template: template,
+            assignment: assignment?.id,
+            course: course.id,
+            livemode,
+          }),
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
         }),
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-      })
-    );
+      );
 
-    Promise.all(promises).then(() => {
-      setIsSending(false);
-      message.success(`Email${livemode ? 's' : ''} successfully sent.`);
-    }).catch(() => {
-      setIsSending(false);
-      message.error('Failed to send some emails.');
-    });
-
-  }, [template, assignment, course.id]);
+      Promise.all(promises)
+        .then(() => {
+          setIsSending(false);
+          message.success(`Email${livemode ? 's' : ''} successfully sent.`);
+        })
+        .catch(() => {
+          setIsSending(false);
+          message.error('Failed to send some emails.');
+        });
+    },
+    [template, assignment, course.id],
+  );
 
   const sendTestEmail = useCallback(() => {
     sendEmails([me], false);
@@ -94,12 +88,7 @@ const SendEmailModal: FC<IProps> = ({
       {button !== undefined ? (
         button(toggleDialog)
       ) : (
-        <CPButton
-          cpType="secondary"
-          icon={<MailOutlined />}
-          loading={isSending}
-          onClick={toggleDialog}
-        >
+        <CPButton cpType="secondary" icon={<MailOutlined />} loading={isSending} onClick={toggleDialog}>
           {buttonText}
         </CPButton>
       )}
@@ -124,10 +113,7 @@ const SendEmailModal: FC<IProps> = ({
             Send myself a test email
           </CPButton>
           &nbsp;{' '}
-          <CPTooltip
-            title="This will send you an email example of what the recipients will receive."
-            infoIcon={true}
-          />
+          <CPTooltip title="This will send you an email example of what the recipients will receive." infoIcon={true} />
         </div>
         {emails !== undefined ? (
           <div>

@@ -151,7 +151,9 @@ const LandingLayout = (props: IProps) => {
         <Divider />
         <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }} className={sectionClass}>
           <img
-            src={windowSize.width < landingVars.breakpoints.mobile ? testimonialBackgroundMobile : testimonialBackground}
+            src={
+              windowSize.width < landingVars.breakpoints.mobile ? testimonialBackgroundMobile : testimonialBackground
+            }
             style={{
               ...backgroundImageStyle,
               paddingTop:

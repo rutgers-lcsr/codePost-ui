@@ -8,7 +8,7 @@ import { CodeOutlined } from '@ant-design/icons';
 
 /* ant imports */
 import type { SelectProps } from 'antd';
-import { Breadcrumb, Select, Switch, Table } from 'antd';
+import { Breadcrumb, Select, Switch, Table, Typography } from 'antd';
 
 /* codePost imports */
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
@@ -17,15 +17,16 @@ import { Course, CourseType } from '../../infrastructure/course';
 import CPTooltip from '../core/CPTooltip';
 import { tooltips } from '../core/tooltips';
 
-import { SubmissionInfoType } from '../../infrastructure/submission';
+import { AnonymousSubmissionInfoType, SubmissionInfoType } from '../../infrastructure/submission';
 import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 
 import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
 
 import { compare } from '../utils/SortUtils';
 
-import { Component } from 'react';
+import { Component, useCallback } from 'react';
 import CPAdminDetail from '../admin/other/CPAdminDetail';
+import Link from 'antd/es/typography/Link';
 
 type alignType = 'left' | 'right' | 'center';
 
@@ -163,11 +164,6 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
     const centerAlign: alignType = 'center';
     const columns = [
       {
-        title: 'Open',
-        dataIndex: 'open',
-        align: centerAlign,
-      },
-      {
         title: 'Student(s)',
         dataIndex: 'student',
         sorter: (a: ITableRow, b: ITableRow) => compare(true, a.student, b.student),
@@ -215,15 +211,30 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
         return sub.grader && selectedGraders.indexOf(sub.grader.toLowerCase()) !== -1;
       });
     }
+    /***********************************************************************************
+     /* Event handlers
+     /**********************************************************************************/
 
+    const openGradePage = (submission: AnonymousSubmissionInfoType) => {
+      if (localStorage.getItem('source') === 'codePost') {
+        window.open(`/code/${submission.id}`);
+      } else {
+        window.open(`/code/${submission.id}`, '_blank');
+      }
+    };
     const data = filteredSubs.map((sub) => {
       const students = showingEmails ? sub.students.join(', ') : String(sub.id);
       return {
         ...formatSub(sub, this.props.assignment),
         key: sub.id,
-        student: students,
+        student: (
+          <Link onClick={() => openGradePage(sub)}>
+            <Typography.Text strong className="text-link">
+              {students}
+            </Typography.Text>
+          </Link>
+        ),
         viewIcon: <div>{getViewIcon(sub, this.state.viewsBySubmission)}</div>,
-        open: <CodeOutlined onClick={this.openGradePage.bind(this, sub)} />,
       };
     });
 

@@ -260,61 +260,61 @@ const TestResultsTable = (props: IProps) => {
           const children = !props.testCasesByCategory[category.id]
             ? []
             : props.testCasesByCategory[category.id].map((testCase) => {
-              //  If the pagination hasn't completed, show skeletons
-              if (props.resultsLoading) {
+                //  If the pagination hasn't completed, show skeletons
+                if (props.resultsLoading) {
+                  return {
+                    description: <span>{testCase.description}</span>,
+                    passed: <Skeleton.Button active={true} size="default" shape="round" />,
+                    failed: <Skeleton.Button active={true} size="default" shape="round" />,
+                    error: <Skeleton.Button active={true} size="default" shape="round" />,
+                    notRun: <Skeleton.Button active={true} size="default" shape="round" />,
+                    key: `testCase-${testCase.id}`,
+                  };
+                }
+
+                const thisNotRun =
+                  props.submissions.length -
+                  passedByCase[testCase.id].length -
+                  failedByCase[testCase.id].length -
+                  errorByCase[testCase.id].length;
+                passed += passedByCase[testCase.id].length;
+                failed += failedByCase[testCase.id].length;
+                error += errorByCase[testCase.id].length;
+                notRun += thisNotRun;
                 return {
-                  description: <span>{testCase.description}</span>,
-                  passed: <Skeleton.Button active={true} size="default" shape="round" />,
-                  failed: <Skeleton.Button active={true} size="default" shape="round" />,
-                  error: <Skeleton.Button active={true} size="default" shape="round" />,
-                  notRun: <Skeleton.Button active={true} size="default" shape="round" />,
+                  description: (
+                    <span className="text-link" onClick={openDetail.bind({}, category, testCase, undefined, undefined)}>
+                      {testCase.description}
+                    </span>
+                  ),
+                  passed: (
+                    <div
+                      className="text-link"
+                      onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Passed, undefined)}
+                    >
+                      {passedByCase[testCase.id].length}
+                    </div>
+                  ),
+                  failed: (
+                    <div
+                      className="text-link"
+                      onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Failed, undefined)}
+                    >
+                      {failedByCase[testCase.id].length}
+                    </div>
+                  ),
+                  error: (
+                    <div
+                      className="text-link"
+                      onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Error, undefined)}
+                    >
+                      {errorByCase[testCase.id].length}
+                    </div>
+                  ),
+                  notRun: thisNotRun,
                   key: `testCase-${testCase.id}`,
                 };
-              }
-
-              const thisNotRun =
-                props.submissions.length -
-                passedByCase[testCase.id].length -
-                failedByCase[testCase.id].length -
-                errorByCase[testCase.id].length;
-              passed += passedByCase[testCase.id].length;
-              failed += failedByCase[testCase.id].length;
-              error += errorByCase[testCase.id].length;
-              notRun += thisNotRun;
-              return {
-                description: (
-                  <span className="text-link" onClick={openDetail.bind({}, category, testCase, undefined, undefined)}>
-                    {testCase.description}
-                  </span>
-                ),
-                passed: (
-                  <div
-                    className="text-link"
-                    onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Passed, undefined)}
-                  >
-                    {passedByCase[testCase.id].length}
-                  </div>
-                ),
-                failed: (
-                  <div
-                    className="text-link"
-                    onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Failed, undefined)}
-                  >
-                    {failedByCase[testCase.id].length}
-                  </div>
-                ),
-                error: (
-                  <div
-                    className="text-link"
-                    onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Error, undefined)}
-                  >
-                    {errorByCase[testCase.id].length}
-                  </div>
-                ),
-                notRun: thisNotRun,
-                key: `testCase-${testCase.id}`,
-              };
-            });
+              });
 
           if (props.resultsLoading) {
             //  If the pagination hasn't completed, show skeletons

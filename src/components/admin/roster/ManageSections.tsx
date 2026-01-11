@@ -182,11 +182,7 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
         leadersForSearch: section.leaders.join(', '),
         actions: (
           <Tooltip title="Delete section">
-            <Button
-              shape="circle"
-              icon={<DeleteOutlined />}
-              onClick={() => deleteSection(section.id)}
-            />
+            <Button shape="circle" icon={<DeleteOutlined />} onClick={() => deleteSection(section.id)} />
           </Tooltip>
         ),
       };

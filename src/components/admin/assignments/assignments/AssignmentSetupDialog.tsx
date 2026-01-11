@@ -172,14 +172,14 @@ export const AssignmentSetupBanner = (props: IProps) => {
         step.hide
           ? { key: index.toString(), className: 'hidden-step' }
           : {
-            key: index.toString(),
-            title: step.title,
-            subTitle: step.isOptional && !isSmall ? '(optional)' : '',
-            status: step.isComplete ? 'finish' : 'wait',
-            description: '',
-            disabled: step.isComplete,
-            icon: isSmall ? <div /> : step.icon,
-          },
+              key: index.toString(),
+              title: step.title,
+              subTitle: step.isOptional && !isSmall ? '(optional)' : '',
+              status: step.isComplete ? 'finish' : 'wait',
+              description: '',
+              disabled: step.isComplete,
+              icon: isSmall ? <div /> : step.icon,
+            },
       )}
     />
   );

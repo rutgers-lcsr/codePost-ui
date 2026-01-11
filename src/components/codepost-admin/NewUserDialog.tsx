@@ -75,11 +75,7 @@ const NewUserDialog: React.FC<NewUserDialogProps> = ({ visible, onClose, onSucce
           <Input placeholder="user@example.com" />
         </Form.Item>
 
-        <Form.Item
-          name="password"
-          label="Password"
-          rules={[{ required: true, message: 'Please enter a password' }]}
-        >
+        <Form.Item name="password" label="Password" rules={[{ required: true, message: 'Please enter a password' }]}>
           <Input.Password placeholder="Password" />
         </Form.Item>
 

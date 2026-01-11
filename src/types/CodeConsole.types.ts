@@ -82,9 +82,6 @@ export interface ICodeConsoleState {
   /** Whether keyboard shortcuts modal is visible */
   showKeyboardShortcuts: boolean;
 
-  /** Whether to show rubric explanations */
-  showExplanations: boolean;
-
   /** Whether custom comment explorer is visible */
   showCustomCommentExplorer: boolean;
 
@@ -330,7 +327,7 @@ export interface IUIOperations {
   setZoom: (newZoom: number) => void;
   setVerticalOffset: (oldToNew: (oldValue: number) => number) => void;
   toggleKeyboardShortcuts: () => void;
-  toggleShowExplanations: () => void;
+
   toggleCustomCommentExplorer: () => void;
   showInlineTestsModal: () => void;
   hideInlineTestsModal: () => void;

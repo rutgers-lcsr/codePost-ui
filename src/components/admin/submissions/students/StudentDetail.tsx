@@ -158,7 +158,8 @@ const StudentDetail: React.FC<IProps> = (props) => {
           <div>
             <br />
             <div>
-              This action <b>cannot</b> be undone and will delete all existing files and comments for this submission.{' '}
+              This action <b>cannot</b> be undone and will delete all existing files and comments for this
+              submission.{' '}
             </div>
             <br />
             <div>The following students are associated with this submission:</div>
@@ -323,64 +324,61 @@ const StudentDetail: React.FC<IProps> = (props) => {
 
     const menuItems = submission
       ? [
-        {
-          key: '1',
-          label: (
-            <>
-              <RedoOutlined /> Replace files
-            </>
-          ),
-          onClick: () => reUploadSubmission(submission),
-        },
-        {
-          key: '2',
-          label: (
-            <>
-              <FileAddOutlined /> Add / Update files
-            </>
-          ),
-          onClick: () => toggleUploadSubmissionVisible(assignment.id),
-        },
-        ...(assignment.environment
-          ? [
-            {
-              key: '3',
-              label: (
-                <>
-                  {subsRunning.includes(submission.id) ? <LoadingOutlined /> : <CaretRightOutlined />}{' '}
-                  Run Tests
-                </>
-              ),
-              disabled: subsRunning.includes(submission.id),
-              onClick: () => runTests(assignment, submission),
-            },
-          ]
-          : []),
-        {
-          type: 'divider' as const,
-        },
-        {
-          key: '4',
-          label: (
-            <>
-              <DeleteOutlined /> Delete submission
-            </>
-          ),
-          danger: true,
-          onClick: () => removeSubmission(submission),
-        },
-      ]
+          {
+            key: '1',
+            label: (
+              <>
+                <RedoOutlined /> Replace files
+              </>
+            ),
+            onClick: () => reUploadSubmission(submission),
+          },
+          {
+            key: '2',
+            label: (
+              <>
+                <FileAddOutlined /> Add / Update files
+              </>
+            ),
+            onClick: () => toggleUploadSubmissionVisible(assignment.id),
+          },
+          ...(assignment.environment
+            ? [
+                {
+                  key: '3',
+                  label: (
+                    <>{subsRunning.includes(submission.id) ? <LoadingOutlined /> : <CaretRightOutlined />} Run Tests</>
+                  ),
+                  disabled: subsRunning.includes(submission.id),
+                  onClick: () => runTests(assignment, submission),
+                },
+              ]
+            : []),
+          {
+            type: 'divider' as const,
+          },
+          {
+            key: '4',
+            label: (
+              <>
+                <DeleteOutlined /> Delete submission
+              </>
+            ),
+            danger: true,
+            onClick: () => removeSubmission(submission),
+          },
+        ]
       : [
-        {
-          key: '0',
-          label: (
-            <>
-              <UploadOutlined /> Upload submission
-            </>
-          ),
-          onClick: () => toggleUploadSubmissionVisible(assignment.id),
-        },
-      ];
+          {
+            key: '0',
+            label: (
+              <>
+                <UploadOutlined /> Upload submission
+              </>
+            ),
+            onClick: () => toggleUploadSubmissionVisible(assignment.id),
+          },
+        ];
 
     let graderElement;
     const NO_GRADER = 'NO_GRADER';
@@ -432,11 +430,7 @@ const StudentDetail: React.FC<IProps> = (props) => {
     return {
       key: assignment.name,
       assignment: submission ? (
-        <span
-          onClick={() => openSubmission(submission.id)}
-          className="text-link"
-          style={{ cursor: 'pointer' }}
-        >
+        <span onClick={() => openSubmission(submission.id)} className="text-link" style={{ cursor: 'pointer' }}>
           <Typography.Text strong className="text-link">
             {assignment.name}
           </Typography.Text>
@@ -454,10 +448,10 @@ const StudentDetail: React.FC<IProps> = (props) => {
         ),
       partners: submission
         ? submission.students
-          .filter((student) => {
-            return student !== props.student;
-          })
-          .join(',')
+            .filter((student) => {
+              return student !== props.student;
+            })
+            .join(',')
         : '--',
       grade: gradeString,
       grader: graderElement,
@@ -531,26 +525,20 @@ const StudentDetail: React.FC<IProps> = (props) => {
         uploadSubmission={handleUploadSubmission}
         selectedAssignment={assignmentToUpload}
         onSuccess={openSubmission}
-        disableStudentSelect={
-          assignmentToUpload && submissionsMap[assignmentToUpload.id] ? true : false
-        }
-        title={
-          assignmentToUpload &&
-          submissionsMap[assignmentToUpload.id] &&
-          'Add / update files'
-        }
+        disableStudentSelect={assignmentToUpload && submissionsMap[assignmentToUpload.id] ? true : false}
+        title={assignmentToUpload && submissionsMap[assignmentToUpload.id] && 'Add / update files'}
         infoMessage={
           assignmentToUpload &&
           submissionsMap[assignmentToUpload.id] && (
             <div>
               <div>
-                If you upload a file that already exists in the submission, the older versions (including comments)
-                wil be visible in the submission history.
+                If you upload a file that already exists in the submission, the older versions (including comments) wil
+                be visible in the submission history.
               </div>
               <br />
               <div>
-                If you want all existing files to be deleted before upload, click <b>Replace Files</b> in the
-                submission menu instead.
+                If you want all existing files to be deleted before upload, click <b>Replace Files</b> in the submission
+                menu instead.
               </div>
             </div>
           )

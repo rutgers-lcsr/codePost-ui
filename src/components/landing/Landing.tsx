@@ -100,8 +100,8 @@ class Landing extends React.Component<IWithWindowWatcherProps> {
                 <div style={{ fontWeight: 600, paddingBottom: 5 }}>Managing a team of graders?</div>
                 <div>
                   codePost includes tools to help you run a large course team: distribute work to graders, set up a
-                  rubric to ensure consistent, fair feedback, and use{' '}
-                  intuitive keyboard shortcuts to review on grader work.
+                  rubric to ensure consistent, fair feedback, and use intuitive keyboard shortcuts to review on grader
+                  work.
                 </div>
               </div>
             </div>

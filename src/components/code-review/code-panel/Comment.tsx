@@ -985,7 +985,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
       <CPTooltip title={tooltip} hideThisOnHideTips={true}>
         <div>
           <CPPointInput
-            value={-points}
+            value={points}
             onChange={onChangePointInput}
             disabled={props.forcedRubricMode || props.rubricComment ? true : false}
             onKeyDown={handleShiftEnter}
@@ -1225,23 +1225,24 @@ const Comment: React.FC<ICommentProps> = (props) => {
             }}
           >
             <Space size={8} wrap>
-              <Typography.Text strong>{rubricCategoryTitle || 'Rubric Comment'}</Typography.Text>
+              <Typography.Text strong>
+                {rubricCategoryTitle || 'Rubric Comment'}
+                {props.rubricComment.text && ` | ${props.rubricComment.text}`}
+              </Typography.Text>
               <Tag color={pointTagColor}>{pointLabel}</Tag>
             </Space>
             {removeAction}
           </div>
         }
         description={
-          <div className="cp-comment__rubric-description">
-            <BlockMarkdown
-              source={
-                (props.isStudent || props.showExplanations) && props.rubricComment.explanation
-                  ? props.rubricComment.explanation
-                  : props.rubricComment.text
-              }
-              em={!props.isStudent && props.showExplanations && props.rubricComment.explanation.length > 0}
-            />
-          </div>
+          props.isStudent && props.rubricComment.explanation && props.rubricComment.explanation.length > 0 ? (
+            <div
+              className="cp-comment__rubric-description"
+              style={{ color: consoleTheme.consoleTheme.text, fontStyle: 'italic' }}
+            >
+              <BlockMarkdown source={props.rubricComment.explanation} />
+            </div>
+          ) : undefined
         }
       />
     );

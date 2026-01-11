@@ -127,7 +127,6 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
     file &&
     (() => {
       const ext = file.extension.toLowerCase().replace(/^\./, '');
-      console.log(ext);
       const executableExtensions = ['py', 'ipynb', 'js', 'java', 'cpp', 'c', 'rb', 'go', 'rs', 'sh', 'r'];
 
       return executableExtensions.includes(ext);

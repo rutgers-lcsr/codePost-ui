@@ -11,7 +11,19 @@ import { colors } from '../../../theme/colors';
 
 /* antd imports */
 import type { MenuProps } from 'antd';
-import { Badge as AntBadge, Dropdown, Menu } from 'antd';
+import { Badge as AntBadge, Dropdown, Menu, Tag, Typography } from 'antd';
+import {
+  FileTextOutlined,
+  FileImageOutlined,
+  FilePdfOutlined,
+  CodeOutlined,
+  FileOutlined,
+  FileZipOutlined,
+  FileMarkdownOutlined,
+  FileExcelOutlined,
+  FileWordOutlined,
+  BookOutlined,
+} from '@ant-design/icons';
 
 import moment from 'moment';
 
@@ -108,6 +120,62 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
       '--file-menu-comment-badge-bg': consoleTheme.consoleTheme.commentRubricCommentNeutral ?? 'rgba(0, 0, 0, 0.45)',
     };
   }, [consoleTheme, isDarkTheme]);
+
+  const getFileIcon = (fileName: string) => {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    const style = { marginRight: 8, fontSize: 16, color: consoleTheme.consoleTheme.siderMenuItemColor };
+
+    switch (ext) {
+      case 'ipynb':
+        return <BookOutlined style={style} />;
+      case 'py':
+      case 'js':
+      case 'ts':
+      case 'tsx':
+      case 'jsx':
+      case 'java':
+      case 'cpp':
+      case 'c':
+      case 'h':
+      case 'rb':
+      case 'go':
+      case 'rs':
+      case 'php':
+      case 'html':
+      case 'css':
+      case 'scss':
+      case 'json':
+      case 'xml':
+      case 'sql':
+      case 'sh':
+        return <CodeOutlined style={style} />;
+      case 'md':
+      case 'txt':
+        return <FileMarkdownOutlined style={style} />;
+      case 'pdf':
+        return <FilePdfOutlined style={style} />;
+      case 'png':
+      case 'jpg':
+      case 'jpeg':
+      case 'gif':
+      case 'svg':
+      case 'bmp':
+        return <FileImageOutlined style={style} />;
+      case 'zip':
+      case 'tar':
+      case 'gz':
+        return <FileZipOutlined style={style} />;
+      case 'doc':
+      case 'docx':
+        return <FileWordOutlined style={style} />;
+      case 'xls':
+      case 'xlsx':
+      case 'csv':
+        return <FileExcelOutlined style={style} />;
+      default:
+        return <FileOutlined style={style} />;
+    }
+  };
 
   // Initialize state with useMemo for computed initial values
   const initialState = React.useMemo(() => {
@@ -346,9 +414,8 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
             <span style={visuallyHiddenStyle}>
               {openHistoryPath === path
                 ? `${currentFile.name} version history menu expanded. Use arrow keys to explore versions.`
-                : `${currentFile.name} has ${oldVersionsMap[path].length} earlier version${
-                    oldVersionsMap[path].length === 1 ? '' : 's'
-                  }. Activate to open history.`}
+                : `${currentFile.name} has ${oldVersionsMap[path].length} earlier version${oldVersionsMap[path].length === 1 ? '' : 's'
+                }. Activate to open history.`}
             </span>
           </button>
         </Dropdown>
@@ -365,51 +432,62 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
         faded = false;
       }
 
-      let commentCountBadge = null;
+      const tags = [];
+
+      if (!hidePoints && bonuses > 0) {
+        tags.push(
+          <CPTooltip key="bonus" title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
+            <Tag color="success" style={{ margin: 0, opacity: faded ? 0.7 : 1 }}>
+              +{parseFloat(bonuses.toFixed(2))}
+            </Tag>
+          </CPTooltip>,
+        );
+      }
+
+      if (!hidePoints && deductions > 0) {
+        tags.push(
+          <CPTooltip key="deduction" title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
+            <Tag color="error" style={{ margin: 0, opacity: faded ? 0.7 : 1 }}>
+              {parseFloat((deductions * -1).toFixed(2))}
+            </Tag>
+          </CPTooltip>,
+        );
+      }
+
       if (commentCount > 0) {
-        commentCountBadge = <Badge count={commentCount} forcedStyle="neutral" faded={faded} size="small" />;
-      } else {
-        commentCountBadge = null;
+        tags.push(
+          <CPTooltip key="comments" title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
+            <Tag
+              style={{
+                margin: 0,
+                borderColor: 'transparent',
+                backgroundColor: 'rgba(0,0,0,0.05)',
+                color: consoleTheme.consoleTheme.text,
+                opacity: faded ? 0.7 : 1,
+              }}
+            >
+              {commentCount}
+            </Tag>
+          </CPTooltip>,
+        );
       }
-
-      let deductionBadge = null;
-      let bonusBadge = null;
-
-      if (deductions > 0) {
-        deductionBadge = <Badge count={parseFloat((deductions * -1).toFixed(2))} faded={faded} size="small" />;
-      } else {
-        deductionBadge = null;
-      }
-
-      if (bonuses > 0) {
-        bonusBadge = <Badge count={parseFloat(bonuses.toFixed(2))} faded={faded} size="small" />;
-      } else {
-        bonusBadge = null;
-      }
-
-      const badgesStyle: React.CSSProperties = { position: 'absolute', right: '12px', top: '0px', width: '96px' };
 
       return (
-        <div style={badgesStyle}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            {!hidePoints ? (
-              <CPTooltip title={tooltips.console.fileMenu.bonuses} hideThisOnHideTips={true}>
-                <div style={{ minWidth: 25 }}>{bonusBadge}</div>
-              </CPTooltip>
-            ) : null}
-            {!hidePoints ? (
-              <CPTooltip title={tooltips.console.fileMenu.deductions} hideThisOnHideTips={true}>
-                <div style={{ minWidth: 25 }}>{deductionBadge}</div>
-              </CPTooltip>
-            ) : null}
-            <CPTooltip title={tooltips.console.fileMenu.comments} hideThisOnHideTips={true}>
-              <div style={{ minWidth: 25 }}>{commentCountBadge}</div>
-            </CPTooltip>
-          </div>
+        <div
+          style={{
+            position: 'absolute',
+            right: '12px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            display: 'flex',
+            gap: 4,
+          }}
+        >
+          {tags}
         </div>
       );
     },
-    [selectedFile, hidePoints],
+    [selectedFile, hidePoints, consoleTheme],
   );
 
   // FILE MENU BUILD
@@ -429,11 +507,11 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
         const shortcutStyle: React.CSSProperties = !shrunkSider
           ? { fontSize: '9px', verticalAlign: 'middle' }
           : {
-              fontSize: '9px',
-              position: 'absolute',
-              right: '-27px',
-              top: '10px',
-            };
+            fontSize: '9px',
+            position: 'absolute',
+            right: '-27px',
+            top: '10px',
+          };
         /* tslint:enable */
 
         // Find the file order in the list to sync the keyboard shortcuts with the UI order
@@ -447,11 +525,17 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
         const fileSummaryLabel = getFileSummaryLabel(file.name, commentCount, normalizedDeductions, bonuses);
 
         const menuItem = (
-          <div aria-current={selectedFile && selectedFile.id === file.id ? 'true' : undefined}>
+          <div
+            aria-current={selectedFile && selectedFile.id === file.id ? 'true' : undefined}
+            style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center' }}
+          >
             <span style={visuallyHiddenStyle}>{fileSummaryLabel}</span>
             <div
               style={{
-                display: 'inline-block',
+                display: 'flex',
+                alignItems: 'center',
+                width: '100%',
+                paddingRight: !shrunkSider ? '100px' : 0,
                 lineHeight: '12px',
               }}
               aria-hidden="true"
@@ -462,28 +546,28 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
                   {sortedIndex + 1}]
                 </span>
               ) : null}
-              <div style={{ display: 'inline-block', width: '8px' }} />
+              {/* Spacer for shortcut */}
+              <div style={{ display: 'inline-block', width: sortedIndex < 9 ? '4px' : '0px', flexShrink: 0 }} />
+
               <div
                 style={{
-                  minWidth: !shrunkSider ? 0 : '124px',
-                  verticalAlign: 'middle',
-                  fontSize: 12,
-                  display: 'inline-block',
+                  flex: 1,
+                  minWidth: 0,
+                  fontSize: 13,
+                  display: 'flex',
+                  alignItems: 'center',
                 }}
                 title={file.name}
               >
-                <span
+                {getFileIcon(file.name)}
+                <Typography.Text
+                  ellipsis
                   style={{
-                    maxWidth: !shrunkSider ? '134px' : '124px',
-                    overflow: 'hidden',
-                    whiteSpace: 'nowrap',
-                    textOverflow: 'ellipsis',
-                    display: 'inline-block',
-                    verticalAlign: 'middle',
+                    color: consoleTheme.consoleTheme.siderMenuItemColor,
                   }}
                 >
                   {file.name}
-                </span>
+                </Typography.Text>
                 {oldVersionsMenu}
               </div>
             </div>
@@ -607,9 +691,8 @@ export const FileMenuTitle = (props: IFileMenuTitleProps) => {
     >
       {numOldVersions > 0 ? (
         <CPTooltip
-          title={`This submission contains ${numOldVersions} older version${
-            numOldVersions > 1 ? 's' : ''
-          } of these files.`}
+          title={`This submission contains ${numOldVersions} older version${numOldVersions > 1 ? 's' : ''
+            } of these files.`}
           placement="right"
         >
           {badge}

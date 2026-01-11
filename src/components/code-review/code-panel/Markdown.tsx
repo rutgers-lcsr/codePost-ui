@@ -1,4 +1,3 @@
-
 /* Imports
 /**********************************************************************************************************************/
 
@@ -149,8 +148,6 @@ interface CodeProps extends MarkdownNodeProps {
 interface ListProps extends MarkdownNodeProps {
   ordered?: boolean;
 }
-
-
 
 /**********************************************************************************************************************/
 /* Remark Plugin: Mark Top-Level Elements and Track Jupyter Cells
@@ -469,22 +466,17 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
       const executedMarkdown = jupyterToMarkdown(props.executionResult.output_data);
       if (executedMarkdown !== null) {
         setExecutedContent(executedMarkdown);
-
       } else {
         console.debug('[Jupyter] Execution output missing valid notebook cells. Falling back to original file.');
         setExecutedContent(null);
-
       }
     } else {
       setExecutedContent(null);
-
     }
   }, [props.executionResult, isJupyter]);
 
   return (
     <div id="code-markdown" className="markdown" style={rootStyle}>
-
-
       <ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={components as Components}>
         {executedContent || markdown}
       </ReactMarkdown>
@@ -537,8 +529,7 @@ const useMarkdownRenderers = (
     // We check both direct prop (preferred) and node properties (fallback)
     const propsAny = props as any;
     const isTopLevel =
-      propsAny['data-is-top-level'] === 'true' ||
-      props.node?.properties?.['data-is-top-level'] === 'true';
+      propsAny['data-is-top-level'] === 'true' || props.node?.properties?.['data-is-top-level'] === 'true';
 
     // Also consider it top-level if we're in Jupyter mode (where everything is wrapped in cells)
     // or if we have explicit line numbers but no top-level marker (fallback)
@@ -728,10 +719,10 @@ const useMarkdownRenderers = (
 
     const extraJupyterStyles = isJupyter
       ? {
-        border: `1px solid ${markdownTheme.jupyterCellBorder}`,
-        padding: '10px',
-        boxShadow: 'inset 0 0 2px #64b5f6',
-      }
+          border: `1px solid ${markdownTheme.jupyterCellBorder}`,
+          padding: '10px',
+          boxShadow: 'inset 0 0 2px #64b5f6',
+        }
       : {};
 
     // Block code with syntax highlighting - COMMENTABLE (these are actual code blocks)

@@ -12,9 +12,7 @@ import {
 
 import { Menu } from 'antd';
 
-
-
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 interface IProps {
   collapsed: boolean;
@@ -23,11 +21,22 @@ interface IProps {
   regradesAllowed: boolean;
   activateQueue: boolean;
   baseURL: string;
+  isRubricEditor: boolean;
 }
 
 const GraderNav: React.FC<IProps> = (props) => {
-  const params = useParams();
-  const panel = params.panel || '';
+  const location = useLocation();
+  const panel = location.pathname.replace(props.baseURL, '').split('/')[1] || '';
+
+  const assignment = location.pathname.replace(props.baseURL, '').split('/')[2] || '';
+
+  const getPath = (target: string) => {
+    // Only persist assignment for panels that support it clearly
+    if (assignment && ['my_submissions', 'all_submissions', 'rubrics'].includes(target)) {
+      return `${props.baseURL}/${target}/${assignment}`;
+    }
+    return `${props.baseURL}/${target}`;
+  };
 
   const openLink = (url: string) => {
     const w = window.open(url, '_blank');
@@ -37,7 +46,7 @@ const GraderNav: React.FC<IProps> = (props) => {
   };
 
   const getDefaultSelectedKeys = () => {
-    const routes = ['my_submissions', 'my_sections', 'all_submissions', 'regrades'];
+    const routes = ['my_submissions', 'my_sections', 'all_submissions', 'regrades', 'rubrics'];
 
     const match = routes.indexOf(panel).toString();
 
@@ -52,39 +61,48 @@ const GraderNav: React.FC<IProps> = (props) => {
   const mainMenuItems = [
     ...(props.activateQueue
       ? [
-        {
-          key: '0',
-          icon: <ContainerOutlined />,
-          label: <Link to={`${props.baseURL}/my_submissions`}>Claimed by Me</Link>,
-        },
-      ]
+          {
+            key: '0',
+            icon: <ContainerOutlined />,
+            label: <Link to={getPath('my_submissions')}>Claimed by Me</Link>,
+          },
+        ]
       : []),
     ...(props.isSectionLeader
       ? [
-        {
-          key: '1',
-          icon: <ClusterOutlined />,
-          label: <Link to={`${props.baseURL}/my_sections`}>My Sections</Link>,
-        },
-      ]
+          {
+            key: '1',
+            icon: <ClusterOutlined />,
+            label: <Link to={`${props.baseURL}/my_sections`}>My Sections</Link>,
+          },
+        ]
       : []),
     ...(props.isSuperGrader
       ? [
-        {
-          key: '2',
-          icon: <InboxOutlined />,
-          label: <Link to={`${props.baseURL}/all_submissions`}>All Submissions</Link>,
-        },
-      ]
+          {
+            key: '2',
+            icon: <InboxOutlined />,
+            label: <Link to={getPath('all_submissions')}>All Submissions</Link>,
+          },
+        ]
       : []),
     ...(props.regradesAllowed
       ? [
-        {
-          key: '3',
-          icon: <MessageOutlined />,
-          label: <Link to={`${props.baseURL}/regrades`}>Regrade Requests</Link>,
-        },
-      ]
+          {
+            key: '3',
+            icon: <MessageOutlined />,
+            label: <Link to={`${props.baseURL}/regrades`}>Regrade Requests</Link>,
+          },
+        ]
+      : []),
+    ...(props.isRubricEditor
+      ? [
+          {
+            key: '4',
+            icon: <ContainerOutlined />, // Using Container (or similar) or Edit
+            label: <Link to={getPath('rubrics')}>Rubrics</Link>,
+          },
+        ]
       : []),
   ];
 

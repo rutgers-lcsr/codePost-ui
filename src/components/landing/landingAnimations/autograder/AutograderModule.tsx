@@ -89,22 +89,25 @@ const AutograderModule = () => {
       >
         <div
           style={{ position: 'absolute', maxWidth: 550, borderRadius: 8 }}
-          className={`display-flex justify-content-center align-items-center bevel autograder-image${index === 0 ? '--active' : ''
-            }`}
+          className={`display-flex justify-content-center align-items-center bevel autograder-image${
+            index === 0 ? '--active' : ''
+          }`}
         >
           {noCodeImg}
         </div>
         <div
           style={{ position: 'absolute', maxWidth: 550, borderRadius: 8 }}
-          className={`display-flex justify-content-center align-items-center bevel autograder-image${index === 1 ? '--active' : ''
-            }`}
+          className={`display-flex justify-content-center align-items-center bevel autograder-image${
+            index === 1 ? '--active' : ''
+          }`}
         >
           {unitImg}
         </div>
         <div
           style={{ position: 'absolute', maxWidth: 550, borderRadius: 8 }}
-          className={`display-flex justify-content-center align-items-center bevel autograder-image${index === 2 ? '--active' : ''
-            }`}
+          className={`display-flex justify-content-center align-items-center bevel autograder-image${
+            index === 2 ? '--active' : ''
+          }`}
         >
           {fileModeImg}
         </div>

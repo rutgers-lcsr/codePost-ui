@@ -12,7 +12,7 @@
     line-height: 44px !important;
 
     padding-left: 26px !important;
-    padding-right: 40px !important;
+    padding-right: 10px !important;
 
     font-size: 12px !important;
     font-weight: 500 !important;
@@ -40,7 +40,7 @@
     background: #18191c !important;
   }
 
-  .ant-table-thead > tr > th {
+  .ant-table-thead>tr>th {
     background: #18191c !important;
     color: $neutralDarkMainText !important;
   }
@@ -98,6 +98,7 @@
   .ant-alert {
     font-size: 12px;
   }
+
   .ant-alert.ant-alert-no-icon {
     padding: 2px 5px;
   }

@@ -8,8 +8,6 @@ import { lazy, ReactElement, ReactNode, Suspense, useCallback, useEffect, useRef
 /* other library imports */
 import { Navigate, Route, Routes } from 'react-router-dom';
 
-
-
 /* codePost imports */
 import LogInAs from './components/core/LogInAs';
 import Logout from './components/core/Logout';
@@ -529,8 +527,6 @@ Firefox:
     }
   }, [isSuperUser]);
 
-
-
   // Render
   if (toRedirect) {
     return <Navigate to="/" replace />;
@@ -539,15 +535,9 @@ Firefox:
   const renderDemoRoute = () => (
     <Route
       path={`${CODE_DEMO}/*`}
-      element={
-        wrapTooltipContext(
-          <AsyncGrade
-            user={user === undefined ? anonymousUser : user}
-            handleLogout={handleLogout}
-            inDemoMode={true}
-          />,
-        )
-      }
+      element={wrapTooltipContext(
+        <AsyncGrade user={user === undefined ? anonymousUser : user} handleLogout={handleLogout} inDemoMode={true} />,
+      )}
     />
   );
 
@@ -601,10 +591,7 @@ Firefox:
     };
 
     const loginAsRoute = isCodePostAdmin ? (
-      <Route
-        path="/loginAs/*"
-        element={<LogInAs replaceUser={replaceUser} />}
-      />
+      <Route path="/loginAs/*" element={<LogInAs replaceUser={replaceUser} />} />
     ) : null;
 
     const dashboardRoute = isCodePostAdmin ? <Route path="/dashboard" element={<Dashboard />} /> : null;
@@ -612,80 +599,62 @@ Firefox:
     const settingsRoute = (
       <Route
         path="/settings"
-        element={
-          wrapTooltipContext(
-            <Settings
-              user={user === undefined ? anonymousUser : user}
-              handleLogout={handleLogout}
-              replaceUser={replaceUser}
-            />,
-          )
-        }
+        element={wrapTooltipContext(
+          <Settings
+            user={user === undefined ? anonymousUser : user}
+            handleLogout={handleLogout}
+            replaceUser={replaceUser}
+          />,
+        )}
       />
     );
 
     const studentRoute = isStudent ? (
       <Route
         path={`${STUDENT}/*`}
-        element={
-          wrapTooltipContext(
-            <AsyncStudent {...consoleProps} initialCourses={studentCourses} baseURL={STUDENT} />
-          )
-        }
+        element={wrapTooltipContext(
+          <AsyncStudent {...consoleProps} initialCourses={studentCourses} baseURL={STUDENT} />,
+        )}
       />
     ) : null;
 
     const graderRoute = isGrader ? (
       <Route
         path={`${GRADER}/*`}
-        element={
-          wrapTooltipContext(
-            <AsyncGrader {...consoleProps} initialCourses={graderCourses} baseURL={GRADER} />
-          )
-        }
+        element={wrapTooltipContext(<AsyncGrader {...consoleProps} initialCourses={graderCourses} baseURL={GRADER} />)}
       />
     ) : null;
 
     const adminRoute = isAdmin ? (
       <Route
         path={`${ADMIN}/*`}
-        element={
-          wrapTooltipContext(
-            <AsyncAdmin {...consoleProps} initialCourses={courseAdminCourses} baseURL={ADMIN} />
-          )
-        }
+        element={wrapTooltipContext(
+          <AsyncAdmin {...consoleProps} initialCourses={courseAdminCourses} baseURL={ADMIN} />,
+        )}
       />
     ) : null;
 
     const orgRoute = user.isOrgStaff ? (
       <Route
         path="/organization/*"
-        element={
-          wrapTooltipContext(
-            <AsyncOrg user={user} handleLogout={handleLogout} baseURL="/organization" />
-          )
-        }
+        element={wrapTooltipContext(<AsyncOrg user={user} handleLogout={handleLogout} baseURL="/organization" />)}
       />
     ) : null;
 
     const gradeRoute = (
       <Route
         path={`${CODE}/:submissionId`}
-        element={
-          wrapTooltipContext(
-            <AsyncGrade
-              user={user === undefined ? anonymousUser : user}
-              handleLogout={handleLogout}
-              inDemoMode={false}
-            />,
-          )
-        }
+        element={wrapTooltipContext(
+          <AsyncGrade
+            user={user === undefined ? anonymousUser : user}
+            handleLogout={handleLogout}
+            inDemoMode={false}
+          />,
+        )}
       />
     );
 
-    const logoutRoute = (
-      <Route path="/logout" element={<Logout handleLogout={handleLogout} />} />
-    );
+    const logoutRoute = <Route path="/logout" element={<Logout handleLogout={handleLogout} />} />;
 
     let homeRoute: ReactElement;
     if (isStudent && !isGrader && !isAdmin) {

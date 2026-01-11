@@ -377,6 +377,14 @@ const Code = (props: CodePropsWithoutComments) => {
     document.addEventListener('mouseup', callback);
   };
 
+  const onHoverEnter = (commentId: number) => {
+    setHoveredCommentId(commentId);
+  };
+
+  const onHoverLeave = (_: number) => {
+    setHoveredCommentId(null);
+  };
+
   const linesOfCode = (readOnly: boolean, code: string, comments: CommentType[]) => {
     return code.split('\n').map((text: string, i: number) => {
       const t = text === '' ? ' ' : text;
@@ -384,14 +392,32 @@ const Code = (props: CodePropsWithoutComments) => {
       if (readOnly) {
         return (
           <div key={i} id={`line-${i}`}>
-            {CodePanelHighlighting.highlight(comments, t, i, readOnly, consoleTheme.highlight, contextOnHighlightClick)}
+            {CodePanelHighlighting.highlight(
+              comments,
+              t,
+              i,
+              readOnly,
+              consoleTheme.highlight,
+              contextOnHighlightClick,
+              onHoverEnter,
+              onHoverLeave,
+            )}
           </div>
         );
       }
 
       return (
         <div key={i} id={`line-${i}`} onClick={onLineClick} onMouseDown={onMouseDown}>
-          {CodePanelHighlighting.highlight(comments, t, i, readOnly, consoleTheme.highlight, contextOnHighlightClick)}
+          {CodePanelHighlighting.highlight(
+            comments,
+            t,
+            i,
+            readOnly,
+            consoleTheme.highlight,
+            contextOnHighlightClick,
+            onHoverEnter,
+            onHoverLeave,
+          )}
         </div>
       );
     });

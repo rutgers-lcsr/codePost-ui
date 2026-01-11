@@ -132,6 +132,8 @@ export const convertStringToJSX = (
   line: number,
   readOnly: boolean,
   onHighlightClick: (e: React.MouseEvent, commentId: number) => void,
+  onHoverEnter?: (commentId: number) => void,
+  onHoverLeave?: (commentId: number) => void,
 ) => {
   // Fixed regex: space after <strong is optional (was causing highlights to render as text)
   const components = htmlString.split(/(<strong\s.*?>.*?<\/strong>)/g);
@@ -169,6 +171,8 @@ export const convertStringToJSX = (
           text={text}
           readOnly={readOnly}
           onHighlightClick={onHighlightClick}
+          onMouseEnter={onHoverEnter}
+          onMouseLeave={onHoverLeave}
         />
       );
     } else {
@@ -190,6 +194,8 @@ export const highlight = (
   readOnly: boolean,
   _color: string,
   onHighlightClick: (e: React.MouseEvent, commentId: number) => void,
+  onHoverEnter?: (commentId: number) => void,
+  onHoverLeave?: (commentId: number) => void,
 ) => {
   const highlights = getHighlights(sortedComments, thetext, line);
 
@@ -205,7 +211,7 @@ export const highlight = (
   // - Easier to debug (visible in source files)
   // - Faster (no runtime DOM manipulation)
 
-  const returnElements = convertStringToJSX(htmlString, line, readOnly, onHighlightClick);
+  const returnElements = convertStringToJSX(htmlString, line, readOnly, onHighlightClick, onHoverEnter, onHoverLeave);
 
   return returnElements;
 };

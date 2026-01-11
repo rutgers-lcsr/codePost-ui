@@ -60,35 +60,38 @@ const AssignmentStats: FC<IProps> = (props) => {
     setIsLoading(false);
   }, [props]);
 
-  const openDrawer = useCallback((targetAssignment: AssignmentType, type: DRAWER_TYPE) => {
-    if (submissions === null) {
-      const title = getDrawerTitle(type, null);
-      setDrawerContent({
-        title: targetAssignment.name,
-        subtitle: title,
-        content: null,
-      });
-      setDrawerType(type);
-      setDrawerOpen(true);
-    } else {
-      const newContent = filterDataByStat(
-        targetAssignment,
-        submissionsByStudent,
-        type,
-        submissions,
-        viewsBySubmission,
-        students,
-      );
-      const title = getDrawerTitle(type, newContent.length);
-      setDrawerContent({
-        title: targetAssignment.name,
-        subtitle: title,
-        content: newContent,
-      });
-      setDrawerType(type);
-      setDrawerOpen(true);
-    }
-  }, [submissions, submissionsByStudent, viewsBySubmission, students]);
+  const openDrawer = useCallback(
+    (targetAssignment: AssignmentType, type: DRAWER_TYPE) => {
+      if (submissions === null) {
+        const title = getDrawerTitle(type, null);
+        setDrawerContent({
+          title: targetAssignment.name,
+          subtitle: title,
+          content: null,
+        });
+        setDrawerType(type);
+        setDrawerOpen(true);
+      } else {
+        const newContent = filterDataByStat(
+          targetAssignment,
+          submissionsByStudent,
+          type,
+          submissions,
+          viewsBySubmission,
+          students,
+        );
+        const title = getDrawerTitle(type, newContent.length);
+        setDrawerContent({
+          title: targetAssignment.name,
+          subtitle: title,
+          content: newContent,
+        });
+        setDrawerType(type);
+        setDrawerOpen(true);
+      }
+    },
+    [submissions, submissionsByStudent, viewsBySubmission, students],
+  );
 
   const closeDrawer = useCallback(() => {
     setDrawerOpen(false);
@@ -100,13 +103,7 @@ const AssignmentStats: FC<IProps> = (props) => {
   }, [refreshCourseData]);
 
   const statsForRow: IFullStats = useMemo(() => {
-    return calculateFullStats(
-      assignment,
-      submissions,
-      submissionsByStudent,
-      viewsBySubmission,
-      students
-    );
+    return calculateFullStats(assignment, submissions, submissionsByStudent, viewsBySubmission, students);
   }, [assignment, submissions, submissionsByStudent, viewsBySubmission, students]);
 
   const reminderEmails = useMemo(() => {
@@ -121,8 +118,17 @@ const AssignmentStats: FC<IProps> = (props) => {
   }, [submissions]);
 
   const {
-    mean, median, max, min, numSubmissions, numGraded,
-    numInProgress, numUnclaimed, numMissing, numViewed, numUnviewed
+    mean,
+    median,
+    max,
+    min,
+    numSubmissions,
+    numGraded,
+    numInProgress,
+    numUnclaimed,
+    numMissing,
+    numViewed,
+    numUnviewed,
   } = statsForRow;
 
   const summaryData = (
@@ -162,10 +168,7 @@ const AssignmentStats: FC<IProps> = (props) => {
         />
       ),
       data: (
-        <span
-          onClick={() => openDrawer(assignment, DRAWER_TYPE.Submitted)}
-          className="text-link"
-        >
+        <span onClick={() => openDrawer(assignment, DRAWER_TYPE.Submitted)} className="text-link">
           {numSubmissions}
         </span>
       ),
@@ -182,10 +185,7 @@ const AssignmentStats: FC<IProps> = (props) => {
             />
           ),
           data: (
-            <span
-              onClick={() => openDrawer(assignment, DRAWER_TYPE.Graded)}
-              className="text-link"
-            >
+            <span onClick={() => openDrawer(assignment, DRAWER_TYPE.Graded)} className="text-link">
               {numGraded}
             </span>
           ),
@@ -202,10 +202,7 @@ const AssignmentStats: FC<IProps> = (props) => {
                 />
               ),
               data: (
-                <span
-                  onClick={() => openDrawer(assignment, DRAWER_TYPE.Unviewed)}
-                  className="text-link"
-                >
+                <span onClick={() => openDrawer(assignment, DRAWER_TYPE.Unviewed)} className="text-link">
                   {numUnviewed !== null ? numUnviewed : <Spin size="small" />}
                 </span>
               ),
@@ -222,10 +219,7 @@ const AssignmentStats: FC<IProps> = (props) => {
                 />
               ),
               data: (
-                <span
-                  onClick={() => openDrawer(assignment, DRAWER_TYPE.Viewed)}
-                  className="text-link"
-                >
+                <span onClick={() => openDrawer(assignment, DRAWER_TYPE.Viewed)} className="text-link">
                   {numViewed !== null ? numViewed : <Spin size="small" />}
                 </span>
               ),
@@ -244,10 +238,7 @@ const AssignmentStats: FC<IProps> = (props) => {
             />
           ),
           data: (
-            <span
-              onClick={() => openDrawer(assignment, DRAWER_TYPE.InProgress)}
-              className="text-link"
-            >
+            <span onClick={() => openDrawer(assignment, DRAWER_TYPE.InProgress)} className="text-link">
               {numInProgress}
             </span>
           ),
@@ -264,10 +255,7 @@ const AssignmentStats: FC<IProps> = (props) => {
             />
           ),
           data: (
-            <span
-              onClick={() => openDrawer(assignment, DRAWER_TYPE.Unclaimed)}
-              className="text-link"
-            >
+            <span onClick={() => openDrawer(assignment, DRAWER_TYPE.Unclaimed)} className="text-link">
               {numUnclaimed}
             </span>
           ),
@@ -334,12 +322,7 @@ const AssignmentStats: FC<IProps> = (props) => {
             <Title level={3} style={{ color: colors.brandPrimary }}>
               Grading Progress Summary
             </Title>
-            <CPButton
-              onClick={refreshData}
-              cpType="primary"
-              icon={<RedoOutlined />}
-              loading={isLoading}
-            >
+            <CPButton onClick={refreshData} cpType="primary" icon={<RedoOutlined />} loading={isLoading}>
               Refresh data
             </CPButton>
             {reminderEmails.length > 0 ? (
@@ -353,9 +336,8 @@ const AssignmentStats: FC<IProps> = (props) => {
                 emails={reminderEmails}
                 body={
                   <div>
-                    Send a reminder email to graders with pending submissions for {assignment.name} asking
-                    them to complete or unclaim these submissions. Graders without pending submissions won't be
-                    emailed
+                    Send a reminder email to graders with pending submissions for {assignment.name} asking them to
+                    complete or unclaim these submissions. Graders without pending submissions won't be emailed
                   </div>
                 }
               />
@@ -400,9 +382,7 @@ const AssignmentStats: FC<IProps> = (props) => {
 
   return (
     <CPAdminDetail
-      breadcrumbs={
-        <Breadcrumb items={[...breadcrumbs, { title: assignment.name }, { title: 'Stats' }]} />
-      }
+      breadcrumbs={<Breadcrumb items={[...breadcrumbs, { title: assignment.name }, { title: 'Stats' }]} />}
       goBack={null}
       title={`${assignment.name} | Stats`}
       actions={[]}

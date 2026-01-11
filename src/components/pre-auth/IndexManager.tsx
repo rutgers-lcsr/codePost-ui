@@ -67,10 +67,7 @@ class IndexManager extends React.Component<IndexManagerProps> {
             }
           />
 
-          <Route
-            path="/logout"
-            element={<Logout handleLogout={this.props.handleLogout} />}
-          />
+          <Route path="/logout" element={<Logout handleLogout={this.props.handleLogout} />} />
 
           <Route
             path="/login"
@@ -84,55 +81,22 @@ class IndexManager extends React.Component<IndexManagerProps> {
             }
           />
 
-          <Route
-            path="/forgot-password"
-            element={<ForgotPasswordForm isLoggedIn={this.props.isLoggedIn} />}
-          />
-          <Route
-            path="/signup/join"
-            element={<JoinSignup email={this.props.email} />}
-          />
-          <Route
-            path="/signup/create"
-            element={<CreateSignup isLoggedIn={this.props.isLoggedIn} />}
-          />
+          <Route path="/forgot-password" element={<ForgotPasswordForm isLoggedIn={this.props.isLoggedIn} />} />
+          <Route path="/signup/join" element={<JoinSignup email={this.props.email} />} />
+          <Route path="/signup/create" element={<CreateSignup isLoggedIn={this.props.isLoggedIn} />} />
           <Route path="/signup" element={<SignUpManager />} />
-          <Route
-            path="/terms"
-            element={<TermsOfService isLoggedIn={this.props.isLoggedIn} />}
-          />
-          <Route
-            path="/integrations"
-            element={<IntegrationsPage isLoggedIn={this.props.isLoggedIn} />}
-          />
+          <Route path="/terms" element={<TermsOfService isLoggedIn={this.props.isLoggedIn} />} />
+          <Route path="/integrations" element={<IntegrationsPage isLoggedIn={this.props.isLoggedIn} />} />
           <Route
             path="/scholarships/computer-science-education"
             element={<Scholarship isLoggedIn={this.props.isLoggedIn} />}
           />
-          <Route
-            path="/autograder"
-            element={<AutograderDetail isLoggedIn={this.props.isLoggedIn} />}
-          />
-          <Route
-            path="/faqs"
-            element={<FAQs isLoggedIn={this.props.isLoggedIn} />}
-          />
-          <Route
-            path="/privacy"
-            element={<PrivacyPolicy isLoggedIn={this.props.isLoggedIn} />}
-          />
-          <Route
-            path="/why-use-codepost"
-            element={<WhyUse isLoggedIn={this.props.isLoggedIn} />}
-          />
-          <Route
-            path="/about"
-            element={<AboutUs isLoggedIn={this.props.isLoggedIn} />}
-          />
-          <Route
-            path="/testimonials"
-            element={<AllTestimonials isLoggedIn={this.props.isLoggedIn} />}
-          />
+          <Route path="/autograder" element={<AutograderDetail isLoggedIn={this.props.isLoggedIn} />} />
+          <Route path="/faqs" element={<FAQs isLoggedIn={this.props.isLoggedIn} />} />
+          <Route path="/privacy" element={<PrivacyPolicy isLoggedIn={this.props.isLoggedIn} />} />
+          <Route path="/why-use-codepost" element={<WhyUse isLoggedIn={this.props.isLoggedIn} />} />
+          <Route path="/about" element={<AboutUs isLoggedIn={this.props.isLoggedIn} />} />
+          <Route path="/testimonials" element={<AllTestimonials isLoggedIn={this.props.isLoggedIn} />} />
 
           <Route
             path="/password-reset/:uid/:token"
@@ -144,41 +108,23 @@ class IndexManager extends React.Component<IndexManagerProps> {
             element={<PasswordReset message={'activate'} isLoggedIn={this.props.isLoggedIn} />}
           />
 
-          <Route
-            path="/invite/:sid/:token"
-            element={<ValidateInvite isLoggedIn={this.props.isLoggedIn} />}
-          />
+          <Route path="/invite/:sid/:token" element={<ValidateInvite isLoggedIn={this.props.isLoggedIn} />} />
 
           <Route path={`${CODE_DEMO}/`} element={null} />
 
           {/* Protected routes - show login form when accessed without authentication */}
-          <Route
-            path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
-            element={loginElement}
-          />
+          <Route path={`${STUDENT}/:courseName?/:period?/:assignmentName?`} element={loginElement} />
 
-          <Route
-            path={`${GRADER}/:courseName?/:period?/:assignmentName?/:panelName1?`}
-            element={loginElement}
-          />
+          <Route path={`${GRADER}/:courseName?/:period?/:assignmentName?/:panelName1?`} element={loginElement} />
 
-          <Route
-            path={`${ADMIN}/:courseName?/:period?/:panelName1?/:panelName2?`}
-            element={loginElement}
-          />
+          <Route path={`${ADMIN}/:courseName?/:period?/:panelName1?/:panelName2?`} element={loginElement} />
 
-          <Route
-            path={`${CODE}/:submissionId`}
-            element={loginElement}
-          />
+          <Route path={`${CODE}/:submissionId`} element={loginElement} />
 
           <Route path="/settings" element={loginElement} />
           <Route path="/organization/*" element={loginElement} />
 
-          <Route
-            path="*"
-            element={<NoMatch isLoggedIn={this.props.isLoggedIn} />}
-          />
+          <Route path="*" element={<NoMatch isLoggedIn={this.props.isLoggedIn} />} />
         </Routes>
       </div>
     );

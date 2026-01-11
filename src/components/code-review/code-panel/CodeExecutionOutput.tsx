@@ -142,10 +142,6 @@ const CodeExecutionOutput: React.FC<CodeExecutionOutputProps> = ({
     return seconds < 1 ? `${(seconds * 1000).toFixed(0)}ms` : `${seconds.toFixed(2)}s`;
   };
 
-
-
-
-
   return (
     <Card
       style={{
@@ -211,23 +207,23 @@ const CodeExecutionOutput: React.FC<CodeExecutionOutputProps> = ({
           // Tab 1: Image (Conditional)
           ...(hasImages
             ? [
-              {
-                key: 'plot',
-                label: (
-                  <span>
-                    <FileImageOutlined /> Image
-                    {outputImages && outputImages.length > 1 ? `s (${outputImages.length})` : ''}
-                  </span>
-                ),
-                children: (
-                  <div style={{ padding: '24px', backgroundColor: '#fff' }}>
-                    {outputImages && outputImages.length > 0
-                      ? outputImages.map((img, idx) => renderImage(img, idx, outputImages))
-                      : outputImage && renderImage(outputImage, 0, outputImages)}
-                  </div>
-                ),
-              },
-            ]
+                {
+                  key: 'plot',
+                  label: (
+                    <span>
+                      <FileImageOutlined /> Image
+                      {outputImages && outputImages.length > 1 ? `s (${outputImages.length})` : ''}
+                    </span>
+                  ),
+                  children: (
+                    <div style={{ padding: '24px', backgroundColor: '#fff' }}>
+                      {outputImages && outputImages.length > 0
+                        ? outputImages.map((img, idx) => renderImage(img, idx, outputImages))
+                        : outputImage && renderImage(outputImage, 0, outputImages)}
+                    </div>
+                  ),
+                },
+              ]
             : []),
           // Tab 2: Console Output
           {

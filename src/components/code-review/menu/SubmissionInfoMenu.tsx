@@ -7,6 +7,8 @@ import React, { useState } from 'react';
 
 import {
   AuditOutlined,
+  CalendarOutlined,
+  ClockCircleOutlined,
   CloseOutlined,
   HistoryOutlined,
   MailOutlined,
@@ -15,7 +17,24 @@ import {
 } from '@ant-design/icons';
 
 /* antd imports */
-import { Alert, Avatar, Divider, Input, message, Modal, Select, Switch, Tabs, Tag } from 'antd';
+import {
+  Alert,
+  Avatar,
+  Card,
+  Col,
+  Divider,
+  Input,
+  message,
+  Modal,
+  Row,
+  Select,
+  Space,
+  Switch,
+  Tabs,
+  Tag,
+  theme,
+  Typography,
+} from 'antd';
 
 /* other library imports */
 import moment from 'moment';
@@ -25,7 +44,7 @@ import ReactMarkdown from 'react-markdown';
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../../infrastructure/submission';
 
-import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
 import CPButton from '../../core/CPButton';
 import CPTooltip from '../../core/CPTooltip';
@@ -34,6 +53,7 @@ import { tooltips } from '../../core/tooltips';
 import { CodePostDate } from '../../utils/CodepostDate';
 
 const { confirm } = Modal;
+const { Text, Title } = Typography;
 
 /**********************************************************************************************************************/
 
@@ -63,15 +83,21 @@ interface ISubmissionInfoWriteProps {
   addLateDayCreditComment: any;
 }
 
-
 const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const { token } = theme.useToken();
+  // consoleThemes.dark is the object reference, consoleTheme is the current value
+  // In the context definition: consoleTheme: consoleThemes.light
+  // So strict equality works if references are preserved.
+  const isDark = consoleTheme === consoleThemes.dark;
 
   const [lateDaySelectValue, setLateDaySelectValue] = React.useState(
     props.submission !== undefined ? props.submission.lateDayCreditsUsed : 0,
   );
 
-  let submitted;
+  let submittedInfo;
+  let useLateDayCredits;
+
   if (props.submission !== undefined) {
     if (props.submission) {
       if (props.assignment.allowStudentUpload && props.assignment.uploadDueDate) {
@@ -80,11 +106,11 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
           props.submission.dateUploaded !== null &&
           Date.parse(props.submission.dateUploaded) > Date.parse(props.assignment.uploadDueDate) + two_hours;
 
-        const uploaded = moment(props.submission.dateUploaded);
+        // const uploaded = moment(props.submission.dateUploaded);
         const due = moment(props.assignment.uploadDueDate);
-        const daysLate = uploaded.diff(due, 'days') + 1;
-
-        let useLateDayCredits;
+        const daysLate = props.submission.dateUploaded
+          ? moment(props.submission.dateUploaded).diff(due, 'days') + 1
+          : 0;
 
         if (props.courseLateDayCreditsAllowable !== null && isLate) {
           const onChange = async (val: any) => {
@@ -96,14 +122,14 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
 
           const arr = [...Array(props.courseLateDayCreditsAllowable).keys(), props.courseLateDayCreditsAllowable];
           const content = (
-            <div>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
               <span>Use</span>
-              <span style={{ margin: '0px 4px' }}>
+              <span style={{ margin: '0px 8px' }}>
                 <Select
                   onChange={onChange}
                   value={lateDaySelectValue}
                   size="small"
-                  style={{ width: 50 }}
+                  style={{ width: 60 }}
                   disabled={props.submission.isFinalized}
                 >
                   {arr.map((index: number) => {
@@ -111,33 +137,61 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
                   })}
                 </Select>
               </span>
-              <span>Late Day Credits</span>
+              <span>Late Days</span>
             </div>
           );
 
           useLateDayCredits = (
-            <div className="submission-info__late-day-credits">
-              <Alert message={content} type="warning" />
+            <div className="submission-info__late-day-credits" style={{ marginTop: 12 }}>
+              <Alert message={content} type="warning" showIcon />
             </div>
           );
         }
 
-        submitted = (
-          <div>
-            <div>
-              Uploaded:{' '}
-              {props.submission.dateUploaded && <CodePostDate datetime={props.submission.dateUploaded} />}{' '}
-            </div>
-            <div>
-              Due: <CodePostDate datetime={props.assignment.uploadDueDate} />{' '}
-              {isLate ? (
-                <Tag color="volcano">
-                  LATE {daysLate} {daysLate === 1 ? 'DAY' : 'DAYS'}
-                </Tag>
-              ) : (
-                ''
-              )}
-            </div>
+        submittedInfo = (
+          <div
+            style={{
+              backgroundColor: consoleTheme.siderSubmenuTitleBg,
+              borderRadius: 8,
+              padding: 12,
+              border: consoleTheme.siderSubmenuBorder,
+            }}
+          >
+            <Row gutter={[16, 8]}>
+              <Col span={24}>
+                <Space align="start">
+                  <CalendarOutlined style={{ color: token.colorTextSecondary }} />
+                  <div>
+                    <Text type="secondary" style={{ fontSize: 11, display: 'block' }}>
+                      Uploaded
+                    </Text>
+                    {props.submission.dateUploaded ? (
+                      <CodePostDate datetime={props.submission.dateUploaded} />
+                    ) : (
+                      'Not uploaded'
+                    )}
+                  </div>
+                </Space>
+              </Col>
+              <Col span={24}>
+                <Space align="start">
+                  <ClockCircleOutlined style={{ color: token.colorTextSecondary }} />
+                  <div>
+                    <Text type="secondary" style={{ fontSize: 11, display: 'block' }}>
+                      Due Date
+                    </Text>
+                    <Space>
+                      <CodePostDate datetime={props.assignment.uploadDueDate} />
+                      {isLate && (
+                        <Tag color="volcano" style={{ margin: 0, fontSize: 10, lineHeight: '16px' }}>
+                          LATE {daysLate}d
+                        </Tag>
+                      )}
+                    </Space>
+                  </div>
+                </Space>
+              </Col>
+            </Row>
             {useLateDayCredits}
           </div>
         );
@@ -152,26 +206,46 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
     studentList = <Students submission={props.readOnlySubmission!} isAnonymous={false} />;
   }
 
-  // Check if students should see the grader
-  // For students, we trust the backend (props.readOnlySubmission.grader is filtered)
-  // For admins simulating students (readOnlySubmission undefined), we calculate permission manually
   const canSeeGrader =
     props.assignment.studentsCanSeeGraders === true ||
     (props.assignment.studentsCanSeeGraders === null && props.courseStudentsCanSeeGraders === true);
 
   const graderEmail = props.readOnlySubmission ? props.readOnlySubmission.grader : props.submission?.grader;
-
   const showGraderToStudent = props.isStudentMode && graderEmail && canSeeGrader;
 
   return (
-    <div id="submission-info" style={{ paddingLeft: '15px', paddingBottom: '10px' }}>
-      <span style={{ fontSize: '12px', color: '#111' }}>{submitted}</span>
-      <div style={{ fontSize: 12, overflowX: 'auto' }}>
-        <b style={{ color: consoleTheme.siderMenuItemColor }}>Students</b>: {studentList}
-        {props.submission !== undefined ? (
-          <div id="submission-grader">
-            <br />
-            <b style={{ color: consoleTheme.siderMenuItemColor }}>Grader</b>:{' '}
+    <div id="submission-info" style={{ padding: '0 15px 15px' }}>
+      <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+        {submittedInfo}
+
+        <div>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              color: token.colorTextSecondary,
+              marginBottom: 8,
+            }}
+          >
+            Students
+          </div>
+          {studentList}
+        </div>
+
+        {props.submission !== undefined && (
+          <div>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                color: token.colorTextSecondary,
+                marginBottom: 8,
+              }}
+            >
+              Grader
+            </div>
             <GraderInfo
               submission={props.submission}
               isCourseAdmin={props.isCourseAdmin}
@@ -179,12 +253,21 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
               updateGrader={props.updateGrader}
             />
           </div>
-        ) : null}
-        {/* Show grader to students when studentsCanSeeGraders is enabled */}
+        )}
+
         {showGraderToStudent && (
-          <div id="submission-grader-student">
-            <br />
-            <b style={{ color: consoleTheme.siderMenuItemColor }}>Grader</b>:{' '}
+          <div>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                color: token.colorTextSecondary,
+                marginBottom: 8,
+              }}
+            >
+              Grader
+            </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <Avatar
                 size="small"
@@ -193,33 +276,33 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
                 style={{ backgroundColor: consoleTheme.avatarBackground }}
               />
               <span style={{ width: '8px' }} />
-              <span
+              <Text
                 style={{
+                  flex: 1,
+                  minWidth: 0,
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  width: '80%',
                   color: consoleTheme.siderMenuItemColor,
                 }}
               >
                 {props.readOnlySubmission?.grader}
-              </span>
+              </Text>
             </div>
           </div>
         )}
+
         {props.readOnlySubmission !== undefined &&
-          props.submitStudentQuestion &&
-          props.assignment.allowRegradeRequests ? (
+        props.submitStudentQuestion &&
+        props.assignment.allowRegradeRequests ? (
           <StudentRegrade
             submission={props.readOnlySubmission}
             assignment={props.assignment}
             submitStudentQuestion={props.submitStudentQuestion}
             deleteStudentQuestion={props.deleteStudentQuestion}
           />
-        ) : (
-          <div />
-        )}
-      </div>
+        ) : null}
+      </Space>
     </div>
   );
 };
@@ -324,13 +407,14 @@ export const GraderInfo = (props: IGraderInfoProps) => {
             style={{ backgroundColor: consoleTheme.avatarBackground }}
           />
           <span style={{ width: '8px' }} />
-          <span
+          <Typography.Text
             onClick={toggleModal}
             style={{
+              flex: 1,
+              minWidth: 0,
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              width: '80%',
               textDecoration: 'underline',
               textDecorationColor: '#ccc',
               cursor: 'pointer',
@@ -339,14 +423,14 @@ export const GraderInfo = (props: IGraderInfoProps) => {
           >
             {props.submission.isFinalized ? (
               <CPTooltip title={tooltips.grade.subInfo.unfinalizeToAssign} placement="right">
-                <div>{props.submission.grader}</div>
+                <span>{props.submission.grader}</span>
               </CPTooltip>
             ) : (
               <CPTooltip title={tooltips.grade.subInfo.assignGrader} placement="right" hideThisOnHideTips={true}>
-                <div>{props.submission.grader}</div>
+                <span>{props.submission.grader}</span>
               </CPTooltip>
             )}
-          </span>
+          </Typography.Text>
         </div>
       );
     }
@@ -382,17 +466,18 @@ export const GraderInfo = (props: IGraderInfoProps) => {
           style={{ backgroundColor: consoleTheme.avatarBackground }}
         />
         <span style={{ width: '8px' }} />
-        <span
+        <Typography.Text
           style={{
+            flex: 1,
+            minWidth: 0,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            width: '80%',
             color: consoleTheme.siderMenuItemColor,
           }}
         >
           {props.submission.grader === undefined ? 'unassigned' : props.submission.grader}
-        </span>
+        </Typography.Text>
       </div>
     );
   }
@@ -413,10 +498,10 @@ export const Students = (props: {
 
   if (showStudents) {
     return (
-      <div style={{ color: consoleTheme.subheaderStudents }}>
+      <Space direction="vertical" size={4} style={{ width: '100%' }}>
         {props.submission.students!.map((student) => {
           return (
-            <div key={student} style={{ display: 'flex', alignItems: 'center', paddingBottom: '2px' }}>
+            <div key={student} style={{ display: 'flex', alignItems: 'center' }}>
               <Avatar
                 size="small"
                 icon={<UserOutlined />}
@@ -424,20 +509,22 @@ export const Students = (props: {
                 style={{ backgroundColor: consoleTheme.avatarBackground }}
               />
               <span style={{ width: '8px' }} />
-              <span
+              <Typography.Text
                 style={{
+                  flex: 1,
+                  minWidth: 0,
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  width: '80%',
+                  color: consoleTheme.subheaderStudents,
                 }}
               >
                 {student}
-              </span>
+              </Typography.Text>
             </div>
           );
         })}
-      </div>
+      </Space>
     );
   } else {
     if (props.submission.students === undefined) {
@@ -586,13 +673,28 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
           <div style={{ fontWeight: 600 }}>{deadline}</div>
         </div>
       );
+
       return (
-        <div>
-          <div style={buttonStyle}>
-            <CPButton cpType="secondary" icon={<MessageOutlined />} onClick={toggleModalVisible}>
-              Submit a regrade request
+        <Card
+          styles={{ body: { padding: 12 } }}
+          size="small"
+          variant="borderless"
+          style={{ backgroundColor: 'rgba(0,0,0,0.02)' }}
+        >
+          <Space direction="vertical" style={{ width: '100%' }} align="center">
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              Need clarification or a regrade?
+            </Typography.Text>
+            <CPButton
+              cpType="secondary"
+              size="small"
+              icon={<MessageOutlined />}
+              onClick={toggleModalVisible}
+              style={{ width: '100%' }}
+            >
+              Submit Request
             </CPButton>
-          </div>
+          </Space>
           <Modal
             onCancel={toggleModalVisible}
             open={isModalVisible}
@@ -621,7 +723,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
               <div />
             )}
           </Modal>
-        </div>
+        </Card>
       );
     }
     case QUESTION_STATUS.CLAIMED:

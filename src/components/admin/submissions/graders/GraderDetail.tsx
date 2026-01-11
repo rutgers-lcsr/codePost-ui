@@ -11,7 +11,6 @@ import { Breadcrumb, Typography } from 'antd';
 /* other library imports */
 import { Link, Route, Routes } from 'react-router-dom';
 
-
 /* codePost imports */
 import { AssignmentType, sortAssignments } from '../../../../infrastructure/assignment';
 import { SubmissionInfoType } from '../../../../infrastructure/submission';
@@ -89,14 +88,12 @@ const GraderDetail = (props: IProps) => {
             const graded = props.submissionsByAssignment[assignment.id];
 
             // Deduplicate submissions for stats calculation
-            const uniqueGraded = graded
-              ? Array.from(new Map(graded.map((s) => [s.id, s])).values())
-              : undefined;
+            const uniqueGraded = graded ? Array.from(new Map(graded.map((s) => [s.id, s])).values()) : undefined;
 
             const numFinalized = uniqueGraded
               ? uniqueGraded.filter((sub) => {
-                return sub.isFinalized;
-              }).length
+                  return sub.isFinalized;
+                }).length
               : 0;
 
             const numClaimed = uniqueGraded ? uniqueGraded.length : 0;
@@ -113,10 +110,7 @@ const GraderDetail = (props: IProps) => {
             return {
               key: assignment.name,
               assignment: (
-                <Link
-                  to={`${props.baseURL}/${props.grader}/${encodeForLink(assignment.name)}`}
-                  className="text-link"
-                >
+                <Link to={`${props.baseURL}/${props.grader}/${encodeForLink(assignment.name)}`} className="text-link">
                   <Typography.Text strong className="text-link">
                     {assignment.name}
                   </Typography.Text>

@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import Comment from './Comment';
+import { useHoveredCommentId } from './CommentHighlightContext';
 
 import { CommentType } from '../../../infrastructure/comment';
 
@@ -75,6 +76,8 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
   // Refs
   const wrapperRef = useRef<HTMLDivElement>(null);
   const prevPropsRef = useRef<ICommentsCoreProps & ICommentsEditProps>(props);
+
+  const hoveredCommentId = useHoveredCommentId();
 
   // Disabled: Calculate comment placements
   /* const calculateCommentPlacements = useCallback(
@@ -391,6 +394,13 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
       }
     }
   }, [props.comments, jumpToComment]);
+
+  // Handle scroll on hover
+  useEffect(() => {
+    if (hoveredCommentId !== null) {
+      jumpToComment(hoveredCommentId);
+    }
+  }, [hoveredCommentId, jumpToComment]);
 
   // Render
   const commentNodes = props.comments.map((comment: CommentType, index: number) => {

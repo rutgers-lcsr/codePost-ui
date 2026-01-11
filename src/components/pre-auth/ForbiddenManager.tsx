@@ -35,25 +35,13 @@ class ForbiddenManager extends React.Component<IndexManagerProps> {
     return (
       <div>
         <Routes>
-          <Route
-            path={`${STUDENT}/:courseName?/:period?/:assignmentName?`}
-            element={loginElement}
-          />
+          <Route path={`${STUDENT}/:courseName?/:period?/:assignmentName?`} element={loginElement} />
 
-          <Route
-            path={`${GRADER}/:courseName?/:period?/:assignmentName?/:panelName1?`}
-            element={loginElement}
-          />
+          <Route path={`${GRADER}/:courseName?/:period?/:assignmentName?/:panelName1?`} element={loginElement} />
 
-          <Route
-            path={`${ADMIN}/:courseName?/:period?/:panelName1?/:panelName2?`}
-            element={loginElement}
-          />
+          <Route path={`${ADMIN}/:courseName?/:period?/:panelName1?/:panelName2?`} element={loginElement} />
 
-          <Route
-            path={`${CODE}/:submissionId`}
-            element={loginElement}
-          />
+          <Route path={`${CODE}/:submissionId`} element={loginElement} />
 
           <Route path={'/settings'} element={loginElement} />
         </Routes>

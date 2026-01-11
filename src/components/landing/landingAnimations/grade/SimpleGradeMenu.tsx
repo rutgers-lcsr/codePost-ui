@@ -81,7 +81,7 @@ const SimpleGradeMenu = (props: { selectedKeys: string[]; secondFileDeduction: a
           </Menu.Item>
         </SubMenu>
       </Menu>
-    </div >
+    </div>
   );
 };
 

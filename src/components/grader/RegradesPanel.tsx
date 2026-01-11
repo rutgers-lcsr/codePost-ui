@@ -10,7 +10,6 @@ import { Switch } from 'antd';
 
 /* other library imports */
 
-
 /* codePost imports */
 import { Assignment, AssignmentType } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';

@@ -79,11 +79,7 @@ const TestsOverview = (props: IProps) => {
       edit: (
         <Link to={`${location.pathname}/${encodeForLink(assignment.name)}/edit`}>
           <Button loading={assignment.environment ? envBuildStatuses[assignment.environment] === 1 : false}>
-            {assignment.environment
-              ? envBuildStatuses[assignment.environment] === 1
-                ? 'Building'
-                : 'Edit'
-              : 'Create'}
+            {assignment.environment ? (envBuildStatuses[assignment.environment] === 1 ? 'Building' : 'Edit') : 'Create'}
           </Button>
         </Link>
       ),

@@ -6,13 +6,7 @@
 import * as React from 'react';
 import { useCallback, useMemo, useState } from 'react';
 
-import {
-  DisconnectOutlined,
-  EditOutlined,
-  MailOutlined,
-  ProfileOutlined,
-  UserDeleteOutlined,
-} from '@ant-design/icons';
+import { DisconnectOutlined, EditOutlined, MailOutlined, ProfileOutlined, UserDeleteOutlined } from '@ant-design/icons';
 
 /* style imports */
 import { Breadcrumb, Button, Empty, message, Modal, Select, Space, Spin, Tooltip } from 'antd';
@@ -237,11 +231,7 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
           <Space>
             {!hasActivated && (
               <Tooltip title="Send activation email">
-                <Button
-                  shape="circle"
-                  icon={<MailOutlined />}
-                  onClick={() => sendActivationEmail(studentEmail)}
-                />
+                <Button shape="circle" icon={<MailOutlined />} onClick={() => sendActivationEmail(studentEmail)} />
               </Tooltip>
             )}
             <Tooltip title="Open profile">
@@ -250,17 +240,20 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
               </Link>
             </Tooltip>
             <Tooltip title="Unenroll">
-              <Button
-                shape="circle"
-                icon={<UserDeleteOutlined />}
-                onClick={() => removeStudent(studentEmail)}
-              />
+              <Button shape="circle" icon={<UserDeleteOutlined />} onClick={() => removeStudent(studentEmail)} />
             </Tooltip>
           </Space>
         ),
       };
     });
-  }, [props.students, props.notActivated, props.sectionsByStudent, location.pathname, sendActivationEmail, removeStudent]);
+  }, [
+    props.students,
+    props.notActivated,
+    props.sectionsByStudent,
+    location.pathname,
+    sendActivationEmail,
+    removeStudent,
+  ]);
   const actions = useMemo(() => {
     if (props.students.length === 0) return [];
 

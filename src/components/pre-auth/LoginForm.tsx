@@ -73,8 +73,6 @@ const LoginForm: React.FC<ILoginFormProps> = ({
     }
   }, [email]);
 
-
-
   const handleKeyPress = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter') {
@@ -109,12 +107,7 @@ const LoginForm: React.FC<ILoginFormProps> = ({
         return (
           <div>
             <br />
-            <Alert
-              message="Error"
-              description={errorMsg}
-              type="error"
-              showIcon
-            />
+            <Alert message="Error" description={errorMsg} type="error" showIcon />
           </div>
         );
     }
@@ -163,8 +156,6 @@ const LoginForm: React.FC<ILoginFormProps> = ({
             </>
           )}
 
-
-
           {renderError(error)}
 
           <br />
@@ -172,29 +163,25 @@ const LoginForm: React.FC<ILoginFormProps> = ({
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             {step === 'email' && (
-              <CPButton
-                onClick={checkSSO}
-                cpType="primary"
-                loading={loading}
-                disabled={maintenanceMode || !email}
-              >
+              <CPButton onClick={checkSSO} cpType="primary" loading={loading} disabled={maintenanceMode || !email}>
                 Continue
               </CPButton>
             )}
 
             {step === 'password' && (
-              <CPButton
-                onClick={performLogin}
-                cpType="primary"
-                loading={loading}
-                disabled={maintenanceMode}
-              >
+              <CPButton onClick={performLogin} cpType="primary" loading={loading} disabled={maintenanceMode}>
                 Log In
               </CPButton>
             )}
 
             {step !== 'email' && (
-              <a onClick={() => { setStep('email'); setPassword(''); }} style={{ cursor: 'pointer' }}>
+              <a
+                onClick={() => {
+                  setStep('email');
+                  setPassword('');
+                }}
+                style={{ cursor: 'pointer' }}
+              >
                 Use a different email
               </a>
             )}

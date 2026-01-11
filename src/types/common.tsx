@@ -23,6 +23,7 @@ export enum USER_APP {
   Grader,
   CourseAdmin,
   SuperGrader,
+  RubricEditor,
 }
 
 export enum BUTTON_STATE {

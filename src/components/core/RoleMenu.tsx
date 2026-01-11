@@ -1,12 +1,7 @@
 import { Link } from 'react-router-dom';
 
-import {
-  AuditOutlined,
-  InfoCircleOutlined,
-  UserSwitchOutlined,
-  TeamOutlined
-} from '@ant-design/icons';
-import { PiStudentFill, PiChalkboardTeacherFill } from "react-icons/pi";
+import { AuditOutlined, InfoCircleOutlined, UserSwitchOutlined, TeamOutlined } from '@ant-design/icons';
+import { PiStudentFill, PiChalkboardTeacherFill } from 'react-icons/pi';
 
 import { Dropdown, theme } from 'antd';
 

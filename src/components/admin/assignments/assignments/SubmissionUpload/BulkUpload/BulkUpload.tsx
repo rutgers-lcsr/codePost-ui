@@ -1,4 +1,3 @@
-
 import { FC, useState, useEffect, useCallback } from 'react';
 import { Divider, Modal, Progress, Steps } from 'antd';
 import {
@@ -48,13 +47,15 @@ const BulkUpload: FC<IProps> = (props) => {
     uploadSubmission,
     updateSubmission,
     deleteSubmission,
-    course
+    course,
   } = props;
 
   const [protoSubmissions, setProtoSubmissions] = useState<IProtoSubmission[]>([]);
   const [studentMap, setStudentMap] = useState<{ [student: string]: STUDENT_STATUS }>({});
   const [uploadMap, setUploadMap] = useState<{ [student: string]: UPLOAD_STATUS }>({});
-  const [fileMap, setFileMap] = useState<{ [submitters: string]: { [fileName: string]: string | ArrayBuffer | null } }>({});
+  const [fileMap, setFileMap] = useState<{ [submitters: string]: { [fileName: string]: string | ArrayBuffer | null } }>(
+    {},
+  );
   const [status, setStatus] = useState<STATUS>(STATUS.NONE);
   const [numUploaded, setNumUploaded] = useState(0);
   const [numFiles, setNumFiles] = useState(0);
@@ -90,7 +91,6 @@ const BulkUpload: FC<IProps> = (props) => {
   }, [onCancel]);
 
   // clearFiles is available if needed for reset functionality
-
 
   const updateProtoSubmissions = useCallback((protos: IProtoSubmission[], nFiles: number, errors: string[]) => {
     setProtoSubmissions(protos);
@@ -164,19 +164,13 @@ const BulkUpload: FC<IProps> = (props) => {
     return Promise.all(promises);
   }, [students, protoSubmissions, submissions, deleteSubmission, updateSubmission]);
 
-
-
-
-
-
-
   // Revised readFiles to be more robust
   const performReadAndUpload = useCallback(async () => {
     // We set status READING
     setStatus(STATUS.READING);
 
     // Use a local variable to accumulate files to ensure we have the full data for upload
-    // BUT we also want to update state so UI shows progress if implemented? 
+    // BUT we also want to update state so UI shows progress if implemented?
     // Original UI has READING progress bar based on fileMap size.
     // So we MUST update state.
 
@@ -219,9 +213,9 @@ const BulkUpload: FC<IProps> = (props) => {
           }
         }
         // Update state incrementally if we want? Or just once at end is safer for now.
-        // Let's do once at end for simplicity and correctness of data flow. 
+        // Let's do once at end for simplicity and correctness of data flow.
         // The progress bar for reading might jump to 100%, but it's safer.
-      })
+      }),
     );
 
     setFileMap(localFileMap);
@@ -251,11 +245,21 @@ const BulkUpload: FC<IProps> = (props) => {
 
       await performUploadWithMap(localFileMap);
     }
-
-  }, [protoSubmissions, numFiles, overwriteMode, handleOverwrite, uploadSubmission, assignment, updateSubmission, deleteSubmission]);
+  }, [
+    protoSubmissions,
+    numFiles,
+    overwriteMode,
+    handleOverwrite,
+    uploadSubmission,
+    assignment,
+    updateSubmission,
+    deleteSubmission,
+  ]);
 
   // Upload with explicit map
-  const performUploadWithMap = async (currentFileMap: { [submitters: string]: { [fileName: string]: string | ArrayBuffer | null } }) => {
+  const performUploadWithMap = async (currentFileMap: {
+    [submitters: string]: { [fileName: string]: string | ArrayBuffer | null };
+  }) => {
     const toUpload = overwriteMode
       ? [...protoSubmissions] // Shallow copy to allow mutation (pop)
       : protoSubmissions.filter((el) => !el.isCollision);
@@ -282,7 +286,9 @@ const BulkUpload: FC<IProps> = (props) => {
         .then(() => {
           setUploadMap((prev) => {
             const next = { ...prev };
-            submission.students.forEach((student) => { next[student] = UPLOAD_STATUS.SUCCESS; });
+            submission.students.forEach((student) => {
+              next[student] = UPLOAD_STATUS.SUCCESS;
+            });
             return next;
           });
           setNumUploaded((prev) => prev + 1);
@@ -297,7 +303,9 @@ const BulkUpload: FC<IProps> = (props) => {
         .catch(() => {
           setUploadMap((prev) => {
             const next = { ...prev };
-            submission.students.forEach((student) => { next[student] = UPLOAD_STATUS.SUCCESS; });
+            submission.students.forEach((student) => {
+              next[student] = UPLOAD_STATUS.SUCCESS;
+            });
             return next;
           });
 
@@ -329,19 +337,19 @@ const BulkUpload: FC<IProps> = (props) => {
     performReadAndUpload();
   }, [performReadAndUpload]);
 
-  const processSubmissions = useCallback(async (
-    acceptedFiles: codePostFile[],
-    getStudentsFromFile: (file: IProtoFileUpload) => string[],
-  ) => {
-    await processSubmissionsFromFiles(
-      acceptedFiles,
-      students,
-      studentMap,
-      getStudentsFromFile,
-      updateProtoSubmissions,
-    );
-    setStatus(STATUS.UPLOADED);
-  }, [students, studentMap, updateProtoSubmissions]);
+  const processSubmissions = useCallback(
+    async (acceptedFiles: codePostFile[], getStudentsFromFile: (file: IProtoFileUpload) => string[]) => {
+      await processSubmissionsFromFiles(
+        acceptedFiles,
+        students,
+        studentMap,
+        getStudentsFromFile,
+        updateProtoSubmissions,
+      );
+      setStatus(STATUS.UPLOADED);
+    },
+    [students, studentMap, updateProtoSubmissions],
+  );
 
   // Render logic...
   // Use status state to determine content
@@ -352,23 +360,18 @@ const BulkUpload: FC<IProps> = (props) => {
   }
 
   // Title content
-  const titleContent = mode && mode !== 'more' ? (
-    <span>
-      <img src={INTEGRATIONS[mode].logo} style={{ width: '25px', marginRight: 5, marginBottom: 3 }} alt="" />
-      <span style={{ color: colors.brandPrimary }}>
-        {mode.charAt(0).toUpperCase() + mode.slice(1)} import:
-      </span>{' '}
-      {assignment.name}
-    </span>
-  ) : (
-    <span>Upload Submissions: {assignment.name}</span>
-  );
+  const titleContent =
+    mode && mode !== 'more' ? (
+      <span>
+        <img src={INTEGRATIONS[mode].logo} style={{ width: '25px', marginRight: 5, marginBottom: 3 }} alt="" />
+        <span style={{ color: colors.brandPrimary }}>{mode.charAt(0).toUpperCase() + mode.slice(1)} import:</span>{' '}
+        {assignment.name}
+      </span>
+    ) : (
+      <span>Upload Submissions: {assignment.name}</span>
+    );
 
-  const stepsItems = [
-    { title: 'Upload' },
-    { title: 'Review' },
-    { title: 'Save' },
-  ];
+  const stepsItems = [{ title: 'Upload' }, { title: 'Review' }, { title: 'Save' }];
 
   let stepNumber = 1;
   if (status === STATUS.NONE) stepNumber = 0;
@@ -387,7 +390,9 @@ const BulkUpload: FC<IProps> = (props) => {
             <div>
               <BulkUploadHeader
                 showImportOptions={showImportOptions}
-                toggleImportOptions={() => { setShowImportOptions(true); }}
+                toggleImportOptions={() => {
+                  setShowImportOptions(true);
+                }}
               />
               <Divider />
             </div>
@@ -423,8 +428,8 @@ const BulkUpload: FC<IProps> = (props) => {
       />
     );
   } else if (status === STATUS.READING) {
-    // Since we read in one go without state updates in the loop, progress will change from 0 to 100 fast? 
-    // Actually I removed intermediate updates for fileMap. 
+    // Since we read in one go without state updates in the loop, progress will change from 0 to 100 fast?
+    // Actually I removed intermediate updates for fileMap.
     // So readFiles progress might just be 0 until done.
     // That's acceptable for robustness.
     const readFilesCount = Object.keys(fileMap).reduce((acc, el) => {
@@ -434,7 +439,11 @@ const BulkUpload: FC<IProps> = (props) => {
 
     content = (
       <div>
-        Reading files: &nbsp; <Progress percent={numFiles > 0 ? parseFloat(((readFilesCount / numFiles) * 100).toFixed(0)) : 0} size="small" />
+        Reading files: &nbsp;{' '}
+        <Progress
+          percent={numFiles > 0 ? parseFloat(((readFilesCount / numFiles) * 100).toFixed(0)) : 0}
+          size="small"
+        />
         Uploading submissions: &nbsp; <Progress percent={0} size="small" />
       </div>
     );
@@ -444,15 +453,15 @@ const BulkUpload: FC<IProps> = (props) => {
         Reading files: &nbsp; <Progress percent={100} size="small" />
         Uploading submissions: &nbsp;
         <Progress
-          percent={protoSubmissions.length > 0 ? parseFloat(((numUploaded / protoSubmissions.length) * 100).toFixed(0)) : 0}
+          percent={
+            protoSubmissions.length > 0 ? parseFloat(((numUploaded / protoSubmissions.length) * 100).toFixed(0)) : 0
+          }
           size="small"
         />
       </div>
     );
   } else if (status === STATUS.COMPLETE) {
-    content = (
-      <BulkUploadComplete protoSubmissions={protoSubmissions} uploadMap={uploadMap} />
-    );
+    content = <BulkUploadComplete protoSubmissions={protoSubmissions} uploadMap={uploadMap} />;
   }
 
   let footer;
@@ -485,7 +494,7 @@ const BulkUpload: FC<IProps> = (props) => {
       <Steps
         size="small"
         current={stepNumber}
-        items={stepsItems.map(item => ({ key: item.title, title: item.title }))}
+        items={stepsItems.map((item) => ({ key: item.title, title: item.title }))}
       />
       <br />
       {content}

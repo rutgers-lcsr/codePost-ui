@@ -15,6 +15,8 @@ interface IHighlightProps {
   className: string;
   text: string;
   onHighlightClick: (e: React.MouseEvent, commentId: number) => void;
+  onMouseEnter?: (commentId: number) => void;
+  onMouseLeave?: (commentId: number) => void;
 }
 
 const Highlight = (props: IHighlightProps) => {
@@ -65,14 +67,22 @@ const Highlight = (props: IHighlightProps) => {
       // When hovering over a highlight with multiple comments, set the first one as hovered
       // This enables bidirectional highlighting with the comment panel
       if (commentIDs.length > 0) {
-        setHoveredCommentId(commentIDs[0]);
+        if (props.onMouseEnter) {
+          props.onMouseEnter(commentIDs[0]);
+        } else {
+          setHoveredCommentId(commentIDs[0]);
+        }
       }
     };
 
     onMouseLeave = (_: React.MouseEvent) => {
       // Clear hover state when mouse leaves
       if (commentIDs.length > 0 && commentIDs.includes(hoveredCommentId || -1)) {
-        setHoveredCommentId(null);
+        if (props.onMouseLeave) {
+          props.onMouseLeave(commentIDs[0]);
+        } else {
+          setHoveredCommentId(null);
+        }
       }
     };
 
