@@ -58,8 +58,9 @@ const LandingHero = () => {
         style={{
           width: '100%',
         }}
-        className={`landing__heroButtons display-flex align-items-center justify-content-${windowSize.width < landingVars.breakpoints.hero ? 'center' : 'flex-start'
-          }`}
+        className={`landing__heroButtons display-flex align-items-center justify-content-${
+          windowSize.width < landingVars.breakpoints.hero ? 'center' : 'flex-start'
+        }`}
       >
         <Link to="/signup">
           <CPButton
@@ -105,8 +106,9 @@ const LandingHero = () => {
       style={{
         width: '100%',
       }}
-      className={`display-flex align-items-center justify-content-center flex-direction-${windowSize.width < landingVars.breakpoints.hero ? 'column' : 'row'
-        }`}
+      className={`display-flex align-items-center justify-content-center flex-direction-${
+        windowSize.width < landingVars.breakpoints.hero ? 'column' : 'row'
+      }`}
       id="Hero"
     >
       <div style={{ maxWidth: landingVars.maxWidths.heroText }}>{hero}</div>

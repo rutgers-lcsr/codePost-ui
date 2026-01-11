@@ -5,9 +5,35 @@
   overflow: hidden;
   white-space: nowrap;
 
+
+
   &--code {
     vertical-align: top;
     // Scrolling handled by inline styles in CodePanelLayout
+    padding: 10px 10px 20px 20px;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    // Modern scrollbar styling - Floating Pill Design
+    &::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.4);
+      }
+    }
   }
 
   &--comments {

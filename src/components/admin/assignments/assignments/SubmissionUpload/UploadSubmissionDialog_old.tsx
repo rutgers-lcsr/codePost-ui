@@ -97,18 +97,18 @@ interface IUploadSubmissionDialogProps {
     };
   };
   uploadSubmission:
-  | ((
-    assignment: AssignmentStudentType,
-    partners: string[],
-    files: FileType[],
-    sendConfirmationEmail: boolean,
-  ) => Promise<StudentSubmissionType>)
-  | ((
-    assignment: AssignmentType,
-    partners: string[],
-    files: FileType[],
-    sendConfirmationEmail: boolean,
-  ) => Promise<SubmissionInfoType>);
+    | ((
+        assignment: AssignmentStudentType,
+        partners: string[],
+        files: FileType[],
+        sendConfirmationEmail: boolean,
+      ) => Promise<StudentSubmissionType>)
+    | ((
+        assignment: AssignmentType,
+        partners: string[],
+        files: FileType[],
+        sendConfirmationEmail: boolean,
+      ) => Promise<SubmissionInfoType>);
 
   disableStudentSelect?: boolean;
   onSuccess?: (newSubmissionID: number) => void;
@@ -196,10 +196,10 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
 
   public toggleState =
     (key: keyof IUploadSubmissionDialogState) =>
-      (prevState: IUploadSubmissionDialogState): IUploadSubmissionDialogState => ({
-        ...prevState,
-        [key]: !prevState[key],
-      });
+    (prevState: IUploadSubmissionDialogState): IUploadSubmissionDialogState => ({
+      ...prevState,
+      [key]: !prevState[key],
+    });
 
   public getState = (key: keyof IUploadSubmissionDialogState): any => {
     return this.state[key];
@@ -825,8 +825,9 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
             <Spin size="large" />
             <br />
             <br />
-            <Typography.Title level={4}>{`Uploading your files${this.state.loadingTests ? ' and running tests...' : ''
-              }`}</Typography.Title>
+            <Typography.Title level={4}>{`Uploading your files${
+              this.state.loadingTests ? ' and running tests...' : ''
+            }`}</Typography.Title>
           </div>
         );
         break;
@@ -995,9 +996,9 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
           sendMeAConfirmationEmailCheckbox = (
             <span key="sendMeAConfirmationEmailCheckbox">
               {this.state.selectedAssignment &&
-                this.state.selectedAssignment.uploadDueDate &&
-                dueDatePassed(this.state.selectedAssignment.uploadDueDate) &&
-                !hideDueDate ? (
+              this.state.selectedAssignment.uploadDueDate &&
+              dueDatePassed(this.state.selectedAssignment.uploadDueDate) &&
+              !hideDueDate ? (
                 <Tag color="volcano">Due Date Passed</Tag>
               ) : null}
               <Checkbox
@@ -1067,8 +1068,8 @@ class UploadSubmissionDialog extends React.Component<IUploadSubmissionDialogProp
                 to={
                   this.props.course
                     ? `/admin/${encodeForLink(this.props.course.name)}/${encodeForLink(
-                      this.props.course.period,
-                    )}/roster/students`
+                        this.props.course.period,
+                      )}/roster/students`
                     : ''
                 }
               >

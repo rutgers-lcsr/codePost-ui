@@ -58,8 +58,9 @@ const LandingHero = () => {
         style={{
           width: '100%',
         }}
-        className={`landing__heroButtons display-flex ${windowSize.width < landingVars.breakpoints.removeModule ? 'flex-direction-column' : ''
-          } align-items-center justify-content-center`}
+        className={`landing__heroButtons display-flex ${
+          windowSize.width < landingVars.breakpoints.removeModule ? 'flex-direction-column' : ''
+        } align-items-center justify-content-center`}
       >
         <Link to="/signup/create">
           <CPButton style={buttonStyle} cpType="primary">

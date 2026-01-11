@@ -97,7 +97,7 @@ const RubricCategoryUI: React.FC<{
 
         /* Accessors and Handlers */
         const currentComment = thisComment || rubricComment;
-        const currentPointDelta = -currentComment.pointDelta;
+        const currentPointDelta = currentComment.pointDelta;
 
         // Handlers
         const onChangeText = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

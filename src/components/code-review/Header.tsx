@@ -60,7 +60,7 @@ import {
   pointsPerCategoryWithCaps,
 } from './codeConsoleUtils';
 
-import useHotkeys, { F_KEY, MINUS_KEY, PLUS_KEY, P_KEY, V_KEY } from './useHotkeys';
+import useHotkeys, { F_KEY, MINUS_KEY, PLUS_KEY, P_KEY } from './useHotkeys';
 
 import useWindowSize from '../core/useWindowSize';
 
@@ -802,9 +802,6 @@ interface IHeaderMenuProps {
   claimSubmission: () => void;
   isStudent: boolean;
   isDemo?: boolean;
-  hasExplanations: boolean;
-  showExplanations: boolean;
-  toggleShowExplanations: () => void;
   isAdmin: boolean;
   course?: CourseType;
   assignment: AssignmentType;
@@ -814,7 +811,6 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
   useHotkeys(P_KEY, props.claimSubmission, true);
-  useHotkeys(V_KEY, props.toggleShowExplanations, true, !props.hasExplanations);
 
   const groupStyle = {
     padding: '5px 20px',
@@ -876,17 +872,7 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
           },
         ]
       : []),
-    ...(props.isStudent || !props.hasExplanations
-      ? []
-      : [
-          {
-            key: 'explanations',
-            label: `Show rubric comment ${props.showExplanations ? 'text' : ' explanations'} [${osControlKey()} shift v]`,
-            style: itemStyle,
-            className: 'header-menu',
-            onClick: props.toggleShowExplanations,
-          },
-        ]),
+
     {
       key: 'setting:3',
       label: 'Help! (talk to a human from codePost)',

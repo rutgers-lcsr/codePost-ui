@@ -92,9 +92,14 @@
     height: auto !important;
     line-height: 15.75px !important;
     letter-spacing: -0.05px !important;
-    padding: 4px 10px 4px 26px !important;
+    padding: 0 !important;
     overflow: visible;
     white-space: pre-wrap;
+    transition: background-color 0.15s ease;
+
+    &:has(.rubric-row--active):hover {
+      background-color: rgba(36, 190, 133, 0.15) !important;
+    }
 
     .ant-input {
       font-size: 12px;
@@ -102,10 +107,11 @@
     }
 
     .rubric-row {
+      cursor: pointer;
+      padding: 8px 10px 8px 16px;
+
       &--active {
-        &:hover {
-          color: $brandPrimary !important;
-        }
+        // Hover handled by parent .ant-menu-item
       }
 
       &--inactive {
@@ -113,6 +119,7 @@
           .overlay {
             opacity: 1;
           }
+
           color: transparent;
           text-shadow: rgba(0, 0, 0, 0.5) 0px 0px 5px;
         }
@@ -132,6 +139,11 @@
         align-items: flex-start;
         justify-content: space-between;
       }
+
+      &-cursored {
+        background-color: rgba(36, 190, 133, 0.2);
+        border-left: 2px solid $brandPrimary;
+      }
     }
   }
 
@@ -139,7 +151,7 @@
     display: table;
     white-space: pre-wrap;
 
-    > div {
+    >div {
       &:nth-of-type(1) {
         display: table-cell;
         min-width: 100px;
@@ -171,6 +183,7 @@
     .ant-input-group-addon {
       background-color: #323435 !important;
     }
+
     input {
       background-color: #18191b !important;
       color: rgba(255, 255, 255, 0.9);
@@ -206,6 +219,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -217,6 +231,7 @@
     opacity: 1;
     transform: translateY(0);
   }
+
   to {
     opacity: 0;
     transform: translateY(10px);

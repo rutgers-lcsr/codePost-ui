@@ -8,8 +8,6 @@ import * as React from 'react';
 /* other library imports */
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
-
-
 /* codePost imports */
 
 /* API library */
@@ -45,8 +43,6 @@ export interface IComponentProps extends IComponentManagerProps {
   currentCourse?: CourseType;
 }
 
-
-
 const formURLforLink = (baseURL: string, course: CourseType, page?: string) => {
   const base = `${baseURL}/${encodeForLink(course.name)}/${encodeForLink(course.period)}`;
   return page !== undefined ? `${base}/${page}` : base;
@@ -66,9 +62,7 @@ const ComponentManager = (
       const found = props.initialCourses.find((course: CourseType) => course.id === storedID);
       if (found !== undefined) {
         let dPage =
-          typeof defaultPage === 'string' || typeof defaultPage === 'undefined'
-            ? defaultPage
-            : defaultPage(found);
+          typeof defaultPage === 'string' || typeof defaultPage === 'undefined' ? defaultPage : defaultPage(found);
 
         if (location.pathname === '/admin/billing') {
           dPage = 'billing';
@@ -83,9 +77,7 @@ const ComponentManager = (
         return b.id - a.id;
       })[0];
       let dPage =
-        typeof defaultPage === 'string' || typeof defaultPage === 'undefined'
-          ? defaultPage
-          : defaultPage(lastResort);
+        typeof defaultPage === 'string' || typeof defaultPage === 'undefined' ? defaultPage : defaultPage(lastResort);
 
       if (location.pathname === '/admin/billing') {
         dPage = 'billing';

@@ -13,22 +13,22 @@ interface IProps {
 }
 
 const RubricFileDownload: FC<IProps> = ({ assignment, rubricCategories, rubricComments, isDisabled }) => {
-  const getNestedRubricForDownload = useCallback((
-    categories: RubricCategoryType[],
-    comments: IRubricCategoryToRubricCommentsMap,
-  ) => {
-    return categories.map((cat) => ({
-      name: cat.name,
-      pointLimit: cat.pointLimit,
-      rubricComments: comments[cat.id].map((comment) => ({
-        text: comment.text,
-        pointDelta: comment.pointDelta,
-        sortKey: comment.sortKey,
-        explanation: comment.explanation,
-        instructionText: comment.instructionText,
-      })),
-    }));
-  }, []);
+  const getNestedRubricForDownload = useCallback(
+    (categories: RubricCategoryType[], comments: IRubricCategoryToRubricCommentsMap) => {
+      return categories.map((cat) => ({
+        name: cat.name,
+        pointLimit: cat.pointLimit,
+        rubricComments: comments[cat.id].map((comment) => ({
+          text: comment.text,
+          pointDelta: comment.pointDelta,
+          sortKey: comment.sortKey,
+          explanation: comment.explanation,
+          instructionText: comment.instructionText,
+        })),
+      }));
+    },
+    [],
+  );
 
   const downloadRubric = useCallback(() => {
     const rubric = getNestedRubricForDownload(rubricCategories, rubricComments);

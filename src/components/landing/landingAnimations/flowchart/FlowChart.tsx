@@ -146,9 +146,7 @@ const FlowNode = (props: FlowNodeProps) => {
       {!props.isCategory &&
         (() => {
           const IconComponent = iconMap[props.icon];
-          return IconComponent ? (
-            <IconComponent style={{ color: '#02261e', fontSize: 20, marginRight: 5 }} />
-          ) : null;
+          return IconComponent ? <IconComponent style={{ color: '#02261e', fontSize: 20, marginRight: 5 }} /> : null;
         })()}
       <div style={{ maxWidth: 60, minWidth: 60 }}>{props.title}</div>
     </div>

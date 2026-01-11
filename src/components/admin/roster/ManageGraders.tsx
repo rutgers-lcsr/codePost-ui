@@ -6,16 +6,10 @@
 import * as React from 'react';
 import { useState, useMemo, useCallback } from 'react';
 
-import {
-  DisconnectOutlined,
-  EditOutlined,
-  MailOutlined,
-  ProfileOutlined,
-  UserDeleteOutlined,
-} from '@ant-design/icons';
+import { DisconnectOutlined, EditOutlined, MailOutlined, ProfileOutlined, UserDeleteOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Button, Empty, message, Modal, Space, Switch, Tooltip } from 'antd';
+import { Breadcrumb, Button, Empty, message, Modal, Space, Popconfirm, Tooltip } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -48,6 +42,7 @@ export interface IManageGradersProps {
   students: string[];
   graders: string[];
   superGraders: string[];
+  rubricEditors: string[];
   admins: string[];
   sections: SectionType[];
   currentCourse: CourseType;
@@ -67,12 +62,7 @@ export interface IManageGradersProps {
 }
 
 const ManageGraders: React.FC<IManageGradersProps> = (props) => {
-  const [activeGrader, setActiveGraderState] = useState<string>('');
   const location = useLocation();
-
-  const setActiveGrader = (grader: string) => {
-    setActiveGraderState(grader);
-  };
 
   const sendActivationEmail = useCallback(
     (grader: string) => {
@@ -105,6 +95,21 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
       } else {
         props.updateRoster([], [grader], USER_APP.SuperGrader).then(() => {
           message.success(`${grader} is no longer a supergrader`);
+        });
+      }
+    },
+    [props.updateRoster],
+  );
+
+  const toggleRubricEditor = useCallback(
+    (grader: string, include: boolean) => {
+      if (include) {
+        props.updateRoster([grader], [], USER_APP.RubricEditor).then(() => {
+          message.success(`${grader} is now a rubric editor`);
+        });
+      } else {
+        props.updateRoster([], [grader], USER_APP.RubricEditor).then(() => {
+          message.success(`${grader} is no longer a rubric editor`);
         });
       }
     },
@@ -217,6 +222,18 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
         sorter: (a: any, b: any) => (a.superGrader === b.superGrader ? 0 : a.superGrader ? -1 : 1),
       },
       {
+        title: (
+          <div>
+            Rubric Editor{' '}
+            <CPTooltip title="Rubric editors can edit the course rubric" infoIcon={true} hideThisOnHideTips={true} />
+          </div>
+        ),
+        dataIndex: 'rubricEditorStatus',
+        key: 'rubricEditorStatus',
+        align: aligner,
+        sorter: (a: any, b: any) => (a.isRubricEditor === b.isRubricEditor ? 0 : a.isRubricEditor ? -1 : 1),
+      },
+      {
         title: 'Actions',
         dataIndex: 'actions',
         key: 'actions',
@@ -226,32 +243,60 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
 
     data = props.graders.map((graderEmail) => {
       const hasActivated = props.notActivated.indexOf(graderEmail) === -1;
-      let statusElement;
-      if (graderEmail === activeGrader) {
-        statusElement = (
-          <div>
-            <Switch
-              checked={props.superGraders.includes(graderEmail)}
-              onChange={(checked) => toggleSuperGrader(graderEmail, checked)}
-            />
-            &nbsp;&nbsp;
-            <EditOutlined onClick={() => setActiveGrader('')} />
-          </div>
-        );
-      } else {
-        statusElement = (
-          <div>
-            <Switch checked={props.superGraders.includes(graderEmail)} disabled={true} />
-            &nbsp;&nbsp;
-            <EditOutlined onClick={() => setActiveGrader(graderEmail)} />
-          </div>
-        );
-      }
+      const isSuperGrader = props.superGraders.includes(graderEmail);
+
+      const statusElement = isSuperGrader ? (
+        <Popconfirm
+          title="Demote from Supergrader?"
+          onConfirm={() => toggleSuperGrader(graderEmail, false)}
+          okText="Demote"
+          cancelText="Cancel"
+        >
+          <Button danger size="small">
+            Demote
+          </Button>
+        </Popconfirm>
+      ) : (
+        <Popconfirm
+          title="Promote to Supergrader?"
+          onConfirm={() => toggleSuperGrader(graderEmail, true)}
+          okText="Promote"
+          cancelText="Cancel"
+        >
+          <Button size="small">Promote</Button>
+        </Popconfirm>
+      );
+
+      const isRubricEditor = props.rubricEditors.includes(graderEmail);
+      const rubricEditorStatusElement = isRubricEditor ? (
+        <Popconfirm
+          title="Remove Rubric Editor access?"
+          onConfirm={() => toggleRubricEditor(graderEmail, false)}
+          okText="Remove"
+          cancelText="Cancel"
+        >
+          <Button danger size="small">
+            Remove
+          </Button>
+        </Popconfirm>
+      ) : (
+        <Popconfirm
+          title="Grant Rubric Editor access?"
+          onConfirm={() => toggleRubricEditor(graderEmail, true)}
+          okText="Grant"
+          cancelText="Cancel"
+        >
+          <Button size="small">Grant</Button>
+        </Popconfirm>
+      );
+
       return {
         key: graderEmail,
         grader: graderEmail,
         status: statusElement,
-        superGrader: props.superGraders.includes(graderEmail),
+        superGrader: isSuperGrader,
+        rubricEditorStatus: rubricEditorStatusElement,
+        isRubricEditor: isRubricEditor,
         actions: (
           <Space>
             {!hasActivated && (

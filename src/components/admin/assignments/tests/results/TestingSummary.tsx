@@ -101,7 +101,6 @@ export const TestingSummary = (props: IProps) => {
     fetchData();
   }, [props.currentAssignment && props.currentAssignment.id]);
 
-
   // ******************************* API / State change functions  *******************************
 
   const runAllCallback = () => {
@@ -159,17 +158,17 @@ export const TestingSummary = (props: IProps) => {
     !props.isAdmin || !props.match
       ? []
       : [
-        <RunAllTests
-          numSubmissions={props.submissions.length}
-          testCasesByCategory={testCasesByCategory}
-          runAllSubmissions={runAllSubmissions}
-          assignment={props.currentAssignment}
-          env={env}
-        />,
-        <Button type="primary">
-          <Link to={location.pathname.replace(/\/results.*$/, '/edit')}>Edit tests</Link>
-        </Button>,
-      ];
+          <RunAllTests
+            numSubmissions={props.submissions.length}
+            testCasesByCategory={testCasesByCategory}
+            runAllSubmissions={runAllSubmissions}
+            assignment={props.currentAssignment}
+            env={env}
+          />,
+          <Button type="primary">
+            <Link to={location.pathname.replace(/\/results.*$/, '/edit')}>Edit tests</Link>
+          </Button>,
+        ];
 
   console.log(props.fullSubmissionsLoadComplete);
 

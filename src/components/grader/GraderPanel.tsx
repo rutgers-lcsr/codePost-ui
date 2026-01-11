@@ -5,14 +5,12 @@
 /* react imports */
 import * as React from 'react';
 
-
 /* antd imports */
 import { Breadcrumb, Table } from 'antd';
 
 /* other library imports */
 
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
-
 
 /* codePost imports */
 import CPAdminDetail from '../admin/other/CPAdminDetail';

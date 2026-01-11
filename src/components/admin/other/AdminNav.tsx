@@ -64,13 +64,12 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
 
     if (location.pathname.startsWith(courseBaseURL)) {
       const relativePath = location.pathname.substring(courseBaseURL.length);
-      const parts = relativePath.split('/').filter(p => p);
+      const parts = relativePath.split('/').filter((p) => p);
       if (parts.length > 0) panel1 = parts[0];
       if (parts.length > 1) panel2 = parts[1];
     }
 
-    const routeString = `${panel1}/${panel2 !== undefined ? panel2 : ''
-      }`;
+    const routeString = `${panel1}/${panel2 !== undefined ? panel2 : ''}`;
 
     // Check for exact match or prefix match for deep routes (e.g. /submissions/by_grader/graderId)
     // The key in routes is "submissions/by_grader", so we want to match that.
@@ -83,7 +82,7 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
     // default to /assignments
     if (matchKey === '-1') {
       // If we are at /admin/course/period/assignments/overview, routeString is assignments/overview.
-      // If at /admin/course/period, routeString is /. 
+      // If at /admin/course/period, routeString is /.
       return 'assignments/overview';
     } else {
       return routeString;

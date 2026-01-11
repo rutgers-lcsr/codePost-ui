@@ -7,15 +7,13 @@ import * as React from 'react';
 
 /* antd imports */
 
-import { AuditOutlined, TeamOutlined, } from '@ant-design/icons';
+import { AuditOutlined, TeamOutlined } from '@ant-design/icons';
 import { Typography, theme, Card, Row, Col } from 'antd';
-
-
 
 /* other library imports */
 import { Link } from 'react-router-dom';
-import { PiStudentFill, PiChalkboardTeacherFill } from "react-icons/pi";
-import { GrUserAdmin } from "react-icons/gr";
+import { PiStudentFill, PiChalkboardTeacherFill } from 'react-icons/pi';
+import { GrUserAdmin } from 'react-icons/gr';
 /* codePost imports */
 import PeripheralPageLayout from './layouts/PeripheralPageLayout';
 
@@ -123,9 +121,7 @@ const Home = (props: IProps) => {
           <Typography.Title level={2} style={{ margin: 0 }}>
             Welcome Back!
           </Typography.Title>
-          <Typography.Text style={{ fontSize: '16px' }}>
-            Select a console to continue
-          </Typography.Text>
+          <Typography.Text style={{ fontSize: '16px' }}>Select a console to continue</Typography.Text>
         </div>
 
         <Row gutter={[24, 24]} justify="center">

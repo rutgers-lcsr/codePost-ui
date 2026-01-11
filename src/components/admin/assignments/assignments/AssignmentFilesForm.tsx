@@ -164,7 +164,8 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
           <p>
             "Assignment Files" are strictly for text-based source code.
             <br />
-            To provide binary files to students, please upload them to <b>Assignment Datasets</b> in the Resources tab instead.
+            To provide binary files to students, please upload them to <b>Assignment Datasets</b> in the Resources tab
+            instead.
           </p>
         </div>
       ),
@@ -293,7 +294,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
           const content = await zipEntry.async('text');
 
           if (hasNullBytes(content)) {
-            // Skip binary files in zip silently or with a toast? 
+            // Skip binary files in zip silently or with a toast?
             // Ideally we warn, but preventing the whole zip might be annoying.
             // Let's console warn and skip, or show a single warning at end.
             // For now, let's just skip them to prevent errors.

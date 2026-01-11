@@ -10,7 +10,6 @@ import { encodeForLink } from '../core/URLutils';
 
 /* other library imports */
 
-
 /* codePost imports */
 import { AssignmentType, sortAssignments } from '../../infrastructure/assignment';
 import { CourseType } from '../../infrastructure/course';

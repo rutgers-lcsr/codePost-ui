@@ -64,58 +64,61 @@ const RubricFileUpload: FC<IProps> = ({
     setStatus(STATUS.OPEN);
   }, []);
 
-  const parseRubric = useCallback((rubric: IDownloadCategory[]) => {
-    const categories: RubricCategoryType[] = [];
-    const comments: any = {};
+  const parseRubric = useCallback(
+    (rubric: IDownloadCategory[]) => {
+      const categories: RubricCategoryType[] = [];
+      const comments: any = {};
 
-    let categoryID = -1;
-    let commentID = -1;
-    rubric.forEach((newCategory: IDownloadCategory, index: number) => {
-      const commentList: RubricCommentType[] = [];
-      const categoryPayload: RubricCategoryType = {
-        id: categoryID,
-        name: newCategory.name,
-        rubricComments: [],
-        assignment: assignment.id,
-        pointLimit: newCategory.pointLimit,
-        sortKey: index,
-        helpText: newCategory.helpText,
-        atMostOnce: false,
-      };
+      let categoryID = -1;
+      let commentID = -1;
+      rubric.forEach((newCategory: IDownloadCategory, index: number) => {
+        const commentList: RubricCommentType[] = [];
+        const categoryPayload: RubricCategoryType = {
+          id: categoryID,
+          name: newCategory.name,
+          rubricComments: [],
+          assignment: assignment.id,
+          pointLimit: newCategory.pointLimit,
+          sortKey: index,
+          helpText: newCategory.helpText,
+          atMostOnce: false,
+        };
 
-      (newCategory.rubricComments || []).forEach((newComment: IDownloadComment, indexComment: number) => {
-        let sortKey = indexComment;
-        if (newComment.sortKey !== undefined) {
-          sortKey = newComment.sortKey;
-        }
+        (newCategory.rubricComments || []).forEach((newComment: IDownloadComment, indexComment: number) => {
+          let sortKey = indexComment;
+          if (newComment.sortKey !== undefined) {
+            sortKey = newComment.sortKey;
+          }
 
-        const explanation = newComment.explanation || '';
-        const instructionText = newComment.instructionText || '';
+          const explanation = newComment.explanation || '';
+          const instructionText = newComment.instructionText || '';
 
-        commentList.push({
-          id: commentID,
-          text: newComment.text,
-          pointDelta: newComment.pointDelta,
-          category: categoryPayload.id,
-          sortKey,
-          explanation,
-          instructionText,
-          templateTextOn: false,
+          commentList.push({
+            id: commentID,
+            text: newComment.text,
+            pointDelta: newComment.pointDelta,
+            category: categoryPayload.id,
+            sortKey,
+            explanation,
+            instructionText,
+            templateTextOn: false,
+          });
+          commentID = commentID - 1;
         });
-        commentID = commentID - 1;
+
+        comments[categoryPayload.id] = commentList;
+        categories.push(categoryPayload);
+
+        categoryID = categoryID - 1;
       });
 
-      comments[categoryPayload.id] = commentList;
-      categories.push(categoryPayload);
-
-      categoryID = categoryID - 1;
-    });
-
-    return {
-      rubricCategories: categories,
-      rubricComments: comments,
-    };
-  }, [assignment.id]);
+      return {
+        rubricCategories: categories,
+        rubricComments: comments,
+      };
+    },
+    [assignment.id],
+  );
 
   const isRubric = useCallback((rubric: IDownloadCategory[]) => {
     const errors: string[] = [];
@@ -150,29 +153,32 @@ const RubricFileUpload: FC<IProps> = ({
     return errors;
   }, []);
 
-  const handleRubricUpload = useCallback((file: File, result: string) => {
-    setStatus(STATUS.LOADING);
-    try {
-      const rubric = JSON.parse(result);
-      const errors = isRubric(rubric);
+  const handleRubricUpload = useCallback(
+    (file: File, result: string) => {
+      setStatus(STATUS.LOADING);
+      try {
+        const rubric = JSON.parse(result);
+        const errors = isRubric(rubric);
 
-      if (errors.length === 0) {
-        const formatted = parseRubric(rubric);
-        setNewCategories(formatted.rubricCategories);
-        setNewComments(formatted.rubricComments);
-        setUploadFileName(file.name);
-        setStatus(STATUS.FILE_UPLOADED);
-      } else {
-        setUploadErrors(errors);
+        if (errors.length === 0) {
+          const formatted = parseRubric(rubric);
+          setNewCategories(formatted.rubricCategories);
+          setNewComments(formatted.rubricComments);
+          setUploadFileName(file.name);
+          setStatus(STATUS.FILE_UPLOADED);
+        } else {
+          setUploadErrors(errors);
+          setUploadFileName(file.name);
+          setStatus(STATUS.UPLOAD_ERRORS);
+        }
+      } catch (error) {
+        setUploadErrors(["The rubric you uploaded isn't a valid JSON object."]);
         setUploadFileName(file.name);
         setStatus(STATUS.UPLOAD_ERRORS);
       }
-    } catch (error) {
-      setUploadErrors(["The rubric you uploaded isn't a valid JSON object."]);
-      setUploadFileName(file.name);
-      setStatus(STATUS.UPLOAD_ERRORS);
-    }
-  }, [isRubric, parseRubric]);
+    },
+    [isRubric, parseRubric],
+  );
 
   const saveRubric = useCallback(() => {
     setStatus(STATUS.LOADING);
@@ -180,17 +186,20 @@ const RubricFileUpload: FC<IProps> = ({
     toggleStatus();
   }, [onRubricUpload, newCategories, newComments, toggleStatus]);
 
-  const beforeUpload = useCallback((file: any) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (reader.result) {
-        const resultStr = typeof reader.result === 'string' ? reader.result : '';
-        handleRubricUpload(file, resultStr);
-      }
-    };
-    reader.readAsText(file);
-    return false;
-  }, [handleRubricUpload]);
+  const beforeUpload = useCallback(
+    (file: any) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (reader.result) {
+          const resultStr = typeof reader.result === 'string' ? reader.result : '';
+          handleRubricUpload(file, resultStr);
+        }
+      };
+      reader.readAsText(file);
+      return false;
+    },
+    [handleRubricUpload],
+  );
 
   const stepsList = ['Upload', 'Review'];
   let currentStep;
@@ -259,7 +268,7 @@ const RubricFileUpload: FC<IProps> = ({
       footer = [
         <Button key="cancel" onClick={toggleStatus}>
           Cancel
-        </Button>
+        </Button>,
       ];
       break;
     case STATUS.UPLOAD_ERRORS:
@@ -272,7 +281,7 @@ const RubricFileUpload: FC<IProps> = ({
       footer = [
         <Button key="back" onClick={goBack}>
           Go back
-        </Button>
+        </Button>,
       ];
       break;
     case STATUS.FILE_UPLOADED:
@@ -298,7 +307,7 @@ const RubricFileUpload: FC<IProps> = ({
         </Button>,
         <Button key="continue" onClick={saveRubric} type={isReplacement ? undefined : 'primary'}>
           {isReplacement ? 'Overwrite' : 'Save'}
-        </Button>
+        </Button>,
       ];
       break;
   }

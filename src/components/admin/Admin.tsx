@@ -84,6 +84,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
   const [inactiveGraders, setInactiveGraders] = useState<string[]>([]);
   const [admins, setAdmins] = useState<string[]>([]);
   const [superGraders, setSuperGraders] = useState<string[]>([]);
+  const [rubricEditors, setRubricEditors] = useState<string[]>([]);
   const [notActivated, setNotActivated] = useState<string[]>([]);
 
   /**** Sections data ****/
@@ -215,19 +216,6 @@ const Admin: React.FC<IComponentProps> = (props) => {
     assignmentsParam?: AssignmentType[],
     callback?: () => void,
   ) => {
-    // We use functional updates or read current state. To avoid stale closures, we might need to rely on the passed params
-    // or assume we are calling this when state is stable.
-    // However, since we are inside a functional component, capturing 'students' etc from closure might be stale if this is called async.
-    // But usually in React we rely on the closure values at the time of render.
-    // If this is called from an async .then(), 'students' will be the value from when the effect started.
-    // To fix this proper, we should use refs or dependency chains, but for this refactor we will assume standard closure behavior
-    // and try to pass explicit params where possible.
-
-    // WARNING: In functional components, this state access pattern is tricky inside async callbacks.
-    // We will trust the passed parameters primarily. If they are undefined, we fall back to state.
-    // For state fallbacks to work in async, we'd theoretically need refs.
-    // Given the complexity, let's try to pass arguments explicitly from the caller.
-
     const submissionsToUse = submissionsParam !== undefined ? submissionsParam : submissions;
     const assignmentsToUse = assignmentsParam !== undefined ? assignmentsParam : assignments;
 
@@ -305,11 +293,6 @@ const Admin: React.FC<IComponentProps> = (props) => {
         assignmentsRef.current = loadedAssignments;
         setAssignmentsLoadComplete(true);
 
-        // If we have other data ready, update mappings
-        // Note: checking state here (partialSubmissionsLoadComplete) refers to closure state at start of loadAllCourseData.
-        // This might be false initially.
-        // We will trigger updates when those finish instead.
-
         // Trigger dependent loads
         loadSubmissionsData(course);
         loadViewsBySubmissionData(course);
@@ -326,20 +309,13 @@ const Admin: React.FC<IComponentProps> = (props) => {
             setGraders(roster.graders);
             setAdmins(roster.courseAdmins);
             setSuperGraders(roster.superGraders);
+            setRubricEditors(roster.rubricEditors);
             setInactiveStudents(roster.inactive_students);
             setInactiveGraders(roster.inactive_graders);
             setNotActivated(roster.not_activated);
             setRosterLoadComplete(true);
             rosterRef.current = roster;
 
-            // We can try to update submissions by user if we have everything
-            // Since loadedAssignments is passed through, we can use it.
-            // Submissions might not be full yet (partial), but onSubmissionsPagination handles incremental updates.
-            // However, we should do an initial generation if we have data.
-            // But 'submissions' state is empty initially.
-            // The pagination callbacks will handle the population.
-
-            // If we already had data (refresh case), we might want to run update.
             updateSubmissionsByUser(roster, {}, loadedAssignments);
           })
           .catch((err) => {
@@ -365,38 +341,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
       const newAssignmentSubmissions = [...oldSubmissions, ...submissionsPage];
       const newSubmissionsMap = { ...prevSubmissions, [assignment]: newAssignmentSubmissions };
 
-      // Update by-user mappings using functional update's latest state
-      // We need access to latest roster and assignments here.
-      // We can use a ref or rely on component re-render if this callback is recreated (it isn't currently).
-      // Since `onSubmissionsPagination` is defined inside the component, it captures state.
-      // BUT if it's passed to `Assignment.readPaginatedSubmissions` which is async, it captures the closure at call time.
-      // This is the classic React stale closure problem.
-
-      // FIX: Use functional updates for dependent states?
-      // Or simply: `updateSubmissionsByUser` uses closure state.
-      // If we use refs for roster/assignments, we can access them here.
-
-      // Let's assume for this complex refactor that we might need to rely on the setters to trigger re-renders
-      // where we re-calculate derived data, but `updateSubmissionsByUser` is explicitly doing derived data calc.
-
-      // For this step, I will construct usage of `updateSubmissionsByUser` carefully.
-      // Since I can't easily get strict latest state inside this closure without refs,
-      // I will assume `assignments` and `students` don't change rapidly during pagination loads.
-
-      // Wait, `assignments` was loaded before submissions started loading. So `assignments` should be fresh enough.
-      // `roster` might be loading in parallel.
-
-      // We can check if `assignments` and `students` are populated.
-
-      // To be safe, let's update `submissions` state, and then rely on an Effect to update `submissionsByStudent`?
-      // No, `Admin.tsx` logic explicitly called `updateSubmissionsByUser`.
-
-      // I'll leave the explicit call but aware it might use stale roster if roster load finishes after this starts.
-      // But `loadAllCourseData` chains them: assignments -> then submissions starts. Roster is parallel.
-
-      // Let's defer map updating to when we have data.
       setTimeout(() => {
-        // Use refs to avoid stale closure issues
         const currentRoster = rosterRef.current;
         const currentAssignments = assignmentsRef.current;
         updateSubmissionsByUser(currentRoster, newSubmissionsMap, currentAssignments);
@@ -431,7 +376,6 @@ const Admin: React.FC<IComponentProps> = (props) => {
 
     setSections((prev) => {
       const combined = [...prev, ...newSections];
-      // Generate map
       const map = generateSectionsByStudent(combined);
       setSectionsByStudent(map);
       return combined;
@@ -493,6 +437,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
       expiration_date: null,
       studentsCanSeeGraders: false,
       studentCount: 0,
+      isRubricEditor: false,
       ...(copiedCourse ? { clone_from: copiedCourse.id } : {}),
     };
 
@@ -578,6 +523,9 @@ const Admin: React.FC<IComponentProps> = (props) => {
         case USER_APP.SuperGrader:
           addToPayload(payload, 'superGraders', users);
           break;
+        case USER_APP.RubricEditor:
+          addToPayload(payload, 'rubricEditors', users);
+          break;
       }
       return payload;
     };
@@ -609,6 +557,9 @@ const Admin: React.FC<IComponentProps> = (props) => {
           break;
         case USER_APP.SuperGrader:
           setSuperGraders(roster.superGraders);
+          break;
+        case USER_APP.RubricEditor:
+          setRubricEditors(roster.rubricEditors);
           break;
       }
     }
@@ -702,7 +653,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
       promises.push(updateSection(updatedSection));
     }
 
-    return Promise.all(promises).then(() => { });
+    return Promise.all(promises).then(() => {});
   };
 
   /************************************************************************
@@ -987,7 +938,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
         course={props.currentCourse}
         hasStudents={students.length > 0}
         hasSubmissions={submissions && submissions[assignments[0].id] && submissions[assignments[0].id].length > 0}
-        onClose={() => { }}
+        onClose={() => {}}
         assignment={assignments[0]}
       />
     ) : undefined;
@@ -1056,6 +1007,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
         courses={courses}
         // Actions
         refreshCourseData={() => loadAllCourseData(props.currentCourse!)}
+        rubricEditors={rubricEditors}
       />
     );
   }

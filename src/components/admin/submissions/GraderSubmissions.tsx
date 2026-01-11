@@ -15,7 +15,6 @@ import Highlighter from 'react-highlight-words';
 
 import { Link, Route, Routes } from 'react-router-dom';
 
-
 /* codePost imports  */
 import { IAssignmentToSubmissionsMap, IGraderSubmissionsDataTable } from '../../../types/common';
 
@@ -51,8 +50,6 @@ export interface IByGraderProps {
 
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
-
-
 }
 
 const GraderData: React.FC<IByGraderProps> = (props) => {
@@ -70,16 +67,13 @@ const GraderData: React.FC<IByGraderProps> = (props) => {
     inactiveGraders,
     viewsBySubmission,
     deleteSubmission,
-
   } = props;
 
   React.useEffect(() => {
     const newMeans: Record<string, string | null> = {};
     for (const key of Object.keys(submissionsByAssignment)) {
       const submissions: SubmissionInfoType[] = submissionsByAssignment[+key];
-      const uniqueSubmissions = submissions
-        ? Array.from(new Map(submissions.map((s) => [s.id, s])).values())
-        : [];
+      const uniqueSubmissions = submissions ? Array.from(new Map(submissions.map((s) => [s.id, s])).values()) : [];
       let scoreSum = 0;
       let numFinalized = 0;
       for (const submission of uniqueSubmissions) {

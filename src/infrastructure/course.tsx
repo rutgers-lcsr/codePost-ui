@@ -38,6 +38,7 @@ export const CourseV = t.intersection(
       expiration_date: t.union([t.string, t.null, t.undefined]),
       studentsCanSeeGraders: t.boolean,
       studentCount: t.number,
+      isRubricEditor: t.boolean,
     }),
     t.partial({ webhooks: t.array(t.number), clone_from: t.number }),
   ],
@@ -90,6 +91,7 @@ const RosterV = t.intersection(
       inactive_courseAdmins: t.array(t.string),
       graders: t.array(t.string),
       superGraders: t.array(t.string),
+      rubricEditors: t.array(t.string),
       courseAdmins: t.array(t.string),
       not_activated: t.array(t.string),
       organization: t.number, // API returns organization ID, not full object
@@ -108,6 +110,7 @@ const RosterVPatch = t.intersection(
       students: t.array(t.string),
       graders: t.array(t.string),
       superGraders: t.array(t.string),
+      rubricEditors: t.array(t.string),
       courseAdmins: t.array(t.string),
     }),
   ],

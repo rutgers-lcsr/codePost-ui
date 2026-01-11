@@ -475,7 +475,7 @@ const RubricUI = ({
                   height: 60,
                 },
               }}
-              description={<span>No rubric yet</span>}
+              description={<span>No rubric created for this assignment yet</span>}
             >
               <CPButton cpType="primary" onClick={addRubricCategory}>
                 Create a category

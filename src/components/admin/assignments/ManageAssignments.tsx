@@ -11,7 +11,6 @@ import { Tag } from 'antd';
 
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
 
-
 /* codePost imports */
 import { AssignmentPatchType, AssignmentType } from '../../../infrastructure/assignment';
 import { CourseType, SectionType, SubmissionInfoType } from '../../../infrastructure/types';

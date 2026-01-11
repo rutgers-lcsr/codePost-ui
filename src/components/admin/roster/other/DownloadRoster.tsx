@@ -24,8 +24,6 @@ import CPButton from '../../../../components/core/CPButton';
 
 /**********************************************************************************************************************/
 
-
-
 interface IProps {
   /* data */
   students: string[];
@@ -182,12 +180,7 @@ const DownloadRoster: React.FC<IProps> = (props) => {
     setIncludeSections((prev) => !prev);
   }, []);
 
-  const previewText = getPreviewText(
-    props.students,
-    props.sectionsByStudent,
-    props.graders,
-    props.admins,
-  );
+  const previewText = getPreviewText(props.students, props.sectionsByStudent, props.graders, props.admins);
 
   return (
     <div>

@@ -29,8 +29,9 @@ const SubHero = () => {
   return (
     <div>
       <div
-        className={`display-flex ${windowSize.width < landingVars.breakpoints.verticalPanels ? 'flex-direction-column' : ''
-          } justify-content-center align-items-center`}
+        className={`display-flex ${
+          windowSize.width < landingVars.breakpoints.verticalPanels ? 'flex-direction-column' : ''
+        } justify-content-center align-items-center`}
       >
         <div
           className={'display-flex flex-direction-column justify-content-center align-items-center'}

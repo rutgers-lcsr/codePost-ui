@@ -182,7 +182,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
 
     cursorMode: LOCAL_SETTINGS.cursorMode.getter(),
     showCursor: LOCAL_SETTINGS.cursorMode.getter() ? CURSOR_DOMAIN.CODE : CURSOR_DOMAIN.CODE_HIDDEN,
-    showExplanations: false,
+
     showCustomCommentExplorer: false,
 
     panelType: PANEL_TYPE.FILE,
@@ -542,10 +542,13 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
           );
         }
 
-        // load the data only an admin has access to
+        // load the data only an admin or super grader has access to
         let graders: string[] = [];
         let students: string[] = [];
-        if (isCourseAdmin(assignment)) {
+
+        const isSuperGrader = props.user.superGraderCourses.some((c) => c.id === assignment.course);
+
+        if (isCourseAdmin(assignment) || isSuperGrader) {
           const roster = await Course.readRoster(assignment.course);
           graders = roster['graders'];
           students = roster['students'];
@@ -768,14 +771,6 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
         LOCAL_SETTINGS.mostRecentFile.setter(selectedFile.id);
       }
       return { ...prev, selectedFile, activeCommentID: undefined, panelType: PANEL_TYPE.FILE };
-    });
-  }, []);
-
-  const toggleShowExplanations = React.useCallback(() => {
-    setState((prev) => {
-      const newShowExplanations = !prev.showExplanations;
-      message.info(`Now showing rubric comment ${newShowExplanations ? 'explanations' : 'text'}`);
-      return { ...prev, showExplanations: newShowExplanations };
     });
   }, []);
 
@@ -1577,11 +1572,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             key="menu"
             claimSubmission={claimSubmission}
             isStudent={state.isStudent}
-            toggleShowExplanations={toggleShowExplanations}
-            showExplanations={state.showExplanations}
-            hasExplanations={Object.values(state.rubricComments)
-              .flat()
-              .some((el) => el.explanation)}
             isAdmin={isCourseAdmin(state.assignment)}
             course={state.course}
             assignment={state.assignment}
@@ -1637,7 +1627,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           const demoComments = (
             <GradeComments
               isStudent={state.isStudent}
-              showExplanations={state.showExplanations}
+              showExplanations={true}
               comments={state.comments[state.selectedFile!.id]}
               rubricComments={state.commentRubricComments}
               readOnly={state.submission!.isFinalized}
@@ -1742,7 +1732,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
                 demoMode: true,
                 showCursor: outerState.showCursor,
                 updateCursorDomain: updateCursorDomain,
-                showExplanations: outerState.showExplanations,
                 showFrequent:
                   outerState.assignment !== undefined ? outerState.assignment.showFrequentlyUsedRubricComments : false,
                 course: outerState.course!,
@@ -1760,11 +1749,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             claimSubmission={claimSubmission}
             isStudent={state.isStudent}
             isDemo={true}
-            toggleShowExplanations={toggleShowExplanations}
-            showExplanations={state.showExplanations}
-            hasExplanations={Object.values(state.rubricComments)
-              .flat()
-              .some((el) => el.explanation)}
             isAdmin={isCourseAdmin(state.assignment)}
             course={state.course}
             assignment={state.assignment}
@@ -1868,11 +1852,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           key="menu"
           claimSubmission={claimSubmission}
           isStudent={state.isStudent}
-          toggleShowExplanations={toggleShowExplanations}
-          showExplanations={state.showExplanations}
-          hasExplanations={Object.values(state.rubricComments)
-            .flat()
-            .some((el) => el.explanation)}
           isAdmin={isCourseAdmin(state.assignment)}
           course={state.course}
           assignment={state.assignment}
@@ -1972,11 +1951,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           key="menu"
           claimSubmission={claimSubmission}
           isStudent={state.isStudent}
-          toggleShowExplanations={toggleShowExplanations}
-          showExplanations={state.showExplanations}
-          hasExplanations={Object.values(state.rubricComments)
-            .flat()
-            .some((el) => el.explanation)}
           isAdmin={isCourseAdmin(state.assignment)}
           course={state.course}
           assignment={state.assignment}
@@ -2045,7 +2019,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         const comments = (
           <GradeComments
             isStudent={state.isStudent}
-            showExplanations={state.showExplanations}
+            showExplanations={true}
             comments={state.comments[state.selectedFile!.id]}
             rubricComments={state.commentRubricComments}
             readOnly={state.submission!.isFinalized}
@@ -2164,11 +2138,13 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               setRubric: setRubric,
               turnOnReload: turnOnReload,
               turnOffReload: turnOffReload,
-              canUserEdit: isCourseAdmin(outerState.assignment) || outerState.assignment!.collaborativeRubricMode,
+              canUserEdit:
+                isCourseAdmin(outerState.assignment) ||
+                outerState.assignment!.collaborativeRubricMode ||
+                (outerState.course?.isRubricEditor ?? false),
               showCursor: outerState.showCursor,
               updateCursorDomain: updateCursorDomain,
               demoMode: outerState.noSave === true,
-              showExplanations: outerState.showExplanations,
               showFrequent:
                 outerState.assignment !== undefined ? outerState.assignment.showFrequentlyUsedRubricComments : false,
               course: outerState.course!,

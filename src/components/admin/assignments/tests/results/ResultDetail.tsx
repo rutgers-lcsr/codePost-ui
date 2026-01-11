@@ -328,12 +328,14 @@ const TestDetail = (props: IResultProps) => {
   let pointsBadge;
   if (props.test) {
     if (props.test.passed) {
-      const points = `${props.testCase.pointsPass > 0 ? '+' : props.testCase.pointsPass < 0 ? '-' : ''}${props.testCase.pointsPass
-        }`;
+      const points = `${props.testCase.pointsPass > 0 ? '+' : props.testCase.pointsPass < 0 ? '-' : ''}${
+        props.testCase.pointsPass
+      }`;
       pointsBadge = <Badge count={points} style={{ backgroundColor: '#52c41a' }} />;
     } else {
-      const points = `${props.testCase.pointsFail > 0 ? '+' : props.testCase.pointsPass < 0 ? '-' : ''}${props.testCase.pointsFail
-        }`;
+      const points = `${props.testCase.pointsFail > 0 ? '+' : props.testCase.pointsPass < 0 ? '-' : ''}${
+        props.testCase.pointsFail
+      }`;
       pointsBadge = <Badge count={points} style={{ backgroundColor: 'red' }} />;
     }
   }

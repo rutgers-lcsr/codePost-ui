@@ -5,7 +5,14 @@ import { FileType, getFileContent } from '../../infrastructure/file';
 import { slack } from './slack';
 
 import { Result, Button, Collapse, Typography, Space, Card, theme, Divider } from 'antd';
-import { ReloadOutlined, MailOutlined, BugOutlined, FileTextOutlined, CodeOutlined, GlobalOutlined } from '@ant-design/icons';
+import {
+  ReloadOutlined,
+  MailOutlined,
+  BugOutlined,
+  FileTextOutlined,
+  CodeOutlined,
+  GlobalOutlined,
+} from '@ant-design/icons';
 
 const { Text, Paragraph, Title } = Typography;
 
@@ -57,14 +64,16 @@ const DebugInfoPanel: React.FC<{
           </Paragraph>
           <Divider style={{ margin: '8px 0' }} />
           <Text strong>Stack Trace:</Text>
-          <pre style={{
-            background: token.colorBgContainer,
-            padding: '12px',
-            borderRadius: '4px',
-            overflow: 'auto',
-            maxHeight: '200px',
-            fontSize: '11px',
-          }}>
+          <pre
+            style={{
+              background: token.colorBgContainer,
+              padding: '12px',
+              borderRadius: '4px',
+              overflow: 'auto',
+              maxHeight: '200px',
+              fontSize: '11px',
+            }}
+          >
             {error?.stack}
           </pre>
         </div>
@@ -79,16 +88,18 @@ const DebugInfoPanel: React.FC<{
         </Space>
       ),
       children: (
-        <pre style={{
-          fontFamily: 'monospace',
-          fontSize: '11px',
-          whiteSpace: 'pre-wrap',
-          background: token.colorBgContainer,
-          padding: '12px',
-          borderRadius: '4px',
-          overflow: 'auto',
-          maxHeight: '300px',
-        }}>
+        <pre
+          style={{
+            fontFamily: 'monospace',
+            fontSize: '11px',
+            whiteSpace: 'pre-wrap',
+            background: token.colorBgContainer,
+            padding: '12px',
+            borderRadius: '4px',
+            overflow: 'auto',
+            maxHeight: '300px',
+          }}
+        >
           {errorInfo?.componentStack}
         </pre>
       ),
@@ -106,16 +117,18 @@ const DebugInfoPanel: React.FC<{
         </Space>
       ),
       children: (
-        <pre style={{
-          fontFamily: 'monospace',
-          fontSize: '11px',
-          whiteSpace: 'pre-wrap',
-          background: token.colorBgContainer,
-          padding: '12px',
-          borderRadius: '4px',
-          overflow: 'auto',
-          maxHeight: '300px',
-        }}>
+        <pre
+          style={{
+            fontFamily: 'monospace',
+            fontSize: '11px',
+            whiteSpace: 'pre-wrap',
+            background: token.colorBgContainer,
+            padding: '12px',
+            borderRadius: '4px',
+            overflow: 'auto',
+            maxHeight: '300px',
+          }}
+        >
           {getFileContent(file)}
         </pre>
       ),
@@ -146,11 +159,7 @@ const DebugInfoPanel: React.FC<{
           {submissionID && <Text type="secondary">Submission: {submissionID}</Text>}
           {file && <Text type="secondary">File: {file.id}</Text>}
         </Space>
-        <Collapse
-          items={collapseItems}
-          size="small"
-          style={{ marginTop: '8px' }}
-        />
+        <Collapse items={collapseItems} size="small" style={{ marginTop: '8px' }} />
       </Space>
     </Card>
   );
@@ -170,23 +179,37 @@ const TroubleshootingCard: React.FC = () => {
         maxWidth: '600px',
       }}
     >
-      <Title level={5} style={{ marginTop: 0 }}>⭐ Troubleshooting</Title>
-      <Paragraph>
-        codePost needs permission from your browser to run. Please follow these steps:
-      </Paragraph>
+      <Title level={5} style={{ marginTop: 0 }}>
+        ⭐ Troubleshooting
+      </Title>
+      <Paragraph>codePost needs permission from your browser to run. Please follow these steps:</Paragraph>
 
-      <Title level={5} style={{ marginBottom: '8px' }}>Google Chrome</Title>
+      <Title level={5} style={{ marginBottom: '8px' }}>
+        Google Chrome
+      </Title>
       <ol style={{ paddingLeft: '20px', marginBottom: '16px' }}>
-        <li>Open Chrome cookie settings: <Text code>chrome://settings/content/cookies</Text></li>
-        <li>Click <Text strong>Allow → Add → https://codepost.cs.rutgers.edu</Text></li>
+        <li>
+          Open Chrome cookie settings: <Text code>chrome://settings/content/cookies</Text>
+        </li>
+        <li>
+          Click <Text strong>Allow → Add → https://codepost.cs.rutgers.edu</Text>
+        </li>
         <li>Refresh the page</li>
       </ol>
 
-      <Title level={5} style={{ marginBottom: '8px' }}>Firefox</Title>
+      <Title level={5} style={{ marginBottom: '8px' }}>
+        Firefox
+      </Title>
       <ol style={{ paddingLeft: '20px', marginBottom: 0 }}>
-        <li>Open settings: <Text code>about:preferences#privacy</Text></li>
-        <li>Click <Text strong>Cookies and Site Data → Manage Permissions</Text></li>
-        <li>Add <Text strong>https://codepost.cs.rutgers.edu</Text> and Allow</li>
+        <li>
+          Open settings: <Text code>about:preferences#privacy</Text>
+        </li>
+        <li>
+          Click <Text strong>Cookies and Site Data → Manage Permissions</Text>
+        </li>
+        <li>
+          Add <Text strong>https://codepost.cs.rutgers.edu</Text> and Allow
+        </li>
         <li>Refresh the page</li>
       </ol>
     </Card>
@@ -259,14 +282,16 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
       // Compact error view for code panel
       if (this.props.type === 'codepanel') {
         return (
-          <div style={{
-            padding: '24px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            minHeight: '200px',
-            justifyContent: 'center',
-          }}>
+          <div
+            style={{
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              minHeight: '200px',
+              justifyContent: 'center',
+            }}
+          >
             <Result
               status="error"
               title="Failed to load content"
@@ -294,15 +319,17 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
 
       // Full-page error view for app-level errors
       return (
-        <div style={{
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '40px 20px',
-          background: 'linear-gradient(180deg, #f0f2f5 0%, #ffffff 100%)',
-        }}>
+        <div
+          style={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '40px 20px',
+            background: 'linear-gradient(180deg, #f0f2f5 0%, #ffffff 100%)',
+          }}
+        >
           <Result
             status="500"
             title="Something went wrong"

@@ -246,11 +246,7 @@ const RosterFileUpload: React.FC<IProps> = (props) => {
           // Pre-fill sections to account for students whose sections we aren't
           // updating.
           for (const student of students) {
-            if (
-              toAdd.indexOf(student) === -1 &&
-              toChange.indexOf(student) === -1 &&
-              toRemove.indexOf(student) === -1
-            ) {
+            if (toAdd.indexOf(student) === -1 && toChange.indexOf(student) === -1 && toRemove.indexOf(student) === -1) {
               const section = props.sectionsByStudent[student];
               const sectionValue = section ? section.name : undefined;
               if (sectionValue !== null && sectionValue !== undefined) {

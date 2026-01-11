@@ -130,18 +130,18 @@ const MergeRubricCommentsDialog: FC<IMergeRubricCommentsDialogProps> = ({
 
   const currentFromCommentOption = fromComment
     ? {
-      value: fromComment.id,
-      label: fromComment.text,
-      comment: fromComment,
-    }
+        value: fromComment.id,
+        label: fromComment.text,
+        comment: fromComment,
+      }
     : null;
 
   const currentToCommentOption = toComment
     ? {
-      value: toComment.id,
-      label: toComment.text,
-      comment: toComment,
-    }
+        value: toComment.id,
+        label: toComment.text,
+        comment: toComment,
+      }
     : null;
 
   return (
@@ -156,13 +156,7 @@ const MergeRubricCommentsDialog: FC<IMergeRubricCommentsDialogProps> = ({
       >
         Merge
       </CPButton>
-      <Modal
-        open={visible}
-        title="Merge rubric comments"
-        onCancel={closeDialog}
-        onOk={mergeComments}
-        okText="Merge"
-      >
+      <Modal open={visible} title="Merge rubric comments" onCancel={closeDialog} onOk={mergeComments} okText="Merge">
         {isLoading ? (
           <Spin />
         ) : (

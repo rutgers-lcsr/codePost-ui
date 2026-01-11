@@ -8,15 +8,13 @@ import * as React from 'react';
 import {
   ArrowLeftOutlined,
   BookOutlined,
-  DownOutlined,
   ExperimentOutlined,
   FileOutlined,
   InfoCircleOutlined,
-  UpOutlined,
 } from '@ant-design/icons';
 
 /* antd imports */
-import { Button, Collapse, Layout, Tooltip } from 'antd';
+import { Button, Layout, Tooltip } from 'antd';
 
 /* codePost imports */
 import layoutVars from '../../../styles/layout/_layoutVars';
@@ -25,9 +23,9 @@ import useFixedWindow from '../useFixedWindow';
 
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
-import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
+/* import { LOCAL_SETTINGS } from '../../utils/LocalSettings'; */
 
-const { Content, Header, Sider } = Layout;
+const { Content, Header } = Layout;
 
 export type ConsoleType = 'grade' | 'subheader';
 
@@ -52,74 +50,10 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     toTheme === 'light' ? setConsoleTheme(consoleThemes.light) : setConsoleTheme(consoleThemes.dark);
   };
 
-  const [defaultOpenMenus, setDefaultOpenMenus] = React.useState([0, 1, 2]);
-
-  const [siderCollapsed, setSiderCollapsed] = React.useState(false);
-  const collapsedSiderWidth = 50;
-
-  const getCachedCollapseKeys = () => {
-    return props.sider
-      .map((el, index) => {
-        switch (el.key) {
-          case 'submission-info':
-            return !LOCAL_SETTINGS.infoMenuHidden.getter();
-          case 'file-menu':
-            return !LOCAL_SETTINGS.fileMenuHidden.getter();
-          case 'tests-menu':
-            return !LOCAL_SETTINGS.testsMenuHidden.getter();
-          case 'rubric-menu':
-            return !LOCAL_SETTINGS.rubricMenuHidden.getter();
-          default:
-            return index;
-        }
-      })
-      .map((el, index) => {
-        if (el) {
-          return index;
-        } else {
-          return -1;
-        }
-      })
-      .filter((el) => {
-        return el > -1;
-      })
-      .map((el) => {
-        return el.toString();
-      });
-  };
-
-  const onCollapse = (nodes: React.ReactElement[], keys: string[]) => {
-    setDefaultOpenMenus(
-      keys.map((el) => {
-        return parseInt(el);
-      }),
-    );
-
-    /* set local settings */
-    nodes.forEach((node, index) => {
-      const indexString = index.toString();
-      switch (node.key) {
-        case 'submission-info':
-          LOCAL_SETTINGS.infoMenuHidden.setter(keys.indexOf(indexString) === -1);
-          break;
-        case 'file-menu':
-          LOCAL_SETTINGS.fileMenuHidden.setter(keys.indexOf(indexString) === -1);
-          break;
-        case 'tests-menu':
-          LOCAL_SETTINGS.testsMenuHidden.setter(keys.indexOf(indexString) === -1);
-          break;
-        case 'rubric-menu':
-          LOCAL_SETTINGS.rubricMenuHidden.setter(keys.indexOf(indexString) === -1);
-          break;
-      }
-    });
-  };
-
-  // Manually set collapse icon so we can change color for dark mode
-  const collapseIcon = ({ isActive }: { isActive?: boolean }) => {
-    const Icon = isActive ? UpOutlined : DownOutlined;
-    return <Icon style={{ color: consoleTheme.siderTitle }} />;
-  };
+  const [siderWidth, setSiderWidth] = React.useState(300);
+  const [activePanel, setActivePanel] = React.useState<number | null>(2); // Default to Files
+  const [resizerHover, setResizerHover] = React.useState(false);
+  const [isResizing, setIsResizing] = React.useState(false);
 
   // Get icon for each menu based on its key
   const getMenuIcon = (key: string | null | undefined) => {
@@ -138,11 +72,22 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     }
   };
 
+  /* Removed legacy persistence logic for now */
+  /*
   React.useEffect(() => {
-    setTimeout(() => onCollapse(props.sider, getCachedCollapseKeys()), 10);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Legacy persistence logic
   }, [props.sider.length]);
+  */
+
+  const sidebarRef = React.useRef<HTMLDivElement>(null);
+  const lastActivePanelRef = React.useRef<number>(1);
+
+  // Update last active panel when it changes
+  React.useEffect(() => {
+    if (activePanel !== null) {
+      lastActivePanelRef.current = activePanel;
+    }
+  }, [activePanel]);
 
   const backToSubmissionsButton =
     localStorage.getItem('source') === 'codePost' ? null : (
@@ -180,107 +125,200 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
         >
           {props.header}
         </Header>
-        <Layout style={{ overflowX: 'hidden', height: 'calc(100vh - 49px)', overflow: 'hidden' }}>
+        <Layout style={{ overflowX: 'hidden', height: 'calc(100vh - 49px)', overflow: 'hidden', flexDirection: 'row' }}>
           {backToSubmissionsButton}
-          <div id="Code-Header" style={{ height: '100%', position: 'relative' }}>
-            <Sider
-              className="layout--standard-console__sider"
-              width={siderCollapsed ? collapsedSiderWidth : 300}
-              collapsible
-              collapsed={siderCollapsed}
-              onCollapse={(collapsed) => setSiderCollapsed(collapsed)}
-              collapsedWidth={collapsedSiderWidth}
-              trigger={null}
+          <div
+            id="Code-Header"
+            style={{
+              height: '100%',
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'row',
+              backgroundColor: consoleTheme.siderBg,
+              zIndex: 101,
+            }}
+          >
+            <div
               style={{
-                backgroundColor: consoleTheme.siderBg,
-                color: consoleTheme.siderTitle,
-                zIndex: 100,
-                height: '100%',
-                overflowY: 'auto',
-                overflowX: 'hidden',
+                width: '50px',
                 display: 'flex',
                 flexDirection: 'column',
+                alignItems: 'center',
+                paddingTop: '10px',
+                backgroundColor: 'rgba(0,0,0,0.02)',
+                flexShrink: 0,
+                zIndex: 102,
               }}
             >
-              <Button
-                type="text"
-                icon={
-                  siderCollapsed ? (
-                    <ArrowLeftOutlined rotate={180} style={{ fontSize: '16px' }} />
-                  ) : (
-                    <ArrowLeftOutlined style={{ fontSize: '16px' }} />
-                  )
-                }
-                onClick={() => setSiderCollapsed(!siderCollapsed)}
-                style={{
-                  width: siderCollapsed ? '50px' : '100%',
-                  minWidth: siderCollapsed ? '50px' : '100%',
-                  height: '40px',
-                  color: consoleTheme.siderTitle,
-                  borderTop: `1px solid ${consoleTheme.siderTitle}20`,
-                  borderBottom: `1px solid ${consoleTheme.siderTitle}20`,
-                  marginBottom: '10px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: 0,
-                  margin: '0 auto',
-                }}
-              />
-              {siderCollapsed && props.sider.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0', alignItems: 'center' }}>
-                  {props.sider.map((siderNode, index) => (
-                    <Tooltip key={index} title={props.siderTitles[index]} placement="right">
-                      <Button
-                        type="text"
-                        icon={getMenuIcon(siderNode.key)}
-                        onClick={() => setSiderCollapsed(false)}
-                        style={{
-                          width: '50px',
-                          minWidth: '50px',
-                          height: '40px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          padding: 0,
-                        }}
-                      />
-                    </Tooltip>
-                  ))}
-                </div>
+              {props.sider.map((siderNode, index) => (
+                <SidebarIconButton
+                  key={index}
+                  title={props.siderTitles[index]}
+                  icon={getMenuIcon(siderNode.key)}
+                  active={activePanel === index}
+                  onClick={() => {
+                    if (activePanel === index) {
+                      setActivePanel(null);
+                    } else {
+                      setActivePanel(index);
+                    }
+                  }}
+                  theme={consoleTheme}
+                />
+              ))}
+              {/* Drag Handle to Open when Closed */}
+              {activePanel === null && (
+                <div
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    const startX = e.clientX;
+
+                    const onMouseMove = (moveEvent: MouseEvent) => {
+                      const delta = moveEvent.clientX - startX;
+                      if (delta > 30) {
+                        // Threshold to open
+                        setActivePanel(lastActivePanelRef.current);
+                        setSiderWidth(Math.max(200, delta));
+                        // Clean up listeners immediately to transfer control or just open
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
+                      }
+                    };
+
+                    const onMouseUp = () => {
+                      document.removeEventListener('mousemove', onMouseMove);
+                      document.removeEventListener('mouseup', onMouseUp);
+                    };
+
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: '10px',
+                    cursor: 'col-resize',
+                    zIndex: 1000,
+                  }}
+                />
               )}
-              {!siderCollapsed && props.sider.length > 0 && (
-                <div className="layout--standard-console__inner-sider" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-                  <Collapse
-                    expandIconPosition="end"
-                    activeKey={defaultOpenMenus.map((el) => {
-                      return el.toString();
-                    })}
-                    bordered={false}
-                    onChange={(keys: string | string[]) => onCollapse(props.sider, Array.isArray(keys) ? keys : [keys])}
-                    expandIcon={collapseIcon}
+            </div>
+
+            {activePanel !== null && (
+              <>
+                <div
+                  ref={sidebarRef}
+                  style={{
+                    width: siderWidth,
+                    height: '100%',
+                    overflow: 'hidden',
+                    backgroundColor: consoleTheme.siderBg,
+                    boxShadow: '4px 0 8px rgba(0,0,0,0.1)',
+                    position: 'relative',
+                    flexShrink: 0,
+                    zIndex: 100,
+                    willChange: 'width',
+                  }}
+                >
+                  <div
                     style={{
-                      backgroundColor: consoleTheme.siderBg,
+                      padding: '10px 15px',
+                      borderBottom: `1px solid ${consoleTheme.siderTitle}20`,
+                      fontWeight: 600,
+                      fontSize: '14px',
                       color: consoleTheme.siderTitle,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      height: '40px',
                     }}
-                    items={props.sider.map((siderNode: React.ReactNode, index: number) => ({
-                      key: index.toString(),
-                      label: (
-                        <div
-                          style={{
-                            padding: '0px 10px 5px 0px',
-                            color: consoleTheme.siderTitle,
-                          }}
-                        >
-                          <div className="cp-label cp-label--plus cp-label--bold">{props.siderTitles[index]}</div>
-                        </div>
-                      ),
-                      children: <div>{siderNode}</div>,
-                    }))}
-                  />
+                  >
+                    {props.siderTitles[activePanel]}
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<ArrowLeftOutlined />}
+                      onClick={() => setActivePanel(null)}
+                    />
+                  </div>
+                  <div
+                    className="layout--standard-console__inner-sider"
+                    style={{ height: 'calc(100% - 40px)', overflowY: 'auto' }}
+                  >
+                    {props.sider[activePanel]}
+                  </div>
                 </div>
-              )}
-            </Sider>
+                <div
+                  onMouseEnter={() => setResizerHover(true)}
+                  onMouseLeave={() => setResizerHover(false)}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setIsResizing(true);
+                    const startX = e.clientX;
+                    const startWidth = siderWidth;
+                    let animationFrameId: number;
+
+                    const onMouseMove = (moveEvent: MouseEvent) => {
+                      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+                      animationFrameId = requestAnimationFrame(() => {
+                        const newWidth = startWidth + (moveEvent.clientX - startX);
+                        // Enforce min/max constraints
+                        if (newWidth >= 200 && newWidth <= 800) {
+                          if (sidebarRef.current) {
+                            sidebarRef.current.style.width = `${newWidth}px`;
+                          }
+                        }
+                      });
+                    };
+
+                    const onMouseUp = (upEvent: MouseEvent) => {
+                      setIsResizing(false);
+                      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                      document.removeEventListener('mousemove', onMouseMove);
+                      document.removeEventListener('mouseup', onMouseUp);
+                      document.body.style.cursor = 'default';
+                      document.body.style.userSelect = 'auto';
+
+                      const finalWidth = startWidth + (upEvent.clientX - startX);
+
+                      // Snap close if too small
+                      if (finalWidth < 150) {
+                        setActivePanel(null);
+                        setSiderWidth(200); // Reset width for next open
+                      } else {
+                        // Commit final width to state
+                        const clampedWidth = Math.max(200, Math.min(800, finalWidth));
+                        setSiderWidth(clampedWidth);
+                      }
+                    };
+
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                    document.body.style.cursor = 'col-resize';
+                    document.body.style.userSelect = 'none';
+                  }}
+                  style={{
+                    width: '7px',
+                    height: '100%',
+                    cursor: 'col-resize',
+                    backgroundColor:
+                      resizerHover || isResizing
+                        ? themeMode === 'light'
+                          ? 'rgba(0,0,0,0.2)'
+                          : 'rgba(255,255,255,0.2)'
+                        : 'transparent',
+                    zIndex: 1000,
+                    flexShrink: 0,
+                    marginLeft: '-7px',
+                    position: 'relative',
+                    transition: 'background-color 0.2s',
+                  }}
+                />
+              </>
+            )}
           </div>
           <Layout
             style={{
@@ -308,6 +346,52 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
         </Layout>
       </Layout>
     </ConsoleThemeContext.Provider>
+  );
+};
+
+interface ISidebarIconButtonProps {
+  title: string | React.ReactNode;
+  icon: React.ReactNode;
+  active: boolean;
+  onClick: () => void;
+  theme: any;
+}
+
+const SidebarIconButton = ({ title, icon, active, onClick, theme }: ISidebarIconButtonProps) => {
+  const [hover, setHover] = React.useState(false);
+  // Robust check for dark mode: check if background is dark-ish
+  const isDark = theme.siderBg && theme.siderBg.toLowerCase().includes('#18191b');
+  // Fallback: If title color is white (rgba(255,...) or #fff), it's dark mode.
+  const isDarkMode =
+    isDark || (theme.siderTitle && (theme.siderTitle.includes('255') || theme.siderTitle.includes('#fff')));
+
+  const bgBase = isDarkMode ? '255, 255, 255' : '0, 0, 0';
+
+  return (
+    <Tooltip title={title} placement="right">
+      <Button
+        type="text"
+        icon={icon}
+        onClick={onClick}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        style={{
+          width: '42px',
+          height: '42px',
+          color: active ? '#1890ff' : theme.siderTitle,
+          fontSize: '20px',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginBottom: '6px',
+          borderRadius: '5px',
+          boxShadow: 'none',
+          backgroundColor: active ? `rgba(${bgBase}, 0.1)` : 'transparent',
+          opacity: active || hover ? 1 : 0.65,
+          transition: 'all 0.2s',
+        }}
+      />
+    </Tooltip>
   );
 };
 

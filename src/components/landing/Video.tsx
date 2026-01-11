@@ -282,17 +282,17 @@ class Video extends React.Component<IVideoProps, IVideoState> {
 
     // Horizontal tabs for large screens
     const horizontalTabs = (
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        gap: '8px',
-        marginBottom: '20px',
-        maxWidth: `${videoWidth}px`,
-      }}>
-        <div style={{ width: '200px', marginRight: '16px' }}>
-          {videoSelect}
-        </div>
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          gap: '8px',
+          marginBottom: '20px',
+          maxWidth: `${videoWidth}px`,
+        }}
+      >
+        <div style={{ width: '200px', marginRight: '16px' }}>{videoSelect}</div>
         {this.state.videoSections.map((section: IVideoSection) => {
           const isActive = section.id === this.state.selectedSectionId;
           return (
