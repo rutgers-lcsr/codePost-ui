@@ -27,7 +27,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import Loading from '../core/Loading';
 import { colors } from '../../theme/colors';
 
-import { getOsTriggerKeyFromEvent, osControlKey } from '../core/operatingSystem';
+import { getOsTriggerKeyFromEvent } from '../core/operatingSystem';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from '../../types/common';
 
@@ -54,15 +54,15 @@ import ExecuteFileButton from './ExecuteFileButton';
 import CursorToggle from '../core/CursorToggle';
 import ThemeToggle from '../core/ThemeToggle';
 
-import FileMenu, { FileMenuTitle } from './menu/FileMenu';
+import FileMenu, { FileMenuTitle, FileMenuTooltip } from './menu/FileMenu';
 import HelpModal from './menu/HelpModal';
-import TemplateMenu from './menu/TemplateMenu';
+import TemplateMenu, { PinnedCommentsTooltip } from './menu/TemplateMenu';
 
 const RubricMenuUI = React.lazy(() => import('./menu/RubricMenuUI'));
 
 import InlineTestsModal from './InlineTestsModal';
 
-import { ReadOnlySubmissionInfo, SubmissionInfo } from './menu/SubmissionInfoMenu';
+import { ReadOnlySubmissionInfo, SubmissionInfo, SubmissionInfoTooltip } from './menu/SubmissionInfoMenu';
 
 import layoutVars from '../../styles/layout/_layoutVars';
 
@@ -91,9 +91,9 @@ import { CodeConsoleOnboardingSelector } from '../core/OnboardingSelector';
 
 import { loadDemoGrader, loadDemoStudent } from './demo';
 
-import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
+import RubricManager, { IRubricManagerParams, RubricTooltip } from '../core/rubric/RubricManager';
 
-import TestsMenu from './menu/TestsMenu';
+import TestsMenu, { TestsMenuTooltip } from './menu/TestsMenu';
 
 import { CourseContext, defaultCourse } from '../core/Contexts';
 
@@ -2372,13 +2372,19 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         siderTitles = ['Submission Info', testsTitle, fileMenuTitle, 'Rubric', 'Pinned Comments'];
 
         siderTooltips = [
-          `Submission Info (${osControlKey()} + Shift + E)`,
-          `${testsTitle} (${osControlKey()} + Shift + D)`,
-          <span key="files-title" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <FileMenuTitle key="files" files={files} forceDarkTheme={true} /> ({osControlKey()} + Shift + F)
-          </span>,
-          `Rubric (${osControlKey()} + Shift + G)`,
-          `Pinned Comments (${osControlKey()} + Shift + H)`,
+          <SubmissionInfoTooltip
+            key="submission-info-tooltip"
+            submission={readOnlySubmission || submission}
+            assignment={assignment}
+          />,
+          <TestsMenuTooltip
+            key="tests-info-tooltip"
+            title={testsTitle}
+            testCount={Object.values(state.testCases).flat().length}
+          />,
+          <FileMenuTooltip key="files-tooltip" files={files} />,
+          <RubricTooltip key="rubric-tooltip" itemsApplied={Object.values(rubricComments).flat().length} />,
+          <PinnedCommentsTooltip key="pinned-comments-tooltip" />,
         ];
 
         leftHeader = [
@@ -2531,9 +2537,13 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
       siderTitles = ['Submission Info', testsTitle, fileMenuTitle];
       siderTooltips = [
-        `Submission Info (${osControlKey()} + Shift + E)`,
-        `${testsTitle} (${osControlKey()} + Shift + D)`,
-        `${fileMenuTitle} (${osControlKey()} + Shift + F)`,
+        <SubmissionInfoTooltip key="submission-info-tooltip" submission={readOnlySubmission} assignment={assignment} />,
+        <TestsMenuTooltip
+          key="tests-info-tooltip"
+          title={testsTitle}
+          testCount={Object.values(state.testCases).flat().length}
+        />,
+        <FileMenuTooltip key="files-tooltip" files={files} />,
       ];
     } else if (permissionLevel === PERMISSION_LEVEL.READ_FILES_ONLY) {
       // Files-only mode: show files but no comments, rubrics, or grades
@@ -2606,10 +2616,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
       siderTitles = ['Submission Info', fileMenuTitle];
       siderTooltips = [
-        `Submission Info (${osControlKey()} + Shift + E)`,
-        <span key="files-title" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <FileMenuTitle key="files" files={files} forceDarkTheme={true} /> ({osControlKey()} + Shift + F)
-        </span>,
+        <SubmissionInfoTooltip key="submission-info-tooltip" submission={readOnlySubmission} assignment={assignment} />,
+        <FileMenuTooltip key="files-tooltip" files={files} />,
       ];
     } else {
       leftHeader = [
@@ -2787,13 +2795,21 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         />,
       );
       siderTitles.push('Submission Info');
-      siderTooltips.push(`Submission Info (${osControlKey()} + Shift + E)`);
+      siderTooltips.push(
+        <SubmissionInfoTooltip key="submission-info-tooltip" submission={submission!} assignment={assignment} />,
+      );
 
       // 2. Tests
       if (isCourseAdmin(assignment) || state.testCategories.length > 0) {
         sider.push(<TestsMenu key="tests-menu" />);
         siderTitles.push(testsTitle);
-        siderTooltips.push(`${testsTitle} (${osControlKey()} + Shift + D)`);
+        siderTooltips.push(
+          <TestsMenuTooltip
+            key="tests-info-tooltip"
+            title={testsTitle}
+            testCount={Object.values(state.testCases).flat().length}
+          />,
+        );
       }
 
       // 3. Files
@@ -2809,11 +2825,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         />,
       );
       siderTitles.push(fileMenuTitle);
-      siderTooltips.push(
-        <span key="files-title" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <FileMenuTitle key="files" files={files} forceDarkTheme={true} /> ({osControlKey()} + Shift + F)
-        </span>,
-      );
+      siderTooltips.push(<FileMenuTooltip key="files-tooltip" files={files} />);
 
       // 4. Rubric
       sider.push(
@@ -2853,7 +2865,9 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         </RubricManager>,
       );
       siderTitles.push('Rubric');
-      siderTooltips.push(`Rubric (${osControlKey()} + Shift + G)`);
+      siderTooltips.push(
+        <RubricTooltip key="rubric-tooltip" itemsApplied={Object.values(rubricComments).flat().length} />,
+      );
 
       // 5. Templates
       if (assignment) {
@@ -2869,7 +2883,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           />,
         );
         siderTitles.push('Pinned Comments');
-        siderTooltips.push(`Pinned Comments (${osControlKey()} + Shift + H)`);
+        siderTooltips.push(<PinnedCommentsTooltip key="pinned-comments-tooltip" />);
       }
     }
   }

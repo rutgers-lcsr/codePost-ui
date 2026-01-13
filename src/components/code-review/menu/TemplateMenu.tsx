@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Popconfirm, message, Card, Button, InputNumber, Input, Tooltip, Switch } from 'antd';
+import { Popconfirm, message, Card, Button, InputNumber, Input, Tooltip, Switch, Badge } from 'antd';
 import {
   DeleteOutlined,
   GlobalOutlined,
@@ -375,6 +375,27 @@ const TemplateCard: React.FC<ITemplateCardProps> = ({
         </>
       )}
     </Card>
+  );
+};
+
+import { osControlKey } from '../../core/operatingSystem';
+
+export const PinnedCommentsTooltip: React.FC<{ pinnedCount?: number }> = ({ pinnedCount }) => {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <span>Pinned Comments</span>
+      {pinnedCount !== undefined && pinnedCount > 0 && (
+        <Badge
+          count={pinnedCount}
+          style={{
+            backgroundColor: '#fff',
+            color: 'rgba(0,0,0,0.85)',
+            boxShadow: '0 0 0 1px #d9d9d9 inset',
+          }}
+        />
+      )}
+      <span style={{ opacity: 0.7 }}>({osControlKey()} + Shift + H)</span>
+    </div>
   );
 };
 
