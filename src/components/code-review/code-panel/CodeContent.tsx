@@ -38,6 +38,14 @@ export interface ICodeContentEditProps {
   cursorMode: boolean;
   showCursor: CURSOR_DOMAIN;
   updateCursorDomain: (domain: CURSOR_DOMAIN) => void;
+  onCursorChange?: (cursor: any) => void;
+  onUpdateCommentLocation?: (
+    commentId: number,
+    newStartLine: number,
+    newEndLine: number,
+    newStartChar: number,
+    newEndChar: number,
+  ) => void;
 }
 
 type CodeContentProps = ICodeContentCoreProps & ICodeContentEditProps;
@@ -197,6 +205,32 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
     );
   }
 
+  // Memoize SyntaxHighlighter to prevent expensive re-renders when comments change
+  const syntaxHighlighterLayer = React.useMemo(
+    () => (
+      <SyntaxHighlighter
+        id="code-syntax"
+        className="code--syntax"
+        language={File.language(props.file)}
+        style={consoleTheme.codeTheme}
+        showLineNumbers={true}
+        wrapLines={false}
+        codeTagProps={{
+          style: codeTagStyle,
+        }}
+        customStyle={{
+          ...commonCodeStyle,
+          overflow: 'hidden',
+          padding: '0px 0px 10px 20px',
+          backgroundColor: consoleTheme.codeBg,
+        }}
+      >
+        {fileContent}
+      </SyntaxHighlighter>
+    ),
+    [props.file, consoleTheme.codeTheme, consoleTheme.codeBg, codeTagStyle, commonCodeStyle, fileContent],
+  );
+
   // Render code files with syntax highlighting
   return (
     <div>
@@ -209,25 +243,8 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
         }}
       >
         {/* Syntax Highlighting Layer allows for code to be visible with highlights*/}
-        <SyntaxHighlighter
-          id="code-syntax"
-          className="code--syntax"
-          language={File.language(props.file)}
-          style={consoleTheme.codeTheme}
-          showLineNumbers={true}
-          wrapLines={false}
-          codeTagProps={{
-            style: codeTagStyle,
-          }}
-          customStyle={{
-            ...commonCodeStyle,
-            overflow: 'hidden',
-            padding: '0px 0px 10px 20px',
-            backgroundColor: consoleTheme.codeBg,
-          }}
-        >
-          {fileContent}
-        </SyntaxHighlighter>
+        {syntaxHighlighterLayer}
+
         {props.assignmentFile && (
           <div
             id="code-template"
@@ -261,6 +278,8 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
             cursorMode={props.cursorMode}
             showCursor={props.showCursor}
             updateCursorDomain={props.updateCursorDomain}
+            onCursorChange={props.onCursorChange}
+            onUpdateCommentLocation={props.onUpdateCommentLocation}
           />
         </div>
       </div>

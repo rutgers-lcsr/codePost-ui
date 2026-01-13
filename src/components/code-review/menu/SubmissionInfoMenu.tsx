@@ -20,6 +20,7 @@ import {
 import {
   Alert,
   Avatar,
+  Button,
   Card,
   Col,
   Divider,
@@ -32,19 +33,21 @@ import {
   Switch,
   Tabs,
   Tag,
-  theme,
   Typography,
 } from 'antd';
 
 /* other library imports */
-import moment from 'moment';
+import dayjs from 'dayjs';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+
+dayjs.extend(localizedFormat);
 import ReactMarkdown from 'react-markdown';
 
 /* codePost imports */
 import { AssignmentType } from '../../../infrastructure/assignment';
 import { AnonymousSubmissionType, StudentSubmissionType } from '../../../infrastructure/submission';
 
-import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
+import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
 import CPButton from '../../core/CPButton';
 import CPTooltip from '../../core/CPTooltip';
@@ -53,7 +56,7 @@ import { tooltips } from '../../core/tooltips';
 import { CodePostDate } from '../../utils/CodepostDate';
 
 const { confirm } = Modal;
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 /**********************************************************************************************************************/
 
@@ -85,11 +88,6 @@ interface ISubmissionInfoWriteProps {
 
 const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  const { token } = theme.useToken();
-  // consoleThemes.dark is the object reference, consoleTheme is the current value
-  // In the context definition: consoleTheme: consoleThemes.light
-  // So strict equality works if references are preserved.
-  const isDark = consoleTheme === consoleThemes.dark;
 
   const [lateDaySelectValue, setLateDaySelectValue] = React.useState(
     props.submission !== undefined ? props.submission.lateDayCreditsUsed : 0,
@@ -106,11 +104,8 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
           props.submission.dateUploaded !== null &&
           Date.parse(props.submission.dateUploaded) > Date.parse(props.assignment.uploadDueDate) + two_hours;
 
-        // const uploaded = moment(props.submission.dateUploaded);
-        const due = moment(props.assignment.uploadDueDate);
-        const daysLate = props.submission.dateUploaded
-          ? moment(props.submission.dateUploaded).diff(due, 'days') + 1
-          : 0;
+        const due = dayjs(props.assignment.uploadDueDate);
+        const daysLate = props.submission.dateUploaded ? dayjs(props.submission.dateUploaded).diff(due, 'days') + 1 : 0;
 
         if (props.courseLateDayCreditsAllowable !== null && isLate) {
           const onChange = async (val: any) => {
@@ -151,37 +146,41 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
         submittedInfo = (
           <div
             style={{
-              backgroundColor: consoleTheme.siderSubmenuTitleBg,
+              backgroundColor: consoleTheme.siderSubmenuTitleBg, // Uses new polished darkbg
               borderRadius: 8,
-              padding: 12,
-              border: consoleTheme.siderSubmenuBorder,
+              padding: '16px 12px',
+              border: `1px solid ${consoleTheme.siderSubmenuBorder ? consoleTheme.siderSubmenuBorder.split('solid ')[1] : '#30363d'}`, // Extract color or use fallback
             }}
           >
-            <Row gutter={[16, 8]}>
+            <Row gutter={[16, 12]}>
               <Col span={24}>
                 <Space align="start">
-                  <CalendarOutlined style={{ color: token.colorTextSecondary }} />
+                  <CalendarOutlined style={{ color: consoleTheme.siderMenuItemColor, fontSize: 16, marginTop: 2 }} />
                   <div>
-                    <Text type="secondary" style={{ fontSize: 11, display: 'block' }}>
+                    <Text style={{ fontSize: 11, display: 'block', color: consoleTheme.siderMenuItemColor, fontWeight: 600, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
                       Uploaded
                     </Text>
-                    {props.submission.dateUploaded ? (
-                      <CodePostDate datetime={props.submission.dateUploaded} />
-                    ) : (
-                      'Not uploaded'
-                    )}
+                    <Text style={{ color: consoleTheme.text }}>
+                      {props.submission.dateUploaded ? (
+                        <CodePostDate datetime={props.submission.dateUploaded} />
+                      ) : (
+                        'Not uploaded'
+                      )}
+                    </Text>
                   </div>
                 </Space>
               </Col>
               <Col span={24}>
                 <Space align="start">
-                  <ClockCircleOutlined style={{ color: token.colorTextSecondary }} />
+                  <ClockCircleOutlined style={{ color: consoleTheme.siderMenuItemColor, fontSize: 16, marginTop: 2 }} />
                   <div>
-                    <Text type="secondary" style={{ fontSize: 11, display: 'block' }}>
+                    <Text style={{ fontSize: 11, display: 'block', color: consoleTheme.siderMenuItemColor, fontWeight: 600, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
                       Due Date
                     </Text>
                     <Space>
-                      <CodePostDate datetime={props.assignment.uploadDueDate} />
+                      <Text style={{ color: consoleTheme.text }}>
+                        <CodePostDate datetime={props.assignment.uploadDueDate} />
+                      </Text>
                       {isLate && (
                         <Tag color="volcano" style={{ margin: 0, fontSize: 10, lineHeight: '16px' }}>
                           LATE {daysLate}d
@@ -214,7 +213,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
   const showGraderToStudent = props.isStudentMode && graderEmail && canSeeGrader;
 
   return (
-    <div id="submission-info" style={{ padding: '0 15px 15px' }}>
+    <div id="submission-info" style={{ padding: '10px 15px 15px' }}>
       <Space direction="vertical" size="middle" style={{ width: '100%' }}>
         {submittedInfo}
 
@@ -224,7 +223,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
               fontSize: 11,
               fontWeight: 600,
               textTransform: 'uppercase',
-              color: token.colorTextSecondary,
+              color: consoleTheme.siderMenuItemColor,
               marginBottom: 8,
             }}
           >
@@ -240,8 +239,9 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
                 fontSize: 11,
                 fontWeight: 600,
                 textTransform: 'uppercase',
-                color: token.colorTextSecondary,
+                color: consoleTheme.siderMenuItemColor,
                 marginBottom: 8,
+                marginTop: 8,
               }}
             >
               Grader
@@ -262,8 +262,9 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
                 fontSize: 11,
                 fontWeight: 600,
                 textTransform: 'uppercase',
-                color: token.colorTextSecondary,
+                color: consoleTheme.siderMenuItemColor,
                 marginBottom: 8,
+                marginTop: 8,
               }}
             >
               Grader
@@ -293,8 +294,8 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
         )}
 
         {props.readOnlySubmission !== undefined &&
-        props.submitStudentQuestion &&
-        props.assignment.allowRegradeRequests ? (
+          props.submitStudentQuestion &&
+          props.assignment.allowRegradeRequests ? (
           <StudentRegrade
             submission={props.readOnlySubmission}
             assignment={props.assignment}
@@ -531,9 +532,13 @@ export const Students = (props: {
       return <Tag color={'geekblue'}>Anonymized</Tag>;
     } else {
       return (
-        <div>
-          {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-          <Tag color={'geekblue'}>Anonymized</Tag> <a onClick={reveal}>reveal</a>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Tag color={'geekblue'} style={{ margin: 0 }}>
+            Anonymized
+          </Tag>
+          <Button type="link" size="small" onClick={reveal} style={{ padding: 0, height: 'auto' }}>
+            reveal
+          </Button>
         </div>
       );
     }
@@ -627,7 +632,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
   const regradeTextStyle = { padidngTop: 10, fontWeight: 500 };
 
   const deadline = props.assignment.regradeDeadline
-    ? `Deadline: ${moment(props.assignment.regradeDeadline).format('llll')}`
+    ? `Deadline: ${dayjs(props.assignment.regradeDeadline).format('llll')}`
     : '';
 
   const cancelButton = (

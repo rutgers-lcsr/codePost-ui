@@ -32,7 +32,7 @@
  */
 
 import { useCallback, useEffect } from 'react';
-import { getOperatingSystem, OS } from '../../core/operatingSystem';
+import { getOsTriggerKeyFromEvent } from '../../core/operatingSystem';
 
 export interface KeyboardShortcutHandlers {
   /** Toggle keyboard shortcuts help modal */
@@ -91,8 +91,7 @@ export const useKeyboardShortcuts = (options: UseKeyboardShortcutsOptions) => {
     (e: KeyboardEvent) => {
       if (!enabled) return;
 
-      const os = getOperatingSystem();
-      const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+      const triggerKey = getOsTriggerKeyFromEvent(e);
 
       // Cmd/Ctrl + / : Toggle keyboard shortcuts help
       if (e.key === '/' && triggerKey) {
@@ -110,20 +109,7 @@ export const useKeyboardShortcuts = (options: UseKeyboardShortcutsOptions) => {
         return;
       }
 
-      // Cmd/Ctrl + Shift + E : Toggle custom comment explorer
-      if (e.key === 'e' && triggerKey && e.shiftKey) {
-        e.preventDefault();
-        e.stopPropagation();
 
-        if (state.cursorModeEnabled && state.hasActiveComment) {
-          // In cursor mode with active comment: clear the active comment
-          handlers.onClearActiveComment?.();
-        } else {
-          // Otherwise: toggle comment explorer
-          handlers.onToggleCommentExplorer?.();
-        }
-        return;
-      }
 
       // The following shortcuts only work in cursor mode
       if (!state.cursorModeEnabled || !state.hasSelectedFile) {
@@ -169,8 +155,7 @@ export const useKeyboardShortcuts = (options: UseKeyboardShortcutsOptions) => {
   return {
     // Return utility function for components that need to know if a shortcut is active
     isShortcutKey: (e: KeyboardEvent | React.KeyboardEvent, key: string) => {
-      const os = getOperatingSystem();
-      const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+      const triggerKey = getOsTriggerKeyFromEvent(e);
       return e.key === key && triggerKey;
     },
   };

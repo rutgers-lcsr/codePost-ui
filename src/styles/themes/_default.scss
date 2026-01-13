@@ -25,8 +25,8 @@
 
   // Global scrollbar override for dark theme
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
 
   ::-webkit-scrollbar-track {
@@ -38,11 +38,13 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: content-box;
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.3);
+      background-color: rgba(255, 255, 255, 0.2);
     }
   }
 
@@ -50,123 +52,210 @@
   .ant-input,
   .ant-input-number,
   .ant-select-selector {
-    // background-color: #323435 !important;
-    border-color: #57595c !important;
-    color: rgba(255, 255, 255, 0.9) !important;
+    background-color: #0d1117 !important;
+    border-color: #30363d !important;
+    color: #c9d1d9 !important;
+
+    &:hover,
+    &:focus,
+    &.ant-input-focused {
+      border-color: #58a6ff !important;
+    }
   }
 
   .ant-input::placeholder,
   .ant-input-number::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: #8b949e;
   }
 
   // Select dropdown
   .ant-select-item {
-    color: rgba(255, 255, 255, 0.9);
+    color: #c9d1d9;
   }
 
   .ant-select-dropdown {
-    background-color: #323435;
+    background-color: #161b22;
+    border: 1px solid #30363d;
   }
 
   .ant-select-item-option-selected {
-    background-color: #17181a;
+    background-color: #21262d;
+    font-weight: 500;
+    color: #fff;
+  }
+
+  .ant-select-item-option-active {
+    background-color: #21262d !important;
   }
 
   // Table
   .ant-table {
-    background-color: #17181a;
-    color: rgba(255, 255, 255, 0.9);
+    background-color: #0d1117;
+    color: #c9d1d9;
   }
 
   .ant-table-thead>tr>th {
-    background-color: #323435;
-    color: rgba(255, 255, 255, 0.9);
-    border-bottom-color: #57595c;
+    background-color: #161b22;
+    color: #c9d1d9;
+    border-bottom: 1px solid #30363d;
+    font-weight: 600;
   }
 
   .ant-table-tbody>tr>td {
-    border-bottom-color: #57595c;
+    border-bottom: 1px solid #30363d;
+    background-color: #0d1117;
   }
 
   .ant-table-tbody>tr:hover>td {
-    background-color: #323435;
+    background-color: #161b22 !important;
+  }
+
+  .ant-pagination-item {
+    background-color: #0d1117;
+    border-color: #30363d;
+
+    a {
+      color: #c9d1d9;
+    }
+
+    &:hover {
+      border-color: #58a6ff;
+
+      a {
+        color: #58a6ff;
+      }
+    }
+  }
+
+  .ant-pagination-item-active {
+    border-color: #238636; // Green accent
+    background-color: #238636;
+
+    a {
+      color: #fff;
+    }
+
+    &:hover {
+      border-color: #2ea043;
+      background-color: #2ea043;
+    }
   }
 
   // Modal
   .ant-modal-content {
-    background-color: #18191b;
-    color: rgba(255, 255, 255, 0.9);
+    background-color: #161b22;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   }
 
   .ant-modal-header {
-    background-color: #323435;
-    border-bottom-color: #57595c;
+    background-color: #161b22;
+    border-bottom: 1px solid #30363d;
   }
 
   .ant-modal-title {
-    color: rgba(255, 255, 255, 0.9);
+    color: #c9d1d9;
   }
 
   .ant-modal-footer {
-    border-top-color: #57595c;
+    border-top: 1px solid #30363d;
+  }
+
+  .ant-modal-close-x {
+    color: #8b949e;
+
+    &:hover {
+      color: #c9d1d9;
+    }
   }
 
   // Collapse
   .ant-collapse {
-    background-color: #17181a;
-    border-color: #57595c;
+    background-color: #0d1117;
+    border-color: #30363d;
   }
 
   .ant-collapse-item {
-    border-bottom-color: #57595c;
+    border-bottom-color: #30363d;
   }
 
   .ant-collapse-header {
-    color: rgba(255, 255, 255, 0.9);
+    color: #c9d1d9;
+    background-color: #161b22 !important;
   }
 
   .ant-collapse-content {
-    background-color: #18191b;
-    color: rgba(255, 255, 255, 0.9);
-    border-top-color: #57595c;
+    background-color: #0d1117;
+    color: #c9d1d9;
+    border-top-color: #30363d;
   }
 
   // Tabs
   .ant-tabs-tab {
-    color: rgba(255, 255, 255, 0.7);
+    color: #8b949e;
+
+    &:hover {
+      color: #c9d1d9;
+    }
   }
 
   .ant-tabs-tab-active {
-    color: rgba(255, 255, 255, 0.9);
+    color: #c9d1d9 !important;
+
+    .ant-tabs-tab-btn {
+      color: #c9d1d9 !important;
+    }
   }
 
   .ant-tabs-ink-bar {
-    background-color: #24be85;
+    background-color: #238636;
+  }
+
+  .ant-tabs-top>.ant-tabs-nav::before {
+    border-bottom-color: #30363d;
   }
 
   // Checkbox and Radio
   .ant-checkbox-wrapper,
   .ant-radio-wrapper {
-    color: rgba(255, 255, 255, 0.9);
+    color: #c9d1d9;
   }
 
   .ant-checkbox-inner,
   .ant-radio-inner {
-    background-color: #323435;
-    border-color: #57595c;
+    background-color: #0d1117;
+    border-color: #30363d;
+  }
+
+  .ant-checkbox-checked .ant-checkbox-inner {
+    background-color: #238636;
+    border-color: #238636;
   }
 
   // Buttons (secondary/default type)
   .ant-btn-default {
-    background-color: #202223;
-    border-color: #57595c;
-    color: rgba(255, 255, 255, 0.9);
+    background-color: #21262d;
+    border-color: #30363d;
+    color: #c9d1d9;
 
-    &:hover {
-      background-color: #323435;
-      border-color: #24be85;
-      color: rgba(255, 255, 255, 0.9);
+    &:hover,
+    &:focus {
+      background-color: #30363d;
+      border-color: #8b949e;
+      color: #fff;
+    }
+  }
+
+  .ant-btn-primary {
+    // background-color: #238636; // GitHub Green
+    // border-color: #238636;
+    box-shadow: none;
+
+    &:hover,
+    &:focus {
+      // background-color: #2ea043;
+      // border-color: #2ea043;
     }
   }
 
@@ -174,64 +263,68 @@
   .ant-btn-default[disabled],
   .ant-input[disabled],
   .ant-input-number[disabled] {
-    background-color: rgba(0, 0, 0, 0.2);
-    color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.25);
+    border-color: transparent !important;
   }
 
   // Form items
   .ant-form-item-label>label {
-    color: rgba(255, 255, 255, 0.9);
+    color: #c9d1d9;
   }
 
   // Divider
   .ant-divider {
-    border-top-color: #57595c;
+    border-top-color: #30363d;
   }
 
   // Tooltip
   .ant-tooltip-inner {
-    background-color: #323435;
-    color: rgba(255, 255, 255, 0.9);
+    background-color: #161b22;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   }
 
   .ant-tooltip-arrow-content {
-    background-color: #323435;
+    background-color: #161b22;
   }
 
   // Empty state
   .ant-empty-description {
-    color: rgba(255, 255, 255, 0.7);
+    color: #8b949e;
   }
 
   // Dropdown menu
   .ant-dropdown-menu {
-    background-color: #323435;
+    background-color: #161b22;
+    border: 1px solid #30363d;
   }
 
   .ant-dropdown-menu-item {
-    color: rgba(255, 255, 255, 0.9);
+    color: #c9d1d9;
 
     &:hover {
-      background-color: #17181a;
+      background-color: #21262d;
     }
   }
 
   // Drawer
   .ant-drawer-content {
-    background-color: #18191b;
+    background-color: #0d1117;
   }
 
   .ant-drawer-header {
-    background-color: #323435;
-    border-bottom-color: #57595c;
+    background-color: #161b22;
+    border-bottom-color: #30363d;
   }
 
   .ant-drawer-title {
-    color: rgba(255, 255, 255, 0.9);
+    color: #c9d1d9;
   }
 
   .ant-drawer-body {
-    color: rgba(255, 255, 255, 0.9);
+    color: #c9d1d9;
   }
 
   // Badge
@@ -241,111 +334,104 @@
 
   // Tag
   .ant-tag {
-    background-color: #323435;
-    border-color: #57595c;
-    color: rgba(255, 255, 255, 0.9);
-  }
-
-  // Pagination
-  .ant-pagination-item {
-    background-color: #323435;
-    border-color: #57595c;
-
-    a {
-      color: rgba(255, 255, 255, 0.9);
-    }
-
-    &:hover {
-      border-color: #24be85;
-    }
-  }
-
-  .ant-pagination-item-active {
-    background-color: #24be85;
-    border-color: #24be85;
-
-    a {
-      color: #fff;
-    }
+    background-color: #161b22;
+    border-color: #30363d;
+    color: #c9d1d9;
   }
 
   // Switch
   .ant-switch {
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: #30363d;
   }
 
   .ant-switch-checked {
-    background-color: #24be85;
+    background-color: #238636;
   }
 
   // Slider
   .ant-slider-rail {
-    background-color: #323435;
+    background-color: #30363d;
   }
 
   .ant-slider-track {
-    background-color: #24be85;
+    background-color: #238636;
   }
 
   .ant-slider-handle {
-    border-color: #24be85;
+    border-color: #238636;
   }
 
   // Progress
   .ant-progress-text {
-    color: rgba(255, 255, 255, 0.9);
+    color: #c9d1d9;
   }
 
   // Alert
   .ant-alert {
-    background-color: #323435;
-    border-color: #57595c;
+    background-color: #161b22;
+    border-color: #30363d;
+  }
+
+  .ant-alert-info {
+    background-color: rgba(56, 139, 253, 0.1);
+    border-color: rgba(56, 139, 253, 0.4);
+
+    .ant-alert-message {
+      color: #58a6ff;
+    }
   }
 
   // Descriptions
   .ant-descriptions-bordered .ant-descriptions-item-label {
-    background-color: #323435;
+    background-color: #161b22;
+    border-right: 1px solid #30363d;
   }
 
   .ant-descriptions-bordered .ant-descriptions-item-content {
-    background-color: #18191b;
+    background-color: #0d1117;
+  }
+
+  .ant-descriptions-bordered .ant-descriptions-row {
+    border-bottom: 1px solid #30363d;
   }
 
   // Textarea
   textarea.ant-input {
-    background-color: #494d4f !important;
-    color: rgba(255, 255, 255, 0.9) !important;
+    background-color: #0d1117 !important;
+    color: #c9d1d9 !important;
+    border-color: #30363d !important;
   }
 
   // List
   .ant-list-item {
-    border-bottom-color: #57595c;
+    border-bottom-color: #30363d;
+    color: #c9d1d9;
   }
 
   // Card (used for comments)
   .ant-card {
-    background-color: #18191b;
-    color: rgba(255, 255, 255, 0.9);
-    border-color: #57595c;
+    background-color: #161b22;
+    color: #c9d1d9;
+    border-color: #30363d;
   }
 
   .ant-card-head {
-    background-color: #494d4f;
-    border-bottom-color: rgba(0, 0, 0, 0.09);
-    color: rgba(255, 255, 255, 0.85);
+    background-color: #161b22;
+    border-bottom-color: #30363d;
+    color: #c9d1d9;
   }
 
   .ant-card-head-title {
-    color: rgba(255, 255, 255, 0.85);
+    color: #c9d1d9;
   }
 
   .ant-card-body {
-    background-color: #18191b;
-    color: rgba(255, 255, 255, 0.9);
+    background-color: #0d1117;
+    color: #c9d1d9;
   }
 
   .ant-card-extra {
-    color: rgba(255, 255, 255, 0.85);
+    color: #8b949e;
   }
 
   // // Comment specific styles
@@ -367,64 +453,72 @@
   #file-menu {
     .sider-submenu {
       .ant-menu-submenu-title {
-        background-color: #323435 !important;
-        color: rgba(255, 255, 255, 0.9) !important;
-        border-top: 1px solid #17181a !important;
+        background-color: #161b22 !important;
+        color: #c9d1d9 !important;
+        border-top: 1px solid #30363d !important;
       }
 
       .ant-menu-item {
-        color: rgba(255, 255, 255, 0.65);
+        color: #8b949e;
       }
 
       .ant-menu-item-selected {
-        color: #24be85 !important;
+        color: #58a6ff !important;
+        background-color: rgba(56, 139, 253, 0.1) !important;
       }
     }
 
     .ant-menu-submenu-arrow {
-      color: rgba(255, 255, 255, 0.65);
+      color: #8b949e;
     }
   }
 
   // Sider menu items
   .sider-menu {
     .ant-menu-item {
-      color: rgba(255, 255, 255, 0.65);
+      color: #8b949e;
 
       &:hover {
-        color: rgba(255, 255, 255, 0.9);
+        color: #c9d1d9;
       }
     }
 
     .ant-menu-item-selected {
-      background-color: #323435 !important;
-      color: #24be85 !important;
+      background-color: #161b22 !important;
+      color: #c9d1d9 !important;
+      border-right: 2px solid #238636;
     }
   }
 
   // Popover (for delete confirmations, etc.)
   .ant-popover {
     .ant-popover-inner {
-      background-color: #323435;
+      background-color: #161b22;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      border: 1px solid #30363d;
     }
 
     .ant-popover-title {
-      color: rgba(255, 255, 255, 0.9);
-      border-bottom-color: #57595c;
+      color: #c9d1d9;
+      border-bottom-color: #30363d;
     }
 
     .ant-popover-inner-content {
-      color: rgba(255, 255, 255, 0.9);
+      color: #c9d1d9;
+    }
+
+    .ant-popover-arrow {
+      border-color: #30363d !important;
     }
 
     .ant-popover-arrow-content {
-      background-color: #323435;
+      background-color: #161b22;
     }
   }
 
   // Markdown content in comments
   .markdown-body {
-    color: rgba(255, 255, 255, 0.9);
+    color: #c9d1d9;
 
     h1,
     h2,
@@ -432,17 +526,17 @@
     h4,
     h5,
     h6 {
-      color: rgba(255, 255, 255, 0.95);
-      border-bottom-color: #57595c;
+      color: #c9d1d9;
+      border-bottom-color: #30363d;
     }
 
     code {
-      background-color: #494d4f;
-      color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(110, 118, 129, 0.4);
+      color: #c9d1d9;
     }
 
     pre {
-      background-color: #17181a;
+      background-color: #161b22;
 
       code {
         background-color: transparent;
@@ -450,43 +544,44 @@
     }
 
     blockquote {
-      border-left-color: #57595c;
-      color: rgba(255, 255, 255, 0.7);
+      border-left-color: #30363d;
+      color: #8b949e;
     }
 
     table {
 
       th,
       td {
-        border-color: #57595c;
+        border-color: #30363d;
       }
 
       tr {
-        background-color: #18191b;
-        border-top-color: #57595c;
+        background-color: #0d1117;
+        border-top-color: #30363d;
       }
 
       tr:nth-child(2n) {
-        background-color: #212325;
+        background-color: #161b22;
       }
     }
 
     a {
-      color: #40a9ff;
+      color: #58a6ff;
     }
   }
 
   // Fix for text inputs in comment areas
   .cp-comment__text-area {
-    background-color: #494d4f !important;
-    color: rgba(255, 255, 255, 0.9) !important;
+    background-color: #0d1117 !important;
+    color: #c9d1d9 !important;
+    border-color: #30363d !important;
   }
 
   // Submission info panel
   .submission-info__late-day-credits {
     .ant-alert {
-      background-color: #323435;
-      border-color: #57595c;
+      background-color: #161b22;
+      border-color: #30363d;
     }
   }
 

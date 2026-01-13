@@ -59,7 +59,7 @@ function getAuthToken(): string {
 /**
  * Gets Decoded Token Payload
  */
-function getDecodedTokenPayload(): any | null {
+export function getDecodedTokenPayload(): any | null {
   const token = getAuthToken();
   if (!token) return null;
 

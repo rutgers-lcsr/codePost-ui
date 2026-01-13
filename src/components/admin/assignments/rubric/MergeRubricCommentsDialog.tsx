@@ -15,7 +15,11 @@ interface IMergeRubricCommentsDialogProps {
   rubricComments: IRubricCategoryToRubricCommentsMap;
   isDisabled: boolean;
   assignment: AssignmentType;
-  reloadRubric: (assignment: AssignmentType) => Promise<void>;
+  reloadRubric: (
+    assignment: AssignmentType,
+    shouldLoadInstances: boolean,
+    shouldLoadFeedback: boolean,
+  ) => Promise<void>;
 }
 
 const MergeRubricCommentsDialog: FC<IMergeRubricCommentsDialogProps> = ({
@@ -81,7 +85,7 @@ const MergeRubricCommentsDialog: FC<IMergeRubricCommentsDialogProps> = ({
     Promise.all(relinkCommentPromises)
       .then(() => {
         RubricComment.delete({ id: fromComment.id }).then(() => {
-          reloadRubric(assignment).then(() => {
+          reloadRubric(assignment, false, false).then(() => {
             closeDialog();
             setIsLoading(false);
           });

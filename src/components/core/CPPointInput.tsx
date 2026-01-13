@@ -75,7 +75,7 @@ const CPPointInput: React.FC<ICPPointInputProps> = ({
       const newSign = Math.sign(value);
 
       // If signs are different (or one is zero and other isn't), this is likely a navigation
-      if ((prevSign !== newSign) || (prevValue === 0 && value !== 0)) {
+      if (prevSign !== newSign || (prevValue === 0 && value !== 0)) {
         setPointType(getTypeFromValue(value, defaultToPositive));
       }
     } else if (value !== undefined && prevValue === undefined) {
@@ -149,7 +149,7 @@ const CPPointInput: React.FC<ICPPointInputProps> = ({
 
   const displayValue = value !== undefined ? Math.abs(value) : undefined;
   const isBonus = pointType === 'positive';
-  const isDecrementDisabled = disabled || (displayValue === 0 || displayValue === undefined);
+  const isDecrementDisabled = disabled || displayValue === 0 || displayValue === undefined;
 
   return (
     <div className={`${groupClass} cp-point-input--${size}`}>

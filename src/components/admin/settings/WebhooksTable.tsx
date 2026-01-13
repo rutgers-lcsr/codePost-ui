@@ -1,10 +1,14 @@
 import { DownOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Dropdown, Form, Input, message, Popconfirm, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
 import React, { useContext, useEffect, useRef, useState } from 'react';
+
+dayjs.extend(localizedFormat);
 import { CourseType } from '../../../infrastructure/course';
 import { VALID_WEBHOOKS, Webhook, WebhookType } from '../../../infrastructure/webhook';
+import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../../utils/LocalSettings';
 
 const EditableContext = React.createContext<any>(null);
 
@@ -116,7 +120,7 @@ const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
       action: webhook.event.split('.')[1],
       target: webhook.target,
       lastTriggered: webhook.last_triggered_at ? (
-        moment(webhook.last_triggered_at).format('lll')
+        dayjs(webhook.last_triggered_at).format('lll')
       ) : (
         <Tag>Never Triggered</Tag>
       ),
@@ -131,6 +135,7 @@ const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
     })),
   );
   const [count, setCount] = useState(webhooks.length);
+  const [pageSize, setPageSize] = useState(LOCAL_SETTINGS.defaultPageSize.getter());
 
   const handleDelete = async (webhook: WebhookType) => {
     try {
@@ -307,6 +312,15 @@ const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
         bordered
         dataSource={dataSource}
         columns={mappedColumns}
+        pagination={{
+          pageSize,
+          showSizeChanger: true,
+          pageSizeOptions: PAGE_SIZE_OPTIONS,
+          onShowSizeChange: (_current, size) => {
+            setPageSize(size);
+            LOCAL_SETTINGS.defaultPageSize.setter(size);
+          },
+        }}
       />
     </div>
   );

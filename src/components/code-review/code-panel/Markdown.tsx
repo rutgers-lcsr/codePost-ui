@@ -118,8 +118,8 @@ JupyterImageComponent.displayName = 'JupyterImageComponent';
 interface MarkdownNode {
   type: string;
   position?: {
-    start: { line: number; column: number; offset: number };
-    end: { line: number; column: number; offset: number };
+    start: { line: number; column: number; offset?: number };
+    end: { line: number; column: number; offset?: number };
   };
   data?: {
     isTopLevel?: boolean;
@@ -175,6 +175,9 @@ function remarkMarkTopLevel() {
   };
 }
 
+const REMARK_PLUGINS = [remarkGfm, remarkMarkTopLevel];
+const REHYPE_PLUGINS = [rehypeRaw];
+
 /**********************************************************************************************************************/
 /* Main Component
 /**********************************************************************************************************************/
@@ -185,6 +188,30 @@ interface IMarkdownProps {
   executionResult?: { success: boolean; output_data?: any; error?: string } | null;
   onClearOutputs?: () => void;
 }
+
+interface MarkdownContextStore {
+  onHoverEnter?: (lineNumber: number) => void;
+  onHoverLeave?: (lineNumber: number) => void;
+  hasCommentsForLine?: (lineNumber: number) => boolean;
+  getCommentsForLine?: (lineNumber: number) => CommentType[];
+  isReadOnly?: boolean;
+  markdownTheme: MarkdownThemeValues;
+  syntaxHighlightTheme: React.ComponentProps<typeof SyntaxHighlighter>['style'];
+  getClassName: (index: number) => string;
+  onMouseUp: ((e: React.MouseEvent<HTMLElement>) => void) | undefined;
+  onKeyDown: ((e: React.KeyboardEvent<HTMLElement>) => void) | undefined;
+  isJupyter: boolean;
+}
+
+const MarkdownContext = React.createContext<MarkdownContextStore | null>(null);
+
+const useMarkdownContext = () => {
+  const context = React.useContext(MarkdownContext);
+  if (!context) {
+    throw new Error('useMarkdownContext must be used within a MarkdownContext.Provider');
+  }
+  return context;
+};
 
 const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdownProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
@@ -198,6 +225,46 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
   const [executedContent, setExecutedContent] = React.useState<string | null>(null);
 
   const { readOnly: isReadOnly, commentCounter, file, addComment, user } = props;
+
+  // Optimizing comment updates:
+  // Create a structural hash of comments so we only trigger re-renders when positions/counts change,
+  // not when text content changes (which happens on every keystroke during editing).
+  const commentsHash = React.useMemo(() => {
+    return props.comments
+      .map((c) => `${c.id}:${c.startLine}:${c.endLine}:${c.rubricComment}:${c.color}:${c.pointDelta}`)
+      .join('|');
+  }, [props.comments]);
+
+  const stableComments = React.useMemo(() => props.comments, [commentsHash]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Memoize comments by line locally for the Markdown view
+  // This allows us to decouple from the potentially unstable CommentHighlightContext
+  const stableCommentsByLine = React.useMemo(() => {
+    const map = new Map<number, CommentType[]>();
+    stableComments.forEach((comment) => {
+      for (let line = comment.startLine; line <= comment.endLine; line++) {
+        if (!map.has(line)) {
+          map.set(line, []);
+        }
+        map.get(line)!.push(comment);
+      }
+    });
+    return map;
+  }, [stableComments]);
+
+  const getCommentsForLine = React.useCallback(
+    (lineNumber: number): CommentType[] => {
+      return stableCommentsByLine.get(lineNumber) || [];
+    },
+    [stableCommentsByLine],
+  );
+
+  const hasCommentsForLine = React.useCallback(
+    (lineNumber: number): boolean => {
+      return stableCommentsByLine.has(lineNumber);
+    },
+    [stableCommentsByLine],
+  );
 
   // Convert file content to markdown format
   const fileContent = getFileContent(file);
@@ -226,27 +293,18 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
   // Track if we've already created a comment in this event cycle to prevent duplicates
   const commentCreatedRef = React.useRef<{ cellIndex: number; timestamp: number } | null>(null);
 
-  // Comment highlight context (may be undefined in some usage scenarios)
+  // Comment highlight context
   const commentHighlight = React.useContext(CommentHighlightContext);
   const setHoveredCommentId = commentHighlight?.setHoveredCommentId;
-  const getCommentsForLine = commentHighlight?.getCommentsForLine;
-  const lineHasComments = commentHighlight?.lineHasComments;
+  // We use our local stable versions of these:
+  // const getCommentsForLine = commentHighlight?.getCommentsForLine;
+  // const lineHasComments = commentHighlight?.lineHasComments;
   const isCommentHovered = commentHighlight?.isCommentHovered;
   const contextOnHighlightClick = commentHighlight?.onHighlightClick;
 
-  const hasCommentsForLine = React.useCallback(
-    (lineNumber: number) => {
-      if (!lineHasComments) {
-        return false;
-      }
-      return lineHasComments(lineNumber);
-    },
-    [lineHasComments],
-  );
-
   const handleHoverEnterLine = React.useCallback(
     (lineNumber: number) => {
-      if (!setHoveredCommentId || !getCommentsForLine) {
+      if (!setHoveredCommentId) {
         return;
       }
 
@@ -262,7 +320,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
 
   const handleHoverLeaveLine = React.useCallback(
     (lineNumber: number) => {
-      if (!setHoveredCommentId || !getCommentsForLine || !isCommentHovered) {
+      if (!setHoveredCommentId || !isCommentHovered) {
         return;
       }
 
@@ -278,7 +336,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
 
   const handleExistingCommentOpen = React.useCallback(
     (event: BlockInteractionEvent, lineNumber: number): boolean => {
-      if (!contextOnHighlightClick || !getCommentsForLine) {
+      if (!contextOnHighlightClick) {
         return false;
       }
 
@@ -418,25 +476,42 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
     [extractLineNumber, handleExistingCommentOpen, isReadOnly, attemptAddComment],
   );
 
-  const getClassNameForLine = React.useCallback(
+  const getClassName = React.useCallback(
     (lineNumber: number) => {
-      return getBlockClassName(props.comments, isReadOnly, lineNumber);
+      // Use stableComments instead of props.comments
+      return getBlockClassName(stableComments, isReadOnly, lineNumber);
     },
-    [props.comments, isReadOnly],
+    [stableComments, isReadOnly],
   );
 
-  const components = useMarkdownRenderers(getClassNameForLine, handleBlockMouseUp, handleBlockKeyDown, isJupyter, {
-    onHoverEnter: handleHoverEnterLine,
-    onHoverLeave: handleHoverLeaveLine,
-    hasCommentsForLine,
-    getCommentsForLine,
-    isReadOnly,
-    markdownTheme,
-    syntaxHighlightTheme,
-  });
-
-  const remarkPlugins = [remarkGfm, remarkMarkTopLevel];
-  const rehypePlugins = [rehypeRaw];
+  const contextValue = React.useMemo<MarkdownContextStore>(
+    () => ({
+      onHoverEnter: handleHoverEnterLine,
+      onHoverLeave: handleHoverLeaveLine,
+      hasCommentsForLine,
+      getCommentsForLine,
+      isReadOnly,
+      markdownTheme,
+      syntaxHighlightTheme,
+      getClassName,
+      onMouseUp: handleBlockMouseUp,
+      onKeyDown: handleBlockKeyDown,
+      isJupyter,
+    }),
+    [
+      handleHoverEnterLine,
+      handleHoverLeaveLine,
+      hasCommentsForLine,
+      getCommentsForLine,
+      isReadOnly,
+      markdownTheme,
+      syntaxHighlightTheme,
+      getClassName,
+      handleBlockMouseUp,
+      handleBlockKeyDown,
+      isJupyter,
+    ],
+  );
 
   // Handle external execution results (from ExecuteFileButton)
   React.useEffect(() => {
@@ -475,12 +550,25 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
     }
   }, [props.executionResult, isJupyter]);
 
-  return (
-    <div id="code-markdown" className="markdown" style={rootStyle}>
-      <ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={components as Components}>
+  const markdownElement = React.useMemo(
+    () => (
+      <ReactMarkdown
+        remarkPlugins={REMARK_PLUGINS}
+        rehypePlugins={REHYPE_PLUGINS}
+        components={markdownComponents as Components}
+      >
         {executedContent || markdown}
       </ReactMarkdown>
-    </div>
+    ),
+    [executedContent, markdown],
+  );
+
+  return (
+    <MarkdownContext.Provider value={contextValue}>
+      <div id="code-markdown" className="markdown" style={rootStyle}>
+        {markdownElement}
+      </div>
+    </MarkdownContext.Provider>
   );
 };
 
@@ -488,245 +576,184 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
 /* Component Renderers
 /**********************************************************************************************************************/
 
-interface MarkdownRendererOptions {
-  onHoverEnter?: (lineNumber: number) => void;
-  onHoverLeave?: (lineNumber: number) => void;
-  hasCommentsForLine?: (lineNumber: number) => boolean;
-  getCommentsForLine?: (lineNumber: number) => CommentType[];
-  isReadOnly?: boolean;
-  markdownTheme: MarkdownThemeValues;
-  syntaxHighlightTheme: React.ComponentProps<typeof SyntaxHighlighter>['style'];
-}
-
-const useMarkdownRenderers = (
-  getClassName: (index: number) => string,
-  onMouseUp: ((e: React.MouseEvent<HTMLElement>) => void) | undefined,
-  onKeyDown: ((e: React.KeyboardEvent<HTMLElement>) => void) | undefined,
-  isJupyter: boolean,
-  options: MarkdownRendererOptions,
-) => {
+// Helper hook for block props
+const useBlockProps = (props: MarkdownNodeProps, commentable: boolean = true) => {
   const {
+    isJupyter,
+    getCommentsForLine,
+    hasCommentsForLine,
+    isReadOnly: renderersReadOnly,
     onHoverEnter,
     onHoverLeave,
-    hasCommentsForLine,
-    getCommentsForLine,
-    isReadOnly: renderersReadOnly = false,
-    markdownTheme,
-    syntaxHighlightTheme,
-  } = options;
-  /**
-   * Generate props for block-level elements.
-   * Applies click handlers for commenting based on:
-   * - commentable: explicitly mark element as commentable (default true)
-   * - Line number from markdown position (or cell index for Jupyter)
-   *
-   * For Jupyter notebooks, we don't apply className OR index-number here since
-   * those are only applied to the cell wrapper div, not content elements inside.
-   */
-  const blockProps = (props: MarkdownNodeProps, commentable: boolean = true) => {
-    // Check if this element is marked as top-level by the remark plugin
-    // In react-markdown, custom attributes from hProperties become direct props
-    // We check both direct prop (preferred) and node properties (fallback)
-    const propsAny = props as any;
-    const isTopLevel =
-      propsAny['data-is-top-level'] === 'true' || props.node?.properties?.['data-is-top-level'] === 'true';
+    getClassName,
+    onMouseUp,
+    onKeyDown,
+  } = useMarkdownContext();
 
-    // Also consider it top-level if we're in Jupyter mode (where everything is wrapped in cells)
-    // or if we have explicit line numbers but no top-level marker (fallback)
-    const shouldRenderAsBlock = isJupyter || isTopLevel;
+  const propsAny = props as any;
+  const isTopLevel =
+    propsAny['data-is-top-level'] === 'true' || props.node?.properties?.['data-is-top-level'] === 'true';
+  const shouldRenderAsBlock = isJupyter || isTopLevel;
 
-    if (!shouldRenderAsBlock) {
-      return {
-        className: undefined,
-        'index-number': undefined,
-        onMouseUp: undefined,
-        onKeyDown: undefined,
-        onMouseEnter: undefined,
-        onMouseLeave: undefined,
-        'data-has-comment': undefined,
-        tabIndex: undefined,
-        role: undefined,
-        'aria-label': undefined,
-      };
-    }
+  if (!shouldRenderAsBlock) {
+    return {};
+  }
 
-    const rawLineNumber = props.node?.position?.start?.line;
-    const lineNumber = typeof rawLineNumber === 'number' ? rawLineNumber : undefined;
-    const commentsForLine = lineNumber !== undefined && getCommentsForLine ? getCommentsForLine(lineNumber) : [];
-    const hasComments =
-      lineNumber !== undefined && hasCommentsForLine ? hasCommentsForLine(lineNumber) === true : false;
-    if (lineNumber !== undefined && commentable) {
-      const displayIndex = lineNumber + 1;
-      const commentCount = commentsForLine.length;
-      const ariaLabel = hasComments
-        ? `Block ${displayIndex} with ${commentCount} comment${commentCount === 1 ? '' : 's'}`
-        : `Add comment on block ${displayIndex}`;
-      const shouldBeFocusable = !isJupyter && (!renderersReadOnly || hasComments);
+  const rawLineNumber = props.node?.position?.start?.line;
+  const lineNumber = typeof rawLineNumber === 'number' ? rawLineNumber : undefined;
+  const commentsForLine = lineNumber !== undefined && getCommentsForLine ? getCommentsForLine(lineNumber) : [];
+  const hasComments = lineNumber !== undefined && hasCommentsForLine ? hasCommentsForLine(lineNumber) === true : false;
 
-      return {
-        className: !isJupyter ? classNames(getClassName(lineNumber)) : undefined,
-        'index-number': !isJupyter ? lineNumber : undefined,
-        onMouseUp: !isJupyter ? onMouseUp : undefined,
-        onKeyDown: !isJupyter && shouldBeFocusable ? onKeyDown : undefined,
-        onMouseEnter:
-          !isJupyter && hasComments && onHoverEnter ? (_e: React.MouseEvent) => onHoverEnter(lineNumber) : undefined,
-        onMouseLeave:
-          !isJupyter && hasComments && onHoverLeave ? (_e: React.MouseEvent) => onHoverLeave(lineNumber) : undefined,
-        'data-has-comment': hasComments ? 'true' : undefined,
-        tabIndex: !isJupyter && shouldBeFocusable ? 0 : undefined,
-        role: !isJupyter && shouldBeFocusable ? 'button' : undefined,
-        'aria-label': !isJupyter && shouldBeFocusable ? ariaLabel : undefined,
-      };
-    }
+  if (lineNumber !== undefined && commentable) {
+    const displayIndex = lineNumber + 1;
+    const commentCount = commentsForLine.length;
+    const ariaLabel = hasComments
+      ? `Block ${displayIndex} with ${commentCount} comment${commentCount === 1 ? '' : 's'}`
+      : `Add comment on block ${displayIndex}`;
+    const shouldBeFocusable = !isJupyter && (!renderersReadOnly || hasComments);
 
     return {
-      className: undefined,
-      'index-number': undefined,
-      onMouseUp: undefined,
-      onKeyDown: undefined,
-      onMouseEnter: undefined,
-      onMouseLeave: undefined,
-      'data-has-comment': undefined,
-      tabIndex: undefined,
-      role: undefined,
-      'aria-label': undefined,
+      className: !isJupyter ? classNames(getClassName(lineNumber)) : undefined,
+      'index-number': !isJupyter ? lineNumber : undefined,
+      onMouseUp: !isJupyter ? onMouseUp : undefined,
+      onKeyDown: !isJupyter && shouldBeFocusable ? onKeyDown : undefined,
+      onMouseEnter:
+        !isJupyter && hasComments && onHoverEnter ? (_e: React.MouseEvent) => onHoverEnter(lineNumber) : undefined,
+      onMouseLeave:
+        !isJupyter && hasComments && onHoverLeave ? (_e: React.MouseEvent) => onHoverLeave(lineNumber) : undefined,
+      'data-has-comment': hasComments ? 'true' : undefined,
+      tabIndex: !isJupyter && shouldBeFocusable ? 0 : undefined,
+      role: !isJupyter && shouldBeFocusable ? 'button' : undefined,
+      'aria-label': !isJupyter && shouldBeFocusable ? ariaLabel : undefined,
     };
-  }; // Paragraph renderer - handle code blocks that might be wrapped in <p>
-  const paragraphRenderer = (props: MarkdownNodeProps) => {
-    // If paragraph only contains a code block, unwrap it to avoid DOM nesting warnings
-    const hasOnlyCodeChild =
-      React.Children.count(props.children) === 1 &&
-      React.Children.toArray(props.children).every((child) => React.isValidElement(child) && child.type === 'code');
+  }
 
-    if (hasOnlyCodeChild) {
-      return <>{props.children}</>;
-    }
+  return {};
+};
 
+const MarkdownParagraph = (props: MarkdownNodeProps) => {
+  const blockProps = useBlockProps(props);
+  // If paragraph only contains a code block, unwrap it to avoid DOM nesting warnings
+  const hasOnlyCodeChild =
+    React.Children.count(props.children) === 1 &&
+    React.Children.toArray(props.children).every((child) => React.isValidElement(child) && child.type === 'code');
+
+  if (hasOnlyCodeChild) {
+    return <>{props.children}</>;
+  }
+
+  return (
+    <p
+      {...blockProps}
+      style={{
+        paddingTop: '4px',
+        paddingBottom: '4px',
+        overflowX: 'auto',
+        whiteSpace: 'normal',
+      }}
+    >
+      {props.children}
+    </p>
+  );
+};
+
+const MarkdownList = (props: ListProps) => {
+  const blockProps = useBlockProps(props);
+  const filteredAttrs = Object.fromEntries(Object.entries(blockProps).filter(([_, value]) => value !== undefined));
+  return React.createElement(props.ordered ? 'ol' : 'ul', filteredAttrs, props.children);
+};
+
+const MarkdownCode = (props: CodeProps) => {
+  const { markdownTheme, syntaxHighlightTheme, isJupyter } = useMarkdownContext();
+  const blockProps = useBlockProps(props, true);
+
+  const { className, children } = props;
+  const inline = !props['data-is-top-level'];
+  const match = /language-(\w+)/.exec(className || '');
+  const language = match ? match[1] : '';
+  const codeString = String(children).replace(/\n$/, '');
+
+  if (inline) {
     return (
-      <p
-        {...blockProps(props)}
+      <code
         style={{
-          paddingTop: '4px',
-          paddingBottom: '4px',
-          overflowX: 'auto',
-          whiteSpace: 'normal',
+          fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
+          backgroundColor: markdownTheme.inlineCodeBg,
+          color: markdownTheme.inlineCodeColor,
+          padding: '2px 6px',
+          borderRadius: '4px',
+          fontSize: '0.9em',
+          fontWeight: 500,
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+          border: `1px solid ${markdownTheme.inlineCodeBorder}`,
         }}
       >
-        {props.children}
-      </p>
+        {children}
+      </code>
     );
-  };
+  }
 
-  // List renderer (ordered or unordered)
-  const listRenderer = (props: ListProps) => {
-    const attrs = blockProps(props);
-    const filteredAttrs = Object.fromEntries(Object.entries(attrs).filter(([_, value]) => value !== undefined));
-    return React.createElement(props.ordered ? 'ol' : 'ul', filteredAttrs, props.children);
-  };
-
-  // Code renderer - handles both inline code and code blocks
-  const codeRenderer = (props: CodeProps) => {
-    const { className, children, ...rest } = props;
-    const inline = !props['data-is-top-level'];
-
-    // Extract language from className (format: "language-python")
-    const match = /language-(\w+)/.exec(className || '');
-    const language = match ? match[1] : '';
-
-    // Extract text content from children
-    const codeString = String(children).replace(/\n$/, '');
-
-    // Inline code (like `code`)
-    if (inline) {
-      return (
-        <code
+  if (language === 'output') {
+    return (
+      <div style={{ margin: '4px 0px 8px 0px', display: 'block', width: '100%', boxSizing: 'border-box' }}>
+        <div
           style={{
-            fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
-            backgroundColor: markdownTheme.inlineCodeBg,
-            color: markdownTheme.inlineCodeColor,
-            padding: '2px 6px',
+            backgroundColor: markdownTheme.outputBackground,
+            border: `1px solid ${markdownTheme.outputBorder}`,
+            borderLeft: '3px solid #52c41a',
             borderRadius: '4px',
-            fontSize: '0.9em',
-            fontWeight: 500,
-            whiteSpace: 'pre-wrap',
+            fontFamily: 'monospace',
+            fontSize: '13px',
+            padding: '8px 12px',
             wordBreak: 'break-word',
-            border: `1px solid ${markdownTheme.inlineCodeBorder}`,
+            whiteSpace: 'pre-wrap',
+            overflowWrap: 'anywhere',
+            overflowX: 'auto',
+            width: '100%',
+            maxWidth: '100%',
+            boxSizing: 'border-box',
+            display: 'block',
           }}
         >
-          {children}
-        </code>
-      );
-    }
-
-    // Block code with special "output" language - NOT commentable (no blockProps)
-    if (language === 'output') {
-      return (
-        <div style={{ margin: '4px 0px 8px 0px', display: 'block', width: '100%', boxSizing: 'border-box' }}>
-          <div
-            style={{
-              backgroundColor: markdownTheme.outputBackground,
-              border: `1px solid ${markdownTheme.outputBorder}`,
-              borderLeft: '3px solid #52c41a',
-              borderRadius: '4px',
-              fontFamily: 'monospace',
-              fontSize: '13px',
-              padding: '8px 12px',
-              wordBreak: 'break-word',
-              whiteSpace: 'pre-wrap',
-              overflowWrap: 'anywhere',
-              overflowX: 'auto',
-              width: '100%',
-              maxWidth: '100%',
-              boxSizing: 'border-box',
-              display: 'block',
-            }}
-          >
-            {codeString || ' '}
-          </div>
+          {codeString || ' '}
         </div>
-      );
-    }
+      </div>
+    );
+  }
 
-    // Block code with special "error" language - NOT commentable (no blockProps)
-    if (language === 'error') {
-      return (
-        <div style={{ margin: '4px 0px 8px 0px', display: 'block', width: '100%', boxSizing: 'border-box' }}>
-          <div
-            style={{
-              backgroundColor: markdownTheme.outputBackground,
-              border: `1px solid ${markdownTheme.outputBorder}`,
-              borderLeft: '3px solid #ff4d4f',
-              borderRadius: '4px',
-              fontFamily: 'monospace',
-              fontSize: '13px',
-              padding: '8px 12px',
-              wordBreak: 'break-word',
-              whiteSpace: 'pre-wrap',
-              overflowWrap: 'anywhere',
-              overflowX: 'auto',
-              width: '100%',
-              maxWidth: '100%',
-              boxSizing: 'border-box',
-              display: 'block',
-              color: '#cf1322',
-            }}
-          >
-            {codeString || ' '}
-          </div>
-        </div>
-      );
-    }
-
-    const extraJupyterStyles = isJupyter
-      ? {
-          border: `1px solid ${markdownTheme.jupyterCellBorder}`,
-          padding: '10px',
-          boxShadow: 'inset 0 0 2px #64b5f6',
-        }
-      : {};
-
-    // Block code with syntax highlighting - COMMENTABLE (these are actual code blocks)
+  if (language === 'error') {
     return (
+      <div style={{ margin: '4px 0px 8px 0px', display: 'block', width: '100%', boxSizing: 'border-box' }}>
+        <div
+          style={{
+            backgroundColor: markdownTheme.outputBackground,
+            border: `1px solid ${markdownTheme.outputBorder}`,
+            borderLeft: '3px solid #ff4d4f',
+            borderRadius: '4px',
+            fontFamily: 'monospace',
+            fontSize: '13px',
+            padding: '8px 12px',
+            wordBreak: 'break-word',
+            whiteSpace: 'pre-wrap',
+            overflowWrap: 'anywhere',
+            overflowX: 'auto',
+            width: '100%',
+            maxWidth: '100%',
+            boxSizing: 'border-box',
+            display: 'block',
+            color: '#cf1322',
+          }}
+        >
+          {codeString || ' '}
+        </div>
+      </div>
+    );
+  }
+
+  // Memoize SyntaxHighlighter
+  const highlighter = React.useMemo(
+    () => (
       <SyntaxHighlighter
         language={language || 'text'}
         style={syntaxHighlightTheme}
@@ -735,7 +762,7 @@ const useMarkdownRenderers = (
           borderTop: '0px',
           borderRight: '0px',
           borderBottom: '0px',
-          margin: '8px 0px 10px 0px',
+          margin: '0px', // Handled by wrapper
           fontFamily: 'monospace',
           whiteSpace: 'pre-wrap',
           overflowX: 'auto',
@@ -743,236 +770,273 @@ const useMarkdownRenderers = (
           maxWidth: '100%',
           boxSizing: 'border-box',
           color: markdownTheme.text,
-          ...extraJupyterStyles,
         }}
         showLineNumbers={false}
         wrapLines={true}
         wrapLongLines={true}
-        {...blockProps(rest, true)} // Commentable: true for code blocks
       >
         {codeString || ' '}
       </SyntaxHighlighter>
-    );
-  };
+    ),
+    [language, codeString, syntaxHighlightTheme, markdownTheme],
+  );
 
-  // Horizontal rule renderer
-  const thematicBreakRenderer = (props: MarkdownNodeProps) => {
-    return <hr {...blockProps(props)} />;
-  };
+  const extraJupyterStyles = isJupyter
+    ? {
+        border: `1px solid ${markdownTheme.jupyterCellBorder}`,
+        padding: '10px',
+        boxShadow: 'inset 0 0 2px #64b5f6',
+      }
+    : {};
 
-  // Blockquote renderer
-  const blockQuoteRenderer = (props: MarkdownNodeProps) => {
+  return (
+    <div
+      {...blockProps}
+      style={{
+        margin: '8px 0px 10px 0px',
+        width: '100%',
+        ...extraJupyterStyles,
+      }}
+    >
+      {highlighter}
+    </div>
+  );
+};
+
+const MarkdownThematicBreak = (props: MarkdownNodeProps) => {
+  const blockProps = useBlockProps(props);
+  return <hr {...blockProps} />;
+};
+
+const MarkdownBlockQuote = (props: MarkdownNodeProps) => {
+  const { markdownTheme } = useMarkdownContext();
+  const blockProps = useBlockProps(props);
+  return (
+    <div {...blockProps} style={{ margin: '8px 0px 10px 0px' }}>
+      <blockquote
+        style={{
+          marginBottom: '0px',
+          paddingLeft: '12px',
+          borderLeft: `3px solid ${markdownTheme.blockQuoteBorder}`,
+        }}
+      >
+        {props.children}
+      </blockquote>
+    </div>
+  );
+};
+
+const MarkdownTable = (props: MarkdownNodeProps) => {
+  const blockProps = useBlockProps(props);
+  return (
+    <div {...blockProps} style={{ padding: '8px 10px 10px 30px', margin: '8px 0px 10px 0px', overflowX: 'auto' }}>
+      <table className="markdown-table">{props.children}</table>
+    </div>
+  );
+};
+
+const MarkdownHeading = (props: HeadingProps) => {
+  const blockProps = useBlockProps(props);
+  const headingTags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const;
+  const headingIndex = Math.min(Math.max(props.level ?? 1, 1), headingTags.length) - 1;
+  const Tag = headingTags[headingIndex];
+  return (
+    <Tag
+      {...blockProps}
+      style={{
+        marginTop: props.level <= 2 ? '16px' : '12px',
+        marginBottom: '8px',
+        fontWeight: 'normal',
+        lineHeight: 1.4,
+        scrollMarginTop: '100px',
+      }}
+    >
+      {props.children}
+    </Tag>
+  );
+};
+
+const MarkdownDiv = (props: MarkdownNodeProps) => {
+  const {
+    getClassName,
+    getCommentsForLine,
+    isReadOnly: renderersReadOnly,
+    onHoverEnter,
+    onHoverLeave,
+    onMouseUp,
+    onKeyDown,
+  } = useMarkdownContext();
+
+  // Check if this div has special attributes
+  const properties = props.node?.properties || {};
+
+  // Try different possible property names for the image data attribute
+  const imageId = (properties['data-jupyter-image'] ||
+    properties['dataJupyterImage'] ||
+    properties['data_jupyter_image']) as string;
+
+  if (imageId) {
+    // For image divs, render without blockProps (images are outputs, not commentable)
     return (
-      <div {...blockProps(props)} style={{ margin: '8px 0px 10px 0px' }}>
-        <blockquote
-          style={{
-            marginBottom: '0px',
-            paddingLeft: '12px',
-            borderLeft: `3px solid ${markdownTheme.blockQuoteBorder}`,
-          }}
-        >
-          {props.children}
-        </blockquote>
+      <div>
+        <JupyterImageComponent imageId={imageId} />
       </div>
     );
-  };
+  }
 
-  // Table renderer with wrapper for styling
-  const tableRenderer = (props: MarkdownNodeProps) => {
+  // Check for cell index marker (for Jupyter notebooks)
+  const cellIndex = (properties['dataCellIndex'] || properties['data-cell-index']) as string;
+  const cellUuid = (properties['dataCellUuid'] || properties['data-cell-uuid'] || properties['datacelluuid']) as string;
+
+  if (cellIndex !== undefined) {
+    const cellNum = parseInt(cellIndex, 10);
+    const cellComments = !Number.isNaN(cellNum) && getCommentsForLine ? getCommentsForLine(cellNum) : [];
+    const cellHasComments = cellComments.length > 0;
+    const cellIsInteractive = !Number.isNaN(cellNum) && (!renderersReadOnly || cellHasComments);
+    const cellDisplayIndex = Number.isNaN(cellNum) ? undefined : cellNum + 1;
+    const cellAriaLabel =
+      cellDisplayIndex !== undefined && cellIsInteractive
+        ? cellHasComments
+          ? `Cell ${cellDisplayIndex} with ${cellComments.length} comment${cellComments.length === 1 ? '' : 's'}`
+          : `Add comment on cell ${cellDisplayIndex}`
+        : undefined;
+
+    // Create a safe props object
+    const safeProps: Record<string, unknown> = {};
+    Object.keys(properties).forEach((key) => {
+      if (
+        key !== 'dataCellIndex' &&
+        key !== 'data-cell-index' &&
+        key !== 'indexNumber' &&
+        key !== 'index-number' &&
+        key !== 'dataCellUuid' &&
+        key !== 'data-cell-uuid' &&
+        key !== 'datacelluuid'
+      ) {
+        safeProps[key] = properties[key];
+      }
+    });
+
+    const baseClassName = getClassName(cellNum);
+    const baseClassTokens = baseClassName.split(' ').filter(Boolean);
+    const staticClasses = baseClassTokens.filter((cls) => !cls.startsWith('markdown-block--'));
+
+    const computedClassName = classNames(
+      staticClasses,
+      'jupyter-block',
+      {
+        'markdown-block--commented': cellHasComments,
+        'markdown-block--empty': !cellHasComments,
+      },
+      cellComments.map((comment) => `highlight-${comment.id}`),
+    );
+
     return (
       <div
-        {...blockProps(props)}
-        style={{ padding: '8px 10px 10px 30px', margin: '8px 0px 10px 0px', overflowX: 'auto' }}
+        data-jupyter-cell={cellIndex}
+        data-cell-uuid={cellUuid}
+        className={computedClassName}
+        index-number={cellIndex}
+        data-has-comment={cellHasComments ? 'true' : undefined}
+        onMouseUp={onMouseUp}
+        onKeyDown={cellIsInteractive ? onKeyDown : undefined}
+        onMouseEnter={cellHasComments && onHoverEnter ? (_e) => onHoverEnter(cellNum) : undefined}
+        onMouseLeave={cellHasComments && onHoverLeave ? (_e) => onHoverLeave(cellNum) : undefined}
+        tabIndex={cellIsInteractive ? 0 : undefined}
+        role={cellIsInteractive ? 'button' : undefined}
+        aria-label={cellAriaLabel}
+        {...safeProps}
+        title={`Cell ${1 + parseInt(cellIndex)}`}
       >
-        <table className="markdown-table">{props.children}</table>
+        {props.children}
       </div>
     );
-  };
-  const headingRenderer = (props: HeadingProps) => {
-    const headingTags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const;
-    const headingIndex = Math.min(Math.max(props.level ?? 1, 1), headingTags.length) - 1;
-    const Tag = headingTags[headingIndex];
-    return (
-      <Tag
-        {...blockProps(props)}
-        style={{
-          marginTop: props.level <= 2 ? '16px' : '12px',
-          marginBottom: '8px',
-          fontWeight: 'normal',
-          lineHeight: 1.4,
-          scrollMarginTop: '100px',
-        }}
-      >
-        {props.children}
-      </Tag>
-    );
-  };
+  }
 
-  // Div renderer - handle jupyter image markers and cell indices
-  const divRenderer = (props: MarkdownNodeProps) => {
-    // Check if this div has special attributes
-    const properties = props.node?.properties || {};
+  // Regular div handling
+  const blockProps = useBlockProps(props);
+  return <div {...blockProps}>{props.children}</div>;
+};
 
-    // Try different possible property names for the image data attribute
-    const imageId = (properties['data-jupyter-image'] ||
-      properties['dataJupyterImage'] ||
-      properties['data_jupyter_image']) as string;
+const MarkdownImage = (props: MarkdownNodeProps) => {
+  const properties = props.node?.properties || {};
+  let src = properties['src'] as string;
+  let alt = properties['alt'] as string;
 
-    if (imageId) {
-      // For image divs, render without blockProps (images are outputs, not commentable)
-      return (
-        <div>
-          <JupyterImageComponent imageId={imageId} />
-        </div>
-      );
-    }
+  // remove relative urls as we cannot resolve them in the browser.
+  if (!src || !(src.startsWith('data') || src.startsWith('http'))) {
+    alt = `\`${src}\``;
+    src = '';
+  }
 
-    // Check for cell index marker (for Jupyter notebooks)
-    const cellIndex = (properties['dataCellIndex'] || properties['data-cell-index']) as string;
-
-    if (cellIndex !== undefined) {
-      const cellNum = parseInt(cellIndex, 10);
-      const cellComments = !Number.isNaN(cellNum) && getCommentsForLine ? getCommentsForLine(cellNum) : [];
-      const cellHasComments = cellComments.length > 0;
-      const cellIsInteractive = !Number.isNaN(cellNum) && (!renderersReadOnly || cellHasComments);
-      const cellDisplayIndex = Number.isNaN(cellNum) ? undefined : cellNum + 1;
-      const cellAriaLabel =
-        cellDisplayIndex !== undefined && cellIsInteractive
-          ? cellHasComments
-            ? `Cell ${cellDisplayIndex} with ${cellComments.length} comment${cellComments.length === 1 ? '' : 's'}`
-            : `Add comment on cell ${cellDisplayIndex}`
-          : undefined;
-
-      // Create a safe props object without spreading all properties to avoid
-      // accidentally passing data-cell-index to nested elements
-      const safeProps: Record<string, unknown> = {};
-      Object.keys(properties).forEach((key) => {
-        if (key !== 'dataCellIndex' && key !== 'data-cell-index' && key !== 'indexNumber' && key !== 'index-number') {
-          safeProps[key] = properties[key];
-        }
-      });
-
-      const baseClassName = getClassName(cellNum);
-      const baseClassTokens = baseClassName.split(' ').filter(Boolean);
-      const staticClasses = baseClassTokens.filter((cls) => !cls.startsWith('markdown-block--'));
-
-      const computedClassName = classNames(
-        staticClasses,
-        'jupyter-block',
-        {
-          'markdown-block--commented': cellHasComments,
-          'markdown-block--empty': !cellHasComments,
-        },
-        cellComments.map((comment) => `highlight-${comment.id}`),
-      );
-
-      return (
-        <div
-          data-jupyter-cell={cellIndex}
-          className={computedClassName}
-          index-number={cellIndex}
-          data-has-comment={cellHasComments ? 'true' : undefined}
-          onMouseUp={onMouseUp}
-          onKeyDown={cellIsInteractive ? onKeyDown : undefined}
-          onMouseEnter={cellHasComments && onHoverEnter ? (_e) => onHoverEnter(cellNum) : undefined}
-          onMouseLeave={cellHasComments && onHoverLeave ? (_e) => onHoverLeave(cellNum) : undefined}
-          tabIndex={cellIsInteractive ? 0 : undefined}
-          role={cellIsInteractive ? 'button' : undefined}
-          aria-label={cellAriaLabel}
-          {...safeProps}
-          title={`Cell ${1 + parseInt(cellIndex)}`}
-        >
-          {props.children}
-        </div>
-      );
-    }
-
-    // Regular div handling
-    // For Jupyter, blockProps already returns undefined for index-number
-    // For regular markdown, blockProps returns the line number
-    return <div {...blockProps(props)}>{props.children}</div>;
-  };
-
-  const imgRender = (props: MarkdownNodeProps) => {
-    const properties = props.node?.properties || {};
-    let src = properties['src'] as string;
-    let alt = properties['alt'] as string;
-
-    // remove relative urls as we cannot resolve them in the browser.
-    if (!src || !(src.startsWith('data') || src.startsWith('http'))) {
-      alt = `\`${src}\``;
-      src = '';
-    }
-
-    if (src.startsWith('http')) {
-      try {
-        // check if its a video domain
-        const VIDEODOMAINS = ['youtube.com', 'vimeo.com', 'dailymotion.com', 'wistia.com', 'vidyard.com'];
-        if (VIDEODOMAINS.some((domain) => src.toLowerCase().includes(domain))) {
-          return <video controls src={src} />;
-        }
-      } catch (err) {
-        console.error(err);
-        return <Image width={300} src="" alt={`Unable to render ${src}`} preview={false} />;
+  if (src.startsWith('http')) {
+    try {
+      // check if its a video domain
+      const VIDEODOMAINS = ['youtube.com', 'vimeo.com', 'dailymotion.com', 'wistia.com', 'vidyard.com'];
+      if (VIDEODOMAINS.some((domain) => src.toLowerCase().includes(domain))) {
+        return <video controls src={src} />;
       }
+    } catch (err) {
+      console.error(err);
+      return <Image width={300} src="" alt={`Unable to render ${src}`} preview={false} />;
     }
+  }
 
-    return (
-      <Image
-        title={src == '' && alt ? `Unable to render ${alt}` : undefined}
-        width={200}
-        src={src == '' ? undefined : src}
-        alt={alt}
-        onMouseOver={(e) => console.log('Hovered over image', e)}
-        preview={false}
-      />
-    );
-  };
-  const aRender = (props: MarkdownNodeProps) => {
-    const { node } = props;
-    const href = (node?.properties?.href as string) || '';
-    const title = (node?.properties?.title as string) || '';
+  return (
+    <Image
+      title={src == '' && alt ? `Unable to render ${alt}` : undefined}
+      width={200}
+      src={src == '' ? undefined : src}
+      alt={alt}
+      onMouseOver={(e) => console.log('Hovered over image', e)}
+      preview={false}
+    />
+  );
+};
 
-    return (
-      <Link
-        href={href}
-        title={title}
-        style={{
-          fontWeight: 600,
-          color: markdownTheme.linkColor,
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.color = markdownTheme.hoverLinkColor;
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.color = markdownTheme.linkColor;
-        }}
-      >
-        {props.children}
-      </Link>
-    );
-  };
+const MarkdownLink = (props: MarkdownNodeProps) => {
+  const { markdownTheme } = useMarkdownContext();
+  const { node } = props;
+  const href = (node?.properties?.href as string) || '';
+  const title = (node?.properties?.title as string) || '';
 
-  return {
-    // Map markdown element types to custom renderers (react-markdown v9 format)
-    p: paragraphRenderer,
-    h1: (props: MarkdownNodeProps) => headingRenderer({ ...props, level: 1 }),
-    h2: (props: MarkdownNodeProps) => headingRenderer({ ...props, level: 2 }),
-    h3: (props: MarkdownNodeProps) => headingRenderer({ ...props, level: 3 }),
-    h4: (props: MarkdownNodeProps) => headingRenderer({ ...props, level: 4 }),
-    h5: (props: MarkdownNodeProps) => headingRenderer({ ...props, level: 5 }),
-    h6: (props: MarkdownNodeProps) => headingRenderer({ ...props, level: 6 }),
-    ul: (props: MarkdownNodeProps) => listRenderer({ ...props, ordered: false }),
-    ol: (props: MarkdownNodeProps) => listRenderer({ ...props, ordered: true }),
-    img: imgRender,
-    code: codeRenderer,
-    hr: thematicBreakRenderer,
-    blockquote: blockQuoteRenderer,
-    table: tableRenderer,
-    div: divRenderer,
-    a: aRender,
-    // Note: No custom img renderer - let rehype-raw handle HTML img tags
-  };
+  return (
+    <Link
+      href={href}
+      title={title}
+      style={{
+        fontWeight: 600,
+        color: markdownTheme.linkColor,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.color = markdownTheme.hoverLinkColor;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.color = markdownTheme.linkColor;
+      }}
+    >
+      {props.children}
+    </Link>
+  );
+};
+
+const markdownComponents = {
+  p: MarkdownParagraph,
+  h1: (props: MarkdownNodeProps) => <MarkdownHeading {...props} level={1} />,
+  h2: (props: MarkdownNodeProps) => <MarkdownHeading {...props} level={2} />,
+  h3: (props: MarkdownNodeProps) => <MarkdownHeading {...props} level={3} />,
+  h4: (props: MarkdownNodeProps) => <MarkdownHeading {...props} level={4} />,
+  h5: (props: MarkdownNodeProps) => <MarkdownHeading {...props} level={5} />,
+  h6: (props: MarkdownNodeProps) => <MarkdownHeading {...props} level={6} />,
+  ul: (props: MarkdownNodeProps) => <MarkdownList {...props} ordered={false} />,
+  ol: (props: MarkdownNodeProps) => <MarkdownList {...props} ordered={true} />,
+  img: MarkdownImage,
+  code: MarkdownCode,
+  hr: MarkdownThematicBreak,
+  blockquote: MarkdownBlockQuote,
+  table: MarkdownTable,
+  div: MarkdownDiv,
+  a: MarkdownLink,
 };
 
 export default Markdown;

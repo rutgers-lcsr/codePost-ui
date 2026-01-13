@@ -10,8 +10,28 @@ const shortcuts: IShortcutCategory[] = [
         keys: ['COMMAND', '/'],
       },
       {
+        name: 'Toggle Info Tab',
+        keys: ['COMMAND', 'SHIFT', 'e'],
+      },
+      {
+        name: 'Toggle Test Tab',
+        keys: ['COMMAND', 'SHIFT', 'd'],
+      },
+      {
+        name: 'Toggle File Tab',
+        keys: ['COMMAND', 'SHIFT', 'f'],
+      },
+      {
+        name: 'Toggle Rubric Tab',
+        keys: ['COMMAND', 'SHIFT', 'g'],
+      },
+      {
+        name: 'Toggle Pinned Comments',
+        keys: ['COMMAND', 'SHIFT', 'h'],
+      },
+      {
         name: 'Dark Mode',
-        keys: ['COMMAND', 'l'],
+        keys: ['COMMAND', 'i'],
       },
       {
         name: 'View Grade Breakdown',
@@ -32,12 +52,8 @@ const shortcuts: IShortcutCategory[] = [
     graderOnly: true,
     shortcuts: [
       {
-        name: 'Toggle Finalize',
-        keys: ['COMMAND', 'SHIFT', 'f'],
-      },
-      {
         name: 'Claim Another',
-        keys: ['COMMAND', 'SHIFT', 'p'],
+        keys: ['COMMAND', 'SHIFT', 'u'],
       },
       {
         name: 'Search Rubric',
@@ -52,10 +68,6 @@ const shortcuts: IShortcutCategory[] = [
       {
         name: 'Enable Cursor Mode',
         keys: ['COMMAND', 'SHIFT', 'y'],
-      },
-      {
-        name: 'Move Cursor to Code',
-        keys: ['COMMAND', 'SHIFT', 'E'],
       },
       {
         name: 'Move Cursor to Comments',
@@ -87,18 +99,12 @@ const shortcuts: IShortcutCategory[] = [
         name: 'Delete Comment',
         keys: ['COMMAND', 'd', 'SLASH', 'COMMAND', 'd'],
       },
-      {
-        name: 'Toggle Cursor to Rubric',
-        keys: ['COMMAND', 'y'],
-      },
+
       {
         name: 'Link Highlighted Rubric Comment',
         keys: ['ENTER'],
       },
-      {
-        name: 'Remove Rubric Comment',
-        keys: ['COMMAND', 'u'],
-      },
+
       {
         name: 'Deactivate Comment',
         keys: ['ESCAPE'],

@@ -17,7 +17,7 @@ import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManage
 import RubricUI from '../admin/assignments/rubric/RubricUI';
 import RubricOverview from '../admin/assignments/rubric/RubricOverview';
 import { encodeForRoute } from '../core/URLutils';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 
 const RoutePropsWrapper = ({ render }: { render: (props: any) => React.ReactElement }) => {
   const navigate = useNavigate();

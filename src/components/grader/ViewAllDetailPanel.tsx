@@ -4,8 +4,6 @@
 
 /* react imports */
 
-import { CodeOutlined } from '@ant-design/icons';
-
 /* ant imports */
 import type { SelectProps } from 'antd';
 import { Breadcrumb, Select, Switch, Table, Typography } from 'antd';
@@ -24,7 +22,7 @@ import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtil
 
 import { compare } from '../utils/SortUtils';
 
-import { Component, useCallback } from 'react';
+import { Component } from 'react';
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 import Link from 'antd/es/typography/Link';
 
@@ -51,7 +49,7 @@ interface IViewAllState {
 
 interface ITableRow extends ISubDataBasic {
   key: number;
-  student: string | number;
+  student: string | number | React.ReactElement;
   viewIcon?: string | React.ReactElement;
 }
 

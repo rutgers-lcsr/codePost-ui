@@ -5,7 +5,7 @@ import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
 import CodePanelHighlighting from './CodePanelHighlighting';
 import CodePanelSizing from './CodePanelSizing';
 
-import { getOperatingSystem, OS } from '../../core/operatingSystem';
+import { getOsTriggerKeyFromEvent } from '../../core/operatingSystem';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
@@ -41,6 +41,14 @@ interface ICodeProps {
   cursorMode: boolean;
   showCursor: CURSOR_DOMAIN;
   updateCursorDomain: (domain: CURSOR_DOMAIN) => void;
+  onCursorChange?: (cursor: ICursorType) => void;
+  onUpdateCommentLocation?: (
+    commentId: number,
+    newStartLine: number,
+    newEndLine: number,
+    newStartChar: number,
+    newEndChar: number,
+  ) => void;
 }
 
 // Code component no longer needs comments in props - gets from CommentHighlightContext
@@ -52,6 +60,10 @@ const Code = (props: CodePropsWithoutComments) => {
     comments: contextComments,
     setHoveredCommentId,
     onHighlightClick: contextOnHighlightClick,
+    setPreviewComment,
+    draggingCommentId,
+    draggingType,
+    focusedCommentId,
   } = useCommentHighlightStore();
 
   const [cursor, setCursor] = React.useState<ICursorType>({
@@ -61,6 +73,114 @@ const Code = (props: CodePropsWithoutComments) => {
     endLine: 0,
     lead: 'front',
   });
+
+  const handleCursorChange = (newCursor: ICursorType) => {
+    setCursor(newCursor);
+    if (props.onCursorChange) {
+      props.onCursorChange(newCursor);
+    }
+  };
+
+  // Helper to calculate new positions based on drag event
+  const calculateNewCommentPosition = (
+    e: React.DragEvent,
+    type: string,
+    comment: CommentType,
+  ): {
+    startLine: number;
+    endLine: number;
+    startChar: number;
+    endChar: number;
+  } | null => {
+    const targetLine = getLineNumberFromNode(e.target as Node);
+    if (targetLine === null) return null;
+
+    let targetChar = 0;
+    if ((document as any).caretRangeFromPoint) {
+      const range = (document as any).caretRangeFromPoint(e.clientX, e.clientY);
+      if (range) {
+        const lineElement = document.getElementById(`line-${targetLine}`);
+        if (lineElement) {
+          targetChar = CodePanelHighlighting.getSelectionOffsetRelativeToParent(
+            lineElement,
+            range.startContainer,
+            POSITION.Start,
+            range.startOffset,
+          );
+        }
+      }
+    }
+    if (targetChar < 0) targetChar = 0;
+
+    let newStartLine = comment.startLine;
+    let newEndLine = comment.endLine;
+    let newStartChar = comment.startChar;
+    let newEndChar = comment.endChar;
+
+    if (type === 'COMMENT_MOVE') {
+      const lineDiff = targetLine - comment.startLine;
+      newStartLine = comment.startLine + lineDiff;
+      newEndLine = comment.endLine + lineDiff;
+      const charLen = comment.endChar - comment.startChar;
+      newStartChar = targetChar;
+      newEndChar = targetChar + charLen;
+    }
+
+    // Validation
+    const isBefore = newStartLine < newEndLine || (newStartLine === newEndLine && newStartChar <= newEndChar);
+    if (!isBefore) return null;
+
+    return { startLine: newStartLine, endLine: newEndLine, startChar: newStartChar, endChar: newEndChar };
+  };
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+
+    if (!draggingCommentId || !draggingType) return;
+
+    const comment = contextComments.find((c) => c.id === draggingCommentId);
+    if (!comment) return;
+
+    const result = calculateNewCommentPosition(e, draggingType, comment);
+    if (result) {
+      setPreviewComment({
+        ...comment,
+        startLine: result.startLine,
+        endLine: result.endLine,
+        startChar: result.startChar,
+        endChar: result.endChar,
+      });
+    }
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setPreviewComment(null); // Clear preview
+
+    try {
+      const data = JSON.parse(e.dataTransfer.getData('application/json'));
+      if (!props.onUpdateCommentLocation || !data.id) return;
+
+      const comment = contextComments.find((c) => c.id === data.id);
+      if (!comment) return;
+
+      const result = calculateNewCommentPosition(e, data.type, comment);
+      if (result) {
+        props.onUpdateCommentLocation(
+          data.id,
+          result.startLine,
+          result.endLine,
+          result.startChar,
+          result.endChar,
+        );
+      }
+    } catch (err) {
+      // Ignore
+    }
+  };
+
+
 
   // A cursorComment is a pseudo-comment with ID === 0 or Number.MAX_SAFE_INTEGER
   const cursorComment = {
@@ -142,8 +262,7 @@ const Code = (props: CodePropsWithoutComments) => {
 
     const handleKeydown = async (e: KeyboardEvent) => {
       if (props.cursorMode) {
-        const os = getOperatingSystem();
-        const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+        const triggerKey = getOsTriggerKeyFromEvent(e);
         if (props.showCursor === CURSOR_DOMAIN.CODE && codeScrollArea !== null) {
           if (e.key === 'Enter') {
             e.preventDefault();
@@ -187,7 +306,7 @@ const Code = (props: CodePropsWithoutComments) => {
               handleVerticalScroll(codeScrollArea, newCursor);
             }
 
-            setCursor(newCursor);
+            handleCursorChange(newCursor);
           }
         }
       }
@@ -334,6 +453,22 @@ const Code = (props: CodePropsWithoutComments) => {
       // Log successful selection for debugging
       console.log('[Comment Selection] Success, calling addNewComment');
 
+      // Feature: Highlight to Move
+      // If a comment is currently focused, move it instead of creating a new one
+      if (
+        focusedCommentId !== undefined &&
+        focusedCommentId !== 0 &&
+        focusedCommentId !== Number.MAX_SAFE_INTEGER
+      ) {
+        const focusedComment = contextComments.find((c) => c.id === focusedCommentId);
+        if (focusedComment && props.onUpdateCommentLocation) {
+          props.onUpdateCommentLocation(focusedCommentId, startLine, endLine, startChar, endChar);
+          // Clear selection to indicate action taken
+          selection?.removeAllRanges();
+          return;
+        }
+      }
+
       await addNewComment(startLine, endLine, startChar, endChar);
     } catch (error) {
       console.error('[Comment Selection Error]', error, {
@@ -365,7 +500,7 @@ const Code = (props: CodePropsWithoutComments) => {
       lead: 'front' as LeadPosition,
     };
 
-    setCursor(newCursor);
+    handleCursorChange(newCursor);
   };
 
   const onMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -407,7 +542,14 @@ const Code = (props: CodePropsWithoutComments) => {
       }
 
       return (
-        <div key={i} id={`line-${i}`} onClick={onLineClick} onMouseDown={onMouseDown}>
+        <div
+          key={i}
+          id={`line-${i}`}
+          onClick={onLineClick}
+          onMouseDown={onMouseDown}
+          onDragOver={onDragOver}
+          onDrop={onDrop}
+        >
           {CodePanelHighlighting.highlight(
             comments,
             t,

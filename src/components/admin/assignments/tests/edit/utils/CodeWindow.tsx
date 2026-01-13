@@ -9,6 +9,7 @@ import { codeMirorLanguageMap } from './languageUtils';
 
 import useHotkeys, { S_KEY } from '../../../../../code-review/useHotkeys';
 import Editor from '@monaco-editor/react';
+import { osControlKey } from '../../../../../core/operatingSystem';
 
 type themeType = 'light' | 'dark';
 
@@ -81,7 +82,7 @@ export const CodeWindow = (props: IProps) => {
           loading={isSaving}
           disabled={!props.onSave || props.code === editedCode}
         >
-          {props.onSave ? 'Save [⌘+S]' : 'Editing is Disabled'}
+          {props.onSave ? `Save [${osControlKey()}+S]` : 'Editing is Disabled'}
         </Button>
       )}
 

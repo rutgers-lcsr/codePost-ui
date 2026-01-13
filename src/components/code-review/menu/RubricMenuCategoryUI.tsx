@@ -327,28 +327,28 @@ const RubricMenuCategoryUI = ({
         })),
         ...(props.editRubricMode && props.searchTerm.length === 0
           ? [
-            {
-              key: `comment-${props.rubricCategory.id}-add`,
-              label: (
-                <Button
-                  type="default"
-                  icon={<PlusOutlined />}
-                  size="small"
-                  style={{
-                    width: '180px',
-                    backgroundColor: consoleTheme.siderBg,
-                    color: consoleTheme.siderMenuItemColor,
-                  }}
-                  onClick={addComment}
-                >
-                  Add Comment
-                </Button>
-              ),
-              style: {
-                textAlign: 'center' as const,
+              {
+                key: `comment-${props.rubricCategory.id}-add`,
+                label: (
+                  <Button
+                    type="default"
+                    icon={<PlusOutlined />}
+                    size="small"
+                    style={{
+                      width: '180px',
+                      backgroundColor: consoleTheme.siderBg,
+                      color: consoleTheme.siderMenuItemColor,
+                    }}
+                    onClick={addComment}
+                  >
+                    Add Comment
+                  </Button>
+                ),
+                style: {
+                  textAlign: 'center' as const,
+                },
               },
-            },
-          ]
+            ]
           : []),
       ],
     },

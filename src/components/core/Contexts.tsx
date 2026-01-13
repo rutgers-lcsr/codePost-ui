@@ -25,6 +25,7 @@ export const defaultCourse: CourseType = {
   expiration_date: null,
   studentsCanSeeGraders: false,
   studentCount: 0,
+  isRubricEditor: false,
 };
 
 export const CourseContext = React.createContext<CourseType>(defaultCourse);

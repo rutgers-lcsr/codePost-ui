@@ -16,6 +16,7 @@ import {
   LinkOutlined,
   RobotOutlined,
   LoadingOutlined,
+  PushpinOutlined,
 } from '@ant-design/icons';
 import { Alert, Button, Card, Input, message, Popover, Space, Tag, Typography } from 'antd';
 
@@ -27,7 +28,7 @@ import CPFlex from '../../core/CPFlex';
 import CPPointInput from '../../core/CPPointInput';
 import CPTooltip from '../../core/CPTooltip';
 
-import { getOperatingSystem, OS } from '../../core/operatingSystem';
+import { getOsTriggerKeyFromEvent } from '../../core/operatingSystem';
 
 import { tooltips } from '../../core/tooltips';
 
@@ -116,6 +117,14 @@ interface ICommentProps {
   onSave: (comment: CommentType) => void;
   onDelete: (comment: CommentType) => void;
   removeRubricComment: (comment: CommentType, rubricComment: RubricCommentType) => void;
+  onPin?: (data: {
+    text: string;
+    pointDelta: number | null;
+    rubricComment: number | null;
+    sourceComment: number;
+    startLine?: number;
+  }) => void;
+  forceUpdate?: number;
 
   setCommentPlacements: () => void;
 
@@ -201,6 +210,16 @@ const Comment: React.FC<ICommentProps> = (props) => {
   const edited = useCallback(() => {
     setStatus('edited');
   }, []);
+
+  // Track the last forceUpdate value to detect changes
+  const lastForceUpdateRef = useRef(props.forceUpdate);
+  useEffect(() => {
+    if (props.forceUpdate && props.forceUpdate !== lastForceUpdateRef.current) {
+      setText(props.comment.text || '');
+      edited();
+      lastForceUpdateRef.current = props.forceUpdate;
+    }
+  }, [props.forceUpdate, props.comment.text, edited]);
 
   /**********************************************************************************************************************/
   /* AI Comment Generation
@@ -626,8 +645,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
         }
       }
 
-      const os = getOperatingSystem();
-      const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+      const triggerKey = getOsTriggerKeyFromEvent(e);
 
       if (e.key === 'd' && triggerKey) {
         e.preventDefault();
@@ -663,8 +681,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
         return;
       }
 
-      const os = getOperatingSystem();
-      const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+      const triggerKey = getOsTriggerKeyFromEvent(e);
 
       if (e.key === 'd' && triggerKey) {
         e.preventDefault();
@@ -1137,7 +1154,15 @@ const Comment: React.FC<ICommentProps> = (props) => {
         content={popoverContent}
         overlayClassName="cp-delete-comment-popover"
         overlayStyle={{ zIndex: 2000 }}
-      />
+      >
+        <span
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          style={{ visibility: 'hidden' }}
+        >
+          <CPButton cpType="danger" icon={<DeleteOutlined />} />
+        </span>
+      </Popover>
     );
 
     onClick = onCommentClick;
@@ -1322,11 +1347,42 @@ const Comment: React.FC<ICommentProps> = (props) => {
     titleLeft = [commentElements.line, commentElements.status];
   }
 
+  const onPinClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+      if (props.onPin && text) {
+        props.onPin({
+          text: text,
+          pointDelta: points,
+          rubricComment: props.comment.rubricComment || null,
+          sourceComment: props.comment.id,
+          startLine: props.comment.startLine,
+        });
+      }
+    },
+    [props.onPin, text, points, props.comment.rubricComment, props.comment.id],
+  );
+
   const titleRight = [commentElements.points];
 
   const footerLeft = [commentElements.author];
 
-  const footerRight = [commentElements.saveButton, commentElements.deleteButton];
+  const pinButton =
+    props.onPin && props.commentType !== 'readonly' ? (
+      <CPTooltip title="Pin comment">
+        <Button
+          className="cp-comment__action-btn"
+          type="text"
+          icon={<PushpinOutlined />}
+          size="small"
+          onClick={onPinClick}
+          disabled={!text}
+        />
+      </CPTooltip>
+    ) : null;
+
+  const footerRight = [pinButton, commentElements.saveButton, commentElements.deleteButton];
 
   // Sets zIndex explicitly to avoid style conflict when modals open on this page
   // Per: https://github.com/ant-design/ant-design/issues/6722

@@ -67,8 +67,8 @@ const GRADE_HEADER_ALIGNMENT = (
     {`[${osControlKey()} click highlights]`}
   </div>
 );
-const GRADE_RUBRIC_EDIT = <div>edit rubric [⌘ e]</div>;
-const GRADE_RUBRIC_SAVE = <div>save rubric [⌘ s]</div>;
+const GRADE_RUBRIC_EDIT = <div>edit rubric [{osControlKey()} e]</div>;
+const GRADE_RUBRIC_SAVE = <div>save rubric [{osControlKey()} s]</div>;
 const GRADE_RUBRIC_CATEGORY_SEARCH = 'Search for specific rubric category names.';
 
 const GRADE_HEADER_VIEW_AS_STUDENT = 'See what a student will see.';

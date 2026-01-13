@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Table, Tag, Button, Card, Typography } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import { SystemIO, EventLogType } from '../../infrastructure/system';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 const ActivityFeed: React.FC = () => {
   const [logs, setLogs] = useState<EventLogType[]>([]);
@@ -34,7 +34,7 @@ const ActivityFeed: React.FC = () => {
       title: 'Time',
       dataIndex: 'created',
       key: 'created',
-      render: (text: string) => moment(text).format('MM/DD HH:mm:ss'),
+      render: (text: string) => dayjs(text).format('MM/DD HH:mm:ss'),
       width: 150,
     },
     {

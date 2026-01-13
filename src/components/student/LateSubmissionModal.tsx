@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { Modal, Spin } from 'antd';
 
-import moment from 'moment-timezone';
+import dayjs from 'dayjs';
 import ReactMarkdown from 'react-markdown';
 import { CodePostDate } from '../utils/CodepostDate';
 
@@ -86,7 +86,7 @@ Please see the course policy or contact your instructor if you have any question
             <tr>
               <td style={{ fontStyle: 'italic', fontWeight: 500 }}>Time Now:</td>
               <td>
-                <CodePostDate datetime={moment()} />
+                <CodePostDate datetime={dayjs()} />
               </td>
             </tr>
           </tbody>

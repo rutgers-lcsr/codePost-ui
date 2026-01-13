@@ -22,7 +22,7 @@ import { demoAssignments, demoCourse, demoRoster, demoSections, demoSubmissions 
 import { getDemoSubmissionTests } from './demo-submission-tests';
 
 const createDemoCourse = async (email: string, username: string, org: string) => {
-  const payload = demoCourse(username);
+  const payload = { ...demoCourse(username), isRubricEditor: false };
   return Course.create(payload).then((course) => {
     // Create assignments
     const preAssignments = demoAssignments(course.id);

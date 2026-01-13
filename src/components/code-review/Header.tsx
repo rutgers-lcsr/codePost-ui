@@ -10,7 +10,6 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 import {
-  CaretRightOutlined,
   ControlOutlined,
   DownloadOutlined,
   EditOutlined,
@@ -24,7 +23,7 @@ import {
 } from '@ant-design/icons';
 
 /* antd imports */
-import { Descriptions, Divider, Dropdown, Modal, Popover, Space, Switch, Tag, message } from 'antd';
+import { Col, Dropdown, Modal, Popover, Row, Space, Statistic, Switch, Table, Tag, message } from 'antd';
 
 import { trackFeature } from '../utils/Fullstory';
 
@@ -60,11 +59,12 @@ import {
   pointsPerCategoryWithCaps,
 } from './codeConsoleUtils';
 
-import useHotkeys, { F_KEY, MINUS_KEY, PLUS_KEY, P_KEY } from './useHotkeys';
+import { createFakeSubmission } from '../utils/FakeSubmissionUtils';
 
+import useHotkeys, { MINUS_KEY, PLUS_KEY, U_KEY } from './useHotkeys';
 import useWindowSize from '../core/useWindowSize';
-
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+import { useCodeConsoleStore } from '../../stores/useCodeConsoleStore';
 
 import { encodeForLink } from '../core/URLutils';
 
@@ -139,13 +139,22 @@ const Magnifier = (props: IMagnifierProps) => {
 //   }
 
 //   return (
-//     <CPTooltip title={tooltips.grade.header.alignment} hideThisOnHideTips={true}>
-//       <ButtonGroup>
-//         <CPButton id="reset" cpType={cpType} small={true} onClick={onClick}>
-//           <Icon type="redo" />
-//         </CPButton>
-//       </ButtonGroup>
-//     </CPTooltip>
+//   return (
+//     <Space align="center">
+//       <Tooltip title="Toggle Help Modal">
+//          <Tag style={{ cursor: 'pointer' }} onClick={() => useCodeConsoleStore.getState().setShowHelpModal(true)}>
+//              Help: {osControlKey()} + ?
+//          </Tag>
+//       </Tooltip>
+//       <CPTooltip title={tooltips.grade.header.alignment} hideThisOnHideTips={true}>
+//         <ButtonGroup>
+//           <CPButton id="reset" cpType={cpType} small={true} onClick={onClick}>
+//             <Icon type="redo" />
+//           </CPButton>
+//         </ButtonGroup>
+//       </CPTooltip>
+//     </Space>
+//   );
 //   );
 // };
 
@@ -245,6 +254,14 @@ export const Controls = (props: IControlsProps) => {
     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
       {/*      <Reset key="reset" updateVerticalOffset={props.updateVerticalOffset} />
       <div style={{ width: '20px' }} />*/}
+      <CPTooltip title="Toggle Help Modal">
+        <Tag
+          style={{ cursor: 'pointer', marginRight: '10px' }}
+          onClick={() => useCodeConsoleStore.getState().setShowHelpModal(true)}
+        >
+          Help: {osControlKey()} + ?
+        </Tag>
+      </CPTooltip>
       <Magnifier key="zoom" updateZoom={props.updateZoom} />
     </div>
   );
@@ -386,7 +403,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
     }
   };
 
-  useHotkeys(F_KEY, onClick, true);
+  // useHotkeys(F_KEY, onClick, true); // Disabled to allow Ctrl+Shift+F for sidebar
   // (window as any).addToFoobar({
   //   value: 'Finalize / unfinalize',
   //   label: 'Finalize / unfinalize',
@@ -504,149 +521,116 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
     ''
   );
 
-  const styledLabel = (n: number, excluded?: boolean) => {
-    let points = n;
-    let style = {};
-    let className = 'cp-label';
-    let modifier = null;
-
-    if (n > 0) {
-      modifier = '-';
-      className = 'cp-label cp-label--bold cp-label--error';
-    } else if (n < 0) {
-      modifier = '+';
-      points = n * -1;
-      className = 'cp-label cp-label--bold cp-label--success';
-    } else {
-      className = 'cp-label cp-label--bold cp-label--neutral';
-    }
-
-    if (excluded) {
-      style = { ...style, textDecoration: 'line-through' };
-      className = 'cp-label cp-label--neutral';
-    }
-
-    return (
-      <span style={style} className={className}>
-        {modifier}
-        {points}
-      </span>
-    );
-  };
-
-  let categories = props.rubricCategories.map((rubricCategory: RubricCategoryType) => {
+  const breakdownDataSource = props.rubricCategories.map((rubricCategory: RubricCategoryType) => {
     const uncappedPoints = Object.prototype.hasOwnProperty.call(pointsPerCategoryVal, rubricCategory.id)
       ? pointsPerCategoryVal[rubricCategory.id]
-      : null;
+      : 0;
 
     const cappedPoints = Object.prototype.hasOwnProperty.call(pointsPerCategoryWithCapsVal, rubricCategory.id)
       ? pointsPerCategoryWithCapsVal[rubricCategory.id]
-      : null;
+      : 0;
 
-    let exceededBy = null;
-    if (uncappedPoints !== null && cappedPoints !== null && uncappedPoints !== cappedPoints) {
-      const diff = uncappedPoints - cappedPoints;
-      exceededBy = <span className="cp-label cp-label--italic cp-label--bold">(exceeded limit by {diff})</span>;
-    }
-
-    let points;
-    if (exceededBy !== null && uncappedPoints !== null && cappedPoints !== null) {
-      points = (
-        <span className="cp-label">
-          {styledLabel(uncappedPoints, true)} <CaretRightOutlined /> {styledLabel(cappedPoints)}
-        </span>
-      );
-    } else if (cappedPoints !== null) {
-      points = <span className="cp-label">{styledLabel(cappedPoints)}</span>;
-    }
+    const diff = uncappedPoints !== cappedPoints ? uncappedPoints - cappedPoints : 0;
 
     return {
-      description: (
-        <span className="cp-label cp-label--italic">
-          {rubricCategory.name} {exceededBy}
-        </span>
-      ),
-      value: <span className="cp-label">{points}</span>,
+      key: rubricCategory.id,
+      category: rubricCategory.name,
+      points: cappedPoints,
+      uncapped: uncappedPoints,
+      diff: diff,
     };
   });
 
-  categories = [
-    ...categories,
-    {
-      description: <span className="cp-label cp-label--italic">other</span>,
-      value: styledLabel(genericPoints),
-    },
-    {
-      description: <span className="cp-label cp-label--italic">~Tests~</span>,
-      value: styledLabel(testPoints),
-    },
-  ];
+  // Add tests and other if relevant
+  if (testPoints !== 0) {
+    breakdownDataSource.push({
+      key: 'tests',
+      category: 'Tests',
+      points: testPoints,
+      uncapped: testPoints,
+      limit: null,
+      diff: 0,
+    } as any);
+  }
 
-  const categoriesTable = (
-    <Descriptions
-      title="Category Breakdown"
-      column={1}
-      bordered
-      items={categories.map((item: any, index: number) => ({
-        key: index,
-        label: item.description,
-        children: item.value,
-      }))}
-    />
-  );
+  if (genericPoints !== 0) {
+    breakdownDataSource.push({
+      key: 'other',
+      category: 'General Comments',
+      points: genericPoints,
+      uncapped: genericPoints,
+      limit: null,
+      diff: 0,
+    } as any);
+  }
 
-  // tslint:disable
-  const summary = [
-    props.assignment.additiveGrading
-      ? null
-      : {
-          description: <span className="cp-label">Assignment Total</span>,
-          value: <span>{props.assignment.points}</span>,
-        },
-    props.assignment.additiveGrading
-      ? null
-      : {
-          description: <span className="cp-label">Net Point Delta</span>,
-          value: <span>{styledLabel(categoryPoints + genericPoints + testPoints)}</span>,
-        },
+  const finalGrade =
+    (props.assignment.additiveGrading ? 0 : props.assignment.points) - categoryPoints - genericPoints - testPoints;
+  const totalDeductions = categoryPoints + genericPoints + testPoints;
+
+  const columns = [
     {
-      description: <span className="cp-label cp-label--very-bold">Final Grade</span>,
-      value: (
-        <span className="cp-label cp-label--very-bold">
-          {(props.assignment.additiveGrading ? 0 : props.assignment.points) -
-            categoryPoints -
-            genericPoints -
-            testPoints}{' '}
-          / {props.assignment.points}
+      title: 'Category',
+      dataIndex: 'category',
+      key: 'category',
+      render: (text: string, record: any) => (
+        <span>
+          {text}
+          {record.diff !== 0 && (
+            <span style={{ marginLeft: 8, fontSize: 12, color: 'rgba(0,0,0,0.45)', fontStyle: 'italic' }}>
+              (Exceeded limit by {record.diff})
+            </span>
+          )}
         </span>
       ),
     },
+    {
+      title: 'Points',
+      dataIndex: 'points',
+      key: 'points',
+      align: 'right' as const,
+      render: (points: number) => {
+        if (points > 0) {
+          return <span style={{ color: '#ff4d4f', fontWeight: 600 }}>-{points}</span>;
+        } else if (points < 0) {
+          return <span style={{ color: '#52c41a', fontWeight: 600 }}>+{Math.abs(points)}</span>;
+        }
+        return <span style={{ color: '#d9d9d9', fontWeight: 600 }}>-</span>;
+      },
+    },
   ];
-  // tslint:enable
-
-  const summaryTable = (
-    <Descriptions
-      title="Summary"
-      column={1}
-      bordered
-      items={summary
-        .filter((el) => {
-          return el !== null;
-        })
-        .map((item: any, index: number) => ({
-          key: index,
-          label: item.description,
-          children: item.value,
-        }))}
-    />
-  );
 
   return (
-    <div style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+    <div style={{ maxHeight: '80vh', overflowY: 'auto', overflowX: 'hidden', padding: 4 }}>
       {liveFeedbackWarning}
-      {categoriesTable}
-      <Divider />
-      {summaryTable}
+
+      <Row gutter={16} style={{ marginBottom: 24, marginLeft: 0, marginRight: 0 }}>
+        {!props.assignment.additiveGrading && (
+          <Col span={8}>
+            <Statistic title="Assignment Total" value={props.assignment.points} />
+          </Col>
+        )}
+        <Col span={8}>
+          <Statistic
+            title={props.assignment.additiveGrading ? 'Total Points' : 'Net Change'}
+            value={Math.abs(totalDeductions)}
+            prefix={totalDeductions > 0 ? '-' : totalDeductions < 0 ? '+' : ''}
+            valueStyle={{
+              color: totalDeductions > 0 ? '#ff4d4f' : totalDeductions < 0 ? '#52c41a' : undefined,
+            }}
+          />
+        </Col>
+        <Col span={8}>
+          <Statistic
+            title="Final Grade"
+            value={finalGrade}
+            suffix={`/ ${props.assignment.points}`}
+            valueStyle={{ color: '#1890ff', fontWeight: 'bold' }}
+          />
+        </Col>
+      </Row>
+
+      <Table dataSource={breakdownDataSource} columns={columns} pagination={false} size="small" rowKey="key" />
     </div>
   );
 };
@@ -747,22 +731,22 @@ export const StatusTags = (props: IStatusTagsProps) => {
     case 0:
       tagColor = theme === 'light' ? 'blue' : colors.actionBlue;
       tagText = 'not finalized and not published';
-      tooltipText = 'student cannot view';
+      tooltipText = 'student cannot view feedback';
       break;
     case 1:
       tagColor = theme === 'light' ? 'gold' : '#fa8c16';
       tagText = 'finalized but not published';
-      tooltipText = 'student cannot view';
+      tooltipText = 'student cannot view feedback';
       break;
     case 2:
       tagColor = theme === 'light' ? 'orange' : '#fa8c16';
       tagText = 'published but not finalized';
-      tooltipText = 'student cannot view';
+      tooltipText = 'student cannot view feedback';
       break;
     case 3:
       tagColor = theme === 'light' ? '#22be84' : '#22be84';
       tagText = 'finalized and published';
-      tooltipText = 'student can view';
+      tooltipText = 'student can view feedback';
       break;
   }
 
@@ -805,12 +789,15 @@ interface IHeaderMenuProps {
   isAdmin: boolean;
   course?: CourseType;
   assignment: AssignmentType;
+  submission?: StudentSubmissionType | AnonymousSubmissionType;
 }
 
 export const HeaderMenu = (props: IHeaderMenuProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
-  useHotkeys(P_KEY, props.claimSubmission, true);
+  // Only register claim submission hotkey for non-students
+  const canClaimSubmissions = !props.isStudent && !props.isDemo && props.course?.activateQueue;
+  useHotkeys(U_KEY, canClaimSubmissions ? props.claimSubmission : () => {}, canClaimSubmissions);
 
   const groupStyle = {
     padding: '5px 20px',
@@ -833,6 +820,20 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
   };
 
   const menuItems = [
+    ...(process.env.NODE_ENV === 'development'
+      ? [
+          {
+            key: 'fake-data',
+            label: (
+              <span onClick={() => createFakeSubmission(props.assignment.id, props.submission?.id)}>
+                <PlusCircleOutlined /> Populate Fake Data
+              </span>
+            ),
+            style: itemStyle,
+            className: 'header-menu',
+          },
+        ]
+      : []),
     {
       key: 'setting:1',
       label: 'Code Review Console',
@@ -847,7 +848,7 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
             label: (
               <span onClick={props.claimSubmission}>
                 <PlusCircleOutlined /> Claim another submission{' '}
-                <span style={{ color: '#ccc' }}>[{osControlKey()} shift p]</span>
+                <span style={{ color: '#ccc' }}>[{osControlKey()} shift u]</span>
               </span>
             ),
             style: itemStyle,

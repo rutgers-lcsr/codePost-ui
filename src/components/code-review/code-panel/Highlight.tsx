@@ -21,7 +21,7 @@ interface IHighlightProps {
 
 const Highlight = (props: IHighlightProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  const { setHoveredCommentId, isCommentHovered } = useCommentHighlightStore();
+  const { setHoveredCommentId, isCommentHovered, setDraggingState, setPreviewComment } = useCommentHighlightStore();
   const hoveredCommentId = useHoveredCommentId();
 
   const theme = consoleThemes.light === consoleTheme ? 'light' : 'dark';
@@ -51,7 +51,7 @@ const Highlight = (props: IHighlightProps) => {
 
   // Build style with hover state - use CSS class for background color control
   const style: React.CSSProperties = {
-    cursor: isCursorHighlight ? 'auto' : 'pointer',
+    cursor: isCursorHighlight ? 'auto' : 'grab',
     opacity: consoleTheme.highlightOpacity,
     // DON'T set backgroundColor inline - let CSS handle it for better control
     // Inline styles override CSS classes, preventing our hover effects from working
@@ -94,17 +94,36 @@ const Highlight = (props: IHighlightProps) => {
     };
   }
 
+  const handleDragEnd = () => {
+    setDraggingState(null, null);
+    setPreviewComment(null);
+  };
+
   return (
     <span
       key={`${props.line}-${props.commentID}`}
       id={`line-${props.line}-${props.commentID}`}
       className={`highlight ${props.className} ${isNotCursor ? '' : cursorThemeClass} ${isThisHighlightHovered ? 'highlight--hovered' : ''}`}
-      style={style}
+      style={{
+        ...style,
+        position: 'relative', // Ensure handles are positioned relative to the highlight
+      }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onClick={onClick}
+      draggable={!isCursorHighlight && !props.readOnly}
+      onDragStart={(e) => {
+        if (!isCursorHighlight && !props.readOnly && commentIDs.length > 0) {
+          e.dataTransfer.effectAllowed = 'move';
+          const type = 'COMMENT_MOVE';
+          e.dataTransfer.setData('application/json', JSON.stringify({ type, id: commentIDs[0] }));
+          setDraggingState(commentIDs[0], type);
+        }
+      }}
+      onDragEnd={handleDragEnd}
     >
       {props.text}
+
     </span>
   );
 };

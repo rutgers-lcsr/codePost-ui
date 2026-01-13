@@ -152,11 +152,14 @@ const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => 
   }));
 
   // Derive full state from categoryState + store
-  const state: IRubricCategoryManagerState = useMemo(() => ({
-    ...categoryState,
-    rubricComments: storeComments,
-    rubricCommentStatus: storeStatuses,
-  }), [categoryState, storeComments, storeStatuses]);
+  const state: IRubricCategoryManagerState = useMemo(
+    () => ({
+      ...categoryState,
+      rubricComments: storeComments,
+      rubricCommentStatus: storeStatuses,
+    }),
+    [categoryState, storeComments, storeStatuses],
+  );
 
   const nameInput = useRef<InputRef>(null);
 
@@ -213,7 +216,12 @@ const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => 
     const { name, pointLimit, helpText, atMostOnce, status } = categoryState;
 
     const newStatus = statusChange(
-      [savedRubricCategory.name, savedRubricCategory.pointLimit, savedRubricCategory.helpText, savedRubricCategory.atMostOnce],
+      [
+        savedRubricCategory.name,
+        savedRubricCategory.pointLimit,
+        savedRubricCategory.helpText,
+        savedRubricCategory.atMostOnce,
+      ],
       [name, pointLimit, helpText, atMostOnce],
       status,
     );
@@ -262,12 +270,9 @@ const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => 
     [savedRubricComments, props, store, storeStatuses],
   );
 
-  const setValue = useCallback(
-    (label: 'pointLimit' | 'atMostOnce' | 'name' | 'helpText', value: unknown) => {
-      setCategoryState((prev) => ({ ...prev, [label]: value }));
-    },
-    [],
-  );
+  const setValue = useCallback((label: 'pointLimit' | 'atMostOnce' | 'name' | 'helpText', value: unknown) => {
+    setCategoryState((prev) => ({ ...prev, [label]: value }));
+  }, []);
 
   const saveCategory = useCallback(() => {
     const { name, pointLimit, helpText, atMostOnce, hasError } = categoryState;
@@ -296,20 +301,14 @@ const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => 
     });
   }, [categoryState, props, validateCategory]);
 
-  const changeName = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement> | string) => {
-      const name = typeof event === 'string' ? event : event.target.value;
-      setCategoryState((prev) => ({ ...prev, name }));
-    },
-    [],
-  );
+  const changeName = useCallback((event: React.ChangeEvent<HTMLInputElement> | string) => {
+    const name = typeof event === 'string' ? event : event.target.value;
+    setCategoryState((prev) => ({ ...prev, name }));
+  }, []);
 
-  const changeHelpText = useCallback(
-    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setCategoryState((prev) => ({ ...prev, helpText: event.target.value }));
-    },
-    [],
-  );
+  const changeHelpText = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCategoryState((prev) => ({ ...prev, helpText: event.target.value }));
+  }, []);
 
   const addComment = useCallback(() => {
     props.addComment(props.rubricCategory);
@@ -443,7 +442,14 @@ const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => 
     if (savedRubricCategory) {
       updateCategoryStatus();
     }
-  }, [savedRubricCategory, categoryState.name, categoryState.pointLimit, categoryState.helpText, categoryState.atMostOnce, updateCategoryStatus]);
+  }, [
+    savedRubricCategory,
+    categoryState.name,
+    categoryState.pointLimit,
+    categoryState.helpText,
+    categoryState.atMostOnce,
+    updateCategoryStatus,
+  ]);
 
   const autoSaveRef = useRef({ pointLimit: categoryState.pointLimit, atMostOnce: categoryState.atMostOnce });
   useEffect(() => {

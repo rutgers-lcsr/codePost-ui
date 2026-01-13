@@ -50,7 +50,7 @@ const MarkdownEditorModal: React.FC<IMarkdownEditorModalProps> = ({
       onCancel={onCancel}
       footer={footer}
       width={700}
-      styles={{ content: { backgroundColor: consoleTheme.mainBg } }}
+      styles={{ body: { backgroundColor: consoleTheme.mainBg } }}
       closeIcon={<span style={{ color: consoleTheme.text }}>x</span>}
     >
       <div className="markdown-editor-modal" style={{ color: consoleTheme.text }}>

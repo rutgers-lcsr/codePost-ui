@@ -394,8 +394,8 @@ const RubricMenuUI = ({
       setChangesMade(x);
     }
 
-    const addRubricCategory = (e: any) => {
-      helpers.addRubricCategory(newCategoryName, e);
+    const addRubricCategory = () => {
+      helpers.addRubricCategory(newCategoryName);
       setNewCategoryName('');
       props.turnOffReload();
     };
@@ -566,13 +566,18 @@ const RubricMenuUI = ({
             className="rubric-menu-category-tag"
             bordered
             onClick={insertCategorySearch}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                insertCategorySearch();
+              }
+            }}
             style={{
               cursor: 'pointer',
               userSelect: 'none',
               margin: 0,
-              // backgroundColor: token.colorBgElevated,
-              // borderColor: token.colorBorderSecondary,
-              // color: token.colorText,
             }}
           >
             category:

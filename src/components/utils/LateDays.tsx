@@ -1,14 +1,14 @@
 import { AssignmentType } from '../../infrastructure/assignment';
 import { SubmissionType, AnonymousSubmissionType } from '../../infrastructure/submission';
 
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 const getDaysLate = (assignment: AssignmentType, submission: SubmissionType | AnonymousSubmissionType) => {
   if (assignment.uploadDueDate === null || submission.dateUploaded === null) {
     return 0;
   }
 
-  const diff = moment(submission.dateUploaded).diff(moment(assignment.uploadDueDate), 'days') + 1;
+  const diff = dayjs(submission.dateUploaded).diff(dayjs(assignment.uploadDueDate), 'days') + 1;
 
   if (diff <= 0) {
     return 0;
