@@ -125,6 +125,33 @@
     &.readonly {
       cursor: default;
     }
+    &.readonly {
+      cursor: default;
+    }
+  }
+
+  &--pulsing {
+    animation: pulse-accessible 1.5s infinite;
+    z-index: 10;
+    // WCAG: Ensure focus indication relies on more than color (use outline/transform)
+  }
+}
+
+@keyframes pulse-accessible {
+  0% {
+    transform: scale(1);
+    outline: 2px solid transparent;
+    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0.4);
+  }
+  50% {
+    transform: scale(1.005);
+    outline: 2px solid #1890ff; // High contrast blue
+    box-shadow: 0 0 0 6px rgba(24, 144, 255, 0);
+  }
+  100% {
+    transform: scale(1);
+    outline: 2px solid transparent;
+    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0);
   }
 }
 

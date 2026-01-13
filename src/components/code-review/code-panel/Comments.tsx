@@ -54,6 +54,15 @@ interface ICommentsEditProps {
 
   showCursor: CURSOR_DOMAIN;
   showExplanations: boolean;
+
+  onPin?: (data: {
+    text: string;
+    pointDelta: number | null;
+    rubricComment: number | null;
+    sourceComment: number;
+    startLine?: number;
+  }) => void;
+  forcedUpdates?: { [id: number]: number };
 }
 
 // Static helper function moved outside component
@@ -443,6 +452,8 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
         cursored={cursored}
         isSpotlit={comment.id === props.scrollToCommentID}
         aiEnabled={props.aiEnabled}
+        onPin={props.onPin}
+        forceUpdate={props.forcedUpdates ? props.forcedUpdates[comment.id] : undefined}
       />
     );
   });
@@ -513,6 +524,8 @@ const makeReadOnly = (Component: React.ComponentType<ICommentsCoreProps & IComme
         oldCommentIDs={{}}
         showCursor={CURSOR_DOMAIN.CODE_HIDDEN}
         showExplanations={false}
+        onPin={undefined}
+        forcedUpdates={undefined}
       />
     );
   };

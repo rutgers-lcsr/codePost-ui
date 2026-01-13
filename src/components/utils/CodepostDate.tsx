@@ -1,19 +1,26 @@
-import moment, { Moment } from 'moment-timezone';
+import dayjs, { Dayjs } from 'dayjs';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 
 import { CourseContext } from '../core/Contexts';
 
-const CodePostDateChild = (props: { datetime: Moment; timezone: string }) => {
-  const momentObj = props.datetime.clone().tz(props.timezone);
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(advancedFormat);
+
+const CodePostDateChild = (props: { datetime: Dayjs; timezone: string }) => {
+  const dateObj = props.datetime.tz(props.timezone);
   return (
     <span>
-      {momentObj.format('h:mm a')} on {momentObj.format('MMM DD')} {moment.tz(props.timezone).zoneAbbr()}
+      {dateObj.format('h:mm a')} on {dateObj.format('MMM DD')} {dayjs().tz(props.timezone).format('z')}
     </span>
   );
 };
 
-const CodePostDate = (props: { datetime: Moment | string }) => (
+const CodePostDate = (props: { datetime: Dayjs | string }) => (
   <CourseContext.Consumer>
-    {(course) => <CodePostDateChild datetime={moment(props.datetime)} timezone={course.timezone} />}
+    {(course) => <CodePostDateChild datetime={dayjs(props.datetime)} timezone={course.timezone} />}
   </CourseContext.Consumer>
 );
 

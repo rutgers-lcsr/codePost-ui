@@ -844,7 +844,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                             <code>{'{grader_draft}'}</code> - Current draft text by grader (auto)
                           </li>
                           <li>
-                            <code>{'{file_content}'}</code> - Full content of the current opened file <b>(manual)</b>
+                            <code>{'{file_content}'}</code> - Full content of the current opened file <b>(auto)</b>
                           </li>
                           <li>
                             <code>{'{all_files}'}</code> - Content of all files in submission <b>(manual)</b>

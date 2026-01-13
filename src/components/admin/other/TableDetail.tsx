@@ -10,7 +10,7 @@ import Highlighter from 'react-highlight-words';
 import CPFlex from '../../core/CPFlex';
 import CPAdminDetail from '../other/CPAdminDetail';
 
-import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
+import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../../utils/LocalSettings';
 
 /**********************************************************************************************************************/
 /* Types
@@ -52,7 +52,6 @@ const DEFAULT_SORT_ORDER: 'ascend' | 'descend' = 'ascend';
 const HIGHLIGHT_BACKGROUND_COLOR = '#5CBB8B';
 const SEARCH_PLACEHOLDER = 'Search...';
 const SEARCH_INPUT_WIDTH = 300;
-const PAGE_SIZE_OPTIONS = ['10', '50', '100'];
 
 /**********************************************************************************************************************/
 /* Helper Functions

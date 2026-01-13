@@ -60,6 +60,15 @@ interface CommentHighlightContextStore {
   // Current user (for comment authorship)
   user: string;
 
+  // Preview state request for drag-and-drop
+  setPreviewComment: (comment: CommentType | null) => void;
+  // Dragging state
+  setDraggingState: (id: number | null, type: string | null) => void;
+  draggingCommentId: number | null;
+  draggingType: string | null;
+
+  focusedCommentId?: number;
+
   // External hover store accessors for fine-grained subscriptions
   getHoveredCommentId: () => number | null;
   subscribeHoveredCommentId: (listener: HoverListener) => () => void;
@@ -161,28 +170,11 @@ export interface CommentHighlightProviderProps {
   addComment?: (comment: CommentType, file: FileType) => void;
   updateComment?: (commentId: number, updates: Partial<CommentType>) => void;
   deleteComment?: (commentId: number) => void;
+  focusedCommentId?: number;
 }
 
 /**
  * Comment Highlight Provider Component
- *
- * Wraps the code display components and provides comment/highlight state.
- * Should be placed at the CodeContent level so all child components can access it.
- *
- * Usage:
- * ```tsx
- * <CommentHighlightProvider
- *   file={currentFile}
- *   comments={fileComments}
- *   readOnly={false}
- *   user={currentUser}
- *   onHighlightClick={handleClick}
- *   addComment={handleAddComment}
- * >
- *   <Code />
- *   <Comments />
- * </CommentHighlightProvider>
- * ```
  */
 export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> = (props) => {
   const {
@@ -196,12 +188,41 @@ export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> =
     addComment: externalAddComment,
     updateComment: externalUpdateComment,
     deleteComment: externalDeleteComment,
+    focusedCommentId,
   } = props;
+
+  const [previewComment, setPreviewComment] = React.useState<CommentType | null>(null);
+  const [draggingCommentId, _setDraggingCommentId] = React.useState<number | null>(null);
+  const [draggingType, _setDraggingType] = React.useState<string | null>(null);
+
+  const setDraggingState = React.useCallback((id: number | null, type: string | null) => {
+    _setDraggingCommentId(id);
+    _setDraggingType(type);
+  }, []);
+
+  // Derived comments list that includes the preview comment
+  const effectiveComments = React.useMemo(() => {
+    if (!previewComment) return comments;
+    return comments.map((c) => (c.id === previewComment.id ? previewComment : c));
+  }, [comments, previewComment]);
+
   // External hover state store managed outside React render cycle
   const hoverStoreRef = React.useRef<{ value: number | null; listeners: Set<HoverListener> }>({
-    value: null,
+    value: focusedCommentId || null,
     listeners: new Set(),
   });
+
+  // Keep hover store in sync with focusedCommentId prop
+  React.useEffect(() => {
+    if (focusedCommentId !== undefined) {
+      if (hoverStoreRef.current.value !== focusedCommentId) {
+        hoverStoreRef.current.value = focusedCommentId;
+        // Re-apply styling immediately
+        applyHoverStyling(focusedCommentId);
+        notifyHoverListeners();
+      }
+    }
+  }, [focusedCommentId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Track DOM nodes currently marked as hovered so we can clean them up without re-rendering Markdown/PDF
   const hoveredElementsRef = React.useRef<HTMLElement[]>([]);
@@ -226,6 +247,11 @@ export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> =
 
   const applyHoverStyling = React.useCallback(
     (commentId: number | null) => {
+      // Don't clear and re-apply if it's the same comment, unless file changed
+      // But we need to be careful if line numbers changed (unlikely during simple typing, but possible)
+      // For now, simple optimization: compare IDs?
+      // But we cleared elements already? No, this function calls clear.
+
       clearHoveredElements();
 
       if (!file) {
@@ -239,11 +265,14 @@ export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> =
         return;
       }
 
-      const activeComment = comments.find((comment) => comment.id === commentId);
+      const activeComment = effectiveComments.find((comment) => comment.id === commentId);
 
       if (!activeComment) {
-        if (hoverStoreRef.current.value !== null) {
-          hoverStoreRef.current.value = null;
+        if (hoverStoreRef.current.value !== null && hoverStoreRef.current.value === commentId) {
+          // Keep the ID in store but cleanup styling if comment not found (e.g. deleted)
+          // Actually if provided prop says focus ID, and we can't find it, we should probably reset?
+          // For now, strict:
+          // hoverStoreRef.current.value = null;
         }
         return;
       }
@@ -261,7 +290,7 @@ export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> =
 
       hoveredElementsRef.current = nextElements;
     },
-    [clearHoveredElements, comments, file],
+    [clearHoveredElements, effectiveComments, file],
   );
 
   const setHoveredCommentId = React.useCallback(
@@ -291,7 +320,7 @@ export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> =
   const commentsByLine = React.useMemo(() => {
     const map = new Map<number, CommentType[]>();
 
-    comments.forEach((comment) => {
+    effectiveComments.forEach((comment) => {
       // Add comment to all lines it spans
       for (let line = comment.startLine; line <= comment.endLine; line++) {
         if (!map.has(line)) {
@@ -302,7 +331,7 @@ export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> =
     });
 
     return map;
-  }, [comments]);
+  }, [effectiveComments]);
 
   // Get comments for a specific line
   const getCommentsForLine = React.useCallback(
@@ -356,7 +385,7 @@ export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> =
   const contextValue = React.useMemo<CommentHighlightContextStore>(
     () => ({
       file,
-      comments,
+      comments: effectiveComments,
       setHoveredCommentId,
       onHighlightClick,
       isCommentHovered,
@@ -369,10 +398,15 @@ export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> =
       user,
       getHoveredCommentId,
       subscribeHoveredCommentId,
+      setPreviewComment,
+      setDraggingState,
+      draggingCommentId,
+      draggingType,
+      focusedCommentId,
     }),
     [
       file,
-      comments,
+      effectiveComments,
       onHighlightClick,
       isCommentHovered,
       getCommentsForLine,
@@ -386,19 +420,20 @@ export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> =
       setHoveredCommentId,
       getHoveredCommentId,
       subscribeHoveredCommentId,
+      setPreviewComment,
+      setDraggingState,
+      draggingCommentId,
+      draggingType,
+      focusedCommentId,
     ],
   );
 
   // Apply hover styling without forcing Markdown/PDF to re-render
   React.useLayoutEffect(() => {
-    const previous = hoverStoreRef.current.value;
-    applyHoverStyling(previous);
-    if (hoverStoreRef.current.value !== previous) {
-      notifyHoverListeners();
-    }
-
+    const currentHover = hoverStoreRef.current.value;
+    applyHoverStyling(currentHover);
     return clearHoveredElements;
-  }, [applyHoverStyling, clearHoveredElements, notifyHoverListeners]);
+  }, [applyHoverStyling, clearHoveredElements]); // Removed notifyHoverListeners from deps, shouldn't trigger here?
 
   return <CommentHighlightContext.Provider value={contextValue}>{children}</CommentHighlightContext.Provider>;
 };

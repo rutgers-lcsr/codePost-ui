@@ -2,8 +2,11 @@
 /* Imports
 /**********************************************************************************************************************/
 
-import moment from 'moment';
+import dayjs from 'dayjs';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
 import React from 'react';
+
+dayjs.extend(localizedFormat);
 
 /* antd imports */
 import { EyeFilled, EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
@@ -56,12 +59,12 @@ type GradeInfo = {
 const getTooltipLabel = (submission: SubmissionWithStudents, views: { [student: string]: string }): string => {
   if (submission.students.length === 1) {
     // For a single student submission we want only the date
-    return moment(views[submission.students[0]]).format('llll');
+    return dayjs(views[submission.students[0]]).format('llll');
   }
 
   // For multiple students, we want the student name and the date
   return Object.keys(views)
-    .map((student) => `${student} on ${moment(views[student]).format('llll')}`)
+    .map((student) => `${student} on ${dayjs(views[student]).format('llll')}`)
     .join(', ');
 };
 
@@ -88,7 +91,7 @@ const getViewIcon = (
 
   // Case: looking up a single student, and student has viewed the submission
   if (studentToLookup && studentToLookup in views) {
-    const viewedTime = moment(views[studentToLookup]).format('llll');
+    const viewedTime = dayjs(views[studentToLookup]).format('llll');
     return (
       <CPTooltip title={viewedTime}>
         <EyeFilled />
@@ -169,7 +172,7 @@ const formatGraderText = (grader: string | null | undefined): string | React.Rea
  * Format date edited text
  */
 const formatLastEdited = (dateEdited: string): string => {
-  return `${moment(dateEdited).format('l')}, ${moment(dateEdited).format('LT')}`;
+  return `${dayjs(dateEdited).format('l')}, ${dayjs(dateEdited).format('LT')}`;
 };
 
 /**

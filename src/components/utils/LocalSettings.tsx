@@ -64,6 +64,8 @@ const intIParser = (value: number) => {
   return value.toString();
 };
 
+export const PAGE_SIZE_OPTIONS = ['10', '25', '50', '100'];
+
 /******************************************************************************************************************/
 
 // key: darkMode

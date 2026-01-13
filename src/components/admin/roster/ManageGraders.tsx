@@ -4,9 +4,9 @@
 
 /* react imports */
 import * as React from 'react';
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 
-import { DisconnectOutlined, EditOutlined, MailOutlined, ProfileOutlined, UserDeleteOutlined } from '@ant-design/icons';
+import { DisconnectOutlined, MailOutlined, ProfileOutlined, UserDeleteOutlined } from '@ant-design/icons';
 
 /* style imports */
 import { Breadcrumb, Button, Empty, message, Modal, Space, Popconfirm, Tooltip } from 'antd';

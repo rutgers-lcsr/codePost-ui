@@ -6,6 +6,7 @@ import {
   PANEL_TYPE,
   PERMISSION_LEVEL,
 } from '../../types/CodeConsole.types';
+import { useCodeConsoleStore } from '../../stores/useCodeConsoleStore';
 /**********************************************************************************************************************/
 /* Imports
 /**********************************************************************************************************************/
@@ -14,7 +15,7 @@ import {
 import * as React from 'react';
 
 /* antd imports */
-import { Button, Divider, Empty, message, Progress, Tag, Typography } from 'antd';
+import { Button, Divider, Empty, message, Progress, Tag, Typography, Modal } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 
 /* other library imports */
@@ -26,12 +27,13 @@ import { useLocation, useParams } from 'react-router-dom';
 import Loading from '../core/Loading';
 import { colors } from '../../theme/colors';
 
-import { getOperatingSystem, OS } from '../core/operatingSystem';
+import { getOsTriggerKeyFromEvent, osControlKey } from '../core/operatingSystem';
 
 import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from '../../types/common';
 
 import { Assignment, AssignmentStudent, AssignmentType } from '../../infrastructure/assignment';
 import { CommentIO, CommentType } from '../../infrastructure/comment';
+import { CommentTemplateIO, CommentTemplateType } from '../../infrastructure/commentTemplate';
 import { Course, CourseType } from '../../infrastructure/course';
 import { AssignmentFile, AssignmentFileType, FileType } from '../../infrastructure/file';
 import { RubricCategory, RubricCategoryType } from '../../infrastructure/rubricCategory';
@@ -52,11 +54,11 @@ import ExecuteFileButton from './ExecuteFileButton';
 import CursorToggle from '../core/CursorToggle';
 import ThemeToggle from '../core/ThemeToggle';
 
-import KeyboardShortcuts from './KeyboardShortcuts';
-
 import FileMenu, { FileMenuTitle } from './menu/FileMenu';
+import HelpModal from './menu/HelpModal';
+import TemplateMenu from './menu/TemplateMenu';
 
-import RubricMenuUI from './menu/RubricMenuUI';
+const RubricMenuUI = React.lazy(() => import('./menu/RubricMenuUI'));
 
 import InlineTestsModal from './InlineTestsModal';
 
@@ -91,7 +93,6 @@ import { loadDemoGrader, loadDemoStudent } from './demo';
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 
-import TestsList from './code-panel/TestsList';
 import TestsMenu from './menu/TestsMenu';
 
 import { CourseContext, defaultCourse } from '../core/Contexts';
@@ -135,76 +136,341 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
   /***********************************************************************************************/
 
   const context = React.useContext(ConsoleThemeContext);
+  /* hooks */
   const location = useLocation();
   const params = useParams<{ submissionId?: string }>();
+  const [templateForceUpdates, setTemplateForceUpdates] = React.useState<{ [id: number]: number }>({});
+  const [templateRefresh, setTemplateRefresh] = React.useState(0);
 
   // Refs for intervals (replacing instance variables)
   const checkNewFilesInterval = React.useRef<number | undefined>(undefined);
   const reloadCommentsInterval = React.useRef<number | undefined>(undefined);
+  const lastCursorRef = React.useRef<any>(null);
   // Note: LIVE_FEEDBACK_*_RELOAD_INTERVAL constants removed as live feedback features are deprecated
 
-  // State management
-  const [state, setState] = React.useState<ICodeConsoleState>({
-    permissionLevel: PERMISSION_LEVEL.READ,
-    activeCommentID: undefined,
-    assignment: undefined,
-    commentRubricComments: {},
-    comments: {},
-    assignmentFiles: undefined,
-    showKeyboardShortcuts: false,
+  // State management - now uses Zustand store
+  // Import useCodeConsoleStore and use getState() for sync access
 
-    files: [],
-    graders: [],
-    students: [],
-    isLoading: true,
-    rubricCategories: [],
-    rubricComments: {},
-    submission: undefined,
-    tests: [],
-    testCases: {},
-    testCategories: [],
-    showInlineTestsModal: false,
+  // Granular Selectors - Optimization Phase 4
+  const files = useCodeConsoleStore((s) => s.files);
+  const comments = useCodeConsoleStore((s) => s.comments);
+  const permissionLevel = useCodeConsoleStore((s) => s.permissionLevel);
+  const activeCommentID = useCodeConsoleStore((s) => s.activeCommentID);
+  const assignment = useCodeConsoleStore((s) => s.assignment);
+  const selectedFile = useCodeConsoleStore((s) => s.selectedFile);
+  const assignmentFiles = useCodeConsoleStore((s) => s.assignmentFiles);
+  const commentRubricComments = useCodeConsoleStore((s) => s.commentRubricComments);
+  const rubricCategories = useCodeConsoleStore((s) => s.rubricCategories);
+  const rubricComments = useCodeConsoleStore((s) => s.rubricComments);
+  const submission = useCodeConsoleStore((s) => s.submission);
+  const readOnlySubmission = useCodeConsoleStore((s) => s.readOnlySubmission);
+  const showKeyboardShortcuts = useCodeConsoleStore((s) => s.showKeyboardShortcuts);
+  const graders = useCodeConsoleStore((s) => s.graders);
+  const students = useCodeConsoleStore((s) => s.students);
+  const isLoading = useCodeConsoleStore((s) => s.isLoading);
+  const tests = useCodeConsoleStore((s) => s.tests);
+  const testCases = useCodeConsoleStore((s) => s.testCases);
+  const testCategories = useCodeConsoleStore((s) => s.testCategories);
+  const inlineTestsModalVisible = useCodeConsoleStore((s) => s.showInlineTestsModal);
+  const oldCommentIDs = useCodeConsoleStore((s) => s.oldCommentIDs);
+  const codeZoom = useCodeConsoleStore((s) => s.codeZoom);
+  const codeVerticalOffset = useCodeConsoleStore((s) => s.codeVerticalOffset);
+  const demoCommentCounter = useCodeConsoleStore((s) => s.demoCommentCounter);
+  const isStudent = useCodeConsoleStore((s) => s.isStudent);
+  const editRubricMode = useCodeConsoleStore((s) => s.editRubricMode);
+  const commentCounter = useCodeConsoleStore((s) => s.commentCounter);
+  const commentRefreshCounter = useCodeConsoleStore((s) => s.commentRefreshCounter);
+  const rubricReload = useCodeConsoleStore((s) => s.rubricReload);
+  const cursorMode = useCodeConsoleStore((s) => s.cursorMode);
+  const showCursor = useCodeConsoleStore((s) => s.showCursor);
+  const showCustomCommentExplorer = useCodeConsoleStore((s) => s.showCustomCommentExplorer);
+  const panelType = useCodeConsoleStore((s) => s.panelType);
+  const hideGrades = useCodeConsoleStore((s) => s.hideGrades);
+  const executionResults = useCodeConsoleStore((s) => s.executionResults);
+  const aiEnabled = useCodeConsoleStore((s) => s.aiEnabled);
+  const course = useCodeConsoleStore((s) => s.course);
+  const noSave = useCodeConsoleStore((s) => s.noSave);
+  const activeSiderKey = useCodeConsoleStore((s) => s.activeSiderKey);
+  const showHelpModal = useCodeConsoleStore((s) => s.showHelpModal); // Added selector
 
-    selectedFile: undefined,
-    oldCommentIDs: {},
+  // Still needed for now:
+  // const store = useCodeConsoleStore(); // DISABLED: Using granular selectors to prevent re-renders
 
-    codeZoom: LOCAL_SETTINGS.codeZoom.getter(),
-    codeVerticalOffset: 0,
+  // Create a backwards-compatible state object from store
+  const state: ICodeConsoleState = React.useMemo(
+    () => ({
+      permissionLevel,
+      activeCommentID,
+      assignment,
+      commentRubricComments,
+      comments,
+      assignmentFiles,
+      showKeyboardShortcuts,
+      files,
+      graders,
+      students,
+      isLoading,
+      rubricCategories,
+      rubricComments,
+      submission,
+      readOnlySubmission,
+      tests,
+      testCases,
+      testCategories,
+      showInlineTestsModal: inlineTestsModalVisible,
+      selectedFile,
+      oldCommentIDs,
+      codeZoom,
+      codeVerticalOffset,
+      demoCommentCounter,
+      isStudent,
+      editRubricMode,
+      commentCounter,
+      commentRefreshCounter,
+      rubricReload,
+      cursorMode,
+      showCursor,
+      showCustomCommentExplorer,
+      panelType,
+      hideGrades,
+      executionResults,
+      aiEnabled,
+      course,
+      noSave,
+      activeSiderKey,
+      showHelpModal,
+    }),
+    [
+      permissionLevel,
+      activeCommentID,
+      assignment,
+      commentRubricComments,
+      comments,
+      assignmentFiles,
+      showKeyboardShortcuts,
+      files,
+      graders,
+      students,
+      isLoading,
+      rubricCategories,
+      rubricComments,
+      submission,
+      readOnlySubmission,
+      tests,
+      testCases,
+      testCategories,
+      inlineTestsModalVisible,
+      selectedFile,
+      oldCommentIDs,
+      codeZoom,
+      codeVerticalOffset,
+      demoCommentCounter,
+      isStudent,
+      editRubricMode,
+      commentCounter,
+      commentRefreshCounter,
+      rubricReload,
+      cursorMode,
+      showCursor,
+      showCustomCommentExplorer,
+      panelType,
+      hideGrades,
+      executionResults,
+      aiEnabled,
+      course,
+      noSave,
+      activeSiderKey,
+      showHelpModal,
+    ],
+  );
 
-    demoCommentCounter: 0,
+  // Backwards-compatible setState that updates Zustand store
+  const setState = React.useCallback((updater: React.SetStateAction<ICodeConsoleState>) => {
+    const currentState = useCodeConsoleStore.getState();
+    const stateObj: ICodeConsoleState = {
+      permissionLevel: currentState.permissionLevel,
+      activeCommentID: currentState.activeCommentID,
+      assignment: currentState.assignment,
+      commentRubricComments: currentState.commentRubricComments,
+      comments: currentState.comments,
+      assignmentFiles: currentState.assignmentFiles,
+      showKeyboardShortcuts: currentState.showKeyboardShortcuts,
+      files: currentState.files,
+      graders: currentState.graders,
+      students: currentState.students,
+      isLoading: currentState.isLoading,
+      rubricCategories: currentState.rubricCategories,
+      rubricComments: currentState.rubricComments,
+      submission: currentState.submission,
+      readOnlySubmission: currentState.readOnlySubmission,
+      tests: currentState.tests,
+      testCases: currentState.testCases,
+      testCategories: currentState.testCategories,
+      showInlineTestsModal: currentState.showInlineTestsModal,
+      selectedFile: currentState.selectedFile,
+      oldCommentIDs: currentState.oldCommentIDs,
+      codeZoom: currentState.codeZoom,
+      codeVerticalOffset: currentState.codeVerticalOffset,
+      demoCommentCounter: currentState.demoCommentCounter,
+      isStudent: currentState.isStudent,
+      editRubricMode: currentState.editRubricMode,
+      commentCounter: currentState.commentCounter,
+      commentRefreshCounter: currentState.commentRefreshCounter,
+      rubricReload: currentState.rubricReload,
+      cursorMode: currentState.cursorMode,
+      showCursor: currentState.showCursor,
+      showCustomCommentExplorer: currentState.showCustomCommentExplorer,
+      panelType: currentState.panelType,
+      hideGrades: currentState.hideGrades,
+      executionResults: currentState.executionResults,
+      aiEnabled: currentState.aiEnabled,
+      course: currentState.course,
+      noSave: currentState.noSave,
+      activeSiderKey: currentState.activeSiderKey,
+      showHelpModal: currentState.showHelpModal,
+    };
 
-    isStudent: false,
-    editRubricMode: false,
-    commentCounter: -1,
-    commentRefreshCounter: 0,
-
-    rubricReload: undefined,
-
-    cursorMode: LOCAL_SETTINGS.cursorMode.getter(),
-    showCursor: LOCAL_SETTINGS.cursorMode.getter() ? CURSOR_DOMAIN.CODE : CURSOR_DOMAIN.CODE_HIDDEN,
-
-    showCustomCommentExplorer: false,
-
-    panelType: PANEL_TYPE.FILE,
-    hideGrades: false,
-    executionResults: {},
-    aiEnabled: false, // Whether AI comment generation is available for this course
-  });
+    const newState = typeof updater === 'function' ? updater(stateObj) : updater;
+    currentState.setState(newState);
+  }, []);
 
   /***********************************************************************************************/
   /* Helper functions (converted from class methods)
   /***********************************************************************************************/
 
+  // Track last active sidebar key for sticky toggle (Ctrl+B)
+  const lastSiderKeyRef = React.useRef<string | null>(null);
+
+  React.useEffect(() => {
+    if (state.activeSiderKey) {
+      lastSiderKeyRef.current = state.activeSiderKey;
+    }
+  }, [state.activeSiderKey]);
+
   // Keyboard event handlers (defined early for useEffect dependencies)
   const handleHotkeys = React.useCallback((e: KeyboardEvent) => {
-    const os = getOperatingSystem();
-    const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+    const triggerKey = getOsTriggerKeyFromEvent(e);
 
-    // Show Custom Comment Explorer (typically accessible via Foobar)
-    if (e.key === 'e' && triggerKey && e.shiftKey) {
+    // Toggle Sidebar (Ctrl+B / Cmd+B) - Logic already exists, but adding Ctrl+Shift+B for Hide Grades
+    // Use e.code to be robust against CapsLock and keyboard layouts
+    if (e.code === 'KeyB' && triggerKey) {
+      // Check for Shift -> Hide Grades
+      if (e.shiftKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        setState((prev) => ({ ...prev, hideGrades: !prev.hideGrades }));
+        return;
+      }
+
+      // Normal Ctrl+B -> Toggle Sidebar
       e.preventDefault();
       e.stopPropagation();
-      setState((prev) => ({ ...prev, showCustomCommentExplorer: !prev.showCustomCommentExplorer }));
+      setState((prev) => {
+        if (prev.activeSiderKey) {
+          // Close
+          return { ...prev, activeSiderKey: null };
+        } else {
+          // Open (restore last or default)
+          let target = lastSiderKeyRef.current;
+          if (!target) {
+            // Fallback default if no history
+            target = prev.permissionLevel === PERMISSION_LEVEL.WRITE ? 'rubric-menu' : 'file-menu';
+          }
+          return { ...prev, activeSiderKey: target };
+        }
+      });
+      return;
+    }
+
+    // Toggle Dark Mode (Ctrl+I / Cmd+I)
+    if (e.code === 'KeyI' && triggerKey) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Toggle logic tailored to how ThemeToggle works
+      const currentMode = LOCAL_SETTINGS.darkMode.getter();
+      const nextMode = !currentMode;
+
+      // Update local settings
+      LOCAL_SETTINGS.darkMode.setter(nextMode);
+
+      // Force reload to apply theme
+      window.location.reload();
+      return;
+    }
+
+    // File Navigation (Alt + [ / Alt + ])
+    if (e.altKey && (e.code === 'BracketLeft' || e.code === 'BracketRight')) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      setState((prev) => {
+        // Access files from submission or fallback logic matching changeSelectedFile/render logic
+        // We use prev.files if it's reliably populated, which relies on other updates.
+        // But logic in changeSelectedFile uses prev.files via state.
+        // But CodeConsole state definition for `files` property?
+        // Wait, CodeConsole state usually has `submission`, but `files` might be computed or passed?
+        // Checking usage: changeSelectedFile accesses `prev.files`. So `files` IS in state?
+        // Or `files` is a derived variable in Render?
+        // Let's check state interface.
+        // Assuming `prev.submission.files` is safer if `files` isn't in state.
+        // But line 998: `prev.files.find`. So `files` IS in state.
+        // I will use `prev.files`.
+
+        const currentFiles = prev.files || [];
+        if (currentFiles.length === 0 || !prev.selectedFile) return prev;
+
+        const currentIndex = currentFiles.findIndex((f: FileType) => f.id === prev.selectedFile!.id);
+        if (currentIndex === -1) return prev;
+
+        let newIndex = e.code === 'BracketRight' ? currentIndex + 1 : currentIndex - 1;
+
+        // Cycle through files
+        if (newIndex >= currentFiles.length) newIndex = 0;
+        if (newIndex < 0) newIndex = currentFiles.length - 1;
+
+        const nextFile = currentFiles[newIndex];
+
+        // Update local settings side effect (optional, strictly side-effect in updater but acceptable here for consistency)
+        LOCAL_SETTINGS.mostRecentFile.setter(nextFile.id);
+
+        return {
+          ...prev,
+          selectedFile: nextFile,
+          activeCommentID: undefined,
+          panelType: PANEL_TYPE.FILE,
+        };
+      });
+      return;
+    }
+
+    // Sidebar Tab Shortcuts configuration
+    // Easier to edit: just add new entries here
+    const SIDEBAR_TAB_SHORTCUTS: { [key: string]: string } = {
+      KeyE: 'submission-info',
+      KeyD: 'tests-menu',
+      KeyF: 'file-menu',
+      KeyG: 'rubric-menu',
+      KeyH: 'template-menu',
+    };
+
+    if (triggerKey && e.shiftKey) {
+      if (e.code === 'Slash') {
+        // Toggle Help Modal
+        e.preventDefault();
+        e.stopPropagation();
+        useCodeConsoleStore.getState().setShowHelpModal(!useCodeConsoleStore.getState().showHelpModal);
+        return;
+      }
+
+      // Use e.code (KeyE, etc.)
+      const targetTab = SIDEBAR_TAB_SHORTCUTS[e.code];
+
+      if (targetTab) {
+        e.preventDefault();
+        e.stopPropagation();
+        setState((prev) => ({ ...prev, activeSiderKey: targetTab }));
+      }
     }
   }, []);
 
@@ -228,17 +494,19 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
 
   const handleCursor = React.useCallback(
     (e: KeyboardEvent) => {
-      const os = getOperatingSystem();
-      const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+      const triggerKey = getOsTriggerKeyFromEvent(e);
 
-      if (e.key === '/' && triggerKey) {
+      // Help Modal - Ctrl+/ or Ctrl+? (Shift+/)
+      if ((e.key === '/' || e.key === '?') && triggerKey) {
         e.preventDefault();
         e.stopPropagation();
-        setState((prev) => ({ ...prev, showKeyboardShortcuts: !prev.showKeyboardShortcuts }));
+        // Toggle Help Modal (consolidated from KeyboardShortcuts drawer)
+        useCodeConsoleStore.getState().setShowHelpModal(!useCodeConsoleStore.getState().showHelpModal);
         return;
       }
 
-      if (e.key === 'y' && triggerKey && e.shiftKey) {
+      // Enable Cursor Mode: Ctrl+Shift+Y - check for 'Y' (uppercase when shift is held)
+      if ((e.key === 'y' || e.key === 'Y') && triggerKey && e.shiftKey) {
         e.preventDefault();
         e.stopPropagation();
         setState((prev) => ({
@@ -372,6 +640,30 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
     let rubricComments: IRubricCategoryToRubricCommentsMap = {};
     let selectedFile: FileType | undefined;
     let tests: SubmissionTestType[];
+    let panelTypeOverride: PANEL_TYPE | undefined;
+    let activeSiderKeyOverride: string | undefined;
+
+    if (queryValues.tab !== undefined) {
+      const tabValue = queryValues.tab as string;
+      // Check if it's a sidebar key string (e.g., 'tests-menu', 'file-menu')
+      if (tabValue === 'tests-menu') {
+        activeSiderKeyOverride = 'tests-menu';
+        panelTypeOverride = PANEL_TYPE.TESTS;
+      } else if (tabValue === 'file-menu') {
+        activeSiderKeyOverride = 'file-menu';
+        panelTypeOverride = PANEL_TYPE.FILE;
+      } else if (tabValue === 'submission-info' || tabValue === 'rubric-menu' || tabValue === 'template-menu') {
+        activeSiderKeyOverride = tabValue;
+        // Keep default for panelTypeOverride (show file in main content)
+      } else {
+        // Legacy: numeric PANEL_TYPE
+        const t = parseInt(tabValue);
+        if (!isNaN(t)) {
+          panelTypeOverride = t;
+          activeSiderKeyOverride = t === PANEL_TYPE.TESTS ? 'tests-menu' : 'file-menu';
+        }
+      }
+    }
 
     switch (permissionLevel) {
       case PERMISSION_LEVEL.NOT_FOUND:
@@ -461,12 +753,16 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
         files = fileBouncer(files);
 
         if (selectedFile === undefined && files.length > 0) {
-          if (typeof queryValues.comment === 'string') {
+          if (typeof queryValues.file === 'string') {
+            selectedFile = files.find((f) => f.name === queryValues.file);
+          }
+
+          if (selectedFile === undefined && typeof queryValues.comment === 'string') {
             const matchingFile = files.find((el) =>
               el.comments.some((c) => c === parseInt(queryValues.comment as string)),
             );
             selectedFile = matchingFile || files[0];
-          } else {
+          } else if (selectedFile === undefined) {
             selectedFile =
               files.find((f: FileType) => {
                 return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
@@ -505,6 +801,8 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
           isStudent:
             simulatingStudent ||
             (submission?.students !== undefined && submission.students.indexOf(props.user.email) > -1),
+          panelType: panelTypeOverride !== undefined ? panelTypeOverride : prev.panelType,
+          activeSiderKey: activeSiderKeyOverride ?? prev.activeSiderKey,
         }));
 
         if (assignment && assignment.liveFeedbackMode) {
@@ -563,13 +861,17 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
 
         files = fileBouncer(files);
 
-        if (selectedFile === undefined && files.length > 0) {
-          if (typeof queryValues.comment === 'string') {
+        if (selectedFile === undefined && files.length > 0 && panelTypeOverride !== PANEL_TYPE.TESTS) {
+          if (typeof queryValues.file === 'string') {
+            selectedFile = files.find((f) => f.name === queryValues.file);
+          }
+
+          if (selectedFile === undefined && typeof queryValues.comment === 'string') {
             const matchingFile = files.find((el) =>
               el.comments.some((c) => c === parseInt(queryValues.comment as string)),
             );
             selectedFile = matchingFile || files[0];
-          } else {
+          } else if (selectedFile === undefined) {
             selectedFile =
               files.find((f: FileType) => {
                 return f.id === LOCAL_SETTINGS.mostRecentFile.getter();
@@ -622,6 +924,8 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
           testCategories: Array.isArray(categories) ? categories : [],
           testCases: cases as TestCasesByCategory,
           aiEnabled,
+          panelType: panelTypeOverride !== undefined ? panelTypeOverride : prev.panelType,
+          activeSiderKey: activeSiderKeyOverride ?? prev.activeSiderKey,
         }));
         break;
       }
@@ -638,9 +942,6 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
 
     // Cleanup function
     return () => {
-      document.removeEventListener('keydown', handleCursor);
-      document.removeEventListener('keydown', handleHotkeys);
-      // Capture interval refs in cleanup to avoid stale ref warnings
       const checkFilesInterval = checkNewFilesInterval.current;
       const reloadInterval = reloadCommentsInterval.current;
       if (checkFilesInterval) {
@@ -651,7 +952,16 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run only once on mount
+  }, []);
+
+  React.useEffect(() => {
+    lastCursorRef.current = null;
+  }, [state.selectedFile?.id]);
+
+  // NOTE: URL sync effect was removed.
+  // - URL params (tab, file) are only read on initial load in componentDidMountLogic
+  // - URL is only updated when claiming a new submission (same assignment)
+  // - Internal state (panelType, selectedFile, activeSiderKey) is now the source of truth
 
   const updateCursorDomain = React.useCallback((domain: CURSOR_DOMAIN) => {
     setState((prev) => ({
@@ -752,7 +1062,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
         return;
       }
 
-      if (state.permissionLevel === PERMISSION_LEVEL.WRITE) {
+      if (permissionLevel === PERMISSION_LEVEL.WRITE) {
         changeActiveComment(commentId);
       }
 
@@ -761,7 +1071,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
         commentElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
     },
-    [changeActiveComment, state.permissionLevel],
+    [changeActiveComment, permissionLevel],
   );
 
   const changeSelectedFile = React.useCallback((fileID: number): void => {
@@ -770,9 +1080,26 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
       if (selectedFile) {
         LOCAL_SETTINGS.mostRecentFile.setter(selectedFile.id);
       }
-      return { ...prev, selectedFile, activeCommentID: undefined, panelType: PANEL_TYPE.FILE };
+      // NOTE: URL is NOT updated here - internal state is the source of truth
+      return {
+        ...prev,
+        selectedFile,
+        activeCommentID: undefined,
+        panelType: PANEL_TYPE.FILE,
+        activeSiderKey: 'file-menu',
+      };
     });
   }, []);
+
+  const goToTests = () => {
+    // NOTE: URL is NOT updated here - internal state is the source of truth
+    setState((prev) => ({
+      ...prev,
+      panelType: PANEL_TYPE.TESTS,
+      selectedFile: undefined,
+      activeSiderKey: 'tests-menu',
+    }));
+  };
 
   const showInlineTestsModal = React.useCallback(() => {
     setState((prev) => ({ ...prev, showInlineTestsModal: true }));
@@ -822,21 +1149,21 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
       return;
     }
 
-    if (state.assignment === undefined || !state.assignment.allowStudentUpload) {
+    if (assignment === undefined || !assignment.allowStudentUpload) {
       return;
     }
 
-    if (state.submission === undefined) {
+    if (submission === undefined) {
       return;
     }
 
-    if (state.files.length === 0) {
+    if (files.length === 0) {
       return;
     }
 
-    const firstFile = state.files[0];
+    const firstFile = files[0];
 
-    const daysLate = getDaysLate(state.assignment, state.submission);
+    const daysLate = getDaysLate(assignment, submission);
     const daysLateAfterCredit = daysLate - lateDayCreditsUsed;
 
     const text = `
@@ -864,7 +1191,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     };
 
     const submissionPayload = {
-      id: state.submission!.id,
+      id: submission!.id,
       lateDayCreditsUsed,
     };
 
@@ -873,10 +1200,10 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
       let promises: Promise<void>[] = [];
       // Clear previous LateDay comments
-      for (const fileID of Object.keys(state.comments)) {
+      for (const fileID of Object.keys(comments)) {
         promises = [
           ...promises,
-          ...state.comments[+fileID].map(async (comment: CommentType) => {
+          ...comments[+fileID].map(async (comment: CommentType) => {
             if (comment.tags !== undefined && comment.tags.includes('late')) {
               await deleteComment(comment);
             }
@@ -906,32 +1233,37 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     });
 
     try {
-      if (state.submission && state.submission.grader === null) {
-        updateGrader(state.submission, props.user.email);
+      if (submission && submission.grader === null) {
+        updateGrader(submission, props.user.email);
       }
     } catch (err) {
       console.log('comment author isnt enrolled as a grader');
     }
 
-    const comments = addCommentToState(state.comments, comment, file);
-    setState((prev) => ({ ...prev, comments, activeCommentID: comment.id, commentCounter: state.commentCounter - 1 }));
+    const nextComments = addCommentToState(comments, comment, file);
+    setState((prev) => ({
+      ...prev,
+      comments: nextComments,
+      activeCommentID: comment.id,
+      commentCounter: state.commentCounter - 1,
+    }));
   };
 
   const updateComment = (commentID: number, newComment: CommentType, newRubricComment?: RubricCommentType) => {
-    const comments = updateCommentsState(state.comments, commentID, newComment);
+    const nextComments = updateCommentsState(comments, commentID, newComment);
 
     const [rubricComment, restOfCommentRubricComments] = removeFromCommentRubricCommentsState(
-      state.commentRubricComments,
+      commentRubricComments,
       commentID,
     );
 
-    const commentRubricComments = addToCommentRubricCommentsState(
+    const nextCommentRubricComments = addToCommentRubricCommentsState(
       restOfCommentRubricComments,
       newComment.id,
       newRubricComment ? newRubricComment : rubricComment,
     );
 
-    setState((prev) => ({ ...prev, comments, commentRubricComments }));
+    setState((prev) => ({ ...prev, comments: nextComments, commentRubricComments: nextCommentRubricComments }));
   };
 
   const saveComment = async (comment: CommentType) => {
@@ -959,7 +1291,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         // 3. POST returns, saving the comment.
         // Solution: Check if the comment with the OLD negative ID still exists in current state
         if (
-          !_.flatten(Object.values(state.comments)).find((el: CommentType) => {
+          !_.flatten(Object.values(comments)).find((el: CommentType) => {
             return el.id === comment.id;
           })
         ) {
@@ -1017,10 +1349,10 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       }
     }
 
-    const comments = removeCommentFromState(state.comments, comment);
-    const [, commentRubricComments] = removeFromCommentRubricCommentsState(state.commentRubricComments, comment.id);
+    const nextComments = removeCommentFromState(comments, comment);
+    const [, nextCommentRubricComments] = removeFromCommentRubricCommentsState(commentRubricComments, comment.id);
 
-    setState((prev) => ({ ...prev, comments, commentRubricComments }));
+    setState((prev) => ({ ...prev, comments: nextComments, commentRubricComments: nextCommentRubricComments }));
     // We will never be in a situation in which we have an active comment immediately after
     // deleting a comment. Either
     // (1) we deleted the active comment, so it's no longer active
@@ -1047,14 +1379,14 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   };
 
   const removeRubricComment = (comment: CommentType, rubricComment: RubricCommentType) => {
-    const comments = unlinkRubricComment(state.comments, comment, rubricComment);
-    const [, commentRubricComments] = removeFromCommentRubricCommentsState(state.commentRubricComments, comment.id);
+    const nextComments = unlinkRubricComment(comments, comment, rubricComment);
+    const [, nextCommentRubricComments] = removeFromCommentRubricCommentsState(commentRubricComments, comment.id);
 
-    setState((prev) => ({ ...prev, comments, commentRubricComments }));
+    setState((prev) => ({ ...prev, comments: nextComments, commentRubricComments: nextCommentRubricComments }));
   };
 
   const onRubricCommentClick = (rubricComment: RubricCommentType): void => {
-    if (!state.activeCommentID) {
+    if (!activeCommentID) {
       message.warning(
         `You must open a comment before applying a rubric comment. Click an existing comment,
         or highlight some code to create a new one.`,
@@ -1065,21 +1397,21 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
     // If this category requires "at most once", check to see if we've applied a comment from this
     // category somewhere else.
-    const category = state.rubricCategories.find((el) => el.id === rubricComment.category);
+    const category = rubricCategories.find((el) => el.id === rubricComment.category);
     if (category !== undefined && category.atMostOnce) {
-      const siblings = state.rubricComments[rubricComment.category].map((el) => el.id);
-      const hasApplied = Object.values(state.comments)
+      const siblings = rubricComments[rubricComment.category].map((el) => el.id);
+      const hasApplied = Object.values(comments)
         .flat()
-        .some((el) => siblings.indexOf(el.rubricComment) > -1 && el.id !== state.activeCommentID);
+        .some((el) => siblings.indexOf(el.rubricComment) > -1 && el.id !== activeCommentID);
       if (hasApplied) {
         message.warning("You can't apply more than one rubric comment from this rubric category.");
         return;
       }
     }
 
-    const comments = linkRubricComment(state.comments, rubricComment, state.activeCommentID);
+    const nextComments = linkRubricComment(comments, rubricComment, activeCommentID);
 
-    if (comments === undefined) {
+    if (nextComments === undefined) {
       return;
     }
 
@@ -1088,26 +1420,31 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       setState((prev) => ({ ...prev, showCursor: CURSOR_DOMAIN.CODE_HIDDEN }));
     }
 
-    const commentRubricComments = addToCommentRubricCommentsState(
-      state.commentRubricComments,
-      state.activeCommentID,
+    const nextCommentRubricComments = addToCommentRubricCommentsState(
+      commentRubricComments,
+      activeCommentID,
       rubricComment,
     );
 
-    setState((prev) => ({ ...prev, comments, commentRubricComments, showCursor: CURSOR_DOMAIN.CODE_HIDDEN }));
+    setState((prev) => ({
+      ...prev,
+      comments: nextComments,
+      commentRubricComments: nextCommentRubricComments,
+      showCursor: CURSOR_DOMAIN.CODE_HIDDEN,
+    }));
   };
 
   const calculateGradeFromState = (): number | undefined => {
-    if (!(state.submission || state.readOnlySubmission) || !state.assignment) {
+    if (!(submission || readOnlySubmission) || !assignment) {
       return undefined;
     }
 
     return calculateGrade(
-      state.assignment,
-      state.comments,
-      state.commentRubricComments,
-      state.rubricCategories,
-      state.files,
+      assignment,
+      comments,
+      commentRubricComments,
+      rubricCategories,
+      files,
       state.tests,
       Object.values(state.testCases).flat() as any[], // eslint-disable-line @typescript-eslint/no-explicit-any
     );
@@ -1115,16 +1452,16 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
   const getPointsInFile = (file: FileType): number[] => {
     // If, for some reason, the file is not in comments, don't have a fatal error
-    const fileComments = state.comments[file.id] || [];
-    return pointsInFile(file, fileComments, state.commentRubricComments);
+    const fileComments = comments[file.id] || [];
+    return pointsInFile(file, fileComments, commentRubricComments);
   };
 
   const updateSubmissionGrade = () => {
-    if (state.submission) {
+    if (submission) {
       const grade = calculateGradeFromState();
       if (grade) {
-        const submission = { ...state.submission, grade };
-        setState((prev) => ({ ...prev, submission }));
+        const updatedSubmission = { ...submission, grade };
+        setState((prev) => ({ ...prev, submission: updatedSubmission }));
       }
     }
   };
@@ -1137,7 +1474,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   };
 
   const toggleFinalized = async () => {
-    if (!state.submission) {
+    if (!submission) {
       return;
     }
 
@@ -1166,27 +1503,27 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     }
 
     let payload: { id: number; isFinalized: boolean; grader?: string } = {
-      id: state.submission.id,
-      isFinalized: !state.submission.isFinalized,
+      id: submission.id,
+      isFinalized: !submission.isFinalized,
     };
 
     // if trying to finalize with only one grader available, set the grader
-    if (state.graders.length === 1 && !state.submission.isFinalized) {
+    if (state.graders.length === 1 && !submission.isFinalized) {
       payload = { ...payload, grader: state.graders[0] };
     }
 
     try {
-      let submission;
-      if (state.submission.students === undefined) {
-        submission = await Submission.updateAnonymous(payload);
+      let updatedSubmission;
+      if (submission.students === undefined) {
+        updatedSubmission = await Submission.updateAnonymous(payload);
       } else {
-        submission = await Submission.update(payload);
+        updatedSubmission = await Submission.update(payload);
       }
 
-      if (!state.submission.isFinalized) {
+      if (updatedSubmission.isFinalized) {
         sendSlack(
           'Submission finalized',
-          `${state.submission.id} ${state.assignment ? state.assignment.name : ''} | ${
+          `${updatedSubmission.id} ${assignment ? assignment.name : ''} | ${
             state.course ? state.course.name : ''
           } ${state.course ? state.course.period : ''}`,
           colors.brandPrimary,
@@ -1198,7 +1535,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         message.success('Successfully unfinalized submission');
       }
 
-      setState((prev) => ({ ...prev, submission: { ...submission, files: submission.files || [] } }));
+      setState((prev) => ({ ...prev, submission: { ...updatedSubmission, files: updatedSubmission.files || [] } }));
     } catch (error) {
       message.error(`Error updating submission: ${JSON.stringify(error)}`);
     }
@@ -1229,6 +1566,19 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       .includes(assignment.course);
   };
 
+  const isSuperGrader = (assignment: AssignmentType | undefined) => {
+    if (!assignment || !assignment.course) {
+      return false;
+    }
+    if (isCourseAdmin(assignment)) return true;
+
+    return props.user.superGraderCourses
+      .map((course) => {
+        return course.id;
+      })
+      .includes(assignment.course);
+  };
+
   // Note: onEscKeyPress removed - functionality handled elsewhere
 
   const setZoom = (newZoom: number) => {
@@ -1240,10 +1590,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       ...oldState,
       codeVerticalOffset: oldToNew(oldState.codeVerticalOffset),
     }));
-  };
-
-  const toggleKeyboardShortcuts = () => {
-    setState((prev) => ({ ...prev, showKeyboardShortcuts: !state.showKeyboardShortcuts }));
   };
 
   /***********************************************************************************************/
@@ -1277,7 +1623,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
    */
   const handleExecutionComplete = React.useCallback(
     (result: { success: boolean; output_data?: unknown; error?: string; file_id?: number }) => {
-      const fileId = result.file_id || state.selectedFile?.id;
+      const fileId = result.file_id || selectedFile?.id;
       if (fileId) {
         setState((prev) => ({
           ...prev,
@@ -1288,7 +1634,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         }));
       }
     },
-    [state.selectedFile?.id],
+    [selectedFile?.id],
   );
 
   /**
@@ -1317,8 +1663,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   }) => {
     const newCommentRubricComments: ICommentToRubricCommentMap = {};
 
-    for (const commentID of Object.keys(state.commentRubricComments)) {
-      const oldRubricComment = state.commentRubricComments[+commentID];
+    for (const commentID of Object.keys(commentRubricComments)) {
+      const oldRubricComment = commentRubricComments[+commentID];
 
       const newRubricComment = rubric.rubricComments[oldRubricComment.category].find(
         (rubricComment: RubricCommentType) => {
@@ -1353,18 +1699,45 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         if (res.status === 204) {
           return undefined;
         }
+        if (!res.ok) {
+          console.error('Failed to claim submission:', res.status, res.statusText);
+          return undefined;
+        }
         return res.json();
       })
       .then((json) => {
         return json;
+      })
+      .catch((err) => {
+        console.error('Error in fetchSubmission:', err);
+        return undefined;
       });
   };
 
   const claimSubmission = async () => {
-    if (state.assignment) {
-      const submission = await fetchSubmission(state.assignment);
-      if (submission !== undefined) {
-        openSubmissionInSameTab(submission.id);
+    if (assignment) {
+      let submission: any = await fetchSubmission(assignment);
+
+      // API returns an array of submissions
+      if (Array.isArray(submission)) {
+        submission = submission.length > 0 ? submission[0] : undefined;
+      }
+
+      if (submission !== undefined && submission.id !== undefined) {
+        // Check if the new submission is from the same assignment
+        const isSameAssignment = submission.assignment === assignment.id;
+
+        // Only preserve tab and file state if staying within the same assignment
+        const queryParams = isSameAssignment
+          ? queryString.stringify({
+              tab: activeSiderKey,
+              file: selectedFile?.name,
+            })
+          : '';
+
+        const url = queryParams ? `/code/${submission.id}?${queryParams}` : `/code/${submission.id}`;
+
+        window.open(url, '_self');
         message.success('Successfully claimed another submission. Start reviewing!');
       } else {
         message.success('The ungraded queue is empty, so there are no more submissions to claim.');
@@ -1378,6 +1751,233 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
   const turnOffReload = () => {
     setState((prev) => ({ ...prev, rubricReload: undefined }));
+  };
+
+  const handlePinComment = async (data: {
+    text: string;
+    pointDelta: number | null;
+    rubricComment: number | null;
+    sourceComment: number;
+    startLine?: number;
+  }) => {
+    if (!assignment) return;
+
+    let cellId: string | undefined;
+
+    if (selectedFile && selectedFile.extension === 'ipynb' && data.startLine !== undefined && selectedFile.data) {
+      try {
+        const nb = JSON.parse(selectedFile.data);
+        if (nb.cells && Array.isArray(nb.cells)) {
+          const cell = nb.cells[data.startLine];
+          if (cell) {
+            cellId = cell.id || (cell.metadata ? cell.metadata.id : undefined) || undefined;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to parse notebook for cell ID', e);
+      }
+    }
+
+    try {
+      await CommentTemplateIO.create({
+        text: data.text,
+        isGlobal: false,
+        owner: props.user.email,
+        assignment: assignment.id,
+        pointDelta: data.pointDelta,
+        rubricComment: data.rubricComment,
+        sourceComment: data.sourceComment,
+        cellId: cellId,
+        filePath: selectedFile?.name,
+      });
+      message.success('Comment pinned');
+      setTemplateRefresh((prev) => prev + 1);
+    } catch (e: any) {
+      if (e && e.data && e.data.detail) {
+        message.error(`Failed to pin: ${e.data.detail}`);
+      } else {
+        message.error('Failed to pin comment.');
+      }
+    }
+  };
+
+  const handleCursorChange = React.useCallback((cursor: any) => {
+    lastCursorRef.current = cursor;
+  }, []);
+
+  const handleUpdateCommentLocation = async (
+    commentId: number,
+    newStartLine: number,
+    newEndLine: number,
+    newStartChar: number,
+    newEndChar: number,
+  ) => {
+    const fileId = state.selectedFile?.id;
+    if (!fileId) return;
+
+    const currentComments = state.comments[fileId] || [];
+    const comment = currentComments.find((c) => c.id === commentId);
+
+    if (!comment) return;
+
+    // Don't save if position hasn't changed
+    if (
+      comment.startLine === newStartLine &&
+      comment.endLine === newEndLine &&
+      comment.startChar === newStartChar &&
+      comment.endChar === newEndChar
+    )
+      return;
+
+    const newComment = {
+      ...comment,
+      startLine: newStartLine,
+      endLine: newEndLine,
+      startChar: newStartChar,
+      endChar: newEndChar,
+    };
+
+    // Prevent negative lines (though drop target likely prevents this)
+    if (newComment.startLine < 1) return;
+    if (newComment.startChar < 0) return;
+
+    // Check for collisions if we want to be strict, but backend might handle it or we assume user knows best
+    // For now, allow overlapping/stacking as per existing logic, but maybe warn if exact duplicate?
+    // Existing logic in handleApplyTemplate checks for overwrite, but here we are moving.
+    // Let's just save.
+
+    await saveComment(newComment);
+    message.success('Comment updated');
+  };
+
+  const handleApplyTemplate = (template: CommentTemplateType) => {
+    if (!selectedFile) {
+      message.warning('Select a file first.');
+      return;
+    }
+
+    const fileID = selectedFile.id;
+
+    // If there's an active comment, apply template to it
+    if (state.activeCommentID !== undefined) {
+      const currentComments = state.comments[fileID] || [];
+      const comment = currentComments.find((c) => c.id === state.activeCommentID);
+
+      if (comment) {
+        const newText = comment.text ? comment.text + '\n' + template.text : template.text;
+
+        let newPointDelta = comment.pointDelta;
+        if (template.pointDelta !== null && template.pointDelta !== undefined) {
+          newPointDelta = template.pointDelta;
+        }
+
+        let newRubricComment = comment.rubricComment;
+        if (template.rubricComment !== null && template.rubricComment !== undefined) {
+          newRubricComment = template.rubricComment;
+        }
+
+        const newCommentsObj = updateCommentsState(state.comments, comment.id, {
+          ...comment,
+          text: newText,
+          pointDelta: newPointDelta,
+          rubricComment: newRubricComment,
+        });
+
+        useCodeConsoleStore.setState({ comments: newCommentsObj });
+
+        setTemplateForceUpdates((prev) => ({
+          ...prev,
+          [comment.id]: (prev[comment.id] || 0) + 1,
+        }));
+        return;
+      }
+    }
+
+    // No active comment - create a new comment with the template
+    const existingComments = state.comments[fileID] || [];
+    let targetLine: number | undefined;
+
+    // Check if template has a Cell ID and we are in a notebook
+    if (template.cellId && selectedFile.extension === 'ipynb' && selectedFile.data) {
+      try {
+        const nb = JSON.parse(selectedFile.data);
+        if (nb.cells && Array.isArray(nb.cells)) {
+          // Find the cell index for this UUID
+          const cellIndex = nb.cells.findIndex(
+            (c: any) => c.id === template.cellId || (c.metadata && c.metadata.id === template.cellId),
+          );
+
+          if (cellIndex !== -1) {
+            targetLine = cellIndex;
+
+            // Check for existing comment on this cell
+            const existingComment = existingComments.find((c) => c.startLine === cellIndex);
+            if (existingComment) {
+              Modal.confirm({
+                title: 'Overwrite existing comment?',
+                content:
+                  'A comment already exists on this cell. Do you want to overwrite it with the pinned comment? Cancel to abort.',
+                onOk: async () => {
+                  const updatedComment = {
+                    ...existingComment,
+                    text: template.text,
+                    pointDelta:
+                      template.pointDelta !== null && template.pointDelta !== undefined
+                        ? template.pointDelta
+                        : existingComment.pointDelta,
+                    rubricComment:
+                      template.rubricComment !== null && template.rubricComment !== undefined
+                        ? template.rubricComment
+                        : existingComment.rubricComment,
+                  };
+                  await saveComment(updatedComment);
+                  message.success('Comment overwritten');
+                },
+              });
+              return;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to parse notebook for cell ID', e);
+      }
+    }
+
+    if (targetLine === undefined) {
+      if (lastCursorRef.current !== null) {
+        targetLine = lastCursorRef.current.startLine;
+      }
+    }
+
+    if (targetLine === undefined) {
+      // Find first available line (start at 1, go up to 1000)
+      const usedLines = new Set(existingComments.map((c) => c.startLine));
+      targetLine = 1;
+      for (let i = 1; i <= 1000; i++) {
+        if (!usedLines.has(i)) {
+          targetLine = i;
+          break;
+        }
+      }
+    }
+
+    const newComment: CommentType = {
+      id: state.commentCounter,
+      file: fileID,
+      startLine: targetLine,
+      endLine: targetLine,
+      startChar: 0,
+      endChar: 1,
+      text: template.text,
+      pointDelta: template.pointDelta ?? 0,
+      rubricComment: template.rubricComment ?? null,
+      author: props.user.email,
+      feedback: 0,
+      tags: [],
+      color: '',
+    };
+    addComment(newComment, selectedFile);
+    message.success('Created new comment from pinned comment');
   };
 
   /***********************************************************************************
@@ -1399,28 +1999,29 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   let rightHeader: React.ReactNode[] = [];
   let content;
   let siderTitles: Array<React.ReactNode | string> = [];
+  let siderTooltips: Array<React.ReactNode | string> = []; // Added for shortcuts
   let sider: React.ReactElement[] = [];
 
   const toolbarWidgets: React.ReactElement[] = [];
 
   // Add execute button for supported executable files
-  if (state.selectedFile) {
-    const ext = state.selectedFile.extension.toLowerCase().replace(/^\./, '');
+  if (selectedFile) {
+    const ext = selectedFile.extension.toLowerCase().replace(/^\./, '');
     const executableExtensions = ['py', 'ipynb', 'r', 'rb', 'js', 'java', 'cpp', 'c', 'go', 'rs', 'sh'];
 
     if (executableExtensions.includes(ext)) {
       toolbarWidgets.push(
         <ExecuteFileButton
           key="execute-file-button"
-          file={state.selectedFile}
+          file={selectedFile}
           disabled={false}
           onExecutionComplete={handleExecutionComplete}
-          canWrite={state.permissionLevel === PERMISSION_LEVEL.WRITE}
+          canWrite={permissionLevel === PERMISSION_LEVEL.WRITE}
         />,
       );
 
       // Add execution status for Jupyter notebooks
-      const executionResult = state.executionResults[state.selectedFile.id];
+      const executionResult = state.executionResults[selectedFile.id];
       if (ext === 'ipynb' && executionResult) {
         toolbarWidgets.push(
           <Divider key="execution-divider" type="vertical" style={{ height: '24px', margin: '0 8px' }} />,
@@ -1451,7 +2052,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
   const testsTitle = 'Tests';
 
-  if (state.permissionLevel === PERMISSION_LEVEL.NONE || state.permissionLevel === PERMISSION_LEVEL.NOT_FOUND) {
+  if (permissionLevel === PERMISSION_LEVEL.NONE || permissionLevel === PERMISSION_LEVEL.NOT_FOUND) {
     rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
 
     content = (
@@ -1459,14 +2060,14 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         styles={{ image: { marginTop: '200px', height: '60px' } }}
         description={
           <span style={{ color: theme === 'light' ? 'black' : 'white', fontSize: 'larger' }}>
-            {state.permissionLevel === PERMISSION_LEVEL.NOT_FOUND
+            {permissionLevel === PERMISSION_LEVEL.NOT_FOUND
               ? "Whoops! This submission doesn't exist...😔"
               : "Whoops! Looks like you don't have access to this submission...😔, If you submitted this assignment, your submission might still be under review. please check back later after its finalized!"}
           </span>
         }
       />
     );
-  } else if (props.inDemoMode && !state.assignment) {
+  } else if (props.inDemoMode && !assignment) {
     rightHeader = [
       <CursorToggle
         key="cursor-toggle"
@@ -1478,7 +2079,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       controls,
     ];
   } else {
-    if (!state.assignment) {
+    if (!assignment) {
       return <div>We're not supposed to get here..</div>;
     }
 
@@ -1490,81 +2091,86 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       /*********************************************************/
 
     middleHeader =
-      state.hideGrades || state.permissionLevel === PERMISSION_LEVEL.READ_FILES_ONLY
+      state.hideGrades || permissionLevel === PERMISSION_LEVEL.READ_FILES_ONLY
         ? []
         : [
             <GradeButton
               key="subheader-grade"
-              assignment={state.assignment!}
-              submission={state.submission === undefined ? state.readOnlySubmission! : state.submission}
+              assignment={assignment!}
+              submission={submission === undefined ? readOnlySubmission! : submission}
               calculateGrade={calculateGradeFromState}
-              rubricCategories={state.rubricCategories}
-              comments={state.comments}
-              commentRubricComments={state.commentRubricComments}
-              files={state.files}
+              rubricCategories={rubricCategories}
+              comments={comments}
+              commentRubricComments={commentRubricComments}
+              files={files}
               submissionTests={state.tests}
               testCases={Object.values(state.testCases).flat() as any} // eslint-disable-line @typescript-eslint/no-explicit-any
             />,
           ];
 
-    const fileMenuTitle = <FileMenuTitle key="files" files={state.files} />;
+    const fileMenuTitle = <FileMenuTitle key="files" files={files} />;
     if (props.inDemoMode) {
-      if (state.permissionLevel === PERMISSION_LEVEL.READ) {
-        if (state.selectedFile) {
+      if (permissionLevel === PERMISSION_LEVEL.READ) {
+        if (state.panelType === PANEL_TYPE.FILE && selectedFile) {
           const code = (onHighlightClick: (e: React.MouseEvent) => void) => (
             <StudentCode
-              key={state.selectedFile!.id}
-              file={state.selectedFile!}
-              comments={state.comments[state.selectedFile!.id]}
+              key={selectedFile!.id}
+              file={selectedFile!}
+              comments={comments[selectedFile!.id]}
               readOnly={true}
               user={props.user.email}
               onHighlightClick={onHighlightClick}
-              executionResult={state.executionResults[state.selectedFile!.id] || null}
+              executionResult={state.executionResults[selectedFile!.id] || null}
               onClearOutputs={handleClearOutputs}
             />
           );
 
-          const comments = (
+          const commentsPanel = (
             <StudentComments
               isStudent={state.isStudent}
-              comments={state.comments[state.selectedFile!.id]}
-              rubricComments={state.commentRubricComments}
-              file={state.selectedFile!}
-              fileIDs={state.files.map((file: FileType) => {
+              comments={comments[selectedFile!.id]}
+              rubricComments={commentRubricComments}
+              file={selectedFile!}
+              fileIDs={files.map((file: FileType) => {
                 return file.id;
               })}
               verticalOffset={state.codeVerticalOffset}
-              updateFeedback={updateFeedback.bind(this, state.selectedFile!.id)}
-              studentFeedbackOn={state.assignment.commentFeedback}
-              hideAuthor={state.assignment.hideGradersFromStudents}
+              updateFeedback={updateFeedback.bind(this, selectedFile!.id)}
+              studentFeedbackOn={assignment.commentFeedback}
+              hideAuthor={
+                assignment.studentsCanSeeGraders !== null
+                  ? !assignment.studentsCanSeeGraders
+                  : state.course
+                    ? !state.course.studentsCanSeeGraders
+                    : true
+              }
               additiveGrading={false}
-              rubricCategories={state.rubricCategories}
+              rubricCategories={rubricCategories}
             />
           );
 
           content = (
             <CommentHighlightProvider
-              file={state.selectedFile!}
-              comments={state.comments[state.selectedFile!.id]}
+              file={selectedFile!}
+              comments={comments[selectedFile!.id]}
               readOnly={true}
               user={props.user.email}
               onHighlightClick={(_e: React.MouseEvent) => {
                 // Highlight clicks are handled by CodePanelLayout for scroll sync in demo student mode.
               }}
               onHighlightSelect={handleHighlightSelect}
+              focusedCommentId={activeCommentID}
             >
               <CodePanelLayout
-                comments={comments}
+                comments={commentsPanel}
                 code={code}
                 toolbarWidgets={toolbarWidgets}
-                file={state.selectedFile}
+                file={selectedFile}
                 zoom={state.codeZoom}
                 updateVerticalOffset={setVerticalOffset}
               />
             </CommentHighlightProvider>
           );
-        } else if (state.panelType === PANEL_TYPE.TESTS) {
-          content = <TestsList />;
         }
 
         leftHeader = [
@@ -1572,11 +2178,12 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             key="menu"
             claimSubmission={claimSubmission}
             isStudent={state.isStudent}
-            isAdmin={isCourseAdmin(state.assignment)}
+            isAdmin={isCourseAdmin(assignment)}
             course={state.course}
-            assignment={state.assignment}
+            assignment={assignment}
+            submission={readOnlySubmission}
           />,
-          <SubheaderTitle key="subheader-title" assignment={state.assignment!} />,
+          <SubheaderTitle key="subheader-title" assignment={assignment!} />,
         ];
 
         rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
@@ -1585,18 +2192,18 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           <ReadOnlySubmissionInfo
             key="submission-info"
             title="Submission Info"
-            assignment={state.assignment}
-            readOnlySubmission={state.readOnlySubmission!}
+            assignment={assignment}
+            readOnlySubmission={readOnlySubmission!}
             submitStudentQuestion={submitStudentQuestion}
             deleteStudentQuestion={deleteStudentQuestion}
-            isStudentMode={state.readOnlySubmission!.students!.find((el) => el === props.user.email) === undefined}
+            isStudentMode={readOnlySubmission!.students!.find((el) => el === props.user.email) === undefined}
           />,
           <FileMenu
             key="file-menu"
             title="Files"
-            files={state.files}
-            comments={state.comments}
-            selectedFile={state.selectedFile}
+            files={files}
+            comments={comments}
+            selectedFile={selectedFile}
             getPointsInFile={getPointsInFile}
             changeSelectedFile={changeSelectedFile}
           />,
@@ -1604,13 +2211,15 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
         siderTitles = ['Submission Info', fileMenuTitle];
       } else {
-        if (state.selectedFile) {
+        if (state.panelType === PANEL_TYPE.FILE && selectedFile) {
           const demoCode = (onHighlightClick: (e: React.MouseEvent) => void) => (
             <GradeCode
-              key={state.selectedFile!.id}
-              file={state.selectedFile!}
-              comments={state.comments[state.selectedFile!.id]}
-              readOnly={state.submission!.isFinalized}
+              onCursorChange={handleCursorChange}
+              onUpdateCommentLocation={handleUpdateCommentLocation}
+              key={selectedFile!.id}
+              file={selectedFile!}
+              comments={comments[selectedFile!.id]}
+              readOnly={submission!.isFinalized}
               addComment={addComment}
               user={props.user.email}
               onHighlightClick={onHighlightClick}
@@ -1619,7 +2228,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               cursorMode={state.cursorMode}
               showCursor={state.showCursor}
               updateCursorDomain={updateCursorDomain}
-              executionResult={state.executionResults[state.selectedFile!.id] || null}
+              executionResult={state.executionResults[selectedFile!.id] || null}
               onClearOutputs={handleClearOutputs}
             />
           );
@@ -1628,36 +2237,44 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             <GradeComments
               isStudent={state.isStudent}
               showExplanations={true}
-              comments={state.comments[state.selectedFile!.id]}
-              rubricComments={state.commentRubricComments}
-              readOnly={state.submission!.isFinalized}
-              file={state.selectedFile!}
-              fileIDs={state.files.map((file: FileType) => {
+              comments={comments[selectedFile!.id]}
+              rubricComments={commentRubricComments}
+              readOnly={submission!.isFinalized}
+              file={selectedFile!}
+              fileIDs={files.map((file: FileType) => {
                 return file.id;
               })}
-              activeCommentID={state.activeCommentID}
+              activeCommentID={activeCommentID}
               changeActive={changeActiveComment}
               deleteComment={deleteComment}
               saveComment={saveComment}
               removeRubricComment={removeRubricComment}
               oldCommentIDs={state.oldCommentIDs}
               verticalOffset={state.codeVerticalOffset}
-              updateFeedback={updateFeedback.bind(this, state.selectedFile!.id)}
-              studentFeedbackOn={state.assignment.commentFeedback}
-              hideAuthor={state.assignment.hideGradersFromStudents}
-              additiveGrading={state.assignment.additiveGrading}
-              forcedRubricMode={state.assignment.forcedRubricMode}
-              rubricCategories={state.rubricCategories}
+              updateFeedback={updateFeedback.bind(this, selectedFile!.id)}
+              studentFeedbackOn={assignment.commentFeedback}
+              hideAuthor={
+                assignment.studentsCanSeeGraders !== null
+                  ? !assignment.studentsCanSeeGraders
+                  : state.course
+                    ? !state.course.studentsCanSeeGraders
+                    : true
+              }
+              additiveGrading={assignment.additiveGrading}
+              forcedRubricMode={assignment.forcedRubricMode}
+              rubricCategories={rubricCategories}
               showCursor={state.showCursor}
               aiEnabled={state.aiEnabled}
+              onPin={handlePinComment}
+              forcedUpdates={templateForceUpdates}
             />
           );
 
           content = (
             <CommentHighlightProvider
-              file={state.selectedFile!}
-              comments={state.comments[state.selectedFile!.id]}
-              readOnly={state.submission!.isFinalized}
+              file={selectedFile!}
+              comments={comments[selectedFile!.id]}
+              readOnly={submission!.isFinalized}
               user={props.user.email}
               onHighlightClick={(_e: React.MouseEvent) => {
                 // Highlight clicks are handled by CodePanelLayout for scroll sync in demo grader mode.
@@ -1669,14 +2286,12 @@ Days Late (After Credit):  ${daysLateAfterCredit}
                 comments={demoComments}
                 code={demoCode}
                 toolbarWidgets={toolbarWidgets}
-                file={state.selectedFile}
+                file={selectedFile}
                 zoom={state.codeZoom}
                 updateVerticalOffset={setVerticalOffset}
               />
             </CommentHighlightProvider>
           );
-        } else if (state.panelType === PANEL_TYPE.TESTS) {
-          content = <TestsList />;
         }
 
         const onCancel = () => {
@@ -1687,11 +2302,11 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           <SubmissionInfo
             key="submission-info"
             title="Submission Info"
-            assignment={state.assignment!}
-            submission={state.submission!}
+            assignment={assignment!}
+            submission={submission!}
             courseLateDayCreditsAllowable={state.course!.lateDayCreditsAllowable}
             graders={state.graders}
-            isCourseAdmin={isCourseAdmin(state.assignment)}
+            isCourseAdmin={isCourseAdmin(assignment)}
             updateGrader={updateGrader}
             addLateDayCreditComment={addLateDayCreditComment}
             isStudentMode={false}
@@ -1700,22 +2315,22 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           <FileMenu
             key="file-menu"
             title="Files"
-            files={state.files}
-            comments={state.comments}
-            selectedFile={state.selectedFile}
+            files={files}
+            comments={comments}
+            selectedFile={selectedFile}
             getPointsInFile={getPointsInFile}
             changeSelectedFile={changeSelectedFile}
           />,
           <RubricManager
             key="rubric-menu"
             shouldLoadFeedback={false}
-            shouldLoadInstanceLists={state.assignment.showFrequentlyUsedRubricComments}
-            assignment={state.assignment}
+            shouldLoadInstanceLists={assignment.showFrequentlyUsedRubricComments}
+            assignment={assignment}
             submissions={[]}
             onCancel={onCancel}
             defaultRubric={{
-              categories: state.rubricCategories,
-              comments: _.flatten(Object.values(state.rubricComments)),
+              categories: rubricCategories,
+              comments: _.flatten(Object.values(rubricComments)),
             }}
           >
             {({ props, state: rubricState, helpers }: IRubricManagerParams) => {
@@ -1736,12 +2351,35 @@ Days Late (After Credit):  ${daysLateAfterCredit}
                   outerState.assignment !== undefined ? outerState.assignment.showFrequentlyUsedRubricComments : false,
                 course: outerState.course!,
               };
-              return <RubricMenuUI props={propz} state={rubricState} helpers={helpers} />;
+              return (
+                <React.Suspense fallback={<Loading />}>
+                  <RubricMenuUI props={propz} state={rubricState} helpers={helpers} />
+                </React.Suspense>
+              );
             }}
           </RubricManager>,
+          <TemplateMenu
+            key="template-menu"
+            assignmentId={assignment!.id}
+            onApplyTemplate={handleApplyTemplate}
+            currentUserEmail={props.user.email}
+            refreshTrigger={templateRefresh}
+            currentFilePath={selectedFile?.name}
+            isSuperGrader={isSuperGrader(assignment)}
+          />,
         ];
 
-        siderTitles = ['Submission Info', testsTitle, fileMenuTitle, 'Rubric'];
+        siderTitles = ['Submission Info', testsTitle, fileMenuTitle, 'Rubric', 'Pinned Comments'];
+
+        siderTooltips = [
+          `Submission Info (${osControlKey()} + Shift + E)`,
+          `${testsTitle} (${osControlKey()} + Shift + D)`,
+          <span key="files-title" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <FileMenuTitle key="files" files={files} forceDarkTheme={true} /> ({osControlKey()} + Shift + F)
+          </span>,
+          `Rubric (${osControlKey()} + Shift + G)`,
+          `Pinned Comments (${osControlKey()} + Shift + H)`,
+        ];
 
         leftHeader = [
           <HeaderMenu
@@ -1749,11 +2387,12 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             claimSubmission={claimSubmission}
             isStudent={state.isStudent}
             isDemo={true}
-            isAdmin={isCourseAdmin(state.assignment)}
+            isAdmin={isCourseAdmin(assignment)}
             course={state.course}
-            assignment={state.assignment}
+            assignment={assignment}
+            submission={readOnlySubmission}
           />,
-          <SubheaderTitle key="subheader-title" assignment={state.assignment} />,
+          <SubheaderTitle key="subheader-title" assignment={assignment} />,
         ];
 
         const signupButton =
@@ -1779,72 +2418,77 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           <FinalizeButton
             key="subheader-finalize"
             course={state.course!}
-            submission={state.submission!}
+            submission={submission!}
             toggleFinalized={toggleFinalized}
-            numComments={Object.values(state.comments).flat().length}
+            numComments={Object.values(comments).flat().length}
             minComments={state.course!.minComments}
             canUnfinalize={true}
             isOnlyGrader={state.graders.length === 1}
           />,
         ];
       }
-    } else if (state.permissionLevel === PERMISSION_LEVEL.READ) {
-      if (state.selectedFile) {
+    } else if (permissionLevel === PERMISSION_LEVEL.READ) {
+      if (selectedFile) {
         const code = (onHighlightClick: (e: React.MouseEvent) => void) => (
           <StudentCode
-            key={state.selectedFile!.id}
-            file={state.selectedFile!}
-            comments={state.comments[state.selectedFile!.id]}
+            key={selectedFile!.id}
+            file={selectedFile!}
+            comments={comments[selectedFile!.id]}
             readOnly={true}
             user={props.user.email}
             onHighlightClick={onHighlightClick}
-            executionResult={state.executionResults[state.selectedFile!.id] || null}
+            executionResult={state.executionResults[selectedFile!.id] || null}
             onClearOutputs={handleClearOutputs}
           />
         );
 
-        const comments = (
+        const commentsPanel = (
           <StudentComments
             isStudent={state.isStudent}
-            comments={state.comments[state.selectedFile!.id]}
-            rubricComments={state.commentRubricComments}
-            file={state.selectedFile!}
-            fileIDs={state.files.map((file: FileType) => {
+            comments={comments[selectedFile!.id]}
+            rubricComments={commentRubricComments}
+            file={selectedFile!}
+            fileIDs={files.map((file: FileType) => {
               return file.id;
             })}
             verticalOffset={state.codeVerticalOffset}
-            updateFeedback={updateFeedback.bind(this, state.selectedFile!.id)}
-            studentFeedbackOn={state.assignment.commentFeedback}
-            hideAuthor={state.assignment.hideGradersFromStudents}
+            updateFeedback={updateFeedback.bind(this, selectedFile!.id)}
+            studentFeedbackOn={assignment.commentFeedback}
+            hideAuthor={
+              assignment.studentsCanSeeGraders !== null
+                ? !assignment.studentsCanSeeGraders
+                : state.course
+                  ? !state.course.studentsCanSeeGraders
+                  : true
+            }
             additiveGrading={false}
-            rubricCategories={state.rubricCategories}
+            rubricCategories={rubricCategories}
             scrollToCommentID={parseInt(queryString.parse(location.search).comment as string)}
           />
         );
 
         content = (
           <CommentHighlightProvider
-            file={state.selectedFile!}
-            comments={state.comments[state.selectedFile!.id]}
+            file={selectedFile!}
+            comments={comments[selectedFile!.id]}
             readOnly={true}
             user={props.user.email}
             onHighlightClick={(_e: React.MouseEvent) => {
               // Highlight clicks are handled by CodePanelLayout for scroll sync in student mode.
             }}
             onHighlightSelect={handleHighlightSelect}
+            focusedCommentId={activeCommentID}
           >
             <CodePanelLayout
-              comments={comments}
+              comments={commentsPanel}
               code={code}
               toolbarWidgets={toolbarWidgets}
-              file={state.selectedFile}
+              file={selectedFile}
               zoom={state.codeZoom}
               updateVerticalOffset={setVerticalOffset}
             />
           </CommentHighlightProvider>
         );
-      } else if (state.panelType === PANEL_TYPE.TESTS) {
-        content = <TestsList />;
       }
 
       leftHeader = [
@@ -1852,11 +2496,12 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           key="menu"
           claimSubmission={claimSubmission}
           isStudent={state.isStudent}
-          isAdmin={isCourseAdmin(state.assignment)}
+          isAdmin={isCourseAdmin(assignment)}
           course={state.course}
-          assignment={state.assignment}
+          assignment={assignment}
+          submission={readOnlySubmission}
         />,
-        <SubheaderTitle key="subheader-title" assignment={state.assignment!} />,
+        <SubheaderTitle key="subheader-title" assignment={assignment!} />,
       ];
 
       rightHeader = [<ThemeToggle key="theme-toggle" small={true} />, controls];
@@ -1865,8 +2510,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         <ReadOnlySubmissionInfo
           key="submission-info"
           title="Submission Info"
-          assignment={state.assignment}
-          readOnlySubmission={state.readOnlySubmission!}
+          assignment={assignment}
+          readOnlySubmission={readOnlySubmission!}
           submitStudentQuestion={submitStudentQuestion}
           deleteStudentQuestion={deleteStudentQuestion}
           isStudentMode={state.isStudent}
@@ -1876,45 +2521,60 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         <FileMenu
           key="file-menu"
           title="Files"
-          files={state.files}
-          comments={state.comments}
-          selectedFile={state.selectedFile}
+          files={files}
+          comments={comments}
+          selectedFile={selectedFile}
           getPointsInFile={getPointsInFile}
           changeSelectedFile={changeSelectedFile}
         />,
       ];
 
       siderTitles = ['Submission Info', testsTitle, fileMenuTitle];
-    } else if (state.permissionLevel === PERMISSION_LEVEL.READ_FILES_ONLY) {
+      siderTooltips = [
+        `Submission Info (${osControlKey()} + Shift + E)`,
+        `${testsTitle} (${osControlKey()} + Shift + D)`,
+        `${fileMenuTitle} (${osControlKey()} + Shift + F)`,
+      ];
+    } else if (permissionLevel === PERMISSION_LEVEL.READ_FILES_ONLY) {
       // Files-only mode: show files but no comments, rubrics, or grades
-      if (state.selectedFile) {
+      if (selectedFile) {
         const code = (_onHighlightClick: (e: React.MouseEvent) => void) => (
           <StudentCode
-            key={state.selectedFile!.id}
-            file={state.selectedFile!}
+            key={selectedFile!.id}
+            file={selectedFile!}
             comments={[]} // No comments in files-only mode
             readOnly={true}
             user={props.user.email}
             onHighlightClick={(_e) => {}}
-            executionResult={state.executionResults[state.selectedFile!.id] || null}
+            executionResult={state.executionResults[selectedFile!.id] || null}
             onClearOutputs={handleClearOutputs}
           />
         );
 
         content = (
-          <CodePanelLayout
-            comments={null} // No comments panel
-            code={code}
-            toolbarWidgets={toolbarWidgets}
-            file={state.selectedFile}
-            zoom={state.codeZoom}
-            updateVerticalOffset={setVerticalOffset}
-          />
+          <CommentHighlightProvider
+            file={selectedFile!}
+            comments={[]} // No comments in files-only mode
+            readOnly={true}
+            user={props.user.email}
+            onHighlightClick={(_e: React.MouseEvent) => {}}
+            onHighlightSelect={(_sel) => {}}
+            focusedCommentId={undefined}
+          >
+            <CodePanelLayout
+              comments={null} // No comments panel
+              code={code}
+              toolbarWidgets={toolbarWidgets}
+              file={selectedFile}
+              zoom={state.codeZoom}
+              updateVerticalOffset={setVerticalOffset}
+            />
+          </CommentHighlightProvider>
         );
       }
 
       leftHeader = [
-        <SubheaderTitle key="subheader-title" assignment={state.assignment!} />,
+        <SubheaderTitle key="subheader-title" assignment={assignment!} />,
         <Tag key="files-only-notice" color="warning">
           Files Only - Feedback not yet available
         </Tag>,
@@ -1926,8 +2586,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         <ReadOnlySubmissionInfo
           key="submission-info"
           title="Submission Info"
-          assignment={state.assignment}
-          readOnlySubmission={state.readOnlySubmission!}
+          assignment={assignment}
+          readOnlySubmission={readOnlySubmission!}
           submitStudentQuestion={undefined} // No regrade requests in files-only mode
           deleteStudentQuestion={undefined}
           isStudentMode={true}
@@ -1936,30 +2596,37 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         <FileMenu
           key="file-menu"
           title="Files"
-          files={state.files}
+          files={files}
           comments={{}} // No comments to show
-          selectedFile={state.selectedFile}
+          selectedFile={selectedFile}
           getPointsInFile={getPointsInFile}
           changeSelectedFile={changeSelectedFile}
         />,
       ];
 
       siderTitles = ['Submission Info', fileMenuTitle];
+      siderTooltips = [
+        `Submission Info (${osControlKey()} + Shift + E)`,
+        <span key="files-title" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <FileMenuTitle key="files" files={files} forceDarkTheme={true} /> ({osControlKey()} + Shift + F)
+        </span>,
+      ];
     } else {
       leftHeader = [
         <HeaderMenu
           key="menu"
           claimSubmission={claimSubmission}
           isStudent={state.isStudent}
-          isAdmin={isCourseAdmin(state.assignment)}
+          isAdmin={isCourseAdmin(assignment)}
           course={state.course}
-          assignment={state.assignment}
+          assignment={assignment}
+          submission={submission}
         />,
-        <SubheaderTitle key="subheader-title" assignment={state.assignment!} />,
+        <SubheaderTitle key="subheader-title" assignment={assignment!} />,
         <StatusTags
           key="tag"
-          assignment={state.assignment!}
-          submission={state.submission!}
+          assignment={assignment!}
+          submission={submission!}
           fallbackWidth={layoutVars.breakpoints.smallScreen.gradeHeader}
         />,
       ];
@@ -1972,37 +2639,39 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           small={true}
         />,
         <ThemeToggle key="theme-toggle" small={true} />,
-        <DownloadCode key="download-code" submission={state.submission!} />,
+        <DownloadCode key="download-code" submission={submission!} />,
         controls,
         <ViewAsStudent key="view-as-student" pathname={location.pathname} />,
         <FinalizeButton
           key="subheader-finalize"
           course={state.course!}
-          submission={state.submission!}
+          submission={submission!}
           toggleFinalized={toggleFinalized}
-          numComments={Object.values(state.comments).flat().length}
+          numComments={Object.values(comments).flat().length}
           minComments={state.course!.minComments}
-          canUnfinalize={!state.course!.noUnfinalize || isCourseAdmin(state.assignment)}
+          canUnfinalize={!state.course!.noUnfinalize || isCourseAdmin(assignment)}
           isOnlyGrader={state.graders.length === 1}
         />,
       ];
 
-      if (state.selectedFile !== undefined) {
+      if (selectedFile !== undefined) {
         let assignmentFile: AssignmentFileType | undefined;
-        if (state.assignmentFiles !== undefined) {
-          assignmentFile = state.assignmentFiles.find((template: AssignmentFileType) => {
+        if (assignmentFiles !== undefined) {
+          assignmentFile = assignmentFiles.find((template: AssignmentFileType) => {
             // FIXME: could be more flexible here
             // Find the first match
-            return template.name === state.selectedFile!.name;
+            return template.name === selectedFile!.name;
           });
         }
 
         const code = (onHighlightClick: (e: React.MouseEvent) => void) => (
           <GradeCode
-            key={state.selectedFile!.id}
-            file={state.selectedFile!}
-            comments={state.comments[state.selectedFile!.id]}
-            readOnly={state.submission!.isFinalized}
+            onCursorChange={handleCursorChange}
+            onUpdateCommentLocation={handleUpdateCommentLocation}
+            key={selectedFile!.id}
+            file={selectedFile!}
+            comments={comments[selectedFile!.id]}
+            readOnly={submission!.isFinalized}
             addComment={addComment}
             user={props.user.email}
             onHighlightClick={onHighlightClick}
@@ -2011,47 +2680,55 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             cursorMode={state.cursorMode}
             showCursor={state.showCursor}
             updateCursorDomain={updateCursorDomain}
-            executionResult={state.executionResults[state.selectedFile!.id] || null}
+            executionResult={state.executionResults[selectedFile!.id] || null}
             onClearOutputs={handleClearOutputs}
           />
         );
 
-        const comments = (
+        const commentsPanel = (
           <GradeComments
             isStudent={state.isStudent}
             showExplanations={true}
-            comments={state.comments[state.selectedFile!.id]}
-            rubricComments={state.commentRubricComments}
-            readOnly={state.submission!.isFinalized}
-            file={state.selectedFile!}
-            fileIDs={state.files.map((file: FileType) => {
+            comments={comments[selectedFile!.id]}
+            rubricComments={commentRubricComments}
+            readOnly={submission!.isFinalized}
+            file={selectedFile!}
+            fileIDs={files.map((file: FileType) => {
               return file.id;
             })}
-            activeCommentID={state.activeCommentID}
+            activeCommentID={activeCommentID}
             changeActive={changeActiveComment}
             deleteComment={deleteComment}
             saveComment={saveComment}
             removeRubricComment={removeRubricComment}
             oldCommentIDs={state.oldCommentIDs}
             verticalOffset={state.codeVerticalOffset}
-            updateFeedback={updateFeedback.bind(this, state.selectedFile!.id)}
-            studentFeedbackOn={state.assignment.commentFeedback}
-            hideAuthor={state.assignment.hideGradersFromStudents}
-            additiveGrading={state.assignment.additiveGrading}
-            forcedRubricMode={state.assignment.forcedRubricMode}
-            rubricCategories={state.rubricCategories}
+            updateFeedback={updateFeedback.bind(this, selectedFile!.id)}
+            studentFeedbackOn={assignment.commentFeedback}
+            hideAuthor={
+              assignment.studentsCanSeeGraders !== null
+                ? !assignment.studentsCanSeeGraders
+                : state.course
+                  ? !state.course.studentsCanSeeGraders
+                  : true
+            }
+            additiveGrading={assignment.additiveGrading}
+            forcedRubricMode={assignment.forcedRubricMode}
+            rubricCategories={rubricCategories}
             showCursor={state.showCursor}
             scrollToCommentID={parseInt(queryString.parse(location.search).comment as string)}
             aiEnabled={state.aiEnabled}
+            onPin={handlePinComment}
+            forcedUpdates={templateForceUpdates}
           />
         );
 
         content = (
           <div style={{ height: '100%' }}>
             <CommentHighlightProvider
-              file={state.selectedFile!}
-              comments={state.comments[state.selectedFile!.id]}
-              readOnly={state.submission!.isFinalized}
+              file={selectedFile!}
+              comments={comments[selectedFile!.id]}
+              readOnly={submission!.isFinalized}
               user={props.user.email}
               onHighlightClick={(_e: React.MouseEvent) => {
                 // This is called from CodePanelLayout's scroll sync handler
@@ -2060,12 +2737,13 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               }}
               addComment={addComment}
               onHighlightSelect={handleHighlightSelect}
+              focusedCommentId={activeCommentID}
             >
               <CodePanelLayout
-                comments={comments}
+                comments={commentsPanel}
                 code={code}
                 toolbarWidgets={toolbarWidgets}
-                file={state.selectedFile}
+                file={selectedFile}
                 zoom={state.codeZoom}
                 updateVerticalOffset={setVerticalOffset}
               />
@@ -2073,60 +2751,81 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             <CustomCommentExplorer
               graders={state.graders}
               user={props.user.email}
-              isAdmin={isCourseAdmin(state.assignment)}
-              assignment={state.assignment}
-              rubricComments={Object.values(state.rubricComments).flat()}
-              rubricCategories={state.rubricCategories}
+              isAdmin={isCourseAdmin(assignment)}
+              assignment={assignment}
+              rubricComments={Object.values(rubricComments).flat()}
+              rubricCategories={rubricCategories}
               visible={state.showCustomCommentExplorer}
               onCancel={toggleCustomCommentExplorer}
             />
           </div>
         );
-      } else if (state.panelType === PANEL_TYPE.TESTS) {
-        content = <TestsList />;
       }
 
       const onCancel = () => {
         return;
       };
 
-      sider = [
+      sider = [];
+      siderTitles = [];
+      siderTooltips = [];
+
+      // 1. Submission Info
+      sider.push(
         <SubmissionInfo
           key="submission-info"
           title="Submission Info"
-          assignment={state.assignment}
+          assignment={assignment}
           courseLateDayCreditsAllowable={state.course!.lateDayCreditsAllowable}
-          submission={state.submission!}
+          submission={submission!}
           graders={state.graders}
-          isCourseAdmin={isCourseAdmin(state.assignment)}
+          isCourseAdmin={isCourseAdmin(assignment)}
           updateGrader={updateGrader}
           addLateDayCreditComment={addLateDayCreditComment}
           isStudentMode={state.isStudent}
           courseStudentsCanSeeGraders={state.course?.studentsCanSeeGraders}
         />,
-        isCourseAdmin(state.assignment) || state.testCategories.length > 0 ? (
-          <TestsMenu key="tests-menu" />
-        ) : (
-          <React.Fragment />
-        ),
+      );
+      siderTitles.push('Submission Info');
+      siderTooltips.push(`Submission Info (${osControlKey()} + Shift + E)`);
+
+      // 2. Tests
+      if (isCourseAdmin(assignment) || state.testCategories.length > 0) {
+        sider.push(<TestsMenu key="tests-menu" />);
+        siderTitles.push(testsTitle);
+        siderTooltips.push(`${testsTitle} (${osControlKey()} + Shift + D)`);
+      }
+
+      // 3. Files
+      sider.push(
         <FileMenu
           key="file-menu"
           title="Files"
-          files={state.files}
-          comments={state.comments}
-          selectedFile={state.selectedFile}
+          files={files}
+          comments={comments}
+          selectedFile={selectedFile}
           getPointsInFile={getPointsInFile}
           changeSelectedFile={changeSelectedFile}
         />,
+      );
+      siderTitles.push(fileMenuTitle);
+      siderTooltips.push(
+        <span key="files-title" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <FileMenuTitle key="files" files={files} forceDarkTheme={true} /> ({osControlKey()} + Shift + F)
+        </span>,
+      );
+
+      // 4. Rubric
+      sider.push(
         <RubricManager
           key="rubric-menu"
-          assignment={state.assignment}
+          assignment={assignment}
           submissions={[]}
           onCancel={onCancel}
           reloadInterval={state.rubricReload}
           setRubric={setRubric}
           shouldLoadFeedback={false}
-          shouldLoadInstanceLists={state.assignment.showFrequentlyUsedRubricComments}
+          shouldLoadInstanceLists={assignment.showFrequentlyUsedRubricComments}
         >
           {({ props, state: rubricState, helpers }: IRubricManagerParams) => {
             const propz = {
@@ -2152,9 +2851,26 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             return <RubricMenuUI props={propz} state={rubricState} helpers={helpers} />;
           }}
         </RubricManager>,
-      ];
+      );
+      siderTitles.push('Rubric');
+      siderTooltips.push(`Rubric (${osControlKey()} + Shift + G)`);
 
-      siderTitles = ['Submission Info', testsTitle, fileMenuTitle, 'Rubric'];
+      // 5. Templates
+      if (assignment) {
+        sider.push(
+          <TemplateMenu
+            key="template-menu"
+            assignmentId={assignment.id}
+            onApplyTemplate={handleApplyTemplate}
+            currentUserEmail={props.user.email}
+            refreshTrigger={templateRefresh}
+            currentFilePath={selectedFile?.name}
+            isSuperGrader={isSuperGrader(assignment)}
+          />,
+        );
+        siderTitles.push('Pinned Comments');
+        siderTooltips.push(`Pinned Comments (${osControlKey()} + Shift + H)`);
+      }
     }
   }
 
@@ -2169,13 +2885,13 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   /* callbacks */
   const assigner = (queryValue?: string) => {
     if (queryValue !== undefined) {
-      updateGrader(state.submission!, queryValue);
+      updateGrader(submission!, queryValue);
     }
   };
 
   const goToFile = (queryValue?: string) => {
     if (queryValue !== undefined) {
-      const foundFile = state.files.find((file) => {
+      const foundFile = files.find((file) => {
         return file.name === queryValue;
       });
       if (foundFile) {
@@ -2184,12 +2900,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     }
   };
 
-  const goToTests = () => {
-    setState((prev) => ({ ...prev, panelType: PANEL_TYPE.TESTS, selectedFile: undefined }));
-  };
-
   const findGraderSubmissions = async (grader: string) => {
-    const submissions = await Assignment.readSubmissions(state.assignment!.id, { grader });
+    const submissions = await Assignment.readSubmissions(assignment!.id, { grader });
     return submissions.map((sub) => {
       return {
         value: `${sub.id}`,
@@ -2202,7 +2914,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   };
 
   const findStudentSubmission = async (student: string) => {
-    const submissions = await Assignment.readSubmissions(state.assignment!.id, { student });
+    const submissions = await Assignment.readSubmissions(assignment!.id, { student });
     if (submissions.length === 1) {
       const sub = submissions[0];
       return [
@@ -2220,8 +2932,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   };
 
   const viewStats = async () => {
-    if (state.assignment) {
-      const submissions = await Assignment.readSubmissions(state.assignment.id);
+    if (assignment) {
+      const submissions = await Assignment.readSubmissions(assignment.id);
 
       const numSubmissions = submissions.length;
       const numGraded = submissions.filter((el) => el.isFinalized).length;
@@ -2269,7 +2981,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     },
   ];
 
-  if (isCourseAdmin(state.assignment)) {
+  if (isCourseAdmin(assignment)) {
     defaultOptions = [
       ...defaultOptions,
       {
@@ -2304,7 +3016,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       {
         value: 'Open rubric editor',
         label: 'Open rubric editor',
-        link: getRubricURL(state.course!, state.assignment!),
+        link: getRubricURL(state.course!, assignment!),
         kind: 'link',
       },
       {
@@ -2312,7 +3024,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         label: 'Open test editor',
         link: `/admin/${encodeForLink(state.course!.name)}/${encodeForLink(
           state.course!.period,
-        )}/assignments/tests/${encodeForLink(state.assignment!.name)}/edit/tests`,
+        )}/assignments/tests/${encodeForLink(assignment!.name)}/edit/tests`,
         kind: 'link',
       },
       {
@@ -2320,7 +3032,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         label: 'Open test results',
         link: `/admin/${encodeForLink(state.course!.name)}/${encodeForLink(
           state.course!.period,
-        )}/assignments/tests/${encodeForLink(state.assignment!.name)}/results`,
+        )}/assignments/tests/${encodeForLink(assignment!.name)}/results`,
         kind: 'link',
       },
       { value: 'View stats', label: 'View stats', kind: 'dashboard', populator: viewStats },
@@ -2339,7 +3051,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   return (
     <div id="Grade">
       <CodeConsoleOnboardingSelector
-        open={props.inDemoMode && !state.assignment}
+        open={props.inDemoMode && !assignment}
         onUploadConfirm={loadDemoData}
         onCancel={cancelFunc}
       />
@@ -2349,6 +3061,20 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         ) : (
           <StandardConsoleLayout
             consoleTypes={['grade']}
+            activePanel={(() => {
+              const idx = sider.findIndex((s) => s.key === state.activeSiderKey);
+              return idx !== -1 ? idx : null;
+            })()}
+            onActivePanelChange={(index) => {
+              // Sidebar panel changes should NOT affect the main content (selectedFile)
+              // Just update which sidebar panel is expanded
+              if (index === null) {
+                setState((prev) => ({ ...prev, activeSiderKey: null }));
+              } else {
+                const key = sider[index]?.key;
+                setState((prev) => ({ ...prev, activeSiderKey: key ?? null }));
+              }
+            }}
             header={
               <CPFlex
                 style={{
@@ -2366,27 +3092,22 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             }
             sider={sider}
             siderTitles={siderTitles}
+            siderTooltips={siderTooltips}
             content={content}
             editRubricMode={state.editRubricMode}
           />
         )}
-        <KeyboardShortcuts
-          key="keyboard-shortcuts"
-          visible={state.showKeyboardShortcuts}
-          onClose={toggleKeyboardShortcuts}
-          isStudent={state.isStudent}
-        />
-        {state.permissionLevel === PERMISSION_LEVEL.WRITE &&
-        state.assignment !== undefined &&
-        state.submission !== undefined ? (
+        {/* KeyboardShortcuts drawer removed - consolidated into HelpModal */}
+        <HelpModal />
+        {permissionLevel === PERMISSION_LEVEL.WRITE && assignment !== undefined && submission !== undefined ? (
           <InlineTestsModal
             key="inline-tests-modal"
             visible={state.showInlineTestsModal}
             show={showInlineTestsModal}
             hide={hideInlineTestsModal}
-            files={state.files}
-            assignment={state.assignment}
-            submission={state.submission}
+            files={files}
+            assignment={assignment}
+            submission={submission}
           />
         ) : null}
       </CourseContext.Provider>

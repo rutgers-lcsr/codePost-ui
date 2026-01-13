@@ -24,6 +24,7 @@ export const CourseAISettingsV = t.intersection([
     ai_provider: t.union([t.string, t.null]),
     ai_base_url: t.union([t.string, t.null]),
     ai_model: t.union([t.string, t.null]),
+    ai_disabled: t.boolean,
     // Note: ai_api_key is write-only, never returned from API
   }),
 ]);
@@ -81,10 +82,11 @@ export async function getCourseAISettings(courseId: number): Promise<CourseAISet
 export async function updateCourseAISettings(
   courseId: number,
   settings: {
-    ai_provider?: AIProvider;
+    ai_provider?: AIProvider | null;
     ai_api_key?: string;
-    ai_base_url?: string;
-    ai_model?: string;
+    ai_base_url?: string | null;
+    ai_model?: string | null;
+    ai_disabled?: boolean;
   },
 ): Promise<CourseAISettingsType> {
   const res = await fetch(`${process.env.REACT_APP_API_URL}/courses/${courseId}/aiSettings/`, {

@@ -11,6 +11,7 @@ import {
   ExperimentOutlined,
   FileOutlined,
   InfoCircleOutlined,
+  PushpinOutlined,
 } from '@ant-design/icons';
 
 /* antd imports */
@@ -40,7 +41,10 @@ interface IStandardConsoleLayoutProps {
   content: React.ReactNode;
   children?: React.ReactNode;
   siderTitles: Array<string | React.ReactNode>;
+  siderTooltips?: Array<string | React.ReactNode>; // Optional: separate tooltip text (e.g. with shortcuts)
   editRubricMode: boolean;
+  activePanel?: number | null;
+  onActivePanelChange?: (index: number | null) => void;
 }
 
 const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
@@ -51,7 +55,19 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
   };
 
   const [siderWidth, setSiderWidth] = React.useState(300);
-  const [activePanel, setActivePanel] = React.useState<number | null>(2); // Default to Files
+  const [internalActivePanel, setInternalActivePanel] = React.useState<number | null>(2); // Default to Files
+
+  // Use prop if provided, otherwise internal state
+  const activePanel = props.activePanel !== undefined ? props.activePanel : internalActivePanel;
+
+  const setActivePanel = (index: number | null) => {
+    if (props.onActivePanelChange) {
+      props.onActivePanelChange(index);
+    } else {
+      setInternalActivePanel(index);
+    }
+  };
+
   const [resizerHover, setResizerHover] = React.useState(false);
   const [isResizing, setIsResizing] = React.useState(false);
 
@@ -67,6 +83,8 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
         return <ExperimentOutlined style={iconStyle} />;
       case 'rubric-menu':
         return <BookOutlined style={iconStyle} />;
+      case 'template-menu':
+        return <PushpinOutlined style={iconStyle} />;
       default:
         return <FileOutlined style={iconStyle} />;
     }
@@ -88,6 +106,13 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
       lastActivePanelRef.current = activePanel;
     }
   }, [activePanel]);
+
+  // Sync internal state with prop if prop changes (optional, but good for consistency)
+  React.useEffect(() => {
+    if (props.activePanel !== undefined) {
+      setInternalActivePanel(props.activePanel);
+    }
+  }, [props.activePanel]);
 
   const backToSubmissionsButton =
     localStorage.getItem('source') === 'codePost' ? null : (
@@ -153,7 +178,11 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
               {props.sider.map((siderNode, index) => (
                 <SidebarIconButton
                   key={index}
-                  title={props.siderTitles[index]}
+                  title={
+                    props.siderTooltips && props.siderTooltips[index]
+                      ? props.siderTooltips[index]
+                      : props.siderTitles[index]
+                  }
                   icon={getMenuIcon(siderNode.key)}
                   active={activePanel === index}
                   onClick={() => {
@@ -206,50 +235,57 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
               )}
             </div>
 
-            {activePanel !== null && (
-              <>
+            <>
+              <div
+                ref={sidebarRef}
+                style={{
+                  width: siderWidth,
+                  height: '100%',
+                  overflow: 'hidden',
+                  backgroundColor: consoleTheme.siderBg,
+                  boxShadow: '4px 0 8px rgba(0,0,0,0.1)',
+                  position: 'relative',
+                  flexShrink: 0,
+                  zIndex: 100,
+                  willChange: 'width',
+                  display: activePanel !== null ? 'block' : 'none',
+                }}
+              >
                 <div
-                  ref={sidebarRef}
                   style={{
-                    width: siderWidth,
-                    height: '100%',
-                    overflow: 'hidden',
-                    backgroundColor: consoleTheme.siderBg,
-                    boxShadow: '4px 0 8px rgba(0,0,0,0.1)',
-                    position: 'relative',
-                    flexShrink: 0,
-                    zIndex: 100,
-                    willChange: 'width',
+                    padding: '10px 15px',
+                    borderBottom: `1px solid ${consoleTheme.siderTitle}20`,
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    color: consoleTheme.siderTitle,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    height: '40px',
                   }}
                 >
-                  <div
-                    style={{
-                      padding: '10px 15px',
-                      borderBottom: `1px solid ${consoleTheme.siderTitle}20`,
-                      fontWeight: 600,
-                      fontSize: '14px',
-                      color: consoleTheme.siderTitle,
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      height: '40px',
-                    }}
-                  >
-                    {props.siderTitles[activePanel]}
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<ArrowLeftOutlined />}
-                      onClick={() => setActivePanel(null)}
-                    />
-                  </div>
-                  <div
-                    className="layout--standard-console__inner-sider"
-                    style={{ height: 'calc(100% - 40px)', overflowY: 'auto' }}
-                  >
-                    {props.sider[activePanel]}
-                  </div>
+                  {activePanel !== null ? props.siderTitles[activePanel] : null}
+                  <Button type="text" size="small" icon={<ArrowLeftOutlined />} onClick={() => setActivePanel(null)} />
                 </div>
+                <div
+                  className="layout--standard-console__inner-sider"
+                  style={{ height: 'calc(100% - 40px)', overflowY: 'hidden' }}
+                >
+                  {props.sider.map((panel, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        height: '100%',
+                        overflowY: 'auto',
+                        display: activePanel === index ? 'block' : 'none',
+                      }}
+                    >
+                      {panel}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {activePanel !== null && (
                 <div
                   onMouseEnter={() => setResizerHover(true)}
                   onMouseLeave={() => setResizerHover(false)}
@@ -317,8 +353,8 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
                     transition: 'background-color 0.2s',
                   }}
                 />
-              </>
-            )}
+              )}
+            </>
           </div>
           <Layout
             style={{

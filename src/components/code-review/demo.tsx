@@ -11,7 +11,12 @@ import { IRubricCategoryToRubricCommentsMap } from '../../types/common';
 import { TestCasesByCategory } from '../core/testFetchUtils';
 import { PERMISSION_LEVEL } from './CodeConsoleEnums';
 
-import moment from 'moment-timezone';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export const loadDemoGrader = (files: any[], user: string | null) => {
   const demoAssignment: AssignmentType = {
@@ -66,7 +71,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     sections: [],
     sendReleasedSubmissionsToBack: false,
     showStudentsStatistics: false,
-    timezone: moment.tz.guess(),
+    timezone: dayjs.tz.guess(),
     emailNewUsers: false,
     anonymousGradingDefault: false,
     minComments: 0,
@@ -81,6 +86,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     expiration_date: null,
     studentsCanSeeGraders: false,
     studentCount: 0,
+    isRubricEditor: false,
   };
 
   const demoSubmission: AnonymousSubmissionType = {
@@ -90,7 +96,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
     students: ['student1@example.edu'],
     assignment: -1,
     dateEdited: '',
-    dateUploaded: moment().toString(),
+    dateUploaded: dayjs().toString(),
     grade: null,
     grader: user,
     questionText: '',
@@ -377,7 +383,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     sections: [],
     sendReleasedSubmissionsToBack: false,
     showStudentsStatistics: false,
-    timezone: moment.tz.guess(),
+    timezone: dayjs.tz.guess(),
     emailNewUsers: false,
     anonymousGradingDefault: false,
     minComments: 0,
@@ -392,6 +398,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     expiration_date: null,
     studentsCanSeeGraders: false,
     studentCount: 0,
+    isRubricEditor: false,
   };
 
   const demoSubmission: AnonymousSubmissionType = {
@@ -401,7 +408,7 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
     students: ['student1@example.edu'],
     assignment: -1,
     dateEdited: '',
-    dateUploaded: moment().toString(),
+    dateUploaded: dayjs().toString(),
     grade: null,
     grader: user,
     questionText: '',

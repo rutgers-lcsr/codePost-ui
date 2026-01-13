@@ -72,9 +72,9 @@ function hexToRgb(hexColor: string | undefined): { r: number; g: number; b: numb
   const expanded =
     normalized.length === 3
       ? normalized
-          .split('')
-          .map((char) => char + char)
-          .join('')
+        .split('')
+        .map((char) => char + char)
+        .join('')
       : normalized;
 
   const numeric = Number.parseInt(expanded, 16);
@@ -125,29 +125,29 @@ export function useMarkdownTheme(consoleTheme: ConsoleTheme | null): {
       jupyterCellBorder: consoleTheme?.codeBorder ?? '#cccccc',
       blockBackground: 'transparent',
       blockHighlightBackground: isDarkTheme
-        ? 'linear-gradient(90deg, rgba(36, 190, 133, 0.08) 0%, rgba(36, 190, 133, 0.24) 100%)'
+        ? 'linear-gradient(90deg, rgba(36, 190, 133, 0.03) 0%, rgba(36, 190, 133, 0.08) 100%)'
         : 'linear-gradient(90deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.98) 20%, rgba(255, 255, 255, 0.95) 100%), linear-gradient(90deg, rgba(255, 248, 225, 0.75) 0%, rgba(255, 236, 179, 0.65) 28%, rgba(46, 125, 50, 0.15) 100%)',
       blockHighlightShadow: isDarkTheme
-        ? 'inset 0 0 0 1px rgba(36, 190, 133, 0.35), 0 1px 2px rgba(0, 0, 0, 0.35)'
+        ? 'inset 0 0 0 1px rgba(36, 190, 133, 0.2), 0 2px 4px rgba(0, 0, 0, 0.2)'
         : 'inset 0 0 0 1px rgba(46, 125, 50, 0.2), 0 1px 2px rgba(0, 0, 0, 0.08)',
-      blockHighlightBorderColor: isDarkTheme ? 'rgba(36, 190, 133, 0.45)' : 'rgba(46, 125, 50, 0.32)',
+      blockHighlightBorderColor: isDarkTheme ? 'rgba(36, 190, 133, 0.2)' : 'rgba(46, 125, 50, 0.32)',
       blockHighlightHoverBackground: isDarkTheme
-        ? 'linear-gradient(90deg, rgba(36, 190, 133, 0.22) 0%, rgba(36, 190, 133, 0.38) 100%)'
+        ? 'linear-gradient(90deg, rgba(36, 190, 133, 0.05) 0%, rgba(36, 190, 133, 0.12) 100%)'
         : 'linear-gradient(90deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.98) 18%, rgba(255, 255, 255, 0.94) 100%), linear-gradient(90deg, rgba(255, 213, 79, 0.7) 0%, rgba(255, 213, 79, 0.55) 28%, rgba(255, 143, 0, 0.28) 100%)',
-      blockHighlightHoverBorderColor: isDarkTheme ? 'rgba(36, 190, 133, 0.65)' : 'rgba(255, 167, 38, 0.55)',
+      blockHighlightHoverBorderColor: isDarkTheme ? 'rgba(36, 190, 133, 0.4)' : 'rgba(255, 167, 38, 0.55)',
       blockHighlightHoverShadow: isDarkTheme
-        ? 'inset 0 0 0 1.5px rgba(36, 190, 133, 0.55), 0 4px 12px rgba(36, 190, 133, 0.35)'
+        ? 'inset 0 0 0 1px rgba(36, 190, 133, 0.35), 0 4px 12px rgba(0, 0, 0, 0.2)'
         : 'inset 0 0 0 1.5px rgba(255, 167, 38, 0.55), 0 4px 12px rgba(255, 213, 79, 0.35)',
       blockCommentedBackground: isDarkTheme
-        ? 'linear-gradient(90deg, rgba(36, 190, 133, 0.16) 0%, rgba(36, 190, 133, 0.28) 100%)'
+        ? 'linear-gradient(90deg, rgba(36, 190, 133, 0.08) 0%, rgba(36, 190, 133, 0.15) 100%)'
         : 'linear-gradient(90deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%)',
-      blockCommentedBorderColor: isDarkTheme ? 'rgba(36, 190, 133, 0.45)' : 'rgba(46, 125, 50, 0.18)',
+      blockCommentedBorderColor: isDarkTheme ? 'rgba(36, 190, 133, 0.25)' : 'rgba(46, 125, 50, 0.18)',
       blockFocusedBackground: isDarkTheme
-        ? 'linear-gradient(90deg, rgba(36, 190, 133, 0.32) 0%, rgba(36, 190, 133, 0.48) 100%)'
+        ? 'linear-gradient(90deg, rgba(36, 190, 133, 0.1) 0%, rgba(36, 190, 133, 0.2) 100%)'
         : 'linear-gradient(90deg, rgba(255, 253, 218, 0.9) 0%, rgba(255, 248, 196, 0.98) 45%, rgba(255, 241, 118, 0.9) 100%)',
-      blockFocusedBorderColor: isDarkTheme ? 'rgba(36, 190, 133, 0.7)' : 'rgba(255, 167, 38, 0.65)',
+      blockFocusedBorderColor: isDarkTheme ? 'rgba(36, 190, 133, 0.5)' : 'rgba(255, 167, 38, 0.65)',
       blockFocusedShadow: isDarkTheme
-        ? '0px 6px 16px rgba(36, 190, 133, 0.28)'
+        ? '0px 6px 16px rgba(36, 190, 133, 0.15)'
         : '0px 6px 16px rgba(255, 213, 79, 0.28)',
       blockEmptyBorderColor: isDarkTheme ? 'rgba(255, 255, 255, 0.15)' : 'white',
       blockEmptyHoverBorderColor: isDarkTheme ? 'rgba(64, 169, 255, 0.65)' : '#bdbdbd',

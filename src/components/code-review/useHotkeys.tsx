@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { getOperatingSystem, OS } from '../core/operatingSystem';
+import { getOsTriggerKeyFromEvent } from '../core/operatingSystem';
 
 /************************** SHORTCUTS **************************************/
 
@@ -40,7 +40,11 @@ export const P_KEY = 'p';
 export const V_KEY = 'v';
 
 /*******************************************************************************/
-export const K_KEY = 75;
+export const K_KEY = 'k';
+
+/*******************************************************************************/
+
+export const U_KEY = 'u';
 
 /*******************************************************************************/
 
@@ -49,15 +53,13 @@ export const M_KEY = 'm';
 /*******************************************************************************/
 
 const useHotkeys = (hotkey: string, callback: any, shift?: boolean, override?: boolean) => {
-  const os = getOperatingSystem();
-
   React.useEffect(() => {
     const handleKeydown = (e: any) => {
-      const triggerKey = os === OS.WINDOWS ? e.ctrlKey : e.metaKey;
+      const triggerKey = getOsTriggerKeyFromEvent(e);
 
-      let trigger = e.key === hotkey && triggerKey;
+      let trigger = e.key.toLowerCase() === hotkey.toLowerCase() && triggerKey;
       if (shift !== undefined && shift) {
-        trigger = e.key === hotkey && triggerKey && e.shiftKey;
+        trigger = e.key.toLowerCase() === hotkey.toLowerCase() && triggerKey && e.shiftKey;
       }
 
       if (trigger && !override) {

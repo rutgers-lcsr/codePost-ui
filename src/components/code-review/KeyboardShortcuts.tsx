@@ -1,7 +1,9 @@
+import * as React from 'react';
 import { OS, getOperatingSystem, osControlKey } from '../core/operatingSystem';
+import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 import shortcuts from './keyboard_shortcuts.tsx';
 
-import { Drawer, Tabs, Tooltip } from 'antd';
+import { Drawer, Tabs, Tooltip, ConfigProvider, theme } from 'antd';
 const { TabPane } = Tabs;
 
 interface IKeyboardShortCutsProps {
@@ -70,6 +72,9 @@ const KeyIcon = (props: IKeyIconProps) => {
 };
 
 const KeyboardShortcuts = (props: IKeyboardShortCutsProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const isLight = consoleTheme === consoleThemes.light;
+
   const filteredShortcuts = shortcuts.filter((category: IShortcutCategory) => {
     return props.isStudent ? !category.graderOnly : category;
   });
@@ -77,7 +82,7 @@ const KeyboardShortcuts = (props: IKeyboardShortCutsProps) => {
   const tabs = filteredShortcuts.map((category: IShortcutCategory) => {
     return (
       <TabPane tab={category.category} key={category.category}>
-        <div style={{ width: '80%', margin: '0px auto', fontSize: '12px' }}>
+        <div style={{ width: '80%', margin: '0px auto', fontSize: '12px', color: isLight ? '#000' : '#fff' }}>
           <div className="keyboard-shortcuts__grid">
             {category.shortcuts.map((shortcut: IShortcut, idx: number) => {
               return (
@@ -97,26 +102,34 @@ const KeyboardShortcuts = (props: IKeyboardShortCutsProps) => {
     );
   });
 
+  const crawlerBg = isLight ? '#fff' : '#1f1f1f';
+  const crawlerTextColor = isLight ? 'rgba(0, 0, 0, 0.85)' : '#fff';
+
   return (
-    <Drawer
-      title={null}
-      className="keyboard-shortcuts-drawer"
-      placement="bottom"
-      closable={true}
-      onClose={props.onClose}
-      open={props.visible}
-      mask={false}
-      style={{ color: 'rgba(255, 255, 255, 0.65)' }}
-      styles={{
-        header: { backgroundColor: 'rgb(33, 35, 37)', color: 'rgba(255, 255, 255, 0.65)' },
-        body: { padding: '0px 24px', backgroundColor: 'rgb(33, 35, 37)', color: 'rgba(255, 255, 255, 0.65)' },
-        wrapper: { backgroundColor: 'rgb(33, 35, 37)', color: 'rgba(255, 255, 255, 0.65)' },
+    <ConfigProvider
+      theme={{
+        algorithm: isLight ? theme.defaultAlgorithm : theme.darkAlgorithm,
       }}
     >
-      <div style={{ textAlign: 'center' }} className="keyboard-shortcuts">
-        <Tabs type="card">{tabs}</Tabs>
-      </div>
-    </Drawer>
+      <Drawer
+        {...props}
+        placement="bottom"
+        closable={true}
+        mask={false}
+        open={props.visible}
+        onClose={props.onClose}
+        style={{ color: crawlerTextColor }}
+        styles={{
+          header: { backgroundColor: crawlerBg, color: crawlerTextColor },
+          body: { padding: '0px 24px', backgroundColor: crawlerBg, color: crawlerTextColor },
+          wrapper: { backgroundColor: crawlerBg, color: crawlerTextColor },
+        }}
+      >
+        <div style={{ textAlign: 'center' }} className="keyboard-shortcuts">
+          <Tabs type="card">{tabs}</Tabs>
+        </div>
+      </Drawer>
+    </ConfigProvider>
   );
 };
 

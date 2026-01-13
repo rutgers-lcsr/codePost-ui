@@ -3,6 +3,7 @@ import { Table, Card, Tag, Button, Space, message, Popconfirm, Input } from 'ant
 import { SearchOutlined } from '@ant-design/icons';
 import { UserType } from '../../infrastructure/user';
 import { Organization } from '../../infrastructure/organization';
+import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 import { ColumnsType } from 'antd/es/table';
 
 interface IProps {
@@ -15,6 +16,7 @@ interface IProps {
 
 const OrgUsers: React.FC<IProps> = ({ orgId, users, loading, onRefresh, ssoEnabled }) => {
   const [searchText, setSearchText] = React.useState(''); // Add search state
+  const [pageSize, setPageSize] = React.useState(LOCAL_SETTINGS.defaultPageSize.getter());
   const [actionLoading, setActionLoading] = React.useState<number | null>(null);
 
   const handleVerify = async (email: string, action: 'approve' | 'decline') => {
@@ -178,7 +180,21 @@ const OrgUsers: React.FC<IProps> = ({ orgId, users, loading, onRefresh, ssoEnabl
         </Space>
       }
     >
-      <Table dataSource={filteredUsers} columns={columns} rowKey="id" loading={loading} pagination={{ pageSize: 20 }} />
+      <Table
+        dataSource={filteredUsers}
+        columns={columns}
+        rowKey="id"
+        loading={loading}
+        pagination={{
+          pageSize,
+          showSizeChanger: true,
+          pageSizeOptions: PAGE_SIZE_OPTIONS,
+          onShowSizeChange: (_current, size) => {
+            setPageSize(size);
+            LOCAL_SETTINGS.defaultPageSize.setter(size);
+          },
+        }}
+      />
     </Card>
   );
 };

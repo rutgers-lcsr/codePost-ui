@@ -16,7 +16,7 @@ import {
   DislikeOutlined,
 } from '@ant-design/icons';
 
-import { Button, Empty, Input, Spin, Tag, Popconfirm, Switch, Divider } from 'antd';
+import { Button, Empty, Input, Spin, Tag, Popconfirm, Switch, Divider, Space } from 'antd';
 
 import CPPointInput from '../../../core/CPPointInput';
 import CPTooltip from '../../../core/CPTooltip';
@@ -448,119 +448,122 @@ const RubricCategoryUI: React.FC<{
       </div>
 
       <div style={{ padding: '24px' }}>
-        {/* Settings Bar - Horizontal Layout */}
+        {/* Settings Bar - Structured Layout */}
         {(props.showPointLimits || props.showHelpText || props.showAtMostOnce) && (
           <div
             style={{
-              display: 'flex',
-              gap: '24px',
               marginBottom: '24px',
-              alignItems: 'flex-start',
-              flexWrap: 'wrap',
-              padding: '12px 16px',
-              background: '#fff',
-              borderRadius: '6px',
+              padding: '20px 24px',
+              background: '#f9f9f9',
+              borderRadius: '8px',
               border: '1px solid #f0f0f0',
             }}
           >
-            {props.showPointLimits && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    color: '#8c8c8c',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                  }}
-                >
-                  Max Points
-                  <CPTooltip
-                    title={tooltips.admin.rubric.categoryPointLimit}
-                    infoIcon={true}
-                    hideThisOnHideTips={true}
-                    iconStyle={{ marginLeft: 4 }}
-                  />
-                </span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <CPPointInput
-                    value={state.pointLimit !== null ? -state.pointLimit : undefined}
-                    size="small"
-                    onChange={setVal}
-                    disabled={false}
-                    step={1}
-                  />
-                  <CPTooltip title="Clear point limit">
-                    <Button
-                      icon={<CloseCircleOutlined />}
-                      type="text"
-                      size="small"
-                      onClick={clearPointLimit}
-                      onBlur={helpers.saveCategory}
-                      disabled={state.pointLimit === null}
-                      style={{ color: '#bfbfbf' }}
+            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+              {/* Top Row: Constraints */}
+              {(props.showPointLimits || props.showAtMostOnce) && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '48px' }}>
+                  {props.showPointLimits && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <span
+                        style={{
+                          fontSize: '14px',
+                          fontWeight: 500,
+                          color: '#262626',
+                        }}
+                      >
+                        Max Points
+                        <CPTooltip
+                          title={tooltips.admin.rubric.categoryPointLimit}
+                          infoIcon={true}
+                          hideThisOnHideTips={true}
+                          iconStyle={{ marginLeft: 6, color: '#8c8c8c' }}
+                        />
+                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <CPPointInput
+                          value={state.pointLimit !== null ? -state.pointLimit : undefined}
+                          size="default"
+                          onChange={setVal}
+                          disabled={false}
+                          step={1}
+                        />
+                        <CPTooltip title="Clear point limit">
+                          <Button
+                            icon={<CloseCircleOutlined />}
+                            type="text"
+                            onClick={clearPointLimit}
+                            onBlur={helpers.saveCategory}
+                            disabled={state.pointLimit === null}
+                            style={{ color: state.pointLimit === null ? 'transparent' : '#bfbfbf' }}
+                          />
+                        </CPTooltip>
+                      </div>
+                    </div>
+                  )}
+
+                  {props.showAtMostOnce && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <span
+                        style={{
+                          fontSize: '14px',
+                          fontWeight: 500,
+                          color: '#262626',
+                        }}
+                      >
+                        Limits
+                        <CPTooltip
+                          infoIcon={true}
+                          title="If enabled, this category can be applied at most once to any submission"
+                          iconStyle={{ marginLeft: 6, color: '#8c8c8c' }}
+                        />
+                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <Switch size="small" checked={state.atMostOnce} onChange={toggleAtMostOnce} />
+                        <span style={{ fontSize: '13px', color: '#595959' }}>Apply at most once</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Bottom Row: Help Text */}
+              {props.showHelpText && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <span
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      color: '#262626',
+                    }}
+                  >
+                    Help Text
+                    <CPTooltip
+                      title={tooltips.admin.rubric.categoryHelpText}
+                      infoIcon={true}
+                      hideThisOnHideTips={true}
+                      iconStyle={{ marginLeft: 6, color: '#8c8c8c' }}
                     />
-                  </CPTooltip>
-                </div>
-              </div>
-            )}
-
-            {props.showHelpText && (
-              <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    color: '#8c8c8c',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                  }}
-                >
-                  Help Text
-                  <CPTooltip
-                    title={tooltips.admin.rubric.categoryHelpText}
-                    infoIcon={true}
-                    hideThisOnHideTips={true}
-                    iconStyle={{ marginLeft: 4 }}
+                  </span>
+                  <Input.TextArea
+                    value={state.helpText}
+                    onChange={helpers.changeHelpText}
+                    onBlur={helpers.saveCategory}
+                    autoSize={{ minRows: 2, maxRows: 6 }}
+                    placeholder="Enter instructions or guidance for graders using this category..."
+                    style={{
+                      resize: 'none',
+                      fontSize: '14px',
+                      borderRadius: '6px',
+                      padding: '8px 12px',
+                    }}
                   />
-                </span>
-                <Input.TextArea
-                  value={state.helpText}
-                  onChange={helpers.changeHelpText}
-                  onBlur={helpers.saveCategory}
-                  autoSize={{ minRows: 1, maxRows: 3 }}
-                  placeholder="Guidance for graders..."
-                  style={{ resize: 'none', fontSize: '13px' }}
-                />
-              </div>
-            )}
-
-            {props.showAtMostOnce && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    color: '#8c8c8c',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                  }}
-                >
-                  Limits
-                  <CPTooltip
-                    infoIcon={true}
-                    title="If enabled, this category can be applied at most once to any submission"
-                    iconStyle={{ marginLeft: 4 }}
-                  />
-                </span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', height: '32px' }}>
-                  <Switch size="small" checked={state.atMostOnce} onChange={toggleAtMostOnce} />
-                  <span style={{ fontSize: '13px', color: '#595959' }}>At most once</span>
                 </div>
-              </div>
-            )}
+              )}
+            </Space>
           </div>
         )}
+
 
         {/* Comments Section */}
         <div>
@@ -592,38 +595,40 @@ const RubricCategoryUI: React.FC<{
         </div>
       </div>
 
-      {activeComment ? (
-        <ExplanationModal
-          title={activeComment.text}
-          startText={activeComment[activeField]}
-          onCancel={() => {
-            setActiveComment(undefined);
-          }}
-          onSave={setField.bind({}, activeField)}
-          extra={
-            activeField === 'instructionText' ? (
-              <span>
-                Use as template:{' '}
-                <Switch
-                  defaultChecked={activeComment.templateTextOn}
-                  onChange={() =>
-                    helpers.updateRubricComment(activeComment.id, 'templateTextOn', !activeComment.templateTextOn)
-                  }
-                />
-                <CPTooltip
-                  title={
-                    'If on, this instruction text will be made available for graders to edit directly in the custom text area of a rubric comment instance.'
-                  }
-                  infoIcon={true}
-                  hideThisOnHideTips={true}
-                  iconStyle={{ paddingLeft: 5 }}
-                />
-              </span>
-            ) : undefined
-          }
-        />
-      ) : null}
-    </div>
+      {
+        activeComment ? (
+          <ExplanationModal
+            title={activeComment.text}
+            startText={activeComment[activeField]}
+            onCancel={() => {
+              setActiveComment(undefined);
+            }}
+            onSave={setField.bind({}, activeField)}
+            extra={
+              activeField === 'instructionText' ? (
+                <span>
+                  Use as template:{' '}
+                  <Switch
+                    defaultChecked={activeComment.templateTextOn}
+                    onChange={() =>
+                      helpers.updateRubricComment(activeComment.id, 'templateTextOn', !activeComment.templateTextOn)
+                    }
+                  />
+                  <CPTooltip
+                    title={
+                      'If on, this instruction text will be made available for graders to edit directly in the custom text area of a rubric comment instance.'
+                    }
+                    infoIcon={true}
+                    hideThisOnHideTips={true}
+                    iconStyle={{ paddingLeft: 5 }}
+                  />
+                </span>
+              ) : undefined
+            }
+          />
+        ) : null
+      }
+    </div >
   );
 };
 

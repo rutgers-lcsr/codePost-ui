@@ -96,6 +96,7 @@ const demoCourse = (testName: string) => {
     expiration_date: null,
     studentsCanSeeGraders: false,
     studentCount: 0,
+    isRubricEditor: false,
   };
 };
 

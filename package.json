@@ -28,7 +28,6 @@
     "lang-map": "^0.4.0",
     "lodash": "^4.17.21",
     "memoize-one": "^6.0.0",
-    "moment-timezone": "^0.6.0",
     "query-string": "^9.3.1",
     "rc-slider": "^11.1.9",
     "re-resizable": "^6.11.2",

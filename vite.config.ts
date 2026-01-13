@@ -77,6 +77,13 @@ export default defineConfig(async (config) => {
           manualChunks: {
             'react-vendor': ['react', 'react-dom', 'react-router-dom'],
             'antd-vendor': ['antd', '@ant-design/icons'],
+            'aws-vendor': ['aws-sdk'],
+            'pdf-vendor': ['react-pdf'],
+            'icons-vendor': ['react-icons'],
+            'jszip-vendor': ['jszip'],
+            'dayjs-vendor': ['dayjs'],
+            'monaco-vendor': ['@monaco-editor/react', 'monaco-editor'],
+            'markdown-vendor': ['react-markdown', 'remark-gfm'],
           },
         },
       },
@@ -102,7 +109,7 @@ export default defineConfig(async (config) => {
     },
     resolve: {
       alias: {
-        // Add any necessary aliases here
+        'jszip': 'jszip/lib/index.js',
       },
     },
   };

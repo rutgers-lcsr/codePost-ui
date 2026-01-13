@@ -13,7 +13,6 @@ import { colors } from '../../../theme/colors';
 import type { MenuProps } from 'antd';
 import { Badge as AntBadge, Dropdown, Menu, Tag, Typography } from 'antd';
 import {
-  FileTextOutlined,
   FileImageOutlined,
   FilePdfOutlined,
   CodeOutlined,
@@ -25,7 +24,10 @@ import {
   BookOutlined,
 } from '@ant-design/icons';
 
-import moment from 'moment';
+import dayjs from 'dayjs';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+
+dayjs.extend(localizedFormat);
 
 // Type for Menu onSelect callback
 type SelectInfo = Parameters<NonNullable<MenuProps['onSelect']>>[0];
@@ -63,7 +65,7 @@ import Badge from '../../core/Badge';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 
-import { OS, getOperatingSystem, osControlKey } from '../../core/operatingSystem';
+import { osControlKey, getOsTriggerKeyFromEvent } from '../../core/operatingSystem';
 
 import { sendSlack } from '../../core/slack';
 
@@ -238,9 +240,8 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
         }
       }
 
-      const os = getOperatingSystem();
-      const modifierHeld = os === OS.WINDOWS ? event.ctrlKey : event.metaKey;
-      if (!modifierHeld) {
+      const triggerKey = getOsTriggerKeyFromEvent(event);
+      if (!triggerKey) {
         return;
       }
 
@@ -337,7 +338,7 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
           key: `file-${f2.id}`,
           label: (
             <div className="display-flex align-items-center justify-content-space-between">
-              {moment(f2.created).format('lll')}
+              {dayjs(f2.created).format('lll')}
               {numComments > 0 ? <Badge count={numComments} forcedStyle="neutral" size="small" /> : <div />}
             </div>
           ),
@@ -357,7 +358,7 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
                 <div className="display-flex align-items-center justify-content-space-between">
                   <div style={{ lineHeight: 1.5, marginTop: 4 }}>
                     <div style={{ fontSize: 10, fontStyle: 'italic' }}>Current Version</div>
-                    <div>{moment(currentFile.created).format('lll')}</div>
+                    <div>{dayjs(currentFile.created).format('lll')}</div>
                   </div>
                   {currentFileNumComments > 0 ? (
                     <Badge count={currentFileNumComments} forcedStyle="neutral" size="small" />
@@ -414,8 +415,9 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
             <span style={visuallyHiddenStyle}>
               {openHistoryPath === path
                 ? `${currentFile.name} version history menu expanded. Use arrow keys to explore versions.`
-                : `${currentFile.name} has ${oldVersionsMap[path].length} earlier version${oldVersionsMap[path].length === 1 ? '' : 's'
-                }. Activate to open history.`}
+                : `${currentFile.name} has ${oldVersionsMap[path].length} earlier version${
+                    oldVersionsMap[path].length === 1 ? '' : 's'
+                  }. Activate to open history.`}
             </span>
           </button>
         </Dropdown>
@@ -503,17 +505,6 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
           oldVersionsMenu = buildOldVersionsMenu(file, oldVersionsMap[path], path);
         }
 
-        /* tslint:disable */
-        const shortcutStyle: React.CSSProperties = !shrunkSider
-          ? { fontSize: '9px', verticalAlign: 'middle' }
-          : {
-            fontSize: '9px',
-            position: 'absolute',
-            right: '-27px',
-            top: '10px',
-          };
-        /* tslint:enable */
-
         // Find the file order in the list to sync the keyboard shortcuts with the UI order
         const sortedIndex = sortedFilesParam.findIndex((f) => {
           return f.id === file.id;
@@ -540,15 +531,6 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
               }}
               aria-hidden="true"
             >
-              {sortedIndex < 9 ? (
-                <span style={shortcutStyle}>
-                  [{osControlKey()}
-                  {sortedIndex + 1}]
-                </span>
-              ) : null}
-              {/* Spacer for shortcut */}
-              <div style={{ display: 'inline-block', width: sortedIndex < 9 ? '4px' : '0px', flexShrink: 0 }} />
-
               <div
                 style={{
                   flex: 1,
@@ -557,17 +539,21 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
                   display: 'flex',
                   alignItems: 'center',
                 }}
-                title={file.name}
               >
                 {getFileIcon(file.name)}
-                <Typography.Text
-                  ellipsis
-                  style={{
-                    color: consoleTheme.consoleTheme.siderMenuItemColor,
-                  }}
+                <CPTooltip
+                  title={sortedIndex < 9 ? `${file.name} (${osControlKey()}+${sortedIndex + 1})` : file.name}
+                  placement="right"
                 >
-                  {file.name}
-                </Typography.Text>
+                  <Typography.Text
+                    ellipsis
+                    style={{
+                      color: consoleTheme.consoleTheme.siderMenuItemColor,
+                    }}
+                  >
+                    {file.name}
+                  </Typography.Text>
+                </CPTooltip>
                 {oldVersionsMenu}
               </div>
             </div>
@@ -661,10 +647,11 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
 
 interface IFileMenuTitleProps {
   files: FileType[];
+  forceDarkTheme?: boolean;
 }
 export const FileMenuTitle = (props: IFileMenuTitleProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  const isDarkTheme = consoleThemes.dark === consoleTheme;
+  const isDarkTheme = props.forceDarkTheme || consoleThemes.dark === consoleTheme;
 
   const numUniqueFiles = CodeConsoleUtils.filterCurrentFileVersions(props.files)[0].size;
   const numOldVersions = props.files.length - numUniqueFiles;
@@ -691,8 +678,9 @@ export const FileMenuTitle = (props: IFileMenuTitleProps) => {
     >
       {numOldVersions > 0 ? (
         <CPTooltip
-          title={`This submission contains ${numOldVersions} older version${numOldVersions > 1 ? 's' : ''
-            } of these files.`}
+          title={`This submission contains ${numOldVersions} older version${
+            numOldVersions > 1 ? 's' : ''
+          } of these files.`}
           placement="right"
         >
           {badge}

@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { colors } from '../../theme/colors';
 import { RosterType as InfraRosterType } from '../../infrastructure/course';
 import { OrganizationType } from '../../infrastructure/organization';
+import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 
 import { PlusOutlined } from '@ant-design/icons';
 import NewOrganizationDialog from './NewOrganizationDialog';
@@ -51,7 +52,7 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
   const [visible, setVisible] = React.useState(false);
   const [showCreateDialog, setShowCreateDialog] = React.useState(false);
   const [currentRoster, setCurrentRoster] = React.useState<RosterType | undefined>(undefined);
-  const [pageSize, setPageSize] = React.useState(10);
+  const [pageSize, setPageSize] = React.useState(LOCAL_SETTINGS.defaultPageSize.getter());
 
   const showDrawer = (roster: RosterType) => {
     setVisible(true);
@@ -384,9 +385,12 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
         pagination={{
           pageSize,
           showSizeChanger: true,
-          pageSizeOptions: ['10', '20', '50', '100'],
+          pageSizeOptions: PAGE_SIZE_OPTIONS,
           showTotal: (total) => `Total ${total} organizations`,
-          onShowSizeChange: (_current, size) => setPageSize(size),
+          onShowSizeChange: (_current, size) => {
+            setPageSize(size);
+            LOCAL_SETTINGS.defaultPageSize.setter(size);
+          },
         }}
         scroll={{ x: 'max-content' }}
       />

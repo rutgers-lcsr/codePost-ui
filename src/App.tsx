@@ -46,6 +46,7 @@ const AsyncGrader = lazy(() => import('./components/grader/GraderManager'));
 const AsyncAdmin = lazy(() => import('./components/admin/AdminManager'));
 const AsyncOrg = lazy(() => import('./components/organization/OrgDashboard'));
 const AsyncGrade = lazy(() => import('./components/code-review/CodeConsole'));
+const AsyncDevTools = lazy(() => import('./components/dev/DevTools'));
 
 /*****************************************************************************/
 
@@ -189,7 +190,7 @@ Firefox:
   const replaceUser = useCallback((newUser: UserType, redirect: boolean, isSuperUserParam: boolean) => {
     setUser(newUser);
     setToRedirect(redirect);
-    setIsSuperUser((prev) => prev || isSuperUserParam);
+    setIsSuperUser(isSuperUserParam);
     localStorage.setItem('token', newUser.token);
   }, []);
 
@@ -681,21 +682,28 @@ Firefox:
     }
 
     return (
-      <Routes>
-        {loginAsRoute}
-        {dashboardRoute}
-        {settingsRoute}
-        {homeRoute}
-        {studentRoute}
-        {graderRoute}
-        {adminRoute}
-        {orgRoute}
-        {gradeRoute}
-        {renderDemoRoute()}
-        <Route path={HEALTH_CHECK} element={<div>OK</div>} />
-        {logoutRoute}
-        <Route path="*" element={<Navigate to={HOME} replace />} />
-      </Routes>
+      <>
+        <Routes>
+          {loginAsRoute}
+          {dashboardRoute}
+          {settingsRoute}
+          {homeRoute}
+          {studentRoute}
+          {graderRoute}
+          {adminRoute}
+          {orgRoute}
+          {gradeRoute}
+          {renderDemoRoute()}
+          <Route path={HEALTH_CHECK} element={<div>OK</div>} />
+          {logoutRoute}
+          <Route path="*" element={<Navigate to={HOME} replace />} />
+        </Routes>
+        {process.env.NODE_ENV === 'development' && (
+          <Suspense fallback={null}>
+            <AsyncDevTools replaceUser={replaceUser} />
+          </Suspense>
+        )}
+      </>
     );
   }
 

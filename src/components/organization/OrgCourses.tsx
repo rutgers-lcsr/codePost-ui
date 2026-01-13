@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Table, Card, Input, Button, Modal, Form, Switch, message, Select, InputNumber, Tooltip, Tabs } from 'antd';
 import { CourseType, Course } from '../../infrastructure/course';
+import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 import { ColumnsType } from 'antd/es/table';
 import { EditOutlined, SearchOutlined, CopyOutlined, RedoOutlined } from '@ant-design/icons';
 
@@ -24,6 +25,7 @@ interface IProps {
 
 const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
   const [searchText, setSearchText] = React.useState('');
+  const [pageSize, setPageSize] = React.useState(LOCAL_SETTINGS.defaultPageSize.getter());
   const [editingCourse, setEditingCourse] = React.useState<CourseType | null>(null);
   const [modalVisible, setModalVisible] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
@@ -234,7 +236,15 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
         columns={columns}
         rowKey="id"
         loading={loading}
-        pagination={{ pageSize: 20 }}
+        pagination={{
+          pageSize,
+          showSizeChanger: true,
+          pageSizeOptions: PAGE_SIZE_OPTIONS,
+          onShowSizeChange: (_current, size) => {
+            setPageSize(size);
+            LOCAL_SETTINGS.defaultPageSize.setter(size);
+          },
+        }}
       />
 
       <Modal

@@ -486,18 +486,6 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
   let actions: Array<React.ReactNode> = [];
 
   if (submissions.length > 0 || isLoadingSubmissions) {
-    // If we're in anonymous grading mode, add a toggle to reveal student emails
-    let anonymousToggle;
-    if (assignment.anonymousGrading && canViewSubmissionInfo) {
-      anonymousToggle = (
-        <Space size="small">
-          <span>Reveal students:</span>
-          <Switch checked={showStudentEmails} onChange={toggleShowStudentEmails} />
-          <Divider type="vertical" style={{ height: 25 }} />
-        </Space>
-      );
-    }
-
     const centerAlign: alignType = 'center';
     const columns = [
       {
@@ -570,8 +558,23 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
       };
     });
 
-    actions = [anonymousToggle, renderClaimControls, renderFilterComponent].filter(Boolean);
-    content = <Table columns={columns} dataSource={data} pagination={false} loading={isLoadingSubmissions} />;
+    // Consolidate actions into a single toolbar for better spacing control
+    const toolbar = (
+      <Space size="large" align="center">
+        {assignment.anonymousGrading && canViewSubmissionInfo && (
+          <Space size="small">
+            <span>Reveal students:</span>
+            <Switch checked={showStudentEmails} onChange={toggleShowStudentEmails} />
+          </Space>
+        )}
+        <Divider type="vertical" />
+        {renderClaimControls}
+        {renderFilterComponent}
+      </Space>
+    );
+
+    actions = [toolbar];
+    content = <Table columns={columns} dataSource={data} pagination={{ pageSize: 20 }} loading={isLoadingSubmissions} />;
   } else {
     let emptyMessage: string | React.ReactElement = 'No submissions yet. Click claim to start grading!';
     if (isAdmin) {

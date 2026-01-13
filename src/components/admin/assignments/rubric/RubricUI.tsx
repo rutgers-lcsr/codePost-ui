@@ -353,8 +353,8 @@ const RubricUI = ({
       </CPButton>,
     ];
 
-    const addRubricCategory = (e: any) => {
-      helpers.addRubricCategory(undefined, e);
+    const addRubricCategory = () => {
+      helpers.addRubricCategory(undefined);
     };
 
     const onDelete = () => {
@@ -374,7 +374,7 @@ const RubricUI = ({
           style={{ marginBottom: 16 }}
           onEdit={(targetKey, action) => {
             if (action === 'add') {
-              addRubricCategory(null);
+              addRubricCategory();
             } else if (action === 'remove') {
               const catToDelete = rubricCategories.find((c) => c.id.toString() === targetKey);
               if (catToDelete) {

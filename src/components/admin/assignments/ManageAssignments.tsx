@@ -3,6 +3,7 @@
 /**********************************************************************************************************************/
 
 /* React imports */
+import { lazy, Suspense } from 'react';
 
 /* antd imports */
 import { Tag } from 'antd';
@@ -18,23 +19,28 @@ import { UserType } from '../../../infrastructure/user';
 
 import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../types/common';
 
-import RubricManager, { IRubricManagerParams } from '../../../components/core/rubric/RubricManager';
-import AssignmentRegrades from './assignments/AssignmentRegrades';
-import AssignmentStats from './assignments/AssignmentStats/AssignmentStats';
+// Keep synchronous - needed for main table
 import AssignmentsTable from './AssignmentsTable';
 import { DETAIL_TYPE } from './types';
-import RubricUI from './rubric/RubricUI';
-import Moss from './assignments/Moss';
 
 import { encodeForRoute } from '../../core/URLutils';
 
 import Loading from '../../core/Loading';
 
-import { AssignmentTests } from './tests/AssignmentTests';
-
 import { FileType } from '../../../infrastructure/types';
-import RubricOverview from './rubric/RubricOverview';
-import TestsOverview from './tests/TestsOverview';
+
+// Lazy load heavy sub-components for code splitting
+const RubricManager = lazy(() => import('../../../components/core/rubric/RubricManager'));
+const RubricUI = lazy(() => import('./rubric/RubricUI'));
+const AssignmentStats = lazy(() => import('./assignments/AssignmentStats/AssignmentStats'));
+const AssignmentRegrades = lazy(() => import('./assignments/AssignmentRegrades'));
+const AssignmentTests = lazy(() => import('./tests/AssignmentTests').then((m) => ({ default: m.AssignmentTests })));
+const Moss = lazy(() => import('./assignments/Moss'));
+const RubricOverview = lazy(() => import('./rubric/RubricOverview'));
+const TestsOverview = lazy(() => import('./tests/TestsOverview'));
+
+// Type import for RubricManager params
+import type { IRubricManagerParams } from '../../../components/core/rubric/RubricManager';
 
 /**********************************************************************************************************************/
 
@@ -140,36 +146,38 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
             element={
               <RoutePropsWrapper
                 render={(subprops: any) => (
-                  <RubricManager
-                    {...subprops}
-                    assignment={assignment}
-                    submissions={props.submissions[assignment.id]}
-                    onCancel={cancel}
-                    shouldLoadFeedback={true}
-                    shouldLoadInstanceLists={true}
-                  >
-                    {(params: IRubricManagerParams) => {
-                      const propz = {
-                        ...params.props,
-                        breadcrumbs: [
-                          ...breadcrumbs,
-                          {
-                            title: <Link to={`${props.baseURL}/rubrics`}>Rubrics</Link>,
-                          },
-                        ],
-                        baseURL: `${props.baseURL}/${encodedName}/rubric`,
-                        history: subprops.history,
-                      };
-                      return (
-                        <RubricUI
-                          key={`rubric-ui-${encodedName}`}
-                          props={propz}
-                          state={params.state}
-                          helpers={params.helpers}
-                        />
-                      );
-                    }}
-                  </RubricManager>
+                  <Suspense fallback={<Loading />}>
+                    <RubricManager
+                      {...subprops}
+                      assignment={assignment}
+                      submissions={props.submissions[assignment.id]}
+                      onCancel={cancel}
+                      shouldLoadFeedback={true}
+                      shouldLoadInstanceLists={true}
+                    >
+                      {(params: IRubricManagerParams) => {
+                        const propz = {
+                          ...params.props,
+                          breadcrumbs: [
+                            ...breadcrumbs,
+                            {
+                              title: <Link to={`${props.baseURL}/rubrics`}>Rubrics</Link>,
+                            },
+                          ],
+                          baseURL: `${props.baseURL}/${encodedName}/rubric`,
+                          history: subprops.history,
+                        };
+                        return (
+                          <RubricUI
+                            key={`rubric-ui-${encodedName}`}
+                            props={propz}
+                            state={params.state}
+                            helpers={params.helpers}
+                          />
+                        );
+                      }}
+                    </RubricManager>
+                  </Suspense>
                 )}
               />
             }
@@ -183,22 +191,24 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
                   !props.fullSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
-                    <AssignmentStats
-                      {...subprops}
-                      course={props.currentCourse!}
-                      assignment={assignment}
-                      submissions={
-                        Object.prototype.hasOwnProperty.call(props.submissions, assignment.id)
-                          ? props.submissions[assignment.id]
-                          : null
-                      }
-                      students={props.students}
-                      submissionsByStudent={props.submissionsByStudent}
-                      viewsBySubmission={props.viewsBySubmission}
-                      refreshCourseData={props.refreshCourseData}
-                      myEmail={props.myEmail}
-                      breadcrumbs={breadcrumbs}
-                    />
+                    <Suspense fallback={<Loading />}>
+                      <AssignmentStats
+                        {...subprops}
+                        course={props.currentCourse!}
+                        assignment={assignment}
+                        submissions={
+                          Object.prototype.hasOwnProperty.call(props.submissions, assignment.id)
+                            ? props.submissions[assignment.id]
+                            : null
+                        }
+                        students={props.students}
+                        submissionsByStudent={props.submissionsByStudent}
+                        viewsBySubmission={props.viewsBySubmission}
+                        refreshCourseData={props.refreshCourseData}
+                        myEmail={props.myEmail}
+                        breadcrumbs={breadcrumbs}
+                      />
+                    </Suspense>
                   )
                 }
               />
@@ -213,17 +223,19 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
                   !props.partialSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
-                    <AssignmentRegrades
-                      {...subprops}
-                      assignment={assignment}
-                      submissions={props.submissions[assignment.id]}
-                      refreshCourseData={props.refreshCourseData}
-                      onCancel={cancel}
-                      user={props.user}
-                      updateSubmission={props.updateSubmission}
-                      currentCourse={props.currentCourse!}
-                      breadcrumbs={breadcrumbs}
-                    />
+                    <Suspense fallback={<Loading />}>
+                      <AssignmentRegrades
+                        {...subprops}
+                        assignment={assignment}
+                        submissions={props.submissions[assignment.id]}
+                        refreshCourseData={props.refreshCourseData}
+                        onCancel={cancel}
+                        user={props.user}
+                        updateSubmission={props.updateSubmission}
+                        currentCourse={props.currentCourse!}
+                        breadcrumbs={breadcrumbs}
+                      />
+                    </Suspense>
                   )
                 }
               />
@@ -427,15 +439,17 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
             element={
               <RoutePropsWrapper
                 render={(subprops: any) => (
-                  <AssignmentTests
-                    {...subprops}
-                    breadcrumbs={breadcrumbs}
-                    activeAssignment={assignment}
-                    submissions={props.submissions[assignment.id] || []}
-                    user={props.user}
-                    updateAssignment={props.shallowUpdateAssignment}
-                    fullSubmissionsLoadComplete={props.fullSubmissionsLoadComplete}
-                  />
+                  <Suspense fallback={<Loading />}>
+                    <AssignmentTests
+                      {...subprops}
+                      breadcrumbs={breadcrumbs}
+                      activeAssignment={assignment}
+                      submissions={props.submissions[assignment.id] || []}
+                      user={props.user}
+                      updateAssignment={props.shallowUpdateAssignment}
+                      fullSubmissionsLoadComplete={props.fullSubmissionsLoadComplete}
+                    />
+                  </Suspense>
                 )}
               />
             }
@@ -446,15 +460,17 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
             element={
               <RoutePropsWrapper
                 render={(subprops: any) => (
-                  <Moss
-                    {...subprops}
-                    assignment={assignment}
-                    assignments={props.assignments}
-                    course={props.currentCourse!}
-                    submissions={props.submissions[assignment.id] || []}
-                    user={props.user}
-                    breadcrumbs={breadcrumbs}
-                  />
+                  <Suspense fallback={<Loading />}>
+                    <Moss
+                      {...subprops}
+                      assignment={assignment}
+                      assignments={props.assignments}
+                      course={props.currentCourse!}
+                      submissions={props.submissions[assignment.id] || []}
+                      user={props.user}
+                      breadcrumbs={breadcrumbs}
+                    />
+                  </Suspense>
                 )}
               />
             }
@@ -466,7 +482,11 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
         path="environment"
         element={
           <RoutePropsWrapper
-            render={(subprops: any) => <TestsOverview {...subprops} assignments={props.assignments} />}
+            render={(subprops: any) => (
+              <Suspense fallback={<Loading />}>
+                <TestsOverview {...subprops} assignments={props.assignments} />
+              </Suspense>
+            )}
           />
         }
       />
@@ -475,7 +495,9 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
         element={
           <RoutePropsWrapper
             render={(subprops: any) => (
-              <RubricOverview {...subprops} assignments={props.assignments} course={props.currentCourse} />
+              <Suspense fallback={<Loading />}>
+                <RubricOverview {...subprops} assignments={props.assignments} course={props.currentCourse} />
+              </Suspense>
             )}
           />
         }

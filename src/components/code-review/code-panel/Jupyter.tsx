@@ -37,6 +37,7 @@ export interface NotebookCell {
   cell_type: 'code' | 'markdown' | 'raw';
   source: string | string[];
   metadata?: Record<string, unknown>;
+  id?: string;
   // Code cells only
   outputs?: NotebookCellOutput[];
   execution_count?: number | null;
@@ -161,9 +162,13 @@ export const jupyterToMarkdown = (content: unknown): string | null => {
   }
 
   jupyterJson.cells.forEach((cell: NotebookCell, cellIndex: number) => {
+    // Extract ID from root (nbformat 4.5+) or metadata (older/codepost injected)
+    const cellId = cell.id || (cell.metadata && typeof cell.metadata.id === 'string' ? cell.metadata.id : '');
+    const idAttr = cellId ? ` data-cell-uuid="${cellId}"` : '';
+
     if (cell.cell_type === 'markdown') {
       // For markdown cells, add cell index as HTML comment before content
-      markdown += `<div data-cell-index="${cellIndex}">\n\n`;
+      markdown += `<div data-cell-index="${cellIndex}"${idAttr}>\n\n`;
       if (Array.isArray(cell.source)) {
         markdown += cell.source.join('');
       } else {
@@ -174,7 +179,7 @@ export const jupyterToMarkdown = (content: unknown): string | null => {
 
     if (cell.cell_type === 'code') {
       // For code cells, wrap in a div with cell index
-      markdown += `<div data-cell-index="${cellIndex}">\n\n`;
+      markdown += `<div data-cell-index="${cellIndex}"${idAttr}>\n\n`;
       markdown += '```python\n';
       if (Array.isArray(cell.source)) {
         markdown += cell.source.join('');
