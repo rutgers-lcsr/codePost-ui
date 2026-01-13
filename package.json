@@ -70,7 +70,7 @@
     "dev": "vite",
     "start": "vite",
     "build": "tsc && vite build --mode development",
-    "build:production": "tsc && vite build --mode production",
+    "build:production": "export NODE_OPTIONS=\"--max-old-space-size=4096\" && tsc && vite build --mode production",
     "preview": "vite preview",
     "test": "vitest",
     "lint:fix": "eslint './src/**/*.{ts,tsx}' --fix",
