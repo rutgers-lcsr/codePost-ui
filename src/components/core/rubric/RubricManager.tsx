@@ -7,7 +7,8 @@ import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 /* antd imports */
-import { message, notification } from 'antd';
+import { message, notification, Badge as AntBadge } from 'antd';
+import { osControlKey } from '../operatingSystem';
 
 /* other library imports */
 import { arrayMoveImmutable as arrayMove } from 'array-move';
@@ -779,6 +780,25 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
   );
 
   return <>{props.children(params)}</>;
+};
+
+export const RubricTooltip: React.FC<{ itemsApplied?: number }> = ({ itemsApplied }) => {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <span>Rubric</span>
+      {itemsApplied !== undefined && itemsApplied > 0 && (
+        <AntBadge
+          count={itemsApplied}
+          style={{
+            backgroundColor: '#fff',
+            color: 'rgba(0,0,0,0.85)',
+            boxShadow: '0 0 0 1px #d9d9d9 inset',
+          }}
+        />
+      )}
+      <span style={{ opacity: 0.7 }}>({osControlKey()} + Shift + G)</span>
+    </div>
+  );
 };
 
 export default React.memo(RubricManager);

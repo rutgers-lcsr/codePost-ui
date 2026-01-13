@@ -34,6 +34,7 @@ import {
   Tabs,
   Tag,
   Typography,
+  Badge as AntBadge,
 } from 'antd';
 
 /* other library imports */
@@ -49,6 +50,7 @@ import { AnonymousSubmissionType, StudentSubmissionType } from '../../../infrast
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
+import { osControlKey } from '../../core/operatingSystem';
 import CPButton from '../../core/CPButton';
 import CPTooltip from '../../core/CPTooltip';
 import { tooltips } from '../../core/tooltips';
@@ -157,7 +159,16 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
                 <Space align="start">
                   <CalendarOutlined style={{ color: consoleTheme.siderMenuItemColor, fontSize: 16, marginTop: 2 }} />
                   <div>
-                    <Text style={{ fontSize: 11, display: 'block', color: consoleTheme.siderMenuItemColor, fontWeight: 600, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        display: 'block',
+                        color: consoleTheme.siderMenuItemColor,
+                        fontWeight: 600,
+                        letterSpacing: '0.02em',
+                        textTransform: 'uppercase',
+                      }}
+                    >
                       Uploaded
                     </Text>
                     <Text style={{ color: consoleTheme.text }}>
@@ -174,7 +185,16 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
                 <Space align="start">
                   <ClockCircleOutlined style={{ color: consoleTheme.siderMenuItemColor, fontSize: 16, marginTop: 2 }} />
                   <div>
-                    <Text style={{ fontSize: 11, display: 'block', color: consoleTheme.siderMenuItemColor, fontWeight: 600, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        display: 'block',
+                        color: consoleTheme.siderMenuItemColor,
+                        fontWeight: 600,
+                        letterSpacing: '0.02em',
+                        textTransform: 'uppercase',
+                      }}
+                    >
                       Due Date
                     </Text>
                     <Space>
@@ -294,8 +314,8 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
         )}
 
         {props.readOnlySubmission !== undefined &&
-          props.submitStudentQuestion &&
-          props.assignment.allowRegradeRequests ? (
+        props.submitStudentQuestion &&
+        props.assignment.allowRegradeRequests ? (
           <StudentRegrade
             submission={props.readOnlySubmission}
             assignment={props.assignment}
@@ -808,4 +828,41 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
   }
 };
 
-export { ReadOnlySubmissionInfo, SubmissionInfo };
+const SubmissionInfoTooltip: React.FC<{
+  submission?: AnonymousSubmissionType | StudentSubmissionType;
+  assignment?: AssignmentType;
+}> = ({ submission, assignment }) => {
+  let badge = null;
+
+  if (submission && assignment && assignment.uploadDueDate) {
+    const two_hours = 3.6e6 * 2; // ms grace period
+    const isLate =
+      submission.dateUploaded && Date.parse(submission.dateUploaded) > Date.parse(assignment.uploadDueDate) + two_hours;
+
+    if (isLate) {
+      badge = (
+        <AntBadge
+          count={'LATE'}
+          style={{
+            backgroundColor: '#ff4d4f',
+            color: '#fff',
+            boxShadow: '0 0 0 1px #d9d9d9 inset',
+            fontSize: '10px',
+            lineHeight: '16px',
+            padding: '0 4px',
+          }}
+        />
+      );
+    }
+  }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <span>Submission Info</span>
+      {badge}
+      <span style={{ opacity: 0.7 }}>({osControlKey()} + Shift + E)</span>
+    </div>
+  );
+};
+
+export { ReadOnlySubmissionInfo, SubmissionInfo, SubmissionInfoTooltip };

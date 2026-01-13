@@ -654,7 +654,6 @@ export const FileMenuTitle = (props: IFileMenuTitleProps) => {
   const isDarkTheme = props.forceDarkTheme || consoleThemes.dark === consoleTheme;
 
   const numUniqueFiles = CodeConsoleUtils.filterCurrentFileVersions(props.files)[0].size;
-  const numOldVersions = props.files.length - numUniqueFiles;
 
   const badge = (
     <AntBadge
@@ -667,34 +666,28 @@ export const FileMenuTitle = (props: IFileMenuTitleProps) => {
     />
   );
 
-  const badgeWrapper = (
-    <div
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        marginLeft: '8px',
-        verticalAlign: 'middle',
-      }}
-    >
-      {numOldVersions > 0 ? (
-        <CPTooltip
-          title={`This submission contains ${numOldVersions} older version${
-            numOldVersions > 1 ? 's' : ''
-          } of these files.`}
-          placement="right"
-        >
-          {badge}
-        </CPTooltip>
-      ) : (
-        badge
-      )}
-    </div>
-  );
-
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
       <span>Files</span>
-      {badgeWrapper}
+      {badge}
+    </div>
+  );
+};
+
+export const FileMenuTooltip: React.FC<{ files: FileType[] }> = ({ files }) => {
+  const numUniqueFiles = CodeConsoleUtils.filterCurrentFileVersions(files)[0].size;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <span>Files</span>
+      <AntBadge
+        count={numUniqueFiles}
+        style={{
+          backgroundColor: '#fff',
+          color: 'rgba(0,0,0,0.85)',
+          boxShadow: '0 0 0 1px #d9d9d9 inset',
+        }}
+      />
+      <span style={{ opacity: 0.7 }}>({osControlKey()} + Shift + F)</span>
     </div>
   );
 };
