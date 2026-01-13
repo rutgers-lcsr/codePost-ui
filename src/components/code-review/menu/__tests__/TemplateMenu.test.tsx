@@ -29,7 +29,7 @@ describe('TemplateMenu', () => {
     ];
     vi.spyOn(CommentTemplateIO, 'list').mockResolvedValue(templates as any);
 
-    renderWithTheme(<TemplateMenu courseId={1} onApplyTemplate={vi.fn()} currentUserEmail="me" />);
+    renderWithTheme(<TemplateMenu assignmentId={1} onApplyTemplate={vi.fn()} currentUserEmail="me" />);
 
     await waitFor(() => {
       expect(screen.getByText('Template 1')).toBeInTheDocument();
@@ -42,7 +42,7 @@ describe('TemplateMenu', () => {
     vi.spyOn(CommentTemplateIO, 'list').mockResolvedValue(templates as any);
     const onApply = vi.fn();
 
-    renderWithTheme(<TemplateMenu courseId={1} onApplyTemplate={onApply} currentUserEmail="me" />);
+    renderWithTheme(<TemplateMenu assignmentId={1} onApplyTemplate={onApply} currentUserEmail="me" />);
 
     await waitFor(() => expect(screen.getByText('Template 1')).toBeInTheDocument());
 
