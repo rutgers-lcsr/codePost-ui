@@ -57,11 +57,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps> {
             <div style={{ paddingBottom: 15 }}>
               Identify correctness mistakes efficiently, in courses of all sizes. Take advantage of simple no-code
               tests, or write flexible tests using short scripts. All tests run on codePost servers, and{' '}
-              <a
-                href="https://help.codepost.io/en/articles/3550689-what-languages-does-the-codepost-autograder-support"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href="/docs/features#supported-languages" target="_blank" rel="noopener noreferrer">
                 <span style={{ fontWeight: 500, cursor: 'pointer' }} className="landing__link">
                   all major languages are supported
                 </span>

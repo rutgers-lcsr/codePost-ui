@@ -47,3 +47,30 @@ docker run -d \
 ```
 
 See the `nginx.conf` file for the specific certificate path configuration.
+# Admin Guide
+
+This guide is for system administrators submitting or maintaining the codePost instance.
+
+## Deployment
+
+CodePost is typically deployed using Docker. Refer to the [Docker Setup](./DOCKER.md) guide for detailed instructions on building images and running containers.
+
+## Configuration
+
+System-level configuration is managed via environment variables.
+
+### Key Variables
+
+- `REACT_APP_API_URL` (or `VITE_API_URL`): The URL of the backend API.
+- `REACT_APP_GA_ID`: Google Analytics ID.
+
+## Maintenance
+
+- **Backups**: Ensure your database is backed up regularly.
+- **Updates**: Rebuild the Docker images when the codebase is updated.
+- **Logs**: Monitor Docker logs for application errors.
+
+## Troubleshooting
+
+- **Build Failures**: Check node version compatibility (Node 18+ recommended).
+- **Network Issues**: Ensure connectivity between the UI container and the API container/server.

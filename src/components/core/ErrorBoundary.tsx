@@ -300,7 +300,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
                 <Button key="retry" icon={<ReloadOutlined />} onClick={this.handleRefresh}>
                   Retry
                 </Button>,
-                <Button key="email" type="link" icon={<MailOutlined />} href="mailto:help@cs.rutgers.edu">
+                <Button key="email" type="link" icon={<MailOutlined />} href="mailto:codepost@cs.rutgers.edu">
                   Contact Support
                 </Button>,
               ]}
@@ -341,7 +341,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
               <Button key="home" onClick={this.handleGoHome} size="large">
                 Go to Homepage
               </Button>,
-              <Button key="email" type="link" icon={<MailOutlined />} href="mailto:help@cs.rutgers.edu">
+              <Button key="email" type="link" icon={<MailOutlined />} href="mailto:codepost@cs.rutgers.edu">
                 Contact Support
               </Button>,
             ]}

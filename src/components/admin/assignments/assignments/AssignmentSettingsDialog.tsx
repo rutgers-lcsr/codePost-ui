@@ -722,11 +722,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                     extra={
                       <div>
                         When enabled, graders will not be able to see student emails associated with submissions. For
-                        more info, see{' '}
-                        <a href="https://help.codepost.io/en/articles/3164756-how-to-enable-anonymous-grading-mode">
-                          our docs
-                        </a>
-                        .
+                        more info, see <a href="/docs/features#anonymous-grading">our docs</a>.
                       </div>
                     }
                     labelCol={{ span: 6 }}

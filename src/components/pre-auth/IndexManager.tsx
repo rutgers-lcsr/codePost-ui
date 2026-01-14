@@ -34,6 +34,7 @@ import { ADMIN, CODE, CODE_DEMO, GRADER, STUDENT } from '../../routes';
 /**********************************************************************************************************************/
 
 const AsyncLanding = React.lazy(() => import('../landing/LandingABTest'));
+const AsyncDocs = React.lazy(() => import('../docs/DocsPage'));
 
 interface IndexManagerProps {
   error: string;
@@ -92,6 +93,14 @@ class IndexManager extends React.Component<IndexManagerProps> {
             element={<Scholarship isLoggedIn={this.props.isLoggedIn} />}
           />
           <Route path="/autograder" element={<AutograderDetail isLoggedIn={this.props.isLoggedIn} />} />
+          <Route
+            path="/docs/*"
+            element={
+              <React.Suspense fallback={<div />}>
+                <AsyncDocs />
+              </React.Suspense>
+            }
+          />
           <Route path="/faqs" element={<FAQs isLoggedIn={this.props.isLoggedIn} />} />
           <Route path="/privacy" element={<PrivacyPolicy isLoggedIn={this.props.isLoggedIn} />} />
           <Route path="/why-use-codepost" element={<WhyUse isLoggedIn={this.props.isLoggedIn} />} />

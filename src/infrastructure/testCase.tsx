@@ -36,6 +36,8 @@ export const TestCaseV = t.intersection(
       outputIsRegexp: t.boolean,
       expectPlot: t.boolean,
       dataSet: t.union([t.number, t.null]),
+    }),
+    t.partial({
       targetCellId: t.union([t.number, t.string, t.null]),
     }),
   ],

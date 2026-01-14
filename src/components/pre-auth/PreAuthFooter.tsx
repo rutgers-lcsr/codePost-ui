@@ -66,9 +66,9 @@ const PreAuthFooter = () => {
           codePost
         </span>
         <span style={{ marginTop: 6, ...mobileFlexStyle }}>
-          <a style={linkStyle} href="https://help.codepost.io">
+          <Link style={linkStyle} to="/docs">
             Docs
-          </a>{' '}
+          </Link>{' '}
           <Link style={linkStyle} to="/about">
             About us
           </Link>{' '}
