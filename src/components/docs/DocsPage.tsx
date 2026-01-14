@@ -2,7 +2,6 @@ import React from 'react';
 import { Layout } from 'antd';
 import DocsSidebar from './DocsSidebar';
 import DocsContent from './DocsContent';
-import { colors } from '../../theme/colors';
 
 const { Content } = Layout;
 

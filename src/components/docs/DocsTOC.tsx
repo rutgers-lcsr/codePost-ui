@@ -2,7 +2,6 @@ import React from 'react';
 import { Typography, Anchor } from 'antd';
 import { colors } from '../../theme/colors';
 
-const { Link } = Anchor;
 const { Text } = Typography;
 
 export interface TOCItem {
