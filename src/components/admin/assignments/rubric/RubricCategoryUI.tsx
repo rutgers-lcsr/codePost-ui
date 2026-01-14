@@ -5,8 +5,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
 import {
-  CaretDownOutlined,
-  CaretUpOutlined,
   CloseCircleOutlined,
   DeleteOutlined,
   EditOutlined,
@@ -16,7 +14,7 @@ import {
   DislikeOutlined,
 } from '@ant-design/icons';
 
-import { Button, Empty, Input, Spin, Tag, Popconfirm, Switch, Divider, Space } from 'antd';
+import { Button, Empty, Input, Spin, Tag, Switch, Divider, Space } from 'antd';
 
 import CPPointInput from '../../../core/CPPointInput';
 import CPTooltip from '../../../core/CPTooltip';
@@ -30,8 +28,6 @@ import {
 
 import { RubricComment, RubricCommentType } from '../../../../infrastructure/rubricComment';
 
-import { DIRECTION } from '../../../../types/common';
-
 import ExplanationModal from './ExplanationModal';
 
 const { TextArea } = Input;
@@ -39,8 +35,6 @@ const { TextArea } = Input;
 /**********************************************************************************************************************/
 /* Constants
 /**********************************************************************************************************************/
-
-const BUTTON_SPACING = '8px';
 
 // Design Constants
 
@@ -70,13 +64,8 @@ const RubricCategoryUI: React.FC<{
     instanceLists,
     activateCommentExplorer,
     rubricComments,
-    moveCategory,
-    rubricCategory,
-    deleteCategory,
-    index: categoryIndex,
     showExplanations,
     commentFeedbackOn,
-    numCategories,
     showInstructions,
   } = props;
   const { rubricComments: stateRubricComments, atMostOnce } = state;
@@ -315,17 +304,6 @@ const RubricCategoryUI: React.FC<{
       commentFeedbackOn,
     ],
   );
-  const moveUp = useCallback(() => {
-    moveCategory(rubricCategory, DIRECTION.Up);
-  }, [moveCategory, rubricCategory]);
-
-  const moveDown = useCallback(() => {
-    moveCategory(rubricCategory, DIRECTION.Down);
-  }, [moveCategory, rubricCategory]);
-
-  const deleteCat = useCallback(() => {
-    deleteCategory(rubricCategory);
-  }, [deleteCategory, rubricCategory]);
 
   const setVal = useCallback(
     (value: number) => {
@@ -384,7 +362,7 @@ const RubricCategoryUI: React.FC<{
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
-          <div style={{ flex: 1, maxWidth: '400px' }}>
+          <div style={{ flex: 1, maxWidth: '100%' }}>
             <Input
               value={state.name}
               onChange={helpers.changeName}
@@ -397,30 +375,6 @@ const RubricCategoryUI: React.FC<{
             />
           </div>
 
-          <div style={{ display: 'flex', gap: BUTTON_SPACING }}>
-            <CPTooltip title={categoryIndex === 0 ? 'First category' : 'Move category up'} hideThisOnHideTips={true}>
-              <Button
-                icon={<CaretUpOutlined />}
-                size="small"
-                onClick={moveUp}
-                disabled={categoryIndex === 0}
-                type="text"
-              />
-            </CPTooltip>
-            <CPTooltip
-              title={categoryIndex === numCategories - 1 ? 'Last category' : 'Move category down'}
-              hideThisOnHideTips={true}
-            >
-              <Button
-                icon={<CaretDownOutlined />}
-                size="small"
-                disabled={categoryIndex === numCategories - 1}
-                onClick={moveDown}
-                type="text"
-              />
-            </CPTooltip>
-          </div>
-
           {state.hasError && (
             <Tag color="error" icon={<CloseCircleOutlined />}>
               {state.errorMessage}
@@ -431,19 +385,6 @@ const RubricCategoryUI: React.FC<{
               {state.commentErrorMessage}
             </Tag>
           )}
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <Popconfirm
-            title="Delete this category?"
-            description="This action cannot be undone. All rubric comments in this category will be deleted."
-            onConfirm={deleteCat}
-            okText="Yes, Delete"
-            cancelText="Cancel"
-            okButtonProps={{ danger: true }}
-          >
-            <Button danger type="text" icon={<DeleteOutlined />} />
-          </Popconfirm>
         </div>
       </div>
 
@@ -564,7 +505,6 @@ const RubricCategoryUI: React.FC<{
           </div>
         )}
 
-
         {/* Comments Section */}
         <div>
           {/* Add Comment Button */}
@@ -595,40 +535,38 @@ const RubricCategoryUI: React.FC<{
         </div>
       </div>
 
-      {
-        activeComment ? (
-          <ExplanationModal
-            title={activeComment.text}
-            startText={activeComment[activeField]}
-            onCancel={() => {
-              setActiveComment(undefined);
-            }}
-            onSave={setField.bind({}, activeField)}
-            extra={
-              activeField === 'instructionText' ? (
-                <span>
-                  Use as template:{' '}
-                  <Switch
-                    defaultChecked={activeComment.templateTextOn}
-                    onChange={() =>
-                      helpers.updateRubricComment(activeComment.id, 'templateTextOn', !activeComment.templateTextOn)
-                    }
-                  />
-                  <CPTooltip
-                    title={
-                      'If on, this instruction text will be made available for graders to edit directly in the custom text area of a rubric comment instance.'
-                    }
-                    infoIcon={true}
-                    hideThisOnHideTips={true}
-                    iconStyle={{ paddingLeft: 5 }}
-                  />
-                </span>
-              ) : undefined
-            }
-          />
-        ) : null
-      }
-    </div >
+      {activeComment ? (
+        <ExplanationModal
+          title={activeComment.text}
+          startText={activeComment[activeField]}
+          onCancel={() => {
+            setActiveComment(undefined);
+          }}
+          onSave={setField.bind({}, activeField)}
+          extra={
+            activeField === 'instructionText' ? (
+              <span>
+                Use as template:{' '}
+                <Switch
+                  defaultChecked={activeComment.templateTextOn}
+                  onChange={() =>
+                    helpers.updateRubricComment(activeComment.id, 'templateTextOn', !activeComment.templateTextOn)
+                  }
+                />
+                <CPTooltip
+                  title={
+                    'If on, this instruction text will be made available for graders to edit directly in the custom text area of a rubric comment instance.'
+                  }
+                  infoIcon={true}
+                  hideThisOnHideTips={true}
+                  iconStyle={{ paddingLeft: 5 }}
+                />
+              </span>
+            ) : undefined
+          }
+        />
+      ) : null}
+    </div>
   );
 };
 

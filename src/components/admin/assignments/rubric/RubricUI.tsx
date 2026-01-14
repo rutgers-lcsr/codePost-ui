@@ -6,8 +6,16 @@
 import * as React from 'react';
 
 /* antd imports */
-import { SaveOutlined, SettingOutlined, UndoOutlined } from '@ant-design/icons';
-import { Breadcrumb, Checkbox, Empty, Modal, Tabs } from 'antd';
+import {
+  SaveOutlined,
+  SettingOutlined,
+  UndoOutlined,
+  PlusOutlined,
+  DeleteOutlined,
+  CaretUpOutlined,
+  CaretDownOutlined,
+} from '@ant-design/icons';
+import { Breadcrumb, Checkbox, Empty, Modal, Button, Popconfirm, Tooltip } from 'antd';
 
 /* codePost imports */
 import RubricCommentExplorer from './RubricCommentExplorer';
@@ -18,7 +26,7 @@ import MergeRubricCommentsDialog from './MergeRubricCommentsDialog';
 import RubricFileDownload from './RubricFileDownload';
 import RubricFileUpload from './RubricFileUpload';
 
-import { RubricCategory, RubricCategoryType } from '../../../../infrastructure/rubricCategory';
+import { RubricCategory } from '../../../../infrastructure/rubricCategory';
 import { RubricComment } from '../../../../infrastructure/rubricComment';
 
 import CPButton from '../../../../components/core/CPButton';
@@ -38,6 +46,9 @@ import { IRubricManagerHelpers, IRubricManagerProps, IRubricManagerState } from 
 
 import CPTooltip from '../../../core/CPTooltip';
 import { tooltips } from '../../../core/tooltips';
+
+import styles from './RubricSideBar.module.css';
+import { DIRECTION } from '../../../../types/common';
 
 interface IRubricUIProps extends IRubricManagerProps {
   breadcrumbs: Array<{ title: React.ReactNode }>;
@@ -71,6 +82,24 @@ const RubricUI = ({
   const [showExplanationsCheckbox, setShowExplanationsCheckbox] = React.useState(true);
   const [showInstructionsCheckbox, setShowInstructionsCheckbox] = React.useState(true);
   const [showAtMostOnceCheckbox, setShowAtMostOnceCheckbox] = React.useState(true);
+
+  // Active Category State
+  const [activeCategoryId, setActiveCategoryId] = React.useState<number | undefined>(undefined);
+
+  // Set initial active category
+  React.useEffect(() => {
+    if (rubricCategories.length > 0 && activeCategoryId === undefined) {
+      setActiveCategoryId(rubricCategories.sort(RubricCategory.compare)[0].id);
+    } else if (rubricCategories.length > 0 && activeCategoryId !== undefined) {
+      // Check if active category still exists
+      const exists = rubricCategories.some((c) => c.id === activeCategoryId);
+      if (!exists) {
+        setActiveCategoryId(rubricCategories.sort(RubricCategory.compare)[0].id);
+      }
+    } else if (rubricCategories.length === 0) {
+      setActiveCategoryId(undefined);
+    }
+  }, [rubricCategories, activeCategoryId]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
@@ -365,74 +394,157 @@ const RubricUI = ({
       helpers.onLinkedCommentsResolve(state.linkedComments[0], RESOLUTION.UNLINK);
     };
 
+    /* Sorting and Preparing Categories */
+    const sortedCategories = rubricCategories.slice().sort(RubricCategory.compare);
+    const activeCategory = sortedCategories.find((c) => c.id === activeCategoryId);
+    const activeCategoryIndex = sortedCategories.findIndex((c) => c.id === activeCategoryId);
+
+    /* Render Content */
     const content = (
       <div>
         {settingsModal}
-        <Tabs
-          type="editable-card"
-          defaultActiveKey={rubricCategories.length > 0 ? rubricCategories[0].id.toString() : undefined}
-          style={{ marginBottom: 16 }}
-          onEdit={(targetKey, action) => {
-            if (action === 'add') {
-              addRubricCategory();
-            } else if (action === 'remove') {
-              const catToDelete = rubricCategories.find((c) => c.id.toString() === targetKey);
-              if (catToDelete) {
-                helpers.deleteRubricCategory(catToDelete);
-              }
-            }
+        <div
+          style={{
+            display: 'flex',
+            height: 'calc(100vh - 200px)',
+            border: '1px solid #f0f0f0',
+            borderRadius: '8px',
+            overflow: 'hidden',
           }}
-          hideAdd={false}
-          items={rubricCategories.sort(RubricCategory.compare).map((cat: RubricCategoryType, catIndex: number) => {
-            const savedCategory = state.savedRubricCategories.find((el: any) => {
-              return el.id === cat.id;
-            });
+        >
+          {/* Sidebar */}
+          <div className={styles.sidebarContainer}>
+            <div className={styles.sidebarHeader}>
+              <span className={styles.sidebarTitle}>Categories</span>
+              <Tooltip title="Add new category">
+                <Button size="small" type="primary" icon={<PlusOutlined />} onClick={addRubricCategory} />
+              </Tooltip>
+            </div>
 
-            return {
-              label: cat.name || 'Untitled Category',
-              key: cat.id.toString(),
-              closable: false,
-              children: (
-                <RubricCategoryManager
-                  key={cat.id}
-                  rubricCategory={cat}
-                  savedRubricCategory={savedCategory}
-                  rubricComments={cat.id in rubricComments ? rubricComments[cat.id].sort(RubricComment.compare) : []}
-                  savedRubricComments={savedCategory ? state.savedRubricComments[savedCategory.id] : undefined}
-                  updateCategory={helpers.updateRubricCategory}
-                  deleteCategory={helpers.deleteRubricCategory}
-                  addComment={helpers.addRubricComment}
-                  updateComment={helpers.updateRubricComment}
-                  deleteComment={helpers.deleteRubricComment}
-                  onEdit={helpers.onCategoryEdit}
-                  onUndo={helpers.onCategoryUndo}
-                  onCommentEdit={helpers.onCommentEdit}
-                  onCommentUndo={helpers.onCommentUndo}
-                  activateCommentExplorer={helpers.activateCommentExplorer}
-                  onCommentDragEnd={helpers.onCommentDragEnd}
-                  moveCategory={helpers.moveCategory}
-                  index={catIndex}
-                  numCategories={state.rubricCategories.length}
-                  otherCategories={state.rubricCategories}
-                  feedbackScores={state.feedbackScores}
-                  commentFeedbackOn={props.assignment.commentFeedback}
-                  showPointLimits={showPointLimits}
-                  showHelpText={showHelpText}
-                  showExplanations={showExplanations}
-                  showInstructions={showInstructions}
-                  showAtMostOnce={showAtMostOnce}
-                  instanceLists={state.instanceLists}
-                >
-                  {({ propz, statez, helperz }: IRubricCategoryManagerParams) => {
-                    return (
-                      <RubricCategoryUI props={{ ...propz, baseURL: props.baseURL }} state={statez} helpers={helperz} />
-                    );
-                  }}
-                </RubricCategoryManager>
-              ),
-            };
-          })}
-        />
+            <ul className={styles.sidebarList}>
+              {sortedCategories.map((cat, index) => {
+                const isActive = cat.id === activeCategoryId;
+                return (
+                  <li
+                    key={cat.id}
+                    className={`${styles.sidebarItem} ${isActive ? styles.sidebarItemActive : ''}`}
+                    onClick={() => setActiveCategoryId(cat.id)}
+                  >
+                    <div className={styles.sidebarItemContent}>
+                      {cat.name || <span style={{ color: '#bfbfbf', fontStyle: 'italic' }}>Untitled</span>}
+                    </div>
+                    <div className={styles.sidebarItemActions}>
+                      <Tooltip title="Move Up">
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<CaretUpOutlined style={{ fontSize: 10 }} />}
+                          disabled={index === 0}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            helpers.moveCategory(cat, DIRECTION.Up);
+                          }}
+                        />
+                      </Tooltip>
+                      <Tooltip title="Move Down">
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<CaretDownOutlined style={{ fontSize: 10 }} />}
+                          disabled={index === sortedCategories.length - 1}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            helpers.moveCategory(cat, DIRECTION.Down);
+                          }}
+                        />
+                      </Tooltip>
+                      <Popconfirm
+                        title="Delete category?"
+                        onConfirm={(e) => {
+                          e?.stopPropagation();
+                          helpers.deleteRubricCategory(cat);
+                        }}
+                        onCancel={(e) => e?.stopPropagation()}
+                        okText="Yes"
+                        cancelText="No"
+                        placement="right"
+                      >
+                        <Button
+                          type="text"
+                          danger
+                          size="small"
+                          icon={<DeleteOutlined style={{ fontSize: 10 }} />}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </Popconfirm>
+                    </div>
+                  </li>
+                );
+              })}
+              {sortedCategories.length === 0 && (
+                <div style={{ padding: '20px', textAlign: 'center', color: '#8c8c8c', fontSize: '13px' }}>
+                  No categories yet
+                </div>
+              )}
+            </ul>
+          </div>
+
+          {/* Main Content Area */}
+          <div className={styles.contentContainer}>
+            {activeCategory ? (
+              <RubricCategoryManager
+                key={activeCategory.id}
+                rubricCategory={activeCategory}
+                savedRubricCategory={state.savedRubricCategories.find((el) => el.id === activeCategory.id)}
+                rubricComments={
+                  activeCategory.id in rubricComments
+                    ? rubricComments[activeCategory.id].sort(RubricComment.compare)
+                    : []
+                }
+                savedRubricComments={
+                  state.savedRubricCategories.find((el) => el.id === activeCategory.id)
+                    ? state.savedRubricComments[activeCategory.id]
+                    : undefined
+                }
+                updateCategory={helpers.updateRubricCategory}
+                deleteCategory={helpers.deleteRubricCategory}
+                addComment={helpers.addRubricComment}
+                updateComment={helpers.updateRubricComment}
+                deleteComment={helpers.deleteRubricComment}
+                onEdit={helpers.onCategoryEdit}
+                onUndo={helpers.onCategoryUndo}
+                onCommentEdit={helpers.onCommentEdit}
+                onCommentUndo={helpers.onCommentUndo}
+                activateCommentExplorer={helpers.activateCommentExplorer}
+                onCommentDragEnd={helpers.onCommentDragEnd}
+                moveCategory={helpers.moveCategory}
+                index={activeCategoryIndex}
+                numCategories={sortedCategories.length}
+                otherCategories={sortedCategories}
+                feedbackScores={state.feedbackScores}
+                commentFeedbackOn={props.assignment.commentFeedback}
+                showPointLimits={showPointLimits}
+                showHelpText={showHelpText}
+                showExplanations={showExplanations}
+                showInstructions={showInstructions}
+                showAtMostOnce={showAtMostOnce}
+                instanceLists={state.instanceLists}
+              >
+                {({ propz, statez, helperz }: IRubricCategoryManagerParams) => {
+                  return (
+                    <RubricCategoryUI props={{ ...propz, baseURL: props.baseURL }} state={statez} helpers={helperz} />
+                  );
+                }}
+              </RubricCategoryManager>
+            ) : (
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Select or create a category to get started">
+                <Button type="primary" onClick={addRubricCategory}>
+                  Create Category
+                </Button>
+              </Empty>
+            )}
+          </div>
+        </div>
 
         {state.activeComment ? (
           <RubricCommentExplorer
