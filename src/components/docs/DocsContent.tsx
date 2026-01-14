@@ -4,8 +4,9 @@ import { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { visit } from 'unist-util-visit';
 import { docRoutes } from './DocsConfig';
+import { getDocByPath } from './DocsLoader';
 import { Typography, Alert, Breadcrumb, Divider } from 'antd';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { colors } from '../../theme/colors';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { materialLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -23,8 +24,6 @@ import DocsTOC, { TOCItem } from './DocsTOC';
 import useWindowSize from '../core/useWindowSize';
 
 const { Title, Text } = Typography;
-
-const modules = import.meta.glob('../../docs/content/*.md', { query: '?raw', import: 'default', eager: true });
 
 const slugify = (text: string) => {
   return text
@@ -53,10 +52,66 @@ const DocsContent: React.FC = () => {
   const navigate = useNavigate();
   const { width } = useWindowSize(); // Use window size hook
 
-  // Scroll to top on route change
+  const { search } = useLocation();
+  const highlightTerm = new URLSearchParams(search).get('highlight');
+
+  // Scroll to highlight or top
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [splat]);
+    if (highlightTerm) {
+      setTimeout(() => {
+        const element = document.querySelector('.doc-match-highlight');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          window.scrollTo(0, 0);
+        }
+      }, 100);
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [splat, highlightTerm]);
+
+  const renderWithHighlight = (nodes: React.ReactNode) => {
+    if (!highlightTerm || !nodes) return nodes;
+
+    const term = highlightTerm.toLowerCase();
+
+    const highlightRecursive = (n: React.ReactNode): React.ReactNode => {
+      return React.Children.map(n, (child) => {
+        if (typeof child === 'string') {
+          if (child.toLowerCase().includes(term)) {
+            const parts = child.split(new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
+            return (
+              <>
+                {parts.map((part, i) =>
+                  part.toLowerCase() === term ? (
+                    <mark
+                      key={i}
+                      className="doc-match-highlight"
+                      style={{ backgroundColor: '#ffe58f', padding: '0 2px', borderRadius: '2px', color: 'inherit' }}
+                    >
+                      {part}
+                    </mark>
+                  ) : (
+                    part
+                  ),
+                )}
+              </>
+            );
+          }
+          return child;
+        }
+        if (React.isValidElement(child)) {
+          return React.cloneElement(child as React.ReactElement<any>, {
+            children: highlightRecursive((child.props as any).children),
+          });
+        }
+        return child;
+      });
+    };
+
+    return highlightRecursive(nodes);
+  };
 
   const currentPath = splat || '';
   const currentRoute = docRoutes.find((r) => r.path === currentPath);
@@ -67,11 +122,10 @@ const DocsContent: React.FC = () => {
   if (!currentRoute) {
     error = 'Document not found';
   } else {
-    const pathKey = `../../docs/content/${currentRoute.fileName}`;
-    const rawContent = modules[pathKey];
+    const doc = getDocByPath(currentPath);
 
-    if (typeof rawContent === 'string') {
-      content = rawContent;
+    if (doc) {
+      content = doc.content;
     } else {
       error = `File not found: ${currentRoute.fileName}`;
     }
@@ -172,17 +226,21 @@ const DocsContent: React.FC = () => {
         </Title>
       );
     },
-    p: ({ node, ...props }: any) => (
+    p: ({ node, children, ...props }: any) => (
       <div
         style={{ marginBottom: '20px', fontSize: '16px', color: colors.neutralMainText, lineHeight: '28px' }}
         {...props}
-      />
+      >
+        {renderWithHighlight(children)}
+      </div>
     ),
-    li: ({ node, ...props }: any) => (
+    li: ({ node, children, ...props }: any) => (
       <li
         style={{ marginBottom: '12px', fontSize: '16px', color: colors.neutralMainText, lineHeight: '28px' }}
         {...props}
-      />
+      >
+        {renderWithHighlight(children)}
+      </li>
     ),
     blockquote: ({ node, children, ...props }: any) => {
       // Check for GitHub-style alerts: [!NOTE], [!TIP], [!WARNING], [!IMPORTANT], [!CAUTION]
@@ -284,7 +342,9 @@ const DocsContent: React.FC = () => {
             >
               {style.icon} {style.title}
             </div>
-            <div style={{ color: colors.neutralMainText, lineHeight: '1.6' }}>{cleanChildren(children)}</div>
+            <div style={{ color: colors.neutralMainText, lineHeight: '1.6' }}>
+              {renderWithHighlight(cleanChildren(children))}
+            </div>
           </div>
         );
       }
@@ -303,7 +363,7 @@ const DocsContent: React.FC = () => {
           }}
           {...props}
         >
-          {children}
+          {renderWithHighlight(children)}
         </blockquote>
       );
     },

@@ -96,6 +96,22 @@ When Auto Detect Environment mode is enabled, codePost will:
 
 For custom environments or specific language versions, configure the environment manually in Assignment Settings.
 
-## AI Intigration
+## AI-Assisted Feedback
 
-codePost allows graders to create draft comments and use AI to refine them. Instructors can define system prompts and choose whether to include specific context or information for the AI. We support various AI models and configurations to help provide high-quality feedback efficiently.
+codePost integrates with AI providers to help graders write better feedback faster. Graders can draft comments and use AI to refine them for clarity, tone, and helpfulness.
+
+Instructors retain full control over the AI environment:
+
+- **System Prompts**: customizing how the AI behaves.
+- **Context**: deciding what information (code, rubric, etc.) is shared with the AI.
+- **Model Choice**: configuring your preferred provider and model.
+
+> [!IMPORTANT]
+> **Enabling AI Features**
+>
+> 1. Go to **Course Settings > General**.
+> 2. Scroll to **AI Comment Generation**.
+> 3. Enter your **AI Provider**, **API Key**, and **Model Name**.
+> 4. Click **Save**.
+>
+> Once enabled, all graders in the course will see the AI assistance options in their grading interface.

@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Layout, Menu, Input } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
 import { docRoutes, DocCategory } from './DocsConfig';
 import { AppstoreOutlined, TeamOutlined, RocketOutlined, SearchOutlined } from '@ant-design/icons';
 import { colors } from '../../theme/colors';
 import CPLogo from '../core/CPLogo';
-import { useState } from 'react';
+import { getAllDocs } from './DocsLoader';
+import Fuse from 'fuse.js';
 
 const { Sider } = Layout;
 
@@ -20,7 +21,78 @@ const DocsSidebar: React.FC = () => {
     return match ? match.key : 'overview';
   };
 
-  // Group routes by category
+  // Get all docs for searching
+  const allDocs = getAllDocs();
+
+  // Filter docs based on search
+  const searchResults = useMemo(() => {
+    if (!searchText.trim()) return [];
+
+    const fuse = new Fuse(allDocs, {
+      keys: [
+        { name: 'title', weight: 0.7 },
+        { name: 'plainText', weight: 0.3 },
+      ],
+      includeMatches: true,
+      threshold: 0.3,
+      ignoreLocation: true,
+      minMatchCharLength: 3, // Don't match single/double letters
+    });
+
+    const results = fuse.search(searchText);
+
+    return results.map(({ item: doc, matches }) => {
+      // Find match in content
+      const contentMatch = matches?.find((m) => m.key === 'plainText');
+
+      let snippet: React.ReactNode = '';
+      if (contentMatch && contentMatch.indices.length > 0) {
+        // Find the longest match to avoid highlighting just a single fuzzy letter
+        const bestMatch = contentMatch.indices.reduce((prev, current) => {
+          const prevLen = prev[1] - prev[0];
+          const currLen = current[1] - current[0];
+          return currLen > prevLen ? current : prev;
+        });
+
+        const [startIdx, endIdx] = bestMatch;
+
+        // Extract snippet window
+        const windowStart = Math.max(0, startIdx - 40);
+        const windowEnd = Math.min(doc.plainText.length, endIdx + 60);
+        const textSlice = doc.plainText.slice(windowStart, windowEnd);
+
+        // Calculate relative match position
+        const relativeStart = startIdx - windowStart;
+        const relativeEnd = endIdx - windowStart + 1; // +1 because slice is exclusive
+
+        const before = textSlice.slice(0, relativeStart);
+        const matchText = textSlice.slice(relativeStart, relativeEnd);
+        const after = textSlice.slice(relativeEnd);
+
+        snippet = (
+          <span>
+            {windowStart > 0 && '...'}
+            {before}
+            <span style={{ fontWeight: 800, backgroundColor: '#ffe58f', padding: '0 2px', borderRadius: '2px' }}>
+              {matchText}
+            </span>
+            {after}
+            {windowEnd < doc.plainText.length && '...'}
+          </span>
+        );
+      } else {
+        // Fallback if match was only in title or no indices
+        snippet = doc.plainText.slice(0, 100) + '...';
+      }
+
+      return {
+        ...doc,
+        snippet,
+      };
+    });
+  }, [searchText]);
+
+  // Group routes by category for normal view
   const categories: Record<DocCategory, typeof docRoutes> = {
     'Getting Started': [],
     Guides: [],
@@ -29,9 +101,7 @@ const DocsSidebar: React.FC = () => {
 
   docRoutes.forEach((route) => {
     if (categories[route.category]) {
-      if (!searchText || route.title.toLowerCase().includes(searchText.toLowerCase())) {
-        categories[route.category].push(route);
-      }
+      categories[route.category].push(route);
     }
   });
 
@@ -46,7 +116,8 @@ const DocsSidebar: React.FC = () => {
     }
   };
 
-  const items = Object.entries(categories)
+  // Normal items
+  const menuItems = Object.entries(categories)
     .filter(([_, routes]) => routes.length > 0)
     .map(([category, routes]) => ({
       key: category,
@@ -73,7 +144,7 @@ const DocsSidebar: React.FC = () => {
 
   return (
     <Sider
-      width={260}
+      width={300}
       theme="light"
       style={{
         borderRight: `1px solid ${colors.neutralBorder}`,
@@ -109,6 +180,7 @@ const DocsSidebar: React.FC = () => {
           placeholder="Search docs..."
           prefix={<SearchOutlined style={{ color: colors.neutralSecondaryText }} />}
           bordered={false}
+          value={searchText}
           style={{
             background: 'white',
             borderRadius: '8px',
@@ -116,15 +188,51 @@ const DocsSidebar: React.FC = () => {
             border: `1px solid ${colors.neutralBorder}`,
           }}
           onChange={(e) => setSearchText(e.target.value)}
+          allowClear
         />
       </div>
 
-      <Menu
-        mode="inline"
-        selectedKeys={[getSelectedKey()]}
-        style={{ background: 'transparent', borderRight: 0 }}
-        items={items}
-      />
+      {searchText ? (
+        <div style={{ overflowY: 'auto', height: 'calc(100vh - 160px)', padding: '0 12px' }}>
+          {searchResults.length === 0 ? (
+            <div style={{ padding: '24px', textAlign: 'center', color: colors.neutralSecondaryText }}>
+              No results found
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {searchResults.map((result) => (
+                <Link
+                  key={result.key}
+                  to={`/docs/${result.path}?highlight=${encodeURIComponent(searchText)}`}
+                  style={{
+                    display: 'block',
+                    padding: '12px',
+                    background: 'white',
+                    borderRadius: '6px',
+                    border: `1px solid ${colors.neutralBorder}`,
+                    color: colors.neutralMainText,
+                  }}
+                >
+                  <div style={{ fontWeight: 600, color: colors.brandPrimary, marginBottom: '4px' }}>{result.title}</div>
+                  <div style={{ fontSize: '12px', color: colors.neutralSecondaryText, marginBottom: '4px' }}>
+                    {result.category}
+                  </div>
+                  <div style={{ fontSize: '12px', color: colors.neutralMainText, lineHeight: '1.4' }}>
+                    {result.snippet}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <Menu
+          mode="inline"
+          selectedKeys={[getSelectedKey()]}
+          style={{ background: 'transparent', borderRight: 0 }}
+          items={menuItems}
+        />
+      )}
 
       <div
         style={{

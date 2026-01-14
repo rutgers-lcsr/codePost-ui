@@ -20,6 +20,7 @@
     "aws-sdk": "^2.1692.0",
     "file-saver": "^2.0.5",
     "fp-ts": "^2.16.11",
+    "fuse.js": "^7.1.0",
     "immutability-helper": "^3.1.1",
     "io-ts": "^2.2.22",
     "io-ts-reporters": "^2.0.1",
