@@ -47,6 +47,7 @@ const AsyncAdmin = lazy(() => import('./components/admin/AdminManager'));
 const AsyncOrg = lazy(() => import('./components/organization/OrgDashboard'));
 const AsyncGrade = lazy(() => import('./components/code-review/CodeConsole'));
 const AsyncDevTools = lazy(() => import('./components/dev/DevTools'));
+const AsyncDocs = lazy(() => import('./components/docs/DocsPage'));
 
 /*****************************************************************************/
 
@@ -595,6 +596,17 @@ Firefox:
       <Route path="/loginAs/*" element={<LogInAs replaceUser={replaceUser} />} />
     ) : null;
 
+    const docsRoute = (
+      <Route
+        path="/docs/*"
+        element={
+          <Suspense fallback={<RouterLoading />}>
+            <AsyncDocs />
+          </Suspense>
+        }
+      />
+    );
+
     const dashboardRoute = isCodePostAdmin ? <Route path="/dashboard" element={<Dashboard />} /> : null;
 
     const settingsRoute = (
@@ -687,6 +699,7 @@ Firefox:
           {loginAsRoute}
           {dashboardRoute}
           {settingsRoute}
+          {docsRoute}
           {homeRoute}
           {studentRoute}
           {graderRoute}
@@ -711,6 +724,14 @@ Firefox:
     return (
       <div>
         <Routes>
+          <Route
+            path="/docs/*"
+            element={
+              <Suspense fallback={<RouterLoading />}>
+                <AsyncDocs />
+              </Suspense>
+            }
+          />
           <Route path="*" element={<RemoteAuthFailed />} />
         </Routes>
       </div>
@@ -728,7 +749,20 @@ Firefox:
     });
   }
 
-  return <div />;
+  // Public routes (Docs, etc)
+  return (
+    <Routes>
+      <Route
+        path="/docs/*"
+        element={
+          <Suspense fallback={<RouterLoading />}>
+            <AsyncDocs />
+          </Suspense>
+        }
+      />
+      <Route path="*" element={<div />} />
+    </Routes>
+  );
 };
 
 export default App;

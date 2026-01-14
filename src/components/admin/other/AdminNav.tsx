@@ -199,8 +199,7 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
           {
             key: 'docs',
             icon: <PushpinOutlined />,
-            label: 'Docs',
-            onClick: () => openLink('https://help.codepost.io'),
+            label: <Link to="/docs">Docs</Link>,
           },
           {
             key: 'api-reference',

@@ -21,7 +21,7 @@ import CommentHighlightContext from './CommentHighlightContext';
 
 /**********************************************************************************************************************/
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
 
 type PdfDocumentProxyLike = {
   numPages: number;
@@ -180,7 +180,11 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
 
   if (File.codeType(props.file) === 'pdf') {
     return (
-      <Document file={getFileContent(props.file)} onLoadSuccess={onDocumentLoadSuccess}>
+      <Document
+        file={getFileContent(props.file)}
+        onLoadSuccess={onDocumentLoadSuccess}
+        onLoadError={(error) => console.error('Error loading PDF:', error)}
+      >
         {pageEventHandlers.map(({ pageNumber, pageHasComments, onMouseEnter, onMouseLeave, onClick }) => (
           <Page
             key={`page_${pageNumber}`}
@@ -188,6 +192,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
             data-has-comment={pageHasComments ? 'true' : undefined}
             pageNumber={pageNumber}
             renderTextLayer={false}
+            renderAnnotationLayer={false}
             onRenderSuccess={dispatch}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}

@@ -43,15 +43,9 @@ function LandingHeader() {
     </Link>
   );
   const docs = (
-    <a
-      style={{ ...linkStyle }}
-      target="_blank"
-      className="link--header"
-      href="https://help.codepost.io"
-      rel="noopener noreferrer"
-    >
+    <Link style={{ ...linkStyle }} className="link--header" to="/docs">
       Docs
-    </a>
+    </Link>
   );
   const faqs = (
     <Link style={{ ...linkStyle }} className="link--header" to="/faqs">

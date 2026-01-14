@@ -195,7 +195,7 @@ const LoginForm: React.FC<ILoginFormProps> = ({
         <br />
         <a
           onClick={() => {
-            window.open('https://help.codepost.io/en/articles/3324251-faq-where-is-my-email', '_blank');
+            window.open('/docs/faq#missing-email', '_blank');
           }}
           style={{ cursor: 'pointer' }}
         >

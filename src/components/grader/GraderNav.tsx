@@ -115,8 +115,7 @@ const GraderNav: React.FC<IProps> = (props) => {
     {
       key: 'docs',
       icon: <PushpinOutlined />,
-      label: 'Docs',
-      onClick: () => openLink('https://help.codepost.io'),
+      label: <Link to="/docs">Docs</Link>,
     },
     {
       key: 'scholarship',

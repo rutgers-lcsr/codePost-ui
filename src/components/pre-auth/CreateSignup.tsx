@@ -361,9 +361,9 @@ class CreateSignup extends React.Component<IProps, IState> {
             <br />
             <br />
             <Alert
-              message="You're almost there!"
-              description="We'll email soon with more instructions so you can finish setting up your account."
-              type="success"
+              title="Registration Pending Approval"
+              description="Your account is waiting for manual approval from our team. We've received your request and will email you as soon as your organization is verified."
+              type="info"
             />
           </div>
         );
@@ -380,7 +380,7 @@ class CreateSignup extends React.Component<IProps, IState> {
                 <div>
                   Check your email to finish setting up your account. If you don't see an email within a couple of
                   minutes,{' '}
-                  <a href="http://help.codepost.io/en/articles/3324251-faq-where-is-my-email" target="_blank">
+                  <a href="/docs/faq#missing-email" target="_blank">
                     please read this
                   </a>
                   .

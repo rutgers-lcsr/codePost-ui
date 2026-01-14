@@ -351,11 +351,7 @@ const Moss = (props: IMossProps) => {
       title={
         <span>
           Want help getting started with Moss? Check out our guide{' '}
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href="https://help.codepost.io/en/articles/3324264-faq-does-codepost-do-plagiarism-detection"
-          >
+          <a target="_blank" rel="noopener noreferrer" href="/docs/features#plagiarism-detection">
             here
           </a>
           .

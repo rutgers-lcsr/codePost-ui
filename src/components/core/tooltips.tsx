@@ -178,8 +178,7 @@ const ADMIN_STUDENTROSTER_LOCKSECTION = 'Finish editing';
 const ADMIN_GRADERROSTER_TITLE = 'Graders currently enrolled in this course';
 const ADMIN_GRADERROSTER_SUPERGRADER = (
   <div>
-    Supergraders have elevated privileges. Read more about them in{' '}
-    <a href="https://help.codepost.io/en/articles/3165427-faq-what-s-a-supergrader">our docs</a>.
+    Supergraders have elevated privileges. Read more about them in <a href="/docs/faq#supergrader">our docs</a>.
   </div>
 );
 const ADMIN_ADMINROSTER_TITLE = 'Admins who are enrolled in this course';

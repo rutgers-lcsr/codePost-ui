@@ -82,22 +82,14 @@ export const BulkUploadNoStudents = (props: IUploadNoStudentsProps) => {
       <ul>
         <li>
           Allowing students to submit directly (learn more{' '}
-          <a
-            href="https://help.codepost.io/en/articles/3381427-how-to-allow-students-to-upload-submissions-to-codepost"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href="/docs/submission-upload#student-uploads" target="_blank" rel="noopener noreferrer">
             here
           </a>
           )
         </li>
         <li>
           Manually uploading submissions (learn more{' '}
-          <a
-            href="https://help.codepost.io/en/articles/3164723-how-to-upload-student-submissions"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href="/docs/submission-upload#bulk-upload" target="_blank" rel="noopener noreferrer">
             here
           </a>
           )
@@ -125,11 +117,7 @@ export const BulkUploadHeader = (props: IUploadHeaderProps) => {
     <div>
       <div>
         <b>Tip:</b> Want to allow students to upload directly? Learn more{' '}
-        <a
-          href="https://help.codepost.io/en/articles/3381427-how-to-allow-students-to-upload-submissions-to-codepost"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <a href="/docs/submission-upload#student-uploads" target="_blank" rel="noopener noreferrer">
           here
         </a>
         .
