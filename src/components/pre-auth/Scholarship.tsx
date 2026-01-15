@@ -35,7 +35,12 @@ const Scholarship = (props: IProps) => {
       <Typography.Title level={2}>About this scholarship</Typography.Title>
       <div style={{ marginBottom: 25 }}>
         Our mission at{' '}
-        <a className="landing__link" href="https://codepost.cs.rutgers.edu" target="_blank" rel="noopener noreferrer">
+        <a
+          className="landing__link text-link"
+          href="https://codepost.cs.rutgers.edu"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           codePost
         </a>{' '}
         is to <b style={{ fontWeight: 600 }}>advance Computer Science education</b> by empowering educators to give
@@ -158,8 +163,10 @@ const Scholarship = (props: IProps) => {
         <div style={{ marginBottom: isMobile ? 40 : 100, textAlign: 'center', width: '100%' }}>
           <img src={scholarshipImage} style={{ maxWidth: '100%' }} alt="codePost scholarship background" />
         </div>
-        <div style={{ fontWeight: 600, fontSize: isMobile ? 22 : 30, textAlign: 'center' }}>
-          Recognizing students who advance Computer Science education
+        <div style={{ textAlign: 'center' }}>
+          <Typography.Title level={1} style={{ fontWeight: 600, fontSize: isMobile ? 22 : 30, margin: 0 }}>
+            Recognizing students who advance Computer Science education
+          </Typography.Title>
         </div>
         <div
           style={{
