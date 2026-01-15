@@ -117,8 +117,9 @@ const JoinSignup = (props: { email?: string }) => {
   } else {
     content = (
       <div>
-        Invite code:{' '}
+        <label htmlFor="invite-code">Invite code:</label>{' '}
         <Input
+          id="invite-code"
           placeholder="abc123"
           value={inviteCode}
           onChange={(e) => setInviteCode(e.target.value)}
@@ -131,8 +132,9 @@ const JoinSignup = (props: { email?: string }) => {
         {invalidCode && <span style={{ color: 'red' }}>Your invite code is invalid.</span>}
         <br />
         <br />
-        Email:{' '}
+        <label htmlFor="email-input">Email:</label>{' '}
         <Input
+          id="email-input"
           placeholder="jill@princeton.edu"
           defaultValue={email}
           disabled={props.email ? true : false}
@@ -148,8 +150,13 @@ const JoinSignup = (props: { email?: string }) => {
         <br />
         {props.email === undefined && (
           <span>
-            <Checkbox checked={acceptedTerms} onClick={() => setAcceptedTerms(!acceptedTerms)} /> I agree to the
-            codePost <Link to="/terms">Terms of Service</Link> and <Link to="/privacy">Privacy Policy</Link>.
+            <Checkbox
+              aria-label="I agree to terms"
+              checked={acceptedTerms}
+              onClick={() => setAcceptedTerms(!acceptedTerms)}
+            />{' '}
+            I agree to the codePost <Link to="/terms">Terms of Service</Link> and{' '}
+            <Link to="/privacy">Privacy Policy</Link>.
           </span>
         )}
         <br />
