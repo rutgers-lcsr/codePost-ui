@@ -412,7 +412,7 @@ const AllTestimonials = (props: IProps) => {
   return (
     <PreAuthLayout isLoggedIn={props.isLoggedIn}>
       <div>
-        <Typography.Title level={2} style={{ color: '#758275', textAlign: 'center' }}>
+        <Typography.Title level={1} style={{ color: '#758275', textAlign: 'center' }}>
           Instructor Testimonials
         </Typography.Title>
         {toRender.map((row, i) => {

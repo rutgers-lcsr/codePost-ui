@@ -106,6 +106,7 @@
     "@typescript-eslint/eslint-plugin": "^8.46.1",
     "@typescript-eslint/parser": "^8.46.1",
     "@vitejs/plugin-react": "^5.0.4",
+    "axe-core": "^4.11.1",
     "baseline-browser-mapping": "^2.9.11",
     "eslint": "^9.38.0",
     "eslint-config-prettier": "^10.1.8",
@@ -122,7 +123,8 @@
     "vite": "^7.1.10",
     "vite-plugin-svgr": "^4.5.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "vitest-axe": "^0.1.0"
   },
   "jest": {
     "moduleNameMapper": {

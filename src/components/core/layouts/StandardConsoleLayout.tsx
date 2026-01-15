@@ -367,6 +367,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
             id="code-scroll-area"
           >
             <Content
+              role="main"
               className="layout--standard-console__content"
               style={{
                 height: '100%',

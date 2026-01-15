@@ -125,7 +125,7 @@ const LoginForm: React.FC<ILoginFormProps> = ({
           <div />
         )}
         <br />
-        <Typography.Title level={2}>{title}</Typography.Title>
+        <Typography.Title level={1}>{title}</Typography.Title>
         <form onSubmit={(e) => e.preventDefault()}>
           <Input
             prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}

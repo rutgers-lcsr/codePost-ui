@@ -1,8 +1,10 @@
 .text-link {
   cursor: pointer;
-  color: #448ee1;
+  color: #096dd9; // darker blue (>4.5:1 contrast against white)
+  text-decoration: underline;
 
   &:hover {
-    text-decoration: underline;
+    text-decoration: none;
+    color: #40a9ff;
   }
 }

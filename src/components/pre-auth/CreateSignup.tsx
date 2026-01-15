@@ -274,7 +274,9 @@ class CreateSignup extends React.Component<IProps, IState> {
         content = (
           <div>
             {spacing}
+            <label htmlFor="create-email-input">Your email</label>
             <Input
+              id="create-email-input"
               placeholder={'Your email'}
               value={this.state.email}
               onChange={this.handleChange.bind(this, 'email')}
@@ -282,7 +284,11 @@ class CreateSignup extends React.Component<IProps, IState> {
             />
             <br />
             <br />
+            <div id="org-select-label" style={{ marginBottom: 5 }}>
+              Select your organization
+            </div>
             <Select
+              aria-labelledby="org-select-label"
               placeholder={
                 <div>
                   <TeamOutlined style={{ color: 'rgba(0,0,0,.25)' }} />
@@ -295,12 +301,16 @@ class CreateSignup extends React.Component<IProps, IState> {
               isDisabled={this.state.createNewOrg}
             />
             <br />
-            <Switch onChange={this.toggleCheck.bind(this.props, 'createNewOrg')} />
-            <span>&nbsp; &nbsp; Can't find your organization? Create a new one.</span>
+            <label htmlFor="create-new-org-switch">
+              <Switch id="create-new-org-switch" onChange={this.toggleCheck.bind(this.props, 'createNewOrg')} />
+              <span>&nbsp; &nbsp; Can't find your organization? Create a new one.</span>
+            </label>
             {this.state.createNewOrg ? (
               <div>
                 <br />
+                <label htmlFor="new-org-input">Your organization</label>
                 <Input
+                  id="new-org-input"
                   placeholder="Your organization"
                   value={this.state.newOrg}
                   onChange={this.handleChange.bind(this, 'newOrg')}

@@ -24,7 +24,7 @@ const AboutUs = (props: IProps) => {
           className="display-flex justify-content-center"
           style={{ width: '60%', flexDirection: 'column', margin: '0 auto' }}
         >
-          <Typography.Title level={3}>
+          <Typography.Title level={1}>
             codePost’s mission is to help CS teachers give students great feedback on programming work
           </Typography.Title>
           <br />
