@@ -8,6 +8,9 @@ import * as React from 'react';
 // /* other library imports */
 // import { Link } from 'react-router-dom';
 
+/* ant imports */
+import { Typography } from 'antd';
+
 /* codePost imports */
 import useWindowSize from '../core/useWindowSize';
 import PreAuthLayout from './PreAuthLayout';
@@ -71,8 +74,10 @@ const IntegrationsPage = (props: IProps) => {
   return (
     <PreAuthLayout isLoggedIn={props.isLoggedIn}>
       <div style={{ width: '100%' }}>
-        <div style={{ fontSize: 30, color: '#062a22', fontWeight: 'bold', marginBottom: '10px', textAlign: 'center' }}>
-          <span>Integrations</span>
+        <div style={{ marginBottom: '10px', textAlign: 'center' }}>
+          <Typography.Title level={1} style={{ fontSize: 30, color: '#062a22', margin: 0 }}>
+            Integrations
+          </Typography.Title>
         </div>
         <div
           style={{

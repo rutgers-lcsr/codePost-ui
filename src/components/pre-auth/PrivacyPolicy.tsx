@@ -22,7 +22,7 @@ class PrivacyPolicy extends React.Component<IProps> {
     return (
       <PreAuthLayout isLoggedIn={this.props.isLoggedIn}>
         <div>
-          <Typography.Title level={3}>Privacy Policy</Typography.Title>
+          <Typography.Title level={1}>Privacy Policy</Typography.Title>
 
           <Typography.Paragraph>
             Your privacy is important to us. It is codePost’s policy to respect your privacy regarding any information
@@ -60,7 +60,11 @@ class PrivacyPolicy extends React.Component<IProps> {
           <Typography.Paragraph>
             Your continued use of our website will be regarded as acceptance of our practices around privacy and
             personal information. If you have any questions about how we handle user data and personal information, feel
-            free to contact us at <a href="mailto:team@codepost.io">team@codepost.io</a>.
+            free to contact us at{' '}
+            <a className="text-link" href="mailto:team@codepost.io">
+              team@codepost.io
+            </a>
+            .
           </Typography.Paragraph>
         </div>
       </PreAuthLayout>

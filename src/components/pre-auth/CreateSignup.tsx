@@ -288,6 +288,7 @@ class CreateSignup extends React.Component<IProps, IState> {
               Select your organization
             </div>
             <Select
+              aria-label="Select your organization"
               aria-labelledby="org-select-label"
               placeholder={
                 <div>

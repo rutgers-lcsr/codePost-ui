@@ -41,7 +41,10 @@ const apiFAQ = (
     <b>What is the codePost API?</b>
     <br />
     <span>
-      The codePost API is a <a href="https://en.wikipedia.org/wiki/Representational_state_transfer">RESTful API</a>
+      The codePost API is a{' '}
+      <a className="text-link" href="https://en.wikipedia.org/wiki/Representational_state_transfer">
+        RESTful API
+      </a>
       {''} that allows you to perform any operation you can perform on the codePost site from a script.
     </span>
     <br />
@@ -97,13 +100,23 @@ const securityFAQ = (
       We take security and students' privacy very seriously. codePost is compliant with Family Educational Rights and
       Privacy Act (FERPA) regulations. Most importantly, we commit to never share data with 3rd parties without the
       consent of the student or university and to delete all related data upon request. Please see our{' '}
-      <Link to="/terms">Terms</Link> and <Link to="/privacy">Privacy</Link> pages for details on our policies and
-      infrastructure.
+      <Link to="/terms" className="text-link">
+        Terms
+      </Link>{' '}
+      and{' '}
+      <Link to="/privacy" className="text-link">
+        Privacy
+      </Link>{' '}
+      pages for details on our policies and infrastructure.
     </span>
     <br />
     <br />
     <span>
-      If you have questions, please <a href="mailto:team@codepost.io">reach out to us</a>.
+      If you have questions, please{' '}
+      <a className="text-link" href="mailto:team@codepost.io">
+        reach out to us
+      </a>
+      .
     </span>
   </div>
 );
@@ -138,7 +151,7 @@ const FAQs = (props: IProps) => {
   return (
     <PreAuthLayout isLoggedIn={props.isLoggedIn}>
       <div>
-        <Typography.Title level={3}>FAQs</Typography.Title>
+        <Typography.Title level={1}>FAQs</Typography.Title>
         <div
           style={{
             fontSize: 17,

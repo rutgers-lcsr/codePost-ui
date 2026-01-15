@@ -29,7 +29,7 @@ class TermsOfService extends React.Component<IProps> {
     return (
       <PreAuthLayout isLoggedIn={this.props.isLoggedIn}>
         <div>
-          <Typography.Title level={3}>Terms of Service</Typography.Title>
+          <Typography.Title level={1}>Terms of Service</Typography.Title>
           <Typography.Paragraph>
             These Terms of Service govern your access to and use of codePost, including the products, features, apps,
             services, technologies, and software that we offer.
@@ -173,7 +173,7 @@ class TermsOfService extends React.Component<IProps> {
           <Typography.Paragraph>
             Your privacy is important to codePost. With this in mind, we will protect your personal information in
             accordance with our{' '}
-            <Link to="/privacy" target="_blank">
+            <Link to="/privacy" target="_blank" className="text-link">
               Privacy Policy
             </Link>
           </Typography.Paragraph>
@@ -350,7 +350,9 @@ class TermsOfService extends React.Component<IProps> {
           <Typography.Title level={4}>12. Contact Information</Typography.Title>
           <Typography.Paragraph>
             If you have any questions about these Terms or the Services please contact{' '}
-            <a href="mailto:team@codepost.io">team@codepost.io</a>
+            <a href="mailto:team@codepost.io" className="text-link">
+              team@codepost.io
+            </a>
           </Typography.Paragraph>
         </div>
       </PreAuthLayout>

@@ -87,7 +87,7 @@ const AutograderDetail = (props: IProps) => {
 
   const title = (
     <div>
-      <Typography.Title level={2}>codePost Autograder</Typography.Title>
+      <Typography.Title level={1}>codePost Autograder</Typography.Title>
       <div style={{ marginTop: 15, fontSize: 24, color: colors.brandPrimary }}>
         Easy to use, flexible, and powerful.
       </div>
