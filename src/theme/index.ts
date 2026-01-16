@@ -62,6 +62,7 @@ const themeConfig: ThemeConfig = {
     Typography: {
       linkDecoration: 'none',
       linkHoverDecoration: 'none',
+      colorTextSecondary: 'rgba(0, 0, 0, 0.65)', // Darker for WCAG AA contrast
     },
     Breadcrumb: {
       itemColor: 'rgba(0, 0, 0, 0.8)',

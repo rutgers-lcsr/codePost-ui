@@ -235,6 +235,11 @@ const DocsContent: React.FC = () => {
         {renderWithHighlight(children)}
       </div>
     ),
+    a: ({ node, children, href, ...props }: any) => (
+      <a href={href} className="text-link" {...props}>
+        {children}
+      </a>
+    ),
     li: ({ node, children, ...props }: any) => (
       <li
         style={{ marginBottom: '12px', fontSize: '16px', color: colors.neutralMainText, lineHeight: '28px' }}
@@ -499,7 +504,7 @@ const DocsContent: React.FC = () => {
                 background: 'white',
               }}
             >
-              <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>
+              <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px', color: 'rgba(0, 0, 0, 0.65)' }}>
                 <LeftOutlined /> Previous
               </Text>
               <Text strong style={{ fontSize: '16px', color: colors.brandPrimary }}>
@@ -528,7 +533,7 @@ const DocsContent: React.FC = () => {
                 background: 'white',
               }}
             >
-              <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>
+              <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px', color: 'rgba(0, 0, 0, 0.65)' }}>
                 Next <RightOutlined />
               </Text>
               <Text strong style={{ fontSize: '16px', color: colors.brandPrimary }}>
@@ -541,7 +546,7 @@ const DocsContent: React.FC = () => {
         </div>
 
         <div style={{ marginTop: '40px', textAlign: 'center', color: colors.neutralSecondaryText }}>
-          <Text type="secondary">codePost Documentation &copy; {new Date().getFullYear()}</Text>
+          <Text type="secondary" style={{ color: 'rgba(0, 0, 0, 0.65)' }}>codePost Documentation &copy; {new Date().getFullYear()}</Text>
         </div>
       </div>
 

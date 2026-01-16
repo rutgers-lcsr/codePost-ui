@@ -324,8 +324,8 @@ class CreateSignup extends React.Component<IProps, IState> {
               onChange={this.toggleCheck.bind(this, 'check2')}
               style={{ marginRight: 10 }}
             >
-              I agree to the codePost <Link to="/terms">Terms of Service</Link> and{' '}
-              <Link to="/privacy">Privacy Policy</Link>.
+              I agree to the codePost <Link to="/terms" className="text-link">Terms of Service</Link> and{' '}
+              <Link to="/privacy" className="text-link">Privacy Policy</Link>.
             </Checkbox>
             {spacing}
             <div style={{ display: 'flex' }}>
@@ -390,7 +390,7 @@ class CreateSignup extends React.Component<IProps, IState> {
                 <div>
                   Check your email to finish setting up your account. If you don't see an email within a couple of
                   minutes,{' '}
-                  <a href="/docs/faq#missing-email" target="_blank">
+                  <a href="/docs/faq#missing-email" target="_blank" className="text-link">
                     please read this
                   </a>
                   .
@@ -465,7 +465,7 @@ class CreateSignup extends React.Component<IProps, IState> {
                 <div style={{ color: 'rgba(0,0,0,0.6)' }}>
                   <InfoCircleTwoTone twoToneColor="#bbbbbb" style={{ marginRight: 5 }} />{' '}
                   <b style={{ fontWeight: 500 }}>Not an instructor?</b> If you're a student, sign up by{' '}
-                  <Link to="/signup/join">clicking here</Link>.
+                  <Link to="/signup/join" className="text-link">clicking here</Link>.
                 </div>
               }
               type="info"
