@@ -96,7 +96,7 @@ const LoginForm: React.FC<ILoginFormProps> = ({
           <div>
             <br />
             <Alert
-              message="Error"
+              title="Error"
               description={'The email and password you entered are invalid.'}
               type="error"
               showIcon
@@ -107,7 +107,7 @@ const LoginForm: React.FC<ILoginFormProps> = ({
         return (
           <div>
             <br />
-            <Alert message="Error" description={errorMsg} type="error" showIcon />
+            <Alert title="Error" description={errorMsg} type="error" showIcon />
           </div>
         );
     }

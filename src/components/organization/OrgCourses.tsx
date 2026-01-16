@@ -164,7 +164,7 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
             </Select>
           </Form.Item>
           <Form.Item name="archived" label="Archived" valuePropName="checked">
-            <Switch />
+            <Switch aria-label="Archive course" />
           </Form.Item>
         </>
       ),
@@ -175,26 +175,26 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
       children: (
         <>
           <Form.Item name="emailNewUsers" label="Email New Users" valuePropName="checked">
-            <Switch />
+            <Switch aria-label="Email new users" />
           </Form.Item>
           <Form.Item name="inviteCodeEnabled" label="Invite Code Enabled" valuePropName="checked">
-            <Switch />
+            <Switch aria-label="Enable invite code" />
           </Form.Item>
           {editingCourse?.inviteCode && (
             <Form.Item label="Invite Code">
               <Input.Group compact>
                 <Input value={editingCourse.inviteCode} readOnly style={{ width: 'calc(100% - 80px)' }} />
                 <Tooltip title="Copy">
-                  <Button icon={<CopyOutlined />} onClick={copyInviteCode} />
+                  <Button aria-label="Copy invite code" icon={<CopyOutlined />} onClick={copyInviteCode} />
                 </Tooltip>
                 <Tooltip title="Reset Code">
-                  <Button icon={<RedoOutlined />} onClick={resetInviteCode} />
+                  <Button aria-label="Reset invite code" icon={<RedoOutlined />} onClick={resetInviteCode} />
                 </Tooltip>
               </Input.Group>
             </Form.Item>
           )}
           <Form.Item name="studentsCanSeeGraders" label="Students Can See Graders" valuePropName="checked">
-            <Switch />
+            <Switch aria-label="Students can see graders" />
           </Form.Item>
         </>
       ),
@@ -205,10 +205,10 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
       children: (
         <>
           <Form.Item name="anonymousGradingDefault" label="Anonymous Grading Default" valuePropName="checked">
-            <Switch />
+            <Switch aria-label="Anonymous grading default" />
           </Form.Item>
           <Form.Item name="allowGradersToEditRubric" label="Allow Graders to Edit Rubric" valuePropName="checked">
-            <Switch />
+            <Switch aria-label="Allow graders to edit rubric" />
           </Form.Item>
           <Form.Item name="minComments" label="Minimum Comments">
             <InputNumber min={0} />
@@ -225,6 +225,7 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
       extra={
         <Input
           placeholder="Search courses..."
+          aria-label="Search courses"
           prefix={<SearchOutlined />}
           onChange={(e) => setSearchText(e.target.value)}
           style={{ width: 200 }}

@@ -25,11 +25,15 @@ const InputNumberOrNull: FC<IInputNumberOrNullProps> = ({ value, onChange }) => 
   return (
     <span>
       <Input.Group compact>
-        <Select onChange={handleOnOffChange} value={selectValue}>
+        <label htmlFor="late-days-select" className="sr-only">Enable Late Days</label>
+        <Select id="late-days-select" aria-label="Enable Late Days" onChange={handleOnOffChange} value={selectValue}>
           <Select.Option value="Off">Off</Select.Option>
           <Select.Option value="On">On</Select.Option>
         </Select>
+        <label htmlFor="late-days-input" className="sr-only">Late Days Allowed</label>
         <InputNumber
+          id="late-days-input"
+          aria-label="Late Days Allowed"
           min={0}
           onChange={handleNumberChange}
           disabled={value === null}

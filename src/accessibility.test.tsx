@@ -17,6 +17,19 @@ import GraderManager from './components/grader/GraderManager';
 import AdminManager from './components/admin/AdminManager';
 import CodeConsole from './components/code-review/CodeConsole';
 
+// Marketing Page Imports
+import Landing from './components/landing/LandingABTest';
+import { AllTestimonials } from './components/landing/Testimonial';
+import AboutUs from './components/pre-auth/AboutUs';
+import AutograderDetail from './components/pre-auth/AutograderDetail';
+import FAQs from './components/pre-auth/FAQs';
+import IntegrationsPage from './components/pre-auth/IntegrationsPage';
+import PrivacyPolicy from './components/pre-auth/PrivacyPolicy';
+import Scholarship from './components/pre-auth/Scholarship';
+import { SignUpManager } from './components/pre-auth/SignUpManager';
+import TermsOfService from './components/pre-auth/TermsOfService';
+import WhyUse from './components/pre-auth/WhyUse';
+
 expect.extend(matchers);
 
 // Mock props for IndexManager
@@ -95,7 +108,7 @@ const mockStudentProps = {
 const axeConfig = {
   runOnly: {
     type: 'tag' as const,
-    values: ['wcag21aa', 'best-practice'],
+    values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'],
   },
 };
 
@@ -240,4 +253,30 @@ describe('Accessibility', () => {
     // const results = await axe(container, axeConfig);
     // expect(results).toHaveNoViolations();
   }, 30000);
+
+  describe('Marketing Pages', () => {
+    const marketingPages = [
+      { name: 'Landing', component: <Landing /> },
+      { name: 'AboutUs', component: <AboutUs isLoggedIn={false} /> },
+      { name: 'AutograderDetail', component: <AutograderDetail isLoggedIn={false} /> },
+      { name: 'FAQs', component: <FAQs isLoggedIn={false} /> },
+      { name: 'IntegrationsPage', component: <IntegrationsPage isLoggedIn={false} /> },
+      { name: 'PrivacyPolicy', component: <PrivacyPolicy isLoggedIn={false} /> },
+      { name: 'Scholarship', component: <Scholarship isLoggedIn={false} /> },
+      { name: 'SignUpManager', component: <SignUpManager /> },
+      { name: 'TermsOfService', component: <TermsOfService isLoggedIn={false} /> },
+      { name: 'WhyUse', component: <WhyUse isLoggedIn={false} /> },
+      { name: 'AllTestimonials', component: <AllTestimonials isLoggedIn={false} /> },
+    ];
+
+    marketingPages.forEach(({ name, component }) => {
+      it(`should have no violations on ${name} page`, async () => {
+        const { container } = render(<MemoryRouter>{component}</MemoryRouter>);
+        // @ts-ignore
+        const results = await axe(container, axeConfig);
+        // @ts-ignore
+        expect(results).toHaveNoViolations();
+      }, 30000);
+    });
+  });
 });

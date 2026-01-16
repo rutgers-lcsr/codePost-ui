@@ -172,6 +172,7 @@ const OrgUsers: React.FC<IProps> = ({ orgId, users, loading, onRefresh, ssoEnabl
         <Space>
           <Input
             placeholder="Search users..."
+            aria-label="Search users"
             prefix={<SearchOutlined />}
             onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 200 }}

@@ -113,7 +113,7 @@ const securityFAQ = (
     <br />
     <span>
       If you have questions, please{' '}
-      <a className="text-link" href="mailto:team@codepost.io">
+      <a className="text-link" href="mailto:codepost@cs.rutgers.edu">
         reach out to us
       </a>
       .

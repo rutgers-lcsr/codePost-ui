@@ -19,7 +19,7 @@ const PreAuthFooter = () => {
   // We need some horitzontal padding on mobile to make sure the intercom button doesn't block the terms
   const bottomPadding = windowSize.width < breakpoint ? 0 : 0;
 
-  const linkStyle = { fontSize: 17, paddingLeft: 8, paddingRight: 8, color: '#222', textDecoration: 'none' };
+
 
   const content = (
     <div style={{ textAlign: 'center' }}>
@@ -55,30 +55,41 @@ const PreAuthFooter = () => {
       >
         <span style={{ fontSize: 24, fontWeight: 600, textAlign: logoTextAlign }}>
           <Popover content={content}>
-            <img
-              alt="snapcode"
-              src="https://codepost-videos.s3.us-east-2.amazonaws.com/snapcode_dark.png"
-              height="24"
-              width="24"
-              style={{ marginRight: '20px', cursor: 'pointer' }}
-            />
+            <button
+              type="button"
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                marginRight: '20px',
+                cursor: 'pointer',
+              }}
+              aria-label="View snapcode"
+            >
+              <img
+                alt="snapcode"
+                src="https://codepost-videos.s3.us-east-2.amazonaws.com/snapcode_dark.png"
+                height="24"
+                width="24"
+              />
+            </button>
           </Popover>{' '}
           codePost
         </span>
         <span style={{ marginTop: 6, ...mobileFlexStyle }}>
-          <Link style={linkStyle} to="/docs">
+          <Link className="text-link" style={{ fontSize: 17, paddingLeft: 8, paddingRight: 8 }} to="/docs">
             Docs
           </Link>{' '}
-          <Link style={linkStyle} to="/about">
+          <Link className="text-link" style={{ fontSize: 17, paddingLeft: 8, paddingRight: 8 }} to="/about">
             About us
           </Link>{' '}
-          <Link style={linkStyle} to="/scholarships/computer-science-education">
+          <Link className="text-link" style={{ fontSize: 17, paddingLeft: 8, paddingRight: 8 }} to="/scholarships/computer-science-education">
             Scholarship
           </Link>{' '}
-          <Link style={linkStyle} to="/terms">
+          <Link className="text-link" style={{ fontSize: 17, paddingLeft: 8, paddingRight: 8 }} to="/terms">
             Terms
           </Link>{' '}
-          <Link style={linkStyle} to="/privacy">
+          <Link className="text-link" style={{ fontSize: 17, paddingLeft: 8, paddingRight: 8 }} to="/privacy">
             Privacy
           </Link>
         </span>

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Card, Descriptions, Statistic, Row, Col, Spin } from 'antd';
+import { Card, Descriptions, Statistic, Row, Col, Spin, Typography } from 'antd';
 import { OrganizationType, Organization } from '../../infrastructure/organization';
 import { TeamOutlined, BookOutlined, FileOutlined, CheckCircleOutlined, FileTextOutlined } from '@ant-design/icons';
 
@@ -41,7 +41,7 @@ const OrgOverview: React.FC<IProps> = ({ organization }) => {
     <div>
       <Row gutter={[16, 16]}>
         <Col span={24}>
-          <Card title="Organization Details" bordered={false}>
+          <Card title={<Typography.Title level={2} style={{ margin: 0 }}>Organization Details</Typography.Title>} bordered={false}>
             <Descriptions column={2}>
               <Descriptions.Item label="Name">{organization.name}</Descriptions.Item>
               <Descriptions.Item label="Short Name">{organization.shortname}</Descriptions.Item>
@@ -59,7 +59,7 @@ const OrgOverview: React.FC<IProps> = ({ organization }) => {
 
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col span={24}>
-          <Card title="Analytics" bordered={false}>
+          <Card title={<Typography.Title level={2} style={{ margin: 0 }}>Analytics</Typography.Title>} bordered={false}>
             {loading ? (
               <div style={{ textAlign: 'center', padding: 24 }}>
                 <Spin />

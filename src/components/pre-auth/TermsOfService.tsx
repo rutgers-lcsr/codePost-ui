@@ -43,7 +43,7 @@ class TermsOfService extends React.Component<IProps> {
               <li>We will refer to you, the person or entity agreeing to these Terms, as “you” or “your”.</li>
             </ul>
           </Typography.Paragraph>
-          <Typography.Title level={4}>0. Acceptance of our Terms</Typography.Title>
+          <Typography.Title level={2}>0. Acceptance of our Terms</Typography.Title>
           <Typography.Paragraph>
             By accessing or using the Site and/or using one or more Services, you agree to these Terms. These Terms are
             a legal agreement between you and codePost. In addition, by accessing or using the Site and/or using one or
@@ -57,7 +57,7 @@ class TermsOfService extends React.Component<IProps> {
             majority. This same parent or legal guardian must expressly ratify and confirm any acts of the child and all
             users of the account corresponding to the child.
           </Typography.Paragraph>
-          <Typography.Title level={4}>1. Modification</Typography.Title>
+          <Typography.Title level={2}>1. Modification</Typography.Title>
           <Typography.Paragraph>
             We may revise the Terms at any time. If we do so, and, in codePost’s sole discretion, the change is material
             under applicable law, we will notify you via posting to our website, or through other communication
@@ -65,7 +65,7 @@ class TermsOfService extends React.Component<IProps> {
             been modified, you are indicating to us that you agree to be bound by the modified Terms, and to license our
             Services as further discussed below.
           </Typography.Paragraph>
-          <Typography.Title level={4}>2. Your Right to use the Site</Typography.Title>
+          <Typography.Title level={2}>2. Your Right to use the Site</Typography.Title>
           <Typography.Paragraph>
             <ol type="a">
               <li>
@@ -111,7 +111,7 @@ class TermsOfService extends React.Component<IProps> {
             any commercial purpose without express written consent of codePost. The licenses granted by codePost
             terminate if you do not comply with these Terms.
           </Typography.Paragraph>
-          <Typography.Title level={4}>3. Use of the Services</Typography.Title>
+          <Typography.Title level={2}>3. Use of the Services</Typography.Title>
           <Typography.Paragraph>
             Areas of our Services allow you to submit, post, upload, publish, submit, transfer, link, display, or
             otherwise make available (hereinafter, "post") information, text, graphics, photograph, audio, video,
@@ -169,7 +169,7 @@ class TermsOfService extends React.Component<IProps> {
             misleading, or otherwise objectionable. Please also note that User Content may contain typographical or
             other inadvertent errors or inaccuracies.
           </Typography.Paragraph>
-          <Typography.Title level={4}>4. Our Privacy Policy</Typography.Title>
+          <Typography.Title level={2}>4. Our Privacy Policy</Typography.Title>
           <Typography.Paragraph>
             Your privacy is important to codePost. With this in mind, we will protect your personal information in
             accordance with our{' '}
@@ -177,7 +177,7 @@ class TermsOfService extends React.Component<IProps> {
               Privacy Policy
             </Link>
           </Typography.Paragraph>
-          <Typography.Title level={4}>5. FERPA</Typography.Title>
+          <Typography.Title level={2}>5. FERPA</Typography.Title>
           <Typography.Paragraph>
             This section applies only to those Users who access the Services in connection with classes offered by an
             educational agency or institution (the "School") that is subject to the Family Educational Rights and
@@ -199,7 +199,7 @@ class TermsOfService extends React.Component<IProps> {
             that the School associated with or created for such class is valid and that you are validly affiliated with
             the School.
           </Typography.Paragraph>
-          <Typography.Title level={4}>6. Data Security; Disclaimer</Typography.Title>
+          <Typography.Title level={2}>6. Data Security; Disclaimer</Typography.Title>
           <Typography.Paragraph>
             <ol type="A">
               <li>
@@ -248,14 +248,14 @@ class TermsOfService extends React.Component<IProps> {
               </li>
             </ol>
           </Typography.Paragraph>
-          <Typography.Title level={4}>7. Links to Third Party Websites or Resources</Typography.Title>
+          <Typography.Title level={2}>7. Links to Third Party Websites or Resources</Typography.Title>
           <Typography.Paragraph>
             The Site may contain links to third-party websites or resources. We provide these links only as a
             convenience and are not responsible for the content, products or services on or available from those
             websites or resources or links displayed on such sites. You acknowledge sole responsibility for, and assume
             all risk arising from, your use of any third-party websites or resources.
           </Typography.Paragraph>
-          <Typography.Title level={4}>8. Important Disclaimers</Typography.Title>
+          <Typography.Title level={2}>8. Important Disclaimers</Typography.Title>
           <Typography.Paragraph>
             EXCEPT AS MAY BE OTHERWISE EXPRESSLY SET FORTH IN THESE TERMS, THE SERVICES ARE PROVIDED “AS IS,” WITHOUT
             WARRANTY OF ANY KIND. IN ADDITION TO THE DISCLAIMERS ABOVE, CODEPOST DOES NOT REPRESENT OR WARRANT THAT
@@ -285,7 +285,7 @@ class TermsOfService extends React.Component<IProps> {
             other person’s computer, mobile phone, or other hardware or software, related to or resulting from using or
             downloading materials in connection with the Site or the Service.
           </Typography.Paragraph>
-          <Typography.Title level={4}>9. Indemnity</Typography.Title>
+          <Typography.Title level={2}>9. Indemnity</Typography.Title>
           <Typography.Paragraph>
             You agree to defend, indemnify and hold harmless codePost, its affiliates, officers, directors, employees
             and agents from and against any and all claims, damages, obligations, losses, liabilities, costs or debt,
@@ -297,7 +297,7 @@ class TermsOfService extends React.Component<IProps> {
             application of any law that may limit the efficacy of the foregoing agreement to defend and indemnify
             codePost and its affiliates, officers, directors, employees and agents.
           </Typography.Paragraph>
-          <Typography.Title level={4}>10. Limitations of Liability</Typography.Title>
+          <Typography.Title level={2}>10. Limitations of Liability</Typography.Title>
           <Typography.Paragraph>
             codePost shall have no liability for any loss, damage, or injury resulting from your or any third parties’
             negligence, lack of training, use or misuse, or misapplication of any Product or Service.
@@ -306,7 +306,7 @@ class TermsOfService extends React.Component<IProps> {
             You agree to indemnify, defend, and hold harmless codePost and its employees from any claims, damages and
             actions of any kind or nature arising from or caused by the use or misuse of any Service.
           </Typography.Paragraph>
-          <Typography.Title level={4}>11. General Terms</Typography.Title>
+          <Typography.Title level={2}>11. General Terms</Typography.Title>
           <Typography.Paragraph>
             These Terms constitute the entire and exclusive understanding and agreement between codePost and you
             regarding the Services, and supersede and replace any and all prior oral or written understandings or
@@ -347,11 +347,11 @@ class TermsOfService extends React.Component<IProps> {
             State of New Jersey, without regard to its conflict of laws provisions. The sole venue for all disputes
             relating to these Terms shall be in Mercer County, New Jersey.
           </Typography.Paragraph>
-          <Typography.Title level={4}>12. Contact Information</Typography.Title>
+          <Typography.Title level={2}>12. Contact Information</Typography.Title>
           <Typography.Paragraph>
             If you have any questions about these Terms or the Services please contact{' '}
-            <a href="mailto:team@codepost.io" className="text-link">
-              team@codepost.io
+            <a href="mailto:codepost@cs.rutgers.edu" className="text-link">
+              codepost@cs.rutgers.edu
             </a>
           </Typography.Paragraph>
         </div>
