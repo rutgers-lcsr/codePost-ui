@@ -93,18 +93,22 @@ const LandingLayout = (props: IProps) => {
       }}
       id="LandingLayout"
     >
-      <main>
-        <div style={{ ...sectionStyle, background: landingVars.backgrounds.hero }} className={sectionClass}>
-          <div
-            style={{
-              width: '100%',
-              paddingTop: verticalPadddingHeader,
-              paddingBottom: verticalPadddingHeader,
-            }}
-          >
-            {props.topBar}
-          </div>
+      <header
+        style={{ ...sectionStyle, background: landingVars.backgrounds.hero }}
+        className={sectionClass}
+        id="landing-header"
+      >
+        <div
+          style={{
+            width: '100%',
+            paddingTop: verticalPadddingHeader,
+            paddingBottom: verticalPadddingHeader,
+          }}
+        >
+          {props.topBar}
         </div>
+      </header>
+      <main id="landing-main">
         <div
           style={{
             ...sectionStyle,
@@ -220,12 +224,15 @@ const LandingLayout = (props: IProps) => {
               </div>
             </div>
           </div>
-
-          <div style={{ ...sectionStyle, background: landingVars.backgrounds.footer }} className={sectionClass}>
-            <div style={{ maxWidth: landingVars.maxWidths.footer, width: '100%' }}>{props.footer}</div>
-          </div>
         </div>
       </main>
+      <footer
+        style={{ ...sectionStyle, background: landingVars.backgrounds.footer }}
+        className={sectionClass}
+        id="landing-footer"
+      >
+        <div style={{ maxWidth: landingVars.maxWidths.footer, width: '100%' }}>{props.footer}</div>
+      </footer>
     </div>
   );
 };

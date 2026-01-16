@@ -361,9 +361,8 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
         // FIXME: This doesn't cover the situation where both settings are enabled
         // course.enableStudentFeedbackNotifications and mincomments
       } else if (props.course.enableStudentFeedbackNotifications) {
-        const studentText = `student${
-          props.submission.students ? (props.submission.students.length > 1 ? 's' : '') : '(s)'
-        }`;
+        const studentText = `student${props.submission.students ? (props.submission.students.length > 1 ? 's' : '') : '(s)'
+          }`;
 
         Modal.confirm({
           title: `Notify ${studentText} via email?`,
@@ -776,9 +775,12 @@ interface ISubheaderTitleProps {
 export const SubheaderTitle = (props: ISubheaderTitleProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   return (
-    <span className=" cp-label cp-label--very-bold cp-label--medium" style={{ color: consoleTheme.subheaderTitle }}>
+    <h1
+      className=" cp-label cp-label--very-bold cp-label--medium"
+      style={{ color: consoleTheme.subheaderTitle, margin: 0, display: 'inline-block', fontSize: 'inherit' }}
+    >
       {props.assignment.name}
-    </span>
+    </h1>
   );
 };
 
@@ -797,7 +799,7 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
 
   // Only register claim submission hotkey for non-students
   const canClaimSubmissions = !props.isStudent && !props.isDemo && props.course?.activateQueue;
-  useHotkeys(U_KEY, canClaimSubmissions ? props.claimSubmission : () => {}, canClaimSubmissions);
+  useHotkeys(U_KEY, canClaimSubmissions ? props.claimSubmission : () => { }, canClaimSubmissions);
 
   const groupStyle = {
     padding: '5px 20px',
@@ -822,17 +824,17 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
   const menuItems = [
     ...(process.env.NODE_ENV === 'development'
       ? [
-          {
-            key: 'fake-data',
-            label: (
-              <span onClick={() => createFakeSubmission(props.assignment.id, props.submission?.id)}>
-                <PlusCircleOutlined /> Populate Fake Data
-              </span>
-            ),
-            style: itemStyle,
-            className: 'header-menu',
-          },
-        ]
+        {
+          key: 'fake-data',
+          label: (
+            <span onClick={() => createFakeSubmission(props.assignment.id, props.submission?.id)}>
+              <PlusCircleOutlined /> Populate Fake Data
+            </span>
+          ),
+          style: itemStyle,
+          className: 'header-menu',
+        },
+      ]
       : []),
     {
       key: 'setting:1',
@@ -843,35 +845,35 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
     ...(props.isStudent || props.isDemo || (props.course && !props.course.activateQueue)
       ? []
       : [
-          {
-            key: 'claim',
-            label: (
-              <span onClick={props.claimSubmission}>
-                <PlusCircleOutlined /> Claim another submission{' '}
-                <span style={{ color: '#ccc' }}>[{osControlKey()} shift u]</span>
-              </span>
-            ),
-            style: itemStyle,
-            className: 'header-menu',
-          },
-        ]),
+        {
+          key: 'claim',
+          label: (
+            <span onClick={props.claimSubmission}>
+              <PlusCircleOutlined /> Claim another submission{' '}
+              <span style={{ color: '#ccc' }}>[{osControlKey()} shift u]</span>
+            </span>
+          ),
+          style: itemStyle,
+          className: 'header-menu',
+        },
+      ]),
     ...(props.isAdmin && props.course
       ? [
-          {
-            key: 'rubric',
-            label: (
-              <Link
-                to={`/admin/${encodeForLink(props.course.name)}/${encodeForLink(
-                  props.course.period,
-                )}/assignments/rubrics/${encodeForLink(props.assignment.name)}`}
-              >
-                <EditOutlined /> Open rubric in Admin Console
-              </Link>
-            ),
-            style: itemStyle,
-            className: 'header-menu',
-          },
-        ]
+        {
+          key: 'rubric',
+          label: (
+            <Link
+              to={`/admin/${encodeForLink(props.course.name)}/${encodeForLink(
+                props.course.period,
+              )}/assignments/rubrics/${encodeForLink(props.assignment.name)}`}
+            >
+              <EditOutlined /> Open rubric in Admin Console
+            </Link>
+          ),
+          style: itemStyle,
+          className: 'header-menu',
+        },
+      ]
       : []),
 
     {

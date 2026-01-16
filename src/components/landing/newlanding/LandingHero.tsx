@@ -21,8 +21,8 @@ const LandingHero = () => {
     height: 60,
     fontSize: isMobile ? 16 : 22,
     display: 'inline',
-    backgroundColor: colors.green8,
-    borderColor: colors.green8,
+    backgroundColor: colors.green9,
+    borderColor: colors.green9,
   };
 
   const hero = (
@@ -33,16 +33,14 @@ const LandingHero = () => {
       }}
       className="display-flex flex-direction-column justify-content-flex-start align-items-center"
     >
-      <div style={{ fontSize: isMobile ? 24 : 36, lineHeight: 1.45, fontWeight: 600, color: '#4A4A4A' }}>
-        <span>
-          The best way to grade{' '}
-          <Typography.Text mark className="codePost-title-highlight-new">
-            student code
-          </Typography.Text>
-          . Built for instructors.
-        </span>
-      </div>
-      <h1
+      <h1 style={{ fontSize: isMobile ? 24 : 36, lineHeight: 1.45, fontWeight: 600, color: '#4A4A4A', margin: 0 }}>
+        The best way to grade{' '}
+        <Typography.Text mark className="codePost-title-highlight-new">
+          student code
+        </Typography.Text>
+        . Built for instructors.
+      </h1>
+      <p
         style={{
           fontSize: isMobile ? 20 : 24,
           lineHeight: 1.67,
@@ -50,17 +48,17 @@ const LandingHero = () => {
           color: '#606060',
           paddingTop: 35,
           paddingBottom: windowSize.width < landingVars.breakpoints.hero ? 30 : 45,
+          margin: 0,
         }}
       >
         Autograder, code commenting, and other tools to help you give amazing feedback, quickly.
-      </h1>
+      </p>
       <div
         style={{
           width: '100%',
         }}
-        className={`landing__heroButtons display-flex ${
-          windowSize.width < landingVars.breakpoints.removeModule ? 'flex-direction-column' : ''
-        } align-items-center justify-content-center`}
+        className={`landing__heroButtons display-flex ${windowSize.width < landingVars.breakpoints.removeModule ? 'flex-direction-column' : ''
+          } align-items-center justify-content-center`}
       >
         <Link to="/signup/create">
           <CPButton style={buttonStyle} cpType="primary">

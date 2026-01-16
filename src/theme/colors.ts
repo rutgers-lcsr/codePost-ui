@@ -59,7 +59,7 @@ export const greenPalette = {
 export const neutralColors = {
   title: 'rgba(0, 0, 0, 0.8)',
   mainText: 'rgba(0, 0, 0, 0.7)',
-  secondaryText: 'rgba(0, 0, 0, 0.5)',
+  secondaryText: 'rgba(0, 0, 0, 0.6)',
   disable: 'rgba(0, 0, 0, 0.3)',
   border: 'rgba(0, 0, 0, 0.2)',
   divider: 'rgba(0, 0, 0, 0.1)',
