@@ -576,7 +576,7 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
         <span>
           {text}
           {record.diff !== 0 && (
-            <span style={{ marginLeft: 8, fontSize: 12, color: 'rgba(0,0,0,0.45)', fontStyle: 'italic' }}>
+            <span style={{ marginLeft: 8, fontSize: 12, color: 'rgba(0,0,0,0.65)', fontStyle: 'italic' }}>
               (Exceeded limit by {record.diff})
             </span>
           )}

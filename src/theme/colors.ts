@@ -14,7 +14,7 @@
 // Brand Colors
 // ============================================================================
 export const brandColors = {
-  primary: '#24be85',
+  primary: '#198665', // WCAG AA compliant with white text
   light: '#f0fff6',
   vibrant: '#48cc98',
   dark: '#17996e',
@@ -29,7 +29,7 @@ export const brandColors = {
 export const actionColors = {
   blue: '#1890ff',
   blueFade: '#40a9ff',
-  green: '#24be85',
+  green: '#198665', // WCAG AA compliant with white text
   greenFade: '#48cc98',
   yellow: '#ffbf00',
   yellowFade: '#ffd129',
@@ -46,7 +46,7 @@ export const greenPalette = {
   green3: '#9ce6c3',
   green4: '#71d9ac',
   green5: '#48cc98',
-  green6: '#24be85',
+  green6: '#198665', // Brand primary (WCAG AA compliant)
   green7: '#17996e',
   green8: '#0d7354',
   green9: '#034d39',
