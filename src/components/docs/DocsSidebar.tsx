@@ -163,7 +163,7 @@ const DocsSidebar: React.FC = () => {
           style={{
             marginTop: '4px',
             padding: '2px 8px',
-            background: colors.brandPrimary,
+            background: colors.green9, // Darker green for contrast with white text
             color: 'white',
             borderRadius: '12px',
             fontSize: '10px',

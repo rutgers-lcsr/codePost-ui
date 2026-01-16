@@ -13,7 +13,7 @@ import PreAuthFooter from './PreAuthFooter';
 /* ant imports */
 import { Layout } from 'antd';
 
-const { Content, Footer } = Layout;
+
 
 /**********************************************************************************************************************/
 
@@ -43,20 +43,21 @@ class PreAuthLayout extends React.Component<IProps> {
   public render() {
     return (
       <Layout id="PreAuth" style={{ backgroundColor: '#fff', minHeight: '100vh' }}>
-        <Content>
-          <LandingHeader />
-          <div
-            style={{
-              background: '#fff',
-              padding: '25px 50px',
-              maxWidth: 1200,
-              margin: '0 auto',
-            }}
-          >
-            {this.props.children}
-          </div>
-        </Content>
-        <Footer
+        <LandingHeader />
+        <main
+          style={{
+            background: '#fff',
+            padding: '25px 50px',
+            maxWidth: 1200,
+            width: '100%',
+            margin: '0 auto',
+            flex: 1,
+            boxSizing: 'border-box',
+          }}
+        >
+          {this.props.children}
+        </main>
+        <footer
           style={{
             background: 'rgb(234,234,234)',
             width: '100%',
@@ -65,7 +66,7 @@ class PreAuthLayout extends React.Component<IProps> {
           }}
         >
           <PreAuthFooter />
-        </Footer>
+        </footer>
       </Layout>
     );
   }

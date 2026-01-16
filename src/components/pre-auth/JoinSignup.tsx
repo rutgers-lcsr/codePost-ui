@@ -93,7 +93,7 @@ const JoinSignup = (props: { email?: string }) => {
           props.email ? (
             <span>
               Head back to your{' '}
-              <a target="_blank" href="/student">
+              <a target="_blank" href="/student" className="text-link">
                 Student Console
               </a>{' '}
               to check out your new course.
@@ -101,7 +101,7 @@ const JoinSignup = (props: { email?: string }) => {
           ) : (
             <span>
               Check your email to finish signing up. If you don't see an email within a couple of minutes,{' '}
-              <a href="/docs/faq#missing-email" target="_blank">
+              <a href="/docs/faq#missing-email" target="_blank" className="text-link">
                 please read this
               </a>
               .
@@ -155,8 +155,8 @@ const JoinSignup = (props: { email?: string }) => {
               checked={acceptedTerms}
               onClick={() => setAcceptedTerms(!acceptedTerms)}
             />{' '}
-            I agree to the codePost <Link to="/terms">Terms of Service</Link> and{' '}
-            <Link to="/privacy">Privacy Policy</Link>.
+            I agree to the codePost <Link to="/terms" className="text-link">Terms of Service</Link> and{' '}
+            <Link to="/privacy" className="text-link">Privacy Policy</Link>.
           </span>
         )}
         <br />

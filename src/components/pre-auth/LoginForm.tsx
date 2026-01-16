@@ -191,13 +191,14 @@ const LoginForm: React.FC<ILoginFormProps> = ({
         <br />
         <br />
         <br />
-        <Link to="/forgot-password">Forgot password?</Link>
+        <Link to="/forgot-password" className="text-link">Forgot password?</Link>
         <br />
         <a
           onClick={() => {
             window.open('/docs/faq#missing-email', '_blank');
           }}
           style={{ cursor: 'pointer' }}
+          className="text-link"
         >
           Where's my sign up email?
         </a>

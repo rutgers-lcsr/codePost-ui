@@ -164,21 +164,21 @@ const PasswordReset: React.FC<IPasswordResetProps> = ({ message, isLoggedIn }) =
         case 'forgot':
           newLinkMessage = (
             <span>
-              Request a new password reset link <Link to="/forgot-password/">here</Link>.
+              Request a new password reset link <Link to="/forgot-password/" className="text-link">here</Link>.
             </span>
           );
           break;
         case 'activate':
           newLinkMessage = (
             <span>
-              Request a new account activation link <Link to="/signup/join/">here</Link>.
+              Request a new account activation link <Link to="/signup/join/" className="text-link">here</Link>.
             </span>
           );
           break;
         case 'upgrade':
           newLinkMessage = (
             <span>
-              Request a new account upgrade link <Link to="/upgrade/">here</Link>.
+              Request a new account upgrade link <Link to="/upgrade/" className="text-link">here</Link>.
             </span>
           );
           break;
@@ -203,7 +203,7 @@ const PasswordReset: React.FC<IPasswordResetProps> = ({ message, isLoggedIn }) =
         <div>
           <Typography.Title level={4}>Success!</Typography.Title>
           <div>
-            Try <Link to="/login">logging in</Link> now.
+            Try <Link to="/login" className="text-link">logging in</Link> now.
           </div>
         </div>
       );

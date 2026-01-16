@@ -82,7 +82,7 @@ class ForgotPasswordForm extends React.Component<IProps, State> {
               <span>
                 Check your email for a link. Follow that to reset your password. If you don't see an email within a
                 couple of minutes,{' '}
-                <a href="/docs/faq#missing-email" target="_blank">
+                <a href="/docs/faq#missing-email" target="_blank" className="text-link">
                   please read this
                 </a>
                 .
