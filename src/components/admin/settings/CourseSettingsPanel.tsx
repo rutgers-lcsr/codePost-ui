@@ -8,7 +8,7 @@ import * as React from 'react';
 import { RedoOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Card, Descriptions, Flex, Form, Input, message, Select, Space, Switch, Typography } from 'antd';
+import { Breadcrumb, Card, Descriptions, Flex, Form, Input, message, Select, Switch, Typography } from 'antd';
 
 import CPButton from '../../../components/core/CPButton';
 import CPAdminDetail from '../other/CPAdminDetail';

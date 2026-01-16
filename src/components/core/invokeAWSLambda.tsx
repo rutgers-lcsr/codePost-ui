@@ -12,11 +12,12 @@ const invokeAWSLambda = async (props: IAWSLambdaProps) => {
 
   // This function creates a service object to execute AWS actions
   const createService = () => {
-    AWS.config.update({
-      accessKeyId: props.accessKey,
-      secretAccessKey: props.secretAccessKey,
-      region: 'us-east-2',
-    });
+    if (AWS.config && AWS.config.update) {
+      AWS.config.update({
+        credentials: new AWS.Credentials(props.accessKey, props.secretAccessKey),
+        region: 'us-east-2',
+      });
+    }
 
     return new AWS.Lambda();
   };
