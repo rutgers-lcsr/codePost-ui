@@ -318,16 +318,15 @@ class CreateSignup extends React.Component<IProps, IState> {
                 />
               </div>
             ) : null}
-            <div>
-              <div style={{ paddingTop: 80 }} />
-              <Checkbox
-                value={this.state.check2}
-                onChange={this.toggleCheck.bind(this, 'check2')}
-                style={{ marginRight: 10 }}
-              />
+            <div style={{ paddingTop: 80 }} />
+            <Checkbox
+              value={this.state.check2}
+              onChange={this.toggleCheck.bind(this, 'check2')}
+              style={{ marginRight: 10 }}
+            >
               I agree to the codePost <Link to="/terms">Terms of Service</Link> and{' '}
               <Link to="/privacy">Privacy Policy</Link>.
-            </div>
+            </Checkbox>
             {spacing}
             <div style={{ display: 'flex' }}>
               <Link to="/signup">

@@ -167,7 +167,7 @@ const Dashboard = () => {
   if (isLoading) {
     return (
       <div style={{ padding: '40px 0px', textAlign: 'center' }}>
-        <Spin size="large" tip="Loading dashboard data..." />
+        <Spin size="large" tip="Loading dashboard data..." aria-label="Loading dashboard data" />
       </div>
     );
   }
@@ -368,10 +368,10 @@ const Dashboard = () => {
                     dataIndex: 'courseCount',
                     key: 'usage',
                     width: 150,
-                    render: (count: number) => {
+                    render: (count: number, record: any) => {
                       const maxCourses = Math.max(...topOrganizations.map((o) => o.courseCount));
                       const percent = maxCourses > 0 ? (count / maxCourses) * 100 : 0;
-                      return <Progress percent={Math.round(percent)} size="small" />;
+                      return <Progress percent={Math.round(percent)} size="small" aria-label={`Usage for ${record.name}: ${Math.round(percent)}%`} />;
                     },
                   },
                 ]}
@@ -425,7 +425,7 @@ const Dashboard = () => {
         if (usersLoading) {
           return (
             <div style={{ padding: '40px 0px', textAlign: 'center' }}>
-              <Spin size="large" tip="Loading users..." />
+              <Spin size="large" tip="Loading users..." aria-label="Loading users" />
             </div>
           );
         }
@@ -456,63 +456,67 @@ const Dashboard = () => {
           <Link to="/">
             <CPLogo cpType="main" />
           </Link>
-          <div
+          <Typography.Title
+            level={1}
             style={{
               color: token.colorPrimary,
               marginTop: '8px',
               fontWeight: 500,
+              fontSize: '18px',
             }}
           >
             SuperAdmin Console
-          </div>
+          </Typography.Title>
         </div>
 
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[currentTab]}
-          onClick={({ key }) => setCurrentTab(key as TabType)}
-          items={[
-            {
-              key: 'Overview',
-              icon: <DashboardOutlined />,
-              label: 'Overview',
-            },
-            {
-              key: 'Organizations',
-              icon: <GlobalOutlined />,
-              label: `Organizations (${organizations.length})`,
-            },
-            {
-              key: 'Courses',
-              icon: <BookOutlined />,
-              label: `Courses (${courses.length})`,
-            },
-            {
-              key: 'Admins',
-              icon: <TeamOutlined />,
-              label: `Admins (${admins.length})`,
-            },
-            {
-              key: 'Users',
-              icon: <UserOutlined />,
-              label: `Users (${users.length})`,
-            },
-            {
-              key: 'Activity',
-              icon: <RiseOutlined />,
-              label: 'Activity',
-            },
-            {
-              key: 'API',
-              icon: <ApiOutlined />,
-              label: 'API',
-            },
-          ]}
-        />
+        <nav aria-label="SuperAdmin navigation">
+          <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[currentTab]}
+            onClick={({ key }) => setCurrentTab(key as TabType)}
+            items={[
+              {
+                key: 'Overview',
+                icon: <DashboardOutlined />,
+                label: 'Overview',
+              },
+              {
+                key: 'Organizations',
+                icon: <GlobalOutlined />,
+                label: `Organizations (${organizations.length})`,
+              },
+              {
+                key: 'Courses',
+                icon: <BookOutlined />,
+                label: `Courses (${courses.length})`,
+              },
+              {
+                key: 'Admins',
+                icon: <TeamOutlined />,
+                label: `Admins (${admins.length})`,
+              },
+              {
+                key: 'Users',
+                icon: <UserOutlined />,
+                label: `Users (${users.length})`,
+              },
+              {
+                key: 'Activity',
+                icon: <RiseOutlined />,
+                label: 'Activity',
+              },
+              {
+                key: 'API',
+                icon: <ApiOutlined />,
+                label: 'API',
+              },
+            ]}
+          />
+        </nav>
       </Sider>
       <Layout style={{ height: '100vh', overflowY: 'auto', background: '#f0f2f5', marginLeft: 200 }}>
-        <Content style={{ margin: '24px 16px 0', overflow: 'initial', paddingBottom: '100px' }}>
+        <Content role="main" style={{ margin: '24px 16px 0', overflow: 'initial', paddingBottom: '100px' }}>
           {renderContent()}
         </Content>
       </Layout>

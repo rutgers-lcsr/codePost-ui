@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Layout, Menu, theme } from 'antd';
+import { Layout, Menu, theme, Typography } from 'antd';
 import { Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { DashboardOutlined, SettingOutlined, TeamOutlined, BookOutlined } from '@ant-design/icons';
 import CPLogo from '../core/CPLogo';
@@ -99,49 +99,53 @@ const OrgDashboard: React.FC<IProps> = (props) => {
           <Link to="/">
             <CPLogo cpType="main" />
           </Link>
-          <div
+          <Typography.Title
+            level={1}
             style={{
               color: token.colorPrimary,
               marginTop: '8px',
               fontWeight: 500,
+              fontSize: '18px',
             }}
           >
             Organization Console
-          </div>
+          </Typography.Title>
         </div>
 
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[getSelectedKey()]}
-          onClick={({ key }) => navigate(`${props.baseURL}/${key === 'overview' ? '' : key}`)}
-          items={[
-            {
-              key: 'overview',
-              icon: <DashboardOutlined />,
-              label: 'Overview',
-            },
-            {
-              key: 'courses',
-              icon: <BookOutlined />,
-              label: 'Courses',
-            },
-            {
-              key: 'users',
-              icon: <TeamOutlined />,
-              label: 'Users',
-            },
-            {
-              key: 'settings',
-              icon: <SettingOutlined />,
-              label: 'Settings',
-            },
-          ]}
-        />
+        <nav aria-label="Organization navigation">
+          <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[getSelectedKey()]}
+            onClick={({ key }) => navigate(`${props.baseURL}/${key === 'overview' ? '' : key}`)}
+            items={[
+              {
+                key: 'overview',
+                icon: <DashboardOutlined />,
+                label: 'Overview',
+              },
+              {
+                key: 'courses',
+                icon: <BookOutlined />,
+                label: 'Courses',
+              },
+              {
+                key: 'users',
+                icon: <TeamOutlined />,
+                label: 'Users',
+              },
+              {
+                key: 'settings',
+                icon: <SettingOutlined />,
+                label: 'Settings',
+              },
+            ]}
+          />
+        </nav>
       </Sider>
 
       <Layout style={{ marginLeft: 200, minHeight: '100vh' }}>
-        <Content style={{ margin: '24px 16px 0', overflow: 'initial' }}>
+        <Content role="main" style={{ margin: '24px 16px 0', overflow: 'initial' }}>
           <Routes>
             <Route
               path="/"

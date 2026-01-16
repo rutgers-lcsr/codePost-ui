@@ -24,13 +24,32 @@ body {
   width: 100%;
 }
 
-// Remove default link underlines
+// Default link styles
 a {
+  color: #096dd9; // Accessible blue (WCAG AA)
   text-decoration: none;
+
+  &:hover {
+    color: #40a9ff;
+    text-decoration: none; // Keep it clean by default
+  }
+}
+
+// Links in text-heavy containers should have underlines for accessibility (WCAG 1.4.1)
+p a,
+dd a,
+.text-link {
+  text-decoration: underline;
 
   &:hover {
     text-decoration: none;
   }
+}
+
+// Lists often contain navigation or menus, so we only underline links in lists 
+// if they are part of a markdown-like block or explicitly requested.
+.markdown-block li a {
+  text-decoration: underline;
 }
 
 /**
@@ -44,4 +63,17 @@ a {
 *::before,
 *::after {
   box-sizing: inherit;
+}
+
+// Utility class for screen-reader only content
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

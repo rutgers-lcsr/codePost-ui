@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Form, Switch, Select, Button, message, Input, Card, Space, Alert } from 'antd';
+import { Form, Switch, Select, Button, message, Input, Card, Space, Alert, Typography } from 'antd';
 import { UserType } from '../../infrastructure/user';
 import { Organization } from '../../infrastructure/organization';
 
@@ -178,7 +178,7 @@ const OrgSettings: React.FC<IProps> = (props) => {
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', padding: '24px 0' }}>
-      <h2>Organization Settings</h2>
+      <Typography.Title level={1}>Organization Settings</Typography.Title>
       <Form
         form={form}
         layout="vertical"
@@ -192,7 +192,7 @@ const OrgSettings: React.FC<IProps> = (props) => {
         <div
           style={{ marginBottom: 24, border: '1px solid #f0f0f0', padding: 24, borderRadius: 8, background: '#fff' }}
         >
-          <h3>Email Settings</h3>
+          <Typography.Title level={2}>Email Settings</Typography.Title>
           <Form.Item
             name="emailDomain"
             label="Allowed Email Domain"
@@ -207,14 +207,14 @@ const OrgSettings: React.FC<IProps> = (props) => {
             valuePropName="checked"
             help="If disabled, users added to this organization via roster upload will NOT receive a welcome email by default."
           >
-            <Switch />
+            <Switch aria-label="Send welcome emails" />
           </Form.Item>
         </div>
 
         <div
           style={{ marginBottom: 24, border: '1px solid #f0f0f0', padding: 24, borderRadius: 8, background: '#fff' }}
         >
-          <h3>SSO Configuration</h3>
+          <Typography.Title level={2}>SSO Configuration</Typography.Title>
           <div style={{ marginBottom: 16 }}>
             <Form.Item
               name="sso_enabled"
@@ -222,7 +222,7 @@ const OrgSettings: React.FC<IProps> = (props) => {
               valuePropName="checked"
               help="If enabled, new users added to this organization are automatically activated."
             >
-              <Switch />
+              <Switch aria-label="Enable SSO activation" />
             </Form.Item>
           </div>
 

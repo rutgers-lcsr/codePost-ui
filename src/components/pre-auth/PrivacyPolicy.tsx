@@ -61,8 +61,8 @@ class PrivacyPolicy extends React.Component<IProps> {
             Your continued use of our website will be regarded as acceptance of our practices around privacy and
             personal information. If you have any questions about how we handle user data and personal information, feel
             free to contact us at{' '}
-            <a className="text-link" href="mailto:team@codepost.io">
-              team@codepost.io
+            <a className="text-link" href="mailto:codepost@cs.rutgers.edu">
+              codepost@cs.rutgers.edu
             </a>
             .
           </Typography.Paragraph>

@@ -134,7 +134,9 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
           {/* Provider */}
           <Flex vertical gap={4}>
             <Text strong>AI Provider</Text>
+            <label htmlFor="ai-provider-select" className="sr-only">AI Provider</label>
             <Select
+              id="ai-provider-select"
               value={provider}
               onChange={handleProviderChange}
               onClear={handleProviderClear}
@@ -154,7 +156,9 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
           {provider && (
             <Flex vertical gap={4}>
               <Text strong>API Key</Text>
+              <label htmlFor="ai-api-key" className="sr-only">API Key</label>
               <Input.Password
+                id="ai-api-key"
                 value={apiKey}
                 onChange={(e) => {
                   setApiKey(e.target.value);
@@ -170,7 +174,9 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
           {showBaseUrl && (
             <Flex vertical gap={4}>
               <Text strong>Base URL</Text>
+              <label htmlFor="ai-base-url" className="sr-only">Base URL</label>
               <Input
+                id="ai-base-url"
                 value={baseUrl}
                 onChange={(e) => {
                   setBaseUrl(e.target.value);
@@ -186,7 +192,9 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
           {provider && (
             <Flex vertical gap={4}>
               <Text strong>Model</Text>
+              <label htmlFor="ai-model" className="sr-only">Model</label>
               <Input
+                id="ai-model"
                 value={model}
                 onChange={(e) => {
                   setModel(e.target.value);
@@ -222,7 +230,9 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                       : 'Toggle off to disable AI features.'}
                   </Text>
                 </Flex>
+                <label htmlFor="ai-disable-toggle" className="sr-only">Toggle AI Generation</label>
                 <Switch
+                  id="ai-disable-toggle"
                   checked={!aiDisabled}
                   onChange={(checked) => {
                     setAiDisabled(!checked);
@@ -233,8 +243,9 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
             </Card>
           )}
         </Flex>
-      )}
-    </Card>
+      )
+      }
+    </Card >
   );
 };
 

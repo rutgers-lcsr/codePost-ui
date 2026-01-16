@@ -25,7 +25,7 @@ import { tooltips } from '../core/tooltips';
 const CopyTokenIcon = ({ onClick }: { onClick: () => void }) => {
   const { token } = theme.useToken();
 
-  return <CopyOutlined style={{ color: token.colorInfo }} onClick={onClick} />;
+  return <CopyOutlined aria-label="Copy API key" style={{ color: token.colorInfo }} onClick={onClick} />;
 };
 
 interface IState {
@@ -131,7 +131,7 @@ class Settings extends Component<IProps, IState> {
         message.success(
           <span>
             Check your email for a link to reset your password. If you don't see an email within a couple of minutes,{' '}
-            <a href="/docs/faq#missing-email" target="_blank">
+            <a href="/docs/faq#missing-email" target="_blank" rel="noopener noreferrer">
               please read this
             </a>
             .
@@ -168,13 +168,13 @@ class Settings extends Component<IProps, IState> {
         title={() => {
           return (
             <div>
-              <Typography.Title level={4}>Courses you can interact with via the API</Typography.Title>
+              <Typography.Title level={2}>Courses you can interact with via the API</Typography.Title>
               You can always{' '}
-              <a target="_window" href="https://docs.codepost.io/reference#retrieve-a-specific-course">
+              <a target="_blank" rel="noopener noreferrer" href="https://docs.codepost.io/reference#retrieve-a-specific-course">
                 retrieve a course
               </a>{' '}
               by its ID. If you're using the{' '}
-              <a target="_window" href="https://docs.codepost.io/docs/first-steps-with-the-codepost-python-sdk">
+              <a target="_blank" rel="noopener noreferrer" href="https://docs.codepost.io/docs/first-steps-with-the-codepost-python-sdk">
                 codePost SDK
               </a>
               , you can retrieve a course by ID or (name, period) -- both are unique.
@@ -195,7 +195,9 @@ class Settings extends Component<IProps, IState> {
       if (user.api_token) {
         inputComponent = (
           <div>
+            <label htmlFor="api-key" className="sr-only">Your API key</label>
             <Input.Password
+              aria-label="Your API key"
               addonBefore="Your API key"
               className="input--disabled-normal"
               id="api-key"
@@ -208,7 +210,7 @@ class Settings extends Component<IProps, IState> {
               disabled={true}
               addonAfter={
                 <CPTooltip title={tooltips.settings.token.reset}>
-                  <RedoOutlined onClick={this.toggleResetStatus} />
+                  <RedoOutlined aria-label="Reset API key" onClick={this.toggleResetStatus} />
                 </CPTooltip>
               }
             />
@@ -228,8 +230,9 @@ class Settings extends Component<IProps, IState> {
 
     const settingsContent = (
       <div>
-        <Typography.Title level={4}>User info</Typography.Title>
-        <Input addonBefore="Email" className="input--disabled-normal" disabled={true} value={user.email} />
+        <Typography.Title level={2}>User info</Typography.Title>
+        <label htmlFor="user-email" className="sr-only">Email</label>
+        <Input id="user-email" aria-label="Email" addonBefore="Email" className="input--disabled-normal" disabled={true} value={user.email} />
         <br />
         <br />
         <CPButton cpType="secondary" onClick={this.sendPasswordResetEmail}>
@@ -240,12 +243,15 @@ class Settings extends Component<IProps, IState> {
         <br />
         <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
           <div style={{ flexGrow: 1 }}>
-            <Typography.Title level={4}>Enable tips</Typography.Title>
+            <Typography.Title level={2}>Enable tips</Typography.Title>
             If you're a codePost veteran and don't want to see help text and tips across the site, then you can turn
             this setting off.
           </div>
           <div style={{ paddingLeft: 40 }}>
+            <label htmlFor="product-tips-switch" className="sr-only">Enable product tips</label>
             <Switch
+              id="product-tips-switch"
+              aria-label="Enable product tips"
               checked={user.showProductTips}
               onChange={this.updateShowProductTips.bind(this, !user.showProductTips)}
             />
@@ -255,10 +261,10 @@ class Settings extends Component<IProps, IState> {
         <br />
         {user.canModifyRosters ? (
           <div>
-            <Typography.Title level={4}>API token</Typography.Title>
+            <Typography.Title level={2}>API token</Typography.Title>
             <div>
               This token can be used to authenticate yourself with the
-              <a href="http://docs.codepost.io"> codePost API</a>. For more information on how to use this token, please
+              <a href="http://docs.codepost.io" target="_blank" rel="noopener noreferrer"> codePost API</a>. For more information on how to use this token, please
               see our API documentation.
             </div>
             <br />
@@ -283,7 +289,7 @@ class Settings extends Component<IProps, IState> {
     return (
       <PeripheralPageLayout user={this.props.user} handleLogout={this.props.handleLogout}>
         <div id="Settings" style={{ maxWidth: 600, margin: '0 auto' }}>
-          <Typography.Title level={3}>Your settings:</Typography.Title>
+          <Typography.Title level={1}>Your settings:</Typography.Title>
           {settingsContent}
         </div>
       </PeripheralPageLayout>

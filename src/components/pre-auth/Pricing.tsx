@@ -130,7 +130,7 @@ const Pricing = (props: IProps) => {
             <br />
             <br />
             <p style={{ fontSize: '18px', fontWeight: 'bold' }}>$15 / student / course</p>
-            <a href="mailto:team@codepost.io">
+            <a href="mailto:codepost@cs.rutgers.edu">
               <Button style={premiumButtonStyle}>
                 Coming soon <ArrowRightOutlined />
               </Button>

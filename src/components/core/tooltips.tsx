@@ -133,7 +133,7 @@ const ADMIN_ASSIGNMENTS_UPLOADSUBMISSION =
 const ADMIN_ASSIGNMENTS_UPLOADSUBMISSIONFILETYPES = (
   <div>
     Not able to upload a file type that you think codePost should support?{' '}
-    <a href="mailto:team@codepost.io?subject=File Support Request">Let us know</a> and we'll add it.
+    <a href="mailto:codepost@cs.rutgers.edu?subject=File Support Request">Let us know</a> and we'll add it.
   </div>
 );
 
@@ -194,7 +194,7 @@ from the old course into your new course. All other information (including roste
 // ************************ Pre auth tooltips ************************
 const PREAUTH_CREATE_PROPRICING = (
   <span>
-    To sign up for an Enterprise plan, please contact us at <a href="mailto:team@codepost.io">team@codepost.io</a>. To
+    To sign up for an Enterprise plan, please contact us at <a href="mailto:codepost@cs.rutgers.edu">codepost@cs.rutgers.edu</a>. To
     learn more, check out our{' '}
     <Link to="/pricing" target="_blank">
       Pricing.

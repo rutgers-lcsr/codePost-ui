@@ -178,35 +178,33 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
   return (
     <Form form={form} layout="horizontal" onChange={makeDirty}>
       {/* Course Name & Period */}
-      <Card title="Course Identity" style={{ marginBottom: 24, maxWidth: 600 }}>
+      <Card title={<Typography.Title level={2} style={{ margin: 0 }}>Course Identity</Typography.Title>} style={{ marginBottom: 24, maxWidth: 600 }}>
         <Flex vertical gap={16}>
           <Form.Item
             name="name"
+            label="Course Name"
             initialValue={thisCourse.name}
-            style={{ marginBottom: 0 }}
+            style={{ marginBottom: 16 }}
             rules={[
               { required: true, message: 'Please enter a course name with at least 4 characters', min: 4 },
               { message: 'Course name cannot exceed 36 characters', max: 36 },
             ]}
           >
-            <Space.Compact style={{ width: '100%' }}>
-              <Space.Addon>Name</Space.Addon>
-              <Input defaultValue={thisCourse.name} maxLength={36} minLength={4} count={{ show: true }} />
-            </Space.Compact>
+            <label htmlFor="course-name" className="sr-only">Course Name</label>
+            <Input id="course-name" defaultValue={thisCourse.name} maxLength={36} minLength={4} count={{ show: true }} />
           </Form.Item>
           <Form.Item
             name="period"
+            label="Course Period"
             initialValue={thisCourse.period}
-            style={{ marginBottom: 0 }}
+            style={{ marginBottom: 16 }}
             rules={[
               { required: true, message: 'Please enter a course period.' },
               { message: 'Course period cannot exceed 32 characters', max: 32 },
             ]}
           >
-            <Space.Compact style={{ width: '100%' }}>
-              <Space.Addon>Period</Space.Addon>
-              <Input defaultValue={thisCourse.period} maxLength={32} minLength={1} count={{ show: true }} />
-            </Space.Compact>
+            <label htmlFor="course-period" className="sr-only">Course Period</label>
+            <Input id="course-period" defaultValue={thisCourse.period} maxLength={32} minLength={1} count={{ show: true }} />
           </Form.Item>
         </Flex>
       </Card>
@@ -216,7 +214,7 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
 
       {/* Toggle Settings */}
       <Card
-        title="Course Settings"
+        title={<Typography.Title level={2} style={{ margin: 0 }}>Course Settings</Typography.Title>}
         extra={<Text type="secondary">Configure course behavior</Text>}
         style={{ marginBottom: 24, maxWidth: 800 }}
       >
@@ -251,7 +249,8 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
                   initialValue={setting.initialValue}
                   style={{ marginBottom: 0 }}
                 >
-                  <Switch onChange={makeDirty} />
+                  <label htmlFor={`switch-${setting.key}`} className="sr-only">{setting.title}</label>
+                  <Switch id={`switch-${setting.key}`} aria-label={setting.title} onChange={makeDirty} />
                 </Form.Item>
               </Flex>
             </Card>
@@ -261,7 +260,7 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
 
       {/* Additional Settings */}
       <Card
-        title="Additional Options"
+        title={<Typography.Title level={2} style={{ margin: 0 }}>Additional Options</Typography.Title>}
         extra={<Text type="secondary">Late days and timezone</Text>}
         style={{ marginBottom: 24, maxWidth: 800 }}
       >
@@ -299,7 +298,7 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
                 </Text>
               </Flex>
               <Form.Item name="timezone" initialValue={thisCourse.timezone} style={{ marginBottom: 0 }}>
-                <Select style={{ width: 180 }} onChange={makeDirty}>
+                <Select aria-label="Course Timezone" style={{ width: 180 }} onChange={makeDirty}>
                   {timezones.map((tz, i) => (
                     <Select.Option key={i} value={tz}>
                       {tz}
@@ -313,7 +312,7 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
       </Card>
 
       {/* Course Info */}
-      <Card title="Course Information" style={{ marginBottom: 24, maxWidth: 800 }}>
+      <Card title={<Typography.Title level={2} style={{ margin: 0 }}>Course Information</Typography.Title>} style={{ marginBottom: 24, maxWidth: 800 }}>
         <Descriptions column={1} bordered size="small">
           <Descriptions.Item label="Course ID">
             <Text code>{thisCourse.id}</Text>

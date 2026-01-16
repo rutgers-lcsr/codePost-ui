@@ -87,6 +87,15 @@ vi.mock('./infrastructure/course', () => ({
   },
 }));
 
+vi.mock('./infrastructure/system', () => ({
+  SystemIO: {
+    getHealth: vi.fn().mockResolvedValue({
+      database: 'Connected',
+      celery: 'Running',
+    }),
+  },
+}));
+
 vi.mock('./infrastructure/user', () => ({
   UserIO: {
     getDashboardStats: vi.fn(() => Promise.resolve({})),
@@ -111,9 +120,9 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
+  observe() { }
+  unobserve() { }
+  disconnect() { }
 };
 
 // Mock User
@@ -210,7 +219,7 @@ const mockDashboardProps = {
 const axeConfig = {
   runOnly: {
     type: 'tag' as const,
-    values: ['wcag21aa', 'best-practice'],
+    values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'],
   },
 };
 
@@ -222,6 +231,9 @@ describe('Expanded Accessibility Audit', () => {
       </MemoryRouter>,
     );
     const results = await axe(container, axeConfig);
+    if (results.violations.length > 0) {
+      console.log('Axe violations on User Settings:', JSON.stringify(results.violations, null, 2));
+    }
     expect(results).toHaveNoViolations();
   }, 30000);
 
@@ -235,6 +247,9 @@ describe('Expanded Accessibility Audit', () => {
     await waitFor(() => expect(container.textContent).toContain('Organization Console'));
 
     const results = await axe(container, axeConfig);
+    if (results.violations.length > 0) {
+      console.log('Axe violations on Organization Dashboard:', JSON.stringify(results.violations, null, 2));
+    }
     expect(results).toHaveNoViolations();
   }, 30000);
 
@@ -246,6 +261,9 @@ describe('Expanded Accessibility Audit', () => {
     );
 
     const results = await axe(container, axeConfig);
+    if (results.violations.length > 0) {
+      console.log('Axe violations on Course Settings Panel:', JSON.stringify(results.violations, null, 2));
+    }
     expect(results).toHaveNoViolations();
   }, 30000);
 
@@ -281,6 +299,9 @@ describe('Expanded Accessibility Audit', () => {
     await waitFor(() => expect(container.textContent).toContain('SuperAdmin Console'), { timeout: 10000 });
 
     const results = await axe(container, axeConfig);
+    if (results.violations.length > 0) {
+      console.log('Axe violations on Super Admin Dashboard:', JSON.stringify(results.violations, null, 2));
+    }
     expect(results).toHaveNoViolations();
   }, 30000);
 });
