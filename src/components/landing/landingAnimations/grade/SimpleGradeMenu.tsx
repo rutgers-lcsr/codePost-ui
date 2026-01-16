@@ -13,7 +13,7 @@ function getFileItem(name: string, points: number) {
   }
   if (points > 0) {
     pointsBadge = (
-      <Badge count={`+${points}`} className="badge badge--standard" style={{ backgroundColor: colors.brandPrimary }} />
+      <Badge count={`+${points}`} className="badge badge--standard" style={{ backgroundColor: colors.green9 }} />
     );
   }
 

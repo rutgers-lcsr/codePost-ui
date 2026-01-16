@@ -70,7 +70,7 @@ const TemplateMenu: React.FC<ITemplateMenuProps> = (props) => {
               style={{
                 fontSize: 12,
                 fontWeight: 600,
-                color: isDarkTheme ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)',
+                color: isDarkTheme ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,0.65)',
                 marginBottom: 8,
                 marginTop: 4,
                 paddingLeft: 4,
@@ -102,7 +102,7 @@ const TemplateMenu: React.FC<ITemplateMenuProps> = (props) => {
               style={{
                 fontSize: 12,
                 fontWeight: 600,
-                color: isDarkTheme ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)',
+                color: isDarkTheme ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,0.65)',
                 marginBottom: 8,
                 marginTop: filteredTemplates.some((t) => t.isGlobal) ? 16 : 4,
                 paddingLeft: 4,

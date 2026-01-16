@@ -81,7 +81,7 @@ function LandingHeader() {
             {features}
             {login}
             <Link
-              style={{ ...linkStyle, background: colors.brandPrimary, color: 'white' }}
+              style={{ ...linkStyle, background: colors.green9, color: 'white' }}
               className="link--header"
               to="/signup"
             >
@@ -95,7 +95,7 @@ function LandingHeader() {
     return (
       <Collapse
         bordered={false}
-        expandIconPosition="end"
+        expandIconPlacement="end"
         expandIcon={expandIcon}
         style={{ backgroundColor: 'white' }}
         items={collapseItems}
@@ -104,7 +104,7 @@ function LandingHeader() {
   } else {
     // Normal View
     return (
-      <div style={{ width: '100%' }} className="display-flex justify-content-center">
+      <header style={{ width: '100%' }} className="display-flex justify-content-center">
         <div
           style={{
             background: 'none',
@@ -132,7 +132,7 @@ function LandingHeader() {
             </Link>
           </div>
         </div>
-      </div>
+      </header>
     );
   }
 }
