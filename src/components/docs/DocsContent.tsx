@@ -169,8 +169,9 @@ const DocsContent: React.FC = () => {
 
   if (error) {
     return (
-      <div style={{ padding: '50px' }}>
-        <Alert title="Error" description={error} type="error" showIcon />
+      <div style={{ padding: '50px', maxWidth: '800px' }}>
+        <Title level={1}>Documentation Error</Title>
+        <Alert message="Error" description={error} type="error" showIcon />
       </div>
     );
   }

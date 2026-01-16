@@ -26,7 +26,7 @@ import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_c
 
 /* import { LOCAL_SETTINGS } from '../../utils/LocalSettings'; */
 
-const { Content, Header } = Layout;
+const { Header } = Layout;
 
 export type ConsoleType = 'grade' | 'subheader';
 
@@ -366,18 +366,19 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
             }}
             id="code-scroll-area"
           >
-            <Content
-              role="main"
+            <main
+              id="code-main-content"
               className="layout--standard-console__content"
               style={{
                 height: '100%',
                 maxHeight: '100%',
                 overflowY: 'hidden',
                 overflowX: 'hidden',
+                flex: 1, // Ensure it takes up remaining space
               }}
             >
               {props.content}
-            </Content>
+            </main>
             {props.children}
           </Layout>
         </Layout>
