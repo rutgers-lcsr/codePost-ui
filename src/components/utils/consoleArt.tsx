@@ -11,7 +11,7 @@ Welcome to...
   \\___\\___/ \\__,_|\\___|_|   \\___/|___/\\__|
 
 
-%cCheckout our API: https://docs.codepost.io/reference
+%cCheckout our API: https://codepost-api.cs.rutgers.edu/api/schema/elements/
 `;
 
 // prettier-ignore

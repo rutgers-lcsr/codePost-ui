@@ -11,88 +11,89 @@ import Editor from '@monaco-editor/react';
 const apiCodeExamples = [
   {
     title: 'Export grades',
-    code: 'import csv\n\
-import codepost\n\
-\n\
-codepost.configure_api_key("<your API key>")\n\
-\n\
-# Get all submissions for an assignment with id of 1\n\
-submissions = codepost.assignment.list_submissions(id=1)\n\
-\n\
-# Identify graded submissions\n\
-grades = [\n\
-  (student, submission.grade)\n\
-  for submission in submissions\n\
-  for student in submission.students\n\
-  if not submission.grade is None\n\
-]\n\
-\n\
-# Export list of students and grades to a CSV\n\
-# (or use your LMS API to post grades directly)\n\
-with open("grades.csv", "w") as writeFile:\n\
-  writer = csv.writer(writeFile)\n\
-  writer.writerows(grades)',
+    code: `import csv
+import codepost_api_client as codepost
+
+config = codepost.Configuration(
+    host="https://codepost-api.cs.rutgers.edu",
+    api_key={"tokenAuth": "Token <API_KEY>"}
+)
+
+with codepost.ApiClient(config) as client:
+    assignments_api = codepost.AssignmentsApi(client)
+
+    # Get submissions for assignment 1
+    subs = assignments_api.assignments_submissions_list(id=1)
+
+    # Identify graded submissions
+    grades = [
+        (s.students[0], s.grade)
+        for s in subs
+        if s.grade is not None
+    ]
+
+# Export to CSV
+with open("grades.csv", "w") as f:
+    writer = csv.writer(f)
+    writer.writerows(grades)`,
   },
   {
     title: 'Assign submissions for review',
-    code: 'import codepost\n\
-\n\
-codepost.configure_api_key("<your API key>")\n\
-\n\
-# Map for who grades what:\n\
-grader_map = {\n\
-  "student1@university.edu": "grader1@university.edu",\n\
-  "student2@university.edu": "grader1@university.edu",\n\
-  "student3@university.edu": "grader2@university.edu",\n\
-  "student4@university.edu": "grader1@university.edu",\n\
-  # ...\n\
-}\n\
-\n\
-# Get all submissions for an assignment with id of 1\n\
-submissions = codepost.assignment.list_submissions(id=1)\n\
-\n\
-# Assign the submissions to graders\n\
-for submission in submissions:\n\
-\n\
-# Determine who should grade this submission\n\
-grader_email = grader_map.get(submission.students[0],\n\
-  "defaultGrader@university.edu")\n\
-\n\
-# Assign grader to submission\n\
-codepost.submission.update(\n\
-  id=submission.id,\n\
-  grader=grader_email,\n\
-)',
+    code: `import codepost_api_client as codepost
+
+# ... setup config ...
+
+grader_map = {
+    "student1@u.edu": "ta1@u.edu",
+    # ...
+}
+
+with codepost.ApiClient(config) as client:
+    assign_api = codepost.AssignmentsApi(client)
+    sub_api = codepost.SubmissionsApi(client)
+
+    # Get submissions
+    subs = assign_api.assignments_submissions_list(id=1)
+
+    for s in subs:
+        grader = grader_map.get(s.students[0], "default@u.edu")
+        
+        # Assign grader (PATCH update)
+        sub_api.submissions_partial_update(
+            id=s.id,
+            patched_submission=codepost.PatchedSubmission(grader=grader)
+        )
+`,
   },
   {
     title: 'Identify common student errors',
-    code: 'import codepost\n\
-\n\
-codepost.configure_api_key("<your API key>")\n\
-\n\
-# Get rubric of assignment with id of 1\n\
-assignment = codepost.assignment.retrieve(id=1)\n\
-rubric_categories = map(\n\
-  lambda id: codepost.rubric_categories.retrieve(id=id),\n\
-  assignment.rubricCategories\n\
-)\n\
-\n\
-# Print report for each category\n\
-for category in rubric_categories:\n\
-  rubric_comments = map(\n\
-    lambda id: codepost.rubric_comments.retrieve(id=id),\n\
-    category.rubricComments\n\
-  )\n\
-\n\
-  _freq_list = [\n\
-     (comment.text, comment.length)\n\
-     for comment in rubric_comments\n\
-  ]\n\
-  _freq_list.sort(key=lambda tup: tup[1])\n\
-\n\
-  print(category.name)\n\
-  print("Rubric comments sorted by highest frequency")\n\
-  print(_freq_list)',
+    code: `import codepost_api_client as codepost
+
+# ... setup config ...
+
+with codepost.ApiClient(config) as client:
+    assign_api = codepost.AssignmentsApi(client)
+    cat_api = codepost.RubricCategoriesApi(client)
+    com_api = codepost.RubricCommentsApi(client)
+
+    # Get assignment
+    assignment = assign_api.assignments_retrieve(id=1)
+
+    # Iterate categories
+    for cat_id in assignment.rubric_categories:
+        cat = cat_api.rubric_categories_retrieve(cat_id)
+        
+        stats = []
+        for com_id in cat.rubric_comments:
+            com = com_api.rubric_comments_retrieve(com_id)
+            stats.append((com.text, com.point_delta))
+            
+        # Print stats
+        stats.sort(key=lambda x: x[1])
+        print(f"Category: {cat.name}")
+        for text, points in stats:
+            print(f"  {points}pts: {text}")
+`,
   },
 ];
 
@@ -214,9 +215,8 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
             zIndex: 0,
             borderRadius: 5,
             transition: '.3s',
-            transform: `translateY(${
-              exampleIndex === 1 ? 'calc(100% + 10px)' : exampleIndex === 2 ? 'calc(200% + 20px)' : '0%'
-            })`,
+            transform: `translateY(${exampleIndex === 1 ? 'calc(100% + 10px)' : exampleIndex === 2 ? 'calc(200% + 20px)' : '0%'
+              })`,
           }}
         />
         <CPButton
@@ -246,10 +246,10 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
         >
           {apiCodeExamples[2].title}
         </CPButton>
-        <Divider type="horizontal" style={{ margin: '16px 0px' }} />
+        <Divider orientation="horizontal" style={{ margin: '16px 0px' }} />
         <CPButton
           key="APIDocs"
-          href="http://docs.codepost.io/reference"
+          href="https://codepost-api.cs.rutgers.edu/api/schema/elements/"
           target="_blank"
           cpType="link"
           style={{ fontWeight: 600, fontSize: 18 }}
@@ -279,9 +279,8 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
                   style={{
                     fontSize: 12,
                   }}
-                  className={`display-flex flex-direction-${
-                    this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'column' : 'row'
-                  } align-items-${this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'center' : 'start'}`}
+                  className={`display-flex flex-direction-${this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'column' : 'row'
+                    } align-items-${this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'center' : 'start'}`}
                 >
                   {this.props.windowwidth < landingVars.breakpoints.verticalPanels ? buttons : codebox}
                   {this.props.windowwidth < landingVars.breakpoints.verticalPanels ? codebox : buttons}

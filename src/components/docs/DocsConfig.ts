@@ -60,6 +60,13 @@ export const docRoutes: DocRoute[] = [
     category: 'Guides',
   },
   {
+    key: 'programmatic-comments',
+    path: 'programmatic-comments',
+    title: 'Programmatic Comments',
+    fileName: 'sdk_programmatic_comments.md',
+    category: 'Guides',
+  },
+  {
     key: 'features',
     path: 'features',
     title: 'Features',

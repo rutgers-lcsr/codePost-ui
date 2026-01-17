@@ -205,7 +205,7 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
             key: 'api-reference',
             icon: <ApiOutlined />,
             label: 'API Reference',
-            onClick: () => openLink('https://docs.codepost.io/reference'),
+            onClick: () => openLink('https://codepost-api.cs.rutgers.edu/api/schema/elements/'),
           },
           {
             key: 'scholarship',
