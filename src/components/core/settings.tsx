@@ -170,11 +170,11 @@ class Settings extends Component<IProps, IState> {
             <div>
               <Typography.Title level={2}>Courses you can interact with via the API</Typography.Title>
               You can always{' '}
-              <a target="_blank" rel="noopener noreferrer" href="https://docs.codepost.io/reference#retrieve-a-specific-course">
+              <a target="_blank" rel="noopener noreferrer" href="https://codepost-api.cs.rutgers.edu/api/schema/elements/">
                 retrieve a course
               </a>{' '}
               by its ID. If you're using the{' '}
-              <a target="_blank" rel="noopener noreferrer" href="https://docs.codepost.io/docs/first-steps-with-the-codepost-python-sdk">
+              <a target="_blank" rel="noopener noreferrer" href="https://codepost-api.cs.rutgers.edu/api/schema/elements/">
                 codePost SDK
               </a>
               , you can retrieve a course by ID or (name, period) -- both are unique.
@@ -264,7 +264,7 @@ class Settings extends Component<IProps, IState> {
             <Typography.Title level={2}>API token</Typography.Title>
             <div>
               This token can be used to authenticate yourself with the
-              <a href="http://docs.codepost.io" target="_blank" rel="noopener noreferrer"> codePost API</a>. For more information on how to use this token, please
+              <a href="https://codepost-api.cs.rutgers.edu/api/schema/elements/" target="_blank" rel="noopener noreferrer"> codePost API</a>. For more information on how to use this token, please
               see our API documentation.
             </div>
             <br />

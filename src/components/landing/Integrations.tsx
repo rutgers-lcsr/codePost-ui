@@ -167,9 +167,9 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
             Including tool output as .txt or .md file in a codePost submission (making it available during grading)
           </li>
           <li>
-            <a href="https://docs.codepost.io/docs/programmatically-place-comments">
+            <Link to="/docs/programmatic-comments">
               Programmatically placing comments
-            </a>{' '}
+            </Link>{' '}
             on code
           </li>
         </ul>
