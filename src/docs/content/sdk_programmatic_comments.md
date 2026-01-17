@@ -60,7 +60,19 @@ except codepost.ApiException as e:
 
 ## Note on Coordinates
 
-- For **text files**, `start_point` and `end_point` typically represent line numbers.
-- For **image/PDF files**, they might represent coordinates.
+- For **Text Files** (e.g., .py, .java, .txt):
+  - `start_point` / `end_point`: Correspond to **line numbers** (1-indexed).
+  - `start_char` / `end_char`: Correspond to character offsets within the line (0-indexed).
+
+- For **Jupyter Notebooks** (.ipynb):
+  - `start_point` / `end_point`: Correspond to the **Cell Index** (0-indexed).
+  - `start_char` / `end_char`: Generally ignored or used for block offsets. Set to `0` to comment on the entire cell.
+  
+- **For Image/PDF Files**:
+  - **Coordinates (x, y) are NOT currently supported.**
+  - **PDFs**: `start_point` / `end_point` correspond to the **Page Number** (1-indexed).
+  - **Images**: Treat as a single block. `start_point` / `end_point` are typically `1` (1-indexed).
+  - `start_char` / `end_char` should be `0`.
+
 
 See the [API Reference](https://codepost-api.cs.rutgers.edu/api/schema/elements/) for more details on the `Comment` model.
