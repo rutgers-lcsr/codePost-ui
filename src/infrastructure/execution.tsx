@@ -99,6 +99,13 @@ export interface FileExecutionRequest {
   file_id: number;
   timeout?: number;
   force_execute?: boolean;
+  test_code?: string;
+  example_code?: string;  // Optional: Replace target file content with this when running tests
+}
+
+export interface AsyncExecutionResponse {
+  task_id: string;
+  status: string;
 }
 
 /**
@@ -151,5 +158,12 @@ export const Execution = {
    */
   executeFile: async (request: FileExecutionRequest): Promise<FileExecutionResult> => {
     return executeApiCall<FileExecutionResult>('execute/file', request);
+  },
+
+  /**
+   * Asynchronously execute a file (triggers a task)
+   */
+  executeFileAsync: async (request: FileExecutionRequest): Promise<AsyncExecutionResponse> => {
+    return executeApiCall<AsyncExecutionResponse>('execute/file/async', request);
   },
 };

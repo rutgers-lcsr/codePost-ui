@@ -265,7 +265,7 @@ IndexError: list index out of range`,
     },
   ];
 
-  const testCases: TestCasesByCategory = {
+  const testCases: any = {
     '-1': [
       {
         id: -1,
@@ -277,10 +277,7 @@ IndexError: list index out of range`,
         pointsPass: 0,
         text: '',
         modified: '2019-12-16T23:09:44.686902Z',
-        function: 'max',
         fileName: 'Loops.py',
-        expectedOutput: '3',
-        input: '[1,2,3]',
         checkReturn: true,
         exposed: false,
         instances: [-1],
@@ -303,10 +300,7 @@ IndexError: list index out of range`,
         pointsPass: 0,
         text: '',
         modified: '2019-12-16T23:09:44.686902Z',
-        function: 'reverse',
         fileName: 'Loops.py',
-        expectedOutput: '[3,2,1]',
-        input: '[1,2,3]',
         checkReturn: true,
         exposed: false,
         instances: [-1],

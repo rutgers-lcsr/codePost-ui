@@ -32,6 +32,7 @@ interface ITestItemProps {
   setTestSubject: (id: string) => void;
   activeSubmission?: SubmissionInfoType;
   updateTestStatus: (testID: number, status: number) => void;
+  assignmentFiles?: any[]; // Using any to avoid importing AssignmentFile type just for pass-through if lazy
 }
 
 // Extends expected form fields + state fields from TestFormItem
@@ -39,19 +40,17 @@ interface IFullTestValues {
   description: string;
   testType: string;
   explanation: string;
-  checkReturn: boolean;
-  outputType: string;
   commandText: string;
   fileName: string;
   exposed: boolean;
+
   pointsPass: number;
   pointsFail: number;
-  expectPlot: boolean;
   dataSet: number;
-  expectedOutput: string;
-  input: string;
-  function: string;
+  // Legacy fields removed
+
   targetCellId?: number | string;
+  testCode?: string;
 }
 
 export const TestItem = (props: ITestItemProps) => {
@@ -63,24 +62,16 @@ export const TestItem = (props: ITestItemProps) => {
     const testCaseCopy = { ...props.testCase };
     testCaseCopy.text = values.commandText || '';
     testCaseCopy.description = values.description;
-    testCaseCopy.expectedOutput = values.expectedOutput;
     testCaseCopy.fileName = values.fileName;
-    testCaseCopy.function = values.function; // Note: 'function' might be unused in new UI but keeping for compatibility
-    testCaseCopy.input = values.input;
-    testCaseCopy.checkReturn = values.checkReturn;
     testCaseCopy.type = values.testType;
     testCaseCopy.exposed = values.exposed;
     testCaseCopy.pointsPass = values.pointsPass;
     testCaseCopy.pointsFail = values.pointsFail;
     testCaseCopy.explanation = values.explanation;
-
-    testCaseCopy.outputIsFile = values.outputType === 'file';
-    testCaseCopy.isFlexible = values.outputType === 'flex';
-    testCaseCopy.outputIsRegexp = values.outputType === 'regexp';
-
-    testCaseCopy.expectPlot = !!values.expectPlot;
     testCaseCopy.dataSet = values.dataSet || null;
-    testCaseCopy.targetCellId = values.targetCellId || null;
+    testCaseCopy.targetCellId = (values.targetCellId as any) || null;
+    testCaseCopy.testCode = values.testCode || '';
+    testCaseCopy.testCode = values.testCode || '';
 
     return testCaseCopy;
   };
@@ -184,6 +175,7 @@ export const TestItem = (props: ITestItemProps) => {
       setTestSubject={props.setTestSubject}
       activeSubmission={props.activeSubmission}
       currentAssignment={props.currentAssignment}
+      assignmentFiles={props.assignmentFiles}
     />
   );
 };
