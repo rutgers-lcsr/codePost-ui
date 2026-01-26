@@ -17,8 +17,15 @@ import { TestCategoryType } from '../../../../../infrastructure/types';
 
 /* codePost interface imports */
 import { TestCasesByCategory } from '../../../../core/testFetchUtils';
-import { IBasicFile } from './TestDefinitions';
 import { FILE_TYPE } from './TestDefinitions/FileType';
+
+interface IBasicFile {
+  id: number;
+  name: string;
+  code: string;
+  type: FILE_TYPE;
+  canSave: boolean;
+}
 
 /* codePost component imports */
 import FileTag from './TestDefinitions/FileTag';
@@ -84,7 +91,7 @@ export const SourceEditor = (props: IProps) => {
   };
 
   // On confirm of tests change, update the sourcefile
-  const onConfirm = () => {};
+  const onConfirm = () => { };
 
   // callback called when run is complete
   const callback = async (response: TestEditorResultType) => {
@@ -184,7 +191,7 @@ export const SourceEditor = (props: IProps) => {
       </Row>
       <TestsChangeModal
         checkChanges={saving}
-        currentFile={props.currentFile!}
+        currentFile={props.currentFile! as any}
         currentFileCode={''}
         categories={props.categories}
         casesByCategory={props.casesByCategory}

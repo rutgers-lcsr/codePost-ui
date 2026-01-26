@@ -69,8 +69,8 @@ export const CodeWindow = (props: IProps) => {
         minWidth: 300,
         width: '100%',
         position: 'relative',
-        height: props.height || undefined,
-        paddingTop: 30,
+        height: props.height || '100%',
+        paddingTop: props.onChange ? 0 : 30, // Only pad if button might show (read-only mode usually)
       }}
     >
       {!props.onChange && (
@@ -87,21 +87,21 @@ export const CodeWindow = (props: IProps) => {
       )}
 
       <Editor
-        height={props.height || '100%'}
+        height="100%"
         width="100%"
         language={getMode()}
-        value={props.onSave ? editedCode : props.code}
-        onChange={(value) => {
-          if (!value) return;
-          setEditedCode(value);
-          if (props.onChange) {
-            props.onChange(value);
-          }
-        }}
         options={{
           automaticLayout: true,
           minimap: { enabled: false },
+          scrollBeyondLastLine: false,
           readOnly: !(props.onSave || props.onChange) || isSaving,
+        }}
+        value={props.onSave ? editedCode : props.code}
+        onChange={(value) => {
+          setEditedCode(value || '');
+          if (props.onChange) {
+            props.onChange(value || '');
+          }
         }}
         theme={props.theme === 'dark' ? 'vs-dark' : 'light'}
       />

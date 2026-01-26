@@ -36,9 +36,10 @@ interface NotebookStructure {
 interface NotebookEditorProps {
   content: string;
   onChange: (newContent: string) => void;
+  height?: string | number;
 }
 
-const NotebookEditor: React.FC<NotebookEditorProps> = ({ content, onChange }) => {
+const NotebookEditor: React.FC<NotebookEditorProps> = ({ content, onChange, height = '500px' }) => {
   const [notebook, setNotebook] = React.useState<NotebookStructure | null>(null);
   const [parseError, setParseError] = React.useState<string | null>(null);
   const isInternalUpdate = React.useRef(false);
@@ -192,7 +193,7 @@ const NotebookEditor: React.FC<NotebookEditorProps> = ({ content, onChange }) =>
   }
 
   return (
-    <div style={{ height: '500px', overflowY: 'auto', padding: '10px', background: '#f5f5f5' }}>
+    <div style={{ height, overflowY: 'auto', padding: '10px', background: '#f5f5f5' }}>
       {notebook.cells.length === 0 && (
         <Empty description="No cells in notebook" image={Empty.PRESENTED_IMAGE_SIMPLE}>
           <Button type="primary" onClick={() => handleAddCell(-1)} icon={<PlusOutlined />}>

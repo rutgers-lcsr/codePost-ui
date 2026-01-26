@@ -231,6 +231,7 @@ export const TestingSetup = (props: IProps) => {
           updateEnv={setEnv}
           reloadEnv={reloadEnv}
           loading={loading}
+          helpers={helperFiles}
         />
       ),
     });

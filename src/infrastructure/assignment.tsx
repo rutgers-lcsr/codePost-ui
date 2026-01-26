@@ -253,6 +253,27 @@ export class Assignment {
     throw new Error(`Failed to clone assignment: ${res.status} ${res.statusText}`);
   };
 
+  public static generateTest = async (
+    assignmentId: number,
+    payload: { target_filename: string; context_file_id?: number; context_file_name?: string; language?: string },
+  ): Promise<{ script: string }> => {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignmentId}/generateTest/`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+
+    if (res.status === 200) {
+      return await res.json();
+    } else {
+      const err = await res.json();
+      throw new Error(err.error || `Failed to generate test: ${res.status}`);
+    }
+  };
+
   public static readRubric = readObjectDetail(RubricV, 'assignments', 'rubric');
   public static readSubmissions = readObjectDetail(t.array(SubmissionInfoV), 'assignments', 'submissions');
   public static readSubmissionsAnonymous = readObjectDetail(
