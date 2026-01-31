@@ -262,6 +262,11 @@ IndexError: list index out of range`,
       name: 'Correctness',
       testCases: [-1, -2],
       assignment: demoAssignment.id,
+      testScript: null,
+      maxPoints: null,
+      sortKey: 0,
+      targetFileName: null,
+      resources: []
     },
   ];
 

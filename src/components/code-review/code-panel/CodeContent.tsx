@@ -83,11 +83,7 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
     [props],
   );
 
-  let codeType = File.codeType(props.file);
-  // Robust check for ipynb to ensure it renders as Jupyter
-  if (props.file.extension.toLowerCase().endsWith('ipynb')) {
-    codeType = 'jupyter';
-  }
+  const codeType = File.codeType(props.file);
 
   const fileContent = getFileContent(props.file);
   const lineNumberPadding = React.useCallback(() => {

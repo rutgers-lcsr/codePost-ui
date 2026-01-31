@@ -8,6 +8,7 @@ interface ITestCase {
     type: 'test' | 'code'; // 'test' for structured test case, 'code' for raw code block (preamble/interstitial)
     name?: string;
     points?: number;
+    timeout?: number;
     description?: string;
     logic?: string; // The body of the test or the raw code content
 }
@@ -153,6 +154,18 @@ except AttributeError:
                                                     bordered={false}
                                                 />
                                             </div>
+                                            <div style={{ background: '#f5f5f5', borderRadius: 4, padding: '2px 8px' }}>
+                                                <span style={{ fontSize: 12, marginRight: 8, color: '#888' }}>Timeout:</span>
+                                                <InputNumber
+                                                    value={item.timeout}
+                                                    onChange={val => updateItem(item.id, { timeout: Number(val) || undefined })}
+                                                    min={1}
+                                                    placeholder="30"
+                                                    size="small"
+                                                    style={{ width: 50 }}
+                                                    bordered={false}
+                                                />
+                                            </div>
                                             <Button type="text" danger icon={<DeleteOutlined />} onClick={() => deleteItem(item.id)} />
                                         </Space>
                                     }
@@ -258,7 +271,8 @@ const parseCode = (code: string, language: string): ITestCase[] => {
         // Group 1: Name
         // Group 2: Points (optional)
         // Group 3: Description (optional)
-        const regex = /@test\(\s*"([^"]*)"\s*(?:,\s*points\s*=\s*([0-9.]+))?(?:,\s*description\s*=\s*"([^"]*)")?\s*\)\s*\ndef\s+[a-zA-Z0-9_]+\s*\(\):\s*\n/g;
+        // Group 4: Timeout (optional)
+        const regex = /@test\(\s*"([^"]*)"\s*(?:,\s*points\s*=\s*([0-9.]+))?(?:,\s*description\s*=\s*"([^"]*)")?(?:,\s*timeout\s*=\s*([0-9.]+))?\s*\)\s*\ndef\s+[a-zA-Z0-9_]+\s*\(\):\s*\n/g;
 
         while ((match = regex.exec(code)) !== null) {
             // Push preceding raw code
@@ -270,6 +284,7 @@ const parseCode = (code: string, language: string): ITestCase[] => {
             const name = match[1];
             const points = parseFloat(match[2] || '1');
             const description = match[3] || '';
+            const timeout = match[4] ? parseFloat(match[4]) : undefined;
 
             // Extract body - assumption: indented block follows
             // We need to read lines until unindent or EOF
@@ -336,7 +351,7 @@ const parseCode = (code: string, language: string): ITestCase[] => {
 
             // Reconstruct body
             const logic = bodyLines.join('\n');
-            items.push({ id: generateId(), type: 'test', name, points, description, logic });
+            items.push({ id: generateId(), type: 'test', name, points, description, logic, timeout });
 
             // Update lastIndex based on consumed lines from original string
             let consumed = 0;
@@ -373,6 +388,7 @@ const generateCode = (items: ITestCase[], language: string): string => {
 
             const pythonDesc = item.description ? `    """\n    ${item.description}\n    """\n` : '';
             const descArg = item.description ? `, description="${item.description}"` : '';
+            const timeoutArg = item.timeout ? `, timeout=${item.timeout}` : '';
 
             // Normalize name: test_Exact Name -> test_Exact_Name
             // Use a stable name derivation instead of random
@@ -385,7 +401,7 @@ const generateCode = (items: ITestCase[], language: string): string => {
             const indentedLogic = cleanLogic.split('\n').map(l => l.trim() ? `    ${l}` : l).join('\n');
 
             return `
-@test("${item.name}", points=${item.points}${descArg})
+@test("${item.name}", points=${item.points}${descArg}${timeoutArg})
 def ${funcName}():
 ${pythonDesc}${indentedLogic}
 `;

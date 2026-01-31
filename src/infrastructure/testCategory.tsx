@@ -8,6 +8,12 @@ export const TestCategoryV = t.intersection(
       assignment: t.number,
       name: t.string,
       testCases: t.array(t.number),
+      testScript: t.union([t.string, t.null]),
+      maxPoints: t.union([t.number, t.null]),
+      sortKey: t.union([t.number, t.null]),
+      targetFileName: t.union([t.string, t.null]),
+      // helperFiles: t.array(t.number), // Deprecated
+      resources: t.array(t.any), // Using t.any to avoid circular dependency issues, or import TestCategoryResourceV
     }),
   ],
   'TestCategory',
@@ -19,6 +25,11 @@ const TestCategoryPostV = t.intersection(
     t.type({
       assignment: t.number,
       name: t.string,
+      testScript: t.union([t.string, t.null]),
+      maxPoints: t.union([t.number, t.null]),
+      sortKey: t.union([t.number, t.null]),
+      targetFileName: t.union([t.string, t.null]),
+      // helperFiles: t.array(t.number), // Deprecated
     }),
   ],
   'TestCategory',
@@ -29,6 +40,11 @@ const TestCategoryPatchV = t.intersection(
     GenericObject,
     t.partial({
       name: t.string,
+      testScript: t.union([t.string, t.null]),
+      maxPoints: t.union([t.number, t.null]),
+      sortKey: t.union([t.number, t.null]),
+      targetFileName: t.union([t.string, t.null]),
+      // helperFiles: t.array(t.number), // Deprecated
     }),
   ],
   'TestCategory',

@@ -295,7 +295,7 @@ export const ResultDetail = (props: IProps) => {
           {filterCase && testsToShow.length > 0 ? (
             <TestDetail testCase={filterCase} test={(testsToShow && testsToShow[0]) || undefined} />
           ) : testsToShow.length > 0 ? (
-            <TestsList />
+            <TestsList submissionId={filterSubmission?.id || 0} tests={cases} />
           ) : (
             <Card style={{ margin: 20 }}>
               <Empty description={'No tests.'} />
@@ -327,14 +327,12 @@ const TestDetail = (props: IResultProps) => {
   let pointsBadge;
   if (props.test) {
     if (props.test.passed) {
-      const points = `${props.testCase.pointsPass > 0 ? '+' : props.testCase.pointsPass < 0 ? '-' : ''}${
-        props.testCase.pointsPass
-      }`;
+      const points = `${props.testCase.pointsPass > 0 ? '+' : props.testCase.pointsPass < 0 ? '-' : ''}${props.testCase.pointsPass
+        }`;
       pointsBadge = <Badge count={points} style={{ backgroundColor: '#52c41a' }} />;
     } else {
-      const points = `${props.testCase.pointsFail > 0 ? '+' : props.testCase.pointsPass < 0 ? '-' : ''}${
-        props.testCase.pointsFail
-      }`;
+      const points = `${props.testCase.pointsFail > 0 ? '+' : props.testCase.pointsPass < 0 ? '-' : ''}${props.testCase.pointsFail
+        }`;
       pointsBadge = <Badge count={points} style={{ backgroundColor: 'red' }} />;
     }
   }

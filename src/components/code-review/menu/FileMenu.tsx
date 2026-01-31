@@ -49,7 +49,7 @@ type FileMenuRootStyle = React.CSSProperties & Record<FileMenuCSSVariable, strin
 
 /* codePost imports */
 import { CommentType } from '../../../infrastructure/comment';
-import { FileType } from '../../../infrastructure/file';
+import { FileType, File as CodePostFile } from '../../../infrastructure/file';
 import { Submission } from '../../../infrastructure/submission';
 
 import { IFileToCommentsMap } from '../../../types/common';
@@ -124,7 +124,7 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
   }, [consoleTheme, isDarkTheme]);
 
   const getFileIcon = (fileName: string) => {
-    const ext = fileName.split('.').pop()?.toLowerCase();
+    const ext = CodePostFile.extension(fileName);
     const style = { marginRight: 8, fontSize: 16, color: consoleTheme.consoleTheme.siderMenuItemColor };
 
     switch (ext) {
@@ -415,9 +415,8 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
             <span style={visuallyHiddenStyle}>
               {openHistoryPath === path
                 ? `${currentFile.name} version history menu expanded. Use arrow keys to explore versions.`
-                : `${currentFile.name} has ${oldVersionsMap[path].length} earlier version${
-                    oldVersionsMap[path].length === 1 ? '' : 's'
-                  }. Activate to open history.`}
+                : `${currentFile.name} has ${oldVersionsMap[path].length} earlier version${oldVersionsMap[path].length === 1 ? '' : 's'
+                }. Activate to open history.`}
             </span>
           </button>
         </Dropdown>

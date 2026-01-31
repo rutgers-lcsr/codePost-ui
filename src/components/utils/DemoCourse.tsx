@@ -178,6 +178,10 @@ const createAssignment = async (course: CourseType, assignment: any) => {
         id: -1,
         assignment: assnObj.id,
         name: category.category,
+        targetFileName: null,
+        testScript: null,
+        maxPoints: null,
+        sortKey: 0,
       };
 
       return TestCategory.create(catPayload).then((catObj) => {

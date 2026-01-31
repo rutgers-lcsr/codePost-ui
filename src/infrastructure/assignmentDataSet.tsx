@@ -1,7 +1,7 @@
 import * as t from 'io-ts';
 import { deleteObject, GenericObject, readObject, readObjectDetail, updateObject } from './generics';
 
-const AssignmentDataSetV = t.intersection(
+export const AssignmentDataSetV = t.intersection(
   [
     GenericObject,
     t.type({
@@ -13,6 +13,7 @@ const AssignmentDataSetV = t.intersection(
       is_active: t.boolean,
     }),
     t.partial({
+      hidden: t.boolean,
       file_url: t.string,
       file_size: t.number,
       file_name: t.string,
@@ -33,6 +34,7 @@ const AssignmentDataSetVPost = t.intersection(
       description: t.string,
       mount_path: t.string,
       is_active: t.boolean,
+      hidden: t.boolean,
     }),
   ],
   'AssignmentDataSetPost',
@@ -46,6 +48,7 @@ const AssignmentDataSetVPatch = t.intersection(
       description: t.string,
       mount_path: t.string,
       is_active: t.boolean,
+      hidden: t.boolean,
     }),
   ],
   'AssignmentDataSetPatch',

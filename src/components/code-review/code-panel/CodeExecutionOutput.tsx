@@ -8,7 +8,7 @@ import {
 } from '@ant-design/icons';
 import { Alert, Button, Card, Space, Tabs, Tag, Typography } from 'antd';
 import React, { useMemo } from 'react';
-import { FileType } from '../../../infrastructure/file';
+import { FileType, File as CodePostFile } from '../../../infrastructure/file';
 
 const { Text } = Typography;
 
@@ -109,7 +109,7 @@ const CodeExecutionOutput: React.FC<CodeExecutionOutputProps> = ({
   onClearOutputs,
 }) => {
   // Determine if notebook
-  const ext = file?.extension || (fileName ? fileName.split('.').pop() : '');
+  const ext = file?.extension || CodePostFile.extension(fileName || '');
   const isNotebook = ext?.toLowerCase() === 'ipynb';
 
   // Extract output data
@@ -207,23 +207,23 @@ const CodeExecutionOutput: React.FC<CodeExecutionOutputProps> = ({
           // Tab 1: Image (Conditional)
           ...(hasImages
             ? [
-                {
-                  key: 'plot',
-                  label: (
-                    <span>
-                      <FileImageOutlined /> Image
-                      {outputImages && outputImages.length > 1 ? `s (${outputImages.length})` : ''}
-                    </span>
-                  ),
-                  children: (
-                    <div style={{ padding: '24px', backgroundColor: '#fff' }}>
-                      {outputImages && outputImages.length > 0
-                        ? outputImages.map((img, idx) => renderImage(img, idx, outputImages))
-                        : outputImage && renderImage(outputImage, 0, outputImages)}
-                    </div>
-                  ),
-                },
-              ]
+              {
+                key: 'plot',
+                label: (
+                  <span>
+                    <FileImageOutlined /> Image
+                    {outputImages && outputImages.length > 1 ? `s (${outputImages.length})` : ''}
+                  </span>
+                ),
+                children: (
+                  <div style={{ padding: '24px', backgroundColor: '#fff' }}>
+                    {outputImages && outputImages.length > 0
+                      ? outputImages.map((img, idx) => renderImage(img, idx, outputImages))
+                      : outputImage && renderImage(outputImage, 0, outputImages)}
+                  </div>
+                ),
+              },
+            ]
             : []),
           // Tab 2: Console Output
           {

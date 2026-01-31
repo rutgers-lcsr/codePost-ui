@@ -35,7 +35,7 @@ import type { ColumnsType } from 'antd/es/table';
 import JSZip from 'jszip';
 import * as React from 'react';
 import { colors } from '../../../../theme/colors';
-import { AssignmentFileType } from '../../../../infrastructure/file';
+import { AssignmentFileType, File as CodePostFile } from '../../../../infrastructure/file';
 import NotebookEditor from './NotebookEditor'; // Added import
 
 const { Text } = Typography;
@@ -51,69 +51,11 @@ interface EditableFile extends AssignmentFileType {
 }
 
 function getCodingLanguage(extension: string): string {
-  const ext = extension.toLowerCase();
-  switch (ext) {
-    case 'js':
-    case 'jsx':
-      return 'javascript';
-    case 'ts':
-    case 'tsx':
-      return 'typescript';
-    case 'py':
-      return 'python';
-    case 'java':
-      return 'java';
-    case 'cpp':
-    case 'cc':
-    case 'cxx':
-    case 'c':
-      return 'cpp';
-    case 'cs':
-      return 'csharp';
-    case 'rb':
-      return 'ruby';
-    case 'go':
-      return 'go';
-    case 'php':
-      return 'php';
-    case 'html':
-    case 'htm':
-      return 'html';
-    case 'css':
-      return 'css';
-    case 'ipynb':
-    case 'json':
-      return 'json';
-    case 'xml':
-      return 'xml';
-    case 'sh':
-      return 'shell';
-    case 'swift':
-      return 'swift';
-    case 'kt':
-    case 'kts':
-      return 'kotlin';
-    case 'rs':
-      return 'rust';
-    case 'dart':
-      return 'dart';
-    case 'r':
-      return 'r';
-    case 'm':
-    case 'mm':
-      return 'objective-c';
-    case 'sql':
-      return 'sql';
-    case 'yaml':
-    case 'yml':
-      return 'yaml';
-    case 'md':
-      return 'markdown';
-    case 'txt':
-      return 'plaintext';
-    default:
-      return 'plaintext'; // Default to plain text for unknown extensions
-  }
+  // Map our detected extensions to Monaco editor languages if they differ
+  const lang = CodePostFile.language({ name: `test.${extension}` } as any);
+  if (lang === 'c++') return 'cpp';
+  if (lang === 'c') return 'cpp'; // Monaco uses 'cpp' for C/C++ usually or 'c'
+  return lang;
 }
 
 const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], onChange, assignmentId }) => {
@@ -179,8 +121,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
     }
 
     // Extract extension from filename
-    const parts = newFileName.split('.');
-    const extension = parts.length > 1 ? parts[parts.length - 1] : 'txt';
+    const extension = CodePostFile.extension(newFileName) || 'txt';
 
     // Generate a temporary negative ID for new files
     const newId = -1 * (files.length + Date.now());
@@ -255,8 +196,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
           const newName = nameInput?.value.trim();
 
           if (newName) {
-            const parts = newName.split('.');
-            const extension = parts.length > 1 ? parts[parts.length - 1] : 'txt';
+            const extension = CodePostFile.extension(newName) || 'txt';
             updateFiles(files.map((f) => (f.id === id ? { ...f, name: newName, path: newPath, extension } : f)));
           }
         },
@@ -287,8 +227,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
           const directory = pathParts.slice(0, -1).join('/');
 
           // Get extension
-          const nameParts = fileName.split('.');
-          const extension = nameParts.length > 1 ? nameParts[nameParts.length - 1] : 'txt';
+          const extension = CodePostFile.extension(fileName) || 'txt';
 
           // Read file content
           const content = await zipEntry.async('text');
@@ -339,8 +278,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
       }
 
       // Handle single file upload
-      const nameParts = file.name.split('.');
-      const extension = nameParts.length > 1 ? nameParts[nameParts.length - 1] : 'txt';
+      const extension = CodePostFile.extension(file.name) || 'txt';
 
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -518,12 +456,12 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
               Assignment Files
             </Text>
             <Tag color="blue" style={{ fontSize: 13 }}>
-              {files.length} {files.length === 1 ? 'file' : 'files'}
+              {files.filter((f) => !f.hidden).length} {files.filter((f) => !f.hidden).length === 1 ? 'file' : 'files'}
             </Tag>
             <Space size={24} style={{ marginLeft: 30 }}>
               <div>
                 <Tag color="success" style={{ marginRight: 6 }}>
-                  {files.filter((f) => f.required).length} Required
+                  {files.filter((f) => f.required && !f.hidden).length} Required
                 </Tag>
                 <Text type="secondary" style={{ fontSize: 12 }}>
                   Must be submitted
@@ -531,7 +469,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
               </div>
               <div>
                 <Tag color="default" style={{ marginRight: 6 }}>
-                  {files.filter((f) => !f.required).length} Optional
+                  {files.filter((f) => !f.required && !f.hidden).length} Optional
                 </Tag>
                 <Text type="secondary" style={{ fontSize: 12 }}>
                   Can be submitted
@@ -546,7 +484,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
       <div>
         <Table
           columns={columns}
-          dataSource={files}
+          dataSource={files.filter((f) => !f.hidden)}
           rowKey="id"
           pagination={false}
           size="middle"
@@ -620,7 +558,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
             </Text>
             <Space.Compact style={{ width: '100%' }}>
               <Input
-                placeholder="Directory (e.g., src or /srv/share)"
+                placeholder="Directory"
                 value={newFilePath}
                 onChange={(e) => setNewFilePath(e.target.value)}
                 style={{ width: '30%' }}
@@ -721,9 +659,9 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
           </div>
         }
       >
-        <Space direction="vertical" size={12} style={{ width: '100%' }}>
+        <Space orientation="vertical" size={12} style={{ width: '100%' }}>
           <Alert
-            message={
+            title={
               <Text style={{ fontSize: 12 }}>
                 <strong>Editor:</strong> This code will be included when students download the assignment files. Add
                 TODOs, function stubs, or template code to guide students.

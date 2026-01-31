@@ -1,8 +1,21 @@
-import { Alert, Badge as AntBadge } from 'antd';
+import { Badge as AntBadge } from 'antd';
 import React from 'react';
 import { osControlKey } from '../../core/operatingSystem';
+import TestsList from '../code-panel/TestsList';
+import { TestCaseType } from '../../../infrastructure/testCase';
 
-const TestsMenu = () => {
+import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
+
+import { TestCategoryType } from '../../../infrastructure/testCategory';
+
+interface TestsMenuProps {
+  submissionId: number;
+  tests: TestCaseType[];
+  rubricCategories?: RubricCategoryType[];
+  testCategories?: TestCategoryType[];
+}
+
+const TestsMenu: React.FC<TestsMenuProps> = ({ submissionId, tests, rubricCategories, testCategories }) => {
   return (
     <div
       id="tests-info"
@@ -11,9 +24,15 @@ const TestsMenu = () => {
         paddingBottom: '10px',
         paddingRight: '15px',
         paddingTop: '10px',
+        height: '100%',
       }}
     >
-      <Alert title="Tests coming soon" type="info" showIcon />
+      <TestsList
+        submissionId={submissionId}
+        tests={tests}
+        rubricCategories={rubricCategories}
+        testCategories={testCategories}
+      />
     </div>
   );
 };

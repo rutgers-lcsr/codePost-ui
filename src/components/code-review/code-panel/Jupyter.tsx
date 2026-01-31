@@ -50,8 +50,12 @@ export interface NotebookMetadata {
   kernelspec?: {
     name: string;
     display_name?: string;
+    language?: string;
   };
-  language_info?: Record<string, unknown>;
+  language_info?: {
+    name?: string;
+    [key: string]: unknown;
+  };
   [key: string]: unknown;
 }
 
@@ -177,10 +181,24 @@ export const jupyterToMarkdown = (content: unknown): string | null => {
       markdown += '\n\n</div>\n\n';
     }
 
+    // Extract language from notebook metadata, fallback to python
+    let language = 'python';
+    if (
+      jupyterJson.metadata?.language_info?.name &&
+      typeof jupyterJson.metadata.language_info.name === 'string'
+    ) {
+      language = jupyterJson.metadata.language_info.name.toLowerCase();
+    } else if (
+      jupyterJson.metadata?.kernelspec?.language &&
+      typeof jupyterJson.metadata.kernelspec.language === 'string'
+    ) {
+      language = jupyterJson.metadata.kernelspec.language.toLowerCase();
+    }
+
     if (cell.cell_type === 'code') {
       // For code cells, wrap in a div with cell index
       markdown += `<div data-cell-index="${cellIndex}"${idAttr}>\n\n`;
-      markdown += '```python\n';
+      markdown += '```' + language + '\n';
       if (Array.isArray(cell.source)) {
         markdown += cell.source.join('');
       } else {
@@ -283,7 +301,7 @@ export const jupyterToMarkdown = (content: unknown): string | null => {
             !cell.outputs?.some((o: NotebookCellOutput) => o.output_type === 'error')
           ) {
             if (output.text) {
-              markdown += '\n```error\n⚠️  STDERR:\n';
+              markdown += '\n```error\n  STDERR:\n';
               if (Array.isArray(output.text)) {
                 markdown += output.text.join('');
               } else {

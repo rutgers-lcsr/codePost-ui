@@ -123,18 +123,18 @@ interface IUploadSubmissionDialogProps {
   };
   /** Function to upload submission */
   uploadSubmission:
-    | ((
-        assignment: AssignmentStudentType,
-        partners: string[],
-        files: FileType[],
-        sendConfirmationEmail: boolean,
-      ) => Promise<StudentSubmissionType>)
-    | ((
-        assignment: AssignmentType,
-        partners: string[],
-        files: FileType[],
-        sendConfirmationEmail: boolean,
-      ) => Promise<SubmissionInfoType>);
+  | ((
+    assignment: AssignmentStudentType,
+    partners: string[],
+    files: FileType[],
+    sendConfirmationEmail: boolean,
+  ) => Promise<StudentSubmissionType>)
+  | ((
+    assignment: AssignmentType,
+    partners: string[],
+    files: FileType[],
+    sendConfirmationEmail: boolean,
+  ) => Promise<SubmissionInfoType>);
   /** Disable student selection dropdown */
   disableStudentSelect?: boolean;
   /** Callback when upload is successful */
@@ -209,6 +209,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
   );
   const [submissionTests, setSubmissionTests] = useState<SubmissionTestType[]>([]);
   const [testsLog, setTestsLog] = useState<string | null>(null);
+  const [testCasesState, setTestCasesState] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<string>('1');
   const [lateSubmissionModalVisible, setLateSubmissionModalVisible] = useState<boolean>(false);
 
@@ -251,6 +252,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
           caseObj[testCase.testCategory] = [...caseObj[testCase.testCategory], testCase];
         });
         setTestCategories(fetchedCategories);
+        setTestCasesState(exposedTestCases);
         setLoadingTests(false);
       }
     },
@@ -637,7 +639,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
           ),
           okText: 'Continue and simulate tests',
           onOk: execute,
-          onCancel: () => {},
+          onCancel: () => { },
         });
       } else {
         message.warning(
@@ -1020,9 +1022,9 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
         sendMeAConfirmationEmailCheckbox = (
           <span key="sendMeAConfirmationEmailCheckbox">
             {selectedAssignment &&
-            selectedAssignment.uploadDueDate &&
-            dueDatePassed(selectedAssignment.uploadDueDate) &&
-            !hideDueDate ? (
+              selectedAssignment.uploadDueDate &&
+              dueDatePassed(selectedAssignment.uploadDueDate) &&
+              !hideDueDate ? (
               <Tag color="volcano">Due Date Passed</Tag>
             ) : null}
             <Checkbox checked={sendMeAConfirmationEmail} onChange={toggleSendMeAConfirmationEmail}>
@@ -1227,7 +1229,10 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
           {showTestsTab && (
             <Tabs.TabPane tab="Tests" key="3">
               <div style={{ minHeight: MIN_TEST_HEIGHT, height: 'calc(100vh - 400px)' }}>
-                <TestsList />
+                <TestsList
+                  submissionId={submission?.id || 0}
+                  tests={testCasesState}
+                />
               </div>
             </Tabs.TabPane>
           )}

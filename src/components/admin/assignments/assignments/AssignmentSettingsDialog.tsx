@@ -495,14 +495,34 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
               key: 'resources',
               children: (
                 <div style={tabPaneStyle}>
-                  <Form.Item extra="Starter files that students will download, complete, and submit back for grading. Also used for figuring out the environment to run student code.">
-                    <AssignmentFilesForm value={templates} onChange={setTemplates} assignmentId={assignment.id} />
-                  </Form.Item>
-                  <div style={{ marginTop: 24, marginBottom: 24, borderTop: '1px solid #f0f0f0' }} />
-                  <AssignmentDataSetsForm
-                    assignmentId={assignment.id}
-                    datasets={datasets}
-                    onDatasetsChange={onDatasetsChange}
+                  <Tabs
+                    defaultActiveKey="files"
+                    items={[
+                      {
+                        label: 'Files',
+                        key: 'files',
+                        children: (
+                          <Form.Item extra="Starter files that students will download, complete, and submit back for grading. Also used for figuring out the environment to run student code.">
+                            <AssignmentFilesForm
+                              value={templates}
+                              onChange={setTemplates}
+                              assignmentId={assignment.id}
+                            />
+                          </Form.Item>
+                        ),
+                      },
+                      {
+                        label: 'Datasets',
+                        key: 'datasets',
+                        children: (
+                          <AssignmentDataSetsForm
+                            assignmentId={assignment.id}
+                            datasets={datasets}
+                            onDatasetsChange={onDatasetsChange}
+                          />
+                        ),
+                      },
+                    ]}
                   />
                 </div>
               ),

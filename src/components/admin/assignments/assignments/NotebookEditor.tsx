@@ -14,24 +14,11 @@ import Editor from '@monaco-editor/react';
 import { Button, Card, Empty, Radio, Space, Tooltip, Typography } from 'antd';
 import * as React from 'react';
 import { colors } from '../../../../theme/colors';
+import { NotebookStructure, NotebookCell, File as CodePostFile } from '../../../../infrastructure/file';
 
 const { Text } = Typography;
 
-interface NotebookCell {
-  cell_type: 'code' | 'markdown' | 'raw';
-  source: string[];
-  metadata?: Record<string, unknown>;
-  outputs?: unknown[];
-  execution_count?: number | null;
-}
 
-// nbformat: 4
-interface NotebookStructure {
-  cells: NotebookCell[];
-  metadata?: Record<string, unknown>;
-  nbformat?: number;
-  nbformat_minor?: number;
-}
 
 interface NotebookEditorProps {
   content: string;
@@ -53,41 +40,7 @@ const NotebookEditor: React.FC<NotebookEditorProps> = ({ content, onChange, heig
     }
 
     try {
-      if (!content.trim()) {
-        // Initialize with empty notebook structure if content is empty
-        const emptyNotebook: NotebookStructure = {
-          cells: [],
-          metadata: {
-            kernelspec: {
-              display_name: 'Python 3',
-              language: 'python',
-              name: 'python3',
-            },
-            language_info: {
-              codemirror_mode: {
-                name: 'ipython',
-                version: 3,
-              },
-              file_extension: '.py',
-              mimetype: 'text/x-python',
-              name: 'python',
-              nbconvert_exporter: 'python',
-              pygments_lexer: 'ipython3',
-              version: '3.8.5',
-            },
-          },
-          nbformat: 4,
-          nbformat_minor: 4,
-        };
-        setNotebook(emptyNotebook);
-        setParseError(null);
-        return;
-      }
-
-      const parsed = JSON.parse(content);
-      if (!Array.isArray(parsed.cells)) {
-        throw new Error('Invalid notebook format: "cells" array is missing');
-      }
+      const parsed = CodePostFile.parseNotebook(content);
       setNotebook(parsed);
       setParseError(null);
     } catch (e) {
@@ -263,8 +216,20 @@ const NotebookEditor: React.FC<NotebookEditorProps> = ({ content, onChange, heig
             <div style={{ border: '1px solid #d9d9d9', borderRadius: 4, overflow: 'hidden' }}>
               <Editor
                 height={cell.cell_type === 'markdown' ? '150px' : '200px'}
-                defaultLanguage={cell.cell_type === 'code' ? 'python' : 'markdown'}
-                language={cell.cell_type === 'code' ? 'python' : 'markdown'}
+                defaultLanguage={
+                  cell.cell_type === 'code'
+                    ? (notebook.metadata?.language_info as any)?.name?.toLowerCase() ||
+                    (notebook.metadata?.kernelspec as any)?.language?.toLowerCase() ||
+                    'python'
+                    : 'markdown'
+                }
+                language={
+                  cell.cell_type === 'code'
+                    ? (notebook.metadata?.language_info as any)?.name?.toLowerCase() ||
+                    (notebook.metadata?.kernelspec as any)?.language?.toLowerCase() ||
+                    'python'
+                    : 'markdown'
+                }
                 value={getSourceString(cell.source)}
                 onChange={(val) => handleCellChange(index, val || '')}
                 theme="vs-light"

@@ -10,6 +10,7 @@ import { codeMirorLanguageMap } from './languageUtils';
 import useHotkeys, { S_KEY } from '../../../../../code-review/useHotkeys';
 import Editor from '@monaco-editor/react';
 import { osControlKey } from '../../../../../core/operatingSystem';
+import { File } from '../../../../../../infrastructure/file';
 
 type themeType = 'light' | 'dark';
 
@@ -50,12 +51,7 @@ export const CodeWindow = (props: IProps) => {
 
   // ******************************* Util functions  *******************************
   const getMode = () => {
-    let extension: string;
-    if (props.name.includes('.')) {
-      extension = props.name.split('.')[1].replace('.', '');
-    } else {
-      extension = props.name;
-    }
+    const extension = File.extension(props.name);
     if (extension in codeMirorLanguageMap) {
       return codeMirorLanguageMap[extension];
     } else return 'txt';
