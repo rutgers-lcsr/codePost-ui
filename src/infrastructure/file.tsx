@@ -78,6 +78,9 @@ const AssignmentFileV = t.intersection(
       description: t.string,
       required: t.boolean,
     }),
+    t.partial({
+      hidden: t.boolean,
+    }),
   ],
   'AssignmentFile',
 );
@@ -93,6 +96,7 @@ const AssignmentFileVPost = t.intersection(
     }),
     t.partial({
       data: t.string,
+      hidden: t.boolean,
     }),
   ],
   'AssignmentFilePost',
@@ -172,6 +176,22 @@ export const BinaryExtensions = [
   '.xlsx',
 ];
 
+
+export interface NotebookCell {
+  cell_type: 'code' | 'markdown' | 'raw';
+  source: string[];
+  metadata?: Record<string, unknown>;
+  outputs?: unknown[];
+  execution_count?: number | null;
+}
+
+export interface NotebookStructure {
+  cells: NotebookCell[];
+  metadata?: Record<string, unknown>;
+  nbformat?: number;
+  nbformat_minor?: number;
+}
+
 type CodeType = 'code' | 'markdown' | 'jupyter' | 'image' | 'pdf';
 
 // Helper to get file content (supports both 'data' and 'code' fields)
@@ -187,33 +207,98 @@ export class File {
   public static update = updateObject(FileV, FileVPatch, 'files');
   public static delete = deleteObject(FileV, 'files');
 
-  public static language = (file: FileType) => {
-    const extensionMatch = /^(?:\.?)(.*)/;
-    const extension = extensionMatch.exec(file.extension)![1];
-    return LangMap.languages(extension)[0];
+  public static language = (file: FileType | SubmissionFileType | AssignmentFileType | CourseFileType) => {
+    // 1. Get unified extension
+    const ext = File.extension(file.name);
+
+    // 2. If it's a notebook, try to parse metadata
+    if (ext === 'ipynb') {
+      const content = getFileContent(file);
+      if (content) {
+        try {
+          // Use JSON.parse for robust metadata extraction
+          // We only care about the metadata field, which is usually at the top level
+          const json = JSON.parse(content);
+
+          if (json?.metadata?.language_info?.name) {
+            return json.metadata.language_info.name.toLowerCase();
+          }
+
+          if (json?.metadata?.kernelspec?.language) {
+            return json.metadata.kernelspec.language.toLowerCase();
+          }
+        } catch (e) {
+          // If JSON parsing fails (e.g. invalid json or partial upload), fall back
+          console.warn(`Failed to parse ipynb content for language detection: [${file.name}]`, e);
+        }
+      }
+      return 'python'; // Default fallback for notebooks if parsing fails
+    }
+
+    // 3. Fallback to lang-map
+    return LangMap.languages(ext)[0] || ext;
   };
 
-  // FIXME: replace language with this
-  public static language2 = (fileExtension: string) => {
-    const extensionMatch = /^(?:\.?)(.*)/;
-    const extension = extensionMatch.exec(fileExtension)![1];
-    return LangMap.languages(extension)[0];
-  };
-
-  public static codeType = (file: FileType): CodeType => {
-    return JupyterExtensions.includes(file.extension.toLowerCase())
+  public static codeType = (file: FileType | SubmissionFileType | AssignmentFileType | CourseFileType): CodeType => {
+    const ext = File.extension(file.name);
+    return JupyterExtensions.includes(ext) || JupyterExtensions.includes('.' + ext)
       ? 'jupyter'
-      : MarkdownExtensions.includes(file.extension.toLowerCase())
+      : MarkdownExtensions.includes(ext) || MarkdownExtensions.includes('.' + ext)
         ? 'markdown'
-        : ImageExtensions.includes(file.extension.toLowerCase())
+        : ImageExtensions.includes(ext) || ImageExtensions.includes('.' + ext)
           ? 'image'
-          : PDFExtensions.includes(file.extension.toLowerCase())
+          : PDFExtensions.includes(ext) || PDFExtensions.includes('.' + ext)
             ? 'pdf'
             : 'code';
   };
 
   public static extension = (filename: string): string => {
-    return filename.slice(((filename.lastIndexOf('.') - 1) >>> 0) + 2);
+    if (!filename) return '';
+    const parts = filename.split('.');
+    return parts.length > 1 ? parts.pop()!.toLowerCase() : '';
+  };
+
+  public static parseNotebook = (content: string): NotebookStructure => {
+    if (!content.trim()) {
+      return File.getEmptyNotebook();
+    }
+
+    try {
+      const parsed = JSON.parse(content);
+      if (!Array.isArray(parsed.cells)) {
+        throw new Error('Invalid notebook format: "cells" array is missing');
+      }
+      return parsed as NotebookStructure;
+    } catch (e) {
+      throw new Error(e instanceof Error ? e.message : 'Invalid JSON content');
+    }
+  };
+
+  public static getEmptyNotebook = (): NotebookStructure => {
+    return {
+      cells: [],
+      metadata: {
+        kernelspec: {
+          display_name: 'Python 3',
+          language: 'python',
+          name: 'python3',
+        },
+        language_info: {
+          codemirror_mode: {
+            name: 'ipython',
+            version: 3,
+          },
+          file_extension: '.py',
+          mimetype: 'text/x-python',
+          name: 'python',
+          nbconvert_exporter: 'python',
+          pygments_lexer: 'ipython3',
+          version: '3.8.5',
+        },
+      },
+      nbformat: 4,
+      nbformat_minor: 4,
+    };
   };
 }
 

@@ -22,7 +22,7 @@ import { UserType } from '../../../../../infrastructure/user';
 import CPTooltip from '../../../../core/CPTooltip';
 import CPAdminDetail from '../../../other/CPAdminDetail';
 import { EnvironmentSpecs } from './EnvironmentSpecs';
-import { TestDefinitions } from './TestDefinitions';
+import { TestManager } from './manager/TestManager';
 
 /* codePost util imports */
 import { fetchEnvironment } from '../../../../core/testFetchUtils';
@@ -223,17 +223,7 @@ export const TestingSetup = (props: IProps) => {
     items.push({
       key: 'tests',
       label: 'Tests',
-      children: (
-        <TestDefinitions
-          currentAssignment={props.currentAssignment}
-          submissions={props.submissions}
-          env={env}
-          updateEnv={setEnv}
-          reloadEnv={reloadEnv}
-          loading={loading}
-          helpers={helperFiles}
-        />
-      ),
+      children: <TestManager assignment={props.currentAssignment} />,
     });
   }
 

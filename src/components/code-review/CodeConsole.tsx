@@ -1523,7 +1523,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       if (updatedSubmission.isFinalized) {
         sendSlack(
           'Submission finalized',
-          `${updatedSubmission.id} ${assignment ? assignment.name : ''} | ${state.course ? state.course.name : ''
+          `${updatedSubmission.id} ${assignment ? assignment.name : ''} | ${
+            state.course ? state.course.name : ''
           } ${state.course ? state.course.period : ''}`,
           colors.brandPrimary,
           '#user_notifications_everything',
@@ -1729,9 +1730,9 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         // Only preserve tab and file state if staying within the same assignment
         const queryParams = isSameAssignment
           ? queryString.stringify({
-            tab: activeSiderKey,
-            file: selectedFile?.name,
-          })
+              tab: activeSiderKey,
+              file: selectedFile?.name,
+            })
           : '';
 
         const url = queryParams ? `/code/${submission.id}?${queryParams}` : `/code/${submission.id}`;
@@ -2093,19 +2094,19 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       state.hideGrades || permissionLevel === PERMISSION_LEVEL.READ_FILES_ONLY
         ? []
         : [
-          <GradeButton
-            key="subheader-grade"
-            assignment={assignment!}
-            submission={submission === undefined ? readOnlySubmission! : submission}
-            calculateGrade={calculateGradeFromState}
-            rubricCategories={rubricCategories}
-            comments={comments}
-            commentRubricComments={commentRubricComments}
-            files={files}
-            submissionTests={state.tests}
-            testCases={Object.values(state.testCases).flat() as any} // eslint-disable-line @typescript-eslint/no-explicit-any
-          />,
-        ];
+            <GradeButton
+              key="subheader-grade"
+              assignment={assignment!}
+              submission={submission === undefined ? readOnlySubmission! : submission}
+              calculateGrade={calculateGradeFromState}
+              rubricCategories={rubricCategories}
+              comments={comments}
+              commentRubricComments={commentRubricComments}
+              files={files}
+              submissionTests={state.tests}
+              testCases={Object.values(state.testCases).flat() as any} // eslint-disable-line @typescript-eslint/no-explicit-any
+            />,
+          ];
 
     const fileMenuTitle = <FileMenuTitle key="files" files={files} />;
     if (props.inDemoMode) {
@@ -2310,7 +2311,13 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             addLateDayCreditComment={addLateDayCreditComment}
             isStudentMode={false}
           />,
-          <TestsMenu key="tests-menu" />,
+          <TestsMenu
+            key="tests-menu"
+            submissionId={submission!.id}
+            tests={Object.values(state.testCases).flat() as any}
+            rubricCategories={state.rubricCategories}
+            testCategories={state.testCategories}
+          />,
           <FileMenu
             key="file-menu"
             title="Files"
@@ -2522,7 +2529,13 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           isStudentMode={state.isStudent}
           courseStudentsCanSeeGraders={state.course?.studentsCanSeeGraders}
         />,
-        <TestsMenu key="tests-menu" />,
+        <TestsMenu
+          key="tests-menu"
+          submissionId={readOnlySubmission!.id}
+          tests={Object.values(state.testCases).flat() as any}
+          rubricCategories={state.rubricCategories}
+          testCategories={state.testCategories}
+        />,
         <FileMenu
           key="file-menu"
           title="Files"
@@ -2554,7 +2567,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             comments={[]} // No comments in files-only mode
             readOnly={true}
             user={props.user.email}
-            onHighlightClick={(_e) => { }}
+            onHighlightClick={(_e) => {}}
             executionResult={state.executionResults[selectedFile!.id] || null}
             onClearOutputs={handleClearOutputs}
           />
@@ -2566,8 +2579,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             comments={[]} // No comments in files-only mode
             readOnly={true}
             user={props.user.email}
-            onHighlightClick={(_e: React.MouseEvent) => { }}
-            onHighlightSelect={(_sel) => { }}
+            onHighlightClick={(_e: React.MouseEvent) => {}}
+            onHighlightSelect={(_sel) => {}}
             focusedCommentId={undefined}
           >
             <CodePanelLayout
@@ -2800,7 +2813,15 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
       // 2. Tests
       if (isCourseAdmin(assignment) || state.testCategories.length > 0) {
-        sider.push(<TestsMenu key="tests-menu" />);
+        sider.push(
+          <TestsMenu
+            key="tests-menu"
+            submissionId={submission!.id}
+            tests={Object.values(state.testCases).flat() as any}
+            rubricCategories={state.rubricCategories}
+            testCategories={state.testCategories}
+          />,
+        );
         siderTitles.push(testsTitle);
         siderTooltips.push(
           <TestsMenuTooltip
@@ -3070,7 +3091,9 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       />
       <CourseContext.Provider value={state.course || defaultCourse}>
         {localStorage.getItem('source') !== 'codePost' ? (
-          <main id="demo-main-content" style={{ height: '100%' }}>{content}</main>
+          <main id="demo-main-content" style={{ height: '100%' }}>
+            {content}
+          </main>
         ) : (
           <StandardConsoleLayout
             consoleTypes={['grade']}

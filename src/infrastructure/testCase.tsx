@@ -22,17 +22,16 @@ export const TestCaseV = t.intersection(
       pointsFail: t.number,
       text: t.string,
       modified: t.string,
-      fileName: t.string,
       exposed: t.boolean,
       instances: t.array(t.number),
       explanation: t.string,
       lastSolutionRun: t.number,
-      dataSet: t.union([t.number, t.null]),
       rubricItem: t.union([t.number, t.null]),
     }),
     t.partial({
       targetCellId: t.union([t.number, t.string, t.null]),
       testCode: t.string,
+      timeout: t.number,
     }),
   ],
   'TestCase',
@@ -49,12 +48,11 @@ const TestCaseVPatch = t.intersection(
       pointsPass: t.number,
       pointsFail: t.number,
       text: t.string,
-      fileName: t.string,
       exposed: t.boolean,
       lastSolutionRun: t.number,
-      dataSet: t.union([t.number, t.null]),
       testCode: t.string,
       rubricItem: t.union([t.number, t.null]),
+      timeout: t.number,
     }),
   ],
   'TestCasePatch',
@@ -71,14 +69,13 @@ const TestCaseVPost = t.intersection(
       pointsPass: t.number,
       pointsFail: t.number,
       text: t.string,
-      fileName: t.string,
       exposed: t.boolean,
       explanation: t.string,
     }),
     t.partial({
-      dataSet: t.union([t.number, t.null]),
       testCode: t.string,
       rubricItem: t.union([t.number, t.null]),
+      timeout: t.number,
     }),
   ],
   'TestCasePost',
@@ -95,6 +92,7 @@ export const StudentTestCaseV = t.intersection(
       pointsFail: t.number,
       explanation: t.string,
       exposed: t.boolean,
+      rubricItem: t.union([t.number, t.null]),
     }),
   ],
   'TestCase',
@@ -134,7 +132,7 @@ export class TestCase {
     return testCases.sort(compare);
   };
 
-  public static runV2 = async (payload: { testId: number; submissionId: string }) => {
+  public static runV2 = async (payload: { testId?: number; submissionId: string }) => {
     const res = await fetch(`${process.env.REACT_APP_API_URL}/autograder/v2/run/`, {
       headers: getHeaders(),
       method: 'POST',

@@ -255,7 +255,7 @@ export class Assignment {
 
   public static generateTest = async (
     assignmentId: number,
-    payload: { target_filename: string; context_file_id?: number; context_file_name?: string; language?: string },
+    payload: { target_filename: string; context_file_id?: number; context_file_name?: string; language?: string; rubric_text?: string },
   ): Promise<{ script: string }> => {
     const res = await fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignmentId}/generateTest/`, {
       headers: {

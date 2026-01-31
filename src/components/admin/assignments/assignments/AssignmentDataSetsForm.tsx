@@ -164,7 +164,12 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
       title: 'Mount Path',
       dataIndex: 'mount_path',
       key: 'mount_path',
-      render: (path: string) => <code style={{ fontSize: '12px' }}>{path || 'shared/<name>'}</code>,
+      render: (path: string, record: AssignmentDataSetType) => {
+        // if the path ends with a /, add the name of the file. this is because if the ending is a /, it is a directory, else we assume the name is where it should be mounted
+        const name = path.endsWith('/') ? path + record.name : path;
+
+        return <code style={{ fontSize: '12px' }}>{name || 'shared/<name>'}</code>;
+      },
     },
     {
       title: 'File',
@@ -225,7 +230,13 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
       </div>
 
       {datasets.length > 0 ? (
-        <Table columns={columns} dataSource={datasets} rowKey="id" pagination={false} size="small" />
+        <Table
+          columns={columns}
+          dataSource={datasets.filter((d: any) => !d.hidden)}
+          rowKey="id"
+          pagination={false}
+          size="small"
+        />
       ) : (
         <div
           style={{

@@ -41,12 +41,10 @@ interface IFullTestValues {
   testType: string;
   explanation: string;
   commandText: string;
-  fileName: string;
   exposed: boolean;
-
   pointsPass: number;
   pointsFail: number;
-  dataSet: number;
+
   // Legacy fields removed
 
   targetCellId?: number | string;
@@ -62,13 +60,12 @@ export const TestItem = (props: ITestItemProps) => {
     const testCaseCopy = { ...props.testCase };
     testCaseCopy.text = values.commandText || '';
     testCaseCopy.description = values.description;
-    testCaseCopy.fileName = values.fileName;
     testCaseCopy.type = values.testType;
     testCaseCopy.exposed = values.exposed;
     testCaseCopy.pointsPass = values.pointsPass;
     testCaseCopy.pointsFail = values.pointsFail;
     testCaseCopy.explanation = values.explanation;
-    testCaseCopy.dataSet = values.dataSet || null;
+    testCaseCopy.explanation = values.explanation;
     testCaseCopy.targetCellId = (values.targetCellId as any) || null;
     testCaseCopy.testCode = values.testCode || '';
     testCaseCopy.testCode = values.testCode || '';

@@ -14,7 +14,11 @@ export const SubmissionTestV = t.intersection(
       modified: t.string,
       isError: t.boolean,
     }),
-    t.partial({}),
+    t.partial({
+      score: t.number,
+      maxScore: t.number,
+      results: t.union([t.array(t.any), t.null]),
+    }),
   ],
   'SubmissionTest',
 );

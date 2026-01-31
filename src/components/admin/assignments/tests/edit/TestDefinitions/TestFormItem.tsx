@@ -20,17 +20,17 @@ import CodeExecutionOutput from '../../../../../code-review/code-panel/CodeExecu
 
 /* codePost util imports */
 import { extensionsByLanguage, testTemplates } from '../utils/languageUtils';
-import { getHeaders } from '../../../../../../infrastructure/generics';
+// import { getHeaders } from '../../../../../../infrastructure/generics';
 import { AssignmentType } from '../../../../../../infrastructure/types';
 import { AssignmentFileType } from '../../../../../../infrastructure/file';
+
+import { Assignment } from '../../../../../../infrastructure/assignment';
+import { RubricCommentType } from '../../../../../../infrastructure/rubricComment';
 import { TestScriptEditor } from './TestScriptEditor';
 
 const { Option } = Select;
 
-interface IDataset {
-  id: number;
-  name: string;
-}
+
 
 interface ITestFormItemProps {
   form: LegacyFormController;
@@ -51,46 +51,43 @@ interface ITestFormItemProps {
 }
 
 const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
-  const { testCase, form, language, currentAssignment, activeSubmission } = props;
+  const { testCase, form, language, currentAssignment } = props;
   const { getFieldDecorator } = form;
 
   // Helpers
 
 
   // State
+
+  const [rubricComments, setRubricComments] = useState<RubricCommentType[]>([]);
   const [commandText, setCommandText] = useState(testCase.text);
   const [testType, setTestType] = useState(testCase.type);
-  const [selectedFileName, setSelectedFileName] = useState(testCase.fileName);
+
   const [explanation, setExplanation] = useState(testCase.explanation);
 
 
   const [testCode, setTestCode] = useState(testCase.testCode || '');
-  const [datasets, setDatasets] = useState<IDataset[]>([]);
+
 
   // Check if notebook
-  const isNotebook = (Array.isArray(selectedFileName) ? selectedFileName[0] || '' : selectedFileName || '').endsWith(
-    '.ipynb',
-  );
+  // Check if notebook
+  const isNotebook = false; // Derived from category in future, currently disabled for per-test override
 
   // Effects
   useEffect(() => {
-    const fetchDatasets = async () => {
+
+
+    const fetchRubric = async () => {
       try {
-        const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/assignmentDataSets/by_assignment/?assignment_id=${currentAssignment.id}`,
-          {
-            headers: getHeaders(),
-          },
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setDatasets(data);
-        }
+        const rubric = await Assignment.readRubric(currentAssignment.id);
+        setRubricComments(rubric.rubricComments);
       } catch (e) {
-        console.error('Failed to fetch datasets', e);
+        console.error('Failed to fetch rubric', e);
       }
     };
-    fetchDatasets();
+
+
+    fetchRubric();
   }, [currentAssignment.id]);
 
   // Handlers
@@ -113,9 +110,7 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
     onTypeChange(e.target.value);
   };
 
-  const onChangeFileName = (newName: string) => {
-    setSelectedFileName(newName);
-  };
+
 
 
 
@@ -156,14 +151,7 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
   const typesWithEditDisabled = ['file']; // Disable select
   const typesWithRunDisabled = ['file', 'external']; // Disable definitions and pseudoterminal
 
-  const fileOptions =
-    activeSubmission && activeSubmission.files && typeof activeSubmission.files[0] !== 'number'
-      ? (activeSubmission.files as any[]).map((f: any) => (
-        <Option key={f.name} value={f.name}>
-          {f.name}
-        </Option>
-      ))
-      : [];
+
 
   return (
     <div style={{ padding: '0px 15px', maxWidth: '1400px', margin: '0 auto' }}>
@@ -244,40 +232,13 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
               headStyle={{ borderBottom: '1px solid #f0f0f0', fontWeight: 600 }}
             >
               <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item label={isNotebook ? 'Target Notebook' : 'Target File'}>
-                    {getFieldDecorator('fileName', {
-                      initialValue: testCase.fileName,
-                      rules: [{ required: true, message: 'Target is required' }],
+
+                <Col span={6}>
+                  <Form.Item label="Timeout (s)">
+                    {getFieldDecorator('timeout', {
+                      initialValue: testCase.timeout || 30,
                     })(
-                      <Select
-                        mode="tags"
-                        style={{ width: '100%' }}
-                        placeholder="Select file or type..."
-                        onChange={(val: string) => onChangeFileName(val)}
-                      >
-                        {fileOptions}
-                      </Select>,
-                    )}
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item label="Dataset (Optional)">
-                    {getFieldDecorator('dataSet', {
-                      initialValue: testCase.dataSet,
-                    })(
-                      <Select
-                        style={{ width: '100%' }}
-                        placeholder="None (Default)"
-                        allowClear
-                        disabled={props.isRunning}
-                      >
-                        {datasets.map((d) => (
-                          <Option key={d.id} value={d.id}>
-                            {d.name}
-                          </Option>
-                        ))}
-                      </Select>,
+                      <InputNumber min={1} max={600} style={{ width: '100%' }} placeholder="30" />
                     )}
                   </Form.Item>
                 </Col>
@@ -318,8 +279,10 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
                         onChange={setTestCode}
                         language={language}
                         assignmentId={currentAssignment.id}
-                        targetFileName={Array.isArray(selectedFileName) ? selectedFileName[0] : selectedFileName}
+                        targetFileName={""}
                         contextFiles={props.assignmentFiles || []}
+                        onRubricItemChange={(id) => props.form.setFieldsValue({ rubricItem: id })}
+                        selectedRubricItem={props.form.getFieldValue('rubricItem') || testCase.rubricItem}
                       />
                     </div>
                   </Form.Item>
@@ -356,6 +319,28 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
             >
 
 
+              <Form.Item label="Link to Rubric Item (Optional)" help="If set, failing this test will automatically apply this rubric deduction.">
+                {getFieldDecorator('rubricItem', {
+                  initialValue: testCase.rubricItem,
+                })(
+                  <Select
+                    allowClear
+                    placeholder="Select a rubric item"
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      String(option?.props.children).toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                  >
+                    {rubricComments.map(rc => (
+                      <Option key={rc.id} value={rc.id}>
+                        {rc.text} ({rc.pointDelta > 0 ? '+' : ''}{rc.pointDelta})
+                      </Option>
+                    ))}
+                  </Select>
+                )}
+              </Form.Item>
+
               <Form.Item label="Explanation for Students">
                 <Input.TextArea
                   rows={3}
@@ -377,7 +362,7 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
         <div style={{ marginTop: 24 }}>
           <CodeExecutionOutput
             executionResult={props.log}
-            fileName={Array.isArray(testCase.fileName) ? testCase.fileName[0] : testCase.fileName}
+            fileName="output.txt"
           />
         </div>
       )}

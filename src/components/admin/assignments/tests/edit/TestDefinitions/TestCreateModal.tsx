@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react';
 import { Modal, Steps, Button, Radio, Card, Select, message, Alert } from 'antd';
 import { RobotOutlined, CodeOutlined, FileTextOutlined } from '@ant-design/icons';
 import { AssignmentFileType } from '../../../../../../infrastructure/file';
-import { testTemplates } from '../utils/languageUtils';
+
 import { Assignment } from '../../../../../../infrastructure/assignment';
-import { CodeWindow } from '../utils/CodeWindow';
+
 
 
 import { RubricCategoryType } from '../../../../../../infrastructure/rubricCategory';
@@ -49,8 +49,16 @@ export const TestCreateModal = (props: IProps) => {
             setManualCode("");
             setSelectedRubricCategory(undefined);
             setSelectedRubricItem(undefined);
+
+            // Auto-select context file if it matches initialFileName
+            if (props.initialFileName && props.contextFiles) {
+                const match = props.contextFiles.find(f => f.name === props.initialFileName);
+                if (match) setSelectedContextFile(match.id);
+            } else {
+                setSelectedContextFile(undefined);
+            }
         }
-    }, [props.visible, props.initialFileName]);
+    }, [props.visible, props.initialFileName, props.contextFiles]);
 
     const [selectedRubricCategory, setSelectedRubricCategory] = useState<number | undefined>(undefined);
     const [selectedRubricItem, setSelectedRubricItem] = useState<number | undefined>(undefined);
@@ -77,9 +85,6 @@ export const TestCreateModal = (props: IProps) => {
 
         if (creationMethod === 'manual') {
             code = manualCode;
-        } else if (creationMethod === 'template') {
-            const tmpl = testTemplates[props.language];
-            code = tmpl?.script || "";
         } else if (creationMethod === 'ai') {
             message.error("Please generate the script first.");
             return;
@@ -173,14 +178,7 @@ export const TestCreateModal = (props: IProps) => {
                             </div>
                         </Radio>
                     </Card>
-                    <Card hoverable className={creationMethod === 'template' ? 'ant-card-bordered-primary' : ''} onClick={() => setCreationMethod('template')}>
-                        <Radio value="template">
-                            <div style={{ marginLeft: 8 }}>
-                                <strong>Use Template</strong>
-                                <div style={{ color: '#666' }}>Start with a basic test structure for {props.language}.</div>
-                            </div>
-                        </Radio>
-                    </Card>
+
                     <Card hoverable className={creationMethod === 'ai' ? 'ant-card-bordered-primary' : ''} onClick={() => setCreationMethod('ai')}>
                         <Radio value="ai">
                             <div style={{ display: 'flex', alignItems: 'center', marginLeft: 8 }}>
@@ -219,15 +217,12 @@ export const TestCreateModal = (props: IProps) => {
 
             {creationMethod === 'manual' && (
                 <div style={{ marginTop: 20 }}>
-                    <p style={{ marginBottom: 5 }}>Write your test script:</p>
-                    <div style={{ border: '1px solid #d9d9d9', borderRadius: 6, overflow: 'hidden' }}>
-                        <CodeWindow
-                            code={manualCode}
-                            name={fileName || "test.py"}
-                            height="300px"
-                            onChange={setManualCode}
-                        />
-                    </div>
+                    <Alert
+                        message="Empty Script"
+                        description="A new empty test script will be created. You can edit the code after creation."
+                        type="info"
+                        showIcon
+                    />
                 </div>
             )}
         </div>

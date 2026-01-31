@@ -23,8 +23,9 @@ export const TestBuilderModal = (props: IProps) => {
 
         if (lang === 'python' || lang === 'ipynb') {
             const descArg = description ? `, description="${description}"` : '';
+            const timeoutArg = values.timeout ? `, timeout=${values.timeout}` : '';
             return `
-@test("${name}", points=${points}${descArg})
+@test("${name}", points=${points}${descArg}${timeoutArg})
 def test_${name.toLowerCase().replace(/\s+/g, '_')}():
 ${pythonDesc}${indentedLogic}
 `;
@@ -105,6 +106,9 @@ end`;
                 </Form.Item>
                 <Form.Item name="points" label="Points" rules={[{ required: true }]}>
                     <InputNumber min={0} />
+                </Form.Item>
+                <Form.Item name="timeout" label="Timeout (seconds)">
+                    <InputNumber min={1} placeholder="30" />
                 </Form.Item>
 
                 <Form.Item label="Test Logic" name="logic" rules={[{ required: true, message: 'Enter the test logic' }]}>
