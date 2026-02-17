@@ -42,7 +42,7 @@ export default function SplitScreen({ children, initialLeftWidth = 50 }: Props) 
   }, []);
   return (
     <div ref={containerRef} style={{ display: 'flex', height: '100%', width: '100%' }}>
-      <div className="split-screen-pane" style={{ width: `${leftWidth}%`, overflow: 'auto' }}>
+      <div className="split-screen-pane" style={{ width: `${leftWidth}%` }}>
         {leftChild && <>{leftChild}</>}
       </div>
       <div
@@ -57,7 +57,7 @@ export default function SplitScreen({ children, initialLeftWidth = 50 }: Props) 
           userSelect: 'none',
         }}
       />
-      <div className="split-screen-pane" style={{ flex: 1, overflow: 'auto' }}>
+      <div className="split-screen-pane" style={{ flex: 1 }}>
         {rightChild && <>{rightChild}</>}
       </div>
     </div>

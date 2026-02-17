@@ -5,20 +5,20 @@ import { CopyOutlined, QrcodeOutlined, RedoOutlined } from '@ant-design/icons';
 
 import { Button, Modal, Input, Tooltip, Checkbox, message } from 'antd';
 
-import { CourseType } from '../../../../infrastructure/types';
-import { Course } from '../../../../infrastructure/course';
+import { coursesApi } from '../../../../api-client/clients';
 
 interface IProps {
-  course: CourseType;
+  course: any;
 }
 
 const ShareInviteCode = (props: IProps) => {
   const [visible, setVisible] = React.useState(false);
-  const [usingWhitelist, setUsingWhitelist] = React.useState(props.course.emailWhitelist.length > 0);
+  const [usingWhitelist, setUsingWhitelist] = React.useState((props.course.emailWhitelist || []).length > 0);
   const [whitelist, setWhitelist] = React.useState(props.course.emailWhitelist);
   const [inviteCode, setInviteCode] = React.useState(props.course.inviteCode);
   const [enabled, setEnabled] = React.useState(props.course.inviteCodeEnabled);
 
+  // Sync state with props if needed, but primarily relying on local state for the modal
   React.useEffect(() => {
     if (!usingWhitelist) {
       setWhitelist('');
@@ -26,32 +26,48 @@ const ShareInviteCode = (props: IProps) => {
   }, [usingWhitelist]);
 
   const resetCode = () => {
+    const api = coursesApi;
     Modal.confirm({
       title: "Are you sure you want to reset this course's invite code?",
       content: "The old code will no longer work, and you won't be able to undo this.",
       onOk() {
-        return fetch(`${process.env.REACT_APP_API_URL}/courses/${props.course.id}/changeInviteCode/`, {
-          method: 'PATCH',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
-          },
-        })
-          .then((res) => {
-            if (res.status === 200) {
-              return res.json();
-            } else {
-              return Promise.reject(res.status);
-            }
+        return api
+          .changeInviteCodePartialUpdate({ id: props.course.id })
+          .then((res: any) => {
+            // Check return type; assuming string based on legacy
+            const newCode = res as unknown as string;
+            // Legacy mutation to keep parent in sync without refetch
+            (props.course as any).inviteCode = newCode;
+            setInviteCode(newCode);
+            message.success('Invite code reset');
           })
-          .then((res) => {
-            props.course.inviteCode = res;
-            setInviteCode(res);
-          })
-          .catch((err) => {
-            console.log(err);
+          .catch((err: any) => {
+            console.error(err);
+            message.error('Failed to reset invite code');
           });
       },
     });
+  };
+
+  const saveSettings = async () => {
+    const api = coursesApi;
+    try {
+      await api.partialUpdate({
+        id: props.course.id,
+        patchedCourse: {
+          emailWhitelist: whitelist,
+          inviteCodeEnabled: enabled,
+        },
+      });
+      // Update local object to reflect changes (mimicking legacy behavior)
+      if (whitelist) (props.course as any).emailWhitelist = whitelist;
+      if (enabled !== undefined) (props.course as any).inviteCodeEnabled = enabled;
+      message.success('Settings updated');
+      setVisible(false);
+    } catch (e) {
+      message.error('Failed to update settings');
+      console.error(e);
+    }
   };
 
   const inviteLink = inviteCode === null ? '' : `https://codepost.cs.rutgers.edu/signup/join?code=${inviteCode}`;
@@ -64,11 +80,6 @@ const ShareInviteCode = (props: IProps) => {
     document.execCommand('copy');
     document.body.removeChild(element);
     message.info('Invite code copied to clipboard.');
-  };
-
-  const saveSettings = () => {
-    Course.update({ ...props.course, emailWhitelist: whitelist, inviteCodeEnabled: enabled });
-    setVisible(false);
   };
 
   const inputValue =

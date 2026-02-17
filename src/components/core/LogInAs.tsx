@@ -1,7 +1,7 @@
 import { Alert, Button, Spin } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { UserType } from '../../infrastructure/user';
+import type { UserType } from '../../types/models';
 
 interface LogInAsProps {
   replaceUser: (user: UserType, redirect: boolean, isSuperUser: boolean) => void;

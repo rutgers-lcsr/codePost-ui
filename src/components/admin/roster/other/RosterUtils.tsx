@@ -1,15 +1,17 @@
 import { message } from 'antd';
 
-import { AssignmentType } from '../../../../infrastructure/assignment';
-import { CourseType } from '../../../../infrastructure/course';
+import { Course } from '../../../../api-client';
+import { AssignmentType } from '../../../../types/models';
 
 const sendEmailToUser = (
   user: string,
   template: string,
-  course: CourseType,
+  course: Course,
   livemode: boolean,
   assignment?: AssignmentType,
 ) => {
+  // Manual fetch used because generated client schema does not match this custom endpoint's expectations.
+
   fetch(`${process.env.REACT_APP_API_URL}/users/${user}/email/`, {
     body: JSON.stringify({
       token: localStorage.getItem('token'),

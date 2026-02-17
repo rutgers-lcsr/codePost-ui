@@ -1,20 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Button, Empty, message, Select, Spin, Typography, Tooltip } from 'antd';
-import { AssignmentType, TestCaseType, TestCategoryType } from '../../../../../infrastructure/types';
-import { TestCase } from '../../../../../infrastructure/testCase';
-import { TestCategory } from '../../../../../infrastructure/testCategory';
-import { RubricCategory, RubricCategoryType } from '../../../../../infrastructure/rubricCategory';
-import { RubricComment, RubricCommentType } from '../../../../../infrastructure/rubricComment';
-import { loadIDList } from '../../../../../infrastructure/generics';
-import { SubmissionInfoType } from '../../../../../infrastructure/submission';
-import { EnvironmentType } from '../../../../../infrastructure/autograder/environment';
+import { assignmentsApi, autograderApi, testCasesApi, testCategoriesApi } from '../../../../../api-client/clients';
+import { RubricCategory, RubricComment, TypeEnum } from '../../../../../api-client';
+import { RubricFullData } from '../../../../../types/rubric';
+import { loadIDList } from '../../../../../utils/generics';
+import {
+  AssignmentFileType,
+  AssignmentType,
+  EnvironmentType,
+  SubmissionInfoType,
+  TestCaseType,
+  TestCategoryType,
+} from '../../../../../types/models';
 import { TestScriptEditor } from './TestDefinitions/TestScriptEditor';
-import { AssignmentFileType, File as CodePostFile } from '../../../../../infrastructure/file';
+import { File as CodePostFile } from '../../../../../utils/file';
 
 import { TestCreateModal } from './TestDefinitions/TestCreateModal';
 import { TestBuilderModal } from './TestDefinitions/TestBuilderModal';
 import { CaretRightOutlined, PlusOutlined } from '@ant-design/icons';
-import { Execution } from '../../../../../infrastructure/execution';
 import { CodeWindow } from './utils/CodeWindow';
 import NotebookEditor from '../../assignments/NotebookEditor';
 
@@ -40,8 +43,8 @@ export const TestDefinitions = (props: IProps) => {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<TestCategoryType[]>([]);
   const [testCases, setTestCases] = useState<TestCaseType[]>([]);
-  const [rubricCategories, setRubricCategories] = useState<RubricCategoryType[]>([]);
-  const [rubricComments, setRubricComments] = useState<Record<number, RubricCommentType[]>>({});
+  const [rubricCategories, setRubricCategories] = useState<RubricCategory[]>([]);
+  const [rubricComments, setRubricComments] = useState<Record<number, RubricComment[]>>({});
   const [activeFile, setActiveFile] = useState<string>('');
 
   const [activeSubmission, setActiveSubmission] = useState<SubmissionInfoType | undefined>(undefined);
@@ -57,7 +60,12 @@ export const TestDefinitions = (props: IProps) => {
 
   useEffect(() => {
     // Default active file
-    if (props.helpers && props.helpers.length > 0 && activeFile === 'main.py' && !props.helpers.some(h => h.name === 'main.py')) {
+    if (
+      props.helpers &&
+      props.helpers.length > 0 &&
+      activeFile === 'main.py' &&
+      !props.helpers.some((h) => h.name === 'main.py')
+    ) {
       setActiveFile(props.helpers[0].name);
     }
   }, [props.helpers]);
@@ -65,13 +73,13 @@ export const TestDefinitions = (props: IProps) => {
   const [isRunning, setIsRunning] = useState(false);
 
   const getTestFileName = (tc: TestCaseType): string | undefined => {
-    const cat = categories.find(c => c.id === tc.testCategory);
+    const cat = categories.find((c) => c.id === tc.testCategory);
     return cat?.targetFileName || cat?.name; // Fallback to name if targetFileName missing? Or just targetFileName.
   };
 
   const handleRunScript = async (testCase: TestCaseType) => {
     let fileId: number | undefined;
-    let contextName = "Assignment Files";
+    let contextName = 'Assignment Files';
     let exampleCodeToSend: string | undefined;
 
     if (runContextMode === 'example') {
@@ -82,16 +90,16 @@ export const TestDefinitions = (props: IProps) => {
       }
       // Use the assignment file to get context (language, other files), but override content
       const fname = getTestFileName(testCase);
-      const helperFile = props.helpers?.find(f => f.name === fname);
+      const helperFile = props.helpers?.find((f) => f.name === fname);
       if (helperFile) {
         fileId = helperFile.id;
       }
-      contextName = "Example Submission";
+      contextName = 'Example Submission';
       exampleCodeToSend = exampleCode;
     } else if (runContextMode === 'submission' && activeSubmission && activeSubmission.files) {
       // Submission mode - run against student's file
       const fname = getTestFileName(testCase);
-      const subFile = (activeSubmission.files as any[]).find(f => f.name === fname);
+      const subFile = (activeSubmission.files as any[]).find((f) => f.name === fname);
       if (subFile) {
         fileId = subFile.id;
         contextName = `Submission (${activeSubmission.students?.join(', ') || activeSubmission.id})`;
@@ -104,10 +112,10 @@ export const TestDefinitions = (props: IProps) => {
     // Fallback to Assignment Files (Template) for 'solution' mode or when submission file not found
     if (!fileId && props.helpers) {
       const fname = getTestFileName(testCase);
-      const helperFile = props.helpers.find(f => f.name === fname);
+      const helperFile = props.helpers.find((f) => f.name === fname);
       if (helperFile) {
         fileId = helperFile.id;
-        contextName = "Assignment Files";
+        contextName = 'Assignment Files';
       }
     }
 
@@ -119,13 +127,15 @@ export const TestDefinitions = (props: IProps) => {
 
     setIsRunning(true);
     try {
-      const res = await Execution.executeFileAsync({
-        file_id: fileId,
-        test_code: testCase.testCode || testCase.text || '',
-        force_execute: true,
-        example_code: exampleCodeToSend
+      const res = await autograderApi.executeFileAsyncCreate({
+        asyncExecutionRequest: {
+          fileId: fileId,
+          testCode: testCase.testCode || testCase.text || '',
+          forceExecute: true,
+          exampleCode: exampleCodeToSend,
+        },
       });
-      message.success(`Execution queued against ${contextName} (Task: ${res.task_id}). Checking results...`);
+      message.success(`Execution queued against ${contextName} (Task: ${res.taskId}). Checking results...`);
     } catch (e: any) {
       message.error(`Failed to run script: ${e.message || 'Unknown error'}`);
     } finally {
@@ -138,10 +148,12 @@ export const TestDefinitions = (props: IProps) => {
     try {
       // 1. Fetch Test Categories & Tests
       if (props.currentAssignment.testCategories) {
-        const cats = await loadIDList(props.currentAssignment.testCategories, TestCategory);
+        const cats = await loadIDList(props.currentAssignment.testCategories, {
+          read: (id: number) => testCategoriesApi.retrieve({ id }),
+        });
         setCategories(cats);
         const allTestIds = cats.reduce((acc, cat) => [...acc, ...(cat.testCases || [])], [] as number[]);
-        const tcs = await loadIDList(allTestIds, TestCase);
+        const tcs = await loadIDList(allTestIds, { read: (id: number) => testCasesApi.retrieve({ id }) });
         setTestCases(tcs);
       } else {
         setCategories([]);
@@ -150,24 +162,35 @@ export const TestDefinitions = (props: IProps) => {
 
       // 2. Fetch Rubrics (for linking)
       // We load rubric data to pass to the modal
-      if (props.currentAssignment.rubricCategories) {
-        const rCats = await loadIDList(props.currentAssignment.rubricCategories, RubricCategory);
-        setRubricCategories(rCats);
+      if (props.currentAssignment.id) {
+        try {
+          const rubricRequest = await assignmentsApi.rubricRetrieve({ id: props.currentAssignment.id });
+          const rubric = rubricRequest as unknown as RubricFullData;
+          setRubricCategories(rubric.rubricCategories);
 
-        // Load comments for each category
-        const commentsMap: Record<number, RubricCommentType[]> = {};
-        for (const cat of rCats) {
-          if (cat.rubricComments && cat.rubricComments.length > 0) {
-            const comments = await loadIDList(cat.rubricComments, RubricComment);
-            commentsMap[cat.id] = comments;
-          }
+          // Load comments for each category
+          const commentsMap: Record<number, RubricComment[]> = {};
+
+          // Initialize map for all categories
+          rubric.rubricCategories.forEach((cat) => {
+            commentsMap[cat.id] = [];
+          });
+
+          // Group comments by category
+          rubric.rubricComments.forEach((comment) => {
+            if (commentsMap[comment.category]) {
+              commentsMap[comment.category].push(comment);
+            }
+          });
+
+          setRubricComments(commentsMap);
+        } catch (e) {
+          console.error('Failed to load rubric', e);
         }
-        setRubricComments(commentsMap);
       }
-
     } catch (e) {
       console.error(e);
-      message.error("Failed to load tests");
+      message.error('Failed to load tests');
     } finally {
       setLoading(false);
     }
@@ -175,21 +198,21 @@ export const TestDefinitions = (props: IProps) => {
 
   // Auto-Category Management: Find or Create Category by Name (fileName)
   const getOrCreateCategory = async (name: string): Promise<number | null> => {
-    const existing = categories.find(c => c.name === name);
+    const existing = categories.find((c) => c.name === name);
     if (existing) return existing.id;
 
     try {
-      const newCat = await TestCategory.create({
-        id: -1,
-        name: name,
-        targetFileName: name,
-        assignment: props.currentAssignment.id,
-        testScript: null,
-        maxPoints: null,
-        sortKey: null,
-
+      const newCat = await testCategoriesApi.create({
+        testCategory: {
+          name: name,
+          targetFileName: name,
+          assignment: props.currentAssignment.id,
+          testScript: undefined,
+          maxPoints: undefined,
+          sortKey: undefined,
+        },
       });
-      setCategories(prev => [...prev, newCat]);
+      setCategories((prev) => [...prev, newCat]);
       return newCat.id;
     } catch (e) {
       message.error(`Failed to create category for ${name}`);
@@ -197,26 +220,30 @@ export const TestDefinitions = (props: IProps) => {
     }
   };
 
-  const handleCreateTest = async (values: { fileName: string; testCode: string; type: string; rubricItem?: number }) => {
+  const handleCreateTest = async (values: {
+    fileName: string;
+    testCode: string;
+    type: string;
+    rubricItem?: number;
+  }) => {
     const catId = await getOrCreateCategory(values.fileName);
     if (!catId) return;
 
     try {
-      const newTest = await TestCase.create({
-        id: -1,
-        description: `Test for ${values.fileName}`,
-        type: values.type,
-        testCategory: catId,
-        pointsPass: values.rubricItem ? 0 : 1, // If rubric linked, points determined by rubric
-        pointsFail: 0,
-        text: "",
-        // fileName: values.fileName, // Removed
-        exposed: true,
-        sortKey: testCases.filter(t => t.testCategory === catId).length,
-        testCode: values.testCode,
-        // dataSet: null, // Removed
-        explanation: "",
-        rubricItem: values.rubricItem || null
+      const newTest = await testCasesApi.create({
+        testCase: {
+          description: `Test for ${values.fileName}`,
+          type: values.type as TypeEnum,
+          testCategory: catId,
+          pointsPass: values.rubricItem ? 0 : 1, // If rubric linked, points determined by rubric
+          pointsFail: 0,
+          text: '',
+          exposed: true,
+          sortKey: testCases.filter((t) => t.testCategory === catId).length,
+          testCode: values.testCode,
+          explanation: '',
+          rubricItem: values.rubricItem || null,
+        },
       });
       setTestCases([...testCases, newTest]);
       setIsCreateModalOpen(false);
@@ -224,37 +251,41 @@ export const TestDefinitions = (props: IProps) => {
       // Auto-switch view to this file
       setActiveFile(values.fileName);
       setActiveTestId(newTest.id);
-
     } catch (e) {
-      message.error("Failed to create test");
+      message.error('Failed to create test');
     }
   };
 
   const handleDeleteTest = async (testCtx: TestCaseType) => {
     try {
-      await TestCase.delete(testCtx);
-      setTestCases(testCases.filter(t => t.id !== testCtx.id));
+      await testCasesApi.destroy({ id: testCtx.id });
+      setTestCases(testCases.filter((t) => t.id !== testCtx.id));
     } catch (e) {
-      message.error("Failed to delete test");
+      message.error('Failed to delete test');
     }
   };
 
   const handleSaveTest = async (testCtx: TestCaseType) => {
     try {
-      const updated = await TestCase.update(testCtx as any);
-      setTestCases(testCases.map(t => t.id === updated.id ? updated : t));
+      const updated = await testCasesApi.partialUpdate({
+        id: testCtx.id,
+        patchedTestCase: testCtx as any,
+      });
+      setTestCases(testCases.map((t) => (t.id === updated.id ? updated : t)));
       return updated;
     } catch (e) {
-      message.error("Failed to save test");
+      message.error('Failed to save test');
       return testCtx;
     }
   };
 
   // Derive unique files list
-  const files = Array.from(new Set([
-    ...(props.helpers?.map(h => h.name) || []),
-    ...testCases.map(t => getTestFileName(t) || "").filter(f => f)
-  ])).sort();
+  const files = Array.from(
+    new Set([
+      ...(props.helpers?.map((h) => h.name) || []),
+      ...testCases.map((t) => getTestFileName(t) || '').filter((f) => f),
+    ]),
+  ).sort();
 
   if (files.length === 0) files.push('main.py'); // Default if empty
 
@@ -264,13 +295,15 @@ export const TestDefinitions = (props: IProps) => {
     <div style={{ padding: '20px' }}>
       <div style={{ marginBottom: 20 }}>
         <Typography.Title level={4}>Tests</Typography.Title>
-        <Typography.Text type="secondary">Define unit tests, I/O tests, and scripts to grade submissions.</Typography.Text>
+        <Typography.Text type="secondary">
+          Define unit tests, I/O tests, and scripts to grade submissions.
+        </Typography.Text>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
         <div style={{ display: 'flex', gap: 0 }}>
           {/* File Tabs */}
-          {files.map(file => (
+          {files.map((file) => (
             <Button
               key={file}
               type={activeFile === file ? 'primary' : 'default'}
@@ -297,27 +330,33 @@ export const TestDefinitions = (props: IProps) => {
               setActiveSubmission(undefined);
               // Pre-fill example code with current assignment file content if empty
               if (!exampleCode) {
-                const helperFile = props.helpers?.find(f => f.name === activeFile);
+                const helperFile = props.helpers?.find((f) => f.name === activeFile);
                 if (helperFile && helperFile.data) {
                   setExampleCode(helperFile.data);
                 }
               }
             } else {
               // It's a submission ID
-              const sub = props.submissions.find(s => s.id === Number(val));
+              const sub = props.submissions.find((s) => s.id === Number(val));
               if (sub) {
                 setRunContextMode('submission');
                 setActiveSubmission(sub);
               }
             }
           }}
-          value={runContextMode === 'solution' ? 'solution' : runContextMode === 'example' ? 'example' : activeSubmission?.id?.toString()}
+          value={
+            runContextMode === 'solution'
+              ? 'solution'
+              : runContextMode === 'example'
+                ? 'example'
+                : activeSubmission?.id?.toString()
+          }
         >
           <Select.Option value="solution">📁 Assignment Files (Template)</Select.Option>
           <Select.Option value="example">✏️ Example Submission (Filled-out)</Select.Option>
           {props.submissions.length > 0 && (
             <Select.OptGroup label="Student Submissions">
-              {props.submissions.map(s => (
+              {props.submissions.map((s) => (
                 <Select.Option key={s.id} value={s.id.toString()}>
                   {s.students && s.students.length > 0 ? `👤 ${s.students.join(', ')}` : `Submission ${s.id}`}
                 </Select.Option>
@@ -326,15 +365,28 @@ export const TestDefinitions = (props: IProps) => {
           )}
         </Select>
         <Tooltip title="Template: Run against Assignment Files as-is. Example: Provide a filled-out version to test against (includes all other assignment files). Submission: Test against real student code.">
-          <Typography.Text type="secondary" style={{ cursor: 'help', fontSize: 12 }}>(?)</Typography.Text>
+          <Typography.Text type="secondary" style={{ cursor: 'help', fontSize: 12 }}>
+            (?)
+          </Typography.Text>
         </Tooltip>
       </div>
 
       {runContextMode === 'example' && (
         <div style={{ marginBottom: 20, border: '1px solid #1890ff', borderRadius: 4, overflow: 'hidden' }}>
-          <div style={{ padding: '8px 12px', background: '#e6f7ff', borderBottom: '1px solid #1890ff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div
+            style={{
+              padding: '8px 12px',
+              background: '#e6f7ff',
+              borderBottom: '1px solid #1890ff',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <div>
-              <Typography.Text strong style={{ fontSize: 13, color: '#1890ff' }}>Example Submission for: {activeFile}</Typography.Text>
+              <Typography.Text strong style={{ fontSize: 13, color: '#1890ff' }}>
+                Example Submission for: {activeFile}
+              </Typography.Text>
               <Typography.Text type="secondary" style={{ fontSize: 11, marginLeft: 10 }}>
                 Write/paste a filled-out version of the template to test your test script against
               </Typography.Text>
@@ -342,11 +394,7 @@ export const TestDefinitions = (props: IProps) => {
           </div>
           <div style={{ height: activeFile.endsWith('.ipynb') ? 600 : 250 }}>
             {activeFile.endsWith('.ipynb') ? (
-              <NotebookEditor
-                content={exampleCode}
-                onChange={(val) => setExampleCode(val)}
-                height="100%"
-              />
+              <NotebookEditor content={exampleCode} onChange={(val) => setExampleCode(val)} height="100%" />
             ) : (
               <CodeWindow
                 code={exampleCode}
@@ -358,14 +406,23 @@ export const TestDefinitions = (props: IProps) => {
         </div>
       )}
 
-
-      <div style={{ border: '1px solid #f0f0f0', padding: 0, height: 'calc(100vh - 250px)', minHeight: 600, background: '#fafafa', display: 'flex', flexDirection: 'column' }}>
+      <div
+        style={{
+          border: '1px solid #f0f0f0',
+          padding: 0,
+          height: 'calc(100vh - 250px)',
+          minHeight: 600,
+          background: '#fafafa',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
         {(() => {
-          const fileTests = testCases.filter(t => getTestFileName(t) === activeFile);
+          const fileTests = testCases.filter((t) => getTestFileName(t) === activeFile);
           // Sort by ID is usually fine for creation order
           fileTests.sort((a, b) => a.id - b.id);
 
-          let fileTest = fileTests.find(t => t.id === activeTestId);
+          let fileTest = fileTests.find((t) => t.id === activeTestId);
           // Default to first if activeTestId invalid/null
           if (!fileTest && fileTests.length > 0) {
             fileTest = fileTests[0];
@@ -382,7 +439,10 @@ export const TestDefinitions = (props: IProps) => {
                 }
                 style={{ marginTop: 100 }}
               >
-                <Button type="primary" onClick={() => handleCreateTest({ fileName: activeFile, testCode: '', type: 'script' })}>
+                <Button
+                  type="primary"
+                  onClick={() => handleCreateTest({ fileName: activeFile, testCode: '', type: 'script' })}
+                >
                   Initialize Test Script
                 </Button>
               </Empty>
@@ -399,7 +459,16 @@ export const TestDefinitions = (props: IProps) => {
           // We have a test case, show editor
           return (
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <div style={{ padding: '10px 15px', borderBottom: '1px solid #f0f0f0', backgroundColor: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div
+                style={{
+                  padding: '10px 15px',
+                  borderBottom: '1px solid #f0f0f0',
+                  backgroundColor: '#fff',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
                   <span style={{ fontWeight: 500, color: '#666' }}>Test Script:</span>
 
@@ -424,9 +493,9 @@ export const TestDefinitions = (props: IProps) => {
                         // Find the comment
                         for (const cat of rubricCategories) {
                           const comments = rubricComments[cat.id] || [];
-                          const found = comments.find(c => c.id === t.rubricItem);
+                          const found = comments.find((c) => c.id === t.rubricItem);
                           if (found) {
-                            displayName = found.text; // Just text, no points
+                            displayName = found.text ?? displayName; // Just text, no points
                             break;
                           }
                         }
@@ -455,18 +524,24 @@ export const TestDefinitions = (props: IProps) => {
                   >
                     Run Script
                   </Button>
-                  <Button icon={<PlusOutlined />} onClick={() => setIsBuilderOpen(true)}>Add Code Block</Button>
-                  <Button danger size="small" onClick={() => handleDeleteTest(fileTest!)}>Delete Script</Button>
-                  <Button type="primary" size="small" onClick={() => handleSaveTest(fileTest!)}>Save Changes</Button>
+                  <Button icon={<PlusOutlined />} onClick={() => setIsBuilderOpen(true)}>
+                    Add Code Block
+                  </Button>
+                  <Button danger size="small" onClick={() => handleDeleteTest(fileTest!)}>
+                    Delete Script
+                  </Button>
+                  <Button type="primary" size="small" onClick={() => handleSaveTest(fileTest!)}>
+                    Save Changes
+                  </Button>
                 </div>
               </div>
               <div style={{ flex: 1 }}>
                 <TestScriptEditor
-                  code={fileTest.testCode || fileTest.text || ""}
+                  code={fileTest.testCode || fileTest.text || ''}
                   onChange={(newCode) => {
                     // Update local state immediately
                     const updated = { ...fileTest!, testCode: newCode, text: newCode };
-                    setTestCases(testCases.map(t => t.id === updated.id ? updated : t));
+                    setTestCases(testCases.map((t) => (t.id === updated.id ? updated : t)));
                   }}
                   language={(() => {
                     const fname = getTestFileName(fileTest!) || activeFile;
@@ -477,15 +552,20 @@ export const TestDefinitions = (props: IProps) => {
                     return rawLang;
                   })()}
                   assignmentId={props.currentAssignment.id}
+                  courseId={props.currentAssignment.course}
                   targetFileName={activeFile}
-                  contextFiles={props.helpers || []}
+                  contextFiles={(() => {
+                    const files = props.helpers || [];
+                    return files;
+                  })()}
                   rubricText={(() => {
                     if (!fileTest?.rubricItem) return undefined;
                     // Find the comment text
                     for (const cat of rubricCategories) {
                       const comments = rubricComments[cat.id] || [];
-                      const found = comments.find(c => c.id === fileTest!.rubricItem);
-                      if (found) return `${found.text} (${found.pointDelta > 0 ? '+' : ''}${found.pointDelta} points)`;
+                      const found = comments.find((c) => c.id === fileTest!.rubricItem);
+                      if (found)
+                        return `${found.text || ''} (${found.pointDelta > 0 ? '+' : ''}${found.pointDelta} points)`;
                     }
                     return undefined;
                   })()}
@@ -495,10 +575,9 @@ export const TestDefinitions = (props: IProps) => {
                   selectedRubricItem={fileTest!.rubricItem}
                   onRubricItemChange={(newId) => {
                     const updated = { ...fileTest!, rubricItem: newId };
-                    setTestCases(testCases.map(t => t.id === updated.id ? updated : t));
+                    setTestCases(testCases.map((t) => (t.id === updated.id ? updated : t)));
                     handleSaveTest(updated);
                   }}
-
                 />
               </div>
             </div>
@@ -510,9 +589,10 @@ export const TestDefinitions = (props: IProps) => {
         visible={isCreateModalOpen}
         onCancel={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateTest}
-        language={props.env ? props.env.language : 'python'}
+        language={props.env?.language || 'python'}
         contextFiles={props.helpers || []}
         assignmentId={props.currentAssignment.id}
+        courseId={props.currentAssignment.course}
         rubricCategories={rubricCategories}
         rubricComments={rubricComments}
         initialFileName={activeFile}
@@ -529,11 +609,11 @@ export const TestDefinitions = (props: IProps) => {
           return rawLang;
         })()}
         onInsert={(code) => {
-          const fileTest = testCases.find(t => getTestFileName(t) === activeFile);
+          const fileTest = testCases.find((t) => getTestFileName(t) === activeFile);
           if (fileTest) {
-            const newCode = (fileTest.testCode || "") + "\n" + code;
+            const newCode = (fileTest.testCode || '') + '\n' + code;
             const updated = { ...fileTest, testCode: newCode, text: newCode };
-            setTestCases(testCases.map(t => t.id === updated.id ? updated : t));
+            setTestCases(testCases.map((t) => (t.id === updated.id ? updated : t)));
             // Optional: Auto-save?
             // handleSaveTest(updated);
           }

@@ -1,14 +1,15 @@
 import { Spin } from 'antd';
-import { TestCategory, TestCategoryType } from '../../../../../infrastructure/testCategory';
+import { TestCategoryType } from '../../../../../types/models';
 
 export const bySubmissionColumns = (shouldSort: boolean, categories: TestCategoryType[]) => {
+  const sortedCategories = [...categories].sort((a, b) => (a.sortKey ?? 0) - (b.sortKey ?? 0));
   const columns = [
     {
       title: 'Student(s)',
       dataIndex: 'students',
       key: 'students',
     },
-    ...TestCategory.sort(categories).map((category) => {
+    ...sortedCategories.map((category) => {
       return {
         title: (
           <span>

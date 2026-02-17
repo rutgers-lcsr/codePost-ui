@@ -8,15 +8,17 @@
 import type { SelectProps } from 'antd';
 import { Breadcrumb, Select, Switch, Table, Typography } from 'antd';
 
-/* codePost imports */
-import { Assignment, AssignmentType } from '../../infrastructure/assignment';
-import { Course, CourseType } from '../../infrastructure/course';
+import { Course } from '../../api-client';
+import { assignmentsApi, coursesApi } from '../../api-client/clients';
+import {
+  AnonymousSubmissionInfoType,
+  AssignmentType,
+  SubmissionHistoryType,
+  SubmissionInfoType,
+} from '../../types/models';
 
 import CPTooltip from '../core/CPTooltip';
 import { tooltips } from '../core/tooltips';
-
-import { AnonymousSubmissionInfoType, SubmissionInfoType } from '../../infrastructure/submission';
-import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
 
 import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
 
@@ -33,7 +35,7 @@ const { Option } = Select;
 /**********************************************************************************************************************/
 
 interface IViewAllProps {
-  course: CourseType;
+  course: Course;
   assignment: AssignmentType;
   breadcrumbs: Array<{ title: React.ReactNode }>;
 }
@@ -65,14 +67,33 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
 
   public async initialLoad() {
     this.setState({ isLoading: true });
-    Assignment.readPaginatedSubmissions(this.props.assignment.id, this.onLoadNewSubmissions);
-    Assignment.readPaginatedSubmissionHistories(this.props.assignment.id, this.onLoadNewHistories);
 
-    const roster = await Course.readRoster(this.props.course.id);
-    this.setState({
-      graders: roster.graders,
-      isLoading: false,
-    });
+    try {
+      const submissionsResponse = await assignmentsApi.submissionsList({ id: this.props.assignment.id });
+      const submissions = submissionsResponse.results ?? [];
+      this.onLoadNewSubmissions(submissions);
+    } catch (error) {
+      console.error('Failed to load submissions', error);
+    }
+
+    try {
+      const historiesResponse = await assignmentsApi.submissionHistoriesList({ id: this.props.assignment.id });
+      const histories = historiesResponse.results ?? [];
+      this.onLoadNewHistories(histories);
+    } catch (error) {
+      console.error('Failed to load submission histories', error);
+    }
+
+    try {
+      const roster = await coursesApi.rosterRetrieve({ id: this.props.course.id });
+      this.setState({
+        graders: (roster.graders ?? []).filter((grader): grader is string => Boolean(grader)),
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error('Failed to load roster', error);
+      this.setState({ isLoading: false });
+    }
   }
 
   public componentDidMount() {
@@ -115,18 +136,7 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
   };
 
   // public loadSubmissionsViews = async () => {
-  //   const histories = await Assignment.readSubmissionHistories(this.props.assignment.id);
-  //   const viewsBySubmission: any = {};
-  //   histories.forEach((history: SubmissionHistoryType) => {
-  //     const submissionID = history.submission;
-  //     if (!(submissionID in viewsBySubmission)) {
-  //       viewsBySubmission[submissionID] = {};
-  //     }
-  //     if (history.hasViewed) {
-  //       viewsBySubmission[submissionID][history.student] = history.dateViewed;
-  //     }
-  //   });
-  //   return viewsBySubmission;
+  // Legacy call commented out in original file
   // };
 
   public toggleShowStudentEmails = () => {

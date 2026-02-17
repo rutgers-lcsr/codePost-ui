@@ -10,9 +10,10 @@ import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import { Layout, Menu, MenuProps, Spin } from 'antd';
 
-import { AssignmentStudent, AssignmentStudentType } from '../../infrastructure/assignment';
-import { File, getFileContent } from '../../infrastructure/file';
-import { FileType } from '../../infrastructure/types';
+import { AssignmentStudent } from '../../services/assignment';
+import type { AssignmentStudentType } from '../../types/models';
+import { File, getFileContent } from '../../utils/file';
+import type { FileType } from '../../utils/file';
 
 import ReactMarkdown from 'react-markdown';
 
@@ -25,8 +26,8 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 const { Sider, Content } = Layout;
 
 import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context.js';
-import Markdown from '../code-review/code-panel/Markdown';
-import { CURSOR_DOMAIN } from '../code-review/CodeConsoleEnums';
+import Markdown from '../../features/code-review/code-panel/Markdown';
+import { CURSOR_DOMAIN } from '../../features/code-review/CodeConsoleEnums';
 
 interface IProps {
   assignment?: AssignmentStudentType;
@@ -124,6 +125,8 @@ function ViewUpload(props: IProps) {
         cursorMode={false}
         showCursor={CURSOR_DOMAIN.CODE_HIDDEN}
         updateCursorDomain={() => {}}
+        isEditMode={false}
+        onContentChange={() => {}}
       />
     );
   } else {

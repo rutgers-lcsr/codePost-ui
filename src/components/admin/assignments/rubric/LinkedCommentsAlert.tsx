@@ -6,14 +6,13 @@
 import { Button, Modal } from 'antd';
 
 /* codePost imports */
-import { RubricCommentType } from '../../../../infrastructure/rubricComment';
-
+import { RubricComment } from '../../../../api-client';
 import { IRubricCategoryToRubricCommentsMap } from '../../../../types/common';
 
 /**********************************************************************************************************************/
 
 interface IPropsLinkedCommentsAlert {
-  rubricComment: RubricCommentType;
+  rubricComment: RubricComment;
   onDelete: () => void;
   onUnLink: () => void;
   onCancel: (revert: boolean) => void;
@@ -90,7 +89,7 @@ interface IPropsConfirm {
   onAccept: () => void;
   onCancel: () => void;
   isVisible: boolean;
-  unsavedComments: RubricCommentType[];
+  unsavedComments: RubricComment[];
   savedRubricComments: IRubricCategoryToRubricCommentsMap;
 }
 
@@ -99,11 +98,11 @@ const LinkedCommentsConfirm = (props: IPropsConfirm) => {
     return <div />;
   }
 
-  const savedComments: RubricCommentType[] = Object.values(props.savedRubricComments).flat();
+  const savedComments: RubricComment[] = Object.values(props.savedRubricComments).flat();
 
   // Ignore unsaved comments where the only change is in the order
-  const contentEditedComments = props.unsavedComments.filter((unsavedComment: RubricCommentType) => {
-    const match = savedComments.find((savedComment: RubricCommentType) => {
+  const contentEditedComments = props.unsavedComments.filter((unsavedComment: RubricComment) => {
+    const match = savedComments.find((savedComment: RubricComment) => {
       return savedComment.id === unsavedComment.id;
     });
 

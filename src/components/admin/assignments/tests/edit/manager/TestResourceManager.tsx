@@ -23,9 +23,16 @@ import {
   InfoCircleOutlined,
   EyeOutlined,
 } from '@ant-design/icons';
-import { AssignmentFile, AssignmentFileType, File as CodePostFile } from '../../../../../../infrastructure/file';
-import { AssignmentDataSet, AssignmentDataSetType } from '../../../../../../infrastructure/assignmentDataSet';
-import { TestCategoryResource, TestCategoryResourceType } from '../../../../../../infrastructure/testCategoryResource';
+import {
+  assignmentDataSetsApi,
+  assignmentFilesApi,
+  assignmentsApi,
+  testCategoryResourcesApi,
+} from '../../../../../../api-client/clients';
+import { getAuthToken } from '../../../../../../utils/auth';
+import { loadIDList } from '../../../../../../utils/generics';
+import { AssignmentDataSetType, AssignmentFileType, TestCategoryResourceType } from '../../../../../../types/models';
+import { File as CodePostFile } from '../../../../../../utils/file';
 import Editor from '@monaco-editor/react';
 import NotebookEditor from '../../../assignments/NotebookEditor';
 
@@ -77,37 +84,13 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
   const loadSourceOptions = async () => {
     try {
       // Fetch assignment to get embedded files
-      const token = localStorage.getItem('token') || '';
-      const assignmentRes = await fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignmentId}/`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const assignmentData = await assignmentsApi.retrieve({ id: assignmentId });
+      const files = await loadIDList(assignmentData.files || [], {
+        read: (id: number) => assignmentFilesApi.retrieve({ id }),
       });
-      if (assignmentRes.ok) {
-        const assignmentData = await assignmentRes.json();
-        // Assignment.files can be array of IDs or objects - we need to fetch each if ID
-        const files = assignmentData.files || [];
-        console.log('Assignment files field:', files);
+      setAssignmentFiles(files);
 
-        // If files are objects (with id and name), use them directly
-        // If they're just IDs, we need to fetch each one
-        if (files.length > 0 && typeof files[0] === 'object') {
-          setAssignmentFiles(files);
-        } else if (files.length > 0) {
-          // Fetch each file by ID
-          const filePromises = files.map((id: number) =>
-            fetch(`${process.env.REACT_APP_API_URL}/assignmentFiles/${id}/`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }).then((r) => (r.ok ? r.json() : null)),
-          );
-          const fetchedFiles = (await Promise.all(filePromises)).filter(Boolean);
-          console.log('Fetched files:', fetchedFiles);
-          setAssignmentFiles(fetchedFiles);
-        }
-      } else {
-        console.error('Failed to load assignment, status:', assignmentRes.status);
-      }
-
-      const datasetRes = await AssignmentDataSet.listByAssignment(assignmentId);
-      console.log('Loaded datasets:', datasetRes);
+      const datasetRes = await assignmentsApi.datasetsList({ id: assignmentId });
       setDatasets(datasetRes);
     } catch (e) {
       console.error('Error loading options:', e);
@@ -121,24 +104,24 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
       const resource = resources.find((r) => r.id === id);
 
       // Delete the resource link first
-      await TestCategoryResource.delete({ id });
+      await testCategoryResourcesApi.destroy({ id });
 
       // If the underlying file/dataset is hidden, delete it too
       if (resource) {
-        const fileDetails = (resource as any).file_details;
-        const datasetDetails = (resource as any).dataset_details;
+        const fileDetails = (resource as any).fileDetails ?? (resource as any).file_details;
+        const datasetDetails = (resource as any).datasetDetails ?? (resource as any).dataset_details;
 
         if (fileDetails && fileDetails.hidden) {
           // Delete the hidden file
           try {
-            await AssignmentFile.delete({ id: fileDetails.id });
+            await assignmentFilesApi.destroy({ id: fileDetails.id });
           } catch (e) {
             console.warn('Failed to delete underlying file:', e);
           }
         } else if (datasetDetails && datasetDetails.hidden) {
           // Delete the hidden dataset
           try {
-            await AssignmentDataSet.delete({ id: datasetDetails.id } as any);
+            await assignmentDataSetsApi.destroy({ id: datasetDetails.id });
           } catch (e) {
             console.warn('Failed to delete underlying dataset:', e);
           }
@@ -168,14 +151,16 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
           setIsUploading(false);
           return;
         }
-        const newFile = await AssignmentFile.create({
-          assignment: assignmentId,
-          name: uploadFile.name,
-          extension: CodePostFile.extension(uploadFile.name) || 'txt',
-          path: null,
-          data: content,
-          hidden: true, // Default to hidden for helper files
-        } as any);
+        const newFile = await assignmentFilesApi.create({
+          assignmentFile: {
+            assignment: assignmentId,
+            name: uploadFile.name,
+            extension: CodePostFile.extension(uploadFile.name) || 'txt',
+            path: null,
+            data: content,
+            hidden: true, // Default to hidden for helper files
+          },
+        });
         sourceId = newFile.id;
       } else {
         // Upload Dataset - handle potential duplicate names
@@ -183,12 +168,12 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
         let datasetName = baseName;
 
         // Fetch fresh dataset list to check for duplicates (including hidden ones)
-        const freshDatasets = await AssignmentDataSet.listByAssignment(assignmentId);
-        const existingDataset = freshDatasets.find((d: any) => d.name === baseName);
+        const freshDatasets = await assignmentsApi.datasetsList({ id: assignmentId });
+        const existingDataset = (freshDatasets as any[]).find((d: any) => d.name === baseName);
         if (existingDataset) {
           // Append timestamp to make name unique
           const ext = CodePostFile.extension(baseName) ? '.' + CodePostFile.extension(baseName) : '';
-          const nameWithoutExt = CodePostFile.extension(baseName) ? baseName.slice(0, -(ext.length)) : baseName;
+          const nameWithoutExt = CodePostFile.extension(baseName) ? baseName.slice(0, -ext.length) : baseName;
           datasetName = `${nameWithoutExt}_${Date.now()}${ext}`;
         }
 
@@ -198,18 +183,34 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
         formData.append('file', uploadFile);
         formData.append('hidden', 'true');
 
-        const newDataset = await AssignmentDataSet.create(formData);
+        const token = getAuthToken();
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/assignmentDataSets/`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Failed to create dataset: ${response.statusText} - ${errorText}`);
+        }
+
+        const newDataset = await response.json();
         sourceId = newDataset.id;
       }
 
       // Create Resource
       const payload: any = {
         category: categoryId,
-        target_path: targetPath || uploadFile.name, // Use uploaded name as default target
+        targetPath: targetPath || uploadFile.name, // Use uploaded name as default target
         file: activeTab === 'files' ? sourceId : null,
         dataset: activeTab === 'datasets' ? sourceId : null,
       };
-      await TestCategoryResource.create(payload);
+      await testCategoryResourcesApi.create({
+        testCategoryResource: payload,
+      });
 
       message.success('Resource uploaded and added');
       setIsAddModalOpen(false);
@@ -260,24 +261,20 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
     },
     {
       title: 'Target Name (Alias)',
-      dataIndex: 'target_path',
-      key: 'target_path',
+      dataIndex: 'targetPath',
+      key: 'targetPath',
       render: (text: string) => <Text strong>{text}</Text>,
     },
     {
       title: 'Source',
       key: 'source',
       render: (_: any, record: TestCategoryResourceType) => {
-        const name = (record as any).file_details?.name || (record as any).dataset_details?.name || 'Unknown';
-        const isHidden = (record as any).file_details?.hidden || (record as any).dataset_details?.hidden;
+        const fileDetails = (record as any).fileDetails ?? (record as any).file_details;
+        const datasetDetails = (record as any).datasetDetails ?? (record as any).dataset_details;
+        const name = fileDetails?.name || datasetDetails?.name || 'Unknown';
         return (
           <Space>
             <Text type="secondary">{name}</Text>
-            {isHidden && (
-              <Tag style={{ fontSize: 10 }} color="warning">
-                Hidden
-              </Tag>
-            )}
           </Space>
         );
       },
@@ -287,7 +284,7 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
       key: 'actions',
       width: 120,
       render: (_: any, record: TestCategoryResourceType) => {
-        const fileDetails = (record as any).file_details;
+        const fileDetails = (record as any).fileDetails ?? (record as any).file_details;
         return (
           <Space>
             {fileDetails && (
@@ -330,11 +327,14 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
         size="small"
         pagination={false}
         locale={{ emptyText: <Empty description="No resources configured" /> }}
-        footer={() => <div>
-          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-            Resources are files that are used by the tests. Can be used to override files in the submission or provide additional files for the tests.
-          </Typography.Text>
-        </div>}
+        footer={() => (
+          <div>
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              Resources are files that are used by the tests. Can be used to override files in the submission or provide
+              additional files for the tests.
+            </Typography.Text>
+          </div>
+        )}
       />
 
       <Modal
@@ -442,7 +442,7 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
         title={
           <Space>
             <span>Edit: {(viewingResource as any)?.file_details?.name}</span>
-            <Tag color="blue">{viewingResource?.target_path}</Tag>
+            <Tag color="blue">{viewingResource?.targetPath}</Tag>
           </Space>
         }
         width="90%"
@@ -463,10 +463,10 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
                 const fileDetails = (viewingResource as any).file_details;
                 if (fileDetails) {
                   try {
-                    await AssignmentFile.update({
+                    await assignmentFilesApi.partialUpdate({
                       id: fileDetails.id,
-                      data: editingCode,
-                    } as any);
+                      patchedAssignmentFile: { data: editingCode },
+                    });
                     message.success('File saved');
                     setViewingResource(null);
                     onRefresh();
@@ -484,7 +484,7 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
       >
         <div style={{ flex: 1, minHeight: 0, border: '1px solid #d9d9d9', borderRadius: 4 }}>
           {(() => {
-            const fileDetails = (viewingResource as any)?.file_details;
+            const fileDetails = (viewingResource as any)?.fileDetails ?? (viewingResource as any)?.file_details;
             const ext = CodePostFile.extension(fileDetails?.name || '') || 'txt';
             const isNotebook = ext === 'ipynb';
 
@@ -518,7 +518,7 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
           </Text>
           <Space size={8}>
             {(() => {
-              const fileDetails = (viewingResource as any)?.file_details;
+              const fileDetails = (viewingResource as any)?.fileDetails ?? (viewingResource as any)?.file_details;
               const ext = CodePostFile.extension(fileDetails?.name || '') || '';
               if (ext === 'ipynb') {
                 return (

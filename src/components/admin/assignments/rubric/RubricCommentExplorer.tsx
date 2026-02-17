@@ -10,10 +10,10 @@ import { Badge, Button, Modal, Space, Table, Tag, Typography } from 'antd';
 
 import { openSubmission } from '../../other/AdminUtils';
 
-import { CommentIO, CommentType } from '../../../../infrastructure/comment';
-import { SubmissionFile } from '../../../../infrastructure/file';
-import { RubricComment, RubricCommentType } from '../../../../infrastructure/rubricComment';
-import { Submission, SubmissionInfoType } from '../../../../infrastructure/submission';
+import { RubricComment } from '../../../../api-client';
+import { commentsApi, rubricCommentsApi, submissionFilesApi, submissionsApi } from '../../../../api-client/clients';
+import { CommentType, SubmissionInfoType } from '../../../../types/models';
+import { RubricCommentInstanceList } from '../../../../types/rubric';
 
 import CPTooltip from '../../../../components/core/CPTooltip';
 
@@ -33,7 +33,7 @@ const MODAL_WIDTH = 900;
 /**********************************************************************************************************************/
 
 interface IProps {
-  rubricComment: RubricCommentType;
+  rubricComment: RubricComment;
   closeCommentExplorer: () => void;
   isVisible: boolean;
   submissions: SubmissionInfoType[];
@@ -51,13 +51,12 @@ interface CommentToSubMap {
 /* Helper Functions
 /**********************************************************************************************************************/
 
-const readComments = async (rubricComment: RubricCommentType): Promise<CommentType[]> => {
-  const linkedComments = await RubricComment.readCommmentList(rubricComment.id);
-  return Promise.all(
-    linkedComments.comments.map((id) => {
-      return CommentIO.read(id);
-    }),
-  );
+const readComments = async (rubricComment: RubricComment): Promise<CommentType[]> => {
+  const response = await rubricCommentsApi.retrieve({ id: rubricComment.id });
+  // Cast to custom type or use generated type if available
+  const linkedComments = response as unknown as RubricCommentInstanceList;
+
+  return Promise.all(linkedComments.comments.map((id) => commentsApi.retrieve({ id })));
 };
 
 const getSubmissions = async (comments: CommentType[]): Promise<CommentToSubMap> => {
@@ -65,10 +64,10 @@ const getSubmissions = async (comments: CommentType[]): Promise<CommentToSubMap>
     comments.map(async (comm) => {
       try {
         const fileID = comm.file;
-        const file = await SubmissionFile.read(fileID);
+        const file = await submissionFilesApi.retrieve({ id: fileID });
         if (!file) return null;
 
-        const sub = await Submission.read(file.submission);
+        const sub = await submissionsApi.retrieve({ id: file.submission });
         if (!sub) return null;
 
         return [comm.id, file.name, file.submission, sub.students || []];
@@ -186,7 +185,7 @@ const RubricCommentExplorer: React.FC<IProps> = ({ rubricComment, closeCommentEx
             file: subInfo.fileName,
             author: comment.author,
             text:
-              comment.text === null || comment.text.length === 0 ? (
+              !comment.text || comment.text.length === 0 ? (
                 <CPTooltip title="No custom text (using rubric comment text)">
                   <PushpinOutlined style={{ fontSize: '16px', color: '#bfbfbf' }} />
                 </CPTooltip>

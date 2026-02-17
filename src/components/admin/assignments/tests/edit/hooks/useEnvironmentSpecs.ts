@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { message, Modal } from 'antd';
-import { Environment } from '../../../../../../infrastructure/autograder/environment';
+import { autograderApi } from '../../../../../../api-client/clients';
 import { getScanner } from '../utils/scanners';
+import type { ScannedFile } from '../utils/scanners';
+import { BuildTypeEnum, Environment, LanguageEnum } from '../../../../../../api-client';
 
 export interface EnvironmentState {
   language: string;
@@ -13,9 +15,25 @@ export interface EnvironmentState {
   envVars: Record<string, string>;
 }
 
-export const useEnvironmentSpecs = (props: any, initialLanguage: string) => {
-  const [language, setLanguage] = useState<string>(initialLanguage);
-  const [buildType, setBuildType] = useState<string>('default');
+interface EnvironmentSpecsProps {
+  env?: Environment;
+  updateEnv: (
+    language: string,
+    dependencies: string,
+    customDockerfile: string,
+    buildType: string,
+    requirements: string,
+    autoDetect: boolean,
+    envVars: Record<string, string>,
+  ) => Promise<Environment>;
+  reloadEnv?: () => void;
+  helpers?: ScannedFile[];
+  solutions?: ScannedFile[];
+}
+
+export const useEnvironmentSpecs = (props: EnvironmentSpecsProps, initialLanguage: LanguageEnum) => {
+  const [language, setLanguage] = useState<LanguageEnum | 'other'>(initialLanguage);
+  const [buildType, setBuildType] = useState<BuildTypeEnum>(BuildTypeEnum.Default);
   const [dependencies, setDependencies] = useState<string>('');
   const [customDockerfile, setCustomDockerfile] = useState<string>('');
   const [requirements, setRequirements] = useState<string>('');
@@ -26,6 +44,8 @@ export const useEnvironmentSpecs = (props: any, initialLanguage: string) => {
   const [buildLogs, setBuildLogs] = useState<string>('');
   const [buildIsSuccess, setBuildIsSuccess] = useState<boolean | null>(null);
   const [buildDockerfile, setBuildDockerfile] = useState<string>('');
+
+  const lastEnvIdRef = useRef<number | null>(null);
 
   // Ref to hold current state for async operations to avoid stale closures
   const stateRef = useRef<EnvironmentState>({
@@ -51,18 +71,44 @@ export const useEnvironmentSpecs = (props: any, initialLanguage: string) => {
     };
   }, [language, buildType, dependencies, customDockerfile, requirements, autoDetect, envVars]);
 
-  // Initial Data Load
+  const dictionariesEqual = (a: Record<string, string>, b: Record<string, string>) => {
+    const aKeys = Object.keys(a).sort();
+    const bKeys = Object.keys(b).sort();
+    if (aKeys.length !== bKeys.length) return false;
+    for (let i = 0; i < aKeys.length; i++) {
+      const key = aKeys[i];
+      if (key !== bKeys[i] || a[key] !== b[key]) return false;
+    }
+    return true;
+  };
+
+  // Initial Data Load (and env id changes)
   useEffect(() => {
     if (props.env) {
-      setLanguage(props.env.language);
-      setDependencies(props.env.dockerRunInstructions.join('\n'));
-      setBuildType(props.env.buildType);
-      setCustomDockerfile(props.env.dockerfile);
-      setRequirements(props.env.requirements || '');
-      setAutoDetect(props.env.autoDetect);
-      setEnvVars(props.env.envVars || {});
+      const envId = props.env.id;
+      const envVarsFromServer = (props.env.envVars || {}) as Record<string, string>;
+
+      const envChanged = lastEnvIdRef.current !== envId;
+      const envVarsMatch = dictionariesEqual(stateRef.current.envVars, envVarsFromServer);
+
+      if (envChanged) {
+        lastEnvIdRef.current = envId;
+        setLanguage(props.env.language ?? initialLanguage);
+        setDependencies((props.env.dockerRunInstructions ?? []).join('\n'));
+        setBuildType(props.env.buildType ?? BuildTypeEnum.Default);
+        setCustomDockerfile(props.env.dockerfile ?? '');
+        setRequirements(props.env.requirements ?? '');
+        setAutoDetect(props.env.autoDetect ?? true);
+        setEnvVars(envVarsFromServer);
+        return;
+      }
+
+      // Avoid clobbering local edits if the env id hasn't changed
+      if (envVarsMatch) {
+        setEnvVars(envVarsFromServer);
+      }
     }
-  }, [props.env]);
+  }, [props.env, initialLanguage]);
 
   // Manifest Scanning Logic
   const scanForManifests = (manualTrigger: boolean = false) => {
@@ -75,12 +121,17 @@ export const useEnvironmentSpecs = (props: any, initialLanguage: string) => {
     // 1. Detect Dominant Language if needed (or verify current support)
     let detectedLang = language;
     if (!detectedLang) {
-      if (allFiles.some((f: any) => f.name.endsWith('.py'))) detectedLang = 'python-3.12';
-      else if (allFiles.some((f: any) => f.name.endsWith('.js') || f.name.endsWith('.ts'))) detectedLang = 'node-20';
-      else if (allFiles.some((f: any) => f.name.endsWith('.R') || f.name.endsWith('.r'))) detectedLang = 'r-4';
-      else if (allFiles.some((f: any) => f.name.endsWith('.java'))) detectedLang = 'java-17';
-      else if (allFiles.some((f: any) => f.name.endsWith('.ipynb'))) {
-        detectedLang = 'python-3.12';
+      if (allFiles.some((f) => f.name.endsWith('.py'))) {
+        detectedLang = LanguageEnum.Python312;
+      } else if (allFiles.some((f) => f.name.endsWith('.js') || f.name.endsWith('.ts'))) {
+        detectedLang = LanguageEnum.Node20;
+      } else if (allFiles.some((f) => f.name.endsWith('.R') || f.name.endsWith('.r'))) {
+        detectedLang = LanguageEnum.R4;
+      } else if (allFiles.some((f) => f.name.endsWith('.java'))) {
+        detectedLang = LanguageEnum.Java17;
+      } else if (allFiles.some((f) => f.name.endsWith('.ipynb'))) {
+        detectedLang = LanguageEnum.Python312;
+        //# TODO - This should look at the kernal
       }
       if (detectedLang) setLanguage(detectedLang);
     }
@@ -128,12 +179,15 @@ export const useEnvironmentSpecs = (props: any, initialLanguage: string) => {
       setBuildInProgress(true);
       setBuildLogs('');
       try {
-        await Environment.build({ ...newEnvironment, language: lang });
+        await autograderApi.environmentsBuildPartialUpdate({
+          id: newEnvironment.id,
+          patchedEnvironmentBuildRequest: {},
+        });
         // Poll for completion
         let pollCount = 0;
         const pollInterval = setInterval(async () => {
           try {
-            const status = await Environment.status(newEnvironment.id);
+            const status = await autograderApi.environmentsBuildStatusRetrieve({ id: newEnvironment.id });
             if (!status.inProgress) {
               clearInterval(pollInterval);
               setBuildInProgress(false);
@@ -163,8 +217,8 @@ export const useEnvironmentSpecs = (props: any, initialLanguage: string) => {
             console.error('Polling error', err);
           }
         }, 1000);
-      } catch (e: any) {
-        message.error('Failed to trigger build: ' + e.toString());
+      } catch (err: unknown) {
+        message.error('Failed to trigger build: ' + String(err));
         setBuildInProgress(false);
       }
     } else {

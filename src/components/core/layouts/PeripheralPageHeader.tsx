@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { SettingOutlined } from '@ant-design/icons';
 
-import { UserType } from '../../../infrastructure/user';
+import type { UserType } from '../../../types/models';
 
 import RoleMenu from '../RoleMenu';
 

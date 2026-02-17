@@ -37,13 +37,28 @@ import {
 } from '../../types/common';
 
 /* API library */
-import { Assignment, AssignmentPatchType, AssignmentType } from '../../infrastructure/assignment';
-import { Course, CoursePatchType, CourseType, RosterType } from '../../infrastructure/course';
-import { FileType, SubmissionFile } from '../../infrastructure/file';
-import { Section, SectionType } from '../../infrastructure/section';
-import { Submission, SubmissionInfoType } from '../../infrastructure/submission';
-import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
-import { addToPayload } from '../../infrastructure/utils';
+import { Course, CourseFile, CourseRoster, Section } from '../../api-client';
+import type {
+  CreateRequest as AssignmentCreateRequest,
+  PartialUpdateRequest as AssignmentPartialUpdateRequest,
+} from '../../api-client/apis/AssignmentsApi';
+import type {
+  CreateRequest as SubmissionCreateRequest,
+  PartialUpdateRequest as SubmissionPartialUpdateRequest,
+} from '../../api-client/apis/SubmissionsApi';
+import type { CreateRequest as SubmissionFileCreateRequest } from '../../api-client/apis/SubmissionFilesApi';
+import type { PartialUpdateRequest as SectionPartialUpdateRequest } from '../../api-client/apis/SectionsApi';
+import {
+  courseFilesApi,
+  coursesApi,
+  sectionsApi,
+  assignmentsApi,
+  submissionsApi,
+  submissionFilesApi,
+} from '../../api-client/clients';
+import { Assignment, SubmissionInfoType, UploadFile } from '../../types/common';
+import { SubmissionHistory } from '../../api-client';
+import { withQueryParams } from '../../utils/apiClient';
 
 import { AdminOnboardingSelector } from '../core/OnboardingSelector';
 
@@ -61,7 +76,7 @@ import { CIPAdminModal } from '../cip/components';
 
 /**********************************************************************************************************************/
 
-const formatCourseURL = (course: CourseType) => {
+const formatCourseURL = (course: Course) => {
   return `/admin/${encodeURIComponent(course.name)}/${encodeURIComponent(course.period)}`;
 };
 
@@ -74,7 +89,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
   const [cipModalVisible, setCipModalVisible] = useState(false);
 
   /**** Top-level course data ****/
-  const [courses, setCourses] = useState<CourseType[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
 
   /**** Roster data ****/
   const [rosterLoadComplete, setRosterLoadComplete] = useState(false);
@@ -89,12 +104,12 @@ const Admin: React.FC<IComponentProps> = (props) => {
 
   /**** Sections data ****/
   const [sectionsLoadComplete, setSectionsLoadComplete] = useState(false);
-  const [sections, setSections] = useState<SectionType[]>([]);
-  const [sectionsByStudent, setSectionsByStudent] = useState<{ [studentEmail: string]: SectionType }>({});
+  const [sections, setSections] = useState<Section[]>([]);
+  const [sectionsByStudent, setSectionsByStudent] = useState<{ [studentEmail: string]: Section }>({});
 
   /**** Assignments data ****/
   const [assignmentsLoadComplete, setAssignmentsLoadComplete] = useState(false);
-  const [assignments, setAssignments] = useState<AssignmentType[]>([]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
 
   /*** Submissions data ****/
   const [partialSubmissionsLoadComplete, setPartialSubmissionsLoadComplete] = useState(false);
@@ -107,9 +122,26 @@ const Admin: React.FC<IComponentProps> = (props) => {
     {},
   );
 
+  type RosterData = {
+    id?: number;
+    name?: string;
+    period?: string;
+    students: string[];
+    graders: string[];
+    inactive_students: string[];
+    inactive_graders: string[];
+    inactive_courseAdmins?: string[];
+    courseAdmins: string[];
+    superGraders: string[];
+    rubricEditors: string[];
+    not_activated: string[];
+    organization?: number;
+  };
+
   // Refs for async data access
-  const rosterRef = useRef<RosterType | undefined>(undefined);
-  const assignmentsRef = useRef<AssignmentType[]>([]);
+  const rosterRef = useRef<RosterData | undefined>(undefined);
+  const assignmentsRef = useRef<Assignment[]>([]);
+  const lastLoadedCourseIdRef = useRef<number | undefined>(undefined);
 
   // Initialize state based on props (mimicking constructor)
   useEffect(() => {
@@ -118,38 +150,23 @@ const Admin: React.FC<IComponentProps> = (props) => {
       Object.prototype.hasOwnProperty.call(queryString.parse(location.search), 'onboarding') ||
       props.initialCourses.length === 0;
 
-    setOnboardingModalVisible(showOnboarding && !showCIPModal);
-    setCipModalVisible(showCIPModal);
-    setCourses(_.cloneDeep(props.initialCourses));
-  }, []); // Run once on mount
+    queueMicrotask(() => {
+      setOnboardingModalVisible(showOnboarding && !showCIPModal);
+      setCipModalVisible(showCIPModal);
+      setCourses(props.initialCourses);
+    });
+  }, [location.search, props.initialCourses, props.user.hasCredentials]);
 
   // Document Title
   useEffect(() => {
     document.title = 'codePost - Admin Console';
   }, [navigate]);
 
-  // Load Course Data when currentCourse changes
-  useEffect(() => {
-    if (props.currentCourse) {
-      loadAllCourseData(props.currentCourse);
-    }
-  }, [props.currentCourse?.id]);
-
   /***********************************************************************************
   /* Helper Functions (Business Logic)
   /**********************************************************************************/
 
   /* GENERATORS (Pure functions mostly) */
-
-  const generateSectionsByStudent = (sectionsToProcess: SectionType[]) => {
-    const newSectionsByStudent: { [studentEmail: string]: SectionType } = {};
-    sectionsToProcess.forEach((section) => {
-      section.students.forEach((student) => {
-        newSectionsByStudent[student] = section;
-      });
-    });
-    return newSectionsByStudent;
-  };
 
   const generateSubmissionsByUser = (
     rosterToUse: {
@@ -159,7 +176,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
       inactive_graders: string[];
     },
     submissionsToUse: IAssignmentToSubmissionsMap,
-    assignmentsToUse: AssignmentType[],
+    assignmentsToUse: Assignment[],
   ) => {
     const subsByStudent: IStudentSubmissionsDataTable = {};
     const subsByGrader: IGraderSubmissionsDataTable = {};
@@ -182,8 +199,8 @@ const Admin: React.FC<IComponentProps> = (props) => {
       if (assignmentSubs) {
         assignmentSubs.forEach((submission: SubmissionInfoType) => {
           // NOTE: students in submission.students might be inactive
-          submission.students.forEach((student: string) => {
-            if (student in subsByStudent) {
+          (submission.students as (string | null)[]).forEach((student: string | null) => {
+            if (student && student in subsByStudent) {
               subsByStudent[student][assignment.id] = submission;
             }
           });
@@ -213,7 +230,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
       inactive_graders: string[];
     },
     submissionsParam?: IAssignmentToSubmissionsMap,
-    assignmentsParam?: AssignmentType[],
+    assignmentsParam?: Assignment[],
     callback?: () => void,
   ) => {
     const submissionsToUse = submissionsParam !== undefined ? submissionsParam : submissions;
@@ -242,151 +259,308 @@ const Admin: React.FC<IComponentProps> = (props) => {
 
   /* LOADERS */
 
-  const loadAssignmentsData = (course: CourseType) => {
-    const getData = course.assignments.map((assignmentID) => {
-      return Assignment.read(assignmentID);
-    });
-    return Promise.all(getData);
+  const sortAssignments = (assignments: Assignment[]) => {
+    return assignments.sort((a, b) => (a.sortKey || 0) - (b.sortKey || 0));
   };
 
-  const loadSubmissionsData = (course: CourseType) => {
-    setSubmissions({});
+  type AssignmentCreatePayload = AssignmentCreateRequest['assignment'];
+  type AssignmentPatchPayload = AssignmentPartialUpdateRequest['patchedAssignment'];
+  type SubmissionPatchPayload = SubmissionPartialUpdateRequest['patchedSubmission'];
+  type SubmissionCreatePayload = SubmissionCreateRequest['submission'];
+  type SubmissionFileCreatePayload = SubmissionFileCreateRequest['submissionFile'];
+  type SectionPatchPayload = SectionPartialUpdateRequest['patchedSection'];
+
+  const normalizeRoster = (roster: CourseRoster | RosterData): RosterData => {
+    if ('inactive_students' in roster) {
+      return roster as RosterData;
+    }
+
+    const toStrings = (values?: Array<string | null>) => (values ?? []).filter((v): v is string => Boolean(v));
+    const rosterApi = roster as CourseRoster;
+
+    return {
+      id: rosterApi.id,
+      name: rosterApi.name,
+      period: rosterApi.period,
+      students: toStrings(rosterApi.students),
+      inactive_students: toStrings(rosterApi.inactiveStudents),
+      inactive_graders: toStrings(rosterApi.inactiveGraders),
+      inactive_courseAdmins: toStrings(rosterApi.inactiveCourseAdmins),
+      graders: toStrings(rosterApi.graders),
+      superGraders: toStrings(rosterApi.superGraders),
+      rubricEditors: toStrings(rosterApi.rubricEditors),
+      courseAdmins: toStrings(rosterApi.courseAdmins),
+      not_activated: rosterApi.notActivated ?? [],
+      organization: rosterApi.organization,
+    };
+  };
+
+  const sanitizeAssignment = (result: Assignment): Assignment => ({
+    ...result,
+    isReleased: result.isReleased ?? false,
+    feedbackReleased: result.feedbackReleased ?? false,
+    hideGrades: result.hideGrades ?? false,
+    isVisible: result.isVisible ?? false,
+    allowStudentUpload: result.allowStudentUpload ?? false,
+    allowStudentUploadWithPartners: result.allowStudentUploadWithPartners ?? false,
+    commentFeedback: result.commentFeedback ?? false,
+    anonymousGrading: result.anonymousGrading ?? false,
+    hideGradersFromStudents: result.hideGradersFromStudents ?? false,
+    allowRegradeRequests: result.allowRegradeRequests ?? false,
+    liveFeedbackMode: result.liveFeedbackMode ?? false,
+    additiveGrading: result.additiveGrading ?? false,
+    collaborativeRubricMode: result.collaborativeRubricMode ?? false,
+    forcedRubricMode: result.forcedRubricMode ?? false,
+    templateMode: result.templateMode ?? false,
+    showFrequentlyUsedRubricComments: result.showFrequentlyUsedRubricComments ?? false,
+    allowLateUploads: result.allowLateUploads ?? false,
+    nudgeMode: result.nudgeMode ?? false,
+    runTestsOnSubmit: result.runTestsOnSubmit ?? true,
+    testsAffectGrade: result.testsAffectGrade ?? true,
+
+    sortKey: result.sortKey ?? 0,
+    points: result.points,
+    maxLateDays: result.maxLateDays ?? 0,
+    course: result.course,
+
+    environment: result.environment ?? null,
+    maxStudentTestRuns: result.maxStudentTestRuns ?? null,
+    mean: result.mean ?? null,
+    median: result.median ?? null,
+
+    explanation: result.explanation ?? '',
+    regradeInstructions: result.regradeInstructions ?? '',
+
+    uploadDueDate: result.uploadDueDate ?? null,
+    regradeDeadline: result.regradeDeadline ?? null,
+    studentsCanSeeGraders: result.studentsCanSeeGraders ?? null,
+
+    rubricCategories: result.rubricCategories ?? [],
+    files: result.files ?? [],
+    fileTemplates: result.fileTemplates ?? [],
+    testCategories: result.testCategories ?? [],
+    dataSets: result.dataSets ?? [],
+    hideFrom: result.hideFrom ?? [],
+    lateDeductions: result.lateDeductions ?? [],
+  });
+
+  const loadAssignmentsData = (course: Course): Promise<Assignment[]> => {
+    if (!course.assignments) return Promise.resolve([]);
+
+    const promises = course.assignments.map((id) => assignmentsApi.retrieve({ id }));
+    return Promise.all(promises).then((results) => {
+      // Sanitize fields
+      const sanitized = results.map(sanitizeAssignment);
+
+      const sorted = sortAssignments(sanitized);
+      setAssignments(sorted);
+      setAssignmentsLoadComplete(true);
+      return sorted;
+    });
+  };
+
+  const loadRosterData = (course: Course) => {
+    if (!course) return Promise.resolve();
+
+    return coursesApi.rosterRetrieve({ id: course.id }).then((roster) => {
+      const r = normalizeRoster(roster);
+      setStudents(r.students);
+      setInactiveStudents(r.inactive_students);
+      setGraders(r.graders);
+      setInactiveGraders(r.inactive_graders);
+      setAdmins(r.courseAdmins);
+      setSuperGraders(r.superGraders);
+      setRubricEditors(r.rubricEditors);
+      setNotActivated(r.not_activated);
+      setRosterLoadComplete(true);
+      rosterRef.current = r;
+      return r;
+    });
+  };
+
+  const loadPaginatedSections = (course: Course) => {
+    const fetchAllSections = async () => {
+      const pageSize = 200;
+      let page = 1;
+      let allSections: Section[] = [];
+
+      while (true) {
+        const response = await coursesApi.sectionsList({ id: course.id, page, pageSize });
+        const results = response.results ?? [];
+        allSections = allSections.concat(results);
+
+        if (!response.next) {
+          break;
+        }
+
+        page += 1;
+      }
+
+      return allSections;
+    };
+
+    return fetchAllSections().then((sectionsList) => {
+      const sectionMap: { [studentEmail: string]: Section } = {};
+
+      sectionsList.forEach((sec) => {
+        sec.students.forEach((stu) => {
+          if (stu) {
+            sectionMap[stu] = sec;
+          }
+        });
+      });
+
+      setSections(sectionsList);
+      setSectionsByStudent(sectionMap);
+      setSectionsLoadComplete(true);
+      return sectionsList;
+    });
+  };
+
+  /* New loaders using generated client */
+  const fetchAssignmentSubmissionsCompact = async (assignmentId: number): Promise<SubmissionInfoType[]> => {
+    const pageSize = 1000;
+    let page = 1;
+    let allResults: SubmissionInfoType[] = [];
+    const assignmentsApiWithCompact = withQueryParams(assignmentsApi, { compact: 1 });
+
+    while (true) {
+      const response = await assignmentsApiWithCompact.submissionsListRaw({ id: assignmentId, page, pageSize });
+      const data = (await response.raw.json()) as unknown;
+      if (Array.isArray(data)) {
+        allResults = data as SubmissionInfoType[];
+        break;
+      }
+
+      const results = ((data as { results?: SubmissionInfoType[] } | undefined)?.results ?? []) as SubmissionInfoType[];
+      allResults = allResults.concat(results);
+
+      if (!(data as { next?: string | null } | undefined)?.next) {
+        break;
+      }
+
+      page += 1;
+    }
+
+    return allResults;
+  };
+
+  const loadSubmissionsData = (_course: Course, loadedAssignments: Assignment[]) => {
     setPartialSubmissionsLoadComplete(false);
     setFullSubmissionsLoadComplete(false);
 
-    const promises = course.assignments.map((assignmentID) => {
-      return Assignment.readPaginatedSubmissions(assignmentID, (submissionsPage) =>
-        onSubmissionsPagination(course, assignmentID, submissionsPage),
-      );
-    });
-    Promise.all(promises).then(() => {
+    if (!loadedAssignments || loadedAssignments.length === 0) {
+      setPartialSubmissionsLoadComplete(true);
+      setFullSubmissionsLoadComplete(true);
+      return;
+    }
+
+    const promises = loadedAssignments.map((a) => fetchAssignmentSubmissionsCompact(a.id));
+
+    Promise.all(promises).then((results) => {
+      const newSubmissions: IAssignmentToSubmissionsMap = {};
+
+      results.forEach((subsResponse: SubmissionInfoType[], index) => {
+        const assignmentID = loadedAssignments[index].id;
+        newSubmissions[assignmentID] = subsResponse ?? [];
+      });
+
+      setSubmissions(newSubmissions);
+
+      if (rosterRef.current) {
+        updateSubmissionsByUser(rosterRef.current, newSubmissions, loadedAssignments);
+      }
+
       setPartialSubmissionsLoadComplete(true);
       setFullSubmissionsLoadComplete(true);
     });
   };
 
-  const loadRosterData = (course: CourseType) => {
-    return Course.readRoster(course.id);
-  };
+  const loadViewsBySubmissionData = (_course: Course, loadedAssignments: Assignment[]) => {
+    const fetchAllSubmissionHistories = async (assignmentId: number) => {
+      const pageSize = 200;
+      let page = 1;
+      let allResults: SubmissionHistory[] = [];
 
-  const loadSectionsData = (course: CourseType) => {
-    Course.readPaginatedSections(course.id, (newSections) => onSectionPagination(course, newSections)).then(() => {
-      setSectionsLoadComplete(true);
-    });
-  };
+      while (true) {
+        const response = await assignmentsApi.submissionHistoriesList({ id: assignmentId, page, pageSize });
+        const results = response.results ?? [];
+        allResults = allResults.concat(results as SubmissionHistory[]);
 
-  const loadViewsBySubmissionData = (course: CourseType) => {
-    course.assignments.forEach((assignmentID) => {
-      Assignment.readPaginatedSubmissionHistories(assignmentID, (history) =>
-        onSubmissionHistoryPagination(course, history),
-      );
-    });
-  };
+        if (!response.next) {
+          break;
+        }
 
-  const loadAllCourseData = (course: CourseType) => {
-    // We start loading assignments
-    loadAssignmentsData(course)
-      .then((loadedAssignments) => {
-        if (props.currentCourse?.id !== course.id) return;
+        page += 1;
+      }
 
-        setAssignments(loadedAssignments);
-        assignmentsRef.current = loadedAssignments;
-        setAssignmentsLoadComplete(true);
+      return allResults;
+    };
 
-        // Trigger dependent loads
-        loadSubmissionsData(course);
-        loadViewsBySubmissionData(course);
-
-        return loadedAssignments;
-      })
-      .then((loadedAssignments) => {
-        // Then load roster
-        loadRosterData(course)
-          .then((roster) => {
-            if (props.currentCourse?.id !== course.id) return;
-
-            setStudents(roster.students);
-            setGraders(roster.graders);
-            setAdmins(roster.courseAdmins);
-            setSuperGraders(roster.superGraders);
-            setRubricEditors(roster.rubricEditors);
-            setInactiveStudents(roster.inactive_students);
-            setInactiveGraders(roster.inactive_graders);
-            setNotActivated(roster.not_activated);
-            setRosterLoadComplete(true);
-            rosterRef.current = roster;
-
-            updateSubmissionsByUser(roster, {}, loadedAssignments);
-          })
-          .catch((err) => {
-            console.error('Failed to load roster:', err);
+    loadedAssignments.forEach((assignment) => {
+      fetchAllSubmissionHistories(assignment.id).then((viewHistoryList) => {
+        setViewsBySubmission((prev) => {
+          const newViews = { ...prev };
+          viewHistoryList.forEach((h) => {
+            const { submission, student, hasViewed, dateViewed } = h;
+            if (!(submission in newViews)) {
+              newViews[submission] = {};
+            }
+            if (hasViewed && dateViewed) {
+              newViews[submission][student] = dateViewed;
+            }
           });
-      })
-      .catch((err) => {
-        console.error('Failed to load assignments or chain error:', err);
+          return newViews;
+        });
       });
-
-    loadSectionsData(course);
+    });
   };
+
+  const loadAllCourseData = (course: Course) => {
+    setRosterLoadComplete(false);
+    setSectionsLoadComplete(false);
+    setAssignmentsLoadComplete(false);
+
+    // 1. Assignments
+    loadAssignmentsData(course).then((loadedAssignments) => {
+      if (props.currentCourse?.id !== course.id) return;
+
+      assignmentsRef.current = loadedAssignments;
+
+      // 2. Submissions & Views (depend on assignments)
+      loadSubmissionsData(course, loadedAssignments);
+      loadViewsBySubmissionData(course, loadedAssignments);
+    });
+
+    // 3. Roster (Independent)
+    loadRosterData(course);
+
+    // 4. Sections (Independent)
+    loadPaginatedSections(course);
+  };
+
+  // Load Course Data when currentCourse changes
+  useEffect(() => {
+    const currentCourse = props.currentCourse;
+    if (!currentCourse) return;
+    if (lastLoadedCourseIdRef.current === currentCourse.id) return;
+
+    lastLoadedCourseIdRef.current = currentCourse.id;
+
+    queueMicrotask(() => {
+      loadAllCourseData(currentCourse);
+    });
+  });
 
   /***********************************************************************************
   /* Pagination Callbacks
   /**********************************************************************************/
 
-  const onSubmissionsPagination = (course: CourseType, assignment: number, submissionsPage: SubmissionInfoType[]) => {
-    if (props.currentCourse?.id !== course.id) return;
-
-    setSubmissions((prevSubmissions) => {
-      const oldSubmissions = prevSubmissions[assignment] || [];
-      const newAssignmentSubmissions = [...oldSubmissions, ...submissionsPage];
-      const newSubmissionsMap = { ...prevSubmissions, [assignment]: newAssignmentSubmissions };
-
-      setTimeout(() => {
-        const currentRoster = rosterRef.current;
-        const currentAssignments = assignmentsRef.current;
-        updateSubmissionsByUser(currentRoster, newSubmissionsMap, currentAssignments);
-      }, 0);
-
-      return newSubmissionsMap;
-    });
-
-    setPartialSubmissionsLoadComplete(true);
-  };
-
-  const onSubmissionHistoryPagination = (course: CourseType, viewHistoryList: SubmissionHistoryType[]) => {
-    if (props.currentCourse?.id !== course.id) return;
-
-    setViewsBySubmission((prev) => {
-      const newViews = { ...prev };
-      viewHistoryList.forEach((history) => {
-        const { submission, student, hasViewed, dateViewed } = history;
-        if (!(submission in newViews)) {
-          newViews[submission] = {};
-        }
-        if (hasViewed && dateViewed) {
-          newViews[submission][student] = dateViewed;
-        }
-      });
-      return newViews;
-    });
-  };
-
-  const onSectionPagination = (course: CourseType, newSections: SectionType[]) => {
-    if (props.currentCourse?.id !== course.id) return;
-
-    setSections((prev) => {
-      const combined = [...prev, ...newSections];
-      const map = generateSectionsByStudent(combined);
-      setSectionsByStudent(map);
-      return combined;
-    });
-  };
-
   /***********************************************************************************
   /* URL + UI handling methods
   /**********************************************************************************/
 
-  const handleDemoCourse = (course?: CourseType) => {
+  const handleDemoCourse = (course?: Course) => {
     const searchParam = `?product_tour_id=${ADMIN_TOUR_ID}`;
 
     if (course !== undefined) {
@@ -412,8 +586,8 @@ const Admin: React.FC<IComponentProps> = (props) => {
   /* Course handling methods
   /***********************************************************************/
 
-  const createCourse = (courseName: string, coursePeriod: string, copiedCourse: CourseType | undefined) => {
-    const payload = {
+  const createCourse = (courseName: string, coursePeriod: string, copiedCourse: Course | undefined) => {
+    const courseRequest: Course = {
       id: -1,
       name: courseName,
       period: coursePeriod,
@@ -434,14 +608,14 @@ const Admin: React.FC<IComponentProps> = (props) => {
       emailWhitelist: '',
       inviteCodeEnabled: false,
       enableStudentFeedbackNotifications: false,
-      expiration_date: null,
+      expirationDate: null,
       studentsCanSeeGraders: false,
       studentCount: 0,
       isRubricEditor: false,
-      ...(copiedCourse ? { clone_from: copiedCourse.id } : {}),
-    };
+      cloneFrom: copiedCourse ? copiedCourse.id : undefined,
+    } as unknown as Course;
 
-    return Course.create(payload).then((course: CourseType) => {
+    return coursesApi.create({ course: courseRequest }).then((course: Course) => {
       if (!copiedCourse) {
         props.addCourse(course);
         navigate(`${formatCourseURL(course)}/assignments/overview`);
@@ -449,37 +623,33 @@ const Admin: React.FC<IComponentProps> = (props) => {
       }
 
       const assignmentClonePromises = copiedCourse.assignments.map((assignmentID: number) =>
-        Assignment.clone(assignmentID, course.id),
+        assignmentsApi.cloneCreate({
+          id: assignmentID,
+          assignmentClone: {
+            course: course.id,
+          },
+        }),
       );
 
-      const copyCourseFiles = fetch(`${process.env.REACT_APP_API_URL}/courseFiles/?course=${copiedCourse.id}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      })
-        .then((res) => (res.ok ? res.json() : []))
-        .then((courseFiles: any[]) => {
+      const copyCourseFiles = withQueryParams(courseFilesApi, { course: copiedCourse.id })
+        .listRaw()
+        .then((response: { raw: Response }) => response.raw.json())
+        .then((courseFiles: CourseFile[]) => {
           if (!courseFiles || courseFiles.length === 0) return Promise.resolve([]);
           return Promise.all(
             courseFiles.map((file) =>
-              fetch(`${process.env.REACT_APP_API_URL}/courseFiles/`, {
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-                method: 'POST',
-                body: JSON.stringify({
+              courseFilesApi.create({
+                courseFile: {
                   course: course.id,
                   name: file.name,
                   extension: file.extension,
                   data: file.data,
-                }),
+                },
               }),
             ),
           );
         })
-        .catch((error) => {
+        .catch((error: unknown) => {
           console.error('Error copying course files:', error);
           return Promise.resolve([]);
         });
@@ -491,8 +661,11 @@ const Admin: React.FC<IComponentProps> = (props) => {
     });
   };
 
-  const updateSettings = (course: CoursePatchType) => {
-    return Course.update(course).then((newCourse: CourseType) => {
+  const updateSettings = (course: Course) => {
+    const patch: Course = { ...course };
+    if (patch.id === undefined) return Promise.reject();
+
+    return coursesApi.update({ id: patch.id, course: patch }).then((newCourse: Course) => {
       setCourses(courses.map((c) => (c.id === newCourse.id ? newCourse : c)));
       navigate(`${formatCourseURL(newCourse)}/settings`);
       return newCourse;
@@ -509,35 +682,45 @@ const Admin: React.FC<IComponentProps> = (props) => {
     if (adds.length === 0 && deletes.length === 0) return Promise.reject();
 
     const makePayload = (role: USER_APP, users: string[]) => {
-      const payload = { id: currentCourse.id };
+      const payload: Record<string, unknown> = { id: currentCourse.id };
       switch (role) {
         case USER_APP.Student:
-          addToPayload(payload, 'students', users);
+          payload.students = users;
           break;
         case USER_APP.Grader:
-          addToPayload(payload, 'graders', users);
+          payload.graders = users;
           break;
         case USER_APP.CourseAdmin:
-          addToPayload(payload, 'courseAdmins', users);
+          payload.courseAdmins = users;
           break;
         case USER_APP.SuperGrader:
-          addToPayload(payload, 'superGraders', users);
+          payload.superGraders = users;
           break;
         case USER_APP.RubricEditor:
-          addToPayload(payload, 'rubricEditors', users);
+          payload.rubricEditors = users;
           break;
       }
       return payload;
     };
 
-    let roster: RosterType | undefined = undefined;
+    let roster: RosterData | undefined = undefined;
 
     if (adds.length > 0) {
-      roster = await Course.addToRoster(makePayload(userType, adds));
+      roster = normalizeRoster(
+        await coursesApi.addToRosterPartialUpdate({
+          id: currentCourse.id,
+          patchedCourse: makePayload(userType, adds),
+        }),
+      );
     }
 
     if (deletes.length > 0) {
-      roster = await Course.removeFromRoster(makePayload(userType, deletes));
+      roster = normalizeRoster(
+        await coursesApi.removeFromRosterPartialUpdate({
+          id: currentCourse.id,
+          patchedCourse: makePayload(userType, deletes),
+        }),
+      );
     }
 
     if (roster) {
@@ -576,13 +759,12 @@ const Admin: React.FC<IComponentProps> = (props) => {
       course: props.currentCourse.id,
       leaders: [],
       students: [],
-      id: -1,
     };
 
-    return Section.create(payload).then((section: SectionType) => {
+    return sectionsApi.create({ section: payload }).then((section: Section) => {
       setSections([...sections, section]);
       if (props.currentCourse) {
-        props.currentCourse.sections.push(section.id);
+        // Previously mutated course sections list. Skipping for now as currentCourse is likely immutable prop
       }
       return section;
     });
@@ -595,36 +777,44 @@ const Admin: React.FC<IComponentProps> = (props) => {
     const thisSection = sections[sectionIndex];
     const sectionStudents = thisSection.students;
 
-    return Section.delete({ id: sectionID }).then(() => {
+    return sectionsApi.destroy({ id: sectionID }).then(() => {
       const newSections = sections.filter((s) => s.id !== sectionID);
       const newSectionsByStudent = { ...sectionsByStudent };
       sectionStudents.forEach((student) => {
-        delete newSectionsByStudent[student];
+        if (student) {
+          delete newSectionsByStudent[student];
+        }
       });
-
-      if (props.currentCourse) {
-        props.currentCourse.sections = newSections.map((s) => s.id);
-      }
 
       setSections(newSections);
       setSectionsByStudent(newSectionsByStudent);
     });
   };
 
-  const updateSection = (toUpdate: SectionType): Promise<void> => {
+  const updateSection = (toUpdate: Section): Promise<void> => {
     const oldSection = sections.find((s) => s.id === toUpdate.id);
     if (!oldSection) return Promise.reject('This section does not exist.');
 
     const oldStudents = [...oldSection.students];
 
-    return Section.update(toUpdate).then((newSection) => {
-      const newStudents = toUpdate.students;
+    // Use partial update with full object to update fields
+    // toUpdate is Section type (User, ID, course, etc)
+    // Omit ID from body
+    const { id, ...rest } = toUpdate;
+    const payload: SectionPatchPayload = { ...rest };
+
+    return sectionsApi.partialUpdate({ id, patchedSection: payload }).then((newSection) => {
+      const newStudents = newSection.students;
       const removedStudents = oldStudents.filter((student) => !newStudents.includes(student));
       const addedStudents = newStudents.filter((student) => !oldStudents.includes(student));
 
       const sectionMap = { ...sectionsByStudent };
-      for (const removed of removedStudents) delete sectionMap[removed];
-      for (const added of addedStudents) sectionMap[added] = newSection;
+      for (const removed of removedStudents) {
+        if (removed) delete sectionMap[removed];
+      }
+      for (const added of addedStudents) {
+        if (added) sectionMap[added] = newSection;
+      }
 
       const otherSections = sections
         .filter((s) => s.id !== newSection.id)
@@ -649,7 +839,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
       promises.push(updateSection(updatedSection));
     } else if (oldSection) {
       const updatedSection = _.cloneDeep(oldSection);
-      updatedSection.students = updatedSection.students.filter((el: string) => el !== studentEmail);
+      updatedSection.students = updatedSection.students.filter((el: string | null) => el !== studentEmail);
       promises.push(updateSection(updatedSection));
     }
 
@@ -660,12 +850,13 @@ const Admin: React.FC<IComponentProps> = (props) => {
   /* Assignment handling methods
   /***********************************************************************/
 
-  const updateAssignment = (patchObj: AssignmentPatchType): Promise<void> => {
-    return Assignment.update(patchObj)
-      .then((assignment) => {
-        setAssignments(assignments.map((assn) => (assn.id === assignment.id ? assignment : assn)));
-      })
-      .catch((errors) => Promise.reject(errors));
+  const updateAssignment = (patchObj: Partial<Assignment> & { id: number }): Promise<void> => {
+    const { id, ...rest } = patchObj;
+    const payload: AssignmentPatchPayload = rest as AssignmentPatchPayload;
+    return assignmentsApi.partialUpdate({ id, patchedAssignment: payload }).then((updatedGenerated) => {
+      const assignment = sanitizeAssignment(updatedGenerated);
+      setAssignments(assignments.map((assn) => (assn.id === assignment.id ? assignment : assn)));
+    });
   };
 
   const shallowUpdateAssignment = (assignmentID: number, field: string, value: number) => {
@@ -679,18 +870,16 @@ const Admin: React.FC<IComponentProps> = (props) => {
     isVisible: boolean,
     dueDate?: string,
     sortKey?: number,
-  ): Promise<AssignmentType> => {
+  ): Promise<Assignment> => {
     const { currentCourse } = props;
     if (!currentCourse) return Promise.reject();
 
-    const payload = {
-      id: -1,
+    const payload: AssignmentCreatePayload = {
       course: currentCourse.id,
       name: aName,
       points: aPoints,
       isReleased: false,
       hideGrades: false,
-      rubricCategories: [],
       sortKey,
       allowStudentUpload: studentUpload,
       uploadDueDate: dueDate,
@@ -698,13 +887,15 @@ const Admin: React.FC<IComponentProps> = (props) => {
       feedbackReleased: false,
     };
 
-    return Assignment.create(payload).then((assignment: AssignmentType) => {
+    // assignmentsApi is imported from clients
+    return assignmentsApi.create({ assignment: payload }).then((resp) => {
+      const assignment = sanitizeAssignment(resp);
       const newSubsByGrader = { ...submissionsByGrader };
       graders.forEach((grader) => {
         newSubsByGrader[grader][assignment.id] = [];
       });
 
-      const newAssignments = _.uniqBy([...assignments, assignment], (a: AssignmentType) => a.name);
+      const newAssignments = _.uniqBy([...assignments, assignment], (a) => a.name);
 
       setSubmissions((prev) => ({ ...prev, [assignment.id]: [] }));
       setAssignments(newAssignments);
@@ -715,18 +906,18 @@ const Admin: React.FC<IComponentProps> = (props) => {
     });
   };
 
-  const deleteAssignment = (toDelete: AssignmentType) => {
+  const deleteAssignment = (toDelete: Assignment) => {
     const { currentCourse } = props;
     if (!currentCourse) return Promise.reject();
 
-    return Assignment.delete(toDelete).then(() => {
+    // assignmentsApi is imported from clients
+
+    return assignmentsApi.destroy({ id: toDelete.id }).then(() => {
       const newAssignments = assignments.filter((el) => el.id !== toDelete.id);
       // We need to remove it from submissions map
       const newSubmissions = { ...submissions };
       delete newSubmissions[toDelete.id];
 
-      const newAssignmentIDs = newAssignments.map((i) => i.id);
-      currentCourse.assignments = newAssignmentIDs; // mutates prop object, which propagates in global state logic often
       props.deleteAssignment(toDelete);
 
       setAssignments(newAssignments);
@@ -746,12 +937,15 @@ const Admin: React.FC<IComponentProps> = (props) => {
     getPayload: (sub: SubmissionInfoType) => Partial<SubmissionInfoType>,
   ) => {
     const submissionsToUpdate = submissions[assignmentID];
+    // submissionsApi is imported from clients
     const promises = submissionsToUpdate.map((s) => {
-      const payload = { id: s.id, ...getPayload(s) };
-      return Submission.update(payload);
+      const payload = getPayload(s) as SubmissionPatchPayload;
+      return submissionsApi
+        .partialUpdate({ id: s.id, patchedSubmission: payload })
+        .then((updated) => updated as SubmissionInfoType);
     });
 
-    return Promise.all(promises).then((updatedSubmissions: SubmissionInfoType[]) => {
+    return Promise.all(promises).then((updatedSubmissions) => {
       const newSubmissions = { ...submissions, [assignmentID]: updatedSubmissions };
       setSubmissions(newSubmissions);
       updateSubmissionsByUser(undefined, newSubmissions, undefined);
@@ -764,35 +958,51 @@ const Admin: React.FC<IComponentProps> = (props) => {
 
     if (oldSubmission === undefined) return Promise.reject('Submission does not exist');
 
-    return Submission.update(toUpdate).then((updated) => {
-      const newAssignmentSubs = [...submissions[assignmentID].filter((s) => s.id !== updated.id), updated];
+    // submissionsApi is imported from clients
+    const payload = toUpdate as SubmissionPatchPayload;
+    return submissionsApi.partialUpdate({ id: toUpdate.id, patchedSubmission: payload }).then((updated) => {
+      const updatedSubmission = updated as SubmissionInfoType;
+      const newAssignmentSubs = [
+        ...submissions[assignmentID].filter((s) => s.id !== updatedSubmission.id),
+        updatedSubmission,
+      ];
       const newSubmissions = { ...submissions, [assignmentID]: newAssignmentSubs };
 
       // Update student mappings
       const newSubmissionsByStudent = { ...submissionsByStudent };
-      const removedStudents = oldSubmission.students.filter((student) => updated.students.indexOf(student) < 0);
+      const removedStudents = (oldSubmission.students as (string | null)[]).filter(
+        (student) => student && updatedSubmission.students.indexOf(student) < 0,
+      ) as string[];
 
       removedStudents.forEach((student) => {
-        delete newSubmissionsByStudent[student][assignmentID];
+        if (newSubmissionsByStudent[student]) {
+          delete newSubmissionsByStudent[student][assignmentID];
+        }
       });
 
-      updated.students.forEach((student) => {
-        newSubmissionsByStudent[student][assignmentID] = updated;
+      (updatedSubmission.students as (string | null)[]).forEach((student) => {
+        if (student) {
+          const s = student as string;
+          if (!newSubmissionsByStudent[s]) {
+            newSubmissionsByStudent[s] = {};
+          }
+          newSubmissionsByStudent[s][assignmentID] = updatedSubmission;
+        }
       });
 
       // Update grader mappings
       const newGraderMap = { ...submissionsByGrader };
-      if (oldSubmission.grader && oldSubmission.grader !== updated.grader) {
+      if (oldSubmission.grader && oldSubmission.grader !== updatedSubmission.grader) {
         newGraderMap[oldSubmission.grader][assignmentID] = newGraderMap[oldSubmission.grader][assignmentID].filter(
-          (s) => s.id !== updated.id,
+          (s) => s.id !== updatedSubmission.id,
         );
       }
 
-      if (updated.grader) {
-        const existingGraderSubs = newGraderMap[updated.grader][assignmentID] || [];
-        newGraderMap[updated.grader][assignmentID] = [
-          ...existingGraderSubs.filter((s) => s.id !== updated.id),
-          updated,
+      if (updatedSubmission.grader) {
+        const existingGraderSubs = newGraderMap[updatedSubmission.grader!][assignmentID] || [];
+        newGraderMap[updatedSubmission.grader!][assignmentID] = [
+          ...existingGraderSubs.filter((s) => s.id !== updatedSubmission.id),
+          updatedSubmission,
         ];
       }
 
@@ -814,13 +1024,16 @@ const Admin: React.FC<IComponentProps> = (props) => {
 
     if (sub === undefined) return Promise.reject('Submission does not exist');
 
-    return Submission.delete(sub).then(() => {
+    // submissionsApi is imported from clients
+    return submissionsApi.destroy({ id: sub.id }).then(() => {
       const newAssignmentSubs = submissions[assignmentID].filter((s) => s.id !== sub.id);
       const newSubmissions = { ...submissions, [assignmentID]: newAssignmentSubs };
 
       const newSubmissionsByStudent = { ...submissionsByStudent };
-      sub.students.forEach((student) => {
-        delete newSubmissionsByStudent[student][assignmentID];
+      (sub.students as (string | null)[]).forEach((student) => {
+        if (student && newSubmissionsByStudent[student]) {
+          delete newSubmissionsByStudent[student][assignmentID];
+        }
       });
 
       const newSubmissionsByGrader = { ...submissionsByGrader };
@@ -841,36 +1054,37 @@ const Admin: React.FC<IComponentProps> = (props) => {
     return split.length === 1 ? 'txt' : split[split.length - 1];
   };
 
-  const addFilesToSubmission = (submission: SubmissionInfoType, files: FileType[]) => {
-    const filePromises = files.map((file: FileType) => {
+  const addFilesToSubmission = (submission: SubmissionInfoType, files: UploadFile[]) => {
+    // submissionFilesApi is imported from clients
+    const filePromises = files.map((file: UploadFile) => {
       const ext = getFileExtension(file.name);
-      const filePayload = {
-        id: -1,
+      const fileData = file.data ?? '';
+      const payload: SubmissionFileCreatePayload = {
         name: file.name,
         extension: ext,
-        data: (file as unknown as { data: string }).data,
+        data: fileData,
         submission: submission.id,
-        comments: [],
         path: file.path ? file.path : null,
       };
-      return SubmissionFile.create(filePayload);
+      return submissionFilesApi.create({
+        submissionFile: payload,
+      });
     });
 
     return Promise.all(filePromises).then(() => submission);
   };
 
-  const uploadSubmission = (assignment: AssignmentType, partners: string[], files: FileType[]) => {
+  const uploadSubmission = (assignment: Assignment, partners: string[], files: UploadFile[]) => {
     if (partners.length === 0) return Promise.reject();
 
-    const submissionPayload = {
-      id: -1,
+    const submissionPayload: SubmissionCreatePayload = {
       isFinalized: false,
-      files: [],
       assignment: assignment.id,
       students: partners,
     };
 
-    return Submission.create(submissionPayload).then((submission: SubmissionInfoType) => {
+    // submissionsApi is imported from clients
+    return submissionsApi.create({ submission: submissionPayload }).then((submission) => {
       const filesPromise = addFilesToSubmission(submission, files);
 
       const newSubmissionsByStudent = { ...submissionsByStudent };
@@ -922,7 +1136,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
     <AdminOnboardingSelector
       open={onboardingModalVisible}
       onCancel={closeModal}
-      email={props.user.email}
+      email={props.user.email!}
       onDemoCreate={handleDemoCourse}
       demoCourseExists={courses.some((el) => el.period === 'demo')}
     />,
@@ -961,7 +1175,6 @@ const Admin: React.FC<IComponentProps> = (props) => {
         course={props.currentCourse}
         courseURL={courseURL}
         // Loaded Data
-        assignments={assignments}
         students={students}
         graders={graders}
         admins={admins}
@@ -986,7 +1199,8 @@ const Admin: React.FC<IComponentProps> = (props) => {
         }}
         // User Context
         user={props.user}
-        myEmail={props.user.email}
+        myEmail={props.user.email!}
+        assignments={assignments}
         // Change handlers
         createAssignment={createAssignment}
         updateAssignment={updateAssignment}

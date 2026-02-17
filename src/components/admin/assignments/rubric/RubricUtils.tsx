@@ -2,6 +2,8 @@
 /* Imports
 /**********************************************************************************************************************/
 
+import { RubricCategory, RubricComment } from '../../../../api-client';
+
 /**********************************************************************************************************************/
 
 enum STATUS {
@@ -43,4 +45,20 @@ const statusChange = (oldProps: any[], newProps: any[], currStatus: STATUS) => {
   }
 };
 
-export { STATUS, statusChange };
+const compareRubricCategories = (a: RubricCategory, b: RubricCategory) => {
+  if (a.sortKey === b.sortKey) {
+    return a.id - b.id;
+  } else {
+    return (a.sortKey || 0) - (b.sortKey || 0);
+  }
+};
+
+const compareRubricComments = (a: RubricComment, b: RubricComment) => {
+  if (a.sortKey === b.sortKey) {
+    return a.id - b.id;
+  } else {
+    return (a.sortKey || 0) - (b.sortKey || 0);
+  }
+};
+
+export { STATUS, statusChange, compareRubricCategories, compareRubricComments };

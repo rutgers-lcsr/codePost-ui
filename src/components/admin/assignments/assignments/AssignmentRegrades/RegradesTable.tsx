@@ -16,11 +16,14 @@ import {
 import { Divider, Dropdown, Input, message, Modal, Table, Tag, Typography } from 'antd';
 
 /* codePost imports */
-import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
-import { AnonymousSubmissionInfoType, SubmissionInfoType } from '../../../../../infrastructure/submission';
+/* codePost imports */
+import { assignmentsApi } from '../../../../../api-client/clients';
+import { Assignment, SubmissionInfoType } from '../../../../../types/common';
 import RegradeInstructionsModal from './RegradeInstructionsModal';
 
-import { UserType } from '../../../../../infrastructure/user';
+import { User } from '../../../../../api-client';
+
+type AnonymousSubmissionInfoType = SubmissionInfoType;
 
 import CPButton from '../../../../../components/core/CPButton';
 
@@ -34,13 +37,13 @@ const { confirm } = Modal;
 
 interface IRegradesTableProps {
   /* assignment data */
-  assignment: AssignmentType;
+  assignment: Assignment;
   submissions: SubmissionInfoType[] | AnonymousSubmissionInfoType[];
 
   /* Refresh Course data */
   refreshCourseData: () => void | undefined;
 
-  user: UserType;
+  user: User;
   updateSubmission: (submission: SubmissionInfoType) => Promise<void>;
 
   isAnonymous?: boolean;
@@ -101,7 +104,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
       title: `Are you sure you want to ${isRelease ? 'release' : 'claim'} this regrade?`,
       content: 'This will clear the existing draft response text.',
       onOk() {
-        clearRegrade(submission, isRelease ? null : props.user.email);
+        clearRegrade(submission, isRelease ? null : props.user.email || '');
       },
       onCancel() {
         return;
@@ -128,13 +131,11 @@ const RegradesTable = (props: IRegradesTableProps) => {
   };
 
   const saveInstructions = async (instructions: string) => {
-    const payload = {
-      id: props.assignment.id,
-      regradeInstructions: instructions,
-    };
-
     try {
-      await Assignment.update(payload);
+      await assignmentsApi.partialUpdate({
+        id: props.assignment.id,
+        patchedAssignment: { regradeInstructions: instructions },
+      });
       message.success('Successfully updated instructions!');
       closeInstructionsModal();
     } catch (err) {
@@ -398,7 +399,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
       </CPButton>
       <RegradeInstructionsModal
         visible={instructionsModalVisible}
-        instructions={props.assignment.regradeInstructions}
+        instructions={props.assignment.regradeInstructions ?? ''}
         cancel={closeInstructionsModal}
         save={saveInstructions}
       />

@@ -45,6 +45,7 @@ interface IStandardConsoleLayoutProps {
   editRubricMode: boolean;
   activePanel?: number | null;
   onActivePanelChange?: (index: number | null) => void;
+  panelDefaultWidths?: { [key: string]: number };
 }
 
 const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
@@ -104,6 +105,14 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
   React.useEffect(() => {
     if (activePanel !== null) {
       lastActivePanelRef.current = activePanel;
+
+      // If we have a default width for this panel, set it
+      if (props.panelDefaultWidths && props.sider[activePanel]) {
+        const key = props.sider[activePanel].key;
+        if (key && props.panelDefaultWidths[key]) {
+          setSiderWidth(props.panelDefaultWidths[key]);
+        }
+      }
     }
   }, [activePanel]);
 

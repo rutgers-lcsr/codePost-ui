@@ -1,4 +1,9 @@
-import { CourseType, AssignmentType } from '../../infrastructure/types';
+import type { AssignmentType } from '../../types/models';
+
+interface ICourseRef {
+  name: string;
+  period: string;
+}
 
 // React-router automatically encodes URI components.
 //
@@ -27,29 +32,29 @@ export const encodeForRoute = (pathComponent: string) => {
   return encodeForLink(pathComponent);
 };
 
-export const getRubricURL = (course: CourseType, assignment: AssignmentType) => {
+export const getRubricURL = (course: ICourseRef, assignment: AssignmentType) => {
   return `admin/${encodeForLink(course.name)}/${encodeForLink(course.period)}/assignments/rubrics/${encodeForLink(
     assignment.name,
   )}`;
 };
 
-export const getUploadSubmissionsURL = (course: CourseType, assignment: AssignmentType) => {
+export const getUploadSubmissionsURL = (course: ICourseRef, assignment: AssignmentType) => {
   return `admin/${encodeForLink(course.name)}/${encodeForLink(course.period)}/assignments/${encodeForLink(
     assignment.name,
   )}/upload/single`;
 };
 
-export const getRosterURL = (course: CourseType) => {
+export const getRosterURL = (course: ICourseRef) => {
   return `admin/${encodeForLink(course.name)}/${encodeForLink(course.period)}/roster`;
 };
 
-export const getTestsURL = (course: CourseType, assignment: AssignmentType) => {
+export const getTestsURL = (course: ICourseRef, assignment: AssignmentType) => {
   return `admin/${encodeForLink(course.name)}/${encodeForLink(course.period)}/assignments/tests/${encodeForLink(
     assignment.name,
   )}/edit/environment`;
 };
 
-export const getSettingsURL = (course: CourseType, assignment: AssignmentType) => {
+export const getSettingsURL = (course: ICourseRef, assignment: AssignmentType) => {
   return `admin/${encodeForLink(course.name)}/${encodeForLink(course.period)}/assignments/${encodeForLink(
     assignment.name,
   )}/settings`;

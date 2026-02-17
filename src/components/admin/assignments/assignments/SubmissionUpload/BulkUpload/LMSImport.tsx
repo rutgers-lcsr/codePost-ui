@@ -30,9 +30,9 @@ import ReactMarkdown from 'react-markdown';
 
 import { codePostFile, IProtoFileUpload } from './../FileReader';
 
-import { CourseType } from '../../../../../../infrastructure/types';
+import { Course } from '../../../../../../api-client';
 
-import { Course } from '../../../../../../infrastructure/course';
+import { coursesApi } from '../../../../../../api-client/clients';
 
 import LMSRosterMapUpload from './LMSRosterMapUpload';
 
@@ -55,7 +55,7 @@ interface IUploadFormProps {
   ) => void;
   students: string[];
   mode?: string;
-  course: CourseType;
+  course: Course;
   onCancel: () => void;
   setImportOptions: (value: boolean) => void;
   system: string;
@@ -495,7 +495,7 @@ interface IStepThreeProps {
   setStudent: (folderName: string, email: string) => void;
   setFolderMap: (map: FolderToStudentMap) => void;
   onUpload: () => void;
-  course: CourseType;
+  course: Course;
 }
 
 // *************************************************************************************
@@ -505,7 +505,7 @@ interface IStepThreeProps {
 const StepThreeMapStudent = (props: IStepThreeProps) => {
   const [editMode, setEditMode] = useState(true);
   const [showUpload, setShowUpload] = useState(false);
-  const [newMapping, setNewMapping] = useState<{ [id: string]: string }>({});
+  const [newMapping, setNewMapping] = useState<{ [id: string]: string | null | undefined }>({});
   const [loading, setLoading] = useState(true);
   const [isGuessing, setIsGuessing] = useState(false);
 
@@ -549,8 +549,8 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
   React.useEffect(() => {
     const fetchMap = async () => {
       setLoading(true);
-      const oldMap = await Course.readRosterMap(props.course.id);
-      setNewMapping(oldMap);
+      const response = await coursesApi.rosterMapRetrieve({ id: props.course.id });
+      setNewMapping(response.rosterMap ?? {});
     };
     fetchMap();
   }, []);
@@ -567,8 +567,11 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
     let studentsMatched = 0;
     Object.keys(newMapping).forEach((identifier) => {
       if (identifier in folderNameByID && identifier in newMapping) {
-        props.setStudent(folderNameByID[identifier], newMapping[identifier]);
-        studentsMatched += 1;
+        const email = newMapping[identifier];
+        if (email) {
+          props.setStudent(folderNameByID[identifier], email);
+          studentsMatched += 1;
+        }
       }
     });
 
@@ -655,7 +658,12 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
 
   const onRosterSave = async (newMap: { [id: string]: string }) => {
     // Save the map in api, so users don't lose their work
-    await Course.updateRosterMap({ id: props.course.id, rosterMap: newMap });
+    // Generated client expects PatchCourse but legacy sends rosterMap which is not in PatchCourse definition.
+    // Casting to any or PatchCourse to bypass.
+    await coursesApi.rosterMapPartialUpdate({
+      id: props.course.id,
+      patchedCourseRosterMap: { rosterMap: newMap },
+    });
     setNewMapping(newMap);
     setShowUpload(false);
     message.success('Mapping saved!');
@@ -671,7 +679,10 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
       }
     });
 
-    await Course.updateRosterMap({ id: props.course.id, rosterMap: latestMap });
+    await coursesApi.rosterMapPartialUpdate({
+      id: props.course.id,
+      patchedCourseRosterMap: { rosterMap: latestMap },
+    });
     props.onUpload();
   };
 

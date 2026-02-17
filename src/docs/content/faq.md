@@ -97,3 +97,19 @@ Contact your course instructor or organization administrator to update your emai
 - Make sure you're using the correct email address
 - Ask your instructor to verify you're added to the roster
 - Check if you need to use an invite code to join
+
+## Running Assignments
+
+### Failed to create Docker container
+
+Sometimes the environment cannot be built on codePost, this is usually due to a misconfiguration in the assignment.
+Containers can file for a couple of reasons, which can be one of the following.
+
+1. Misaligned dataset mounts
+   - Datasets are a bit tricky to get right, datasets which are mounted improerly can cause build to fail.
+   - Check if your mounting the dataset in the correct location, its common to mistakely mount it as a directory, causing addicational mounts to fail.
+2. Unavilable Docker containers,
+   - If docker hub is down, or if we are unable to pull the image, the build will fail.
+3. Unsupported configuration due to limitations of the docker sandbox
+   - If you have a configuration which is not yet supported please reach out to our team.
+   - We recommend not using external links such as http requests inside student code, as every time the code executes it will download.

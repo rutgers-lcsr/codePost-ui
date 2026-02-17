@@ -35,7 +35,7 @@ import type { ColumnsType } from 'antd/es/table';
 import JSZip from 'jszip';
 import * as React from 'react';
 import { colors } from '../../../../theme/colors';
-import { AssignmentFileType, File as CodePostFile } from '../../../../infrastructure/file';
+import { AssignmentFileType, File as CodePostFile } from '../../../../utils/file';
 import NotebookEditor from './NotebookEditor'; // Added import
 
 const { Text } = Typography;
@@ -135,6 +135,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
       assignment: assignmentId || files[0]?.assignment || 0,
       data: '',
       created: new Date().toISOString(),
+      modified: new Date().toISOString(),
       description: '',
     };
 
@@ -254,6 +255,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
             assignment: assignmentId || files[0]?.assignment || 0,
             data: content,
             created: new Date().toISOString(),
+            modified: new Date().toISOString(),
             description: '',
           });
 
@@ -300,6 +302,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
           assignment: assignmentId || files[0]?.assignment || 0,
           data: content,
           created: new Date().toISOString(),
+          modified: new Date().toISOString(),
           description: '',
         };
 

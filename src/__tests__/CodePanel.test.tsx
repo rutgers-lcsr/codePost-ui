@@ -110,3 +110,11 @@
 //     expect(wrapper.instance().getPointDeltaInFile(file, comments, commentRubricComments)).toBe(5);
 //   });
 // });
+
+import { describe, it } from 'vitest';
+
+describe.skip('CodePanel (legacy enzyme tests)', () => {
+  it('skipped', () => {
+    // Legacy Enzyme snapshot tests are kept for reference.
+  });
+});

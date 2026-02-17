@@ -4,15 +4,13 @@ import { useEffect, useState } from 'react';
 import { Badge, Button, Card, Empty, Layout, Modal, Radio, Select, Typography } from 'antd';
 
 /* codePost object imports */
-import { SubmissionInfoType } from '../../../../../infrastructure/submission';
-import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructure/submissionTest';
-import { TestCaseType } from '../../../../../infrastructure/testCase';
-import { TestCategoryType } from '../../../../../infrastructure/testCategory';
+import { SubmissionInfoType, SubmissionTestType, TestCaseType, TestCategoryType } from '../../../../../types/models';
 import { colors } from '../../../../../theme/colors';
 
-import TestsList from '../../../../code-review/code-panel/TestsList';
+import TestsList from '@code-review/code-panel/TestsList';
 
 import { RESULT_STATUS, TestCasesByCategory, TestsBySubmission } from '../../../../core/testFetchUtils';
+import { getLatestSubmissionTests } from '../../../../../utils/submissionTests';
 
 // @ts-ignore
 import { List } from 'react-window';
@@ -111,7 +109,7 @@ export const ResultDetail = (props: IProps) => {
     // if there's a test filter, check to see that the submission has a test for that case with the right status
     if (filterCase) {
       return (
-        SubmissionTest.getLatest(thisSubmissionTests).find(
+        getLatestSubmissionTests(thisSubmissionTests).find(
           (t) => sameStatus(t, filterStatus) && t.testCase === filterCase.id,
         ) === undefined
       );
@@ -120,14 +118,14 @@ export const ResultDetail = (props: IProps) => {
     if (filterCategory) {
       const filterCaseIDS = props.casesByCategory[filterCategory.id].map((tc) => tc.id);
       return (
-        SubmissionTest.getLatest(thisSubmissionTests).find(
+        getLatestSubmissionTests(thisSubmissionTests).find(
           (t) => sameStatus(t, filterStatus) && filterCaseIDS.includes(t.testCase),
         ) === undefined
       );
     }
 
     // Else see if any test matches the filter status
-    return SubmissionTest.getLatest(thisSubmissionTests).find((t) => sameStatus(t, filterStatus)) === undefined;
+    return getLatestSubmissionTests(thisSubmissionTests).find((t) => sameStatus(t, filterStatus)) === undefined;
   };
 
   // does a submission test have the same status as a given status type
@@ -150,7 +148,7 @@ export const ResultDetail = (props: IProps) => {
     if (!(filterSubmission.id in props.testsBySubmission)) {
       testsToShow = [];
     } else {
-      testsToShow = SubmissionTest.getLatest(props.testsBySubmission[filterSubmission.id] || []).filter((t) => {
+      testsToShow = getLatestSubmissionTests(props.testsBySubmission[filterSubmission.id] || []).filter((t) => {
         const meetsCategory = filterCategory ? t.testCategory === filterCategory.id : true;
         const meetsCase = filterCase ? t.testCase === filterCase.id : true;
         const meetsStatus = filterStatus !== undefined ? sameStatus(t, filterStatus) : true;
@@ -327,12 +325,14 @@ const TestDetail = (props: IResultProps) => {
   let pointsBadge;
   if (props.test) {
     if (props.test.passed) {
-      const points = `${props.testCase.pointsPass > 0 ? '+' : props.testCase.pointsPass < 0 ? '-' : ''}${props.testCase.pointsPass
-        }`;
+      const points = `${(props.testCase.pointsPass || 0) > 0 ? '+' : (props.testCase.pointsPass || 0) < 0 ? '-' : ''}${
+        props.testCase.pointsPass || 0
+      }`;
       pointsBadge = <Badge count={points} style={{ backgroundColor: '#52c41a' }} />;
     } else {
-      const points = `${props.testCase.pointsFail > 0 ? '+' : props.testCase.pointsPass < 0 ? '-' : ''}${props.testCase.pointsFail
-        }`;
+      const points = `${(props.testCase.pointsFail || 0) > 0 ? '+' : (props.testCase.pointsFail || 0) < 0 ? '-' : ''}${
+        props.testCase.pointsFail || 0
+      }`;
       pointsBadge = <Badge count={points} style={{ backgroundColor: 'red' }} />;
     }
   }

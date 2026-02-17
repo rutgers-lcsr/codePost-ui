@@ -30,6 +30,7 @@ export const codeMirorLanguageMap: { [language: string]: string } = {
   sh: 'shell',
   ipynb: 'json',
   md: 'markdown',
+  r: 'r',
 };
 
 export const extensionsByLanguage: { [language: string]: string } = {
@@ -45,6 +46,11 @@ export const extensionsByLanguage: { [language: string]: string } = {
   'node-20': 'js',
   'node-18': 'js',
   'r-4': 'r',
+  python: 'py',
+  r: 'r',
+  javascript: 'js',
+  typescript: 'ts',
+  node: 'js',
 };
 
 /****************************** Languages and Language support *********************************/

@@ -2,16 +2,19 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import _ from 'lodash';
 
-import { AssignmentType } from '../infrastructure/assignment';
-import { CommentType } from '../infrastructure/comment';
-import { CourseType } from '../infrastructure/course';
-import { AssignmentFileType, FileType } from '../infrastructure/file';
-import { RubricCategoryType } from '../infrastructure/rubricCategory';
-import { RubricCommentType } from '../infrastructure/rubricComment';
-import { AnonymousSubmissionType, StudentSubmissionType } from '../infrastructure/submission';
-import { SubmissionTestType } from '../infrastructure/submissionTest';
-import { StudentTestCaseType, TestCaseType } from '../infrastructure/testCase';
-import { TestCategoryType } from '../infrastructure/testCategory';
+import { Assignment } from '../types/common';
+import { CommentType } from '../utils/comments';
+import { Course, RubricCategory, RubricComment } from '../api-client';
+import {
+  AnonymousSubmissionType,
+  AssignmentFileType,
+  FileTypeAlias as FileType,
+  StudentSubmissionType,
+  SubmissionTestType,
+  TestCaseType,
+  TestCategoryType,
+} from '../types/models';
+import type { StudentTestCaseType } from '../types/models';
 import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from '../types/common';
 import { CURSOR_DOMAIN, ICodeConsoleState, PANEL_TYPE, PERMISSION_LEVEL } from '../types/CodeConsole.types';
 
@@ -43,8 +46,8 @@ interface CodeConsoleStoreActions {
   // Submission data
   setSubmission: (submission: AnonymousSubmissionType | undefined) => void;
   setReadOnlySubmission: (submission: StudentSubmissionType | undefined) => void;
-  setAssignment: (assignment: AssignmentType | undefined) => void;
-  setCourse: (course: CourseType | undefined) => void;
+  setAssignment: (assignment: Assignment | undefined) => void;
+  setCourse: (course: Course | undefined) => void;
 
   // Files
   setFiles: (files: FileType[]) => void;
@@ -60,11 +63,11 @@ interface CodeConsoleStoreActions {
 
   // Comment-RubricComment mapping
   setCommentRubricComments: (mapping: ICommentToRubricCommentMap) => void;
-  addCommentRubricComment: (commentId: number, rubricComment: RubricCommentType) => void;
-  removeCommentRubricComment: (commentId: number) => RubricCommentType | undefined;
+  addCommentRubricComment: (commentId: number, rubricComment: RubricComment) => void;
+  removeCommentRubricComment: (commentId: number) => RubricComment | undefined;
 
   // Rubric
-  setRubricCategories: (categories: RubricCategoryType[]) => void;
+  setRubricCategories: (categories: RubricCategory[]) => void;
   setRubricComments: (comments: IRubricCategoryToRubricCommentsMap) => void;
   setEditRubricMode: (mode: boolean) => void;
 
@@ -109,6 +112,11 @@ interface CodeConsoleStoreActions {
 
   // Old comment ID tracking
   setOldCommentID: (currentId: number, oldId: number) => void;
+
+  // Temporary Edits
+  setIsEditMode: (mode: boolean) => void;
+  setTemporaryFileContent: (fileId: number, content: string) => void;
+  clearTemporaryFileContent: (fileId: number) => void;
 }
 
 type CodeConsoleStore = ICodeConsoleState & CodeConsoleStoreActions;
@@ -151,6 +159,8 @@ const getInitialState = (): ICodeConsoleState => ({
   hideGrades: false,
   executionResults: {},
   aiEnabled: false,
+  isEditMode: false,
+  temporaryFileContent: {},
 });
 
 export const useCodeConsoleStore = create<CodeConsoleStore>()(
@@ -338,6 +348,32 @@ export const useCodeConsoleStore = create<CodeConsoleStore>()(
           }),
           false,
           'setOldCommentID',
+        );
+      },
+
+      // Temporary Edits
+      setIsEditMode: (mode) => set({ isEditMode: mode }, false, 'setIsEditMode'),
+      setTemporaryFileContent: (fileId, content) => {
+        set(
+          (state) => ({
+            temporaryFileContent: {
+              ...state.temporaryFileContent,
+              [fileId]: content,
+            },
+          }),
+          false,
+          'setTemporaryFileContent',
+        );
+      },
+      clearTemporaryFileContent: (fileId) => {
+        set(
+          (state) => {
+            const newContent = { ...state.temporaryFileContent };
+            delete newContent[fileId];
+            return { temporaryFileContent: newContent };
+          },
+          false,
+          'clearTemporaryFileContent',
         );
       },
     }),

@@ -67,7 +67,9 @@ To download grades for your records:
 
 ## Auto-Run Environment
 
-codePost supports running submitted code to generate output. This is **not** traditional autograding (PASS/FAIL tests), but rather a system for _executing_ student code and displaying the results. As of right now Tests are being rewritten.
+codePost supports running submitted code to generate output. This is **not** traditional autograding (PASS/FAIL tests), but rather a system for _executing_ student code and displaying the results.
+
+For script-based test syntax and examples, see the [Testing Guide](/docs/testing-guide).
 
 ### What is Auto-Run?
 

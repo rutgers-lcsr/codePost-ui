@@ -13,8 +13,6 @@ import PreAuthFooter from './PreAuthFooter';
 /* ant imports */
 import { Layout } from 'antd';
 
-
-
 /**********************************************************************************************************************/
 
 interface IProps {

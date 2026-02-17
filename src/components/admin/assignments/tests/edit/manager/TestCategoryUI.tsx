@@ -1,17 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Input, InputNumber, Typography, Button, message, Divider, Select, Space } from 'antd';
 import { InfoCircleOutlined, SaveOutlined } from '@ant-design/icons';
-import { TestCategoryType, AssignmentType } from '../../../../../../infrastructure/types';
-import { TestCategory } from '../../../../../../infrastructure/testCategory';
+import { AssignmentFileType, AssignmentType, TestCategoryType } from '../../../../../../types/models';
+import { File as CodePostFile } from '../../../../../../utils/file';
 import { TestScriptEditor } from '../TestDefinitions/TestScriptEditor';
-import { AssignmentFile, AssignmentFileType } from '../../../../../../infrastructure/file';
 import { TestResourceManager } from './TestResourceManager';
-import { Assignment } from '../../../../../../infrastructure/assignment';
+import { assignmentsApi, assignmentFilesApi, testCategoriesApi } from '../../../../../../api-client/clients';
+import type { PatchedTestCategory } from '../../../../../../api-client';
 
 interface IProps {
   category: TestCategoryType;
   assignment: AssignmentType;
   onUpdate: (cat: TestCategoryType) => void;
+  helpers?: AssignmentFileType[];
 }
 
 export const TestCategoryUI = (props: IProps) => {
@@ -33,50 +34,55 @@ export const TestCategoryUI = (props: IProps) => {
   }, [props.category]);
 
   // Improved loadFiles that fetches standard list
-  const fetchAssignmentFiles = async () => {
+  const fetchAssignmentFiles = useCallback(async () => {
     // Use the generic listObject if possible, or reliance on props?
     // For now, let's try to reload based on props, BUT if we uploaded, props are stale.
     // We need to fetch files for this assignment.
     // We can use a direct fetch to API: /assignments/{id}/files/
     try {
-      const { files } = await Assignment.read(props.assignment.id);
+      const { files } = (await assignmentsApi.retrieve({
+        id: props.assignment.id,
+      })) as unknown as AssignmentType;
       if (!files) {
         return;
       }
       const fileList: AssignmentFileType[] = [];
-      for (const file of files) {
-        const id = typeof file === 'number' ? file : file.id;
-        if (!id) {
+      for (const fileId of files) {
+        if (!fileId) {
           continue;
         }
 
-        const f = await AssignmentFile.read(id);
+        const f = (await assignmentFilesApi.retrieve({
+          id: fileId,
+        })) as unknown as AssignmentFileType;
         if (f && !f.hidden) {
           fileList.push(f);
         }
       }
       setAssignmentFiles(fileList);
-
     } catch (e) {
       console.error(e);
     }
-  };
+  }, [props.assignment.id]);
 
   useEffect(() => {
     fetchAssignmentFiles();
-  }, [props.assignment.id]);
+  }, [fetchAssignmentFiles]);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const updated = await TestCategory.update({
-        id: props.category.id,
+      const payload: Omit<PatchedTestCategory, 'id' | 'testCases' | 'resources'> = {
         name,
         maxPoints,
         testScript: script,
         targetFileName: targetFileName || null,
         // helperFiles: helperFiles, // Deprecated
-      });
+      };
+      const updated = (await testCategoriesApi.partialUpdate({
+        id: props.category.id,
+        patchedTestCategory: payload,
+      })) as unknown as TestCategoryType;
       props.onUpdate(updated);
       message.success('Category saved');
     } catch (e) {
@@ -94,6 +100,47 @@ export const TestCategoryUI = (props: IProps) => {
     targetFileName !== (props.category.targetFileName || undefined);
   // JSON.stringify(helperFiles.sort()) !== JSON.stringify((props.category.helperFiles || []).sort());
 
+  // Detect language of the target file
+  const targetFileObj = assignmentFiles.find((f) => f.name === targetFileName);
+  const detectedLanguage = targetFileObj ? CodePostFile.language(targetFileObj) : 'python';
+  const normalizedLanguage = detectedLanguage.toLowerCase();
+  const isJsLike =
+    normalizedLanguage.includes('javascript') ||
+    normalizedLanguage.includes('typescript') ||
+    normalizedLanguage.includes('node');
+  const isCppLike =
+    normalizedLanguage.includes('c++') || normalizedLanguage === 'c' || normalizedLanguage.includes('cpp');
+
+  const languageLabel =
+    normalizedLanguage === 'r'
+      ? 'R'
+      : normalizedLanguage.startsWith('java')
+        ? 'Java'
+        : isJsLike
+          ? 'JavaScript/Node'
+          : isCppLike
+            ? 'C/C++'
+            : normalizedLanguage.includes('ruby')
+              ? 'Ruby'
+              : normalizedLanguage.includes('php')
+                ? 'PHP'
+                : 'Python';
+
+  const syntaxHint =
+    normalizedLanguage === 'r'
+      ? 'run_test("Name", 5, "Optional description", function() { ... }, 30)'
+      : normalizedLanguage.startsWith('java')
+        ? '@Test(name="Name", points=5)'
+        : isJsLike
+          ? 'test("Name", 5, "Optional description", () => { ... }, 30);'
+          : isCppLike
+            ? 'TEST(Name, 5.0) { ... }'
+            : normalizedLanguage.includes('ruby')
+              ? 'run_test("Name", 5, "Optional description") do ... end'
+              : normalizedLanguage.includes('php')
+                ? 'Tester::test("Name", 5, "Optional description", function () { ... }, 30);'
+                : '@test(name="Name", points=5)';
+
   return (
     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header / Settings */}
@@ -108,7 +155,7 @@ export const TestCategoryUI = (props: IProps) => {
             </Space>
           </div>
           <div>
-            <Space orientation='vertical'>
+            <Space orientation="vertical">
               <Typography.Text type="secondary" style={{ fontSize: 12 }}>
                 Target File
               </Typography.Text>
@@ -123,7 +170,7 @@ export const TestCategoryUI = (props: IProps) => {
                   {assignmentFiles.map((f) => (
                     <Select.Option key={f.id} value={f.name}>
                       {f.name}
-                      {(f as any).hidden && ' (Hidden)'}
+                      {f.hidden && ' (Hidden)'}
                     </Select.Option>
                   ))}
                 </Select>
@@ -134,11 +181,10 @@ export const TestCategoryUI = (props: IProps) => {
                   </Typography.Text>
                 </Space>
               </div>
-
             </Space>
           </div>
           <div>
-            <Space orientation='vertical'>
+            <Space orientation="vertical">
               <Typography.Text type="secondary" style={{ fontSize: 12 }}>
                 Max Points
               </Typography.Text>
@@ -152,11 +198,9 @@ export const TestCategoryUI = (props: IProps) => {
             </Space>
           </div>
         </Space>
-        <div style={{ display: 'flex', gap: 20, alignItems: 'center', flex: 1, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 20, alignItems: 'center', flex: 1, flexWrap: 'wrap' }}></div>
 
-        </div>
-
-        <div style={{ padding: '0 20px', marginBottom: 20, width: "100%" }}>
+        <div style={{ padding: '0 20px', marginBottom: 20, width: '100%' }}>
           {/* Resources Section moved to full width below header */}
           <TestResourceManager
             assignmentId={props.assignment.id}
@@ -165,7 +209,9 @@ export const TestCategoryUI = (props: IProps) => {
             onRefresh={async () => {
               // Reload category to get updated resources
               try {
-                const updated = await TestCategory.read(props.category.id);
+                const updated = (await testCategoriesApi.retrieve({
+                  id: props.category.id,
+                })) as unknown as TestCategoryType;
                 props.onUpdate(updated);
               } catch (e) {
                 console.error(e);
@@ -188,19 +234,21 @@ export const TestCategoryUI = (props: IProps) => {
         <Typography.Text strong style={{ marginBottom: 10 }}>
           Test Script
         </Typography.Text>
+        {/* TODO: Make sure test decorators are by language */}
         <Typography.Text type="secondary" style={{ fontSize: 12, marginBottom: 10 }}>
-          Write a Python script. Use <code>@test("Name", points=5, description="Optional description")</code> to define tests.
+          Write a {languageLabel} script. Use <code>{syntaxHint}</code> to define tests.
         </Typography.Text>
 
         <div style={{ flex: 1, border: '1px solid #d9d9d9', borderRadius: 4 }}>
           <TestScriptEditor
             code={script}
             onChange={setScript}
-            language="python"
+            language={detectedLanguage}
             assignmentId={props.assignment.id}
+            courseId={props.assignment.course}
             targetFileName={targetFileName || ''} // Pass selected file for AI generation context
-            contextFiles={[]} // TODO: Pass helper files if needed
-            onRubricItemChange={() => { }}
+            contextFiles={assignmentFiles} // Pass assignment files for context extraction
+            onRubricItemChange={() => {}}
           />
         </div>
       </div>

@@ -26,9 +26,6 @@ import MergeRubricCommentsDialog from './MergeRubricCommentsDialog';
 import RubricFileDownload from './RubricFileDownload';
 import RubricFileUpload from './RubricFileUpload';
 
-import { RubricCategory } from '../../../../infrastructure/rubricCategory';
-import { RubricComment } from '../../../../infrastructure/rubricComment';
-
 import CPButton from '../../../../components/core/CPButton';
 import Loading from '../../../../components/core/Loading';
 
@@ -49,6 +46,7 @@ import { tooltips } from '../../../core/tooltips';
 
 import styles from './RubricSideBar.module.css';
 import { DIRECTION } from '../../../../types/common';
+import { compareRubricCategories, compareRubricComments } from './RubricUtils';
 
 interface IRubricUIProps extends IRubricManagerProps {
   breadcrumbs: Array<{ title: React.ReactNode }>;
@@ -89,12 +87,12 @@ const RubricUI = ({
   // Set initial active category
   React.useEffect(() => {
     if (rubricCategories.length > 0 && activeCategoryId === undefined) {
-      setActiveCategoryId(rubricCategories.sort(RubricCategory.compare)[0].id);
+      setActiveCategoryId(rubricCategories.sort(compareRubricCategories)[0].id);
     } else if (rubricCategories.length > 0 && activeCategoryId !== undefined) {
       // Check if active category still exists
       const exists = rubricCategories.some((c) => c.id === activeCategoryId);
       if (!exists) {
-        setActiveCategoryId(rubricCategories.sort(RubricCategory.compare)[0].id);
+        setActiveCategoryId(rubricCategories.sort(compareRubricCategories)[0].id);
       }
     } else if (rubricCategories.length === 0) {
       setActiveCategoryId(undefined);
@@ -395,7 +393,7 @@ const RubricUI = ({
     };
 
     /* Sorting and Preparing Categories */
-    const sortedCategories = rubricCategories.slice().sort(RubricCategory.compare);
+    const sortedCategories = rubricCategories.slice().sort(compareRubricCategories);
     const activeCategory = sortedCategories.find((c) => c.id === activeCategoryId);
     const activeCategoryIndex = sortedCategories.findIndex((c) => c.id === activeCategoryId);
 
@@ -498,7 +496,7 @@ const RubricUI = ({
                 savedRubricCategory={state.savedRubricCategories.find((el) => el.id === activeCategory.id)}
                 rubricComments={
                   activeCategory.id in rubricComments
-                    ? rubricComments[activeCategory.id].sort(RubricComment.compare)
+                    ? rubricComments[activeCategory.id].sort(compareRubricComments)
                     : []
                 }
                 savedRubricComments={

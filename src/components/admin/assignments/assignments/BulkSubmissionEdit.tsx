@@ -6,17 +6,20 @@ import type { RadioChangeEvent } from 'antd';
 import { Alert, message, Modal, Radio } from 'antd';
 
 /* codePost imports */
-import { AssignmentType } from '../../../../infrastructure/assignment';
-import { CourseType } from '../../../../infrastructure/course';
-import { SubmissionInfoType } from '../../../../infrastructure/submission';
+/* codePost imports */
+import { Course } from '../../../../api-client';
+import { Assignment, SubmissionInfoType } from '../../../../types/common';
 
 export interface IProps {
-  activeAssignment: AssignmentType;
+  activeAssignment: Assignment;
   submissions: SubmissionInfoType[];
-  currentCourse: CourseType;
+  currentCourse: Course;
   onCancel: () => void;
   myEmail: string;
-  bulkUpdateSubmissions: (assignmentID: number, getPayload: (sub: SubmissionInfoType) => any) => Promise<void>;
+  bulkUpdateSubmissions: (
+    assignmentID: number,
+    getPayload: (sub: SubmissionInfoType) => Partial<SubmissionInfoType>,
+  ) => Promise<void>;
 }
 
 enum BULK_ACTION {

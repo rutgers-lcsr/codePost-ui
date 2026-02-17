@@ -5,7 +5,7 @@ import { PiStudentFill, PiChalkboardTeacherFill } from 'react-icons/pi';
 
 import { Dropdown, theme } from 'antd';
 
-import { UserType } from '../../infrastructure/user';
+import type { UserType } from '../../types/models';
 import { USER_TYPE } from '../../types/common';
 
 import CPTooltip from './CPTooltip';

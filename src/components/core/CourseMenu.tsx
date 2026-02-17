@@ -11,7 +11,8 @@ import { theme, Input } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 
 /* codePost imports */
-import { CourseType } from '../../infrastructure/course';
+/* codePost imports */
+import { Course } from '../../api-client';
 
 import { encodeForLink } from '../core/URLutils';
 
@@ -20,13 +21,13 @@ import CPDropdown from './CPDropdown';
 /**********************************************************************************************************************/
 
 interface IProps {
-  courses: CourseType[];
-  currentCourse?: CourseType;
+  courses: Course[];
+  currentCourse?: Course;
   base: string;
   panel?: string;
 }
 
-export const encodedCourseLink = (base: string, course: CourseType, panel?: string) => {
+export const encodedCourseLink = (base: string, course: Course, panel?: string) => {
   return `/${base}/${encodeForLink(course.name)}/${encodeForLink(course.period)}/${panel !== undefined ? panel : ''}`;
 };
 
@@ -63,7 +64,7 @@ const CourseMenu = (props: IProps) => {
     const archived = filtered.filter((c) => c.archived);
 
     // Sort by name, then period
-    const sortCourses = (a: CourseType, b: CourseType) => {
+    const sortCourses = (a: Course, b: Course) => {
       const nameCompare = a.name.localeCompare(b.name);
       return nameCompare !== 0 ? nameCompare : a.period.localeCompare(b.period);
     };

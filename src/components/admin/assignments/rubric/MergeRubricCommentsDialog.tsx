@@ -3,23 +3,18 @@ import { ArrowRightOutlined, BranchesOutlined } from '@ant-design/icons';
 import { Modal, Spin } from 'antd';
 import Select from 'react-select';
 
-import { AssignmentType } from '../../../../infrastructure/assignment';
-import { CommentIO } from '../../../../infrastructure/comment';
-import { RubricCategoryType } from '../../../../infrastructure/rubricCategory';
-import { RubricComment, RubricCommentType } from '../../../../infrastructure/rubricComment';
-import { IRubricCategoryToRubricCommentsMap } from '../../../../types/common';
+import { commentsApi, rubricCommentsApi } from '../../../../api-client/clients';
+import { RubricCategory, RubricComment } from '../../../../api-client';
+import { Assignment, IRubricCategoryToRubricCommentsMap } from '../../../../types/common';
+import { RubricCommentInstanceList } from '../../../../types/rubric';
 import CPButton from '../../../../components/core/CPButton';
 
 interface IMergeRubricCommentsDialogProps {
-  rubricCategories: RubricCategoryType[];
+  rubricCategories: RubricCategory[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
   isDisabled: boolean;
-  assignment: AssignmentType;
-  reloadRubric: (
-    assignment: AssignmentType,
-    shouldLoadInstances: boolean,
-    shouldLoadFeedback: boolean,
-  ) => Promise<void>;
+  assignment: Assignment;
+  reloadRubric: (assignment: Assignment, shouldLoadInstances: boolean, shouldLoadFeedback: boolean) => Promise<void>;
 }
 
 const MergeRubricCommentsDialog: FC<IMergeRubricCommentsDialogProps> = ({
@@ -30,8 +25,8 @@ const MergeRubricCommentsDialog: FC<IMergeRubricCommentsDialogProps> = ({
   reloadRubric,
 }) => {
   const [visible, setVisible] = useState(false);
-  const [fromComment, setFromComment] = useState<RubricCommentType | null>(null);
-  const [toComment, setToComment] = useState<RubricCommentType | null>(null);
+  const [fromComment, setFromComment] = useState<RubricComment | null>(null);
+  const [toComment, setToComment] = useState<RubricComment | null>(null);
   const [fromCommentInstances, setFromCommentInstances] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -53,8 +48,10 @@ const MergeRubricCommentsDialog: FC<IMergeRubricCommentsDialogProps> = ({
       setFromCommentInstances([]);
       return;
     }
-    const awaited = await RubricComment.readCommmentList(selected.comment.id);
-    const instanceList = awaited.comments;
+    const response = (await rubricCommentsApi.retrieve({
+      id: selected.comment.id,
+    })) as unknown as RubricCommentInstanceList;
+    const instanceList = response.comments;
     setFromComment(selected.comment);
     setFromCommentInstances(instanceList);
   }, []);
@@ -75,16 +72,17 @@ const MergeRubricCommentsDialog: FC<IMergeRubricCommentsDialogProps> = ({
     setIsLoading(true);
 
     const relinkCommentPromises = fromCommentInstances.map((commentID: number) => {
-      const payload = {
+      return commentsApi.partialUpdate({
         id: commentID,
-        rubricComment: toComment.id,
-      };
-      return CommentIO.update(payload);
+        patchedComment: {
+          rubricComment: toComment.id,
+        },
+      });
     });
 
     Promise.all(relinkCommentPromises)
       .then(() => {
-        RubricComment.delete({ id: fromComment.id }).then(() => {
+        rubricCommentsApi.destroy({ id: fromComment.id }).then(() => {
           reloadRubric(assignment, false, false).then(() => {
             closeDialog();
             setIsLoading(false);
@@ -93,11 +91,12 @@ const MergeRubricCommentsDialog: FC<IMergeRubricCommentsDialogProps> = ({
       })
       .catch(() => {
         const undoLinkCommentPromises = fromCommentInstances.map((commentID: number) => {
-          const payload = {
+          return commentsApi.partialUpdate({
             id: commentID,
-            rubricComment: fromComment.id,
-          };
-          return CommentIO.update(payload);
+            patchedComment: {
+              rubricComment: fromComment.id,
+            },
+          });
         });
 
         Promise.all(undoLinkCommentPromises);
@@ -109,14 +108,14 @@ const MergeRubricCommentsDialog: FC<IMergeRubricCommentsDialogProps> = ({
   const groupedOptions = useMemo(() => {
     const options: Array<{
       label: string;
-      options: Array<{ label: string; value: number; comment: RubricCommentType }>;
+      options: Array<{ label: string; value: number; comment: RubricComment }>;
     }> = [];
 
-    rubricCategories.forEach((rubricCategory: RubricCategoryType) => {
+    rubricCategories.forEach((rubricCategory: RubricCategory) => {
       if (Object.prototype.hasOwnProperty.call(rubricComments, rubricCategory.id)) {
-        const comments = rubricComments[rubricCategory.id].map((rubricComment: RubricCommentType) => {
+        const comments = rubricComments[rubricCategory.id].map((rubricComment: RubricComment) => {
           return {
-            label: rubricComment.text,
+            label: rubricComment.text || '',
             value: rubricComment.id,
             comment: rubricComment,
           };

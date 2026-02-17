@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 /* library imports */
 import { Button, Modal, Select } from 'antd';
 
-import { TestCategoryType } from '../../../../../../infrastructure/testCategory';
+import { TestCategoryType } from '../../../../../../types/models';
 
 interface IUploadProps {
   // Function to call on category choose

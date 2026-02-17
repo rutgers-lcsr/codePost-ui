@@ -18,8 +18,7 @@ import { Link, useLocation } from 'react-router-dom';
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
 
-import { CourseType } from '../../../infrastructure/course';
-import { SectionType } from '../../../infrastructure/section';
+import { Course, Section } from '../../../api-client';
 
 import CPTooltip from '../../../components/core/CPTooltip';
 import { tooltips } from '../../../components/core/tooltips';
@@ -44,9 +43,9 @@ export interface IManageStudentsProps {
   students: string[];
   graders: string[];
   admins: string[];
-  sections: SectionType[];
-  currentCourse: CourseType;
-  sectionsByStudent: { [studentEmail: string]: SectionType };
+  sections: Section[];
+  currentCourse: Course;
+  sectionsByStudent: { [studentEmail: string]: Section };
   notActivated: string[];
 
   /* loading state */
@@ -55,8 +54,8 @@ export interface IManageStudentsProps {
 
   /* object-level REST operations */
   updateStudentSection: (student: string, section: number) => Promise<void>;
-  updateSection: (section: SectionType) => Promise<void>;
-  createSection: (sectionName: string) => Promise<SectionType>;
+  updateSection: (section: Section) => Promise<void>;
+  createSection: (sectionName: string) => Promise<Section>;
   updateRoster: (adds: string[], deletes: string[], userType: USER_APP) => Promise<void>;
 
   /* misc */

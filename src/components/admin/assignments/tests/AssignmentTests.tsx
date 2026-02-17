@@ -11,9 +11,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
 /* codePost object imports */
-import { Assignment, AssignmentType } from '../../../../infrastructure/assignment';
-import { SubmissionInfoType } from '../../../../infrastructure/submission';
-import { UserType } from '../../../../infrastructure/user';
+import { assignmentsApi } from '../../../../api-client/clients';
+import { AssignmentType, SubmissionInfoType, UserType } from '../../../../types/models';
 
 /* codePost component imports */
 import { TestingSetup } from './edit/TestingSetup';
@@ -39,7 +38,9 @@ export const AssignmentTests = (props: IProps) => {
   useEffect(() => {
     // We want to make sure we have the latest assignment information (test language, test categories)
     const fetchData = async () => {
-      const updatedAssignment = await Assignment.read(props.activeAssignment.id);
+      const updatedAssignment = (await assignmentsApi.retrieve({
+        id: props.activeAssignment.id,
+      })) as unknown as AssignmentType;
       setAssignment(updatedAssignment);
     };
     fetchData();

@@ -26,9 +26,10 @@ import UsersTable from './UsersTable';
 import APIIframe from './APIIframe';
 import ActivityFeed from './ActivityFeed';
 
-import { Course, CourseType, RosterType } from '../../infrastructure/course';
-import { Organization, OrganizationType } from '../../infrastructure/organization';
-import { UserIO, UserType } from '../../infrastructure/user';
+import type { RosterType, UserType } from '../../types/models';
+import { Organization, Course } from '../../api-client';
+import { organizationsApi, coursesApi } from '../../api-client/clients';
+import { UserIO } from '../../services/user';
 
 const { Title, Text } = Typography;
 const { Content, Sider } = Layout;
@@ -38,7 +39,7 @@ type TabType = 'Overview' | 'Organizations' | 'Courses' | 'Admins' | 'Users' | '
 export interface AdminData {
   id: number;
   key: number;
-  organization: OrganizationType | undefined;
+  organization: Organization | undefined;
   course_name: string;
   course_period: string;
   email: string;
@@ -65,9 +66,9 @@ const Dashboard = () => {
   useFixedWindow();
   const { token } = theme.useToken();
   const [admins, setAdmins] = useState<AdminData[]>([]);
-  const [courses, setCourses] = useState<CourseType[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [rosters, setRosters] = useState<RosterType[]>([]);
-  const [organizations, setOrganizations] = useState<OrganizationType[]>([]);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [users, setUsers] = useState<UserType[]>([]);
   const [currentTab, setCurrentTab] = useState<TabType>('Overview');
   const [isLoading, setIsLoading] = useState(true);
@@ -90,7 +91,9 @@ const Dashboard = () => {
     totalInactiveUsers: 0,
   });
 
-  const buildAdminList = (_rosters: RosterType[], _organizations: OrganizationType[]): AdminData[] => {
+  const api = organizationsApi;
+
+  const buildAdminList = (_rosters: RosterType[], _organizations: Organization[]): AdminData[] => {
     let idCounter = 0;
     return _rosters.flatMap((roster, index) =>
       roster.courseAdmins.map((email) => {
@@ -112,8 +115,8 @@ const Dashboard = () => {
       // Also fetch orgs and courses for tables, but NOT all users
       const [statsData, organizationData, courseData] = await Promise.all([
         UserIO.getDashboardStats(),
-        Organization.list(),
-        Course.list(),
+        api.list(),
+        coursesApi.list(),
       ]);
 
       setStats(statsData);
@@ -126,7 +129,7 @@ const Dashboard = () => {
       // TODO: This could also be optimized with a bulk endpoint
       const rosterData = await Promise.all(
         uniqueCourses.map(async (course) => {
-          const roster = await Course.readRoster(course.id);
+          const roster = (await coursesApi.rosterRetrieve({ id: course.id })) as any as RosterType;
           return roster;
         }),
       );
@@ -371,7 +374,13 @@ const Dashboard = () => {
                     render: (count: number, record: any) => {
                       const maxCourses = Math.max(...topOrganizations.map((o) => o.courseCount));
                       const percent = maxCourses > 0 ? (count / maxCourses) * 100 : 0;
-                      return <Progress percent={Math.round(percent)} size="small" aria-label={`Usage for ${record.name}: ${Math.round(percent)}%`} />;
+                      return (
+                        <Progress
+                          percent={Math.round(percent)}
+                          size="small"
+                          aria-label={`Usage for ${record.name}: ${Math.round(percent)}%`}
+                        />
+                      );
                     },
                   },
                 ]}

@@ -8,12 +8,15 @@ import { Breadcrumb, Button } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
 
 /* codePost object imports */
-import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
-import { SubmissionInfoType, SubmissionWithTestsType } from '../../../../../infrastructure/submission';
-import { TestCategoryType } from '../../../../../infrastructure/testCategory';
-
-import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
-import { SubmissionTestResultType } from '../../../../../infrastructure/autograder/runTypes';
+import {
+  EnvironmentType,
+  SubmissionInfoType,
+  SubmissionWithTestsType,
+  TestCategoryType,
+  AssignmentType,
+} from '../../../../../types/models';
+import { SubmissionTestResultType } from '../../../../../types/autograder';
+import { autograderApi } from '../../../../../api-client/clients';
 
 import { awaitTestResult } from '../autograderPollingUtils';
 
@@ -72,9 +75,13 @@ export const TestingSummary = (props: IProps) => {
   const fetchPaginatedResults = async () => {
     if (props.currentAssignment) {
       setResultsLoading(true);
-      Assignment.readPaginatedTestResults(props.currentAssignment.id, submissionTestsCallback).then(() => {
-        setResultsLoading(false);
-      });
+      const tests = await fetchTestsBySubmission(props.submissions);
+      const results: SubmissionWithTestsType[] = Object.keys(tests).map((id) => ({
+        id: Number(id),
+        tests: tests[Number(id)],
+      }));
+      submissionTestsCallback(results);
+      setResultsLoading(false);
     }
   };
 
@@ -113,7 +120,10 @@ export const TestingSummary = (props: IProps) => {
     sendEmail: boolean,
   ) => {
     if (env) {
-      const result = await Environment.runAll({ id: env.id, sendEmail: sendEmail });
+      const result = (await autograderApi.environmentsRunAllPartialUpdate({
+        id: env.id,
+        patchedEnvironmentRunAllRequest: { sendEmail: sendEmail } as any,
+      })) as unknown as { task: string };
       awaitTestResult(
         result.task,
         () => {
@@ -122,7 +132,7 @@ export const TestingSummary = (props: IProps) => {
         },
         progressCallback,
       );
-      const newEnv = { ...env };
+      const newEnv = { ...env } as any;
       newEnv.isRunning = true;
       setEnv(newEnv);
     }
@@ -141,12 +151,13 @@ export const TestingSummary = (props: IProps) => {
   const runSubmission = async (sub: SubmissionInfoType) => {
     if (env) {
       setSubsLoading([...subsLoading, sub.id]);
-      const payload = {
+      const result = (await autograderApi.environmentsRunPartialUpdate({
         id: env.id,
-        submission: sub.id,
-        simulate: false,
-      };
-      const result = await Environment.run(payload);
+        patchedEnvironmentRunRequest: {
+          submission: sub.id,
+          simulate: false,
+        } as any,
+      })) as unknown as { task: string };
       awaitTestResult(result.task, runSubmissionCallback.bind({}, sub));
     }
   };

@@ -15,7 +15,7 @@ import { UPLOAD_STATUS } from './BulkUploadHelpers';
 import { IProtoSubmission } from './../FileReader';
 
 import { encodeForLink } from '../../../../../../components/core/URLutils';
-import { CourseType } from '../../../../../../infrastructure/types';
+import { Course } from '../../../../../../api-client';
 
 interface IUploadBulkFooterProps {
   onBack: (() => void) | null;
@@ -72,7 +72,7 @@ export const BulkUploadFooter = (props: IUploadBulkFooterProps) => {
 //******************** Visual when No Students are in the course ***********************
 
 interface IUploadNoStudentsProps {
-  course: CourseType;
+  course: Course;
 }
 
 export const BulkUploadNoStudents = (props: IUploadNoStudentsProps) => {

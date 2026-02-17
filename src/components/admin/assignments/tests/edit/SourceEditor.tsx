@@ -9,11 +9,9 @@ import { useState } from 'react';
 import { Button, Card, Col, Row, Space, Typography } from 'antd';
 
 /* codePost object imports */
-import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
-import { TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
-import { SubmissionInfoType } from '../../../../../infrastructure/submission';
-import { TestCaseType } from '../../../../../infrastructure/testCase';
-import { TestCategoryType } from '../../../../../infrastructure/types';
+import { autograderApi } from '../../../../../api-client/clients';
+import { TestEditorResultType } from '../../../../../types/autograder';
+import { EnvironmentType, SubmissionInfoType, TestCaseType, TestCategoryType } from '../../../../../types/models';
 
 /* codePost interface imports */
 import { TestCasesByCategory } from '../../../../core/testFetchUtils';
@@ -79,19 +77,20 @@ export const SourceEditor = (props: IProps) => {
       let result: any;
       if (fileToRun === 'main.sh') {
         // Run all tests
-        const payload: any = { id: props.env.id };
-        if (props.activeSubmission) {
-          Object.assign(payload, { submission: props.activeSubmission.id, simulate: true });
-        }
-
-        result = await Environment.run(payload);
+        result = await autograderApi.environmentsRunPartialUpdate({
+          id: props.env.id,
+          patchedEnvironmentRunRequest: {
+            submission: props.activeSubmission?.id,
+            simulate: true,
+          },
+        });
       }
       awaitTestResult(result.task, callback);
     }
   };
 
   // On confirm of tests change, update the sourcefile
-  const onConfirm = () => { };
+  const onConfirm = () => {};
 
   // callback called when run is complete
   const callback = async (response: TestEditorResultType) => {

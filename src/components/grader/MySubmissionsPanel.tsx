@@ -11,8 +11,9 @@ import { encodeForLink } from '../core/URLutils';
 /* other library imports */
 
 /* codePost imports */
-import { AssignmentType, sortAssignments } from '../../infrastructure/assignment';
-import { CourseType } from '../../infrastructure/course';
+import { Course } from '../../api-client';
+import { AssignmentType } from '../../types/models';
+import { sortAssignments } from '../../utils/assignments';
 
 import MySubmissionsPanelDetail from './MySubmissionsPanelDetail';
 
@@ -25,7 +26,7 @@ type alignType = 'left' | 'right' | 'center';
 
 interface IProps {
   assignments: AssignmentType[];
-  course: CourseType;
+  course: Course;
   graderEmail: string;
   isAdmin: boolean;
 }

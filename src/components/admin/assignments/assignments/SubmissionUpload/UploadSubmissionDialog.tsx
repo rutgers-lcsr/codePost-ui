@@ -44,22 +44,18 @@ import {
 import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 
-import { AssignmentStudent, AssignmentStudentType } from '../../../../../infrastructure/assignment';
-import { Environment } from '../../../../../infrastructure/autograder/environment';
-import { SubmissionTestResultType, TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
-import { File as CodePostFile, FileType, AssignmentFileType } from '../../../../../infrastructure/file';
-import { FileTemplate } from '../../../../../infrastructure/fileTemplate';
-import { Submission } from '../../../../../infrastructure/submission';
-import { SubmissionTest } from '../../../../../infrastructure/submissionTest';
+import { assignmentFilesApi, assignmentsApi, autograderApi, submissionsApi } from '../../../../../api-client/clients';
+import { SubmissionTestResultType, TestEditorResultType } from '../../../../../types/autograder';
+import { File as CodePostFile, FileType } from '../../../../../utils/file';
+import { Course } from '../../../../../api-client';
+import { Assignment, AssignmentStudentType } from '../../../../../types/common';
 import {
-  AssignmentType,
-  CourseType,
-  FileTemplateType,
+  AssignmentFileType,
   StudentSubmissionType,
   SubmissionInfoType,
   SubmissionTestType,
   TestCategoryType,
-} from '../../../../../infrastructure/types';
+} from '../../../../../types/models';
 
 import CPTooltip from '../../../../core/CPTooltip';
 import { tooltips } from '../../../../core/tooltips';
@@ -69,11 +65,12 @@ import { encodeForLink } from '../../../../core/URLutils';
 import { CodePostDate } from '../../../../utils/CodepostDate';
 import { dueDatePassed } from '../../../../utils/DateUtils';
 import { LOCAL_SETTINGS } from '../../../../utils/LocalSettings';
-import TestsList from '../../../../code-review/code-panel/TestsList';
+import TestsList from '@code-review/code-panel/TestsList';
 import InvitePartnersLink from '../../../../student/InvitePartnersLink';
 import LateSubmissionModal from '../../../../student/LateSubmissionModal';
 import ViewUpload from '../../../../student/ViewUpload';
 import { awaitTestResult } from '../../tests/autograderPollingUtils';
+import { getLatestSubmissionTests } from '../../../../../utils/submissionTests';
 
 import { fileToProtoFileUpload, IBaseFileUpload, IProtoFileUpload, readUploadedFile } from './FileReader';
 
@@ -108,14 +105,14 @@ interface IUploadSubmissionDialogProps {
   /** Callback when dialog is cancelled/closed */
   onCancel: () => void;
   /** List of available assignments */
-  assignments: (AssignmentType | AssignmentStudentType)[];
+  assignments: (Assignment | AssignmentStudentType)[];
   /** Currently selected assignment */
-  selectedAssignment?: AssignmentType | AssignmentStudentType;
+  selectedAssignment?: Assignment | AssignmentStudentType;
   /** List of student emails */
   students: string[];
   /** Currently selected student emails */
   selectedStudents: string[];
-  /** Map of student submissions indexed by email and assignment ID */
+  /** Map of student submissions indexed by user email and assignment ID */
   submissions: {
     [userEmail: string]: {
       [assignmentID: number]: SubmissionInfoType | StudentSubmissionType;
@@ -123,18 +120,18 @@ interface IUploadSubmissionDialogProps {
   };
   /** Function to upload submission */
   uploadSubmission:
-  | ((
-    assignment: AssignmentStudentType,
-    partners: string[],
-    files: FileType[],
-    sendConfirmationEmail: boolean,
-  ) => Promise<StudentSubmissionType>)
-  | ((
-    assignment: AssignmentType,
-    partners: string[],
-    files: FileType[],
-    sendConfirmationEmail: boolean,
-  ) => Promise<SubmissionInfoType>);
+    | ((
+        assignment: AssignmentStudentType,
+        partners: string[],
+        files: FileType[],
+        sendConfirmationEmail: boolean,
+      ) => Promise<StudentSubmissionType>)
+    | ((
+        assignment: Assignment,
+        partners: string[],
+        files: FileType[],
+        sendConfirmationEmail: boolean,
+      ) => Promise<SubmissionInfoType>);
   /** Disable student selection dropdown */
   disableStudentSelect?: boolean;
   /** Callback when upload is successful */
@@ -142,7 +139,7 @@ interface IUploadSubmissionDialogProps {
   /** Whether this is being used in student view */
   isStudent?: boolean;
   /** Current course information */
-  course?: CourseType;
+  course?: Course;
   /** Custom title for the dialog */
   title?: string;
   /** Info message to display at top of dialog */
@@ -192,7 +189,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
   /********************************************************************************************************/
 
   const [selectedStudents, setSelectedStudents] = useState<string[]>(propsSelectedStudents);
-  const [selectedAssignment, setSelectedAssignment] = useState<AssignmentType | AssignmentStudentType | undefined>(
+  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | AssignmentStudentType | undefined>(
     propsSelectedAssignment,
   );
   const [files, setFiles] = useState<IProtoFileUpload[]>([]);
@@ -201,9 +198,9 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
   const [rejectedFiles, setRejectedFiles] = useState<string[]>([]);
   const [uploadDirectory, setUploadDirectory] = useState<boolean>(false);
   const [testCategories, setTestCategories] = useState<TestCategoryType[]>([]);
-  const [submission, setSubmission] = useState<StudentSubmissionType | undefined>(undefined);
+  const [submission, setSubmission] = useState<StudentSubmissionType | SubmissionInfoType | undefined>(undefined);
   const [loadingTests, setLoadingTests] = useState<boolean>(false);
-  const [fileTemplates, setFileTemplates] = useState<FileTemplateType[]>([]);
+  const [fileTemplates, setFileTemplates] = useState<AssignmentFileType[]>([]);
   const [sendMeAConfirmationEmail, setSendMeAConfirmationEmail] = useState<boolean>(
     LOCAL_SETTINGS.sendMeAConfirmationEmail.getter(),
   );
@@ -219,7 +216,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
 
   const assignmentOptions = useMemo(
     () =>
-      assignments.map((assignment: AssignmentType | AssignmentStudentType) => (
+      assignments.map((assignment: Assignment | AssignmentStudentType) => (
         <Select.Option key={assignment.id} value={assignment.id}>
           {assignment.name}
         </Select.Option>
@@ -231,24 +228,30 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
   /* Loading and data formatting methods
   /********************************************************************************************************/
 
-  const loadTemplates = useCallback(async (assignment: AssignmentType | AssignmentStudentType) => {
-    const promises = (assignment.fileTemplates ?? []).map((el) => FileTemplate.read(el));
-    const templates = await Promise.all(promises);
-    setFileTemplates(templates);
+  const loadTemplates = useCallback(async (assignment: Assignment | AssignmentStudentType) => {
+    const files = assignment.files ?? [];
+    const templates = await Promise.all(
+      files.map((item) => (typeof item === 'number' ? assignmentFilesApi.retrieve({ id: item }) : item)),
+    );
+    const visibleTemplates = templates.filter((file) => !file.hidden);
+    setFileTemplates(visibleTemplates);
   }, []);
 
   const loadTests = useCallback(
     async (assignmentId: number) => {
       if (isStudent) {
         setLoadingTests(true);
+
+        // Fetch categories and initial test cases
         const { testCases: fetchedTestCases, testCategories: fetchedCategories } =
-          await AssignmentStudent.readStudentTests(assignmentId);
+          await assignmentsApi.studentTestsRetrieve({ id: assignmentId });
+
         const caseObj: StudentTestCasesByCategory = {};
-        const exposedTestCases = fetchedTestCases.filter((t) => t.exposed);
+        const exposedTestCases = fetchedTestCases.filter((t: any) => t.exposed);
         fetchedCategories.forEach((category) => {
           caseObj[category.id] = [];
         });
-        exposedTestCases.forEach((testCase) => {
+        exposedTestCases.forEach((testCase: any) => {
           caseObj[testCase.testCategory] = [...caseObj[testCase.testCategory], testCase];
         });
         setTestCategories(fetchedCategories);
@@ -259,12 +262,53 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
     [isStudent],
   );
 
+  // Update student tests (merged with results) when submission or assignment changes
+  useEffect(() => {
+    const updateStudentTests = async () => {
+      if (!isStudent || !selectedAssignment) return;
+
+      if (submission) {
+        try {
+          const studentTests = await assignmentsApi.studentTestsRetrieve({ id: selectedAssignment.id });
+          const testResults = await submissionsApi.testResultsRetrieve({
+            id: submission.id,
+          });
+
+          const latestTests = getLatestSubmissionTests(testResults.submissionTests || []);
+          const resultMap = new Map(latestTests.map((t) => [t.testCase, t]));
+
+          const testsWithResults = studentTests.testCases.map((test: any) => {
+            const result = resultMap.get(test.id);
+            if (result) {
+              return { ...test, result };
+            }
+            return test;
+          });
+          setTestCasesState(testsWithResults);
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
+        // No submission yet, just show tests without results
+        try {
+          const studentTests = await assignmentsApi.studentTestsRetrieve({ id: selectedAssignment.id });
+          // @ts-ignore
+          setTestCasesState(studentTests.testCases as any[]);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    };
+
+    updateStudentTests();
+  }, [submission, selectedAssignment, isStudent]);
+
   const loadTestResults = useCallback(
     async (sub: StudentSubmissionType | SubmissionInfoType | undefined, _loadLogs: boolean) => {
       if (sub) {
-        const results = await Submission.readTestResults(sub.id, { isStudentMode: 'True' });
+        const results = await submissionsApi.testResultsRetrieve({ id: sub.id });
         if (results !== null && results !== undefined) {
-          setSubmissionTests(SubmissionTest.getLatest(results.submissionTests));
+          setSubmissionTests(getLatestSubmissionTests(results.submissionTests));
           setTestsLog(results.logs);
         }
       }
@@ -519,11 +563,13 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
       if (shouldRunTests() && selectedAssignment?.environment) {
         setLoadingTests(true);
         setStatus(STATUS.SAVING);
-        const result = await Environment.run({
+        const result = await autograderApi.environmentsRunPartialUpdate({
           id: selectedAssignment.environment,
-          submission: sub.id,
-          simulate: false,
-          exposedOnly: true,
+          patchedEnvironmentRunRequest: {
+            submission: sub.id,
+            simulate: false,
+            exposedOnly: true,
+          },
         });
         awaitTestResult(result.task, setResults);
       }
@@ -568,17 +614,17 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
           path: file.path === undefined || file.path === null ? '' : file.path,
         }));
 
-        const assignment = selectedAssignment as AssignmentType;
+        const assignment = selectedAssignment as Assignment;
 
-        const payload = {
+        const result = await autograderApi.environmentsRunPartialUpdate({
           id: assignment.environment!,
-          files: JSON.stringify(filesJson),
-          submission: sub.id,
-          simulate: true,
-          exposedOnly: true,
-        };
-
-        const result = await Environment.run(payload);
+          patchedEnvironmentRunRequest: {
+            files: JSON.stringify(filesJson),
+            submission: sub.id,
+            simulate: true,
+            exposedOnly: true,
+          },
+        });
         awaitTestResult(result.task, setMockResults);
       }
     },
@@ -598,10 +644,16 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
   /**
    * Check if the submission is locked (finalized or has a grader)
    */
-  const isSubmissionLocked = useMemo(
-    () => submission && (submission.isFinalized || submission.hasGrader),
-    [submission],
-  );
+  const isSubmissionLocked = useMemo(() => {
+    if (!submission) {
+      return false;
+    }
+
+    const hasGrader =
+      'grader' in submission ? Boolean(submission.grader) : 'hasGrader' in submission ? submission.hasGrader : false;
+
+    return submission.isFinalized || hasGrader;
+  }, [submission]);
 
   /********************************************************************************************************/
   /* Submission upload
@@ -639,7 +691,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
           ),
           okText: 'Continue and simulate tests',
           onOk: execute,
-          onCancel: () => { },
+          onCancel: () => {},
         });
       } else {
         message.warning(
@@ -1022,9 +1074,9 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
         sendMeAConfirmationEmailCheckbox = (
           <span key="sendMeAConfirmationEmailCheckbox">
             {selectedAssignment &&
-              selectedAssignment.uploadDueDate &&
-              dueDatePassed(selectedAssignment.uploadDueDate) &&
-              !hideDueDate ? (
+            selectedAssignment.uploadDueDate &&
+            dueDatePassed(selectedAssignment.uploadDueDate) &&
+            !hideDueDate ? (
               <Tag color="volcano">Due Date Passed</Tag>
             ) : null}
             <Checkbox checked={sendMeAConfirmationEmail} onChange={toggleSendMeAConfirmationEmail}>
@@ -1229,10 +1281,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
           {showTestsTab && (
             <Tabs.TabPane tab="Tests" key="3">
               <div style={{ minHeight: MIN_TEST_HEIGHT, height: 'calc(100vh - 400px)' }}>
-                <TestsList
-                  submissionId={submission?.id || 0}
-                  tests={testCasesState}
-                />
+                <TestsList submissionId={submission?.id || 0} tests={testCasesState} />
               </div>
             </Tabs.TabPane>
           )}
