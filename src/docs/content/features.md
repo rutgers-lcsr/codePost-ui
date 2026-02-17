@@ -96,9 +96,9 @@ When Auto Detect Environment mode is enabled, codePost will:
 
 For custom environments or specific language versions, configure the environment manually in Assignment Settings.
 
-## AI-Assisted Feedback
+## AI-Assisted Grading
 
-codePost integrates with AI providers to help graders write better feedback faster. Graders can draft comments and use AI to refine them for clarity, tone, and helpfulness.
+codePost integrates with AI providers to help graders write better feedback faster and to generate test cases for assignments. Graders can draft comments and use AI to refine them for clarity, tone, and helpfulness. Instructors can also use AI to generate test scripts based on assignment specifications.
 
 Instructors retain full control over the AI environment:
 
@@ -110,8 +110,55 @@ Instructors retain full control over the AI environment:
 > **Enabling AI Features**
 >
 > 1. Go to **Course Settings > General**.
-> 2. Scroll to **AI Comment Generation**.
+> 2. Scroll to **AI Features**.
 > 3. Enter your **AI Provider**, **API Key**, and **Model Name**.
 > 4. Click **Save**.
+> 5. Enable **AI Comment Generation**
+> 6. Click **Save**.
 >
-> Once enabled, all graders in the course will see the AI assistance options in their grading interface.
+> Once enabled, you can use AI features in the grader interface when writing comments or generate test cases in the Test Script editor.
+
+### Autograding and Tests Generation
+
+codePost can automatically generate test cases and autograding scripts based on your assignment specifications. This feature uses AI to analyze your assignment description, provided code, and any sample tests you have to create comprehensive test suites.
+
+To enable AI-generated tests:
+
+1. Go to **Admin Console > Environment Setup**.
+2. Ensure the **Target File** is set for your assignment.
+3. Open a test category and click **Generate (AI)** in the Test Script editor.
+4. Review the generated script and adjust as needed.
+
+> [!NOTE]
+> AI-generated tests are a starting point. You can always edit the script or use the builder to refine cases.
+
+---
+
+## Tests ✅
+
+codePost supports script-based autograding that lets instructors define tests directly in the Test Script editor.
+
+### Where to find it
+
+1. Go to **Admin Console > Assignments > Environment**.
+2. Select an assignment in **Environment Setup**.
+3. Select a **Test Category** or create a new one.
+4. Use the **Test Script** editor (Code, Split Preview, or Builder).
+
+### How it works
+
+- Each test is defined in the script using a language-specific test decorator or macro.
+- The backend parses your script and creates test cases automatically.
+- The **Preview** panel shows how your tests will appear to graders.
+- Total points are computed from the `points` values in your test definitions.
+
+> [!IMPORTANT]
+> Make sure each test includes a **name** and **points**. This keeps preview and scoring consistent.
+
+### Dedicated Testing Guide
+
+The full syntax reference, examples, and language-by-language patterns now live in the **Testing Guide**:
+
+- [Testing Guide](/docs/testing-guide)
+
+Use this as the source of truth for supported script formats and examples.

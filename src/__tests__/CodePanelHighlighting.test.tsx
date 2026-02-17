@@ -1,5 +1,5 @@
-import CodePanelHighlighting from '../components/code-review/code-panel/CodePanelHighlighting';
-import { CommentIO, CommentType } from '../infrastructure/comment';
+import CodePanelHighlighting from '../features/code-review/code-panel/CodePanelHighlighting';
+import { CommentIO, CommentType } from '../utils/comments';
 
 describe('CodePanelHighlighting', () => {
   it('sort comments', () => {

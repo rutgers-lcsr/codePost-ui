@@ -17,8 +17,7 @@ import ReactSelect from 'react-select';
 
 /* codePost imports */
 import { tooltips } from '../../../components/core/tooltips';
-import { CourseType } from '../../../infrastructure/course';
-import { SectionType } from '../../../infrastructure/section';
+import { Course, Section } from '../../../api-client';
 import { USER_APP } from '../../../types/common';
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 import AddSectionDialog from './sections/AddSectionDialog';
@@ -32,9 +31,9 @@ export interface IManageSectionsProps {
   students: string[];
   graders: string[];
   admins: string[];
-  sections: SectionType[];
-  currentCourse: CourseType;
-  sectionsByStudent: { [studentEmail: string]: SectionType };
+  sections: Section[];
+  currentCourse: Course;
+  sectionsByStudent: { [studentEmail: string]: Section };
 
   /* loading state */
   loadComplete: boolean;
@@ -43,8 +42,8 @@ export interface IManageSectionsProps {
   /* object-level REST operations */
   updateRoster: (adds: string[], deletes: string[], userType: USER_APP) => Promise<void>;
   deleteSection: (sectionID: number) => Promise<void>;
-  createSection: (sectionName: string) => Promise<SectionType>;
-  updateSection: (section: SectionType) => Promise<void>;
+  createSection: (sectionName: string) => Promise<Section>;
+  updateSection: (section: Section) => Promise<void>;
   updateStudentSection: (student: string, section: number) => Promise<void>;
 }
 
@@ -52,7 +51,7 @@ export interface IManageSectionsProps {
 
 const ManageSections: React.FC<IManageSectionsProps> = (props) => {
   const [activeSection, setActiveSection] = useState<string>('');
-  const [openSection, setOpenSection] = useState<SectionType | undefined>(undefined);
+  const [openSection, setOpenSection] = useState<Section | undefined>(undefined);
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
   const [allowSectionReassignment, setAllowSectionReassignment] = useState<boolean>(false);
 
@@ -81,7 +80,7 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
     [props],
   );
 
-  const handleSetOpenSection = useCallback((section: SectionType | undefined) => {
+  const handleSetOpenSection = useCallback((section: Section | undefined) => {
     if (section === undefined) {
       setDrawerOpen(false);
       setTimeout(() => {
@@ -227,11 +226,13 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
   const drawerData = useMemo(() => {
     if (!openSection) return [];
 
-    return openSection.students.map((studentEmail) => ({
-      key: studentEmail,
-      student: studentEmail,
-      remove: <Button onClick={() => handleRemoveStudent(studentEmail)}>Remove</Button>,
-    }));
+    return openSection.students
+      .filter((s): s is string => s !== null && s !== undefined)
+      .map((studentEmail) => ({
+        key: studentEmail,
+        student: studentEmail,
+        remove: <Button onClick={() => handleRemoveStudent(studentEmail)}>Remove</Button>,
+      }));
   }, [openSection, handleRemoveStudent]);
 
   const studentOptions = useMemo(() => {

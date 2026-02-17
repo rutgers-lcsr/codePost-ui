@@ -11,8 +11,9 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { CloseOutlined } from '@ant-design/icons';
 
 /* codePost imports */
-import { AssignmentType, sortAssignments } from '../../infrastructure/assignment';
-import { CourseType } from '../../infrastructure/course';
+import type { AssignmentType } from '../../types/models';
+import { sortAssignments } from '../../utils/assignments';
+import { Course } from '../../api-client';
 
 import CPDropdown from './CPDropdown';
 
@@ -23,7 +24,7 @@ import { encodeForLink } from '../core/URLutils';
 /**********************************************************************************************************************/
 
 interface IProps {
-  currentCourse: CourseType;
+  currentCourse: Course;
   assignments: AssignmentType[];
   baseURL: string;
 }

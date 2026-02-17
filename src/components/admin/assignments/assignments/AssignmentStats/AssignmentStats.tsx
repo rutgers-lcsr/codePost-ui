@@ -6,9 +6,8 @@ import CPButton from '../../../../../components/core/CPButton';
 import CPTooltip from '../../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../../components/core/tooltips';
 import CPAdminDetail from '../../../other/CPAdminDetail';
-import { AssignmentType } from '../../../../../infrastructure/assignment';
-import { CourseType } from '../../../../../infrastructure/course';
-import { SubmissionInfoType } from '../../../../../infrastructure/submission';
+import { Assignment, SubmissionInfoType } from '../../../../../types/common';
+import { Course } from '../../../../../api-client';
 import { IStudentSubmissionsDataTable } from '../../../../../types/common';
 import {
   calculateFullStats,
@@ -23,8 +22,8 @@ import SendEmailModal from '../../../other/SendEmailModal';
 const { Title } = Typography;
 
 export interface IProps {
-  course: CourseType;
-  assignment: AssignmentType;
+  course: Course;
+  assignment: Assignment;
   submissions: SubmissionInfoType[] | null;
   students: string[];
   submissionsByStudent: IStudentSubmissionsDataTable;
@@ -61,7 +60,7 @@ const AssignmentStats: FC<IProps> = (props) => {
   }, [props]);
 
   const openDrawer = useCallback(
-    (targetAssignment: AssignmentType, type: DRAWER_TYPE) => {
+    (targetAssignment: Assignment, type: DRAWER_TYPE) => {
       if (submissions === null) {
         const title = getDrawerTitle(type, null);
         setDrawerContent({
@@ -110,7 +109,7 @@ const AssignmentStats: FC<IProps> = (props) => {
     if (submissions === null) return [];
     const toEmail = new Set<string>();
     for (const submission of submissions) {
-      if (submission.grader !== null && !submission.isFinalized) {
+      if (submission.grader && !submission.isFinalized) {
         toEmail.add(submission.grader);
       }
     }

@@ -17,8 +17,7 @@ import Highlighter from 'react-highlight-words';
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';
 
-import { CourseType } from '../../../infrastructure/course';
-import { SectionType } from '../../../infrastructure/section';
+import { Course, Section } from '../../../api-client';
 
 import DownloadRoster from './other/DownloadRoster';
 import RosterFileUpload from './other/RosterFileUpload';
@@ -46,18 +45,18 @@ export interface IManageAdminsProps {
   students: string[];
   graders: string[];
   admins: string[];
-  sections: SectionType[];
-  currentCourse: CourseType;
-  sectionsByStudent: { [studentEmail: string]: SectionType };
+  sections: Section[];
+  currentCourse: Course;
+  sectionsByStudent: { [studentEmail: string]: Section };
   notActivated: string[];
 
   /* loading state */
   loadComplete: boolean;
 
   /* object-level REST operations */
-  updateSection: (section: SectionType) => Promise<void>;
+  updateSection: (section: Section) => Promise<void>;
   updateRoster: (adds: string[], deletes: string[], userType: USER_APP) => Promise<void>;
-  createSection: (sectionName: string) => Promise<SectionType>;
+  createSection: (sectionName: string) => Promise<Section>;
 
   /* misc */
   myEmail: string;
@@ -138,7 +137,7 @@ const ManageAdmins: React.FC<IManageAdminsProps> = (props) => {
         changeRoster={props.updateRoster}
         isDisabled={false}
         updateSection={props.updateSection}
-        emailNewUsers={props.currentCourse ? props.currentCourse.emailNewUsers : false}
+        emailNewUsers={props.currentCourse.emailNewUsers ?? false}
         createSection={props.createSection}
         course={props.currentCourse}
       />,

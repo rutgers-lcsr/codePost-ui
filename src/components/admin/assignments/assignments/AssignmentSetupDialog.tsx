@@ -15,7 +15,8 @@ import {
 } from '@ant-design/icons';
 
 /* codePost imports */
-import { AssignmentType, CourseType } from '../../../../infrastructure/types';
+import { Course } from '../../../../api-client';
+import { Assignment } from '../../../../types/common';
 
 import {
   getRosterURL,
@@ -30,14 +31,14 @@ import useWindowSize from '../../../core/useWindowSize';
 /**********************************************************************************************************************/
 
 interface IProps {
-  assignment: AssignmentType;
-  course: CourseType;
+  assignment: Assignment;
+  course: Course;
   hasStudents: boolean;
   hasSubmissions?: boolean;
   onClose: () => void;
 }
 
-const getSteps = (course: CourseType, assignment: AssignmentType, hasStudents: boolean, hasSubmissions?: boolean) => [
+const getSteps = (course: Course, assignment: Assignment, hasStudents: boolean, hasSubmissions?: boolean) => [
   {
     title: 'Create assignment',
     url: null,
@@ -73,10 +74,10 @@ const getSteps = (course: CourseType, assignment: AssignmentType, hasStudents: b
     hide: !assignment.allowStudentUpload,
     isComplete:
       assignment.allowStudentUploadWithPartners ||
-      assignment.files.length > 0 ||
+      (assignment.files?.length ?? 0) > 0 ||
       assignment.liveFeedbackMode ||
       assignment.allowLateUploads ||
-      assignment.explanation.length > 0 ||
+      (assignment.explanation?.length ?? 0) > 0 ||
       hasSubmissions,
     icon: <UploadOutlined />,
   },
@@ -86,7 +87,7 @@ const getSteps = (course: CourseType, assignment: AssignmentType, hasStudents: b
     isOptional: true,
     description: 'Specify required files, allow late submissions, etc...',
     hide: false,
-    isComplete: assignment.testCategories.length > 0,
+    isComplete: (assignment.testCategories?.length ?? 0) > 0,
     icon: <FileDoneOutlined />,
   },
   {
@@ -95,7 +96,7 @@ const getSteps = (course: CourseType, assignment: AssignmentType, hasStudents: b
     isOptional: true,
     description: 'Make it easier to review student code by creating standard comments.',
     hide: false,
-    isComplete: assignment.rubricCategories.length > 0,
+    isComplete: (assignment.rubricCategories?.length ?? 0) > 0,
     icon: <OrderedListOutlined />,
   },
 ];

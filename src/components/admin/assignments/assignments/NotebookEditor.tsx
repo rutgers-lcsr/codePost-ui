@@ -14,11 +14,9 @@ import Editor from '@monaco-editor/react';
 import { Button, Card, Empty, Radio, Space, Tooltip, Typography } from 'antd';
 import * as React from 'react';
 import { colors } from '../../../../theme/colors';
-import { NotebookStructure, NotebookCell, File as CodePostFile } from '../../../../infrastructure/file';
+import { NotebookStructure, NotebookCell, File as CodePostFile } from '../../../../utils/file';
 
 const { Text } = Typography;
-
-
 
 interface NotebookEditorProps {
   content: string;
@@ -219,15 +217,15 @@ const NotebookEditor: React.FC<NotebookEditorProps> = ({ content, onChange, heig
                 defaultLanguage={
                   cell.cell_type === 'code'
                     ? (notebook.metadata?.language_info as any)?.name?.toLowerCase() ||
-                    (notebook.metadata?.kernelspec as any)?.language?.toLowerCase() ||
-                    'python'
+                      (notebook.metadata?.kernelspec as any)?.language?.toLowerCase() ||
+                      'python'
                     : 'markdown'
                 }
                 language={
                   cell.cell_type === 'code'
                     ? (notebook.metadata?.language_info as any)?.name?.toLowerCase() ||
-                    (notebook.metadata?.kernelspec as any)?.language?.toLowerCase() ||
-                    'python'
+                      (notebook.metadata?.kernelspec as any)?.language?.toLowerCase() ||
+                      'python'
                     : 'markdown'
                 }
                 value={getSourceString(cell.source)}

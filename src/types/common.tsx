@@ -2,15 +2,57 @@
  * Common Types
  */
 
-import { AssignmentType, AssignmentStudentType } from '../infrastructure/assignment';
-import { CommentType } from '../infrastructure/comment';
-import { RubricCategoryType } from '../infrastructure/rubricCategory';
-import { RubricCommentType } from '../infrastructure/rubricComment';
-import { StudentSubmissionType, SubmissionType, SubmissionInfoType } from '../infrastructure/submission';
+import {
+  Assignment as AssignmentGenerated,
+  Comment,
+  RubricCategory,
+  RubricComment,
+  StudentSubmission,
+  Submission,
+} from '../api-client';
+import type { CreateRequest as SubmissionFileCreateRequest } from '../api-client/apis/SubmissionFilesApi';
+
+export type AssignmentStudentType = AssignmentGenerated;
+export type CommentType = Comment;
+export type SubmissionType = Submission;
+export type SubmissionInfoType = Submission;
+export type StudentSubmissionType = StudentSubmission;
+export type UploadFile = Omit<SubmissionFileCreateRequest['submissionFile'], 'submission'>;
+
+// Extended Assignment Type to bridge legacy and generated types
+export type Assignment = Omit<AssignmentGenerated, 'environment' | 'files' | 'fileTemplates'> & {
+  environment?: number | null;
+  files?: any[];
+  fileTemplates?: number[];
+  submissions_inprogress_count?: number;
+  submissions_finalized_count?: number;
+  submissions_unclaimed_count?: number;
+  submissions_missing_count?: number;
+  submissions_count?: number;
+  stats_mean?: number;
+  stats_max?: number;
+  stats_min?: number;
+  mean?: number | null;
+  median?: number | null;
+  created?: string;
+  modified?: string;
+  names?: string[]; // Sometimes attached?
+  test_analysis?: any; // Sometimes attached?
+  runTestsOnSubmit?: boolean;
+  testsAffectGrade?: boolean;
+};
 
 export type IdMapType = {
   [id: number]: boolean;
 };
+
+export enum PERMISSION_LEVEL {
+  NOT_FOUND,
+  NONE,
+  READ,
+  READ_FILES_ONLY,
+  WRITE,
+}
 
 export enum USER_TYPE {
   STUDENT = 'Student',
@@ -87,7 +129,7 @@ export interface IAssignmentToSubmissionStudentMap {
 }
 
 export interface IAssignmentToRubricCategories {
-  [assignmentID: number]: RubricCategoryType[];
+  [assignmentID: number]: RubricCategory[];
 }
 
 export interface IFileToCommentsMap {
@@ -95,11 +137,11 @@ export interface IFileToCommentsMap {
 }
 
 export interface IRubricCategoryToRubricCommentsMap {
-  [rubricCategoryID: number]: RubricCommentType[];
+  [rubricCategoryID: number]: RubricComment[];
 }
 
 export interface ICourseToAssignmentMap {
-  [courseID: number]: AssignmentType[];
+  [courseID: number]: Assignment[];
 }
 
 export interface ICourseToAssignmentStudentMap {
@@ -107,7 +149,7 @@ export interface ICourseToAssignmentStudentMap {
 }
 
 export interface ICommentToRubricCommentMap {
-  [commentID: number]: RubricCommentType;
+  [commentID: number]: RubricComment;
 }
 
 export interface ICSSStyleObject {

@@ -504,7 +504,15 @@ const DocsContent: React.FC = () => {
                 background: 'white',
               }}
             >
-              <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px', color: 'rgba(0, 0, 0, 0.65)' }}>
+              <Text
+                type="secondary"
+                style={{
+                  fontSize: '12px',
+                  textTransform: 'uppercase',
+                  marginBottom: '4px',
+                  color: 'rgba(0, 0, 0, 0.65)',
+                }}
+              >
                 <LeftOutlined /> Previous
               </Text>
               <Text strong style={{ fontSize: '16px', color: colors.brandPrimary }}>
@@ -533,7 +541,15 @@ const DocsContent: React.FC = () => {
                 background: 'white',
               }}
             >
-              <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px', color: 'rgba(0, 0, 0, 0.65)' }}>
+              <Text
+                type="secondary"
+                style={{
+                  fontSize: '12px',
+                  textTransform: 'uppercase',
+                  marginBottom: '4px',
+                  color: 'rgba(0, 0, 0, 0.65)',
+                }}
+              >
                 Next <RightOutlined />
               </Text>
               <Text strong style={{ fontSize: '16px', color: colors.brandPrimary }}>
@@ -546,7 +562,9 @@ const DocsContent: React.FC = () => {
         </div>
 
         <div style={{ marginTop: '40px', textAlign: 'center', color: colors.neutralSecondaryText }}>
-          <Text type="secondary" style={{ color: 'rgba(0, 0, 0, 0.65)' }}>codePost Documentation &copy; {new Date().getFullYear()}</Text>
+          <Text type="secondary" style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
+            codePost Documentation &copy; {new Date().getFullYear()}
+          </Text>
         </div>
       </div>
 

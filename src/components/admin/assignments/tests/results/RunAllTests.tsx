@@ -7,8 +7,7 @@ import { Button, Checkbox, Modal } from 'antd';
 /* other library imports */
 
 /* codePost object imports */
-import { AssignmentType } from '../../../../../infrastructure/assignment';
-import { EnvironmentType } from '../../../../../infrastructure/autograder/environment';
+import { AssignmentType, EnvironmentType } from '../../../../../types/models';
 import RunAllProgressModal from './RunAllProgressModal';
 
 /* codePost util imports */
@@ -103,7 +102,7 @@ const RunAllTests = (props: IProps) => {
 
   return (
     <div>
-      <Button type="default" disabled={!canRun} onClick={onTrigger} loading={props.env && props.env.isRunning}>
+      <Button type="default" disabled={!canRun} onClick={onTrigger} loading={props.env && (props.env as any).isRunning}>
         Run all tests
       </Button>
       <RunAllProgressModal

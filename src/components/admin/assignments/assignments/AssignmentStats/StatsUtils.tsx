@@ -5,8 +5,8 @@ import { CodeOutlined, UploadOutlined, DeleteOutlined } from '@ant-design/icons'
 import { Drawer, Spin, Popconfirm } from 'antd';
 
 /* codePost imports */
-import { AssignmentType } from '../../../../../infrastructure/assignment';
-import { SubmissionInfoType } from '../../../../../infrastructure/submission';
+import { Assignment } from '../../../../../types/common';
+import { SubmissionInfoType } from '../../../../../types/common';
 import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../../../types/common';
 
 import { openSubmission } from '../../../other/AdminUtils';
@@ -56,7 +56,7 @@ export enum DRAWER_TYPE {
 
 // Calculate Grading Progress Stats for multiple assignments
 export const calculateMultipleAssignmentProgressStats = (
-  assignments: AssignmentType[],
+  assignments: Assignment[],
   submissions: IAssignmentToSubmissionsMap,
   submissionsByStudent: IStudentSubmissionsDataTable,
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
@@ -80,7 +80,7 @@ export const calculateMultipleAssignmentProgressStats = (
 
 /* Calculate Full stats (progress + grade stats) */
 export const calculateFullStats = (
-  assignment: AssignmentType,
+  assignment: Assignment,
   submissions: SubmissionInfoType[] | null,
   submissionsByStudent: IStudentSubmissionsDataTable,
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
@@ -168,7 +168,7 @@ export const calculateFullStats = (
 
 /* Calculate Grading Progress stats only */
 export const calculateGradingProgressStats = (
-  assignment: AssignmentType,
+  assignment: Assignment,
   submissions: SubmissionInfoType[] | null,
   submissionsByStudent: IStudentSubmissionsDataTable,
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } },
@@ -211,6 +211,9 @@ export const calculateGradingProgressStats = (
     }
     if (submission.id in viewsBySubmission) {
       submission.students.forEach((student) => {
+        if (!student) {
+          return;
+        }
         if (student in viewsBySubmission[submission.id]) {
           numViewed += 1;
         } else if (
@@ -258,7 +261,7 @@ export const calculateGradingProgressStats = (
 
 // This function is called to return the list of students that meet a certain stat type
 export const filterDataByStat = (
-  assignment: AssignmentType,
+  assignment: Assignment,
   submissionsByStudent: IStudentSubmissionsDataTable,
   type: DRAWER_TYPE,
   subs: SubmissionInfoType[],
@@ -308,6 +311,9 @@ export const filterDataByStat = (
         //                      (c) student's submission is finalized
         if (sub && sub.id in viewsBySubmission) {
           sub.students.forEach((student) => {
+            if (!student) {
+              return;
+            }
             if (
               !(student in viewsBySubmission[sub.id]) &&
               submissionsByStudent[student][assignment.id] &&
@@ -325,6 +331,9 @@ export const filterDataByStat = (
         //                      (b) student's email is in viewsBySubmission
         if (sub && sub.id in viewsBySubmission) {
           sub.students.forEach((student) => {
+            if (!student) {
+              return;
+            }
             if (student in viewsBySubmission[sub.id]) {
               students.push({ email: student, subID: sub.id });
             }

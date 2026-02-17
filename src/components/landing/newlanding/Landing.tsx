@@ -45,7 +45,7 @@ import princetonImg from '../../../img/landing/compressed/logos/princeton.png';
 import ucsdImg from '../../../img/landing/compressed/logos/ucsd.png';
 
 class LandingOld extends React.Component<IWithWindowWatcherProps> {
-  public componentDidMount() { }
+  public componentDidMount() {}
 
   public render() {
     const panelOne = <LandingAnnotationPanel />;
@@ -55,8 +55,8 @@ class LandingOld extends React.Component<IWithWindowWatcherProps> {
         text={
           <div>
             <div style={{ paddingBottom: 24 }}>
-              Native support for Python, Java, R, and more.
-              First-class rendering for <strong>Jupyter Notebooks</strong> and <strong>PDFs</strong>.
+              Native support for Python, Java, R, and more. First-class rendering for <strong>Jupyter Notebooks</strong>{' '}
+              and <strong>PDFs</strong>.
               <br />
               <br />
               Give feedback wherever your students work.
@@ -94,7 +94,8 @@ class LandingOld extends React.Component<IWithWindowWatcherProps> {
         text={
           <div>
             <div style={{ paddingBottom: 24 }}>
-              Docker-based isolation for secure testing. Templates for <strong>Python, Java, R</strong>, and many others.
+              Docker-based isolation for secure testing. Templates for <strong>Python, Java, R</strong>, and many
+              others.
               <br />
               <br />
               Run simple I/O tests or complex script-based suites.
@@ -151,7 +152,8 @@ class LandingOld extends React.Component<IWithWindowWatcherProps> {
             text={
               <div>
                 <div style={{ paddingBottom: 24 }}>
-                  Manage rosters, sync with LMS, coordinate TAs with granular permissions, and ensure consistency with shared rubrics.
+                  Manage rosters, sync with LMS, coordinate TAs with granular permissions, and ensure consistency with
+                  shared rubrics.
                   <br />
                   <br />
                   Built for large courses.

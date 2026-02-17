@@ -7,13 +7,17 @@ import { ILogType, PseudoTerminal, RESULT_TYPE } from '../admin/assignments/test
 import { CodeWindow } from '../admin/assignments/tests/edit/utils/CodeWindow';
 import useWindowSize from './useWindowSize';
 
-import { EnvironmentType } from '../../infrastructure/autograder/environment';
-import { AnonymousSubmissionType } from '../../infrastructure/submission';
-import { BasicTestResultType, TestEditorResultType } from '../../infrastructure/autograder/runTypes';
-import { getFileContent } from '../../infrastructure/file';
-import { arrayUpdate } from '../../infrastructure/immutable';
-import { TestCase } from '../../infrastructure/testCase';
-import { AssignmentType, FileType, TestCaseType, TestCategoryType } from '../../infrastructure/types';
+import type {
+  EnvironmentType,
+  AnonymousSubmissionType,
+  AssignmentType,
+  TestCaseType,
+  TestCategoryType,
+} from '../../types/models';
+import type { BasicTestResultType, TestEditorResultType } from '../../types/autograder';
+import { getFileContent, type FileType } from '../../utils/file';
+import { arrayUpdate } from '../../utils/immutable';
+import { testCasesApi } from '../../api-client/clients';
 
 import { fetchEnvironment, fetchTestData, TestCasesByCategory } from './testFetchUtils';
 
@@ -130,11 +134,13 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
       });
 
       const payload = {
-        id: selectedTestCase.id,
-        submission: props.submission.id.toString(),
+        submission: props.submission.id,
         files: JSON.stringify(filesJson),
       };
-      const result = await TestCase.run(payload);
+      const result = await testCasesApi.runCreate({
+        id: selectedTestCase.id,
+        testCaseRunRequest: payload,
+      });
       awaitTestResult(result.task, callback.bind({}, selectedTestCase));
     }
   };

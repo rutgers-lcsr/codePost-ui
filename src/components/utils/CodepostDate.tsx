@@ -20,7 +20,7 @@ const CodePostDateChild = (props: { datetime: Dayjs; timezone: string }) => {
 
 const CodePostDate = (props: { datetime: Dayjs | string }) => (
   <CourseContext.Consumer>
-    {(course) => <CodePostDateChild datetime={dayjs(props.datetime)} timezone={course.timezone} />}
+    {(course) => <CodePostDateChild datetime={dayjs(props.datetime)} timezone={course.timezone || 'UTC'} />}
   </CourseContext.Consumer>
 );
 

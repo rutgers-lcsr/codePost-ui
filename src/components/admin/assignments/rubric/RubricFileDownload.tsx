@@ -1,30 +1,30 @@
 import { FC, useCallback } from 'react';
 import { DownloadOutlined } from '@ant-design/icons';
-import { IRubricCategoryToRubricCommentsMap } from '../../../../types/common';
-import { AssignmentType } from '../../../../infrastructure/assignment';
-import { RubricCategoryType } from '../../../../infrastructure/rubricCategory';
+import { IRubricCategoryToRubricCommentsMap, Assignment } from '../../../../types/common';
+import { RubricCategory } from '../../../../api-client';
 import CPButton from '../../../../components/core/CPButton';
 
 interface IProps {
-  assignment: AssignmentType;
-  rubricCategories: RubricCategoryType[];
+  assignment: Assignment;
+  rubricCategories: RubricCategory[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
   isDisabled: boolean;
 }
 
 const RubricFileDownload: FC<IProps> = ({ assignment, rubricCategories, rubricComments, isDisabled }) => {
   const getNestedRubricForDownload = useCallback(
-    (categories: RubricCategoryType[], comments: IRubricCategoryToRubricCommentsMap) => {
+    (categories: RubricCategory[], comments: IRubricCategoryToRubricCommentsMap) => {
       return categories.map((cat) => ({
         name: cat.name,
         pointLimit: cat.pointLimit,
-        rubricComments: comments[cat.id].map((comment) => ({
-          text: comment.text,
-          pointDelta: comment.pointDelta,
-          sortKey: comment.sortKey,
-          explanation: comment.explanation,
-          instructionText: comment.instructionText,
-        })),
+        rubricComments:
+          comments[cat.id]?.map((comment) => ({
+            text: comment.text || '',
+            pointDelta: comment.pointDelta,
+            sortKey: comment.sortKey,
+            explanation: comment.explanation,
+            instructionText: comment.instructionText,
+          })) || [],
       }));
     },
     [],

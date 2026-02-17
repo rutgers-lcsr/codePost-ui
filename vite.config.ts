@@ -1,5 +1,6 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv, type UserConfig } from 'vite';
+import path from 'path';
 import svgr from 'vite-plugin-svgr';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import packageJson from './package.json';
@@ -108,9 +109,13 @@ export default defineConfig(async (config) => {
       },
     },
     resolve: {
-      alias: {
-        'jszip': 'jszip/lib/index.js',
-      },
+      alias: [
+        { find: 'jszip', replacement: 'jszip/lib/index.js' },
+        { find: /^@features\/(.*)$/, replacement: path.resolve(__dirname, 'src/features') + '/$1' },
+        { find: /^@code-review\/(.*)$/, replacement: path.resolve(__dirname, 'src/features/code-review') + '/$1' },
+        { find: '@features', replacement: path.resolve(__dirname, 'src/features') },
+        { find: '@code-review', replacement: path.resolve(__dirname, 'src/features/code-review') },
+      ],
     },
   };
   return configuration;

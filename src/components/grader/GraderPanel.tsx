@@ -15,8 +15,8 @@ import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 /* codePost imports */
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 
-import { AssignmentType } from '../../infrastructure/assignment';
-import { CourseType } from '../../infrastructure/course';
+import { Course } from '../../api-client';
+import { AssignmentType } from '../../types/models';
 
 import { encodeForLink, encodeForRoute } from '../core/URLutils';
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
@@ -25,7 +25,7 @@ import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
 interface IParentProps {
   assignments: AssignmentType[];
-  course: CourseType;
+  course: Course;
   actions: React.ReactElement[];
   title: string;
   isLoading: boolean;

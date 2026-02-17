@@ -15,9 +15,8 @@ import React, { useMemo, useState } from 'react';
 
 import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 import { colors } from '../../theme/colors';
-import { RosterType } from '../../infrastructure/course';
-import { OrganizationType } from '../../infrastructure/organization';
-import { UserType } from '../../infrastructure/user';
+import type { RosterType, UserType } from '../../types/models';
+import { Organization } from '../../api-client';
 
 import { PlusOutlined, EditOutlined } from '@ant-design/icons';
 import NewUserDialog from './NewUserDialog';
@@ -33,13 +32,13 @@ export interface UserData {
   isCodePostAdmin: boolean; // Platform-wide admin (different from courseAdmin!)
   isActive: boolean;
   totalCourses: number;
-  organizationDetails: OrganizationType[];
+  organizationDetails: Organization[];
   fullUserData?: UserType; // Optional: full user data from API
 }
 
 interface UsersTableProps {
   rosters: RosterType[];
-  organizations: OrganizationType[];
+  organizations: Organization[];
   users: UserType[];
   onRefresh: () => void;
 }
@@ -112,12 +111,13 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
 
     // Then, merge in full user data from User.list()
     users.forEach((fullUser) => {
+      if (!fullUser.email) return;
       const email = fullUser.email.toLowerCase();
       if (map.has(email)) {
         // User exists from rosters, add full user data and codePostAdmin status
         const user = map.get(email)!;
         user.fullUserData = fullUser;
-        user.isCodePostAdmin = fullUser.codePostAdmin;
+        user.isCodePostAdmin = !!fullUser.codePostAdmin;
         // Also ensure isActive is true if they exist in User.list (which means they are a platform user)
         // Unless we only want "Active in a Course" to count.
         // Usually User.list users are active unless 'is_active' flag on user model is false.
@@ -145,11 +145,11 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
         ].forEach((course) => allCourses.add(`${course.name} (${course.period})`));
 
         map.set(email, {
-          email: fullUser.email,
+          email: fullUser.email!,
           organizations: userOrg ? new Set([userOrg.shortname]) : new Set(),
           courses: allCourses,
           roles,
-          isCodePostAdmin: fullUser.codePostAdmin, // Platform-wide admin flag
+          isCodePostAdmin: !!fullUser.codePostAdmin, // Platform-wide admin flag
           isActive: true, // Users from User.list() are generally active
           totalCourses: allCourses.size,
           organizationDetails: userOrg ? [userOrg] : [],

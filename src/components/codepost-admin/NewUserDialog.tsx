@@ -1,14 +1,15 @@
 import { Form, Input, Modal, Select, message } from 'antd';
 import React, { useState } from 'react';
 
-import { OrganizationType } from '../../infrastructure/organization';
-import { UserIO, UserType } from '../../infrastructure/user';
+import { Organization } from '../../api-client';
+import { UserIO } from '../../services/user';
+import type { UserType } from '../../types/models';
 
 interface NewUserDialogProps {
   visible: boolean;
   onClose: () => void;
   onSuccess: (user: UserType) => void;
-  organizations: OrganizationType[];
+  organizations: Organization[];
 }
 
 const NewUserDialog: React.FC<NewUserDialogProps> = ({ visible, onClose, onSuccess, organizations }) => {

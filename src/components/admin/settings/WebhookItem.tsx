@@ -7,17 +7,19 @@ import * as React from 'react';
 import { Checkbox, Input, message } from 'antd';
 
 /* codePost imports */
-import { Webhook, WebhookType } from '../../../infrastructure/webhook';
+import type { Webhook } from '../../../api-client';
+import type { PartialUpdateRequest } from '../../../api-client/apis/WebhooksApi';
+import { webhooksApi } from '../../../api-client/clients';
 
 /**********************************************************************************************************************/
 
 interface IProps {
-  webhook: WebhookType;
+  webhook: Webhook;
   setJustSaved: any;
 }
 
 const WebhookItem = (props: IProps) => {
-  const [isActive, setIsActive] = React.useState<boolean>(props.webhook.is_active);
+  const [isActive, setIsActive] = React.useState<boolean>(!!props.webhook.isActive);
   const [target, setTarget] = React.useState<string>(props.webhook.target);
 
   const onChangeCheckbox = async (e: any) => {
@@ -25,8 +27,12 @@ const WebhookItem = (props: IProps) => {
     e.preventDefault();
     setIsActive(e.target.checked);
 
+    const payload: NonNullable<PartialUpdateRequest['patchedWebhook']> = {
+      isActive: e.target.checked,
+    };
+
     try {
-      await Webhook.update({ id: props.webhook.id, is_active: e.target.checked });
+      await webhooksApi.partialUpdate({ id: props.webhook.id, patchedWebhook: payload });
       props.setJustSaved(true);
     } catch {
       message.error('Error saving...');
@@ -40,8 +46,12 @@ const WebhookItem = (props: IProps) => {
   const onBlurInput = async (e: any) => {
     setTarget(e.target.value);
 
+    const payload: NonNullable<PartialUpdateRequest['patchedWebhook']> = {
+      target: e.target.value,
+    };
+
     try {
-      await Webhook.update({ id: props.webhook.id, target: e.target.value });
+      await webhooksApi.partialUpdate({ id: props.webhook.id, patchedWebhook: payload });
       props.setJustSaved(true);
     } catch {
       message.error('Error saving...');

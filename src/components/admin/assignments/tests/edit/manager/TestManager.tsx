@@ -1,15 +1,16 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Button, Empty, Spin, message, Tooltip, Popconfirm } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import { AssignmentType, TestCategoryType } from '../../../../../../infrastructure/types';
-import { TestCategory } from '../../../../../../infrastructure/testCategory';
+import { testCategoriesApi } from '../../../../../../api-client/clients';
+import { AssignmentType, TestCategoryType } from '../../../../../../types/models';
 import { TestCategoryUI } from './TestCategoryUI';
-import { loadIDList } from '../../../../../../infrastructure/generics';
+import { loadIDList } from '../../../../../../utils/generics';
 import styles from '../../../rubric/RubricSideBar.module.css'; // Reusing styles
 
 interface IProps {
   assignment: AssignmentType;
   onSave?: () => void;
+  helpers?: any[]; // AssignmentFileType[]
 }
 
 export const TestManager = (props: IProps) => {
@@ -21,7 +22,9 @@ export const TestManager = (props: IProps) => {
     setLoading(true);
     try {
       if (props.assignment.testCategories) {
-        const cats = await loadIDList(props.assignment.testCategories, TestCategory);
+        const cats = await loadIDList(props.assignment.testCategories, {
+          read: (id: number) => testCategoriesApi.retrieve({ id }),
+        });
         setCategories(cats.sort((a, b) => (a.sortKey || 0) - (b.sortKey || 0)));
         if (cats.length > 0 && !activeCategoryId) {
           setActiveCategoryId(cats[0].id);
@@ -40,15 +43,17 @@ export const TestManager = (props: IProps) => {
 
   const handleAddCategory = async () => {
     try {
-      const newCat = await TestCategory.create({
-        id: -1,
-        name: `New Test Category ${categories.length + 1}`,
-        assignment: props.assignment.id,
-        testScript: '',
-        maxPoints: 10, // Default
-        sortKey: categories.length,
-        targetFileName: null,
-
+      const newCat = await testCategoriesApi.create({
+        testCategory: {
+          name: `New Test Category ${categories.length + 1}`,
+          assignment: props.assignment.id,
+          testScript: '',
+          maxPoints: 10, // Default
+          sortKey: categories.length,
+          targetFileName: null,
+          testCases: [],
+          resources: [],
+        },
       });
       setCategories([...categories, newCat]);
       setActiveCategoryId(newCat.id);
@@ -60,7 +65,7 @@ export const TestManager = (props: IProps) => {
 
   const handleDeleteCategory = async (cat: TestCategoryType) => {
     try {
-      await TestCategory.delete(cat);
+      await testCategoriesApi.destroy({ id: cat.id });
       const newCats = categories.filter((c) => c.id !== cat.id);
       setCategories(newCats);
       if (activeCategoryId === cat.id) {
@@ -178,6 +183,7 @@ export const TestManager = (props: IProps) => {
             category={activeCategory}
             assignment={props.assignment}
             onUpdate={handleUpdateCategory}
+            helpers={props.helpers}
           />
         ) : (
           <Empty

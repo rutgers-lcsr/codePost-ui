@@ -16,12 +16,16 @@ import Highlighter from 'react-highlight-words';
 import { Link, Route, Routes } from 'react-router-dom';
 
 /* codePost imports  */
-import { IAssignmentToSubmissionsMap, IGraderSubmissionsDataTable } from '../../../types/common';
+import type {
+  Assignment,
+  IAssignmentToSubmissionsMap,
+  IGraderSubmissionsDataTable,
+  SubmissionInfoType,
+} from '../../../types/common';
 
 import { encodeForLink } from '../../../components/core/URLutils';
 
-import { AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
-import { SubmissionInfoType } from '../../../infrastructure/submission';
+import { sortAssignments } from '../../../utils/assignments';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
@@ -42,7 +46,7 @@ export interface IByGraderProps {
   courseURL: string;
 
   /* submissions data */
-  assignments: AssignmentType[];
+  assignments: Assignment[];
   submissionsByAssignment: IAssignmentToSubmissionsMap;
   submissionsByGrader: IGraderSubmissionsDataTable;
   graders: string[];

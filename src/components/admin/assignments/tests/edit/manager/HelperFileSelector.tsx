@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Checkbox, List, Modal, Upload, Input, message, Tag, Typography, Tabs, Empty } from 'antd';
 import { UploadOutlined, FileTextOutlined, InfoCircleOutlined, DatabaseOutlined } from '@ant-design/icons';
-import { AssignmentFile, AssignmentFileType } from '../../../../../../infrastructure/file';
-import { AssignmentDataSet, AssignmentDataSetType } from '../../../../../../infrastructure/assignmentDataSet';
+import { assignmentFilesApi, assignmentsApi } from '../../../../../../api-client/clients';
+import { getAuthToken } from '../../../../../../utils/auth';
+import { AssignmentDataSetType, AssignmentFileType } from '../../../../../../types/models';
 
 const { Text } = Typography;
 
@@ -43,11 +44,7 @@ export const HelperFileSelector: React.FC<IProps> = ({
   const fetchDatasets = async () => {
     setIsLoadingDatasets(true);
     try {
-      // Use listByAssignment if available or direct fetch
-      // assignmentDataSet.tsx has public static listByAssignment = readObjectDetail(...)
-      // But readObjectDetail returns a single object usually? No, the type passed to it is t.array(AssignmentDataSetV).
-      // It relies on /assignments/{id}/datasets/ endpoint.
-      const res = await AssignmentDataSet.listByAssignment(assignmentId);
+      const res = await assignmentsApi.datasetsList({ id: assignmentId });
       setDatasets(res);
     } catch (e) {
       console.error(e);
@@ -91,14 +88,16 @@ export const HelperFileSelector: React.FC<IProps> = ({
         const parts = uploadFileName.split('.');
         const ext = parts.length > 1 ? parts[parts.length - 1] : 'txt';
 
-        const newFile = await AssignmentFile.create({
-          assignment: assignmentId,
-          name: uploadFileName,
-          extension: ext,
-          path: null,
-          data: content,
-          hidden: uploadFileHidden,
-        } as any);
+        const newFile = await assignmentFilesApi.create({
+          assignmentFile: {
+            assignment: assignmentId,
+            name: uploadFileName,
+            extension: ext,
+            path: null,
+            data: content,
+            hidden: uploadFileHidden,
+          },
+        });
 
         message.success('Helper file uploaded');
         setIsFileUploadOpen(false);
@@ -132,7 +131,21 @@ export const HelperFileSelector: React.FC<IProps> = ({
       formData.append('file', uploadDatasetFile);
       if (uploadDatasetHidden) formData.append('hidden', 'true');
 
-      await AssignmentDataSet.create(formData);
+      const token = getAuthToken();
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/assignmentDataSets/`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to create dataset: ${response.statusText} - ${errorText}`);
+      }
+
+      await response.json();
       message.success('Dataset uploaded');
       setIsDatasetUploadOpen(false);
       fetchDatasets();
@@ -209,13 +222,13 @@ export const HelperFileSelector: React.FC<IProps> = ({
               <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
                 <DatabaseOutlined style={{ marginRight: 8, color: '#722ed1' }} />
                 <span style={{ marginRight: 8, fontWeight: 500 }}>{item.name}</span>
-                {item.hidden && (
+                {(item as any).hidden && (
                   <Tag color="warning" style={{ fontSize: 10, lineHeight: '18px', padding: '0 4px' }}>
                     Hidden
                   </Tag>
                 )}
                 <span style={{ marginLeft: 'auto', fontSize: 11, color: '#999' }}>
-                  {item.mount_path || `shared/${item.name}`}
+                  {item.mountPath || `shared/${item.name}`}
                 </span>
               </div>
             </List.Item>

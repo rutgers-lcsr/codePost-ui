@@ -7,7 +7,7 @@ import { Form, Input, message, Modal, Radio, theme } from 'antd';
 import { colors } from '../../theme/colors';
 import { sendSlack } from './slack';
 
-import { UserType } from '../../infrastructure/user';
+import type { UserType } from '../../types/models';
 
 import { trackFeature } from '../utils/Fullstory';
 

@@ -2,8 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import _ from 'lodash';
 
-import { RubricCategoryType } from '../infrastructure/rubricCategory';
-import { RubricCommentType } from '../infrastructure/rubricComment';
+import { RubricCategory, RubricComment } from '../api-client';
 import { IRubricCategoryToRubricCommentsMap } from '../types/common';
 
 /**
@@ -27,21 +26,21 @@ interface RubricStoreState {
   errorObjects: number[];
 
   // Rubric data
-  rubricCategories: RubricCategoryType[];
+  rubricCategories: RubricCategory[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
-  savedRubricCategories: RubricCategoryType[];
+  savedRubricCategories: RubricCategory[];
   savedRubricComments: IRubricCategoryToRubricCommentsMap;
 
   // Edit tracking
-  unsavedComments: RubricCommentType[];
-  deletedComments: RubricCommentType[];
-  unsavedCategories: RubricCategoryType[];
-  deletedCategories: RubricCategoryType[];
+  unsavedComments: RubricComment[];
+  deletedComments: RubricComment[];
+  unsavedCategories: RubricCategory[];
+  deletedCategories: RubricCategory[];
   hasMoved: boolean;
 
   // UI state
-  activeComment?: RubricCommentType;
-  linkedComments: RubricCommentType[];
+  activeComment?: RubricComment;
+  linkedComments: RubricComment[];
   resolutions: Record<number, RESOLUTION>;
   confirmedPropagation: boolean;
   showConfirmDialog: boolean;
@@ -54,33 +53,33 @@ interface RubricStoreState {
 
 interface RubricStoreActions {
   // Initialization
-  initialize: (categories: RubricCategoryType[], comments: IRubricCategoryToRubricCommentsMap) => void;
+  initialize: (categories: RubricCategory[], comments: IRubricCategoryToRubricCommentsMap) => void;
   setLoadComplete: (complete: boolean) => void;
   setIsSaving: (saving: boolean) => void;
 
   // Category actions
-  addCategory: (category: RubricCategoryType) => number;
-  updateCategory: (category: RubricCategoryType, hasError?: boolean) => void;
-  deleteCategory: (category: RubricCategoryType) => void;
+  addCategory: (category: RubricCategory) => number;
+  updateCategory: (category: RubricCategory, hasError?: boolean) => void;
+  deleteCategory: (category: RubricCategory) => void;
   moveCategory: (categoryId: number, newIndex: number) => void;
-  onCategoryEdit: (category: RubricCategoryType) => void;
-  onCategoryUndo: (category: RubricCategoryType) => void;
+  onCategoryEdit: (category: RubricCategory) => void;
+  onCategoryUndo: (category: RubricCategory) => void;
 
   // Comment actions
-  addComment: (categoryId: number, comment: RubricCommentType) => number;
-  updateComment: (comment: RubricCommentType) => void;
-  deleteComment: (comment: RubricCommentType) => void;
-  reorderComments: (categoryId: number, comments: RubricCommentType[]) => void;
-  onCommentEdit: (comment: RubricCommentType) => void;
-  onCommentUndo: (comment: RubricCommentType) => void;
+  addComment: (categoryId: number, comment: RubricComment) => number;
+  updateComment: (comment: RubricComment) => void;
+  deleteComment: (comment: RubricComment) => void;
+  reorderComments: (categoryId: number, comments: RubricComment[]) => void;
+  onCommentEdit: (comment: RubricComment) => void;
+  onCommentUndo: (comment: RubricComment) => void;
 
   // Save/Reset
   resetRubric: () => void;
-  afterSave: (categories: RubricCategoryType[], comments: IRubricCategoryToRubricCommentsMap) => void;
+  afterSave: (categories: RubricCategory[], comments: IRubricCategoryToRubricCommentsMap) => void;
 
   // UI state
-  setActiveComment: (comment?: RubricCommentType) => void;
-  setLinkedComments: (comments: RubricCommentType[]) => void;
+  setActiveComment: (comment?: RubricComment) => void;
+  setLinkedComments: (comments: RubricComment[]) => void;
   setResolution: (commentId: number, resolution: RESOLUTION) => void;
   setConfirmedPropagation: (confirmed: boolean) => void;
   setShowConfirmDialog: (show: boolean) => void;
@@ -92,12 +91,9 @@ interface RubricStoreActions {
 
   // Getters
   changesMade: () => boolean;
-  getCategory: (id: number) => RubricCategoryType | undefined;
-  getComment: (id: number, categoryId: number) => RubricCommentType | undefined;
-  buildCommentMap: (
-    categories: RubricCategoryType[],
-    comments: RubricCommentType[],
-  ) => IRubricCategoryToRubricCommentsMap;
+  getCategory: (id: number) => RubricCategory | undefined;
+  getComment: (id: number, categoryId: number) => RubricComment | undefined;
+  buildCommentMap: (categories: RubricCategory[], comments: RubricComment[]) => IRubricCategoryToRubricCommentsMap;
 }
 
 type RubricStore = RubricStoreState & RubricStoreActions;
@@ -234,7 +230,7 @@ export const useRubricStore = create<RubricStore>()(
             reordered.splice(newIndex, 0, moved);
 
             // Update sortKeys
-            const toAdd: RubricCategoryType[] = [];
+            const toAdd: RubricCategory[] = [];
             reordered.forEach((cat, i) => {
               if (cat.sortKey !== i) {
                 cat.sortKey = i;
@@ -349,7 +345,7 @@ export const useRubricStore = create<RubricStore>()(
       reorderComments: (categoryId, comments) => {
         set(
           (state) => {
-            const toAdd: RubricCommentType[] = [];
+            const toAdd: RubricComment[] = [];
             comments.forEach((comm, i) => {
               if (comm.sortKey !== i) {
                 comm.sortKey = i;

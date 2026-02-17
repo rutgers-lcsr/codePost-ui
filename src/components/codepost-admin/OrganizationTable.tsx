@@ -10,8 +10,8 @@ import { Badge, Button, Card, Col, Descriptions, Drawer, Input, Row, Space, Stat
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { colors } from '../../theme/colors';
-import { RosterType as InfraRosterType } from '../../infrastructure/course';
-import { OrganizationType } from '../../infrastructure/organization';
+import type { RosterType as InfraRosterType } from '../../types/models';
+import { Organization } from '../../api-client';
 import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 
 import { PlusOutlined } from '@ant-design/icons';
@@ -21,7 +21,7 @@ const { Search } = Input;
 
 type RosterType = InfraRosterType;
 
-interface OrganizationRow extends OrganizationType {
+interface OrganizationRow extends Organization {
   rosters: RosterType[];
   key: string;
 }
@@ -35,7 +35,7 @@ interface CourseRow {
 }
 
 interface Props {
-  organizations: OrganizationType[];
+  organizations: Organization[];
   rosters: RosterType[];
   onRefresh: () => void;
 }

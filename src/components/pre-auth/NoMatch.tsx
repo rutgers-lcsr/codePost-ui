@@ -130,8 +130,15 @@ class NoMatch extends React.Component<IProps, IState> {
           <Typography.Title level={1}>Whoops! This page doesn't exist!</Typography.Title>
           <Typography.Title level={4}>
             {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-            You can <Link to="/" className="text-link">return to our homepage</Link>, or <a onClick={this.openIntercom} className="text-link">let us know</a> if you
-            can't find what you're looking for...
+            You can{' '}
+            <Link to="/" className="text-link">
+              return to our homepage
+            </Link>
+            , or{' '}
+            <a onClick={this.openIntercom} className="text-link">
+              let us know
+            </a>{' '}
+            if you can't find what you're looking for...
           </Typography.Title>
           <div>...or meditate on the quote below.</div>
           <br />

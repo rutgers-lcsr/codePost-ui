@@ -3,6 +3,7 @@ import { render, waitFor } from '@testing-library/react';
 import { axe } from 'vitest-axe';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
+const { act } = React;
 
 // Component Imports
 import Settings from './components/core/settings';
@@ -12,14 +13,14 @@ import RosterManager from './components/admin/roster/RosterManager';
 import ManageAssignments from './components/admin/assignments/ManageAssignments';
 import Dashboard from './components/codepost-admin/Dashboard';
 
-// Mock Infrastructure
+// Mock data
 const mockOrganization = {
   id: 1,
   name: 'Test University',
   sso_enabled: false,
 };
 
-const mockCourse = {
+const mockCourse: any = {
   id: 1,
   name: 'CS101',
   period: 'Fall 2023',
@@ -37,16 +38,17 @@ const mockCourse = {
   archived: false,
   activateQueue: true,
   inviteCode: '',
-  emailWhitelist: '',
   inviteCodeEnabled: false,
+  emailWhitelist: '',
   enableStudentFeedbackNotifications: false,
   expiration_date: null,
   studentsCanSeeGraders: false,
   studentCount: 0,
   isRubricEditor: false,
+  webhooks: [],
 };
 
-const mockAssignment = {
+const mockAssignment: any = {
   id: 1,
   course: 1,
   name: 'Homework 1',
@@ -67,38 +69,93 @@ const mockAssignment = {
   description: '',
   files: [],
   isFinalized: false,
+  maxStudentTestRuns: null,
+  nudgeMode: false,
+  dataSets: [],
+  testCategories: [],
+  environment: null,
+};
+
+const mockUser: any = {
+  email: 'test@university.edu',
+  id: 123,
+  token: 'abc',
+  organization: 1,
+  canCreateCourses: true,
+  canModifyRosters: true,
+  api_token: 'api-token-123',
+  studentCourses: [],
+  graderCourses: [],
+  superGraderCourses: [],
+  courseadminCourses: [mockCourse],
+  leaderSections: [],
+  student_sections: [],
+  showProductTips: true,
+  codePostAdmin: false,
+  hasCredentials: true,
+  isOrgStaff: true,
+  password: '',
+  studentSections: [],
 };
 
 // Mocks
-vi.mock('./infrastructure/organization', () => ({
-  Organization: {
-    read: vi.fn(() => Promise.resolve(mockOrganization)),
-    getUsers: vi.fn(() => Promise.resolve([])),
+vi.mock('./api-client/clients', () => ({
+  organizationsApi: {
+    retrieve: vi.fn(() => Promise.resolve(mockOrganization)),
     list: vi.fn(() => Promise.resolve([mockOrganization])),
+    usersRetrieve: vi.fn(() => Promise.resolve([])),
   },
-}));
-
-vi.mock('./infrastructure/course', () => ({
-  Course: {
+  coursesApi: {
     list: vi.fn(() => Promise.resolve([mockCourse])),
-    read: vi.fn(() => Promise.resolve(mockCourse)),
-    update: vi.fn(),
-    readRoster: vi.fn(() => Promise.resolve({ courseAdmins: [], students: [], graders: [] })),
+    retrieve: vi.fn(() => Promise.resolve(mockCourse)),
+    aiSettingsRetrieve: vi.fn(() => Promise.resolve({ id: 1, aiEnabled: false })),
+    aiSettingsPartialUpdate: vi.fn(() => Promise.resolve({ id: 1, aiEnabled: false })),
+    rosterRetrieve: vi.fn(() =>
+      Promise.resolve({
+        id: 1,
+        organization: 1,
+        name: mockCourse.name,
+        period: mockCourse.period,
+        courseAdmins: [],
+        students: [],
+        graders: [],
+      }),
+    ),
+    rosterPartialUpdate: vi.fn(() => Promise.resolve({})),
+  },
+  usersApi: {
+    requestAPITokenCreate: vi.fn(() => Promise.resolve({ ...mockUser, apiToken: 'token' })),
+    mePartialUpdate: vi.fn(() => Promise.resolve(mockUser)),
+    list: vi.fn(() => Promise.resolve([])),
+  },
+  registrationApi: {
+    emailPasswordResetCreate: vi.fn(() => Promise.resolve({ success: true })),
+  },
+  systemApi: {
+    healthRetrieve: vi.fn(() => Promise.resolve({ database: 'Connected', celery: 'Running' })),
   },
 }));
 
-vi.mock('./infrastructure/system', () => ({
-  SystemIO: {
-    getHealth: vi.fn().mockResolvedValue({
-      database: 'Connected',
-      celery: 'Running',
-    }),
-  },
-}));
-
-vi.mock('./infrastructure/user', () => ({
+vi.mock('./services/user', () => ({
   UserIO: {
-    getDashboardStats: vi.fn(() => Promise.resolve({})),
+    getDashboardStats: vi.fn(() =>
+      Promise.resolve({
+        totalOrganizations: 0,
+        totalCourses: 0,
+        activeCourses: 0,
+        archivedCourses: 0,
+        totalCourseAdmins: 0,
+        totalCodePostAdmins: 0,
+        totalGraders: 0,
+        totalStudents: 0,
+        totalUniqueUsers: 0,
+        totalSections: 0,
+        totalAssignments: 0,
+        avgCoursesPerOrg: 0,
+        avgStudentsPerCourse: 0,
+        totalInactiveUsers: 0,
+      }),
+    ),
     list: vi.fn(() => Promise.resolve([])),
   },
 }));
@@ -120,30 +177,9 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
-  observe() { }
-  unobserve() { }
-  disconnect() { }
-};
-
-// Mock User
-const mockUser = {
-  email: 'test@university.edu',
-  id: 123,
-  token: 'abc',
-  organization: 1,
-  canCreateCourses: true,
-  canModifyRosters: true,
-  api_token: 'api-token-123',
-  studentCourses: [],
-  graderCourses: [],
-  superGraderCourses: [],
-  courseadminCourses: [mockCourse],
-  leaderSections: [],
-  student_sections: [],
-  showProductTips: true,
-  codePostAdmin: false,
-  hasCredentials: true,
-  isOrgStaff: true,
+  observe() {}
+  unobserve() {}
+  disconnect() {}
 };
 
 // Props
@@ -164,7 +200,7 @@ const mockCourseSettingsProps = {
   updateSettings: vi.fn(),
 };
 
-const mockRosterProps = {
+const mockRosterProps: any = {
   notActivated: [],
   sections: [],
   students: ['student1@university.edu'],
@@ -184,7 +220,7 @@ const mockRosterProps = {
   deleteSection: vi.fn(),
 };
 
-const mockAssignmentsProps = {
+const mockAssignmentsProps: any = {
   loadComplete: true,
   partialSubmissionsLoadComplete: true,
   fullSubmissionsLoadComplete: true,
@@ -223,85 +259,81 @@ const axeConfig = {
   },
 };
 
-describe('Expanded Accessibility Audit', () => {
+const renderWithRouter = async (ui: React.ReactElement, routerProps?: React.ComponentProps<typeof MemoryRouter>) => {
+  let result: ReturnType<typeof render>;
+  await act(async () => {
+    result = render(<MemoryRouter {...routerProps}>{ui}</MemoryRouter>);
+  });
+  await act(async () => {
+    await Promise.resolve();
+  });
+  return result!;
+};
+
+const runAxe = async (container: HTMLElement) => {
+  await act(async () => {
+    await Promise.resolve();
+  });
+  return axe(container, axeConfig);
+};
+
+describe.sequential('Expanded Accessibility Audit', () => {
   it('should have no violations on User Settings page', async () => {
-    const { container } = render(
-      <MemoryRouter>
-        <Settings {...mockSettingsProps} />
-      </MemoryRouter>,
-    );
-    const results = await axe(container, axeConfig);
+    const { container } = await renderWithRouter(<Settings {...mockSettingsProps} />);
+    const results = await runAxe(container);
     if (results.violations.length > 0) {
       console.log('Axe violations on User Settings:', JSON.stringify(results.violations, null, 2));
     }
-    expect(results).toHaveNoViolations();
+    expect(results.violations).toHaveLength(0);
   }, 30000);
 
   it('should have no violations on Organization Dashboard', async () => {
-    const { container } = render(
-      <MemoryRouter initialEntries={['/organization']}>
-        <OrgDashboard {...mockOrgProps} />
-      </MemoryRouter>,
-    );
+    const { container } = await renderWithRouter(<OrgDashboard {...mockOrgProps} />, {
+      initialEntries: ['/organization'],
+    });
 
     await waitFor(() => expect(container.textContent).toContain('Organization Console'));
 
-    const results = await axe(container, axeConfig);
+    const results = await runAxe(container);
     if (results.violations.length > 0) {
       console.log('Axe violations on Organization Dashboard:', JSON.stringify(results.violations, null, 2));
     }
-    expect(results).toHaveNoViolations();
+    expect(results.violations).toHaveLength(0);
   }, 30000);
 
   it('should have no violations on Course Settings Panel', async () => {
-    const { container } = render(
-      <MemoryRouter>
-        <CourseSettingsPanel {...mockCourseSettingsProps} />
-      </MemoryRouter>,
-    );
+    const { container } = await renderWithRouter(<CourseSettingsPanel {...mockCourseSettingsProps} />);
 
-    const results = await axe(container, axeConfig);
+    const results = await runAxe(container);
     if (results.violations.length > 0) {
       console.log('Axe violations on Course Settings Panel:', JSON.stringify(results.violations, null, 2));
     }
-    expect(results).toHaveNoViolations();
+    expect(results.violations).toHaveLength(0);
   }, 30000);
 
   it.skip('should have no violations on Roster Manager', async () => {
-    const { container } = render(
-      <MemoryRouter>
-        <RosterManager {...mockRosterProps} />
-      </MemoryRouter>,
-    );
+    const { container } = await renderWithRouter(<RosterManager {...mockRosterProps} />);
 
-    const results = await axe(container, axeConfig);
-    expect(results).toHaveNoViolations();
+    const results = await runAxe(container);
+    expect(results.violations).toHaveLength(0);
   }, 30000);
 
   it.skip('should have no violations on Manage Assignments', async () => {
-    const { container } = render(
-      <MemoryRouter>
-        <ManageAssignments {...mockAssignmentsProps} />
-      </MemoryRouter>,
-    );
+    const { container } = await renderWithRouter(<ManageAssignments {...mockAssignmentsProps} />);
 
-    const results = await axe(container, axeConfig);
-    expect(results).toHaveNoViolations();
+    const results = await runAxe(container);
+    expect(results.violations).toHaveLength(0);
   }, 30000);
 
   it('should have no violations on Super Admin Dashboard', async () => {
-    const { container } = render(
-      <MemoryRouter>
-        <Dashboard />
-      </MemoryRouter>,
-    );
+    const { container } = await renderWithRouter(<Dashboard />);
 
     await waitFor(() => expect(container.textContent).toContain('SuperAdmin Console'), { timeout: 10000 });
 
-    const results = await axe(container, axeConfig);
+    const results = await runAxe(container);
     if (results.violations.length > 0) {
       console.log('Axe violations on Super Admin Dashboard:', JSON.stringify(results.violations, null, 2));
     }
-    expect(results).toHaveNoViolations();
+    expect(results.violations).toHaveLength(0);
   }, 30000);
 });

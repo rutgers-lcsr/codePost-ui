@@ -1,6 +1,5 @@
 ---
 trigger: always_on
-glob:
 description: UI infrastructure patterns and conventions for codePost frontend development
 ---
 
@@ -10,17 +9,17 @@ This document outlines the key architectural patterns, conventions, and best pra
 
 ## Tech Stack
 
-| Category | Technology |
-|----------|------------|
-| Framework | React 19 with TypeScript |
-| Build Tool | Vite 7.x |
-| UI Library | Ant Design 6.x |
-| State Management | Zustand 5.x |
-| Routing | React Router 7.x |
-| Styling | SCSS + CSS-in-JS |
-| Code Editor | Monaco Editor |
-| Type Validation | io-ts + fp-ts |
-| Testing | Vitest + Testing Library |
+| Category         | Technology               |
+| ---------------- | ------------------------ |
+| Framework        | React 19 with TypeScript |
+| Build Tool       | Vite 7.x                 |
+| UI Library       | Ant Design 6.x           |
+| State Management | Zustand 5.x              |
+| Routing          | React Router 7.x         |
+| Styling          | SCSS + CSS-in-JS         |
+| Code Editor      | Monaco Editor            |
+| Type Validation  | io-ts + fp-ts            |
+| Testing          | Vitest + Testing Library |
 
 ## Project Structure
 
@@ -35,7 +34,7 @@ src/
 │   ├── student/        # Student-facing views
 │   ├── grader/         # Grader-specific components
 │   └── utils/          # Utility components
-├── infrastructure/     # API layer and data types
+├── api-client/     # API layer and data types
 ├── stores/             # Zustand state stores
 ├── styles/             # SCSS files (7-1 architecture)
 ├── theme/              # Ant Design theming and color tokens
@@ -46,6 +45,7 @@ src/
 ## State Management with Zustand
 
 All complex component state should use Zustand stores instead of `useState` for:
+
 - Shared state across components
 - State that persists across route changes
 - Complex state with many properties
@@ -90,11 +90,11 @@ export const useMyStore = create<MyStore>()(
 
 ### Existing Stores
 
-| Store | Purpose |
-|-------|---------|
-| `useCodeConsoleStore` | Code Console UI state (comments, files, tests, rubric) |
-| `useRubricStore` | Rubric editing state with undo/redo support |
-| `useRubricCommentStore` | Rubric comment management |
+| Store                   | Purpose                                                |
+| ----------------------- | ------------------------------------------------------ |
+| `useCodeConsoleStore`   | Code Console UI state (comments, files, tests, rubric) |
+| `useRubricStore`        | Rubric editing state with undo/redo support            |
+| `useRubricCommentStore` | Rubric comment management                              |
 
 ## API Layer (Infrastructure)
 
@@ -120,17 +120,17 @@ export type MyObjectType = t.TypeOf<typeof MyObject>;
 
 Use the generic CRUD functions from `infrastructure/generics.tsx`:
 
-| Function | HTTP Method | Purpose |
-|----------|-------------|---------|
-| `createObject` | POST | Create new resources |
-| `readObject` | GET | Fetch single resource by ID |
-| `listObject` | GET | Fetch all resources (handles pagination) |
-| `listObjectPaginated` | GET | Fetch single page with pagination info |
-| `updateObject` | PATCH | Update existing resource |
-| `deleteObject` | DELETE | Remove resource |
-| `readObjectDetail` | GET | Fetch nested resource |
-| `updateObjectDetail` | PATCH | Update nested resource |
-| `createObjectDetail` | POST | Create nested resource |
+| Function              | HTTP Method | Purpose                                  |
+| --------------------- | ----------- | ---------------------------------------- |
+| `createObject`        | POST        | Create new resources                     |
+| `readObject`          | GET         | Fetch single resource by ID              |
+| `listObject`          | GET         | Fetch all resources (handles pagination) |
+| `listObjectPaginated` | GET         | Fetch single page with pagination info   |
+| `updateObject`        | PATCH       | Update existing resource                 |
+| `deleteObject`        | DELETE      | Remove resource                          |
+| `readObjectDetail`    | GET         | Fetch nested resource                    |
+| `updateObjectDetail`  | PATCH       | Update nested resource                   |
+| `createObjectDetail`  | POST        | Create nested resource                   |
 
 ### Example API Usage
 
@@ -176,13 +176,13 @@ import { brandColors, actionColors, neutralColors } from '@/theme/colors';
 
 ### Color Categories
 
-| Category | Examples |
-|----------|----------|
-| Brand | `brandPrimary`, `brandLight`, `brandDark`, `brandAccent` |
-| Action | `actionBlue`, `actionGreen`, `actionYellow`, `actionRed` + `*Fade` variants |
-| Neutral (Light) | `neutralTitle`, `neutralMainText`, `neutralSecondaryText`, `neutralBorder` |
-| Neutral (Dark) | `neutralDarkTitle`, `neutralDarkMainText`, `neutralDarkBackground` |
-| Green Palette | `green1` through `green10` |
+| Category        | Examples                                                                    |
+| --------------- | --------------------------------------------------------------------------- |
+| Brand           | `brandPrimary`, `brandLight`, `brandDark`, `brandAccent`                    |
+| Action          | `actionBlue`, `actionGreen`, `actionYellow`, `actionRed` + `*Fade` variants |
+| Neutral (Light) | `neutralTitle`, `neutralMainText`, `neutralSecondaryText`, `neutralBorder`  |
+| Neutral (Dark)  | `neutralDarkTitle`, `neutralDarkMainText`, `neutralDarkBackground`          |
+| Green Palette   | `green1` through `green10`                                                  |
 
 ## Component Conventions
 
@@ -266,6 +266,7 @@ it('should have no accessibility violations', async () => {
 ### Code Console (`components/code-review/`)
 
 The main code review interface. Key sub-components:
+
 - `CodeWindow` - Monaco editor wrapper
 - `CommentPanel` - Comment list and creation
 - `RubricPanel` - Rubric selection
@@ -275,6 +276,7 @@ The main code review interface. Key sub-components:
 ### Admin Panel (`components/admin/`)
 
 Course and assignment management:
+
 - `AssignmentEditor` - Assignment configuration
 - `RubricManager` - Rubric category/comment editing
 - `TestManager` - Autograder test configuration
@@ -337,8 +339,10 @@ npm run lint:fix      # Fix linting issues
 
 ## Important Notes
 
-1. **Type Safety**: All API responses are validated with io-ts. Invalid data is logged to Slack.
+1. **Type Safety**: Use api-client which is autogenerated from openapi if your changing api definations go to codePost-Api and regenerate the client.
 2. **Immutability**: State updates should be immutable. Use spread operators or `immutability-helper`.
 3. **Performance**: Use `React.memo`, `useMemo`, and `useCallback` for expensive operations.
 4. **Monaco Editor**: Use `@monaco-editor/react` wrapper, not raw Monaco.
 5. **Routing**: Use React Router v7 patterns with `useNavigate`, `useParams`, etc.
+6. **Legacy Code**: Remove legacy code do not use adapters.
+7. **NO ANY**: no using any in interfaces.

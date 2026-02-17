@@ -2,17 +2,15 @@ import { FC, useState, useCallback } from 'react';
 import { UploadOutlined, WarningOutlined } from '@ant-design/icons';
 import { Button, Collapse, Modal, Spin, Steps, Typography, Upload } from 'antd';
 import ReactMarkdown from 'react-markdown';
-import { IRubricCategoryToRubricCommentsMap } from '../../../../types/common';
-import { AssignmentType } from '../../../../infrastructure/assignment';
-import { RubricCategoryType } from '../../../../infrastructure/rubricCategory';
-import { RubricCommentType } from '../../../../infrastructure/rubricComment';
+import { IRubricCategoryToRubricCommentsMap, Assignment } from '../../../../types/common';
+import { RubricCategory, RubricComment } from '../../../../api-client';
 import CPButton from '../../../../components/core/CPButton';
 
 interface IProps {
-  assignment: AssignmentType;
-  rubricCategories: RubricCategoryType[];
+  assignment: Assignment;
+  rubricCategories: RubricCategory[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
-  onRubricUpload: (categories: RubricCategoryType[], comments: IRubricCategoryToRubricCommentsMap) => void;
+  onRubricUpload: (categories: RubricCategory[], comments: IRubricCategoryToRubricCommentsMap) => void;
   isDisabled: boolean;
 }
 
@@ -47,7 +45,7 @@ const RubricFileUpload: FC<IProps> = ({
   isDisabled,
 }) => {
   const [status, setStatus] = useState<STATUS>(STATUS.CLOSED);
-  const [newCategories, setNewCategories] = useState<RubricCategoryType[]>([]);
+  const [newCategories, setNewCategories] = useState<RubricCategory[]>([]);
   const [newComments, setNewComments] = useState<IRubricCategoryToRubricCommentsMap>({});
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
   const [uploadFileName, setUploadFileName] = useState('');
@@ -66,14 +64,14 @@ const RubricFileUpload: FC<IProps> = ({
 
   const parseRubric = useCallback(
     (rubric: IDownloadCategory[]) => {
-      const categories: RubricCategoryType[] = [];
+      const categories: RubricCategory[] = [];
       const comments: any = {};
 
       let categoryID = -1;
       let commentID = -1;
       rubric.forEach((newCategory: IDownloadCategory, index: number) => {
-        const commentList: RubricCommentType[] = [];
-        const categoryPayload: RubricCategoryType = {
+        const commentList: RubricComment[] = [];
+        const categoryPayload = {
           id: categoryID,
           name: newCategory.name,
           rubricComments: [],
@@ -82,7 +80,7 @@ const RubricFileUpload: FC<IProps> = ({
           sortKey: index,
           helpText: newCategory.helpText,
           atMostOnce: false,
-        };
+        } as unknown as RubricCategory;
 
         (newCategory.rubricComments || []).forEach((newComment: IDownloadComment, indexComment: number) => {
           let sortKey = indexComment;
@@ -102,7 +100,7 @@ const RubricFileUpload: FC<IProps> = ({
             explanation,
             instructionText,
             templateTextOn: false,
-          });
+          } as unknown as RubricComment);
           commentID = commentID - 1;
         });
 

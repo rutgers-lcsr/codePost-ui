@@ -9,8 +9,8 @@ import { Breadcrumb, Button, Empty, Tag } from 'antd';
 
 import { TableDetail } from '../../other/TableDetail';
 
-import { AssignmentType } from '../../../../infrastructure/assignment';
-import { CourseType } from '../../../../infrastructure/course';
+import { Course } from '../../../../api-client';
+import { AssignmentType } from '../../../../types/models';
 
 import { encodeForLink } from '../../../core/URLutils';
 
@@ -20,7 +20,7 @@ import { encodeForLink } from '../../../core/URLutils';
 
 interface IProps {
   assignments: AssignmentType[];
-  course: CourseType | undefined;
+  course: Course | undefined;
 }
 
 /**********************************************************************************************************************/

@@ -28,11 +28,11 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 
 /* codePost imports */
-import { AssignmentType } from '../../../../infrastructure/assignment';
-import { CourseType } from '../../../../infrastructure/course';
-import { FileTemplate, FileTemplateType } from '../../../../infrastructure/fileTemplate';
-import { SubmissionInfoType } from '../../../../infrastructure/submission';
-import { UserType } from '../../../../infrastructure/user';
+/* codePost imports */
+import { Course } from '../../../../api-client';
+import { assignmentFilesApi } from '../../../../api-client/clients';
+import { Assignment } from '../../../../types/common';
+import { AssignmentFileType, SubmissionInfoType, UserType } from '../../../../types/models';
 
 import FileExploror from '../../../../components/core/FileExplorer';
 import invokeAWSLambda from '../../../../components/core/invokeAWSLambda';
@@ -60,10 +60,10 @@ const { TextArea } = Input;
 
 export interface IMossProps {
   /* assignment data */
-  assignment?: AssignmentType;
-  assignments: AssignmentType[];
+  assignment?: Assignment;
+  assignments: Assignment[];
 
-  course: CourseType;
+  course: Course;
   submissions: SubmissionInfoType[];
 
   user: UserType;
@@ -112,7 +112,7 @@ const Moss = (props: IMossProps) => {
   const [mossID, setMossID] = useState('');
   const [excludedFiles, setExcludedFiles] = useState('');
 
-  const [fileTemplates, setFileTemplates] = useState<FileTemplateType[]>([]);
+  const [fileTemplates, setFileTemplates] = useState<AssignmentFileType[]>([]);
   const [includeFileTemplates, setIncludeFileTemplates] = useState(false);
   const [fileExplorerVisible, setFileExplorerVisible] = useState(false);
 
@@ -125,13 +125,13 @@ const Moss = (props: IMossProps) => {
   useEffect(() => {
     const fetch = async () => {
       if (props.assignment !== undefined) {
+        const files = props.assignment.files ?? [];
         const ret = await Promise.all(
-          (props.assignment.fileTemplates ?? []).map(async (id: number) => {
-            return await FileTemplate.read(id);
-          }),
+          files.map((item) => (typeof item === 'number' ? assignmentFilesApi.retrieve({ id: item }) : item)),
         );
-        setFileTemplates(ret);
-        if (ret.length > 0) {
+        const visibleFiles = ret.filter((file) => !file.hidden);
+        setFileTemplates(visibleFiles);
+        if (visibleFiles.length > 0) {
           setIncludeFileTemplates(true);
         }
       }

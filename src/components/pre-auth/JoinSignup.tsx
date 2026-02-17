@@ -155,8 +155,15 @@ const JoinSignup = (props: { email?: string }) => {
               checked={acceptedTerms}
               onClick={() => setAcceptedTerms(!acceptedTerms)}
             />{' '}
-            I agree to the codePost <Link to="/terms" className="text-link">Terms of Service</Link> and{' '}
-            <Link to="/privacy" className="text-link">Privacy Policy</Link>.
+            I agree to the codePost{' '}
+            <Link to="/terms" className="text-link">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link to="/privacy" className="text-link">
+              Privacy Policy
+            </Link>
+            .
           </span>
         )}
         <br />

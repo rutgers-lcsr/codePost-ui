@@ -76,8 +76,9 @@ const LandingHero = () => {
           width: '100%',
           gap: '16px', // Use flex gap
         }}
-        className={`landing__heroButtons display-flex ${windowSize.width < landingVars.breakpoints.removeModule ? 'flex-direction-column' : ''
-          } align-items-center justify-content-center`}
+        className={`landing__heroButtons display-flex ${
+          windowSize.width < landingVars.breakpoints.removeModule ? 'flex-direction-column' : ''
+        } align-items-center justify-content-center`}
       >
         <Link to="/signup/create">
           <CPButton style={primaryButtonStyle} cpType="primary">
@@ -100,12 +101,25 @@ const LandingHero = () => {
         </CPButton>
       </div>
 
-      <Modal open={modalShowing} onCancel={setModalShowing.bind(false, false)} footer={null} title="Try out codePost!" centered>
+      <Modal
+        open={modalShowing}
+        onCancel={setModalShowing.bind(false, false)}
+        footer={null}
+        title="Try out codePost!"
+        centered
+      >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '20px 0' }}>
           <CPButton cpType="primary" block size="large" href={`/demo`} target="_blank" rel="noopener noreferrer">
             Interactive code annotation demo
           </CPButton>
-          <CPButton cpType="default" block size="large" href="https://codepost.wistia.com/medias/n0ja8jbpny" target="_blank" rel="noopener noreferrer">
+          <CPButton
+            cpType="default"
+            block
+            size="large"
+            href="https://codepost.wistia.com/medias/n0ja8jbpny"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Watch a video overview
           </CPButton>
         </div>

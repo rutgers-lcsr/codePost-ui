@@ -11,10 +11,9 @@ import { Switch } from 'antd';
 /* other library imports */
 
 /* codePost imports */
-import { Assignment, AssignmentType } from '../../infrastructure/assignment';
-import { CourseType } from '../../infrastructure/course';
-import { AnonymousSubmissionInfoType } from '../../infrastructure/submission';
-import { UserType } from '../../infrastructure/user';
+import { getHeaders } from '../../utils/generics';
+import { Course } from '../../api-client';
+import { AnonymousSubmissionInfoType, AssignmentType, UserType } from '../../types/models';
 
 import RegradesDetailPanel from './RegradesDetailPanel';
 
@@ -28,7 +27,7 @@ type alignType = 'left' | 'right' | 'center';
 
 interface IProps {
   assignments: AssignmentType[];
-  course: CourseType;
+  course: Course;
   user: UserType;
   isAnonymous: boolean;
   isAdmin: boolean;
@@ -63,20 +62,35 @@ class RegradesPanel extends React.Component<IProps, IState> {
 
   public loadSubmissions = (assignments: AssignmentType[], grader?: string) => {
     this.setState({ isLoading: true }, () => {
-      const toRet = [];
-      for (const assn of assignments) {
-        if (grader !== undefined) {
-          toRet.push(Assignment.readSubmissionsAnonymous(assn.id, { grader, ['compact']: '1' }));
-        } else {
-          toRet.push(Assignment.readSubmissionsAnonymous(assn.id, { ['compact']: '1' }));
+      const promises = assignments.map(async (assn) => {
+        try {
+          const params = new URLSearchParams({
+            compact: '1',
+          });
+          if (grader) {
+            params.append('grader', grader);
+          }
+          const response = await fetch(`/api/assignments/${assn.id}/submissions/?${params.toString()}`, {
+            headers: getHeaders(),
+          });
+          if (!response.ok) throw new Error(`Failed to fetch submissions for assignment ${assn.id}`);
+          const data = await response.json();
+          return data;
+        } catch (error) {
+          console.error(error);
+          return [];
         }
-      }
+      });
 
-      Promise.all(toRet).then((lists) => {
+      Promise.all(promises).then((lists) => {
         const mapper: { [id: number]: AnonymousSubmissionInfoType[] } = {};
         for (const list of lists) {
           if (list.length > 0) {
-            mapper[list[0].assignment] = list;
+            // Check if list elements have assignment property
+            const firstSub = list[0];
+            if (firstSub && firstSub.assignment) {
+              mapper[firstSub.assignment] = list;
+            }
           }
         }
         this.setState({ submissionsByAssignment: mapper, isLoading: false });

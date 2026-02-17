@@ -8,7 +8,10 @@ import {
   UPLOAD_STATUS,
 } from './BulkUploadHelpers';
 import { colors } from '../../../../../../theme/colors';
-import { AssignmentType, CourseType, FileType, SubmissionInfoType } from '../../../../../../infrastructure/types';
+
+import { SubmissionInfoType, UploadFile } from '../../../../../../types/common';
+import { Course } from '../../../../../../api-client';
+import { Assignment } from '../../../../../../types/common';
 import { BulkUploadComplete, BulkUploadFooter, BulkUploadHeader, BulkUploadNoStudents } from './BulkUploadComponents';
 import BulkUploadConfirm from './BulkUploadConfirm';
 import UploadForm from './UploadForm';
@@ -18,14 +21,14 @@ import { codePostFile, IProtoFileUpload, IProtoSubmission, readUploadedFile } fr
 interface IProps {
   isVisible: boolean;
   onCancel: () => void;
-  assignment: AssignmentType;
+  assignment: Assignment;
   submissions: SubmissionInfoType[];
   students: string[];
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: FileType[]) => Promise<void>;
+  uploadSubmission: (assignment: Assignment, partners: string[], files: UploadFile[]) => Promise<SubmissionInfoType>;
   updateSubmission: (submission: SubmissionInfoType) => Promise<void>;
   deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   showImportOptions?: boolean;
-  course: CourseType;
+  course: Course;
 }
 
 enum STATUS {
@@ -72,8 +75,12 @@ const BulkUpload: FC<IProps> = (props) => {
     }
     if (submissionList) {
       for (const submission of submissionList) {
-        for (const student of submission.students) {
-          newMap[student.toLowerCase()] = STUDENT_STATUS.EXISTING;
+        if (submission.students) {
+          for (const student of submission.students) {
+            if (student) {
+              newMap[student.toLowerCase()] = STUDENT_STATUS.EXISTING;
+            }
+          }
         }
       }
     }
@@ -128,8 +135,8 @@ const BulkUpload: FC<IProps> = (props) => {
 
       if (newSubmission !== undefined && newSubmission.isCollision) {
         const match = submissions.find((sub) => {
-          return sub.students.some((el) => {
-            return isEqual(el, student);
+          return (sub.students as (string | null)[]).some((el) => {
+            return el && isEqual(el, student);
           });
         });
 
@@ -140,14 +147,14 @@ const BulkUpload: FC<IProps> = (props) => {
 
           if (reMatch) {
             reMatch.students = reMatch.students.filter((el) => {
-              return !isEqual(el, student);
-            });
+              return el && !isEqual(el, student);
+            }) as string[];
           } else {
             const newSub = { ...match };
-            newSub.students = newSub.students.filter((el) => {
-              return !isEqual(el, student);
-            });
-            toChange.push(newSub);
+            newSub.students = (newSub.students as (string | null)[]).filter((el) => {
+              return el && !isEqual(el, student);
+            }) as string[];
+            toChange.push(newSub as any);
           }
         }
       }

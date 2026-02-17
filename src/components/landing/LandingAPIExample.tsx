@@ -215,8 +215,9 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
             zIndex: 0,
             borderRadius: 5,
             transition: '.3s',
-            transform: `translateY(${exampleIndex === 1 ? 'calc(100% + 10px)' : exampleIndex === 2 ? 'calc(200% + 20px)' : '0%'
-              })`,
+            transform: `translateY(${
+              exampleIndex === 1 ? 'calc(100% + 10px)' : exampleIndex === 2 ? 'calc(200% + 20px)' : '0%'
+            })`,
           }}
         />
         <CPButton
@@ -279,8 +280,9 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
                   style={{
                     fontSize: 12,
                   }}
-                  className={`display-flex flex-direction-${this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'column' : 'row'
-                    } align-items-${this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'center' : 'start'}`}
+                  className={`display-flex flex-direction-${
+                    this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'column' : 'row'
+                  } align-items-${this.props.windowwidth < landingVars.breakpoints.verticalPanels ? 'center' : 'start'}`}
                 >
                   {this.props.windowwidth < landingVars.breakpoints.verticalPanels ? buttons : codebox}
                   {this.props.windowwidth < landingVars.breakpoints.verticalPanels ? codebox : buttons}

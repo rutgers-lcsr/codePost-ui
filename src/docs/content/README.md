@@ -13,6 +13,9 @@ Welcome to the codePost documentation. codePost is a powerful feedback and gradi
 - [**Instructor Guide**](/docs/instructor)
   - How to set up courses, manage rosters, create assignments, run autograders, and grade submissions.
 
+- [**Testing Guide**](/docs/testing-guide)
+  - Script syntax and examples for writing autograder tests by language.
+
 - [**Admin Guide**](/docs/admin)
   - Deployment, configuration, and system administration.
 

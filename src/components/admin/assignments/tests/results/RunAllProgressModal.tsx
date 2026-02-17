@@ -1,6 +1,6 @@
 import { Divider, Modal, Progress, Typography } from 'antd';
 
-import { TestCaseType } from '../../../../../infrastructure/testCase';
+import { TestCaseType } from '../../../../../types/models';
 
 interface IResultsType {
   [id: number]: {

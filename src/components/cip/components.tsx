@@ -15,14 +15,14 @@ import { colors } from '../../theme/colors';
 // import Select from 'react-select';
 
 /* internal imports */
-import { CourseType } from '../../infrastructure/types';
+import { Course } from '../../api-client';
 import Video from '../landing/Video';
 import universities from '../pre-auth/universities';
 import { createDemoCourse } from '../utils/DemoCourse';
 
 import { sendSlack } from '../core/slack';
 
-import { UserType } from '../../infrastructure/user';
+import { UserType } from '../../types/models';
 import useWindowSize from '../core/useWindowSize';
 
 /**********************************************************************************************************************/
@@ -31,7 +31,7 @@ interface IAdminModalProps {
   open: boolean;
   onClose: () => void;
   onCreateCourse: () => void;
-  onCreateDemoCourse: (course?: CourseType) => void;
+  onCreateDemoCourse: (course?: Course) => void;
   user: UserType;
 }
 
@@ -73,7 +73,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
     if (panel === 0) {
       const didSucceed = await setCreds();
       if (didSucceed) {
-        slackCIPNotification(props.user.email, 'Successfully set up account!', CIP_NOTIFICATION.success);
+        slackCIPNotification(props.user.email!, 'Successfully set up account!', CIP_NOTIFICATION.success);
         setPanel(1);
       }
     } else if (panel == 1) {
@@ -119,7 +119,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
       })
       .catch(async (err) => {
         const errorMessage = await err.json();
-        slackCIPNotification(props.user.email, `ERROR: ${JSON.stringify(errorMessage)}`, CIP_NOTIFICATION.error);
+        slackCIPNotification(props.user.email!, `ERROR: ${JSON.stringify(errorMessage)}`, CIP_NOTIFICATION.error);
         message.error(
           `An error occured: ${JSON.stringify(
             errorMessage,
@@ -133,10 +133,10 @@ const CIPAdminModal = (props: IAdminModalProps) => {
   const handleDemoCourse = () => {
     setLoadingDemo(true);
     createDemoCourse(
-      props.user.email,
-      `${props.user.email.split('@')[0]}'s course`,
-      props.user.email.split('@')[1],
-    ).then((course: CourseType) => {
+      props.user.email!,
+      `${props.user.email!.split('@')[0]}'s course`,
+      props.user.email!.split('@')[1],
+    ).then((course: Course) => {
       setLoadingDemo(false);
       props.onCreateDemoCourse(course);
     });
@@ -158,7 +158,12 @@ const CIPAdminModal = (props: IAdminModalProps) => {
           First, to use codePost independently of Code in Place, you'll need to set a codePost password.
           <br />
           <br />
-          <Input style={{ width: 500 }} addonBefore="Your email" value={props.user.email} disabled={true} /> &nbsp;{' '}
+          <Input
+            style={{ width: 500 }}
+            addonBefore="Your email"
+            value={props.user.email!}
+            disabled={true}
+          /> &nbsp;{' '}
           <Popover
             title="Use a different email"
             content={
@@ -263,7 +268,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
             disabled={loadingDemo}
             type="primary"
             onClick={() => {
-              slackCIPNotification(props.user.email, 'Course creation started.', CIP_NOTIFICATION.success);
+              slackCIPNotification(props.user.email!, 'Course creation started.', CIP_NOTIFICATION.success);
               props.onCreateCourse();
             }}
           >
@@ -273,7 +278,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
           <Button
             loading={loadingDemo}
             onClick={() => {
-              slackCIPNotification(props.user.email, 'Demo course created.', CIP_NOTIFICATION.success);
+              slackCIPNotification(props.user.email!, 'Demo course created.', CIP_NOTIFICATION.success);
               handleDemoCourse();
             }}
           >

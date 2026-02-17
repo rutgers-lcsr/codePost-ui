@@ -1,7 +1,7 @@
 /**
  * AISettingsCard Component
  *
- * Card component for managing AI comment generation settings for a course.
+ * Card component for managing course AI settings.
  * Separated from CourseSettingsPanel for better maintainability.
  */
 
@@ -9,13 +9,8 @@ import * as React from 'react';
 import { Card, Flex, Input, message, Select, Space, Switch, Typography } from 'antd';
 import { RobotOutlined } from '@ant-design/icons';
 import CPButton from '../../core/CPButton';
-import {
-  getCourseAISettings,
-  updateCourseAISettings,
-  AI_PROVIDERS,
-  DEFAULT_MODELS,
-} from '../../../infrastructure/aiService';
-import type { AIProvider } from '../../../infrastructure/aiService';
+import { getCourseAISettings, updateCourseAISettings, AI_PROVIDERS, DEFAULT_MODELS } from '../../../utils/aiService';
+import type { AIProvider } from '../../../utils/aiService';
 
 const { Text } = Typography;
 
@@ -28,6 +23,8 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
   const [isSaving, setIsSaving] = React.useState(false);
   const [aiEnabled, setAiEnabled] = React.useState(false);
   const [aiDisabled, setAiDisabled] = React.useState(false);
+  const [aiCommentsEnabled, setAiCommentsEnabled] = React.useState(false);
+  const [aiCommentsDisabled, setAiCommentsDisabled] = React.useState(false);
   const [isConfigured, setIsConfigured] = React.useState(false); // Has provider + API key
   const [provider, setProvider] = React.useState<AIProvider | undefined>(undefined);
   const [apiKey, setApiKey] = React.useState('');
@@ -40,12 +37,14 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
     const fetchSettings = async () => {
       try {
         const settings = await getCourseAISettings(courseId);
-        setAiEnabled(settings.ai_enabled);
-        setAiDisabled(settings.ai_disabled || false);
-        setIsConfigured(!!settings.ai_provider); // We know it's configured if provider is set
-        setProvider((settings.ai_provider as AIProvider) || undefined);
-        setBaseUrl(settings.ai_base_url || '');
-        setModel(settings.ai_model || '');
+        setAiEnabled(settings.aiEnabled);
+        setAiDisabled(settings.aiDisabled || false);
+        setAiCommentsEnabled(settings.aiCommentsEnabled ?? settings.aiEnabled ?? false);
+        setAiCommentsDisabled(settings.aiCommentsDisabled || false);
+        setIsConfigured(!!settings.aiProvider); // We know it's configured if provider is set
+        setProvider((settings.aiProvider as AIProvider) || undefined);
+        setBaseUrl(settings.aiBaseUrl || '');
+        setModel(settings.aiModel || '');
       } catch (error) {
         console.error('Failed to fetch AI settings:', error);
       } finally {
@@ -60,17 +59,21 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
     try {
       // Always send all fields - use null/empty to clear values when provider is removed
       const settings: Parameters<typeof updateCourseAISettings>[1] = {
-        ai_provider: provider || null,
-        ai_base_url: baseUrl || null,
-        ai_model: model || null,
-        ai_disabled: aiDisabled,
+        aiProvider: provider || null,
+        aiBaseUrl: baseUrl || null,
+        aiModel: model || null,
+        aiDisabled: aiDisabled,
+        aiCommentsDisabled: aiCommentsDisabled,
       };
       // Only include API key if user entered a new one
-      if (apiKey) settings.ai_api_key = apiKey;
+      if (apiKey) settings.aiApiKey = apiKey;
 
       const result = await updateCourseAISettings(courseId, settings);
-      setAiEnabled(result.ai_enabled);
-      setIsConfigured(!!result.ai_provider);
+      setAiEnabled(result.aiEnabled);
+      setAiDisabled(result.aiDisabled || false);
+      setAiCommentsEnabled(result.aiCommentsEnabled ?? false);
+      setAiCommentsDisabled(result.aiCommentsDisabled || false);
+      setIsConfigured(!!result.aiProvider);
       setApiKey(''); // Clear API key from form after save (for security)
       setIsDirty(false);
       message.success('AI settings saved!');
@@ -101,7 +104,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
       title={
         <Space>
           <RobotOutlined />
-          <span>AI Comment Generation</span>
+          <span>AI Features</span>
           {isConfigured && (
             <Text type={aiEnabled ? 'success' : 'danger'} style={{ fontSize: 12 }}>
               {aiEnabled ? '(Enabled)' : '(Disabled)'}
@@ -127,14 +130,16 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
       ) : (
         <Flex vertical gap={16}>
           <Text type="secondary" style={{ marginBottom: 8 }}>
-            Enable AI-powered comment generation for graders. Configure an API key to allow graders to generate feedback
-            suggestions when leaving comments on student code.
+            Enable AI for this course. The global toggle controls all AI features (including test/script generation),
+            while comment generation can be toggled separately for the code console.
           </Text>
 
           {/* Provider */}
           <Flex vertical gap={4}>
             <Text strong>AI Provider</Text>
-            <label htmlFor="ai-provider-select" className="sr-only">AI Provider</label>
+            <label htmlFor="ai-provider-select" className="sr-only">
+              AI Provider
+            </label>
             <Select
               id="ai-provider-select"
               value={provider}
@@ -156,7 +161,9 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
           {provider && (
             <Flex vertical gap={4}>
               <Text strong>API Key</Text>
-              <label htmlFor="ai-api-key" className="sr-only">API Key</label>
+              <label htmlFor="ai-api-key" className="sr-only">
+                API Key
+              </label>
               <Input.Password
                 id="ai-api-key"
                 value={apiKey}
@@ -174,7 +181,9 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
           {showBaseUrl && (
             <Flex vertical gap={4}>
               <Text strong>Base URL</Text>
-              <label htmlFor="ai-base-url" className="sr-only">Base URL</label>
+              <label htmlFor="ai-base-url" className="sr-only">
+                Base URL
+              </label>
               <Input
                 id="ai-base-url"
                 value={baseUrl}
@@ -192,7 +201,9 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
           {provider && (
             <Flex vertical gap={4}>
               <Text strong>Model</Text>
-              <label htmlFor="ai-model" className="sr-only">Model</label>
+              <label htmlFor="ai-model" className="sr-only">
+                Model
+              </label>
               <Input
                 id="ai-model"
                 value={model}
@@ -209,7 +220,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
             </Flex>
           )}
 
-          {/* Disable Toggle - only show if AI is configured */}
+          {/* Global AI toggle - only show if AI is configured */}
           {isConfigured && (
             <Card
               size="small"
@@ -222,20 +233,60 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
               <Flex justify="space-between" align="center">
                 <Flex vertical>
                   <Text strong style={{ color: aiDisabled ? '#cf1322' : undefined }}>
-                    {aiDisabled ? 'AI Generation Disabled' : 'AI Generation Enabled'}
+                    {aiDisabled ? 'Global AI Disabled' : 'Global AI Enabled'}
                   </Text>
                   <Text type="secondary" style={{ fontSize: 12 }}>
                     {aiDisabled
-                      ? 'Toggle on to re-enable AI features. Your API key is preserved.'
-                      : 'Toggle off to disable AI features.'}
+                      ? 'Toggle on to re-enable all AI features. Your API key is preserved.'
+                      : 'Toggle off to disable all AI features for this course.'}
                   </Text>
                 </Flex>
-                <label htmlFor="ai-disable-toggle" className="sr-only">Toggle AI Generation</label>
+                <label htmlFor="ai-disable-toggle" className="sr-only">
+                  Toggle Global AI
+                </label>
                 <Switch
                   id="ai-disable-toggle"
                   checked={!aiDisabled}
                   onChange={(checked) => {
                     setAiDisabled(!checked);
+                    setAiCommentsEnabled(checked && !aiCommentsDisabled);
+                    setIsDirty(true);
+                  }}
+                />
+              </Flex>
+            </Card>
+          )}
+
+          {/* Comment generation toggle - only show if AI is configured */}
+          {isConfigured && (
+            <Card
+              size="small"
+              style={{
+                marginTop: 8,
+                background: aiCommentsEnabled ? '#f6ffed' : '#fffbe6',
+                borderColor: aiCommentsEnabled ? '#b7eb8f' : '#ffe58f',
+              }}
+            >
+              <Flex justify="space-between" align="center">
+                <Flex vertical>
+                  <Text strong style={{ color: aiCommentsEnabled ? undefined : '#ad6800' }}>
+                    {aiCommentsEnabled ? 'Comment Generation Enabled' : 'Comment Generation Disabled'}
+                  </Text>
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    {aiDisabled
+                      ? 'Global AI is off, so comment generation is currently unavailable.'
+                      : 'Controls the "Generate with AI" button in the code console.'}
+                  </Text>
+                </Flex>
+                <label htmlFor="ai-comments-toggle" className="sr-only">
+                  Toggle AI Comment Generation
+                </label>
+                <Switch
+                  id="ai-comments-toggle"
+                  checked={!aiCommentsDisabled}
+                  onChange={(checked) => {
+                    setAiCommentsDisabled(!checked);
+                    setAiCommentsEnabled(checked && !aiDisabled);
                     setIsDirty(true);
                   }}
                 />
@@ -243,9 +294,8 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
             </Card>
           )}
         </Flex>
-      )
-      }
-    </Card >
+      )}
+    </Card>
   );
 };
 

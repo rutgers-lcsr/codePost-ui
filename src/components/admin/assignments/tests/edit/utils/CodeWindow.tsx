@@ -7,10 +7,10 @@ import { Button } from 'antd';
 // codePost util imports
 import { codeMirorLanguageMap } from './languageUtils';
 
-import useHotkeys, { S_KEY } from '../../../../../code-review/useHotkeys';
+import useHotkeys, { S_KEY } from '@code-review/useHotkeys';
 import Editor from '@monaco-editor/react';
 import { osControlKey } from '../../../../../core/operatingSystem';
-import { File } from '../../../../../../infrastructure/file';
+import { File } from '../../../../../../utils/file';
 
 type themeType = 'light' | 'dark';
 
@@ -22,6 +22,7 @@ interface IProps {
   onDelete?: () => void;
   theme?: themeType;
   height?: string;
+  onMount?: (editor: any, monaco: any) => void;
 }
 
 export const CodeWindow = (props: IProps) => {
@@ -30,7 +31,7 @@ export const CodeWindow = (props: IProps) => {
   const [prevCode, setPrevCode] = useState(props.code);
   const [isSaving, setIsSaving] = useState(false);
 
-  if (props.code !== prevCode) {
+  if (props.code !== prevCode && props.code !== editedCode) {
     setPrevCode(props.code);
     setEditedCode(props.code);
   }
@@ -99,6 +100,7 @@ export const CodeWindow = (props: IProps) => {
             props.onChange(value || '');
           }
         }}
+        onMount={props.onMount}
         theme={props.theme === 'dark' ? 'vs-dark' : 'light'}
       />
     </div>

@@ -73,4 +73,11 @@ export const docRoutes: DocRoute[] = [
     fileName: 'features.md',
     category: 'Reference',
   },
+  {
+    key: 'testing-guide',
+    path: 'testing-guide',
+    title: 'Testing Guide',
+    fileName: 'testing_guide.md',
+    category: 'Reference',
+  },
 ];

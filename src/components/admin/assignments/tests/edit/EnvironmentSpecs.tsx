@@ -3,7 +3,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   CheckCircleOutlined,
@@ -35,13 +35,13 @@ import {
   Tooltip,
   Input,
 } from 'antd';
+import type { RadioChangeEvent } from 'antd';
 
 /* codePost object imports */
-import { AssignmentType } from '../../../../../infrastructure/assignment';
-import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
 
 import { BuildDetailModal } from './EnvironmentSpecs/BuildDetailModal';
 import { AutoDetectStatus } from './EnvironmentSpecs/AutoDetectStatus';
+import { EnvironmentShellWidget } from '../../assignments/EnvironmentShellWidget';
 
 /* codePost component imports */
 import { CodeWindow } from './utils/CodeWindow';
@@ -50,13 +50,16 @@ import CPTooltip from '../../../../core/CPTooltip';
 /* codePost util imports */
 import { languages } from './utils/languageUtils';
 import { useEnvironmentSpecs } from './hooks/useEnvironmentSpecs';
+import type { ScannedFile } from './utils/scanners';
 
 import locale from './utils/languageLocale';
 
 import themeVars from '../../../../../styles/abstracts/_theme.js';
 
-import { awaitBuildResult } from '../autograderPollingUtils';
 import Editor from '@monaco-editor/react';
+import { BuildTypeEnum, Environment, LanguageEnum } from '../../../../../api-client/index.js';
+import { autograderApi } from '../../../../../api-client/clients.js';
+import { AssignmentType } from '../../../../../types/models';
 
 const { Option } = Select;
 
@@ -64,7 +67,7 @@ const { Option } = Select;
 
 interface IProps {
   currentAssignment: AssignmentType;
-  env: EnvironmentType | undefined;
+  env?: Environment;
   updateEnv: (
     language: string,
     dependencies: string,
@@ -73,12 +76,12 @@ interface IProps {
     requirements: string,
     autoDetect: boolean,
     envVars: Record<string, string>,
-  ) => Promise<EnvironmentType>;
+  ) => Promise<Environment>;
   reloadEnv: () => void;
   updateCompileText: (compileText: string) => Promise<void>;
   loading: boolean;
-  helpers?: any[];
-  solutions?: any[];
+  helpers?: ScannedFile[];
+  solutions?: ScannedFile[];
 }
 
 export const EnvironmentSpecs = (props: IProps) => {
@@ -108,7 +111,7 @@ export const EnvironmentSpecs = (props: IProps) => {
     saveEnv,
     envVars,
     setEnvVars,
-  } = useEnvironmentSpecs(props, props.env ? props.env.language : '');
+  } = useEnvironmentSpecs(props, props.env?.language ?? LanguageEnum.Python312);
 
   // UI State (local to component)
   const [showLogsModal, setShowLogsModal] = useState(false);
@@ -116,9 +119,13 @@ export const EnvironmentSpecs = (props: IProps) => {
   const [previewContent, setPreviewContent] = useState('');
   const [newEnvKey, setNewEnvKey] = useState('');
   const [newEnvVal, setNewEnvVal] = useState('');
+  const hasAssignmentFiles = (props.currentAssignment?.files?.length || 0) > 0;
+
+  const envId = props.env?.id;
+  const hasEnv = Boolean(props.env);
 
   // Helper to normalize family names consistently
-  const getLanguageFamily = (lang: string) => {
+  const getLanguageFamily = useCallback((lang: string) => {
     if (!lang) return null;
     let family = lang;
     if (lang.includes('-')) {
@@ -137,26 +144,31 @@ export const EnvironmentSpecs = (props: IProps) => {
     if (family === 'php') return 'PHP';
 
     return family.charAt(0).toUpperCase() + family.slice(1);
-  };
+  }, []);
 
   // Derived State for Language Selector
-  const languageFamilyMap = languages.reduce((acc: any, lang) => {
-    const family = getLanguageFamily(lang);
+  type LanguageVersion = { key: string; version: string };
+  type LanguageFamilyMap = Record<string, LanguageVersion[]>;
 
-    // Determine version for display
-    let version = 'Default';
-    if (lang.includes('-')) {
-      version = lang.split('-')[1];
-    } else {
-      // e.g. 'java' -> 'Default' (or could use "Latest")
-    }
+  const languageFamilyMap: LanguageFamilyMap = useMemo(() => {
+    return languages.reduce<LanguageFamilyMap>((acc, lang) => {
+      const family = getLanguageFamily(lang);
 
-    if (family) {
-      if (!acc[family]) acc[family] = [];
-      acc[family].push({ key: lang, version });
-    }
-    return acc;
-  }, {});
+      // Determine version for display
+      let version = 'Default';
+      if (lang.includes('-')) {
+        version = lang.split('-')[1];
+      } else {
+        // e.g. 'java' -> 'Default' (or could use "Latest")
+      }
+
+      if (family) {
+        if (!acc[family]) acc[family] = [];
+        acc[family].push({ key: lang, version });
+      }
+      return acc;
+    }, {});
+  }, [getLanguageFamily]);
 
   const currentFamily = getLanguageFamily(language || '');
   const currentVersions = currentFamily && languageFamilyMap[currentFamily] ? languageFamilyMap[currentFamily] : [];
@@ -188,40 +200,36 @@ export const EnvironmentSpecs = (props: IProps) => {
     return true;
   };
 
-  const buildStatusCallback = (result: any) => {
-    const { inProgress, isSuccess, logs, dockerfile } = result;
-    setBuildLogs(logs || '');
-    setBuildDockerfile(dockerfile || '');
-    if (inProgress === false) {
-      setBuildInProgress(false);
-      setBuildIsSuccess(isSuccess);
-      props.reloadEnv();
-    }
-  };
-
   // Preview Logic
-  const fetchPreview = async () => {
+  const fetchPreview = useCallback(async () => {
     if (!props.env) return;
     try {
-      const result = await Environment.preview({
+      if (language === 'other') {
+        message.error('Language "other" is not supported for preview');
+        return;
+      }
+
+      const result = await autograderApi.environmentsPreviewCreate({
         id: props.env.id,
-        language: language || props.env.language,
-        buildType: buildType,
-        dockerfile: customDockerfile,
-        dockerRunInstructions: dependencies ? dependencies.split('\n') : [],
-        requirements: requirements,
+        environmentPreviewRequest: {
+          language: language || props.env.language,
+          buildType: buildType,
+          dockerfile: customDockerfile,
+          dockerRunInstructions: dependencies ? dependencies.split('\n') : [],
+          requirements: requirements,
+        },
       });
       setPreviewContent(result);
-    } catch (e) {
+    } catch {
       message.error('Failed to generate preview');
     }
-  };
+  }, [props.env, language, buildType, customDockerfile, dependencies, requirements]);
 
   useEffect(() => {
     if (previewVisible) {
       fetchPreview();
     }
-  }, [previewVisible]);
+  }, [previewVisible, fetchPreview]);
 
   // Keyboard shortcut for Save (Ctrl+S / Cmd+S)
   useEffect(() => {
@@ -245,9 +253,11 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   const downloadDockerfile = async () => {
     if (props.env) {
-      const dockerfile = await Environment.dockerfile(props.env.id);
+      const { dockerfile } = await autograderApi.environmentsRetrieve({
+        id: props.env.id,
+      });
       const a = document.createElement('a');
-      a.href = `data:text/plain;charset=utf-8,${encodeURIComponent(dockerfile)}`;
+      a.href = `data:text/plain;charset=utf-8,${encodeURIComponent(dockerfile || 'Unable to download dockerfile')}`;
       a.download = `${props.currentAssignment.name}-dockerfile`;
       document.body.appendChild(a);
       a.click();
@@ -258,55 +268,75 @@ export const EnvironmentSpecs = (props: IProps) => {
   // Run on mount
   useEffect(() => {
     scanForManifests(false);
-  }, [props.env?.id]);
+  }, [envId, scanForManifests]);
 
   /******************************* API / State Change Functions ****************************/
 
   useEffect(() => {
     if (props.env) {
       // Only set these if they aren't already set, or if we switched environments
-      setLanguage(props.env.language);
-      setDependencies(props.env.dockerRunInstructions.join('\n'));
-      setBuildType(props.env.buildType);
-      setCustomDockerfile(props.env.dockerfile);
-      setRequirements(props.env.requirements || '');
-      setAutoDetect(props.env.autoDetect);
+
+      // check for values in environment, console.log error
+      if (props.env.language) {
+        setLanguage(props.env.language);
+      } else {
+        console.error(`Environment ${props.env.id} is missing language`);
+      }
+      if (props.env.dockerRunInstructions) {
+        setDependencies(props.env.dockerRunInstructions.join('\n'));
+      } else {
+        console.error(`Environment ${props.env.id} is missing dockerRunInstructions`);
+      }
+      if (props.env.buildType) {
+        setBuildType(props.env.buildType);
+      } else {
+        console.error(`Environment ${props.env.id} is missing buildType`);
+      }
+      if (props.env.dockerfile) {
+        setCustomDockerfile(props.env.dockerfile);
+      } else {
+        console.error(`Environment ${props.env.id} is missing dockerfile`);
+      }
+      if (props.env.requirements) {
+        setRequirements(props.env.requirements);
+      } else {
+        console.error(`Environment ${props.env.id} is missing requirements`);
+      }
+      if (props.env.autoDetect) {
+        setAutoDetect(props.env.autoDetect);
+      } else {
+        console.error(`Environment ${props.env.id} is missing autoDetect`);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.env?.id]);
 
   useEffect(() => {
-    if (props.env && props.env.id) {
-      awaitBuildResult(props.env.id, buildStatusCallback);
-    }
-  }, [props.env && props.env.id]);
-
-  useEffect(() => {
-    if (!props.env && language) {
+    if (!hasEnv && language) {
       // Logic for new environment creation immediate save (if applicable)
     }
-  }, [language]);
+  }, [hasEnv, language]);
 
   /******************************* UI Helpers ****************************/
 
   const onFamilyChange = (family: string) => {
     if (!family) {
-      setLanguage('');
+      setLanguage(LanguageEnum.Python312);
       return;
     }
     const versions = languageFamilyMap[family];
     // Default to first version
     if (versions && versions.length > 0) {
-      onLanguageChange(versions[0].key);
+      onLanguageChange(versions[0].key as LanguageEnum);
     }
   };
 
-  const onLanguageChange = (value: string) => {
-    setLanguage(value || '');
+  const onLanguageChange = (value: LanguageEnum | 'other') => {
+    setLanguage(value || 'other');
     if (value === 'other') {
-      setBuildType('ubuntu');
+      setBuildType(BuildTypeEnum.Ubuntu);
     } else {
-      setBuildType('default');
+      setBuildType(BuildTypeEnum.Default);
     }
   };
 
@@ -323,7 +353,7 @@ export const EnvironmentSpecs = (props: IProps) => {
     stateRef.current.customDockerfile = newVal;
   };
 
-  const changeBuildType = (type: string) => {
+  const changeBuildType = (type: BuildTypeEnum) => {
     setBuildType(type);
   };
 
@@ -335,6 +365,10 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   if (props.loading) {
     return <Skeleton active />;
+  }
+
+  if (!props.env) {
+    return null;
   }
 
   // Show auto-detect status panel when autoDetect is enabled
@@ -367,7 +401,7 @@ export const EnvironmentSpecs = (props: IProps) => {
           style={{ width: 150 }}
           size="large"
         >
-          {currentVersions.map((v: any) => (
+          {currentVersions.map((v) => (
             <Option key={v.key} value={v.key}>
               {v.version}
             </Option>
@@ -613,17 +647,17 @@ export const EnvironmentSpecs = (props: IProps) => {
   //************ 1B. ENVIRONMENT -  STRATEGY SELECTION
   // Grouping Build Type and Base Image logic into a clearer "Strategy" selector
 
-  const onStrategyChange = (e: any) => {
+  const onStrategyChange = (e: RadioChangeEvent) => {
     const strategy = e.target.value;
     if (strategy === 'default') {
-      setBuildType('default');
+      setBuildType(BuildTypeEnum.Default);
       // If language was 'other', reset to python default or something?
-      if (language === 'other') {
+      if (language && !Object.values(LanguageEnum).includes(language as LanguageEnum)) {
         onFamilyChange('Python'); // fallback
       }
     } else {
       // Custom strategy
-      setBuildType('ubuntu'); // default custom base
+      setBuildType(BuildTypeEnum.Ubuntu); // default custom base
       setLanguage('other');
     }
   };
@@ -828,6 +862,11 @@ export const EnvironmentSpecs = (props: IProps) => {
 
       {/* Runscript Section */}
       {props.env ? showAfterCreation : null}
+
+      {/* Environment Shell */}
+      {props.env ? (
+        <EnvironmentShellWidget environmentId={props.env.id} hasAssignmentFiles={hasAssignmentFiles} />
+      ) : null}
 
       {/* Modals */}
       <BuildDetailModal

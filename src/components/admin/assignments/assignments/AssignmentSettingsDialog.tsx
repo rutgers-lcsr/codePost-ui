@@ -28,28 +28,27 @@ import timezone from 'dayjs/plugin/timezone';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
-
-/* codePost imports */
-import { AssignmentPatchType } from '../../../../infrastructure/assignment';
-import { AssignmentType, SectionType } from '../../../../infrastructure/types';
+import { Section } from '../../../../api-client';
+import { Assignment } from '../../../../types/common';
 import InputNumberMultiple from '../../settings/InputNumberMultiple';
 
 import ReactMarkdown from 'react-markdown';
-import { AssignmentDataSet, AssignmentDataSetType } from '../../../../infrastructure/assignmentDataSet';
-import { AssignmentFile, AssignmentFileType } from '../../../../infrastructure/file';
 import AssignmentDataSetsForm from './AssignmentDataSetsForm';
 import AssignmentFilesForm from './AssignmentFilesForm';
+import { EnvironmentShellWidget } from './EnvironmentShellWidget';
+import { assignmentFilesApi, assignmentsApi } from '../../../../api-client/clients';
+import { AssignmentDataSetType, AssignmentFileType } from '../../../../types/models';
 
 /**********************************************************************************************************************/
 
 interface IProps {
   isVisible: boolean;
   onCancel: () => void;
-  onSave: (assignment: AssignmentPatchType) => Promise<void>;
-  currentAssignment: AssignmentType;
-  assignments: AssignmentType[];
+  onSave: (assignment: Partial<Assignment> & { id: number }) => Promise<void>;
+  currentAssignment: Assignment;
+  assignments: Assignment[];
   timezone: string;
-  sections: SectionType[];
+  sections: Section[];
 }
 
 const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
@@ -60,9 +59,10 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
 
   const loadFiles = () => {
     setIsLoading(true);
-    const promises = props.currentAssignment.files.map((el) => {
+    const filesList = props.currentAssignment.files ?? [];
+    const promises = filesList.map((el) => {
       if (typeof el === 'number') {
-        return AssignmentFile.read(el);
+        return assignmentFilesApi.retrieve({ id: el });
       }
       return Promise.resolve(el);
     });
@@ -72,7 +72,8 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
   };
 
   const loadDatasets = () => {
-    AssignmentDataSet.listByAssignment(props.currentAssignment.id)
+    assignmentsApi
+      .datasetsList({ id: props.currentAssignment.id })
       .then((datasets) => setAssignmentDatasets(datasets))
       .catch((error) => {
         console.error('Failed to load datasets:', error);
@@ -136,7 +137,10 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
       hideFrom: values.hideFrom,
       lateDeductions: values.lateDeductions,
       studentsCanSeeGraders: values.studentsCanSeeGraders,
-      ai_system_prompt: values.ai_system_prompt || '',
+      gradersCanEditSubmissions: values.gradersCanEditSubmissions,
+      aiSystemPrompt: values.aiSystemPrompt || '',
+      runTestsOnSubmit: values.runTestsOnSubmit,
+      testsAffectGrade: values.testsAffectGrade,
     };
 
     await props.onSave(payload);
@@ -169,16 +173,39 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
             (original as any).required !== (ft as any).required;
 
           if (hasChanged) {
-            fileTemplatePromises.push(AssignmentFile.update(ft));
+            fileTemplatePromises.push(
+              assignmentFilesApi
+                .partialUpdate({
+                  id: ft.id,
+                  patchedAssignmentFile: ft as any,
+                })
+                .then((res: any) => res as unknown as AssignmentFileType),
+            );
           }
         } else {
-          fileTemplatePromises.push(AssignmentFile.create(ft));
+          // Prototype: Use Generated API Client for creation
+          fileTemplatePromises.push(
+            assignmentFilesApi
+              .create({
+                assignmentFile: {
+                  name: ft.name,
+                  assignment: ft.assignment,
+                  extension: ft.extension,
+                  path: ft.path,
+                  required: ft.required,
+                  description: ft.description || '',
+                  data: (ft as any).data,
+                  hidden: (ft as any).hidden,
+                },
+              })
+              .then((res) => res as unknown as AssignmentFileType),
+          );
         }
       }
 
       for (const ft of assignmentFiles) {
         if (!templates.some((el) => el.id === ft.id)) {
-          fileTemplatePromises.push(AssignmentFile.delete(ft));
+          fileTemplatePromises.push(assignmentFilesApi.destroy({ id: ft.id }));
         }
       }
 
@@ -233,13 +260,13 @@ interface IFormProps {
   isLoading: boolean;
   onCancel: () => void;
   onSave: (templates: AssignmentFileType[]) => void;
-  assignment: AssignmentType;
-  assignments: AssignmentType[];
+  assignment: Assignment;
+  assignments: Assignment[];
   initialAssignmentFiles: AssignmentFileType[];
   datasets: AssignmentDataSetType[];
   onDatasetsChange: () => void;
   timezone: string;
-  sections: SectionType[];
+  sections: Section[];
 }
 
 interface IFormValues {
@@ -265,7 +292,10 @@ interface IFormValues {
   explanation: string;
   hideFrom: number[];
   lateDeductions: number[];
-  ai_system_prompt: string;
+  aiSystemPrompt: string;
+  gradersCanEditSubmissions: boolean;
+  runTestsOnSubmit: boolean;
+  testsAffectGrade: boolean;
 }
 
 const CollectionCreateForm: React.FC<IFormProps> = (props) => {
@@ -287,6 +317,8 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
   const [templates, setTemplates] = React.useState<AssignmentFileType[]>(initialAssignmentFiles);
   const [explanationPreview, setExplanationPreview] = React.useState(false);
   const [explanation, setExplanation] = React.useState(assignment.explanation);
+  const hasAssignmentFiles = templates.length > 0;
+  const environmentId = assignment.environment ?? null;
 
   // Watch form field values for conditional rendering
   const studentUploadEnabled = Form.useWatch('allowStudentUpload', form);
@@ -306,6 +338,9 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
         collaborativeRubricMode: assignment.collaborativeRubricMode,
 
         studentsCanSeeGraders: assignment.studentsCanSeeGraders,
+        gradersCanEditSubmissions: assignment.gradersCanEditSubmissions,
+        runTestsOnSubmit: assignment.runTestsOnSubmit ?? true,
+        testsAffectGrade: assignment.testsAffectGrade ?? true,
         commentFeedback: assignment.commentFeedback,
         allowRegradeRequests: assignment.allowRegradeRequests,
         allowStudentUpload: assignment.allowStudentUpload,
@@ -479,7 +514,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                       initialValue={assignment.hideFrom}
                     >
                       <Select mode="multiple">
-                        {sections.map((section: SectionType) => (
+                        {sections.map((section: Section) => (
                           <Select.Option key={section.id} value={section.id}>
                             {section.name}
                           </Select.Option>
@@ -524,6 +559,15 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                       },
                     ]}
                   />
+                </div>
+              ),
+            },
+            {
+              label: 'Environment',
+              key: 'environment',
+              children: (
+                <div style={tabPaneStyle}>
+                  <EnvironmentShellWidget environmentId={environmentId} hasAssignmentFiles={hasAssignmentFiles} />
                 </div>
               ),
             },
@@ -718,6 +762,22 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                   </Form.Item>
 
                   <Form.Item
+                    name="gradersCanEditSubmissions"
+                    label="Graders can edit"
+                    extra={
+                      <div>
+                        When enabled, graders will be allowed to edit student submissions (e.g. for testing fixes).
+                      </div>
+                    }
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
+                    initialValue={assignment.gradersCanEditSubmissions}
+                    valuePropName="checked"
+                  >
+                    <Switch />
+                  </Form.Item>
+
+                  <Form.Item
                     name="showFrequentlyUsedRubricComments"
                     label="Freq. rubric comments"
                     extra={
@@ -729,6 +789,42 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                     labelCol={{ span: 6 }}
                     wrapperCol={{ span: 18 }}
                     initialValue={assignment.showFrequentlyUsedRubricComments}
+                    valuePropName="checked"
+                  >
+                    <Switch />
+                  </Form.Item>
+
+                  <div style={{ marginTop: 24, marginBottom: 24, borderTop: '1px solid #f0f0f0' }} />
+                  <h3>Autograder Settings</h3>
+                  <Form.Item
+                    name="runTestsOnSubmit"
+                    label="Run on submit"
+                    extra={
+                      <div>
+                        When enabled, the autograder will automatically run tests against student submissions when they
+                        are turned in.
+                      </div>
+                    }
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
+                    initialValue={assignment.runTestsOnSubmit ?? true}
+                    valuePropName="checked"
+                  >
+                    <Switch />
+                  </Form.Item>
+
+                  <Form.Item
+                    name="testsAffectGrade"
+                    label="Tests affect grade"
+                    extra={
+                      <div>
+                        When enabled, the results of autograder tests will count towards the submission's final grade.
+                        Disable this if you only want to use tests for feedback.
+                      </div>
+                    }
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
+                    initialValue={assignment.testsAffectGrade ?? true}
                     valuePropName="checked"
                   >
                     <Switch />
@@ -832,7 +928,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                 <div style={tabPaneStyle}>
                   <h3>AI Comment Generation</h3>
                   <Form.Item
-                    name="ai_system_prompt"
+                    name="aiSystemPrompt"
                     label="System Prompt"
                     extra={
                       <div>
@@ -871,7 +967,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                     }
                     labelCol={{ span: 4 }}
                     wrapperCol={{ span: 20 }}
-                    initialValue={assignment.ai_system_prompt || ''}
+                    initialValue={assignment.aiSystemPrompt || ''}
                   >
                     <Input.TextArea
                       placeholder={`You are an AI assistant helping grade student code submissions.

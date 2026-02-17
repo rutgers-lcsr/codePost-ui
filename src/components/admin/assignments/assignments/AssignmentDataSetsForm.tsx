@@ -2,7 +2,9 @@ import { DeleteOutlined, DownloadOutlined, UploadOutlined, EditOutlined } from '
 import { Button, Form, Input, message, Modal, Space, Switch, Table, Upload } from 'antd';
 import type { UploadFile } from 'antd/es/upload/interface';
 import * as React from 'react';
-import { AssignmentDataSet, AssignmentDataSetType } from '../../../../infrastructure/assignmentDataSet';
+import { assignmentDataSetsApi } from '../../../../api-client/clients';
+import { getAuthToken } from '../../../../utils/auth';
+import { AssignmentDataSetType } from '../../../../types/models';
 
 interface IProps {
   assignmentId: number;
@@ -23,8 +25,8 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
       form.setFieldsValue({
         name: dataset.name,
         description: dataset.description,
-        mount_path: dataset.mount_path,
-        is_active: dataset.is_active,
+        mount_path: dataset.mountPath,
+        is_active: dataset.isActive,
       });
     } else {
       form.resetFields();
@@ -50,12 +52,12 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
     try {
       if (editingDataset) {
         // Update existing dataset
-        await AssignmentDataSet.update({
+        await assignmentDataSetsApi.partialUpdate({
           id: editingDataset.id,
           name: values.name,
           description: values.description,
-          mount_path: values.mount_path,
-          is_active: values.is_active,
+          mountPath: values.mount_path,
+          isActive: values.is_active,
         });
         message.success('Dataset updated successfully');
       } else {
@@ -85,7 +87,21 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
         formData.append('is_active', values.is_active !== false ? 'true' : 'false');
         formData.append('file', file);
 
-        await AssignmentDataSet.create(formData);
+        const token = getAuthToken();
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/assignmentDataSets/`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Failed to create dataset: ${response.statusText} - ${errorText}`);
+        }
+
+        await response.json();
         message.success('Dataset uploaded successfully');
       }
 
@@ -110,7 +126,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
       okType: 'danger',
       onOk: async () => {
         try {
-          await AssignmentDataSet.delete({ id: datasetId });
+          await assignmentDataSetsApi.destroy({ id: datasetId });
           message.success('Dataset deleted successfully');
           onDatasetsChange();
         } catch (error: unknown) {
@@ -122,12 +138,12 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
   };
 
   const handleDownload = (dataset: AssignmentDataSetType) => {
-    window.open(AssignmentDataSet.downloadUrl(dataset.id), '_blank');
+    window.open(`${process.env.REACT_APP_API_URL}/assignmentDataSets/${dataset.id}/download/`, '_blank');
   };
 
   const handleToggleActive = async (dataset: AssignmentDataSetType, checked: boolean) => {
     try {
-      await AssignmentDataSet.update({ id: dataset.id, is_active: checked });
+      await assignmentDataSetsApi.partialUpdate({ id: dataset.id, isActive: checked });
       message.success(`Dataset ${checked ? 'activated' : 'deactivated'}`);
       onDatasetsChange();
     } catch (error: unknown) {
@@ -162,11 +178,13 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
     },
     {
       title: 'Mount Path',
-      dataIndex: 'mount_path',
-      key: 'mount_path',
-      render: (path: string, record: AssignmentDataSetType) => {
+      dataIndex: 'mountPath',
+      key: 'mountPath',
+      render: (path: string | undefined, record: AssignmentDataSetType) => {
         // if the path ends with a /, add the name of the file. this is because if the ending is a /, it is a directory, else we assume the name is where it should be mounted
-        const name = path.endsWith('/') ? path + record.name : path;
+        const resolvedPath = path ?? '';
+        console.log(record);
+        const name = resolvedPath.endsWith('/') ? resolvedPath + record.name : resolvedPath;
 
         return <code style={{ fontSize: '12px' }}>{name || 'shared/<name>'}</code>;
       },
@@ -176,18 +194,18 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
       key: 'file',
       render: (_: unknown, record: AssignmentDataSetType) => (
         <div>
-          <div style={{ fontSize: '12px' }}>{record.file_name || 'N/A'}</div>
-          <div style={{ fontSize: '11px', color: '#888' }}>{formatFileSize(record.file_size)}</div>
+          <div style={{ fontSize: '12px' }}>{record.fileName || 'N/A'}</div>
+          <div style={{ fontSize: '11px', color: '#888' }}>{formatFileSize(record.fileSize ?? undefined)}</div>
         </div>
       ),
     },
     {
       title: 'Status',
-      dataIndex: 'is_active',
-      key: 'is_active',
-      render: (isActive: boolean, record: AssignmentDataSetType) => (
+      dataIndex: 'isActive',
+      key: 'isActive',
+      render: (isActive: boolean | undefined, record: AssignmentDataSetType) => (
         <Switch
-          checked={isActive}
+          checked={Boolean(isActive)}
           size="small"
           onChange={(checked) => handleToggleActive(record, checked)}
           checkedChildren="Active"
@@ -232,7 +250,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
       {datasets.length > 0 ? (
         <Table
           columns={columns}
-          dataSource={datasets.filter((d: any) => !d.hidden)}
+          dataSource={datasets.filter((d: AssignmentDataSetType) => !d.hidden)}
           rowKey="id"
           pagination={false}
           size="small"

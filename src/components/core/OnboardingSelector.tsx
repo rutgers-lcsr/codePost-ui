@@ -14,12 +14,11 @@ import { UploadChangeParam } from 'antd/lib/upload';
 import { colors } from '../../theme/colors';
 
 /* codePost imports */
-import { CourseType } from '../../infrastructure/course';
+import { Course } from '../../api-client';
 
 import CPButton from '../core/CPButton';
 
 import { createDemoCourse } from '../utils/DemoCourse';
-
 import { CODE_DEMO } from '../../routes';
 
 /**********************************************************************************************************************/
@@ -74,7 +73,7 @@ interface IProps {
   open: boolean;
   onCancel: () => void;
   email: string;
-  onDemoCreate: (course?: CourseType) => void;
+  onDemoCreate: (course?: Course) => void;
   demoCourseExists: boolean;
 }
 
@@ -92,7 +91,7 @@ const AdminOnboardingSelector = (props: IProps) => {
     setLoading(true);
     if (!props.demoCourseExists) {
       createDemoCourse(props.email, `${props.email.split('@')[0]}'s course`, props.email.split('@')[1]).then(
-        (course: CourseType) => {
+        (course: Course) => {
           setLoading(false);
           props.onDemoCreate(course);
         },

@@ -14,8 +14,7 @@ import { Tag, Select, Tooltip } from 'antd';
 import { Resizable } from 're-resizable';
 
 /* codePost imports  */
-import { SubmissionInfoType } from '../../../../../../infrastructure/submission';
-import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
+import { EnvironmentType, SubmissionInfoType } from '../../../../../../types/models';
 import { colors } from '../../../../../../theme/colors';
 import CPFlex from '../../../../../core/CPFlex';
 import { copyTextToClipboard } from '../../../../../utils/Browser';

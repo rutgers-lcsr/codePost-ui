@@ -191,7 +191,9 @@ const LoginForm: React.FC<ILoginFormProps> = ({
         <br />
         <br />
         <br />
-        <Link to="/forgot-password" className="text-link">Forgot password?</Link>
+        <Link to="/forgot-password" className="text-link">
+          Forgot password?
+        </Link>
         <br />
         <a
           onClick={() => {

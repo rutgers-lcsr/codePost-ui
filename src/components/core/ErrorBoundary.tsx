@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { FileType, getFileContent } from '../../infrastructure/file';
+import { FileType, getFileContent } from '../../utils/file';
 
 import { slack } from './slack';
 

@@ -1,3 +1,10 @@
+import { describe, it } from 'vitest';
+
+describe.skip('CommentList (legacy enzyme tests)', () => {
+  it('skipped', () => {
+    // Legacy Enzyme snapshot tests are kept for reference.
+  });
+});
 // import * as React from 'react';
 
 // import { shallow } from 'enzyme';

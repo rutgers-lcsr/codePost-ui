@@ -14,23 +14,23 @@ import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
 
 import { colors } from '../../theme/colors';
-import { CourseType, RosterType } from '../../infrastructure/course';
-import { OrganizationType } from '../../infrastructure/organization';
+import type { RosterType } from '../../types/models';
+import { Organization, Course } from '../../api-client';
 import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 
 import NewCourseDialog from './NewCourseDialog';
 
 const { Search } = Input;
 
-interface CourseWithRoster extends CourseType {
+interface CourseWithRoster extends Omit<Course, 'organization'> {
   roster?: RosterType;
-  organization?: OrganizationType;
+  organization?: Organization;
 }
 
 interface CoursesTableProps {
-  courses: CourseType[];
+  courses: Course[];
   rosters: RosterType[];
-  organizations: OrganizationType[];
+  organizations: Organization[];
   onRefresh: () => void;
 }
 
@@ -106,7 +106,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
       title: 'Organization',
       dataIndex: 'organization',
       key: 'organization',
-      render: (org?: OrganizationType) =>
+      render: (org?: Organization) =>
         org ? (
           <Space>
             <GlobalOutlined style={{ color: colors.actionBlue }} />

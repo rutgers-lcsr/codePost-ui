@@ -4,7 +4,7 @@ export interface ScannedFile {
   data?: string;
 }
 
-import { File as CodePostFile } from '../../../../../../infrastructure/file';
+import { File as CodePostFile } from '../../../../../../utils/file';
 
 export interface ManifestResult {
   content: string;
@@ -47,15 +47,7 @@ export abstract class LanguageScanner {
 
         // Handle Notebooks
         if (f.name.endsWith('.ipynb')) {
-          try {
-            const notebook = CodePostFile.parseNotebook(code);
-            code = notebook.cells
-              .filter(c => c.cell_type === 'code')
-              .map(c => (Array.isArray(c.source) ? c.source.join('') : c.source))
-              .join('\n');
-          } catch (e) {
-            // ignore
-          }
+          code = CodePostFile.extractNotebookCode(code);
         }
 
         this.scanCode(code, packages);

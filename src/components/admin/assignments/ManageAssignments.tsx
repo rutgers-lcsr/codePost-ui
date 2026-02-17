@@ -13,11 +13,16 @@ import { Tag } from 'antd';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
 
 /* codePost imports */
-import { AssignmentPatchType, AssignmentType } from '../../../infrastructure/assignment';
-import { CourseType, SectionType, SubmissionInfoType } from '../../../infrastructure/types';
-import { UserType } from '../../../infrastructure/user';
+/* codePost imports */
+import { Course, Section, User } from '../../../api-client';
 
-import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../types/common';
+import {
+  Assignment,
+  IAssignmentToSubmissionsMap,
+  IStudentSubmissionsDataTable,
+  SubmissionInfoType,
+  UploadFile,
+} from '../../../types/common';
 
 // Keep synchronous - needed for main table
 import AssignmentsTable from './AssignmentsTable';
@@ -26,8 +31,6 @@ import { DETAIL_TYPE } from './types';
 import { encodeForRoute } from '../../core/URLutils';
 
 import Loading from '../../core/Loading';
-
-import { FileType } from '../../../infrastructure/types';
 
 // Lazy load heavy sub-components for code splitting
 const RubricManager = lazy(() => import('../../../components/core/rubric/RubricManager'));
@@ -46,14 +49,14 @@ import type { IRubricManagerParams } from '../../../components/core/rubric/Rubri
 
 export interface IManageAssignmentsProps {
   /* assignment data */
-  assignments: AssignmentType[];
+  assignments: Assignment[];
   submissions: IAssignmentToSubmissionsMap;
   students: string[]; // emails
   submissionsByStudent: IStudentSubmissionsDataTable;
-  currentCourse: CourseType | undefined;
+  currentCourse: Course | undefined;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
-  sections: SectionType[];
-  courses: CourseType[];
+  sections: Section[];
+  courses: Course[];
 
   /* loading state */
   loadComplete: boolean;
@@ -69,16 +72,16 @@ export interface IManageAssignmentsProps {
     isVisible: boolean,
     dueDate?: string,
     sortKey?: number,
-  ) => Promise<AssignmentType>;
-  updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
-  deleteAssignment: (assignment: AssignmentType) => Promise<void>;
+  ) => Promise<Assignment>;
+  updateAssignment: (assignment: Partial<Assignment> & { id: number }) => Promise<void>;
+  deleteAssignment: (assignment: Assignment) => Promise<void>;
   shallowUpdateAssignment: (assignmentID: number, field: string, value: number) => void;
   bulkUpdateSubmissions: (
     assignmentID: number,
     getPayload: (sub: SubmissionInfoType) => Partial<SubmissionInfoType>,
   ) => Promise<void>;
 
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: FileType[]) => Promise<SubmissionInfoType>;
+  uploadSubmission: (assignment: Assignment, partners: string[], files: UploadFile[]) => Promise<SubmissionInfoType>;
   deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   updateSubmission: (submission: SubmissionInfoType) => Promise<void>;
 
@@ -90,7 +93,7 @@ export interface IManageAssignmentsProps {
 
   /* user data */
   /* user data */
-  user: UserType;
+  user: User;
   baseURL: string;
 }
 

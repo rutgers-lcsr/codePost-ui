@@ -8,8 +8,8 @@ import * as React from 'react';
 /* other library imports */
 
 /* codePost imports */
-import { AssignmentType } from '../../infrastructure/assignment';
-import { CourseType } from '../../infrastructure/course';
+import { Course } from '../../api-client';
+import { AssignmentType } from '../../types/models';
 import { Typography } from 'antd';
 import { Link } from 'react-router-dom';
 import { encodeForLink } from '../core/URLutils';
@@ -24,7 +24,7 @@ const ViewAllShell = GraderPanelBuilder(ViewAllDetailPanel);
 
 interface IProps {
   assignments: AssignmentType[];
-  course: CourseType;
+  course: Course;
 }
 
 class ViewAllPanel extends React.Component<IProps> {

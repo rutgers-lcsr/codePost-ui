@@ -15,7 +15,7 @@ import DocsPage from './components/docs/DocsPage';
 import Student from './components/student/Student';
 import GraderManager from './components/grader/GraderManager';
 import AdminManager from './components/admin/AdminManager';
-import CodeConsole from './components/code-review/CodeConsole';
+import CodeConsole from './features/code-review/CodeConsole';
 
 // Marketing Page Imports
 import Landing from './components/landing/LandingABTest';

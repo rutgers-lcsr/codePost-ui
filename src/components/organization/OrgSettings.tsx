@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Form, Switch, Select, Button, message, Input, Card, Space, Alert, Typography } from 'antd';
-import { UserType } from '../../infrastructure/user';
-import { Organization } from '../../infrastructure/organization';
+import type { UserType } from '../../types/models';
+import { organizationsApi } from '../../api-client/clients';
 
 interface IProps {
   user: UserType;
@@ -12,22 +12,25 @@ const OrgSettings: React.FC<IProps> = (props) => {
   const [loading, setLoading] = React.useState(false);
   const [provider, setProvider] = React.useState<string>('CAS');
 
+  // Use singleton instance
+  const api = organizationsApi;
+
   React.useEffect(() => {
     const loadOrg = async () => {
       if (props.user.organization) {
         try {
-          const orgData = await Organization.read(props.user.organization);
-          setProvider(orgData.sso_provider || 'CAS');
+          const orgData = await api.retrieve({ id: props.user.organization });
+          setProvider(orgData.ssoProvider || 'CAS');
 
           // Parse config to populate fields
-          const config = orgData.sso_config || {};
+          const config = orgData.ssoConfig || {};
 
           form.setFieldsValue({
             emailDomain: orgData.emailDomain,
-            sso_enabled: orgData.sso_enabled,
-            sso_provider: orgData.sso_provider || 'CAS',
-            send_welcome_email: orgData.send_welcome_email,
-            ...config, // Spread config keys directly into form
+            ssoEnabled: orgData.ssoEnabled,
+            ssoProvider: orgData.ssoProvider || 'CAS',
+            sendWelcomeEmail: orgData.sendWelcomeEmail,
+            ...config, // Spread config keys directly into form (assuming they match config field names)
           });
         } catch (e) {
           console.error('Failed to load organization', e);
@@ -36,7 +39,7 @@ const OrgSettings: React.FC<IProps> = (props) => {
       }
     };
     loadOrg();
-  }, [props.user.organization, form]);
+  }, [props.user.organization, form, api]);
 
   const onProviderChange = (value: string) => {
     setProvider(value);
@@ -50,24 +53,24 @@ const OrgSettings: React.FC<IProps> = (props) => {
       // Reconstruct sso_config from flat fields based on provider
       let config: any = {};
 
-      if (values.sso_provider === 'CAS') {
+      if (values.ssoProvider === 'CAS') {
         config = {
           cas_server_url: values.cas_server_url,
           cas_version: values.cas_version,
         };
-      } else if (values.sso_provider === 'AZURE') {
+      } else if (values.ssoProvider === 'AZURE') {
         config = {
           tenant_id: values.tenant_id,
           client_id: values.client_id,
           client_secret: values.client_secret,
         };
-      } else if (values.sso_provider === 'OIDC') {
+      } else if (values.ssoProvider === 'OIDC') {
         config = {
           discovery_url: values.discovery_url,
           client_id: values.client_id,
           client_secret: values.client_secret,
         };
-      } else if (values.sso_provider === 'GOOGLE') {
+      } else if (values.ssoProvider === 'GOOGLE') {
         config = {
           client_id: values.client_id,
           client_secret: values.client_secret,
@@ -75,27 +78,18 @@ const OrgSettings: React.FC<IProps> = (props) => {
         };
       }
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/organizations/${props.user.organization}/`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({
+      await api.partialUpdate({
+        id: props.user.organization,
+        patchedOrganization: {
           emailDomain: values.emailDomain,
-          sso_enabled: values.sso_enabled,
-          sso_provider: values.sso_provider,
-          send_welcome_email: values.send_welcome_email,
-          sso_config: config,
-        }),
+          ssoEnabled: values.ssoEnabled,
+          ssoProvider: values.ssoProvider,
+          sendWelcomeEmail: values.sendWelcomeEmail,
+          ssoConfig: config,
+        },
       });
 
-      if (response.ok) {
-        message.success('Settings updated successfully');
-        // const updated = await response.json();
-      } else {
-        message.error('Failed to update settings');
-      }
+      message.success('Settings updated successfully');
     } catch (e) {
       console.error(e);
       message.error('An error occurred');
@@ -184,9 +178,9 @@ const OrgSettings: React.FC<IProps> = (props) => {
         layout="vertical"
         onFinish={onFinish}
         initialValues={{
-          sso_enabled: false,
-          send_welcome_email: true,
-          sso_provider: 'CAS',
+          ssoEnabled: false,
+          sendWelcomeEmail: true,
+          ssoProvider: 'CAS',
         }}
       >
         <div
@@ -202,7 +196,7 @@ const OrgSettings: React.FC<IProps> = (props) => {
           </Form.Item>
 
           <Form.Item
-            name="send_welcome_email"
+            name="sendWelcomeEmail"
             label="Send Welcome Emails"
             valuePropName="checked"
             help="If disabled, users added to this organization via roster upload will NOT receive a welcome email by default."
@@ -217,7 +211,7 @@ const OrgSettings: React.FC<IProps> = (props) => {
           <Typography.Title level={2}>SSO Configuration</Typography.Title>
           <div style={{ marginBottom: 16 }}>
             <Form.Item
-              name="sso_enabled"
+              name="ssoEnabled"
               label="Enable SSO Activation"
               valuePropName="checked"
               help="If enabled, new users added to this organization are automatically activated."
@@ -227,7 +221,7 @@ const OrgSettings: React.FC<IProps> = (props) => {
           </div>
 
           <Space direction="vertical" size="large" style={{ width: '100%' }}>
-            <Form.Item name="sso_provider" label="SSO Provider">
+            <Form.Item name="ssoProvider" label="SSO Provider">
               <Select onChange={onProviderChange}>
                 <Select.Option value="CAS">CAS</Select.Option>
                 <Select.Option value="AZURE">Azure AD</Select.Option>

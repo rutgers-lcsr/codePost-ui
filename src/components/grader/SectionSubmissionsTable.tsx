@@ -12,8 +12,7 @@ import { Dropdown, message, Spin, Table } from 'antd';
 /* codePost imports */
 import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
 
-import { AssignmentType } from '../../infrastructure/assignment';
-import { SubmissionType } from '../../infrastructure/submission';
+import { AssignmentType, SubmissionType } from '../../types/models';
 
 import { compare } from '../utils/SortUtils';
 

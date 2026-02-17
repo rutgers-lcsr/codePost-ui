@@ -4,7 +4,7 @@ import { ReactComponent as MoonSvg } from '../../img/icons/moon.svg';
 import { ReactComponent as SunSvg } from '../../img/icons/sun.svg';
 import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context';
 
-import useHotkeys, { L_KEY } from '../code-review/useHotkeys';
+import useHotkeys, { L_KEY } from '@code-review/useHotkeys';
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
 import { Switch, theme } from 'antd';

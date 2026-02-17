@@ -1,16 +1,15 @@
 import { FC, lazy } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 
-import { AssignmentType } from '../../infrastructure/assignment';
-import { SectionType } from '../../infrastructure/section';
-import { CourseType } from '../../infrastructure/types';
-import { UserType } from '../../infrastructure/user';
+import { Course, Section } from '../../api-client';
+import type { CourseType, UserType } from '../../types/models';
+import { Assignment } from '../../types/common';
 
 // Lazy-loaded route components
 const MySubmissionsPanel = lazy(() => import('./MySubmissionsPanel'));
 const SectionPanel = lazy(() => import('./SectionPanel'));
-const ViewAllPanel = lazy(() => import('./ViewAllPanel'));
 const RegradesPanel = lazy(() => import('./RegradesPanel'));
+const ViewAllPanel = lazy(() => import('./ViewAllPanel'));
 const VideoModal = lazy(() => import('../landing/VideoModal'));
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
@@ -39,10 +38,10 @@ const RoutePropsWrapper = ({ render }: { render: (props: any) => React.ReactElem
 };
 
 interface GraderRoutesProps {
-  currentCourse: CourseType;
-  assignments: AssignmentType[];
+  currentCourse: Course;
+  assignments: Assignment[];
   user: UserType;
-  localSectionsLed: SectionType[];
+  localSectionsLed: Section[];
   isSuperGrader: boolean;
   someRegrades: boolean;
   isRubricEditor: boolean;
@@ -70,9 +69,9 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
           path="my_submissions/*"
           element={
             <MySubmissionsPanel
-              assignments={assignments}
+              assignments={assignments as any}
               course={currentCourse}
-              graderEmail={user.email}
+              graderEmail={user.email!}
               isAdmin={isAdmin}
             />
           }
@@ -84,10 +83,10 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
           path="my_sections/*"
           element={
             <SectionPanel
-              assignments={assignments}
+              assignments={assignments as any}
               course={currentCourse}
-              graderEmail={user.email}
-              sections={localSectionsLed}
+              graderEmail={user.email!}
+              sections={localSectionsLed as any}
               isAdmin={isAdmin}
             />
           }
@@ -97,7 +96,7 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
         <Route
           key="all_submissions"
           path="all_submissions/*"
-          element={<ViewAllPanel course={currentCourse} assignments={assignments} />}
+          element={<ViewAllPanel course={currentCourse} assignments={assignments as any} />}
         />
       )}
       {someRegrades && (
@@ -107,7 +106,7 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
           element={
             <RegradesPanel
               course={currentCourse}
-              assignments={assignments}
+              assignments={assignments as any}
               user={user}
               isAnonymous={false}
               isAdmin={isAdmin}
@@ -122,7 +121,7 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
           path="rubrics/*"
           element={
             <Routes>
-              <Route index element={<RubricOverview assignments={assignments} course={currentCourse} />} />
+              <Route index element={<RubricOverview assignments={assignments as any} course={currentCourse} />} />
               {assignments.map((assignment) => {
                 const encodedName = encodeForRoute(assignment.name);
                 return (
@@ -134,7 +133,7 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
                         render={(subprops: any) => (
                           <RubricManager
                             {...subprops}
-                            assignment={assignment}
+                            assignment={assignment as any}
                             submissions={[]}
                             onCancel={() => {}}
                             shouldLoadFeedback={false}

@@ -57,7 +57,16 @@ const LandingPanel = (props: IProps) => {
       }}
       className="display-flex flex-direction-column justify-content-center"
     >
-      <div style={{ color: brandColor, fontSize: 16, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 16 }}>
+      <div
+        style={{
+          color: brandColor,
+          fontSize: 16,
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          marginBottom: 16,
+        }}
+      >
         {props.title}
       </div>
       <div style={{ color: titleColor, fontSize: 36, paddingBottom: 24, fontWeight: 800, lineHeight: 1.25 }}>
@@ -90,7 +99,10 @@ const LandingPanel = (props: IProps) => {
     );
   } else {
     return (
-      <div className="display-flex flex-direction-row align-items-center justify-content-center" style={{ padding: '60px 0' }}>
+      <div
+        className="display-flex flex-direction-row align-items-center justify-content-center"
+        style={{ padding: '60px 0' }}
+      >
         <div style={{ flex: 1, display: 'flex', justifyContent: props.type === 'right' ? 'flex-end' : 'flex-start' }}>
           {props.type === 'right' ? moduleDiv : <div style={{ maxWidth: 600 }}>{textDiv}</div>}
         </div>

@@ -9,28 +9,28 @@ import Form, { LegacyFormController } from '../../../../../core/legacyForm';
 import { Button, Card, Col, Input, InputNumber, Radio, Row, Select, Space, Switch } from 'antd';
 
 /* codePost object imports */
-import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
-
-import { SubmissionInfoType, TestCaseType } from '../../../../../../infrastructure/types';
+import {
+  AssignmentFileType,
+  AssignmentType,
+  EnvironmentType,
+  RubricCommentType,
+  SubmissionInfoType,
+  TestCaseType,
+} from '../../../../../../types/models';
 
 /* codePost component imports */
 
 import { CodeWindow } from '../utils/CodeWindow';
-import CodeExecutionOutput from '../../../../../code-review/code-panel/CodeExecutionOutput';
+import CodeExecutionOutput from '@code-review/code-panel/CodeExecutionOutput';
 
 /* codePost util imports */
 import { extensionsByLanguage, testTemplates } from '../utils/languageUtils';
 // import { getHeaders } from '../../../../../../infrastructure/generics';
-import { AssignmentType } from '../../../../../../infrastructure/types';
-import { AssignmentFileType } from '../../../../../../infrastructure/file';
-
-import { Assignment } from '../../../../../../infrastructure/assignment';
-import { RubricCommentType } from '../../../../../../infrastructure/rubricComment';
+import { TypeEnum } from '../../../../../../api-client';
+import { assignmentsApi } from '../../../../../../api-client/clients';
 import { TestScriptEditor } from './TestScriptEditor';
 
 const { Option } = Select;
-
-
 
 interface ITestFormItemProps {
   form: LegacyFormController;
@@ -56,18 +56,15 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
 
   // Helpers
 
-
   // State
 
   const [rubricComments, setRubricComments] = useState<RubricCommentType[]>([]);
   const [commandText, setCommandText] = useState(testCase.text);
-  const [testType, setTestType] = useState(testCase.type);
+  const [testType, setTestType] = useState<TypeEnum>(testCase.type as TypeEnum);
 
   const [explanation, setExplanation] = useState(testCase.explanation);
 
-
   const [testCode, setTestCode] = useState(testCase.testCode || '');
-
 
   // Check if notebook
   // Check if notebook
@@ -75,17 +72,17 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
 
   // Effects
   useEffect(() => {
-
-
     const fetchRubric = async () => {
       try {
-        const rubric = await Assignment.readRubric(currentAssignment.id);
+        const rubricRequest = await assignmentsApi.rubricRetrieve({
+          id: currentAssignment.id,
+        });
+        const rubric = rubricRequest as unknown as { rubricComments: RubricCommentType[] };
         setRubricComments(rubric.rubricComments);
       } catch (e) {
         console.error('Failed to fetch rubric', e);
       }
     };
-
 
     fetchRubric();
   }, [currentAssignment.id]);
@@ -98,7 +95,7 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
     });
   };
 
-  const onTypeChange = (type: string) => {
+  const onTypeChange = (type: TypeEnum) => {
     const newType = testCase.type === type;
     const template = testTemplates[language] ? language : 'other';
 
@@ -107,14 +104,8 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
   };
 
   const onTypeChangeRadio = (e: any) => {
-    onTypeChange(e.target.value);
+    onTypeChange(e.target.value as TypeEnum);
   };
-
-
-
-
-
-
 
   const onSave = () => {
     props.form.validateFields((err, values) => {
@@ -150,8 +141,6 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
 
   const typesWithEditDisabled = ['file']; // Disable select
   const typesWithRunDisabled = ['file', 'external']; // Disable definitions and pseudoterminal
-
-
 
   return (
     <div style={{ padding: '0px 15px', maxWidth: '1400px', margin: '0 auto' }}>
@@ -232,14 +221,11 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
               headStyle={{ borderBottom: '1px solid #f0f0f0', fontWeight: 600 }}
             >
               <Row gutter={16}>
-
                 <Col span={6}>
                   <Form.Item label="Timeout (s)">
                     {getFieldDecorator('timeout', {
                       initialValue: testCase.timeout || 30,
-                    })(
-                      <InputNumber min={1} max={600} style={{ width: '100%' }} placeholder="30" />
-                    )}
+                    })(<InputNumber min={1} max={600} style={{ width: '100%' }} placeholder="30" />)}
                   </Form.Item>
                 </Col>
               </Row>
@@ -279,7 +265,8 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
                         onChange={setTestCode}
                         language={language}
                         assignmentId={currentAssignment.id}
-                        targetFileName={""}
+                        courseId={currentAssignment.course}
+                        targetFileName={''}
                         contextFiles={props.assignmentFiles || []}
                         onRubricItemChange={(id) => props.form.setFieldsValue({ rubricItem: id })}
                         selectedRubricItem={props.form.getFieldValue('rubricItem') || testCase.rubricItem}
@@ -317,9 +304,10 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
                 </div>
               }
             >
-
-
-              <Form.Item label="Link to Rubric Item (Optional)" help="If set, failing this test will automatically apply this rubric deduction.">
+              <Form.Item
+                label="Link to Rubric Item (Optional)"
+                help="If set, failing this test will automatically apply this rubric deduction."
+              >
                 {getFieldDecorator('rubricItem', {
                   initialValue: testCase.rubricItem,
                 })(
@@ -332,12 +320,13 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
                       String(option?.props.children).toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
                   >
-                    {rubricComments.map(rc => (
+                    {rubricComments.map((rc) => (
                       <Option key={rc.id} value={rc.id}>
-                        {rc.text} ({rc.pointDelta > 0 ? '+' : ''}{rc.pointDelta})
+                        {rc.text} ({rc.pointDelta > 0 ? '+' : ''}
+                        {rc.pointDelta})
                       </Option>
                     ))}
-                  </Select>
+                  </Select>,
                 )}
               </Form.Item>
 
@@ -360,10 +349,7 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
       {/* Results */}
       {props.log && (
         <div style={{ marginTop: 24 }}>
-          <CodeExecutionOutput
-            executionResult={props.log}
-            fileName="output.txt"
-          />
+          <CodeExecutionOutput executionResult={props.log} fileName="output.txt" />
         </div>
       )}
     </div>

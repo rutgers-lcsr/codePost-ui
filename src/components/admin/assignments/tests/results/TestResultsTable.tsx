@@ -14,11 +14,13 @@ import {
 import { Dropdown, Radio, Skeleton, Tooltip } from 'antd';
 
 /* codePost object imports */
-import { AssignmentType } from '../../../../../infrastructure/assignment';
-import { SubmissionInfoType } from '../../../../../infrastructure/submission';
-import { SubmissionTest, SubmissionTestType } from '../../../../../infrastructure/submissionTest';
-import { TestCaseType } from '../../../../../infrastructure/testCase';
-import { TestCategoryType } from '../../../../../infrastructure/testCategory';
+import {
+  AssignmentType,
+  SubmissionInfoType,
+  SubmissionTestType,
+  TestCaseType,
+  TestCategoryType,
+} from '../../../../../types/models';
 
 /* codePost component imports */
 import { TableDetail } from '../../../other/TableDetail';
@@ -34,6 +36,7 @@ import {
   TestsByCase,
   TestsBySubmission,
 } from '../../../../core/testFetchUtils';
+import { getLatestSubmissionTests } from '../../../../../utils/submissionTests';
 import { openSubmission } from '../../../other/AdminUtils';
 
 interface IProps {
@@ -196,7 +199,7 @@ const TestResultsTable = (props: IProps) => {
             return toRet;
           }
 
-          const tests = SubmissionTest.getLatest(props.testsBySubmission[submission.id] || []);
+          const tests = getLatestSubmissionTests(props.testsBySubmission[submission.id] || []);
           let passed = 0;
 
           // Group the SubmissionTests by category
