@@ -845,7 +845,7 @@ const TestsList: React.FC<TestsListProps> = ({
           <Progress
             percent={Math.round((passedTests / totalTests) * 100)}
             status={failedTests > 0 ? 'exception' : passedTests === totalTests ? 'success' : 'active'}
-            format={(percent, successPercent) => (
+            format={() => (
               <span style={{ color: consoleTheme.text }}>
                 {passedTests}/{totalTests}
               </span>
