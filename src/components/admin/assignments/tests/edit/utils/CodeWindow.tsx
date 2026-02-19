@@ -7,9 +7,10 @@ import { Button } from 'antd';
 // codePost util imports
 import { codeMirorLanguageMap } from './languageUtils';
 
-import useHotkeys, { S_KEY } from '../../../../../code-review/useHotkeys';
+import useHotkeys, { S_KEY } from '@code-review/useHotkeys';
 import Editor from '@monaco-editor/react';
 import { osControlKey } from '../../../../../core/operatingSystem';
+import { File } from '../../../../../../utils/file';
 
 type themeType = 'light' | 'dark';
 
@@ -21,6 +22,7 @@ interface IProps {
   onDelete?: () => void;
   theme?: themeType;
   height?: string;
+  onMount?: (editor: any, monaco: any) => void;
 }
 
 export const CodeWindow = (props: IProps) => {
@@ -29,7 +31,7 @@ export const CodeWindow = (props: IProps) => {
   const [prevCode, setPrevCode] = useState(props.code);
   const [isSaving, setIsSaving] = useState(false);
 
-  if (props.code !== prevCode) {
+  if (props.code !== prevCode && props.code !== editedCode) {
     setPrevCode(props.code);
     setEditedCode(props.code);
   }
@@ -50,12 +52,7 @@ export const CodeWindow = (props: IProps) => {
 
   // ******************************* Util functions  *******************************
   const getMode = () => {
-    let extension: string;
-    if (props.name.includes('.')) {
-      extension = props.name.split('.')[1].replace('.', '');
-    } else {
-      extension = props.name;
-    }
+    const extension = File.extension(props.name);
     if (extension in codeMirorLanguageMap) {
       return codeMirorLanguageMap[extension];
     } else return 'txt';
@@ -69,8 +66,8 @@ export const CodeWindow = (props: IProps) => {
         minWidth: 300,
         width: '100%',
         position: 'relative',
-        height: props.height || undefined,
-        paddingTop: 30,
+        height: props.height || '100%',
+        paddingTop: props.onChange ? 0 : 30, // Only pad if button might show (read-only mode usually)
       }}
     >
       {!props.onChange && (
@@ -87,22 +84,23 @@ export const CodeWindow = (props: IProps) => {
       )}
 
       <Editor
-        height={props.height || '100%'}
+        height="100%"
         width="100%"
         language={getMode()}
-        value={props.onSave ? editedCode : props.code}
-        onChange={(value) => {
-          if (!value) return;
-          setEditedCode(value);
-          if (props.onChange) {
-            props.onChange(value);
-          }
-        }}
         options={{
           automaticLayout: true,
           minimap: { enabled: false },
+          scrollBeyondLastLine: false,
           readOnly: !(props.onSave || props.onChange) || isSaving,
         }}
+        value={props.onSave ? editedCode : props.code}
+        onChange={(value) => {
+          setEditedCode(value || '');
+          if (props.onChange) {
+            props.onChange(value || '');
+          }
+        }}
+        onMount={props.onMount}
         theme={props.theme === 'dark' ? 'vs-dark' : 'light'}
       />
     </div>

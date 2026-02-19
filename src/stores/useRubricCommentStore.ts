@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import _ from 'lodash';
 
-import { RubricCommentType } from '../infrastructure/rubricComment';
+import { RubricComment } from '../api-client';
 import { STATUS } from '../components/admin/assignments/rubric/RubricUtils';
 
 /**
@@ -17,7 +17,7 @@ import { STATUS } from '../components/admin/assignments/rubric/RubricUtils';
 
 interface RubricCommentStoreState {
   // State
-  comments: Record<number, RubricCommentType>;
+  comments: Record<number, RubricComment>;
   statuses: Record<number, STATUS>;
 
   // Actions
@@ -28,8 +28,8 @@ interface RubricCommentStoreState {
     id: number,
     field: string,
     value: unknown,
-    propsComments?: RubricCommentType[],
-  ) => RubricCommentType | undefined;
+    propsComments?: RubricComment[],
+  ) => RubricComment | undefined;
 
   /**
    * Set the status for a comment
@@ -39,17 +39,17 @@ interface RubricCommentStoreState {
   /**
    * Get a comment by ID, checking both store and fallback props
    */
-  getComment: (id: number, propsComments?: RubricCommentType[]) => RubricCommentType | undefined;
+  getComment: (id: number, propsComments?: RubricComment[]) => RubricComment | undefined;
 
   /**
    * Initialize the store with comments from props
    */
-  initializeComments: (comments: RubricCommentType[]) => void;
+  initializeComments: (comments: RubricComment[]) => void;
 
   /**
    * Sync comments from props (for prop changes)
    */
-  syncFromProps: (comments: RubricCommentType[]) => void;
+  syncFromProps: (comments: RubricComment[]) => void;
 
   /**
    * Reset the store
@@ -75,7 +75,7 @@ export const useRubricCommentStore = create<RubricCommentStoreState>()(
         if (!current) return undefined;
 
         // Create updated comment
-        const updated: RubricCommentType = {
+        const updated: RubricComment = {
           ...current,
           [field]: value,
         };
@@ -113,7 +113,7 @@ export const useRubricCommentStore = create<RubricCommentStoreState>()(
       },
 
       initializeComments: (comments) => {
-        const map: Record<number, RubricCommentType> = {};
+        const map: Record<number, RubricComment> = {};
         const statuses: Record<number, STATUS> = {};
 
         comments.forEach((c) => {

@@ -16,8 +16,7 @@ import ReactMarkdown from 'react-markdown';
 /* codePost imports */
 
 // type definitions
-import { CourseType } from '../../../../infrastructure/course';
-import { SectionType } from '../../../../infrastructure/section';
+import { Course, Section } from '../../../../api-client';
 import { USER_TYPE } from '../../../../types/common';
 
 import CPButton from '../../../../components/core/CPButton';
@@ -29,8 +28,8 @@ interface IProps {
   students: string[];
   graders: string[];
   admins: string[];
-  course: CourseType;
-  sectionsByStudent: { [studentEmail: string]: SectionType };
+  course: Course;
+  sectionsByStudent: { [studentEmail: string]: Section };
 
   /* selected roster subsets to include in download */
   downloadType: USER_TYPE;
@@ -41,7 +40,7 @@ interface IProps {
 }
 
 export const rosterToCsv = (
-  sectionsByStudent: { [studentEmail: string]: SectionType },
+  sectionsByStudent: { [studentEmail: string]: Section },
   includeSections: boolean,
   downloadType: USER_TYPE,
   admins: string[],
@@ -123,7 +122,7 @@ const DownloadRoster: React.FC<IProps> = (props) => {
   const getPreviewText = useCallback(
     (
       students: string[],
-      sectionsByStudent: { [studentEmail: string]: SectionType },
+      sectionsByStudent: { [studentEmail: string]: Section },
       graders: string[],
       admins: string[],
     ) => {

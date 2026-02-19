@@ -6,8 +6,10 @@ import localizedFormat from 'dayjs/plugin/localizedFormat';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 dayjs.extend(localizedFormat);
-import { CourseType } from '../../../infrastructure/course';
-import { VALID_WEBHOOKS, Webhook, WebhookType } from '../../../infrastructure/webhook';
+import type { Course, Webhook } from '../../../api-client';
+import type { CreateRequest, PartialUpdateRequest } from '../../../api-client/apis/WebhooksApi';
+import { webhooksApi } from '../../../api-client/clients';
+import { VALID_WEBHOOKS } from '../../../utils/webhooks';
 import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../../utils/LocalSettings';
 
 const EditableContext = React.createContext<any>(null);
@@ -95,13 +97,13 @@ const EditableCell: React.FC<EditableCellProps> = ({
 };
 
 interface IWebhooksTableProps {
-  webhooks: WebhookType[];
-  course: CourseType;
+  webhooks: Webhook[];
+  course: Course;
 }
 
 interface DataSourceType {
   key: string;
-  webhook: WebhookType;
+  webhook: Webhook;
   enabled: boolean;
   object: string;
   action: string;
@@ -115,20 +117,20 @@ const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
     webhooks.map((webhook, index) => ({
       key: index.toString(),
       webhook,
-      enabled: webhook.is_active,
+      enabled: !!webhook.isActive,
       object: webhook.event.split('.')[0],
       action: webhook.event.split('.')[1],
       target: webhook.target,
-      lastTriggered: webhook.last_triggered_at ? (
-        dayjs(webhook.last_triggered_at).format('lll')
+      lastTriggered: webhook.lastTriggeredAt ? (
+        dayjs(webhook.lastTriggeredAt).format('lll')
       ) : (
         <Tag>Never Triggered</Tag>
       ),
       status:
-        webhook.last_triggered_status && webhook.last_triggered_status.includes('20') ? (
-          <Tag color="green">{webhook.last_triggered_status}</Tag>
-        ) : webhook.last_triggered_status ? (
-          <Tag color="red">{webhook.last_triggered_status}</Tag>
+        webhook.lastTriggeredStatus && webhook.lastTriggeredStatus.includes('20') ? (
+          <Tag color="green">{webhook.lastTriggeredStatus}</Tag>
+        ) : webhook.lastTriggeredStatus ? (
+          <Tag color="red">{webhook.lastTriggeredStatus}</Tag>
         ) : (
           ''
         ),
@@ -137,9 +139,9 @@ const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
   const [count, setCount] = useState(webhooks.length);
   const [pageSize, setPageSize] = useState(LOCAL_SETTINGS.defaultPageSize.getter());
 
-  const handleDelete = async (webhook: WebhookType) => {
+  const handleDelete = async (webhook: Webhook) => {
     try {
-      await Webhook.delete(webhook);
+      await webhooksApi.destroy({ id: webhook.id });
       setDataSource((prev) => prev.filter((item) => item.webhook.id !== webhook.id));
     } catch {
       message.error('Error...');
@@ -149,16 +151,17 @@ const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
   const handleAdd = async (e: any) => {
     const event = `${e.keyPath[1]}.${e.keyPath[0]}`;
 
-    const payload = {
-      id: 0,
+    const payload: CreateRequest['webhook'] = {
       event,
-      is_active: false,
+      isActive: false,
       target: 'https://my.webhook.endpoint.com',
       course: course.id,
+      lastTriggeredAt: null,
+      lastTriggeredStatus: null,
     };
 
     try {
-      const newWebhook = await Webhook.create(payload);
+      const newWebhook = await webhooksApi.create({ webhook: payload });
       if (newWebhook) {
         const newData: DataSourceType = {
           key: count.toString(),
@@ -179,14 +182,13 @@ const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
   };
 
   const handleSave = async (row: DataSourceType) => {
-    const payload = {
-      id: row.webhook.id,
-      is_active: row.enabled,
+    const payload: NonNullable<PartialUpdateRequest['patchedWebhook']> = {
+      isActive: row.enabled,
       target: row.target,
     };
 
     try {
-      await Webhook.update(payload);
+      await webhooksApi.partialUpdate({ id: row.webhook.id, patchedWebhook: payload });
       message.success('Saved!');
       setDataSource((prev) => {
         const newData = [...prev];

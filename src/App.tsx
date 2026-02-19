@@ -18,9 +18,13 @@ import Home from './components/core/Home';
 
 import { ADMIN, CODE, CODE_DEMO, GRADER, HEALTH_CHECK, HOME, STUDENT } from './routes';
 
-import { AssignmentType } from './infrastructure/assignment';
-import { CourseType } from './infrastructure/course';
-import { UserType } from './infrastructure/user';
+import { Course, User } from './api-client';
+import { Assignment } from './types/common';
+
+import { registrationApi, tokenAuthApi, tokenRefreshApi } from './api-client/clients';
+import { ResponseError, type InitOverrideFunction } from './api-client/runtime';
+
+import { normalizeUser } from './utils/normalizeUser';
 
 import IndexManager from './components/pre-auth/IndexManager';
 import RemoteAuthFailed from './components/pre-auth/RemoteAuthFailed';
@@ -45,26 +49,27 @@ const AsyncStudent = lazy(() => import('./components/student/StudentManager'));
 const AsyncGrader = lazy(() => import('./components/grader/GraderManager'));
 const AsyncAdmin = lazy(() => import('./components/admin/AdminManager'));
 const AsyncOrg = lazy(() => import('./components/organization/OrgDashboard'));
-const AsyncGrade = lazy(() => import('./components/code-review/CodeConsole'));
+const AsyncGrade = lazy(() => import('./features/code-review/CodeConsole'));
 const AsyncDevTools = lazy(() => import('./components/dev/DevTools'));
 const AsyncDocs = lazy(() => import('./components/docs/DocsPage'));
 
 /*****************************************************************************/
 
-const anonymousUser: UserType = {
+const anonymousUser: User = {
   email: 'anonymous@university.edu',
   id: -1,
   token: '',
+  password: '',
   organization: 1,
   canCreateCourses: false,
   canModifyRosters: false,
-  api_token: null,
+  apiToken: null,
   studentCourses: [],
   graderCourses: [],
   superGraderCourses: [],
   courseadminCourses: [],
   leaderSections: [],
-  student_sections: [],
+  studentSections: [],
   showProductTips: true,
   codePostAdmin: false,
   hasCredentials: false,
@@ -86,7 +91,7 @@ const App: React.FC = () => {
     const urlParams = new URLSearchParams(window.location.search);
     return !!localStorage.getItem('token') || !!urlParams.get('token');
   });
-  const [user, setUser] = useState<UserType | undefined>(undefined);
+  const [user, setUser] = useState<User | undefined>(undefined);
   const [toRedirect, setToRedirect] = useState<boolean>(false);
   const [triedLoading, setTriedLoading] = useState<boolean>(false);
   const [isSuperUser, setIsSuperUser] = useState<boolean>(() => localStorage.getItem('isSuperUser') !== null);
@@ -104,7 +109,7 @@ const App: React.FC = () => {
   useEffect(() => {
     try {
       localStorage.setItem('source', 'codePost');
-    } catch (err) {
+    } catch {
       alert(
         `codePost needs permission from your browser to start.
 Please follow these steps for your current browser...
@@ -188,15 +193,19 @@ Firefox:
   );
 
   // User management functions
-  const replaceUser = useCallback((newUser: UserType, redirect: boolean, isSuperUserParam: boolean) => {
+  const replaceUser = useCallback((newUser: User, redirect: boolean, isSuperUserParam: boolean) => {
     setUser(newUser);
     setToRedirect(redirect);
     setIsSuperUser(isSuperUserParam);
-    localStorage.setItem('token', newUser.token);
+    if (newUser.token) {
+      localStorage.setItem('token', newUser.token);
+    } else {
+      localStorage.removeItem('token');
+    }
   }, []);
 
   const addCreatedCourse = useCallback(
-    (course: CourseType) => {
+    (course: Course) => {
       if (!user) {
         return;
       }
@@ -210,7 +219,7 @@ Firefox:
   );
 
   const addAssignment = useCallback(
-    (assignment: AssignmentType) => {
+    (assignment: Assignment) => {
       if (!user) return;
 
       const courseLists = [user.graderCourses, user.studentCourses];
@@ -219,7 +228,8 @@ Firefox:
         const toChange = courseList.find((el) => el.id === assignment.course);
 
         if (toChange) {
-          toChange.assignments = [...toChange.assignments, assignment.id];
+          const mutableCourse = toChange as typeof toChange & { assignments: number[] };
+          mutableCourse.assignments = [...toChange.assignments, assignment.id];
         }
       }
     },
@@ -227,7 +237,7 @@ Firefox:
   );
 
   const deleteAssignment = useCallback(
-    (assignment: AssignmentType) => {
+    (assignment: Assignment) => {
       if (!user) return;
 
       const courseLists = [user.graderCourses, user.studentCourses];
@@ -236,7 +246,8 @@ Firefox:
         const toChange = courseList.find((el) => el.id === assignment.course);
 
         if (toChange) {
-          toChange.assignments = toChange.assignments.filter((el) => el !== assignment.id);
+          const mutableCourse = toChange as typeof toChange & { assignments: number[] };
+          mutableCourse.assignments = toChange.assignments.filter((el) => el !== assignment.id);
         }
       }
     },
@@ -245,25 +256,19 @@ Firefox:
 
   // Token refresh functionality
   const refreshToken = useCallback(
-    (currentUser: UserType) => {
+    (currentUser: User) => {
       if (!hasToken) {
         return;
       }
 
-      fetch(`${process.env.REACT_APP_API_URL}/token-refresh/`, {
-        body: JSON.stringify({ token: localStorage.getItem('token') }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-      })
-        .then((res) => {
-          if (res.ok) {
-            return res.json();
-          }
-          return Promise.reject();
-        })
-        .then((json) => {
+      const existingToken = localStorage.getItem('token') || '';
+      if (!existingToken) {
+        return;
+      }
+
+      tokenRefreshApi
+        .refreshCreate({ tokenRefreshSliding: { token: existingToken } })
+        .then((json: { token: string }) => {
           localStorage.setItem('token', json.token);
           const exp = getTokenExpiration(json.token);
           const now = new Date().getTime();
@@ -311,36 +316,27 @@ Firefox:
   const handleLogin = useCallback(
     (username: string, password: string, shouldRedirect: boolean) => {
       setError('');
-      return fetch(`${process.env.REACT_APP_API_URL}/token-auth/`, {
-        body: JSON.stringify({ username, password }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-      })
-        .then((res) => {
-          if (res.ok) {
-            return res.json();
-          }
-          return Promise.reject();
-        })
-        .then((json) => {
+      return tokenAuthApi
+        .authCreateRaw({ jWT: { username, password } })
+        .then((response) => response.raw.json())
+        .then((json: { token: string; user: unknown }) => {
           const jwtToken = json.token;
           localStorage.setItem('token', json.token);
 
           setError('');
           setHasToken(true);
-          setUser(json.user);
+          const normalizedUser = normalizeUser(json.user);
+          setUser(normalizedUser);
           setToRedirect(shouldRedirect);
-          setIsSuperUser(superUsers.indexOf(json.user.email) > -1);
+          setIsSuperUser(superUsers.indexOf(normalizedUser.email ?? '') > -1);
 
           (window as Window & typeof globalThis & { gtag?: (...args: unknown[]) => void }).gtag?.('set', {
-            user_id: json.user.id,
+            user_id: normalizedUser.id,
           });
           (window as Window & typeof globalThis & { gtag?: (...args: unknown[]) => void }).gtag?.(
             'set',
             'organization',
-            json.user.organization,
+            normalizedUser.organization,
           );
 
           const exp = getTokenExpiration(jwtToken);
@@ -348,7 +344,7 @@ Firefox:
 
           refreshTimerRef.current = setTimeout(
             () => {
-              refreshToken(json.user);
+              refreshToken(normalizedUser);
             },
             Math.max(0, exp - now - 1000),
           );
@@ -375,33 +371,42 @@ Firefox:
         authHeader = `Firebase ${propToken}`;
       }
 
-      fetch(`${process.env.REACT_APP_API_URL}/registration/current_user/`, {
-        headers: {
-          Authorization: authHeader,
-        },
-      })
-        .then(async (res) => {
-          if (res.ok) {
-            const currentUser = await res.json();
+      const initOverrides: InitOverrideFunction | undefined =
+        authType === 'Firebase'
+          ? async ({ init }) => ({
+              ...init,
+              headers: {
+                ...(init.headers || {}),
+                Authorization: authHeader,
+              },
+            })
+          : undefined;
 
-            localStorage.setItem('token', currentUser.token);
-            setUser(currentUser);
+      registrationApi
+        .currentUserRetrieve(initOverrides)
+        .then((currentUser) => {
+          if (currentUser) {
+            const normalizedUser = normalizeUser(currentUser);
+
+            if (normalizedUser.token) {
+              localStorage.setItem('token', normalizedUser.token);
+            } else {
+              localStorage.removeItem('token');
+            }
+            setUser(normalizedUser);
             setTriedLoading(true);
-            setIsSuperUser((prev) => superUsers.indexOf(currentUser.email) > -1 || prev);
+            setIsSuperUser((prev) => superUsers.indexOf(normalizedUser.email ?? '') > -1 || prev);
             setAuthType('JWT');
 
-            refreshToken(currentUser);
-          } else if (res.status === 401) {
-            setTriedLoading(true);
-            handleLogout();
-          } else {
-            setTimeout(() => {
-              loginCountRef.current += 1;
-              tryToLogin();
-            }, 1000);
+            refreshToken(normalizedUser);
           }
         })
-        .catch((_error) => {
+        .catch((error: unknown) => {
+          if (error instanceof ResponseError && error.response?.status === 401) {
+            setTriedLoading(true);
+            handleLogout();
+            return;
+          }
           setTimeout(() => {
             loginCountRef.current += 1;
             tryToLogin();

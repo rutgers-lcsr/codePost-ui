@@ -167,10 +167,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
             Including tool output as .txt or .md file in a codePost submission (making it available during grading)
           </li>
           <li>
-            <Link to="/docs/programmatic-comments">
-              Programmatically placing comments
-            </Link>{' '}
-            on code
+            <Link to="/docs/programmatic-comments">Programmatically placing comments</Link> on code
           </li>
         </ul>
       </span>

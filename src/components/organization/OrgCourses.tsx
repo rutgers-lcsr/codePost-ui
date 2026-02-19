@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Table, Card, Input, Button, Modal, Form, Switch, message, Select, InputNumber, Tooltip, Tabs } from 'antd';
-import { CourseType, Course } from '../../infrastructure/course';
+import { Course } from '../../api-client';
+import { coursesApi } from '../../api-client/clients';
 import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 import { ColumnsType } from 'antd/es/table';
 import { EditOutlined, SearchOutlined, CopyOutlined, RedoOutlined } from '@ant-design/icons';
@@ -18,7 +19,7 @@ const TIMEZONES = [
 ];
 
 interface IProps {
-  courses: CourseType[];
+  courses: Course[];
   loading: boolean;
   onRefresh: () => void;
 }
@@ -26,14 +27,16 @@ interface IProps {
 const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
   const [searchText, setSearchText] = React.useState('');
   const [pageSize, setPageSize] = React.useState(LOCAL_SETTINGS.defaultPageSize.getter());
-  const [editingCourse, setEditingCourse] = React.useState<CourseType | null>(null);
+  const [editingCourse, setEditingCourse] = React.useState<Course | null>(null);
   const [modalVisible, setModalVisible] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
   const [form] = Form.useForm();
 
+  const api = coursesApi;
+
   const filteredCourses = courses.filter((course) => course.name.toLowerCase().includes(searchText.toLowerCase()));
 
-  const handleEdit = (course: CourseType) => {
+  const handleEdit = (course: Course) => {
     setEditingCourse(course);
     form.setFieldsValue({
       name: course.name,
@@ -42,7 +45,7 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
       timezone: course.timezone,
       emailNewUsers: course.emailNewUsers,
       anonymousGradingDefault: course.anonymousGradingDefault,
-      allowGradersToEditRubric: (course as any).allowGradersToEditRubric || false,
+      allowGradersToEditRubric: (course as any).allowGradersToEditRubric || false, // Check if this exists in generated model
       minComments: course.minComments,
       studentsCanSeeGraders: course.studentsCanSeeGraders,
       inviteCodeEnabled: course.inviteCodeEnabled,
@@ -55,7 +58,10 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
       const values = await form.validateFields();
       setSaving(true);
       if (editingCourse) {
-        await Course.update({ ...values, id: editingCourse.id });
+        await api.partialUpdate({
+          id: editingCourse.id,
+          patchedCourse: values,
+        });
         message.success('Course updated successfully');
         setModalVisible(false);
         onRefresh();
@@ -82,20 +88,17 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
       content: 'The old code will no longer work. This cannot be undone.',
       onOk: async () => {
         try {
-          const res = await fetch(`${process.env.REACT_APP_API_URL}/courses/${editingCourse.id}/changeInviteCode/`, {
-            method: 'PATCH',
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
-            },
-          });
-          if (res.ok) {
-            const newCode = await res.json();
-            setEditingCourse({ ...editingCourse, inviteCode: newCode });
-            message.success('Invite code reset!');
-            onRefresh(); // Refresh list to get updated code
+          // Use generated client for changeInviteCode
+          const updatedCourse = await api.changeInviteCodePartialUpdate({ id: editingCourse.id });
+          // Update editing state with new invite code (API may return Course or just the code string)
+          if (typeof updatedCourse === 'string') {
+            setEditingCourse({ ...editingCourse, inviteCode: updatedCourse });
           } else {
-            message.error('Failed to reset invite code');
+            setEditingCourse(updatedCourse);
           }
+
+          message.success('Invite code reset!');
+          onRefresh(); // Refresh list to get updated code in table
         } catch (error) {
           message.error('Failed to reset invite code');
         }
@@ -103,7 +106,7 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
     });
   };
 
-  const columns: ColumnsType<CourseType> = [
+  const columns: ColumnsType<Course> = [
     {
       title: 'Course Name',
       dataIndex: 'name',
@@ -129,7 +132,7 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
         { text: 'Active', value: false },
         { text: 'Archived', value: true },
       ],
-      onFilter: (value: any, record: CourseType) => record.archived === value,
+      onFilter: (value: any, record: Course) => record.archived === value,
     },
     {
       title: 'Actions',

@@ -104,7 +104,7 @@ function LandingHeader() {
   } else {
     // Normal View
     return (
-      <header style={{ width: '100%' }} className="display-flex justify-content-center">
+      <nav aria-label="Primary" style={{ width: '100%' }} className="display-flex justify-content-center">
         <div
           style={{
             background: 'none',
@@ -132,7 +132,7 @@ function LandingHeader() {
             </Link>
           </div>
         </div>
-      </header>
+      </nav>
     );
   }
 }

@@ -11,10 +11,10 @@ import CPPointInput from '../../../core/CPPointInput';
 
 import Badge from '../../../core/Badge';
 
-import { CommentType, UiComment } from '../../../../infrastructure/comment';
-import { RubricCommentType } from '../../../../infrastructure/rubricComment';
+import { UiComment, type CommentType } from '../../../../utils/comments';
+import type { RubricCommentType } from '../../../../types/models';
 
-import { wait } from '../../../../infrastructure/animation';
+import { wait } from '../../../../utils/animation';
 
 import ReactMarkdown, { Components } from 'react-markdown';
 import { consoleThemes } from '../../../../styles/abstracts/_console-theme-context';

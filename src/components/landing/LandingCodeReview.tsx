@@ -8,7 +8,7 @@ import confusedStudentImg from './../../img/landing/compressed/confused_student.
 
 import Comment from './landingAnimations/grade/SimpleComment';
 
-import { CommentType } from '../../infrastructure/comment';
+import type { CommentType } from '../../types/models';
 
 import { editor } from 'monaco-editor';
 

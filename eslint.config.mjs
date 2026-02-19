@@ -30,6 +30,18 @@ export default tseslint.config(
             '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
             'prettier/prettier': 'warn',
             'jsx-a11y/anchor-is-valid': 'off',
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        '**/components/code-review/**',
+                        '**/hooks/useExecuteFileAsync',
+                        '**/hooks/useExecuteFileStreaming',
+                        '**/utils/executeFileStreaming',
+                        '**/utils/execution',
+                    ],
+                },
+            ],
         },
     },
     prettierConfig,

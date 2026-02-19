@@ -14,7 +14,7 @@ import CPButton from '../../../components/core/CPButton';
 import CPAdminDetail from '../other/CPAdminDetail';
 
 /* codePost imports */
-import { CoursePatchType, CourseType } from '../../../infrastructure/course';
+import { Course } from '../../../api-client';
 import InputNumberOrNull from './InputNumberOrNull';
 import AISettingsCard from './AISettingsCard';
 
@@ -26,8 +26,8 @@ import dayjs from 'dayjs';
 /**********************************************************************************************************************/
 
 interface IProps {
-  currentCourse: CourseType;
-  updateSettings: (newCourse: CoursePatchType) => Promise<CourseType>;
+  currentCourse: Course;
+  updateSettings: (newCourse: Course) => Promise<Course>;
 }
 
 const CourseSettingsPanel: React.FC<IProps> = (props) => {
@@ -58,11 +58,14 @@ const CourseSettingsPanel: React.FC<IProps> = (props) => {
       });
   };
 
-  const updateSettings = (values: CoursePatchType & { allowGradersToEditRubric?: boolean }) => {
+  const updateSettings = (values: Course & { allowGradersToEditRubric?: boolean }) => {
     setIsLoading(true);
     const { currentCourse } = props;
-    const payload = {
-      id: currentCourse.id, // codePost convention
+
+    // Updated this to use the spread operator to keep all the other fields
+    // Need to check if this worked
+    const payload: Course = {
+      ...currentCourse,
       name: values.name,
       period: values.period,
       sendReleasedSubmissionsToBack: values.sendReleasedSubmissionsToBack,
@@ -71,10 +74,10 @@ const CourseSettingsPanel: React.FC<IProps> = (props) => {
       emailNewUsers: values.emailNewUsers,
       anonymousGradingDefault: values.anonymousGradingDefault,
       lateDayCreditsAllowable: values.lateDayCreditsAllowable,
-      assignments: [], // ignored by API
-      sections: [], // ignored by API
+      assignments: [],
+      sections: [],
       archived: values.archived,
-    } as CoursePatchType;
+    };
 
     props.updateSettings(payload).then(() => {
       message.success('Your settings were saved!');
@@ -120,7 +123,7 @@ const CourseSettingsPanel: React.FC<IProps> = (props) => {
 
 interface IFormProps {
   form: ReturnType<typeof Form.useForm>[0];
-  thisCourse: CourseType;
+  thisCourse: Course;
   makeDirty: () => void;
 }
 
@@ -178,7 +181,14 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
   return (
     <Form form={form} layout="horizontal" onChange={makeDirty}>
       {/* Course Name & Period */}
-      <Card title={<Typography.Title level={2} style={{ margin: 0 }}>Course Identity</Typography.Title>} style={{ marginBottom: 24, maxWidth: 600 }}>
+      <Card
+        title={
+          <Typography.Title level={2} style={{ margin: 0 }}>
+            Course Identity
+          </Typography.Title>
+        }
+        style={{ marginBottom: 24, maxWidth: 600 }}
+      >
         <Flex vertical gap={16}>
           <Form.Item
             name="name"
@@ -190,8 +200,16 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
               { message: 'Course name cannot exceed 36 characters', max: 36 },
             ]}
           >
-            <label htmlFor="course-name" className="sr-only">Course Name</label>
-            <Input id="course-name" defaultValue={thisCourse.name} maxLength={36} minLength={4} count={{ show: true }} />
+            <label htmlFor="course-name" className="sr-only">
+              Course Name
+            </label>
+            <Input
+              id="course-name"
+              defaultValue={thisCourse.name}
+              maxLength={36}
+              minLength={4}
+              count={{ show: true }}
+            />
           </Form.Item>
           <Form.Item
             name="period"
@@ -203,8 +221,16 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
               { message: 'Course period cannot exceed 32 characters', max: 32 },
             ]}
           >
-            <label htmlFor="course-period" className="sr-only">Course Period</label>
-            <Input id="course-period" defaultValue={thisCourse.period} maxLength={32} minLength={1} count={{ show: true }} />
+            <label htmlFor="course-period" className="sr-only">
+              Course Period
+            </label>
+            <Input
+              id="course-period"
+              defaultValue={thisCourse.period}
+              maxLength={32}
+              minLength={1}
+              count={{ show: true }}
+            />
           </Form.Item>
         </Flex>
       </Card>
@@ -214,7 +240,11 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
 
       {/* Toggle Settings */}
       <Card
-        title={<Typography.Title level={2} style={{ margin: 0 }}>Course Settings</Typography.Title>}
+        title={
+          <Typography.Title level={2} style={{ margin: 0 }}>
+            Course Settings
+          </Typography.Title>
+        }
         extra={<Text type="secondary">Configure course behavior</Text>}
         style={{ marginBottom: 24, maxWidth: 800 }}
       >
@@ -249,7 +279,9 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
                   initialValue={setting.initialValue}
                   style={{ marginBottom: 0 }}
                 >
-                  <label htmlFor={`switch-${setting.key}`} className="sr-only">{setting.title}</label>
+                  <label htmlFor={`switch-${setting.key}`} className="sr-only">
+                    {setting.title}
+                  </label>
                   <Switch id={`switch-${setting.key}`} aria-label={setting.title} onChange={makeDirty} />
                 </Form.Item>
               </Flex>
@@ -260,7 +292,11 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
 
       {/* Additional Settings */}
       <Card
-        title={<Typography.Title level={2} style={{ margin: 0 }}>Additional Options</Typography.Title>}
+        title={
+          <Typography.Title level={2} style={{ margin: 0 }}>
+            Additional Options
+          </Typography.Title>
+        }
         extra={<Text type="secondary">Late days and timezone</Text>}
         style={{ marginBottom: 24, maxWidth: 800 }}
       >
@@ -312,13 +348,20 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
       </Card>
 
       {/* Course Info */}
-      <Card title={<Typography.Title level={2} style={{ margin: 0 }}>Course Information</Typography.Title>} style={{ marginBottom: 24, maxWidth: 800 }}>
+      <Card
+        title={
+          <Typography.Title level={2} style={{ margin: 0 }}>
+            Course Information
+          </Typography.Title>
+        }
+        style={{ marginBottom: 24, maxWidth: 800 }}
+      >
         <Descriptions column={1} bordered size="small">
           <Descriptions.Item label="Course ID">
             <Text code>{thisCourse.id}</Text>
           </Descriptions.Item>
           <Descriptions.Item label="Expires">
-            {thisCourse.expiration_date ? dayjs(thisCourse.expiration_date).format('YYYY-MM-DD') : 'Never'}
+            {thisCourse.expirationDate ? dayjs(thisCourse.expirationDate).format('YYYY-MM-DD') : 'Never'}
           </Descriptions.Item>
         </Descriptions>
       </Card>

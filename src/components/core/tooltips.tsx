@@ -194,8 +194,8 @@ from the old course into your new course. All other information (including roste
 // ************************ Pre auth tooltips ************************
 const PREAUTH_CREATE_PROPRICING = (
   <span>
-    To sign up for an Enterprise plan, please contact us at <a href="mailto:codepost@cs.rutgers.edu">codepost@cs.rutgers.edu</a>. To
-    learn more, check out our{' '}
+    To sign up for an Enterprise plan, please contact us at{' '}
+    <a href="mailto:codepost@cs.rutgers.edu">codepost@cs.rutgers.edu</a>. To learn more, check out our{' '}
     <Link to="/pricing" target="_blank">
       Pricing.
     </Link>

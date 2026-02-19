@@ -55,7 +55,7 @@ export const consoleThemes = {
     mainBg: '#0d1117', // GitHub Dark Code Bg
     codeBg: '#161b22', // GitHub Dark Main Bg
     codeHeaderBg: 'rgba(255,255,255,0.03)',
-    codeBorder: '#30363d', // GitHub Dark Border
+    codeBorder: '#6e7681', // Accessible dark border (>= 3:1 against dark surfaces)
     commentBg: '#161b22',
     codeTheme: tomorrowNight,
     highlight: '#d3d3d3',
@@ -63,7 +63,7 @@ export const consoleThemes = {
     highlightOpacity: 0.15,
     commentTitle: '#161b22', // Match commentBg
     commentTitleText: '#c9d1d9',
-    commentTitleBorder: '#30363d',
+    commentTitleBorder: '#6e7681',
     commentBody: '#161b22',
     commentTextArea: '#0d1117',
     commentAuthor: '#8b949e', // GitHub Dark Secondary Text
@@ -73,27 +73,27 @@ export const consoleThemes = {
 
     commentCode: '#21262d',
     buttonDangerBg: '#21262d',
-    buttonDangerBorder: '1px solid #30363d',
+    buttonDangerBorder: '1px solid #6e7681',
     buttonSecondaryBg: '#21262d',
-    buttonSecondaryBorder: '1px solid #30363d',
+    buttonSecondaryBorder: '1px solid #6e7681',
     buttonSecondaryColor: '#c9d1d9',
     buttonDisabledBg: 'rgba(255,255,255,0.04)',
     buttonDisabledColor: 'rgba(255,255,255,0.2)',
     subheaderBg: '#161b22',
-    subheaderBorderBottom: '1px solid #30363d',
+    subheaderBorderBottom: '1px solid #6e7681',
     subheaderTitle: '#c9d1d9',
     subheaderDate: '#8b949e',
     subheaderStudents: '#8b949e',
-    subheaderGrade: '#30363d',
+    subheaderGrade: '#9da7b3',
     siderBg: '#0d1117',
     siderTitle: '#c9d1d9',
     siderMenuItemColor: '#8b949e',
     siderSubmenuTitleBg: '#161b22',
     siderSubmenuTitleColor: '#c9d1d9',
-    siderSubmenuBorder: '1px solid #30363d',
+    siderSubmenuBorder: '1px solid #6e7681',
     avatarBackground: '#238636', // GitHub Green
     resizerTrack: '#21262d',
-    resizerTrackActive: '#30363d',
+    resizerTrackActive: '#6e7681',
     templateCode: '#21262d',
   },
 };

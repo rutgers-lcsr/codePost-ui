@@ -1,6 +1,6 @@
 import { Typography } from 'antd';
 import React from 'react';
-import InteractiveCodeConsole from '../components/code-review/InteractiveCodeConsole';
+import InteractiveCodeConsole from '../features/code-review/InteractiveCodeConsole';
 
 const { Title } = Typography;
 

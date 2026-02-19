@@ -14,13 +14,13 @@ import { Form, Input, message, Modal } from 'antd';
 /* codePost imports */
 import CPButton from '../../../../components/core/CPButton';
 
-import { SectionType } from '../../../../infrastructure/section';
+import { Section } from '../../../../api-client';
 
 /**********************************************************************************************************************/
 
 interface IProps {
-  sections: SectionType[];
-  addSection: (sectionName: string) => Promise<SectionType>;
+  sections: Section[];
+  addSection: (sectionName: string) => Promise<Section>;
 }
 
 const AddSectionDialog: React.FC<IProps> = ({ sections, addSection }) => {
@@ -78,7 +78,7 @@ interface IModalProps {
   open: boolean;
   onCreate: () => void;
   onCancel: () => void;
-  sections: SectionType[];
+  sections: Section[];
   saving: boolean;
 }
 

@@ -26,6 +26,13 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
 
+    /* Path aliases */
+    "baseUrl": "src",
+    "paths": {
+      "@features/*": ["features/*"],
+      "@code-review/*": ["features/code-review/*"]
+    },
+
     /* Types */
     "types": ["vite/client", "vitest/globals"]
   },

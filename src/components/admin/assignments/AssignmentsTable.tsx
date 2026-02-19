@@ -71,11 +71,10 @@ dayjs.extend(advancedFormat);
 import { Link, useNavigate } from 'react-router-dom';
 
 /* codePost imports */
-import { AssignmentPatchType, AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
-import { CourseType, FileType, SectionType, SubmissionInfoType } from '../../../infrastructure/types';
-import { UserType } from '../../../infrastructure/user';
+import { SubmissionInfoType, UploadFile } from '../../../types/common';
+import { Course, Section, User } from '../../../api-client';
 
-import { IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../types/common';
+import { Assignment, IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../types/common';
 
 import DeleteAssignmentDialog from './assignments/DeleteAssignmentDialog';
 
@@ -88,7 +87,7 @@ import AssignmentSettingsDialog from './assignments/AssignmentSettingsDialog';
 
 import DownloadGrades from './assignments/DownloadGrades';
 
-import { sendSlack } from '../../../components/core/slack';
+import { Logger } from '../../../utils/logger';
 
 import {
   calculateMultipleAssignmentProgressStats,
@@ -125,14 +124,14 @@ const FINALIZED_THRESHOLD = 0.5;
 
 export interface IManageAssignmentsProps {
   /* assignment data */
-  assignments: AssignmentType[];
+  assignments: Assignment[];
   submissions: IAssignmentToSubmissionsMap;
   students: string[]; // emails
   submissionsByStudent: IStudentSubmissionsDataTable;
-  currentCourse: CourseType;
+  currentCourse: Course;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
-  sections: SectionType[];
-  courses: CourseType[];
+  sections: Section[];
+  courses: Course[];
 
   /* loading state */
   loadComplete: boolean;
@@ -147,15 +146,18 @@ export interface IManageAssignmentsProps {
     isVisible: boolean,
     dueDate?: string,
     sortKey?: number,
-  ) => Promise<AssignmentType>;
-  updateAssignment: (assignment: AssignmentPatchType) => Promise<void>;
-  deleteAssignment: (assignment: AssignmentType) => Promise<void>;
+  ) => Promise<Assignment>;
+  updateAssignment: (assignment: Partial<Assignment> & { id: number }) => Promise<void>;
+  deleteAssignment: (assignment: Assignment) => Promise<void>;
 
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: FileType[]) => Promise<any>;
+  uploadSubmission: (assignment: Assignment, partners: string[], files: UploadFile[]) => Promise<SubmissionInfoType>;
   deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   updateSubmission: (submission: SubmissionInfoType) => Promise<void>;
 
-  bulkUpdateSubmissions: (assignmentID: number, getPayload: (sub: SubmissionInfoType) => any) => Promise<void>;
+  bulkUpdateSubmissions: (
+    assignmentID: number,
+    getPayload: (sub: SubmissionInfoType) => Partial<SubmissionInfoType>,
+  ) => Promise<void>;
 
   /* Refresh course */
   refreshCourseData: () => void;
@@ -164,9 +166,9 @@ export interface IManageAssignmentsProps {
   myEmail: string;
 
   /* user data */
-  user: UserType;
+  user: User;
 
-  activeAssignment?: AssignmentType; // which assignment has been clicked
+  activeAssignment?: Assignment; // which assignment has been clicked
   detailType?: DETAIL_TYPE; // what detail view are we showing
   baseURL: string;
 
@@ -182,6 +184,9 @@ interface DrawerContentState {
 /**********************************************************************************************************************/
 
 const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
+  const sortAssignments = (assignments: Assignment[]) => {
+    return assignments.sort((a, b) => (a.sortKey || 0) - (b.sortKey || 0));
+  };
   const {
     assignments,
     submissions,
@@ -229,7 +234,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
   useEffect(() => {
     if (drawerType === undefined) return;
 
-    const thisAssignment = assignments.find((assignment: AssignmentType) => {
+    const thisAssignment = assignments.find((assignment: Assignment) => {
       return assignment.name === drawerContent.title;
     });
 
@@ -286,7 +291,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
 
   // This function is called when an assignment drawer is opened
   const openDrawer = useCallback(
-    (assignment: AssignmentType, type: DRAWER_TYPE) => {
+    (assignment: Assignment, type: DRAWER_TYPE) => {
       if (!Object.prototype.hasOwnProperty.call(submissions, assignment.id)) {
         const title = getDrawerTitle(type, null, !fullSubmissionsLoadComplete);
 
@@ -331,7 +336,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
    ******************************************************************************/
 
   const saveSettings = useCallback(
-    (assignment: AssignmentPatchType) => {
+    (assignment: Partial<Assignment> & { id: number }) => {
       return updateAssignmentProp(assignment);
     },
 
@@ -383,7 +388,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
 
   // Helper to get publish confirmation text based on assignment state
   const getPublishConfirmText = useCallback(
-    (assignment: AssignmentType): React.ReactElement | string => {
+    (assignment: Assignment): React.ReactElement | string => {
       if (assignment.isReleased) {
         return 'Are you sure you want to un-publish this assignment?';
       }
@@ -411,7 +416,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
 
   // Helper to toggle assignment visibility
   const toggleAssignmentVisibility = useCallback(
-    (assignment: AssignmentType) => {
+    (assignment: Assignment) => {
       const oldVal = assignment.isVisible;
 
       updateAssignmentProp({
@@ -426,17 +431,16 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
 
   // Helper to handle assignment publish toggle
   const toggleAssignmentPublish = useCallback(
-    (assignment: AssignmentType) => {
+    (assignment: Assignment) => {
       if (!assignment.isReleased) {
-        sendSlack(
-          'Assignment published',
-          `${assignment.name} | ${currentCourse ? currentCourse.name : ''} ${
+        Logger.info('Assignment published', {
+          text: `${assignment.name} | ${currentCourse ? currentCourse.name : ''} ${
             currentCourse ? currentCourse.period : ''
           }`,
-          colors.brandPrimary,
-          '#user_notifications_everything',
-          currentCourse ? currentCourse.id : 0,
-        );
+          color: colors.brandPrimary,
+          channel: '#user_notifications_everything',
+          courseID: currentCourse ? currentCourse.id : 0,
+        });
       }
 
       updateAssignmentProp({
@@ -449,7 +453,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
 
   // Helper to toggle submissions released
   const toggleSubmissionsReleased = useCallback(
-    (assignment: AssignmentType) => {
+    (assignment: Assignment) => {
       const isReleased = assignment.feedbackReleased;
       const action = isReleased ? 'unrelease' : 'release';
       const title = `Are you sure you want to ${action} submissions?`;
@@ -712,7 +716,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                 buttonText={'Notify students'}
                 title="Notify students via email"
                 template="publish_assignment"
-                course={currentCourse!}
+                course={currentCourse}
                 assignment={assignment}
                 me={myEmail}
                 emails={students}
@@ -739,8 +743,10 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         <Space orientation="vertical" size={0}>
           <Text strong style={{ fontSize: '16px' }}>
             {assignment.name}
-            {assignment.hideFrom.length > 0 && (
-              <Tooltip title={`Assignment hidden from the following sections: ${getSectionNames(assignment.hideFrom)}`}>
+            {(assignment.hideFrom ?? []).length > 0 && (
+              <Tooltip
+                title={`Assignment hidden from the following sections: ${getSectionNames(assignment.hideFrom ?? [])}`}
+              >
                 <EyeInvisibleOutlined style={{ marginLeft: 5, color: colors.neutralMainText }} />
               </Tooltip>
             )}
@@ -834,9 +840,11 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
     <NewAssignmentDialog
       key={1}
       {...props}
+      currentCourse={currentCourse}
       assignments={assignments}
+      courses={props.courses}
       createAssignment={createAssignment}
-      timezone={currentCourse.timezone}
+      timezone={currentCourse.timezone || 'UTC'}
     />,
     <Link to={`${baseURL}/download/grades`}>
       <CPButton cpType="secondary" key={2} icon={<DownloadOutlined />} disabled={Object.keys(submissions).length === 0}>
@@ -891,7 +899,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
             onSave={saveSettings}
             currentAssignment={activeAssignment!}
             assignments={assignments}
-            timezone={currentCourse.timezone}
+            timezone={currentCourse.timezone || 'UTC'}
             sections={sections}
           />
         );
@@ -906,8 +914,8 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
             students={students}
             selectedStudents={activeStudent !== undefined ? [activeStudent] : []}
             submissions={submissionsByStudent}
-            uploadSubmission={(assignment: AssignmentType, partners: string[], files: FileType[]) =>
-              uploadSubmission(assignment, partners, files)
+            uploadSubmission={(assignment, partners, files) =>
+              uploadSubmission(assignment, partners, files as UploadFile[])
             }
             course={currentCourse}
             onSuccess={openSubmission}
@@ -922,7 +930,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
             assignment={activeAssignment}
             submissions={submissions[activeAssignment.id]}
             students={students}
-            uploadSubmission={(assignment: AssignmentType, partners: string[], files: FileType[]) =>
+            uploadSubmission={(assignment: Assignment, partners: string[], files: UploadFile[]) =>
               uploadSubmission(assignment, partners, files)
             }
             updateSubmission={updateSubmission}
@@ -965,7 +973,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
             assignments={assignments}
             submissionsByStudent={submissionsByStudent}
             students={students}
-            currentCourse={currentCourse!}
+            currentCourse={currentCourse}
             onCancel={cancel}
           />
         );
@@ -976,7 +984,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
             activeAssignment={activeAssignment}
             submissions={submissions[activeAssignment.id]}
             bulkUpdateSubmissions={bulkUpdateSubmissions}
-            currentCourse={currentCourse!}
+            currentCourse={currentCourse}
             onCancel={cancel}
             myEmail={myEmail}
           />
@@ -1002,7 +1010,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
             assignments={assignments}
             submissionsByStudent={submissionsByStudent}
             students={students}
-            currentCourse={currentCourse!}
+            currentCourse={currentCourse}
             onCancel={cancel}
           />
         );
@@ -1074,8 +1082,10 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
             <NewAssignmentDialog
               key={1}
               {...props}
-              timezone={currentCourse.timezone}
+              currentCourse={currentCourse}
+              timezone={currentCourse.timezone || 'UTC'}
               assignments={assignments}
+              courses={props.courses}
               createAssignment={createAssignmentProp}
             />
           </Empty>

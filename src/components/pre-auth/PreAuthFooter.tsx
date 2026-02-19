@@ -19,8 +19,6 @@ const PreAuthFooter = () => {
   // We need some horitzontal padding on mobile to make sure the intercom button doesn't block the terms
   const bottomPadding = windowSize.width < breakpoint ? 0 : 0;
 
-
-
   const content = (
     <div style={{ textAlign: 'center' }}>
       <img
@@ -83,7 +81,11 @@ const PreAuthFooter = () => {
           <Link className="text-link" style={{ fontSize: 17, paddingLeft: 8, paddingRight: 8 }} to="/about">
             About us
           </Link>{' '}
-          <Link className="text-link" style={{ fontSize: 17, paddingLeft: 8, paddingRight: 8 }} to="/scholarships/computer-science-education">
+          <Link
+            className="text-link"
+            style={{ fontSize: 17, paddingLeft: 8, paddingRight: 8 }}
+            to="/scholarships/computer-science-education"
+          >
             Scholarship
           </Link>{' '}
           <Link className="text-link" style={{ fontSize: 17, paddingLeft: 8, paddingRight: 8 }} to="/terms">

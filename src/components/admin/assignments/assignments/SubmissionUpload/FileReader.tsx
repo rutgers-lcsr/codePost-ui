@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 
 import { message } from 'antd';
 
-import { BinaryExtensions, File as CPFile, ImageExtensions, PDFExtensions } from '../../../../../infrastructure/file';
+import { BinaryExtensions, File as CPFile, ImageExtensions, PDFExtensions } from '../../../../../utils/file';
 
 import { UploadFile } from 'antd/lib/upload/interface';
 

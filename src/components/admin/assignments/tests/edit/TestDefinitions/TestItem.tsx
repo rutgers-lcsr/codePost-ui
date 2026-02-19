@@ -9,13 +9,19 @@ import { useState } from 'react';
 import { message, Modal } from 'antd';
 
 /* codePost object imports */
-import { AssignmentType, TestCaseType, SubmissionInfoType } from '../../../../../../infrastructure/types';
-import { TestCase } from '../../../../../../infrastructure/testCase';
-
-import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
+import { TypeEnum } from '../../../../../../api-client';
+import { autograderApi } from '../../../../../../api-client/clients';
+import {
+  AssignmentFileType,
+  AssignmentType,
+  EnvironmentType,
+  SubmissionInfoType,
+  TestCaseType,
+} from '../../../../../../types/models';
 /* codePost util imports */
 
 import WrappedTestFormItem from './TestFormItem';
+import { useTaskPolling } from '../../../../../../hooks/useTaskPolling';
 
 const { confirm } = Modal;
 
@@ -32,29 +38,29 @@ interface ITestItemProps {
   setTestSubject: (id: string) => void;
   activeSubmission?: SubmissionInfoType;
   updateTestStatus: (testID: number, status: number) => void;
+  assignmentFiles?: AssignmentFileType[];
 }
 
 // Extends expected form fields + state fields from TestFormItem
 interface IFullTestValues {
   description: string;
-  testType: string;
+  testType: TypeEnum;
   explanation: string;
-  checkReturn: boolean;
-  outputType: string;
   commandText: string;
-  fileName: string;
   exposed: boolean;
   pointsPass: number;
   pointsFail: number;
-  expectPlot: boolean;
-  dataSet: number;
-  expectedOutput: string;
-  input: string;
-  function: string;
+
+  // Legacy fields removed
+
   targetCellId?: number | string;
+  testCode?: string;
 }
 
 export const TestItem = (props: ITestItemProps) => {
+  // This might be deprecated, I dont think its currently being used
+
+  // TODO: investigate and remove if so (also remove related imports)
   /******************************* State Variables ****************************/
   const [testOutput, setTestOutput] = useState<any | undefined>(undefined);
   const [isRunning, setIsRunning] = useState(false);
@@ -63,24 +69,15 @@ export const TestItem = (props: ITestItemProps) => {
     const testCaseCopy = { ...props.testCase };
     testCaseCopy.text = values.commandText || '';
     testCaseCopy.description = values.description;
-    testCaseCopy.expectedOutput = values.expectedOutput;
-    testCaseCopy.fileName = values.fileName;
-    testCaseCopy.function = values.function; // Note: 'function' might be unused in new UI but keeping for compatibility
-    testCaseCopy.input = values.input;
-    testCaseCopy.checkReturn = values.checkReturn;
     testCaseCopy.type = values.testType;
     testCaseCopy.exposed = values.exposed;
     testCaseCopy.pointsPass = values.pointsPass;
     testCaseCopy.pointsFail = values.pointsFail;
     testCaseCopy.explanation = values.explanation;
-
-    testCaseCopy.outputIsFile = values.outputType === 'file';
-    testCaseCopy.isFlexible = values.outputType === 'flex';
-    testCaseCopy.outputIsRegexp = values.outputType === 'regexp';
-
-    testCaseCopy.expectPlot = !!values.expectPlot;
-    testCaseCopy.dataSet = values.dataSet || null;
-    testCaseCopy.targetCellId = values.targetCellId || null;
+    testCaseCopy.explanation = values.explanation;
+    testCaseCopy.targetCellId = (values.targetCellId as any) || null;
+    testCaseCopy.testCode = values.testCode || '';
+    testCaseCopy.testCode = values.testCode || '';
 
     return testCaseCopy;
   };
@@ -129,17 +126,17 @@ export const TestItem = (props: ITestItemProps) => {
     }
   };
 
+  // Extract polling logic since we can't easily use the hook inside a callback without refactoring the whole component structure significantly
+  // or checking if we can use the hook at top level.
+  // We can use the hook at top level!
+  const { pollTask } = useTaskPolling();
+
   const runTest = async (values: IFullTestValues) => {
     // 1. Save (or simulate save? Legacy saved first)
     const updatedTest = await saveTest(values);
 
     if (updatedTest && updatedTest.id > 0) {
       setIsRunning(true);
-      const payload: any = {
-        testId: updatedTest.id,
-        submissionId: props.activeSubmission ? props.activeSubmission.id.toString() : '0',
-      };
-
       if (!props.activeSubmission) {
         message.error('Please select a student submission to run tests.');
         setIsRunning(false);
@@ -147,16 +144,35 @@ export const TestItem = (props: ITestItemProps) => {
       }
 
       try {
-        const result = await TestCase.runV2(payload);
+        const response = await autograderApi.v2RunCreate({
+          testExecutionRequest: {
+            testId: updatedTest.id,
+            submissionId: props.activeSubmission.id,
+          },
+        });
 
+        // The response is now AsyncTaskResponse
+        const taskId = (response as any).taskId || (response as any).task_id;
+
+        if (!taskId) {
+          throw new Error('No task ID returned from server');
+        }
+
+        const runResult = await pollTask(taskId);
+
+        // result.result contains the actual test result data
+        const result = runResult.result as any;
+        const success = runResult.success as boolean;
+
+        const resultData = result ?? {};
         const formatted = {
-          success: result.passed,
-          stdout: result.output_data?.stdout || result.logs,
-          stderr: result.output_data?.stderr,
-          error: result.isError ? result.logs : undefined,
-          output_data: result.output_data,
-          cached: result.cached,
-          execution_time: result.execution_time,
+          success: success,
+          stdout: (resultData as { stdout?: string; logs?: string }).stdout ?? (resultData as { logs?: string }).logs,
+          stderr: (resultData as { stderr?: string }).stderr,
+          error: runResult.error ?? (resultData as { error?: string }).error,
+          output_data: resultData,
+          cached: (resultData as { cached?: boolean }).cached,
+          execution_time: (resultData as { execution_time?: number }).execution_time,
         };
 
         setTestOutput(formatted);
@@ -164,6 +180,7 @@ export const TestItem = (props: ITestItemProps) => {
       } catch (e) {
         message.error('Failed to run test');
         setIsRunning(false);
+        console.error(e);
       }
     }
   };
@@ -184,6 +201,7 @@ export const TestItem = (props: ITestItemProps) => {
       setTestSubject={props.setTestSubject}
       activeSubmission={props.activeSubmission}
       currentAssignment={props.currentAssignment}
+      assignmentFiles={props.assignmentFiles}
     />
   );
 };

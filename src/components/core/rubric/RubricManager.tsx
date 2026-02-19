@@ -14,13 +14,12 @@ import { osControlKey } from '../operatingSystem';
 import { arrayMoveImmutable as arrayMove } from 'array-move';
 import _ from 'lodash';
 
-import { Assignment, AssignmentType, RubricType } from '../../../infrastructure/assignment';
-import { CommentIO } from '../../../infrastructure/comment';
-import { RubricCategory, RubricCategoryType } from '../../../infrastructure/rubricCategory';
-import { RubricComment, RubricCommentType } from '../../../infrastructure/rubricComment';
-import { SubmissionInfoType } from '../../../infrastructure/submission';
+import { assignmentsApi, rubricCategoriesApi, rubricCommentsApi, commentsApi } from '../../../api-client/clients';
+import { RubricCategory, RubricComment } from '../../../api-client';
+import { RubricFullData, RubricCommentInstanceList } from '../../../types/rubric';
+import { SubmissionInfoType } from '../../../types/models';
 
-import { DIRECTION, IRubricCategoryToRubricCommentsMap } from '../../../types/common';
+import { DIRECTION, IRubricCategoryToRubricCommentsMap, Assignment } from '../../../types/common';
 import { useRubricStore, RESOLUTION, IFeedbackScore } from '../../../stores/useRubricStore';
 
 /**********************************************************************************************************************/
@@ -36,58 +35,55 @@ export interface IRubricManagerParams {
 
 export interface IRubricManagerHelpers {
   loadAssignmentRubric: (
-    assignment: AssignmentType,
+    assignment: Assignment,
     shouldLoadInstances: boolean,
     shouldLoadFeedback: boolean,
   ) => Promise<void>;
-  loadFeedbackScores: (rubricComments: RubricCommentType[]) => Promise<void>;
-  loadInstanceLists: (rubricComments: RubricCommentType[]) => Promise<Record<number, number[]>>;
+  loadFeedbackScores: (rubricComments: RubricComment[]) => Promise<void>;
+  loadInstanceLists: (rubricComments: RubricComment[]) => Promise<Record<number, number[]>>;
   resetRubric: () => void;
-  setNewRubric: (categories: RubricCategoryType[], comments: IRubricCategoryToRubricCommentsMap) => void;
-  replaceRubric: (categories: RubricCategoryType[], comments: IRubricCategoryToRubricCommentsMap) => void;
-  onCategoryEdit: (category: RubricCategoryType) => void;
-  onCategoryUndo: (category: RubricCategoryType) => void;
-  onCommentEdit: (comment: RubricCommentType) => void;
-  onCommentUndo: (comment: RubricCommentType) => void;
+  setNewRubric: (categories: RubricCategory[], comments: IRubricCategoryToRubricCommentsMap) => void;
+  replaceRubric: (categories: RubricCategory[], comments: IRubricCategoryToRubricCommentsMap) => void;
+  onCategoryEdit: (category: RubricCategory) => void;
+  onCategoryUndo: (category: RubricCategory) => void;
+  onCommentEdit: (comment: RubricComment) => void;
+  onCommentUndo: (comment: RubricComment) => void;
   saveRubric: (
-    categories: RubricCategoryType[],
+    categories: RubricCategory[],
     comments: IRubricCategoryToRubricCommentsMap,
-    unsavedComments: RubricCommentType[],
-    deletedComments: RubricCommentType[],
-    unsavedCategories: RubricCategoryType[],
-    deletedCategories: RubricCategoryType[],
+    unsavedComments: RubricComment[],
+    deletedComments: RubricComment[],
+    unsavedCategories: RubricCategory[],
+    deletedCategories: RubricCategory[],
     resolved: Record<number, RESOLUTION>,
     demoMode?: boolean,
-  ) => Promise<{ rubricCategories: RubricCategoryType[]; rubricComments: IRubricCategoryToRubricCommentsMap }>;
-  deleteLinkedComments: (rubricComment: RubricCommentType) => Promise<unknown[]>;
-  unlinkLinkedComments: (rubricComment: RubricCommentType) => Promise<unknown[]>;
+  ) => Promise<{ rubricCategories: RubricCategory[]; rubricComments: IRubricCategoryToRubricCommentsMap }>;
+  deleteLinkedComments: (rubricComment: RubricComment) => Promise<unknown[]>;
+  unlinkLinkedComments: (rubricComment: RubricComment) => Promise<unknown[]>;
   buildLinkedList: (
-    deletedComments: RubricCommentType[],
-    editedComments: RubricCommentType[],
+    deletedComments: RubricComment[],
+    editedComments: RubricComment[],
     resolved: Record<number, RESOLUTION>,
     instanceLists: Record<number, number[]>,
-  ) => { edited: RubricCommentType[]; deleted: RubricCommentType[] };
+  ) => { edited: RubricComment[]; deleted: RubricComment[] };
   onSave: (fnc?: (rubric: any) => void, demoMode?: boolean) => Promise<void>;
-  buildCommentMap: (
-    categories: RubricCategoryType[],
-    comments: RubricCommentType[],
-  ) => IRubricCategoryToRubricCommentsMap;
-  moveCategory: (category: RubricCategoryType, direction: DIRECTION) => void;
-  updateRubricCategory: (category: RubricCategoryType, hasError?: boolean) => void;
-  deleteRubricCategory: (category: RubricCategoryType) => void;
+  buildCommentMap: (categories: RubricCategory[], comments: RubricComment[]) => IRubricCategoryToRubricCommentsMap;
+  moveCategory: (category: RubricCategory, direction: DIRECTION) => void;
+  updateRubricCategory: (category: RubricCategory, hasError?: boolean) => void;
+  deleteRubricCategory: (category: RubricCategory) => void;
   addRubricCategory: (name?: string) => void;
-  updateRubricComment: (comment: RubricCommentType) => void;
-  deleteRubricComment: (comment: RubricCommentType) => void;
-  addRubricComment: (category: RubricCategoryType) => void;
+  updateRubricComment: (comment: RubricComment) => void;
+  deleteRubricComment: (comment: RubricComment) => void;
+  addRubricComment: (category: RubricCategory) => void;
   onLinkedAlertCancel: () => void;
-  onLinkedCommentsResolve: (comment: RubricCommentType, resolution: RESOLUTION, fnc?: (rubric: any) => void) => void;
+  onLinkedCommentsResolve: (comment: RubricComment, resolution: RESOLUTION, fnc?: (rubric: any) => void) => void;
   onLinkedConfirmCancel: () => void;
   onLinkedConfirmAccept: (fnc?: (rubric: any) => void) => void;
   onBack: () => void;
   onUnload: (event: BeforeUnloadEvent) => void;
   toggleLock: () => void;
   changesMade: () => boolean;
-  activateCommentExplorer: (comment: RubricCommentType) => void;
+  activateCommentExplorer: (comment: RubricComment) => void;
   clearCommentExplorer: () => void;
   onCommentDragEnd: (result: {
     destination?: { droppableId: string; index: number } | null;
@@ -96,25 +92,25 @@ export interface IRubricManagerHelpers {
 }
 
 export interface IRubricManagerProps {
-  assignment: AssignmentType;
+  assignment: Assignment;
   submissions: SubmissionInfoType[];
   shouldLoadFeedback: boolean;
   shouldLoadInstanceLists: boolean;
   onCancel: () => void;
   reloadInterval?: number;
   setRubric?: (rubric: {
-    rubricCategories: RubricCategoryType[];
+    rubricCategories: RubricCategory[];
     rubricComments: IRubricCategoryToRubricCommentsMap;
   }) => void;
-  rubricCategories?: RubricCategoryType[];
+  rubricCategories?: RubricCategory[];
   rubricComments?: IRubricCategoryToRubricCommentsMap;
   children: (params: IRubricManagerParams) => React.ReactNode;
   defaultRubric?: IRubric;
 }
 
 export interface IRubric {
-  categories: RubricCategoryType[];
-  comments: RubricCommentType[];
+  categories: RubricCategory[];
+  comments: RubricComment[];
 }
 
 export interface IRubricManagerState {
@@ -122,19 +118,19 @@ export interface IRubricManagerState {
   changeLock: boolean;
   isSaving: boolean;
   errorObjects: number[];
-  unsavedComments: RubricCommentType[];
-  deletedComments: RubricCommentType[];
-  unsavedCategories: RubricCategoryType[];
-  deletedCategories: RubricCategoryType[];
+  unsavedComments: RubricComment[];
+  deletedComments: RubricComment[];
+  unsavedCategories: RubricCategory[];
+  deletedCategories: RubricCategory[];
   hasMoved: boolean;
-  activeComment?: RubricCommentType;
-  linkedComments: RubricCommentType[];
+  activeComment?: RubricComment;
+  linkedComments: RubricComment[];
   resolutions: Record<number, RESOLUTION>;
   confirmedPropagation: boolean;
   showConfirmDialog: boolean;
-  rubricCategories: RubricCategoryType[];
+  rubricCategories: RubricCategory[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
-  savedRubricCategories: RubricCategoryType[];
+  savedRubricCategories: RubricCategory[];
   savedRubricComments: IRubricCategoryToRubricCommentsMap;
   newObjectCounter: number;
   feedbackScores?: Record<number, IFeedbackScore>;
@@ -151,7 +147,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
   // Build comment map utility
   const buildCommentMap = useCallback(
-    (categories: RubricCategoryType[], comments: RubricCommentType[]): IRubricCategoryToRubricCommentsMap => {
+    (categories: RubricCategory[], comments: RubricComment[]): IRubricCategoryToRubricCommentsMap => {
       const map: IRubricCategoryToRubricCommentsMap = {};
       categories.forEach((cat) => {
         map[cat.id] = [];
@@ -168,11 +164,13 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
   // Load feedback scores
   const loadFeedbackScores = useCallback(
-    async (rubricComments: RubricCommentType[]) => {
+    async (rubricComments: RubricComment[]) => {
       const newMap: Record<number, IFeedbackScore> = {};
       for (const rComment of rubricComments) {
         if (rComment.id > 0) {
-          const score = await RubricComment.readFeedbackScore(rComment.id);
+          const score = (await rubricCommentsApi.feedbackScoreRetrieve({
+            id: rComment.id,
+          })) as unknown as IFeedbackScore;
           newMap[rComment.id] = {
             negative: score.negative,
             positive: score.positive,
@@ -186,11 +184,13 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
   // Load instance lists
   const loadInstanceLists = useCallback(
-    async (rubricComments: RubricCommentType[]): Promise<Record<number, number[]>> => {
+    async (rubricComments: RubricComment[]): Promise<Record<number, number[]>> => {
       const newMap: Record<number, number[]> = {};
       for (const rComment of rubricComments) {
         if (rComment.id > 0) {
-          const list = await RubricComment.readCommmentList(rComment.id);
+          const list = (await rubricCommentsApi.retrieve({
+            id: rComment.id,
+          })) as unknown as RubricCommentInstanceList;
           newMap[rComment.id] = list.comments;
         } else {
           newMap[rComment.id] = [];
@@ -204,9 +204,10 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
   // Load assignment rubric
   const loadAssignmentRubric = useCallback(
-    async (assignment: AssignmentType, shouldLoadInstances: boolean, shouldLoadFeedback: boolean) => {
+    async (assignment: Assignment, shouldLoadInstances: boolean, shouldLoadFeedback: boolean) => {
       try {
-        const rubric: RubricType = await Assignment.readRubric(assignment.id);
+        const rubricRequest = await assignmentsApi.rubricRetrieve({ id: assignment.id });
+        const rubric = rubricRequest as unknown as RubricFullData;
         const commentMap = buildCommentMap(rubric.rubricCategories, rubric.rubricComments);
 
         const categoriesChanged = !_.isEqual(store.savedRubricCategories, rubric.rubricCategories);
@@ -254,15 +255,19 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
   // Delete linked comments
   const deleteLinkedComments = useCallback(
-    async (rubricComment: RubricCommentType) => {
+    async (rubricComment: RubricComment) => {
       let comments: number[] = [];
       if (store.instanceLists[rubricComment.id]) {
         comments = store.instanceLists[rubricComment.id];
       } else {
-        comments = (await RubricComment.readCommmentList(rubricComment.id)).comments;
+        comments = (
+          (await rubricCommentsApi.retrieve({
+            id: rubricComment.id,
+          })) as unknown as RubricCommentInstanceList
+        ).comments;
       }
 
-      const promises = comments.map((commentID) => CommentIO.delete({ id: commentID }));
+      const promises = comments.map((commentID) => commentsApi.destroy({ id: commentID }));
       return Promise.all(promises);
     },
     [store.instanceLists],
@@ -270,22 +275,28 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
   // Unlink linked comments
   const unlinkLinkedComments = useCallback(
-    async (rubricComment: RubricCommentType) => {
+    async (rubricComment: RubricComment) => {
       let comments: number[] = [];
       if (store.instanceLists[rubricComment.id]) {
         comments = store.instanceLists[rubricComment.id];
       } else {
-        comments = (await RubricComment.readCommmentList(rubricComment.id)).comments;
+        comments = (
+          (await rubricCommentsApi.retrieve({
+            id: rubricComment.id,
+          })) as unknown as RubricCommentInstanceList
+        ).comments;
       }
 
       const promises = comments.map((commentID) => {
-        const payload = {
+        return commentsApi.partialUpdate({
           id: commentID,
-          text: rubricComment.text,
-          pointDelta: rubricComment.pointDelta,
-          rubricComment: null,
-        };
-        return CommentIO.update(payload);
+          patchedComment: {
+            // text: rubricComment.text,  // Wait, legacy commentIO.update accepted payload. commentsApi.partialUpdate expects PatchedComment
+            // pointDelta: rubricComment.pointDelta, // Comment does not have pointDelta usually? Let's check model.
+            // rubricComment: null,
+            rubricComment: null,
+          },
+        });
       });
       return Promise.all(promises);
     },
@@ -295,13 +306,13 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
   // Build linked list
   const buildLinkedList = useCallback(
     (
-      deletedComments: RubricCommentType[],
-      editedComments: RubricCommentType[],
+      deletedComments: RubricComment[],
+      editedComments: RubricComment[],
       resolved: Record<number, RESOLUTION>,
       instanceLists: Record<number, number[]>,
     ) => {
-      const deleted: RubricCommentType[] = [];
-      const edited: RubricCommentType[] = [];
+      const deleted: RubricComment[] = [];
+      const edited: RubricComment[] = [];
 
       for (const comment of deletedComments) {
         if (!Object.keys(resolved).includes(comment.id.toString())) {
@@ -327,12 +338,12 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
   // Save rubric
   const saveRubric = useCallback(
     async (
-      categories: RubricCategoryType[],
+      categories: RubricCategory[],
       comments: IRubricCategoryToRubricCommentsMap,
-      unsavedComments: RubricCommentType[],
-      deletedComments: RubricCommentType[],
-      unsavedCategories: RubricCategoryType[],
-      deletedCategories: RubricCategoryType[],
+      unsavedComments: RubricComment[],
+      deletedComments: RubricComment[],
+      unsavedCategories: RubricCategory[],
+      deletedCategories: RubricCategory[],
       resolved: Record<number, RESOLUTION>,
       demoMode?: boolean,
     ) => {
@@ -341,11 +352,13 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
         ? []
         : categories.map((category) => {
             if (category.id < 0) {
-              return RubricCategory.create(category).then((newCategory) => {
+              const { id, ...payload } = category;
+              return rubricCategoriesApi.create({ rubricCategory: payload as any }).then((newCategory) => {
                 const commentList = comments[category.id];
                 const innerPromises = commentList.map((comment) => {
-                  comment.category = newCategory.id;
-                  return RubricComment.create(comment);
+                  const { id: cId, ...cPayload } = comment;
+                  cPayload.category = newCategory.id;
+                  return rubricCommentsApi.create({ rubricComment: cPayload as any });
                 });
                 return Promise.all(innerPromises);
               });
@@ -354,21 +367,31 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
               let categoryPromise: Promise<unknown> = Promise.resolve();
 
               if (categoryNeedsSaving) {
-                const { rubricComments: _unused, ...payload } = category;
+                const { rubricComments: _unused, id, ...payload } = category;
                 void _unused;
-                categoryPromise = RubricCategory.update(payload);
+                categoryPromise = rubricCategoriesApi.partialUpdate({
+                  id: category.id,
+                  patchedRubricCategory: payload,
+                });
               }
 
               const commentList = comments[category.id];
+              // Ensure commentList exists
+              if (!commentList) return categoryPromise;
+
               const commentPromises = commentList.map((comment) => {
                 if (comment.id < 0) {
-                  return RubricComment.create(comment);
+                  const { id: cId, ...cPayload } = comment;
+                  return rubricCommentsApi.create({ rubricComment: cPayload as any });
                 } else {
                   const commentNeedsSaving = unsavedComments.some((el) => el.id === comment.id);
                   if (commentNeedsSaving) {
-                    const { category: _unused, ...payload } = comment;
+                    const { category: _unused, id, ...payload } = comment;
                     void _unused;
-                    return RubricComment.update(payload);
+                    return rubricCommentsApi.partialUpdate({
+                      id: comment.id,
+                      patchedRubricComment: payload,
+                    });
                   }
                   return Promise.resolve();
                 }
@@ -379,26 +402,32 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
           });
 
       // Delete comments
-      const deleteCommentPromises = demoMode
+      const deleteCommentPromises: Promise<any>[] = demoMode
         ? []
         : deletedComments.map((rubricComment) => {
             if (Object.keys(resolved).includes(rubricComment.id.toString())) {
               switch (resolved[rubricComment.id]) {
                 case RESOLUTION.DELETE:
-                  return deleteLinkedComments(rubricComment).then(() => RubricComment.delete(rubricComment));
+                  return deleteLinkedComments(rubricComment).then(() =>
+                    rubricCommentsApi.destroy({ id: rubricComment.id }),
+                  );
                 case RESOLUTION.UNLINK:
-                  return unlinkLinkedComments(rubricComment).then(() => RubricComment.delete(rubricComment));
+                  return unlinkLinkedComments(rubricComment).then(() =>
+                    rubricCommentsApi.destroy({ id: rubricComment.id }),
+                  );
                 default:
                   return Promise.resolve();
               }
             }
-            return RubricComment.delete(rubricComment);
+            return rubricCommentsApi.destroy({ id: rubricComment.id });
           });
 
       await Promise.all(deleteCommentPromises);
 
       // Delete categories
-      const deleteCategoryPromises = demoMode ? [] : deletedCategories.map((cat) => RubricCategory.delete(cat));
+      const deleteCategoryPromises = demoMode
+        ? []
+        : deletedCategories.map((cat) => rubricCategoriesApi.destroy({ id: cat.id }));
       await Promise.all([...promises, ...deleteCategoryPromises]);
 
       // Retrieve updated rubric
@@ -406,7 +435,8 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
         return { rubricCategories: categories, rubricComments: comments };
       }
 
-      const newRubric = await Assignment.readRubric(props.assignment.id);
+      const newRubricRequest = await assignmentsApi.rubricRetrieve({ id: props.assignment.id });
+      const newRubric = newRubricRequest as unknown as RubricFullData;
       const commentMap = buildCommentMap(newRubric.rubricCategories, newRubric.rubricComments);
 
       if (props.shouldLoadInstanceLists) {
@@ -479,7 +509,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
   // Move category
   const moveCategory = useCallback(
-    (category: RubricCategoryType, direction: DIRECTION) => {
+    (category: RubricCategory, direction: DIRECTION) => {
       const index = store.rubricCategories.findIndex((x) => x.id === category.id);
       if (index === -1) return;
 
@@ -520,18 +550,18 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
   // Add rubric comment
   const addRubricComment = useCallback(
-    (category: RubricCategoryType) => {
+    (category: RubricCategory) => {
       const payload = {
         id: -1, // Will be replaced by store
         text: '',
         pointDelta: 0,
         category: category.id,
-        comments: [],
+        // comments: [], // Generated RubricComment does not have comments field?
         sortKey: store.rubricComments[category.id]?.length ?? 0,
         explanation: '',
         instructionText: '',
         templateTextOn: false,
-      };
+      } as unknown as RubricComment;
       store.addComment(category.id, payload);
     },
     [store],
@@ -539,7 +569,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
   // Set new rubric
   const setNewRubric = useCallback(
-    (categories: RubricCategoryType[], comments: IRubricCategoryToRubricCommentsMap) => {
+    (categories: RubricCategory[], comments: IRubricCategoryToRubricCommentsMap) => {
       store.initialize(categories, comments);
       onSave(undefined);
     },
@@ -548,7 +578,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
   // Replace rubric
   const replaceRubric = useCallback(
-    (categories: RubricCategoryType[], comments: IRubricCategoryToRubricCommentsMap) => {
+    (categories: RubricCategory[], comments: IRubricCategoryToRubricCommentsMap) => {
       // Mark all saved items for deletion
       store.initialize(categories, comments);
       onSave(undefined);
@@ -558,7 +588,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
   // Linked comments resolution
   const onLinkedCommentsResolve = useCallback(
-    (comment: RubricCommentType, resolution: RESOLUTION, fnc?: (rubric: any) => void) => {
+    (comment: RubricComment, resolution: RESOLUTION, fnc?: (rubric: any) => void) => {
       store.setResolution(comment.id, resolution);
 
       // If user has finished resolving all linked comments, trigger save

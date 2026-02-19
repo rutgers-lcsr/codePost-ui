@@ -1,8 +1,8 @@
 import { animated } from 'react-spring';
 
-import { FileMock } from '../../../../infrastructure/file';
+import { FileMock } from '../../../../utils/file';
 
-import Comment from '../../../../components/code-review/code-panel/Comment';
+import Comment from '../../../../features/code-review/code-panel/Comment';
 
 export type CPCommentType = 'readonly' | 'active' | 'inactive';
 

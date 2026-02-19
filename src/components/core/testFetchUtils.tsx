@@ -1,13 +1,21 @@
-/* codepost object imports */
-import { Assignment, AssignmentType } from '../../infrastructure/assignment';
-import { TestCase, TestCaseType, StudentTestCaseType } from '../../infrastructure/testCase';
-import { Submission, SubmissionInfoType } from '../../infrastructure/submission';
+import type {
+  AssignmentType,
+  TestCaseType,
+  StudentTestCaseType,
+  SubmissionInfoType,
+  AnonymousSubmissionType,
+  SubmissionTestType,
+  TestCategoryType,
+} from '../../types/models';
+import { getLatestSubmissionTests } from '../../utils/submissionTests';
 
-import { SubmissionTest, SubmissionTestType } from '../../infrastructure/submissionTest';
-import { TestCategory, TestCategoryType } from '../../infrastructure/testCategory';
-import { AnonymousSubmissionType } from '../../infrastructure/submission';
-
-import { Environment } from '../../infrastructure/autograder/environment';
+import {
+  assignmentsApi,
+  autograderApi,
+  testCategoriesApi,
+  testCasesApi,
+  submissionsApi,
+} from '../../api-client/clients';
 
 //********************************** Interfaces **** ******************************
 export interface TestsBySubmission {
@@ -36,7 +44,9 @@ export interface StudentTestCasesByCategory {
 // For an assignment fetch teh testCategories
 export const fetchTestCategories = async (assignment: AssignmentType) => {
   const categoryPromises = assignment.testCategories.map((id) => {
-    return TestCategory.read(id);
+    return testCategoriesApi.retrieve({
+      id: id,
+    }) as unknown as Promise<TestCategoryType>;
   });
   return await Promise.all(categoryPromises);
 };
@@ -47,16 +57,24 @@ export const fetchEnvironment = async (assignment: AssignmentType) => {
   // an environment, it won't change
   // If the environment was recently created, we want to make sure the assignment id
   // isn't out of date.
-  const latestAssignment = assignment.environment ? assignment : await Assignment.read(assignment.id);
+  const latestAssignment = assignment.environment
+    ? assignment
+    : await assignmentsApi.retrieve({
+        id: assignment.id,
+      });
   if (latestAssignment.environment) {
-    return await Environment.read(latestAssignment.environment);
+    return await autograderApi.environmentsRetrieve({
+      id: latestAssignment.environment,
+    });
   }
 };
 
 //********************************** Complex Fetch Utils (some data processing) *****************************
 export const fetchTestData = async (assignment: AssignmentType) => {
   // get the latest assignment in case the categories have changed
-  const latestAssignment: AssignmentType = await Assignment.read(assignment.id);
+  const latestAssignment = (await assignmentsApi.retrieve({
+    id: assignment.id,
+  })) as unknown as AssignmentType;
   const categories: TestCategoryType[] = await fetchTestCategories(latestAssignment);
   const casesByCategory: TestCasesByCategory = await fetchTestCasesByCategory(categories);
   return [categories, casesByCategory];
@@ -66,7 +84,9 @@ export const fetchTestData = async (assignment: AssignmentType) => {
 export const fetchTestCasesByCategory = async (categories: TestCategoryType[]) => {
   const categoryPromises = categories.map(async (category) => {
     const testCasePromises = category.testCases.map((id) => {
-      return TestCase.read(id);
+      return testCasesApi.retrieve({
+        id: id,
+      }) as unknown as Promise<TestCaseType>;
     });
     const testCases: TestCaseType[] = await Promise.all(testCasePromises);
     return {
@@ -97,7 +117,7 @@ export const getTestsByCase = (testsBySubmission: TestsBySubmission, casesByCate
     });
   });
   Object.keys(testsBySubmission).forEach((subID) => {
-    const tests = SubmissionTest.getLatest(testsBySubmission[parseInt(subID, 10)]);
+    const tests = getLatestSubmissionTests(testsBySubmission[parseInt(subID, 10)]);
 
     tests.forEach((t) => {
       const caseID = t.testCase;
@@ -130,8 +150,22 @@ export const fetchTestsBySubmission = async (submissions: (AnonymousSubmissionTy
   const submissionPromises =
     submissions !== undefined
       ? submissions.map(async (submission: AnonymousSubmissionType | SubmissionInfoType) => {
-          const res = await Submission.readTestResults(submission.id, { isStudentMode: 'False' });
-          toRet[submission.id] = res.submissionTests;
+          // Legacy: Submission.readTestResults(submission.id, { isStudentMode: 'False' });
+          // New: submissionsApi.SubmissionTestsRetrieve
+          const res = (await submissionsApi.submissionTestsList({
+            id: submission.id,
+          })) as unknown as any;
+
+          // Handle potential different response structures
+          // If it returns a list directly or an object with submissionTests
+          if (Array.isArray(res)) {
+            toRet[submission.id] = res;
+          } else if (res.submissionTests) {
+            toRet[submission.id] = res.submissionTests;
+          } else {
+            // Fallback or empty
+            toRet[submission.id] = [];
+          }
         })
       : [];
   await Promise.all(submissionPromises);

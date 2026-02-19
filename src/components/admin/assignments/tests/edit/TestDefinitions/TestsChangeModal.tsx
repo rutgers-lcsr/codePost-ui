@@ -10,8 +10,7 @@ import { Button, Divider, Modal, Spin, Steps, Table, Tag } from 'antd';
 import _ from 'lodash';
 
 /* codePost object imports */
-import { TestCaseType } from '../../../../../../infrastructure/testCase';
-import { TestCategoryType } from '../../../../../../infrastructure/types';
+import { TestCaseType, TestCategoryType } from '../../../../../../types/models';
 import { IBasicFile } from './../TestDefinitions';
 
 /* codePost interface imports */

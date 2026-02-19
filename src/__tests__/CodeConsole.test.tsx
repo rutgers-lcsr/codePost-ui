@@ -1,4 +1,4 @@
-import * as CodeConsoleUtils from '../components/code-review/codeConsoleUtils';
+import * as CodeConsoleUtils from '../features/code-review/codeConsoleUtils';
 
 // ##############################################################################
 // ######################### Standard Object Mocks ##############################

@@ -1,16 +1,22 @@
 import { Checkbox, Form, Modal, Select, Switch, message } from 'antd';
 import React, { useEffect, useState } from 'react';
 
-import { UserIO, UserType } from '../../infrastructure/user';
-import { OrganizationType } from '../../infrastructure/organization';
+import { UserIO } from '../../services/user';
+import type { UserType } from '../../types/models';
+import { Organization } from '../../api-client';
 
 interface EditUserDialogProps {
   visible: boolean;
   user: UserType | null;
   onClose: () => void;
   onSuccess: () => void;
-  organizations: OrganizationType[];
+  organizations: Organization[];
 }
+
+type EditUserValues = Pick<
+  UserType,
+  'organization' | 'codePostAdmin' | 'isOrgStaff' | 'canCreateCourses' | 'canModifyRosters'
+>;
 
 const EditUserDialog: React.FC<EditUserDialogProps> = ({ visible, user, onClose, onSuccess, organizations }) => {
   const [form] = Form.useForm();
@@ -27,11 +33,11 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ visible, user, onClose,
     }
   }, [visible, user, form]);
 
-  const handleSubmit = async (values: any) => {
-    if (!user) return;
+  const handleSubmit = async (values: EditUserValues) => {
+    if (!user?.email) return;
     setIsSubmitting(true);
     try {
-      await UserIO.update({ ...values, id: user.id, email: user.email });
+      await UserIO.update(user.email, values);
       message.success('User updated successfully');
       onSuccess();
     } catch (error) {

@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import { colors } from '../../theme/colors';
 import PreAuthLayout from '../pre-auth/PreAuthLayout';
 
-import { Submission } from '../../infrastructure/submission';
+import { Submission } from '../../services/submission';
 
 interface IValidateInviteProps {
   isLoggedIn: boolean;
@@ -32,7 +32,7 @@ const ValidateInvite = (props: IValidateInviteProps) => {
       if (!token || !sid) return;
 
       try {
-        const data = await Submission.validatePartnerLinkAndReturn(parseInt(sid, 10), { token });
+        const data = await Submission.validatePartnerLinkAndReturn(parseInt(sid, 10), token);
         setSubmission(data);
       } catch (err) {
         setStatus(STATUS.INVALID);
@@ -51,7 +51,7 @@ const ValidateInvite = (props: IValidateInviteProps) => {
 
     setStatus(STATUS.LOADING);
     try {
-      await Submission.validatePartnerLink(parseInt(sid, 10), { token });
+      await Submission.validatePartnerLink(parseInt(sid, 10), token);
       setStatus(STATUS.SUCCESS);
     } catch (err) {
       setStatus(STATUS.INVALID);

@@ -5,7 +5,7 @@ import React, { useMemo, useState } from 'react';
 import _ from 'lodash';
 
 import { colors } from '../../theme/colors';
-import { OrganizationType } from '../../infrastructure/organization';
+import { Organization } from '../../api-client';
 import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 import { AdminData } from './Dashboard';
 
@@ -17,7 +17,7 @@ interface AdminTableProps {
 
 interface GroupedAdminData {
   email: string;
-  organizations: OrganizationType[];
+  organizations: Organization[];
   courses: { name: string; period: string }[];
 }
 
@@ -38,7 +38,7 @@ const columns: ColumnsType<GroupedAdminData> = [
     title: 'Organization',
     dataIndex: 'organizations',
     key: 'organization',
-    render: (orgs: OrganizationType[]) => (
+    render: (orgs: Organization[]) => (
       <Space direction="vertical" size="small">
         {orgs.map((org) => (
           <Space key={org.id}>
@@ -105,7 +105,7 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
 
       // Get unique organizations
       const seenOrgs = new Set<number>();
-      const uniqueOrgs: OrganizationType[] = [];
+      const uniqueOrgs: Organization[] = [];
       records.forEach((r) => {
         if (r.organization && !seenOrgs.has(r.organization.id)) {
           seenOrgs.add(r.organization.id);
@@ -144,7 +144,7 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
 
   // Get unique organizations for filter
   const uniqueOrgs = useMemo(() => {
-    const orgMap = new Map<number, OrganizationType>();
+    const orgMap = new Map<number, Organization>();
     admins.forEach((admin) => {
       if (admin.organization) {
         orgMap.set(admin.organization.id, admin.organization);

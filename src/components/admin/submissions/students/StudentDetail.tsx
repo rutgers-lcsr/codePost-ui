@@ -33,9 +33,16 @@ import { Link } from 'react-router-dom';
 /* codePost imports */
 import { openSubmission } from '../../other/AdminUtils';
 
-import { AssignmentType, sortAssignments } from '../../../../infrastructure/assignment';
-import { CourseType } from '../../../../infrastructure/course';
-import { SubmissionInfoType } from '../../../../infrastructure/submission';
+import type { Course } from '../../../../api-client';
+import type { EnvironmentsRunPartialUpdateRequest } from '../../../../api-client/apis/AutograderApi';
+import { autograderApi } from '../../../../api-client/clients';
+import type {
+  Assignment,
+  IStudentSubmissionsDataTable,
+  SubmissionInfoType,
+  UploadFile,
+} from '../../../../types/common';
+import { sortAssignments } from '../../../../utils/assignments';
 
 import { TableDetail } from '../../other/TableDetail';
 
@@ -44,12 +51,6 @@ import UploadSubmissionDialog from '../../assignments/assignments/SubmissionUplo
 import CPTooltip from '../../../../components/core/CPTooltip';
 import { tooltips } from '../../../../components/core/tooltips';
 
-import { IStudentSubmissionsDataTable } from '../../../../types/common';
-
-import { Environment } from '../../../../infrastructure/autograder/environment';
-import { SubmissionTestResultType } from '../../../../infrastructure/autograder/runTypes';
-
-import { FileType } from '../../../../infrastructure/file';
 import { awaitTestResult } from '../../assignments/tests/autograderPollingUtils';
 
 dayjs.extend(localizedFormat);
@@ -58,15 +59,15 @@ const confirm = Modal.confirm;
 /**********************************************************************************************************************/
 
 interface IProps {
-  course: CourseType;
+  course: Course;
   onBack?: () => void;
   students: string[];
   deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
-  assignments: AssignmentType[];
+  assignments: Assignment[];
   graders: string[];
   submissions: IStudentSubmissionsDataTable;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: FileType[]) => Promise<SubmissionInfoType>;
-  addFilesToSubmission: (submission: SubmissionInfoType, files: FileType[]) => Promise<SubmissionInfoType>;
+  uploadSubmission: (assignment: Assignment, partners: string[], files: UploadFile[]) => Promise<SubmissionInfoType>;
+  addFilesToSubmission: (submission: SubmissionInfoType, files: UploadFile[]) => Promise<SubmissionInfoType>;
 
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   changeSubmissionGrader: (submission: SubmissionInfoType, grader: string | undefined) => Promise<void>;
@@ -78,7 +79,7 @@ interface IProps {
 const StudentDetail: React.FC<IProps> = (props) => {
   const [uploadSubmissionVisible, setUploadSubmissionVisible] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState('');
-  const [assignmentToUpload, setAssignmentToUpload] = useState<AssignmentType | undefined>(undefined);
+  const [assignmentToUpload, setAssignmentToUpload] = useState<Assignment | undefined>(undefined);
   const [subsRunning, setSubsRunning] = useState<number[]>([]);
 
   // Derive submissionsMap directly from props to ensure it's always up to date
@@ -123,22 +124,24 @@ const StudentDetail: React.FC<IProps> = (props) => {
     [props.deleteSubmission],
   );
 
-  const callback = useCallback((sub: SubmissionInfoType, _result: SubmissionTestResultType) => {
+  const callback = useCallback((sub: SubmissionInfoType, _result: unknown) => {
     setSubsRunning((prev) => prev.filter((id) => id !== sub.id));
     message.success('Test run completed!');
   }, []);
 
   const runTests = useCallback(
-    async (assignment: AssignmentType, sub: SubmissionInfoType) => {
+    async (assignment: Assignment, sub: SubmissionInfoType) => {
       if (assignment.environment) {
         setSubsRunning((prev) => [...prev, sub.id]);
-        const payload = {
-          id: assignment.environment,
+        const payload: NonNullable<EnvironmentsRunPartialUpdateRequest['patchedEnvironmentRunRequest']> = {
           submission: sub.id,
           simulate: false,
         };
         try {
-          const result = await Environment.run(payload);
+          const result = await autograderApi.environmentsRunPartialUpdate({
+            id: assignment.environment,
+            patchedEnvironmentRunRequest: payload,
+          });
           awaitTestResult(result.task, callback.bind({}, sub));
         } catch (error) {
           console.error('Error running tests:', error);
@@ -164,7 +167,7 @@ const StudentDetail: React.FC<IProps> = (props) => {
             <br />
             <div>The following students are associated with this submission:</div>
             <ul>
-              {toRemove.students.map((student: string, index: number) => {
+              {toRemove.students.map((student, index) => {
                 return <li key={index}>{student}</li>;
               })}
             </ul>
@@ -182,7 +185,7 @@ const StudentDetail: React.FC<IProps> = (props) => {
   );
 
   const handleUploadSubmission = useCallback(
-    (assignment: AssignmentType, partners: string[], files: FileType[]) => {
+    (assignment: Assignment, partners: string[], files: UploadFile[], _sendConfirmationEmail?: boolean) => {
       const submission = submissionsMap[assignment.id];
       if (submission) {
         return props.addFilesToSubmission(submission, files);

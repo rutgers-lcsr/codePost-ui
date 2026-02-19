@@ -18,8 +18,7 @@ import localizedFormat from 'dayjs/plugin/localizedFormat';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
-import { AssignmentType } from '../../../../infrastructure/assignment';
-import { SubmissionInfoType } from '../../../../infrastructure/submission';
+import type { Assignment, SubmissionInfoType } from '../../../../types/common';
 
 import { TableDetail } from '../../other/TableDetail';
 
@@ -43,7 +42,7 @@ interface IProps {
 
   baseURL: string;
 
-  selectedAssignment: AssignmentType;
+  selectedAssignment: Assignment;
   submissions: SubmissionInfoType[];
 }
 
@@ -88,6 +87,7 @@ const GraderAssignmentDetail: React.FC<IProps> = (props) => {
       // case: submission has been viewed
       if (Object.keys(viewed).length > 0) {
         const tooltipText = submission.students
+          .filter((student): student is string => student !== null)
           .map((student) => {
             if (Object.keys(viewed).indexOf(student) > -1) {
               return `${student}: ${dayjs(viewed[student]).format('llll')}`;

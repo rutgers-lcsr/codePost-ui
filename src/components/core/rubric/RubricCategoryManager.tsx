@@ -4,8 +4,7 @@ import _ from 'lodash';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from '../withWindowWatcher';
 
-import { RubricCategoryType } from '../../../infrastructure/rubricCategory';
-import { RubricCommentType } from '../../../infrastructure/rubricComment';
+import { RubricCategory, RubricComment } from '../../../api-client';
 
 import { DIRECTION } from '../../../types/common';
 import { STATUS, statusChange } from '../../admin/assignments/rubric/RubricUtils';
@@ -28,7 +27,7 @@ export interface IRubricCategoryManagerState {
   status: STATUS;
 
   /* local rubric comment data - NOW FROM ZUSTAND STORE */
-  rubricComments: Record<number, RubricCommentType>;
+  rubricComments: Record<number, RubricComment>;
   rubricCommentStatus: Record<number, STATUS>;
 
   /* validation status */
@@ -40,34 +39,34 @@ export interface IRubricCategoryManagerState {
 
 export interface IRubricCategoryManagerProps extends IWithWindowWatcherProps {
   // data
-  rubricCategory: RubricCategoryType;
-  rubricComments: RubricCommentType[];
+  rubricCategory: RubricCategory;
+  rubricComments: RubricComment[];
   index: number;
   numCategories: number;
   instanceLists: Record<number, number[]>;
 
   // saved data
-  savedRubricCategory?: RubricCategoryType;
-  savedRubricComments?: RubricCommentType[];
+  savedRubricCategory?: RubricCategory;
+  savedRubricComments?: RubricComment[];
 
   // RubricCategory functions
-  updateCategory: (rCategory: RubricCategoryType, hasError?: boolean) => void;
-  deleteCategory: (rCategory: RubricCategoryType) => void;
-  moveCategory: (rCategory: RubricCategoryType, direction: DIRECTION) => void;
+  updateCategory: (rCategory: RubricCategory, hasError?: boolean) => void;
+  deleteCategory: (rCategory: RubricCategory) => void;
+  moveCategory: (rCategory: RubricCategory, direction: DIRECTION) => void;
 
   // RubricComment functions
-  addComment: (rCategory: RubricCategoryType) => void;
-  deleteComment: (rComment: RubricCommentType) => void;
-  updateComment: (rComment: RubricCommentType) => void;
-  activateCommentExplorer: (rComment: RubricCommentType) => void;
+  addComment: (rCategory: RubricCategory) => void;
+  deleteComment: (rComment: RubricComment) => void;
+  updateComment: (rComment: RubricComment) => void;
+  activateCommentExplorer: (rComment: RubricComment) => void;
 
   // misc
-  onEdit: (obj: RubricCategoryType) => void;
-  onUndo: (obj: RubricCategoryType) => void;
-  onCommentEdit: (obj: RubricCommentType) => void;
-  onCommentUndo: (obj: RubricCommentType) => void;
+  onEdit: (obj: RubricCategory) => void;
+  onUndo: (obj: RubricCategory) => void;
+  onCommentEdit: (obj: RubricComment) => void;
+  onCommentUndo: (obj: RubricComment) => void;
   onCommentDragEnd: (...args: unknown[]) => void;
-  otherCategories: RubricCategoryType[];
+  otherCategories: RubricCategory[];
   feedbackScores?: Record<number, IFeedbackScore>;
   commentFeedbackOn: boolean;
   showPointLimits: boolean;
@@ -80,8 +79,8 @@ export interface IRubricCategoryManagerProps extends IWithWindowWatcherProps {
 }
 
 export interface IRubricCategoryManagerHelpers {
-  buildLocalRubricCommentsStructure: (comments: RubricCommentType[]) => Record<number, RubricCommentType>;
-  initializeRubricCommentStatus: (comments: RubricCommentType[]) => Record<number, STATUS>;
+  buildLocalRubricCommentsStructure: (comments: RubricComment[]) => Record<number, RubricComment>;
+  initializeRubricCommentStatus: (comments: RubricComment[]) => Record<number, STATUS>;
   updateCategoryStatus: () => void;
   setValue: (label: 'pointLimit' | 'atMostOnce' | 'name' | 'helpText', value: unknown) => void;
   validateCategory: (
@@ -96,10 +95,10 @@ export interface IRubricCategoryManagerHelpers {
   changeName: (event: React.ChangeEvent<HTMLInputElement> | string) => void;
   changeHelpText: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
   addComment: () => void;
-  deleteComment: (rubricComment: RubricCommentType) => void;
-  validateComments: (comment: RubricCommentType) => { valid: boolean; message: string };
-  saveComment: (rubricCommentID: number, overrideComment?: RubricCommentType) => void;
-  updateCommentStatus: (rubricComment: RubricCommentType) => void;
+  deleteComment: (rubricComment: RubricComment) => void;
+  validateComments: (comment: RubricComment) => { valid: boolean; message: string };
+  saveComment: (rubricCommentID: number, overrideComment?: RubricComment) => void;
+  updateCommentStatus: (rubricComment: RubricComment) => void;
   updateRubricComment: (rubricCommentID: number, key: string, event: unknown) => void;
   nameInput: React.RefObject<InputRef | null>;
 }
@@ -112,15 +111,15 @@ const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => 
   const storeComments = useRubricCommentStore((s) => s.comments);
   const storeStatuses = useRubricCommentStore((s) => s.statuses);
 
-  const buildLocalRubricCommentsStructure = useCallback((comments: RubricCommentType[]) => {
-    const toRet: Record<number, RubricCommentType> = {};
+  const buildLocalRubricCommentsStructure = useCallback((comments: RubricComment[]) => {
+    const toRet: Record<number, RubricComment> = {};
     for (const rubricComment of comments) {
       toRet[rubricComment.id] = _.cloneDeep(rubricComment);
     }
     return toRet;
   }, []);
 
-  const initializeRubricCommentStatus = useCallback((comments: RubricCommentType[]) => {
+  const initializeRubricCommentStatus = useCallback((comments: RubricComment[]) => {
     const toRet: Record<number, STATUS> = {};
     for (const rubricComment of comments) {
       toRet[rubricComment.id] = STATUS.NONE;
@@ -141,9 +140,9 @@ const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => 
   // Component state - now WITHOUT rubricComments and rubricCommentStatus
   const [categoryState, setCategoryState] = useState(() => ({
     name: rubricCategory.name,
-    pointLimit: rubricCategory.pointLimit,
+    pointLimit: rubricCategory.pointLimit ?? null,
     helpText: rubricCategory.helpText ? rubricCategory.helpText : '',
-    atMostOnce: rubricCategory.atMostOnce,
+    atMostOnce: rubricCategory.atMostOnce ?? false,
     status: typeof savedRubricCategory === 'undefined' ? STATUS.UNSAVED : STATUS.NONE,
     hasError: false,
     errorMessage: '',
@@ -204,7 +203,7 @@ const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => 
     return { valid: true, message: '' };
   }, []);
 
-  const validateComments = useCallback((_newComment: RubricCommentType) => {
+  const validateComments = useCallback((_newComment: RubricComment) => {
     return { valid: true, message: '' };
   }, []);
 
@@ -238,7 +237,7 @@ const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => 
   }, [savedRubricCategory, categoryState, props]);
 
   const updateCommentStatus = useCallback(
-    (rubricComment: RubricCommentType) => {
+    (rubricComment: RubricComment) => {
       if (!savedRubricComments) {
         return;
       }
@@ -315,7 +314,7 @@ const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => 
   }, [props]);
 
   const deleteComment = useCallback(
-    (rubricComment: RubricCommentType) => {
+    (rubricComment: RubricComment) => {
       props.deleteComment(rubricComment);
     },
     [props],
@@ -334,7 +333,7 @@ const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => 
         return;
       }
 
-      let workingComment: RubricCommentType = localComment;
+      let workingComment: RubricComment = localComment;
       let pointDelta = parseFloat(workingComment.pointDelta.toFixed(1));
       const text = workingComment.text;
 
@@ -460,23 +459,23 @@ const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => 
     }
   }, [saveCategory, categoryState.atMostOnce, categoryState.pointLimit]);
 
-  const prevRubricCategoryRef = useRef<RubricCategoryType | null>(null);
+  const prevRubricCategoryRef = useRef<RubricCategory | null>(null);
   useEffect(() => {
     const prevRubricCategory = prevRubricCategoryRef.current;
     if (prevRubricCategory && prevRubricCategory !== rubricCategory) {
       setCategoryState((prev) => ({
         ...prev,
         name: rubricCategory.name,
-        pointLimit: rubricCategory.pointLimit,
+        pointLimit: rubricCategory.pointLimit ?? null,
         helpText: rubricCategory.helpText ? rubricCategory.helpText : '',
-        atMostOnce: rubricCategory.atMostOnce,
+        atMostOnce: rubricCategory.atMostOnce ?? false,
       }));
     }
     prevRubricCategoryRef.current = rubricCategory;
   }, [rubricCategory]);
 
   // Sync store from props when rubricComments change
-  const prevRubricCommentsRef = useRef<RubricCommentType[] | null>(null);
+  const prevRubricCommentsRef = useRef<RubricComment[] | null>(null);
   useEffect(() => {
     const prevRubricComments = prevRubricCommentsRef.current;
     if (prevRubricComments && prevRubricComments !== rubricComments) {
@@ -486,7 +485,7 @@ const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => 
   }, [rubricComments, store]);
 
   // Update comment statuses when savedRubricComments change
-  const prevSavedRubricCommentsRef = useRef<RubricCommentType[] | undefined>(savedRubricComments);
+  const prevSavedRubricCommentsRef = useRef<RubricComment[] | undefined>(savedRubricComments);
   useEffect(() => {
     if (savedRubricComments && savedRubricComments !== prevSavedRubricCommentsRef.current) {
       Object.values(storeComments).forEach((comment) => {

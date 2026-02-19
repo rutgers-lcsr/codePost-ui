@@ -9,8 +9,9 @@ const DocsPage: React.FC = () => {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <DocsSidebar />
-      <Layout style={{ backgroundColor: '#fff' }}>
+      <Layout>
         <Content
+          role="main"
           id="docs-scroll-container"
           style={{
             height: '100vh',

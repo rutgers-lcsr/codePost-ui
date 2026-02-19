@@ -9,8 +9,8 @@ import { Breadcrumb, Button, Empty } from 'antd';
 
 import { TableDetail } from '../../other/TableDetail';
 
-import { AssignmentType } from '../../../../infrastructure/types';
-import { Environment } from '../../../../infrastructure/autograder/environment';
+import { autograderApi } from '../../../../api-client/clients';
+import { AssignmentType } from '../../../../types/models';
 
 import { encodeForLink } from '../../../core/URLutils';
 
@@ -48,7 +48,7 @@ const TestsOverview = (props: IProps) => {
         .map(async (a) => {
           try {
             if (a.environment) {
-              const env = await Environment.read(a.environment);
+              const env = await autograderApi.environmentsRetrieve({ id: a.environment });
               statuses[a.environment] = env.buildStatus;
             }
           } catch (e) {

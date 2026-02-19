@@ -1,9 +1,9 @@
 import { message } from 'antd';
-import { Assignment } from '../../infrastructure/assignment';
-import { Course } from '../../infrastructure/course';
-import { SubmissionFile, getFileContent } from '../../infrastructure/file';
-import { getHeaders } from '../../infrastructure/generics';
-import { Submission } from '../../infrastructure/submission';
+import { Assignment } from '../../services/assignment';
+import { Course } from '../../services/course';
+import { Submission } from '../../services/submission';
+import { submissionFilesApi, filesApi } from '../../api-client/clients';
+import { getFileContent } from '../../utils/file';
 
 import { FAKE_FILES } from './FakeSubmissionData';
 
@@ -15,7 +15,7 @@ export const createFakeSubmission = async (assignmentId: number, sourceSubmissio
     const fakeEmail = `fake_student_${Date.now()}@example.com`;
 
     try {
-      await Course.addToRoster({ id: assignment.course, students: [fakeEmail] } as any);
+      await Course.addToRoster(assignment.course, { students: [fakeEmail] } as any);
     } catch (e) {
       console.error(e);
       message.destroy();
@@ -40,13 +40,7 @@ export const createFakeSubmission = async (assignmentId: number, sourceSubmissio
         // Use readAnonymous to ensure we can read it (if we have access)
         // or just read() if we know we are admin.
         // Since this is a dev tool, assume we have permissions.
-        let sourceSubmission: any;
-        try {
-          sourceSubmission = await Submission.read(sourceSubmissionId);
-        } catch {
-          // Fallback for graders who might only have anonymous access
-          sourceSubmission = await Submission.readAnonymous(sourceSubmissionId);
-        }
+        const sourceSubmission = await Submission.read(sourceSubmissionId);
 
         if (sourceSubmission && sourceSubmission.files) {
           await Promise.all(
@@ -55,31 +49,23 @@ export const createFakeSubmission = async (assignmentId: number, sourceSubmissio
                 let fileData: any = {};
 
                 if (typeof fileOrId === 'object' && fileOrId !== null) {
-                  // If we already have the object, use it directly
                   fileData = fileOrId;
                 } else {
-                  // Fetch manually to avoid strict validation errors from FileModel.read
-                  const res = await fetch(`${process.env.REACT_APP_API_URL}/files/${fileOrId}/`, {
-                    headers: getHeaders(),
-                    method: 'GET',
-                  });
-                  if (res.ok) {
-                    fileData = await res.json();
-                  } else {
-                    throw new Error(`Failed to fetch file ${fileOrId}`);
-                  }
+                  fileData = await filesApi.retrieve({ id: fileOrId });
                 }
 
                 // Use helper or fallback to .data or .code
                 const content = getFileContent(fileData) || fileData.data || fileData.code || '';
 
-                await SubmissionFile.create({
-                  submission: newSubmission.id,
-                  name: fileData.name || 'unknown',
-                  extension: fileData.extension || 'txt',
-                  data: content,
-                  path: fileData.path,
-                } as any);
+                await submissionFilesApi.create({
+                  submissionFile: {
+                    submission: newSubmission.id,
+                    name: fileData.name || 'unknown',
+                    extension: fileData.extension || 'txt',
+                    data: content,
+                    path: fileData.path,
+                  },
+                });
               } catch (err) {
                 console.error(`Failed to clone file`, err);
               }
@@ -97,13 +83,15 @@ export const createFakeSubmission = async (assignmentId: number, sourceSubmissio
           // @ts-ignore
           const content = FAKE_FILES[filename];
           const extension = filename.split('.').pop() || '';
-          await SubmissionFile.create({
-            submission: newSubmission.id,
-            name: filename,
-            extension: extension,
-            data: content,
-            path: null,
-          } as any);
+          await submissionFilesApi.create({
+            submissionFile: {
+              submission: newSubmission.id,
+              name: filename,
+              extension: extension,
+              data: content,
+              path: null,
+            },
+          });
         }),
       );
     }

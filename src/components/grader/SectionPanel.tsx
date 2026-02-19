@@ -11,10 +11,9 @@ import { Select } from 'antd';
 /* other library imports */
 
 /* codePost imports */
-import { AssignmentType } from '../../infrastructure/assignment';
-import { CourseType } from '../../infrastructure/course';
-import { Section, SectionType } from '../../infrastructure/section';
-import { SubmissionInfoType } from '../../infrastructure/submission';
+import { Course } from '../../api-client';
+import { sectionsApi } from '../../api-client/clients';
+import { AssignmentType, SectionType, SubmissionInfoType } from '../../types/models';
 
 import GraderPanelBuilder from './GraderPanel';
 import SectionDetailPanel from './SectionDetailPanel';
@@ -28,7 +27,7 @@ type alignType = 'left' | 'right' | 'center';
 interface IProps {
   assignments: AssignmentType[];
   sections: SectionType[];
-  course: CourseType;
+  course: Course;
   graderEmail: string;
   isAdmin: boolean;
 }
@@ -63,7 +62,10 @@ class SectionPanel extends React.Component<IProps, IState> {
     this.setState({ isLoading: true }, async () => {
       const toRet: SubmissionInfoType[][] = [];
       for (const assn of assignments) {
-        toRet[assn.id] = await Section.readSubmissions(section.id, { assignment: assn.id.toString() });
+        toRet[assn.id] = await sectionsApi.submissionsList({
+          id: section.id,
+          assignment: assn.id,
+        });
       }
 
       // Don't update state if activeSection has changed since we started

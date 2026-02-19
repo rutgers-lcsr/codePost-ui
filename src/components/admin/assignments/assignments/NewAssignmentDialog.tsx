@@ -24,27 +24,26 @@ import { useNavigate } from 'react-router-dom';
 import CPButton from '../../../../components/core/CPButton';
 import CPTooltip from '../../../../components/core/CPTooltip';
 
-import { Assignment } from '../../../../infrastructure/assignment';
-import { loadIDList } from '../../../../infrastructure/generics';
-import { AssignmentType, CourseType } from '../../../../infrastructure/types';
-
+import { Course, Assignment as NativeAssignment } from '../../../../api-client';
+import { Assignment } from '../../../../types/common';
+import { assignmentsApi } from '../../../../api-client/clients';
 import { encodeForLink } from '../../../core/URLutils';
 
 /**********************************************************************************************************************/
 
 interface IProps extends Record<string, unknown> {
-  assignments: AssignmentType[];
+  assignments: Assignment[];
   createAssignment: (
     assignmentName: string,
     assignmentPoints: number,
     upload: boolean,
     isVisible: boolean,
     dueDate?: string,
-  ) => Promise<AssignmentType>;
+  ) => Promise<Assignment>;
   baseURL: string;
   timezone: string;
-  courses: CourseType[];
-  currentCourse: CourseType;
+  courses: Course[];
+  currentCourse: Course;
 }
 
 const NewAssignmentDialog: React.FC<IProps> = (props) => {
@@ -54,17 +53,27 @@ const NewAssignmentDialog: React.FC<IProps> = (props) => {
   const [isAssignmentVisible, setIsAssignmentVisible] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isLoadingAssignments, setIsLoadingAssignments] = React.useState(false);
-  const [allAssignments, setAllAssignments] = React.useState<{ [courseTitle: string]: AssignmentType[] }>({});
+  const [allAssignments, setAllAssignments] = React.useState<{ [courseTitle: string]: NativeAssignment[] }>({});
 
   const [form] = Form.useForm();
 
   const loadAllAssignments = async () => {
-    const assignments: { [courseTitle: string]: AssignmentType[] } = {};
+    const assignments: { [courseTitle: string]: NativeAssignment[] } = {};
 
     await Promise.all(
-      props.courses.map(async (course: CourseType) => {
+      props.courses.map(async (course: Course) => {
         const courseTitle = `${course.name} | ${course.period}`;
-        assignments[courseTitle] = await loadIDList<AssignmentType>(course.assignments, Assignment);
+        // assignments[courseTitle] = await loadIDList<AssignmentType>(course.assignments, Assignment);
+        const fetchedAssignments = await Promise.all(
+          course.assignments.map(async (id) => {
+            try {
+              return await assignmentsApi.retrieve({ id });
+            } catch (e) {
+              return null;
+            }
+          }),
+        );
+        assignments[courseTitle] = fetchedAssignments.filter((a) => a !== null) as NativeAssignment[];
         return;
       }),
     );
@@ -101,25 +110,23 @@ const NewAssignmentDialog: React.FC<IProps> = (props) => {
   };
 
   const cloneAssignment = async (cloneID: number) => {
-    const object = {
-      course: props.currentCourse.id,
-    };
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/assignments/${cloneID}/clone/`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify(object),
-    });
-
-    if ((await res.status) === 200) {
-      const data = await res.json();
+    try {
+      // assignmentsApi is imported
+      const data = await assignmentsApi.cloneCreate({
+        id: cloneID,
+        assignmentClone: {
+          course: props.currentCourse.id,
+        },
+      });
       return Promise.resolve(data);
-    } else {
-      const data = await res.json();
-      message.error(JSON.stringify(data));
-      return Promise.reject(data);
+    } catch (err: any) {
+      if (err.json) {
+        const data = await err.json();
+        message.error(JSON.stringify(data));
+        return Promise.reject(data);
+      }
+      message.error(err.message || 'Failed to clone assignment');
+      return Promise.reject(err);
     }
   };
 
@@ -199,8 +206,8 @@ interface IFormProps {
   visible: boolean;
   onCreate: () => void;
   onCancel: () => void;
-  assignments: AssignmentType[];
-  allAssignments: { [courseTitle: string]: AssignmentType[] };
+  assignments: Assignment[];
+  allAssignments: { [courseTitle: string]: NativeAssignment[] };
   toggleStudentUpload: () => void;
   toggleIsAssignmentVisible: () => void;
   studentsCanUpload: boolean;
@@ -254,7 +261,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
               {Object.keys(props.allAssignments).map((courseTitle: string) => {
                 return (
                   <Select.OptGroup key={`select-course-${courseTitle}`} label={courseTitle}>
-                    {props.allAssignments[courseTitle].map((assignment: AssignmentType) => {
+                    {props.allAssignments[courseTitle].map((assignment: NativeAssignment) => {
                       return (
                         <Select.Option
                           key={`assignment-${assignment.id}`}

@@ -69,13 +69,13 @@ To make a grader a supergrader, go to **Roster > Graders** and toggle the "Super
 - View all submissions
 - Publish grades
 
-### Orangization Admin
+### Organization Admin
 
 - All Admin permissions
 - Create and manage Courses
-- Edit SSO settings for an Organzation
-- Can view all Users in an Organzation
-- Can view all Courses in an Organzation
+- Edit SSO settings for an Organization
+- Can view all Users in-an Organization
+- Can view all Courses in an Organization
 
 ---
 
@@ -97,3 +97,30 @@ Contact your course instructor or organization administrator to update your emai
 - Make sure you're using the correct email address
 - Ask your instructor to verify you're added to the roster
 - Check if you need to use an invite code to join
+
+## System & Browser Support
+
+codePost is optimized for desktop usage on:
+
+- **Chrome** (Recommended)
+- Firefox
+- Safari
+- Edge
+
+**Mobile Support**: The Student Console is mobile-friendly for checking grades, but the Code Console (grading/reviewing) requires a desktop screen for the best experience.
+
+## Running Assignments
+
+### Failed to create Docker container
+
+Sometimes the environment cannot be built on codePost, this is usually due to a misconfiguration in the assignment.
+Containers can fail for a couple of reasons, which can be one of the following:
+
+1. **Misaligned dataset mounts**
+   - Datasets which are mounted improperly can cause the build to fail.
+   - Check if you are mounting the dataset in the correct location; it is common to mistakenly mount it as a directory, causing additional mounts to fail.
+2. **Unavailable Docker containers**
+   - If Docker Hub is down, or if we are unable to pull the image, the build will fail.
+3. **Unsupported configuration**
+   - If you have a configuration which is not yet supported, please reach out to our team.
+   - We recommend not using external links (e.g., HTTP requests) inside student code, as every execution will attempt to download data, which is slow and flaky.

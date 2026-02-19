@@ -10,8 +10,8 @@ import { Badge, Button, Card, Col, Descriptions, Drawer, Input, Row, Space, Stat
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { colors } from '../../theme/colors';
-import { RosterType as InfraRosterType } from '../../infrastructure/course';
-import { OrganizationType } from '../../infrastructure/organization';
+import type { RosterType as InfraRosterType } from '../../types/models';
+import { Organization } from '../../api-client';
 import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 
 import { PlusOutlined } from '@ant-design/icons';
@@ -19,9 +19,16 @@ import NewOrganizationDialog from './NewOrganizationDialog';
 
 const { Search } = Input;
 
+const compactEmails = (emails: Array<string | null | undefined>): string[] =>
+  emails.filter((email): email is string => Boolean(email));
+
+const addEmailsToSet = (target: Set<string>, emails: Array<string | null | undefined>) => {
+  compactEmails(emails).forEach((email) => target.add(email));
+};
+
 type RosterType = InfraRosterType;
 
-interface OrganizationRow extends OrganizationType {
+interface OrganizationRow extends Organization {
   rosters: RosterType[];
   key: string;
 }
@@ -35,7 +42,7 @@ interface CourseRow {
 }
 
 interface Props {
-  organizations: OrganizationType[];
+  organizations: Organization[];
   rosters: RosterType[];
   onRefresh: () => void;
 }
@@ -80,15 +87,15 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
 
     rosters.forEach((roster) => {
       // Active users
-      roster.students.forEach((email) => students.add(email));
-      roster.graders.forEach((email) => graders.add(email));
-      roster.superGraders.forEach((email) => graders.add(email));
-      roster.courseAdmins.forEach((email) => admins.add(email));
+      addEmailsToSet(students, roster.students);
+      addEmailsToSet(graders, roster.graders);
+      addEmailsToSet(graders, roster.superGraders);
+      addEmailsToSet(admins, roster.courseAdmins);
 
       // Inactive users - they should still count in totals
-      roster.inactive_students.forEach((email) => students.add(email));
-      roster.inactive_graders.forEach((email) => graders.add(email));
-      roster.inactive_courseAdmins.forEach((email) => admins.add(email));
+      addEmailsToSet(students, roster.inactiveStudents);
+      addEmailsToSet(graders, roster.inactiveGraders);
+      addEmailsToSet(admins, roster.inactiveCourseAdmins);
     });
 
     // Calculate total unique staff (union of graders and admins to avoid double-counting)
@@ -219,13 +226,13 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
         const allUsers = new Set<string>();
 
         // Add all users from the roster
-        record.roster.students.forEach((email) => allUsers.add(email));
-        record.roster.graders.forEach((email) => allUsers.add(email));
-        record.roster.superGraders.forEach((email) => allUsers.add(email));
-        record.roster.courseAdmins.forEach((email) => allUsers.add(email));
-        record.roster.inactive_students.forEach((email) => allUsers.add(email));
-        record.roster.inactive_graders.forEach((email) => allUsers.add(email));
-        record.roster.inactive_courseAdmins.forEach((email) => allUsers.add(email));
+        addEmailsToSet(allUsers, record.roster.students);
+        addEmailsToSet(allUsers, record.roster.graders);
+        addEmailsToSet(allUsers, record.roster.superGraders);
+        addEmailsToSet(allUsers, record.roster.courseAdmins);
+        addEmailsToSet(allUsers, record.roster.inactiveStudents);
+        addEmailsToSet(allUsers, record.roster.inactiveGraders);
+        addEmailsToSet(allUsers, record.roster.inactiveCourseAdmins);
 
         return <strong>{allUsers.size}</strong>;
       },
@@ -240,15 +247,15 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
       const uniqueAdmins = new Set<string>();
 
       // Active users
-      roster.students.forEach((email) => uniqueStudents.add(email));
-      roster.graders.forEach((email) => uniqueGraders.add(email));
-      roster.superGraders.forEach((email) => uniqueGraders.add(email));
-      roster.courseAdmins.forEach((email) => uniqueAdmins.add(email));
+      addEmailsToSet(uniqueStudents, roster.students);
+      addEmailsToSet(uniqueGraders, roster.graders);
+      addEmailsToSet(uniqueGraders, roster.superGraders);
+      addEmailsToSet(uniqueAdmins, roster.courseAdmins);
 
       // Inactive users
-      roster.inactive_students.forEach((email) => uniqueStudents.add(email));
-      roster.inactive_graders.forEach((email) => uniqueGraders.add(email));
-      roster.inactive_courseAdmins.forEach((email) => uniqueAdmins.add(email));
+      addEmailsToSet(uniqueStudents, roster.inactiveStudents);
+      addEmailsToSet(uniqueGraders, roster.inactiveGraders);
+      addEmailsToSet(uniqueAdmins, roster.inactiveCourseAdmins);
 
       return {
         name: `${roster.name} | ${roster.period}`,
@@ -297,15 +304,15 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
     organizationRows.forEach((org) => {
       org.rosters.forEach((roster) => {
         // Active users
-        roster.students.forEach((email) => allStudents.add(email));
-        roster.graders.forEach((email) => allGraders.add(email));
-        roster.superGraders.forEach((email) => allGraders.add(email));
-        roster.courseAdmins.forEach((email) => allAdmins.add(email));
+        addEmailsToSet(allStudents, roster.students);
+        addEmailsToSet(allGraders, roster.graders);
+        addEmailsToSet(allGraders, roster.superGraders);
+        addEmailsToSet(allAdmins, roster.courseAdmins);
 
         // Inactive users
-        roster.inactive_students.forEach((email) => allStudents.add(email));
-        roster.inactive_graders.forEach((email) => allGraders.add(email));
-        roster.inactive_courseAdmins.forEach((email) => allAdmins.add(email));
+        addEmailsToSet(allStudents, roster.inactiveStudents);
+        addEmailsToSet(allGraders, roster.inactiveGraders);
+        addEmailsToSet(allAdmins, roster.inactiveCourseAdmins);
       });
     });
 
@@ -436,30 +443,30 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
 
             {currentRoster.courseAdmins.length > 0 &&
               renderEmailList(
-                currentRoster.courseAdmins,
+                compactEmails(currentRoster.courseAdmins),
                 'Course Admins',
                 <TeamOutlined style={{ color: '#722ed1' }} />,
                 'purple',
               )}
             {currentRoster.graders.length + currentRoster.superGraders.length > 0 &&
               renderEmailList(
-                [...currentRoster.graders, ...currentRoster.superGraders],
+                compactEmails([...currentRoster.graders, ...currentRoster.superGraders]),
                 'Graders',
                 <TeamOutlined style={{ color: '#13c2c2' }} />,
                 'cyan',
               )}
             {currentRoster.students.length > 0 &&
-              renderEmailList(currentRoster.students, 'Students', <UserOutlined />, 'green')}
+              renderEmailList(compactEmails(currentRoster.students), 'Students', <UserOutlined />, 'green')}
 
-            {currentRoster.not_activated.length > 0 && (
+            {currentRoster.notActivated.length > 0 && (
               <>
                 <Descriptions title="Not Activated" column={1} bordered size="small" style={{ marginTop: '16px' }}>
                   <Descriptions.Item label={<ClockCircleOutlined />}>
-                    {currentRoster.not_activated.length} users
+                    {currentRoster.notActivated.length} users
                   </Descriptions.Item>
                 </Descriptions>
                 <Space direction="vertical" style={{ width: '100%', marginTop: '8px' }}>
-                  {currentRoster.not_activated.map((email) => (
+                  {currentRoster.notActivated.map((email) => (
                     <Tag key={email} color="orange">
                       {email}
                     </Tag>

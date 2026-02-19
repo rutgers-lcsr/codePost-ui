@@ -5,12 +5,10 @@
   overflow: hidden;
   white-space: nowrap;
 
-
-
   &--code {
     vertical-align: top;
     // Scrolling handled by inline styles in CodePanelLayout
-    padding: 10px 10px 20px 20px;
+    margin: 10px 10px 20px 20px;
     overflow-x: hidden;
     overflow-y: auto;
 

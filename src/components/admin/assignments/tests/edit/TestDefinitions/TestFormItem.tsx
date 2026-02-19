@@ -9,26 +9,28 @@ import Form, { LegacyFormController } from '../../../../../core/legacyForm';
 import { Button, Card, Col, Input, InputNumber, Radio, Row, Select, Space, Switch } from 'antd';
 
 /* codePost object imports */
-import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
-
-import { SubmissionInfoType, TestCaseType } from '../../../../../../infrastructure/types';
+import {
+  AssignmentFileType,
+  AssignmentType,
+  EnvironmentType,
+  RubricCommentType,
+  SubmissionInfoType,
+  TestCaseType,
+} from '../../../../../../types/models';
 
 /* codePost component imports */
 
 import { CodeWindow } from '../utils/CodeWindow';
-import CodeExecutionOutput from '../../../../../code-review/code-panel/CodeExecutionOutput';
+import CodeExecutionOutput from '@code-review/code-panel/CodeExecutionOutput';
 
 /* codePost util imports */
-import { extensionsByLanguage, hasNativeTestSupport, testTemplates } from '../utils/languageUtils';
-import { getHeaders } from '../../../../../../infrastructure/generics';
-import { AssignmentType } from '../../../../../../infrastructure/types';
+import { extensionsByLanguage, testTemplates } from '../utils/languageUtils';
+// import { getHeaders } from '../../../../../../infrastructure/generics';
+import { TypeEnum } from '../../../../../../api-client';
+import { assignmentsApi } from '../../../../../../api-client/clients';
+import { TestScriptEditor } from './TestScriptEditor';
 
 const { Option } = Select;
-
-interface IDataset {
-  id: number;
-  name: string;
-}
 
 interface ITestFormItemProps {
   form: LegacyFormController;
@@ -45,60 +47,44 @@ interface ITestFormItemProps {
   activeSubmission?: SubmissionInfoType;
   env?: EnvironmentType;
   currentAssignment: AssignmentType;
+  assignmentFiles?: AssignmentFileType[];
 }
 
 const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
-  const { testCase, form, language, currentAssignment, activeSubmission } = props;
+  const { testCase, form, language, currentAssignment } = props;
   const { getFieldDecorator } = form;
 
   // Helpers
-  const getOutputFromTestCase = (tc: TestCaseType) => {
-    if (tc.outputIsRegexp) {
-      return 'regexp';
-    } else if (tc.outputIsFile) {
-      return 'file';
-    } else if (tc.isFlexible) {
-      return 'flex';
-    } else {
-      return 'constant';
-    }
-  };
 
   // State
+
+  const [rubricComments, setRubricComments] = useState<RubricCommentType[]>([]);
   const [commandText, setCommandText] = useState(testCase.text);
-  const [testType, setTestType] = useState(testCase.type);
-  const [selectedFileName, setSelectedFileName] = useState(testCase.fileName);
+  const [testType, setTestType] = useState<TypeEnum>(testCase.type as TypeEnum);
+
   const [explanation, setExplanation] = useState(testCase.explanation);
-  const [checkReturn] = useState(testCase.checkReturn);
-  const [outputType, setOutputType] = useState<'constant' | 'flex' | 'regexp' | 'file'>(
-    getOutputFromTestCase(testCase),
-  );
-  const [datasets, setDatasets] = useState<IDataset[]>([]);
+
+  const [testCode, setTestCode] = useState(testCase.testCode || '');
 
   // Check if notebook
-  const isNotebook = (Array.isArray(selectedFileName) ? selectedFileName[0] || '' : selectedFileName || '').endsWith(
-    '.ipynb',
-  );
+  // Check if notebook
+  const isNotebook = false; // Derived from category in future, currently disabled for per-test override
 
   // Effects
   useEffect(() => {
-    const fetchDatasets = async () => {
+    const fetchRubric = async () => {
       try {
-        const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/assignmentDataSets/by_assignment/?assignment_id=${currentAssignment.id}`,
-          {
-            headers: getHeaders(),
-          },
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setDatasets(data);
-        }
+        const rubricRequest = await assignmentsApi.rubricRetrieve({
+          id: currentAssignment.id,
+        });
+        const rubric = rubricRequest as unknown as { rubricComments: RubricCommentType[] };
+        setRubricComments(rubric.rubricComments);
       } catch (e) {
-        console.error('Failed to fetch datasets', e);
+        console.error('Failed to fetch rubric', e);
       }
     };
-    fetchDatasets();
+
+    fetchRubric();
   }, [currentAssignment.id]);
 
   // Handlers
@@ -109,7 +95,7 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
     });
   };
 
-  const onTypeChange = (type: string) => {
+  const onTypeChange = (type: TypeEnum) => {
     const newType = testCase.type === type;
     const template = testTemplates[language] ? language : 'other';
 
@@ -118,15 +104,7 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
   };
 
   const onTypeChangeRadio = (e: any) => {
-    onTypeChange(e.target.value);
-  };
-
-  const onChangeFileName = (newName: string) => {
-    setSelectedFileName(newName);
-  };
-
-  const onChangeOutputType = (val: string) => {
-    setOutputType(val as 'constant' | 'flex' | 'regexp' | 'file');
+    onTypeChange(e.target.value as TypeEnum);
   };
 
   const onSave = () => {
@@ -136,10 +114,8 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
           ...values,
           testType,
           explanation,
-          checkReturn,
-          outputType,
           commandText,
-          // expectPlot and dataSet are already in values
+          testCode,
         });
       }
     });
@@ -152,9 +128,8 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
           ...values,
           testType,
           explanation,
-          checkReturn,
-          outputType,
           commandText,
+          testCode,
         });
       }
     });
@@ -163,18 +138,9 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
   const name = testType === 'shell' ? '.sh' : extensionsByLanguage[language];
 
   // Disable some test types if there is no native support
-  const hasNativeSupport = hasNativeTestSupport(language);
+
   const typesWithEditDisabled = ['file']; // Disable select
   const typesWithRunDisabled = ['file', 'external']; // Disable definitions and pseudoterminal
-
-  const fileOptions =
-    activeSubmission && activeSubmission.files && typeof activeSubmission.files[0] !== 'number'
-      ? (activeSubmission.files as any[]).map((f: any) => (
-          <Option key={f.name} value={f.name}>
-            {f.name}
-          </Option>
-        ))
-      : [];
 
   return (
     <div style={{ padding: '0px 15px', maxWidth: '1400px', margin: '0 auto' }}>
@@ -211,9 +177,8 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
               buttonStyle="solid"
               disabled={props.isRunning || typesWithEditDisabled.includes(testType)}
             >
-              <Radio.Button value={hasNativeSupport ? 'io' : 'io_cli'}>IO Test</Radio.Button>
-              {hasNativeSupport && <Radio.Button value={'unit'}>Unit Test</Radio.Button>}
-              <Radio.Button value={'shell'}>Script (Bash)</Radio.Button>
+              <Radio.Button value={'script'}>Custom Script (AI)</Radio.Button>
+              <Radio.Button value={'shell'}>Bash Script</Radio.Button>
               <Radio.Button value={'external'}>External</Radio.Button>
             </Radio.Group>
 
@@ -256,41 +221,11 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
               headStyle={{ borderBottom: '1px solid #f0f0f0', fontWeight: 600 }}
             >
               <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item label={isNotebook ? 'Target Notebook' : 'Target File'}>
-                    {getFieldDecorator('fileName', {
-                      initialValue: testCase.fileName,
-                      rules: [{ required: true, message: 'Target is required' }],
-                    })(
-                      <Select
-                        mode="tags"
-                        style={{ width: '100%' }}
-                        placeholder="Select file or type..."
-                        onChange={(val: string) => onChangeFileName(val)}
-                      >
-                        {fileOptions}
-                      </Select>,
-                    )}
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item label="Dataset (Optional)">
-                    {getFieldDecorator('dataSet', {
-                      initialValue: testCase.dataSet,
-                    })(
-                      <Select
-                        style={{ width: '100%' }}
-                        placeholder="None (Default)"
-                        allowClear
-                        disabled={props.isRunning}
-                      >
-                        {datasets.map((d) => (
-                          <Option key={d.id} value={d.id}>
-                            {d.name}
-                          </Option>
-                        ))}
-                      </Select>,
-                    )}
+                <Col span={6}>
+                  <Form.Item label="Timeout (s)">
+                    {getFieldDecorator('timeout', {
+                      initialValue: testCase.timeout || 30,
+                    })(<InputNumber min={1} max={600} style={{ width: '100%' }} placeholder="30" />)}
                   </Form.Item>
                 </Col>
               </Row>
@@ -321,25 +256,29 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
                 </Form.Item>
               )}
 
-              <Form.Item label="Standard Input (Stdin)">
-                {/* Using CodeWindow for Stdin if IO test, otherwise standard editor */}
-                {testType === 'io' || testType === 'io_cli' ? (
-                  getFieldDecorator('input', { initialValue: testCase.input })(
-                    <Input.TextArea
-                      rows={12}
-                      style={{
-                        fontFamily: 'monospace',
-                        borderRadius: 4,
-                        backgroundColor: '#fafafa',
-                        borderColor: '#d9d9d9',
-                      }}
-                      placeholder="Data piped to stdin..."
-                    />,
-                  )
-                ) : (
+              {testType === 'script' ? (
+                <div style={{ marginTop: 10 }}>
+                  <Form.Item label="Test Script" style={{ marginBottom: 0 }}>
+                    <div style={{ border: '1px solid #d9d9d9', borderRadius: 4, padding: 2 }}>
+                      <TestScriptEditor
+                        code={testCode}
+                        onChange={setTestCode}
+                        language={language}
+                        assignmentId={currentAssignment.id}
+                        courseId={currentAssignment.course}
+                        targetFileName={''}
+                        contextFiles={props.assignmentFiles || []}
+                        onRubricItemChange={(id) => props.form.setFieldsValue({ rubricItem: id })}
+                        selectedRubricItem={props.form.getFieldValue('rubricItem') || testCase.rubricItem}
+                      />
+                    </div>
+                  </Form.Item>
+                </div>
+              ) : (
+                <Form.Item label="Command / Attributes">
                   <CodeWindow code={commandText!} name={name === undefined ? '' : name} onChange={onChange} />
-                )}
-              </Form.Item>
+                </Form.Item>
+              )}
             </Card>
           </Col>
 
@@ -365,62 +304,31 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
                 </div>
               }
             >
-              {testType !== 'unit' && testType !== 'external' && (
-                <>
-                  <div style={{ marginBottom: 16 }}>
-                    <Radio.Group
-                      value={outputType}
-                      onChange={(e) => onChangeOutputType(e.target.value)}
-                      buttonStyle="solid"
-                      size="small"
-                    >
-                      <Radio.Button value={'constant'}>Exact Match</Radio.Button>
-                      <Radio.Button value={'flex'}>Flexible</Radio.Button>
-                      <Radio.Button value={'regexp'}>Regex</Radio.Button>
-                      <Radio.Button value={'file'}>File Match</Radio.Button>
-                    </Radio.Group>
-                  </div>
-
-                  <Form.Item label="Expected Output (Stdout)" style={{ marginBottom: 12 }}>
-                    {getFieldDecorator('expectedOutput', { initialValue: testCase.expectedOutput })(
-                      <Input.TextArea
-                        rows={10}
-                        style={{
-                          fontFamily: 'monospace',
-                          borderRadius: 4,
-                          backgroundColor: '#fafafa',
-                          borderColor: '#d9d9d9',
-                        }}
-                        placeholder="Expected stdout..."
-                      />,
-                    )}
-                  </Form.Item>
-
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: 24,
-                      padding: '12px',
-                      background: '#f9f9f9',
-                      borderRadius: 6,
-                    }}
+              <Form.Item
+                label="Link to Rubric Item (Optional)"
+                help="If set, failing this test will automatically apply this rubric deduction."
+              >
+                {getFieldDecorator('rubricItem', {
+                  initialValue: testCase.rubricItem,
+                })(
+                  <Select
+                    allowClear
+                    placeholder="Select a rubric item"
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      String(option?.props.children).toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
                   >
-                    <Form.Item style={{ marginBottom: 0, flex: 1 }}>
-                      {getFieldDecorator('expectPlot', {
-                        initialValue: testCase.expectPlot,
-                        valuePropName: 'checked',
-                      })(<Switch size="small" />)}
-                      <span style={{ marginLeft: 8, fontWeight: 500 }}>Require Matplotlib Plot</span>
-                    </Form.Item>
-                    <div style={{ borderLeft: '1px solid #eee', paddingLeft: 12, marginLeft: 12 }}>
-                      <span style={{ color: '#888', fontSize: 12 }}>
-                        If enabled, test fails if no plot is generated.
-                      </span>
-                    </div>
-                  </div>
-                </>
-              )}
+                    {rubricComments.map((rc) => (
+                      <Option key={rc.id} value={rc.id}>
+                        {rc.text} ({rc.pointDelta > 0 ? '+' : ''}
+                        {rc.pointDelta})
+                      </Option>
+                    ))}
+                  </Select>,
+                )}
+              </Form.Item>
 
               <Form.Item label="Explanation for Students">
                 <Input.TextArea
@@ -441,10 +349,7 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
       {/* Results */}
       {props.log && (
         <div style={{ marginTop: 24 }}>
-          <CodeExecutionOutput
-            executionResult={props.log}
-            fileName={Array.isArray(testCase.fileName) ? testCase.fileName[0] : testCase.fileName}
-          />
+          <CodeExecutionOutput executionResult={props.log} fileName="output.txt" />
         </div>
       )}
     </div>

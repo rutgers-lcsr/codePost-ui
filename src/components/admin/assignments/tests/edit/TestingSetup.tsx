@@ -3,30 +3,33 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 /* antd imports */
-import { Breadcrumb, Button, Checkbox, InputNumber, message, Tabs, Typography } from 'antd';
+import { Breadcrumb, Button, Checkbox, InputNumber, message, Skeleton, Tabs, Typography } from 'antd';
 
 /* other library imports */
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 
 /* codePost object imports */
-/* codePost object imports */
-import { Assignment, AssignmentType } from '../../../../../infrastructure/assignment';
-import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
-import { SubmissionInfoType } from '../../../../../infrastructure/submission';
-import { UserType } from '../../../../../infrastructure/user';
+import { assignmentsApi, assignmentFilesApi, autograderApi } from '../../../../../api-client/clients';
+import type {
+  EnvironmentsCreateRequest,
+  EnvironmentsPartialUpdateRequest,
+} from '../../../../../api-client/apis/AutograderApi';
+
+import { AssignmentType, SubmissionInfoType, UserType } from '../../../../../types/models';
 
 /* codePost component imports */
 import CPTooltip from '../../../../core/CPTooltip';
 import CPAdminDetail from '../../../other/CPAdminDetail';
 import { EnvironmentSpecs } from './EnvironmentSpecs';
-import { TestDefinitions } from './TestDefinitions';
+import { TestManager } from './manager/TestManager';
 
 /* codePost util imports */
 import { fetchEnvironment } from '../../../../core/testFetchUtils';
-import { AssignmentFile, AssignmentFileType } from '../../../../../infrastructure/file';
+
+import { AssignmentFile, Environment } from '../../../../../api-client';
 
 /**********************************************************************************************************************/
 
@@ -38,25 +41,25 @@ interface IProps {
   user: UserType;
 }
 
+type EnvironmentPatchPayload = NonNullable<EnvironmentsPartialUpdateRequest['patchedEnvironment']>;
+
 export const TestingSetup = (props: IProps) => {
   // ************************** State Variables ******************************
   const location = useLocation();
   const navigate = useNavigate();
   const params = useParams<{ tabKey?: string }>();
 
-  let defaultTab;
-  if (params.tabKey !== undefined) {
-    defaultTab = params.tabKey.valueOf();
-  } else {
-    defaultTab = 'environment';
-    navigate(`${location.pathname}/environment`, { replace: true });
-  }
-
-  const [currTab, setCurrTab] = useState(defaultTab);
-  const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
-  const [helperFiles, setHelperFiles] = useState<AssignmentFileType[]>([]);
+  const currTab = useMemo(() => params.tabKey ?? 'environment', [params.tabKey]);
+  const [env, setEnv] = useState<Environment | undefined>(undefined);
+  const [helperFiles, setHelperFiles] = useState<AssignmentFile[]>([]);
 
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!params.tabKey) {
+      navigate(`${location.pathname}/environment`, { replace: true });
+    }
+  }, [params.tabKey, location.pathname, navigate]);
 
   // Check permissions: Admin or Course Admin
   const isCourseAdmin =
@@ -76,17 +79,22 @@ export const TestingSetup = (props: IProps) => {
       // Explicitly re-read assignment to ensure we have the latest file list (fix for stale props)
       try {
         // Re-fetch assignment to get fresh list of files
-        const freshAssignment = await Assignment.read(props.currentAssignment.id);
+        const freshAssignment = await assignmentsApi.retrieve({
+          id: props.currentAssignment.id,
+        });
 
         if (freshAssignment.files && freshAssignment.files.length > 0) {
           const filePromises = freshAssignment.files.map((idOrFile) => {
             if (typeof idOrFile === 'number') {
-              return AssignmentFile.read(idOrFile);
+              return assignmentFilesApi.retrieve({
+                id: idOrFile,
+              });
             }
             return Promise.resolve(idOrFile);
           });
-          const files = await Promise.all(filePromises);
-          setHelperFiles(files);
+
+          const fetchedFiles = await Promise.all(filePromises);
+          setHelperFiles(fetchedFiles);
         } else {
           setHelperFiles([]);
         }
@@ -107,7 +115,9 @@ export const TestingSetup = (props: IProps) => {
 
   const reloadEnv = async () => {
     if (env) {
-      const newEnv = await Environment.read(env.id);
+      const newEnv = await autograderApi.environmentsRetrieve({
+        id: env.id,
+      });
 
       // HACK: mutate to avoid propagating reference change through children
       setEnv(newEnv);
@@ -127,13 +137,13 @@ export const TestingSetup = (props: IProps) => {
     // If environment doesn't exist create it
 
     if (!thisEnvironment) {
-      const payload = {
-        language,
+      const payload: EnvironmentsCreateRequest['environment'] = {
+        language: language as EnvironmentsCreateRequest['environment']['language'],
         dockerRunInstructions: dependencies && !customDockerfile ? dependencies.split('\n') : [],
         dockerfile: customDockerfile,
         requirements: requirements,
         autoDetect,
-        buildType, // Restored
+        buildType: buildType as EnvironmentsCreateRequest['environment']['buildType'], // Restored
         assignment: props.currentAssignment.id,
         compileText: '', // default
         allowNetworkAccess: false, // default
@@ -142,7 +152,9 @@ export const TestingSetup = (props: IProps) => {
         envVars,
       };
 
-      thisEnvironment = await Environment.create(payload);
+      thisEnvironment = await autograderApi.environmentsCreate({
+        environment: payload,
+      });
 
       // Update the assignment to point to this environment
       props.updateAssignment(props.currentAssignment.id, 'environment', thisEnvironment.id);
@@ -150,18 +162,20 @@ export const TestingSetup = (props: IProps) => {
       setEnv(thisEnvironment);
       return thisEnvironment;
     } else {
-      const payload: Partial<EnvironmentType> & { id: number } = {
-        id: thisEnvironment.id,
-        language,
+      const payload: EnvironmentPatchPayload = {
+        language: language as EnvironmentPatchPayload['language'],
         dockerRunInstructions: dependencies && !customDockerfile ? dependencies.split('\n') : [],
         dockerfile: customDockerfile,
         requirements: requirements,
         autoDetect,
-        buildType, // Restored
+        buildType: buildType as EnvironmentPatchPayload['buildType'], // Restored
         envVars,
       };
 
-      const newEnv = await Environment.update(payload);
+      const newEnv = await autograderApi.environmentsPartialUpdate({
+        id: thisEnvironment.id,
+        patchedEnvironment: payload,
+      });
       setEnv(newEnv);
       return newEnv;
     }
@@ -169,29 +183,31 @@ export const TestingSetup = (props: IProps) => {
 
   const updateCompileText = async (val: string) => {
     if (env) {
-      const payload: Partial<EnvironmentType> & { id: number } = {
-        id: env.id,
+      const payload: EnvironmentPatchPayload = {
         compileText: val,
       };
-      const newEnv = await Environment.update(payload);
+      const newEnv = await autograderApi.environmentsPartialUpdate({
+        id: env.id,
+        patchedEnvironment: payload,
+      });
       setEnv(newEnv);
     }
   };
 
   const onChange = (val: string) => {
-    setCurrTab(val);
-
     const newUrl = `${location.pathname.split('/').slice(0, -1).join('/')}/${val}`;
     navigate(newUrl);
   };
 
   const updateEnvSetting = async (field: string, value: string | number | boolean | null) => {
     if (env) {
-      const payload = {
-        id: env.id,
+      const payload: EnvironmentPatchPayload = {
         [field]: value,
       };
-      const newEnv = await Environment.update(payload);
+      const newEnv = await autograderApi.environmentsPartialUpdate({
+        id: env.id,
+        patchedEnvironment: payload,
+      });
       if (typeof value === 'boolean') {
         // we only show message for boolean settings. Numerical or string fields would be really annoying
         message.success(value ? 'Setting enabled' : 'Setting disabled');
@@ -205,7 +221,7 @@ export const TestingSetup = (props: IProps) => {
     {
       key: 'environment',
       label: 'Environment',
-      children: (
+      children: env ? (
         <EnvironmentSpecs
           currentAssignment={props.currentAssignment}
           env={env}
@@ -215,6 +231,10 @@ export const TestingSetup = (props: IProps) => {
           loading={loading}
           helpers={helperFiles}
         />
+      ) : (
+        <div style={{ padding: '24px 32px' }}>
+          <Skeleton active paragraph={{ rows: 10 }} />
+        </div>
       ),
     },
   ];
@@ -223,16 +243,7 @@ export const TestingSetup = (props: IProps) => {
     items.push({
       key: 'tests',
       label: 'Tests',
-      children: (
-        <TestDefinitions
-          currentAssignment={props.currentAssignment}
-          submissions={props.submissions}
-          env={env}
-          updateEnv={setEnv}
-          reloadEnv={reloadEnv}
-          loading={loading}
-        />
-      ),
+      children: <TestManager assignment={props.currentAssignment} helpers={helperFiles} />,
     });
   }
 

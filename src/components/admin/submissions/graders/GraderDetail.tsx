@@ -12,14 +12,13 @@ import { Breadcrumb, Typography } from 'antd';
 import { Link, Route, Routes } from 'react-router-dom';
 
 /* codePost imports */
-import { AssignmentType, sortAssignments } from '../../../../infrastructure/assignment';
-import { SubmissionInfoType } from '../../../../infrastructure/submission';
+import type { Assignment, SubmissionInfoType } from '../../../../types/common';
+import { IAssignmentToSubmissionsMap } from '../../../../types/common';
+import { sortAssignments } from '../../../../utils/assignments';
 
 import { TableDetail } from '../../other/TableDetail';
 
 import { encodeForLink, encodeForRoute } from '../../../../components/core/URLutils';
-
-import { IAssignmentToSubmissionsMap } from '../../../../types/common';
 
 import GraderAssignmentDetail from './GraderAssignmentDetail';
 
@@ -27,7 +26,7 @@ import GraderAssignmentDetail from './GraderAssignmentDetail';
 
 interface IProps {
   deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
-  assignments: AssignmentType[];
+  assignments: Assignment[];
   graders: string[];
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   means: { [assignmentID: number]: string | null };

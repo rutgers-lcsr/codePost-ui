@@ -17,7 +17,7 @@ import { GrUserAdmin } from 'react-icons/gr';
 /* codePost imports */
 import PeripheralPageLayout from './layouts/PeripheralPageLayout';
 
-import { UserType } from '../../infrastructure/user';
+import type { UserType } from '../../types/models';
 
 /**********************************************************************************************************************/
 

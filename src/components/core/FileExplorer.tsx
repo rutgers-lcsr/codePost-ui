@@ -1,12 +1,12 @@
 import { Button, Modal, Tabs } from 'antd';
 
-import { FileTemplateType } from '../../infrastructure/types';
+import { AssignmentFileType } from '../../types/models';
 
 import Editor from '@monaco-editor/react';
 
 interface IProps {
   // files: FileType[] | FileTemplateType[];
-  files: FileTemplateType[];
+  files: AssignmentFileType[];
   visible: boolean;
   toggleVisible: () => void;
 }
@@ -26,7 +26,7 @@ const FileExplorer = (props: IProps) => {
     >
       <div id="file-explorer">
         <Tabs defaultActiveKey="1" tabPosition="left">
-          {props.files.map((file: FileTemplateType) => {
+          {props.files.map((file: AssignmentFileType) => {
             return (
               <Tabs.TabPane tab={file.name} key={`file-${file.id}`}>
                 {/* <CodeMirror
@@ -43,7 +43,7 @@ const FileExplorer = (props: IProps) => {
                 /> */}
                 <Editor
                   height="80vh"
-                  defaultValue={file.data}
+                  defaultValue={file.data ?? ''}
                   theme="vs-dark"
                   options={{ readOnly: true, minimap: { enabled: false } }}
                 />

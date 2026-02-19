@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Badge, Space, Button, Tooltip, Typography } from 'antd';
 import { RedoOutlined, DatabaseOutlined, ClusterOutlined } from '@ant-design/icons';
-import { SystemIO, SystemHealthType } from '../../infrastructure/system';
+import { systemApi } from '../../api-client/clients';
+import type { SystemHealthResponse } from '../../api-client';
 
 const { Text } = Typography;
 
 const SystemHealth: React.FC = () => {
-  const [health, setHealth] = useState<SystemHealthType | null>(null);
+  const [health, setHealth] = useState<SystemHealthResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const checkHealth = async () => {
     setLoading(true);
     try {
-      const data = await SystemIO.getHealth();
+      const data = await systemApi.healthRetrieve();
       setHealth(data);
       setLastUpdated(new Date());
     } catch (e) {

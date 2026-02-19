@@ -39,8 +39,9 @@ Instructors can upload multiple student submissions at once using the bulk uploa
 Organize submissions in folders named by student email or identifier:
 
 ```
-submissions/
-├── student1@email.com/
+submissions.zip
+└── submissions/
+    ├── student1@email.com/
 │   ├── file1.py
 │   └── file2.py
 ├── student2@email.com/
@@ -59,6 +60,12 @@ submissions/
 5. Drag and drop your folder or select files
 6. Verify the detected submissions
 7. Click **Upload**
+
+### Troubleshooting Uploads
+
+- **File Size Limit**: Individual uploads are capped (typ. 100MB). For larger files (e.g., datasets), use **Instructor Resources**.
+- **Forbidden Extensions**: If a file fails, check if the assignment restriction excludes it (e.g., no `.exe`).
+- **Encoding Errors**: Ensure filenames use standard UTF-8 characters.
 
 ### Partner Submissions
 

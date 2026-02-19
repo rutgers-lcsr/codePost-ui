@@ -34,7 +34,7 @@ import {
   SyncOutlined,
   CheckCircleOutlined,
 } from '@ant-design/icons';
-import { EnvironmentType } from '../../../../../../infrastructure/autograder/environment';
+import { EnvironmentType } from '../../../../../../types/models';
 import CPTooltip from '../../../../../core/CPTooltip';
 
 interface AutoDetectStatusProps {

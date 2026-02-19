@@ -4,9 +4,9 @@ import { Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { DashboardOutlined, SettingOutlined, TeamOutlined, BookOutlined } from '@ant-design/icons';
 import CPLogo from '../core/CPLogo';
 import useFixedWindow from '../core/useFixedWindow';
-import { UserType } from '../../infrastructure/user';
-import { Organization, OrganizationType } from '../../infrastructure/organization';
-import { Course, CourseType } from '../../infrastructure/course';
+import type { UserType } from '../../types/models';
+import { Organization, Course, User } from '../../api-client';
+import { organizationsApi, coursesApi } from '../../api-client/clients';
 import OrgSettings from './OrgSettings';
 import OrgOverview from './OrgOverview';
 import OrgCourses from './OrgCourses';
@@ -26,11 +26,15 @@ const OrgDashboard: React.FC<IProps> = (props) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [organization, setOrganization] = React.useState<OrganizationType | null>(null);
-  const [courses, setCourses] = React.useState<CourseType[]>([]);
-  const [orgUsers, setOrgUsers] = React.useState<UserType[]>([]);
+  const [organization, setOrganization] = React.useState<Organization | null>(null);
+  const [courses, setCourses] = React.useState<Course[]>([]);
+  const [orgUsers, setOrgUsers] = React.useState<User[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [usersLoading, setUsersLoading] = React.useState(false);
+
+  const api = organizationsApi;
+
+  const coursesApiInstance = coursesApi;
 
   // Determine selected key based on path
   const getSelectedKey = () => {
@@ -46,31 +50,33 @@ const OrgDashboard: React.FC<IProps> = (props) => {
 
     try {
       setLoading(true);
-      const org = await Organization.read(props.user.organization);
+      const org = await api.retrieve({ id: props.user.organization });
       setOrganization(org);
 
       // Fetch courses (filtered by backend for Org Staff)
-      const coursesList = await Course.list();
+      const coursesList = await coursesApiInstance.list();
       setCourses(coursesList);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }, [props.user.organization]);
+  }, [props.user.organization, api, coursesApiInstance]);
 
   const fetchUsers = React.useCallback(async () => {
     if (!props.user.organization) return;
     try {
       setUsersLoading(true);
-      const users = await Organization.getUsers(props.user.organization);
+      // NOTE: The generated client has wrong return type for usersRetrieve (returns Organization instead of User[]).
+      // We cast it to any then to User[] to bypass strict check, assuming backend returns array.
+      const users = (await api.usersRetrieve({ id: props.user.organization })) as unknown as User[];
       setOrgUsers(users);
     } catch (error) {
       console.error(error);
     } finally {
       setUsersLoading(false);
     }
-  }, [props.user.organization]);
+  }, [props.user.organization, api]);
 
   React.useEffect(() => {
     fetchOrgData();
@@ -154,7 +160,7 @@ const OrgDashboard: React.FC<IProps> = (props) => {
                   <OrgOverview
                     organization={organization}
                     courseCount={courses.length}
-                    userCount={orgUsers.length || undefined} // Only show if fetched, or maybe trigger fetch?
+                    userCount={orgUsers.length || undefined}
                   />
                 ) : (
                   <div>Loading...</div>
@@ -173,7 +179,7 @@ const OrgDashboard: React.FC<IProps> = (props) => {
                   users={orgUsers}
                   loading={usersLoading}
                   onRefresh={fetchUsers}
-                  ssoEnabled={organization?.sso_enabled || false}
+                  ssoEnabled={organization?.ssoEnabled || false}
                 />
               }
             />

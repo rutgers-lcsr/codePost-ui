@@ -8,9 +8,9 @@ import { Divider, Modal, Radio, Typography } from 'antd';
 
 import { IStudentSubmissionsDataTable } from '../../../../types/common';
 
-import { AssignmentType } from '../../../../infrastructure/assignment';
+import { Assignment } from '../../../../types/common';
 
-import { CourseType } from '../../../../infrastructure/course';
+import { Course } from '../../../../api-client';
 
 export interface BuildAllGradesOptions {
   zeroForMissing?: boolean;
@@ -18,7 +18,7 @@ export interface BuildAllGradesOptions {
 }
 
 export const buildAllGradesTable = (
-  assignments: AssignmentType[],
+  assignments: Assignment[],
   students: string[],
   submissionsByStudent: IStudentSubmissionsDataTable,
   options: BuildAllGradesOptions = {},
@@ -52,11 +52,11 @@ export const buildAllGradesTable = (
 };
 
 export interface IProps {
-  activeAssignment?: AssignmentType;
-  assignments: AssignmentType[];
+  activeAssignment?: Assignment;
+  assignments: Assignment[];
   submissionsByStudent: IStudentSubmissionsDataTable;
   students: string[];
-  currentCourse: CourseType;
+  currentCourse: Course;
   onCancel: () => void;
 }
 
@@ -90,7 +90,7 @@ const DownloadGrades = (props: IProps) => {
   };
 
   const studentSet = new Set(props.students);
-  const getAssignmentWarning = (assignment: AssignmentType) => {
+  const getAssignmentWarning = (assignment: Assignment) => {
     return Object.keys(props.submissionsByStudent).reduce(
       (warningSubmissions: IWarningSubmissions, student: string) => {
         if (!props.submissionsByStudent[student][assignment.id] && studentSet.has(student)) {
@@ -108,9 +108,9 @@ const DownloadGrades = (props: IProps) => {
     );
   };
 
-  const getAllAssignmentWarning = (assignments: AssignmentType[]) => {
+  const getAllAssignmentWarning = (assignments: Assignment[]) => {
     return assignments.reduce(
-      (warningSubmissions: IWarningSubmissions, assignment: AssignmentType) => {
+      (warningSubmissions: IWarningSubmissions, assignment: Assignment) => {
         const thisAssignmentWarnings = getAssignmentWarning(assignment);
         warningSubmissions.missing += thisAssignmentWarnings.missing;
         warningSubmissions.ungraded += thisAssignmentWarnings.ungraded;
@@ -121,7 +121,7 @@ const DownloadGrades = (props: IProps) => {
   };
   // ********************************** DOWNLOAD FUNCTIONS ****************************************
 
-  const downloadAssignmentGrades = (assignment: AssignmentType, zeroForMissing?: boolean) => {
+  const downloadAssignmentGrades = (assignment: Assignment, zeroForMissing?: boolean) => {
     const grades: string[] = [`Student,${assignment.name} Grade`];
 
     const submissionsByStudent = props.submissionsByStudent;

@@ -43,10 +43,9 @@ import { tooltips } from '../core/tooltips';
 import { compare } from '../utils/SortUtils';
 import { formatSub, ISubDataBasic, sortByGrade } from './GraderUtils';
 
-import { Assignment, AssignmentType } from '../../infrastructure/assignment';
-import { CourseType } from '../../infrastructure/course';
-import { Section, SectionType } from '../../infrastructure/section';
-import { AnonymousSubmissionInfoType, Submission, SubmissionType } from '../../infrastructure/submission';
+import { coursesApi, submissionsApi } from '../../api-client/clients';
+import { Course } from '../../api-client';
+import { AnonymousSubmissionInfoType, AssignmentType, SectionType, SubmissionType } from '../../types/models';
 import { ADMIN } from '../../routes';
 import { BUTTON_STATE } from '../../types/common';
 
@@ -77,7 +76,7 @@ enum FILTER_TYPE {
 
 interface IProps {
   assignment: AssignmentType;
-  course: CourseType;
+  course: Course;
   graderEmail: string;
   isAdmin: boolean;
   breadcrumbs: Array<{ title: React.ReactNode }>;
@@ -87,16 +86,53 @@ interface IProps {
 /* Helper Functions
 /**********************************************************************************************************************/
 
-const loadSections = async (course: CourseType): Promise<SectionType[]> => {
-  const sections = await Promise.all(course.sections.map((id) => Section.read(id)));
-  return sections.filter((section): section is SectionType => section !== undefined);
+const loadSections = async (course: Course): Promise<SectionType[]> => {
+  try {
+    const pageSize = 200;
+    let page = 1;
+    let allSections: SectionType[] = [];
+
+    while (true) {
+      const response = await coursesApi.sectionsList({ id: course.id, page, pageSize });
+      const results = response.results ?? [];
+      allSections = allSections.concat(results);
+
+      if (!response.next) {
+        break;
+      }
+
+      page += 1;
+    }
+
+    return allSections;
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
 };
 
-const loadSubmissions = (currentAssignment: AssignmentType, user: string): Promise<AnonymousSubmissionInfoType[]> => {
-  return Assignment.readSubmissionsAnonymous(currentAssignment.id, {
-    grader: user,
-    compact: '1',
-  });
+const loadSubmissions = async (
+  currentAssignment: AssignmentType,
+  user: string,
+): Promise<AnonymousSubmissionInfoType[]> => {
+  // Legacy: Assignment.readSubmissionsAnonymous
+  try {
+    const query = new URLSearchParams({
+      grader: user,
+      compact: '1',
+    });
+    const response = await fetch(`/api/assignments/${currentAssignment.id}/submissions/?${query.toString()}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    if (!response.ok) throw new Error('Failed to fetch submissions');
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 };
 
 const getSectionParameters = (sections: SectionType[]): Array<SectionType | undefined> => {
@@ -232,17 +268,21 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
   );
 
   const releaseSubmission = useCallback(async (submission: SubmissionType): Promise<SubmissionType> => {
-    const payload = {
+    // Legacy: Submission.update(payload)
+    // const payload = {
+    //   id: submission.id,
+    //   grader: null, // API expects null or string? legacy was ''
+    //   isFinalized: false,
+    // };
+
+    const released = await submissionsApi.partialUpdate({
       id: submission.id,
-      grader: '',
-      isFinalized: false,
-    };
+      patchedSubmission: { grader: null, isFinalized: false },
+    });
 
-    const releasedSubmission = await Submission.update(payload);
+    setSubmissions((prev) => prev.filter((sub) => sub.id !== released.id));
 
-    setSubmissions((prev) => prev.filter((sub) => sub.id !== releasedSubmission.id));
-
-    return releasedSubmission;
+    return released;
   }, []);
 
   const updateQueueLength = useCallback(async () => {
@@ -574,7 +614,9 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
     );
 
     actions = [toolbar];
-    content = <Table columns={columns} dataSource={data} pagination={{ pageSize: 20 }} loading={isLoadingSubmissions} />;
+    content = (
+      <Table columns={columns} dataSource={data} pagination={{ pageSize: 20 }} loading={isLoadingSubmissions} />
+    );
   } else {
     let emptyMessage: string | React.ReactElement = 'No submissions yet. Click claim to start grading!';
     if (isAdmin) {

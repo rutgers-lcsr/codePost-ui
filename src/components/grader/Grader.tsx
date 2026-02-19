@@ -21,12 +21,13 @@ import { tooltips } from '../core/tooltips';
 
 /* codePost imports */
 
+import { assignmentsApi } from '../../api-client/clients';
+
 import { USER_TYPE } from '../../types/common';
 
-import { Assignment, AssignmentType } from '../../infrastructure/assignment';
+import { Assignment } from '../../types/common';
 
-import { loadIDList } from '../../infrastructure/generics';
-import { SectionType } from '../../infrastructure/section';
+import { Section } from '../../api-client';
 
 import GraderNav from './GraderNav';
 
@@ -48,10 +49,10 @@ const Grader: React.FC<IComponentProps> = (props) => {
   const { currentCourse, superGraderCourses, sectionsLed } = props;
 
   // State
-  const [assignments, setAssignments] = useState<AssignmentType[]>([]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
 
   const [isSuperGrader, setIsSuperGrader] = useState<boolean>(false);
-  const [localSectionsLed, setLocalSectionsLed] = useState<SectionType[]>([]);
+  const [localSectionsLed, setLocalSectionsLed] = useState<Section[]>([]);
 
   const [showConversionModal, setShowConversionModal] = useState<boolean>(false);
 
@@ -68,13 +69,16 @@ const Grader: React.FC<IComponentProps> = (props) => {
       }
 
       // Load assignments
-      loadIDList<AssignmentType>(currentCourse.assignments, Assignment).then((newAssignments) => {
+      const promises = (currentCourse.assignments || []).map((id) => assignmentsApi.retrieve({ id }));
+
+      Promise.all(promises).then((newAssignments) => {
         // Calculate derived state dependent on course
         const newIsSuperGrader = superGraderCourses.some((course) => course.id === currentCourse.id);
         const newSectionsLed = sectionsLed
           .slice()
           .filter((section) => currentCourse.sections.indexOf(section.id) !== -1);
 
+        // @ts-ignore: Assignment type compatibility
         setAssignments(newAssignments);
         setIsSuperGrader(newIsSuperGrader);
         setLocalSectionsLed(newSectionsLed);
@@ -133,7 +137,7 @@ const Grader: React.FC<IComponentProps> = (props) => {
   } else {
     graderPanelContent = (
       <GraderRoutes
-        currentCourse={currentCourse}
+        currentCourse={currentCourse as any}
         assignments={assignments}
         user={props.user}
         localSectionsLed={localSectionsLed}
@@ -160,10 +164,12 @@ const Grader: React.FC<IComponentProps> = (props) => {
       <Routes>
         <Route
           path=":panel/:assignment"
+          // @ts-ignore
           element={<AssignmentMenu currentCourse={currentCourse} assignments={assignments} baseURL={graderBaseURL} />}
         />
         <Route
           path=":panel"
+          // @ts-ignore
           element={<AssignmentMenu currentCourse={currentCourse} assignments={assignments} baseURL={graderBaseURL} />}
         />
       </Routes>
@@ -226,7 +232,7 @@ const Grader: React.FC<IComponentProps> = (props) => {
           <CIPGraderModal
             open={showConversionModal}
             onClose={() => setShowConversionModal(false)}
-            email={props.user.email}
+            email={props.user.email!}
           />
         </span>
       }
