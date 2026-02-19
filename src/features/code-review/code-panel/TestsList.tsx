@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Button, Card, Collapse, Progress, Typography, message, Badge, Alert, Tag, Tooltip } from 'antd';
 import {
   CheckCircleFilled,
@@ -14,6 +14,7 @@ import { RubricCategory, SubmissionTest, TestCase, TestCategory } from '../../..
 import { autograderApi, submissionsApi } from '../../../api-client/clients';
 import { useTaskPolling } from '../../../hooks/useTaskPolling';
 import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';
+import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
 const { Panel } = Collapse;
 const { Text, Title } = Typography;
@@ -150,6 +151,14 @@ const TestsList: React.FC<TestsListProps> = ({
   testCategories,
   fileOverrides,
 }) => {
+  const { consoleTheme } = useContext(ConsoleThemeContext);
+  const isDarkTheme = consoleThemes.dark === consoleTheme;
+  const secondaryText = isDarkTheme ? '#c9d1d9' : '#595959';
+  const mutedText = isDarkTheme ? '#9da7b3' : '#595959';
+  const emphasisText = isDarkTheme ? '#e6edf3' : '#262626';
+  const darkSurface = 'rgba(255,255,255,0.08)';
+  const darkBorder = '#6e7681';
+
   const [runningAll, setRunningAll] = useState(false);
   const [runningTestIds, setRunningTestIds] = useState<Set<number>>(new Set());
   const [results, setResults] = useState<SubmissionTest[]>([]);
@@ -275,12 +284,19 @@ const TestsList: React.FC<TestsListProps> = ({
     return 'Failed';
   };
 
-  const statusColors = {
-    passed: { main: '#389e0d', bg: '#f6ffed', border: '#b7eb8f' }, // green-7, green-1, green-3
-    error: { main: '#cf1322', bg: '#fff1f0', border: '#ffa39e' }, // red-7, red-1, red-3
-    partial: { main: '#d48806', bg: '#fffbe6', border: '#ffe58f' }, // gold-7, gold-1, gold-3
-    default: { main: '#595959', bg: '#fafafa', border: '#d9d9d9' }, // gray-7, gray-1, gray-5
-  };
+  const statusColors = isDarkTheme
+    ? {
+        passed: { main: '#49aa19', bg: 'rgba(73, 170, 25, 0.1)', border: '#274916' },
+        error: { main: '#d32029', bg: 'rgba(211, 32, 41, 0.1)', border: '#58181c' },
+        partial: { main: '#d89614', bg: 'rgba(216, 150, 20, 0.1)', border: '#593d10' },
+        default: { main: '#9da7b3', bg: darkSurface, border: darkBorder },
+      }
+    : {
+        passed: { main: '#389e0d', bg: '#f6ffed', border: '#b7eb8f' }, // green-7, green-1, green-3
+        error: { main: '#cf1322', bg: '#fff1f0', border: '#ffa39e' }, // red-7, red-1, red-3
+        partial: { main: '#d48806', bg: '#fffbe6', border: '#ffe58f' }, // gold-7, gold-1, gold-3
+        default: { main: '#595959', bg: '#fafafa', border: '#d9d9d9' }, // gray-7, gray-1, gray-5
+      };
 
   const getStatusColorKey = (result?: SubmissionTest) => {
     if (!result) return 'default';
@@ -299,11 +315,11 @@ const TestsList: React.FC<TestsListProps> = ({
     return {
       marginBottom: 12,
       borderRadius: 6,
-      border: `1px solid ${colors.border}`,
+      border: `1px solid ${isDarkTheme ? darkBorder : colors.border}`,
       borderLeft: `4px solid ${colors.main}`,
-      backgroundColor: '#ffffff', // Clean white background for card
+      backgroundColor: isDarkTheme ? darkSurface : '#ffffff',
       transition: 'all 0.2s ease',
-      boxShadow: '0 1px 2px rgba(0,0,0,0.03)', // Subtle shadow
+      boxShadow: isDarkTheme ? '0 1px 2px rgba(0,0,0,0.2)' : '0 1px 2px rgba(0,0,0,0.03)',
     };
   };
 
@@ -378,7 +394,7 @@ const TestsList: React.FC<TestsListProps> = ({
               style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}
             >
               <div style={{ flex: 1, marginRight: 8, minWidth: 0 }}>
-                <Text strong style={{ fontSize: 13, display: 'block', lineHeight: '1.4', color: '#262626' }}>
+                <Text strong style={{ fontSize: 13, display: 'block', lineHeight: '1.4', color: consoleTheme.text }}>
                   {definition.description || `Test ${definition.id}`}
                 </Text>
 
@@ -388,7 +404,7 @@ const TestsList: React.FC<TestsListProps> = ({
                 {parsedResults.length === 1 &&
                   parsedResults[0].description &&
                   parsedResults[0].description !== definition.description && (
-                    <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 2, color: '#595959' }}>
+                    <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 2, color: mutedText }}>
                       {parsedResults[0].description}
                     </Text>
                   )}
@@ -420,7 +436,7 @@ const TestsList: React.FC<TestsListProps> = ({
                         }}
                         disabled={runningAll || isRunning}
                         style={{
-                          color: isRunning ? '#1890ff' : '#595959',
+                          color: isRunning ? '#1890ff' : secondaryText,
                           borderColor: isRunning ? '#1890ff' : 'transparent',
                         }}
                       />
@@ -440,7 +456,7 @@ const TestsList: React.FC<TestsListProps> = ({
                 >
                   {result ? `${currentScore}/${maxScore} pts` : 'Not Run'}
                 </Tag>
-                <div style={{ fontSize: 10, color: '#595959', marginTop: 2, textAlign: 'right' }}>
+                <div style={{ fontSize: 10, color: mutedText, marginTop: 2, textAlign: 'right' }}>
                   {getStatusText(result)}
                 </div>
               </div>
@@ -461,9 +477,9 @@ const TestsList: React.FC<TestsListProps> = ({
                   <Badge
                     status="processing"
                     text={
-                      <Text type="secondary" style={{ fontSize: 11, color: '#595959' }}>
+                      <Text type="secondary" style={{ fontSize: 11, color: mutedText }}>
                         Linked:{' '}
-                        <Text strong style={{ color: '#262626' }}>
+                        <Text strong style={{ color: emphasisText }}>
                           {itemDetails.text}
                         </Text>{' '}
                         ({itemDetails.pointDelta > 0 ? '-' : '+'}
@@ -485,7 +501,7 @@ const TestsList: React.FC<TestsListProps> = ({
               >
                 <Panel
                   header={
-                    <Text style={{ fontSize: 12, color: '#262626' }}>
+                    <Text style={{ fontSize: 12, color: consoleTheme.text }}>
                       {' '}
                       {/* Darker for readability */}
                       {parsedResults.filter((r) => r.passed).length}/{parsedResults.length} subtests passed
@@ -510,9 +526,9 @@ const TestsList: React.FC<TestsListProps> = ({
                           ) : (
                             <CloseCircleFilled style={{ color: statusColors.error.main, fontSize: 12 }} />
                           )}
-                          <Text style={{ fontSize: 12, color: '#262626' }}>{pr.name}</Text>
+                          <Text style={{ fontSize: 12, color: consoleTheme.text }}>{pr.name}</Text>
                         </div>
-                        <Text type="secondary" style={{ fontSize: 11, color: '#595959' }}>
+                        <Text type="secondary" style={{ fontSize: 11, color: mutedText }}>
                           {pr.score}/{pr.maxScore}
                         </Text>
                       </div>
@@ -526,7 +542,11 @@ const TestsList: React.FC<TestsListProps> = ({
             {parsedResults.length === 1 && parsedResults[0].message && (
               <div style={{ marginTop: 8 }}>
                 <Alert
-                  message={<span style={{ fontSize: 12, color: '#262626' }}>{parsedResults[0].message}</span>}
+                  message={
+                    <span style={{ fontSize: 12, color: isDarkTheme ? '#1e1e1e' : '#262626' }}>
+                      {parsedResults[0].message}
+                    </span>
+                  }
                   type="info"
                   showIcon
                   style={{
@@ -545,12 +565,12 @@ const TestsList: React.FC<TestsListProps> = ({
                 style={{
                   marginTop: 8,
                   padding: '8px',
-                  backgroundColor: '#fff1f0',
-                  border: '1px solid #ffccc7',
+                  backgroundColor: statusColors.error.bg,
+                  border: `1px solid ${statusColors.error.border}`,
                   borderRadius: 4,
                   fontFamily: 'monospace',
                   fontSize: 11,
-                  color: '#cf1322', // Standard error red (usually accessible on light bg)
+                  color: statusColors.error.main, // Standard error red (usually accessible on light bg)
                   whiteSpace: 'pre-wrap',
                 }}
               >
@@ -567,19 +587,19 @@ const TestsList: React.FC<TestsListProps> = ({
                   !result.passed)) && (
                 <div style={{ marginTop: 8 }}>
                   <Collapse ghost size="small">
-                    <Panel header={<span style={{ color: '#595959' }}>View Logs</span>} key="logs">
+                    <Panel header={<span style={{ color: consoleTheme.text }}>View Logs</span>} key="logs">
                       <pre
                         style={{
                           fontFamily: 'monospace',
                           fontSize: 11,
                           whiteSpace: 'pre-wrap',
                           padding: 8,
-                          backgroundColor: '#fafafa',
+                          backgroundColor: isDarkTheme ? 'rgba(0,0,0,0.3)' : '#fafafa',
                           borderRadius: 4,
                           maxHeight: 150,
                           overflow: 'auto',
-                          border: '1px solid #f0f0f0',
-                          color: '#595959',
+                          border: `1px solid ${isDarkTheme ? darkBorder : '#f0f0f0'}`,
+                          color: consoleTheme.text,
                         }}
                       >
                         {result.logs}
@@ -652,7 +672,7 @@ const TestsList: React.FC<TestsListProps> = ({
                 fontSize: 13,
                 fontWeight: 600,
                 textTransform: 'uppercase',
-                color: '#262626',
+                color: consoleTheme.text,
                 letterSpacing: '0.5px',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
@@ -669,7 +689,7 @@ const TestsList: React.FC<TestsListProps> = ({
                 style={{
                   fontSize: 11,
                   marginTop: 2,
-                  color: '#595959',
+                  color: mutedText,
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -684,7 +704,7 @@ const TestsList: React.FC<TestsListProps> = ({
 
           {/* Right Side: Points and Progress */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
-            <Text strong style={{ fontSize: 12, color: isComplete ? '#52c41a' : '#262626' }}>
+            <Text strong style={{ fontSize: 12, color: isComplete ? '#52c41a' : consoleTheme.text }}>
               {totalPoints} / {totalMax} pts
             </Text>
             <div style={{ width: 80, marginTop: 4 }}>
@@ -768,7 +788,7 @@ const TestsList: React.FC<TestsListProps> = ({
           position: 'sticky',
           top: 0,
           zIndex: 1,
-          backgroundColor: '#fff',
+          backgroundColor: isDarkTheme ? consoleTheme.mainBg : '#fff', // Use theme bg
           padding: '16px 0',
         }}
       >
@@ -791,9 +811,32 @@ const TestsList: React.FC<TestsListProps> = ({
 
       {/* Summary Badges */}
       <div style={{ marginBottom: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <Badge count={`${passedTests} Passed`} style={{ backgroundColor: '#52c41a' }} />
-        <Badge count={`${failedTests} Failed`} style={{ backgroundColor: failedTests > 0 ? '#ff4d4f' : '#8c8c8c' }} />
-        {notRunTests > 0 && <Badge count={`${notRunTests} Not Run`} style={{ backgroundColor: '#8c8c8c' }} />}
+        <Badge
+          count={`${passedTests} Passed`}
+          style={{
+            backgroundColor: statusColors.passed.main,
+            color: '#fff',
+            boxShadow: isDarkTheme ? 'none' : undefined,
+          }}
+        />
+        <Badge
+          count={`${failedTests} Failed`}
+          style={{
+            backgroundColor: failedTests > 0 ? statusColors.error.main : statusColors.default.main,
+            color: '#fff',
+            boxShadow: isDarkTheme ? 'none' : undefined,
+          }}
+        />
+        {notRunTests > 0 && (
+          <Badge
+            count={`${notRunTests} Not Run`}
+            style={{
+              backgroundColor: statusColors.default.main,
+              color: '#fff',
+              boxShadow: isDarkTheme ? 'none' : undefined,
+            }}
+          />
+        )}
       </div>
 
       {/* Progress Bar */}
@@ -802,8 +845,13 @@ const TestsList: React.FC<TestsListProps> = ({
           <Progress
             percent={Math.round((passedTests / totalTests) * 100)}
             status={failedTests > 0 ? 'exception' : passedTests === totalTests ? 'success' : 'active'}
-            format={() => `${passedTests}/${totalTests}`}
-            strokeColor={passedTests === totalTests ? '#52c41a' : undefined}
+            format={(percent, successPercent) => (
+              <span style={{ color: consoleTheme.text }}>
+                {passedTests}/{totalTests}
+              </span>
+            )}
+            strokeColor={passedTests === totalTests ? statusColors.passed.main : undefined}
+            trailColor={isDarkTheme ? 'rgba(255,255,255,0.25)' : undefined}
           />
         </div>
       )}

@@ -24,6 +24,8 @@ import EditUserDialog from './EditUserDialog';
 
 const { Search } = Input;
 
+const isNonEmptyEmail = (email: string | null | undefined): email is string => Boolean(email);
+
 export interface UserData {
   email: string;
   organizations: Set<string>; // org shortnames
@@ -61,10 +63,11 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
 
       // Helper to add or update user
       const addUser = (
-        emailRaw: string,
+        emailRaw: string | null | undefined,
         role: 'student' | 'grader' | 'superGrader' | 'courseAdmin',
         isActive: boolean,
       ) => {
+        if (!isNonEmptyEmail(emailRaw)) return;
         const email = emailRaw.toLowerCase();
         if (!map.has(email)) {
           map.set(email, {
@@ -104,9 +107,9 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
       roster.courseAdmins.forEach((email) => addUser(email, 'courseAdmin', true));
 
       // Add inactive users
-      roster.inactive_students.forEach((email) => addUser(email, 'student', false));
-      roster.inactive_graders.forEach((email) => addUser(email, 'grader', false));
-      roster.inactive_courseAdmins.forEach((email) => addUser(email, 'courseAdmin', false));
+      roster.inactiveStudents.forEach((email) => addUser(email, 'student', false));
+      roster.inactiveGraders.forEach((email) => addUser(email, 'grader', false));
+      roster.inactiveCourseAdmins.forEach((email) => addUser(email, 'courseAdmin', false));
     });
 
     // Then, merge in full user data from User.list()

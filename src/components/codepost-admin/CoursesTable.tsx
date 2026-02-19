@@ -22,6 +22,10 @@ import NewCourseDialog from './NewCourseDialog';
 
 const { Search } = Input;
 
+const addEmailToSet = (target: Set<string>, email: string | null | undefined) => {
+  if (email) target.add(email);
+};
+
 interface CourseWithRoster extends Omit<Course, 'organization'> {
   roster?: RosterType;
   organization?: Organization;
@@ -70,8 +74,8 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
     const allStudents = new Set<string>();
     filteredCourses.forEach((c) => {
       if (c.roster) {
-        c.roster.students.forEach((email) => allStudents.add(email));
-        c.roster.inactive_students.forEach((email) => allStudents.add(email));
+        c.roster.students.forEach((email) => addEmailToSet(allStudents, email));
+        c.roster.inactiveStudents.forEach((email) => addEmailToSet(allStudents, email));
       }
     });
 
@@ -149,8 +153,8 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
         // Use Set to count unique students (in case someone is listed in both active and inactive)
         const uniqueStudents = new Set<string>();
         if (record.roster) {
-          record.roster.students.forEach((email) => uniqueStudents.add(email));
-          record.roster.inactive_students.forEach((email) => uniqueStudents.add(email));
+          record.roster.students.forEach((email) => addEmailToSet(uniqueStudents, email));
+          record.roster.inactiveStudents.forEach((email) => addEmailToSet(uniqueStudents, email));
         }
         return (
           <Space>
@@ -163,12 +167,12 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
         const aSet = new Set<string>();
         const bSet = new Set<string>();
         if (a.roster) {
-          a.roster.students.forEach((email) => aSet.add(email));
-          a.roster.inactive_students.forEach((email) => aSet.add(email));
+          a.roster.students.forEach((email) => addEmailToSet(aSet, email));
+          a.roster.inactiveStudents.forEach((email) => addEmailToSet(aSet, email));
         }
         if (b.roster) {
-          b.roster.students.forEach((email) => bSet.add(email));
-          b.roster.inactive_students.forEach((email) => bSet.add(email));
+          b.roster.students.forEach((email) => addEmailToSet(bSet, email));
+          b.roster.inactiveStudents.forEach((email) => addEmailToSet(bSet, email));
         }
         return aSet.size - bSet.size;
       },
@@ -181,11 +185,11 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
         // Use Set to avoid double-counting users with multiple roles
         const allStaff = new Set<string>();
         if (record.roster) {
-          record.roster.courseAdmins.forEach((email) => allStaff.add(email));
-          record.roster.graders.forEach((email) => allStaff.add(email));
-          record.roster.superGraders.forEach((email) => allStaff.add(email));
-          record.roster.inactive_courseAdmins.forEach((email) => allStaff.add(email));
-          record.roster.inactive_graders.forEach((email) => allStaff.add(email));
+          record.roster.courseAdmins.forEach((email) => addEmailToSet(allStaff, email));
+          record.roster.graders.forEach((email) => addEmailToSet(allStaff, email));
+          record.roster.superGraders.forEach((email) => addEmailToSet(allStaff, email));
+          record.roster.inactiveCourseAdmins.forEach((email) => addEmailToSet(allStaff, email));
+          record.roster.inactiveGraders.forEach((email) => addEmailToSet(allStaff, email));
         }
         return (
           <Space>

@@ -2,17 +2,28 @@ import LangMap from 'lang-map';
 import type { AssignmentFile, CourseFile, SubmissionFile } from '../api-client';
 import { CommentType } from 'types/models';
 
-export type FileType = AssignmentFile | CourseFile | SubmissionFile | FileLike;
-export type FileWithId = FileType & { id: number; comments: CommentType[]; created?: string };
+type FileMetadata = {
+  id?: number;
+  submission?: number;
+  comments?: Array<CommentType | number>;
+  created?: string;
+};
+
+export type FileType = (AssignmentFile | CourseFile | SubmissionFile | FileLike) & FileMetadata;
+export type FileWithId = FileType & { id: number; comments?: Array<CommentType | number>; created?: string };
 export type AssignmentFileType = AssignmentFile;
 export type CourseFileType = CourseFile;
 export type SubmissionFileType = SubmissionFile;
 
 export interface FileLike {
+  id?: number;
   name: string;
   extension: string;
   path?: string | null;
   data?: string | null;
+  submission?: number;
+  comments?: Array<CommentType | number>;
+  created?: string;
 }
 
 export const MarkdownExtensions = ['md', '.md'];
@@ -190,6 +201,7 @@ public class HelloWorld {
 }`;
 
 export const FileMock: FileLike = {
+  id: 0,
   name: 'hello.java',
   extension: 'java',
   data: codeString,

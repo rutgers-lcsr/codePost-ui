@@ -1,4 +1,4 @@
-export type DocCategory = 'Getting Started' | 'Guides' | 'Reference';
+export type DocCategory = 'Getting Started' | 'Instructor Workflows' | 'Role Guides' | 'Reference';
 
 export interface DocRoute {
   key: string;
@@ -36,35 +36,70 @@ export const docRoutes: DocRoute[] = [
     path: 'student',
     title: 'Student Guide',
     fileName: 'student_guide.md',
-    category: 'Guides',
+    category: 'Role Guides',
+  },
+  {
+    key: 'grader',
+    path: 'grader',
+    title: 'Grader Guide',
+    fileName: 'grader_guide.md',
+    category: 'Role Guides',
   },
   {
     key: 'instructor',
     path: 'instructor',
-    title: 'Instructor Guide',
+    title: 'Instructor Overview',
     fileName: 'instructor_guide.md',
-    category: 'Guides',
+    category: 'Instructor Workflows',
+  },
+  {
+    key: 'instructor-course-setup',
+    path: 'instructor-course-setup',
+    title: 'Course Setup & Roster',
+    fileName: 'instructor_course_setup.md',
+    category: 'Instructor Workflows',
+  },
+  {
+    key: 'instructor-assignment-workflow',
+    path: 'instructor-assignment-workflow',
+    title: 'Assignment Workflow',
+    fileName: 'instructor_assignment_workflow.md',
+    category: 'Instructor Workflows',
+  },
+  {
+    key: 'instructor-grading-publishing',
+    path: 'instructor-grading-publishing',
+    title: 'Grading, Release & Exports',
+    fileName: 'instructor_grading_publishing.md',
+    category: 'Instructor Workflows',
+  },
+  {
+    key: 'instructor-environment-testing',
+    path: 'instructor-environment-testing',
+    title: 'Environment & Testing Ops',
+    fileName: 'instructor_environment_testing.md',
+    category: 'Instructor Workflows',
   },
   {
     key: 'organization',
     path: 'organization',
     title: 'Organization Guide',
     fileName: 'organization_guide.md',
-    category: 'Guides',
+    category: 'Role Guides',
   },
   {
     key: 'submission-upload',
     path: 'submission-upload',
     title: 'Uploading Submissions',
     fileName: 'submission_upload.md',
-    category: 'Guides',
+    category: 'Role Guides',
   },
   {
     key: 'programmatic-comments',
     path: 'programmatic-comments',
     title: 'Programmatic Comments',
     fileName: 'sdk_programmatic_comments.md',
-    category: 'Guides',
+    category: 'Role Guides',
   },
   {
     key: 'features',

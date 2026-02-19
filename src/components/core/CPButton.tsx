@@ -49,9 +49,9 @@ const CPButton: React.FC<CPButtonFullProps> = ({
     }
 
     if (cpType === 'dark') {
-      baseStyle.border = 'solid 1px #5e5e5e';
-      baseStyle.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-      baseStyle.color = 'rgba(255, 255, 255, 0.5)';
+      baseStyle.border = 'solid 1px #8b949e';
+      baseStyle.backgroundColor = 'rgba(255, 255, 255, 0.12)';
+      baseStyle.color = 'rgba(255, 255, 255, 0.88)';
     }
 
     if (cpType === 'highlight') {
@@ -87,8 +87,10 @@ const CPButton: React.FC<CPButtonFullProps> = ({
       classes.push('cp-button-with-text');
     }
 
+    classes.push(`cp-button-${cpType}`);
+
     return classes.join(' ') || undefined;
-  }, [className, children, small]);
+  }, [className, children, small, cpType]);
 
   // Determine if button should fallback to icon-only based on window width
   const shouldFallbackToIcon = windowwidth < fallbackWidth && !!fallbackIcon;

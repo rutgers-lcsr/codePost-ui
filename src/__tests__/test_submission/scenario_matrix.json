@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "description": "Robust student submission-process scenarios per language.",
+  "languages": ["cpp", "java", "node", "php", "python", "r", "ruby"],
+  "requiredScenarios": ["multi_file_import", "nested_paths", "failure_cases"]
+}

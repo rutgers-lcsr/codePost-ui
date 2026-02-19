@@ -122,7 +122,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
         id: commentCounter,
         endChar: 0,
         endLine: pageNumber,
-        file: file.id,
+        file: file.id ?? 0,
         pointDelta: 0.0,
         startChar: 0,
         startLine: pageNumber,

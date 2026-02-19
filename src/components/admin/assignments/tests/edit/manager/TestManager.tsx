@@ -51,8 +51,6 @@ export const TestManager = (props: IProps) => {
           maxPoints: 10, // Default
           sortKey: categories.length,
           targetFileName: null,
-          testCases: [],
-          resources: [],
         },
       });
       setCategories([...categories, newCat]);

@@ -1,0 +1,961 @@
+{
+  "metadata": {
+    "generatedAt": "2026-02-18T20:28:46.694Z",
+    "source": "src/__tests__/test_submission/build_backend_seed_data.js",
+    "scenarioMatrixVersion": 1
+  },
+  "assignments": [
+    {
+      "key": "cpp",
+      "assignmentName": "C++ Submission Compatibility",
+      "courseId": 0,
+      "environmentLanguage": "c/c++",
+      "assignmentFiles": [
+        {
+          "name": "main.cpp",
+          "path": "",
+          "relativePath": "main.cpp",
+          "encoding": "utf-8",
+          "content": "#include <cassert>\n#include <fstream>\n#include <iostream>\n#include <sstream>\n#include <string>\n#include <vector>\n\nstd::vector<int> parse_numbers(const std::string& csv_line) {\n    // TODO(student): Parse comma-separated integers and return them.\n    return {};\n}\n\nint main() {\n    std::ifstream input(\"existing_data.txt\");\n    std::string line;\n    std::getline(input, line);\n\n    auto values = parse_numbers(line);\n\n    std::ofstream output(\"starter_output.txt\");\n    output << \"TODO: write summary for \" << values.size() << \" numbers\" << std::endl;\n\n    assert(!values.empty() && \"Starter assertion intentionally triggers until parse_numbers is implemented.\");\n    std::cout << \"Starter template completed.\" << std::endl;\n    return 0;\n}\n"
+        },
+        {
+          "name": "main.ipynb",
+          "path": "",
+          "relativePath": "main.ipynb",
+          "encoding": "utf-8",
+          "content": "{\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"1445b6df\",\n   \"metadata\": {\n    \"language\": \"markdown\"\n   },\n   \"source\": [\n    \"# C++ Starter Notebook\\n\",\n    \"Implement parsing logic, keep file I/O, and make the assertion pass.\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"4f0243f5\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"cpp\"\n    },\n    \"language\": \"cpp\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"#include <vector>\\n\",\n    \"#include <string>\\n\",\n    \"\\n\",\n    \"std::vector<int> parse_numbers(const std::string& csv_line) {\\n\",\n    \"    // TODO(student): parse comma-separated integers\\n\",\n    \"    return {};\\n\",\n    \"}\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"87b22722\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"cpp\"\n    },\n    \"language\": \"cpp\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"// TODO(student): read existing_data.txt and write starter_output.txt\\n\",\n    \"// TODO(student): print render text block to stdout\\n\",\n    \"// assert(!values.empty());\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"language_info\": {\n   \"name\": \"cpp\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n"
+        },
+        {
+          "name": "existing_data.txt",
+          "path": "",
+          "relativePath": "existing_data.txt",
+          "encoding": "utf-8",
+          "content": "3,5,8,13,21\n"
+        }
+      ],
+      "assignmentDataSets": [
+        {
+          "name": "existing_data.txt",
+          "description": "Seeded execution resource from existing_data.txt",
+          "mountPath": "shared/existing_data.txt",
+          "encoding": "utf-8",
+          "content": "3,5,8,13,21\n",
+          "sourceRelativePath": "existing_data.txt"
+        }
+      ],
+      "fakeSubmissions": [
+        {
+          "key": "cpp_multi_file_import",
+          "scenario": "multi_file_import",
+          "description": "Scenario submission for cpp/multi_file_import",
+          "files": [
+            {
+              "name": "main.cpp",
+              "path": "",
+              "relativePath": "main.cpp",
+              "encoding": "utf-8",
+              "content": "#include <cassert>\n#include <iostream>\n#include <string>\n\n#include \"math_utils.hpp\"\n\nint main() {\n    const std::string csv = \"3,5,8,13,21\";\n    const int sum = parse_and_sum(csv);\n    assert(sum == 50);\n    std::cout << \"[cpp][multi_file_import] sum=\" << sum << std::endl;\n    return 0;\n}\n"
+            },
+            {
+              "name": "math_utils.hpp",
+              "path": "",
+              "relativePath": "math_utils.hpp",
+              "encoding": "utf-8",
+              "content": "#pragma once\n\n#include <sstream>\n#include <string>\n\ninline int parse_and_sum(const std::string& csv) {\n    std::stringstream ss(csv);\n    std::string token;\n    int total = 0;\n    while (std::getline(ss, token, ',')) {\n        total += std::stoi(token);\n    }\n    return total;\n}\n"
+            }
+          ]
+        },
+        {
+          "key": "cpp_nested_paths",
+          "scenario": "nested_paths",
+          "description": "Scenario submission for cpp/nested_paths",
+          "files": [
+            {
+              "name": "parser.hpp",
+              "path": "lib",
+              "relativePath": "lib/parser.hpp",
+              "encoding": "utf-8",
+              "content": "#pragma once\n\n#include <sstream>\n#include <string>\n#include <vector>\n\ninline std::vector<int> parse_csv(const std::string& csv) {\n    std::vector<int> values;\n    std::stringstream ss(csv);\n    std::string token;\n    while (std::getline(ss, token, ',')) {\n        values.push_back(std::stoi(token));\n    }\n    return values;\n}\n"
+            },
+            {
+              "name": "main.cpp",
+              "path": "src",
+              "relativePath": "src/main.cpp",
+              "encoding": "utf-8",
+              "content": "#include <cassert>\n#include <iostream>\n\n#include \"../lib/parser.hpp\"\n\nint main() {\n    auto values = parse_csv(\"1,2,3,4\");\n    assert(values.size() == 4);\n    std::cout << \"[cpp][nested_paths] count=\" << values.size() << std::endl;\n    return 0;\n}\n"
+            }
+          ]
+        },
+        {
+          "key": "cpp_failure_runtime_1",
+          "scenario": "failure_cases",
+          "kind": "runtime_error",
+          "description": "Intentional runtime error submission.",
+          "files": [
+            {
+              "name": "runtime_error.cpp",
+              "path": "",
+              "relativePath": "runtime_error.cpp",
+              "encoding": "utf-8",
+              "content": "#include <stdexcept>\n\nint main() {\n    throw std::runtime_error(\"Intentional runtime error for submission-process testing\");\n}\n"
+            }
+          ]
+        },
+        {
+          "key": "cpp_failure_syntax_1",
+          "scenario": "failure_cases",
+          "kind": "syntax_error",
+          "description": "Intentional syntax error submission.",
+          "files": [
+            {
+              "name": "syntax_error.cpp",
+              "path": "",
+              "relativePath": "syntax_error.cpp",
+              "encoding": "utf-8",
+              "content": "int main() {\n    int x = 10\n    return x;\n}\n"
+            }
+          ]
+        },
+        {
+          "key": "cpp_complete_happy_path",
+          "scenario": "complete_happy_path",
+          "description": "Completed student submission for the assignment happy path.",
+          "files": [
+            {
+              "name": "main.cpp",
+              "path": "",
+              "relativePath": "main.cpp",
+              "encoding": "utf-8",
+              "content": "#include <algorithm>\n#include <cassert>\n#include <fstream>\n#include <iomanip>\n#include <iostream>\n#include <numeric>\n#include <sstream>\n#include <string>\n#include <vector>\n\nstd::vector<int> parse_numbers(const std::string& csv_line) {\n    std::vector<int> values;\n    std::stringstream ss(csv_line);\n    std::string token;\n    while (std::getline(ss, token, ',')) {\n        values.push_back(std::stoi(token));\n    }\n    return values;\n}\n\nint main() {\n    std::ifstream input(\"existing_data.txt\");\n    assert(input.good() && \"Input file should exist.\");\n\n    std::string line;\n    std::getline(input, line);\n    auto values = parse_numbers(line);\n    assert(values.size() == 5 && \"Expected five values from fixture input.\");\n\n    int total = std::accumulate(values.begin(), values.end(), 0);\n    int max_value = *std::max_element(values.begin(), values.end());\n\n    std::ofstream output(\"result_summary.txt\");\n    output << \"count=\" << values.size() << \"\\n\";\n    output << \"sum=\" << total << \"\\n\";\n    output << \"max=\" << max_value << \"\\n\";\n\n    std::ofstream markdown(\"render_preview.md\");\n    markdown << \"# C++ Rendering Preview\\n\\n\";\n    markdown << \"- Unicode: café λ 🚀\\n\";\n    markdown << \"- Status: success\\n\\n\";\n    markdown << \"```text\\n\";\n    markdown << \"idx | value\\n\";\n    markdown << \"-----------\\n\";\n    for (size_t i = 0; i < values.size(); ++i) {\n        markdown << i << \"   | \" << values[i] << \"\\n\";\n    }\n    markdown << \"```\\n\";\n\n    assert(total == 50 && \"Sum should match fixture data.\");\n    assert(max_value == 21 && \"Max should match fixture data.\");\n\n    std::cout << \"=== C++ RENDER TEST START ===\" << std::endl;\n    std::cout << \"unicode: café λ 🚀\" << std::endl;\n    std::cout << \"json: {\\\"language\\\":\\\"cpp\\\",\\\"status\\\":\\\"ok\\\"}\" << std::endl;\n    std::cout << \"idx | value\" << std::endl;\n    for (size_t i = 0; i < values.size(); ++i) {\n        std::cout << std::setw(3) << i << \" | \" << values[i] << std::endl;\n    }\n    std::cerr << \"[stderr][cpp] Render check stderr line\" << std::endl;\n    std::cout << \"CPP compatibility checks passed.\" << std::endl;\n    return 0;\n}\n"
+            },
+            {
+              "name": "main.ipynb",
+              "path": "",
+              "relativePath": "main.ipynb",
+              "encoding": "utf-8",
+              "content": "{\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"68df85ff\",\n   \"metadata\": {\n    \"language\": \"markdown\"\n   },\n   \"source\": [\n    \"# C++ Complete Notebook\\n\",\n    \"Exercises file I/O, imports, assertions, and render-oriented text output.\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"e8ebc49f\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"cpp\"\n    },\n    \"language\": \"cpp\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"#include <cassert>\\n\",\n    \"#include <fstream>\\n\",\n    \"#include <numeric>\\n\",\n    \"#include <sstream>\\n\",\n    \"#include <string>\\n\",\n    \"#include <vector>\\n\",\n    \"\\n\",\n    \"std::vector<int> parse_numbers(const std::string& csv_line) {\\n\",\n    \"    std::vector<int> values;\\n\",\n    \"    std::stringstream ss(csv_line);\\n\",\n    \"    std::string token;\\n\",\n    \"    while (std::getline(ss, token, ',')) values.push_back(std::stoi(token));\\n\",\n    \"    return values;\\n\",\n    \"}\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"b7b2d23d\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"cpp\"\n    },\n    \"language\": \"cpp\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"std::ifstream input(\\\"existing_data.txt\\\");\\n\",\n    \"assert(input.good());\\n\",\n    \"std::string line;\\n\",\n    \"std::getline(input, line);\\n\",\n    \"auto values = parse_numbers(line);\\n\",\n    \"int sum = std::accumulate(values.begin(), values.end(), 0);\\n\",\n    \"std::ofstream out(\\\"result_summary.txt\\\"); out << \\\"sum=\\\" << sum << std::endl;\\n\",\n    \"std::cout << \\\"=== C++ NOTEBOOK RENDER TEST ===\\\" << std::endl;\\n\",\n    \"std::cout << \\\"unicode: café λ 🚀\\\" << std::endl;\\n\",\n    \"std::cout << \\\"idx | value\\\" << std::endl;\\n\",\n    \"for (size_t i = 0; i < values.size(); ++i) std::cout << i << \\\" | \\\" << values[i] << std::endl;\\n\",\n    \"assert(sum == 50);\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"language_info\": {\n   \"name\": \"cpp\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "java",
+      "assignmentName": "Java Submission Compatibility",
+      "courseId": 0,
+      "environmentLanguage": "java",
+      "assignmentFiles": [
+        {
+          "name": "Main.ipynb",
+          "path": "",
+          "relativePath": "Main.ipynb",
+          "encoding": "utf-8",
+          "content": "{\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"e182f836\",\n   \"metadata\": {\n    \"language\": \"markdown\"\n   },\n   \"source\": [\n    \"# Java Starter Notebook\\n\",\n    \"Complete parsing and rendering TODOs, then make assertions pass.\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"a32d97b7\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"java\"\n    },\n    \"language\": \"java\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"import java.util.Collections;\\n\",\n    \"import java.util.List;\\n\",\n    \"\\n\",\n    \"List<Integer> parseNumbers(String csvLine) {\\n\",\n    \"    // TODO(student): parse comma-separated integers\\n\",\n    \"    return Collections.emptyList();\\n\",\n    \"}\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"8f02116b\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"java\"\n    },\n    \"language\": \"java\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"// TODO(student): read existing_data.txt and write starter_output.txt\\n\",\n    \"// TODO(student): print a rendering table to stdout\\n\",\n    \"// assert !values.isEmpty();\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"language_info\": {\n   \"name\": \"java\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n"
+        },
+        {
+          "name": "Main.java",
+          "path": "",
+          "relativePath": "Main.java",
+          "encoding": "utf-8",
+          "content": "import java.io.IOException;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nimport java.util.Collections;\nimport java.util.List;\n\npublic class Main {\n    public static List<Integer> parseNumbers(String csvLine) {\n        // TODO(student): Parse comma-separated integers.\n        return Collections.emptyList();\n    }\n\n    public static void main(String[] args) throws IOException {\n        String csv = Files.readString(Path.of(\"existing_data.txt\")).trim();\n        List<Integer> values = parseNumbers(csv);\n\n        Files.writeString(Path.of(\"starter_output.txt\"), \"TODO count=\" + values.size());\n\n        assert !values.isEmpty() : \"Starter assertion intentionally triggers until parseNumbers is implemented.\";\n        System.out.println(\"Starter template ran.\");\n    }\n}\n"
+        },
+        {
+          "name": "existing_data.txt",
+          "path": "",
+          "relativePath": "existing_data.txt",
+          "encoding": "utf-8",
+          "content": "3,5,8,13,21\n"
+        }
+      ],
+      "assignmentDataSets": [
+        {
+          "name": "existing_data.txt",
+          "description": "Seeded execution resource from existing_data.txt",
+          "mountPath": "shared/existing_data.txt",
+          "encoding": "utf-8",
+          "content": "3,5,8,13,21\n",
+          "sourceRelativePath": "existing_data.txt"
+        }
+      ],
+      "fakeSubmissions": [
+        {
+          "key": "java_multi_file_import",
+          "scenario": "multi_file_import",
+          "description": "Scenario submission for java/multi_file_import",
+          "files": [
+            {
+              "name": "Helper.java",
+              "path": "",
+              "relativePath": "Helper.java",
+              "encoding": "utf-8",
+              "content": "package __tests__.test_submission.java.scenarios.multi_file_import;\n\nimport java.util.Arrays;\nimport java.util.List;\nimport java.util.stream.Collectors;\n\npublic class Helper {\n    public static List<Integer> parse(String csv) {\n        return Arrays.stream(csv.split(\",\")).map(String::trim).map(Integer::parseInt).collect(Collectors.toList());\n    }\n\n    public static int parseAndSum(String csv) {\n        return parse(csv).stream().mapToInt(Integer::intValue).sum();\n    }\n}\n"
+            },
+            {
+              "name": "Main.java",
+              "path": "",
+              "relativePath": "Main.java",
+              "encoding": "utf-8",
+              "content": "package __tests__.test_submission.java.scenarios.multi_file_import;\n\nimport java.util.List;\n\npublic class Main {\n    public static void main(String[] args) {\n        int sum = Helper.parseAndSum(\"3,5,8,13,21\");\n        if (sum != 50) {\n            throw new AssertionError(\"Expected 50\");\n        }\n        System.out.println(\"[java][multi_file_import] sum=\" + sum);\n        List<Integer> values = Helper.parse(\"1,2,3\");\n        if (values.size() != 3) {\n            throw new AssertionError(\"Expected 3 values\");\n        }\n    }\n}\n"
+            }
+          ]
+        },
+        {
+          "key": "java_nested_paths",
+          "scenario": "nested_paths",
+          "description": "Scenario submission for java/nested_paths",
+          "files": [
+            {
+              "name": "Utils.java",
+              "path": "lib",
+              "relativePath": "lib/Utils.java",
+              "encoding": "utf-8",
+              "content": "package __tests__.test_submission.java.scenarios.nested_paths.lib;\n\nimport java.util.Arrays;\n\npublic class Utils {\n    public static int[] parse(String csv) {\n        return Arrays.stream(csv.split(\",\")).map(String::trim).mapToInt(Integer::parseInt).toArray();\n    }\n}\n"
+            },
+            {
+              "name": "Main.java",
+              "path": "src",
+              "relativePath": "src/Main.java",
+              "encoding": "utf-8",
+              "content": "package __tests__.test_submission.java.scenarios.nested_paths.src;\n\nimport __tests__.test_submission.java.scenarios.nested_paths.lib.Utils;\n\npublic class Main {\n    public static void main(String[] args) {\n        int[] values = Utils.parse(\"1,2,3,4\");\n        if (values.length != 4) {\n            throw new AssertionError(\"Expected 4 values\");\n        }\n        System.out.println(\"[java][nested_paths] count=\" + values.length);\n    }\n}\n"
+            }
+          ]
+        },
+        {
+          "key": "java_failure_runtime_1",
+          "scenario": "failure_cases",
+          "kind": "runtime_error",
+          "description": "Intentional runtime error submission.",
+          "files": [
+            {
+              "name": "runtime_error.java",
+              "path": "",
+              "relativePath": "runtime_error.java",
+              "encoding": "utf-8",
+              "content": "package __tests__.test_submission.java.scenarios.failure_cases;\n\npublic class runtime_error {\n    public static void main(String[] args) {\n        throw new RuntimeException(\"Intentional runtime error for submission-process testing\");\n    }\n}\n"
+            }
+          ]
+        },
+        {
+          "key": "java_failure_syntax_1",
+          "scenario": "failure_cases",
+          "kind": "syntax_error",
+          "description": "Intentional syntax error submission.",
+          "files": [
+            {
+              "name": "syntax_error.java",
+              "path": "",
+              "relativePath": "syntax_error.java",
+              "encoding": "utf-8",
+              "content": "package __tests__.test_submission.java.scenarios.failure_cases;\n\npublic class syntax_error {\n    public static void main(String[] args) {\n        System.out.println(\"See syntax_error.java.txt for intentionally invalid syntax fixture sample\");\n    }\n}\n"
+            }
+          ]
+        },
+        {
+          "key": "java_complete_happy_path",
+          "scenario": "complete_happy_path",
+          "description": "Completed student submission for the assignment happy path.",
+          "files": [
+            {
+              "name": "Main.ipynb",
+              "path": "",
+              "relativePath": "Main.ipynb",
+              "encoding": "utf-8",
+              "content": "{\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"da1ac13b\",\n   \"metadata\": {\n    \"language\": \"markdown\"\n   },\n   \"source\": [\n    \"# Java Complete Notebook\\n\",\n    \"Runs file I/O, assertions, and render-heavy console output.\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"6f8f9df4\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"java\"\n    },\n    \"language\": \"java\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"import java.nio.file.Files;\\n\",\n    \"import java.nio.file.Path;\\n\",\n    \"import java.util.Arrays;\\n\",\n    \"import java.util.List;\\n\",\n    \"import java.util.stream.Collectors;\\n\",\n    \"\\n\",\n    \"List<Integer> parseNumbers(String csvLine) {\\n\",\n    \"  return Arrays.stream(csvLine.split(\\\",\\\")).map(String::trim).map(Integer::parseInt).collect(Collectors.toList());\\n\",\n    \"}\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"a9c63ad0\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"java\"\n    },\n    \"language\": \"java\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"String csv = Files.readString(Path.of(\\\"existing_data.txt\\\")).trim();\\n\",\n    \"List<Integer> values = parseNumbers(csv);\\n\",\n    \"int sum = values.stream().mapToInt(Integer::intValue).sum();\\n\",\n    \"Files.writeString(Path.of(\\\"result_summary.txt\\\"), \\\"sum=\\\" + sum + System.lineSeparator());\\n\",\n    \"System.out.println(\\\"=== JAVA NOTEBOOK RENDER TEST ===\\\");\\n\",\n    \"System.out.println(\\\"unicode: café λ 🚀\\\");\\n\",\n    \"System.out.println(\\\"idx | value\\\");\\n\",\n    \"for (int i = 0; i < values.size(); i++) System.out.println(i + \\\" | \\\" + values.get(i));\\n\",\n    \"assert sum == 50;\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"language_info\": {\n   \"name\": \"java\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n"
+            },
+            {
+              "name": "Main.java",
+              "path": "",
+              "relativePath": "Main.java",
+              "encoding": "utf-8",
+              "content": "import java.io.IOException;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nimport java.util.Arrays;\nimport java.util.List;\nimport java.util.stream.Collectors;\n\npublic class Main {\n    private static List<Integer> parseNumbers(String csvLine) {\n        return Arrays.stream(csvLine.split(\",\"))\n                .map(String::trim)\n                .map(Integer::parseInt)\n                .collect(Collectors.toList());\n    }\n\n    private static void assertCondition(boolean condition, String message) {\n        if (!condition) {\n            throw new AssertionError(message);\n        }\n    }\n\n    public static void main(String[] args) throws IOException {\n        String csv = Files.readString(Path.of(\"existing_data.txt\")).trim();\n        List<Integer> values = parseNumbers(csv);\n\n        int sum = values.stream().mapToInt(Integer::intValue).sum();\n        int max = values.stream().mapToInt(Integer::intValue).max().orElseThrow();\n\n        String report = \"count=\" + values.size() + System.lineSeparator()\n                + \"sum=\" + sum + System.lineSeparator()\n                + \"max=\" + max + System.lineSeparator();\n        Files.writeString(Path.of(\"result_summary.txt\"), report);\n\n        StringBuilder markdown = new StringBuilder();\n        markdown.append(\"# Java Rendering Preview\").append(System.lineSeparator()).append(System.lineSeparator());\n        markdown.append(\"- Unicode: café λ 🚀\").append(System.lineSeparator());\n        markdown.append(\"- Status: success\").append(System.lineSeparator()).append(System.lineSeparator());\n        markdown.append(\"```text\").append(System.lineSeparator());\n        markdown.append(\"idx | value\").append(System.lineSeparator());\n        markdown.append(\"-----------\").append(System.lineSeparator());\n        for (int i = 0; i < values.size(); i++) {\n            markdown.append(i).append(\"   | \").append(values.get(i)).append(System.lineSeparator());\n        }\n        markdown.append(\"```\").append(System.lineSeparator());\n        Files.writeString(Path.of(\"render_preview.md\"), markdown.toString());\n\n        assertCondition(values.size() == 5, \"Expected five values.\");\n        assertCondition(sum == 50, \"Expected sum to equal 50.\");\n        assertCondition(max == 21, \"Expected max to equal 21.\");\n\n        System.out.println(\"=== JAVA RENDER TEST START ===\");\n        System.out.println(\"unicode: café λ 🚀\");\n        System.out.println(\"json: {\\\"language\\\":\\\"java\\\",\\\"status\\\":\\\"ok\\\"}\");\n        System.out.println(\"idx | value\");\n        for (int i = 0; i < values.size(); i++) {\n            System.out.println(String.format(\"%3d | %d\", i, values.get(i)));\n        }\n        System.err.println(\"[stderr][java] Render check stderr line\");\n        System.out.println(\"Java compatibility checks passed.\");\n    }\n}\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "node",
+      "assignmentName": "Node Submission Compatibility",
+      "courseId": 0,
+      "environmentLanguage": "node-20",
+      "assignmentFiles": [
+        {
+          "name": "main.ipynb",
+          "path": "",
+          "relativePath": "main.ipynb",
+          "encoding": "utf-8",
+          "content": "{\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"8e350ba0\",\n   \"metadata\": {\n    \"language\": \"markdown\"\n   },\n   \"source\": [\n    \"# Node.js Starter Notebook\\n\",\n    \"Implement parser logic and render-friendly output.\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"7f111912\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"javascript\"\n    },\n    \"language\": \"javascript\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"function parseNumbers(csvLine) {\\n\",\n    \"  // TODO(student): parse comma-separated integers\\n\",\n    \"  return [];\\n\",\n    \"}\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"8b277bb5\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"javascript\"\n    },\n    \"language\": \"javascript\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"// TODO(student): read existing_data.txt and write starter_output.txt\\n\",\n    \"// TODO(student): print a table to stdout for rendering tests\\n\",\n    \"// throw new Error('intentional starter failure until completed');\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"language_info\": {\n   \"name\": \"javascript\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n"
+        },
+        {
+          "name": "main.js",
+          "path": "",
+          "relativePath": "main.js",
+          "encoding": "utf-8",
+          "content": "const assert = require('node:assert/strict');\nconst fs = require('node:fs');\nconst path = require('node:path');\n\nfunction parseNumbers(csvLine) {\n    // TODO(student): parse comma-separated integers.\n    return [];\n}\n\nconst inputPath = path.join(__dirname, '..', 'existing_data.txt');\nconst csv = fs.readFileSync(inputPath, 'utf8').trim();\nconst values = parseNumbers(csv);\n\nfs.writeFileSync(path.join(__dirname, 'starter_output.txt'), `TODO count=${values.length}\\n`);\n\nassert(values.length > 0, 'Starter assertion intentionally triggers until parseNumbers is implemented.');\nconsole.log('Node starter template ran.');\n"
+        },
+        {
+          "name": "existing_data.txt",
+          "path": "",
+          "relativePath": "existing_data.txt",
+          "encoding": "utf-8",
+          "content": "3,5,8,13,21\n"
+        }
+      ],
+      "assignmentDataSets": [
+        {
+          "name": "existing_data.txt",
+          "description": "Seeded execution resource from existing_data.txt",
+          "mountPath": "shared/existing_data.txt",
+          "encoding": "utf-8",
+          "content": "3,5,8,13,21\n",
+          "sourceRelativePath": "existing_data.txt"
+        }
+      ],
+      "fakeSubmissions": [
+        {
+          "key": "node_multi_file_import",
+          "scenario": "multi_file_import",
+          "description": "Scenario submission for node/multi_file_import",
+          "files": [
+            {
+              "name": "helper.js",
+              "path": "",
+              "relativePath": "helper.js",
+              "encoding": "utf-8",
+              "content": "function parseAndSum(csv) {\n    return csv\n        .split(',')\n        .map((value) => Number(value.trim()))\n        .reduce((acc, value) => acc + value, 0);\n}\n\nmodule.exports = { parseAndSum };\n"
+            },
+            {
+              "name": "main.js",
+              "path": "",
+              "relativePath": "main.js",
+              "encoding": "utf-8",
+              "content": "const { parseAndSum } = require('./helper');\n\nconst sum = parseAndSum('3,5,8,13,21');\nif (sum !== 50) {\n    throw new Error('Expected sum=50');\n}\n\nconsole.log(`[node][multi_file_import] sum=${sum}`);\n"
+            }
+          ]
+        },
+        {
+          "key": "node_nested_paths",
+          "scenario": "nested_paths",
+          "description": "Scenario submission for node/nested_paths",
+          "files": [
+            {
+              "name": "math.js",
+              "path": "lib",
+              "relativePath": "lib/math.js",
+              "encoding": "utf-8",
+              "content": "function parse(csv) {\n    return csv.split(',').map((value) => Number(value.trim()));\n}\n\nmodule.exports = { parse };\n"
+            },
+            {
+              "name": "main.js",
+              "path": "src",
+              "relativePath": "src/main.js",
+              "encoding": "utf-8",
+              "content": "const { parse } = require('../lib/math');\n\nconst values = parse('1,2,3,4');\nif (values.length !== 4) {\n    throw new Error('Expected 4 values');\n}\n\nconsole.log(`[node][nested_paths] count=${values.length}`);\n"
+            }
+          ]
+        },
+        {
+          "key": "node_failure_runtime_1",
+          "scenario": "failure_cases",
+          "kind": "runtime_error",
+          "description": "Intentional runtime error submission.",
+          "files": [
+            {
+              "name": "runtime_error.js",
+              "path": "",
+              "relativePath": "runtime_error.js",
+              "encoding": "utf-8",
+              "content": "throw new Error('Intentional runtime error for submission-process testing');\n"
+            }
+          ]
+        },
+        {
+          "key": "node_failure_syntax_1",
+          "scenario": "failure_cases",
+          "kind": "syntax_error",
+          "description": "Intentional syntax error submission.",
+          "files": [
+            {
+              "name": "syntax_error.js",
+              "path": "",
+              "relativePath": "syntax_error.js",
+              "encoding": "utf-8",
+              "content": "const bad = {\n    value: 10,\n\n    console.log(bad.value);\n"
+            }
+          ]
+        },
+        {
+          "key": "node_complete_happy_path",
+          "scenario": "complete_happy_path",
+          "description": "Completed student submission for the assignment happy path.",
+          "files": [
+            {
+              "name": "main.ipynb",
+              "path": "",
+              "relativePath": "main.ipynb",
+              "encoding": "utf-8",
+              "content": "{\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"f232e800\",\n   \"metadata\": {\n    \"language\": \"markdown\"\n   },\n   \"source\": [\n    \"# Node.js Complete Notebook\\n\",\n    \"Runs file I/O, assertions, and render-heavy console output.\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"ec953acf\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"javascript\"\n    },\n    \"language\": \"javascript\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"const fs = require('node:fs');\\n\",\n    \"\\n\",\n    \"function parseNumbers(csvLine) {\\n\",\n    \"  return csvLine.split(',').map((item) => Number(item.trim()));\\n\",\n    \"}\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"3d30c1f9\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"javascript\"\n    },\n    \"language\": \"javascript\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"const csv = fs.readFileSync('existing_data.txt', 'utf8').trim();\\n\",\n    \"const values = parseNumbers(csv);\\n\",\n    \"const sum = values.reduce((acc, value) => acc + value, 0);\\n\",\n    \"fs.writeFileSync('result_summary.txt', `sum=${sum}\\\\n`);\\n\",\n    \"console.log('=== NODE NOTEBOOK RENDER TEST ===');\\n\",\n    \"console.log('unicode: café λ 🚀');\\n\",\n    \"console.log('idx | value');\\n\",\n    \"values.forEach((value, index) => console.log(`${index} | ${value}`));\\n\",\n    \"console.error('[stderr][node-notebook] Render check stderr line');\\n\",\n    \"if (sum !== 50) throw new Error('Expected sum=50');\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"language_info\": {\n   \"name\": \"javascript\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n"
+            },
+            {
+              "name": "main.js",
+              "path": "",
+              "relativePath": "main.js",
+              "encoding": "utf-8",
+              "content": "const assert = require('node:assert/strict');\nconst fs = require('node:fs');\nconst path = require('node:path');\nconst os = require('node:os');\n\nfunction parseNumbers(csvLine) {\n    return csvLine.split(',').map((item) => Number(item.trim()));\n}\n\nconst inputPath = path.join(__dirname, '..', 'existing_data.txt');\nconst csv = fs.readFileSync(inputPath, 'utf8').trim();\nconst values = parseNumbers(csv);\n\nconst sum = values.reduce((acc, value) => acc + value, 0);\nconst max = Math.max(...values);\n\nconst report = [\n    `platform=${os.platform()}`,\n    `count=${values.length}`,\n    `sum=${sum}`,\n    `max=${max}`,\n].join('\\n');\n\nfs.writeFileSync(path.join(__dirname, 'result_summary.txt'), `${report}\\n`);\n\nconst markdown = [\n    '# Node Rendering Preview',\n    '',\n    '- Unicode: café λ 🚀',\n    '- Status: success',\n    '',\n    '```text',\n    'idx | value',\n    '-----------',\n    ...values.map((value, index) => `${index}   | ${value}`),\n    '```',\n    '',\n].join('\\n');\nfs.writeFileSync(path.join(__dirname, 'render_preview.md'), markdown);\n\nassert.equal(values.length, 5, 'Expected five parsed values.');\nassert.equal(sum, 50, 'Expected sum to equal 50.');\nassert.equal(max, 21, 'Expected max to equal 21.');\n\nconsole.log('=== NODE RENDER TEST START ===');\nconsole.log('unicode: café λ 🚀');\nconsole.log('json: {\"language\":\"node\",\"status\":\"ok\"}');\nconsole.log('idx | value');\nvalues.forEach((value, index) => console.log(`${index.toString().padStart(3, ' ')} | ${value}`));\nconsole.error('[stderr][node] Render check stderr line');\nconsole.log('Node compatibility checks passed.');\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "php",
+      "assignmentName": "PHP Submission Compatibility",
+      "courseId": 0,
+      "environmentLanguage": "php",
+      "assignmentFiles": [
+        {
+          "name": "main.ipynb",
+          "path": "",
+          "relativePath": "main.ipynb",
+          "encoding": "utf-8",
+          "content": "{\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"19fb1627\",\n   \"metadata\": {\n    \"language\": \"markdown\"\n   },\n   \"source\": [\n    \"# PHP Starter Notebook\\n\",\n    \"Complete TODO sections for parsing, file I/O, and rendering output.\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"f114b3c7\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"php\"\n    },\n    \"language\": \"php\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"<?php\\n\",\n    \"function parse_numbers(string $csv_line): array {\\n\",\n    \"  // TODO(student): parse comma-separated integers\\n\",\n    \"  return [];\\n\",\n    \"}\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"20e45b3c\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"php\"\n    },\n    \"language\": \"php\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"// TODO(student): read existing_data.txt and write starter_output.txt\\n\",\n    \"// TODO(student): print a render table to stdout\\n\",\n    \"// assert(count($values) > 0);\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"language_info\": {\n   \"name\": \"php\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n"
+        },
+        {
+          "name": "main.php",
+          "path": "",
+          "relativePath": "main.php",
+          "encoding": "utf-8",
+          "content": "<?php\ndeclare(strict_types=1);\n\nfunction parse_numbers(string $csv_line): array {\n    // TODO(student): parse comma-separated integers.\n    return [];\n}\n\n$csv = trim((string) file_get_contents(__DIR__ . '/existing_data.txt'));\n$values = parse_numbers($csv);\n\nfile_put_contents(__DIR__ . '/starter_output.txt', 'TODO count=' . count($values) . PHP_EOL);\n\nassert(count($values) > 0, 'Starter assertion intentionally triggers until parse_numbers is implemented.');\necho \"PHP starter template ran.\" . PHP_EOL;\n"
+        },
+        {
+          "name": "existing_data.txt",
+          "path": "",
+          "relativePath": "existing_data.txt",
+          "encoding": "utf-8",
+          "content": "3,5,8,13,21\n"
+        }
+      ],
+      "assignmentDataSets": [
+        {
+          "name": "existing_data.txt",
+          "description": "Seeded execution resource from existing_data.txt",
+          "mountPath": "shared/existing_data.txt",
+          "encoding": "utf-8",
+          "content": "3,5,8,13,21\n",
+          "sourceRelativePath": "existing_data.txt"
+        }
+      ],
+      "fakeSubmissions": [
+        {
+          "key": "php_multi_file_import",
+          "scenario": "multi_file_import",
+          "description": "Scenario submission for php/multi_file_import",
+          "files": [
+            {
+              "name": "helper.php",
+              "path": "",
+              "relativePath": "helper.php",
+              "encoding": "utf-8",
+              "content": "<?php\ndeclare(strict_types=1);\n\nfunction parse_and_sum(string $csv): int {\n    $values = array_map(static fn(string $value): int => (int) trim($value), explode(',', $csv));\n    return array_sum($values);\n}\n"
+            },
+            {
+              "name": "main.php",
+              "path": "",
+              "relativePath": "main.php",
+              "encoding": "utf-8",
+              "content": "<?php\ndeclare(strict_types=1);\n\nrequire_once __DIR__ . '/helper.php';\n\n$sum = parse_and_sum('3,5,8,13,21');\nif ($sum !== 50) {\n    throw new RuntimeException('Expected sum=50');\n}\n\necho '[php][multi_file_import] sum=' . $sum . PHP_EOL;\n"
+            }
+          ]
+        },
+        {
+          "key": "php_nested_paths",
+          "scenario": "nested_paths",
+          "description": "Scenario submission for php/nested_paths",
+          "files": [
+            {
+              "name": "math.php",
+              "path": "lib",
+              "relativePath": "lib/math.php",
+              "encoding": "utf-8",
+              "content": "<?php\ndeclare(strict_types=1);\n\nfunction parse_csv(string $csv): array {\n    return array_map(static fn(string $value): int => (int) trim($value), explode(',', $csv));\n}\n"
+            },
+            {
+              "name": "main.php",
+              "path": "src",
+              "relativePath": "src/main.php",
+              "encoding": "utf-8",
+              "content": "<?php\ndeclare(strict_types=1);\n\nrequire_once __DIR__ . '/../lib/math.php';\n\n$values = parse_csv('1,2,3,4');\nif (count($values) !== 4) {\n    throw new RuntimeException('Expected 4 values');\n}\n\necho '[php][nested_paths] count=' . count($values) . PHP_EOL;\n"
+            }
+          ]
+        },
+        {
+          "key": "php_failure_runtime_1",
+          "scenario": "failure_cases",
+          "kind": "runtime_error",
+          "description": "Intentional runtime error submission.",
+          "files": [
+            {
+              "name": "runtime_error.php",
+              "path": "",
+              "relativePath": "runtime_error.php",
+              "encoding": "utf-8",
+              "content": "<?php\ndeclare(strict_types=1);\n\nthrow new RuntimeException('Intentional runtime error for submission-process testing');\n"
+            }
+          ]
+        },
+        {
+          "key": "php_failure_syntax_1",
+          "scenario": "failure_cases",
+          "kind": "syntax_error",
+          "description": "Intentional syntax error submission.",
+          "files": [
+            {
+              "name": "syntax_error.php",
+              "path": "",
+              "relativePath": "syntax_error.php",
+              "encoding": "utf-8",
+              "content": "<?php\ndeclare(strict_types=1)\n\necho 'missing semicolon above';\n"
+            }
+          ]
+        },
+        {
+          "key": "php_complete_happy_path",
+          "scenario": "complete_happy_path",
+          "description": "Completed student submission for the assignment happy path.",
+          "files": [
+            {
+              "name": "main.ipynb",
+              "path": "",
+              "relativePath": "main.ipynb",
+              "encoding": "utf-8",
+              "content": "{\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"7692eece\",\n   \"metadata\": {\n    \"language\": \"markdown\"\n   },\n   \"source\": [\n    \"# PHP Complete Notebook\\n\",\n    \"Runs file I/O, assertion checks, and render-friendly console output.\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"70c661c4\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"php\"\n    },\n    \"language\": \"php\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"<?php\\n\",\n    \"function parse_numbers(string $csv_line): array {\\n\",\n    \"  return array_map(static fn(string $item): int => (int) trim($item), explode(',', $csv_line));\\n\",\n    \"}\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"bf57f5c2\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"php\"\n    },\n    \"language\": \"php\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"$csv = trim((string) file_get_contents('existing_data.txt'));\\n\",\n    \"$values = parse_numbers($csv);\\n\",\n    \"$sum = array_sum($values);\\n\",\n    \"file_put_contents('result_summary.txt', 'sum=' . $sum . PHP_EOL);\\n\",\n    \"echo '=== PHP NOTEBOOK RENDER TEST ===' . PHP_EOL;\\n\",\n    \"echo 'unicode: café λ 🚀' . PHP_EOL;\\n\",\n    \"echo 'idx | value' . PHP_EOL;\\n\",\n    \"foreach ($values as $idx => $value) { echo $idx . ' | ' . $value . PHP_EOL; }\\n\",\n    \"fwrite(STDERR, '[stderr][php-notebook] Render check stderr line' . PHP_EOL);\\n\",\n    \"assert($sum === 50, 'Expected sum=50');\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"language_info\": {\n   \"name\": \"php\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n"
+            },
+            {
+              "name": "main.php",
+              "path": "",
+              "relativePath": "main.php",
+              "encoding": "utf-8",
+              "content": "<?php\ndeclare(strict_types=1);\n\nfunction parse_numbers(string $csv_line): array {\n    return array_map(\n        static fn(string $value): int => (int) trim($value),\n        explode(',', $csv_line)\n    );\n}\n\nfunction assert_true(bool $condition, string $message): void {\n    if (!$condition) {\n        throw new RuntimeException($message);\n    }\n}\n\n$csv = trim((string) file_get_contents(__DIR__ . '/existing_data.txt'));\n$values = parse_numbers($csv);\n\n$sum = array_sum($values);\n$max = max($values);\n\n$payload = [\n    'count' => count($values),\n    'sum' => $sum,\n    'max' => $max,\n];\n\nfile_put_contents(__DIR__ . '/result_summary.json', json_encode($payload, JSON_PRETTY_PRINT) . PHP_EOL);\n\n$markdown_lines = [\n    '# PHP Rendering Preview',\n    '',\n    '- Unicode: café λ 🚀',\n    '- Status: success',\n    '',\n    '```text',\n    'idx | value',\n    '-----------',\n];\nforeach ($values as $index => $value) {\n    $markdown_lines[] = $index . '   | ' . $value;\n}\n$markdown_lines[] = '```';\n$markdown_lines[] = '';\nfile_put_contents(__DIR__ . '/render_preview.md', implode(PHP_EOL, $markdown_lines));\n\nassert_true(count($values) === 5, 'Expected five values.');\nassert_true($sum === 50, 'Expected sum to equal 50.');\nassert_true($max === 21, 'Expected max to equal 21.');\n\necho \"=== PHP RENDER TEST START ===\" . PHP_EOL;\necho \"unicode: café λ 🚀\" . PHP_EOL;\necho \"json: {\\\"language\\\":\\\"php\\\",\\\"status\\\":\\\"ok\\\"}\" . PHP_EOL;\necho \"idx | value\" . PHP_EOL;\nforeach ($values as $index => $value) {\n    echo str_pad((string) $index, 3, ' ', STR_PAD_LEFT) . \" | \" . $value . PHP_EOL;\n}\nfwrite(STDERR, \"[stderr][php] Render check stderr line\" . PHP_EOL);\necho 'PHP compatibility checks passed.' . PHP_EOL;\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "python",
+      "assignmentName": "Python Submission Compatibility",
+      "courseId": 0,
+      "environmentLanguage": "python-3.12",
+      "assignmentFiles": [
+        {
+          "name": "main.ipynb",
+          "path": "",
+          "relativePath": "main.ipynb",
+          "encoding": "utf-8",
+          "content": "{\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"cadb5691\",\n   \"metadata\": {\n    \"language\": \"markdown\"\n   },\n   \"source\": [\n    \"# Python Starter Notebook\\n\",\n    \"Implement parser + plotting TODOs and preserve file I/O + assertion flow.\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"12bf0c73\",\n   \"metadata\": {\n    \"language\": \"python\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"from pathlib import Path\\n\",\n    \"import matplotlib.pyplot as plt\\n\",\n    \"\\n\",\n    \"def parse_numbers(csv_line: str) -> list[int]:\\n\",\n    \"    # TODO(student): parse comma-separated integers\\n\",\n    \"    return []\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"0919320a\",\n   \"metadata\": {\n    \"language\": \"python\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"# TODO(student): read existing_data.txt\\n\",\n    \"# TODO(student): write starter_output.txt and print render lines\\n\",\n    \"# TODO(student): plot values\\n\",\n    \"assert False, 'Starter assertion intentionally triggers until completed.'\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"language_info\": {\n   \"name\": \"python\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n"
+        },
+        {
+          "name": "main.py",
+          "path": "",
+          "relativePath": "main.py",
+          "encoding": "utf-8",
+          "content": "\"\"\"Python starter submission fixture.\"\"\"\n\nfrom pathlib import Path\n\n\ndef parse_numbers(csv_line: str) -> list[int]:\n    \"\"\"TODO(student): parse comma-separated integers.\"\"\"\n    return []\n\n\ndef main() -> None:\n    data_path = Path(__file__).resolve().parent.parent / \"existing_data.txt\"\n    csv_line = data_path.read_text(encoding=\"utf-8\").strip()\n    values = parse_numbers(csv_line)\n\n    (Path(__file__).resolve().parent / \"starter_output.txt\").write_text(\n        f\"TODO count={len(values)}\\n\", encoding=\"utf-8\"\n    )\n\n    assert values, \"Starter assertion intentionally triggers until parse_numbers is implemented.\"\n\n\nif __name__ == \"__main__\":\n    main()\n"
+        },
+        {
+          "name": "requirements.txt",
+          "path": "",
+          "relativePath": "requirements.txt",
+          "encoding": "utf-8",
+          "content": "matplotlib>=3.8\n"
+        },
+        {
+          "name": "existing_data.txt",
+          "path": "",
+          "relativePath": "existing_data.txt",
+          "encoding": "utf-8",
+          "content": "3,5,8,13,21\n"
+        }
+      ],
+      "assignmentDataSets": [
+        {
+          "name": "existing_data.txt",
+          "description": "Seeded execution resource from existing_data.txt",
+          "mountPath": "shared/existing_data.txt",
+          "encoding": "utf-8",
+          "content": "3,5,8,13,21\n",
+          "sourceRelativePath": "existing_data.txt"
+        }
+      ],
+      "fakeSubmissions": [
+        {
+          "key": "python_multi_file_import",
+          "scenario": "multi_file_import",
+          "description": "Scenario submission for python/multi_file_import",
+          "files": [
+            {
+              "name": "helper.py",
+              "path": "",
+              "relativePath": "helper.py",
+              "encoding": "utf-8",
+              "content": "def parse_and_sum(csv: str) -> int:\n    return sum(int(value.strip()) for value in csv.split(\",\"))\n"
+            },
+            {
+              "name": "main.py",
+              "path": "",
+              "relativePath": "main.py",
+              "encoding": "utf-8",
+              "content": "from helper import parse_and_sum\n\n\ndef main() -> None:\n    total = parse_and_sum(\"3,5,8,13,21\")\n    assert total == 50\n    print(f\"[python][multi_file_import] sum={total}\")\n\n\nif __name__ == \"__main__\":\n    main()\n"
+            }
+          ]
+        },
+        {
+          "key": "python_nested_paths",
+          "scenario": "nested_paths",
+          "description": "Scenario submission for python/nested_paths",
+          "files": [
+            {
+              "name": "math_utils.py",
+              "path": "lib",
+              "relativePath": "lib/math_utils.py",
+              "encoding": "utf-8",
+              "content": "def parse_csv(csv: str) -> list[int]:\n    return [int(value.strip()) for value in csv.split(\",\")]\n"
+            },
+            {
+              "name": "main.py",
+              "path": "src",
+              "relativePath": "src/main.py",
+              "encoding": "utf-8",
+              "content": "from pathlib import Path\nimport sys\n\nsys.path.append(str(Path(__file__).resolve().parent.parent / \"lib\"))\n\nfrom math_utils import parse_csv  # noqa: E402  # type: ignore[import-not-found]\n\n\ndef main() -> None:\n    values = parse_csv(\"1,2,3,4\")\n    assert len(values) == 4\n    print(f\"[python][nested_paths] count={len(values)}\")\n\n\nif __name__ == \"__main__\":\n    main()\n"
+            }
+          ]
+        },
+        {
+          "key": "python_failure_runtime_1",
+          "scenario": "failure_cases",
+          "kind": "runtime_error",
+          "description": "Intentional runtime error submission.",
+          "files": [
+            {
+              "name": "runtime_error.py",
+              "path": "",
+              "relativePath": "runtime_error.py",
+              "encoding": "utf-8",
+              "content": "raise RuntimeError(\"Intentional runtime error for submission-process testing\")\n"
+            }
+          ]
+        },
+        {
+          "key": "python_failure_syntax_1",
+          "scenario": "failure_cases",
+          "kind": "syntax_error",
+          "description": "Intentional syntax error submission.",
+          "files": [
+            {
+              "name": "syntax_error.py",
+              "path": "",
+              "relativePath": "syntax_error.py",
+              "encoding": "utf-8",
+              "content": "def broken_function()\n    return 10\n"
+            }
+          ]
+        },
+        {
+          "key": "python_complete_happy_path",
+          "scenario": "complete_happy_path",
+          "description": "Completed student submission for the assignment happy path.",
+          "files": [
+            {
+              "name": "main.ipynb",
+              "path": "",
+              "relativePath": "main.ipynb",
+              "encoding": "utf-8",
+              "content": "{\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"21bfab6e\",\n   \"metadata\": {\n    \"language\": \"markdown\"\n   },\n   \"source\": [\n    \"# Python Complete Notebook\\n\",\n    \"Performs file I/O, plotting, assertions, and render-oriented console output.\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"db4fc89d\",\n   \"metadata\": {\n    \"language\": \"python\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"import json\\n\",\n    \"from pathlib import Path\\n\",\n    \"import matplotlib.pyplot as plt\\n\",\n    \"\\n\",\n    \"def parse_numbers(csv_line: str) -> list[int]:\\n\",\n    \"    return [int(part.strip()) for part in csv_line.split(',')]\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"2f9a274a\",\n   \"metadata\": {\n    \"language\": \"python\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"csv_line = Path('existing_data.txt').read_text(encoding='utf-8').strip()\\n\",\n    \"values = parse_numbers(csv_line)\\n\",\n    \"summary = {'count': len(values), 'sum': sum(values), 'max': max(values)}\\n\",\n    \"Path('result_summary.json').write_text(json.dumps(summary, indent=2), encoding='utf-8')\\n\",\n    \"plt.plot(values, marker='o')\\n\",\n    \"plt.title('Python Notebook Render Plot')\\n\",\n    \"plt.show()\\n\",\n    \"print('=== PYTHON NOTEBOOK RENDER TEST ===')\\n\",\n    \"print('unicode: café λ 🚀')\\n\",\n    \"print('idx | value')\\n\",\n    \"for i, value in enumerate(values):\\n\",\n    \"    print(f'{i:>3} | {value}')\\n\",\n    \"assert summary['sum'] == 50\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"language_info\": {\n   \"name\": \"python\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n"
+            },
+            {
+              "name": "main.py",
+              "path": "",
+              "relativePath": "main.py",
+              "encoding": "utf-8",
+              "content": "\"\"\"Python complete submission fixture.\"\"\"\n\nfrom __future__ import annotations\n\nimport json\nimport sys\nfrom pathlib import Path\n\nimport matplotlib\n\nmatplotlib.use(\"Agg\")\nimport matplotlib.pyplot as plt\n\n\ndef parse_numbers(csv_line: str) -> list[int]:\n    return [int(part.strip()) for part in csv_line.split(\",\")]\n\n\ndef main() -> None:\n    base_dir = Path(__file__).resolve().parent\n    csv_line = (base_dir.parent / \"existing_data.txt\").read_text(encoding=\"utf-8\").strip()\n    values = parse_numbers(csv_line)\n\n    summary = {\n        \"count\": len(values),\n        \"sum\": sum(values),\n        \"max\": max(values),\n    }\n    (base_dir / \"result_summary.json\").write_text(json.dumps(summary, indent=2), encoding=\"utf-8\")\n\n    markdown_lines = [\n        \"# Python Rendering Preview\",\n        \"\",\n        \"- Unicode: café λ 🚀\",\n        \"- Status: success\",\n        \"\",\n        \"```text\",\n        \"idx | value\",\n        \"-----------\",\n    ]\n    markdown_lines.extend(f\"{idx}   | {value}\" for idx, value in enumerate(values))\n    markdown_lines.extend([\"```\", \"\"])\n    (base_dir / \"render_preview.md\").write_text(\"\\n\".join(markdown_lines), encoding=\"utf-8\")\n\n    plt.figure(figsize=(6, 3))\n    plt.plot(values, marker=\"o\")\n    plt.title(\"Python Compatibility Plot\")\n    plt.xlabel(\"Index\")\n    plt.ylabel(\"Value\")\n    plt.tight_layout()\n    plt.savefig(base_dir / \"plot.png\")\n\n    assert summary[\"count\"] == 5, \"Expected five values.\"\n    assert summary[\"sum\"] == 50, \"Expected sum to equal 50.\"\n    assert summary[\"max\"] == 21, \"Expected max to equal 21.\"\n\n    print(\"=== PYTHON RENDER TEST START ===\")\n    print(\"unicode: café λ 🚀\")\n    print('json: {\"language\":\"python\",\"status\":\"ok\"}')\n    print(\"idx | value\")\n    for idx, value in enumerate(values):\n        print(f\"{idx:>3} | {value}\")\n    print(\"[stderr][python] Render check stderr line\", file=sys.stderr)\n    print(\"Python compatibility checks passed.\")\n\n\nif __name__ == \"__main__\":\n    main()\n"
+            },
+            {
+              "name": "requirements.txt",
+              "path": "",
+              "relativePath": "requirements.txt",
+              "encoding": "utf-8",
+              "content": "matplotlib>=3.8\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "r",
+      "assignmentName": "R Submission Compatibility",
+      "courseId": 0,
+      "environmentLanguage": "r-4",
+      "assignmentFiles": [
+        {
+          "name": "main.R",
+          "path": "",
+          "relativePath": "main.R",
+          "encoding": "utf-8",
+          "content": "parse_numbers <- function(csv_line) {\n  # TODO(student): parse comma-separated numeric values.\n  numeric(0)\n}\n\ncsv_line <- trimws(readLines(\"existing_data.txt\", warn = FALSE)[1])\nvalues <- parse_numbers(csv_line)\n\nwriteLines(sprintf(\"TODO count=%d\", length(values)), \"starter_output.txt\")\n\nstopifnot(\"Starter assertion intentionally triggers until parse_numbers is implemented.\" = length(values) > 0)\n"
+        },
+        {
+          "name": "main.ipynb",
+          "path": "",
+          "relativePath": "main.ipynb",
+          "encoding": "utf-8",
+          "content": "{\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"ceb156db\",\n   \"metadata\": {\n    \"language\": \"markdown\"\n   },\n   \"source\": [\n    \"# R Starter Notebook\\n\",\n    \"Implement parser and plotting logic while preserving I/O + assertion flow.\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"bdde6cb4\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"r\"\n    },\n    \"language\": \"r\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"parse_numbers <- function(csv_line) {\\n\",\n    \"  # TODO(student): parse comma-separated numeric values\\n\",\n    \"  numeric(0)\\n\",\n    \"}\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"8b2c3d28\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"r\"\n    },\n    \"language\": \"r\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"# TODO(student): read existing_data.txt\\n\",\n    \"# TODO(student): write starter_output.txt and print render table\\n\",\n    \"# TODO(student): generate a simple plot\\n\",\n    \"stopifnot('Starter assertion intentionally triggers until completed.' = FALSE)\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"language_info\": {\n   \"name\": \"r\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n"
+        },
+        {
+          "name": "existing_data.txt",
+          "path": "",
+          "relativePath": "existing_data.txt",
+          "encoding": "utf-8",
+          "content": "3,5,8,13,21\n"
+        }
+      ],
+      "assignmentDataSets": [
+        {
+          "name": "existing_data.txt",
+          "description": "Seeded execution resource from existing_data.txt",
+          "mountPath": "shared/existing_data.txt",
+          "encoding": "utf-8",
+          "content": "3,5,8,13,21\n",
+          "sourceRelativePath": "existing_data.txt"
+        }
+      ],
+      "fakeSubmissions": [
+        {
+          "key": "r_multi_file_import",
+          "scenario": "multi_file_import",
+          "description": "Scenario submission for r/multi_file_import",
+          "files": [
+            {
+              "name": "helpers.R",
+              "path": "",
+              "relativePath": "helpers.R",
+              "encoding": "utf-8",
+              "content": "parse_and_sum <- function(csv_line) {\n  values <- as.numeric(strsplit(csv_line, \",\")[[1]])\n  sum(values)\n}\n"
+            },
+            {
+              "name": "main.R",
+              "path": "",
+              "relativePath": "main.R",
+              "encoding": "utf-8",
+              "content": "source(\"helpers.R\")\n\nsum_value <- parse_and_sum(\"3,5,8,13,21\")\nstopifnot(sum_value == 50)\n\ncat(sprintf(\"[r][multi_file_import] sum=%d\\n\", sum_value))\n"
+            }
+          ]
+        },
+        {
+          "key": "r_nested_paths",
+          "scenario": "nested_paths",
+          "description": "Scenario submission for r/nested_paths",
+          "files": [
+            {
+              "name": "math.R",
+              "path": "lib",
+              "relativePath": "lib/math.R",
+              "encoding": "utf-8",
+              "content": "parse_csv <- function(csv_line) {\n  as.numeric(strsplit(csv_line, \",\")[[1]])\n}\n"
+            },
+            {
+              "name": "main.R",
+              "path": "src",
+              "relativePath": "src/main.R",
+              "encoding": "utf-8",
+              "content": "source(\"../lib/math.R\")\n\nvalues <- parse_csv(\"1,2,3,4\")\nstopifnot(length(values) == 4)\n\ncat(sprintf(\"[r][nested_paths] count=%d\\n\", length(values)))\n"
+            }
+          ]
+        },
+        {
+          "key": "r_failure_runtime_1",
+          "scenario": "failure_cases",
+          "kind": "runtime_error",
+          "description": "Intentional runtime error submission.",
+          "files": [
+            {
+              "name": "runtime_error.R",
+              "path": "",
+              "relativePath": "runtime_error.R",
+              "encoding": "utf-8",
+              "content": "stop(\"Intentional runtime error for submission-process testing\")\n"
+            }
+          ]
+        },
+        {
+          "key": "r_failure_syntax_1",
+          "scenario": "failure_cases",
+          "kind": "syntax_error",
+          "description": "Intentional syntax error submission.",
+          "files": [
+            {
+              "name": "syntax_error.R",
+              "path": "",
+              "relativePath": "syntax_error.R",
+              "encoding": "utf-8",
+              "content": "broken <- function(x) {\n  x + 1\n"
+            }
+          ]
+        },
+        {
+          "key": "r_complete_happy_path",
+          "scenario": "complete_happy_path",
+          "description": "Completed student submission for the assignment happy path.",
+          "files": [
+            {
+              "name": "main.R",
+              "path": "",
+              "relativePath": "main.R",
+              "encoding": "utf-8",
+              "content": "parse_numbers <- function(csv_line) {\n  as.numeric(strsplit(csv_line, \",\")[[1]])\n}\n\ncsv_line <- trimws(readLines(\"existing_data.txt\", warn = FALSE)[1])\nvalues <- parse_numbers(csv_line)\n\nsum_value <- sum(values)\nmax_value <- max(values)\n\nsummary_lines <- c(\n  sprintf(\"count=%d\", length(values)),\n  sprintf(\"sum=%d\", sum_value),\n  sprintf(\"max=%d\", max_value)\n)\nwriteLines(summary_lines, \"result_summary.txt\")\n\nmarkdown_lines <- c(\n  \"# R Rendering Preview\",\n  \"\",\n  \"- Unicode: café λ 🚀\",\n  \"- Status: success\",\n  \"\",\n  \"```text\",\n  \"idx | value\",\n  \"-----------\",\n  sprintf(\"%d   | %d\", seq_along(values) - 1, values),\n  \"```\",\n  \"\"\n)\nwriteLines(markdown_lines, \"render_preview.md\")\n\npng(\"plot.png\", width = 700, height = 400)\nplot(values, type = \"b\", col = \"steelblue\", pch = 19,\n     main = \"R Compatibility Plot\", xlab = \"Index\", ylab = \"Value\")\ndev.off()\n\nstopifnot(length(values) == 5)\nstopifnot(sum_value == 50)\nstopifnot(max_value == 21)\n\ncat(\"=== R RENDER TEST START ===\\n\")\ncat(\"unicode: café λ 🚀\\n\")\ncat(\"json: {\\\"language\\\":\\\"r\\\",\\\"status\\\":\\\"ok\\\"}\\n\")\ncat(\"idx | value\\n\")\nfor (i in seq_along(values)) {\n  cat(sprintf(\"%3d | %d\\n\", i - 1, values[i]))\n}\nmessage(\"[stderr][r] Render check stderr line\")\ncat(\"R compatibility checks passed.\\n\")\n"
+            },
+            {
+              "name": "main.ipynb",
+              "path": "",
+              "relativePath": "main.ipynb",
+              "encoding": "utf-8",
+              "content": "{\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"85ad896c\",\n   \"metadata\": {\n    \"language\": \"markdown\"\n   },\n   \"source\": [\n    \"# R Complete Notebook\\n\",\n    \"Performs file I/O, plotting, assertions, and render-friendly console output.\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"fa821ac9\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"r\"\n    },\n    \"language\": \"r\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"parse_numbers <- function(csv_line) {\\n\",\n    \"  as.numeric(strsplit(csv_line, ',')[[1]])\\n\",\n    \"}\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"78166284\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"r\"\n    },\n    \"language\": \"r\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"csv_line <- trimws(readLines('existing_data.txt', warn = FALSE)[1])\\n\",\n    \"values <- parse_numbers(csv_line)\\n\",\n    \"writeLines(sprintf('sum=%d', sum(values)), 'result_summary.txt')\\n\",\n    \"plot(values, type='b', col='steelblue', pch=19, main='R Notebook Render Plot')\\n\",\n    \"cat('=== R NOTEBOOK RENDER TEST ===\\\\n')\\n\",\n    \"cat('unicode: café λ 🚀\\\\n')\\n\",\n    \"cat('idx | value\\\\n')\\n\",\n    \"for (i in seq_along(values)) cat(sprintf('%d | %d\\\\n', i - 1, values[i]))\\n\",\n    \"stopifnot(sum(values) == 50)\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"language_info\": {\n   \"name\": \"r\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ruby",
+      "assignmentName": "Ruby Submission Compatibility",
+      "courseId": 0,
+      "environmentLanguage": "ruby",
+      "assignmentFiles": [
+        {
+          "name": "main.ipynb",
+          "path": "",
+          "relativePath": "main.ipynb",
+          "encoding": "utf-8",
+          "content": "{\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"12984082\",\n   \"metadata\": {\n    \"language\": \"markdown\"\n   },\n   \"source\": [\n    \"# Ruby Starter Notebook\\n\",\n    \"Implement parser and rendering TODOs while preserving assertion flow.\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"9bf5704d\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"ruby\"\n    },\n    \"language\": \"ruby\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"def parse_numbers(csv_line)\\n\",\n    \"  # TODO(student): parse comma-separated integers\\n\",\n    \"  []\\n\",\n    \"end\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"86fa27c8\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"ruby\"\n    },\n    \"language\": \"ruby\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"# TODO(student): read existing_data.txt and write starter_output.txt\\n\",\n    \"# TODO(student): print render table to stdout\\n\",\n    \"raise 'Starter assertion intentionally triggers until completed.'\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"language_info\": {\n   \"name\": \"ruby\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n"
+        },
+        {
+          "name": "main.rb",
+          "path": "",
+          "relativePath": "main.rb",
+          "encoding": "utf-8",
+          "content": "require 'json'\n\ndef parse_numbers(csv_line)\n  # TODO(student): parse comma-separated integers.\n  []\nend\n\ncsv_line = File.read(File.join(__dir__, '..', 'existing_data.txt')).strip\nvalues = parse_numbers(csv_line)\n\nFile.write(File.join(__dir__, 'starter_output.txt'), \"TODO count=#{values.length}\\n\")\n\nraise 'Starter assertion intentionally triggers until parse_numbers is implemented.' unless values.length.positive?\n\nputs 'Ruby starter template ran.'\n"
+        },
+        {
+          "name": "existing_data.txt",
+          "path": "",
+          "relativePath": "existing_data.txt",
+          "encoding": "utf-8",
+          "content": "3,5,8,13,21\n"
+        }
+      ],
+      "assignmentDataSets": [
+        {
+          "name": "existing_data.txt",
+          "description": "Seeded execution resource from existing_data.txt",
+          "mountPath": "shared/existing_data.txt",
+          "encoding": "utf-8",
+          "content": "3,5,8,13,21\n",
+          "sourceRelativePath": "existing_data.txt"
+        }
+      ],
+      "fakeSubmissions": [
+        {
+          "key": "ruby_multi_file_import",
+          "scenario": "multi_file_import",
+          "description": "Scenario submission for ruby/multi_file_import",
+          "files": [
+            {
+              "name": "helper.rb",
+              "path": "",
+              "relativePath": "helper.rb",
+              "encoding": "utf-8",
+              "content": "def parse_and_sum(csv_line)\n  csv_line.split(',').map { |value| Integer(value.strip) }.sum\nend\n"
+            },
+            {
+              "name": "main.rb",
+              "path": "",
+              "relativePath": "main.rb",
+              "encoding": "utf-8",
+              "content": "require_relative './helper'\n\nsum_value = parse_and_sum('3,5,8,13,21')\nraise 'Expected sum=50' unless sum_value == 50\n\nputs \"[ruby][multi_file_import] sum=#{sum_value}\"\n"
+            }
+          ]
+        },
+        {
+          "key": "ruby_nested_paths",
+          "scenario": "nested_paths",
+          "description": "Scenario submission for ruby/nested_paths",
+          "files": [
+            {
+              "name": "math_utils.rb",
+              "path": "lib",
+              "relativePath": "lib/math_utils.rb",
+              "encoding": "utf-8",
+              "content": "def parse_csv(csv_line)\n  csv_line.split(',').map { |value| Integer(value.strip) }\nend\n"
+            },
+            {
+              "name": "main.rb",
+              "path": "src",
+              "relativePath": "src/main.rb",
+              "encoding": "utf-8",
+              "content": "require_relative '../lib/math_utils'\n\nvalues = parse_csv('1,2,3,4')\nraise 'Expected 4 values' unless values.length == 4\n\nputs \"[ruby][nested_paths] count=#{values.length}\"\n"
+            }
+          ]
+        },
+        {
+          "key": "ruby_failure_runtime_1",
+          "scenario": "failure_cases",
+          "kind": "runtime_error",
+          "description": "Intentional runtime error submission.",
+          "files": [
+            {
+              "name": "runtime_error.rb",
+              "path": "",
+              "relativePath": "runtime_error.rb",
+              "encoding": "utf-8",
+              "content": "raise 'Intentional runtime error for submission-process testing'\n"
+            }
+          ]
+        },
+        {
+          "key": "ruby_failure_syntax_1",
+          "scenario": "failure_cases",
+          "kind": "syntax_error",
+          "description": "Intentional syntax error submission.",
+          "files": [
+            {
+              "name": "syntax_error.rb",
+              "path": "",
+              "relativePath": "syntax_error.rb",
+              "encoding": "utf-8",
+              "content": "def broken_method\n  puts 'missing end'\n"
+            }
+          ]
+        },
+        {
+          "key": "ruby_complete_happy_path",
+          "scenario": "complete_happy_path",
+          "description": "Completed student submission for the assignment happy path.",
+          "files": [
+            {
+              "name": "main.ipynb",
+              "path": "",
+              "relativePath": "main.ipynb",
+              "encoding": "utf-8",
+              "content": "{\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"bb547354\",\n   \"metadata\": {\n    \"language\": \"markdown\"\n   },\n   \"source\": [\n    \"# Ruby Complete Notebook\\n\",\n    \"Performs file I/O, assertions, and render-oriented output for UI checks.\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"5bfc5e5a\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"ruby\"\n    },\n    \"language\": \"ruby\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"def parse_numbers(csv_line)\\n\",\n    \"  csv_line.split(',').map { |part| Integer(part.strip) }\\n\",\n    \"end\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"execution_count\": null,\n   \"id\": \"ff202f53\",\n   \"metadata\": {\n    \"vscode\": {\n     \"languageId\": \"ruby\"\n    },\n    \"language\": \"ruby\"\n   },\n   \"outputs\": [],\n   \"source\": [\n    \"csv_line = File.read('existing_data.txt').strip\\n\",\n    \"values = parse_numbers(csv_line)\\n\",\n    \"sum = values.sum\\n\",\n    \"File.write('result_summary.txt', \\\"sum=#{sum}\\\\n\\\")\\n\",\n    \"puts '=== RUBY NOTEBOOK RENDER TEST ==='\\n\",\n    \"puts 'unicode: café λ 🚀'\\n\",\n    \"puts 'idx | value'\\n\",\n    \"values.each_with_index { |value, i| puts \\\"#{i} | #{value}\\\" }\\n\",\n    \"raise 'Expected sum=50' unless sum == 50\"\n   ]\n  }\n ],\n \"metadata\": {\n  \"language_info\": {\n   \"name\": \"ruby\"\n  }\n },\n \"nbformat\": 4,\n \"nbformat_minor\": 5\n}\n"
+            },
+            {
+              "name": "main.rb",
+              "path": "",
+              "relativePath": "main.rb",
+              "encoding": "utf-8",
+              "content": "require 'json'\nrequire 'fileutils'\n\ndef parse_numbers(csv_line)\n  csv_line.split(',').map { |part| Integer(part.strip) }\nend\n\ndef assert_true(condition, message)\n  raise message unless condition\nend\n\ncsv_line = File.read(File.join(__dir__, '..', 'existing_data.txt')).strip\nvalues = parse_numbers(csv_line)\n\nsummary = {\n  count: values.length,\n  sum: values.sum,\n  max: values.max,\n}\n\nFile.write(File.join(__dir__, 'result_summary.json'), JSON.pretty_generate(summary) + \"\\n\")\n\nmarkdown_lines = [\n  '# Ruby Rendering Preview',\n  '',\n  '- Unicode: café λ 🚀',\n  '- Status: success',\n  '',\n  '```text',\n  'idx | value',\n  '-----------',\n]\nmarkdown_lines.concat(values.each_with_index.map { |value, index| \"#{index}   | #{value}\" })\nmarkdown_lines << '```'\nmarkdown_lines << ''\nFile.write(File.join(__dir__, 'render_preview.md'), markdown_lines.join(\"\\n\"))\n\nassert_true(values.length == 5, 'Expected five values.')\nassert_true(values.sum == 50, 'Expected sum to equal 50.')\nassert_true(values.max == 21, 'Expected max to equal 21.')\n\nputs '=== RUBY RENDER TEST START ==='\nputs 'unicode: café λ 🚀'\nputs 'json: {\"language\":\"ruby\",\"status\":\"ok\"}'\nputs 'idx | value'\nvalues.each_with_index { |value, index| puts format('%3d | %d', index, value) }\nwarn '[stderr][ruby] Render check stderr line'\nputs 'Ruby compatibility checks passed.'\n"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

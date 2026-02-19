@@ -914,8 +914,8 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
             students={students}
             selectedStudents={activeStudent !== undefined ? [activeStudent] : []}
             submissions={submissionsByStudent}
-            uploadSubmission={(assignment: Assignment, partners: string[], files: UploadFile[]) =>
-              uploadSubmission(assignment, partners, files)
+            uploadSubmission={(assignment, partners, files) =>
+              uploadSubmission(assignment, partners, files as UploadFile[])
             }
             course={currentCourse}
             onSuccess={openSubmission}

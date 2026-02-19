@@ -178,7 +178,7 @@ const Code = (props: CodePropsWithoutComments) => {
   const cursorComment = {
     ...cursor,
     id: cursor.lead === 'back' ? 0 : Number.MAX_SAFE_INTEGER,
-    file: props.file.id,
+    file: props.file.id ?? 0,
     pointDelta: 0.0,
     text: '',
     rubricComment: null,
@@ -194,7 +194,7 @@ const Code = (props: CodePropsWithoutComments) => {
       startChar,
       endChar,
       id: props.commentCounter,
-      file: props.file.id,
+      file: props.file.id ?? 0,
       pointDelta: 0.0,
       text: '',
       rubricComment: null,

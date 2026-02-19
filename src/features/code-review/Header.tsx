@@ -45,7 +45,7 @@ import type {
   SubmissionTestType,
   TestCaseType,
 } from '../../types/models';
-import { getFileContent, type FileType } from '../../utils/file';
+import { getFileContent, type FileType, type FileWithId } from '../../utils/file';
 import { Submission } from '../../services/submission';
 import { submissionFilesApi } from '../../api-client/clients';
 
@@ -518,8 +518,12 @@ interface GradeBreakdownRow {
 }
 
 export const GradeBreakdown = (props: IGradeBreakdownProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const isDarkTheme = consoleThemes.dark === consoleTheme;
+  const mutedText = isDarkTheme ? '#9da7b3' : 'rgba(0,0,0,0.65)';
+
   // Import these from codeConsoleUtils instead of using CodeConsole static
-  const [, currentCommentSet] = filterCurrentFileVersions(props.files, props.comments);
+  const [, currentCommentSet] = filterCurrentFileVersions(props.files as FileWithId[], props.comments);
   const pointsPerCategoryVal = pointsPerCategory(props.commentRubricComments, currentCommentSet);
   const pointsPerCategoryWithCapsVal = pointsPerCategoryWithCaps(pointsPerCategoryVal, props.rubricCategories);
   const genericPoints = genericCommentPoints(props.comments);
@@ -531,7 +535,7 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
   }, 0);
 
   const liveFeedbackWarning = props.assignment.liveFeedbackMode ? (
-    <div style={{ color: 'grey', fontStyle: 'italic', marginBottom: 10, textAlign: 'center' }}>
+    <div style={{ color: mutedText, fontStyle: 'italic', marginBottom: 10, textAlign: 'center' }}>
       Note: Grade calculations do not include old versions of files.
     </div>
   ) : (
@@ -592,7 +596,7 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
         <span>
           {text}
           {record.diff !== 0 && (
-            <span style={{ marginLeft: 8, fontSize: 12, color: 'rgba(0,0,0,0.65)', fontStyle: 'italic' }}>
+            <span style={{ marginLeft: 8, fontSize: 12, color: mutedText, fontStyle: 'italic' }}>
               (Exceeded limit by {record.diff})
             </span>
           )}
@@ -610,7 +614,7 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
         } else if (points < 0) {
           return <span style={{ color: '#52c41a', fontWeight: 600 }}>+{Math.abs(points)}</span>;
         }
-        return <span style={{ color: '#d9d9d9', fontWeight: 600 }}>-</span>;
+        return <span style={{ color: isDarkTheme ? '#9da7b3' : '#d9d9d9', fontWeight: 600 }}>-</span>;
       },
     },
   ];
@@ -648,7 +652,7 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
       <Table dataSource={breakdownDataSource} columns={columns} pagination={false} size="small" rowKey="key" />
 
       {!testsAffectGrade && props.submissionTests.length > 0 && (
-        <div style={{ color: '#8c8c8c', fontStyle: 'italic', marginTop: 10, textAlign: 'center' }}>
+        <div style={{ color: mutedText, fontStyle: 'italic', marginTop: 10, textAlign: 'center' }}>
           Note: Test results are not included in the grade. Tests are for feedback only.
         </div>
       )}

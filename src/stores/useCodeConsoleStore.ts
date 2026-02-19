@@ -2,11 +2,11 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import _ from 'lodash';
 
-import { Assignment } from '../types/common';
 import { CommentType } from '../utils/comments';
 import { Course, RubricCategory, RubricComment } from '../api-client';
 import {
   AnonymousSubmissionType,
+  AssignmentType,
   AssignmentFileType,
   FileTypeAlias as FileType,
   StudentSubmissionType,
@@ -46,7 +46,7 @@ interface CodeConsoleStoreActions {
   // Submission data
   setSubmission: (submission: AnonymousSubmissionType | undefined) => void;
   setReadOnlySubmission: (submission: StudentSubmissionType | undefined) => void;
-  setAssignment: (assignment: Assignment | undefined) => void;
+  setAssignment: (assignment: AssignmentType | undefined) => void;
   setCourse: (course: Course | undefined) => void;
 
   // Files

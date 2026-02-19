@@ -308,16 +308,18 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
   useEffect(() => {
     const prevProps = prevPropsRef.current;
     const codeScrollArea = document.getElementById('code-scroll-area');
+    const prevFileId = prevProps?.file.id ?? -1;
+    const currentFileId = props.file.id ?? -1;
 
     if (codeScrollArea !== null && prevProps) {
-      if (prevProps.file.id !== props.file.id) {
+      if (prevFileId !== currentFileId) {
         // Save scroll position for previous file
         setFileScrollPositions((prev) => ({
           ...prev,
-          [prevProps.file.id]: codeScrollArea.scrollTop,
+          [prevFileId]: codeScrollArea.scrollTop,
         }));
         // Restore scroll position for current file (default to 0 for new files)
-        codeScrollArea.scrollTop = fileScrollPositions[props.file.id] || 0;
+        codeScrollArea.scrollTop = fileScrollPositions[currentFileId] || 0;
       }
     }
   }, [props.file.id, fileScrollPositions, props.file]);

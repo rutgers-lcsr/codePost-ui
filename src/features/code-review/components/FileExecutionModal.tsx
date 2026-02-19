@@ -4,6 +4,8 @@ import { ExecutionResult } from '../../../utils/fileExecution';
 
 const { Text } = Typography;
 
+import { filesApi } from '../../../api-client/clients';
+
 interface FileExecutionModalProps {
   visible: boolean;
   onClose: () => void;
@@ -11,6 +13,7 @@ interface FileExecutionModalProps {
   isExecuting: boolean;
   error: string | null;
   fileName?: string;
+  fileId?: number;
 }
 
 export const FileExecutionModal: React.FC<FileExecutionModalProps> = ({
@@ -20,7 +23,40 @@ export const FileExecutionModal: React.FC<FileExecutionModalProps> = ({
   isExecuting,
   error,
   fileName,
+  fileId,
 }) => {
+  const [rawContent, setRawContent] = React.useState<string | null>(null);
+  const [loadingRaw, setLoadingRaw] = React.useState(false);
+
+  // Clear raw content when modal closes or file changes
+  React.useEffect(() => {
+    if (!visible) {
+      setRawContent(null);
+      setLoadingRaw(false);
+    }
+  }, [visible, fileId]);
+
+  const handleTabChange = async (key: string) => {
+    if (key === 'raw_notebook' && !rawContent && fileId && !loadingRaw) {
+      setLoadingRaw(true);
+      try {
+        const file = await filesApi.retrieve({ id: fileId });
+        if (file && file.data) {
+          setRawContent(file.data);
+        } else {
+          setRawContent('No content available.');
+        }
+      } catch (err) {
+        console.error('Failed to fetch raw file:', err);
+        setRawContent('Failed to load raw content.');
+      } finally {
+        setLoadingRaw(false);
+      }
+    }
+  };
+
+  const isNotebook = fileName?.endsWith('.ipynb');
+
   const renderContent = () => {
     if (isExecuting) {
       return (
@@ -56,7 +92,7 @@ export const FileExecutionModal: React.FC<FileExecutionModalProps> = ({
           />
         )}
 
-        <Tabs defaultActiveKey="stdout">
+        <Tabs defaultActiveKey="stdout" onChange={handleTabChange}>
           <Tabs.TabPane tab="Standard Output" key="stdout">
             <div
               style={{
@@ -121,6 +157,24 @@ export const FileExecutionModal: React.FC<FileExecutionModalProps> = ({
                 }}
               >
                 {result.system_logs.join('\n')}
+              </div>
+            </Tabs.TabPane>
+          )}
+          {isNotebook && (
+            <Tabs.TabPane tab="Raw Notebook" key="raw_notebook">
+              <div
+                style={{
+                  backgroundColor: '#fcfcfc',
+                  padding: '12px',
+                  borderRadius: '4px',
+                  fontFamily: 'monospace',
+                  whiteSpace: 'pre-wrap',
+                  maxHeight: '400px',
+                  overflow: 'auto',
+                  border: '1px solid #eee',
+                }}
+              >
+                {loadingRaw ? <Spin size="small" /> : rawContent || 'Click to load raw content...'}
               </div>
             </Tabs.TabPane>
           )}

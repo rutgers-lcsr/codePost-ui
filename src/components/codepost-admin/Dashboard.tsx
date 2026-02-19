@@ -11,7 +11,7 @@ import {
 } from '@ant-design/icons';
 import { Alert, Card, Col, Progress, Row, Spin, Statistic, Table, Tag, Typography, Layout, Menu, theme } from 'antd';
 import { Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { colors } from '../../theme/colors';
 import useFixedWindow from '../core/useFixedWindow';
@@ -45,6 +45,8 @@ export interface AdminData {
   email: string;
 }
 
+const isNonEmptyEmail = (email: string | null | undefined): email is string => Boolean(email);
+
 interface DashboardStats {
   totalOrganizations: number;
   totalCourses: number;
@@ -61,6 +63,8 @@ interface DashboardStats {
   avgStudentsPerCourse: number;
   totalInactiveUsers: number;
 }
+
+type TopOrganization = Organization & { courseCount: number };
 
 const Dashboard = () => {
   useFixedWindow();
@@ -96,7 +100,7 @@ const Dashboard = () => {
   const buildAdminList = (_rosters: RosterType[], _organizations: Organization[]): AdminData[] => {
     let idCounter = 0;
     return _rosters.flatMap((roster, index) =>
-      roster.courseAdmins.map((email) => {
+      roster.courseAdmins.filter(isNonEmptyEmail).map((email) => {
         return {
           id: idCounter++,
           key: index,
@@ -109,7 +113,7 @@ const Dashboard = () => {
     );
   };
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       // Fetch stats from backend (efficient aggregated queries)
       // Also fetch orgs and courses for tables, but NOT all users
@@ -129,7 +133,7 @@ const Dashboard = () => {
       // TODO: This could also be optimized with a bulk endpoint
       const rosterData = await Promise.all(
         uniqueCourses.map(async (course) => {
-          const roster = (await coursesApi.rosterRetrieve({ id: course.id })) as any as RosterType;
+          const roster = (await coursesApi.rosterRetrieve({ id: course.id })) as RosterType;
           return roster;
         }),
       );
@@ -145,12 +149,12 @@ const Dashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [api]);
 
   useEffect(() => {
     setIsLoading(true);
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   // Lazy load users when Users tab is selected
   useEffect(() => {
@@ -176,7 +180,7 @@ const Dashboard = () => {
   }
 
   const renderOverview = () => {
-    const topOrganizations = organizations
+    const topOrganizations: TopOrganization[] = organizations
       .map((org) => ({
         ...org,
         courseCount: courses.filter((c) => rosters.find((r) => r.id === c.id && r.organization === org.id)).length,
@@ -371,7 +375,7 @@ const Dashboard = () => {
                     dataIndex: 'courseCount',
                     key: 'usage',
                     width: 150,
-                    render: (count: number, record: any) => {
+                    render: (count: number, record: TopOrganization) => {
                       const maxCourses = Math.max(...topOrganizations.map((o) => o.courseCount));
                       const percent = maxCourses > 0 ? (count / maxCourses) * 100 : 0;
                       return (

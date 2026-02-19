@@ -3,7 +3,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 /* antd imports */
 import { Breadcrumb, Button, Checkbox, InputNumber, message, Skeleton, Tabs, Typography } from 'antd';
@@ -13,6 +13,10 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 
 /* codePost object imports */
 import { assignmentsApi, assignmentFilesApi, autograderApi } from '../../../../../api-client/clients';
+import type {
+  EnvironmentsCreateRequest,
+  EnvironmentsPartialUpdateRequest,
+} from '../../../../../api-client/apis/AutograderApi';
 
 import { AssignmentType, SubmissionInfoType, UserType } from '../../../../../types/models';
 
@@ -37,25 +41,25 @@ interface IProps {
   user: UserType;
 }
 
+type EnvironmentPatchPayload = NonNullable<EnvironmentsPartialUpdateRequest['patchedEnvironment']>;
+
 export const TestingSetup = (props: IProps) => {
   // ************************** State Variables ******************************
   const location = useLocation();
   const navigate = useNavigate();
   const params = useParams<{ tabKey?: string }>();
 
-  let defaultTab;
-  if (params.tabKey !== undefined) {
-    defaultTab = params.tabKey.valueOf();
-  } else {
-    defaultTab = 'environment';
-    navigate(`${location.pathname}/environment`, { replace: true });
-  }
-
-  const [currTab, setCurrTab] = useState(defaultTab);
+  const currTab = useMemo(() => params.tabKey ?? 'environment', [params.tabKey]);
   const [env, setEnv] = useState<Environment | undefined>(undefined);
   const [helperFiles, setHelperFiles] = useState<AssignmentFile[]>([]);
 
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!params.tabKey) {
+      navigate(`${location.pathname}/environment`, { replace: true });
+    }
+  }, [params.tabKey, location.pathname, navigate]);
 
   // Check permissions: Admin or Course Admin
   const isCourseAdmin =
@@ -133,13 +137,13 @@ export const TestingSetup = (props: IProps) => {
     // If environment doesn't exist create it
 
     if (!thisEnvironment) {
-      const payload = {
-        language,
+      const payload: EnvironmentsCreateRequest['environment'] = {
+        language: language as EnvironmentsCreateRequest['environment']['language'],
         dockerRunInstructions: dependencies && !customDockerfile ? dependencies.split('\n') : [],
         dockerfile: customDockerfile,
         requirements: requirements,
         autoDetect,
-        buildType, // Restored
+        buildType: buildType as EnvironmentsCreateRequest['environment']['buildType'], // Restored
         assignment: props.currentAssignment.id,
         compileText: '', // default
         allowNetworkAccess: false, // default
@@ -149,7 +153,7 @@ export const TestingSetup = (props: IProps) => {
       };
 
       thisEnvironment = await autograderApi.environmentsCreate({
-        environment: payload as any,
+        environment: payload,
       });
 
       // Update the assignment to point to this environment
@@ -158,20 +162,19 @@ export const TestingSetup = (props: IProps) => {
       setEnv(thisEnvironment);
       return thisEnvironment;
     } else {
-      const payload = {
-        id: thisEnvironment.id,
-        language,
+      const payload: EnvironmentPatchPayload = {
+        language: language as EnvironmentPatchPayload['language'],
         dockerRunInstructions: dependencies && !customDockerfile ? dependencies.split('\n') : [],
         dockerfile: customDockerfile,
         requirements: requirements,
         autoDetect,
-        buildType, // Restored
+        buildType: buildType as EnvironmentPatchPayload['buildType'], // Restored
         envVars,
       };
 
       const newEnv = await autograderApi.environmentsPartialUpdate({
-        id: payload.id,
-        patchedEnvironment: payload as any,
+        id: thisEnvironment.id,
+        patchedEnvironment: payload,
       });
       setEnv(newEnv);
       return newEnv;
@@ -180,34 +183,30 @@ export const TestingSetup = (props: IProps) => {
 
   const updateCompileText = async (val: string) => {
     if (env) {
-      const payload = {
-        id: env.id,
+      const payload: EnvironmentPatchPayload = {
         compileText: val,
       };
       const newEnv = await autograderApi.environmentsPartialUpdate({
-        id: payload.id,
-        patchedEnvironment: payload as any,
+        id: env.id,
+        patchedEnvironment: payload,
       });
       setEnv(newEnv);
     }
   };
 
   const onChange = (val: string) => {
-    setCurrTab(val);
-
     const newUrl = `${location.pathname.split('/').slice(0, -1).join('/')}/${val}`;
     navigate(newUrl);
   };
 
   const updateEnvSetting = async (field: string, value: string | number | boolean | null) => {
     if (env) {
-      const payload = {
-        id: env.id,
+      const payload: EnvironmentPatchPayload = {
         [field]: value,
       };
       const newEnv = await autograderApi.environmentsPartialUpdate({
-        id: payload.id,
-        patchedEnvironment: payload as any,
+        id: env.id,
+        patchedEnvironment: payload,
       });
       if (typeof value === 'boolean') {
         // we only show message for boolean settings. Numerical or string fields would be really annoying

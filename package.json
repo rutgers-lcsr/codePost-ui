@@ -80,6 +80,7 @@
     "build:production": "export NODE_OPTIONS=\"--max-old-space-size=4096\" && tsc && vite build --mode production",
     "preview": "vite preview",
     "test": "vitest",
+    "build:test-submission-seeds": "node src/__tests__/test_submission/build_backend_seed_data.js",
     "lint:fix": "eslint './src/**/*.{ts,tsx}' --fix",
     "prepare": "husky install",
     "find-hardcoded-colors": "node scripts/find-hardcoded-colors.js"

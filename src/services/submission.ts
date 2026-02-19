@@ -25,8 +25,8 @@ export class Submission {
 
   public static readHistory = (id: number): Promise<SubmissionHistory[]> => submissionsApi.historyList({ id });
 
-  public static updateHistory = (id: number, payload: SubmissionHistory[]) =>
-    submissionsApi.historyPartialUpdate({ id, patchedSubmissionHistory: payload });
+  public static updateHistory = (id: number, payload: Partial<SubmissionModel>) =>
+    submissionsApi.historyPartialUpdate({ id, patchedSubmission: payload });
 
   public static readTestResults = (id: number): Promise<SubmissionTestResultsResponse> =>
     submissionsApi.testResultsRetrieve({ id });
@@ -48,7 +48,7 @@ export class Submission {
   public static validatePartnerLink = (id: number, token: string) =>
     submissionsApi.validatePartnerLinkRetrieve({ id, token });
 
-  public static removePartner = (id: number) => submissionsApi.removePartnerPartialUpdate({ id });
+  public static removePartner = (id: number) => submissionsApi.removePartnerRetrieve({ id });
 
   public static filesByVersion = (files: FileType[]) => {
     const olderFiles: { [pathName: string]: FileType[] } = {};

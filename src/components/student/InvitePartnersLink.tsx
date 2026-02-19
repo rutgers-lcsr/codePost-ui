@@ -18,7 +18,7 @@ import type { SubmissionPartnerLinkResponse } from '../../api-client';
 import { Submission } from '../../services/submission';
 
 interface IInvitePartnersLinkProps {
-  assignment?: AssignmentType | AssignmentStudentType;
+  assignment?: AssignmentType | AssignmentStudentType | { allowStudentUploadWithPartners?: boolean };
   submission?: StudentSubmissionType | SubmissionInfoType;
 }
 

@@ -6,7 +6,7 @@ import { visit } from 'unist-util-visit';
 import { docRoutes } from './DocsConfig';
 import { getDocByPath } from './DocsLoader';
 import { Typography, Alert, Breadcrumb, Divider } from 'antd';
-import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { colors } from '../../theme/colors';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { materialLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -22,8 +22,10 @@ import {
 } from '@ant-design/icons';
 import DocsTOC, { TOCItem } from './DocsTOC';
 import useWindowSize from '../core/useWindowSize';
+import LanguageScriptSelector from './LanguageScriptSelector';
 
 const { Title, Text } = Typography;
+const SCRIPT_FORMAT_SELECTOR_TOKEN = '[[SCRIPT_FORMAT_SELECTOR]]';
 
 const slugify = (text: string) => {
   return text
@@ -49,7 +51,6 @@ const remarkRemoveComments = () => {
 
 const DocsContent: React.FC = () => {
   const { '*': splat } = useParams();
-  const navigate = useNavigate();
   const { width } = useWindowSize(); // Use window size hook
 
   const { search } = useLocation();
@@ -88,7 +89,12 @@ const DocsContent: React.FC = () => {
                     <mark
                       key={i}
                       className="doc-match-highlight"
-                      style={{ backgroundColor: '#ffe58f', padding: '0 2px', borderRadius: '2px', color: 'inherit' }}
+                      style={{
+                        backgroundColor: colors.actionYellowFade,
+                        padding: '0 2px',
+                        borderRadius: '2px',
+                        color: 'inherit',
+                      }}
                     >
                       {part}
                     </mark>
@@ -227,14 +233,26 @@ const DocsContent: React.FC = () => {
         </Title>
       );
     },
-    p: ({ node, children, ...props }: any) => (
-      <div
-        style={{ marginBottom: '20px', fontSize: '16px', color: colors.neutralMainText, lineHeight: '28px' }}
-        {...props}
-      >
-        {renderWithHighlight(children)}
-      </div>
-    ),
+    p: ({ node, children, ...props }: any) =>
+      (() => {
+        const paragraphText = React.Children.toArray(children)
+          .map((child) => (typeof child === 'string' ? child : ''))
+          .join('')
+          .trim();
+
+        if (paragraphText === SCRIPT_FORMAT_SELECTOR_TOKEN) {
+          return <LanguageScriptSelector />;
+        }
+
+        return (
+          <div
+            style={{ marginBottom: '20px', fontSize: '16px', color: colors.neutralMainText, lineHeight: '28px' }}
+            {...props}
+          >
+            {renderWithHighlight(children)}
+          </div>
+        );
+      })(),
     a: ({ node, children, href, ...props }: any) => (
       <a href={href} className="text-link" {...props}>
         {children}
@@ -286,11 +304,31 @@ const DocsContent: React.FC = () => {
 
       if (alertType) {
         const alertStyles: Record<string, { bg: string; border: string; icon: React.ReactNode; title: string }> = {
-          note: { bg: '#e7f3ff', border: '#58a6ff', icon: <InfoCircleOutlined />, title: 'Note' },
-          tip: { bg: '#eafaea', border: '#3fb950', icon: <BulbOutlined />, title: 'Tip' },
-          warning: { bg: '#fff8e6', border: '#d29922', icon: <WarningOutlined />, title: 'Warning' },
-          important: { bg: '#f3e8ff', border: '#a371f7', icon: <ExclamationCircleOutlined />, title: 'Important' },
-          caution: { bg: '#ffebe9', border: '#f85149', icon: <CloseCircleOutlined />, title: 'Caution' },
+          note: {
+            bg: `${colors.actionBlue}1A`,
+            border: colors.actionBlue,
+            icon: <InfoCircleOutlined />,
+            title: 'Note',
+          },
+          tip: { bg: `${colors.actionGreen}1A`, border: colors.actionGreen, icon: <BulbOutlined />, title: 'Tip' },
+          warning: {
+            bg: `${colors.actionYellow}1A`,
+            border: colors.actionYellow,
+            icon: <WarningOutlined />,
+            title: 'Warning',
+          },
+          important: {
+            bg: `${colors.brandAccent}1A`,
+            border: colors.brandAccent,
+            icon: <ExclamationCircleOutlined />,
+            title: 'Important',
+          },
+          caution: {
+            bg: `${colors.actionRed}1A`,
+            border: colors.actionRed,
+            icon: <CloseCircleOutlined />,
+            title: 'Caution',
+          },
         };
         const style = alertStyles[alertType];
 
@@ -340,13 +378,13 @@ const DocsContent: React.FC = () => {
               style={{
                 fontWeight: 600,
                 marginBottom: '8px',
-                color: style.border,
+                color: colors.neutralTitle,
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
               }}
             >
-              {style.icon} {style.title}
+              <span style={{ color: style.border, display: 'flex' }}>{style.icon}</span> {style.title}
             </div>
             <div style={{ color: colors.neutralMainText, lineHeight: '1.6' }}>
               {renderWithHighlight(cleanChildren(children))}
@@ -386,7 +424,7 @@ const DocsContent: React.FC = () => {
         >
           <div
             style={{
-              background: '#f5f5f5',
+              background: colors.neutralBackground,
               padding: '8px 16px',
               fontSize: '12px',
               color: colors.neutralSecondaryText,
@@ -409,7 +447,7 @@ const DocsContent: React.FC = () => {
         <code
           className={className}
           style={{
-            background: 'rgba(0,0,0,0.06)',
+            background: colors.neutralBackground,
             padding: '2px 6px',
             borderRadius: '4px',
             fontSize: '85%',
@@ -425,6 +463,7 @@ const DocsContent: React.FC = () => {
     img: ({ node, ...props }: any) => (
       <div style={{ display: 'flex', justifyContent: 'center', margin: '32px 0' }}>
         <img
+          alt={props.alt || ''}
           style={{
             maxWidth: '100%',
             borderRadius: '8px',
@@ -488,8 +527,8 @@ const DocsContent: React.FC = () => {
           }}
         >
           {prevRoute ? (
-            <div
-              onClick={() => navigate(`/docs/${prevRoute.path}`)}
+            <Link
+              to={`/docs/${prevRoute.path}`}
               style={{
                 cursor: 'pointer',
                 border: `1px solid ${colors.neutralBorder}`,
@@ -502,6 +541,7 @@ const DocsContent: React.FC = () => {
                 alignItems: 'flex-start',
                 transition: 'all 0.2s',
                 background: 'white',
+                textDecoration: 'none',
               }}
             >
               <Text
@@ -518,14 +558,14 @@ const DocsContent: React.FC = () => {
               <Text strong style={{ fontSize: '16px', color: colors.brandPrimary }}>
                 {prevRoute.title}
               </Text>
-            </div>
+            </Link>
           ) : (
             <div style={{ flex: 1 }} />
           )}
 
           {nextRoute ? (
-            <div
-              onClick={() => navigate(`/docs/${nextRoute.path}`)}
+            <Link
+              to={`/docs/${nextRoute.path}`}
               style={{
                 cursor: 'pointer',
                 border: `1px solid ${colors.neutralBorder}`,
@@ -539,6 +579,7 @@ const DocsContent: React.FC = () => {
                 textAlign: 'right',
                 transition: 'all 0.2s',
                 background: 'white',
+                textDecoration: 'none',
               }}
             >
               <Text
@@ -555,7 +596,7 @@ const DocsContent: React.FC = () => {
               <Text strong style={{ fontSize: '16px', color: colors.brandPrimary }}>
                 {nextRoute.title}
               </Text>
-            </div>
+            </Link>
           ) : (
             <div style={{ flex: 1 }} />
           )}

@@ -2,6 +2,7 @@
 // These styles apply when dark theme is active in the console
 
 [data-console-theme='dark'] {
+  --cp-dark-border: #6e7681;
 
   // Fix Ant Design text colors for dark theme
   .ant-typography,
@@ -10,7 +11,7 @@
   .ant-select,
   .ant-checkbox-wrapper,
   .ant-radio-wrapper,
-  .ant-form-item-label>label,
+  .ant-form-item-label > label,
   .ant-descriptions-item-label,
   .ant-descriptions-item-content,
   .ant-table,
@@ -53,7 +54,7 @@
   .ant-input-number,
   .ant-select-selector {
     background-color: #0d1117 !important;
-    border-color: #30363d !important;
+    border-color: var(--cp-dark-border) !important;
     color: #c9d1d9 !important;
 
     &:hover,
@@ -75,7 +76,7 @@
 
   .ant-select-dropdown {
     background-color: #161b22;
-    border: 1px solid #30363d;
+    border: 1px solid var(--cp-dark-border);
   }
 
   .ant-select-item-option-selected {
@@ -94,25 +95,25 @@
     color: #c9d1d9;
   }
 
-  .ant-table-thead>tr>th {
+  .ant-table-thead > tr > th {
     background-color: #161b22;
     color: #c9d1d9;
-    border-bottom: 1px solid #30363d;
+    border-bottom: 1px solid var(--cp-dark-border);
     font-weight: 600;
   }
 
-  .ant-table-tbody>tr>td {
-    border-bottom: 1px solid #30363d;
+  .ant-table-tbody > tr > td {
+    border-bottom: 1px solid var(--cp-dark-border);
     background-color: #0d1117;
   }
 
-  .ant-table-tbody>tr:hover>td {
+  .ant-table-tbody > tr:hover > td {
     background-color: #161b22 !important;
   }
 
   .ant-pagination-item {
     background-color: #0d1117;
-    border-color: #30363d;
+    border-color: var(--cp-dark-border);
 
     a {
       color: #c9d1d9;
@@ -145,13 +146,13 @@
   .ant-modal-content {
     background-color: #161b22;
     color: #c9d1d9;
-    border: 1px solid #30363d;
+    border: 1px solid var(--cp-dark-border);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   }
 
   .ant-modal-header {
     background-color: #161b22;
-    border-bottom: 1px solid #30363d;
+    border-bottom: 1px solid var(--cp-dark-border);
   }
 
   .ant-modal-title {
@@ -159,7 +160,7 @@
   }
 
   .ant-modal-footer {
-    border-top: 1px solid #30363d;
+    border-top: 1px solid var(--cp-dark-border);
   }
 
   .ant-modal-close-x {
@@ -173,11 +174,11 @@
   // Collapse
   .ant-collapse {
     background-color: #0d1117;
-    border-color: #30363d;
+    border-color: var(--cp-dark-border);
   }
 
   .ant-collapse-item {
-    border-bottom-color: #30363d;
+    border-bottom-color: var(--cp-dark-border);
   }
 
   .ant-collapse-header {
@@ -188,7 +189,7 @@
   .ant-collapse-content {
     background-color: #0d1117;
     color: #c9d1d9;
-    border-top-color: #30363d;
+    border-top-color: var(--cp-dark-border);
   }
 
   // Tabs
@@ -212,8 +213,8 @@
     background-color: #238636;
   }
 
-  .ant-tabs-top>.ant-tabs-nav::before {
-    border-bottom-color: #30363d;
+  .ant-tabs-top > .ant-tabs-nav::before {
+    border-bottom-color: var(--cp-dark-border);
   }
 
   // Checkbox and Radio
@@ -225,7 +226,7 @@
   .ant-checkbox-inner,
   .ant-radio-inner {
     background-color: #0d1117;
-    border-color: #30363d;
+    border-color: var(--cp-dark-border);
   }
 
   .ant-checkbox-checked .ant-checkbox-inner {
@@ -236,12 +237,12 @@
   // Buttons (secondary/default type)
   .ant-btn-default {
     background-color: #21262d;
-    border-color: #30363d;
+    border-color: var(--cp-dark-border);
     color: #c9d1d9;
 
     &:hover,
     &:focus {
-      background-color: #30363d;
+      background-color: var(--cp-dark-border);
       border-color: #8b949e;
       color: #fff;
     }
@@ -269,20 +270,20 @@
   }
 
   // Form items
-  .ant-form-item-label>label {
+  .ant-form-item-label > label {
     color: #c9d1d9;
   }
 
   // Divider
   .ant-divider {
-    border-top-color: #30363d;
+    border-top-color: var(--cp-dark-border);
   }
 
   // Tooltip
   .ant-tooltip-inner {
     background-color: #161b22;
     color: #c9d1d9;
-    border: 1px solid #30363d;
+    border: 1px solid var(--cp-dark-border);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   }
 
@@ -298,7 +299,7 @@
   // Dropdown menu
   .ant-dropdown-menu {
     background-color: #161b22;
-    border: 1px solid #30363d;
+    border: 1px solid var(--cp-dark-border);
   }
 
   .ant-dropdown-menu-item {
@@ -316,7 +317,7 @@
 
   .ant-drawer-header {
     background-color: #161b22;
-    border-bottom-color: #30363d;
+    border-bottom-color: var(--cp-dark-border);
   }
 
   .ant-drawer-title {
@@ -335,13 +336,13 @@
   // Tag
   .ant-tag {
     background-color: #161b22;
-    border-color: #30363d;
+    border-color: var(--cp-dark-border);
     color: #c9d1d9;
   }
 
   // Switch
   .ant-switch {
-    background-color: #30363d;
+    background-color: var(--cp-dark-border);
   }
 
   .ant-switch-checked {
@@ -350,7 +351,7 @@
 
   // Slider
   .ant-slider-rail {
-    background-color: #30363d;
+    background-color: var(--cp-dark-border);
   }
 
   .ant-slider-track {
@@ -369,7 +370,7 @@
   // Alert
   .ant-alert {
     background-color: #161b22;
-    border-color: #30363d;
+    border-color: var(--cp-dark-border);
   }
 
   .ant-alert-info {
@@ -384,7 +385,7 @@
   // Descriptions
   .ant-descriptions-bordered .ant-descriptions-item-label {
     background-color: #161b22;
-    border-right: 1px solid #30363d;
+    border-right: 1px solid var(--cp-dark-border);
   }
 
   .ant-descriptions-bordered .ant-descriptions-item-content {
@@ -392,19 +393,19 @@
   }
 
   .ant-descriptions-bordered .ant-descriptions-row {
-    border-bottom: 1px solid #30363d;
+    border-bottom: 1px solid var(--cp-dark-border);
   }
 
   // Textarea
   textarea.ant-input {
     background-color: #0d1117 !important;
     color: #c9d1d9 !important;
-    border-color: #30363d !important;
+    border-color: var(--cp-dark-border) !important;
   }
 
   // List
   .ant-list-item {
-    border-bottom-color: #30363d;
+    border-bottom-color: var(--cp-dark-border);
     color: #c9d1d9;
   }
 
@@ -412,12 +413,12 @@
   .ant-card {
     background-color: #161b22;
     color: #c9d1d9;
-    border-color: #30363d;
+    border-color: var(--cp-dark-border);
   }
 
   .ant-card-head {
     background-color: #161b22;
-    border-bottom-color: #30363d;
+    border-bottom-color: var(--cp-dark-border);
     color: #c9d1d9;
   }
 
@@ -455,7 +456,7 @@
       .ant-menu-submenu-title {
         background-color: #161b22 !important;
         color: #c9d1d9 !important;
-        border-top: 1px solid #30363d !important;
+        border-top: 1px solid var(--cp-dark-border) !important;
       }
 
       .ant-menu-item {
@@ -495,12 +496,12 @@
     .ant-popover-inner {
       background-color: #161b22;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-      border: 1px solid #30363d;
+      border: 1px solid var(--cp-dark-border);
     }
 
     .ant-popover-title {
       color: #c9d1d9;
-      border-bottom-color: #30363d;
+      border-bottom-color: var(--cp-dark-border);
     }
 
     .ant-popover-inner-content {
@@ -508,7 +509,7 @@
     }
 
     .ant-popover-arrow {
-      border-color: #30363d !important;
+      border-color: var(--cp-dark-border) !important;
     }
 
     .ant-popover-arrow-content {
@@ -527,7 +528,7 @@
     h5,
     h6 {
       color: #c9d1d9;
-      border-bottom-color: #30363d;
+      border-bottom-color: var(--cp-dark-border);
     }
 
     code {
@@ -544,20 +545,19 @@
     }
 
     blockquote {
-      border-left-color: #30363d;
+      border-left-color: var(--cp-dark-border);
       color: #8b949e;
     }
 
     table {
-
       th,
       td {
-        border-color: #30363d;
+        border-color: var(--cp-dark-border);
       }
 
       tr {
         background-color: #0d1117;
-        border-top-color: #30363d;
+        border-top-color: var(--cp-dark-border);
       }
 
       tr:nth-child(2n) {
@@ -574,14 +574,14 @@
   .cp-comment__text-area {
     background-color: #0d1117 !important;
     color: #c9d1d9 !important;
-    border-color: #30363d !important;
+    border-color: var(--cp-dark-border) !important;
   }
 
   // Submission info panel
   .submission-info__late-day-credits {
     .ant-alert {
       background-color: #161b22;
-      border-color: #30363d;
+      border-color: var(--cp-dark-border);
     }
   }
 
