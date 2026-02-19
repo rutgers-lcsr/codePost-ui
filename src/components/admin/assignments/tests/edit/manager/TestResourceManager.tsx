@@ -57,6 +57,16 @@ const getResourceDatasetDetails = (
   return normalized.datasetDetails ?? normalized.dataset_details ?? null;
 };
 
+const isStudentVisibleFile = (file: AssignmentFileType): boolean => {
+  const normalized = file as AssignmentFileType & { is_test_resource?: boolean };
+  return !Boolean(file.hidden || file.isTestResource || normalized.is_test_resource);
+};
+
+const isStudentVisibleDataset = (dataset: AssignmentDataSetType): boolean => {
+  const normalized = dataset as AssignmentDataSetType & { is_test_resource?: boolean };
+  return !Boolean(dataset.hidden || dataset.isTestResource || normalized.is_test_resource);
+};
+
 const getErrorMessage = (error: unknown): string => {
   if (error instanceof Error) return error.message;
   if (typeof error === 'string') return error;
@@ -136,14 +146,14 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
         const fileDetails = getResourceFileDetails(resource);
         const datasetDetails = getResourceDatasetDetails(resource);
 
-        if (fileDetails && fileDetails.hidden) {
+        if (fileDetails && !isStudentVisibleFile(fileDetails)) {
           // Delete the hidden file
           try {
             await assignmentFilesApi.destroy({ id: fileDetails.id });
           } catch (e) {
             console.warn('Failed to delete underlying file:', e);
           }
-        } else if (datasetDetails && datasetDetails.hidden) {
+        } else if (datasetDetails && !isStudentVisibleDataset(datasetDetails)) {
           // Delete the hidden dataset
           try {
             await assignmentDataSetsApi.destroy({ id: datasetDetails.id });
@@ -433,7 +443,11 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
               >
                 <option value="">Select {activeTab === 'files' ? 'file' : 'dataset'} to override...</option>
                 {(activeTab === 'files' ? assignmentFiles : datasets)
-                  .filter((item) => !item.hidden)
+                  .filter((item) =>
+                    activeTab === 'files'
+                      ? isStudentVisibleFile(item as AssignmentFileType)
+                      : isStudentVisibleDataset(item as AssignmentDataSetType),
+                  )
                   .map((item) => (
                     <option key={item.id} value={item.name}>
                       {item.name}

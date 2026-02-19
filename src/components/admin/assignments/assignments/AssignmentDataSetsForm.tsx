@@ -19,6 +19,11 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
   const [editingDataset, setEditingDataset] = React.useState<AssignmentDataSetType | null>(null);
   const [form] = Form.useForm();
 
+  const isStudentVisibleDataset = (dataset: AssignmentDataSetType): boolean => {
+    const normalized = dataset as AssignmentDataSetType & { is_test_resource?: boolean };
+    return !Boolean(dataset.hidden || dataset.isTestResource || normalized.is_test_resource);
+  };
+
   const showModal = (dataset?: AssignmentDataSetType) => {
     setEditingDataset(dataset || null);
     if (dataset) {
@@ -250,7 +255,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
       {datasets.length > 0 ? (
         <Table
           columns={columns}
-          dataSource={datasets.filter((d: AssignmentDataSetType) => !d.hidden)}
+          dataSource={datasets.filter((d: AssignmentDataSetType) => isStudentVisibleDataset(d))}
           rowKey="id"
           pagination={false}
           size="small"

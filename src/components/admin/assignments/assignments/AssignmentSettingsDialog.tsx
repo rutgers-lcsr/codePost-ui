@@ -57,6 +57,11 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [form] = Form.useForm<IFormValues>();
 
+  const isStudentVisibleFile = (file: AssignmentFileType): boolean => {
+    const normalized = file as AssignmentFileType & { is_test_resource?: boolean };
+    return !Boolean(file.hidden || file.isTestResource || normalized.is_test_resource);
+  };
+
   const loadFiles = () => {
     setIsLoading(true);
     const filesList = props.currentAssignment.files ?? [];
@@ -101,7 +106,7 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
     let templateMode = false;
     if (assignmentFiles !== undefined && assignmentFiles.length > 0) {
       const filtered = assignmentFiles.filter((file: AssignmentFileType) => {
-        return file.data !== '';
+        return isStudentVisibleFile(file) && file.data !== '';
       });
       if (filtered.length > 0) {
         templateMode = true;
