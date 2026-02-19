@@ -58,7 +58,7 @@ const createDemoCourse = async (email: string, username: string, org: string): P
 
               const demoSubmissionTests = getDemoSubmissionTests(org);
               return demoSubmissionTests.map((subEl) => {
-                const subMatch = thisSubmissions.find((sub) => sub.students.indexOf(subEl.students[0]) > -1);
+                const subMatch = thisSubmissions.results.find((sub) => sub.students.indexOf(subEl.students[0]) > -1);
                 return subEl.tests.map((subTestEl) => {
                   // Match submissionTest to newly created testCase object
                   const testCaseMatch = testCases.find((tc) => tc.description === subTestEl.testCase);

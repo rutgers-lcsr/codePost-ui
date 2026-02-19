@@ -13,6 +13,11 @@ interface EditUserDialogProps {
   organizations: Organization[];
 }
 
+type EditUserValues = Pick<
+  UserType,
+  'organization' | 'codePostAdmin' | 'isOrgStaff' | 'canCreateCourses' | 'canModifyRosters'
+>;
+
 const EditUserDialog: React.FC<EditUserDialogProps> = ({ visible, user, onClose, onSuccess, organizations }) => {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,11 +33,11 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ visible, user, onClose,
     }
   }, [visible, user, form]);
 
-  const handleSubmit = async (values: any) => {
-    if (!user) return;
+  const handleSubmit = async (values: EditUserValues) => {
+    if (!user?.email) return;
     setIsSubmitting(true);
     try {
-      await UserIO.update({ ...values, id: user.id, email: user.email });
+      await UserIO.update(user.email, values);
       message.success('User updated successfully');
       onSuccess();
     } catch (error) {

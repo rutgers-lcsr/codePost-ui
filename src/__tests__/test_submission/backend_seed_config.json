@@ -1,0 +1,14 @@
+{
+  "defaultCourseId": 0,
+  "languageEnvironmentMap": {
+    "cpp": "c/c++",
+    "java": "java",
+    "node": "node-20",
+    "php": "php",
+    "python": "python-3.12",
+    "r": "r-4",
+    "ruby": "ruby"
+  },
+  "assignmentNameSuffix": "Submission Compatibility",
+  "includeCompleteAsHappyPath": true
+}

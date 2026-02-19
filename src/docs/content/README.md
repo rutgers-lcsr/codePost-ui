@@ -1,27 +1,29 @@
 # codePost Documentation
 
-Welcome to the codePost documentation. codePost is a powerful feedback and grading tool for computer science education.
+Welcome to the codePost docs. This site is organized by role and workflow, with **instructors first**.
 
-## Guides
+## Instructor path (recommended)
 
-- [**Getting Started**](/docs/getting-started)
-  - Learn how to create an account and log in.
+1. [Instructor Overview](/docs/instructor)
+2. [Course Setup & Roster](/docs/instructor-course-setup)
+3. [Assignment Workflow](/docs/instructor-assignment-workflow)
+4. [Environment & Testing Ops](/docs/instructor-environment-testing)
+5. [Grading, Release & Exports](/docs/instructor-grading-publishing)
 
-- [**Student Guide**](/docs/student)
-  - How to join courses, submit assignments, and view feedback.
+## Role guides
 
-- [**Instructor Guide**](/docs/instructor)
-  - How to set up courses, manage rosters, create assignments, run autograders, and grade submissions.
+- [Grader Guide](/docs/grader)
+- [Student Guide](/docs/student)
+- [Organization Admin Guide](/docs/organization)
 
-- [**Testing Guide**](/docs/testing-guide)
-  - Script syntax and examples for writing autograder tests by language.
+## Common tasks
 
-- [**Admin Guide**](/docs/admin)
-  - Deployment, configuration, and system administration.
+- [Getting Started](/docs/getting-started)
+- [Uploading Submissions](/docs/submission-upload)
+- [Programmatic Comments](/docs/programmatic-comments)
+- [Testing Guide](/docs/testing-guide)
+- [FAQ](/docs/faq)
 
-- [**Organization Guide**](/docs/organization)
-  - For Organizations Staff to manage their organization.
+## Need deployment/admin help?
 
-## More Infomation
-
-If you'd like more infomation on deployment codepost at your institution, please contact [codepost@cs.rutgers.edu](mailto:codepost@cs.rutgers.edu).
+If you need institution-level deployment guidance, contact [codepost@cs.rutgers.edu](mailto:codepost@cs.rutgers.edu).

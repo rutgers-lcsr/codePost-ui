@@ -18,7 +18,8 @@ const DocsTOC: React.FC<DocsTOCProps> = ({ items }) => {
   if (items.length === 0) return null;
 
   return (
-    <div
+    <nav
+      aria-label="Table of contents"
       style={{
         width: '250px',
         paddingLeft: '20px',
@@ -69,7 +70,7 @@ const DocsTOC: React.FC<DocsTOCProps> = ({ items }) => {
             color: ${colors.neutralSecondaryText};
         }
       `}</style>
-    </div>
+    </nav>
   );
 };
 

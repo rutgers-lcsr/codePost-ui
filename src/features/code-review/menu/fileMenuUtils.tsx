@@ -1,4 +1,16 @@
-import { FolderOutlined } from '@ant-design/icons';
+import {
+  FolderOutlined,
+  CodeOutlined,
+  ReadOutlined,
+  ExperimentOutlined,
+  FileTextOutlined,
+  FileImageOutlined,
+  ApiOutlined,
+  AppstoreOutlined,
+  ToolOutlined,
+  CloudOutlined,
+  BgColorsOutlined,
+} from '@ant-design/icons';
 
 import type { MenuProps } from 'antd';
 
@@ -64,6 +76,34 @@ export function createDirectoryStructure<T extends IBasicFile>(files: T[]) {
   return root;
 }
 
+function getFolderIcon(name: string) {
+  const lowerName = name.toLowerCase();
+  switch (true) {
+    case ['src', 'code', 'source'].includes(lowerName):
+      return <CodeOutlined />;
+    case ['lib', 'library', 'libs'].includes(lowerName):
+      return <ReadOutlined />;
+    case ['test', 'tests', 'spec', 'specs'].includes(lowerName):
+      return <ExperimentOutlined />;
+    case ['docs', 'documentation'].includes(lowerName):
+      return <FileTextOutlined />;
+    case ['assets', 'public', 'static', 'images', 'img'].includes(lowerName):
+      return <FileImageOutlined />;
+    case ['api', 'apis'].includes(lowerName):
+      return <ApiOutlined />;
+    case ['components', 'views', 'pages'].includes(lowerName):
+      return <AppstoreOutlined />;
+    case ['utils', 'helpers', 'tools'].includes(lowerName):
+      return <ToolOutlined />;
+    case ['dist', 'build', 'out'].includes(lowerName):
+      return <CloudOutlined />;
+    case ['styles', 'css', 'scss'].includes(lowerName):
+      return <BgColorsOutlined />;
+    default:
+      return <FolderOutlined />;
+  }
+}
+
 export function buildFolderMenu<T extends IBasicFile>(
   parentPath: string,
   folder: { name: string; files: T[]; folders: IFolder<T>[] },
@@ -80,7 +120,7 @@ export function buildFolderMenu<T extends IBasicFile>(
     key: `${parentPath}/${folder.name}`,
     label: (
       <>
-        <FolderOutlined /> {folder.name}
+        {getFolderIcon(folder.name)} <span style={{ marginLeft: 4 }}>{folder.name}</span>
       </>
     ),
     className,

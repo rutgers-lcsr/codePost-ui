@@ -46,9 +46,9 @@ import ReactMarkdown from 'react-markdown';
 
 import { assignmentFilesApi, assignmentsApi, autograderApi, submissionsApi } from '../../../../../api-client/clients';
 import { SubmissionTestResultType, TestEditorResultType } from '../../../../../types/autograder';
-import { File as CodePostFile, FileType } from '../../../../../utils/file';
+import { File as CodePostFile } from '../../../../../utils/file';
 import { Course } from '../../../../../api-client';
-import { Assignment, AssignmentStudentType } from '../../../../../types/common';
+import { Assignment, AssignmentStudentType, UploadFile as SubmissionUploadFile } from '../../../../../types/common';
 import {
   AssignmentFileType,
   StudentSubmissionType,
@@ -119,19 +119,12 @@ interface IUploadSubmissionDialogProps {
     };
   };
   /** Function to upload submission */
-  uploadSubmission:
-    | ((
-        assignment: AssignmentStudentType,
-        partners: string[],
-        files: FileType[],
-        sendConfirmationEmail: boolean,
-      ) => Promise<StudentSubmissionType>)
-    | ((
-        assignment: Assignment,
-        partners: string[],
-        files: FileType[],
-        sendConfirmationEmail: boolean,
-      ) => Promise<SubmissionInfoType>);
+  uploadSubmission: (
+    assignment: AssignmentStudentType | Assignment,
+    partners: string[],
+    files: SubmissionUploadFile[],
+    sendConfirmationEmail?: boolean,
+  ) => Promise<StudentSubmissionType | SubmissionInfoType>;
   /** Disable student selection dropdown */
   disableStudentSelect?: boolean;
   /** Callback when upload is successful */

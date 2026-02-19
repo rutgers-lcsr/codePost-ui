@@ -20,7 +20,6 @@ import type {
   CodeExecutionRequest,
   Environment,
   EnvironmentBuildResponse,
-  EnvironmentBuildStatusError,
   EnvironmentBuildStatusResponse,
   EnvironmentCleanupRequest,
   EnvironmentCleanupResponse,

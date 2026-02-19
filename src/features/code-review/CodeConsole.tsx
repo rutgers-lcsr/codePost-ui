@@ -1340,7 +1340,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       console.log('comment author isnt enrolled as a grader');
     }
 
-    const nextComments = addCommentToState(comments, comment, file);
+    const nextComments = addCommentToState(comments, comment, fileWithId);
     setState((prev) => ({
       ...prev,
       comments: nextComments,
@@ -1678,14 +1678,18 @@ Days Late (After Credit):  ${daysLateAfterCredit}
    * @param result - Execution result with file_id, success status, and output data
    */
   const handleExecutionComplete = React.useCallback(
-    (result: { success: boolean; output_data?: unknown; error?: string; file_id?: number }) => {
+    (result: { success: boolean; output_data?: unknown; error?: string | null; file_id?: number }) => {
       const fileId = result.file_id || selectedFile?.id;
       if (fileId) {
+        const normalizedResult = {
+          ...result,
+          error: result.error ?? undefined,
+        };
         setState((prev) => ({
           ...prev,
           executionResults: {
             ...prev.executionResults,
-            [fileId]: result,
+            [fileId]: normalizedResult,
           },
         }));
       }

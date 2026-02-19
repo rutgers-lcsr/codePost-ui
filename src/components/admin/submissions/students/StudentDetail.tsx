@@ -185,7 +185,7 @@ const StudentDetail: React.FC<IProps> = (props) => {
   );
 
   const handleUploadSubmission = useCallback(
-    (assignment: Assignment, partners: string[], files: UploadFile[]) => {
+    (assignment: Assignment, partners: string[], files: UploadFile[], _sendConfirmationEmail?: boolean) => {
       const submission = submissionsMap[assignment.id];
       if (submission) {
         return props.addFilesToSubmission(submission, files);

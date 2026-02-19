@@ -49,7 +49,7 @@ type FileMenuRootStyle = React.CSSProperties & Record<FileMenuCSSVariable, strin
 
 /* codePost imports */
 import type { CommentType } from '../../../types/models';
-import { File as CodePostFile, type FileType } from '../../../utils/file';
+import { File as CodePostFile } from '../../../utils/file';
 import { Submission } from '../../../services/submission';
 
 import { IFileToCommentsMap } from '../../../types/common';
@@ -113,9 +113,9 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
       overflowY: 'auto',
       '--file-menu-selected-bg': isDarkTheme ? 'rgba(36, 190, 133, 0.28)' : '#f0fff7',
       '--file-menu-selected-color': highlightColor,
-      '--file-menu-submenu-bg': consoleTheme.consoleTheme.siderSubmenuTitleBg ?? '#f9f9f9',
-      '--file-menu-submenu-color': consoleTheme.consoleTheme.siderSubmenuTitleColor ?? highlightColor,
-      '--file-menu-submenu-border': consoleTheme.consoleTheme.siderSubmenuBorder ?? '1px solid rgba(0, 0, 0, 0.05)',
+      '--file-menu-submenu-bg': 'transparent',
+      '--file-menu-submenu-color': consoleTheme.consoleTheme.siderMenuItemColor ?? highlightColor,
+      '--file-menu-submenu-border': 'none',
       '--file-menu-history-badge-bg': consoleTheme.consoleTheme.commentBody ?? '#ffffff',
       '--file-menu-history-badge-color': consoleTheme.consoleTheme.commentRubricCommentNeutral ?? 'rgba(0, 0, 0, 0.45)',
       '--file-menu-history-badge-shadow': `0 0 0 1px ${historyBorder} inset`,
@@ -305,7 +305,7 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
     (file: FileWithId) => {
       let commentCount;
       if (comments === undefined || !Object.prototype.hasOwnProperty.call(comments, file.id)) {
-        commentCount = file.comments.length;
+        commentCount = (file.comments ?? []).length;
       } else {
         commentCount = comments[file.id].filter((comment: CommentType) => {
           return comment.id > 0;

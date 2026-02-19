@@ -15,7 +15,7 @@ import {
 import { Alert, Button, Space, Tag, Typography } from 'antd';
 import React, { useCallback, useState } from 'react';
 
-import { executeFile } from '../../../utils/execution';
+import { executeFile } from '../execution/execution';
 import type { FileType } from '../../../utils/file';
 
 const { Text } = Typography;

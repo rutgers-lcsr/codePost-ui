@@ -1,9 +1,6 @@
 import { BaseAPI } from '../api-client/runtime';
-import type { FetchParams, RequestContext } from '../api-client/runtime';
 
 type QueryParamValue = string | number | boolean | null | undefined;
-
-type PreMiddleware = (context: RequestContext) => Promise<FetchParams | void>;
 
 const buildQueryString = (params: Record<string, QueryParamValue>): string => {
   const searchParams = new URLSearchParams();

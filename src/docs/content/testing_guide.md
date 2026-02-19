@@ -42,6 +42,8 @@ It is written to match the current backend parser behavior.
 > [!IMPORTANT]
 > Keep test names stable and unique in a category so updates are predictable.
 
+![The instructor test interface](/assets/docs/instructor_tests.png)
+
 ## What fields are extracted
 
 The parser extracts (when present):
@@ -68,120 +70,10 @@ The table below shows **recognized parser formats**.
 
 ## Supported script formats
 
-### Python
+Choose a language to see the exact parser-compatible format.
+Each example includes separate test functions showing common return patterns (full credit, message returns, and partial credit).
 
-Use `@test(...)` above a function.
-
-```python
-@test(name="Addition Test", points=5, description="Verifies add() works", timeout=30)
-def test_addition():
-    assert add(1, 2) == 3
-
-@test("Positional Name", points=3)
-def test_positional_name():
-  assert True
-```
-
-### Java
-
-Use `@Test(...)` on a public method.
-
-```java
-@Test(name="Addition Test", points=5, description="Verifies add() works", timeout=30)
-public Object testAddition() {
-    assertEquals(3, Main.add(1, 2));
-    return null;
-}
-
-@Test(name="Edge Cases", points=2)
-public Object testEdges() {
-  return null;
-}
-```
-
-### R
-
-Use `run_test(...)`.
-
-```r
-run_test("Addition Test", 5, "Verifies add() works", function() {
-  stopifnot(add(1, 2) == 3)
-}, 30)
-
-run_test("No Description", 2, function() {
-  stopifnot(TRUE)
-})
-```
-
-### C/C++
-
-Use test macros.
-
-```cpp
-TEST(AdditionTest, 5.0) {
-  assertTrue(add(1, 2) == 3, "1+2 should be 3");
-}
-
-TEST_DESC_TIMEOUT(PartialCredit, 10.0, "Awards partial credit", 30) {
-  return_score(5, "Partial credit");
-}
-
-TEST_TIMEOUT(SmokeTest, 1.0, 10) {
-  assertTrue(true, "smoke");
-}
-```
-
-### Node / JavaScript / TypeScript
-
-Use `test(...)`.
-
-```js
-test(
-  'Addition Test',
-  5,
-  'Verifies add() works',
-  () => {
-    if (add(1, 2) !== 3) throw new Error('1+2 should be 3');
-  },
-  30,
-);
-
-test('No Timeout', 2, 'quick check', () => {
-  if (1 + 1 !== 2) throw new Error('math broke');
-});
-```
-
-### Ruby
-
-Use `run_test(...)`.
-
-```rb
-run_test("Addition Test", 5, "Verifies add() works", 30) do
-  raise "1+2 should be 3" unless add(1, 2) == 3
-end
-
-run_test("No Timeout", 2, "quick check") do
-  raise "failed" unless true
-end
-```
-
-### PHP
-
-Use `Tester::test(...)`.
-
-```php
-Tester::test("Addition Test", 5, "Verifies add() works", function () {
-    if (add(1, 2) !== 3) {
-        throw new Exception("1+2 should be 3");
-    }
-}, 30);
-
-Tester::test("No Description", 2, function () {
-  if (1 + 1 !== 2) {
-    throw new Exception("math broke");
-  }
-});
-```
+[[SCRIPT_FORMAT_SELECTOR]]
 
 ## Scoring and points behavior
 
@@ -191,134 +83,7 @@ Tester::test("No Description", 2, function () {
 
 ## Return patterns (full vs partial, with/without message)
 
-Use these patterns inside your test function/body to control scoring.
-
-### Python (`@test`)
-
-```python
-# Full credit, no message
-return
-
-# Full credit, with message
-return 10, "Perfect solution"
-
-# Partial credit, no message
-return 6
-
-# Partial credit, with message
-return 6, "Correct core logic, missing edge case"
-```
-
-### Java (`@Test`)
-
-```java
-// Full credit, no message
-return null;
-
-// Full credit, with message
-return "Perfect solution";
-
-// Partial credit, no message
-return 6;
-
-// Partial credit, with message (array)
-return new Object[]{6, "Correct core logic, missing edge case"};
-
-// Partial credit, with message (list)
-return java.util.List.of(6, "Correct core logic, missing edge case");
-```
-
-### R (`run_test`)
-
-```r
-# Full credit, no message
-return(NULL)
-
-# Full credit, with message
-return(list(score = 10, message = "Perfect solution"))
-
-# Partial credit, no message
-return(6)
-
-# Partial credit, with message (positional)
-return(list(6, "Correct core logic, missing edge case"))
-
-# Partial credit, with message (named)
-return(list(score = 6, message = "Correct core logic, missing edge case"))
-```
-
-### C/C++ (`TEST*` macros)
-
-```cpp
-// Full credit, no message
-return;
-
-// Full credit, with message
-return return_score(10.0, "Perfect solution");
-
-// Partial credit, no message
-return 6.0;
-
-// Partial credit, with message (helper)
-return return_score(6.0, "Correct core logic, missing edge case");
-
-// Partial credit, with message (pair)
-return std::make_pair(6.0, std::string("Correct core logic, missing edge case"));
-```
-
-### Node / JavaScript / TypeScript (`test(...)`)
-
-```js
-// Full credit, no message
-return;
-
-// Full credit, with message
-return 'Perfect solution';
-
-// Partial credit, no message
-return 6;
-
-// Partial credit, with message (array)
-return [6, 'Correct core logic, missing edge case'];
-
-// Partial credit, with message (object)
-return { score: 6, message: 'Correct core logic, missing edge case' };
-```
-
-### Ruby (`run_test`)
-
-```rb
-# Full credit, no message
-return nil
-
-# Full credit, with message
-return "Perfect solution"
-
-# Partial credit, no message
-return 6
-
-# Partial credit, with message
-return [6, "Correct core logic, missing edge case"]
-```
-
-### PHP (`Tester::test`)
-
-```php
-// Full credit, no message
-return null;
-
-// Full credit, with message
-return "Perfect solution";
-
-// Partial credit, no message
-return 6;
-
-// Partial credit, with message (indexed array)
-return [6, "Correct core logic, missing edge case"];
-
-// Partial credit, with message (associative array)
-return ["score" => 6, "message" => "Correct core logic, missing edge case"];
-```
+Return patterns are shown directly inside each language script example above.
 
 > [!NOTE]
 > In all languages, score values are clamped to the valid range: `0 <= score <= points`.
@@ -353,6 +118,23 @@ If totals look wrong:
 - Use **Split Preview** to verify parsing and points.
 - Set the **Target File** so helpers/AI suggestions use the right context.
 - Start with Builder view if you want scaffolding, then refine in Code view.
+
+## Best Practices
+
+### Isolation
+
+- Tests should not depend on each other.
+- Do not assume `Test A` runs before `Test B`.
+
+### Resource Cleanup
+
+- If your test creates temporary files, delete them in a `finally` block or tear-down step.
+- The environment persists for the duration of the run session, so safe cleanup prevents side effects.
+
+### Robustness
+
+- Handle potential exceptions in student code.
+- Use timeouts to prevent infinite loops from hanging the entire suite.
 
 ## Notes
 

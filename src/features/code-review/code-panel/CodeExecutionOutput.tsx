@@ -8,6 +8,7 @@ import {
 } from '@ant-design/icons';
 import { Alert, Button, Card, Space, Tabs, Tag, Typography } from 'antd';
 import React, { useMemo } from 'react';
+import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 import { File as CodePostFile, type FileType } from '../../../utils/file';
 
 const { Text } = Typography;
@@ -108,6 +109,9 @@ const CodeExecutionOutput: React.FC<CodeExecutionOutputProps> = ({
   executionResult,
   onClearOutputs,
 }) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const isDarkTheme = consoleThemes.dark === consoleTheme;
+
   // Determine if notebook
   const ext = file?.extension || CodePostFile.extension(fileName || '');
   const isNotebook = ext?.toLowerCase() === 'ipynb';
@@ -142,42 +146,56 @@ const CodeExecutionOutput: React.FC<CodeExecutionOutputProps> = ({
     return seconds < 1 ? `${(seconds * 1000).toFixed(0)}ms` : `${seconds.toFixed(2)}s`;
   };
 
+  const cardStyle = {
+    marginTop: '16px',
+    marginBottom: '16px',
+    borderRadius: '8px',
+    border: `1px solid ${consoleTheme.codeBorder}`,
+    boxShadow: isDarkTheme ? '0 2px 8px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,0,0,0.05)',
+    overflow: 'hidden',
+    backgroundColor: consoleTheme.mainBg,
+  };
+
+  const headerStyle = {
+    padding: '12px 16px',
+    backgroundColor: isDarkTheme ? 'rgba(255,255,255,0.04)' : '#fafafa',
+    borderBottom: `1px solid ${consoleTheme.codeBorder}`,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    color: consoleTheme.text,
+  };
+
+  const contentBg = isDarkTheme ? consoleTheme.mainBg : '#fff';
+
   return (
-    <Card
-      style={{
-        marginTop: '16px',
-        marginBottom: '16px',
-        borderRadius: '8px',
-        border: '1px solid #d9d9d9',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-        overflow: 'hidden',
-      }}
-      bodyStyle={{ padding: 0 }}
-    >
+    <Card style={cardStyle} bodyStyle={{ padding: 0 }}>
       {/* Header Bar */}
-      <div
-        style={{
-          padding: '12px 16px',
-          backgroundColor: '#fafafa',
-          borderBottom: '1px solid #f0f0f0',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
+      <div style={headerStyle}>
         <Space>
           {success ? (
             <CheckCircleOutlined style={{ fontSize: '18px', color: SUCCESS_COLOR }} />
           ) : (
             <CloseCircleOutlined style={{ fontSize: '18px', color: ERROR_COLOR }} />
           )}
-          <Text strong style={{ fontSize: '14px' }}>
+          <Text strong style={{ fontSize: '14px', color: consoleTheme.text }}>
             Result
           </Text>
           <Tag color={success ? 'success' : 'error'} style={{ borderRadius: '4px', marginLeft: '8px' }}>
             {success ? 'Success' : 'Failed'}
           </Tag>
-          {executionTime > 0 && <Tag icon={<ClockCircleOutlined />}>{formatExecutionTime(executionTime)}</Tag>}
+          {executionTime > 0 && (
+            <Tag
+              icon={<ClockCircleOutlined />}
+              style={{
+                backgroundColor: isDarkTheme ? 'rgba(255,255,255,0.08)' : undefined,
+                color: isDarkTheme ? consoleTheme.text : undefined,
+                border: isDarkTheme ? 'none' : undefined,
+              }}
+            >
+              {formatExecutionTime(executionTime)}
+            </Tag>
+          )}
           {executionResult.cached && <Tag color="blue">Cached</Tag>}
           {isNotebook && <Tag color="purple">Notebook</Tag>}
         </Space>
@@ -195,14 +213,23 @@ const CodeExecutionOutput: React.FC<CodeExecutionOutputProps> = ({
           type="error"
           showIcon
           banner
-          style={{ borderBottom: '1px solid #ffccc7' }}
+          style={{
+            borderBottom: '1px solid #ffccc7',
+            backgroundColor: isDarkTheme ? '#431418' : '#fff1f0',
+            color: isDarkTheme ? '#ffccc7' : undefined,
+          }}
         />
       )}
 
       {/* Content Tabs */}
       <Tabs
         defaultActiveKey={defaultActiveKey}
-        tabBarStyle={{ paddingLeft: '16px', marginBottom: 0 }}
+        tabBarStyle={{
+          paddingLeft: '16px',
+          marginBottom: 0,
+          color: consoleTheme.text,
+          borderBottom: `1px solid ${consoleTheme.codeBorder}`,
+        }}
         items={[
           // Tab 1: Image (Conditional)
           ...(hasImages
@@ -210,13 +237,13 @@ const CodeExecutionOutput: React.FC<CodeExecutionOutputProps> = ({
                 {
                   key: 'plot',
                   label: (
-                    <span>
+                    <span style={{ color: consoleTheme.text }}>
                       <FileImageOutlined /> Image
                       {outputImages && outputImages.length > 1 ? `s (${outputImages.length})` : ''}
                     </span>
                   ),
                   children: (
-                    <div style={{ padding: '24px', backgroundColor: '#fff' }}>
+                    <div style={{ padding: '24px', backgroundColor: contentBg }}>
                       {outputImages && outputImages.length > 0
                         ? outputImages.map((img, idx) => renderImage(img, idx, outputImages))
                         : outputImage && renderImage(outputImage, 0, outputImages)}
@@ -229,14 +256,14 @@ const CodeExecutionOutput: React.FC<CodeExecutionOutputProps> = ({
           {
             key: 'console',
             label: (
-              <span>
+              <span style={{ color: consoleTheme.text }}>
                 <CodeOutlined /> Console
               </span>
             ),
             children: (
-              <div style={{ padding: '20px' }}>
+              <div style={{ padding: '20px', backgroundColor: contentBg }}>
                 {!stdout && !stderr && (
-                  <Text type="secondary" italic>
+                  <Text type="secondary" italic style={{ color: consoleTheme.siderMenuItemColor }}>
                     No text output produced.
                   </Text>
                 )}

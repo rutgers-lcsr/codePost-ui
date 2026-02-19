@@ -29,7 +29,7 @@ import CPFlex from '../core/CPFlex';
 import { USER_TYPE } from '../../types/common';
 
 import { Assignment } from '../../types/common';
-import { AssignmentsApi, Configuration, Course, Submission } from '../../api-client';
+import { AssignmentsApi, Configuration, Course, StudentSubmission, Submission } from '../../api-client';
 import { getAuthToken } from '../../utils/auth';
 import { getHeaders } from '../../utils/generics';
 
@@ -149,26 +149,26 @@ const getAssignmentsApi = () => {
   );
 };
 
+const toSubmission = (submission: StudentSubmission): Submission => {
+  return {
+    ...(submission as unknown as Submission),
+    dateEdited:
+      (submission as unknown as { dateEdited?: string }).dateEdited ??
+      submission.dateUploaded ??
+      new Date().toISOString(),
+  };
+};
+
 const createStudentUpload = async (assignmentId: number, payload: any): Promise<Submission> => {
-  // Use generated API or manual fetch. Using generated for consistency if possible, but payload structure matters.
-  // Manual for compatibility with refactored logic
-  const res = await fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignmentId}/student_upload/`, {
-    headers: getHeaders(),
-    method: 'POST',
-    body: JSON.stringify({ assignment: payload }),
-  });
-  if (res.ok) return res.json();
-  throw new Error('Failed to create upload');
+  const api = getAssignmentsApi();
+  const created = await api.studentUploadCreate({ id: assignmentId, assignment: payload });
+  return toSubmission(created);
 };
 
 const updateStudentUpload = async (assignmentId: number, payload: any): Promise<Submission> => {
-  const res = await fetch(`${process.env.REACT_APP_API_URL}/assignments/${assignmentId}/student_upload/`, {
-    headers: getHeaders(),
-    method: 'PATCH',
-    body: JSON.stringify({ patchedAssignment: payload }),
-  });
-  if (res.ok) return res.json();
-  throw new Error('Failed to update upload');
+  const api = getAssignmentsApi();
+  const updated = await api.studentUploadPartialUpdate({ id: assignmentId, patchedAssignment: payload });
+  return toSubmission(updated);
 };
 
 const downloadAssignmentZip = async (id: number): Promise<{ zip: string; filename: string }> => {

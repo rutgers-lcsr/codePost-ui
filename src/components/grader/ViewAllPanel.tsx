@@ -53,6 +53,12 @@ class ViewAllPanel extends React.Component<IProps> {
     ];
 
     const data = this.props.assignments.map((assignment) => {
+      const assignmentStats = assignment as AssignmentType & {
+        submissions_inprogress_count?: number;
+        submissions_finalized_count?: number;
+        stats_mean?: number;
+      };
+
       return {
         key: assignment.id,
         assignment: (
@@ -64,15 +70,17 @@ class ViewAllPanel extends React.Component<IProps> {
         ),
         claimed: (
           <Typography.Text strong>
-            {assignment.submissions_inprogress_count && assignment.submissions_finalized_count
-              ? assignment.submissions_inprogress_count + assignment.submissions_finalized_count
+            {assignmentStats.submissions_inprogress_count && assignmentStats.submissions_finalized_count
+              ? assignmentStats.submissions_inprogress_count + assignmentStats.submissions_finalized_count
               : 0}
           </Typography.Text>
         ),
-        finalized: <Typography.Text strong>{assignment.submissions_finalized_count}</Typography.Text>,
+        finalized: <Typography.Text strong>{assignmentStats.submissions_finalized_count || 0}</Typography.Text>,
         grade:
-          assignment.stats_mean && assignment.submissions_finalized_count && assignment.submissions_finalized_count > 0
-            ? `${assignment.stats_mean.toFixed(1)}/${assignment.points}`
+          assignmentStats.stats_mean &&
+          assignmentStats.submissions_finalized_count &&
+          assignmentStats.submissions_finalized_count > 0
+            ? `${assignmentStats.stats_mean.toFixed(1)}/${assignment.points}`
             : '--',
       };
     });

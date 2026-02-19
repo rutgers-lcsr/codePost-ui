@@ -230,7 +230,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
     setIsGenerating(true);
     try {
       const generatedText = await generateComment({
-        file_id: props.file.id,
+        file_id: props.file.id ?? 0,
         start_line: props.comment.startLine!,
         end_line: props.comment.endLine!,
         rubric_comment_id: props.rubricComment?.id,

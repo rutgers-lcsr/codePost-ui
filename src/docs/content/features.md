@@ -66,21 +66,22 @@ MOSS reports show:
 
 ## Supported Languages
 
-The codePost auto-run environment supports many programming languages. See the [Auto-Run Environment](/docs/instructor#auto-run-environment) section in the Instructor Guide for details on configuring environments.
+The codePost auto-run environment supports many programming languages. See [Environment & Testing Ops](/docs/instructor-environment-testing) for configuration guidance.
 
 ### Common Languages
 
 - Python 3
 - R
-- JavaScript/Node.js
 - Java
 
 #### May work
 
+The following are lanuages which some features may not work as expected
+
 - C/C++
+- JavaScript/Node.js
 - Ruby
-- Go
-- Rust
+- PHP
 
 > [!IMPORTANT]
 > codePost relies on your feedback to improve the auto-run environment. If you find that a language is not supported, please let us know at [codepost@cs.rutgers.edu](mailto:codepost@cs.rutgers.edu).
@@ -94,7 +95,14 @@ When Auto Detect Environment mode is enabled, codePost will:
 3. Set up appropriate build/run commands
 4. Install detected dependencies
 
-For custom environments or specific language versions, configure the environment manually in Assignment Settings.
+### Custom Environments
+
+If your course requires specific libraries or language versions not covered by the default environment:
+
+1. Go to **Assignment Settings > Environment**.
+2. Select **Custom Docker Image**.
+3. Provide a Dockerfile or pull from a registry.
+   This ensures your autograder runs exactly as expected.
 
 ## AI-Assisted Grading
 
@@ -117,6 +125,8 @@ Instructors retain full control over the AI environment:
 > 6. Click **Save**.
 >
 > Once enabled, you can use AI features in the grader interface when writing comments or generate test cases in the Test Script editor.
+>
+> ![AI Features configuration in Course Settings](/assets/docs/instructor_ai_settings.png)
 
 ### Autograding and Tests Generation
 
@@ -128,6 +138,15 @@ To enable AI-generated tests:
 2. Ensure the **Target File** is set for your assignment.
 3. Open a test category and click **Generate (AI)** in the Test Script editor.
 4. Review the generated script and adjust as needed.
+
+### AI Comment Assistance
+
+Graders can use AI to refine their feedback.
+
+1. Highlght code to leave a comment.
+2. Draft your thought (e.g., "function is too long").
+3. Click **Refine with AI** or use the magic wand icon.
+4. The AI will suggest a more constructive phrasing (e.g., "Consider refactoring this function into smaller helpers to improve readability.").
 
 > [!NOTE]
 > AI-generated tests are a starting point. You can always edit the script or use the builder to refine cases.

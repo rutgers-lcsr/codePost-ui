@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Button,
   Modal,
@@ -38,11 +38,35 @@ import NotebookEditor from '../../../assignments/NotebookEditor';
 
 const { Text } = Typography;
 
-// Language detection from file extension
+type ResourceWithLegacyFields = TestCategoryResourceType & {
+  file_details?: AssignmentFileType | null;
+  dataset_details?: AssignmentDataSetType | null;
+};
+
+const getResourceFileDetails = (resource: TestCategoryResourceType | null | undefined): AssignmentFileType | null => {
+  if (!resource) return null;
+  const normalized = resource as ResourceWithLegacyFields;
+  return normalized.fileDetails ?? normalized.file_details ?? null;
+};
+
+const getResourceDatasetDetails = (
+  resource: TestCategoryResourceType | null | undefined,
+): AssignmentDataSetType | null => {
+  if (!resource) return null;
+  const normalized = resource as ResourceWithLegacyFields;
+  return normalized.datasetDetails ?? normalized.dataset_details ?? null;
+};
+
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return 'Unknown error';
+};
+
 // Language detection from file extension
 function getCodingLanguage(extension: string): string {
   // Map our detected extensions to Monaco editor languages if they differ
-  const lang = CodePostFile.language({ name: `test.${extension}` } as any);
+  const lang = CodePostFile.language({ name: `test.${extension}`, extension });
   if (lang === 'c++') return 'cpp';
   if (lang === 'c') return 'cpp'; // Monaco uses 'cpp' for C/C++ often
   return lang;
@@ -75,13 +99,8 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
   const [viewingResource, setViewingResource] = useState<TestCategoryResourceType | null>(null);
   const [editingCode, setEditingCode] = useState('');
   const [viewMode, setViewMode] = useState<'json' | 'notebook'>('json');
-  useEffect(() => {
-    if (isAddModalOpen) {
-      loadSourceOptions();
-    }
-  }, [isAddModalOpen, assignmentId]);
 
-  const loadSourceOptions = async () => {
+  const loadSourceOptions = useCallback(async () => {
     try {
       // Fetch assignment to get embedded files
       const assignmentData = await assignmentsApi.retrieve({ id: assignmentId });
@@ -96,7 +115,13 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
       console.error('Error loading options:', e);
       message.error('Failed to load options');
     }
-  };
+  }, [assignmentId]);
+
+  useEffect(() => {
+    if (isAddModalOpen) {
+      loadSourceOptions();
+    }
+  }, [isAddModalOpen, loadSourceOptions]);
 
   const handleDeleteResource = async (id: number) => {
     try {
@@ -108,8 +133,8 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
 
       // If the underlying file/dataset is hidden, delete it too
       if (resource) {
-        const fileDetails = (resource as any).fileDetails ?? (resource as any).file_details;
-        const datasetDetails = (resource as any).datasetDetails ?? (resource as any).dataset_details;
+        const fileDetails = getResourceFileDetails(resource);
+        const datasetDetails = getResourceDatasetDetails(resource);
 
         if (fileDetails && fileDetails.hidden) {
           // Delete the hidden file
@@ -169,7 +194,7 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
 
         // Fetch fresh dataset list to check for duplicates (including hidden ones)
         const freshDatasets = await assignmentsApi.datasetsList({ id: assignmentId });
-        const existingDataset = (freshDatasets as any[]).find((d: any) => d.name === baseName);
+        const existingDataset = freshDatasets.find((dataset) => dataset.name === baseName);
         if (existingDataset) {
           // Append timestamp to make name unique
           const ext = CodePostFile.extension(baseName) ? '.' + CodePostFile.extension(baseName) : '';
@@ -202,7 +227,7 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
       }
 
       // Create Resource
-      const payload: any = {
+      const payload: Omit<TestCategoryResourceType, 'id' | 'fileDetails' | 'datasetDetails'> = {
         category: categoryId,
         targetPath: targetPath || uploadFile.name, // Use uploaded name as default target
         file: activeTab === 'files' ? sourceId : null,
@@ -216,11 +241,12 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
       setIsAddModalOpen(false);
       resetForm();
       onRefresh();
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
       // Try to get message from error response
       let errorMsg = 'Failed to upload/create resource';
-      if (e.message) errorMsg += `: ${e.message}`;
+      const details = getErrorMessage(e);
+      if (details) errorMsg += `: ${details}`;
       message.error(errorMsg);
     } finally {
       setIsUploading(false);
@@ -248,7 +274,7 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
       title: 'Type',
       key: 'type',
       width: 80,
-      render: (_: any, record: TestCategoryResourceType) =>
+      render: (_: unknown, record: TestCategoryResourceType) =>
         record.dataset ? (
           <Tag color="purple">
             <DatabaseOutlined /> Dataset
@@ -268,9 +294,9 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
     {
       title: 'Source',
       key: 'source',
-      render: (_: any, record: TestCategoryResourceType) => {
-        const fileDetails = (record as any).fileDetails ?? (record as any).file_details;
-        const datasetDetails = (record as any).datasetDetails ?? (record as any).dataset_details;
+      render: (_: unknown, record: TestCategoryResourceType) => {
+        const fileDetails = getResourceFileDetails(record);
+        const datasetDetails = getResourceDatasetDetails(record);
         const name = fileDetails?.name || datasetDetails?.name || 'Unknown';
         return (
           <Space>
@@ -283,8 +309,8 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
       title: 'Actions',
       key: 'actions',
       width: 120,
-      render: (_: any, record: TestCategoryResourceType) => {
-        const fileDetails = (record as any).fileDetails ?? (record as any).file_details;
+      render: (_: unknown, record: TestCategoryResourceType) => {
+        const fileDetails = getResourceFileDetails(record);
         return (
           <Space>
             {fileDetails && (
@@ -407,7 +433,7 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
               >
                 <option value="">Select {activeTab === 'files' ? 'file' : 'dataset'} to override...</option>
                 {(activeTab === 'files' ? assignmentFiles : datasets)
-                  .filter((item) => !(item as any).hidden)
+                  .filter((item) => !item.hidden)
                   .map((item) => (
                     <option key={item.id} value={item.name}>
                       {item.name}
@@ -441,7 +467,7 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
         open={!!viewingResource}
         title={
           <Space>
-            <span>Edit: {(viewingResource as any)?.file_details?.name}</span>
+            <span>Edit: {getResourceFileDetails(viewingResource)?.name ?? 'Resource'}</span>
             <Tag color="blue">{viewingResource?.targetPath}</Tag>
           </Space>
         }
@@ -460,7 +486,7 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
             type="primary"
             onClick={async () => {
               if (viewingResource) {
-                const fileDetails = (viewingResource as any).file_details;
+                const fileDetails = getResourceFileDetails(viewingResource);
                 if (fileDetails) {
                   try {
                     await assignmentFilesApi.partialUpdate({
@@ -484,7 +510,7 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
       >
         <div style={{ flex: 1, minHeight: 0, border: '1px solid #d9d9d9', borderRadius: 4 }}>
           {(() => {
-            const fileDetails = (viewingResource as any)?.fileDetails ?? (viewingResource as any)?.file_details;
+            const fileDetails = getResourceFileDetails(viewingResource);
             const ext = CodePostFile.extension(fileDetails?.name || '') || 'txt';
             const isNotebook = ext === 'ipynb';
 
@@ -518,7 +544,7 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
           </Text>
           <Space size={8}>
             {(() => {
-              const fileDetails = (viewingResource as any)?.fileDetails ?? (viewingResource as any)?.file_details;
+              const fileDetails = getResourceFileDetails(viewingResource);
               const ext = CodePostFile.extension(fileDetails?.name || '') || '';
               if (ext === 'ipynb') {
                 return (

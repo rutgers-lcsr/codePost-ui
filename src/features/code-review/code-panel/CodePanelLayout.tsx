@@ -1,8 +1,7 @@
 import * as React from 'react';
 
-import type { FileType } from '../../../utils/file';
-
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../../components/core/withWindowWatcher';
+import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
 import ErrorBoundary from '../../../components/core/ErrorBoundary';
 import SplitScreen from '../../../components/utils/SplitScreen.js';
@@ -18,6 +17,9 @@ interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
 }
 
 export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const isDarkTheme = consoleThemes.dark === consoleTheme;
+
   const onHighlightClick = React.useCallback(
     (e: React.MouseEvent) => {
       let commentID;
@@ -56,7 +58,10 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
     height: `${100 / props.zoom}%`,
   };
 
-  const codePanelStyle = localStorage.getItem('source') === 'codePost' ? {} : { backgroundColor: 'rgb(242, 242, 242)' };
+  const codePanelStyle =
+    localStorage.getItem('source') === 'codePost'
+      ? {}
+      : { backgroundColor: isDarkTheme ? consoleTheme.mainBg : 'rgb(242, 242, 242)' };
 
   return (
     <ErrorBoundary type="codepanel" submissionID={props.file.submission} file={props.file}>
@@ -88,11 +93,11 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
                       alignItems: 'center',
                       gap: '10px',
                       padding: '12px 20px',
-                      // borderBottom: '1px solid #f0f0f0', // Optional: subtle separator if needed
+                      borderBottom: `1px solid ${consoleTheme.codeBorder}`,
                       position: 'sticky',
                       top: 0,
                       zIndex: 100,
-                      backgroundColor: '#f0f0f0',
+                      backgroundColor: isDarkTheme ? consoleTheme.codeBg : '#f0f0f0',
                     }}
                   >
                     {props.toolbarWidgets}

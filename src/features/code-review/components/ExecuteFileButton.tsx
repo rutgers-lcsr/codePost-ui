@@ -5,11 +5,12 @@ import {
   EyeOutlined,
   LoadingOutlined,
   PlayCircleOutlined,
-  ReloadOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons';
 import { Button, Dropdown, message, Tag, Tooltip } from 'antd';
 import React, { useState } from 'react';
 import { useFileExecutionAsync } from '../../../hooks/useFileExecutionAsync';
+import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 import type { FileType } from '../../../utils/file';
 import { colors } from '../../../theme/colors';
 import { ExecutionResult } from '../../../utils/fileExecution';
@@ -33,6 +34,9 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
   canWrite = false,
   codeOverride,
 }) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const isDarkTheme = consoleThemes.dark === consoleTheme;
+
   const { execute, isExecuting, result, error } = useFileExecutionAsync();
   const [showSuccess, setShowSuccess] = React.useState(false);
   const [isCached, setIsCached] = React.useState(false);
@@ -152,16 +156,6 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
 
   const menuItems = [];
 
-  if (canWrite && !isExecuting && isExecutable) {
-    menuItems.push({
-      key: 'force-run',
-      icon: <ReloadOutlined />,
-      label: 'Force Run (Ignore Cache)',
-      onClick: () => handleExecute(true),
-      disabled: disabled,
-    });
-  }
-
   if (result || isExecuting || error) {
     menuItems.push({
       key: 'view-logs',
@@ -183,8 +177,8 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
               onClick={() => handleExecute(false)}
               disabled={disabled || !isExecutable || isExecuting}
               style={{
-                borderTopRightRadius: 0,
-                borderBottomRightRadius: 0,
+                borderTopRightRadius: menuItems.length > 0 ? 0 : undefined,
+                borderBottomRightRadius: menuItems.length > 0 ? 0 : undefined,
                 backgroundColor: colors.actionGreen,
                 borderColor: colors.actionGreen,
               }}
@@ -192,24 +186,46 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
               Run
             </Button>
           </Tooltip>
-          <Dropdown menu={{ items: menuItems }} trigger={['click']} disabled={disabled || isExecuting}>
-            <Button
-              type="primary"
-              size="middle"
-              onClick={(e) => e.preventDefault()}
-              style={{
-                borderTopLeftRadius: 0,
-                borderBottomLeftRadius: 0,
-                marginLeft: '-1px',
-                paddingLeft: '8px',
-                paddingRight: '8px',
-                backgroundColor: colors.actionGreen,
-                borderColor: colors.actionGreen,
-              }}
-            >
-              <DownOutlined />
-            </Button>
-          </Dropdown>
+          {menuItems.length > 0 && (
+            <Dropdown menu={{ items: menuItems }} trigger={['click']} disabled={disabled || isExecuting}>
+              <Button
+                type="primary"
+                size="middle"
+                onClick={(e) => e.preventDefault()}
+                style={{
+                  borderTopLeftRadius: 0,
+                  borderBottomLeftRadius: 0,
+                  marginLeft: '-1px',
+                  paddingLeft: '8px',
+                  paddingRight: '8px',
+                  backgroundColor: colors.actionGreen,
+                  borderColor: colors.actionGreen,
+                }}
+              >
+                <DownOutlined />
+              </Button>
+            </Dropdown>
+          )}
+
+          {canWrite && !isExecuting && isExecutable && (
+            <Tooltip title="Force Run (Ignore Cache)">
+              <Button
+                icon={<ThunderboltOutlined />}
+                onClick={() => handleExecute(true)}
+                disabled={disabled}
+                style={{
+                  marginLeft: '8px',
+                  ...(isDarkTheme
+                    ? {
+                        backgroundColor: consoleTheme.buttonSecondaryBg,
+                        border: consoleTheme.buttonSecondaryBorder,
+                        color: consoleTheme.buttonSecondaryColor,
+                      }
+                    : {}),
+                }}
+              />
+            </Tooltip>
+          )}
         </div>
 
         {showSuccess && !isExecuting && (
@@ -224,8 +240,20 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
               canWrite && cachedInfo.executedBy ? `Executed by ${cachedInfo.executedBy}` : 'Result retrieved from cache'
             }
           >
-            <Tag icon={<ClockCircleOutlined />} color="gold">
-              Cached {canWrite ? formatCachedTime(cachedInfo.executedAt) : ''}
+            <Tag
+              icon={<ClockCircleOutlined />}
+              color={isDarkTheme ? undefined : 'gold'}
+              style={
+                isDarkTheme
+                  ? {
+                      backgroundColor: 'rgba(250, 173, 20, 0.18)',
+                      borderColor: '#d89614',
+                      color: '#ffd666',
+                    }
+                  : undefined
+              }
+            >
+              {`Cached${canWrite ? ` ${formatCachedTime(cachedInfo.executedAt)}` : ''}`}
             </Tag>
           </Tooltip>
         )}
@@ -238,6 +266,7 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
         isExecuting={isExecuting}
         error={error}
         fileName={file?.name}
+        fileId={file?.id}
       />
     </>
   );

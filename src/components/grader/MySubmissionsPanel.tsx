@@ -61,14 +61,20 @@ const MySubmissionsPanel: React.FC<IProps> = (props) => {
   ];
 
   const data = sortAssignments(props.assignments).map((assignment) => {
+    const assignmentStats = assignment as AssignmentType & {
+      submissions_count?: number;
+      submissions_finalized_count?: number;
+      stats_mean?: number;
+    };
+
     // Calculate unfinalized based on claimed and finalized counts
     // logic assumed: submissions_count = total claimed?
     // In admin panel: claimed = inprogress + finalized
     // In assignment.ts type definition: submissions_count is generic count, submissions_finalized_count.
     // Let's assume for My Submissions: submissions_count = Total Claimed.
 
-    const claimed = assignment.submissions_count || 0;
-    const finalized = assignment.submissions_finalized_count || 0;
+    const claimed = assignmentStats.submissions_count || 0;
+    const finalized = assignmentStats.submissions_finalized_count || 0;
     const unfinalized = claimed - finalized;
 
     return {
@@ -84,8 +90,8 @@ const MySubmissionsPanel: React.FC<IProps> = (props) => {
       finalized: <Typography.Text strong>{finalized}</Typography.Text>,
       unfinalized: <Typography.Text strong>{unfinalized}</Typography.Text>,
       grade:
-        assignment.stats_mean && assignment.submissions_count && assignment.submissions_count > 0
-          ? `${assignment.stats_mean.toFixed(1)}/${assignment.points}`
+        assignmentStats.stats_mean && assignmentStats.submissions_count && assignmentStats.submissions_count > 0
+          ? `${assignmentStats.stats_mean.toFixed(1)}/${assignment.points}`
           : '--',
     };
   });

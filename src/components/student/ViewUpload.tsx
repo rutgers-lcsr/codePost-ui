@@ -57,7 +57,7 @@ function ViewUpload(props: IProps) {
         if (!match) {
           mostRecentFiles.push(f);
         } else {
-          if (match.id < f.id) {
+          if ((match.id ?? 0) < (f.id ?? 0)) {
             mostRecentFiles = [...mostRecentFiles.filter((el) => el.name !== f.name), f];
           }
         }
