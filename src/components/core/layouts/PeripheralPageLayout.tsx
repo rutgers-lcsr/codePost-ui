@@ -11,7 +11,7 @@ import * as React from 'react';
 import PreAuthFooter from '../../pre-auth/PreAuthFooter';
 import PeripheralPageHeader from './PeripheralPageHeader';
 
-import { UserType } from '../../../infrastructure/user';
+import type { UserType } from '../../../types/models';
 
 /* ant imports */
 import { Layout, theme } from 'antd';

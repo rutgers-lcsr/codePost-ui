@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { Modal, Typography } from 'antd';
+import { Modal } from 'antd';
 
 import useWindowSize from '../../core/useWindowSize';
 
@@ -16,69 +16,113 @@ const LandingHero = () => {
   const isMobile = windowSize.width < landingVars.breakpoints.mobile;
   const [modalShowing, setModalShowing] = React.useState(false);
 
-  const buttonStyle = {
-    width: isMobile ? 170 : 220,
-    height: 60,
-    fontSize: isMobile ? 16 : 22,
-    display: 'inline',
+  // Modernized button styles
+  const primaryButtonStyle = {
+    width: isMobile ? 180 : 240,
+    height: isMobile ? 50 : 64,
+    fontSize: isMobile ? 18 : 24,
+    fontWeight: 600,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.green9,
     borderColor: colors.green9,
+    boxShadow: '0 4px 14px 0 rgba(0, 118, 255, 0.39)', // Premium shadow effect (adjust color if needed to match brand green)
+    borderRadius: '8px',
   };
 
   const hero = (
     <div
       style={{
         textAlign: 'center',
-        paddingBottom: windowSize.width < landingVars.breakpoints.hero ? 40 : 0,
+        paddingBottom: windowSize.width < landingVars.breakpoints.hero ? 60 : 20, // Increased bottom padding for breathing room
+        paddingTop: isMobile ? 40 : 80, // Added top padding
       }}
       className="display-flex flex-direction-column justify-content-flex-start align-items-center"
     >
-      <h1 style={{ fontSize: isMobile ? 24 : 36, lineHeight: 1.45, fontWeight: 600, color: '#4A4A4A', margin: 0 }}>
-        The best way to grade{' '}
-        <Typography.Text mark className="codePost-title-highlight-new">
-          student code
-        </Typography.Text>
-        . Built for instructors.
+      <h1
+        style={{
+          fontSize: isMobile ? 32 : 56, // Significantly larger font size
+          lineHeight: 1.2,
+          fontWeight: 700,
+          color: '#1a1a1a', // Darker for better contrast
+          margin: 0,
+          letterSpacing: '-0.02em', // Modern tight tracking
+          maxWidth: 900,
+        }}
+      >
+        The Feedback Platform for{' '}
+        <span className="codePost-title-highlight-new" style={{ color: colors.green9 }}>
+          Computer Science
+        </span>
+        .
       </h1>
       <p
         style={{
-          fontSize: isMobile ? 20 : 24,
-          lineHeight: 1.67,
+          fontSize: isMobile ? 18 : 24,
+          lineHeight: 1.6,
           fontWeight: 400,
-          color: '#606060',
-          paddingTop: 35,
-          paddingBottom: windowSize.width < landingVars.breakpoints.hero ? 30 : 45,
+          color: '#4a4a4a',
+          paddingTop: 24,
+          paddingBottom: 48,
           margin: 0,
+          maxWidth: 700,
         }}
       >
-        Autograder, code commenting, and other tools to help you give amazing feedback, quickly.
+        Grade Code, PDFs, and Jupyter Notebooks in one unified workflow.
       </p>
       <div
         style={{
           width: '100%',
+          gap: '16px', // Use flex gap
         }}
-        className={`landing__heroButtons display-flex ${windowSize.width < landingVars.breakpoints.removeModule ? 'flex-direction-column' : ''
-          } align-items-center justify-content-center`}
+        className={`landing__heroButtons display-flex ${
+          windowSize.width < landingVars.breakpoints.removeModule ? 'flex-direction-column' : ''
+        } align-items-center justify-content-center`}
       >
         <Link to="/signup/create">
-          <CPButton style={buttonStyle} cpType="primary">
-            Sign up
+          <CPButton style={primaryButtonStyle} cpType="primary">
+            Sign up for free
           </CPButton>
         </Link>
+        <div style={{ width: isMobile ? 0 : 20 }} /> {/* Spacer if gap not supported, though gap is mostly safe now */}
+        <CPButton
+          onClick={setModalShowing.bind(null, true)}
+          style={{
+            ...primaryButtonStyle,
+            backgroundColor: 'transparent',
+            borderColor: colors.green9,
+            color: colors.green9,
+            boxShadow: 'none',
+          }}
+          cpType="default" // Changed from secondary/ghost to just default with overrides
+        >
+          See a demo
+        </CPButton>
       </div>
-      <Modal open={modalShowing} onCancel={setModalShowing.bind(false, false)} footer={null} title="Try out codePost!">
-        <CPButton cpType="primary" block>
-          <a href={`/demo`} target="_blank" rel="noopener noreferrer">
+
+      <Modal
+        open={modalShowing}
+        onCancel={setModalShowing.bind(false, false)}
+        footer={null}
+        title="Try out codePost!"
+        centered
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '20px 0' }}>
+          <CPButton cpType="primary" block size="large" href={`/demo`} target="_blank" rel="noopener noreferrer">
             Interactive code annotation demo
-          </a>
-        </CPButton>
-        <br />
-        <br />
-        <CPButton cpType="secondary" block>
-          <a href="https://codepost.wistia.com/medias/n0ja8jbpny" target="_blank" rel="noopener noreferrer">
+          </CPButton>
+          <CPButton
+            cpType="default"
+            block
+            size="large"
+            href="https://codepost.wistia.com/medias/n0ja8jbpny"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Watch a video overview
-          </a>
-        </CPButton>
+          </CPButton>
+        </div>
       </Modal>
     </div>
   );
@@ -91,7 +135,7 @@ const LandingHero = () => {
       className={`display-flex align-items-center justify-content-center`}
       id="Hero"
     >
-      <div style={{ maxWidth: 1000, width: 'inherit' }}>{hero}</div>
+      <div style={{ maxWidth: 1200, width: 'inherit', padding: '0 24px' }}>{hero}</div>
     </div>
   );
 };

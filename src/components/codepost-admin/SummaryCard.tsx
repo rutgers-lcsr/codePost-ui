@@ -1,12 +1,12 @@
 import { Card, Statistic } from 'antd';
 
-import { CourseType, RosterType } from '../../infrastructure/course';
-import { OrganizationType } from '../../infrastructure/organization';
+import type { CourseType, RosterType } from '../../types/models';
+import { Organization } from '../../api-client';
 import { AdminData } from './Dashboard';
 
 interface ISummaryCardProps {
   title: string;
-  objects: OrganizationType[] | CourseType[] | RosterType[] | AdminData[];
+  objects: Organization[] | CourseType[] | RosterType[] | AdminData[];
   onClick: any;
 }
 

@@ -26,12 +26,12 @@ import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWa
 
 import CPFlex from '../core/CPFlex';
 
-import { IAssignmentToSubmissionStudentMap, ICourseToAssignmentStudentMap, USER_TYPE } from '../../types/common';
+import { USER_TYPE } from '../../types/common';
 
-import { AssignmentStudent, AssignmentStudentType, sortAssignments } from '../../infrastructure/assignment';
-import { CourseType } from '../../infrastructure/course';
-import { loadIDList } from '../../infrastructure/generics';
-import { StudentSubmissionType, Submission } from '../../infrastructure/submission';
+import { Assignment } from '../../types/common';
+import { AssignmentsApi, Configuration, Course, StudentSubmission, Submission } from '../../api-client';
+import { getAuthToken } from '../../utils/auth';
+import { getHeaders } from '../../utils/generics';
 
 import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
 
@@ -83,10 +83,101 @@ const CODE_IN_PLACE_COURSE_ID = 925;
 
 type StudentProps = IComponentProps & IWithWindowWatcherProps & IStudentProps;
 
+// Types
 // Helper functions
 const getFileExtensionFromName = (fileName: string): string => {
   const split = fileName.split('.');
   return split.length === 1 ? 'txt' : split[split.length - 1];
+};
+
+const sortAssignments = <T extends { sortKey?: number; id: number }>(objs: T[]): T[] => {
+  return objs.sort((a, b) => {
+    if (a.sortKey === b.sortKey || !a.sortKey || !b.sortKey) {
+      return a.id - b.id;
+    }
+    return a.sortKey - b.sortKey;
+  });
+};
+
+const fetchSubmissions = async (assignmentId: number, student: string): Promise<Submission[]> => {
+  const res = await fetch(
+    `${process.env.REACT_APP_API_URL}/assignments/${assignmentId}/submissions/?student=${student}&compact=1`,
+    {
+      headers: getHeaders(),
+      method: 'GET',
+    },
+  );
+  if (res.ok) {
+    return res.json();
+  }
+  return [];
+};
+
+const fetchHistory = async (submissionId: number, student: string): Promise<any[]> => {
+  const res = await fetch(`${process.env.REACT_APP_API_URL}/submissions/${submissionId}/history/?student=${student}`, {
+    headers: getHeaders(),
+    method: 'GET',
+  });
+  if (res.ok) {
+    return res.json();
+  }
+  return [];
+};
+
+const updateHistory = async (submissionId: number, payload: any, urlArgs: any): Promise<any> => {
+  const params = Object.keys(urlArgs)
+    .map((key, i) => (i === 0 ? `?${key}=${urlArgs[key]}` : `&${key}=${urlArgs[key]}`))
+    .join('');
+
+  const res = await fetch(`${process.env.REACT_APP_API_URL}/submissions/${submissionId}/history/${params}`, {
+    headers: getHeaders(),
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+  if (res.ok) {
+    return res.json();
+  }
+  return [];
+};
+
+const getAssignmentsApi = () => {
+  return new AssignmentsApi(
+    new Configuration({
+      basePath: process.env.REACT_APP_API_URL,
+      accessToken: getAuthToken(),
+    }),
+  );
+};
+
+const toSubmission = (submission: StudentSubmission): Submission => {
+  return {
+    ...(submission as unknown as Submission),
+    dateEdited:
+      (submission as unknown as { dateEdited?: string }).dateEdited ??
+      submission.dateUploaded ??
+      new Date().toISOString(),
+  };
+};
+
+const createStudentUpload = async (assignmentId: number, payload: any): Promise<Submission> => {
+  const api = getAssignmentsApi();
+  const created = await api.studentUploadCreate({ id: assignmentId, assignment: payload });
+  return toSubmission(created);
+};
+
+const updateStudentUpload = async (assignmentId: number, payload: any): Promise<Submission> => {
+  const api = getAssignmentsApi();
+  const updated = await api.studentUploadPartialUpdate({ id: assignmentId, patchedAssignment: payload });
+  return toSubmission(updated);
+};
+
+const downloadAssignmentZip = async (id: number): Promise<{ zip: string; filename: string }> => {
+  const res = await fetch(`${process.env.REACT_APP_API_URL}/assignments/${id}/download/`, {
+    headers: getHeaders(),
+    method: 'GET',
+  });
+  if (res.ok) return res.json();
+  throw new Error('Failed to download');
 };
 
 /**
@@ -98,14 +189,14 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   const navigate = useNavigate();
 
   // State
-  const [assignments, setAssignments] = useState<ICourseToAssignmentStudentMap>({});
-  const [submissions, setSubmissions] = useState<IAssignmentToSubmissionStudentMap>({});
+  const [assignments, setAssignments] = useState<Record<number, Assignment[]>>({});
+  const [submissions, setSubmissions] = useState<Record<number, Submission[]>>({});
   const [viewsBySubmission, setViewsBySubmission] = useState<{ [submissionID: number]: boolean }>({});
   const [isLoadingAssignments, setIsLoadingAssignments] = useState(true);
   const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(true);
   const [currentPanel, setCurrentPanel] = useState<CURRENT_PANEL>(CURRENT_PANEL.TABLE);
-  const [detailAssignment, setDetailAssignment] = useState<AssignmentStudentType | undefined>(undefined);
-  const [detailSubmission, setDetailSubmission] = useState<StudentSubmissionType | undefined>(undefined);
+  const [detailAssignment, setDetailAssignment] = useState<Assignment | undefined>(undefined);
+  const [detailSubmission, setDetailSubmission] = useState<Submission | undefined>(undefined);
 
   // Set document title
   useEffect(() => {
@@ -117,55 +208,56 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
    **********************************************************************************/
 
   const loadAssignments = useCallback(
-    async (courses: CourseType[]): Promise<ICourseToAssignmentStudentMap> => {
+    async (courses: Course[]): Promise<Record<number, Assignment[]>> => {
+      const api = getAssignmentsApi();
       const assignmentArrays = await Promise.all(
-        courses.map((course: CourseType) => loadIDList<AssignmentStudentType>(course.assignments, AssignmentStudent)),
+        courses.map(async (course: Course) => Promise.all(course.assignments.map((id) => api.retrieve({ id })))),
       );
 
-      const result: ICourseToAssignmentStudentMap = {};
+      const result: Record<number, Assignment[]> = {};
       courses.forEach((course, i) => {
-        result[course.id] = assignmentArrays[i].filter(
+        result[course.id] = (assignmentArrays[i] as unknown as Assignment[]).filter(
           (a) =>
-            a.isVisible && !a.hideFrom.some((shouldHide: number) => user.student_sections.indexOf(shouldHide) > -1),
+            a.isVisible &&
+            !(a.hideFrom ?? []).some((shouldHide: number) => user.studentSections.indexOf(shouldHide) > -1),
         );
       });
 
       return result;
     },
-    [user.student_sections],
+    [user.studentSections],
   );
 
   const loadSubmissions = useCallback(
-    async (assignmentList: AssignmentStudentType[]): Promise<IAssignmentToSubmissionStudentMap> => {
-      const submissionsMap: IAssignmentToSubmissionStudentMap = {};
+    async (assignmentList: Assignment[]): Promise<Record<number, Submission[]>> => {
+      const submissionsMap: Record<number, Submission[]> = {};
 
       // Create a shallow copy to prevent mutations during async operations
       const assignmentsCopy = [...assignmentList];
 
       for (const assignment of assignmentsCopy) {
         if (assignment.isReleased || assignment.allowStudentUpload || assignment.liveFeedbackMode) {
-          submissionsMap[assignment.id] = await AssignmentStudent.readSubmissions(assignment.id, {
-            student: user.email,
-            compact: '1',
-          });
+          const subs = await fetchSubmissions(assignment.id, user.email!);
+          submissionsMap[assignment.id] = subs;
         }
       }
       return submissionsMap;
     },
     [user.email],
   );
+
   const loadHistories = useCallback(
     async (
-      submissionsMap: IAssignmentToSubmissionStudentMap,
+      submissionsMap: Record<number, Submission[]>,
       email: string,
     ): Promise<{ [submissionID: number]: boolean }> => {
       const viewMap: { [submissionID: number]: boolean } = {};
       const keys = Object.keys(submissionsMap);
       for (const key of keys) {
-        const submissionList: StudentSubmissionType[] = submissionsMap[+key];
+        const submissionList = submissionsMap[+key];
         if (submissionList.length > 0) {
           const submission = submissionList[0];
-          const history = await Submission.readHistory(submission.id, { student: email });
+          const history = await fetchHistory(submission.id, email);
           for (const historyItem of history) {
             if (historyItem.student === email) {
               viewMap[submission.id] = historyItem.hasViewed;
@@ -190,7 +282,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     if (currentCourse) {
       // Handle shortcutting to a specific assignment
       if (uploadShortcut !== undefined && !currentCourse.assignments.includes(uploadShortcut.assignmentID)) {
-        const foundCourse = initialCourses.find((course: CourseType) => {
+        const foundCourse = initialCourses.find((course: Course) => {
           return course.assignments.includes(uploadShortcut.assignmentID);
         });
 
@@ -201,11 +293,11 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
       }
 
       const loadedSubmissions = await loadSubmissions(loadedAssignments[currentCourse.id]);
-      const viewMap = await loadHistories(loadedSubmissions, user.email);
+      const viewMap = await loadHistories(loadedSubmissions, user.email!);
 
       // Open the upload panel for the specified assignment
       if (uploadShortcut !== undefined) {
-        const assignment = loadedAssignments[currentCourse.id].find((a: AssignmentStudentType) => {
+        const assignment = loadedAssignments[currentCourse.id].find((a: Assignment) => {
           return a.id === uploadShortcut.assignmentID;
         });
 
@@ -221,7 +313,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
           // We'll call changePanel after it's defined
           setCurrentPanel(CURRENT_PANEL.UPLOADFILES);
           setDetailAssignment(assignment);
-          setDetailSubmission(submission);
+          setDetailSubmission(submission as Submission); // Cast to submission
         }
       }
 
@@ -251,12 +343,10 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
    **********************************************************************************/
 
   const markViewed = useCallback(
-    async (submission: StudentSubmissionType) => {
-      const history = await Submission.readHistory(submission.id, {
-        student: user.email,
-      });
+    async (submission: Submission) => {
+      const history = await fetchHistory(submission.id, user.email!);
       if (history && history[0] && !history[0].hasViewed) {
-        return await Submission.updateHistory({ id: submission.id, hasViewed: true }, { student: user.email });
+        return await updateHistory(submission.id, { hasViewed: true }, { student: user.email! });
       }
       return;
     },
@@ -264,7 +354,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   );
 
   const openAndMarkViewed = useCallback(
-    (submission: StudentSubmissionType) => {
+    (submission: Submission) => {
       openSubmissionInSameTab(submission.id);
       markViewed(submission);
     },
@@ -272,14 +362,11 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   );
 
   const changePanel = useCallback(
-    async (newPanel: CURRENT_PANEL, assignment?: AssignmentStudentType, submission?: StudentSubmissionType) => {
-      let latestSubmission: StudentSubmissionType | undefined;
+    async (newPanel: CURRENT_PANEL, assignment?: Assignment, submission?: Submission) => {
+      let latestSubmission: Submission | undefined;
       if (submission) {
-        const fetchSubmissions = await AssignmentStudent.readSubmissions(submission.assignment, {
-          student: user.email,
-          compact: '1',
-        });
-        latestSubmission = fetchSubmissions.length > 0 ? fetchSubmissions[0] : undefined;
+        const fetchSubs = await fetchSubmissions(submission.assignment, user.email!);
+        latestSubmission = fetchSubs.length > 0 ? fetchSubs[0] : undefined;
       }
       setCurrentPanel(newPanel);
       setDetailAssignment(assignment);
@@ -295,7 +382,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   const uploadSubmission = useCallback(
     (
       isNew: boolean,
-      assignment: AssignmentStudentType,
+      assignment: Assignment,
       partners: string[],
       files: Array<{ name: string; data: string; path: string }>,
       sendConfirmationEmail: boolean = false,
@@ -320,8 +407,8 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
       };
 
       const submission1 = isNew
-        ? AssignmentStudent.createStudentUpload(payload)
-        : AssignmentStudent.updateStudentUpload(payload);
+        ? createStudentUpload(assignment.id, payload)
+        : updateStudentUpload(assignment.id, payload);
 
       return submission1.then((newSub) => {
         setSubmissions((prevSubmissions) => ({
@@ -358,7 +445,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
    */
   const downloadAssignment = useCallback(async (assignmentId: number, assignmentName: string) => {
     try {
-      const response = await AssignmentStudent.downloadAssignmentZip(assignmentId);
+      const response = await downloadAssignmentZip(assignmentId);
       const linkSource = `data:application/zip;base64,${response.zip}`;
 
       const a = document.createElement('a');
@@ -374,7 +461,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   }, []);
 
   const getUploadContent = useCallback(
-    (assignment: AssignmentStudentType, submission?: StudentSubmissionType) => {
+    (assignment: Assignment, submission?: Submission) => {
       if (!assignment.allowStudentUpload) {
         return null;
       }
@@ -495,7 +582,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   // @ts-expect-error buildAssignmentsTable is kept for reference but no longer used
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _buildAssignmentsTable = useCallback(
-    (assignmentList: AssignmentStudentType[], submissionsMap: IAssignmentToSubmissionStudentMap) => {
+    (assignmentList: Assignment[], submissionsMap: Record<number, Submission[]>) => {
       const modifyIf = (modMap: { [statusTarget: number]: number }) => {
         return (row: { statusType: SUBMISSION_STATUS }) => {
           const obj = {
@@ -623,7 +710,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
 
       const data = sortAssignments(assignmentList).map((assignment) => {
         const submission = assignment.id in submissionsMap ? submissionsMap[assignment.id][0] : undefined;
-        const uploadContent = getUploadContent(assignment, submission);
+        const uploadContent = getUploadContent(assignment, submission as Submission | undefined);
 
         if (!assignment.isReleased && !assignment.liveFeedbackMode) {
           // Case 1: assignment is not published and is not in live feedback mode
@@ -730,7 +817,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   );
 
   const calculateLateDayCreditsAvailable = useCallback(
-    (submissionsMap: IAssignmentToSubmissionStudentMap): number => {
+    (submissionsMap: Record<number, Submission[]>): number => {
       if (!currentCourse?.lateDayCreditsAllowable) {
         return 0;
       }
@@ -795,10 +882,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     const showUpload = visibleAssignments.some((assn) => assn.allowStudentUpload);
 
     // Helper to determine submission status
-    const getSubmissionStatus = (
-      assignment: AssignmentStudentType,
-      submission?: StudentSubmissionType,
-    ): SubmissionStatus => {
+    const getSubmissionStatus = (assignment: Assignment, submission?: Submission): SubmissionStatus => {
       if (!assignment.isReleased && !assignment.liveFeedbackMode) {
         return SubmissionStatus.NOT_PUBLISHED;
       }
@@ -853,7 +937,8 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
             {sortAssignments(assignmentList).map((assignment) => {
               const submission = assignment.id in submissions ? submissions[assignment.id][0] : undefined;
               const status = getSubmissionStatus(assignment, submission);
-              const partners = submission?.students?.filter((s) => s !== user.email) || [];
+              const students = submission?.students || [];
+              const partners = students.filter((s: string | null) => s && s !== user.email) as string[];
               const isDisabled = status === SubmissionStatus.NOT_PUBLISHED;
 
               return (
@@ -917,20 +1002,25 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
           assignments={assignmentList}
           selectedAssignment={detailAssignment}
           students={[]}
-          selectedStudents={detailSubmission && detailSubmission.students ? detailSubmission.students : [user.email]}
-          submissions={
-            detailSubmission
-              ? { [user.email]: { [detailSubmission.assignment]: detailSubmission } }
-              : { [user.email]: {} }
+          selectedStudents={
+            detailSubmission && detailSubmission.students
+              ? (detailSubmission.students.filter((s) => s !== null) as string[])
+              : [user.email!]
           }
-          uploadSubmission={(assignment: any, partners: any, files: any, sendConfirmationEmail: any) =>
-            uploadSubmission(
-              currentPanel !== CURRENT_PANEL.ADDFILES,
-              assignment,
-              partners,
-              files,
-              sendConfirmationEmail,
-            )
+          submissions={
+            (detailSubmission
+              ? { [user.email!]: { [detailSubmission.assignment]: detailSubmission } }
+              : { [user.email!]: {} }) as any
+          }
+          uploadSubmission={
+            ((assignment: any, partners: any, files: any, sendConfirmationEmail: any) =>
+              uploadSubmission(
+                currentPanel !== CURRENT_PANEL.ADDFILES,
+                assignment,
+                partners,
+                files,
+                sendConfirmationEmail,
+              )) as any
           }
           disableStudentSelect={true}
           onSuccess={onUploadSuccess}

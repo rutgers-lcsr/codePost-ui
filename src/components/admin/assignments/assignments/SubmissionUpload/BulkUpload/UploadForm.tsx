@@ -13,7 +13,7 @@ import { codePostFile, IProtoFileUpload } from './../FileReader';
 
 import { LMSImport } from './LMSImport';
 
-import { CourseType } from '../../../../../../infrastructure/types';
+import { Course } from '../../../../../../api-client';
 
 import { IntegrationButton, INTEGRATIONS } from '../../../../../landing/Integrations';
 
@@ -29,7 +29,7 @@ interface IUploadFormProps {
   showImportOptions: boolean;
   mode?: string;
   students: string[];
-  course: CourseType;
+  course: Course;
   setIntegration: (mode?: string) => void;
   onCancel: () => void;
   setImportOptions: (value: boolean) => void;

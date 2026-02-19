@@ -10,9 +10,11 @@ import { Breadcrumb, Switch } from 'antd';
 
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 
-import { Assignment, AssignmentType } from '../../infrastructure/assignment';
-import { AnonymousSubmissionInfoType, Submission } from '../../infrastructure/submission';
-import { UserType } from '../../infrastructure/user';
+/* codePost imports */
+import { submissionsApi } from '../../api-client/clients';
+import { getHeaders } from '../../utils/generics';
+import { Assignment } from '../../types/common';
+import { AnonymousSubmissionInfoType, AssignmentType, UserType } from '../../types/models';
 
 import RegradesTable from '../admin/assignments/assignments/AssignmentRegrades/RegradesTable';
 
@@ -34,25 +36,46 @@ const RegradesDetailPanel = (props: IProps) => {
   const [viewAll, setViewAll] = useState(false);
 
   const loadMySubmissions = async (currentAssignment: AssignmentType, user: string) => {
-    const newSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id, {
-      grader: user,
-      ['compact']: '1',
-    });
-    setSubmissions(newSubmissions);
+    // Manual fetch to support 'grader' query param which is missing in generated client
+    try {
+      const query = new URLSearchParams({
+        grader: user,
+        compact: '1',
+      });
+      const response = await fetch(`/api/assignments/${currentAssignment.id}/submissions/?${query.toString()}`, {
+        headers: getHeaders(),
+      });
+      if (!response.ok) throw new Error('Failed to fetch submissions');
+      const data = await response.json();
+      setSubmissions(data);
+    } catch (error) {
+      console.error(error);
+    }
     setLoading(false);
     return;
   };
 
   const loadAllSubmissions = async (currentAssignment: AssignmentType) => {
-    const newSubmissions = await Assignment.readSubmissionsAnonymous(currentAssignment.id, { ['compact']: '1' });
-    setSubmissions(newSubmissions);
+    try {
+      const query = new URLSearchParams({
+        compact: '1',
+      });
+      const response = await fetch(`/api/assignments/${currentAssignment.id}/submissions/?${query.toString()}`, {
+        headers: getHeaders(),
+      });
+      if (!response.ok) throw new Error('Failed to fetch submissions');
+      const data = await response.json();
+      setSubmissions(data);
+    } catch (error) {
+      console.error(error);
+    }
     setLoading(false);
     return;
   };
 
   const refreshSubmissions = () => {
     setLoading(true);
-    viewAll ? loadAllSubmissions(props.assignment) : loadMySubmissions(props.assignment, props.user.email);
+    viewAll ? loadAllSubmissions(props.assignment) : loadMySubmissions(props.assignment, props.user.email!);
   };
 
   const updateSubmission = (toUpdate: AnonymousSubmissionInfoType) => {
@@ -65,7 +88,7 @@ const RegradesDetailPanel = (props: IProps) => {
       return Promise.reject('Submission does not exist');
     }
 
-    return Submission.updateAnonymousInfo(toUpdate).then((updated) => {
+    return submissionsApi.partialUpdate({ id: toUpdate.id, patchedSubmission: toUpdate }).then((updated) => {
       /* use return value to replace existing submission */
       const newSubmissions = [
         ...submissions.filter((s) => {
@@ -137,7 +160,7 @@ const RegradesDetailPanel = (props: IProps) => {
   const content = (
     <div>
       <RegradesTable
-        assignment={props.assignment}
+        assignment={props.assignment as unknown as Assignment}
         submissions={submissions}
         refreshCourseData={refreshSubmissions}
         user={props.user}

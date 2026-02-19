@@ -1,6 +1,5 @@
 import { buildAllGradesTable } from '../components/admin/assignments/assignments/DownloadGrades';
-import { AssignmentType } from '../infrastructure/assignment';
-import { SubmissionInfoType } from '../infrastructure/types';
+import { AssignmentType, SubmissionInfoType } from '../types/models';
 
 describe('buildAllGradesTable', () => {
   it('creates a matrix of grades for each student and assignment', () => {

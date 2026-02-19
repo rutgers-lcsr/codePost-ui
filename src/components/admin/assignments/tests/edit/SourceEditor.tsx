@@ -9,16 +9,21 @@ import { useState } from 'react';
 import { Button, Card, Col, Row, Space, Typography } from 'antd';
 
 /* codePost object imports */
-import { Environment, EnvironmentType } from '../../../../../infrastructure/autograder/environment';
-import { TestEditorResultType } from '../../../../../infrastructure/autograder/runTypes';
-import { SubmissionInfoType } from '../../../../../infrastructure/submission';
-import { TestCaseType } from '../../../../../infrastructure/testCase';
-import { TestCategoryType } from '../../../../../infrastructure/types';
+import { autograderApi } from '../../../../../api-client/clients';
+import { TestEditorResultType } from '../../../../../types/autograder';
+import { EnvironmentType, SubmissionInfoType, TestCaseType, TestCategoryType } from '../../../../../types/models';
 
 /* codePost interface imports */
 import { TestCasesByCategory } from '../../../../core/testFetchUtils';
-import { IBasicFile } from './TestDefinitions';
 import { FILE_TYPE } from './TestDefinitions/FileType';
+
+interface IBasicFile {
+  id: number;
+  name: string;
+  code: string;
+  type: FILE_TYPE;
+  canSave: boolean;
+}
 
 /* codePost component imports */
 import FileTag from './TestDefinitions/FileTag';
@@ -72,12 +77,13 @@ export const SourceEditor = (props: IProps) => {
       let result: any;
       if (fileToRun === 'main.sh') {
         // Run all tests
-        const payload: any = { id: props.env.id };
-        if (props.activeSubmission) {
-          Object.assign(payload, { submission: props.activeSubmission.id, simulate: true });
-        }
-
-        result = await Environment.run(payload);
+        result = await autograderApi.environmentsRunPartialUpdate({
+          id: props.env.id,
+          patchedEnvironmentRunRequest: {
+            submission: props.activeSubmission?.id,
+            simulate: true,
+          },
+        });
       }
       awaitTestResult(result.task, callback);
     }
@@ -184,7 +190,7 @@ export const SourceEditor = (props: IProps) => {
       </Row>
       <TestsChangeModal
         checkChanges={saving}
-        currentFile={props.currentFile!}
+        currentFile={props.currentFile! as any}
         currentFileCode={''}
         categories={props.categories}
         casesByCategory={props.casesByCategory}

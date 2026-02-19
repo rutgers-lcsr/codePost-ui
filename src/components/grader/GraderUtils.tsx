@@ -15,8 +15,7 @@ import { Typography } from 'antd';
 /* codePost imports */
 import CPTooltip from '../core/CPTooltip';
 
-import { AssignmentType } from '../../infrastructure/assignment';
-import { AnonymousSubmissionInfoType, SubmissionInfoType, SubmissionType } from '../../infrastructure/submission';
+import { AssignmentType, AnonymousSubmissionInfoType, SubmissionInfoType, SubmissionType } from '../../types/models';
 
 const { Text } = Typography;
 
@@ -40,8 +39,8 @@ type ViewsBySubmission = {
 
 type SubmissionWithStudents = {
   id: number;
-  students: string[];
-  isFinalized: boolean;
+  students: (string | null | undefined)[];
+  isFinalized?: boolean;
 };
 
 type GradeInfo = {
@@ -59,7 +58,8 @@ type GradeInfo = {
 const getTooltipLabel = (submission: SubmissionWithStudents, views: { [student: string]: string }): string => {
   if (submission.students.length === 1) {
     // For a single student submission we want only the date
-    return dayjs(views[submission.students[0]]).format('llll');
+    const student = submission.students[0];
+    return student ? dayjs(views[student]).format('llll') : '--';
   }
 
   // For multiple students, we want the student name and the date
@@ -196,7 +196,7 @@ const formatSub = (
   return {
     gradeText: formatGradeText(sub, assignment),
     grade: sub.grade,
-    isFinalized: sub.isFinalized,
+    isFinalized: !!sub.isFinalized,
     grader: formatGraderText(sub.grader),
     lastEdited: formatLastEdited(sub.dateEdited),
   };

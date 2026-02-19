@@ -19,8 +19,7 @@ import { rosterToCsv } from './DownloadRoster';
 import RosterInput from './RosterInput';
 
 // type definitions
-import { CourseType } from '../../../../infrastructure/course';
-import { SectionType } from '../../../../infrastructure/section';
+import { Course, Section } from '../../../../api-client';
 import { USER_APP, USER_TYPE } from '../../../../types/common';
 
 import CPButton from '../../../../components/core/CPButton';
@@ -74,10 +73,10 @@ interface IProps {
   students: string[];
   graders: string[];
   admins: string[];
-  sections: SectionType[];
-  sectionsByStudent: { [studentEmail: string]: SectionType };
+  sections: Section[];
+  sectionsByStudent: { [studentEmail: string]: Section };
 
-  course: CourseType;
+  course: Course;
 
   /* UI control */
   isDisabled: boolean;
@@ -85,8 +84,8 @@ interface IProps {
 
   /* object level REST operations */
   changeRoster: (adds: string[], deletes: string[], userType: USER_APP) => Promise<void>;
-  updateSection: (section: SectionType) => Promise<void>;
-  createSection: (sectionName: string) => Promise<SectionType>;
+  updateSection: (section: Section) => Promise<void>;
+  createSection: (sectionName: string) => Promise<Section>;
 
   /* role type we are editing through this component */
   roleType: 'student' | 'grader' | 'admin';
@@ -420,7 +419,7 @@ const RosterFileUpload: React.FC<IProps> = (props) => {
   }, []);
 
   const transformOldRoster = useCallback(
-    (userType: string, users: string[], sectionsByStudent: { [studentEmail: string]: SectionType }): IUserMap => {
+    (userType: string, users: string[], sectionsByStudent: { [studentEmail: string]: Section }): IUserMap => {
       const userMap: any = {};
       users.forEach((user) => {
         switch (userType) {

@@ -1,19 +1,20 @@
-/* Import codePost API wrappers */
-import { Course, CourseType } from '../../infrastructure/course';
-import { Section } from '../../infrastructure/section';
-
-import { Assignment, AssignmentType } from '../../infrastructure/assignment';
-import { RubricCategory } from '../../infrastructure/rubricCategory';
-import { RubricComment } from '../../infrastructure/rubricComment';
-
-import { CommentIO } from '../../infrastructure/comment';
-import { File } from '../../infrastructure/file';
-import { Submission } from '../../infrastructure/submission';
-
-import { Environment } from '../../infrastructure/autograder/environment';
-import { SubmissionTest } from '../../infrastructure/submissionTest';
-import { TestCase } from '../../infrastructure/testCase';
-import { TestCategory, TestCategoryType } from '../../infrastructure/testCategory';
+/* Import codePost API clients */
+import { Course as NativeCourse } from '../../api-client';
+import {
+  assignmentsApi,
+  autograderApi,
+  commentsApi,
+  coursesApi,
+  rubricCategoriesApi,
+  rubricCommentsApi,
+  sectionsApi,
+  submissionFilesApi,
+  submissionTestsApi,
+  submissionsApi,
+  testCasesApi,
+  testCategoriesApi,
+} from '../../api-client/clients';
+import { AssignmentType, CourseType, TestCategoryType } from '../../types/models';
 
 import { fetchTestData } from '../core/testFetchUtils';
 
@@ -21,9 +22,9 @@ import { fetchTestData } from '../core/testFetchUtils';
 import { demoAssignments, demoCourse, demoRoster, demoSections, demoSubmissions } from './demo-data';
 import { getDemoSubmissionTests } from './demo-submission-tests';
 
-const createDemoCourse = async (email: string, username: string, org: string) => {
-  const payload = { ...demoCourse(username), isRubricEditor: false };
-  return Course.create(payload).then((course) => {
+const createDemoCourse = async (email: string, username: string, org: string): Promise<NativeCourse> => {
+  const payload = { ...demoCourse(username), isRubricEditor: false, webhooks: [] };
+  return coursesApi.create({ course: payload as any }).then((course) => {
     // Create assignments
     const preAssignments = demoAssignments(course.id);
     const makeAssignmnets = preAssignments.map((assignment) => {
@@ -35,11 +36,11 @@ const createDemoCourse = async (email: string, username: string, org: string) =>
       const roster = demoRoster(org, course.id);
       // Add self to graders
       roster.graders = [...roster.graders, email];
-      return Course.updateRoster(roster, {}).then((_rosterObj) => {
+      return coursesApi.rosterPartialUpdate({ id: course.id, patchedCourse: roster as any }).then((_rosterObj) => {
         // Make sections
         const sections = demoSections(org, roster.id);
         const makeSections = sections.map((section) => {
-          return Section.create(section);
+          return sectionsApi.create({ section: section as any });
         });
         return Promise.all(makeSections).then(() => {
           // Make submissions
@@ -53,11 +54,11 @@ const createDemoCourse = async (email: string, username: string, org: string) =>
               const [categories, casesByCategory] = await fetchTestData(assignment);
               const testCategories = categories as TestCategoryType[]; // not clear why this is necessary
               const testCases = Object.values(casesByCategory).flat();
-              const thisSubmissions = await Assignment.readSubmissions(assignment.id);
+              const thisSubmissions = await assignmentsApi.submissionsList({ id: assignment.id });
 
               const demoSubmissionTests = getDemoSubmissionTests(org);
               return demoSubmissionTests.map((subEl) => {
-                const subMatch = thisSubmissions.find((sub) => sub.students.indexOf(subEl.students[0]) > -1);
+                const subMatch = thisSubmissions.results.find((sub) => sub.students.indexOf(subEl.students[0]) > -1);
                 return subEl.tests.map((subTestEl) => {
                   // Match submissionTest to newly created testCase object
                   const testCaseMatch = testCases.find((tc) => tc.description === subTestEl.testCase);
@@ -75,7 +76,7 @@ const createDemoCourse = async (email: string, username: string, org: string) =>
                       modified: '',
                       isError: false,
                     };
-                    return SubmissionTest.create(payload);
+                    return submissionTestsApi.create({ submissionTest: payload as any });
                   } else {
                     return null;
                   }
@@ -88,9 +89,19 @@ const createDemoCourse = async (email: string, username: string, org: string) =>
                 .flat()
                 .flat()
                 .flat()
-                .map((lastSubEl) => Submission.update({ ...lastSubEl, isFinalized: true }));
+                .map((lastSubEl) =>
+                  submissionsApi.partialUpdate({
+                    id: lastSubEl.id,
+                    patchedSubmission: { ...lastSubEl, isFinalized: true } as any,
+                  }),
+                );
               return Promise.all(lastPromises).then(() => {
-                return course;
+                return {
+                  ...course,
+                  expirationDate: (course as any).expirationDate || null,
+                  cloneFrom: (course as any).cloneFrom,
+                  inviteCode: course.inviteCode || null,
+                } as unknown as NativeCourse;
               });
             });
           });
@@ -113,7 +124,7 @@ const createAssignment = async (course: CourseType, assignment: any) => {
     feedbackReleased: false,
   };
 
-  return Assignment.create(assnPayload).then(async (assnObj: AssignmentType) => {
+  return assignmentsApi.create({ assignment: assnPayload as any }).then(async (assnObj: AssignmentType) => {
     // Update course object with assignment ids. This step is necessary to allow
     // the Admin component to load these assignments when the active course is switched
     // to the newly created demo course in changeLoadedCourse.
@@ -121,12 +132,9 @@ const createAssignment = async (course: CourseType, assignment: any) => {
 
     // Create environment for testing
     const payload = {
-      id: -1,
       language: 'java',
       dockerRunInstructions: [],
       assignment: assnObj.id,
-      dumpMode: false,
-      testParsing: true,
       compileText: '',
       buildType: 'default',
       allowNetworkAccess: false,
@@ -138,13 +146,13 @@ const createAssignment = async (course: CourseType, assignment: any) => {
       autoDetect: false,
       envVars: {},
     };
-    const thisEnvironment = await Environment.create(payload);
+    const thisEnvironment = await autograderApi.environmentsCreate({ environment: payload as any });
 
-    await Environment.build(thisEnvironment);
+    await autograderApi.environmentsBuildPartialUpdate({ id: thisEnvironment.id });
 
     // Create rubric
     const makeCategories = assignment.rubric.map((category: any) => {
-      const catPayload = {
+      const categoryPayload = {
         id: -1, // codePost convention
         name: category.category,
         rubricComments: [], // ignored by API
@@ -155,7 +163,7 @@ const createAssignment = async (course: CourseType, assignment: any) => {
         atMostOnce: false,
       };
 
-      return RubricCategory.create(catPayload).then((catObj) => {
+      return rubricCategoriesApi.create({ rubricCategory: categoryPayload as any }).then((catObj) => {
         const makeComments = category.comments.map((comment: any) => {
           const comPayload = {
             id: -1, // codePost convention
@@ -165,7 +173,9 @@ const createAssignment = async (course: CourseType, assignment: any) => {
             comments: [], // ignored by API
           };
 
-          return RubricComment.create(comPayload);
+          return rubricCommentsApi.create({
+            rubricComment: { ...comPayload, explanation: '', instructionText: '', sortKey: 0, templateTextOn: false },
+          });
         });
 
         return Promise.all(makeComments);
@@ -175,15 +185,20 @@ const createAssignment = async (course: CourseType, assignment: any) => {
     // Create tests
     const makeTestCategories = assignment.tests.map((category: any) => {
       const catPayload = {
-        id: -1,
         assignment: assnObj.id,
         name: category.category,
+        testCases: [],
+        resources: [],
+        targetFileName: undefined,
+        testScript: undefined,
+        maxPoints: undefined,
+        sortKey: 0,
       };
 
-      return TestCategory.create(catPayload).then((catObj) => {
+      return testCategoriesApi.create({ testCategory: catPayload as any }).then((catObj) => {
         category.cases.map((testCase: any) => {
           const casePayload = { id: -1, testCategory: catObj.id, ...testCase };
-          return TestCase.create(casePayload);
+          return testCasesApi.create({ testCase: casePayload as any });
         });
       });
     });
@@ -198,8 +213,8 @@ const createAssignment = async (course: CourseType, assignment: any) => {
 
 const createSubmissions = (assignment: AssignmentType, domain: string) => {
   const subTemplates = demoSubmissions(assignment.name, domain);
-  return Assignment.readRubric(assignment.id, {}).then((rubric) => {
-    const rubricComments = rubric.rubricComments;
+  return assignmentsApi.rubricRetrieve({ id: assignment.id }).then((rubric: any) => {
+    const rubricComments: any[] = rubric.rubricComments || [];
     const makeSubs = subTemplates.map((subT) => {
       const payload = {
         id: -1, // codePost convention
@@ -212,7 +227,7 @@ const createSubmissions = (assignment: AssignmentType, domain: string) => {
         grader: subT.grader,
       };
 
-      return Submission.create(payload).then((submission) => {
+      return submissionsApi.create({ submission: payload as any }).then((submission) => {
         // Make files
         const makeFiles = subT.files.map((fileT) => {
           const filePayload = {
@@ -225,12 +240,12 @@ const createSubmissions = (assignment: AssignmentType, domain: string) => {
             path: null,
           };
 
-          return File.create(filePayload).then((fileObj) => {
+          return submissionFilesApi.create({ submissionFile: filePayload as any }).then((fileObj) => {
             // Make comments
             const makeComments = fileT.comments.map((commentT) => {
               let rubricID = null;
               if (commentT.rubric !== null) {
-                const rubricMatch = rubricComments.find((el) => {
+                const rubricMatch = rubricComments.find((el: any) => {
                   return el.text === commentT.rubric;
                 });
                 if (typeof rubricMatch !== 'undefined') {
@@ -253,7 +268,7 @@ const createSubmissions = (assignment: AssignmentType, domain: string) => {
                 color: null,
               };
 
-              return CommentIO.create(commentPayload).then(() => {
+              return commentsApi.create({ comment: commentPayload as any }).then(() => {
                 return submission;
               });
             });

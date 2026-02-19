@@ -26,9 +26,10 @@ import {
   IRubricCategoryManagerState,
 } from '../../../core/rubric/RubricCategoryManager';
 
-import { RubricComment, RubricCommentType } from '../../../../infrastructure/rubricComment';
+import { RubricComment } from '../../../../api-client';
 
 import ExplanationModal from './ExplanationModal';
+import { compareRubricComments } from './RubricUtils';
 
 const { TextArea } = Input;
 
@@ -70,13 +71,13 @@ const RubricCategoryUI: React.FC<{
   } = props;
   const { rubricComments: stateRubricComments, atMostOnce } = state;
 
-  const [activeComment, setActiveComment] = useState<RubricCommentType | undefined>(undefined);
+  const [activeComment, setActiveComment] = useState<RubricComment | undefined>(undefined);
   const [activeField, setActiveField] = useState<'explanation' | 'instructionText'>('explanation');
 
   /* Card-Based Layout Implementation */
   const renderCommentCards = useCallback(
-    (rubricComments: RubricCommentType[], commentMap: { [id: number]: RubricCommentType }) => {
-      return rubricComments.sort(RubricComment.compare).map((rubricComment) => {
+    (rubricComments: RubricComment[], commentMap: { [id: number]: RubricComment }) => {
+      return rubricComments.sort(compareRubricComments).map((rubricComment) => {
         const thisComment = commentMap[rubricComment.id];
 
         let thisFeedback;
@@ -537,8 +538,8 @@ const RubricCategoryUI: React.FC<{
 
       {activeComment ? (
         <ExplanationModal
-          title={activeComment.text}
-          startText={activeComment[activeField]}
+          title={activeComment.text || ''}
+          startText={activeComment[activeField] || ''}
           onCancel={() => {
             setActiveComment(undefined);
           }}

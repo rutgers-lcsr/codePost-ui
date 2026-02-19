@@ -17,13 +17,12 @@ import Highlighter from 'react-highlight-words';
 import { Link, Route, Routes } from 'react-router-dom';
 
 /* codePost imports  */
-import { IStudentSubmissionsDataTable } from '../../../types/common';
+import type { Assignment, IStudentSubmissionsDataTable, SubmissionInfoType, UploadFile } from '../../../types/common';
 
 import { openSubmission } from '../other/AdminUtils';
 
-import { AssignmentType, sortAssignments } from '../../../infrastructure/assignment';
-import { CourseType } from '../../../infrastructure/course';
-import { SubmissionInfoType } from '../../../infrastructure/submission';
+import type { Course } from '../../../api-client';
+import { sortAssignments } from '../../../utils/assignments';
 
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 
@@ -33,7 +32,6 @@ import CPButton from '../../../components/core/CPButton';
 import { tooltips } from '../../../components/core/tooltips';
 
 import Loading from '../../../components/core/Loading';
-import { FileType } from '../../../infrastructure/file';
 
 /**********************************************************************************************************************/
 
@@ -41,10 +39,10 @@ export interface IByStudentProps {
   /* UI control */
   loadComplete: boolean;
 
-  course?: CourseType;
+  course?: Course;
 
   /* submissions data */
-  assignments: AssignmentType[];
+  assignments: Assignment[];
   submissionsByStudent: IStudentSubmissionsDataTable;
   students: string[];
   inactiveStudents: string[];
@@ -53,8 +51,8 @@ export interface IByStudentProps {
   deleteSubmission: (submission: SubmissionInfoType) => Promise<void>;
   graders: string[];
   changeSubmissionGrader: (submission: SubmissionInfoType, grader: string | undefined) => Promise<void>;
-  uploadSubmission: (assignment: AssignmentType, partners: string[], files: FileType[]) => Promise<SubmissionInfoType>;
-  addFilesToSubmission: (submission: SubmissionInfoType, files: FileType[]) => Promise<SubmissionInfoType>;
+  uploadSubmission: (assignment: Assignment, partners: string[], files: UploadFile[]) => Promise<SubmissionInfoType>;
+  addFilesToSubmission: (submission: SubmissionInfoType, files: UploadFile[]) => Promise<SubmissionInfoType>;
   baseURL: string;
   courseURL: string;
 }

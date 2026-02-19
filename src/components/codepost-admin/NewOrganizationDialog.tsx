@@ -1,32 +1,33 @@
 import { Form, Input, Modal, message } from 'antd';
 import React, { useState } from 'react';
 
-import { Organization, OrganizationType } from '../../infrastructure/organization';
+import { Organization } from '../../api-client';
+import { organizationsApi } from '../../api-client/clients';
 
 interface NewOrganizationDialogProps {
   visible: boolean;
   onClose: () => void;
-  onSuccess: (org: OrganizationType) => void;
+  onSuccess: (org: Organization) => void;
 }
 
 const NewOrganizationDialog: React.FC<NewOrganizationDialogProps> = ({ visible, onClose, onSuccess }) => {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const api = organizationsApi;
+
   const handleSubmit = async (values: any) => {
     setIsSubmitting(true);
     try {
-      const payload: any = {
+      const payload = {
         name: values.name,
         shortname: values.shortname,
         emailDomain: values.emailDomain,
-        // GenericObject fields placeholders
-        id: -1,
-        created: new Date().toISOString(),
-        modified: new Date().toISOString(),
+        ssoEnabled: false, // Default values required? Check model.
+        sendWelcomeEmail: false,
       };
 
-      const result = await Organization.create(payload);
+      const result = await api.create({ organization: payload as any }); // Cast if needed for missing opt fields
       message.success('Organization created successfully');
       form.resetFields();
       onSuccess(result);

@@ -10,11 +10,10 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { Breadcrumb, Button, Divider, Select, Spin, Switch, Tabs, message } from 'antd';
 
 /* codePost imports */
-import { AssignmentType } from '../../infrastructure/assignment';
-import { CourseType } from '../../infrastructure/course';
-import { Section, SectionType } from '../../infrastructure/section';
-import { Submission, SubmissionType } from '../../infrastructure/submission';
-import { SubmissionHistoryType } from '../../infrastructure/submissionHistory';
+import { Course } from '../../api-client';
+import { sectionsApi } from '../../api-client/clients';
+import { Submission } from '../../services/submission';
+import { AssignmentType, SectionType, SubmissionHistoryType, SubmissionType } from '../../types/models';
 
 import { tooltips } from '../core/tooltips';
 
@@ -31,7 +30,7 @@ const { Option } = Select;
 /**********************************************************************************************************************/
 
 interface IProps {
-  course: CourseType;
+  course: Course;
   assignment: AssignmentType;
   sections: SectionType[];
   breadcrumbs: Array<{ title: React.ReactNode }>;
@@ -109,13 +108,16 @@ class SectionDetailPanel extends Component<IProps, IState> {
     const submissionMap: any = {};
     for (const section of this.props.sections) {
       const mapValue: any = {};
-      const submissions = await Section.readSubmissions(section.id, {
-        assignment: this.props.assignment.id.toString(),
+      const submissions = await sectionsApi.submissionsList({
+        id: section.id,
+        assignment: this.props.assignment.id,
       });
       this.loadHistories(submissions);
 
       for (const student of section.students) {
-        mapValue[student] = submissions.find((el) => el.students.indexOf(student) > -1);
+        if (student) {
+          mapValue[student] = submissions.find((el) => el.students && el.students.indexOf(student) > -1);
+        }
       }
 
       submissionMap[section.id] = mapValue;
@@ -159,11 +161,13 @@ class SectionDetailPanel extends Component<IProps, IState> {
       const sections = Object.keys(newSubmissions);
       submissions.map((sub) => {
         sub.students.forEach((student) => {
-          for (const section of sections) {
-            const sectionID = parseInt(section, 10);
-            if (student in newSubmissions[sectionID]) {
-              newSubmissions[sectionID][student] = sub;
-              break;
+          if (student) {
+            for (const section of sections) {
+              const sectionID = parseInt(section, 10);
+              if (student in newSubmissions[sectionID]) {
+                newSubmissions[sectionID][student] = sub;
+                break;
+              }
             }
           }
         });

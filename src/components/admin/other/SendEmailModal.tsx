@@ -1,8 +1,8 @@
 import React, { FC, useState, useCallback, useEffect } from 'react';
 import { MailOutlined } from '@ant-design/icons';
 import { Button, List, message, Modal } from 'antd';
-import { AssignmentType } from '../../../infrastructure/assignment';
-import { CourseType } from '../../../infrastructure/course';
+import { Assignment } from '../../../types/common';
+import { Course } from '../../../api-client';
 import CPButton from '../../core/CPButton';
 import CPTooltip from '../../core/CPTooltip';
 
@@ -11,8 +11,8 @@ interface IProps {
   title: string;
   emails: string[];
   template: string;
-  course: CourseType;
-  assignment?: AssignmentType;
+  course: Course;
+  assignment?: Assignment;
   me: string;
   body: React.ReactNode;
   button?: (toggleDialog: () => void) => React.ReactNode;

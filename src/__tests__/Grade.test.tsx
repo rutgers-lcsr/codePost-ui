@@ -1,3 +1,10 @@
+import { describe, it } from 'vitest';
+
+describe.skip('Grade (legacy enzyme tests)', () => {
+  it('skipped', () => {
+    // Legacy Enzyme snapshot tests are kept for reference.
+  });
+});
 //tslint:disable
 
 // import * as React from 'react';

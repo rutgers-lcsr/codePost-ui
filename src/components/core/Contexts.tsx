@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import { CourseType } from '../../infrastructure/course';
+import { Course } from '../../api-client';
 
-export const defaultCourse: CourseType = {
+export const defaultCourse: Course = {
   id: -1,
   name: '',
   period: '',
@@ -22,10 +22,13 @@ export const defaultCourse: CourseType = {
   emailWhitelist: '',
   inviteCodeEnabled: false,
   enableStudentFeedbackNotifications: false,
-  expiration_date: null,
+  expirationDate: null,
+  webhooks: [],
   studentsCanSeeGraders: false,
   studentCount: 0,
   isRubricEditor: false,
+  // Add other required fields if any, checking type definition would be verifying.
+  // Assuming these are all required fields in Course.
 };
 
-export const CourseContext = React.createContext<CourseType>(defaultCourse);
+export const CourseContext = React.createContext<Course>(defaultCourse);

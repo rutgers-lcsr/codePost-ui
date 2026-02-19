@@ -53,32 +53,29 @@ class LandingOld extends React.Component<IWithWindowWatcherProps> {
     const panelTwo = (
       <LandingPanel
         text={
-          <div id="panel">
-            <div style={{ paddingBottom: 15 }}>
-              Identify correctness mistakes efficiently, in courses of all sizes. Take advantage of simple no-code
-              tests, or write flexible tests using short scripts. All tests run on codePost servers, and{' '}
-              <a href="/docs/features#supported-languages" target="_blank" rel="noopener noreferrer">
-                <span style={{ fontWeight: 500, cursor: 'pointer' }} className="landing__link">
-                  all major languages are supported
-                </span>
-              </a>
-              .
+          <div>
+            <div style={{ paddingBottom: 24 }}>
+              Native support for Python, Java, R, and more. First-class rendering for <strong>Jupyter Notebooks</strong>{' '}
+              and <strong>PDFs</strong>.
+              <br />
+              <br />
+              Give feedback wherever your students work.
             </div>
             <Link to="/autograder" target="_blank" rel="noopener noreferrer">
               <CPButton
                 key="panelTwoButton"
                 cpType="link"
-                style={{ background: 'white', fontSize: 16, padding: 0 }}
+                style={{ background: 'transparent', fontSize: 18, padding: 0, fontWeight: 600 }}
                 className="landing__link"
               >
-                Learn more
+                Explore Review Tools
                 <ArrowRightOutlined className="landing__link__arrow" />
               </CPButton>
             </Link>
           </div>
         }
-        title="Autograder"
-        subTitle="Easily write and run tests against student code"
+        title="Review Anything"
+        subTitle="Universal feedback tools."
         type="right"
         moduleMaxWidth={595}
         moduleMaxHeight={550}
@@ -88,40 +85,36 @@ class LandingOld extends React.Component<IWithWindowWatcherProps> {
             <AutograderModule />
           </Suspense>
         }
-        gutterSize={50}
+        gutterSize={80}
       />
     );
 
     const panelThree = (
       <LandingPanel
         text={
-          <div id="panel">
-            <div style={{ paddingBottom: 15 }}>
-              Use codePost to do everything from collecting student work, to distributing results, and everything in
-              between.
-              <div style={{ paddingTop: 15 }}>
-                <div style={{ fontWeight: 600, paddingBottom: 5 }}>Managing a team of graders?</div>
-                <div style={{ fontSize: '85%' }}>
-                  codePost includes tools to help you run a large course team: distribute work, set up a rubric to
-                  ensure consistent, fair feedback, and use intuitive keyboard shortcuts to review on grader work.
-                </div>
-              </div>
+          <div>
+            <div style={{ paddingBottom: 24 }}>
+              Docker-based isolation for secure testing. Templates for <strong>Python, Java, R</strong>, and many
+              others.
+              <br />
+              <br />
+              Run simple I/O tests or complex script-based suites.
             </div>
-            <Link to="/why-use-codePost#instructors" target="_blank" rel="noopener noreferrer">
+            <Link to="/autograder" target="_blank" rel="noopener noreferrer">
               <CPButton
-                key="panelTwoButton"
+                key="panelThreeButton"
                 cpType="link"
-                style={{ background: 'white', fontSize: 16, padding: 0 }}
+                style={{ background: 'transparent', fontSize: 18, padding: 0, fontWeight: 600 }}
                 className="landing__link"
               >
-                Learn more
+                See Autograder
                 <ArrowRightOutlined className="landing__link__arrow" />
               </CPButton>
             </Link>
           </div>
         }
-        title="One tool to rule them all"
-        subTitle="Everything you need to run your course"
+        title="Industrial-Strength Automation"
+        subTitle="Test securely, grade instantly."
         module={
           <Suspense fallback={<div style={{ width: 500, height: 400 }} />}>
             <LandingFlowChart />
@@ -132,7 +125,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps> {
         moduleMaxHeight={405}
         removeModelSmallScreen={true}
         bevel={false}
-        gutterSize={50}
+        gutterSize={80}
       />
     );
 
@@ -158,39 +151,35 @@ class LandingOld extends React.Component<IWithWindowWatcherProps> {
           <LandingPanel
             text={
               <div>
-                <div style={{ paddingBottom: 15 }}>
-                  Closed platforms are a pain. That's why we built the codePost API. It allows you to
-                  <ul>
-                    <li>
-                      <span style={{ fontWeight: 600 }}>integrate with other software</span>, like your LMS,
-                    </li>
-                    <li>
-                      <span style={{ fontWeight: 600 }}>automate common tasks</span>, such as syncing rosters from your
-                      registrar, and
-                    </li>
-                    <li>
-                      <span style={{ fontWeight: 600 }}>analyze your course data</span>.
-                    </li>
-                  </ul>
-                  You can write useful, short scripts in 10 minutes. Or take advantage of our{' '}
-                  <a href="https://codepost.cs.rutgers.edu/integrations" target="_blank" rel="noopener noreferrer">
-                    <span style={{ fontWeight: 500, cursor: 'pointer' }} className="landing__link">
-                      native integrations
-                    </span>
-                  </a>
-                  .
+                <div style={{ paddingBottom: 24 }}>
+                  Manage rosters, sync with LMS, coordinate TAs with granular permissions, and ensure consistency with
+                  shared rubrics.
+                  <br />
+                  <br />
+                  Built for large courses.
                 </div>
+                <a href="/why-use-codePost#instructors" target="_blank" rel="noopener noreferrer">
+                  <CPButton
+                    key="panelFourButton"
+                    cpType="link"
+                    style={{ background: 'transparent', fontSize: 18, padding: 0, fontWeight: 600 }}
+                    className="landing__link"
+                  >
+                    View Management Tools
+                    <ArrowRightOutlined className="landing__link__arrow" />
+                  </CPButton>
+                </a>
               </div>
             }
-            title="API-first: open and interoperable"
-            subTitle="Write short scripts with the codePost API"
+            title="Scale Your Team"
+            subTitle="Built for Large Courses"
             module={panelFourModule}
             type="right"
             moduleMaxWidth={600}
             moduleMaxHeight={500}
             removeModelSmallScreen={true}
             bevel={false}
-            gutterSize={50}
+            gutterSize={80}
           />
         </div>
         {this.props.windowwidth < landingVars.breakpoints.removeModule ? (

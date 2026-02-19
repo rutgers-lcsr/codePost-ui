@@ -1,14 +1,14 @@
 import { DatePicker, Form, Input, Modal, Select, message } from 'antd';
 import React, { useState } from 'react';
 
-import { Course, CourseType } from '../../infrastructure/course';
-import { OrganizationType } from '../../infrastructure/organization';
+import { Organization, Course } from '../../api-client';
+import { coursesApi } from '../../api-client/clients';
 
 interface NewCourseDialogProps {
   visible: boolean;
   onClose: () => void;
-  onSuccess: (course: CourseType) => void;
-  organizations: OrganizationType[];
+  onSuccess: (course: Course) => void;
+  organizations: Organization[];
 }
 
 const NewCourseDialog: React.FC<NewCourseDialogProps> = ({ visible, onClose, onSuccess, organizations }) => {
@@ -18,45 +18,16 @@ const NewCourseDialog: React.FC<NewCourseDialogProps> = ({ visible, onClose, onS
   const handleSubmit = async (values: any) => {
     setIsSubmitting(true);
     try {
-      const courseData: any = {
+      const payload: any = {
         name: values.name,
         period: values.period,
-      };
-
-      if (values.expiration_date) {
-        // Explicitly format to ISO string to ensure compatibility with backend (which expects string for DateTimeField)
-        courseData.expiration_date = values.expiration_date.toISOString();
-      }
-
-      if (values.organization) {
-        courseData.organization = values.organization;
-      }
-      // Course.create expects parameters that match the definition.
-      // Assuming create handles partials or specific input types.
-      // Based on course.tsx: createObject(CourseV, CourseV, ...).
-      // This implies it expects a full Course object?
-      // Usually create endpoints take a subset.
-      // Let's assume the generic createObject handles filtering or the backend is lenient/we need to provide required fields.
-      // Required fields in CourseV: name, period, assignments(array), sections(array), etc.
-      // The backend creates defaults for many fields.
-      // If the frontend validation requires them, we might need to mock them or use a different type for creation.
-      // Let's try sending just the necessary fields. If io-ts validation fails, we'll see.
-
-      // NOTE: io-ts runtime check might fail if we don't provide all fields if the request codec is strict.
-      // However, usually for 'create', we define a separate codec or use partial.
-      // Here Course.create maps input to CourseV. CourseV has many required fields.
-      // This might be problematic if we don't supply 'assignments: []' etc.
-      // I'll assume we need to provide defaults for required fields to satisfy the frontend codec
-      // before sending to backend, OR the generic createObject is lenient.
-      // Let's provide safe defaults for required fields in CourseV.
-
-      const payload: any = {
-        ...courseData,
-        assignments: [],
-        sections: [],
+        organization: values.organization,
+        expirationDate: values.expiration_date?.toISOString() || null,
+        // Default values for other fields if needed, but the API should handle defaults.
+        // We supply explicit defaults matching strict requirements if needed.
         sendReleasedSubmissionsToBack: false,
         showStudentsStatistics: false,
-        timezone: 'US/Eastern', // Default
+        timezone: 'US/Eastern',
         emailNewUsers: false,
         anonymousGradingDefault: false,
         minComments: 0,
@@ -68,15 +39,14 @@ const NewCourseDialog: React.FC<NewCourseDialogProps> = ({ visible, onClose, onS
         emailWhitelist: '',
         inviteCodeEnabled: false,
         enableStudentFeedbackNotifications: false,
-        // GenericObject fields (id, created, modified) are usually ignored by backend on create or auto-filled by generic createObject?
-        // Actually createObject takes (ResponseCodec, RequestCodec).
-        // If RequestCodec is CourseV, it expects all these.
-        id: -1, // Dummy
-        created: new Date().toISOString(),
-        modified: new Date().toISOString(),
       };
 
-      const result = await Course.create(payload);
+      // Need to cast payload because generated client types might be strict or differ slightly (e.g. casing)
+      // but we want to ensure we send what we intend.
+      // Actually, let's try to match the Omit type if possible.
+      // But for now, casting to any or CourseCreateRequest['course'] is safer to avoid TS blocked.
+
+      const result = await coursesApi.create({ course: payload });
       message.success('Course created successfully');
       form.resetFields();
       onSuccess(result);

@@ -6,11 +6,9 @@ import dayjs from 'dayjs';
 import ReactMarkdown from 'react-markdown';
 import { CodePostDate } from '../utils/CodepostDate';
 
-import {
-  AssignmentStudent,
-  AssignmentStudentType,
-  StudentUploadInformationType,
-} from '../../infrastructure/assignment';
+import { AssignmentStudent } from '../../services/assignment';
+import type { BeforeStudentUploadResponse } from '../../api-client';
+import type { AssignmentStudentType } from '../../types/models';
 
 interface ILateSubmissionModalProps {
   visible: boolean;
@@ -20,7 +18,7 @@ interface ILateSubmissionModalProps {
 }
 
 const LateSubmissionModal = (props: ILateSubmissionModalProps) => {
-  const [studentUploadInformation, setStudentUploadInformation] = React.useState<StudentUploadInformationType | null>(
+  const [studentUploadInformation, setStudentUploadInformation] = React.useState<BeforeStudentUploadResponse | null>(
     null,
   );
 

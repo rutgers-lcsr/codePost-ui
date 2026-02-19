@@ -3,18 +3,28 @@
  * Extracted for reusability in Jupyter notebook integrations and other contexts
  */
 
-import { AssignmentType } from '../infrastructure/assignment';
-import { CommentType } from '../infrastructure/comment';
-import { CourseType } from '../infrastructure/course';
-import { AssignmentFileType, FileType } from '../infrastructure/file';
-import { RubricCategoryType } from '../infrastructure/rubricCategory';
-import { RubricCommentType } from '../infrastructure/rubricComment';
-import { AnonymousSubmissionType, StudentSubmissionType } from '../infrastructure/submission';
-import { SubmissionTestType } from '../infrastructure/submissionTest';
-import { StudentTestCaseType, TestCaseType } from '../infrastructure/testCase';
-import { TestCategoryType } from '../infrastructure/testCategory';
-import { UserType } from '../infrastructure/user';
-import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from './common';
+import { Course, RubricCategory, RubricComment } from '../api-client';
+import {
+  AssignmentFileType,
+  AssignmentType,
+  AnonymousSubmissionType,
+  CommentType,
+  FileTypeAlias as FileType,
+  StudentSubmissionType,
+  SubmissionTestType,
+  TestCaseType,
+  TestCategoryType,
+  UserType,
+} from './models';
+import type { StudentTestCaseType } from './models';
+import {
+  ICommentToRubricCommentMap,
+  IFileToCommentsMap,
+  IRubricCategoryToRubricCommentsMap,
+  PERMISSION_LEVEL,
+} from './common';
+
+export { PERMISSION_LEVEL };
 
 /**
  * Panel display types in CodeConsole
@@ -22,17 +32,6 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubric
 export enum PANEL_TYPE {
   TESTS,
   FILE,
-}
-
-/**
- * Permission levels for submission access
- */
-export enum PERMISSION_LEVEL {
-  NOT_FOUND,
-  NONE,
-  READ,
-  READ_FILES_ONLY,
-  WRITE,
 }
 
 /**
@@ -95,7 +94,7 @@ export interface ICodeConsoleState {
   assignment?: AssignmentType;
 
   /** Course information */
-  course?: CourseType;
+  course?: Course;
 
   /** Files in the submission */
   files: FileType[];
@@ -125,7 +124,7 @@ export interface ICodeConsoleState {
   submission?: AnonymousSubmissionType;
 
   /** Rubric categories for the assignment */
-  rubricCategories: RubricCategoryType[];
+  rubricCategories: RubricCategory[];
 
   /** Rubric comments organized by category */
   rubricComments: IRubricCategoryToRubricCommentsMap;
@@ -216,6 +215,19 @@ export interface ICodeConsoleState {
    * ======================================== */
   /** Whether AI comment generation is enabled for this course */
   aiEnabled: boolean;
+
+  /* ========================================
+   * Temporary Edit State
+   * ======================================== */
+  /** Whether the user is temporarily editing a file */
+  isEditMode: boolean;
+
+  /**
+   * Temporary content for files being edited
+   * Key: File ID
+   * Value: Content string
+   */
+  temporaryFileContent: { [fileId: number]: string };
 }
 
 /**
@@ -238,12 +250,12 @@ export interface ICodeConsoleProps {
 export interface ISubmissionResponse {
   submission: AnonymousSubmissionType | StudentSubmissionType;
   assignment: AssignmentType;
-  course: CourseType;
+  course: Course;
   files: FileType[];
   comments: IFileToCommentsMap;
   tests: SubmissionTestType[];
   testCategories: TestCategoryType[];
-  rubricCategories?: RubricCategoryType[];
+  rubricCategories?: RubricCategory[];
   rubricComments?: IRubricCategoryToRubricCommentsMap;
 }
 
@@ -283,7 +295,7 @@ export interface IKeyboardShortcut {
  */
 export interface ICommentOperations {
   add: (comment: CommentType, file: FileType) => void;
-  update: (commentID: number, newComment: CommentType, newRubricComment?: RubricCommentType) => void;
+  update: (commentID: number, newComment: CommentType, newRubricComment?: RubricComment) => void;
   save: (comment: CommentType) => Promise<void>;
   delete: (comment: CommentType) => Promise<void>;
   updateFeedback: (fileID: number, commentID: number, feedbackNum: number) => void;
@@ -293,11 +305,11 @@ export interface ICommentOperations {
  * Rubric operations
  */
 export interface IRubricOperations {
-  applyRubricComment: (rubricComment: RubricCommentType) => void;
-  removeRubricComment: (comment: CommentType, rubricComment: RubricCommentType) => void;
+  applyRubricComment: (rubricComment: RubricComment) => void;
+  removeRubricComment: (comment: CommentType, rubricComment: RubricComment) => void;
   toggleEditMode: () => void;
   updateRubric: (rubric: {
-    rubricCategories: RubricCategoryType[];
+    rubricCategories: RubricCategory[];
     rubricComments: IRubricCategoryToRubricCommentsMap;
   }) => void;
 }

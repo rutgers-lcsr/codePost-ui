@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { Card, Descriptions, Statistic, Row, Col, Spin, Typography } from 'antd';
-import { OrganizationType, Organization } from '../../infrastructure/organization';
+import { Organization } from '../../api-client';
+import { getAuthToken } from '../../utils/auth';
 import { TeamOutlined, BookOutlined, FileOutlined, CheckCircleOutlined, FileTextOutlined } from '@ant-design/icons';
 
 interface IProps {
-  organization: OrganizationType;
+  organization: Organization;
   userCount?: number;
   courseCount?: number;
 }
@@ -26,8 +27,13 @@ const OrgOverview: React.FC<IProps> = ({ organization }) => {
   React.useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const data = await Organization.getAnalytics(organization.id);
-        setAnalytics(data);
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/organizations/${organization.id}/analytics/`, {
+          headers: { Authorization: `Bearer ${getAuthToken()}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setAnalytics(data);
+        }
       } catch (error) {
         console.error('Failed to fetch analytics:', error);
       } finally {
@@ -41,15 +47,22 @@ const OrgOverview: React.FC<IProps> = ({ organization }) => {
     <div>
       <Row gutter={[16, 16]}>
         <Col span={24}>
-          <Card title={<Typography.Title level={2} style={{ margin: 0 }}>Organization Details</Typography.Title>} bordered={false}>
+          <Card
+            title={
+              <Typography.Title level={2} style={{ margin: 0 }}>
+                Organization Details
+              </Typography.Title>
+            }
+            bordered={false}
+          >
             <Descriptions column={2}>
               <Descriptions.Item label="Name">{organization.name}</Descriptions.Item>
               <Descriptions.Item label="Short Name">{organization.shortname}</Descriptions.Item>
               <Descriptions.Item label="Email Domain">{organization.emailDomain || 'N/A'}</Descriptions.Item>
-              <Descriptions.Item label="SSO Enabled">{organization.sso_enabled ? 'Yes' : 'No'}</Descriptions.Item>
-              {organization.sso_enabled && (
+              <Descriptions.Item label="SSO Enabled">{organization.ssoEnabled ? 'Yes' : 'No'}</Descriptions.Item>
+              {organization.ssoEnabled && (
                 <>
-                  <Descriptions.Item label="SSO Provider">{organization.sso_provider}</Descriptions.Item>
+                  <Descriptions.Item label="SSO Provider">{organization.ssoProvider}</Descriptions.Item>
                 </>
               )}
             </Descriptions>
@@ -59,7 +72,14 @@ const OrgOverview: React.FC<IProps> = ({ organization }) => {
 
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col span={24}>
-          <Card title={<Typography.Title level={2} style={{ margin: 0 }}>Analytics</Typography.Title>} bordered={false}>
+          <Card
+            title={
+              <Typography.Title level={2} style={{ margin: 0 }}>
+                Analytics
+              </Typography.Title>
+            }
+            bordered={false}
+          >
             {loading ? (
               <div style={{ textAlign: 'center', padding: 24 }}>
                 <Spin />

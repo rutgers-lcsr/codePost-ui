@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Tag, Button, Card, Typography } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
-import { SystemIO, EventLogType } from '../../infrastructure/system';
+import type { SystemActivityResponse } from '../../api-client';
+import { systemApi } from '../../api-client/clients';
 import dayjs from 'dayjs';
 
 const ActivityFeed: React.FC = () => {
+  type EventLogType = SystemActivityResponse['results'][number];
   const [logs, setLogs] = useState<EventLogType[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -14,7 +16,7 @@ const ActivityFeed: React.FC = () => {
   const fetchLogs = async (pageNum: number, pSize: number) => {
     setLoading(true);
     try {
-      const data = await SystemIO.getActivity(pageNum, pSize);
+      const data = await systemApi.activityRetrieve({ page: pageNum, pageSize: pSize });
       setLogs(data.results);
       setTotal(data.total);
       setPage(data.page);

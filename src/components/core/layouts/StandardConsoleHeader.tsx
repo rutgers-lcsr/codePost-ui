@@ -5,7 +5,7 @@ import CPButton from '../CPButton';
 import CPFlex from '../CPFlex';
 import CPLogo from '../CPLogo';
 
-import { UserType } from '../../../infrastructure/user';
+import type { UserType } from '../../../types/models';
 
 import { USER_TYPE } from '../../../types/common';
 import RoleMenu from '../RoleMenu';

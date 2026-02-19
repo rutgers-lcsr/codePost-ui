@@ -12,7 +12,8 @@ import CPButton from '../../../components/core/CPButton';
 import CPAdminDetail from '../other/CPAdminDetail';
 
 /* codePost imports */
-import { CourseType } from '../../../infrastructure/course';
+/* codePost imports */
+import { Course } from '../../../api-client';
 
 type alignType = 'left' | 'right' | 'center';
 
@@ -21,7 +22,7 @@ const { Text, Title } = Typography;
 /**********************************************************************************************************************/
 
 interface IProps {
-  currentCourse: CourseType;
+  currentCourse: Course;
 }
 
 const BillingPanel = (props: IProps) => {

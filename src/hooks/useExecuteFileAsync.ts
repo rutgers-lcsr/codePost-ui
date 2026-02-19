@@ -1,80 +1,88 @@
-import { useCallback, useRef, useState } from 'react';
-import { ExecutionResult, ExecutionOptions } from '../utils/executeFileStreaming';
-import { getHeaders } from '../infrastructure/generics';
+import { useCallback, useState } from 'react';
+import { autograderApi } from '../api-client/clients';
+import { ResponseError } from '../api-client/runtime';
+import { getAuthToken } from '../utils/auth';
+import { normalizeExecutionResult, type ExecutionResult } from '../utils/fileExecution';
 
-export interface UseExecuteFileAsyncResult {
-  execute: (fileId: number, options?: ExecutionOptions) => Promise<void>;
-  isExecuting: boolean;
-  result: ExecutionResult | null;
-  error: string | null;
-}
+type ExecuteOptions = {
+  force_execute?: boolean;
+  forceExecute?: boolean;
+  timeout?: number;
+  testCode?: string;
+};
 
-export function useExecuteFileAsync(): UseExecuteFileAsyncResult {
+const parseErrorMessage = async (response: Response): Promise<string> => {
+  const contentType = response.headers.get('content-type') || '';
+
+  if (contentType.includes('application/json')) {
+    try {
+      const payload = (await response.json()) as Record<string, unknown>;
+      const message =
+        (payload.detail as string | undefined) ||
+        (payload.error as string | undefined) ||
+        (payload.message as string | undefined);
+      if (message) return message;
+      return JSON.stringify(payload);
+    } catch {
+      return `Request failed (${response.status})`;
+    }
+  }
+
+  try {
+    const text = await response.text();
+    return text || `Request failed (${response.status})`;
+  } catch {
+    return `Request failed (${response.status})`;
+  }
+};
+
+export const useExecuteFileAsync = () => {
   const [isExecuting, setIsExecuting] = useState(false);
   const [result, setResult] = useState<ExecutionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const pollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const execute = useCallback(async (fileId: number, options: ExecutionOptions = {}) => {
+  const execute = useCallback(async (fileId: number, options: ExecuteOptions = {}) => {
     setIsExecuting(true);
-    setResult(null);
     setError(null);
 
-    try {
-      // 1. Start Execution
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/autograder/execute/file/async/`, {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify({
-          file_id: fileId,
-          timeout: options.timeout || 30,
-          force_execute: options.force_execute || false,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error(`Failed to start execution: ${res.statusText}`);
-      }
-
-      const { task_id } = await res.json();
-
-      // 2. Poll for results
-      const poll = async () => {
-        try {
-          const statusRes = await fetch(`${process.env.REACT_APP_API_URL}/autograder/tasks/${task_id}/`, {
-            headers: getHeaders(),
-          });
-
-          if (!statusRes.ok) {
-            // If 404, task might not be registered yet? Or failed.
-            // We'll retry a few times? Or assume error.
-            throw new Error('Failed to check task status');
-          }
-
-          const data = await statusRes.json();
-
-          if (data.status === 'SUCCESS') {
-            setResult(data.result);
-            setIsExecuting(false);
-          } else if (data.status === 'FAILURE' || data.status === 'REVOKED') {
-            setError(data.result || 'Execution failed');
-            setIsExecuting(false);
-          } else {
-            // PENDING, STARTED, RETRY
-            pollTimeoutRef.current = setTimeout(poll, 1000);
-          }
-        } catch (e) {
-          setError(e instanceof Error ? e.message : 'Polling error');
-          setIsExecuting(false);
-        }
-      };
-
-      poll();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+    const token = getAuthToken();
+    if (!token) {
+      const authError = 'You must be logged in to run files.';
+      setError(authError);
       setIsExecuting(false);
+      throw new Error(authError);
+    }
+
+    try {
+      const payload = await autograderApi.executeFileCreate({
+        fileExecutionRequest: {
+          fileId,
+          timeout: options.timeout,
+          forceExecute: options.forceExecute ?? options.force_execute,
+          testCode: options.testCode,
+        },
+      });
+      const normalized = normalizeExecutionResult(payload as unknown as Record<string, unknown>);
+      setResult(normalized);
+      setIsExecuting(false);
+      return normalized;
+    } catch (err) {
+      let message = 'Failed to execute file.';
+      if (err instanceof ResponseError) {
+        message = await parseErrorMessage(err.response);
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      setError(message);
+      setIsExecuting(false);
+      throw new Error(message);
     }
   }, []);
 
-  return { execute, isExecuting, result, error };
-}
+  return {
+    execute,
+    isExecuting,
+    result,
+    error,
+  };
+};

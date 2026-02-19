@@ -10,8 +10,12 @@ import { CopyOutlined, RedoOutlined } from '@ant-design/icons';
 import { Input, message, Modal, Switch, Table, Typography, theme } from 'antd';
 
 /* codePost imports */
-import { CourseType } from '../../infrastructure/course';
-import { UserType } from '../../infrastructure/user';
+import type { CourseType, UserType } from '../../types/models';
+
+import { registrationApi, usersApi } from '../../api-client/clients';
+import type { RequestAPITokenCreateRequest } from '../../api-client/apis/UsersApi';
+
+import { normalizeUser } from '../../utils/normalizeUser';
 
 import PeripheralPageLayout from './layouts/PeripheralPageLayout';
 
@@ -52,22 +56,17 @@ class Settings extends Component<IProps, IState> {
 
   public requestToken = () => {
     this.setState({ loading: true }, () => {
-      fetch(`${process.env.REACT_APP_API_URL}/users/requestAPIToken/`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-      })
-        .then((res) => {
-          if (res.ok) {
-            return res.json();
-          }
-          return Promise.reject();
-        })
+      usersApi
+        // Endpoint uses the authenticated user; OpenAPI spec requires a body, so pass an empty object.
+        .requestAPITokenCreate({ user: {} } as unknown as RequestAPITokenCreateRequest)
         .then((json) => {
-          this.props.replaceUser(json, false, false);
+          this.props.replaceUser(normalizeUser(json), false, false);
           this.setState({ askedToReset: false, loading: false });
+        })
+        .catch((err) => {
+          console.error(err);
+          this.setState({ loading: false, askedToReset: false });
+          message.error('Failed to reset API token');
         });
     });
   };
@@ -75,23 +74,16 @@ class Settings extends Component<IProps, IState> {
   public updateShowProductTips = (setTipsValue: boolean) => {
     const payload = { showProductTips: setTipsValue };
     this.setState({ loading: true }, () => {
-      fetch(`${process.env.REACT_APP_API_URL}/users/me/`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
-          'Content-Type': 'application/json',
-        },
-        method: 'PATCH',
-        body: JSON.stringify(payload),
-      })
-        .then((res) => {
-          if (res.ok) {
-            return res.json();
-          }
-          return Promise.reject();
-        })
+      usersApi
+        .mePartialUpdate({ patchedUser: payload })
         .then((json) => {
-          this.props.replaceUser(json, false, false);
+          this.props.replaceUser(normalizeUser(json), false, false);
           this.setState({ loading: false });
+        })
+        .catch((err) => {
+          console.error(err);
+          this.setState({ loading: false });
+          message.error('Failed to update settings');
         });
     });
   };
@@ -113,19 +105,15 @@ class Settings extends Component<IProps, IState> {
   };
 
   public sendPasswordResetEmail = () => {
-    fetch(`${process.env.REACT_APP_API_URL}/registration/emailPasswordReset/`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email: this.props.user.email }),
-      method: 'POST',
-    })
-      .then((res) => {
-        if (res.ok || res.status === 400) {
-          return res.json();
-        } else {
-          return Promise.reject();
+    registrationApi
+      .emailPasswordResetCreate({ emailPasswordResetRequest: { email: this.props.user.email! } })
+      // Backend returns 200 or 400 (both are "success" in UX terms). Generated client throws on 400.
+      .catch((err) => {
+        // Treat 400 as success (e.g., email not found) to avoid account enumeration.
+        if ((err as any)?.response?.status === 400) {
+          return;
         }
+        throw err;
       })
       .then(() => {
         message.success(
@@ -137,6 +125,10 @@ class Settings extends Component<IProps, IState> {
             .
           </span>,
         );
+      })
+      .catch((err) => {
+        console.error(err);
+        message.error('Failed to request password reset');
       });
   };
 
@@ -170,11 +162,19 @@ class Settings extends Component<IProps, IState> {
             <div>
               <Typography.Title level={2}>Courses you can interact with via the API</Typography.Title>
               You can always{' '}
-              <a target="_blank" rel="noopener noreferrer" href="https://codepost-api.cs.rutgers.edu/api/schema/elements/">
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://codepost-api.cs.rutgers.edu/api/schema/elements/"
+              >
                 retrieve a course
               </a>{' '}
               by its ID. If you're using the{' '}
-              <a target="_blank" rel="noopener noreferrer" href="https://codepost-api.cs.rutgers.edu/api/schema/elements/">
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://codepost-api.cs.rutgers.edu/api/schema/elements/"
+              >
                 codePost SDK
               </a>
               , you can retrieve a course by ID or (name, period) -- both are unique.
@@ -192,16 +192,18 @@ class Settings extends Component<IProps, IState> {
 
     let inputComponent;
     if (user.canModifyRosters) {
-      if (user.api_token) {
+      if (user.apiToken) {
         inputComponent = (
           <div>
-            <label htmlFor="api-key" className="sr-only">Your API key</label>
+            <label htmlFor="api-key" className="sr-only">
+              Your API key
+            </label>
             <Input.Password
               aria-label="Your API key"
               addonBefore="Your API key"
               className="input--disabled-normal"
               id="api-key"
-              value={user.api_token}
+              value={user.apiToken}
               prefix={
                 <CPTooltip title={tooltips.settings.token.copy} hideThisOnHideTips={true}>
                   <CopyTokenIcon onClick={this.copyKeyToClipboard} />
@@ -231,8 +233,17 @@ class Settings extends Component<IProps, IState> {
     const settingsContent = (
       <div>
         <Typography.Title level={2}>User info</Typography.Title>
-        <label htmlFor="user-email" className="sr-only">Email</label>
-        <Input id="user-email" aria-label="Email" addonBefore="Email" className="input--disabled-normal" disabled={true} value={user.email} />
+        <label htmlFor="user-email" className="sr-only">
+          Email
+        </label>
+        <Input
+          id="user-email"
+          aria-label="Email"
+          addonBefore="Email"
+          className="input--disabled-normal"
+          disabled={true}
+          value={user.email}
+        />
         <br />
         <br />
         <CPButton cpType="secondary" onClick={this.sendPasswordResetEmail}>
@@ -248,7 +259,9 @@ class Settings extends Component<IProps, IState> {
             this setting off.
           </div>
           <div style={{ paddingLeft: 40 }}>
-            <label htmlFor="product-tips-switch" className="sr-only">Enable product tips</label>
+            <label htmlFor="product-tips-switch" className="sr-only">
+              Enable product tips
+            </label>
             <Switch
               id="product-tips-switch"
               aria-label="Enable product tips"
@@ -264,8 +277,15 @@ class Settings extends Component<IProps, IState> {
             <Typography.Title level={2}>API token</Typography.Title>
             <div>
               This token can be used to authenticate yourself with the
-              <a href="https://codepost-api.cs.rutgers.edu/api/schema/elements/" target="_blank" rel="noopener noreferrer"> codePost API</a>. For more information on how to use this token, please
-              see our API documentation.
+              <a
+                href="https://codepost-api.cs.rutgers.edu/api/schema/elements/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {' '}
+                codePost API
+              </a>
+              . For more information on how to use this token, please see our API documentation.
             </div>
             <br />
             {inputComponent}

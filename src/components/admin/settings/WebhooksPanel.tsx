@@ -7,8 +7,8 @@ import { Breadcrumb, Skeleton, Tag } from 'antd';
 import * as React from 'react';
 
 /* codePost imports */
-import { CourseType } from '../../../infrastructure/course';
-import { Webhook, WebhookType } from '../../../infrastructure/webhook';
+import type { Course, Webhook } from '../../../api-client';
+import { webhooksApi } from '../../../api-client/clients';
 import CPAdminDetail from '../other/CPAdminDetail';
 
 import WebhooksTable from './WebhooksTable';
@@ -16,11 +16,11 @@ import WebhooksTable from './WebhooksTable';
 /**********************************************************************************************************************/
 
 interface IProps {
-  currentCourse: CourseType;
+  currentCourse: Course;
 }
 
 const WebhooksPanel = (props: IProps) => {
-  const [webhooks, setWebhooks] = React.useState<WebhookType[]>([]);
+  const [webhooks, setWebhooks] = React.useState<Webhook[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [justSaved, setJustSaved] = React.useState<boolean>(false);
 
@@ -54,9 +54,9 @@ const WebhooksPanel = (props: IProps) => {
   React.useEffect(() => {
     const fetchWebhooks = async () => {
       if (props.currentCourse.webhooks !== undefined) {
-        const res: WebhookType[] = await Promise.all(
+        const res: Webhook[] = await Promise.all(
           props.currentCourse.webhooks.map(async (id: number) => {
-            return await Webhook.read(id);
+            return await webhooksApi.retrieve({ id });
           }),
         );
 

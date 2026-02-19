@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Layout, Menu, Input } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
 import { docRoutes, DocCategory } from './DocsConfig';
-import { AppstoreOutlined, TeamOutlined, RocketOutlined, SearchOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, TeamOutlined, RocketOutlined, SearchOutlined, ToolOutlined } from '@ant-design/icons';
 import { colors } from '../../theme/colors';
 import CPLogo from '../core/CPLogo';
 import { getAllDocs } from './DocsLoader';
@@ -73,7 +73,14 @@ const DocsSidebar: React.FC = () => {
           <span>
             {windowStart > 0 && '...'}
             {before}
-            <span style={{ fontWeight: 800, backgroundColor: '#ffe58f', padding: '0 2px', borderRadius: '2px' }}>
+            <span
+              style={{
+                fontWeight: 800,
+                backgroundColor: colors.actionYellowFade,
+                padding: '0 2px',
+                borderRadius: '2px',
+              }}
+            >
               {matchText}
             </span>
             {after}
@@ -95,7 +102,8 @@ const DocsSidebar: React.FC = () => {
   // Group routes by category for normal view
   const categories: Record<DocCategory, typeof docRoutes> = {
     'Getting Started': [],
-    Guides: [],
+    'Instructor Workflows': [],
+    'Role Guides': [],
     Reference: [],
   };
 
@@ -109,7 +117,9 @@ const DocsSidebar: React.FC = () => {
     switch (category) {
       case 'Getting Started':
         return <RocketOutlined />;
-      case 'Guides':
+      case 'Instructor Workflows':
+        return <ToolOutlined />;
+      case 'Role Guides':
         return <TeamOutlined />;
       default:
         return <AppstoreOutlined />;
@@ -155,99 +165,111 @@ const DocsSidebar: React.FC = () => {
         background: colors.brandLight, // Subtle brand tint
       }}
     >
-      <div style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-        <Link to="/">
-          <CPLogo cpType="dark" />
-        </Link>
+      <nav aria-label="Documentation Navigation" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+          <Link to="/">
+            <CPLogo cpType="dark" />
+          </Link>
+          <div
+            style={{
+              marginTop: '4px',
+              padding: '2px 8px',
+              background: colors.green9, // Darker green for contrast with white text
+              color: colors.neutralDarkTitle,
+              borderRadius: '12px',
+              fontSize: '10px',
+              fontWeight: 'bold',
+              textTransform: 'uppercase',
+            }}
+          >
+            Docs
+          </div>
+        </div>
+
+        <div style={{ padding: '0 24px 16px 24px' }}>
+          <Input
+            placeholder="Search docs..."
+            aria-label="Search documentation"
+            prefix={<SearchOutlined style={{ color: colors.neutralSecondaryText }} />}
+            bordered={false}
+            value={searchText}
+            style={{
+              background: 'white',
+              borderRadius: '8px',
+              padding: '8px 12px',
+              border: `1px solid ${colors.neutralBorder}`,
+            }}
+            onChange={(e) => setSearchText(e.target.value)}
+            allowClear
+          />
+        </div>
+
+        {searchText ? (
+          <div
+            role="region"
+            aria-label="Search results"
+            style={{ overflowY: 'auto', height: 'calc(100vh - 160px)', padding: '0 12px' }}
+          >
+            {searchResults.length === 0 ? (
+              <div style={{ padding: '24px', textAlign: 'center', color: colors.neutralSecondaryText }}>
+                No results found
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {searchResults.map((result) => (
+                  <Link
+                    key={result.key}
+                    to={`/docs/${result.path}?highlight=${encodeURIComponent(searchText)}`}
+                    style={{
+                      display: 'block',
+                      padding: '12px',
+                      background: 'white',
+                      borderRadius: '6px',
+                      border: `1px solid ${colors.neutralBorder}`,
+                      color: colors.neutralMainText,
+                    }}
+                  >
+                    <div style={{ fontWeight: 600, color: colors.brandPrimary, marginBottom: '4px' }}>
+                      {result.title}
+                    </div>
+                    <div style={{ fontSize: '12px', color: colors.neutralSecondaryText, marginBottom: '4px' }}>
+                      {result.category}
+                    </div>
+                    <div style={{ fontSize: '12px', color: colors.neutralMainText, lineHeight: '1.4' }}>
+                      {result.snippet}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <Menu
+            mode="inline"
+            selectedKeys={[getSelectedKey()]}
+            style={{ background: 'transparent', borderRight: 0 }}
+            items={menuItems}
+          />
+        )}
+
         <div
           style={{
-            marginTop: '4px',
-            padding: '2px 8px',
-            background: colors.green9, // Darker green for contrast with white text
-            color: 'white',
-            borderRadius: '12px',
-            fontSize: '10px',
-            fontWeight: 'bold',
-            textTransform: 'uppercase',
+            padding: '20px',
+            borderTop: `1px solid ${colors.neutralBorder}`,
+            marginTop: 'auto',
+            position: 'absolute',
+            bottom: 0,
+            width: '100%',
           }}
         >
-          Docs
+          <Link
+            to="/"
+            style={{ color: colors.neutralSecondaryText, display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            &larr; Back to App
+          </Link>
         </div>
-      </div>
-
-      <div style={{ padding: '0 24px 16px 24px' }}>
-        <Input
-          placeholder="Search docs..."
-          prefix={<SearchOutlined style={{ color: colors.neutralSecondaryText }} />}
-          bordered={false}
-          value={searchText}
-          style={{
-            background: 'white',
-            borderRadius: '8px',
-            padding: '8px 12px',
-            border: `1px solid ${colors.neutralBorder}`,
-          }}
-          onChange={(e) => setSearchText(e.target.value)}
-          allowClear
-        />
-      </div>
-
-      {searchText ? (
-        <div style={{ overflowY: 'auto', height: 'calc(100vh - 160px)', padding: '0 12px' }}>
-          {searchResults.length === 0 ? (
-            <div style={{ padding: '24px', textAlign: 'center', color: colors.neutralSecondaryText }}>
-              No results found
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {searchResults.map((result) => (
-                <Link
-                  key={result.key}
-                  to={`/docs/${result.path}?highlight=${encodeURIComponent(searchText)}`}
-                  style={{
-                    display: 'block',
-                    padding: '12px',
-                    background: 'white',
-                    borderRadius: '6px',
-                    border: `1px solid ${colors.neutralBorder}`,
-                    color: colors.neutralMainText,
-                  }}
-                >
-                  <div style={{ fontWeight: 600, color: colors.brandPrimary, marginBottom: '4px' }}>{result.title}</div>
-                  <div style={{ fontSize: '12px', color: colors.neutralSecondaryText, marginBottom: '4px' }}>
-                    {result.category}
-                  </div>
-                  <div style={{ fontSize: '12px', color: colors.neutralMainText, lineHeight: '1.4' }}>
-                    {result.snippet}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      ) : (
-        <Menu
-          mode="inline"
-          selectedKeys={[getSelectedKey()]}
-          style={{ background: 'transparent', borderRight: 0 }}
-          items={menuItems}
-        />
-      )}
-
-      <div
-        style={{
-          padding: '20px',
-          borderTop: `1px solid ${colors.neutralBorder}`,
-          marginTop: 'auto',
-          position: 'absolute',
-          bottom: 0,
-          width: '100%',
-        }}
-      >
-        <Link to="/" style={{ color: colors.neutralSecondaryText, display: 'flex', alignItems: 'center', gap: '8px' }}>
-          &larr; Back to App
-        </Link>
-      </div>
+      </nav>
     </Sider>
   );
 };

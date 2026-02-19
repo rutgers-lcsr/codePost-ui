@@ -9,7 +9,7 @@ import {
   CrownOutlined,
   SafetyCertificateOutlined,
 } from '@ant-design/icons';
-import { UserType } from '../../infrastructure/user';
+import type { UserType } from '../../types/models';
 
 interface IProps {
   replaceUser: (user: UserType, redirect: boolean, isSuperUser: boolean) => void;

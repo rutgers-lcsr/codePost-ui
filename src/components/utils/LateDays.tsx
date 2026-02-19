@@ -1,5 +1,4 @@
-import { AssignmentType } from '../../infrastructure/assignment';
-import { SubmissionType, AnonymousSubmissionType } from '../../infrastructure/submission';
+import { AssignmentType, AnonymousSubmissionType, SubmissionType } from '../../types/models';
 
 import dayjs from 'dayjs';
 

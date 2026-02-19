@@ -7,17 +7,23 @@ import { Button, Input, message, Popconfirm, Tooltip } from 'antd';
 
 import { hostname } from '../../serviceWorker';
 
-import { AssignmentStudentType, AssignmentType } from '../../infrastructure/assignment';
+import type {
+  AssignmentStudentType,
+  AssignmentType,
+  StudentSubmissionType,
+  SubmissionInfoType,
+} from '../../types/models';
 
-import { PartnerLinkType, StudentSubmissionType, Submission } from '../../infrastructure/submission';
+import type { SubmissionPartnerLinkResponse } from '../../api-client';
+import { Submission } from '../../services/submission';
 
 interface IInvitePartnersLinkProps {
-  assignment?: AssignmentType | AssignmentStudentType;
-  submission?: StudentSubmissionType;
+  assignment?: AssignmentType | AssignmentStudentType | { allowStudentUploadWithPartners?: boolean };
+  submission?: StudentSubmissionType | SubmissionInfoType;
 }
 
 const InvitePartnersLink = (props: IInvitePartnersLinkProps) => {
-  const [link, setLink] = React.useState<PartnerLinkType | undefined>(undefined);
+  const [link, setLink] = React.useState<SubmissionPartnerLinkResponse | undefined>(undefined);
   const host = hostname();
 
   React.useEffect(() => {

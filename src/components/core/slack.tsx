@@ -1,24 +1,23 @@
 import { colors } from '../../theme/colors';
+import { Logger } from '../../utils/logger';
 
+// Deprecated: use Logger.error instead
 export const slack = (url: string, payload: any) => {
-  fetch(url, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
-      'Content-Type': 'application/json',
-    },
-    method: 'POST',
-    body: JSON.stringify(payload),
-  })
-    .then((res) => {
-      if (res.status === 200) {
-        return res.json();
-      } else {
-        return Promise.reject(res.status);
-      }
-    })
-    .catch((_err) => {
-      // console.log(err);
-    });
+  // For backward compatibility, we'll try to map this to Logger.
+  // Ideally callers should switch to Logger.error directly.
+  if (url.includes('logError')) {
+    Logger.error(payload.error, payload.errorDetail);
+  } else {
+    // Fallback for other custom slack calls if any
+    fetch(url, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }).catch(() => {});
+  }
 };
 
 export const sendSlack = (
@@ -28,22 +27,10 @@ export const sendSlack = (
   channel = '#user_notifications_everything',
   courseID = 0,
 ) => {
-  const targetURL = `${process.env.REACT_APP_API_URL}/logs/log/`;
-
-  const attachments = [
-    {
-      title: message,
-      color,
-      text,
-      footer: window.location.href,
-    },
-  ];
-
-  const payload = {
-    attachments: attachments,
-    channel: channel,
+  Logger.info(message, {
+    text,
+    color,
+    channel,
     courseID,
-  };
-
-  slack(targetURL, payload);
+  });
 };

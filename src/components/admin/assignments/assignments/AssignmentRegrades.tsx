@@ -5,11 +5,9 @@ import { Breadcrumb } from 'antd';
 import CPAdminDetail from '../../other/CPAdminDetail';
 
 /* codePost imports */
-import { AssignmentType } from '../../../../infrastructure/assignment';
-import { CourseType } from '../../../../infrastructure/course';
-import { SubmissionInfoType } from '../../../../infrastructure/submission';
-
-import { UserType } from '../../../../infrastructure/user';
+/* codePost imports */
+import { Course, User } from '../../../../api-client';
+import { Assignment, SubmissionInfoType } from '../../../../types/common';
 
 import RegradesTable from './AssignmentRegrades/RegradesTable';
 
@@ -17,14 +15,14 @@ import SendEmailModal from '../../other/SendEmailModal';
 
 interface IAssignmentRegradesProps {
   /* assignment data */
-  assignment: AssignmentType;
-  currentCourse: CourseType;
+  assignment: Assignment;
+  currentCourse: Course;
   submissions: SubmissionInfoType[];
 
   /* Refresh Course data */
   refreshCourseData: () => void | undefined;
   onCancel: () => void;
-  user: UserType;
+  user: User;
   updateSubmission: (submission: SubmissionInfoType) => Promise<void>;
   breadcrumbs: Array<{ title: React.ReactNode }>;
 }
@@ -47,7 +45,7 @@ const AssignmentRegrades = (props: IAssignmentRegradesProps) => {
         template="regrades_reminder"
         course={props.currentCourse}
         assignment={props.assignment}
-        me={props.user.email}
+        me={props.user.email ?? ''}
         emails={reminderEmails}
         body={<div>Notify graders of submissions with unclaimed or unfinished regrades. </div>}
       />

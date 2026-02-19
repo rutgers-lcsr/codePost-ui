@@ -16,13 +16,13 @@ import CPButton from '../../core/CPButton';
 import CPTooltip from '../../core/CPTooltip';
 import { tooltips } from '../../core/tooltips';
 
-import { CourseType } from '../../../infrastructure/course';
+import { Course } from '../../../api-client';
 
 /**********************************************************************************************************************/
 
 interface IProps {
-  courses: CourseType[];
-  createCourse: (courseName: string, coursePeriod: string, copiedCourse: CourseType | undefined) => Promise<void>;
+  courses: Course[];
+  createCourse: (courseName: string, coursePeriod: string, copiedCourse: Course | undefined) => Promise<void>;
 }
 
 const NewCourseDialog: React.FC<IProps> = (props) => {
@@ -75,7 +75,7 @@ interface IFormModalProps {
   open: boolean;
   onCreate: (name: string, period: string, cloneID?: number) => void;
   onCancel: () => void;
-  courses: CourseType[];
+  courses: Course[];
   loading: boolean;
 }
 
