@@ -89,6 +89,11 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
     onChange?.(updatedFiles);
   };
 
+  const isStudentVisibleFile = (file: EditableFile): boolean => {
+    const normalized = file as EditableFile & { is_test_resource?: boolean };
+    return !Boolean(file.hidden || file.isTestResource || normalized.is_test_resource);
+  };
+
   // Helper to check for binary content
   const hasNullBytes = (str: string): boolean => {
     return str.indexOf('\0') !== -1;
@@ -459,12 +464,13 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
               Assignment Files
             </Text>
             <Tag color="blue" style={{ fontSize: 13 }}>
-              {files.filter((f) => !f.hidden).length} {files.filter((f) => !f.hidden).length === 1 ? 'file' : 'files'}
+              {files.filter((f) => isStudentVisibleFile(f)).length}{' '}
+              {files.filter((f) => isStudentVisibleFile(f)).length === 1 ? 'file' : 'files'}
             </Tag>
             <Space size={24} style={{ marginLeft: 30 }}>
               <div>
                 <Tag color="success" style={{ marginRight: 6 }}>
-                  {files.filter((f) => f.required && !f.hidden).length} Required
+                  {files.filter((f) => f.required && isStudentVisibleFile(f)).length} Required
                 </Tag>
                 <Text type="secondary" style={{ fontSize: 12 }}>
                   Must be submitted
@@ -472,7 +478,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
               </div>
               <div>
                 <Tag color="default" style={{ marginRight: 6 }}>
-                  {files.filter((f) => !f.required && !f.hidden).length} Optional
+                  {files.filter((f) => !f.required && isStudentVisibleFile(f)).length} Optional
                 </Tag>
                 <Text type="secondary" style={{ fontSize: 12 }}>
                   Can be submitted
@@ -487,7 +493,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
       <div>
         <Table
           columns={columns}
-          dataSource={files.filter((f) => !f.hidden)}
+          dataSource={files.filter((f) => isStudentVisibleFile(f))}
           rowKey="id"
           pagination={false}
           size="middle"
