@@ -2435,6 +2435,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             rubricCategories={state.rubricCategories}
             testCategories={state.testCategories}
             fileOverrides={state.isEditMode ? state.temporaryFileContent : undefined}
+            demoMode={true}
+            initialResults={state.tests}
           />,
           <FileMenu
             key="file-menu"
@@ -2655,6 +2657,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           tests={Object.values(state.testCases).flat() as TestCaseType[]}
           rubricCategories={state.rubricCategories}
           testCategories={state.testCategories}
+          demoMode={props.inDemoMode}
+          initialResults={state.tests}
         />,
         <FileMenu
           key="file-menu"
@@ -2936,6 +2940,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             tests={Object.values(state.testCases).flat() as TestCaseType[]}
             rubricCategories={state.rubricCategories}
             testCategories={state.testCategories}
+            demoMode={props.inDemoMode}
+            initialResults={state.tests}
           />,
         );
         siderTitles.push(testsTitle);

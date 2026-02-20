@@ -24,6 +24,14 @@ dayjs.extend(timezone);
 
 const DEMO_ASSIGNMENT_ID = -1;
 const DEMO_SUBMISSION_ID = 1;
+const DEMO_PDF_DATA_URI =
+  'data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCAzMDAgMTQ0XSAvQ29udGVudHMgNCAwIFIgL1Jlc291cmNlcyA8PCAvRm9udCA8PCAvRjEgNSAwIFIgPj4gPj4gPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0xlbmd0aCA0OCA+PgpzdHJlYW0KQlQKL0YxIDE4IFRmCjQwIDkwIFRkCihjb2RlUG9zdCBEZW1vIFBERikgVGoKRVQKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjw8IC9UeXBlIC9Gb250IC9TdWJ0eXBlIC9UeXBlMSAvQmFzZUZvbnQgL0hlbHZldGljYSA+PgplbmRvYmoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDA5IDAwMDAwIG4gCjAwMDAwMDAwNTggMDAwMDAgbiAKMDAwMDAwMDExNSAwMDAwMCBuIAowMDAwMDAwMjQxIDAwMDAwIG4gCjAwMDAwMDAzMzggMDAwMDAgbiAKdHJhaWxlcgo8PCAvU2l6ZSA2IC9Sb290IDEgMCBSID4+CnN0YXJ0eHJlZgo0MDgKJSVFT0YK';
+
+type DemoUploadFile = {
+  name?: string;
+  data?: string;
+  code?: string;
+};
 
 const demoAssignmentBase: AssignmentType = {
   id: DEMO_ASSIGNMENT_ID,
@@ -320,7 +328,7 @@ const demoTestCases: TestCasesByCategory = {
       description: 'max_value([1, 2, 3]) returns 3',
       type: 'io',
       pointsFail: 1,
-      pointsPass: 0,
+      pointsPass: 2,
       text: '',
       modified: '2026-01-01T00:00:00.000Z',
       fileName: 'Loops.py',
@@ -343,7 +351,7 @@ const demoTestCases: TestCasesByCategory = {
       description: 'max_value([-1, -2, -3]) returns -1',
       type: 'io',
       pointsFail: 2,
-      pointsPass: 0,
+      pointsPass: 3,
       text: '',
       modified: '2026-01-01T00:00:00.000Z',
       fileName: 'Loops.py',
@@ -366,7 +374,7 @@ const demoTestCases: TestCasesByCategory = {
       description: 'reverse([1,2,3]) returns [3,2,1]',
       type: 'unit',
       pointsFail: 2,
-      pointsPass: 0,
+      pointsPass: 3,
       text: '',
       modified: '2026-01-01T00:00:00.000Z',
       fileName: 'Loops.py',
@@ -391,7 +399,7 @@ const demoTestCases: TestCasesByCategory = {
       description: 'sum_recursive([1,2,3]) returns 6',
       type: 'io',
       pointsFail: 1,
-      pointsPass: 0,
+      pointsPass: 2,
       text: '',
       modified: '2026-01-01T00:00:00.000Z',
       fileName: 'Recursion.py',
@@ -414,7 +422,7 @@ const demoTestCases: TestCasesByCategory = {
       description: 'contains_recursive([], 3) should return False',
       type: 'unit',
       pointsFail: 2,
-      pointsPass: 0,
+      pointsPass: 3,
       text: '',
       modified: '2026-01-01T00:00:00.000Z',
       fileName: 'Recursion.py',
@@ -439,7 +447,7 @@ const demoTestCases: TestCasesByCategory = {
       description: 'Notebook has executed outputs available',
       type: 'unit',
       pointsFail: 1,
-      pointsPass: 0,
+      pointsPass: 2,
       text: '',
       modified: '2026-01-01T00:00:00.000Z',
       fileName: 'analysis_notebook.ipynb',
@@ -462,7 +470,7 @@ const demoTestCases: TestCasesByCategory = {
       description: 'Notebook graph output is present',
       type: 'unit',
       pointsFail: 1,
-      pointsPass: 0,
+      pointsPass: 2,
       text: '',
       modified: '2026-01-01T00:00:00.000Z',
       fileName: 'analysis_notebook.ipynb',
@@ -481,10 +489,10 @@ const demoTestCases: TestCasesByCategory = {
   ],
 };
 
-const buildDemoSubmission = (user: string | null): AnonymousSubmissionType => ({
+const buildDemoSubmission = (user: string | null, fileIds: number[]): AnonymousSubmissionType => ({
   id: DEMO_SUBMISSION_ID,
   isFinalized: false,
-  files: [1, 2, 3, 4] as any,
+  files: fileIds as any,
   students: ['student1@example.edu'],
   assignment: DEMO_ASSIGNMENT_ID,
   dateEdited: '',
@@ -503,13 +511,36 @@ const buildDemoSubmission = (user: string | null): AnonymousSubmissionType => ({
   testRunsCompleted: 0,
 });
 
-const buildUploadedFiles = (files: any[]): { fileList: FileType[]; commentMap: Record<number, any[]> } => {
+const inferExtension = (fileName: string): string => {
+  if (!fileName || !fileName.includes('.')) {
+    return '';
+  }
+
+  return fileName.split('.').pop()?.toLowerCase() || '';
+};
+
+const normalizeUploadFile = (file: DemoUploadFile | null | undefined, index: number): Required<DemoUploadFile> => {
+  const fallbackName = `uploaded_file_${index + 1}.txt`;
+  const safeName = typeof file?.name === 'string' && file.name.trim().length > 0 ? file.name : fallbackName;
+
+  const safeDataCandidate = file?.data ?? file?.code ?? '';
+  const safeData = typeof safeDataCandidate === 'string' ? safeDataCandidate : String(safeDataCandidate);
+
+  return {
+    name: safeName,
+    data: safeData,
+    code: safeData,
+  };
+};
+
+const buildUploadedFiles = (files: DemoUploadFile[]): { fileList: FileType[]; commentMap: Record<number, any[]> } => {
   const fileList: FileType[] = [];
   const commentMap: Record<number, any[]> = {};
 
-  files.forEach((file, index) => {
+  files.forEach((rawFile, index) => {
+    const file = normalizeUploadFile(rawFile, index);
     const fileId = index + 1;
-    const extension = file.name.includes('.') ? file.name.split('.').pop() : '';
+    const extension = inferExtension(file.name);
 
     fileList.push({
       id: fileId,
@@ -537,7 +568,7 @@ const buildDefaultGraderFiles = (): { fileList: FileType[]; commentMap: Record<n
   fileList[3] = {
     id: 4,
     name: 'assignment.pdf',
-    data: 'data:application/pdf;base64,JVBERi0xLjcKCjEgMCBvYmogICUgZW50cnkgcG9pbnQKPDwKICAvVHlwZSAvQ2F0YWxvZwogIC9QYWdlcyAyIDAgUgo+PgplbmRvYmoKCjIgMCBvYmogICUgcGFnZXMKPDwKICAvVHlwZSAvUGFnZXMKICAvTWVkaWFCb3ggWyAwIDAgMjAwIDIwMCBdCiAgL0NvdW50IDEKICAvS2lkcyBbIDMgMCBSIF0KPj4KZW5kb2JqCgozIDAgb2JqICB1cGFnZQo8PAogIC9UeXBlIC9QYWdlCiAgL1BhcmVudCAyIDAgUgogIC9SZXNvdXJjZXMgPDwKICAgIC9Gb250IDw8CiAgICAgIC9GMSA0IDAgUgogICAgPj4KICA+PgogIC9Db250ZW50cyA1IDAgUgo+PgplbmRvYmoKCjQgMCBvYmogICUgZm9udAo8PAogIC9UeXBlIC9Gb250CiAgL1N1YnR5cGUgL1R5cGUxCiAgL0Jhc2VGb250IC9UaW1lcy1Sb21hbgpQPj4KZW5kb2JqCgo1IDAgb2JqICAlIHBhZ2UgY29udGVudAo8PAogIC9MZW5ndGggNDQKPj4Kc3RyZWFtCkJUCjcwIDUwIFRECi9GMSAxMiBUZgooSGVsbG8sIHdvcmxkISkgVGoKRVQKZW5kc3RyZWFtCmVuZG9iagoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDEwIDAwMDAwIG4gCjAwMDAwMDAwNjAgMDAwMDAgbiAKMDAwMDAwMDE1NyAwMDAwMCBuIAowMDAwMDAwMjU1IDAwMDAwIG4gCjAwMDAwMDAzNDQgMDAwMDAgbiAKdHJhaWxlcgo8PAogIC9TaXplIDYKICAvUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKNDM5CiUlRU9GCg==',
+    data: DEMO_PDF_DATA_URI,
     comments: [],
     extension: 'pdf',
     submission: DEMO_SUBMISSION_ID,
@@ -569,7 +600,7 @@ const buildDefaultStudentFiles = (): {
   fileList[3] = {
     id: 4,
     name: 'assignment.pdf',
-    data: 'data:application/pdf;base64,JVBERi0xLjcKCjEgMCBvYmogICUgZW50cnkgcG9pbnQKPDwKICAvVHlwZSAvQ2F0YWxvZwogIC9QYWdlcyAyIDAgUgo+PgplbmRvYmoKCjIgMCBvYmogICUgcGFnZXMKPDwKICAvVHlwZSAvUGFnZXMKICAvTWVkaWFCb3ggWyAwIDAgMjAwIDIwMCBdCiAgL0NvdW50IDEKICAvS2lkcyBbIDMgMCBSIF0KPj4KZW5kb2JqCgozIDAgb2JqICB1cGFnZQo8PAogIC9UeXBlIC9QYWdlCiAgL1BhcmVudCAyIDAgUgogIC9SZXNvdXJjZXMgPDwKICAgIC9Gb250IDw8CiAgICAgIC9GMSA0IDAgUgogICAgPj4KICA+PgogIC9Db250ZW50cyA1IDAgUgo+PgplbmRvYmoKCjQgMCBvYmogICUgZm9udAo8PAogIC9UeXBlIC9Gb250CiAgL1N1YnR5cGUgL1R5cGUxCiAgL0Jhc2VGb250IC9UaW1lcy1Sb21hbgpQPj4KZW5kb2JqCgo1IDAgb2JqICAlIHBhZ2UgY29udGVudAo8PAogIC9MZW5ndGggNDQKPj4Kc3RyZWFtCkJUCjcwIDUwIFRECi9GMSAxMiBUZgooSGVsbG8sIHdvcmxkISkgVGoKRVQKZW5kc3RyZWFtCmVuZG9iagoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDEwIDAwMDAwIG4gCjAwMDAwMDAwNjAgMDAwMDAgbiAKMDAwMDAwMDE1NyAwMDAwMCBuIAowMDAwMDAwMjU1IDAwMDAwIG4gCjAwMDAwMDAzNDQgMDAwMDAgbiAKdHJhaWxlcgo8PAogIC9TaXplIDYKICAvUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKNDM5CiUlRU9GCg==',
+    data: DEMO_PDF_DATA_URI,
     comments: [],
     extension: 'pdf',
     submission: DEMO_SUBMISSION_ID,
@@ -706,9 +737,12 @@ export const getDemoPinnedTemplates = (currentUserEmail: string): CommentTemplat
 export const loadDemoGrader = (files: any[], user: string | null) => {
   const demoAssignment = { ...demoAssignmentBase };
   const demoCourse = { ...demoCourseBase };
-  const demoSubmission = buildDemoSubmission(user);
 
   const { fileList, commentMap } = files.length > 0 ? buildUploadedFiles(files) : buildDefaultGraderFiles();
+  const demoSubmission = buildDemoSubmission(
+    user,
+    fileList.map((file) => file.id || 0).filter((id) => id > 0),
+  );
 
   return {
     assignment: demoAssignment,
@@ -732,7 +766,6 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
 export const loadDemoStudent = (files: any[], user: string | null) => {
   const demoAssignment = { ...demoAssignmentBase, studentsCanSeeGraders: true };
   const demoCourse = { ...demoCourseBase };
-  const demoSubmission = buildDemoSubmission(user);
 
   const uploadedData = files.length > 0 ? buildUploadedFiles(files) : undefined;
   const defaultData = files.length > 0 ? undefined : buildDefaultStudentFiles();
@@ -740,6 +773,10 @@ export const loadDemoStudent = (files: any[], user: string | null) => {
   const fileList = uploadedData ? uploadedData.fileList : defaultData!.fileList;
   const commentMap = uploadedData ? uploadedData.commentMap : defaultData!.commentMap;
   const commentRubricComments = uploadedData ? {} : defaultData!.commentRubricComments;
+  const demoSubmission = buildDemoSubmission(
+    user,
+    fileList.map((file) => file.id || 0).filter((id) => id > 0),
+  );
 
   return {
     assignment: demoAssignment,
