@@ -44,49 +44,23 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
   const courseBaseURL = getCourseBaseURL();
 
   const getDefaultSelectedKey = () => {
-    const routes = [
-      'submissions/by_student',
-      'submissions/by_grader',
-      'assignments/overview',
-      'assignments/rubrics',
-      'assignments/environment',
-      'assignments/plagiarism',
-      'roster/students',
-      'roster/graders',
-      'roster/admins',
-      'roster/sections',
-      'settings/',
-    ];
+    const pathname = location.pathname;
 
-    // Calculate panels from location.pathname manually since parent routes might not capture them in params
-    let panel1 = '';
-    let panel2: string | undefined;
+    if (/\/submissions\/by_grader(?:\/|$)/.test(pathname)) return 'submissions/by_grader';
+    if (/\/submissions(?:\/|$)/.test(pathname)) return 'submissions/by_student';
 
-    if (location.pathname.startsWith(courseBaseURL)) {
-      const relativePath = location.pathname.substring(courseBaseURL.length);
-      const parts = relativePath.split('/').filter((p) => p);
-      if (parts.length > 0) panel1 = parts[0];
-      if (parts.length > 1) panel2 = parts[1];
-    }
+    if (/\/roster\/graders(?:\/|$)/.test(pathname)) return 'roster/graders';
+    if (/\/roster\/admins(?:\/|$)/.test(pathname)) return 'roster/admins';
+    if (/\/roster\/sections(?:\/|$)/.test(pathname)) return 'roster/sections';
+    if (/\/roster(?:\/|$)/.test(pathname)) return 'roster/students';
 
-    const routeString = `${panel1}/${panel2 !== undefined ? panel2 : ''}`;
+    if (/\/settings\/webhooks(?:\/|$)/.test(pathname)) return 'course-settings/webhooks';
+    if (/\/settings(?:\/|$)/.test(pathname)) return 'course-settings/general';
 
-    // Check for exact match or prefix match for deep routes (e.g. /submissions/by_grader/graderId)
-    // The key in routes is "submissions/by_grader", so we want to match that.
+    if (/\/assignments\/rubrics(?:\/|$)/.test(pathname)) return 'assignments/rubrics';
+    if (/\/assignments\/environment(?:\/|$)/.test(pathname)) return 'assignments/environment';
 
-    // First try exact match of the constructed routeString (which might have extra segments if we just took first 2)
-    // The construction above only takes first 2 segments.
-
-    const matchKey = routes.indexOf(routeString).toString();
-
-    // default to /assignments
-    if (matchKey === '-1') {
-      // If we are at /admin/course/period/assignments/overview, routeString is assignments/overview.
-      // If at /admin/course/period, routeString is /.
-      return 'assignments/overview';
-    } else {
-      return routeString;
-    }
+    return 'assignments/overview';
   };
 
   const openLink = (url: string) => {
