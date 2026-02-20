@@ -13,7 +13,8 @@ import { Badge, Button, Card, Col, Input, Row, Space, Statistic, Table, Tag, Too
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
 
-import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
+import { PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
+import useDefaultPageSize from '../utils/useDefaultPageSize';
 import { colors } from '../../theme/colors';
 import type { RosterType, UserType } from '../../types/models';
 import { Organization } from '../../api-client';
@@ -47,7 +48,7 @@ interface UsersTableProps {
 
 const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, onRefresh }) => {
   const [searchText, setSearchText] = useState('');
-  const [pageSize, setPageSize] = useState(LOCAL_SETTINGS.defaultPageSize.getter());
+  const [pageSize, setPageSize] = useDefaultPageSize();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
@@ -448,10 +449,8 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
           showSizeChanger: true,
           showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} users`,
           pageSizeOptions: PAGE_SIZE_OPTIONS,
-          onShowSizeChange: (_current, size) => {
-            setPageSize(size);
-            LOCAL_SETTINGS.defaultPageSize.setter(size);
-          },
+          onShowSizeChange: (_current, size) => setPageSize(size),
+          onChange: (_page, size) => setPageSize(size),
         }}
         scroll={{ x: 'max-content' }}
       />
