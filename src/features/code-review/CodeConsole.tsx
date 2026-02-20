@@ -114,7 +114,7 @@ import {
 
 import { CodeConsoleOnboardingSelector } from '../../components/core/OnboardingSelector';
 
-import { loadDemoGrader, loadDemoStudent } from './demo';
+import { getDemoPinnedTemplates, loadDemoGrader, loadDemoStudent } from './demo';
 
 import RubricManager, { IRubricManagerParams, RubricTooltip } from '../../components/core/rubric/RubricManager';
 
@@ -2491,6 +2491,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             refreshTrigger={templateRefresh}
             currentFilePath={selectedFile?.name}
             isSuperGrader={isSuperGrader(assignment)}
+            demoTemplates={getDemoPinnedTemplates(props.user.email!)}
           />,
         ];
 

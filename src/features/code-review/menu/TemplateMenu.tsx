@@ -21,10 +21,19 @@ interface ITemplateMenuProps {
   refreshTrigger?: number;
   currentFilePath?: string;
   isSuperGrader?: boolean;
+  demoTemplates?: CommentTemplateType[];
 }
 
 const TemplateMenu: React.FC<ITemplateMenuProps> = (props) => {
-  const { onApplyTemplate, assignmentId, currentUserEmail, refreshTrigger, currentFilePath, isSuperGrader } = props;
+  const {
+    onApplyTemplate,
+    assignmentId,
+    currentUserEmail,
+    refreshTrigger,
+    currentFilePath,
+    isSuperGrader,
+    demoTemplates,
+  } = props;
   const [templates, setTemplates] = React.useState<CommentTemplateType[]>([]);
   const [loading, setLoading] = React.useState(false);
   // State for template editing has been moved to TemplateCard
@@ -32,6 +41,18 @@ const TemplateMenu: React.FC<ITemplateMenuProps> = (props) => {
   const isDarkTheme = consoleThemes.dark === consoleTheme.consoleTheme;
 
   const fetchTemplates = React.useCallback(async () => {
+    if (demoTemplates && demoTemplates.length > 0) {
+      setTemplates(demoTemplates);
+      setLoading(false);
+      return;
+    }
+
+    if (assignmentId < 0) {
+      setTemplates([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const data = await commentTemplatesApi.list({ assignment: assignmentId });
@@ -42,7 +63,7 @@ const TemplateMenu: React.FC<ITemplateMenuProps> = (props) => {
     } finally {
       setLoading(false);
     }
-  }, [assignmentId]);
+  }, [assignmentId, demoTemplates]);
 
   React.useEffect(() => {
     fetchTemplates();
@@ -91,6 +112,7 @@ const TemplateMenu: React.FC<ITemplateMenuProps> = (props) => {
                   onRefresh={fetchTemplates}
                   theme={consoleTheme.consoleTheme}
                   isDarkTheme={isDarkTheme}
+                  isReadOnly={assignmentId < 0}
                 />
               ))}
           </>
@@ -123,6 +145,7 @@ const TemplateMenu: React.FC<ITemplateMenuProps> = (props) => {
                   onRefresh={fetchTemplates}
                   theme={consoleTheme.consoleTheme}
                   isDarkTheme={isDarkTheme}
+                  isReadOnly={assignmentId < 0}
                 />
               ))}
           </>
@@ -153,6 +176,7 @@ interface ITemplateCardProps {
   onRefresh: () => void;
   theme: any;
   isDarkTheme: boolean;
+  isReadOnly: boolean;
 }
 
 const TemplateCard: React.FC<ITemplateCardProps> = ({
@@ -163,6 +187,7 @@ const TemplateCard: React.FC<ITemplateCardProps> = ({
   onRefresh,
   theme,
   isDarkTheme,
+  isReadOnly,
 }) => {
   const [isEditing, setIsEditing] = React.useState(false);
   const [editText, setEditText] = React.useState('');
@@ -177,7 +202,7 @@ const TemplateCard: React.FC<ITemplateCardProps> = ({
     config: { tension: 300, friction: 30 },
   });
 
-  const isOwner = t.owner === currentUserEmail;
+  const isOwner = !isReadOnly && t.owner === currentUserEmail;
   const isGlobal = !!t.isGlobal;
   const icon = isGlobal ? <GlobalOutlined /> : <UserOutlined />;
   const textColor = theme.siderMenuItemColor;
