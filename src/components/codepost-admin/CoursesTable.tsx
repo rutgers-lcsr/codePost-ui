@@ -16,7 +16,8 @@ import React, { useMemo, useState } from 'react';
 import { colors } from '../../theme/colors';
 import type { RosterType } from '../../types/models';
 import { Organization, Course } from '../../api-client';
-import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
+import { PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
+import useDefaultPageSize from '../utils/useDefaultPageSize';
 
 import NewCourseDialog from './NewCourseDialog';
 
@@ -40,7 +41,7 @@ interface CoursesTableProps {
 
 const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizations, onRefresh }) => {
   const [searchValue, setSearchValue] = useState('');
-  const [pageSize, setPageSize] = useState(LOCAL_SETTINGS.defaultPageSize.getter());
+  const [pageSize, setPageSize] = useDefaultPageSize();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const coursesWithData: CourseWithRoster[] = useMemo(() => {
@@ -294,10 +295,8 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
           showSizeChanger: true,
           pageSizeOptions: PAGE_SIZE_OPTIONS,
           showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} courses`,
-          onShowSizeChange: (_current, size) => {
-            setPageSize(size);
-            LOCAL_SETTINGS.defaultPageSize.setter(size);
-          },
+          onShowSizeChange: (_current, size) => setPageSize(size),
+          onChange: (_page, size) => setPageSize(size),
         }}
         scroll={{ x: 'max-content' }}
       />

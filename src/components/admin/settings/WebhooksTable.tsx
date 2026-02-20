@@ -10,7 +10,8 @@ import type { Course, Webhook } from '../../../api-client';
 import type { CreateRequest, PartialUpdateRequest } from '../../../api-client/apis/WebhooksApi';
 import { webhooksApi } from '../../../api-client/clients';
 import { VALID_WEBHOOKS } from '../../../utils/webhooks';
-import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../../utils/LocalSettings';
+import { PAGE_SIZE_OPTIONS } from '../../utils/LocalSettings';
+import useDefaultPageSize from '../../utils/useDefaultPageSize';
 
 const EditableContext = React.createContext<any>(null);
 
@@ -137,7 +138,7 @@ const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
     })),
   );
   const [count, setCount] = useState(webhooks.length);
-  const [pageSize, setPageSize] = useState(LOCAL_SETTINGS.defaultPageSize.getter());
+  const [pageSize, setPageSize] = useDefaultPageSize();
 
   const handleDelete = async (webhook: Webhook) => {
     try {
@@ -318,10 +319,8 @@ const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
           pageSize,
           showSizeChanger: true,
           pageSizeOptions: PAGE_SIZE_OPTIONS,
-          onShowSizeChange: (_current, size) => {
-            setPageSize(size);
-            LOCAL_SETTINGS.defaultPageSize.setter(size);
-          },
+          onShowSizeChange: (_current, size) => setPageSize(size),
+          onChange: (_page, size) => setPageSize(size),
         }}
       />
     </div>
