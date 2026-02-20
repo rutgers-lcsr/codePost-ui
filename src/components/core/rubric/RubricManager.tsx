@@ -663,7 +663,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
       loadAssignmentRubric(props.assignment, props.shouldLoadInstanceLists, props.shouldLoadFeedback);
     }
 
-    if (props.reloadInterval !== undefined) {
+    if (props.reloadInterval !== undefined && !props.defaultRubric) {
       intervalRef.current = window.setInterval(() => {
         loadAssignmentRubric(props.assignment, props.shouldLoadInstanceLists, props.shouldLoadFeedback);
       }, props.reloadInterval);
@@ -680,6 +680,12 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
   // Handle assignment change
   useEffect(() => {
+    if (props.defaultRubric) {
+      const commentMap = buildCommentMap(props.defaultRubric.categories, props.defaultRubric.comments);
+      store.initialize(props.defaultRubric.categories, commentMap);
+      return;
+    }
+
     store.setLoadComplete(false);
     loadAssignmentRubric(props.assignment, props.shouldLoadInstanceLists, props.shouldLoadFeedback);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -691,7 +697,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
       clearInterval(intervalRef.current);
     }
 
-    if (props.reloadInterval !== undefined) {
+    if (props.reloadInterval !== undefined && !props.defaultRubric) {
       intervalRef.current = window.setInterval(() => {
         loadAssignmentRubric(props.assignment, props.shouldLoadInstanceLists, props.shouldLoadFeedback);
       }, props.reloadInterval);
