@@ -65,6 +65,7 @@ import { AdminOnboardingSelector } from '../core/OnboardingSelector';
 import { ADMIN_TOUR_ID } from '../../routes';
 
 import { IComponentProps } from '../core/ComponentManager';
+import { encodeForLink } from '../core/URLutils';
 
 import CPFlex from '../core/CPFlex';
 import CPTooltip from '../core/CPTooltip';
@@ -77,7 +78,7 @@ import { CIPAdminModal } from '../cip/components';
 /**********************************************************************************************************************/
 
 const formatCourseURL = (course: Course) => {
-  return `/admin/${encodeURIComponent(course.name)}/${encodeURIComponent(course.period)}`;
+  return `/admin/${encodeForLink(course.name)}/${encodeForLink(course.period)}`;
 };
 
 const Admin: React.FC<IComponentProps> = (props) => {
