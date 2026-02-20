@@ -12,6 +12,13 @@ if (typeof window !== 'undefined' && !(window as any).process) {
 }
 // Initialize web-tree-sitter only once
 let isInitialized = false;
+
+const getTreeSitterAssetUrl = (fileName: string) => {
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  return `${normalizedBaseUrl}tree-sitter/${fileName}`;
+};
+
 export const useTreeSitter = (language: string | undefined) => {
   const [parser, setParser] = useState<Parser | null>(null);
 
@@ -28,7 +35,7 @@ export const useTreeSitter = (language: string | undefined) => {
           // Manual fetch for tree-sitter.wasm to bypass MIME type strictness
           let wasmBinary;
           try {
-            const res = await fetch('/tree-sitter/tree-sitter.wasm');
+            const res = await fetch(getTreeSitterAssetUrl('tree-sitter.wasm'));
             if (res.ok) {
               const buffer = await res.arrayBuffer();
               wasmBinary = new Uint8Array(buffer);
@@ -41,7 +48,7 @@ export const useTreeSitter = (language: string | undefined) => {
           await Parser.init({
             wasmBinary,
             locateFile: (scriptName: string) => {
-              return `/tree-sitter/${scriptName}`;
+              return getTreeSitterAssetUrl(scriptName);
             },
           });
           isInitialized = true;
@@ -51,10 +58,10 @@ export const useTreeSitter = (language: string | undefined) => {
         currentParser = p;
         const langFile =
           language === 'python'
-            ? '/tree-sitter/tree-sitter-python.wasm'
+            ? getTreeSitterAssetUrl('tree-sitter-python.wasm')
             : language === 'java'
-              ? '/tree-sitter/tree-sitter-java.wasm'
-              : '/tree-sitter/tree-sitter-r.wasm';
+              ? getTreeSitterAssetUrl('tree-sitter-java.wasm')
+              : getTreeSitterAssetUrl('tree-sitter-r.wasm');
 
         // Manual fetch to handle MIME type issues or 404s
         const response = await fetch(langFile);

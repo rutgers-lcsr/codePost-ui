@@ -27,9 +27,90 @@ export const useSymbolExtraction = (
   useEffect(() => {
     const symbols: MonacoSuggestion[] = [];
 
+    const addSymbol = (
+      name: string,
+      type: 'function' | 'class' | 'variable' | 'method' | 'field' | 'import',
+      origin: string,
+      definitionLine: number,
+    ) => {
+      if (!name || symbols.some((s) => s.label === name)) return;
+
+      if (origin === 'current script' && (type === 'function' || type === 'method' || type === 'variable')) {
+        if (name.toLowerCase().startsWith('test')) {
+          return;
+        }
+      }
+
+      let label = name;
+      let kind = 1; // Function default
+      let insertText = label;
+
+      if (type === 'class') {
+        kind = 5;
+      } else if (type === 'variable' || type === 'field') {
+        kind = 4;
+      } else if (type === 'method' || type === 'function') {
+        kind = type === 'method' ? 0 : 1;
+        insertText = `${label}(\${1})`;
+      } else if (type === 'import') {
+        kind = 8;
+        if (language === 'java') {
+          const parts = label.split('.');
+          label = parts[parts.length - 1];
+          insertText = label;
+        }
+      }
+
+      symbols.push({
+        label,
+        kind,
+        insertText,
+        insertTextRules: 4, // InsertAsSnippet
+        type,
+        documentation: `Defined in ${origin}`,
+        origin,
+        definitionLine,
+      });
+    };
+
+    const lineNumberFromIndex = (code: string, index: number) => code.slice(0, index).split('\n').length;
+
+    const extractWithRegexFallback = (code: string, origin: string) => {
+      if (!language) return;
+
+      const captureAll = (regex: RegExp, type: 'function' | 'class' | 'variable' | 'method' | 'field' | 'import') => {
+        for (const match of code.matchAll(regex)) {
+          const name = match[1];
+          const index = match.index ?? 0;
+          addSymbol(name, type, origin, lineNumberFromIndex(code, index));
+        }
+      };
+
+      if (language === 'python') {
+        captureAll(/^\s*def\s+([A-Za-z_]\w*)\s*\(/gm, 'function');
+        captureAll(/^\s*class\s+([A-Za-z_]\w*)\b/gm, 'class');
+        captureAll(/^\s*([A-Za-z_]\w*)\s*=\s*.+$/gm, 'variable');
+      } else if (language === 'java') {
+        captureAll(/\bclass\s+([A-Za-z_]\w*)\b/gm, 'class');
+        captureAll(
+          /\b(?:public|private|protected)?\s*(?:static\s+)?[\w<>\[\]]+\s+([A-Za-z_]\w*)\s*\([^;{}]*\)\s*\{/gm,
+          'method',
+        );
+        captureAll(/\b(?:public|private|protected)?\s*(?:static\s+)?[\w<>\[\]]+\s+([A-Za-z_]\w*)\s*(?:=|;)/gm, 'field');
+      } else if (language === 'r') {
+        captureAll(/^\s*([A-Za-z.][\w.]*)\s*(?:<-|=)\s*function\s*\(/gm, 'function');
+        captureAll(/^\s*([A-Za-z.][\w.]*)\s*(?:<-|=)\s*.+$/gm, 'variable');
+      }
+    };
+
     // Helper function to extract symbols from a code string
     const extractFromCode = (code: string, origin: string) => {
-      if (!parser || !language) return;
+      if (!language) return;
+
+      if (!parser) {
+        extractWithRegexFallback(code, origin);
+        return;
+      }
 
       let tree: any = null;
       try {
@@ -82,53 +163,13 @@ export const useSymbolExtraction = (
                 if (capture && typeCapture) {
                   let name = capture.node.text;
                   const type = typeCapture.name; // 'function', 'class', 'variable', 'method', 'field', 'import'
-                  const startLine = capture.node.startPosition.row;
-
-                  // Filtering: Exclude test functions from the current script
-                  if (
-                    origin === 'current script' &&
-                    (type === 'function' || type === 'method' || type === 'variable')
-                  ) {
-                    if (name.toLowerCase().startsWith('test')) {
-                      return;
-                    }
-                  }
-
-                  let kind = 1; // Function default
-                  let insertText = name;
-
-                  if (type === 'class') {
-                    kind = 5; // Class
-                    insertText = name;
-                  } else if (type === 'variable' || type === 'field') {
-                    kind = 4; // Variable
-                    insertText = name;
-                  } else if (type === 'method' || type === 'function') {
-                    kind = type === 'method' ? 0 : 1; // Method vs Function
-                    insertText = name + '(${1})';
-                  } else if (type === 'import') {
-                    kind = 8; // Module (approximate mapping)
-                    if (language === 'java') {
-                      // Extract class name from FQN (e.g., java.util.List -> List)
-                      const parts = name.split('.');
-                      name = parts[parts.length - 1];
-                    }
-                    insertText = name;
-                  }
-
-                  // Avoid duplicates
-                  if (!symbols.some((s) => s.label === name)) {
-                    symbols.push({
-                      label: name,
-                      kind,
-                      insertText,
-                      insertTextRules: 4, // InsertAsSnippet
-                      type: type,
-                      documentation: `Defined in ${origin}`,
-                      origin,
-                      definitionLine: startLine + 1, // 1-based line number
-                    });
-                  }
+                  const startLine = capture.node.startPosition.row + 1;
+                  addSymbol(
+                    name,
+                    type as 'function' | 'class' | 'variable' | 'method' | 'field' | 'import',
+                    origin,
+                    startLine,
+                  );
                 }
               });
             } finally {
@@ -138,6 +179,7 @@ export const useSymbolExtraction = (
         }
       } catch (e) {
         console.error('Tree-sitter parsing failed:', e);
+        extractWithRegexFallback(code, origin);
       } finally {
         if (tree) tree.delete();
       }
