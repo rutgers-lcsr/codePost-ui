@@ -15,6 +15,7 @@ import { autograderApi, submissionsApi } from '../../../api-client/clients';
 import { useTaskPolling } from '../../../hooks/useTaskPolling';
 import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
+import { buildDemoExecutionResults } from './demoExecution';
 
 const { Panel } = Collapse;
 const { Text, Title } = Typography;
@@ -25,6 +26,8 @@ interface TestsListProps {
   rubricCategories?: RubricCategory[];
   testCategories?: TestCategory[];
   fileOverrides?: Record<number, string>; // Map of file ID -> temporary content
+  demoMode?: boolean;
+  initialResults?: SubmissionTest[];
 }
 
 interface TestItem {
@@ -150,6 +153,8 @@ const TestsList: React.FC<TestsListProps> = ({
   rubricCategories,
   testCategories,
   fileOverrides,
+  demoMode = false,
+  initialResults,
 }) => {
   const { consoleTheme } = useContext(ConsoleThemeContext);
   const isDarkTheme = consoleThemes.dark === consoleTheme;
@@ -161,11 +166,16 @@ const TestsList: React.FC<TestsListProps> = ({
 
   const [runningAll, setRunningAll] = useState(false);
   const [runningTestIds, setRunningTestIds] = useState<Set<number>>(new Set());
-  const [results, setResults] = useState<SubmissionTest[]>([]);
+  const [results, setResults] = useState<SubmissionTest[]>(initialResults ?? []);
+  const [demoRunSequence, setDemoRunSequence] = useState(0);
   const isStudent = useCodeConsoleStore((s) => s.isStudent);
   const testsAffectGrade = useCodeConsoleStore((s) => s.assignment?.testsAffectGrade ?? true);
 
   const fetchResults = async () => {
+    if (demoMode) {
+      return;
+    }
+
     try {
       const data = await submissionsApi.testResultsRetrieve({ id: submissionId });
       setResults(data.submissionTests);
@@ -175,10 +185,16 @@ const TestsList: React.FC<TestsListProps> = ({
   };
 
   useEffect(() => {
+    if (demoMode) {
+      setResults(initialResults ?? []);
+      setDemoRunSequence(0);
+      return;
+    }
+
     if (submissionId) {
       fetchResults();
     }
-  }, [submissionId]);
+  }, [demoMode, initialResults, submissionId]);
 
   const { pollTask } = useTaskPolling();
 
@@ -190,6 +206,24 @@ const TestsList: React.FC<TestsListProps> = ({
     }
 
     try {
+      if (demoMode) {
+        const nextDemoRun = demoRunSequence + 1;
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        setResults((previousResults) =>
+          buildDemoExecutionResults({
+            submissionId,
+            tests,
+            existingResults: previousResults,
+            targetTestId: testId,
+            runNonce: nextDemoRun,
+          }),
+        );
+        setDemoRunSequence(nextDemoRun);
+
+        message.success(testId ? 'Demo test run completed' : 'Demo run-all completed');
+        return;
+      }
+
       const payload: Record<string, unknown> = { testId: testId || null, submissionId };
       if (fileOverrides && Object.keys(fileOverrides).length > 0) {
         payload.fileOverrides = fileOverrides;

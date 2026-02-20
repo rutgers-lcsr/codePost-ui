@@ -3,7 +3,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /* library imports */
 import { Button, Card, Col, Row, Space, Typography } from 'antd';
@@ -69,6 +69,13 @@ export const SourceEditor = (props: IProps) => {
   const [saving, setSaving] = useState(false);
   const [fileToRun, setFileToRun] = useState('main.sh');
   const [logs, setLogs] = useState<ILogType[]>([]);
+  const [draftCode, setDraftCode] = useState(props.currentFile?.code || '');
+
+  useEffect(() => {
+    if (props.currentFile) {
+      setDraftCode(props.currentFile.code);
+    }
+  }, [props.currentFile?.id, props.currentFile?.code]);
 
   /************************** API functions ****************************/
   const runTest = async () => {
@@ -128,9 +135,7 @@ export const SourceEditor = (props: IProps) => {
             {props.currentFile.canSave && !noPreviewString && (
               <Button
                 icon={<SaveOutlined />}
-                onClick={() =>
-                  props.updateFile(props.currentFile!.type, props.currentFile!.id, props.currentFile!.code)
-                }
+                onClick={() => props.updateFile(props.currentFile!.type, props.currentFile!.id, draftCode)}
               >
                 Save File
               </Button>
@@ -153,8 +158,9 @@ export const SourceEditor = (props: IProps) => {
           >
             <CodeWindow
               key={props.currentFile.id}
-              code={noPreviewString || props.currentFile.code}
+              code={noPreviewString || draftCode}
               name={props.currentFile.name}
+              onChange={setDraftCode}
               onSave={
                 props.currentFile.canSave && !noPreviewString
                   ? props.updateFile.bind({}, props.currentFile.type, props.currentFile.id)
@@ -191,7 +197,7 @@ export const SourceEditor = (props: IProps) => {
       <TestsChangeModal
         checkChanges={saving}
         currentFile={props.currentFile! as any}
-        currentFileCode={''}
+        currentFileCode={draftCode}
         categories={props.categories}
         casesByCategory={props.casesByCategory}
         onCancel={setSaving.bind({}, false)}

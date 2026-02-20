@@ -3,6 +3,7 @@ import React from 'react';
 import { osControlKey } from '../../../components/core/operatingSystem';
 import TestsList from '../code-panel/TestsList';
 import type { TestCaseType, RubricCategoryType, TestCategoryType } from '../../../types/models';
+import type { SubmissionTest } from '../../../api-client';
 
 interface TestsMenuProps {
   submissionId: number;
@@ -10,6 +11,8 @@ interface TestsMenuProps {
   rubricCategories?: RubricCategoryType[];
   testCategories?: TestCategoryType[];
   fileOverrides?: Record<number, string>;
+  demoMode?: boolean;
+  initialResults?: SubmissionTest[];
 }
 
 const TestsMenu: React.FC<TestsMenuProps> = ({
@@ -18,6 +21,8 @@ const TestsMenu: React.FC<TestsMenuProps> = ({
   rubricCategories,
   testCategories,
   fileOverrides,
+  demoMode = false,
+  initialResults,
 }) => {
   return (
     <div
@@ -36,6 +41,8 @@ const TestsMenu: React.FC<TestsMenuProps> = ({
         rubricCategories={rubricCategories}
         testCategories={testCategories}
         fileOverrides={fileOverrides}
+        demoMode={demoMode}
+        initialResults={initialResults}
       />
     </div>
   );

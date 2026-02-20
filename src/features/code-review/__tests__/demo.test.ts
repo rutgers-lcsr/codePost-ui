@@ -19,20 +19,37 @@ describe('code console demo fixtures', () => {
     expect(state.rubricCategories.length).toBe(3);
     expect(Object.values(state.rubricComments).flat().length).toBeGreaterThanOrEqual(5);
     expect(state.testCategories.length).toBe(3);
-    expect(Object.values(state.testCases).flat().length).toBeGreaterThanOrEqual(7);
+    const allTestCases = Object.values(state.testCases).flat();
+    expect(allTestCases.length).toBeGreaterThanOrEqual(7);
+    expect(allTestCases.every((testCase: any) => (testCase.pointsPass ?? 0) > 0)).toBe(true);
     expect(state.tests.length).toBeGreaterThanOrEqual(7);
+
+    const pdfFile = state.files.find((file) => file.name === 'assignment.pdf');
+    expect(pdfFile).toBeDefined();
+    expect(pdfFile!.data?.startsWith('data:application/pdf;base64,')).toBe(true);
+
+    const pdfBase64 = pdfFile!.data!.split(',')[1];
+    const pdfHeader = Buffer.from(pdfBase64, 'base64').toString('latin1', 0, 8);
+    expect(pdfHeader.startsWith('%PDF-')).toBe(true);
   });
 
   it('loads student demo with mapped rubric comments and tests visible', () => {
     const state = loadDemoStudent([], 'student@example.edu');
 
     expect(state.files.length).toBe(4);
+
+    const pdfFile = state.files.find((file) => file.name === 'assignment.pdf');
+    expect(pdfFile).toBeDefined();
+    expect(pdfFile!.data?.startsWith('data:application/pdf;base64,')).toBe(true);
+
     expect(state.comments[1].length).toBeGreaterThan(0);
     expect(state.comments[2].length).toBeGreaterThan(0);
     expect(state.comments[3].length).toBeGreaterThan(0);
     expect(Object.keys(state.commentRubricComments).length).toBeGreaterThan(0);
     expect(state.testCategories.length).toBe(3);
-    expect(Object.values(state.testCases).flat().length).toBeGreaterThanOrEqual(7);
+    const allTestCases = Object.values(state.testCases).flat();
+    expect(allTestCases.length).toBeGreaterThanOrEqual(7);
+    expect(allTestCases.every((testCase: any) => (testCase.pointsPass ?? 0) > 0)).toBe(true);
 
     const notebookFile = state.files.find((file) => file.name === 'analysis_notebook.ipynb');
     expect(notebookFile).toBeDefined();
@@ -50,5 +67,35 @@ describe('code console demo fixtures', () => {
     expect(templates.some((template) => template.isGlobal)).toBe(true);
     expect(templates.some((template) => template.filePath === 'Loops.py')).toBe(true);
     expect(templates.some((template) => template.filePath === 'analysis_notebook.ipynb')).toBe(true);
+  });
+
+  it('normalizes uploaded demo files and keeps submission file IDs in sync', () => {
+    const uploadedFiles = [
+      {
+        name: 'LegacyFile.PY',
+        code: 'print("legacy data path")',
+      },
+      {
+        data: 'console.log("missing name fallback")',
+      },
+    ];
+
+    const graderState = loadDemoGrader(uploadedFiles as any[], 'grader@example.edu');
+    const studentState = loadDemoStudent(uploadedFiles as any[], 'student@example.edu');
+
+    expect(graderState.files.length).toBe(2);
+    expect(studentState.files.length).toBe(2);
+
+    expect(graderState.files[0].name).toBe('LegacyFile.PY');
+    expect(graderState.files[0].extension).toBe('py');
+    expect(graderState.files[0].data).toContain('legacy data path');
+
+    expect(graderState.files[1].name).toBe('uploaded_file_2.txt');
+    expect(graderState.files[1].extension).toBe('txt');
+
+    expect(graderState.submission?.files).toEqual([1, 2]);
+    expect(studentState.submission?.files).toEqual([1, 2]);
+    expect(Object.keys(graderState.comments)).toEqual(['1', '2']);
+    expect(Object.keys(studentState.comments)).toEqual(['1', '2']);
   });
 });
