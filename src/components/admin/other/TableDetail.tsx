@@ -10,7 +10,8 @@ import Highlighter from 'react-highlight-words';
 import CPFlex from '../../core/CPFlex';
 import CPAdminDetail from '../other/CPAdminDetail';
 
-import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../../utils/LocalSettings';
+import { PAGE_SIZE_OPTIONS } from '../../utils/LocalSettings';
+import useDefaultPageSize from '../../utils/useDefaultPageSize';
 
 /**********************************************************************************************************************/
 /* Types
@@ -143,6 +144,7 @@ const TableDetail: React.FC<IProps> = ({
   tableOnly = false,
 }) => {
   const [searchText, setSearchText] = useState<string>('');
+  const [pageSize, setPageSize] = useDefaultPageSize();
 
   /* 🔥 alert, the code below is fire 🔥
    * Columns passed into this component may have an optional 'render' key.
@@ -177,10 +179,6 @@ const TableDetail: React.FC<IProps> = ({
 
   const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(event.target.value.toUpperCase());
-  }, []);
-
-  const handleShowSizeChange = useCallback((_current: number, size: number) => {
-    LOCAL_SETTINGS.defaultPageSize.setter(size);
   }, []);
 
   // Generate columns with search highlighting
@@ -225,10 +223,11 @@ const TableDetail: React.FC<IProps> = ({
       showSizeChanger: true,
       pageSizeOptions: PAGE_SIZE_OPTIONS,
       position: filteredData.length > MANY_ROWS ? 'both' : 'bottom',
-      defaultPageSize: LOCAL_SETTINGS.defaultPageSize.getter(),
-      onShowSizeChange: handleShowSizeChange,
+      pageSize,
+      onShowSizeChange: (_current: number, size: number) => setPageSize(size),
+      onChange: (_page: number, size: number) => setPageSize(size),
     };
-  }, [paginationProp, filteredData.length, handleShowSizeChange]);
+  }, [filteredData.length, pageSize, paginationProp, setPageSize]);
 
   // Render loading state
   if (!loadComplete) {

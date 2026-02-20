@@ -5,6 +5,7 @@ This is the frontend for codePost, built with React.
 ## Development Setup
 
 1.  **Install Dependencies**:
+
     ```bash
     npm install
     # or
@@ -47,6 +48,7 @@ docker run -d \
 ```
 
 See the `nginx.conf` file for the specific certificate path configuration.
+
 # Admin Guide
 
 This guide is for system administrators submitting or maintaining the codePost instance.
@@ -74,3 +76,61 @@ System-level configuration is managed via environment variables.
 
 - **Build Failures**: Check node version compatibility (Node 18+ recommended).
 - **Network Issues**: Ensure connectivity between the UI container and the API container/server.
+
+## Copy assignments across environments (local -> dev/staging)
+
+If your source course is on local and destination is on another server, use:
+
+```bash
+npm run populate:cross-env-course -- --dry-run
+```
+
+The script is interactive by default (it prompts you for missing values and auth details).
+Use `--non-interactive` if you want strict env-var only execution.
+
+What gets copied per assignment:
+
+- assignment settings
+- assignment files
+- assignment datasets
+- autograder environment settings
+- rubric categories/comments
+- test categories/cases
+- test resources (file/dataset mounts)
+
+Required environment variables:
+
+- `SOURCE_BASE_URL` (example: `http://localhost:8000/api`)
+- `SOURCE_COURSE_ID` (example: `53`)
+- `DEST_BASE_URL` (example: `https://dev-codepost-1.cs.rutgers.edu/api`)
+
+Authentication variables (token-only):
+
+- Source: `SOURCE_TOKEN`
+- Destination: `DEST_TOKEN`
+
+Destination selection:
+
+- Set `DEST_COURSE_ID` to copy into an existing course
+- If `DEST_COURSE_ID` is omitted, the script creates a new destination course
+
+Example (your case: local course `53` -> `dev-codepost-1`):
+
+```bash
+export SOURCE_BASE_URL="http://localhost:8000/api"
+export SOURCE_COURSE_ID="53"
+export SOURCE_TOKEN="Token <local-api-token>"
+
+export DEST_BASE_URL="https://dev-codepost-1.cs.rutgers.edu/api"
+export DEST_TOKEN="Token <dev-api-token>"
+# Optional: copy into existing destination course
+# export DEST_COURSE_ID="123"
+
+npm run populate:cross-env-course -- --dry-run
+npm run populate:cross-env-course
+```
+
+Optional flags:
+
+- `--only=Assignment 1,Assignment 2` (copy selected assignment names only)
+- `--allow-duplicates` (copy even when destination already has same assignment name)

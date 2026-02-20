@@ -3,7 +3,8 @@ import { Table, Card, Tag, Button, Space, message, Popconfirm, Input } from 'ant
 import { SearchOutlined } from '@ant-design/icons';
 import { User } from '../../api-client';
 import { getAuthToken } from '../../utils/auth';
-import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
+import { PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
+import useDefaultPageSize from '../utils/useDefaultPageSize';
 import { ColumnsType } from 'antd/es/table';
 
 // Extend User to include pendingValidation which comes from the API but isn't in the generated model
@@ -21,7 +22,7 @@ interface IProps {
 
 const OrgUsers: React.FC<IProps> = ({ orgId, users, loading, onRefresh, ssoEnabled }) => {
   const [searchText, setSearchText] = React.useState(''); // Add search state
-  const [pageSize, setPageSize] = React.useState(LOCAL_SETTINGS.defaultPageSize.getter());
+  const [pageSize, setPageSize] = useDefaultPageSize();
   const [actionLoading, setActionLoading] = React.useState<number | null>(null);
 
   const performAction = async (endpoint: string, body: any, successMessage: string) => {
@@ -196,10 +197,8 @@ const OrgUsers: React.FC<IProps> = ({ orgId, users, loading, onRefresh, ssoEnabl
           pageSize,
           showSizeChanger: true,
           pageSizeOptions: PAGE_SIZE_OPTIONS,
-          onShowSizeChange: (_current, size) => {
-            setPageSize(size);
-            LOCAL_SETTINGS.defaultPageSize.setter(size);
-          },
+          onShowSizeChange: (_current, size) => setPageSize(size),
+          onChange: (_page, size) => setPageSize(size),
         }}
       />
     </Card>

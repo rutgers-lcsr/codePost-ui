@@ -65,6 +65,19 @@ const intIParser = (value: number) => {
 };
 
 export const PAGE_SIZE_OPTIONS = ['10', '25', '50', '100'];
+export const DEFAULT_PAGE_SIZE = 10;
+export const DEFAULT_PAGE_SIZE_STORAGE_KEY = 'defaultPageSize';
+export const DEFAULT_PAGE_SIZE_CHANGE_EVENT = 'codepost:defaultPageSizeChanged';
+
+const validPageSizes = new Set(PAGE_SIZE_OPTIONS.map((option) => parseInt(option, 10)));
+
+const normalizePageSize = (value: string | number | null | undefined): number => {
+  const parsed = typeof value === 'number' ? value : parseInt(value || '', 10);
+  if (!Number.isFinite(parsed) || !validPageSizes.has(parsed)) {
+    return DEFAULT_PAGE_SIZE;
+  }
+  return parsed;
+};
 
 /******************************************************************************************************************/
 
@@ -151,7 +164,20 @@ const autograderInstructionsVisible = generateSettingFunctions(
 // key: defaultPageSize
 // return type: int. Represents the desired page size of paginated tables
 // defalut value: 10
-const defaultPageSize = generateSettingFunctions('defaultPageSize', 10, intIParser, intOParser);
+const defaultPageSize = {
+  setter: (value: number) => {
+    const normalizedValue = normalizePageSize(value);
+    localStorage.setItem(DEFAULT_PAGE_SIZE_STORAGE_KEY, intIParser(normalizedValue));
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent<number>(DEFAULT_PAGE_SIZE_CHANGE_EVENT, { detail: normalizedValue }));
+    }
+  },
+  getter: () => {
+    const storedVal = localStorage.getItem(DEFAULT_PAGE_SIZE_STORAGE_KEY);
+    return normalizePageSize(storedVal);
+  },
+};
 
 /******************************************************************************************************************/
 const LOCAL_SETTINGS = {

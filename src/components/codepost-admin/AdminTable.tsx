@@ -6,7 +6,8 @@ import _ from 'lodash';
 
 import { colors } from '../../theme/colors';
 import { Organization } from '../../api-client';
-import { LOCAL_SETTINGS, PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
+import { PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
+import useDefaultPageSize from '../utils/useDefaultPageSize';
 import { AdminData } from './Dashboard';
 
 const { Search } = Input;
@@ -95,7 +96,7 @@ const columns: ColumnsType<GroupedAdminData> = [
 
 const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
   const [searchValue, setSearchValue] = useState('');
-  const [pageSize, setPageSize] = useState(LOCAL_SETTINGS.defaultPageSize.getter());
+  const [pageSize, setPageSize] = useDefaultPageSize();
 
   // Group admins by email
   const groupedAdmins: GroupedAdminData[] = useMemo(() => {
@@ -242,10 +243,8 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
           showSizeChanger: true,
           pageSizeOptions: PAGE_SIZE_OPTIONS,
           showTotal: (total) => `Total ${total} admins`,
-          onShowSizeChange: (_current, size) => {
-            setPageSize(size);
-            LOCAL_SETTINGS.defaultPageSize.setter(size);
-          },
+          onShowSizeChange: (_current, size) => setPageSize(size),
+          onChange: (_page, size) => setPageSize(size),
         }}
         scroll={{ x: 'max-content' }}
       />

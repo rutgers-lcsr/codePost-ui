@@ -364,11 +364,11 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
       title: <Text strong>Type</Text>,
       dataIndex: 'extension',
       key: 'extension',
-      width: '10%',
+      width: '5%',
       align: 'center',
       render: (ext: string) => (
         <Tag color="blue" style={{ fontSize: 12 }}>
-          .{ext}
+          {ext.replace('.', '')}
         </Tag>
       ),
     },
