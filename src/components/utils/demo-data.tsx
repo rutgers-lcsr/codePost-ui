@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /* Hello World submissions */
 import hello_student0 from './demo_subs/hello/student0';
 import hello_student1 from './demo_subs/hello/student1';

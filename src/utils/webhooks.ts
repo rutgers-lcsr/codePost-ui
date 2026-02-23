@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 export const VALID_WEBHOOKS: { [obj: string]: string[] } = {
   course: ['changed', 'name', 'period', 'archived', 'students', 'graders', 'courseAdmins'],
   section: ['added', 'changed', 'removed', 'name'],

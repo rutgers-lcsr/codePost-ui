@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /**********************************************************************************************************************/
 /* Imports
 /**********************************************************************************************************************/
@@ -28,6 +29,7 @@ import { normalizeUser } from './utils/normalizeUser';
 
 import IndexManager from './components/pre-auth/IndexManager';
 import RemoteAuthFailed from './components/pre-auth/RemoteAuthFailed';
+import TermsOfService from './components/pre-auth/TermsOfService';
 
 import Settings from './components/core/settings';
 
@@ -612,6 +614,14 @@ Firefox:
       />
     );
 
+    const termsRoutes = (
+      <>
+        <Route path="/terms" element={<TermsOfService isLoggedIn={true} />} />
+        <Route path="/terms-of-service" element={<TermsOfService isLoggedIn={true} />} />
+        <Route path="/tos" element={<TermsOfService isLoggedIn={true} />} />
+      </>
+    );
+
     const dashboardRoute = isCodePostAdmin ? <Route path="/dashboard" element={<Dashboard />} /> : null;
 
     const settingsRoute = (
@@ -705,6 +715,7 @@ Firefox:
           {dashboardRoute}
           {settingsRoute}
           {docsRoute}
+          {termsRoutes}
           {homeRoute}
           {studentRoute}
           {graderRoute}
@@ -765,6 +776,9 @@ Firefox:
           </Suspense>
         }
       />
+      <Route path="/terms" element={<TermsOfService isLoggedIn={false} />} />
+      <Route path="/terms-of-service" element={<TermsOfService isLoggedIn={false} />} />
+      <Route path="/tos" element={<TermsOfService isLoggedIn={false} />} />
       <Route path="*" element={<div />} />
     </Routes>
   );

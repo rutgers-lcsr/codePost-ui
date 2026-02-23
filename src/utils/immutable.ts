@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 export function arrayInsert<T>(array: T[], item: T, index: number) {
   return [...array.slice(0, index), item, ...array.slice(index)];
 }

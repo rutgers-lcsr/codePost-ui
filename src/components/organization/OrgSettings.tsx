@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
 import { Form, Switch, Select, Button, message, Input, Card, Space, Alert, Typography } from 'antd';
 import type { UserType } from '../../types/models';

@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React, { FC, useState, useCallback, useEffect } from 'react';
 import { MailOutlined } from '@ant-design/icons';
 import { Button, List, message, Modal } from 'antd';

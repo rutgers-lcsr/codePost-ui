@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { useState, useEffect, useCallback } from 'react';
 import { Input, InputNumber, Typography, Button, message, Divider, Select, Space } from 'antd';
 import { InfoCircleOutlined, SaveOutlined } from '@ant-design/icons';

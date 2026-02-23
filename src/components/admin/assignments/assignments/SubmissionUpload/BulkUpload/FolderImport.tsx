@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /***********************************************************************************
 /* Description: This is an upload component for a folder of folders, where each child folder
 /*              contains all the files of a student's code

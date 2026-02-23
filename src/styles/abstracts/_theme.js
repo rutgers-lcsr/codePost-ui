@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 ///// WARNING
 ///// If you change a variable in this file, you must make sure to also update the
 ///// The references in other `.scss` files

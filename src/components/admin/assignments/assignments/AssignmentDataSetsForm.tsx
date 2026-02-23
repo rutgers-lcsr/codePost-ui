@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { DeleteOutlined, DownloadOutlined, UploadOutlined, EditOutlined } from '@ant-design/icons';
 import { Button, Form, Input, message, Modal, Space, Switch, Table, Upload } from 'antd';
 import type { UploadFile } from 'antd/es/upload/interface';

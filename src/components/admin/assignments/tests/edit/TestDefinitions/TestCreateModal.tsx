@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { useState, useEffect } from 'react';
 import { Modal, Steps, Button, Radio, Card, Select, message, Alert } from 'antd';
 import { RobotOutlined, CodeOutlined, FileTextOutlined } from '@ant-design/icons';

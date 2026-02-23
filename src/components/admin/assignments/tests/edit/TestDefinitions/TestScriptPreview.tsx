@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { useEffect, useState, useRef } from 'react';
 import { Card, Empty, Typography, Tag, Space, Spin, Alert } from 'antd';
 // import { parsePythonTests } from './TestScriptParser'; // Removed client-side parser

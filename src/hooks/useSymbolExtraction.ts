@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { useEffect, useRef } from 'react';
 import { Parser, Query, QueryMatch, QueryCapture } from 'web-tree-sitter';
 import { File as CodePostFile } from '../utils/file';

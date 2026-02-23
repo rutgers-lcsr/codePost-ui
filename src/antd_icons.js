@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /**
  * List all antd icons we use in our code
  * Instead of importing all icons, they need to be included so we don't have to load all the icons

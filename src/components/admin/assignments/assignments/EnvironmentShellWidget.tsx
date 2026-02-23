@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
 import { Alert, Button, Card, Checkbox, Space, Tag, Typography, message } from 'antd';
 import { PoweroffOutlined } from '@ant-design/icons';

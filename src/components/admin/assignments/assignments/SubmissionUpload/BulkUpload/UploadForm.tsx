@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /***********************************************************************************
 /* Description: This component routes to a different upload component based on the
 /*              current mode in state. It renders either an integration selector, a

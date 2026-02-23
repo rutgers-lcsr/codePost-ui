@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { FC, useState, useCallback } from 'react';
 import { UploadOutlined, WarningOutlined } from '@ant-design/icons';
 import { Button, Collapse, Modal, Spin, Steps, Typography, Upload } from 'antd';
