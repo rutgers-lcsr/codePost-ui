@@ -76,7 +76,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
   React.useEffect(() => {
     if (viewingCode?.file) {
       setEditingCode(viewingCode.file.data || '');
-      if (viewingCode.file.extension === 'ipynb') {
+      if (CodePostFile.isNotebookFile(viewingCode.file)) {
         setViewMode('notebook');
       } else {
         setViewMode('json');
@@ -92,7 +92,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
 
   const isStudentVisibleFile = (file: EditableFile): boolean => {
     const normalized = file as EditableFile & { is_test_resource?: boolean };
-    return !Boolean(file.hidden || file.isTestResource || normalized.is_test_resource);
+    return !(file.hidden || file.isTestResource || normalized.is_test_resource);
   };
 
   // Helper to check for binary content
@@ -621,7 +621,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
               <Tag color="blue">{viewingCode?.file.extension}</Tag>
             </Space>
 
-            {viewingCode?.file.extension === 'ipynb' && (
+            {CodePostFile.isNotebookFile(viewingCode?.file) && (
               <Radio.Group
                 value={viewMode}
                 onChange={(e) => setViewMode(e.target.value as 'json' | 'notebook')}
@@ -682,7 +682,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
             style={{ marginBottom: 8 }}
           />
 
-          {viewingCode?.file.extension === 'ipynb' && viewMode === 'notebook' ? (
+          {CodePostFile.isNotebookFile(viewingCode?.file) && viewMode === 'notebook' ? (
             <NotebookEditor content={editingCode} onChange={setEditingCode} />
           ) : (
             <>

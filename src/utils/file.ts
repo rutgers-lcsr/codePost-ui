@@ -84,6 +84,32 @@ export const getFileContent = (file: FileType): string => {
 };
 
 export class File {
+  public static normalizedExtension = (
+    fileOrName: Pick<FileLike, 'name' | 'extension'> | string | null | undefined,
+  ): string => {
+    if (!fileOrName) return '';
+
+    if (typeof fileOrName === 'string') {
+      const fromName = File.extension(fileOrName);
+      if (fromName) return fromName;
+      return fileOrName.trim().toLowerCase().replace(/^\./, '');
+    }
+
+    const fromName = File.extension(fileOrName.name || '');
+    if (fromName) return fromName;
+
+    return String(fileOrName.extension || '')
+      .trim()
+      .toLowerCase()
+      .replace(/^\./, '');
+  };
+
+  public static isNotebookFile = (
+    fileOrName: Pick<FileLike, 'name' | 'extension'> | string | null | undefined,
+  ): boolean => {
+    return File.normalizedExtension(fileOrName) === 'ipynb';
+  };
+
   public static language = (file: FileType) => {
     const ext = File.extension(file.name);
 
@@ -111,7 +137,7 @@ export class File {
   };
 
   public static codeType = (file: FileType): CodeType => {
-    const ext = File.extension(file.name);
+    const ext = File.normalizedExtension(file);
     return JupyterExtensions.includes(ext) || JupyterExtensions.includes('.' + ext)
       ? 'jupyter'
       : MarkdownExtensions.includes(ext) || MarkdownExtensions.includes('.' + ext)
