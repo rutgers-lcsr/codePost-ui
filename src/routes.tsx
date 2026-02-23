@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 // This is the actual url endpoints defined
 export const ADMIN = '/admin';
 export const HOME = '/';

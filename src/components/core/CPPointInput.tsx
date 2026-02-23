@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { CaretDownOutlined, CaretUpOutlined, MinusOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, InputNumber, Space } from 'antd';
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';

@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
 import { OS, getOperatingSystem, osControlKey } from '../../components/core/operatingSystem';
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';

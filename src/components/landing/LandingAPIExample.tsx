@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { ApiOutlined, ArrowRightOutlined, BarChartOutlined, ExportOutlined, TeamOutlined } from '@ant-design/icons';
 import { Collapse, Divider } from 'antd';
 

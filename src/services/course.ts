@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { coursesApi } from '../api-client/clients';
 import type { Course as CourseModel, CourseRoster, CourseSettings } from '../api-client';
 

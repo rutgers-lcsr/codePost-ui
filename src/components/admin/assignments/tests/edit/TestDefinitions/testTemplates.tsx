@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /****************************** Test Templates *********************************/
 
 export const PYTHON_UNIT_TEMPLATE = `# To call a student's method, uncomment the following line and call <fileName>.<method>

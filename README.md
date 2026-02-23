@@ -20,42 +20,60 @@ This is the frontend for codePost, built with React.
     ```
     Runs on `http://localhost:3000`.
 
-## Production Build (Docker)
+## Production deployment (Frontend VM)
 
-The UI is built as a static site and served via Nginx. The Docker build process handles this automatically.
+This repo deploys the frontend as a static build served by Nginx over HTTPS.
 
-### Important: Build Arguments
+### Required build-time environment
 
-The API URL is **baked into the static build** at build time. You must provide the `REACT_APP_API_URL` build argument:
+The API URL is baked into the static bundle at build time.
 
-```bash
-docker build \
-  --build-arg REACT_APP_API_URL=https://codepost.cs.rutgers.edu \
-  -t codepost-ui .
+- Required: `REACT_APP_API_URL`
+
+Example `.env` in `codePost-ui/`:
+
+```ini
+REACT_APP_API_URL=https://api.yourdomain.com
 ```
 
-If you do not provide this, the UI may default to `localhost:8000`, which will fail for end users.
+### TLS certificates
 
-### Running with SSL
+The frontend container expects cert files mounted into `/etc/ssl/certs`.
 
-The production container uses Nginx and expects SSL certificates to be available. You usually mount these as a volume:
+Required filenames:
+
+- `fullchain.pem`
+- `privkey.pem`
+
+When using the provided compose file, place them in:
+
+- `codePost-ui/certs/fullchain.pem`
+- `codePost-ui/certs/privkey.pem`
+
+### Deploy with docker-compose
+
+From `codePost-ui/`:
 
 ```bash
-docker run -d \
-  -p 80:80 -p 443:443 \
-  -v /etc/letsencrypt/live/codepost.cs.rutgers.edu:/etc/ssl/certs \
-  codepost-ui
+docker-compose --env-file .env -f docker-compose.yml up -d --build
 ```
 
-See the `nginx.conf` file for the specific certificate path configuration.
+Current compose config exposes HTTPS on:
 
-# Admin Guide
+- `443:443`
+
+### API integration expectations
+
+- Ensure API is already deployed and reachable at `REACT_APP_API_URL`
+- Backend deployment instructions are in `../codePost-api/README.md`
+
+## Admin Guide
 
 This guide is for system administrators submitting or maintaining the codePost instance.
 
 ## Deployment
 
-CodePost is typically deployed using Docker. Refer to the [Docker Setup](./DOCKER.md) guide for detailed instructions on building images and running containers.
+CodePost UI is typically deployed on a dedicated Frontend VM using the `docker-compose.yml` in this repository.
 
 ## Configuration
 
@@ -63,7 +81,7 @@ System-level configuration is managed via environment variables.
 
 ### Key Variables
 
-- `REACT_APP_API_URL` (or `VITE_API_URL`): The URL of the backend API.
+- `REACT_APP_API_URL`: The URL of the backend API.
 - `REACT_APP_GA_ID`: Google Analytics ID.
 
 ## Maintenance
@@ -75,7 +93,8 @@ System-level configuration is managed via environment variables.
 ## Troubleshooting
 
 - **Build Failures**: Check node version compatibility (Node 18+ recommended).
-- **Network Issues**: Ensure connectivity between the UI container and the API container/server.
+- **Network Issues**: Ensure connectivity from frontend VM to the API host.
+- **TLS Errors**: Verify cert filenames are exactly `fullchain.pem` and `privkey.pem`.
 
 ## Copy assignments across environments (local -> dev/staging)
 
@@ -134,3 +153,23 @@ Optional flags:
 
 - `--only=Assignment 1,Assignment 2` (copy selected assignment names only)
 - `--allow-duplicates` (copy even when destination already has same assignment name)
+
+## License
+
+This repository is licensed under the Rutgers Non-commercial License (RU-NCL).
+
+See [`LICENSE`](./LICENSE) for the full terms.
+
+## Terms of Service and issue tracking
+
+- Terms of Service: [`TERMS_OF_SERVICE.md`](./TERMS_OF_SERVICE.md)
+- License (full legal text): [`LICENSE`](./LICENSE)
+- GitHub issues for tracking bugs/tasks: <https://github.com/rutgers-lcsr/codePost-ui/issues>
+
+When opening an issue, include:
+
+- clear title
+- environment details (OS, browser, Node version, deployment mode)
+- reproducible steps
+- expected vs actual behavior
+- logs/screenshots where relevant

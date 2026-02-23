@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /**
  * Utility functions extracted from CodeConsole component.
  * These static methods handle comment state management, rubric comment linking, grade calculation, and file filtering.

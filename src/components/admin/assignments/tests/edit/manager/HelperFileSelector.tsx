@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React, { useState, useEffect } from 'react';
 import { Button, Checkbox, List, Modal, Upload, Input, message, Tag, Typography, Tabs, Empty } from 'antd';
 import { UploadOutlined, FileTextOutlined, InfoCircleOutlined, DatabaseOutlined } from '@ant-design/icons';

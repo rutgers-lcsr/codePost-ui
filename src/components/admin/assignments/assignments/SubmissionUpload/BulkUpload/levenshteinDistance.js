@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 export default function levenshteinDistance(a, b) {
   // Create empty edit distance matrix for all possible modifications of
   // substrings of a to substrings of b.

@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React, { useEffect, useState } from 'react';
 import { Card, Badge, Space, Button, Tooltip, Typography } from 'antd';
 import { RedoOutlined, DatabaseOutlined, ClusterOutlined } from '@ant-design/icons';

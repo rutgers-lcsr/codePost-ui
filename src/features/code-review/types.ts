@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /**
  * Type definitions specific to CodeConsole component that are not in CodeConsole.types.ts
  * This file contains enums and types that are unique to the code-review components

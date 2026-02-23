@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 class CodePanelLayout {
   public static pixelsPerLine = (): number => {
     let lineHeight = 20; // estimate until the lines are rendered

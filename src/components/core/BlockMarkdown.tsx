@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { createElement, useContext } from 'react';
 import ReactMarkdown, { Components, ExtraProps } from 'react-markdown';
 import SyntaxHighlighter from 'react-syntax-highlighter';

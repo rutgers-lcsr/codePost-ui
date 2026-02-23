@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import type { Identifier, XYCoord } from 'dnd-core';
 import * as React from 'react';
 import { useDrag, useDrop } from 'react-dnd';

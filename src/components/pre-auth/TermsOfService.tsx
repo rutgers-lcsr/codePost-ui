@@ -1,3 +1,4 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /**********************************************************************************************************************/
 /* Imports
 /**********************************************************************************************************************/
@@ -30,6 +31,24 @@ class TermsOfService extends React.Component<IProps> {
       <PreAuthLayout isLoggedIn={this.props.isLoggedIn}>
         <div>
           <Typography.Title level={1}>Terms of Service</Typography.Title>
+          <Typography.Title level={2}>License (RU-NCL)</Typography.Title>
+          <Typography.Paragraph>
+            Use of codePost is governed by the Rutgers Non-commercial License (RU-NCL). The full license text is
+            available in the repository at{' '}
+            <a
+              className="text-link"
+              href="https://github.com/rutgers-lcsr/codePost-ui/blob/master/LICENSE"
+              target="_blank"
+              rel="noreferrer"
+            >
+              LICENSE
+            </a>
+            .
+          </Typography.Paragraph>
+          <Typography.Paragraph>
+            In summary (non-binding): RU-NCL allows academic and personal use and prohibits commercial use. If there is
+            any conflict between this page and the RU-NCL legal text, the RU-NCL controls.
+          </Typography.Paragraph>
           <Typography.Paragraph>
             These Terms of Service govern your access to and use of codePost, including the products, features, apps,
             services, technologies, and software that we offer.
