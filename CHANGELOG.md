@@ -4,6 +4,10 @@ All notable changes to codePost are documented in this file.
 
 The format is inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+> **License** — All source code and commits in this repository are made available under the
+> [Rutgers Non-commercial License (RU-NCL)](./LICENSE). By using, downloading, or contributing
+> to this repository you agree to be bound by its terms.
+
 > **Branch note** — `master` is the current production branch; `render` is the active development branch.
 
 ---
@@ -13,7 +17,7 @@ The format is inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 ### Added
 
 - User-facing changelog page integrated into the docs system (`/docs/changelog`).
-- Rutgers Non-commercial License (`LICENSE`) added to the repository.
+- `LICENSE` file added to the repository — all code and commits are under the Rutgers Non-commercial License (RU-NCL).
 
 ### Changed
 
