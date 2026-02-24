@@ -1,5 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-export type DocCategory = 'Getting Started' | 'Instructor Workflows' | 'Role Guides' | 'Reference';
+export type DocCategory = 'Getting Started' | 'Instructor Workflows' | 'Role Guides' | 'Reference' | 'Changelog';
 
 export interface DocRoute {
   key: string;
@@ -115,5 +115,12 @@ export const docRoutes: DocRoute[] = [
     title: 'Testing Guide',
     fileName: 'testing_guide.md',
     category: 'Reference',
+  },
+  {
+    key: 'changelog',
+    path: 'changelog',
+    title: 'Changelog',
+    fileName: 'changelog.md',
+    category: 'Changelog',
   },
 ];

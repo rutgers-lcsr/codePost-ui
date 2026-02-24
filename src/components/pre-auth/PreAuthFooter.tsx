@@ -82,6 +82,9 @@ const PreAuthFooter = () => {
           <Link className="text-link" style={{ fontSize: 17, paddingLeft: 8, paddingRight: 8 }} to="/about">
             About us
           </Link>{' '}
+          <Link className="text-link" style={{ fontSize: 17, paddingLeft: 8, paddingRight: 8 }} to="/changelog">
+            Changelog
+          </Link>{' '}
           <Link
             className="text-link"
             style={{ fontSize: 17, paddingLeft: 8, paddingRight: 8 }}

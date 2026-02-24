@@ -2,6 +2,10 @@
 
 This is the frontend for codePost, built with React.
 
+## Changelog
+
+- See [`CHANGELOG.md`](./CHANGELOG.md) for product updates and release notes.
+
 ## Development Setup
 
 1.  **Install Dependencies**:

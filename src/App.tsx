@@ -28,6 +28,7 @@ import { ResponseError, type InitOverrideFunction } from './api-client/runtime';
 import { normalizeUser } from './utils/normalizeUser';
 
 import IndexManager from './components/pre-auth/IndexManager';
+import ChangeLog from './components/pre-auth/ChangeLog';
 import RemoteAuthFailed from './components/pre-auth/RemoteAuthFailed';
 import TermsOfService from './components/pre-auth/TermsOfService';
 
@@ -619,6 +620,7 @@ Firefox:
         <Route path="/terms" element={<TermsOfService isLoggedIn={true} />} />
         <Route path="/terms-of-service" element={<TermsOfService isLoggedIn={true} />} />
         <Route path="/tos" element={<TermsOfService isLoggedIn={true} />} />
+        <Route path="/changelog" element={<ChangeLog isLoggedIn={true} />} />
       </>
     );
 
@@ -779,6 +781,7 @@ Firefox:
       <Route path="/terms" element={<TermsOfService isLoggedIn={false} />} />
       <Route path="/terms-of-service" element={<TermsOfService isLoggedIn={false} />} />
       <Route path="/tos" element={<TermsOfService isLoggedIn={false} />} />
+      <Route path="/changelog" element={<ChangeLog isLoggedIn={false} />} />
       <Route path="*" element={<div />} />
     </Routes>
   );
