@@ -3,7 +3,14 @@ import React, { useState, useMemo } from 'react';
 import { Layout, Menu, Input } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
 import { docRoutes, DocCategory } from './DocsConfig';
-import { AppstoreOutlined, TeamOutlined, RocketOutlined, SearchOutlined, ToolOutlined } from '@ant-design/icons';
+import {
+  AppstoreOutlined,
+  TeamOutlined,
+  RocketOutlined,
+  SearchOutlined,
+  ToolOutlined,
+  HistoryOutlined,
+} from '@ant-design/icons';
 import { colors } from '../../theme/colors';
 import CPLogo from '../core/CPLogo';
 import { getAllDocs } from './DocsLoader';
@@ -106,6 +113,7 @@ const DocsSidebar: React.FC = () => {
     'Instructor Workflows': [],
     'Role Guides': [],
     Reference: [],
+    Changelog: [],
   };
 
   docRoutes.forEach((route) => {
@@ -122,6 +130,8 @@ const DocsSidebar: React.FC = () => {
         return <ToolOutlined />;
       case 'Role Guides':
         return <TeamOutlined />;
+      case 'Changelog':
+        return <HistoryOutlined />;
       default:
         return <AppstoreOutlined />;
     }

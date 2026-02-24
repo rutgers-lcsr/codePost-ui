@@ -4,6 +4,7 @@ import * as React from 'react';
 import {
   ApiOutlined,
   FileTextOutlined,
+  HistoryOutlined,
   InboxOutlined,
   PushpinOutlined,
   SettingOutlined,
@@ -181,6 +182,11 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
             icon: <ApiOutlined />,
             label: 'API Reference',
             onClick: () => openLink('https://codepost-api.cs.rutgers.edu/api/schema/elements/'),
+          },
+          {
+            key: 'changelog',
+            icon: <HistoryOutlined />,
+            label: <Link to="/docs/changelog">Changelog</Link>,
           },
           {
             key: 'scholarship',

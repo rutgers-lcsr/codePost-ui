@@ -18,6 +18,7 @@ import { AllTestimonials } from '../landing/Testimonial';
 import ValidateInvite from '../student/ValidateInvite';
 import AboutUs from './AboutUs';
 import AutograderDetail from './AutograderDetail';
+import ChangeLog from './ChangeLog';
 import CreateSignup from './CreateSignup';
 import FAQs from './FAQs';
 import IntegrationsPage from './IntegrationsPage';
@@ -106,6 +107,7 @@ class IndexManager extends React.Component<IndexManagerProps> {
           <Route path="/privacy" element={<PrivacyPolicy isLoggedIn={this.props.isLoggedIn} />} />
           <Route path="/why-use-codepost" element={<WhyUse isLoggedIn={this.props.isLoggedIn} />} />
           <Route path="/about" element={<AboutUs isLoggedIn={this.props.isLoggedIn} />} />
+          <Route path="/changelog" element={<ChangeLog isLoggedIn={this.props.isLoggedIn} />} />
           <Route path="/testimonials" element={<AllTestimonials isLoggedIn={this.props.isLoggedIn} />} />
 
           <Route
