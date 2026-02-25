@@ -48,6 +48,26 @@ export interface AdminData {
 
 const isNonEmptyEmail = (email: string | null | undefined): email is string => Boolean(email);
 
+const asNullableStringArray = (value: Array<string | null> | null | undefined): Array<string | null> =>
+  Array.isArray(value) ? value : [];
+
+const asStringArray = (value: string[] | null | undefined): string[] => (Array.isArray(value) ? value : []);
+
+const normalizeRoster = (roster: Partial<RosterType>): RosterType => {
+  return {
+    ...roster,
+    students: asNullableStringArray(roster.students),
+    graders: asNullableStringArray(roster.graders),
+    superGraders: asNullableStringArray(roster.superGraders),
+    rubricEditors: asNullableStringArray(roster.rubricEditors),
+    courseAdmins: asNullableStringArray(roster.courseAdmins),
+    inactiveStudents: asNullableStringArray(roster.inactiveStudents),
+    inactiveGraders: asNullableStringArray(roster.inactiveGraders),
+    inactiveCourseAdmins: asNullableStringArray(roster.inactiveCourseAdmins),
+    notActivated: asStringArray(roster.notActivated),
+  } as RosterType;
+};
+
 interface DashboardStats {
   totalOrganizations: number;
   totalCourses: number;
@@ -134,8 +154,8 @@ const Dashboard = () => {
       // TODO: This could also be optimized with a bulk endpoint
       const rosterData = await Promise.all(
         uniqueCourses.map(async (course) => {
-          const roster = (await coursesApi.rosterRetrieve({ id: course.id })) as RosterType;
-          return roster;
+          const roster = (await coursesApi.rosterRetrieve({ id: course.id })) as Partial<RosterType>;
+          return normalizeRoster(roster);
         }),
       );
 

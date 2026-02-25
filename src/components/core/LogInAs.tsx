@@ -15,7 +15,7 @@ const LogInAs: React.FC<LogInAsProps> = ({ replaceUser }) => {
 
   // Get email from query string
   const queryParams = new URLSearchParams(location.search);
-  const email = queryParams.get('email') || '';
+  const email = (queryParams.get('email') || '').trim().replace(/\s+/g, '+');
 
   const issueRequest = useCallback(async () => {
     if (!email) {
@@ -28,17 +28,34 @@ const LogInAs: React.FC<LogInAsProps> = ({ replaceUser }) => {
     setErrorMessage('');
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/users/${email}/`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/users/${encodeURIComponent(email)}/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      let finalResponse = response;
+
+      // Fallback: some production environments are stricter about email path segments.
+      // Try the query-param based lookup endpoint before giving up.
+      if (!finalResponse.ok) {
+        const fallbackResponse = await fetch(
+          `${process.env.REACT_APP_API_URL}/users/user/?email=${encodeURIComponent(email)}`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          },
+        );
+        finalResponse = fallbackResponse;
       }
 
-      const user: UserType = await response.json();
+      if (!finalResponse.ok) {
+        throw new Error(`HTTP error! status: ${finalResponse.status}`);
+      }
+
+      const user: UserType = await finalResponse.json();
       replaceUser(user, true, true);
     } catch (err) {
       console.error('Login as error:', err);

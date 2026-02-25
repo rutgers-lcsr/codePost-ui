@@ -562,6 +562,7 @@ Firefox:
     const isGrader = graderCourses.length > 0;
     const isAdmin = courseAdminCourses.length > 0 || user.canCreateCourses;
     const isCodePostAdmin = user.codePostAdmin;
+    const canAccessSuperAdminConsole = isCodePostAdmin || isSuperUser;
 
     const inCodeInPlace =
       studentCourses.length + graderCourses.length + courseAdminCourses.length === 1 &&
@@ -600,7 +601,7 @@ Firefox:
       sectionsLed,
     };
 
-    const loginAsRoute = isCodePostAdmin ? (
+    const loginAsRoute = canAccessSuperAdminConsole ? (
       <Route path="/loginAs/*" element={<LogInAs replaceUser={replaceUser} />} />
     ) : null;
 
@@ -624,7 +625,7 @@ Firefox:
       </>
     );
 
-    const dashboardRoute = isCodePostAdmin ? <Route path="/dashboard" element={<Dashboard />} /> : null;
+    const dashboardRoute = canAccessSuperAdminConsole ? <Route path="/dashboard" element={<Dashboard />} /> : null;
 
     const settingsRoute = (
       <Route

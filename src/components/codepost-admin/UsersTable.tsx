@@ -338,7 +338,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
               type="primary"
               size="small"
               icon={<LoginOutlined />}
-              onClick={() => window.open(`/loginAs?email=${record.email}`, '_blank')}
+              onClick={() => window.open(`/loginAs?email=${encodeURIComponent(record.email)}`, '_blank')}
             >
               Login As
             </Button>
