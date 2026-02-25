@@ -44,11 +44,12 @@ import { tooltips } from '../core/tooltips';
 import { compare } from '../utils/SortUtils';
 import { formatSub, ISubDataBasic, sortByGrade } from './GraderUtils';
 
-import { coursesApi, submissionsApi } from '../../api-client/clients';
+import { assignmentsApi, coursesApi, sectionsApi, submissionsApi } from '../../api-client/clients';
 import { Course } from '../../api-client';
 import { AnonymousSubmissionInfoType, AssignmentType, SectionType, SubmissionType } from '../../types/models';
 import { ADMIN } from '../../routes';
 import { BUTTON_STATE } from '../../types/common';
+import { withQueryParams } from '../../utils/apiClient';
 
 type alignType = 'left' | 'right' | 'center';
 
@@ -87,25 +88,38 @@ interface IProps {
 /* Helper Functions
 /**********************************************************************************************************************/
 
-const loadSections = async (course: Course): Promise<SectionType[]> => {
+const loadSections = async (course: Course, isAdmin: boolean): Promise<SectionType[]> => {
   try {
-    const pageSize = 200;
-    let page = 1;
-    let allSections: SectionType[] = [];
+    if (isAdmin) {
+      const pageSize = 200;
+      let page = 1;
+      let allSections: SectionType[] = [];
 
-    while (true) {
-      const response = await coursesApi.sectionsList({ id: course.id, page, pageSize });
-      const results = response.results ?? [];
-      allSections = allSections.concat(results);
+      while (true) {
+        const response = await coursesApi.sectionsList({ id: course.id, page, pageSize });
+        const results = response.results ?? [];
+        allSections = allSections.concat(results);
 
-      if (!response.next) {
-        break;
+        if (!response.next) {
+          break;
+        }
+
+        page += 1;
       }
 
-      page += 1;
+      return allSections;
     }
 
-    return allSections;
+    // Graders cannot access /courses/{id}/sections/, so load details from section ids instead.
+    const sectionIds = Array.isArray(course.sections) ? course.sections : [];
+    if (sectionIds.length === 0) {
+      return [];
+    }
+
+    const sectionResults = await Promise.allSettled(sectionIds.map((id) => sectionsApi.retrieve({ id })));
+    return sectionResults
+      .filter((result): result is PromiseFulfilledResult<SectionType> => result.status === 'fulfilled')
+      .map((result) => result.value);
   } catch (e) {
     console.error(e);
     return [];
@@ -116,20 +130,21 @@ const loadSubmissions = async (
   currentAssignment: AssignmentType,
   user: string,
 ): Promise<AnonymousSubmissionInfoType[]> => {
-  // Legacy: Assignment.readSubmissionsAnonymous
   try {
-    const query = new URLSearchParams({
+    const submissionsApiWithQuery = withQueryParams(assignmentsApi, {
       grader: user,
-      compact: '1',
+      compact: 1,
     });
-    const response = await fetch(`/api/assignments/${currentAssignment.id}/submissions/?${query.toString()}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
-    if (!response.ok) throw new Error('Failed to fetch submissions');
-    const data = await response.json();
-    return data;
+
+    const response = await submissionsApiWithQuery.submissionsListRaw({ id: currentAssignment.id });
+    const data = (await response.raw.json()) as unknown;
+
+    if (Array.isArray(data)) {
+      return data as AnonymousSubmissionInfoType[];
+    }
+
+    return ((data as { results?: AnonymousSubmissionInfoType[] } | undefined)?.results ??
+      []) as AnonymousSubmissionInfoType[];
   } catch (error) {
     console.error(error);
     return [];
@@ -174,11 +189,11 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
         setIsLoadingSubmissions(false);
       });
 
-      loadSections(course).then((secs) => {
+      loadSections(course, isAdmin).then((secs) => {
         setSections(secs);
       });
     },
-    [graderEmail, course],
+    [graderEmail, course, isAdmin],
   );
 
   // Fetch queue length
@@ -216,27 +231,18 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
 
   const fetchSubmission = useCallback(
     async (assignmentId: number, section?: SectionType, amount: number = 1): Promise<SubmissionType[] | undefined> => {
-      const params = new URLSearchParams();
-      if (section) {
-        params.append('section', section.id.toString());
-      }
-      params.append('amount', amount.toString());
+      const drawUnassignedApi = withQueryParams(assignmentsApi, {
+        amount,
+        section: section?.name,
+      });
 
-      return await fetch(
-        `${process.env.REACT_APP_API_URL}/assignments/${assignmentId}/drawUnassigned/?${params.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        },
-      )
-        .then((res) => {
-          if (res.status === 204) {
-            return undefined;
-          }
-          return res.json();
-        })
-        .then((json) => json);
+      const response = await drawUnassignedApi.drawUnassignedListRaw({ id: assignmentId });
+      if (response.raw.status === 204) {
+        return undefined;
+      }
+
+      const json = (await response.raw.json()) as unknown;
+      return Array.isArray(json) ? (json as SubmissionType[]) : undefined;
     },
     [],
   );
@@ -393,13 +399,6 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
       }
     };
   }, [assignment, changeAssignment, updateQueueLength]);
-
-  // Handle assignment changes
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    changeAssignment(assignment);
-    updateQueueLength();
-  }, [assignment.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /***********************************************************************************
   /* Render helpers
