@@ -285,7 +285,7 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
       <Space direction="vertical" style={{ width: '100%' }}>
         {emails.map((email) => (
           <Tag key={email} color={color} style={{ marginBottom: '4px' }}>
-            <Link to={`/loginAs?email=${encodeURIComponent(email)}`} target="_blank" style={{ color: 'inherit' }}>
+            <Link to={`/loginAs?email=${encodeURIComponent(email)}`} style={{ color: 'inherit' }}>
               {email}
             </Link>
           </Tag>

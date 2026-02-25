@@ -197,13 +197,22 @@ Firefox:
 
   // User management functions
   const replaceUser = useCallback((newUser: User, redirect: boolean, isSuperUserParam: boolean) => {
+    // Stop any pending refresh from the previous identity before switching users.
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+    }
+
     setUser(newUser);
     setToRedirect(redirect);
     setIsSuperUser(isSuperUserParam);
+
     if (newUser.token) {
       localStorage.setItem('token', newUser.token);
+      setHasToken(true);
     } else {
       localStorage.removeItem('token');
+      setHasToken(false);
     }
   }, []);
 
@@ -272,6 +281,13 @@ Firefox:
       tokenRefreshApi
         .refreshCreate({ tokenRefreshSliding: { token: existingToken } })
         .then((json: { token: string }) => {
+          // If token changed while this request was in-flight (e.g., loginAs),
+          // ignore this stale refresh response to avoid switching identities back.
+          const currentToken = localStorage.getItem('token') || '';
+          if (!currentToken || currentToken !== existingToken) {
+            return;
+          }
+
           localStorage.setItem('token', json.token);
           const exp = getTokenExpiration(json.token);
           const now = new Date().getTime();
@@ -601,9 +617,7 @@ Firefox:
       sectionsLed,
     };
 
-    const loginAsRoute = canAccessSuperAdminConsole ? (
-      <Route path="/loginAs/*" element={<LogInAs replaceUser={replaceUser} />} />
-    ) : null;
+    const loginAsRoute = <Route path="/loginAs/*" element={<LogInAs replaceUser={replaceUser} />} />;
 
     const docsRoute = (
       <Route
