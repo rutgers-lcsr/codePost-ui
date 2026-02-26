@@ -245,8 +245,8 @@ export const TestingSetup = (props: IProps) => {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <Typography.Text>
-            Settings for assignments are located in the submissions tab inside Assignment settings. There you can set
-            how tests behave based on the assignment
+            Settings for assignments are located in the `Grading` tab inside Assignment settings. There you can set how
+            tests behave based on the assignment
           </Typography.Text>
         </div>
       </div>
