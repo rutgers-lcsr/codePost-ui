@@ -9,7 +9,7 @@ import { Button } from 'antd';
 import { codeMirorLanguageMap } from './languageUtils';
 
 import useHotkeys, { S_KEY } from '@code-review/useHotkeys';
-import Editor from '@monaco-editor/react';
+import Editor, { EditorProps } from '@monaco-editor/react';
 import { osControlKey } from '../../../../../core/operatingSystem';
 import { File } from '../../../../../../utils/file';
 
@@ -24,6 +24,7 @@ interface IProps {
   theme?: themeType;
   height?: string;
   onMount?: (editor: any, monaco: any) => void;
+  language?: EditorProps['language'];
 }
 
 export const CodeWindow = (props: IProps) => {
@@ -53,6 +54,9 @@ export const CodeWindow = (props: IProps) => {
 
   // ******************************* Util functions  *******************************
   const getMode = () => {
+    if (props.language) {
+      return props.language;
+    }
     const extension = File.extension(props.name);
     if (extension in codeMirorLanguageMap) {
       return codeMirorLanguageMap[extension];

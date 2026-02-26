@@ -7,7 +7,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
 /* antd imports */
-import { Breadcrumb, Button, Checkbox, InputNumber, message, Skeleton, Tabs, Typography } from 'antd';
+import { Breadcrumb, Button, Skeleton, Tabs, Typography } from 'antd';
 
 /* other library imports */
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -22,7 +22,6 @@ import type {
 import { AssignmentType, SubmissionInfoType, UserType } from '../../../../../types/models';
 
 /* codePost component imports */
-import CPTooltip from '../../../../core/CPTooltip';
 import CPAdminDetail from '../../../other/CPAdminDetail';
 import { EnvironmentSpecs } from './EnvironmentSpecs';
 import { TestManager } from './manager/TestManager';
@@ -200,23 +199,6 @@ export const TestingSetup = (props: IProps) => {
     navigate(newUrl);
   };
 
-  const updateEnvSetting = async (field: string, value: string | number | boolean | null) => {
-    if (env) {
-      const payload: EnvironmentPatchPayload = {
-        [field]: value,
-      };
-      const newEnv = await autograderApi.environmentsPartialUpdate({
-        id: env.id,
-        patchedEnvironment: payload,
-      });
-      if (typeof value === 'boolean') {
-        // we only show message for boolean settings. Numerical or string fields would be really annoying
-        message.success(value ? 'Setting enabled' : 'Setting disabled');
-      }
-      setEnv(newEnv);
-    }
-  };
-
   // ************************** Return ***************************************
   const items = [
     {
@@ -262,109 +244,10 @@ export const TestingSetup = (props: IProps) => {
           </Typography.Text>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* Limit test runs setting */}
-          <div
-            style={{
-              padding: '16px 20px',
-              background: env?.maxStudentTestRuns !== null ? '#f6ffed' : '#fafafa',
-              borderRadius: 10,
-              border: env?.maxStudentTestRuns !== null ? '1px solid #b7eb8f' : '1px solid #f0f0f0',
-              transition: 'all 0.2s',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontWeight: 600, fontSize: 15, color: '#262626' }}>Limit Test Run Count</span>
-                  <CPTooltip
-                    infoIcon={true}
-                    title="Enabling this setting will limit the amount of times students see exposed tests on student submit. After this number has been exceeded, they can still submit, but won't see test results."
-                    iconStyle={{ fontSize: 12, color: '#bfbfbf' }}
-                  />
-                </div>
-                <span
-                  style={{
-                    fontSize: 13,
-                    color: '#8c8c8c',
-                    display: 'block',
-                    marginBottom: env?.maxStudentTestRuns !== null ? 12 : 0,
-                  }}
-                >
-                  Students can only run exposed tests a limited number of times
-                </span>
-                {env?.maxStudentTestRuns !== null && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                    <span style={{ fontSize: 13, color: '#595959' }}>Maximum runs:</span>
-                    <InputNumber
-                      min={1}
-                      value={env?.maxStudentTestRuns}
-                      onChange={(value) => updateEnvSetting('maxStudentTestRuns', value)}
-                      style={{ width: 80 }}
-                      size="small"
-                    />
-                  </div>
-                )}
-              </div>
-              <Checkbox
-                checked={env?.maxStudentTestRuns !== null}
-                onChange={(e) => updateEnvSetting('maxStudentTestRuns', e.target.checked ? 10 : null)}
-                disabled={!env}
-                style={{ marginTop: 2 }}
-              />
-            </div>
-          </div>
-
-          {/* Limit exposed failed tests setting */}
-          <div
-            style={{
-              padding: '16px 20px',
-              background: env?.maxExposedFailedTests !== null ? '#f6ffed' : '#fafafa',
-              borderRadius: 10,
-              border: env?.maxExposedFailedTests !== null ? '1px solid #b7eb8f' : '1px solid #f0f0f0',
-              transition: 'all 0.2s',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontWeight: 600, fontSize: 15, color: '#262626' }}>Limit Failed Test Exposure</span>
-                  <CPTooltip
-                    infoIcon={true}
-                    title="Enabling this setting will limit the amount of failed tests a student is exposed to when they submit. This is a helpful feature if you'd like your students to slowly work through failed tests, and encourage them to write their own tests."
-                    iconStyle={{ fontSize: 12, color: '#bfbfbf' }}
-                  />
-                </div>
-                <span
-                  style={{
-                    fontSize: 13,
-                    color: '#8c8c8c',
-                    display: 'block',
-                    marginBottom: env?.maxExposedFailedTests !== null ? 12 : 0,
-                  }}
-                >
-                  Only show a limited number of failed tests per category
-                </span>
-                {env?.maxExposedFailedTests !== null && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                    <span style={{ fontSize: 13, color: '#595959' }}>Max failed tests per category:</span>
-                    <InputNumber
-                      min={1}
-                      value={env?.maxExposedFailedTests}
-                      onChange={(value) => updateEnvSetting('maxExposedFailedTests', value)}
-                      style={{ width: 80 }}
-                      size="small"
-                    />
-                  </div>
-                )}
-              </div>
-              <Checkbox
-                checked={env?.maxExposedFailedTests !== null}
-                onChange={(e) => updateEnvSetting('maxExposedFailedTests', e.target.checked ? 3 : null)}
-                disabled={!env}
-                style={{ marginTop: 2 }}
-              />
-            </div>
-          </div>
+          <Typography.Text>
+            Settings for assignments are located in the submissions tab inside Assignment settings. There you can set
+            how tests behave based on the assignment
+          </Typography.Text>
         </div>
       </div>
     ),

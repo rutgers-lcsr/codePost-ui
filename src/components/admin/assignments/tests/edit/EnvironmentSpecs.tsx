@@ -289,17 +289,17 @@ export const EnvironmentSpecs = (props: IProps) => {
       } else {
         console.error(`Environment ${props.env.id} is missing buildType`);
       }
-      if (props.env.dockerfile) {
+      if (props.env.dockerfile !== undefined && props.env.dockerfile !== null) {
         setCustomDockerfile(props.env.dockerfile);
       } else {
         console.error(`Environment ${props.env.id} is missing dockerfile`);
       }
-      if (props.env.requirements) {
+      if (props.env.requirements !== undefined && props.env.requirements !== null) {
         setRequirements(props.env.requirements);
       } else {
         console.error(`Environment ${props.env.id} is missing requirements`);
       }
-      if (props.env.autoDetect) {
+      if (props.env.autoDetect !== undefined && props.env.autoDetect !== null) {
         setAutoDetect(props.env.autoDetect);
       } else {
         console.error(`Environment ${props.env.id} is missing autoDetect`);
@@ -570,17 +570,22 @@ export const EnvironmentSpecs = (props: IProps) => {
     <Card
       title={
         <span>
-          <CodeOutlined /> Pre-test Runscript{' '}
-          <CPTooltip title="Runs before tests (e.g., compile code)." infoIcon={true} style={{ marginLeft: 8 }} />
+          <CodeOutlined /> Pre Runscript
+          <CPTooltip
+            title="Runs a script before running the code. In case you need to modify something before running the rest of the code. (Might not work in some docker containers)"
+            infoIcon={true}
+            style={{ marginLeft: 16 }}
+          />
         </span>
       }
       style={{ marginTop: 20 }}
-      extra={<Typography.Text type="secondary">Runs before tests (e.g., compile code)</Typography.Text>}
+      extra={<Typography.Text type="secondary">Runs before execution {'Shell'}</Typography.Text>}
       variant="borderless"
     >
       <CodeWindow
+        language={'shell'}
         code={(props.env && props.env.compileText) || ''}
-        name={'.sh'}
+        name={'bash.sh'}
         onSave={saveCompileText}
         height={'200px'}
       />
