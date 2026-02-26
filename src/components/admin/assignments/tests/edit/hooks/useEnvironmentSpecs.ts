@@ -1,5 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { message, Modal } from 'antd';
 import { autograderApi } from '../../../../../../api-client/clients';
 import { getScanner } from '../utils/scanners';
@@ -112,55 +112,58 @@ export const useEnvironmentSpecs = (props: EnvironmentSpecsProps, initialLanguag
   }, [props.env, initialLanguage]);
 
   // Manifest Scanning Logic
-  const scanForManifests = (manualTrigger: boolean = false) => {
-    // Logic from EnvironmentSpecs
-    if (!props.env) return;
-    if (!manualTrigger && props.env.requirements && props.env.requirements.trim().length > 0) return;
+  const scanForManifests = useCallback(
+    (manualTrigger: boolean = false) => {
+      // Logic from EnvironmentSpecs
+      if (!props.env) return;
+      if (!manualTrigger && props.env.requirements && props.env.requirements.trim().length > 0) return;
 
-    const allFiles = [...(props.helpers || []), ...(props.solutions || [])];
+      const allFiles = [...(props.helpers || []), ...(props.solutions || [])];
 
-    // 1. Detect Dominant Language if needed (or verify current support)
-    let detectedLang = language;
-    if (!detectedLang) {
-      if (allFiles.some((f) => f.name.endsWith('.py'))) {
-        detectedLang = LanguageEnum.Python312;
-      } else if (allFiles.some((f) => f.name.endsWith('.js') || f.name.endsWith('.ts'))) {
-        detectedLang = LanguageEnum.Node20;
-      } else if (allFiles.some((f) => f.name.endsWith('.R') || f.name.endsWith('.r'))) {
-        detectedLang = LanguageEnum.R4;
-      } else if (allFiles.some((f) => f.name.endsWith('.java'))) {
-        detectedLang = LanguageEnum.Java17;
-      } else if (allFiles.some((f) => f.name.endsWith('.ipynb'))) {
-        detectedLang = LanguageEnum.Python312;
-        //# TODO - This should look at the kernal
+      // 1. Detect Dominant Language if needed (or verify current support)
+      let detectedLang = language;
+      if (!detectedLang) {
+        if (allFiles.some((f) => f.name.endsWith('.py'))) {
+          detectedLang = LanguageEnum.Python312;
+        } else if (allFiles.some((f) => f.name.endsWith('.js') || f.name.endsWith('.ts'))) {
+          detectedLang = LanguageEnum.Node20;
+        } else if (allFiles.some((f) => f.name.endsWith('.R') || f.name.endsWith('.r'))) {
+          detectedLang = LanguageEnum.R4;
+        } else if (allFiles.some((f) => f.name.endsWith('.java'))) {
+          detectedLang = LanguageEnum.Java17;
+        } else if (allFiles.some((f) => f.name.endsWith('.ipynb'))) {
+          detectedLang = LanguageEnum.Python312;
+          //# TODO - This should look at the kernal
+        }
+        if (detectedLang) setLanguage(detectedLang);
       }
-      if (detectedLang) setLanguage(detectedLang);
-    }
 
-    if (!detectedLang) {
-      if (manualTrigger) message.error('Could not detect language from files.');
-      return;
-    }
+      if (!detectedLang) {
+        if (manualTrigger) message.error('Could not detect language from files.');
+        return;
+      }
 
-    const scanner = getScanner(detectedLang);
-    if (!scanner) {
-      if (manualTrigger) message.warning(`No manifest scanner available for ${detectedLang}`);
-      return;
-    }
+      const scanner = getScanner(detectedLang);
+      if (!scanner) {
+        if (manualTrigger) message.warning(`No manifest scanner available for ${detectedLang}`);
+        return;
+      }
 
-    const result = scanner.scan(allFiles, detectedLang);
+      const result = scanner.scan(allFiles, detectedLang);
 
-    if (result.detected) {
-      if (result.content) {
-        setRequirements(result.content);
-        if (manualTrigger) message.success(`Generated manifest based on ${result.packages.size} detected packages.`);
+      if (result.detected) {
+        if (result.content) {
+          setRequirements(result.content);
+          if (manualTrigger) message.success(`Generated manifest based on ${result.packages.size} detected packages.`);
+        } else if (manualTrigger) {
+          message.info('Scanned files but found no external packages to add to manifest.');
+        }
       } else if (manualTrigger) {
-        message.info('Scanned files but found no external packages to add to manifest.');
+        message.info('No imports detected in source files.');
       }
-    } else if (manualTrigger) {
-      message.info('No imports detected in source files.');
-    }
-  };
+    },
+    [props.env, props.helpers, props.solutions, language],
+  );
 
   // Build Logic
   const buildEnv = async (

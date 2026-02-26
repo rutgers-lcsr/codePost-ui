@@ -74,6 +74,10 @@ export class PythonScanner extends LanguageScanner {
   supportedLanguages = ['python'];
   fileExtensions = ['.py', '.ipynb'];
   stdLib = new Set([
+    'csv',
+    'json',
+    're',
+    'pprint',
     'os',
     'sys',
     're',
