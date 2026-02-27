@@ -11,6 +11,8 @@ import {
   CaretRightOutlined,
   LoadingOutlined,
 } from '@ant-design/icons';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { RubricCategory, SubmissionTest, TestCase, TestCategory } from '../../../api-client';
 import { autograderApi, submissionsApi } from '../../../api-client/clients';
 import { useTaskPolling } from '../../../hooks/useTaskPolling';
@@ -358,6 +360,30 @@ const TestsList: React.FC<TestsListProps> = ({
     };
   };
 
+  const renderMarkdownMessage = (rawMessage: string) => {
+    return (
+      <div
+        style={{
+          fontSize: 12,
+          color: isDarkTheme ? '#1e1e1e' : '#262626',
+          whiteSpace: 'pre-wrap',
+          overflowWrap: 'anywhere',
+        }}
+      >
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            p: ({ children }) => <p style={{ margin: 0 }}>{children}</p>,
+            ul: ({ children }) => <ul style={{ margin: '4px 0 0 16px' }}>{children}</ul>,
+            ol: ({ children }) => <ol style={{ margin: '4px 0 0 16px' }}>{children}</ol>,
+          }}
+        >
+          {rawMessage}
+        </ReactMarkdown>
+      </div>
+    );
+  };
+
   const renderTestCard = (item: TestItem) => {
     const { definition, result } = item;
     let parsedResults = getParsedResults(result);
@@ -577,11 +603,7 @@ const TestsList: React.FC<TestsListProps> = ({
             {parsedResults.length === 1 && parsedResults[0].message && (
               <div style={{ marginTop: 8 }}>
                 <Alert
-                  message={
-                    <span style={{ fontSize: 12, color: isDarkTheme ? '#1e1e1e' : '#262626' }}>
-                      {parsedResults[0].message}
-                    </span>
-                  }
+                  message={renderMarkdownMessage(parsedResults[0].message)}
                   type="info"
                   showIcon
                   style={{
