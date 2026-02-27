@@ -48,6 +48,46 @@ interface ParsedTestResult {
   message?: string;
 }
 
+interface SyntaxInsight {
+  hasSyntaxIssue: boolean;
+}
+
+const SYNTAX_ERROR_PATTERNS: RegExp[] = [
+  /\bSyntaxError\b/i,
+  /\bIndentationError\b/i,
+  /\bTabError\b/i,
+  /\bParseError\b/i,
+  /invalid syntax/i,
+  /unexpected EOF while parsing/i,
+  /unterminated string literal/i,
+  /EOL while scanning string literal/i,
+  /compile(?:d|r)?\s*error/i,
+  /compilation failed/i,
+];
+
+const getSyntaxInsight = (result?: SubmissionTest, parsedResults: ParsedTestResult[] = []): SyntaxInsight => {
+  if (!result) {
+    return { hasSyntaxIssue: false };
+  }
+
+  const candidateTexts = [result.logs || '', ...parsedResults.flatMap((r) => [r.error || '', r.message || ''])].filter(
+    Boolean,
+  );
+
+  const hasSyntaxIssue = candidateTexts.some((text) => SYNTAX_ERROR_PATTERNS.some((pattern) => pattern.test(text)));
+
+  if (!hasSyntaxIssue) {
+    return { hasSyntaxIssue: false };
+  }
+
+  return { hasSyntaxIssue };
+};
+
+const isSyntaxInvalidBoilerplateMessage = (message?: string): boolean => {
+  if (!message) return false;
+  return /student code syntax was invalid|fix syntax errors before running tests/i.test(message);
+};
+
 // Parse individual test results from log output
 function parseTestLogs(logs: string): ParsedTestResult[] {
   const results: ParsedTestResult[] = [];
@@ -419,6 +459,15 @@ const TestsList: React.FC<TestsListProps> = ({
       }
     }
 
+    const syntaxInsight = getSyntaxInsight(result, parsedResults);
+    const primaryParsedResult = parsedResults.length === 1 ? parsedResults[0] : undefined;
+    const showTupleMessage =
+      !!primaryParsedResult?.message &&
+      !(syntaxInsight.hasSyntaxIssue && isSyntaxInvalidBoilerplateMessage(primaryParsedResult.message));
+    const syntaxDetailText = syntaxInsight.hasSyntaxIssue
+      ? (primaryParsedResult?.error || result?.logs || primaryParsedResult?.message || '').trim()
+      : '';
+
     // Determine current score and max score for display
     let currentScore = 0;
     let maxScore = definition.pointsPass || 0;
@@ -600,10 +649,10 @@ const TestsList: React.FC<TestsListProps> = ({
             )}
 
             {/* Default Message / Feedback (Tuple Return) */}
-            {parsedResults.length === 1 && parsedResults[0].message && (
+            {parsedResults.length === 1 && showTupleMessage && (
               <div style={{ marginTop: 8 }}>
                 <Alert
-                  message={renderMarkdownMessage(parsedResults[0].message)}
+                  message={renderMarkdownMessage(primaryParsedResult?.message || '')}
                   type="info"
                   showIcon
                   style={{
@@ -617,7 +666,7 @@ const TestsList: React.FC<TestsListProps> = ({
             )}
 
             {/* Error Message */}
-            {parsedResults.length === 1 && parsedResults[0].error && (
+            {parsedResults.length === 1 && primaryParsedResult?.error && !syntaxInsight.hasSyntaxIssue && (
               <div
                 style={{
                   marginTop: 8,
@@ -631,7 +680,24 @@ const TestsList: React.FC<TestsListProps> = ({
                   whiteSpace: 'pre-wrap',
                 }}
               >
-                {parsedResults[0].error}
+                {primaryParsedResult.error}
+              </div>
+            )}
+
+            {/* Syntax/Parse Error Hint */}
+            {!result?.passed && syntaxInsight.hasSyntaxIssue && (
+              <div style={{ marginTop: 8 }}>
+                <Alert
+                  type="warning"
+                  showIcon
+                  message="Syntax/parse issue detected"
+                  description={
+                    <div style={{ fontSize: 12, whiteSpace: 'pre-wrap' }}>
+                      {syntaxDetailText ||
+                        'Student code appears to have a syntax/parse issue that may prevent tests from running as expected.'}
+                    </div>
+                  }
+                />
               </div>
             )}
 

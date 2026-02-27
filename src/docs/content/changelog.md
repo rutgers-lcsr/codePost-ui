@@ -11,6 +11,8 @@ Stay up to date with new features, improvements, and fixes in codePost.
 - User-facing changelog page — you're reading it!
 - Improved notebook editor loading for notebook-based assignments.
 - Fixed an issue where API tokens could not be generated.
+- Tests now check syntax of code before saving to prevent syntax errors in test cases.
+- Tests now check if target file exists before executing test scripts that reference files.
 
 ---
 
