@@ -574,16 +574,20 @@ Firefox:
     const superGraderCourses = user.superGraderCourses;
     const sectionsLed = user.leaderSections;
 
+    const graderAccessibleCourses = Array.from(
+      new Map([...graderCourses, ...superGraderCourses].map((course) => [course.id, course])).values(),
+    );
+
     const isStudent = studentCourses.length > 0;
-    const isGrader = graderCourses.length > 0;
+    const isGrader = graderAccessibleCourses.length > 0;
     const isAdmin = courseAdminCourses.length > 0 || user.canCreateCourses;
     const isCodePostAdmin = user.codePostAdmin;
     const canAccessSuperAdminConsole = isCodePostAdmin || isSuperUser;
 
     const inCodeInPlace =
-      studentCourses.length + graderCourses.length + courseAdminCourses.length === 1 &&
+      studentCourses.length + graderAccessibleCourses.length + courseAdminCourses.length === 1 &&
       ((isStudent && studentCourses[0].id === 925) ||
-        (isGrader && graderCourses.length > 0 && graderCourses[0].id === 925) ||
+        (isGrader && graderAccessibleCourses.length > 0 && graderAccessibleCourses[0].id === 925) ||
         (isAdmin && courseAdminCourses.length > 0 && courseAdminCourses[0].id === 925));
 
     if (inCodeInPlace || localStorage.getItem('source') !== 'codePost') {
@@ -666,7 +670,9 @@ Firefox:
     const graderRoute = isGrader ? (
       <Route
         path={`${GRADER}/*`}
-        element={wrapTooltipContext(<AsyncGrader {...consoleProps} initialCourses={graderCourses} baseURL={GRADER} />)}
+        element={wrapTooltipContext(
+          <AsyncGrader {...consoleProps} initialCourses={graderAccessibleCourses} baseURL={GRADER} />,
+        )}
       />
     ) : null;
 
