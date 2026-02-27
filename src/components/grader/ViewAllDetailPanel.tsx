@@ -67,11 +67,17 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
   };
 
   public async initialLoad() {
-    this.setState({ isLoading: true });
+    this.setState({
+      isLoading: true,
+      submissions: [],
+      viewsBySubmission: {},
+    });
 
     try {
       const submissionsResponse = await assignmentsApi.submissionsList({ id: this.props.assignment.id });
-      const submissions = submissionsResponse.results ?? [];
+      const submissions = Array.isArray(submissionsResponse)
+        ? submissionsResponse
+        : (submissionsResponse.results ?? []);
       this.onLoadNewSubmissions(submissions);
     } catch (error) {
       console.error('Failed to load submissions', error);
@@ -79,7 +85,7 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
 
     try {
       const historiesResponse = await assignmentsApi.submissionHistoriesList({ id: this.props.assignment.id });
-      const histories = historiesResponse.results ?? [];
+      const histories = Array.isArray(historiesResponse) ? historiesResponse : (historiesResponse.results ?? []);
       this.onLoadNewHistories(histories);
     } catch (error) {
       console.error('Failed to load submission histories', error);
@@ -102,7 +108,7 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
   }
 
   public componentDidUpdate(oldProps: IViewAllProps, _prevProps: IViewAllState) {
-    if (oldProps.assignment !== this.props.assignment) {
+    if (oldProps.assignment.id !== this.props.assignment.id) {
       this.initialLoad();
     }
   }
@@ -111,8 +117,18 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
 
   public onLoadNewSubmissions = (newSubs: SubmissionInfoType[]) => {
     this.setState((prevState, _prevProps) => {
+      const mergedById = new Map<number, SubmissionInfoType>();
+
+      prevState.submissions.forEach((sub) => {
+        mergedById.set(sub.id, sub);
+      });
+
+      newSubs.forEach((sub) => {
+        mergedById.set(sub.id, sub);
+      });
+
       return {
-        submissions: [...prevState.submissions, ...newSubs],
+        submissions: Array.from(mergedById.values()),
       };
     });
   };

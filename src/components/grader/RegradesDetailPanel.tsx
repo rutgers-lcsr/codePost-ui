@@ -48,7 +48,7 @@ const RegradesDetailPanel = (props: IProps) => {
       });
       if (!response.ok) throw new Error('Failed to fetch submissions');
       const data = await response.json();
-      setSubmissions(data);
+      setSubmissions(Array.isArray(data) ? data : (data?.results ?? []));
     } catch (error) {
       console.error(error);
     }
@@ -66,7 +66,7 @@ const RegradesDetailPanel = (props: IProps) => {
       });
       if (!response.ok) throw new Error('Failed to fetch submissions');
       const data = await response.json();
-      setSubmissions(data);
+      setSubmissions(Array.isArray(data) ? data : (data?.results ?? []));
     } catch (error) {
       console.error(error);
     }
