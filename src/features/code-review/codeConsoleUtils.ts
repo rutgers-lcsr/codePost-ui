@@ -247,6 +247,18 @@ export const pointsFromTests = (submissionTests: SubmissionTestType[], testCases
     -1 *
     latestTests
       .map((test) => {
+        // Preferred path: use structured earned points from backend.
+        // This supports partial credit even when `passed` is false.
+        const scoreRaw = test.score as unknown;
+        const maxRaw = test.maxScore as unknown;
+        const scoreVal = typeof scoreRaw === 'number' ? scoreRaw : parseFloat(String(scoreRaw ?? ''));
+        const maxVal = typeof maxRaw === 'number' ? maxRaw : parseFloat(String(maxRaw ?? ''));
+
+        if (Number.isFinite(scoreVal) && Number.isFinite(maxVal) && maxVal > 0) {
+          const clamped = Math.max(0, Math.min(scoreVal, maxVal));
+          return clamped;
+        }
+
         const match = testCases.find((el) => el.id === test.testCase);
 
         if (match === undefined) {

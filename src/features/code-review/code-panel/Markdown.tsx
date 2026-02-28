@@ -151,6 +151,18 @@ interface ListProps extends MarkdownNodeProps {
   ordered?: boolean;
 }
 
+interface FileWithId {
+  id: number;
+}
+
+const hasNumericFileId = (value: unknown): value is FileWithId => {
+  if (typeof value !== 'object' || value === null || !('id' in value)) {
+    return false;
+  }
+
+  return typeof value.id === 'number';
+};
+
 /**********************************************************************************************************************/
 /* Remark Plugin: Mark Top-Level Elements and Track Jupyter Cells
 /**********************************************************************************************************************/
@@ -180,6 +192,8 @@ function remarkMarkTopLevel() {
 
 const REMARK_PLUGINS = [remarkGfm, remarkMarkTopLevel];
 const REHYPE_PLUGINS = [rehypeRaw];
+const NOTEBOOK_CHANGE_DEBOUNCE_MS = 150;
+const VIDEO_DOMAINS = ['youtube.com', 'vimeo.com', 'dailymotion.com', 'wistia.com', 'vidyard.com'];
 
 /**********************************************************************************************************************/
 /* Main Component
@@ -206,11 +220,15 @@ interface MarkdownContextStore {
   isJupyter: boolean;
   isEditMode: boolean;
   onCellContentChange: (cellIndex: number, newContent: string) => void;
-  cellIndexRef: React.MutableRefObject<number | null>;
-  cellTypeRef: React.MutableRefObject<string | null>;
+}
+
+interface MarkdownCellContextStore {
+  cellIndex: number | null;
+  cellType: string | null;
 }
 
 const MarkdownContext = React.createContext<MarkdownContextStore | null>(null);
+const MarkdownCellContext = React.createContext<MarkdownCellContextStore>({ cellIndex: null, cellType: null });
 
 const useMarkdownContext = () => {
   const context = React.useContext(MarkdownContext);
@@ -231,7 +249,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
 
   const [executedContent, setExecutedContent] = React.useState<string | null>(null);
 
-  const { readOnly: isReadOnly, commentCounter, file, addComment, user } = props;
+  const { readOnly: isReadOnly, commentCounter, file, addComment, user, onContentChange } = props;
 
   // Optimizing comment updates:
   // Create a structural hash of comments so we only trigger re-renders when positions/counts change,
@@ -280,8 +298,8 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
 
   // For inline notebook editing: parse the notebook JSON and keep a mutable ref
   const notebookRef = React.useRef<Notebook | null>(null);
-  const cellIndexRef = React.useRef<number | null>(null);
-  const cellTypeRef = React.useRef<string | null>(null);
+  const notebookSyncTimeoutRef = React.useRef<number | null>(null);
+  const pendingNotebookPayloadRef = React.useRef<string | null>(null);
 
   const notebookContent = props.isEditMode && props.temporaryContent ? props.temporaryContent : fileContent;
 
@@ -293,6 +311,25 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
       notebookRef.current = normalizeNotebookJson(notebookContent);
     }
   }, [isJupyter, notebookContent]);
+
+  const flushPendingNotebookSync = React.useCallback(() => {
+    if (notebookSyncTimeoutRef.current !== null) {
+      window.clearTimeout(notebookSyncTimeoutRef.current);
+      notebookSyncTimeoutRef.current = null;
+    }
+
+    const pendingPayload = pendingNotebookPayloadRef.current;
+    if (pendingPayload !== null) {
+      onContentChange(pendingPayload);
+      pendingNotebookPayloadRef.current = null;
+    }
+  }, [onContentChange]);
+
+  React.useEffect(() => {
+    return () => {
+      flushPendingNotebookSync();
+    };
+  }, [flushPendingNotebookSync]);
 
   // Handler for when a code cell is edited in-place
   const onCellContentChange = React.useCallback(
@@ -318,14 +355,24 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
 
         notebookRef.current = updatedNotebook;
 
-        // Serialize back and notify parent
-        // Note: JSON.stringify is still expensive but necessary for the API contract
-        // We could debounce this in the future if needed, but avoiding the parse/stringify roundtrip
-        // for the internal state update is the first big win.
-        props.onContentChange(JSON.stringify(updatedNotebook, null, 1));
+        // Serialize back and notify parent (debounced) to reduce expensive parent updates while typing.
+        pendingNotebookPayloadRef.current = JSON.stringify(updatedNotebook, null, 1);
+
+        if (notebookSyncTimeoutRef.current !== null) {
+          window.clearTimeout(notebookSyncTimeoutRef.current);
+        }
+
+        notebookSyncTimeoutRef.current = window.setTimeout(() => {
+          const pendingPayload = pendingNotebookPayloadRef.current;
+          if (pendingPayload !== null) {
+            onContentChange(pendingPayload);
+            pendingNotebookPayloadRef.current = null;
+          }
+          notebookSyncTimeoutRef.current = null;
+        }, NOTEBOOK_CHANGE_DEBOUNCE_MS);
       }
     },
-    [isJupyter, props.onContentChange],
+    [isJupyter, onContentChange],
   );
 
   const baseMarkdown = React.useMemo(() => {
@@ -346,6 +393,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
   }, [codeType, fileContent, notebookContent]);
 
   const markdown = executedContent ?? baseMarkdown;
+  const deferredMarkdown = React.useDeferredValue(markdown);
 
   // Track if we've already created a comment in this event cycle to prevent duplicates
   const commentCreatedRef = React.useRef<{ cellIndex: number; timestamp: number } | null>(null);
@@ -453,12 +501,12 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
       const displayLine = lineNumber;
 
       // Check if file has an ID (FileLike mocks do not)
-      if (!('id' in file) || typeof (file as any).id !== 'number') {
+      if (!hasNumericFileId(file)) {
         console.warn('Cannot add comment to file without ID');
         return;
       }
 
-      const fileId = (file as any).id as number;
+      const fileId = file.id;
 
       const newComment: CommentType = {
         id: commentCounter,
@@ -564,8 +612,6 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
       isJupyter,
       isEditMode: props.isEditMode,
       onCellContentChange,
-      cellIndexRef,
-      cellTypeRef,
     }),
     [
       handleHoverEnterLine,
@@ -581,8 +627,6 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
       isJupyter,
       props.isEditMode,
       onCellContentChange,
-      cellIndexRef,
-      cellTypeRef,
     ],
   );
 
@@ -630,10 +674,10 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
         rehypePlugins={REHYPE_PLUGINS}
         components={markdownComponents as Components}
       >
-        {executedContent || markdown}
+        {deferredMarkdown}
       </ReactMarkdown>
     ),
-    [executedContent, markdown],
+    [deferredMarkdown],
   );
 
   return (
@@ -664,9 +708,9 @@ const useBlockProps = (props: MarkdownNodeProps, commentable: boolean = true) =>
     isEditMode,
   } = useMarkdownContext();
 
-  const propsAny = props as any;
+  const propsWithAttributes = props as MarkdownNodeProps & Record<string, unknown>;
   const isTopLevel =
-    propsAny['data-is-top-level'] === 'true' || props.node?.properties?.['data-is-top-level'] === 'true';
+    propsWithAttributes['data-is-top-level'] === 'true' || props.node?.properties?.['data-is-top-level'] === 'true';
   const shouldRenderAsBlock = isJupyter || isTopLevel;
 
   if (!shouldRenderAsBlock) {
@@ -743,8 +787,8 @@ const MarkdownList = (props: ListProps) => {
 };
 
 const MarkdownCode = (props: CodeProps) => {
-  const { markdownTheme, syntaxHighlightTheme, isJupyter, isEditMode, onCellContentChange, cellIndexRef, cellTypeRef } =
-    useMarkdownContext();
+  const { markdownTheme, syntaxHighlightTheme, isJupyter, isEditMode, onCellContentChange } = useMarkdownContext();
+  const { cellIndex, cellType } = React.useContext(MarkdownCellContext);
   const blockProps = useBlockProps(props, true);
 
   const { className, children } = props;
@@ -752,9 +796,6 @@ const MarkdownCode = (props: CodeProps) => {
   const match = /language-(\w+)/.exec(className || '');
   const language = match ? match[1] : '';
   const codeString = String(children).replace(/\n$/, '');
-
-  // Capture cell index from the ref (set by parent MarkdownDiv)
-  const cellIndex = cellIndexRef.current;
 
   if (inline) {
     return (
@@ -834,42 +875,38 @@ const MarkdownCode = (props: CodeProps) => {
     );
   }
 
-  // Memoize SyntaxHighlighter
-  const highlighter = React.useMemo(
-    () => (
-      <SyntaxHighlighter
-        language={language || 'text'}
-        style={syntaxHighlightTheme}
-        customStyle={{
-          backgroundColor: markdownTheme.codeBackground,
-          borderTop: '0px',
-          borderRight: '0px',
-          borderBottom: '0px',
-          margin: '0px', // Handled by wrapper
-          fontFamily: 'monospace',
-          whiteSpace: 'pre-wrap',
-          overflowX: 'auto',
-          wordBreak: 'break-word',
-          maxWidth: '100%',
-          boxSizing: 'border-box',
-          color: markdownTheme.text,
-        }}
-        showLineNumbers={false}
-        wrapLines={true}
-        wrapLongLines={true}
-      >
-        {codeString || ' '}
-      </SyntaxHighlighter>
-    ),
-    [language, codeString, syntaxHighlightTheme, markdownTheme],
+  const highlighter = (
+    <SyntaxHighlighter
+      language={language || 'text'}
+      style={syntaxHighlightTheme}
+      customStyle={{
+        backgroundColor: markdownTheme.codeBackground,
+        borderTop: '0px',
+        borderRight: '0px',
+        borderBottom: '0px',
+        margin: '0px', // Handled by wrapper
+        fontFamily: 'monospace',
+        whiteSpace: 'pre-wrap',
+        overflowX: 'auto',
+        wordBreak: 'break-word',
+        maxWidth: '100%',
+        boxSizing: 'border-box',
+        color: markdownTheme.text,
+      }}
+      showLineNumbers={false}
+      wrapLines={true}
+      wrapLongLines={true}
+    >
+      {codeString || ' '}
+    </SyntaxHighlighter>
   );
 
   // In edit mode, render Monaco editor for code cells (not output/error)
-  // Check cellTypeRef to ensure we only render editor for actual Code Cells, not code blocks in Markdown Cells
+  // Check cellType to ensure we only render editor for actual Code Cells, not code blocks in Markdown Cells
   if (
     isEditMode &&
     isJupyter &&
-    cellTypeRef.current === 'code' &&
+    cellType === 'code' &&
     language !== 'output' &&
     language !== 'error' &&
     cellIndex !== null &&
@@ -894,7 +931,7 @@ const MarkdownCode = (props: CodeProps) => {
           height={`${editorHeight}px`}
           width="100%"
           language={language || 'python'}
-          value={codeString}
+          value={codeString === 'undefined' ? '' : codeString || ''}
           onChange={(value) => {
             onCellContentChange(capturedCellIndex, value || '');
           }}
@@ -1009,10 +1046,9 @@ const MarkdownDiv = (props: MarkdownNodeProps) => {
     onHoverLeave,
     onMouseUp,
     onKeyDown,
-    cellIndexRef,
-    cellTypeRef,
     isEditMode,
   } = useMarkdownContext();
+  const blockProps = useBlockProps(props);
 
   // Check if this div has special attributes
   const properties = props.node?.properties || {};
@@ -1039,10 +1075,6 @@ const MarkdownDiv = (props: MarkdownNodeProps) => {
   if (cellIndex !== undefined) {
     const cellNum = parseInt(cellIndex, 10);
 
-    // Set the cellIndexRef so child MarkdownCode can read it
-    cellIndexRef.current = Number.isNaN(cellNum) ? null : cellNum;
-    // Set the cellTypeRef so child MarkdownCode can read it
-    cellTypeRef.current = cellType || null;
     const cellComments = !Number.isNaN(cellNum) && getCommentsForLine ? getCommentsForLine(cellNum) : [];
     const cellHasComments = cellComments.length > 0;
     const cellIsInteractive = !Number.isNaN(cellNum) && (!renderersReadOnly || cellHasComments);
@@ -1089,33 +1121,36 @@ const MarkdownDiv = (props: MarkdownNodeProps) => {
     );
 
     return (
-      <div
-        data-jupyter-cell={cellIndex}
-        data-cell-uuid={cellUuid}
-        className={computedClassName}
-        index-number={cellIndex}
-        data-has-comment={cellHasComments ? 'true' : undefined}
-        onMouseUp={isEditMode ? undefined : onMouseUp}
-        onKeyDown={isEditMode ? undefined : cellIsInteractive ? onKeyDown : undefined}
-        onMouseEnter={
-          isEditMode ? undefined : cellHasComments && onHoverEnter ? (_e) => onHoverEnter(cellNum) : undefined
-        }
-        onMouseLeave={
-          isEditMode ? undefined : cellHasComments && onHoverLeave ? (_e) => onHoverLeave(cellNum) : undefined
-        }
-        tabIndex={isEditMode ? undefined : cellIsInteractive ? 0 : undefined}
-        role={isEditMode ? undefined : cellIsInteractive ? 'button' : undefined}
-        aria-label={isEditMode ? undefined : cellAriaLabel}
-        {...safeProps}
-        title={`Cell ${1 + parseInt(cellIndex)}`}
+      <MarkdownCellContext.Provider
+        value={{ cellIndex: Number.isNaN(cellNum) ? null : cellNum, cellType: cellType || null }}
       >
-        {props.children}
-      </div>
+        <div
+          data-jupyter-cell={cellIndex}
+          data-cell-uuid={cellUuid}
+          className={computedClassName}
+          index-number={cellIndex}
+          data-has-comment={cellHasComments ? 'true' : undefined}
+          onMouseUp={isEditMode ? undefined : onMouseUp}
+          onKeyDown={isEditMode ? undefined : cellIsInteractive ? onKeyDown : undefined}
+          onMouseEnter={
+            isEditMode ? undefined : cellHasComments && onHoverEnter ? (_e) => onHoverEnter(cellNum) : undefined
+          }
+          onMouseLeave={
+            isEditMode ? undefined : cellHasComments && onHoverLeave ? (_e) => onHoverLeave(cellNum) : undefined
+          }
+          tabIndex={isEditMode ? undefined : cellIsInteractive ? 0 : undefined}
+          role={isEditMode ? undefined : cellIsInteractive ? 'button' : undefined}
+          aria-label={isEditMode ? undefined : cellAriaLabel}
+          {...safeProps}
+          title={`Cell ${1 + parseInt(cellIndex)}`}
+        >
+          {props.children}
+        </div>
+      </MarkdownCellContext.Provider>
     );
   }
 
   // Regular div handling
-  const blockProps = useBlockProps(props);
   return <div {...blockProps}>{props.children}</div>;
 };
 
@@ -1131,15 +1166,10 @@ const MarkdownImage = (props: MarkdownNodeProps) => {
   }
 
   if (src.startsWith('http')) {
-    try {
-      // check if its a video domain
-      const VIDEODOMAINS = ['youtube.com', 'vimeo.com', 'dailymotion.com', 'wistia.com', 'vidyard.com'];
-      if (VIDEODOMAINS.some((domain) => src.toLowerCase().includes(domain))) {
-        return <video controls src={src} />;
-      }
-    } catch (err) {
-      console.error(err);
-      return <Image width={300} src="" alt={`Unable to render ${src}`} preview={false} />;
+    // check if its a video domain
+    if (VIDEO_DOMAINS.some((domain) => src.toLowerCase().includes(domain))) {
+      // need to wrap this in an error boundary
+      return <video controls src={src} />;
     }
   }
 
@@ -1149,7 +1179,6 @@ const MarkdownImage = (props: MarkdownNodeProps) => {
       width={200}
       src={src == '' ? undefined : src}
       alt={alt}
-      onMouseOver={(e) => console.log('Hovered over image', e)}
       preview={false}
     />
   );
