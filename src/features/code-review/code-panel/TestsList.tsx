@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React, { useEffect, useState, useContext } from 'react';
-import { Button, Card, Collapse, Progress, Typography, message, Badge, Alert, Tag, Tooltip } from 'antd';
+import { Button, Card, Collapse, Progress, Typography, message, Badge, Alert, Tag, Tooltip, Popover } from 'antd';
 import {
   CheckCircleFilled,
   CloseCircleFilled,
@@ -19,6 +19,7 @@ import { useTaskPolling } from '../../../hooks/useTaskPolling';
 import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 import { buildDemoExecutionResults } from './demoExecution';
+import { getLatestSubmissionTests } from '../../../utils/submissionTests';
 
 const { Panel } = Collapse;
 const { Text, Title } = Typography;
@@ -50,7 +51,11 @@ interface ParsedTestResult {
 
 interface SyntaxInsight {
   hasSyntaxIssue: boolean;
+  hasSyntaxLinkedFailure: boolean;
+  showAdvisory: boolean;
 }
+
+type TestOutcome = 'not-run' | 'passed' | 'partial' | 'failed' | 'error';
 
 const SYNTAX_ERROR_PATTERNS: RegExp[] = [
   /\bSyntaxError\b/i,
@@ -67,7 +72,7 @@ const SYNTAX_ERROR_PATTERNS: RegExp[] = [
 
 const getSyntaxInsight = (result?: SubmissionTest, parsedResults: ParsedTestResult[] = []): SyntaxInsight => {
   if (!result) {
-    return { hasSyntaxIssue: false };
+    return { hasSyntaxIssue: false, hasSyntaxLinkedFailure: false, showAdvisory: false };
   }
 
   const candidateTexts = [result.logs || '', ...parsedResults.flatMap((r) => [r.error || '', r.message || ''])].filter(
@@ -76,16 +81,51 @@ const getSyntaxInsight = (result?: SubmissionTest, parsedResults: ParsedTestResu
 
   const hasSyntaxIssue = candidateTexts.some((text) => SYNTAX_ERROR_PATTERNS.some((pattern) => pattern.test(text)));
 
+  const hasSyntaxLinkedFailure = parsedResults.some((r) => {
+    if (r.passed) return false;
+    const detail = `${r.error || ''}\n${r.message || ''}`;
+    return SYNTAX_ERROR_PATTERNS.some((pattern) => pattern.test(detail));
+  });
+
+  const hasAdvisoryMarker = /notebook syntax advisory/i.test(result.logs || '');
+
   if (!hasSyntaxIssue) {
-    return { hasSyntaxIssue: false };
+    return {
+      hasSyntaxIssue: false,
+      hasSyntaxLinkedFailure,
+      showAdvisory: hasAdvisoryMarker,
+    };
   }
 
-  return { hasSyntaxIssue };
+  return {
+    hasSyntaxIssue,
+    hasSyntaxLinkedFailure,
+    showAdvisory: !hasSyntaxLinkedFailure,
+  };
 };
 
 const isSyntaxInvalidBoilerplateMessage = (message?: string): boolean => {
   if (!message) return false;
   return /student code syntax was invalid|fix syntax errors before running tests/i.test(message);
+};
+
+const extractSyntaxAdvisoryDetail = (result?: SubmissionTest): string => {
+  if (!result?.logs) return '';
+
+  const logs = result.logs;
+  const fullDetailMatch = logs.match(/Full syntax details:\s*([\s\S]+)/i);
+  if (fullDetailMatch?.[1]) {
+    return fullDetailMatch[1].trim();
+  }
+
+  const rootCauseMatch = logs.match(/Root cause:\s*([^\n]+)/i);
+  if (rootCauseMatch?.[1]) {
+    return rootCauseMatch[1].trim();
+  }
+
+  const syntaxLine = logs.split('\n').find((line) => SYNTAX_ERROR_PATTERNS.some((pattern) => pattern.test(line)));
+
+  return (syntaxLine || '').trim();
 };
 
 // Parse individual test results from log output
@@ -114,6 +154,30 @@ function parseTestLogs(logs: string): ParsedTestResult[] {
   // If we found JSON results, return them
   if (results.length > 0) {
     return results;
+  }
+
+  // Try raw JSON payload fallback (some executions store logs as JSON directly)
+  try {
+    const raw = JSON.parse(logs);
+    const normalized = Array.isArray(raw) ? raw : raw?.results;
+    if (Array.isArray(normalized)) {
+      return normalized.map((data: any) => ({
+        name: data.name || 'Unknown Test',
+        passed: data.passed ?? data.status === 'passed',
+        score: typeof data.score === 'number' ? data.score : parseFloat(data.score || '0'),
+        maxScore:
+          typeof data.maxScore === 'number'
+            ? data.maxScore
+            : typeof data.max_score === 'number'
+              ? data.max_score
+              : parseFloat(data.maxScore || data.max_score || '0'),
+        error: data.error,
+        message: data.message,
+        description: data.description,
+      }));
+    }
+  } catch {
+    // ignore and continue fallback parsing
   }
 
   // Fallback: Parse line-by-line format
@@ -213,6 +277,7 @@ const TestsList: React.FC<TestsListProps> = ({
   const [demoRunSequence, setDemoRunSequence] = useState(0);
   const isStudent = useCodeConsoleStore((s) => s.isStudent);
   const testsAffectGrade = useCodeConsoleStore((s) => s.assignment?.testsAffectGrade ?? true);
+  const setStoreTests = useCodeConsoleStore((s) => s.setTests);
 
   const fetchResults = async () => {
     if (demoMode) {
@@ -221,7 +286,9 @@ const TestsList: React.FC<TestsListProps> = ({
 
     try {
       const data = await submissionsApi.testResultsRetrieve({ id: submissionId });
-      setResults(data.submissionTests);
+      const nextResults = data.submissionTests || [];
+      setResults(nextResults);
+      setStoreTests(getLatestSubmissionTests(nextResults));
     } catch (error) {
       console.error('Failed to load test results', error);
     }
@@ -229,7 +296,9 @@ const TestsList: React.FC<TestsListProps> = ({
 
   useEffect(() => {
     if (demoMode) {
-      setResults(initialResults ?? []);
+      const nextResults = initialResults ?? [];
+      setResults(nextResults);
+      setStoreTests(getLatestSubmissionTests(nextResults));
       setDemoRunSequence(0);
       return;
     }
@@ -252,15 +321,17 @@ const TestsList: React.FC<TestsListProps> = ({
       if (demoMode) {
         const nextDemoRun = demoRunSequence + 1;
         await new Promise((resolve) => setTimeout(resolve, 300));
-        setResults((previousResults) =>
-          buildDemoExecutionResults({
+        setResults((previousResults) => {
+          const updatedResults = buildDemoExecutionResults({
             submissionId,
             tests,
             existingResults: previousResults,
             targetTestId: testId,
             runNonce: nextDemoRun,
-          }),
-        );
+          });
+          setStoreTests(getLatestSubmissionTests(updatedResults));
+          return updatedResults;
+        });
         setDemoRunSequence(nextDemoRun);
 
         message.success(testId ? 'Demo test run completed' : 'Demo run-all completed');
@@ -307,12 +378,6 @@ const TestsList: React.FC<TestsListProps> = ({
     return { definition: test, result };
   });
 
-  // Calculate summary stats
-  const totalTests = combinedTests.length;
-  const passedTests = combinedTests.filter((t) => t.result?.passed).length;
-  const failedTests = combinedTests.filter((t) => t.result && !t.result.passed).length;
-  const notRunTests = combinedTests.filter((t) => !t.result).length;
-
   const getParsedResults = (result?: SubmissionTest): ParsedTestResult[] => {
     if (!result) return [];
 
@@ -338,52 +403,88 @@ const TestsList: React.FC<TestsListProps> = ({
     return parseTestLogs(result.logs || '');
   };
 
-  const getStatusIcon = (result?: SubmissionTest) => {
-    const key = getStatusColorKey(result);
-    const color = statusColors[key].main;
-
-    if (!result) return <ClockCircleOutlined style={{ fontSize: 24, color }} />;
-    if (key === 'error') return <CloseCircleFilled style={{ fontSize: 24, color }} />; // Use Close for error/fail to be consistent? Or Exclamation for error?
-    // Let's keep differentiation but use compliant colors
-    if (result.isError) return <ExclamationCircleFilled style={{ fontSize: 24, color }} />;
-    if (key === 'passed') return <CheckCircleFilled style={{ fontSize: 24, color }} />;
-    if (key === 'partial') return <MinusCircleFilled style={{ fontSize: 24, color }} />;
-
-    return <CloseCircleFilled style={{ fontSize: 24, color }} />;
-  };
-
-  const getStatusText = (result?: SubmissionTest) => {
-    if (!result) return 'Not Run';
-    if (result.isError) return 'Error';
-    if (result.passed) return 'Passed';
-    const key = getStatusColorKey(result);
-    if (key === 'partial') return 'Partial';
-    return 'Failed';
-  };
-
   const statusColors = isDarkTheme
     ? {
         passed: { main: '#49aa19', bg: 'rgba(73, 170, 25, 0.1)', border: '#274916' },
+        failed: { main: '#d32029', bg: 'rgba(211, 32, 41, 0.1)', border: '#58181c' },
         error: { main: '#d32029', bg: 'rgba(211, 32, 41, 0.1)', border: '#58181c' },
         partial: { main: '#d89614', bg: 'rgba(216, 150, 20, 0.1)', border: '#593d10' },
         default: { main: '#9da7b3', bg: darkSurface, border: darkBorder },
       }
     : {
         passed: { main: '#389e0d', bg: '#f6ffed', border: '#b7eb8f' }, // green-7, green-1, green-3
+        failed: { main: '#cf1322', bg: '#fff1f0', border: '#ffa39e' }, // red-7, red-1, red-3
         error: { main: '#cf1322', bg: '#fff1f0', border: '#ffa39e' }, // red-7, red-1, red-3
         partial: { main: '#d48806', bg: '#fffbe6', border: '#ffe58f' }, // gold-7, gold-1, gold-3
         default: { main: '#595959', bg: '#fafafa', border: '#d9d9d9' }, // gray-7, gray-1, gray-5
       };
 
-  const getStatusColorKey = (result?: SubmissionTest) => {
-    if (!result) return 'default';
+  const getOutcome = (result?: SubmissionTest): TestOutcome => {
+    if (!result) return 'not-run';
     if (result.isError) return 'error';
     if (result.passed) return 'passed';
+
+    const scoreRaw = result.score as unknown;
+    const maxRaw = result.maxScore as unknown;
+    const scoreVal = typeof scoreRaw === 'number' ? scoreRaw : parseFloat(String(scoreRaw ?? ''));
+    const maxVal = typeof maxRaw === 'number' ? maxRaw : parseFloat(String(maxRaw ?? ''));
+
+    if (Number.isFinite(scoreVal) && Number.isFinite(maxVal) && maxVal > 0) {
+      if (scoreVal > 0 && scoreVal < maxVal) return 'partial';
+      if (scoreVal <= 0) return 'failed';
+      return 'passed';
+    }
+
     const parsedResults = getParsedResults(result);
-    const hasPartial = parsedResults.some((r) => r.score > 0 && r.score < r.maxScore);
-    if (hasPartial) return 'partial';
-    return 'error'; // Default fail
+    if (parsedResults.length > 0) {
+      const totalScore = parsedResults.reduce((acc, curr) => acc + curr.score, 0);
+      const totalMax = parsedResults.reduce((acc, curr) => acc + curr.maxScore, 0);
+
+      if (totalMax > 0 && totalScore > 0 && totalScore < totalMax) return 'partial';
+      if (totalMax > 0 && totalScore <= 0) return 'failed';
+      if (parsedResults.some((r) => r.passed)) return 'partial';
+    }
+
+    return 'failed';
   };
+
+  const getStatusColorKey = (result?: SubmissionTest) => {
+    const outcome = getOutcome(result);
+    if (outcome === 'not-run') return 'default';
+    if (outcome === 'passed') return 'passed';
+    if (outcome === 'partial') return 'partial';
+    if (outcome === 'error') return 'error';
+    return 'failed';
+  };
+
+  const getStatusIcon = (result?: SubmissionTest) => {
+    const outcome = getOutcome(result);
+    const key = getStatusColorKey(result);
+    const color = statusColors[key].main;
+
+    if (outcome === 'not-run') return <ClockCircleOutlined style={{ fontSize: 24, color }} />;
+    if (outcome === 'error') return <ExclamationCircleFilled style={{ fontSize: 24, color }} />;
+    if (outcome === 'passed') return <CheckCircleFilled style={{ fontSize: 24, color }} />;
+    if (outcome === 'partial') return <MinusCircleFilled style={{ fontSize: 24, color }} />;
+    return <CloseCircleFilled style={{ fontSize: 24, color }} />;
+  };
+
+  const getStatusText = (result?: SubmissionTest) => {
+    const outcome = getOutcome(result);
+    if (outcome === 'not-run') return 'Not Run';
+    if (outcome === 'error') return 'Error';
+    if (outcome === 'passed') return 'Passed';
+    if (outcome === 'partial') return 'Partial';
+    return 'Failed';
+  };
+
+  // Calculate summary stats
+  const totalTests = combinedTests.length;
+  const passedTests = combinedTests.filter((t) => getOutcome(t.result) === 'passed').length;
+  const partialTests = combinedTests.filter((t) => getOutcome(t.result) === 'partial').length;
+  const failedTests = combinedTests.filter((t) => getOutcome(t.result) === 'failed').length;
+  const errorTests = combinedTests.filter((t) => getOutcome(t.result) === 'error').length;
+  const notRunTests = combinedTests.filter((t) => !t.result).length;
 
   const getCardStyle = (result?: SubmissionTest): React.CSSProperties => {
     const key = getStatusColorKey(result);
@@ -460,6 +561,33 @@ const TestsList: React.FC<TestsListProps> = ({
     }
 
     const syntaxInsight = getSyntaxInsight(result, parsedResults);
+    const syntaxAdvisoryDetail = extractSyntaxAdvisoryDetail(result);
+    const syntaxAdvisoryPopupContent = (
+      <div style={{ maxWidth: 420, fontSize: 12, whiteSpace: 'pre-wrap' }}>
+        <div>
+          Notebook has syntax/parse issues in one or more cells. This test can still score normally if it does not
+          depend on those cells.
+        </div>
+        {syntaxAdvisoryDetail ? (
+          <div
+            style={{
+              marginTop: 8,
+              padding: 8,
+              borderRadius: 4,
+              border: `1px solid ${isDarkTheme ? darkBorder : '#d9d9d9'}`,
+              background: isDarkTheme ? 'rgba(0,0,0,0.25)' : '#fafafa',
+              fontFamily: 'monospace',
+              fontSize: 11,
+              whiteSpace: 'pre-wrap',
+              maxHeight: 260,
+              overflow: 'auto',
+            }}
+          >
+            {syntaxAdvisoryDetail}
+          </div>
+        ) : null}
+      </div>
+    );
     const primaryParsedResult = parsedResults.length === 1 ? parsedResults[0] : undefined;
     const showTupleMessage =
       !!primaryParsedResult?.message &&
@@ -533,7 +661,29 @@ const TestsList: React.FC<TestsListProps> = ({
               >
                 {/* Run Button for Students/Staff */}
                 {!isStudent && (
-                  <div style={{ marginBottom: 4 }}>
+                  <div style={{ marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {syntaxInsight.showAdvisory && (
+                      <Popover
+                        trigger="click"
+                        placement="leftTop"
+                        title="Syntax advisory"
+                        content={syntaxAdvisoryPopupContent}
+                        overlayStyle={{ maxWidth: 460 }}
+                      >
+                        <Tag
+                          style={{
+                            margin: 0,
+                            cursor: 'pointer',
+                            borderColor: isDarkTheme ? '#3a6ea5' : '#91caff',
+                            background: isDarkTheme ? 'rgba(24, 144, 255, 0.15)' : '#e6f7ff',
+                            color: isDarkTheme ? '#91d5ff' : '#0958d9',
+                          }}
+                        >
+                          Syntax
+                        </Tag>
+                      </Popover>
+                    )}
+
                     <Tooltip title="Run this test only">
                       <Button
                         size="small"
@@ -551,6 +701,30 @@ const TestsList: React.FC<TestsListProps> = ({
                         }}
                       />
                     </Tooltip>
+                  </div>
+                )}
+
+                {isStudent && syntaxInsight.showAdvisory && (
+                  <div style={{ marginBottom: 4 }}>
+                    <Popover
+                      trigger="click"
+                      placement="leftTop"
+                      title="Syntax advisory"
+                      content={syntaxAdvisoryPopupContent}
+                      overlayStyle={{ maxWidth: 460 }}
+                    >
+                      <Tag
+                        style={{
+                          margin: 0,
+                          cursor: 'pointer',
+                          borderColor: isDarkTheme ? '#3a6ea5' : '#91caff',
+                          background: isDarkTheme ? 'rgba(24, 144, 255, 0.15)' : '#e6f7ff',
+                          color: isDarkTheme ? '#91d5ff' : '#0958d9',
+                        }}
+                      >
+                        Syntax
+                      </Tag>
+                    </Popover>
                   </div>
                 )}
 
@@ -685,7 +859,7 @@ const TestsList: React.FC<TestsListProps> = ({
             )}
 
             {/* Syntax/Parse Error Hint */}
-            {!result?.passed && syntaxInsight.hasSyntaxIssue && (
+            {!result?.passed && syntaxInsight.hasSyntaxIssue && syntaxInsight.hasSyntaxLinkedFailure && (
               <div style={{ marginTop: 8 }}>
                 <Alert
                   type="warning"
@@ -945,11 +1119,31 @@ const TestsList: React.FC<TestsListProps> = ({
         <Badge
           count={`${failedTests} Failed`}
           style={{
-            backgroundColor: failedTests > 0 ? statusColors.error.main : statusColors.default.main,
+            backgroundColor: failedTests > 0 ? statusColors.failed.main : statusColors.default.main,
             color: '#fff',
             boxShadow: isDarkTheme ? 'none' : undefined,
           }}
         />
+        {partialTests > 0 && (
+          <Badge
+            count={`${partialTests} Partial`}
+            style={{
+              backgroundColor: statusColors.partial.main,
+              color: '#fff',
+              boxShadow: isDarkTheme ? 'none' : undefined,
+            }}
+          />
+        )}
+        {errorTests > 0 && (
+          <Badge
+            count={`${errorTests} Error`}
+            style={{
+              backgroundColor: statusColors.error.main,
+              color: '#fff',
+              boxShadow: isDarkTheme ? 'none' : undefined,
+            }}
+          />
+        )}
         {notRunTests > 0 && (
           <Badge
             count={`${notRunTests} Not Run`}
@@ -967,7 +1161,7 @@ const TestsList: React.FC<TestsListProps> = ({
         <div style={{ marginBottom: 16 }}>
           <Progress
             percent={Math.round((passedTests / totalTests) * 100)}
-            status={failedTests > 0 ? 'exception' : passedTests === totalTests ? 'success' : 'active'}
+            status={failedTests + errorTests > 0 ? 'exception' : passedTests === totalTests ? 'success' : 'active'}
             format={() => (
               <span style={{ color: consoleTheme.text }}>
                 {passedTests}/{totalTests}

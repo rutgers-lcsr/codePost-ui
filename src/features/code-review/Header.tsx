@@ -524,10 +524,10 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
   const mutedText = isDarkTheme ? '#9da7b3' : 'rgba(0,0,0,0.65)';
 
   // Import these from codeConsoleUtils instead of using CodeConsole static
-  const [, currentCommentSet] = filterCurrentFileVersions(props.files as FileWithId[], props.comments);
+  const [currentFileSet, currentCommentSet] = filterCurrentFileVersions(props.files as FileWithId[], props.comments);
   const pointsPerCategoryVal = pointsPerCategory(props.commentRubricComments, currentCommentSet);
   const pointsPerCategoryWithCapsVal = pointsPerCategoryWithCaps(pointsPerCategoryVal, props.rubricCategories);
-  const genericPoints = genericCommentPoints(props.comments);
+  const genericPoints = genericCommentPoints(props.comments, currentFileSet);
   const testsAffectGrade = props.assignment.testsAffectGrade ?? true;
   const testPoints = testsAffectGrade ? pointsFromTests(props.submissionTests, props.testCases) : 0;
 
