@@ -102,6 +102,18 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
   const sidebarRef = React.useRef<HTMLDivElement>(null);
   const lastActivePanelRef = React.useRef<number>(1);
 
+  // Clamp sidebar width when the browser window is resized so the main
+  // content area always has at least ~500 px of usable space.
+  React.useEffect(() => {
+    const handleResize = () => {
+      // 50 px = icon rail, 500 px = minimum reserved for main content
+      const maxW = Math.max(200, window.innerWidth - 50 - 500);
+      setSiderWidth((prev) => Math.min(prev, maxW));
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Update last active panel when it changes
   React.useEffect(() => {
     if (activePanel !== null) {
@@ -311,8 +323,10 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
 
                       animationFrameId = requestAnimationFrame(() => {
                         const newWidth = startWidth + (moveEvent.clientX - startX);
-                        // Enforce min/max constraints
-                        if (newWidth >= 200 && newWidth <= 800) {
+                        // Enforce min/max constraints — max is viewport-aware to keep
+                        // the main content area at least ~500 px wide.
+                        const maxW = Math.max(200, window.innerWidth - 50 - 500);
+                        if (newWidth >= 200 && newWidth <= maxW) {
                           if (sidebarRef.current) {
                             sidebarRef.current.style.width = `${newWidth}px`;
                           }
@@ -335,8 +349,9 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
                         setActivePanel(null);
                         setSiderWidth(200); // Reset width for next open
                       } else {
-                        // Commit final width to state
-                        const clampedWidth = Math.max(200, Math.min(800, finalWidth));
+                        // Commit final width to state (viewport-aware max)
+                        const maxW = Math.max(200, window.innerWidth - 50 - 500);
+                        const clampedWidth = Math.max(200, Math.min(maxW, finalWidth));
                         setSiderWidth(clampedWidth);
                       }
                     };

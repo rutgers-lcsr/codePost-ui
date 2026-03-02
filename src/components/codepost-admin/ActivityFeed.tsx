@@ -1,10 +1,41 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import React, { useEffect, useState } from 'react';
-import { Table, Tag, Button, Card, Typography } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Table, Tag, Button, Card, Typography, Input, Select, Space, DatePicker } from 'antd';
+import { ReloadOutlined, SearchOutlined, ClearOutlined } from '@ant-design/icons';
 import type { SystemActivityResponse } from '../../api-client';
 import { systemApi } from '../../api-client/clients';
 import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
+
+const { RangePicker } = DatePicker;
+
+// All known event categories from core/logging.py
+const EVENT_CATEGORIES = [
+  'Core App Ready',
+  'Course Created',
+  'Organization Created',
+  'Assignment Created',
+  'Email Subscription',
+  'Email Sent',
+  'Email Failed',
+  'Late Submission Error',
+  'Become User',
+  'UI Error',
+  'User Happiness',
+  'User Dump',
+  'Admin Change Organization Request',
+  'Codepost Registration Error',
+  'Admin Already Exists',
+  'Admin New Request Error',
+  'Admin New Request Denied',
+  'Admin New Request Approved',
+  'Generate One-Time Token',
+  'CIP Activation',
+  'Webhook Error',
+  'Webhook Connection Error',
+  'API Error',
+  'One-Time Token Generated',
+];
 
 const ActivityFeed: React.FC = () => {
   type EventLogType = SystemActivityResponse['results'][number];
@@ -14,23 +45,80 @@ const ActivityFeed: React.FC = () => {
   const [pageSize, setPageSize] = useState(20);
   const [total, setTotal] = useState(0);
 
-  const fetchLogs = async (pageNum: number, pSize: number) => {
-    setLoading(true);
-    try {
-      const data = await systemApi.activityRetrieve({ page: pageNum, pageSize: pSize });
-      setLogs(data.results);
-      setTotal(data.total);
-      setPage(data.page);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Filter state
+  const [searchText, setSearchText] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
+
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fetchLogs = useCallback(
+    async (
+      pageNum: number,
+      pSize: number,
+      search?: string,
+      category?: string,
+      dates?: [Dayjs | null, Dayjs | null] | null,
+    ) => {
+      setLoading(true);
+      try {
+        const params: Parameters<typeof systemApi.activityRetrieve>[0] = {
+          page: pageNum,
+          pageSize: pSize,
+        };
+        if (search && search.trim()) params.search = search.trim();
+        if (category) params.category = category;
+        if (dates?.[0]) params.startDate = dates[0].startOf('day').toISOString();
+        if (dates?.[1]) params.endDate = dates[1].endOf('day').toISOString();
+
+        const data = await systemApi.activityRetrieve(params);
+        setLogs(data.results);
+        setTotal(data.total);
+        setPage(data.page);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     fetchLogs(1, pageSize);
   }, []);
+
+  // Debounced search
+  const handleSearchChange = (value: string) => {
+    setSearchText(value);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      fetchLogs(1, pageSize, value, categoryFilter, dateRange);
+      setPage(1);
+    }, 400);
+  };
+
+  const handleCategoryChange = (value: string | undefined) => {
+    setCategoryFilter(value);
+    fetchLogs(1, pageSize, searchText, value, dateRange);
+    setPage(1);
+  };
+
+  const handleDateRangeChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
+    setDateRange(dates);
+    fetchLogs(1, pageSize, searchText, categoryFilter, dates);
+    setPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setSearchText('');
+    setCategoryFilter(undefined);
+    setDateRange(null);
+    fetchLogs(1, pageSize);
+    setPage(1);
+  };
+
+  const hasActiveFilters = searchText || categoryFilter || dateRange;
 
   const columns = [
     {
@@ -125,11 +213,50 @@ const ActivityFeed: React.FC = () => {
         title="System Activity Feed"
         bodyStyle={{ padding: 0 }}
         extra={
-          <Button icon={<ReloadOutlined />} onClick={() => fetchLogs(1, pageSize)}>
-            Refresh
-          </Button>
+          <Space>
+            {hasActiveFilters && (
+              <Button icon={<ClearOutlined />} onClick={handleClearFilters} size="small">
+                Clear Filters
+              </Button>
+            )}
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={() => fetchLogs(1, pageSize, searchText, categoryFilter, dateRange)}
+            >
+              Refresh
+            </Button>
+          </Space>
         }
       >
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0' }}>
+          <Space wrap size="middle" style={{ width: '100%' }}>
+            <Input
+              placeholder="Search description, user, or meta..."
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              allowClear
+              style={{ width: 300 }}
+            />
+            <Select
+              placeholder="Filter by category"
+              value={categoryFilter}
+              onChange={handleCategoryChange}
+              allowClear
+              style={{ width: 240 }}
+              options={EVENT_CATEGORIES.map((c) => ({ label: c, value: c }))}
+              showSearch
+              filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
+            />
+            <RangePicker
+              value={dateRange as [Dayjs, Dayjs] | null}
+              onChange={(dates) => handleDateRangeChange(dates as [Dayjs | null, Dayjs | null] | null)}
+              allowClear
+              format="MM/DD/YYYY"
+              placeholder={['Start date', 'End date']}
+            />
+          </Space>
+        </div>
         <Table
           dataSource={logs}
           columns={columns}
@@ -142,7 +269,7 @@ const ActivityFeed: React.FC = () => {
             onChange: (p, ps) => {
               setPage(p);
               setPageSize(ps || 20);
-              fetchLogs(p, ps || 20);
+              fetchLogs(p, ps || 20, searchText, categoryFilter, dateRange);
             },
             showSizeChanger: true,
           }}

@@ -1353,10 +1353,18 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   const updateComment = (commentID: number, newComment: CommentType, newRubricComment?: RubricComment) => {
     const nextComments = updateCommentsState(comments, commentID, newComment);
 
+    // If the comment ID changed (temp negative ID -> saved positive ID), migrate any existing
+    // rubric comment association from the old key to the new key so it isn't lost.
+    let migratedCommentRubricComments = state.commentRubricComments;
+    if (commentID !== newComment.id && migratedCommentRubricComments[commentID] !== undefined) {
+      const { [commentID]: existingRubricComment, ...rest } = migratedCommentRubricComments;
+      migratedCommentRubricComments = { ...rest, [newComment.id]: existingRubricComment };
+    }
+
     // We optimistically update the state before the backend confirms
     const nextCommentRubricComments = addToCommentRubricCommentsState(
-      state.commentRubricComments,
-      commentID,
+      migratedCommentRubricComments,
+      newComment.id,
       newRubricComment,
     );
 
