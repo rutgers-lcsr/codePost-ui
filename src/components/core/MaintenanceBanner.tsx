@@ -4,9 +4,9 @@ import { InfoCircleOutlined, ExclamationCircleOutlined, WarningOutlined, CloseOu
 import { systemApi } from '../../api-client/clients';
 import type { MaintenanceBannerResponse } from '../../api-client/models/index';
 
-/** Stable key from message + schedule window so dismissal resets on each new maintenance window. */
+/** Stable key from all banner fields — resets dismissal whenever any field changes. */
 function getDismissKey(b: MaintenanceBannerResponse): string {
-  const raw = `${b.message}|${b.startsAt ?? ''}`;
+  const raw = `${b.message}|${b.severity}|${b.color}|${b.startsAt ?? ''}|${b.endsAt ?? ''}`;
   // Simple djb2-style hash — no crypto needed, just a stable identifier
   let hash = 5381;
   for (let i = 0; i < raw.length; i++) hash = (hash * 33) ^ raw.charCodeAt(i);
