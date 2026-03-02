@@ -27,7 +27,14 @@ const NewUserDialog: React.FC<NewUserDialogProps> = ({ visible, onClose, onSucce
         codePostAdmin: false,
         canCreateCourses: false,
         canModifyRosters: false,
-      };
+        showProductTips: true,
+        studentCourses: [],
+        graderCourses: [],
+        superGraderCourses: [],
+        courseadminCourses: [],
+        leaderSections: [],
+        studentSections: [],
+      } as unknown as Omit<UserType, 'id'>;
 
       const result = await UserIO.create(payload);
       message.success('User created successfully');
