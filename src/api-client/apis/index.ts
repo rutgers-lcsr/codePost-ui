@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 export { AssignmentDataSetsApi } from './AssignmentDataSetsApi';
@@ -11,6 +12,7 @@ export { CourseFilesApi } from './CourseFilesApi';
 export { CoursesApi } from './CoursesApi';
 export { DashboardApi } from './DashboardApi';
 export { FilesApi } from './FilesApi';
+export { ImpersonateApi } from './ImpersonateApi';
 export { LogsApi } from './LogsApi';
 export { OrganizationsApi } from './OrganizationsApi';
 export { OttApi } from './OttApi';

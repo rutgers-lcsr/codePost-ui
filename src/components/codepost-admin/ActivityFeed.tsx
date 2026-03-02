@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Table, Tag, Button, Card, Typography, Input, Select, Space, DatePicker } from 'antd';
+import { Table, Tag, Button, Card, Typography, Input, Select, Space, DatePicker, Image } from 'antd';
 import { ReloadOutlined, SearchOutlined, ClearOutlined } from '@ant-design/icons';
 import type { SystemActivityResponse } from '../../api-client';
 import { systemApi } from '../../api-client/clients';
@@ -148,12 +148,56 @@ const ActivityFeed: React.FC = () => {
   ];
 
   const expandedRowRender = (record: EventLogType) => {
-    let prettyMeta = record.meta;
+    let parsedMeta: Record<string, unknown> | null = null;
     try {
-      prettyMeta = JSON.stringify(JSON.parse(record.meta), null, 2);
-    } catch (e) {
-      // content is not JSON
+      parsedMeta = JSON.parse(record.meta);
+    } catch {
+      // not JSON — fall through to raw display
     }
+
+    const isUIError = record.category === 'UI Error';
+    const screenshot = parsedMeta && typeof parsedMeta.screenshot === 'string' ? parsedMeta.screenshot : null;
+
+    // Parse nested errorDetail JSON (stored as a JSON string inside meta)
+    let errorDetail: Record<string, unknown> | null = null;
+    if (isUIError && parsedMeta && typeof parsedMeta.errorDetail === 'string') {
+      try {
+        errorDetail = JSON.parse(parsedMeta.errorDetail as string);
+      } catch {
+        // leave as null
+      }
+    }
+
+    // Build meta for raw display, omitting large fields already shown above
+    const metaForRaw = parsedMeta
+      ? (() => {
+          const { screenshot: _s, errorDetail: _ed, message: _m, ...rest } = parsedMeta as Record<string, unknown>;
+          return Object.keys(rest).length > 0 ? JSON.stringify(rest, null, 2) : null;
+        })()
+      : record.meta;
+
+    const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+      <p style={{ fontWeight: 700, marginBottom: 4, marginTop: 12 }}>{children}</p>
+    );
+
+    const CodeBlock: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+      <pre
+        style={{
+          fontSize: '12px',
+          background: '#eee',
+          padding: '8px',
+          borderRadius: '4px',
+          whiteSpace: 'pre-wrap',
+          wordWrap: 'break-word',
+          overflowWrap: 'anywhere',
+          maxHeight: '300px',
+          overflow: 'auto',
+          margin: '4px 0 8px',
+        }}
+      >
+        {children}
+      </pre>
+    );
 
     return (
       <div
@@ -165,42 +209,202 @@ const ActivityFeed: React.FC = () => {
           overflowWrap: 'anywhere',
         }}
       >
-        <p>
-          <strong>Full Description:</strong>
-        </p>
-        <div style={{ whiteSpace: 'pre-wrap', marginBottom: '10px', wordWrap: 'break-word', overflowWrap: 'anywhere' }}>
-          {record.description}
-        </div>
+        {/* ── Basic row info ──────────────────────────────────── */}
+        <SectionLabel>Description</SectionLabel>
+        <div style={{ whiteSpace: 'pre-wrap', marginBottom: '8px' }}>{record.description}</div>
 
         {record.user && (
-          <p>
+          <p style={{ margin: '2px 0' }}>
             <strong>User:</strong> {record.user}
           </p>
         )}
         {record.courseID && (
-          <p>
+          <p style={{ margin: '2px 0' }}>
             <strong>Course ID:</strong> {record.courseID}
           </p>
         )}
 
-        {prettyMeta && prettyMeta !== '{}' && prettyMeta !== '' && (
+        {/* ── Screenshot ──────────────────────────────────────── */}
+        {screenshot && (
           <>
-            <p>
-              <strong>Meta Data:</strong>
-            </p>
-            <pre
+            <SectionLabel>Screenshot</SectionLabel>
+            <Image
+              src={screenshot}
+              alt="Page screenshot at time of error"
               style={{
-                fontSize: '12px',
-                background: '#eee',
-                padding: '8px',
+                maxWidth: '800px',
+                width: '100%',
+                border: '1px solid #ddd',
                 borderRadius: '4px',
-                whiteSpace: 'pre-wrap',
-                wordWrap: 'break-word',
-                overflowWrap: 'anywhere',
+                marginBottom: '8px',
+                display: 'block',
               }}
-            >
-              {prettyMeta}
-            </pre>
+            />
+          </>
+        )}
+
+        {/* ── Structured UI Error detail ───────────────────────── */}
+        {isUIError && errorDetail && (
+          <>
+            {typeof errorDetail.stack === 'string' && (
+              <>
+                <SectionLabel>Stack Trace</SectionLabel>
+                <CodeBlock>{errorDetail.stack as string}</CodeBlock>
+              </>
+            )}
+
+            {typeof errorDetail.componentStack === 'string' && (
+              <>
+                <SectionLabel>React Component Stack</SectionLabel>
+                <CodeBlock>{errorDetail.componentStack as string}</CodeBlock>
+              </>
+            )}
+
+            {Array.isArray(errorDetail.recentConsoleLogs) && errorDetail.recentConsoleLogs.length > 0 && (
+              <>
+                <SectionLabel>Recent Console Errors / Warnings</SectionLabel>
+                <CodeBlock>
+                  {(errorDetail.recentConsoleLogs as Array<{ level: string; message: string; at: string }>)
+                    .map((l) => `[${l.at}] [${l.level.toUpperCase()}] ${l.message}`)
+                    .join('\n')}
+                </CodeBlock>
+              </>
+            )}
+
+            {/* Browser/env summary table */}
+            {(() => {
+              const browserFields: Array<[string, unknown]> = [
+                ['URL', parsedMeta?.url ?? record.meta],
+                ['Timestamp', errorDetail.timestamp],
+                ['User Agent', errorDetail.userAgent],
+                ['Platform', errorDetail.platform],
+                ['Language', errorDetail.language],
+                ['Viewport', errorDetail.viewport],
+                [
+                  'Screen',
+                  typeof errorDetail.screen === 'object' ? JSON.stringify(errorDetail.screen) : errorDetail.screen,
+                ],
+                ['Hardware Threads', errorDetail.hardwareConcurrency],
+                ['Online', String(errorDetail.onLine)],
+                ['Cookies Enabled', String(errorDetail.cookiesEnabled)],
+                ['Time On Page', errorDetail.timeOnPageSeconds != null ? `${errorDetail.timeOnPageSeconds}s` : null],
+                ['Referrer', errorDetail.referrer],
+                ['Boundary Type', errorDetail.boundaryType],
+                ['Submission ID', errorDetail.submissionId],
+                ['File ID', errorDetail.fileId],
+                ['File Name', errorDetail.fileName],
+              ].filter(([, v]) => v != null && v !== 'null' && v !== '') as Array<[string, unknown]>;
+
+              const mem = errorDetail.memory as Record<string, unknown> | undefined;
+              const conn = errorDetail.connection as Record<string, unknown> | undefined;
+              const timing = errorDetail.timing as Record<string, unknown> | undefined;
+
+              return (
+                <>
+                  <SectionLabel>Browser Context</SectionLabel>
+                  <table
+                    style={{
+                      width: '100%',
+                      fontSize: '12px',
+                      borderCollapse: 'collapse',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    <tbody>
+                      {browserFields.map(([label, value]) => (
+                        <tr key={label} style={{ borderBottom: '1px solid #e8e8e8' }}>
+                          <td
+                            style={{ padding: '3px 8px 3px 0', fontWeight: 600, whiteSpace: 'nowrap', width: '180px' }}
+                          >
+                            {label}
+                          </td>
+                          <td style={{ padding: '3px 0', wordBreak: 'break-all' }}>{String(value)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  {mem && Object.keys(mem).length > 0 && (
+                    <>
+                      <SectionLabel>Memory (Chrome)</SectionLabel>
+                      <CodeBlock>{JSON.stringify(mem, null, 2)}</CodeBlock>
+                    </>
+                  )}
+
+                  {conn && Object.keys(conn).length > 0 && (
+                    <>
+                      <SectionLabel>Network Connection</SectionLabel>
+                      <CodeBlock>{JSON.stringify(conn, null, 2)}</CodeBlock>
+                    </>
+                  )}
+
+                  {timing && Object.keys(timing).length > 0 && (
+                    <>
+                      <SectionLabel>Page Timing</SectionLabel>
+                      <CodeBlock>{JSON.stringify(timing, null, 2)}</CodeBlock>
+                    </>
+                  )}
+
+                  {(() => {
+                    const raw = errorDetail.localStorageKeys;
+                    if (raw == null) return null;
+                    // Normalise: old format was string[] (keys only), new format is Record<string,string>
+                    const entries: [string, string][] = Array.isArray(raw)
+                      ? (raw as string[]).map((k) => [k, ''])
+                      : Object.entries(raw as Record<string, string>);
+                    return (
+                      <>
+                        <SectionLabel>LocalStorage</SectionLabel>
+                        {entries.length === 0 ? (
+                          <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px' }}>(empty)</div>
+                        ) : (
+                          <table
+                            style={{ fontSize: '11px', marginBottom: '8px', borderCollapse: 'collapse', width: '100%' }}
+                          >
+                            <tbody>
+                              {entries.map(([k, v]) => (
+                                <tr key={k} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                                  <td
+                                    style={{
+                                      padding: '2px 8px 2px 0',
+                                      fontWeight: 600,
+                                      whiteSpace: 'nowrap',
+                                      color: '#444',
+                                      verticalAlign: 'top',
+                                      width: '1%',
+                                    }}
+                                  >
+                                    {k}
+                                  </td>
+                                  <td style={{ padding: '2px 0', color: '#666', wordBreak: 'break-all' }}>
+                                    {v || <em style={{ color: '#bbb' }}>empty</em>}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </>
+                    );
+                  })()}
+
+                  {Array.isArray(errorDetail.failedResources) && errorDetail.failedResources.length > 0 && (
+                    <>
+                      <SectionLabel>Potentially Failed Resources</SectionLabel>
+                      <CodeBlock>{(errorDetail.failedResources as string[]).join('\n')}</CodeBlock>
+                    </>
+                  )}
+                </>
+              );
+            })()}
+          </>
+        )}
+
+        {/* ── Raw meta fallback (non-UI-Error events or unparseable) ── */}
+        {(!isUIError || !errorDetail) && metaForRaw && metaForRaw !== '{}' && metaForRaw !== '' && (
+          <>
+            <SectionLabel>Meta Data</SectionLabel>
+            <CodeBlock>{metaForRaw}</CodeBlock>
           </>
         )}
       </div>

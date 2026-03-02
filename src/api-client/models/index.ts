@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -952,6 +953,44 @@ export interface CacheCheckResponse {
   executedBy?: string | null;
 }
 /**
+ * Result of a single health probe.
+ * @export
+ * @interface CeleryCheck
+ */
+export interface CeleryCheck {
+  /**
+   *
+   * @type {StatusDfeEnum}
+   * @memberof CeleryCheck
+   */
+  status: StatusDfeEnum;
+  /**
+   *
+   * @type {string}
+   * @memberof CeleryCheck
+   */
+  label: string;
+  /**
+   *
+   * @type {string}
+   * @memberof CeleryCheck
+   */
+  detail: string | null;
+  /**
+   *
+   * @type {number}
+   * @memberof CeleryCheck
+   */
+  latencyMs?: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof CeleryCheck
+   */
+  workerCount?: number | null;
+}
+
+/**
  *
  * @export
  * @interface CheckSSOAvailabilityResponse
@@ -1752,6 +1791,50 @@ export interface DashboardStats {
   activeUsers30d: number;
 }
 /**
+ * Result of a single health probe.
+ * @export
+ * @interface DiskCheck
+ */
+export interface DiskCheck {
+  /**
+   *
+   * @type {StatusDfeEnum}
+   * @memberof DiskCheck
+   */
+  status: StatusDfeEnum;
+  /**
+   *
+   * @type {string}
+   * @memberof DiskCheck
+   */
+  label: string;
+  /**
+   *
+   * @type {string}
+   * @memberof DiskCheck
+   */
+  detail: string | null;
+  /**
+   *
+   * @type {number}
+   * @memberof DiskCheck
+   */
+  latencyMs?: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof DiskCheck
+   */
+  usedPct?: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof DiskCheck
+   */
+  freeGb?: number | null;
+}
+
+/**
  *
  * @export
  * @interface EmailPasswordResetRequest
@@ -2493,6 +2576,38 @@ export interface HandleValidationResponse {
   isValid: boolean;
 }
 /**
+ * Result of a single health probe.
+ * @export
+ * @interface HealthCheck
+ */
+export interface HealthCheck {
+  /**
+   *
+   * @type {StatusDfeEnum}
+   * @memberof HealthCheck
+   */
+  status: StatusDfeEnum;
+  /**
+   *
+   * @type {string}
+   * @memberof HealthCheck
+   */
+  label: string;
+  /**
+   *
+   * @type {string}
+   * @memberof HealthCheck
+   */
+  detail: string | null;
+  /**
+   *
+   * @type {number}
+   * @memberof HealthCheck
+   */
+  latencyMs?: number | null;
+}
+
+/**
  *
  * @export
  * @interface JWT
@@ -2623,6 +2738,12 @@ export interface LogErrorRequest {
    * @memberof LogErrorRequest
    */
   url?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof LogErrorRequest
+   */
+  screenshot?: string;
 }
 /**
  *
@@ -2656,6 +2777,94 @@ export interface LogSuccessResponse {
    */
   success: boolean;
 }
+/**
+ * Full response shape returned by both GET and PATCH /system/banner/.
+ * @export
+ * @interface MaintenanceBannerResponse
+ */
+export interface MaintenanceBannerResponse {
+  /**
+   *
+   * @type {boolean}
+   * @memberof MaintenanceBannerResponse
+   */
+  active: boolean;
+  /**
+   * True when active=True and within the schedule window.
+   * @type {boolean}
+   * @memberof MaintenanceBannerResponse
+   */
+  activeNow: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof MaintenanceBannerResponse
+   */
+  message: string;
+  /**
+   *
+   * @type {string}
+   * @memberof MaintenanceBannerResponse
+   */
+  color: string;
+  /**
+   *
+   * @type {SeverityEnum}
+   * @memberof MaintenanceBannerResponse
+   */
+  severity: SeverityEnum;
+  /**
+   *
+   * @type {string}
+   * @memberof MaintenanceBannerResponse
+   */
+  startsAt: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof MaintenanceBannerResponse
+   */
+  endsAt: string | null;
+}
+
+/**
+ * Result of a single health probe.
+ * @export
+ * @interface MigrationCheck
+ */
+export interface MigrationCheck {
+  /**
+   *
+   * @type {StatusDfeEnum}
+   * @memberof MigrationCheck
+   */
+  status: StatusDfeEnum;
+  /**
+   *
+   * @type {string}
+   * @memberof MigrationCheck
+   */
+  label: string;
+  /**
+   *
+   * @type {string}
+   * @memberof MigrationCheck
+   */
+  detail: string | null;
+  /**
+   *
+   * @type {number}
+   * @memberof MigrationCheck
+   */
+  latencyMs?: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof MigrationCheck
+   */
+  pending: number;
+}
+
 /**
  * Base serializer for File objects.
  * @export
@@ -2823,6 +3032,19 @@ export interface Organization {
    */
   sendWelcomeEmail?: boolean;
 }
+/**
+ * * `ok` - ok
+ * * `degraded` - degraded
+ * * `critical` - critical
+ * @export
+ * @enum {string}
+ */
+export enum OverallEnum {
+  Ok = 'ok',
+  Degraded = 'degraded',
+  Critical = 'critical',
+}
+
 /**
  *
  * @export
@@ -4048,6 +4270,50 @@ export interface PatchedFile {
 /**
  *
  * @export
+ * @interface PatchedMaintenanceBanner
+ */
+export interface PatchedMaintenanceBanner {
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedMaintenanceBanner
+   */
+  active?: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedMaintenanceBanner
+   */
+  message?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedMaintenanceBanner
+   */
+  color?: string;
+  /**
+   *
+   * @type {SeverityEnum}
+   * @memberof PatchedMaintenanceBanner
+   */
+  severity?: SeverityEnum;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedMaintenanceBanner
+   */
+  startsAt?: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedMaintenanceBanner
+   */
+  endsAt?: string | null;
+}
+
+/**
+ *
+ * @export
  * @interface PatchedOrganization
  */
 export interface PatchedOrganization {
@@ -5197,6 +5463,19 @@ export interface SetCredentialsResponse {
   isValid: boolean;
 }
 /**
+ * * `info` - info
+ * * `warning` - warning
+ * * `critical` - critical
+ * @export
+ * @enum {string}
+ */
+export enum SeverityEnum {
+  Info = 'info',
+  Warning = 'warning',
+  Critical = 'critical',
+}
+
+/**
  * Response serializer for shell metrics endpoint
  * @export
  * @interface ShellMetricsResponse
@@ -5271,22 +5550,16 @@ export interface ShellMetricsSession {
   lastActivity?: number | null;
 }
 /**
- * * `PENDING` - PENDING
- * * `STARTED` - STARTED
- * * `SUCCESS` - SUCCESS
- * * `FAILURE` - FAILURE
- * * `RETRY` - RETRY
- * * `REVOKED` - REVOKED
+ * * `ok` - ok
+ * * `warning` - warning
+ * * `error` - error
  * @export
  * @enum {string}
  */
-export enum StatusEnum {
-  Pending = 'PENDING',
-  Started = 'STARTED',
-  Success = 'SUCCESS',
-  Failure = 'FAILURE',
-  Retry = 'RETRY',
-  Revoked = 'REVOKED',
+export enum StatusDfeEnum {
+  Ok = 'ok',
+  Warning = 'warning',
+  Error = 'error',
 }
 
 /**
@@ -5908,14 +6181,51 @@ export interface SystemHealthResponse {
    * @type {string}
    * @memberof SystemHealthResponse
    */
-  database: string;
+  checkedAt: string;
   /**
    *
-   * @type {string}
+   * @type {OverallEnum}
    * @memberof SystemHealthResponse
    */
-  celery: string;
+  overall: OverallEnum;
+  /**
+   *
+   * @type {HealthCheck}
+   * @memberof SystemHealthResponse
+   */
+  database: HealthCheck;
+  /**
+   *
+   * @type {CeleryCheck}
+   * @memberof SystemHealthResponse
+   */
+  celery: CeleryCheck;
+  /**
+   *
+   * @type {HealthCheck}
+   * @memberof SystemHealthResponse
+   */
+  cache: HealthCheck;
+  /**
+   *
+   * @type {MigrationCheck}
+   * @memberof SystemHealthResponse
+   */
+  migrations: MigrationCheck;
+  /**
+   *
+   * @type {DiskCheck}
+   * @memberof SystemHealthResponse
+   */
+  disk: DiskCheck;
+  /**
+   *
+   * @type {number}
+   * @memberof SystemHealthResponse
+   */
+  recentEvents1h: number;
 }
+
 /**
  * Response for task status check
  * @export
@@ -5931,16 +6241,35 @@ export interface TaskStatusResponse {
    * * `FAILURE` - FAILURE
    * * `RETRY` - RETRY
    * * `REVOKED` - REVOKED
-   * @type {StatusEnum}
+   * @type {TaskStatusResponseStatusEnum}
    * @memberof TaskStatusResponse
    */
-  status: StatusEnum;
+  status: TaskStatusResponseStatusEnum;
   /**
    * Task result (if completed)
    * @type {{ [key: string]: any | undefined; }}
    * @memberof TaskStatusResponse
    */
   result?: { [key: string]: any | undefined } | null;
+}
+
+/**
+ * * `PENDING` - PENDING
+ * * `STARTED` - STARTED
+ * * `SUCCESS` - SUCCESS
+ * * `FAILURE` - FAILURE
+ * * `RETRY` - RETRY
+ * * `REVOKED` - REVOKED
+ * @export
+ * @enum {string}
+ */
+export enum TaskStatusResponseStatusEnum {
+  Pending = 'PENDING',
+  Started = 'STARTED',
+  Success = 'SUCCESS',
+  Failure = 'FAILURE',
+  Retry = 'RETRY',
+  Revoked = 'REVOKED',
 }
 
 /**

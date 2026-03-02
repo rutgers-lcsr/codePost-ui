@@ -3,7 +3,7 @@ import * as React from 'react';
 
 import { FileType, getFileContent } from '../../utils/file';
 
-import { slack } from './slack';
+import { Logger } from '../../utils/logger';
 
 import { Result, Button, Collapse, Typography, Space, Card, theme, Divider } from 'antd';
 import {
@@ -217,6 +217,249 @@ const TroubleshootingCard: React.FC = () => {
   );
 };
 
+// ── Sensitive data helpers ────────────────────────────────────────────────────
+// Keys matching these patterns are excluded from storage key listings.
+const SENSITIVE_KEY_RE = /token|auth|jwt|secret|password|credential|bearer|api[_-]?key/i;
+
+/**
+ * Redact common credential patterns from a log string so auth tokens are never
+ * persisted in the error report.
+ */
+function redactSensitiveData(str: string): string {
+  return (
+    str
+      // Bearer / Token header values
+      .replace(/\bBearer\s+[A-Za-z0-9\-._~+/]+=*/gi, 'Bearer [REDACTED]')
+      // JWT (three base64url segments)
+      .replace(/eyJ[A-Za-z0-9\-_]+\.eyJ[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_.+/]*/g, '[REDACTED_JWT]')
+      // key/token/auth/Authorization followed by = or : and a value
+      .replace(/\b(token|api[_\-]?key|auth|authorization)(\s*[:=]\s*["']?)([^\s"',}\]]+)/gi, '$1$2[REDACTED]')
+  );
+}
+
+// ── Console interceptor ────────────────────────────────────────────────────────
+// Captures the last 30 console errors/warnings so they're available at crash time.
+const MAX_CONSOLE_LOGS = 30;
+const recentConsoleLogs: Array<{ level: string; message: string; at: string }> = [];
+
+/** Serialize a single console argument to a readable string. */
+function serializeArg(a: unknown): string {
+  if (typeof a === 'string') return a;
+  if (a instanceof Error) return `[Error: ${a.message}]`;
+  try {
+    const s = JSON.stringify(a);
+    return s !== undefined ? s : String(a);
+  } catch {
+    return String(a);
+  }
+}
+
+/**
+ * Perform printf-style substitution on console arguments.
+ * Handles %s, %o/%O, %d/%i, %f, %c — matching browser DevTools behaviour.
+ * Falls back to space-joining when the first arg is not a format string.
+ */
+function formatConsoleArgs(args: unknown[]): string {
+  if (args.length === 0) return '';
+
+  if (typeof args[0] === 'string' && /%[oOsdifc]/.test(args[0])) {
+    let i = 1;
+    const formatted = args[0].replace(/%([oOsdifc])/g, (_match, spec: string): string => {
+      if (i >= args.length) return `%${spec}`;
+      const val = args[i++];
+      switch (spec) {
+        case 'o':
+        case 'O':
+          return serializeArg(val);
+        case 's':
+          return String(val);
+        case 'd':
+        case 'i':
+          return String(Math.trunc(Number(val)));
+        case 'f':
+          return String(Number(val));
+        case 'c':
+          return ''; // CSS styling — discard
+        default:
+          return `%${spec}`;
+      }
+    });
+    // Append any surplus args that had no matching specifier
+    const surplus = args.slice(i).map(serializeArg);
+    return surplus.length ? `${formatted} ${surplus.join(' ')}` : formatted;
+  }
+
+  return args.map(serializeArg).join(' ');
+}
+
+if (typeof window !== 'undefined') {
+  (['error', 'warn'] as const).forEach((level) => {
+    const original = console[level].bind(console) as (...args: unknown[]) => void;
+    console[level] = (...args: unknown[]) => {
+      const raw = formatConsoleArgs(args);
+      recentConsoleLogs.push({
+        level,
+        message: redactSensitiveData(raw),
+        at: new Date().toISOString(),
+      });
+      if (recentConsoleLogs.length > MAX_CONSOLE_LOGS) recentConsoleLogs.shift();
+      original(...args);
+    };
+  });
+}
+
+// ── Pre-crash screenshot ───────────────────────────────────────────────────────
+// Capture a screenshot so we have a snapshot of the page *before* the error
+// boundary fallback UI renders. Strategy:
+//   • Once, 4 s after page load (initial state)
+//   • Every 5 minutes as a background safety net
+//   • On user activity (click / keydown), throttled to at most once per 60 s
+//     so idle sessions pay no cost but active sessions stay up-to-date.
+let lastScreenshot: string | null = null;
+let screenshotBusy = false;
+let lastCaptureTime = 0;
+
+async function captureScreenshot(): Promise<void> {
+  if (screenshotBusy) return;
+  screenshotBusy = true;
+  try {
+    const html2canvas = (await import('html2canvas')).default;
+    const canvas = await Promise.race<HTMLCanvasElement>([
+      html2canvas(document.body, { logging: false, allowTaint: true, useCORS: true }),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
+    ]);
+    lastScreenshot = canvas.toDataURL('image/jpeg', 0.5);
+    lastCaptureTime = Date.now();
+  } catch {
+    // keep previous screenshot on failure
+  } finally {
+    screenshotBusy = false;
+  }
+}
+
+if (typeof window !== 'undefined') {
+  // Initial capture once the page has settled
+  setTimeout(() => void captureScreenshot(), 4000);
+  // Background safety net every 5 minutes
+  setInterval(() => void captureScreenshot(), 5 * 60_000);
+  // On user activity, capture at most once per 60 s
+  const onActivity = () => {
+    if (Date.now() - lastCaptureTime > 60_000) {
+      void captureScreenshot();
+    }
+  };
+  window.addEventListener('click', onActivity, { passive: true });
+  window.addEventListener('keydown', onActivity, { passive: true });
+}
+
+// ── Browser context helper ─────────────────────────────────────────────────────
+function gatherBrowserContext() {
+  const timing: Record<string, number> = {};
+  try {
+    const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+    if (nav) {
+      timing.domContentLoadedMs = Math.round(nav.domContentLoadedEventEnd - nav.startTime);
+      timing.pageLoadMs = Math.round(nav.loadEventEnd - nav.startTime);
+      timing.ttfbMs = Math.round(nav.responseStart - nav.startTime);
+      timing.dnsMs = Math.round(nav.domainLookupEnd - nav.domainLookupStart);
+      timing.connectMs = Math.round(nav.connectEnd - nav.connectStart);
+    }
+  } catch {
+    /* ignore */
+  }
+
+  const memory: Record<string, unknown> = {};
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mem = (performance as any).memory;
+    if (mem) {
+      memory.usedJSHeapSizeMB = Math.round(mem.usedJSHeapSize / 1048576);
+      memory.totalJSHeapSizeMB = Math.round(mem.totalJSHeapSize / 1048576);
+      memory.jsHeapSizeLimitMB = Math.round(mem.jsHeapSizeLimit / 1048576);
+    }
+  } catch {
+    /* ignore */
+  }
+
+  const connection: Record<string, unknown> = {};
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const conn =
+      (navigator as any).connection ?? (navigator as any).mozConnection ?? (navigator as any).webkitConnection;
+    if (conn) {
+      connection.effectiveType = conn.effectiveType;
+      connection.downlinkMbps = conn.downlink;
+      connection.rttMs = conn.rtt;
+      connection.saveData = conn.saveData;
+    }
+  } catch {
+    /* ignore */
+  }
+
+  let localStorageKeys: Record<string, string> = {};
+  let sessionStorageKeys: Record<string, string> = {};
+  const storageVal = (store: Storage, key: string): string => {
+    const v = store.getItem(key) ?? '';
+    return v.length > 80 ? `${v.slice(0, 80)}…` : v;
+  };
+  try {
+    Object.keys(localStorage)
+      .filter((k) => !SENSITIVE_KEY_RE.test(k))
+      .forEach((k) => {
+        localStorageKeys[k] = storageVal(localStorage, k);
+      });
+  } catch {
+    /* ignore */
+  }
+  try {
+    Object.keys(sessionStorage)
+      .filter((k) => !SENSITIVE_KEY_RE.test(k))
+      .forEach((k) => {
+        sessionStorageKeys[k] = storageVal(sessionStorage, k);
+      });
+  } catch {
+    /* ignore */
+  }
+
+  // Recent failed resource loads (images, scripts, etc.)
+  const failedResources: string[] = [];
+  try {
+    performance.getEntriesByType('resource').forEach((entry) => {
+      const r = entry as PerformanceResourceTiming;
+      if (r.transferSize === 0 && r.decodedBodySize === 0 && r.duration === 0) {
+        failedResources.push(r.name);
+      }
+    });
+  } catch {
+    /* ignore */
+  }
+
+  return {
+    userAgent: navigator.userAgent,
+    language: navigator.language,
+    platform: navigator.platform,
+    hardwareConcurrency: navigator.hardwareConcurrency,
+    maxTouchPoints: navigator.maxTouchPoints,
+    cookiesEnabled: navigator.cookieEnabled,
+    onLine: navigator.onLine,
+    screen: {
+      resolution: `${screen.width}x${screen.height}`,
+      available: `${screen.availWidth}x${screen.availHeight}`,
+      devicePixelRatio: window.devicePixelRatio,
+      colorDepth: screen.colorDepth,
+    },
+    viewport: `${window.innerWidth}x${window.innerHeight}`,
+    referrer: document.referrer || null,
+    timeOnPageSeconds: Math.round(performance.now() / 1000),
+    localStorageKeys,
+    sessionStorageKeys,
+    timing,
+    memory,
+    connection,
+    failedResources: failedResources.slice(-10),
+  };
+}
+
 class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryState> {
   public state: Readonly<IErrorBoundaryState> = {};
 
@@ -241,31 +484,41 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
     // Store errorInfo which is only available in componentDidCatch (not in getDerivedStateFromError)
     this.setState({ errorInfo });
 
-    const payload = {
-      // Basic error info
+    const basePayload = {
       error: error.toString(),
-      errorName: error.name,
-      errorMessage: error.message,
-      errorStack: error.stack,
-      errorDetail: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+      errorDetail: JSON.stringify(
+        {
+          // ── Error ──────────────────────────────────────────────────────────
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          cause: (error as any).cause ?? null,
 
-      // React component stack
-      componentStack: errorInfo.componentStack,
+          // ── React context ──────────────────────────────────────────────────
+          componentStack: errorInfo.componentStack,
+          boundaryType: this.props.type,
+          submissionId: this.props.submissionID ?? null,
+          fileId: this.props.file?.id ?? null,
+          fileName: this.props.file?.name ?? null,
 
-      // Context
+          // ── Browser & environment ──────────────────────────────────────────
+          timestamp: new Date().toISOString(),
+          ...gatherBrowserContext(),
+
+          // ── Recent console errors / warnings before crash ──────────────────
+          recentConsoleLogs: [...recentConsoleLogs],
+        },
+        null,
+        2,
+      ),
       url: window.location.href,
-      boundaryType: this.props.type,
-      submissionId: this.props.submissionID ?? null,
-      fileId: this.props.file?.id ?? null,
-      fileName: this.props.file?.name ?? null,
-
-      // Browser/environment info
-      userAgent: navigator.userAgent,
-      timestamp: new Date().toISOString(),
-      viewport: `${window.innerWidth}x${window.innerHeight}`,
     };
-    console.error('ErrorBoundary caught an error:', payload);
-    slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, payload);
+
+    console.error('ErrorBoundary caught an error:', basePayload);
+
+    // Use the last periodic pre-crash screenshot (captured before the fallback UI rendered)
+    Logger.errorFull({ ...basePayload, screenshot: lastScreenshot ?? undefined });
   }
 
   private handleRefresh = () => {
