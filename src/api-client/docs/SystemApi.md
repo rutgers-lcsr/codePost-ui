@@ -9,7 +9,7 @@ All URIs are relative to _http://localhost_
 
 ## activityRetrieve
 
-> SystemActivityResponse activityRetrieve(page, pageSize)
+> SystemActivityResponse activityRetrieve(category, endDate, page, pageSize, search, startDate)
 
 ### Example
 
@@ -33,10 +33,18 @@ async function example() {
   const api = new SystemApi(config);
 
   const body = {
+    // string | Filter by event category (exact match) (optional)
+    category: category_example,
+    // string | Filter events created on or before this ISO 8601 datetime (optional)
+    endDate: endDate_example,
     // number (optional)
     page: 56,
     // number (optional)
     pageSize: 56,
+    // string | Search across description, user, and meta fields (optional)
+    search: search_example,
+    // string | Filter events created on or after this ISO 8601 datetime (optional)
+    startDate: startDate_example,
   } satisfies ActivityRetrieveRequest;
 
   try {
@@ -53,10 +61,14 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name         | Type     | Description | Notes                                |
-| ------------ | -------- | ----------- | ------------------------------------ |
-| **page**     | `number` |             | [Optional] [Defaults to `undefined`] |
-| **pageSize** | `number` |             | [Optional] [Defaults to `undefined`] |
+| Name          | Type     | Description                                               | Notes                                |
+| ------------- | -------- | --------------------------------------------------------- | ------------------------------------ |
+| **category**  | `string` | Filter by event category (exact match)                    | [Optional] [Defaults to `undefined`] |
+| **endDate**   | `string` | Filter events created on or before this ISO 8601 datetime | [Optional] [Defaults to `undefined`] |
+| **page**      | `number` |                                                           | [Optional] [Defaults to `undefined`] |
+| **pageSize**  | `number` |                                                           | [Optional] [Defaults to `undefined`] |
+| **search**    | `string` | Search across description, user, and meta fields          | [Optional] [Defaults to `undefined`] |
+| **startDate** | `string` | Filter events created on or after this ISO 8601 datetime  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

@@ -3,10 +3,14 @@ import React, { Children, useEffect, useRef, useState } from 'react';
 
 type Props = {
   initialLeftWidth?: number; // percentage
+  /** Minimum pixel width for the left (code) pane */
+  minLeftWidth?: number;
+  /** Minimum pixel width for the right (comments) pane */
+  minRightWidth?: number;
   children?: React.ReactNode;
 };
 
-export default function SplitScreen({ children, initialLeftWidth = 50 }: Props) {
+export default function SplitScreen({ children, initialLeftWidth = 50, minLeftWidth, minRightWidth }: Props) {
   const [leftWidth, setLeftWidth] = useState(initialLeftWidth);
   const [isDividerHovered, setIsDividerHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -42,8 +46,16 @@ export default function SplitScreen({ children, initialLeftWidth = 50 }: Props) 
     };
   }, []);
   return (
-    <div ref={containerRef} style={{ display: 'flex', height: '100%', width: '100%' }}>
-      <div className="split-screen-pane" style={{ width: `${leftWidth}%` }}>
+    <div ref={containerRef} style={{ display: 'flex', height: '100%', width: '100%', overflow: 'hidden' }}>
+      <div
+        className="split-screen-pane"
+        style={{
+          width: `${leftWidth}%`,
+          minWidth: minLeftWidth != null ? `${minLeftWidth}px` : '200px',
+          overflow: 'hidden',
+          flexShrink: 0,
+        }}
+      >
         {leftChild && <>{leftChild}</>}
       </div>
       <div
@@ -56,9 +68,17 @@ export default function SplitScreen({ children, initialLeftWidth = 50 }: Props) 
           cursor: 'col-resize',
           backgroundColor: isDividerHovered ? '#aaa' : '#ccc',
           userSelect: 'none',
+          flexShrink: 0,
         }}
       />
-      <div className="split-screen-pane" style={{ flex: 1 }}>
+      <div
+        className="split-screen-pane"
+        style={{
+          flex: 1,
+          minWidth: minRightWidth != null ? `${minRightWidth}px` : '180px',
+          overflow: 'hidden',
+        }}
+      >
         {rightChild && <>{rightChild}</>}
       </div>
     </div>

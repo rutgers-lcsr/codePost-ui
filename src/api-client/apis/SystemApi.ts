@@ -1,4 +1,3 @@
-// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -17,8 +16,12 @@ import * as runtime from '../runtime';
 import type { SystemActivityResponse, SystemHealthResponse } from '../models/index';
 
 export interface ActivityRetrieveRequest {
+  category?: string;
+  endDate?: string;
   page?: number;
   pageSize?: number;
+  search?: string;
+  startDate?: string;
 }
 
 /**
@@ -33,12 +36,28 @@ export class SystemApi extends runtime.BaseAPI {
   ): Promise<runtime.ApiResponse<SystemActivityResponse>> {
     const queryParameters: any = {};
 
+    if (requestParameters['category'] != null) {
+      queryParameters['category'] = requestParameters['category'];
+    }
+
+    if (requestParameters['endDate'] != null) {
+      queryParameters['endDate'] = requestParameters['endDate'];
+    }
+
     if (requestParameters['page'] != null) {
       queryParameters['page'] = requestParameters['page'];
     }
 
     if (requestParameters['pageSize'] != null) {
       queryParameters['pageSize'] = requestParameters['pageSize'];
+    }
+
+    if (requestParameters['search'] != null) {
+      queryParameters['search'] = requestParameters['search'];
+    }
+
+    if (requestParameters['startDate'] != null) {
+      queryParameters['startDate'] = requestParameters['startDate'];
     }
 
     const headerParameters: runtime.HTTPHeaders = {};

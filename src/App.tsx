@@ -450,7 +450,7 @@ Firefox:
         return;
       }
 
-      if (typeof event.data !== 'string') {
+      if (typeof event.data !== 'string' || event.data === '') {
         return;
       }
 

@@ -76,7 +76,7 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
           }}
         >
           <div className="code-panel" id="code-panel" style={{ ...codePanelStyle, height: '100%' }}>
-            <SplitScreen initialLeftWidth={72}>
+            <SplitScreen initialLeftWidth={72} minLeftWidth={280} minRightWidth={220}>
               <div
                 className="code-panel--code"
                 style={{
@@ -121,6 +121,7 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
                   height: '100%',
                   overflow: 'auto',
                   paddingBottom: '20em',
+                  minWidth: '220px',
                 }}
               >
                 {props.comments}

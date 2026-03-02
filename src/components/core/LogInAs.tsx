@@ -28,38 +28,28 @@ const LogInAs: React.FC<LogInAsProps> = ({ replaceUser }) => {
     setErrorMessage('');
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/users/${encodeURIComponent(email)}/`, {
+      // Use the impersonate endpoint which returns user data + a fresh JWT token.
+      // This prevents SSO or token-refresh from reverting back to the original user.
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/impersonate/`, {
+        method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
+        body: JSON.stringify({ email }),
       });
 
-      let finalResponse = response;
-
-      // Fallback: some production environments are stricter about email path segments.
-      // Try the query-param based lookup endpoint before giving up.
-      if (!finalResponse.ok) {
-        const fallbackResponse = await fetch(
-          `${process.env.REACT_APP_API_URL}/users/user/?email=${encodeURIComponent(email)}`,
-          {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          },
-        );
-        finalResponse = fallbackResponse;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
-      if (!finalResponse.ok) {
-        throw new Error(`HTTP error! status: ${finalResponse.status}`);
-      }
-
-      const user: UserType = await finalResponse.json();
+      const user: UserType = await response.json();
       replaceUser(user, true, true);
     } catch (err) {
       console.error('Login as error:', err);
-      setErrorMessage('An error occurred. You probably do not have permission to perform this action!');
+      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      setErrorMessage(message);
       setLoading(false);
     }
   }, [email, replaceUser]);
