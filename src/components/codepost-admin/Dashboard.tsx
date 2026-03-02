@@ -440,9 +440,9 @@ const Dashboard = () => {
         <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
           <Col span={24}>
             <Alert
-              message="Platform Status"
-              description={`System is running smoothly. ${stats.totalCourses} active courses across ${stats.totalOrganizations} organizations.`}
-              type="success"
+              message="Platform Summary"
+              description={`${stats.activeCourses} active course${stats.activeCourses !== 1 ? 's' : ''} across ${stats.totalOrganizations} organization${stats.totalOrganizations !== 1 ? 's' : ''}, with ${stats.totalUniqueUsers.toLocaleString()} unique users.`}
+              type="info"
               showIcon
               icon={<CheckCircleOutlined />}
             />

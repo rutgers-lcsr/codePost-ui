@@ -8,7 +8,7 @@ import { AdminData } from './Dashboard';
 interface ISummaryCardProps {
   title: string;
   objects: Organization[] | CourseType[] | RosterType[] | AdminData[];
-  onClick: any;
+  onClick: (title: string) => void;
 }
 
 const SummaryCard = (props: ISummaryCardProps) => {

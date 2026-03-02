@@ -17,7 +17,7 @@ const NewOrganizationDialog: React.FC<NewOrganizationDialogProps> = ({ visible, 
 
   const api = organizationsApi;
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: { name: string; shortname: string; emailDomain: string }) => {
     setIsSubmitting(true);
     try {
       const payload = {

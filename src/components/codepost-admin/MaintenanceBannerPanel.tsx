@@ -110,8 +110,7 @@ const MaintenanceBannerPanel: React.FC = () => {
 
   const previewColor = draft.color || '#0e704c';
   const previewMessage = draft.message || '(no message set)';
-  const previewIcon =
-    SEVERITY_PRESETS.find((p) => p.severity === draft.severity)?.icon ?? <InfoCircleOutlined />;
+  const previewIcon = SEVERITY_PRESETS.find((p) => p.severity === draft.severity)?.icon ?? <InfoCircleOutlined />;
 
   return (
     <>
@@ -264,4 +263,3 @@ const MaintenanceBannerPanel: React.FC = () => {
 };
 
 export default MaintenanceBannerPanel;
-

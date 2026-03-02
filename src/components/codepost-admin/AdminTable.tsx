@@ -178,9 +178,9 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
 
     return {
       totalAdmins: groupedAdmins.length,
-      totalCourses: uniqueCourses.size,
+      totalUniqueCourses: uniqueCourses.size,
       totalOrganizations: uniqueOrganizations.size,
-      totalAssignments: totalAssignments,
+      totalAdminCourseLinks: totalAssignments,
     };
   };
 
@@ -210,8 +210,8 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
         <Col xs={24} sm={12} md={6}>
           <Card size="small">
             <Statistic
-              title="Courses"
-              value={stats.totalCourses}
+              title="Unique Courses"
+              value={stats.totalUniqueCourses}
               prefix={<BookOutlined style={{ color: '#52c41a' }} />}
             />
           </Card>
@@ -219,8 +219,8 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
         <Col xs={24} sm={12} md={6}>
           <Card size="small">
             <Statistic
-              title="Assignments"
-              value={stats.totalAssignments}
+              title="Admin-Course Links"
+              value={stats.totalAdminCourseLinks}
               prefix={<TeamOutlined style={{ color: '#13c2c2' }} />}
             />
           </Card>

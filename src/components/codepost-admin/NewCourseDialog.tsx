@@ -1,6 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { DatePicker, Form, Input, Modal, Select, message } from 'antd';
 import React, { useState } from 'react';
+import type { Dayjs } from 'dayjs';
 
 import { Organization, Course } from '../../api-client';
 import { coursesApi } from '../../api-client/clients';
@@ -16,7 +17,12 @@ const NewCourseDialog: React.FC<NewCourseDialogProps> = ({ visible, onClose, onS
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: {
+    name: string;
+    period: string;
+    organization?: number;
+    expiration_date?: Dayjs;
+  }) => {
     setIsSubmitting(true);
     try {
       const payload: any = {
