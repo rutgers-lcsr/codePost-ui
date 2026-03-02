@@ -118,8 +118,8 @@ const CheckRow: React.FC<CheckRowProps> = ({ icon, name, check }) => {
           size="small"
           status={diskProgressStatus(pct)}
           strokeColor={diskStrokeColor(pct)}
-          style={{ marginTop: '4px', marginLeft: '24px' }}
-          format={(p) => `${p}%`}
+          style={{ marginTop: '4px', marginLeft: '24px', width: 'calc(100% - 24px)' }}
+          showInfo={false}
         />
       </div>
     );

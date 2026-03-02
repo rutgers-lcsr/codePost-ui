@@ -4,7 +4,7 @@ const APIIframe = () => {
     <iframe
       src={`${process.env.REACT_APP_API_URL}/`}
       title="API Documentation"
-      style={{ width: '100%', height: '100%', border: 'none' }}
+      style={{ width: '100%', height: 'calc(100vh - 100px)', minHeight: '600px', border: 'none' }}
     />
   );
 };

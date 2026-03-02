@@ -27,9 +27,10 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ visible, user, onClose,
     if (visible && user) {
       form.setFieldsValue({
         codePostAdmin: user.codePostAdmin,
+        isOrgStaff: user.isOrgStaff,
         canCreateCourses: user.canCreateCourses,
         canModifyRosters: user.canModifyRosters,
-        organization: user.organization, // Allow editing organization
+        organization: user.organization,
       });
     }
   }, [visible, user, form]);

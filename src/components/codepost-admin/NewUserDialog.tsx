@@ -17,31 +17,16 @@ const NewUserDialog: React.FC<NewUserDialogProps> = ({ visible, onClose, onSucce
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: { email: string; password: string; organization: number }) => {
     setIsSubmitting(true);
     try {
-      const payload: any = {
+      const payload = {
         email: values.email,
         password: values.password,
-        organization: values.organization, // ID
-        // Default booleans
+        organization: values.organization,
         codePostAdmin: false,
         canCreateCourses: false,
         canModifyRosters: false,
-        showProductTips: true,
-        hasCredentials: true,
-        // Dummy fields for creation
-        id: -1,
-        created: new Date().toISOString(),
-        modified: new Date().toISOString(),
-        studentCourses: [],
-        graderCourses: [],
-        superGraderCourses: [],
-        courseadminCourses: [],
-        leaderSections: [],
-        student_sections: [],
-        token: 'dummy', // Backend generates
-        api_token: null,
       };
 
       const result = await UserIO.create(payload);

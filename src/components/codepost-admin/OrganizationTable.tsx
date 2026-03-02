@@ -74,6 +74,10 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
   };
 
   const onSearch = (value: string) => {
+    if (!value.trim()) {
+      setOrganizationRows(getOrganizationRows());
+      return;
+    }
     const searchTerm = value.toLowerCase();
     setOrganizationRows(
       getOrganizationRows().filter(
@@ -270,7 +274,7 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
 
     return (
       <div style={{ padding: '10px 0px' }}>
-        <Table columns={expandedColumns} dataSource={courses} pagination={false} size="small" />
+        <Table columns={expandedColumns} dataSource={courses} pagination={false} size="small" rowKey="name" />
       </div>
     );
   };
@@ -383,7 +387,13 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
       </Row>
 
       <div style={{ padding: '14px 0px', width: '400px' }}>
-        <Search placeholder="Search organizations..." onSearch={onSearch} enterButton />
+        <Search
+          placeholder="Search organizations..."
+          onSearch={onSearch}
+          onChange={(e) => onSearch(e.target.value)}
+          enterButton
+          allowClear
+        />
       </div>
 
       <Table
