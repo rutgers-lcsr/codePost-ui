@@ -2,10 +2,12 @@
 
 All URIs are relative to _http://localhost_
 
-| Method                                                | HTTP request              | Description |
-| ----------------------------------------------------- | ------------------------- | ----------- |
-| [**activityRetrieve**](SystemApi.md#activityretrieve) | **GET** /system/activity/ |             |
-| [**healthRetrieve**](SystemApi.md#healthretrieve)     | **GET** /system/health/   |             |
+| Method                                                      | HTTP request              | Description |
+| ----------------------------------------------------------- | ------------------------- | ----------- |
+| [**activityRetrieve**](SystemApi.md#activityretrieve)       | **GET** /system/activity/ |             |
+| [**bannerPartialUpdate**](SystemApi.md#bannerpartialupdate) | **PATCH** /system/banner/ |             |
+| [**bannerRetrieve**](SystemApi.md#bannerretrieve)           | **GET** /system/banner/   |             |
+| [**healthRetrieve**](SystemApi.md#healthretrieve)           | **GET** /system/health/   |             |
 
 ## activityRetrieve
 
@@ -73,6 +75,144 @@ example().catch(console.error);
 ### Return type
 
 [**SystemActivityResponse**](SystemActivityResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## bannerPartialUpdate
+
+> MaintenanceBannerResponse bannerPartialUpdate(patchedMaintenanceBanner)
+
+Update the maintenance banner. Requires admin authentication.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SystemApi,
+} from '';
+import type { BannerPartialUpdateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new SystemApi(config);
+
+  const body = {
+    // PatchedMaintenanceBanner (optional)
+    patchedMaintenanceBanner: ...,
+  } satisfies BannerPartialUpdateRequest;
+
+  try {
+    const data = await api.bannerPartialUpdate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                         | Type                                                    | Description | Notes      |
+| ---------------------------- | ------------------------------------------------------- | ----------- | ---------- |
+| **patchedMaintenanceBanner** | [PatchedMaintenanceBanner](PatchedMaintenanceBanner.md) |             | [Optional] |
+
+### Return type
+
+[**MaintenanceBannerResponse**](MaintenanceBannerResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## bannerRetrieve
+
+> MaintenanceBannerResponse bannerRetrieve()
+
+Returns the current maintenance banner configuration. No authentication required.
+
+### Example
+
+```ts
+import { Configuration, SystemApi } from '';
+import type { BannerRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: 'YOUR BEARER TOKEN',
+  });
+  const api = new SystemApi(config);
+
+  try {
+    const data = await api.bannerRetrieve();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**MaintenanceBannerResponse**](MaintenanceBannerResponse.md)
 
 ### Authorization
 

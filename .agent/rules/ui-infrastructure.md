@@ -118,34 +118,7 @@ export type MyObjectType = t.TypeOf<typeof MyObject>;
 
 ### API Functions
 
-Use the generic CRUD functions from `infrastructure/generics.tsx`:
-
-| Function              | HTTP Method | Purpose                                  |
-| --------------------- | ----------- | ---------------------------------------- |
-| `createObject`        | POST        | Create new resources                     |
-| `readObject`          | GET         | Fetch single resource by ID              |
-| `listObject`          | GET         | Fetch all resources (handles pagination) |
-| `listObjectPaginated` | GET         | Fetch single page with pagination info   |
-| `updateObject`        | PATCH       | Update existing resource                 |
-| `deleteObject`        | DELETE      | Remove resource                          |
-| `readObjectDetail`    | GET         | Fetch nested resource                    |
-| `updateObjectDetail`  | PATCH       | Update nested resource                   |
-| `createObjectDetail`  | POST        | Create nested resource                   |
-
-### Example API Usage
-
-```typescript
-import { createObject, readObject, listObject, updateObject, deleteObject } from './generics';
-import { MyObject, MyObjectType, MyObjectInput } from './myObject';
-
-const API_URL = '/my-objects/';
-
-export const myObjectCreate = createObject(MyObject, MyObjectInput, API_URL);
-export const myObjectRead = readObject(MyObject, API_URL);
-export const myObjectList = listObject(MyObject, API_URL);
-export const myObjectUpdate = updateObject(MyObject, MyObjectInput, API_URL);
-export const myObjectDelete = deleteObject(MyObject, API_URL);
-```
+The api is generated through an Openapi schema in the codePost-api repo. If you need to add new endpoints, add them to the openapi spec and regenerate the client. under `~/codePost-api/scripts/generate-ts-client.ts`. this will generate the client in `~/codePost-ui/src/api-client/` and you can import the generated functions and types directly from there.
 
 ## Theming & Colors
 

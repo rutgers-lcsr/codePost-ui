@@ -10,7 +10,22 @@ import {
   RiseOutlined,
   ApiOutlined,
 } from '@ant-design/icons';
-import { Alert, Card, Col, Progress, Row, Spin, Statistic, Table, Tag, Typography, Layout, Menu, theme } from 'antd';
+import {
+  Alert,
+  Card,
+  Col,
+  Progress,
+  Row,
+  Space,
+  Spin,
+  Statistic,
+  Table,
+  Tag,
+  Typography,
+  Layout,
+  Menu,
+  theme,
+} from 'antd';
 import { Link } from 'react-router-dom';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -26,6 +41,7 @@ import OrganizationTable from './OrganizationTable';
 import UsersTable from './UsersTable';
 import APIIframe from './APIIframe';
 import ActivityFeed from './ActivityFeed';
+import MaintenanceBannerPanel from './MaintenanceBannerPanel';
 
 import type { RosterType, UserType } from '../../types/models';
 import { Organization, Course } from '../../api-client';
@@ -413,7 +429,10 @@ const Dashboard = () => {
             </Card>
           </Col>
           <Col xs={24} lg={12}>
-            <SystemHealth />
+            <Space direction="vertical" style={{ width: '100%' }} size="middle">
+              <SystemHealth />
+              <MaintenanceBannerPanel />
+            </Space>
           </Col>
         </Row>
 

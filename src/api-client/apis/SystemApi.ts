@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,7 +14,12 @@
  */
 
 import * as runtime from '../runtime';
-import type { SystemActivityResponse, SystemHealthResponse } from '../models/index';
+import type {
+  MaintenanceBannerResponse,
+  PatchedMaintenanceBanner,
+  SystemActivityResponse,
+  SystemHealthResponse,
+} from '../models/index';
 
 export interface ActivityRetrieveRequest {
   category?: string;
@@ -22,6 +28,10 @@ export interface ActivityRetrieveRequest {
   pageSize?: number;
   search?: string;
   startDate?: string;
+}
+
+export interface BannerPartialUpdateRequest {
+  patchedMaintenanceBanner?: PatchedMaintenanceBanner;
 }
 
 /**
@@ -104,6 +114,119 @@ export class SystemApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<SystemActivityResponse> {
     const response = await this.activityRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Update the maintenance banner. Requires admin authentication.
+   */
+  async bannerPartialUpdateRaw(
+    requestParameters: BannerPartialUpdateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<MaintenanceBannerResponse>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/system/banner/`;
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'PATCH',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['patchedMaintenanceBanner'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Update the maintenance banner. Requires admin authentication.
+   */
+  async bannerPartialUpdate(
+    requestParameters: BannerPartialUpdateRequest = {},
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<MaintenanceBannerResponse> {
+    const response = await this.bannerPartialUpdateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Returns the current maintenance banner configuration. No authentication required.
+   */
+  async bannerRetrieveRaw(
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<MaintenanceBannerResponse>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/system/banner/`;
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Returns the current maintenance banner configuration. No authentication required.
+   */
+  async bannerRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MaintenanceBannerResponse> {
+    const response = await this.bannerRetrieveRaw(initOverrides);
     return await response.value();
   }
 

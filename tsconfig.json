@@ -37,6 +37,6 @@
     "types": ["vite/client", "vitest/globals"]
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist", "src/**/__tests__/*", "src/**/*.test.tsx", "src/**/*.test.ts"],
+  "exclude": ["node_modules", "dist", "src/**/__tests__/*", "src/**/*.test.tsx", "src/**/*.test.ts", "src/api-client"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

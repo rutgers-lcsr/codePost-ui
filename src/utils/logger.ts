@@ -10,7 +10,7 @@ export interface LogContext {
 }
 
 export class Logger {
-  private static async postError(payload: { error?: string; errorDetail?: string; url?: string }) {
+  private static async postError(payload: { error?: string; errorDetail?: string; url?: string; screenshot?: string }) {
     try {
       await logsApi.logErrorCreate({ logErrorRequest: payload });
     } catch {
@@ -31,10 +31,17 @@ export class Logger {
       error: message,
       errorDetail: typeof detail === 'string' ? detail : JSON.stringify(detail, null, 2),
       url: window.location.href,
-      timestamp: new Date().toISOString(),
     };
 
     // Fire and forget
+    void Logger.postError(payload);
+  }
+
+  /**
+   * Like Logger.error but accepts a richer payload including an optional screenshot
+   * (base64-encoded JPEG data URL).
+   */
+  public static errorFull(payload: { error: string; errorDetail: string; url: string; screenshot?: string }) {
     void Logger.postError(payload);
   }
 

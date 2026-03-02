@@ -14,18 +14,15 @@
  */
 
 import * as runtime from '../runtime';
-import type { DashboardStats } from '../models/index';
 
 /**
  *
  */
-export class DashboardApi extends runtime.BaseAPI {
+export class ImpersonateApi extends runtime.BaseAPI {
   /**
-   * Returns aggregated platform statistics.
+   * View to handle impersonation of users. Accepts either \'username\' (exact match) or \'email\' (lookup by email) in the POST body. Staff/superusers can impersonate any user. Course admins can only impersonate students or graders in courses they administer.
    */
-  async statsRetrieveRaw(
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<DashboardStats>> {
+  async createRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
@@ -50,26 +47,25 @@ export class DashboardApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/dashboard/stats/`;
+    let urlPath = `/impersonate/`;
 
     const response = await this.request(
       {
         path: urlPath,
-        method: 'GET',
+        method: 'POST',
         headers: headerParameters,
         query: queryParameters,
       },
       initOverrides,
     );
 
-    return new runtime.JSONApiResponse(response);
+    return new runtime.VoidApiResponse(response);
   }
 
   /**
-   * Returns aggregated platform statistics.
+   * View to handle impersonation of users. Accepts either \'username\' (exact match) or \'email\' (lookup by email) in the POST body. Staff/superusers can impersonate any user. Course admins can only impersonate students or graders in courses they administer.
    */
-  async statsRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DashboardStats> {
-    const response = await this.statsRetrieveRaw(initOverrides);
-    return await response.value();
+  async create(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+    await this.createRaw(initOverrides);
   }
 }
